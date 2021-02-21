@@ -1,0 +1,1 @@
+export { MessageStatus } from 'types/journal';
