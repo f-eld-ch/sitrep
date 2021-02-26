@@ -16,7 +16,7 @@ function List() {
         <h3 className="title is-3">Journal</h3>
         { _.times(faker.random.number(20), () => 
               { 
-                return <JournalMessage assignments={ASSIGNMENTS.slice(0,faker.random.number(ASSIGNMENTS.length))} status={getRandomStatus()} sender={faker.name.findName()} receiver={faker.name.findName()} message={faker.lorem.paragraphs(2)}  timeDate={faker.date.recent(1)}/>
+                return <JournalMessage key={faker.random.uuid()} assignments={ASSIGNMENTS.slice(0,faker.random.number(ASSIGNMENTS.length))} status={getRandomStatus()} sender={faker.name.findName()} receiver={faker.name.findName()} message={faker.lorem.paragraphs(2)}  timeDate={faker.date.recent(1)}/>
               }
             )
         }

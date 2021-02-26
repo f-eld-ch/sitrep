@@ -1,10 +1,11 @@
-import React, {FunctionComponent,useState} from 'react';
+import React, {FunctionComponent,useState,useContext} from 'react';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 
 import logo from 'assets/logo.svg';
 import { Link, NavLink, useParams } from 'react-router-dom';
+import {IncidentContext, JournalContext} from 'contexts';
 
 type NavbarProps = {}
 
@@ -72,40 +73,37 @@ interface IRouteParams {
 }
 
 const IncidentNavItem:FunctionComponent = () => {
-    // const params = useParams<IRouteParams>();
-    // console.log("found params", params)
+    const incident = useContext(IncidentContext);
+    const journal = useContext(JournalContext);
 
-    // if (!params.incidentId) {
-    //     console.log("found incident", params.incidentId)
-        return (
-            <div className="navbar-item has-dropdown is-hoverable">
-                <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c" activeClassName="is-active">
-                    GBT Einsatzübung 2021
+    return (
+        <div className="navbar-item has-dropdown is-hoverable">
+            <NavLink className="navbar-item" to="/incident/{incident}" activeClassName="is-active">
+                GBT Einsatzübung 2021
+            </NavLink>
+            <div className="navbar-dropdown">
+                <NavLink className="navbar-item" to={"/incident/" + incident + "/dashboard"} activeClassName="is-active">
+                    Dashboard
                 </NavLink>
-                <div className="navbar-dropdown">
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/dashboard" activeClassName="is-active">
-                        Dashboard
-                    </NavLink>
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/journal/f4cce005-6c24-4923-8549-f1fba6bd806a" activeClassName="is-active">
-                        Journal
-                    </NavLink>
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/journal/f4cce005-6c24-4923-8549-f1fba6bd806a/edit" activeClassName="is-active">
-                        Journal bearbeiten
-                    </NavLink>
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/resources" activeClassName="is-active">
-                        Mittel
-                    </NavLink>                    
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/tasks" activeClassName="is-active">
-                        Pendenzen / Anträge / Bedürfnisse
-                    </NavLink>   
-                    <NavLink className="navbar-item" to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/hotline" activeClassName="is-active">
-                        Hotline
-                    </NavLink>
-                </div>
+                <NavLink className="navbar-item" exact={true} to={"/incident/" + incident + "/journal/"+ journal } activeClassName="is-active">
+                    Journal
+                </NavLink>
+                <NavLink className="navbar-item" to={"/incident/" + incident + "/journal/" + journal + "/edit"} activeClassName="is-active">
+                    Journal bearbeiten
+                </NavLink>
+                <NavLink className="navbar-item" to={"/incident/" + incident + "/resources"} activeClassName="is-active">
+                    Mittel
+                </NavLink>                    
+                <NavLink className="navbar-item" to={"/incident/" + incident + "/tasks"} activeClassName="is-active">
+                    Pendenzen / Anträge / Bedürfnisse
+                </NavLink>   
+                <NavLink className="navbar-item" to={"/incident/" + incident + "/hotline"} activeClassName="is-active">
+                    Hotline
+                </NavLink>
             </div>
-        );
-    // }
-    return <></>;}
+        </div>
+    );
+}
   
 
 export default Navbar;
