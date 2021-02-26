@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 
 import {JournalMessage} from 'components';
 import {MessageStatus as Status} from 'types';
@@ -7,12 +7,14 @@ import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime';
 import classNames from 'classnames';
 
+import {IncidentContext,JournalContext} from 'contexts';
 
 // FIXME(daa): remove
 import faker from "faker/locale/de";
 import _ from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faClock, faEnvelope, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faUser } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 const getRandomStatus = () => { return _.sample(Object.values(Status)) as Status }
 
 // FIXME(daa): remove
@@ -41,11 +43,10 @@ function Editor() {
             <div className="columns">
                 <div className="column is-half">
                     <h3 className="title is-3">Editor</h3>
-
                     <InputBox />
                 </div>
-                <div className="column is-half">
-                    <h3 className="title is-3">Journal-Log</h3>
+                <div className="column">
+                    <h3 className="title is-3">Journal</h3>
                     { _.times(faker.random.number(20), () => 
                             { 
                                 return <JournalMessage assignments={ASSIGNMENTS.slice(0,faker.random.number(ASSIGNMENTS.length))} status={getRandomStatus()} sender={faker.name.findName()} receiver={faker.name.findName()} message={faker.lorem.paragraphs(2)}  timeDate={faker.date.recent(1)}/>
@@ -58,9 +59,85 @@ function Editor() {
     );
 }
 
+enum Medium {
+    Radio = "Funk",
+    Phone = "Telefon",
+    Email = "E-Mail",
+};
+
+interface IPropsInputBox {
+    initialMedium?: Medium
+}
+
 function InputBox() {
+    const incident = useContext(IncidentContext);
+    const journal = useContext(JournalContext);
+
+    const [medium, setMedium] = useState(Medium.Radio)
+
+    const renderFormContent = () => {
+        if (medium == Medium.Radio ) {
+            return <RadioInput />
+        }
+        if (medium == Medium.Phone ) {
+            return <PhoneInput />
+        }
+        if (medium == Medium.Email ) {
+            return <EmailInput />
+        }
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        e.preventDefault();
+        let selectMedium = e.currentTarget.value;
+        if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone) {
+            setMedium(selectMedium);
+        }
+    }
+
     return (
         <div className="box" >
+            <Link className="delete is-pulled-right is-small mb-2" to={"/incident/" + incident + "/journal/"+ journal } />
+            <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                    <label className="label">Medium</label>
+                </div>
+                <div className="field-body">
+                    <div className="field is-narrow">
+                        <div className="control">
+                            <div className="select is-fullwidth">
+                            <select value={medium} onChange={handleChange}>
+                                {Object.values(Medium).map( (medium: Medium) => (<option key={medium}>{medium}</option>))}
+                            </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            { renderFormContent() } 
+        </div>
+    );
+}
+
+function PhoneInput() {
+    return (
+        <>
+            <p>Phone Form</p>
+        </>
+    )
+}
+
+function EmailInput() {
+    return (
+        <>
+            <p>Email Input</p>
+        </>
+    )
+}
+
+function RadioInput() {
+    return (
+        <>
             <div className="field is-horizontal">
                 <div className="field-label is-normal">
                     <label className="label">Empfänger</label>
@@ -95,32 +172,12 @@ function InputBox() {
 
             <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                    <label className="label">Medium</label>
-                </div>
-                <div className="field-body">
-                    <div className="field is-narrow">
-                    <div className="control">
-                        <div className="select is-fullwidth">
-                        <select>
-                            <option>Funk</option>
-                            <option>Telefon</option>
-                            <option>Email</option>
-                        </select>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div className="field is-horizontal">
-                <div className="field-label is-normal">
                     <label className="label">Zeit</label>
                 </div>
                 <div className="field-body">
                     <div className="field">
                         <p className="control is-expanded has-icons-left">
-                            <input className="input" type="text" placeholder="Name" />
+                            <input className="input" type="text" placeholder="Zeit" />
                             <span className="icon is-small is-left">
                                 <FontAwesomeIcon icon={faClock} />
                             </span>
@@ -169,7 +226,7 @@ function InputBox() {
                     <div className="field is-narrow">
                     <div className="control">
                         <div className="select is-multiple">
-                        <select>
+                        <select multiple size={3}>
                             {ASSIGNMENTS.map(a => {return <option>{a}</option>})}
                         </select>
                         </div>
@@ -191,7 +248,7 @@ function InputBox() {
                 </div>
             </div>
             </div>
-        </div>
+        </>
     );
 }
 
