@@ -1,42 +1,20 @@
 import React, { useContext, useState } from 'react';
 
-import {JournalMessage} from 'components';
+import { List } from '.';
 import {MessageStatus as Status} from 'types';
-
-import dayjs from "dayjs";
-import relativeTime from 'dayjs/plugin/relativeTime';
-import classNames from 'classnames';
 
 import {IncidentContext,JournalContext} from 'contexts';
 
-// FIXME(daa): remove
-import faker from "faker/locale/de";
 import _ from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUser } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-const getRandomStatus = () => { return _.sample(Object.values(Status)) as Status }
 
 // FIXME(daa): remove
 const ASSIGNMENTS = ["Pol", "Lage", "San", "FW", "Tech"]
 
 
 function Editor() {
-    let status = Status.New;
-    let sender = "foobar";
-    let receiver = "foobarbaz";
-    let message = "adsfasd fasdf asdf asdfsf"
-    let timeDate = new Date();
-
-    let dayTime = dayjs(timeDate).subtract(4, "minutes");
-   
-    let messageClassNames = classNames({
-        message: true,
-        'is-warning': status == Status.New,
-        // 'is-danger': status == Status.Important,
-        // 'is-dark': status == Status.Triaged,
-    });
-
 
     return (
         <div>
@@ -46,13 +24,7 @@ function Editor() {
                     <InputBox />
                 </div>
                 <div className="column">
-                    <h3 className="title is-3">Journal</h3>
-                    { _.times(faker.random.number(20), () => 
-                            { 
-                                return <JournalMessage assignments={ASSIGNMENTS.slice(0,faker.random.number(ASSIGNMENTS.length))} status={getRandomStatus()} sender={faker.name.findName()} receiver={faker.name.findName()} message={faker.lorem.paragraphs(2)}  timeDate={faker.date.recent(1)}/>
-                            }
-                        )
-                    }
+                    <List />
                 </div> 
             </div>
         </div>
@@ -76,13 +48,13 @@ function InputBox() {
     const [medium, setMedium] = useState(Medium.Radio)
 
     const renderFormContent = () => {
-        if (medium == Medium.Radio ) {
+        if (medium === Medium.Radio ) {
             return <RadioInput />
         }
-        if (medium == Medium.Phone ) {
+        if (medium === Medium.Phone ) {
             return <PhoneInput />
         }
-        if (medium == Medium.Email ) {
+        if (medium === Medium.Email ) {
             return <EmailInput />
         }
     }
@@ -137,7 +109,7 @@ function EmailInput() {
 
 function RadioInput() {
     return (
-        <>
+        <div>
             <div className="field is-horizontal">
                 <div className="field-label is-normal">
                     <label className="label">Empfänger</label>
@@ -227,7 +199,7 @@ function RadioInput() {
                     <div className="control">
                         <div className="select is-multiple">
                         <select multiple size={3}>
-                            {ASSIGNMENTS.map(a => {return <option>{a}</option>})}
+                            {ASSIGNMENTS.map(a => {return <option key={a} >{a}</option>})}
                         </select>
                         </div>
                     </div>
@@ -248,7 +220,7 @@ function RadioInput() {
                 </div>
             </div>
             </div>
-        </>
+        </div>
     );
 }
 

@@ -1,10 +1,12 @@
 import React from 'react';
 import dayjs from "dayjs";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import de from 'dayjs/locale/de';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import classNames from 'classnames';
 
 import {MessageStatus as Status} from 'types';
+import faker from '@faker-js/faker';
 
 export interface MessageProps {
     sender: string;
@@ -17,6 +19,8 @@ export interface MessageProps {
 
 
 dayjs.locale(de);
+dayjs.extend(LocalizedFormat)
+
 dayjs.extend(relativeTime);
 
 function Message({sender,receiver,message,timeDate,status,assignments}:MessageProps) {
@@ -33,7 +37,7 @@ function Message({sender,receiver,message,timeDate,status,assignments}:MessagePr
     let assigmentsClassNames = classNames({
         column: true,
         'is-1': true,
-        'is-hidden': !assignments || assignments.length == 0
+        'is-hidden': !assignments || assignments.length === 0
     })
     return (
         <div className={messageClassNames}>
@@ -56,7 +60,7 @@ function Message({sender,receiver,message,timeDate,status,assignments}:MessagePr
                             <div className="level-item has-text-centered">
                                 <div className="mb-2">
                                 <p className="heading is-size-7">Zeit</p>
-                                <p className="subtitle is-size-7">{dayjs(timeDate).fromNow()}</p>
+                                <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
                                 </div>
                             </div>
                             <div className="level-item has-text-centered">
@@ -75,7 +79,7 @@ function Message({sender,receiver,message,timeDate,status,assignments}:MessagePr
                     <div className={assigmentsClassNames}>
                         <div className="field is-grouped is-grouped-multiline">
                             <div className="tags">
-                                { assignments && assignments.map( a => {return <span className="tag is-grey is-light is-small">{a}</span> })}
+                                { assignments && assignments.map( a => {return <span key={faker.datatype.number(10000)} className="tag is-grey is-light is-small">{a}</span> })}
                             </div>
                         </div>
                     </div>
