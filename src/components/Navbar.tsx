@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 
 import logo from 'assets/logo.svg';
-import { Link, NavLink, useParams } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {IncidentContext, JournalContext} from 'contexts';
 
 type NavbarProps = {}
@@ -20,7 +20,7 @@ const Navbar:FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) 
     return (
         <nav className="navbar is-fixed-top">
             <div className="navbar-brand">
-                <NavLink to="/" className="navbar-item">
+                <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
                     <figure className="image is-16x16" >
                         <img src={logo} alt="Logo" className="is-rounded"/>
                     </figure>
@@ -36,14 +36,14 @@ const Navbar:FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) 
             <div className={navbarMenuClass}>
                 <div className="navbar-start">
                     <div className="navbar-item has-dropdown is-hoverable">
-                        <NavLink className="navbar-item" to="/incident/list" activeClassName="is-active">
+                        <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list" >
                             Ereignis
                         </NavLink>
                         <div className="navbar-dropdown">
-                            <NavLink className="navbar-item" to="/incident/list" activeClassName="is-active">
+                            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list" >
                                 Übersicht
                             </NavLink>
-                            <NavLink className="navbar-item" to="/incident/new" activeClassName="is-active">
+                            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/new" >
                                 Neues Ereignis erstellen
                             </NavLink>
 
@@ -78,26 +78,26 @@ const IncidentNavItem:FunctionComponent = () => {
 
     return (
         <div className="navbar-item has-dropdown is-hoverable">
-            <NavLink className="navbar-item" to="/incident/{incident}" activeClassName="is-active">
+            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/{incident}" >
                 GBT Einsatzübung 2021
             </NavLink>
             <div className="navbar-dropdown">
-                <NavLink className="navbar-item" to={"/incident/" + incident + "/dashboard"} activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to={"/incident/" + incident + "/dashboard"} >
                     Dashboard
                 </NavLink>
-                <NavLink className="navbar-item" exact={true} to={"/incident/" + incident + "/journal/"+ journal } activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} end={true} to={"/incident/" + incident + "/journal/"+ journal } >
                     Journal
                 </NavLink>
-                <NavLink className="navbar-item" to={"/incident/" + incident + "/journal/" + journal + "/edit"} activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to={"/incident/" + incident + "/journal/" + journal + "/edit"} >
                     Journal bearbeiten
                 </NavLink>
-                <NavLink className="navbar-item" to={"/incident/" + incident + "/resources"} activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to={"/incident/" + incident + "/resources"} >
                     Mittel
                 </NavLink>                    
-                <NavLink className="navbar-item" to={"/incident/" + incident + "/tasks"} activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to={"/incident/" + incident + "/tasks"} >
                     Pendenzen / Anträge / Bedürfnisse
                 </NavLink>   
-                <NavLink className="navbar-item" to={"/incident/" + incident + "/hotline"} activeClassName="is-active">
+                <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to={"/incident/" + incident + "/hotline"} >
                     Hotline
                 </NavLink>
             </div>

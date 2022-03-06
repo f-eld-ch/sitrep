@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import faker from "faker/locale/de";
+import faker from "@faker-js/faker/locale/de";
 
 import { JournalMessage } from '../../components';
 import { MessageStatus as Status } from '../../types';
@@ -37,25 +37,25 @@ function Dashboard() {
                        <div className="level-item has-text-centered">
                             <div className="mb-4">
                             <p className="heading is-size-6" >Tote</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                         <div className="level-item has-text-centered">
                             <div className="mb-4">
                             <p className="heading is-size-6" >Verletzte</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                         <div className="level-item has-text-centered">
                             <div className="mb-4">
                             <p className="heading is-size-6">Eingeschlossene</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                         <div className="level-item has-text-centered">
                             <div className="">
                             <p className="heading is-size-6">Obdachlose</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                     </nav>       
@@ -66,25 +66,25 @@ function Dashboard() {
                        <div className="level-item has-text-centered has-text-white-bis">
                             <div className="mb-4">
                             <p className="heading is-size-6" >Feuerwehr</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                         <div className="level-item has-text-centered has-text-white-bis">
                             <div className="mb-4">
                             <p className="heading is-size-6" >Polizei</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                         <div className="level-item has-text-centered">
                             <div className="mb-4">
                             <p className="heading is-size-6">Technische Dienste</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div> 
                         <div className="level-item has-text-centered">
                             <div className="">
                             <p className="heading is-size-6">Zivilschutz</p>
-                            <p className="subtitle is-size-3 has-text-white-bis">{faker.random.number(30)}</p>
+                            <p className="subtitle is-size-3 has-text-white-bis">{faker.datatype.number(30)}</p>
                             </div>
                         </div>
                     </nav>   
