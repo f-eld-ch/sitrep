@@ -1,0 +1,50 @@
+table:
+  schema: public
+  name: triage_status
+is_enum: true
+configuration:
+  custom_root_fields:
+    insert:
+      name: null
+      comment: ""
+    select_aggregate:
+      name: null
+      comment: ""
+    insert_one:
+      name: null
+      comment: ""
+    select_by_pk:
+      name: null
+      comment: ""
+    select:
+      name: null
+      comment: ""
+    delete:
+      name: null
+      comment: ""
+    update:
+      name: null
+      comment: ""
+    delete_by_pk:
+      name: null
+      comment: ""
+    update_by_pk:
+      name: null
+      comment: ""
+  column_config: {}
+  custom_column_names: {}
+array_relationships:
+  - name: messages
+    using:
+      foreign_key_constraint_on:
+        column: triage_id
+        table:
+          schema: public
+          name: messages
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - name
+        - description
+      filter: {}

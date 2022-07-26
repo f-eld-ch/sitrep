@@ -1,0 +1,44 @@
+table:
+  schema: public
+  name: locations
+object_relationships:
+  - name: incidentById
+    using:
+      foreign_key_constraint_on:
+        column: location_id
+        table:
+          schema: public
+          name: incidents
+array_relationships:
+  - name: incident
+    using:
+      foreign_key_constraint_on:
+        column: location_id
+        table:
+          schema: public
+          name: incidents
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - coordinates
+        - name
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - coordinates
+        - name
+        - created_at
+        - updated_at
+        - id
+      filter: {}
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - coordinates
+        - name
+      filter: {}
+      check: {}

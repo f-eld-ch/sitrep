@@ -1,0 +1,11 @@
+- name: Postgres
+  kind: postgres
+  configuration:
+    connection_info:
+      use_prepared_statements: true
+      database_url:
+        from_env: PG_DATABASE_URL
+      isolation_level: read-committed
+  customization:
+    naming_convention: graphql-default
+  tables: "!include Postgres/tables/tables.yaml"

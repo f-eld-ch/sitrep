@@ -1,51 +1,122 @@
-import React from 'react';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import "./App.scss";
+
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate
-} from "react-router-dom";
-
-import './App.scss';
-import { Navbar, Footer } from 'components';
-
-import { List as JournalMessageList, Editor as JournalEditor, HotlineEditor} from 'views/journal';
-import { List as IncidentList, Dashboard as IncidentDashboard } from 'views/incident';
-import { List as ResourcesList } from 'views/resource';
-import { List as TaskList } from 'views/tasks';
-import { ApolloProvider } from '@apollo/client';
-import { default as client } from './client';
+  List as JournalMessageList,
+  Editor as JournalEditor,
+  HotlineEditor,
+  Overview as JournalOverview,
+} from "views/journal";
+import {
+  List as IncidentList,
+  Dashboard as IncidentDashboard,
+  New as IncidentNew,
+  Editor as IncidentEditor,
+} from "views/incident";
+import { List as ResourcesList } from "views/resource";
+import { List as TaskList } from "views/tasks";
+import { ApolloProvider } from "@apollo/client";
+import { default as client } from "./client";
+import { Layout } from "views/Layout";
 
 function App() {
-
   return (
     <ApolloProvider client={client}>
       <Router>
-        <Navbar />
+        <Routes>
+          <Route path="/incident">
+            <Route
+              path="list"
+              element={
+                <Layout>
+                  <IncidentList />
+                </Layout>
+              }
+            />
+            <Route
+              path="new"
+              element={
+                <Layout>
+                  <IncidentNew />
+                </Layout>
+              }
+            />
 
-        <section className="section">
-          <Routes>
-            
-            <Route path="/incident">
-              <Route path="list" element={<IncidentList />} />
+            <Route path=":incidentId">
+              <Route
+                path="dashboard"
+                element={
+                  <Layout>
+                    <IncidentDashboard />
+                  </Layout>
+                }
+              />
+              <Route
+                path="edit"
+                element={
+                  <Layout>
+                    <IncidentEditor />
+                  </Layout>
+                }
+              />
 
-              <Route path=":incidentId" >
-                <Route path="dashboard" element={<IncidentDashboard />} />
-                <Route path="journal" >
-                  <Route path=":journalId/edit" element={<JournalEditor />} />
-                  <Route path=":journalId" element={<JournalMessageList />} />  
-                </Route>
-
-                <Route path="resources" element={<ResourcesList />} />
-                <Route path="tasks" element={<TaskList />} />
-                <Route path="hotline" element={<HotlineEditor />} />
+              <Route path="journal">
+                <Route
+                  path="view"
+                  element={
+                    <Layout>
+                      <JournalOverview />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path=":journalId/edit"
+                  element={
+                    <Layout>
+                      <JournalEditor />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path=":journalId"
+                  element={
+                    <Layout>
+                      <JournalMessageList />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path=":journalId/hotline"
+                  element={
+                    <Layout>
+                      <HotlineEditor />
+                    </Layout>
+                  }
+                />
               </Route>
 
+              <Route
+                path="resources"
+                element={
+                  <Layout>
+                    <ResourcesList />
+                  </Layout>
+                }
+              />
+              <Route
+                path="tasks"
+                element={
+                  <Layout>
+                    <TaskList />
+                  </Layout>
+                }
+              />
             </Route>
-            <Route path="/" element={ <Navigate to="/incident/6796c0d0-ddfa-4d81-870b-121200723e0c/dashboard" />} />
-          </Routes>
-        </section>
-        <Footer />
+          </Route>
+          <Route path="/" element={<Navigate to="/incident/list" />} />
+        </Routes>
       </Router>
     </ApolloProvider>
   );
