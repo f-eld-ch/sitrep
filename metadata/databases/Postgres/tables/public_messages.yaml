@@ -1,0 +1,61 @@
+table:
+  schema: public
+  name: messages
+object_relationships:
+  - name: author
+    using:
+      foreign_key_constraint_on: author_id
+  - name: journal
+    using:
+      foreign_key_constraint_on: journal_id
+  - name: priority
+    using:
+      foreign_key_constraint_on: priority_id
+  - name: triage
+    using:
+      foreign_key_constraint_on: triage_id
+array_relationships:
+  - name: divisions
+    using:
+      foreign_key_constraint_on:
+        column: message_id
+        table:
+          schema: public
+          name: message_division
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      set:
+        author_id: x-hasura-User-Id
+      columns:
+        - content
+        - journal_id
+        - receiver
+        - sender
+        - time
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - content
+        - created_at
+        - deleted_at
+        - id
+        - receiver
+        - sender
+        - time
+        - updated_at
+      filter: {}
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - content
+        - deleted_at
+        - receiver
+        - sender
+        - time
+        - triage_id
+      filter: {}
+      check: null

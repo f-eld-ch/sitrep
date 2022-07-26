@@ -1,0 +1,19 @@
+table:
+  schema: public
+  name: users
+array_relationships:
+  - name: messages
+    using:
+      foreign_key_constraint_on:
+        column: author_id
+        table:
+          schema: public
+          name: messages
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - email
+        - id
+        - name
+      filter: {}

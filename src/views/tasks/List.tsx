@@ -1,10 +1,7 @@
-import React from 'react';
+import React from "react";
 
 function List() {
-  
-  return (
-    <h3 className="title is-size-3">Pendenzen</h3>
-  );
+  return <h3 className="title is-size-3">Pendenzen</h3>;
 }
 
 export default List;

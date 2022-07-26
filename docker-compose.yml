@@ -1,0 +1,51 @@
+version: '3'
+services:
+  oauth2proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.3.0
+    restart: always
+    network_mode: 'host'
+    environment:
+      OAUTH2_PROXY_COOKIE_SECRET: Sm_u-M9bRDNxu3Ukq2vCKFRbul3hDPIHxZpPACR6UHc=
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: true
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_DISPLAY_NAME: Auth0
+      OAUTH2_PROXY_CLIENT_ID: qeq54mSDTa1QBZk3vSyy590d6rJCQ0AJ
+      OAUTH2_PROXY_CLIENT_SECRET: _daPSE_dzFnymqV5ksP8zCnh7sROFpJo9yfrPOniUu0PoE4oOvszoOmmPk2_aatb
+      OAUTH2_PROXY_REDIRECT_URL: http://localhost:4180/oauth2/callback
+      OAUTH2_PROXY_OIDC_ISSUER_URL: https://greenhat.eu.auth0.com/
+      OAUTH2_PROXY_UPSTREAMS: http://127.0.0.1:3000/
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
+      OAUTH2_PROXY_PROXY_WEBSOCKETS: true
+      #ports:
+      # - "4180:4180"
+      # - "8443:443"
+  postgres:
+    image: postgres:14
+    restart: always
+    volumes:
+    - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+  graphql-engine:
+    image: hasura/graphql-engine:v2.8.4
+    ports:
+      - "8080:8080"
+    depends_on:
+    - "postgres"
+    restart: always
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      PG_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false" # set to "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      ## uncomment next line to set an admin secret
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: user
+volumes:
+  db_data:

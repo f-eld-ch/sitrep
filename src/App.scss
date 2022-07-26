@@ -1,18 +1,17 @@
 @charset "utf-8";
 
 // Import a Google Font
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600");
 @import "../node_modules/bulma/sass/utilities/initial-variables";
-
 
 // Set your brand colors
 $warning: rgb(236, 180, 25);
-$primary: hsl(18,100,52);
+$primary: hsl(18, 100, 52);
 $danger: rgb(214, 0, 0);
-$info: hsl(226,100,47);
+$info: hsl(226, 100, 47);
 // $beige-light: #fceedc50;
 // $beige-lighter: #fceedc50;
-// // $blue: 
+// // $blue:
 
 // Update Bulma's global variables
 $family-sans-serif: "Open Sans", sans-serif;
@@ -54,5 +53,3 @@ $family-sans-serif: "Open Sans", sans-serif;
 @import "../node_modules/bulma/sass/components/navbar.sass";
 @import "../node_modules/bulma/sass/components/level.sass";
 @import "../node_modules/bulma/sass/components/tabs.sass";
-
-

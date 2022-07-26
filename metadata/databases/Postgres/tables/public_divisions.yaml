@@ -1,0 +1,53 @@
+table:
+  schema: public
+  name: divisions
+configuration:
+  custom_root_fields:
+    select_aggregate:
+      name: null
+      comment: ""
+    select_by_pk:
+      name: null
+      comment: ""
+    delete:
+      name: null
+      comment: ""
+    delete_by_pk:
+      name: null
+      comment: ""
+  column_config: {}
+  custom_column_names: {}
+object_relationships:
+  - name: incident
+    using:
+      foreign_key_constraint_on: incident_id
+array_relationships:
+  - name: message_divisions
+    using:
+      foreign_key_constraint_on:
+        column: division_id
+        table:
+          schema: public
+          name: message_division
+insert_permissions:
+  - role: user
+    permission:
+      check: {}
+      columns:
+        - description
+        - name
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
+      check: null
