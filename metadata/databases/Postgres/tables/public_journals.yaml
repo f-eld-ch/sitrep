@@ -24,6 +24,7 @@ select_permissions:
   - role: user
     permission:
       columns:
+        - closed_at
         - created_at
         - deleted_at
         - id
@@ -34,6 +35,7 @@ update_permissions:
   - role: user
     permission:
       columns:
+        - closed_at
         - name
       filter: {}
       check: null

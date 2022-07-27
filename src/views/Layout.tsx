@@ -1,3 +1,4 @@
+// Layout.jsx
 import React from "react";
 import { Navbar, Footer } from "components";
 
@@ -7,10 +8,16 @@ export interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   return (
-    <div>
-      <Navbar />
-      <section className="section">{props.children}</section>
-      <Footer />
+    <div className="columns is-flex-direction-column is-fullheight">
+      <div className="column is-narrow is-hidden-print">
+        <Navbar />
+      </div>
+      <div className="column">
+        <section className="section">{props.children}</section>
+      </div>
+      <div className="column is-narrow is-hidden-print">
+        <Footer />
+      </div>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 function Footer() {
   return (
-    <footer className="footer has-background-white-bis">
+    <footer className="footer has-background-white-bis is-hidden-print">
       <div className="content has-text-centered">
         <p>
           Made with <FontAwesomeIcon icon={faHeart as IconProp} color="red" /> in Switzerland by{" "}

@@ -2,7 +2,7 @@
 
 // Import a Google Font
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600");
-@import "../node_modules/bulma/sass/utilities/initial-variables";
+@import "~bulma/sass/utilities/initial-variables.sass";
 
 // Set your brand colors
 $warning: rgb(236, 180, 25);
@@ -18,7 +18,11 @@ $family-sans-serif: "Open Sans", sans-serif;
 // $primary: $blue;
 // $link: $blue;
 
+
+
 // // Update some of Bulma's component variables
+$footer-padding: 1rem 1.5rem 0.5rem;
+
 // $body-background-color: $beige-lighter;
 // $navbar-background-color: $grey-lightest;
 
@@ -53,3 +57,55 @@ $family-sans-serif: "Open Sans", sans-serif;
 @import "../node_modules/bulma/sass/components/navbar.sass";
 @import "../node_modules/bulma/sass/components/level.sass";
 @import "../node_modules/bulma/sass/components/tabs.sass";
+
+.is-fullheight {
+    height: 100vh;
+}
+
+.content {
+    h1 {
+        font-size: 1.2rem;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+    }
+
+    h3 {
+        font-size: 1.0rem;
+    }
+
+    h4 {
+        font-size: 0.9rem;
+    }
+}
+
+.content.is-normal {
+    font-size: 0.9rem;
+}
+
+.message a:not(.button):not(.tag):not(.dropdown-item) {
+    text-decoration: none;
+}
+
+
+@media print {
+    .is-hidden-print {
+        // .no-break {
+        //     word-break: normal;
+        //     min-width: 150px;
+        // }
+        display: none !important;
+    }
+
+    .section {
+        padding: 0 0;
+        margin-bottom: 0;
+    }
+
+    table,
+    td,
+    th {
+        min-width: 100px;
+    }
+}
