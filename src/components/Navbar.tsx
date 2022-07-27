@@ -1,5 +1,12 @@
 import { FunctionComponent, useState } from "react";
-import { faBars, faCog, faExplosion, faListCheck, faTruckMedical } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBars,
+  faCaretDown,
+  faCog,
+  faExplosion,
+  faListCheck,
+  faTruckMedical,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 
@@ -16,7 +23,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   });
 
   return (
-    <nav className="navbar is-fixed-top">
+    <nav className="navbar is-fixed-top is-hidden-print">
       <div className="navbar-brand">
         <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
           <figure className="image is-32x32">
@@ -30,7 +37,9 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             e.preventDefault();
             setIsMenuActive(!isMenuActive);
           }}
-        ></button>
+        >
+          <FontAwesomeIcon icon={faCaretDown}></FontAwesomeIcon>
+        </button>
       </div>
 
       <div className={navbarMenuClass}>
@@ -139,7 +148,7 @@ const TasksNavBar: FunctionComponent = () => {
   if (!incidentId) return <></>;
 
   return (
-    <div className="navbar-item is-hoverable">
+    <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
         className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
         to={`/incident/${incidentId}/tasks`}
@@ -159,7 +168,7 @@ const ResourcesNavBar: FunctionComponent = () => {
   if (!incidentId) return <></>;
 
   return (
-    <div className="navbar-item is-hoverable">
+    <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
         className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
         to={`/incident/${incidentId}/resources`}

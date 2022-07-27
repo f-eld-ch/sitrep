@@ -7,6 +7,8 @@ import classNames from "classnames";
 
 import { TriageStatus, PriorityStatus } from "types";
 import remarkable from "../utils/remarkable";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 
 export interface MessageProps {
   sender: string;
@@ -16,19 +18,29 @@ export interface MessageProps {
   triage: string;
   priority: string;
   assignments?: String[];
+  showControls: boolean;
 }
 
 dayjs.locale(de);
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
 
-function Message({ sender, receiver, message, timeDate, triage, priority, assignments }: MessageProps) {
+function Message({
+  sender,
+  receiver,
+  message,
+  timeDate,
+  triage,
+  priority,
+  assignments,
+  showControls = false,
+}: MessageProps) {
   let messageClassNames = classNames({
     message: true,
     "mb-2": true,
-    "is-danger":
-      triage !== TriageStatus.Pending && (priority === PriorityStatus.High || priority === PriorityStatus.Critical),
+    "is-danger": triage !== TriageStatus.Pending && priority === PriorityStatus.High,
     "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
+    "is-success": triage === TriageStatus.MoreInfo,
     "is-dark": triage === TriageStatus.Triaged,
   });
 
@@ -62,24 +74,26 @@ function Message({ sender, receiver, message, timeDate, triage, priority, assign
                   <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
                 </div>
               </div>
-              <div className="level-item has-text-centered">
-                <div className="">
-                  <p className="heading is-size-7">Prio</p>
-                  <p className="subtitle is-size-7">{priority}</p>
+              {triage !== TriageStatus.Pending && triage !== TriageStatus.Reset ? (
+                <div className="level-item has-text-centered">
+                  <div className="">
+                    <p className="heading is-size-7">Prio</p>
+                    <p className="subtitle is-size-7">{priority}</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="level-item has-text-centered">
-                <div className="">
-                  <p className="heading is-size-7">Triage</p>
-                  <p className="subtitle is-size-7">{triage}</p>
+              ) : (
+                <div className="level-item has-text-centered">
+                  <div className="">
+                    <p className="heading is-size-7">Triage</p>
+                    <p className="subtitle is-size-7">notwendig</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </nav>
           </div>
           <div className="column">
             <div
-              className="content is-normal has-text-weight-light has-text-dark has-text-left"
+              className="content is-normal has-text-left"
               dangerouslySetInnerHTML={{ __html: remarkable.render(message) }}
             />
           </div>
@@ -98,6 +112,38 @@ function Message({ sender, receiver, message, timeDate, triage, priority, assign
             </div>
           </div>
         </div>
+        {showControls === true ? (
+          <div className="tabs is-small is-right">
+            <ul>
+              <li>
+                <a>
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faArrowsToEye} />
+                  </span>
+                  <span>Triagieren</span>
+                </a>
+              </li>
+              <li>
+                <a>
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faSquareCheck} />
+                  </span>
+                  <span>Pendenz erfassen</span>
+                </a>
+              </li>
+              <li>
+                <a>
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faEdit} />
+                  </span>
+                  <span>Bearbeiten</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

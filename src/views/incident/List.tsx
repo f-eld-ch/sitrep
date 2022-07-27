@@ -37,55 +37,49 @@ function List() {
   return (
     <div>
       <h3 className="title is-size-3">Ereignisse</h3>
-      {loading ? (
-        <Spinner />
-      ) : (
-        <>
-          <div className="columns is-mobile">
-            <div className="column">
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  defaultChecked={filterClosed}
-                  ref={inputCheckbox}
-                  onChange={() => setFilterClosed(!filterClosed)}
-                />{" "}
-                Geschlossene Ereignisse ausblenden
-              </label>
-            </div>
-          </div>
+      <div className="columns is-mobile">
+        <div className="column">
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              defaultChecked={filterClosed}
+              ref={inputCheckbox}
+              onChange={() => setFilterClosed(!filterClosed)}
+            />{" "}
+            Geschlossene Ereignisse ausblenden
+          </label>
+        </div>
+      </div>
 
-          <table className="table is-hoverable is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Ort</th>
-                <th>Eröffnet</th>
-                <th>Geschlossen</th>
-                <th>Optionen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data &&
-                data.incidents
-                  .filter((incident) => !filterClosed || incident.closedAt === null)
-                  .map((incident) => (
-                    <tr key={incident.id}>
-                      <td>
-                        <Link to={`../${incident.id}/dashboard`}>{incident.name}</Link>
-                      </td>
-                      <td>{incident.location.name}</td>
-                      <td>{dayjs(incident.createdAt).format("LLL")}</td>
-                      <td>{incident.closedAt && dayjs(incident.closedAt).format("LLL")}</td>
-                      <td>
-                        <Option incident={incident} />
-                      </td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
-        </>
-      )}
+      <table className="table is-hoverable is-fullwidth is-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Ort</th>
+            <th>Eröffnet</th>
+            <th>Geschlossen</th>
+            <th>Optionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data &&
+            data.incidents
+              .filter((incident) => !filterClosed || incident.closedAt === null)
+              .map((incident) => (
+                <tr key={incident.id}>
+                  <td>
+                    <Link to={`../${incident.id}/dashboard`}>{incident.name}</Link>
+                  </td>
+                  <td>{incident.location.name}</td>
+                  <td>{dayjs(incident.createdAt).format("LLL")}</td>
+                  <td>{incident.closedAt && dayjs(incident.closedAt).format("LLL")}</td>
+                  <td>
+                    <Option incident={incident} />
+                  </td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
     </div>
   );
 }
