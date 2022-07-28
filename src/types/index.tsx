@@ -11,4 +11,6 @@ export type {
   Division,
   MessageListData,
   MessageListVars,
+  TriageMessageData,
+  TriageMessageVars,
 } from "types/journal";

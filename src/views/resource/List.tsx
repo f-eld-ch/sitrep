@@ -1,11 +1,11 @@
-import { Spinner } from "components";
+import TriageModal from "views/journal/TriageModal";
 import React from "react";
 
 function List() {
   return (
     <>
       <h3 className="title is-size-3">Mittel</h3>
-      <Spinner />
+      <TriageModal id={"asfdasfdadsf"} />
     </>
   );
 }

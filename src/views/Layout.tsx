@@ -8,7 +8,7 @@ export interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   return (
-    <div className="columns is-flex-direction-column is-fullheight">
+    <section className="columns is-flex-direction-column is-fullheight">
       <div className="column is-narrow is-hidden-print">
         <Navbar />
       </div>
@@ -18,6 +18,6 @@ export const Layout = (props: LayoutProps) => {
       <div className="column is-narrow is-hidden-print">
         <Footer />
       </div>
-    </div>
+    </section>
   );
 };

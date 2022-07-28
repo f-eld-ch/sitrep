@@ -7,9 +7,9 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
-import Message from "components/JournalMessage";
 import { PriorityStatus, TriageStatus } from "types";
 import { gql, useMutation } from "@apollo/client";
+import JournalMessage from "components/JournalMessage";
 
 function Editor() {
   return (
@@ -217,12 +217,11 @@ function RadioInput() {
             <p className="control is-expanded has-icons-left">
               <input
                 className="input"
-                value={time.toISOString()}
+                value={dayjs(time).format("YYYY-MM-DDTHH:mm")}
                 type="datetime-local"
                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                 onChange={(e) => {
                   e.preventDefault();
-                  console.log("got date:" + e.currentTarget.value);
                   e.currentTarget.value && setTime(dayjs(e.currentTarget.value).toDate());
                 }}
               />
@@ -270,7 +269,8 @@ function RadioInput() {
       {content !== "" || sender !== "" || receiver !== "" ? (
         <>
           <div className="title is-size-4">Vorschau</div>
-          <Message
+          <JournalMessage
+            id={undefined}
             message={content}
             receiver={receiver}
             sender={sender}
