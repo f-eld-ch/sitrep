@@ -126,20 +126,25 @@ function Triage(props: { id: string }) {
                       <h3 className="title is-size-3">Fachbereiche zuweisen</h3>
                       <div className="field is-grouped is-grouped-multiline">
                         {message.journal.incident.divisions.map((d) => {
+                          let isPresent = assignments.some((e) => e.name === d.name);
                           let tagsClass = classNames({
                             tag: true,
-                            "is-primary": assignments.some((e) => e.name === d.name),
+                            "is-primary": isPresent,
                           });
                           return (
                             <div key={d.name} className="control">
                               <div className="tags has-addons">
                                 <a className={tagsClass} onClick={() => setAssignments(union(assignments, [d]))}>
-                                  {d.name}
+                                  {d.description || d.name}
                                 </a>
-                                <a
-                                  className="tag is-delete"
-                                  onClick={() => setAssignments(without(assignments, d))}
-                                ></a>
+                                {isPresent ? (
+                                  <a
+                                    className="tag is-delete"
+                                    onClick={() => setAssignments(without(assignments, d))}
+                                  ></a>
+                                ) : (
+                                  <></>
+                                )}
                               </div>
                             </div>
                           );
@@ -172,7 +177,7 @@ function Triage(props: { id: string }) {
           <footer className="modal-card-foot">
             <div className="buttons are-normal">
               <button className="button is-rounded is-primary">Triagieren</button>
-              <button className="button is-rounded is-info">Mehr Informationen benötigt</button>
+              <button className="button is-rounded">Mehr Informationen benötigt</button>
             </div>
           </footer>
         </div>
