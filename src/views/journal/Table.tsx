@@ -5,22 +5,21 @@ import remarkable from "utils/remarkable";
 function MessageTable(props: { messages: undefined | Message[] }) {
   return (
     <div className="is-clearfix">
-      <h3 className="title is-5">Journal</h3>
       <h5 className="subtitle is-7">Stand: {dayjs(Date.now()).format("LLL")}</h5>
-      <table className="table is-fullwidth is-bordered">
-        <thead className="is-size-7">
+      <table className="table is-fullwidth is-narrow">
+        <thead>
           <tr>
-            <th>Zeit</th>
+            <th style={{ minWidth: "120px" }}>Zeit</th>
             <th>Sender</th>
             <th>Empfänger</th>
             <th>Nachricht</th>
           </tr>
         </thead>
-        <tbody className="is-size-7">
+        <tbody>
           {props.messages &&
             props.messages.map((message) => (
               <tr>
-                <td>{dayjs(message.time).format("LLL")}</td>
+                <td>{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
                 <td>{message.sender}</td>
                 <td>{message.receiver}</td>
                 <td>

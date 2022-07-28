@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 import { gql, useSubscription } from "@apollo/client";
 
 import { MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
-import useMediaQuery from "utils/useMediaQuery";
 import MessageTable from "./Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -40,7 +39,6 @@ export const SUBSCRIBE_MESSAGES = gql`
 
 function List(props: { showControls: boolean }) {
   const { journalId } = useParams();
-  const isPrinting = useMediaQuery("print");
   const [triageFilter, setTriageFilter] = useState("Alle");
   const [priorityFilter, setPriorityFilter] = useState("Alle");
   const [assignmentFilter, setAssignmentFilter] = useState("Alle");
@@ -58,16 +56,15 @@ function List(props: { showControls: boolean }) {
     );
 
   if (loading) return <Spinner />;
-  if (isPrinting) return <MessageTable messages={data?.messages} />;
-
   let divisions = new Set(data?.messages.map((m) => m.divisions.map((l) => l.division.name).flat()).flat());
-
-  divisions.forEach((element) => console.log(element));
 
   return (
     <div>
       <h3 className="title is-3">Journal</h3>
-      <div className="block">
+      <div className="block is-print">
+        <MessageTable messages={data?.messages} />;
+      </div>
+      <div className="block is-hidden-print">
         <div className="columns">
           <div className="column is-narrow">
             <div className="control has-icons-left">
@@ -80,10 +77,9 @@ function List(props: { showControls: boolean }) {
                   }}
                 >
                   <option>Alle</option>
-                  <option>{TriageStatus.Pending}</option>
-                  <option>{TriageStatus.Triaged}</option>
-                  <option>{TriageStatus.Reset}</option>
-                  <option>{TriageStatus.MoreInfo}</option>
+                  {Object.values(TriageStatus).map((status: TriageStatus) => (
+                    <option key={status}>{status}</option>
+                  ))}
                 </select>
               </div>
               <div className="icon is-small is-left">
@@ -102,8 +98,9 @@ function List(props: { showControls: boolean }) {
                   }}
                 >
                   <option>Alle</option>
-                  <option>{PriorityStatus.Normal}</option>
-                  <option>{PriorityStatus.High}</option>
+                  {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
+                    <option key={prio}>{prio}</option>
+                  ))}
                 </select>
               </div>
               <div className="icon is-small is-left">
@@ -123,7 +120,9 @@ function List(props: { showControls: boolean }) {
                 >
                   <option>Alle</option>
                   {Array.from(divisions).map((element) => (
-                    <option>{element}</option>
+                    <option key={element.toString()} value={element}>
+                      {element}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -134,30 +133,32 @@ function List(props: { showControls: boolean }) {
           </div>
         </div>
       </div>
-
-      {data &&
-        data.messages
-          .filter((message) => triageFilter === "Alle" || message.triage?.name === triageFilter)
-          .filter((message) => priorityFilter === "Alle" || message.priority?.name === priorityFilter)
-          .filter(
-            (message) =>
-              assignmentFilter === "Alle" || message.divisions?.find((d) => d.division.name === assignmentFilter)
-          )
-          .map((message) => {
-            return (
-              <JournalMessage
-                key={message.id}
-                assignments={message.divisions.map((d) => d.division.name)}
-                triage={message.triage.name}
-                priority={message.priority.name}
-                sender={message.sender}
-                receiver={message.receiver}
-                message={message.content}
-                timeDate={new Date(message.time)}
-                showControls={props.showControls}
-              />
-            );
-          })}
+      <div className="block is-hidden-print">
+        {data &&
+          data.messages
+            .filter((message) => triageFilter === "Alle" || message.triage?.name === triageFilter)
+            .filter((message) => priorityFilter === "Alle" || message.priority?.name === priorityFilter)
+            .filter(
+              (message) =>
+                assignmentFilter === "Alle" || message.divisions?.find((d) => d.division.name === assignmentFilter)
+            )
+            .map((message) => {
+              return (
+                <JournalMessage
+                  key={message.id}
+                  id={message.id}
+                  assignments={message.divisions.map((d) => d.division.name)}
+                  triage={message.triage.name}
+                  priority={message.priority.name}
+                  sender={message.sender}
+                  receiver={message.receiver}
+                  message={message.content}
+                  timeDate={new Date(message.time)}
+                  showControls={props.showControls}
+                />
+              );
+            })}
+      </div>
     </div>
   );
 }

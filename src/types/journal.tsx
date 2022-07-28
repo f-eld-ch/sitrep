@@ -67,3 +67,29 @@ export interface JournalListData {
 export interface JournalListVars {
   incidentId: string;
 }
+
+export interface TriageMessageData {
+  messages_by_pk: {
+    id: string;
+
+    content: string;
+    sender: string;
+    receiver: string;
+    divisions: DivisionList[];
+    time: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
+    triage: Triage;
+    priority: Priority;
+    journal: {
+      incident: {
+        divisions: Division[];
+      };
+    };
+  };
+}
+
+export interface TriageMessageVars {
+  messageId: string;
+}

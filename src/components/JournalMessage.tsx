@@ -8,9 +8,11 @@ import classNames from "classnames";
 import { TriageStatus, PriorityStatus } from "types";
 import remarkable from "../utils/remarkable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import TriageModal from "../views/journal/TriageModal";
 
 export interface MessageProps {
+  id: string | undefined;
   sender: string;
   receiver: string;
   timeDate: Date;
@@ -26,6 +28,7 @@ dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
 
 function Message({
+  id,
   sender,
   receiver,
   message,
@@ -38,7 +41,8 @@ function Message({
   let messageClassNames = classNames({
     message: true,
     "mb-2": true,
-    "is-danger": triage !== TriageStatus.Pending && priority === PriorityStatus.High,
+    "is-danger":
+      !(triage === TriageStatus.Pending || triage === TriageStatus.Reset) && priority === PriorityStatus.High,
     "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
     "is-success": triage === TriageStatus.MoreInfo,
     "is-dark": triage === TriageStatus.Triaged,
@@ -94,6 +98,7 @@ function Message({
           <div className="column">
             <div
               className="content is-normal has-text-left"
+              style={{ whiteSpace: "pre-wrap" }}
               dangerouslySetInnerHTML={{ __html: remarkable.render(message) }}
             />
           </div>
@@ -112,16 +117,11 @@ function Message({
             </div>
           </div>
         </div>
-        {showControls === true ? (
+        {showControls === true && id !== undefined ? (
           <div className="tabs is-small is-right">
             <ul>
               <li>
-                <a>
-                  <span className="icon is-small">
-                    <FontAwesomeIcon icon={faArrowsToEye} />
-                  </span>
-                  <span>Triagieren</span>
-                </a>
+                <TriageModal key={id} id={id} />
               </li>
               <li>
                 <a>
