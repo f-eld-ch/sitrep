@@ -31,7 +31,7 @@ function List() {
   const { loading, error, data } = useQuery<IncidentListData>(GET_INCIDENTS);
   const inputCheckbox = useRef(null);
 
-  if (error) return <div className="notification is-danger">{error}</div>;
+  if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
 
   return (
