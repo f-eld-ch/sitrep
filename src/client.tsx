@@ -14,6 +14,8 @@ const wsLink = new GraphQLWsLink(
   createClient({
     url: process.env.REACT_APP_API_WS_URL || `ws://${window.location.host}/v1/graphql`,
     connectionParams: {},
+    keepAlive: 10_000, // ping server every 10 seconds
+    lazy: true,
   })
 );
 

@@ -20,6 +20,7 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
       time
       divisions {
         division {
+          id
           name
         }
       }
