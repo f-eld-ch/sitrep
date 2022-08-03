@@ -41,6 +41,7 @@ select_permissions:
     permission:
       columns:
         - description
+        - id
         - name
       filter: {}
 update_permissions:
