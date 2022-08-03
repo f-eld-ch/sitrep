@@ -4,7 +4,7 @@ table:
 object_relationships:
   - name: author
     using:
-      foreign_key_constraint_on: author_id
+      foreign_key_constraint_on: author_sub
   - name: journal
     using:
       foreign_key_constraint_on: journal_id
@@ -29,12 +29,12 @@ insert_permissions:
         _and:
           - sender:
               _ne: ""
-          - content:
-              _ne: ""
           - receiver:
               _ne: ""
+          - content:
+              _ne: ""
       set:
-        author_id: x-hasura-User-Id
+        author_sub: x-hasura-User-Id
       columns:
         - content
         - journal_id
@@ -48,36 +48,29 @@ select_permissions:
         - content
         - created_at
         - deleted_at
-        - id
         - receiver
         - sender
         - time
         - updated_at
-      filter: {}
+      filter:
+        deleted_at:
+          _is_null: true
 update_permissions:
   - role: user
     permission:
       columns:
         - content
-        - journal_id
         - receiver
         - sender
         - time
-      filter:
-        _and:
-          - sender:
-              _ne: ""
-          - content:
-              _ne: ""
-          - receiver:
-              _ne: ""
+      filter: {}
       check:
         _and:
           - sender:
               _ne: ""
-          - content:
-              _ne: ""
           - receiver:
               _ne: ""
+          - content:
+              _ne: ""
       set:
-        author_id: 6d9ef59e-eaea-4b9e-852b-038441f18c30
+        author_sub: x-hasura-User-Id
