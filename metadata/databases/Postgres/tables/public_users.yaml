@@ -15,5 +15,5 @@ select_permissions:
       columns:
         - email
         - id
-        - name
+        - sub
       filter: {}
