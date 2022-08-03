@@ -48,6 +48,7 @@ select_permissions:
         - content
         - created_at
         - deleted_at
+        - id
         - receiver
         - sender
         - time
