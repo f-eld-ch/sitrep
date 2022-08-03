@@ -7,6 +7,7 @@ import { createClient } from "graphql-ws";
 
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_API_URL,
+  credentials: "include",
 });
 
 const wsLink = new GraphQLWsLink(
