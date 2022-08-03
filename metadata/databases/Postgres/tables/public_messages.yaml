@@ -34,7 +34,7 @@ insert_permissions:
           - receiver:
               _ne: ""
       set:
-        author_id: 6d9ef59e-eaea-4b9e-852b-038441f18c30
+        author_id: x-hasura-User-Id
       columns:
         - content
         - journal_id
