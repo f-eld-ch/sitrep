@@ -5,7 +5,7 @@ array_relationships:
   - name: messages
     using:
       foreign_key_constraint_on:
-        column: author_id
+        column: author_sub
         table:
           schema: public
           name: messages
