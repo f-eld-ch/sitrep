@@ -130,7 +130,7 @@ function Option(props: IOptionProps) {
         <span className="icon">
           <FontAwesomeIcon icon={faEdit} />
         </span>
-        <span>Bearbeiten</span>
+        <span>Schreiben</span>
       </button>
       {props.journal.closedAt === null ? (
         <button
