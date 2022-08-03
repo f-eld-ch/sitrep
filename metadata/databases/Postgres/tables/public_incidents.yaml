@@ -13,6 +13,13 @@ array_relationships:
         table:
           schema: public
           name: divisions
+  - name: journals
+    using:
+      foreign_key_constraint_on:
+        column: incident_id
+        table:
+          schema: public
+          name: journals
 insert_permissions:
   - role: user
     permission:
