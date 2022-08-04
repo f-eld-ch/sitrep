@@ -18,7 +18,7 @@ function MessageTable(props: { messages: undefined | Message[] }) {
         <tbody>
           {props.messages &&
             props.messages.map((message) => (
-              <tr>
+              <tr key={message.id}>
                 <td>{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
                 <td>{message.sender}</td>
                 <td>{message.receiver}</td>
