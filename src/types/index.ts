@@ -14,3 +14,6 @@ export type {
   TriageMessageData,
   TriageMessageVars,
 } from "types/journal";
+
+
+export type { UserState } from "types/user";

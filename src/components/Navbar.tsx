@@ -1,11 +1,11 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useContext, useState } from "react";
 import {
   faBars,
   faCaretDown,
-  faCog,
   faExplosion,
   faListCheck,
   faTruckMedical,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -13,10 +13,12 @@ import classNames from "classnames";
 import logo from "assets/logo.svg";
 import { NavLink, useParams } from "react-router-dom";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { UserContext } from "utils";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
 
+  let { incidentId } = useParams();
   const navbarMenuClass = classNames({
     "navbar-menu": true,
     "is-active": isMenuActive,
@@ -47,7 +49,6 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <div className="navbar-item has-dropdown is-hoverable">
             <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
               <span className="icon-text">
-                {" "}
                 <FontAwesomeIcon icon={faExplosion as IconProp} className="icon" />
                 <span>Ereignis</span>
               </span>
@@ -59,6 +60,16 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/new">
                 Neues Ereignis erstellen
               </NavLink>
+              {incidentId ? (
+                <NavLink
+                  className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+                  to={`/incident/${incidentId}/edit`}
+                >
+                  Ereignis bearbeiten
+                </NavLink>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
           <JournalNavBar />
@@ -66,21 +77,33 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <ResourcesNavBar />
         </div>
         <div className="navbar-end">
-          <div className="navbar-item has-dropdown is-hoverable is-left">
-            <div className="navbar-link">
-              <FontAwesomeIcon icon={faCog as IconProp} />
-            </div>
-            <div className="navbar-dropdown">
-              <a className="navbar-item" href="https://bulma.io/documentation/overview/start/">
-                Profil
-              </a>
-            </div>
-          </div>
+          <UserNavBar />
         </div>
       </div>
     </nav>
   );
 };
+
+function UserNavBar() {
+  const userState = useContext(UserContext);
+
+  if (!userState.isLoggedin) return <></>;
+
+  return (
+    <div className="navbar-item has-dropdown is-hoverable is-left">
+      <div className="navbar-link">
+        <FontAwesomeIcon icon={faUser as IconProp} className="icon is-small" />
+      </div>
+      <div className="navbar-dropdown is-right">
+        <div className="navbar-item">{userState.username || userState.email}</div>
+        <hr className="navbar-divider" />
+        <a className="navbar-item" href="/oauth2/sign_out">
+          Logout
+        </a>
+      </div>
+    </div>
+  );
+}
 
 const JournalNavBar: FunctionComponent = () => {
   let { incidentId, journalId } = useParams();
@@ -95,7 +118,6 @@ const JournalNavBar: FunctionComponent = () => {
           to={`/incident/${incidentId}/journal/view`}
         >
           <span className="icon-text">
-            {" "}
             <FontAwesomeIcon icon={faBars as IconProp} className="icon" />
             <span>Journal</span>
           </span>
@@ -111,7 +133,6 @@ const JournalNavBar: FunctionComponent = () => {
         to={`/incident/${incidentId}/journal/view`}
       >
         <span className="icon-text">
-          {" "}
           <FontAwesomeIcon icon={faBars as IconProp} className="icon" />
           <span>Journal</span>
         </span>
@@ -129,7 +150,7 @@ const JournalNavBar: FunctionComponent = () => {
           end={true}
           to={`/incident/${incidentId}/journal/${journalId}/edit`}
         >
-          Journal bearbeiten
+          Editor
         </NavLink>
         <NavLink
           className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
