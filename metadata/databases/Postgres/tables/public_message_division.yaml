@@ -46,5 +46,13 @@ insert_permissions:
 select_permissions:
   - role: user
     permission:
-      columns: []
+      columns:
+        - division_id
+        - id
+        - message_id
+      filter: {}
+delete_permissions:
+  - role: user
+    permission:
+      backend_only: false
       filter: {}
