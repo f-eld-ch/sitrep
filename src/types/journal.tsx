@@ -2,7 +2,7 @@ export enum TriageStatus {
   Pending = "pending",
   Triaged = "done",
   Reset = "reset",
-  MoreInfo = "more-info",
+  MoreInfo = "moreinfo",
 }
 
 export enum PriorityStatus {
@@ -39,6 +39,7 @@ export interface DivisionList {
 }
 
 export interface Division {
+  id: string;
   name: string;
   description: string;
 }
@@ -92,4 +93,26 @@ export interface TriageMessageData {
 
 export interface TriageMessageVars {
   messageId: string;
+}
+
+export interface MessageDivision {
+  messageId: string;
+  divisionId: string;
+}
+
+export interface SaveMessageTriageVars {
+  messageId: string;
+  messageDivisions: MessageDivision[];
+  priority: PriorityStatus;
+  triage: TriageStatus;
+}
+
+export interface SaveMessageTriageData {
+  delete_message_division: {
+    affected_rows: number;
+  };
+  insert_message_division: {
+    affected_rows: number;
+  };
+  update_messages_by_pk: Message;
 }

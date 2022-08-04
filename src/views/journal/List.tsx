@@ -22,6 +22,7 @@ export const SUBSCRIBE_MESSAGES = gql`
       deletedAt
       divisions {
         division {
+          id
           name
           description
         }

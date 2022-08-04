@@ -5,9 +5,10 @@ import { faArrowsToEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { JournalMessage, Spinner } from "components";
-import { union, without } from "lodash";
+import { union, reject } from "lodash";
 import { useState } from "react";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
+import { MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { New as TaskNew } from "../tasks";
 
 const GET_MESSAGE_FOR_TRIAGE = gql`
@@ -22,6 +23,7 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
         division {
           id
           name
+          description
         }
       }
       createdAt
@@ -36,6 +38,7 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
       journal {
         incident {
           divisions {
+            id
             name
             description
           }
@@ -57,8 +60,16 @@ function Triage(props: { id: string }) {
     }
   );
 
+  const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
+    SAVE_MESSAGE_TRIAGE,
+    {
+      onCompleted(data) {},
+      refetchQueries: [{ query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.id } }, "GetMessageForTriage"],
+    }
+  );
+
   const [isActive, setIsActive] = useState(false);
-  const [priority, setPriority] = useState(`${PriorityStatus.Normal}`);
+  const [priority, setPriority] = useState(PriorityStatus.Normal);
   const [assignments, setAssignments] = useState<Division[]>([]);
 
   const modalClassNames = classNames({
@@ -85,6 +96,30 @@ function Triage(props: { id: string }) {
     );
   }
 
+  const handleSave = (assignments: Division[], messageId: string, prio: PriorityStatus, triage: TriageStatus) => {
+    if (message === undefined) return;
+
+    saveMessageTriage({
+      variables: {
+        priority: prio,
+        triage: triage,
+        messageId: messageId,
+        messageDivisions: assignments.map<MessageDivision>((d) =>
+          Object.assign(
+            {},
+            {
+              divisionId: d.id,
+              messageId: messageId,
+            }
+          )
+        ),
+      },
+      onCompleted() {
+        setIsActive(!isActive);
+      },
+    });
+  };
+
   const message = data?.messages_by_pk;
   return (
     <>
@@ -103,6 +138,7 @@ function Triage(props: { id: string }) {
           </header>
           <section className="modal-card-body">
             {error ? <div className="notification is-danger">Error: {error.message}</div> : <></>}
+            {errorSet ? <div className="notification is-danger">Error: {errorSet.message}</div> : <></>}
             {message === undefined ? (
               <Spinner />
             ) : (
@@ -141,7 +177,7 @@ function Triage(props: { id: string }) {
                                 {isPresent ? (
                                   <a
                                     className="tag is-delete"
-                                    onClick={() => setAssignments(without(assignments, d))}
+                                    onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
                                   ></a>
                                 ) : (
                                   <></>
@@ -158,7 +194,8 @@ function Triage(props: { id: string }) {
                         <select
                           onChange={(e) => {
                             e.preventDefault();
-                            setPriority(e.currentTarget.value);
+                            let prio = Object.values(PriorityStatus).find((p) => p === e.currentTarget.value);
+                            if (prio !== undefined) setPriority(prio);
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
@@ -177,8 +214,22 @@ function Triage(props: { id: string }) {
           </section>
           <footer className="modal-card-foot">
             <div className="buttons are-normal">
-              <button className="button is-rounded is-primary">Triagieren</button>
-              <button className="button is-rounded">Mehr Informationen benötigt</button>
+              <button
+                className="button is-rounded is-primary"
+                onClick={() => {
+                  if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
+                }}
+              >
+                Triagieren
+              </button>
+              <button
+                className="button is-rounded"
+                onClick={() => {
+                  if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
+                }}
+              >
+                Mehr Informationen benötigt
+              </button>
             </div>
           </footer>
         </div>
@@ -186,5 +237,35 @@ function Triage(props: { id: string }) {
     </>
   );
 }
+
+const SAVE_MESSAGE_TRIAGE = gql`
+  mutation SaveMessageTriage(
+    $messageId: uuid!
+    $priority: priority_status_enum
+    $triage: triage_status_enum
+    $messageDivisions: [message_division_insert_input!]!
+  ) {
+    delete_message_division(where: { messageId: { _eq: $messageId } }) {
+      affected_rows
+    }
+    insert_message_division(objects: $messageDivisions) {
+      affected_rows
+    }
+    update_messages_by_pk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
+      id
+      divisions {
+        division {
+          name
+        }
+      }
+      priority {
+        name
+      }
+      triage {
+        name
+      }
+    }
+  }
+`;
 
 export default Triage;
