@@ -9,8 +9,7 @@ import classNames from "classnames";
 import { TriageStatus, PriorityStatus } from "types";
 import remarkable from "../utils/remarkable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
-import TriageModal from "../views/journal/TriageModal";
+import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { Message as MessageType } from "../types";
 
 export interface MessageProps {
@@ -25,6 +24,7 @@ export interface MessageProps {
   showControls: boolean;
   origMessage: MessageType | undefined;
   setEditorMessage: React.Dispatch<React.SetStateAction<MessageType | undefined>> | undefined;
+  setTriageMessage: React.Dispatch<React.SetStateAction<MessageType | undefined>> | undefined;
 }
 
 dayjs.locale(de);
@@ -42,6 +42,7 @@ function Message({
   assignments,
   showControls = false,
   setEditorMessage,
+  setTriageMessage,
   origMessage,
 }: MessageProps) {
   let messageClassNames = classNames({
@@ -126,9 +127,18 @@ function Message({
         {showControls === true && id !== undefined ? (
           <div className="tabs is-small is-right">
             <ul>
-              <li>
-                <TriageModal key={id} id={id} />
-              </li>
+              {setTriageMessage && origMessage ? (
+                <li>
+                  <a onClick={() => setTriageMessage(origMessage)}>
+                    <span className="icon is-small">
+                      <FontAwesomeIcon icon={faArrowsToEye} />
+                    </span>
+                    <span>Triagieren</span>
+                  </a>
+                </li>
+              ) : (
+                <></>
+              )}
               <li>
                 <a>
                   <span className="icon is-small">

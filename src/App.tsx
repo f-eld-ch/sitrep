@@ -83,7 +83,11 @@ function App() {
                   path=":journalId"
                   element={
                     <Layout>
-                      <JournalMessageList showControls={false} setEditorMessage={undefined} />
+                      <JournalMessageList
+                        showControls={false}
+                        setEditorMessage={undefined}
+                        setTriageMessage={undefined}
+                      />
                     </Layout>
                   }
                 />

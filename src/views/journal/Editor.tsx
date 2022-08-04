@@ -10,9 +10,11 @@ import dayjs from "dayjs";
 import { Message, PriorityStatus, TriageStatus } from "types";
 import { gql, useMutation } from "@apollo/client";
 import JournalMessage from "components/JournalMessage";
+import TriageModal from "./TriageModal";
 
 function Editor() {
   const [messageToEdit, setMessageToEdit] = useState<Message>();
+  const [messageToTriage, setMessageToTriage] = useState<Message>();
   return (
     <div>
       <div className="columns">
@@ -21,8 +23,9 @@ function Editor() {
           <InputBox messageToEdit={messageToEdit} setEditorMessage={setMessageToEdit} />
         </div>
         <div className="column">
-          <List showControls={true} setEditorMessage={setMessageToEdit} />
+          <List showControls={true} setEditorMessage={setMessageToEdit} setTriageMessage={setMessageToTriage} />
         </div>
+        <TriageModal message={messageToTriage} setMessage={setMessageToTriage} />
       </div>
     </div>
   );
@@ -181,7 +184,6 @@ function RadioInput(props: {
     }
   }, [messageToEdit]);
 
-  let updateError = "";
   const [insertMessage, { error }] = useMutation(INSERT_MESSAGE, {
     onCompleted(data) {
       // reset the form values
@@ -195,11 +197,6 @@ function RadioInput(props: {
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UPDATE_MESSAGE, {
     onCompleted(data) {
-      console.log("completed");
-
-      if (data && data.update_messages_by_pk === null) {
-        updateError = "foobar";
-      }
       // reset the form values
       setEditorMessage(undefined);
       setSender("");
@@ -239,8 +236,6 @@ function RadioInput(props: {
     <div>
       {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
-      {updateError ? <div className="notification is-warning">Kann nicht updaten</div> : <></>}
-
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label className="label">Empfänger</label>
@@ -363,6 +358,7 @@ function RadioInput(props: {
             showControls={false}
             origMessage={undefined}
             setEditorMessage={undefined}
+            setTriageMessage={undefined}
           />
         </>
       ) : (

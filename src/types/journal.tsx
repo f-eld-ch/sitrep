@@ -92,7 +92,7 @@ export interface TriageMessageData {
 }
 
 export interface TriageMessageVars {
-  messageId: string;
+  messageId: string | undefined;
 }
 
 export interface MessageDivision {

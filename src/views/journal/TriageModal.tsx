@@ -1,14 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { gql, useMutation, useLazyQuery } from "@apollo/client";
-import { faArrowsToEye } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { JournalMessage, Spinner } from "components";
 import { union, reject } from "lodash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
-import { MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
+import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { New as TaskNew } from "../tasks";
 
 const GET_MESSAGE_FOR_TRIAGE = gql`
@@ -48,14 +46,21 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
   }
 `;
 
-function Triage(props: { id: string }) {
-  const [loadMessage, { called, loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
+function Triage(props: {
+  message: Message | undefined;
+  setMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
+}) {
+  const { message, setMessage } = props;
+  const [loadMessage, { loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
     GET_MESSAGE_FOR_TRIAGE,
     {
-      variables: { messageId: props.id },
+      variables: { messageId: props.message?.id },
       fetchPolicy: "cache-and-network",
       onCompleted: (data) => {
         setAssignments(data?.messages_by_pk.divisions.map((d) => d.division));
+        setPriority(
+          Object.values(PriorityStatus).find((p) => p === data.messages_by_pk.priority.name) || PriorityStatus.Normal
+        );
       },
     }
   );
@@ -64,37 +69,19 @@ function Triage(props: { id: string }) {
     SAVE_MESSAGE_TRIAGE,
     {
       onCompleted(data) {},
-      refetchQueries: [{ query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.id } }, "GetMessageForTriage"],
+      refetchQueries: [
+        { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
+        "GetMessageForTriage",
+      ],
     }
   );
 
-  const [isActive, setIsActive] = useState(false);
   const [priority, setPriority] = useState(PriorityStatus.Normal);
   const [assignments, setAssignments] = useState<Division[]>([]);
 
-  const modalClassNames = classNames({
-    modal: true,
-    "is-active": isActive,
-    "has-text-black": true,
-    "has-text-weight-normal": true,
-    "is-size-6": true,
-    "is-dark": true,
-  });
-
-  if (!called && isActive) {
+  useEffect(() => {
     loadMessage();
-  }
-
-  if (!called || loading) {
-    return (
-      <a onClick={() => setIsActive(!isActive)}>
-        <span className="icon is-small">
-          <FontAwesomeIcon icon={faArrowsToEye} />
-        </span>
-        <span>Triagieren</span>
-      </a>
-    );
-  }
+  }, [loadMessage, props.message]);
 
   const handleSave = (assignments: Division[], messageId: string, prio: PriorityStatus, triage: TriageStatus) => {
     if (message === undefined) return;
@@ -115,31 +102,35 @@ function Triage(props: { id: string }) {
         ),
       },
       onCompleted() {
-        setIsActive(!isActive);
+        setMessage(undefined);
       },
     });
   };
 
-  const message = data?.messages_by_pk;
+  if (!message) return null;
+
+  const modalClassNames = classNames({
+    modal: true,
+    "is-active": message,
+    "has-text-black": true,
+    "has-text-weight-normal": true,
+    "is-size-6": true,
+    "is-dark": true,
+  });
+
   return (
     <>
-      <a onClick={() => setIsActive(!isActive)}>
-        <span className="icon is-small">
-          <FontAwesomeIcon icon={faArrowsToEye} />
-        </span>
-        <span>Triagieren</span>
-      </a>
       <div className={modalClassNames}>
-        <div className="modal-background"></div>Normal
+        <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
             <p className="modal-card-title is-size-2">Triage der Nachricht</p>
-            <button className="delete" aria-label="close" onClick={() => setIsActive(!isActive)}></button>
+            <button className="delete" aria-label="close" onClick={() => setMessage(undefined)}></button>
           </header>
           <section className="modal-card-body">
             {error ? <div className="notification is-danger">Error: {error.message}</div> : <></>}
             {errorSet ? <div className="notification is-danger">Error: {errorSet.message}</div> : <></>}
-            {message === undefined ? (
+            {loading ? (
               <Spinner />
             ) : (
               <>
@@ -156,6 +147,7 @@ function Triage(props: { id: string }) {
                     message={message.content}
                     timeDate={new Date(message.time)}
                     setEditorMessage={undefined}
+                    setTriageMessage={undefined}
                     origMessage={message}
                   />
                 </div>
@@ -164,7 +156,7 @@ function Triage(props: { id: string }) {
                     <div className="column">
                       <h3 className="title is-size-3">Fachbereiche zuweisen</h3>
                       <div className="field is-grouped is-grouped-multiline">
-                        {message.journal.incident.divisions.map((d) => {
+                        {data?.messages_by_pk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
                           let tagsClass = classNames({
                             tag: true,
@@ -201,7 +193,12 @@ function Triage(props: { id: string }) {
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option key={prio}>{prio}</option>
+                            <option
+                              key={prio}
+                              selected={Object.values(PriorityStatus).find((p) => p === message.priority.name) === prio}
+                            >
+                              {prio}
+                            </option>
                           ))}
                         </select>
                       </div>
