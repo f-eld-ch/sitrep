@@ -116,7 +116,7 @@ function Option(props: IOptionProps) {
 
   return (
     <div className="buttons are-small">
-      <button className="button is-light is-success" onClick={() => navigate(`../${props.incident.id}/dashboard`)}>
+      <button className="button is-light is-success" onClick={() => navigate(`../${props.incident.id}/journal/view`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faArrowRightFromBracket} />
         </span>

@@ -19,6 +19,7 @@ function MapFrame() {
   return (
     <iframe
       key={seconds}
+      title="Karte"
       height="1000vh"
       src="https://map.geo.admin.ch/embed.html?lang=de&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bav.haltestellen-oev,ch.swisstopo.swisstlm3d-wanderwege,KML%7C%7Chttps:%2F%2Fpublic.geo.admin.ch%2Fx20-T-HaRN2B1HBQK8UKBg&layers_opacity=1,1,1,0.8,1&layers_visibility=false,false,false,false,true&layers_timestamp=18641231,,,,&E=2605883.78&N=1216144.64&zoom=10"
     />
