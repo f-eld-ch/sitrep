@@ -67,14 +67,8 @@ update_permissions:
         - time
         - triage_id
       filter:
-        _and:
-          - triage_id:
-              _in:
-                - pending
-                - reset
-                - moreinfo
-          - deleted_at:
-              _is_null: true
+        deleted_at:
+          _is_null: true
       check:
         _and:
           - sender:

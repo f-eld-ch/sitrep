@@ -41,6 +41,7 @@ export const SUBSCRIBE_MESSAGES = gql`
 function List(props: {
   showControls: boolean;
   setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
+  setTriageMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
 }) {
   const { journalId } = useParams();
   const [triageFilter, setTriageFilter] = useState("Alle");
@@ -161,6 +162,7 @@ function List(props: {
                   showControls={props.showControls}
                   origMessage={message}
                   setEditorMessage={props.setEditorMessage}
+                  setTriageMessage={props.setTriageMessage}
                 />
               );
             })}
