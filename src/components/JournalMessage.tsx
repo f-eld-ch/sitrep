@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
@@ -10,6 +11,7 @@ import remarkable from "../utils/remarkable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import TriageModal from "../views/journal/TriageModal";
+import { Message as MessageType } from "../types";
 
 export interface MessageProps {
   id: string | undefined;
@@ -21,6 +23,8 @@ export interface MessageProps {
   priority: string;
   assignments?: String[];
   showControls: boolean;
+  origMessage: MessageType | undefined;
+  setEditorMessage: React.Dispatch<React.SetStateAction<MessageType | undefined>> | undefined;
 }
 
 dayjs.locale(de);
@@ -37,6 +41,8 @@ function Message({
   priority,
   assignments,
   showControls = false,
+  setEditorMessage,
+  origMessage,
 }: MessageProps) {
   let messageClassNames = classNames({
     message: true,
@@ -131,14 +137,18 @@ function Message({
                   <span>Pendenz erfassen</span>
                 </a>
               </li>
-              <li>
-                <a>
-                  <span className="icon is-small">
-                    <FontAwesomeIcon icon={faEdit} />
-                  </span>
-                  <span>Bearbeiten</span>
-                </a>
-              </li>
+              {setEditorMessage ? (
+                <li>
+                  <a onClick={() => setEditorMessage(origMessage)}>
+                    <span className="icon is-small">
+                      <FontAwesomeIcon icon={faEdit} />
+                    </span>
+                    <span>Bearbeiten</span>
+                  </a>
+                </li>
+              ) : (
+                <></>
+              )}
             </ul>
           </div>
         ) : (

@@ -155,6 +155,8 @@ function Triage(props: { id: string }) {
                     receiver={message.receiver}
                     message={message.content}
                     timeDate={new Date(message.time)}
+                    setEditorMessage={undefined}
+                    origMessage={message}
                   />
                 </div>
                 <div className="block">

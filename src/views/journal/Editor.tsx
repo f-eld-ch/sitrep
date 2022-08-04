@@ -7,20 +7,21 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
-import { PriorityStatus, TriageStatus } from "types";
+import { Message, PriorityStatus, TriageStatus } from "types";
 import { gql, useMutation } from "@apollo/client";
 import JournalMessage from "components/JournalMessage";
 
 function Editor() {
+  const [messageToEdit, setMessageToEdit] = useState<Message>();
   return (
     <div>
       <div className="columns">
         <div className="column is-half">
           <h3 className="title is-3">Editor</h3>
-          <InputBox />
+          <InputBox messageToEdit={messageToEdit} />
         </div>
         <div className="column">
-          <List showControls={true} />
+          <List showControls={true} setEditorMessage={setMessageToEdit} />
         </div>
       </div>
     </div>
@@ -33,13 +34,13 @@ enum Medium {
   Email = "E-Mail",
 }
 
-function InputBox() {
+function InputBox(props: { messageToEdit: Message | undefined }) {
   const { incidentId, journalId } = useParams();
   const [medium, setMedium] = useState(Medium.Radio);
 
   const renderFormContent = () => {
     if (medium === Medium.Radio) {
-      return <RadioInput />;
+      return <RadioInput messageToEdit={props.messageToEdit} />;
     }
     if (medium === Medium.Phone) {
       return <PhoneInput />;
@@ -127,14 +128,54 @@ const INSERT_MESSAGE = gql`
   }
 `;
 
-function RadioInput() {
+const UPDATE_MESSAGE = gql`
+  mutation MyMutation($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz) {
+    update_messages_by_pk(
+      pk_columns: { id: $messageId }
+      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time }
+    ) {
+      id
+      createdAt
+      content
+      receiver
+      sender
+      time
+      updatedAt
+      priority {
+        name
+      }
+      triage {
+        name
+      }
+      divisions {
+        division {
+          name
+        }
+      }
+      deletedAt
+    }
+  }
+`;
+
+function RadioInput(props: { messageToEdit: Message | undefined }) {
   const { journalId } = useParams();
   const [sender, setSender] = useState("");
   const [receiver, setReceiver] = useState("");
   const [content, setContent] = useState("");
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | undefined>(undefined);
 
   const [insertMessage, { error }] = useMutation(INSERT_MESSAGE, {
+    onCompleted(data) {
+      // reset the form values
+      setSender("");
+      setReceiver("");
+      setContent("");
+      setTime(undefined);
+    },
+    // refetchQueries: [{ query: SUBSCRIBE_MESSAGES }, "GetMessages"],
+  });
+
+  const [updateMessage, { error: errorUpdate }] = useMutation(UPDATE_MESSAGE, {
     onCompleted(data) {
       // reset the form values
       setSender("");
@@ -146,20 +187,34 @@ function RadioInput() {
   });
 
   const handleSave = () => {
-    insertMessage({
-      variables: {
-        time: time,
-        journalId: journalId,
-        content: content,
-        sender: sender,
-        receiver: receiver,
-      },
-    });
+    if (props.messageToEdit?.id) {
+      updateMessage({
+        variables: {
+          messageId: props.messageToEdit.id,
+          time: time || dayjs(props.messageToEdit.time).toDate(),
+          journalId: journalId,
+          content: content || props.messageToEdit.content,
+          sender: sender || props.messageToEdit.sender,
+          receiver: receiver || props.messageToEdit.receiver,
+        },
+      });
+    } else {
+      insertMessage({
+        variables: {
+          time: time || new Date(),
+          journalId: journalId,
+          content: content,
+          sender: sender,
+          receiver: receiver,
+        },
+      });
+    }
   };
 
   return (
     <div>
       {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
+      {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label className="label">Empfänger</label>
@@ -170,7 +225,8 @@ function RadioInput() {
               <input
                 className="input"
                 type="text"
-                value={receiver}
+                value={receiver || props.messageToEdit?.receiver}
+                autoComplete="on"
                 placeholder="Name"
                 onChange={(e) => {
                   e.preventDefault();
@@ -194,7 +250,8 @@ function RadioInput() {
               <input
                 className="input"
                 type="text"
-                value={sender}
+                value={sender || props.messageToEdit?.sender}
+                autoComplete="on"
                 placeholder="Name"
                 onChange={(e) => {
                   e.preventDefault();
@@ -217,7 +274,11 @@ function RadioInput() {
             <p className="control is-expanded has-icons-left">
               <input
                 className="input"
-                value={dayjs(time).format("YYYY-MM-DDTHH:mm")}
+                value={
+                  time
+                    ? dayjs(time).format("YYYY-MM-DDTHH:mm")
+                    : dayjs(props.messageToEdit?.time).format("YYYY-MM-DDTHH:mm")
+                }
                 type="datetime-local"
                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                 onChange={(e) => {
@@ -244,7 +305,7 @@ function RadioInput() {
                 autoFocus={true}
                 placeholder="Was wurde übermittelt?"
                 rows={10}
-                value={content}
+                value={content || props.messageToEdit?.content}
                 onChange={(e) => {
                   e.preventDefault();
                   setContent(e.currentTarget.value);
@@ -274,10 +335,12 @@ function RadioInput() {
             message={content}
             receiver={receiver}
             sender={sender}
-            timeDate={time}
+            timeDate={time || new Date()}
             priority={PriorityStatus.Normal}
             triage={TriageStatus.Pending}
             showControls={false}
+            origMessage={undefined}
+            setEditorMessage={undefined}
           />
         </>
       ) : (
