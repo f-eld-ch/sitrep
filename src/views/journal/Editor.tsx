@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import List from "./List";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,7 +18,7 @@ function Editor() {
       <div className="columns">
         <div className="column is-half">
           <h3 className="title is-3">Editor</h3>
-          <InputBox messageToEdit={messageToEdit} />
+          <InputBox messageToEdit={messageToEdit} setEditorMessage={setMessageToEdit} />
         </div>
         <div className="column">
           <List showControls={true} setEditorMessage={setMessageToEdit} />
@@ -34,13 +34,17 @@ enum Medium {
   Email = "E-Mail",
 }
 
-function InputBox(props: { messageToEdit: Message | undefined }) {
+function InputBox(props: {
+  messageToEdit: Message | undefined;
+  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
+}) {
   const { incidentId, journalId } = useParams();
+  const { messageToEdit, setEditorMessage } = props;
   const [medium, setMedium] = useState(Medium.Radio);
 
   const renderFormContent = () => {
     if (medium === Medium.Radio) {
-      return <RadioInput messageToEdit={props.messageToEdit} />;
+      return <RadioInput messageToEdit={messageToEdit} setEditorMessage={setEditorMessage} />;
     }
     if (medium === Medium.Phone) {
       return <PhoneInput />;
@@ -157,13 +161,27 @@ const UPDATE_MESSAGE = gql`
   }
 `;
 
-function RadioInput(props: { messageToEdit: Message | undefined }) {
+function RadioInput(props: {
+  messageToEdit: Message | undefined;
+  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
+}) {
   const { journalId } = useParams();
+  const { messageToEdit, setEditorMessage } = props;
   const [sender, setSender] = useState("");
   const [receiver, setReceiver] = useState("");
   const [content, setContent] = useState("");
   const [time, setTime] = useState<Date | undefined>(undefined);
 
+  useEffect(() => {
+    if (messageToEdit !== undefined) {
+      setSender(messageToEdit.sender);
+      setReceiver(messageToEdit.receiver);
+      setContent(messageToEdit.content);
+      setTime(dayjs(messageToEdit.time).toDate());
+    }
+  }, [messageToEdit]);
+
+  let updateError = "";
   const [insertMessage, { error }] = useMutation(INSERT_MESSAGE, {
     onCompleted(data) {
       // reset the form values
@@ -177,7 +195,13 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UPDATE_MESSAGE, {
     onCompleted(data) {
+      console.log("completed");
+
+      if (data && data.update_messages_by_pk === null) {
+        updateError = "foobar";
+      }
       // reset the form values
+      setEditorMessage(undefined);
       setSender("");
       setReceiver("");
       setContent("");
@@ -187,15 +211,15 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
   });
 
   const handleSave = () => {
-    if (props.messageToEdit?.id) {
+    if (messageToEdit?.id) {
       updateMessage({
         variables: {
-          messageId: props.messageToEdit.id,
-          time: time || dayjs(props.messageToEdit.time).toDate(),
+          messageId: messageToEdit.id,
+          time: time || dayjs(messageToEdit.time).toDate(),
           journalId: journalId,
-          content: content || props.messageToEdit.content,
-          sender: sender || props.messageToEdit.sender,
-          receiver: receiver || props.messageToEdit.receiver,
+          content: content || messageToEdit.content,
+          sender: sender || messageToEdit.sender,
+          receiver: receiver || messageToEdit.receiver,
         },
       });
     } else {
@@ -215,6 +239,8 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
     <div>
       {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
+      {updateError ? <div className="notification is-warning">Kann nicht updaten</div> : <></>}
+
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label className="label">Empfänger</label>
@@ -225,7 +251,7 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
               <input
                 className="input"
                 type="text"
-                value={receiver || props.messageToEdit?.receiver}
+                value={receiver}
                 autoComplete="on"
                 placeholder="Name"
                 onChange={(e) => {
@@ -250,7 +276,7 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
               <input
                 className="input"
                 type="text"
-                value={sender || props.messageToEdit?.sender}
+                value={sender}
                 autoComplete="on"
                 placeholder="Name"
                 onChange={(e) => {
@@ -274,11 +300,7 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
             <p className="control is-expanded has-icons-left">
               <input
                 className="input"
-                value={
-                  time
-                    ? dayjs(time).format("YYYY-MM-DDTHH:mm")
-                    : dayjs(props.messageToEdit?.time).format("YYYY-MM-DDTHH:mm")
-                }
+                value={dayjs(time).format("YYYY-MM-DDTHH:mm")}
                 type="datetime-local"
                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                 onChange={(e) => {
@@ -305,7 +327,7 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
                 autoFocus={true}
                 placeholder="Was wurde übermittelt?"
                 rows={10}
-                value={content || props.messageToEdit?.content}
+                value={content}
                 onChange={(e) => {
                   e.preventDefault();
                   setContent(e.currentTarget.value);
@@ -336,8 +358,8 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
             receiver={receiver}
             sender={sender}
             timeDate={time || new Date()}
-            priority={PriorityStatus.Normal}
-            triage={TriageStatus.Pending}
+            priority={messageToEdit?.priority.name || PriorityStatus.Normal}
+            triage={messageToEdit?.triage.name || TriageStatus.Pending}
             showControls={false}
             origMessage={undefined}
             setEditorMessage={undefined}

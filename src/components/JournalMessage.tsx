@@ -137,7 +137,7 @@ function Message({
                   <span>Pendenz erfassen</span>
                 </a>
               </li>
-              {setEditorMessage ? (
+              {setEditorMessage && triage !== TriageStatus.Triaged ? (
                 <li>
                   <a onClick={() => setEditorMessage(origMessage)}>
                     <span className="icon is-small">

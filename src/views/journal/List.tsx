@@ -66,7 +66,7 @@ function List(props: {
     <div>
       <h3 className="title is-3">Journal</h3>
       <div className="block is-print">
-        <MessageTable messages={data?.messages} />;
+        <MessageTable messages={data?.messages} />
       </div>
       <div className="block is-hidden-print">
         <div className="columns">
