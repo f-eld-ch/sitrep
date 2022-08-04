@@ -181,7 +181,7 @@ function RadioInput(props: { messageToEdit: Message | undefined }) {
       setSender("");
       setReceiver("");
       setContent("");
-      setTime(new Date());
+      setTime(undefined);
     },
     // refetchQueries: [{ query: SUBSCRIBE_MESSAGES }, "GetMessages"],
   });
