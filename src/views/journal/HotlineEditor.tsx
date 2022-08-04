@@ -13,7 +13,7 @@ function HotlineEditor() {
           <Hotline />
         </div>
         <div className="column">
-          <List showControls={false} />
+          <List showControls={false} setEditorMessage={undefined} />
         </div>
       </div>
     </div>

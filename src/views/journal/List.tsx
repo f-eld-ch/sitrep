@@ -4,7 +4,7 @@ import { JournalMessage, Spinner } from "components";
 import { useParams } from "react-router-dom";
 import { gql, useSubscription } from "@apollo/client";
 
-import { MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
+import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
 import MessageTable from "./Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -38,7 +38,10 @@ export const SUBSCRIBE_MESSAGES = gql`
   }
 `;
 
-function List(props: { showControls: boolean }) {
+function List(props: {
+  showControls: boolean;
+  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
+}) {
   const { journalId } = useParams();
   const [triageFilter, setTriageFilter] = useState("Alle");
   const [priorityFilter, setPriorityFilter] = useState("Alle");
@@ -156,6 +159,8 @@ function List(props: { showControls: boolean }) {
                   message={message.content}
                   timeDate={new Date(message.time)}
                   showControls={props.showControls}
+                  origMessage={message}
+                  setEditorMessage={props.setEditorMessage}
                 />
               );
             })}
