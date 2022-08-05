@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import List from "./List";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 import { Link, useParams } from "react-router-dom";
@@ -255,7 +255,7 @@ function RadioInput(props: {
                 }}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faUser as IconProp} />
+                <FontAwesomeIcon icon={faCircleArrowRight as IconProp} />
               </span>
             </p>
           </div>
@@ -280,7 +280,7 @@ function RadioInput(props: {
                 }}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faUser as IconProp} />
+                <FontAwesomeIcon icon={faCircleArrowLeft as IconProp} />
               </span>
             </p>
           </div>
