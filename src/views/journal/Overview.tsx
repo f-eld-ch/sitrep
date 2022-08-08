@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useQuery, gql, useMutation } from "@apollo/client";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -8,7 +8,15 @@ import de from "dayjs/locale/de";
 import { Spinner } from "components";
 import { Journal, JournalListData, JournalListVars } from "types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartSimple, faEdit, faFolderClosed, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChartSimple,
+  faEdit,
+  faEye,
+  faEyeLowVision,
+  faFolderClosed,
+  faFolderOpen,
+  faPlusCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 
 dayjs.locale(de);
@@ -30,7 +38,7 @@ const GET_JOURNALS = gql`
 function Overview() {
   const { incidentId } = useParams();
   const [filterClosed, setFilterClosed] = useState(true);
-  const inputCheckbox = useRef(null);
+  const navigate = useNavigate();
 
   const { loading, error, data } = useQuery<JournalListData, JournalListVars>(GET_JOURNALS, {
     variables: { incidentId: incidentId || "" },
@@ -43,18 +51,25 @@ function Overview() {
   return (
     <div>
       <h3 className="title is-size-3">Journal-Liste</h3>
-      <div className="columns is-mobile">
-        <div className="column">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              defaultChecked={filterClosed}
-              ref={inputCheckbox}
-              onChange={() => setFilterClosed(!filterClosed)}
-            />{" "}
-            Geschlossene Journale ausblenden
-          </label>
-        </div>
+      <div className="buttons">
+        <button
+          className="button is-success is-small is-responsive is-rounded is-light"
+          onClick={() => navigate("../new")}
+        >
+          <span className="icon is-small">
+            <FontAwesomeIcon icon={faPlusCircle} />
+          </span>
+          <span>Erstellen</span>
+        </button>
+        <button
+          className="button is-primary is-small is-responsive is-rounded is-light"
+          onClick={() => setFilterClosed(!filterClosed)}
+        >
+          <span className="icon is-small">
+            <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
+          </span>
+          <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
+        </button>
       </div>
 
       <table className="table is-hoverable is-fullwidth is-striped">
