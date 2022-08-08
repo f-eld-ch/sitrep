@@ -8,6 +8,7 @@ import {
   Editor as JournalEditor,
   HotlineEditor,
   Overview as JournalOverview,
+  New as JournalNew,
 } from "views/journal";
 import {
   List as IncidentList,
@@ -97,6 +98,14 @@ function App() {
                     element={
                       <Layout>
                         <JournalOverview />
+                      </Layout>
+                    }
+                  />
+                  <Route
+                    path="new"
+                    element={
+                      <Layout>
+                        <JournalNew />
                       </Layout>
                     }
                   />

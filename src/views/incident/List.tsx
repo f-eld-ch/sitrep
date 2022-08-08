@@ -1,13 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useQuery, gql, useMutation } from "@apollo/client";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Spinner } from "components";
 import { Incident, IncidentListData } from "../../types";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightFromBracket, faEdit, faFolderClosed, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowRightFromBracket,
+  faEdit,
+  faEye,
+  faEyeLowVision,
+  faFolderClosed,
+  faFolderOpen,
+  faPlusCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-import { useNavigate } from "react-router-dom";
 
 const GET_INCIDENTS = gql`
   query FetchIncidents {
@@ -28,8 +35,9 @@ const GET_INCIDENTS = gql`
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
+  const navigate = useNavigate();
+
   const { loading, error, data } = useQuery<IncidentListData>(GET_INCIDENTS);
-  const inputCheckbox = useRef(null);
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
@@ -37,20 +45,26 @@ function List() {
   return (
     <div>
       <h3 className="title is-size-3">Ereignisse</h3>
-      <div className="columns is-mobile">
-        <div className="column">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              defaultChecked={filterClosed}
-              ref={inputCheckbox}
-              onChange={() => setFilterClosed(!filterClosed)}
-            />{" "}
-            Geschlossene Ereignisse ausblenden
-          </label>
-        </div>
+      <div className="buttons">
+        <button
+          className="button is-success is-small is-responsive is-rounded is-light"
+          onClick={() => navigate("../new")}
+        >
+          <span className="icon is-small">
+            <FontAwesomeIcon icon={faPlusCircle} />
+          </span>
+          <span>Erstellen</span>
+        </button>
+        <button
+          className="button is-primary is-small is-responsive is-rounded is-light"
+          onClick={() => setFilterClosed(!filterClosed)}
+        >
+          <span className="icon is-small">
+            <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
+          </span>
+          <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
+        </button>
       </div>
-
       <table className="table is-hoverable is-fullwidth is-striped">
         <thead>
           <tr>
@@ -68,7 +82,7 @@ function List() {
               .map((incident) => (
                 <tr key={incident.id}>
                   <td>
-                    <Link to={`../${incident.id}/dashboard`}>{incident.name}</Link>
+                    <Link to={`../${incident.id}/journal/view`}>{incident.name}</Link>
                   </td>
                   <td>{incident.location.name}</td>
                   <td>{dayjs(incident.createdAt).format("LLL")}</td>
