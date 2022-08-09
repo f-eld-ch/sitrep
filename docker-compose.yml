@@ -8,9 +8,6 @@ services:
       - 4180:4180
     depends_on:
     - "graphql-engine"
-    - "whoami"
-    links:
-      - "whoami:whoami"
     environment:
       OAUTH2_PROXY_COOKIE_SECRET: Sm_u-M9bRDNxu3Ukq2vCKFRbul3hDPIHxZpPACR6UHc=
       OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: true
@@ -39,7 +36,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgrespassword
   graphql-engine:
-    image: hasura/graphql-engine:v2.8.4
+    image: hasura/graphql-engine:v2.9.0
     ports:
       - "8080:8080"
     depends_on:

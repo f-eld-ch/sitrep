@@ -136,7 +136,7 @@ const INSERT_MESSAGE = gql`
 `;
 
 const UPDATE_MESSAGE = gql`
-  mutation MyMutation($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz) {
+  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz) {
     update_messages_by_pk(
       pk_columns: { id: $messageId }
       _set: { content: $content, sender: $sender, receiver: $receiver, time: $time }

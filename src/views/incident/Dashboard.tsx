@@ -26,7 +26,7 @@ function MapFrame() {
   );
 }
 
-const GET_INCIDENT_DETAILS = gql`
+export const GET_INCIDENT_DETAILS = gql`
   query GetIncidentDetail($incidentId: uuid!) {
     incidents_by_pk(id: $incidentId) {
       id
