@@ -2,15 +2,15 @@ import React, { useState } from "react";
 
 import { JournalMessage, Spinner } from "components";
 import { useParams } from "react-router-dom";
-import { gql, useSubscription } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 
 import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
 import MessageTable from "./Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
-export const SUBSCRIBE_MESSAGES = gql`
-  subscription SubscribeMessages($journalId: uuid) {
+export const GET_MESSAGES = gql`
+  query GetMessages($journalId: uuid) {
     messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _is_null: true } }, order_by: { time: desc }) {
       id
       content
@@ -48,8 +48,9 @@ function List(props: {
   const [priorityFilter, setPriorityFilter] = useState("Alle");
   const [assignmentFilter, setAssignmentFilter] = useState("Alle");
 
-  const { loading, error, data } = useSubscription<MessageListData, MessageListVars>(SUBSCRIBE_MESSAGES, {
+  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GET_MESSAGES, {
     variables: { journalId: journalId || "" },
+    pollInterval: 10000,
   });
 
   if (error)

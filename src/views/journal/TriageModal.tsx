@@ -5,9 +5,11 @@ import classNames from "classnames";
 import { JournalMessage, Spinner } from "components";
 import { union, reject } from "lodash";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { New as TaskNew } from "../tasks";
+import { GET_MESSAGES } from "./List";
 
 const GET_MESSAGE_FOR_TRIAGE = gql`
   query GetMessageForTriage($messageId: uuid!) {
@@ -51,6 +53,7 @@ function Triage(props: {
   setMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
 }) {
   const { message, setMessage } = props;
+  const { journalId } = useParams();
   const [loadMessage, { loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
     GET_MESSAGE_FOR_TRIAGE,
     {
@@ -70,8 +73,8 @@ function Triage(props: {
     {
       onCompleted(data) {},
       refetchQueries: [
-        { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
-        "GetMessageForTriage",
+        // { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
+        { query: GET_MESSAGES, variables: { journalId: journalId } },
       ],
     }
   );
@@ -80,7 +83,7 @@ function Triage(props: {
   const [assignments, setAssignments] = useState<Division[]>([]);
 
   useEffect(() => {
-    loadMessage();
+    if (props.message !== undefined) loadMessage();
   }, [loadMessage, props.message]);
 
   const handleSave = (assignments: Division[], messageId: string, prio: PriorityStatus, triage: TriageStatus) => {
@@ -186,6 +189,7 @@ function Triage(props: {
                       <h3 className="title is-size-3">Prorität zuweisen</h3>
                       <div className="select is-rounded is-small">
                         <select
+                          defaultValue={message.priority.name}
                           onChange={(e) => {
                             e.preventDefault();
                             let prio = Object.values(PriorityStatus).find((p) => p === e.currentTarget.value);
@@ -193,12 +197,7 @@ function Triage(props: {
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option
-                              key={prio}
-                              selected={Object.values(PriorityStatus).find((p) => p === message.priority.name) === prio}
-                            >
-                              {prio}
-                            </option>
+                            <option key={prio}>{prio}</option>
                           ))}
                         </select>
                       </div>

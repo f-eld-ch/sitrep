@@ -1,3 +1,5 @@
+import { Incident } from "./incident";
+
 export enum TriageStatus {
   Pending = "pending",
   Triaged = "done",
@@ -55,6 +57,7 @@ export interface MessageListVars {
 export type Journal = {
   id: string;
   name: string;
+  incident: Incident;
   createdAt: Date;
   updatedAt: Date;
   closedAt: Date;
@@ -62,6 +65,9 @@ export type Journal = {
 };
 
 export interface JournalListData {
+  incidents: Incident[]
+  id: string;
+  name: string;
   journals: Journal[];
 }
 
@@ -115,4 +121,15 @@ export interface SaveMessageTriageData {
     affected_rows: number;
   };
   update_messages_by_pk: Message;
+}
+
+
+export interface InsertJournalData {
+  insert_journals_one: Journal
+}
+
+
+export interface InsertJournalVars {
+  name: string;
+  incidentId: string;
 }
