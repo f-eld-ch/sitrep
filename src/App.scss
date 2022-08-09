@@ -19,11 +19,15 @@ $section-padding-desktop: 0.5rem 3rem;
 $footer-padding: 1rem 1.5rem 0.5rem;
 $modal-content-width: 80vw;
 
+
 // Import only what you neesd from Bulma
 @import "../node_modules/bulma/sass/base/_all.sass";
 @import "../node_modules/bulma/sass/helpers/_all.sass";
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
+
+
+$breadcrumb-item-color: $grey-dark;
 
 // Bulma Elements
 @import "../node_modules/bulma/sass/elements/box.sass";
@@ -40,7 +44,7 @@ $modal-content-width: 80vw;
 @import "../node_modules/bulma/sass/elements/title.sass";
 
 // Bulma Components
-// @import "../node_modules/bulma/sass/components/breadcrumb.sass";
+@import "../node_modules/bulma/sass/components/breadcrumb.sass";
 @import "../node_modules/bulma/sass/components/card.sass";
 @import "../node_modules/bulma/sass/components/dropdown.sass";
 @import "../node_modules/bulma/sass/components/level.sass";
