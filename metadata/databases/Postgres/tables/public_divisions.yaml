@@ -35,6 +35,7 @@ insert_permissions:
       check: {}
       columns:
         - description
+        - incident_id
         - name
 select_permissions:
   - role: user

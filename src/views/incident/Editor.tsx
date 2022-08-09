@@ -20,7 +20,9 @@ function Editor() {
     <>
       <h3 className="title is-size-3">Ereignis bearbeiten</h3>
 
-      <IncidentForm incident={data?.incidents_by_pk} />
+      <div className="box">
+        <IncidentForm incident={data?.incidents_by_pk} />
+      </div>
     </>
   );
 }

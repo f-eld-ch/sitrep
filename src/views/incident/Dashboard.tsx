@@ -35,10 +35,12 @@ export const GET_INCIDENT_DETAILS = gql`
       closedAt
       updatedAt
       location {
+        id
         name
         coordinates
       }
       divisions {
+        id
         name
         description
       }
