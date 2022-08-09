@@ -25,7 +25,7 @@ export function Breadcrumb() {
   });
 
   return (
-    <nav className="breadcrumb is-right has-bullet-separator" aria-label="breadcrumbs">
+    <nav className="breadcrumb is-right has-bullet-separator is-hidden-print" aria-label="breadcrumbs">
       <ul>
         {incidentData?.incidents_by_pk.name ? (
           <li>
