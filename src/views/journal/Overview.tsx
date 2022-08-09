@@ -147,17 +147,17 @@ function OptionButtons(props: { journal: Journal }) {
 
   return (
     <div className="buttons are-small">
+      <button className="button is-light is-link" onClick={() => navigate(`../${props.journal.id}/edit`)}>
+        <span className="icon">
+          <FontAwesomeIcon icon={faEdit} />
+        </span>
+        <span>Schreiben</span>
+      </button>
       <button className="button is-light is-success" onClick={() => navigate(`../${props.journal.id}`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faChartSimple} />
         </span>
         <span>Feed</span>
-      </button>
-      <button className="button is-light is-warning" onClick={() => navigate(`../${props.journal.id}/edit`)}>
-        <span className="icon">
-          <FontAwesomeIcon icon={faEdit} />
-        </span>
-        <span>Schreiben</span>
       </button>
       {props.journal.closedAt === null ? (
         <button
