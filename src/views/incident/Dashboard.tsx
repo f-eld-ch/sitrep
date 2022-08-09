@@ -44,6 +44,10 @@ export const GET_INCIDENT_DETAILS = gql`
         name
         description
       }
+      journals {
+        id
+        name
+      }
     }
   }
 `;
