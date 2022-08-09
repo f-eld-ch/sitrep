@@ -1,14 +1,14 @@
 table:
-  schema: public
   name: users
+  schema: public
 array_relationships:
   - name: messages
     using:
       foreign_key_constraint_on:
         column: author_sub
         table:
-          schema: public
           name: messages
+          schema: public
 select_permissions:
   - role: user
     permission:

@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: messages
+  schema: public
 object_relationships:
   - name: author
     using:
@@ -20,8 +20,8 @@ array_relationships:
       foreign_key_constraint_on:
         column: message_id
         table:
-          schema: public
           name: message_division
+          schema: public
 insert_permissions:
   - role: user
     permission:
@@ -33,6 +33,18 @@ insert_permissions:
               _ne: ""
           - content:
               _ne: ""
+          - journal:
+              _and:
+                - closed_at:
+                    _is_null: true
+                - deleted_at:
+                    _is_null: true
+                - incident:
+                    _and:
+                      - closed_at:
+                          _is_null: true
+                      - deleted_at:
+                          _is_null: true
       set:
         author_sub: x-hasura-User-Id
       columns:
@@ -77,5 +89,17 @@ update_permissions:
               _ne: ""
           - content:
               _ne: ""
+          - journal:
+              _and:
+                - closed_at:
+                    _is_null: true
+                - deleted_at:
+                    _is_null: true
+                - incident:
+                    _and:
+                      - closed_at:
+                          _is_null: true
+                      - deleted_at:
+                          _is_null: true
       set:
         author_sub: x-hasura-User-Id

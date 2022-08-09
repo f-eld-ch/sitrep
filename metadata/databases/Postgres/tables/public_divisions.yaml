@@ -1,22 +1,22 @@
 table:
-  schema: public
   name: divisions
+  schema: public
 configuration:
-  custom_root_fields:
-    select_aggregate:
-      name: null
-      comment: ""
-    select_by_pk:
-      name: null
-      comment: ""
-    delete:
-      name: null
-      comment: ""
-    delete_by_pk:
-      name: null
-      comment: ""
   column_config: {}
   custom_column_names: {}
+  custom_root_fields:
+    delete:
+      comment: ""
+      name: null
+    delete_by_pk:
+      comment: ""
+      name: null
+    select_aggregate:
+      comment: ""
+      name: null
+    select_by_pk:
+      comment: ""
+      name: null
 object_relationships:
   - name: incident
     using:
@@ -27,8 +27,8 @@ array_relationships:
       foreign_key_constraint_on:
         column: division_id
         table:
-          schema: public
           name: message_division
+          schema: public
 insert_permissions:
   - role: user
     permission:
