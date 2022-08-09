@@ -1,4 +1,4 @@
-import { Journal } from "./journal";
+import { Division, Journal } from "./journal";
 
 export interface Location {
   name: string;
@@ -13,6 +13,7 @@ export type Incident = {
   deletedAt: Date;
   closedAt: Date;
   location: Location;
+  divisions: Division[];
   journals: Journal[];
 };
 
@@ -26,4 +27,21 @@ export interface IncidentDetailsData {
 
 export interface IncidentDetailsVars {
   incidentId: string;
+}
+
+
+export interface InsertIncidentData {
+    insert_incidents_one: Incident
+}
+
+export interface InsertIncidentVars {
+  name: string
+  location: string
+  divisions: DivisionInput[]
+  journalName: string
+}
+
+export interface DivisionInput {
+  name: string,
+  description: string,
 }
