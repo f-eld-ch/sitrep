@@ -141,7 +141,9 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         name: name,
         location: location,
         journalName: "Phase 1",
-        divisions: assignments,
+        divisions: assignments.map((d) => {
+          return { name: d.name, description: d.description };
+        }),
       },
     });
   };
