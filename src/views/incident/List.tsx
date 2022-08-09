@@ -16,7 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 
-const GET_INCIDENTS = gql`
+export const GET_INCIDENTS = gql`
   query FetchIncidents {
     incidents(order_by: { createdAt: desc }) {
       id
