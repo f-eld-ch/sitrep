@@ -64,37 +64,43 @@ function List() {
           </span>
           <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
         </button>
+        <IncidentTable
+          incidents={(data && data.incidents.filter((incident) => !filterClosed || incident.closedAt === null)) || []}
+        />
       </div>
-      <table className="table is-hoverable is-fullwidth is-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Ort</th>
-            <th>Eröffnet</th>
-            <th>Geschlossen</th>
-            <th>Optionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data &&
-            data.incidents
-              .filter((incident) => !filterClosed || incident.closedAt === null)
-              .map((incident) => (
-                <tr key={incident.id}>
-                  <td>
-                    <Link to={`../${incident.id}/journal/view`}>{incident.name}</Link>
-                  </td>
-                  <td>{incident.location.name}</td>
-                  <td>{dayjs(incident.createdAt).format("LLL")}</td>
-                  <td>{incident.closedAt && dayjs(incident.closedAt).format("LLL")}</td>
-                  <td>
-                    <Option incident={incident} />
-                  </td>
-                </tr>
-              ))}
-        </tbody>
-      </table>
     </div>
+  );
+}
+
+function IncidentTable(props: { incidents: Incident[] }) {
+  const { incidents } = props;
+  return (
+    <table className="table is-hoverable is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Ort</th>
+          <th>Eröffnet</th>
+          <th>Geschlossen</th>
+          <th>Optionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {incidents.map((incident) => (
+          <tr key={incident.id}>
+            <td>
+              <Link to={`../${incident.id}/journal/view`}>{incident.name}</Link>
+            </td>
+            <td>{incident.location.name}</td>
+            <td>{dayjs(incident.createdAt).format("LLL")}</td>
+            <td>{incident.closedAt && dayjs(incident.closedAt).format("LLL")}</td>
+            <td>
+              <Option incident={incident} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

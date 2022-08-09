@@ -1,3 +1,5 @@
+import { Journal } from "./journal";
+
 export interface Location {
   name: string;
   coordinates: string;
@@ -11,6 +13,7 @@ export type Incident = {
   deletedAt: Date;
   closedAt: Date;
   location: Location;
+  journals: Journal[];
 };
 
 export interface IncidentListData {

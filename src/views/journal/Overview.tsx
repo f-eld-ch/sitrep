@@ -22,15 +22,19 @@ import classNames from "classnames";
 dayjs.locale(de);
 dayjs.extend(LocalizedFormat);
 
-const GET_JOURNALS = gql`
+export const GET_JOURNALS = gql`
   query GetJournals($incidentId: uuid) {
-    journals(where: { incident: { id: { _eq: $incidentId } } }) {
+    incidents(where: { id: { _eq: $incidentId } }) {
       id
       name
-      createdAt
-      updatedAt
-      closedAt
-      deletedAt
+      journals(order_by: { createdAt: asc }) {
+        id
+        name
+        createdAt
+        updatedAt
+        closedAt
+        deletedAt
+      }
     }
   }
 `;
@@ -48,9 +52,16 @@ function Overview() {
 
   if (loading) return <Spinner />;
 
+  if (!data || !(data.incidents.length === 1))
+    return <div className="notification is-danger">Unerwarteter Fehler beim Laden des Ereignisses.</div>;
+
+  const incident = data.incidents[0];
+
   return (
     <div>
       <h3 className="title is-size-3">Journal-Liste</h3>
+      <h3 className="subtitle">Ereignis: {incident.name}</h3>
+
       <div className="buttons">
         <button
           className="button is-success is-small is-responsive is-rounded is-light"
@@ -71,36 +82,40 @@ function Overview() {
           <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
         </button>
       </div>
-
-      <table className="table is-hoverable is-fullwidth is-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Eröffnet</th>
-            <th>Geschlossen</th>
-            <th>Optionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data &&
-            data.journals
-              .filter((journal) => !filterClosed || journal.closedAt === null)
-
-              .map((journal) => (
-                <tr key={journal.id}>
-                  <td>
-                    <Link to={`../${journal.id}/edit`}>{journal.name}</Link>
-                  </td>
-                  <td>{dayjs(journal.createdAt).format("LLL")}</td>
-                  <td>{journal.closedAt && dayjs(journal.closedAt).format("LLL")}</td>
-                  <td>
-                    <Option journal={journal} />
-                  </td>
-                </tr>
-              ))}
-        </tbody>
-      </table>
+      <JournalTable
+        journals={data.incidents[0].journals.filter((journal) => !filterClosed || journal.closedAt === null) || []}
+      />
     </div>
+  );
+}
+
+function JournalTable(props: { journals: Journal[] }) {
+  const { journals } = props;
+  return (
+    <table className="table is-hoverable is-narrow is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Eröffnet</th>
+          <th>Geschlossen</th>
+          <th>Optionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {journals.map((journal) => (
+          <tr key={journal.id}>
+            <td>
+              <Link to={`../${journal.id}/edit`}>{journal.name}</Link>
+            </td>
+            <td>{dayjs(journal.createdAt).format("LLL")}</td>
+            <td>{journal.closedAt && dayjs(journal.closedAt).format("LLL")}</td>
+            <td>
+              <OptionButtons journal={journal} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -116,14 +131,11 @@ const CLOSE_JOURNAL = gql`
   }
 `;
 
-interface IOptionProps {
-  journal: Journal;
-}
-
-function Option(props: IOptionProps) {
+function OptionButtons(props: { journal: Journal }) {
+  const { incidentId } = useParams();
   const navigate = useNavigate();
   const [closeJournal] = useMutation(CLOSE_JOURNAL, {
-    refetchQueries: [{ query: GET_JOURNALS }, "GetJournals"],
+    refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }],
   });
 
   let closeButtonClassNames = classNames({

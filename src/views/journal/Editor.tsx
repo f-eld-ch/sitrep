@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import List from "./List";
+import List, { GET_MESSAGES } from "./List";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -192,7 +192,7 @@ function RadioInput(props: {
       setContent("");
       setTime(undefined);
     },
-    // refetchQueries: [{ query: SUBSCRIBE_MESSAGES }, "GetMessages"],
+    refetchQueries: [{ query: GET_MESSAGES, variables: { journalId: journalId } }],
   });
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UPDATE_MESSAGE, {
@@ -204,7 +204,7 @@ function RadioInput(props: {
       setContent("");
       setTime(undefined);
     },
-    // refetchQueries: [{ query: SUBSCRIBE_MESSAGES }, "GetMessages"],
+    refetchQueries: [{ query: GET_MESSAGES, variables: { journalId: journalId } }],
   });
 
   const handleSave = () => {
@@ -337,7 +337,7 @@ function RadioInput(props: {
         <div className="field-body">
           <div className="field">
             <div className="control">
-              <button className="button is-primary" onClick={() => handleSave()}>
+              <button className="button is-primary is-rounded" onClick={() => handleSave()}>
                 Speichern
               </button>
             </div>

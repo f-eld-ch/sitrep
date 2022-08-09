@@ -7,7 +7,7 @@ module.exports = function (app) {
       logger: console,
       target: "http://localhost:8080",
       changeOrigin: true,
-      ws: true,
+      // ws: true,
       plugins: [loggerPlugin],
       debug: true,
     })
