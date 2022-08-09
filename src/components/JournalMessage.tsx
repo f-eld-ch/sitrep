@@ -105,7 +105,7 @@ function Message({
           <div className="column">
             <div
               className="content is-normal has-text-left"
-              style={{ whiteSpace: "pre-wrap" }}
+              style={{ whiteSpace: "normal" }}
               dangerouslySetInnerHTML={{ __html: remarkable.render(message) }}
             />
           </div>
