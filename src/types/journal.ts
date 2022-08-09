@@ -47,6 +47,7 @@ export interface Division {
 }
 
 export interface MessageListData {
+  journals_by_pk: Journal;
   messages: Message[];
 }
 

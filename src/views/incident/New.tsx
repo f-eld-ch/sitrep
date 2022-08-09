@@ -7,24 +7,14 @@ import classNames from "classnames";
 import { reject, iteratee, unionBy } from "lodash";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DivisionInput, Incident, InsertIncidentData, InsertIncidentVars } from "types/incident";
-// import { useMutation, gql } from "@apollo/client";
-
-// const SAVE_INCIDENT = gql`
-//   mutation saveIncident($name: string!, $locationName: string!, $coordinates: string) {
-//     insert_incidents_one(
-//       object: { location: { data: { name: $locationName, coordinates: $coordinates } }, name: $name }
-//     ) {
-//       id
-//       location {
-//         coordinates
-//         name
-//       }
-//       createdAt
-//       name
-//     }
-//   }
-// `;
+import { Division } from "types";
+import {
+  Incident,
+  InsertIncidentData,
+  InsertIncidentVars,
+  UpdateIncidentData,
+  UpdateIncidentVars,
+} from "types/incident";
 
 function New() {
   return (
@@ -69,16 +59,23 @@ export const INSERT_INCIDENT = gql`
 
 const UPDATE_INCIDENT = gql`
   mutation UpdateIncident(
-    $incidentId: uuid
+    $incidentId: uuid!
     $name: String!
-    $location: String
+    $location: String!
+    $locationId: uuid!
     $divisions: [divisions_insert_input!]!
-    $journalName: String
   ) {
-    update_incident_by_pk(
-      pk_columns: { id: $incidentID }
-      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time }
+    update_locations_by_pk(pk_columns: { id: $locationId }, _set: { name: $location }) {
+      id
+      name
+    }
+    insert_divisions(
+      objects: $divisions
+      on_conflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
     ) {
+      affected_rows
+    }
+    update_incidents_by_pk(pk_columns: { id: $incidentId }, _set: { name: $name }) {
       id
       name
       journals {
@@ -96,10 +93,10 @@ const UPDATE_INCIDENT = gql`
 
 function IncidentForm(props: { incident: Incident | undefined }) {
   const { incident } = props;
-  const [assignments, setAssignments] = useState<DivisionInput[]>(
+  const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
-      { name: "Lage", description: "Lagekarte" },
-      { name: "SC", description: "Stabchef" },
+      { id: "", name: "Lage", description: "Lagekarte" },
+      { id: "", name: "SC", description: "Stabchef" },
     ]
   );
   const [name, setName] = useState(incident?.name || "");
@@ -115,7 +112,30 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     },
   });
 
+  const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
+    UPDATE_INCIDENT,
+    {
+      onCompleted(data) {
+        navigate(`../journal/view`);
+      },
+    }
+  );
+
   const handleSave = () => {
+    if (incident) {
+      updateIncident({
+        variables: {
+          name: name,
+          incidentId: incident.id,
+          location: location,
+          locationId: incident.location.id,
+          divisions: assignments.map((d) => {
+            return { name: d.name, description: d.description, incidentId: incident.id };
+          }),
+        },
+      });
+      return;
+    }
     insertIncident({
       variables: {
         name: name,
@@ -129,7 +149,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   return (
     <>
       {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
-
+      {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label className="label">Name</label>
@@ -181,17 +201,22 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             {assignments.map((d) => {
               let tagsClass = classNames({
                 tag: true,
-                "is-primary": true,
+                "is-primary": !d.id,
+                "is-info": d.id,
                 "is-normal": true,
               });
               return (
                 <div key={d.name} className="control">
                   <div className="tags has-addons">
                     <p className={tagsClass}>{`${d.description} (${d.name})`}</p>
-                    <a
-                      className="tag is-delete"
-                      onClick={() => setAssignments(reject(assignments, (e) => e.name === d.name))}
-                    />
+                    {d.id ? (
+                      <></>
+                    ) : (
+                      <a
+                        className="tag is-delete"
+                        onClick={() => setAssignments(reject(assignments, (e) => e.name === d.name))}
+                      />
+                    )}
                   </div>
                 </div>
               );
@@ -201,58 +226,56 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
 
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">Fachbereiche Hinzufügen</label>
+        <div className="field-label is-small">
+          <label className="label">Fachbereiche hinzufügen</label>
         </div>
         <div className="field-body">
-          <div className="field is-grouped has-addons">
+          <div className="field is-grouped is-grouped-multiline">
             <p className="control is-expanded">
               <input
-                className="input"
+                className="input is-small"
                 type="text"
                 value={assignmentDescription}
                 onChange={(e) => setAssignmentDescription(e.currentTarget.value)}
                 placeholder="Name"
               />
             </p>
-            <div className="field has-addons">
-              <p className="control">
-                <input
-                  className="input"
-                  value={assignmentName}
-                  type="text"
-                  onChange={(e) => setAssignmentName(e.currentTarget.value)}
-                  placeholder="Kürzel"
-                />
-              </p>
-              <p className="control">
-                <button
-                  className="button is-primary"
-                  onClick={(e) => {
-                    e.preventDefault();
+            <p className="control">
+              <input
+                className="input is-small"
+                value={assignmentName}
+                type="text"
+                onChange={(e) => setAssignmentName(e.currentTarget.value)}
+                placeholder="Kürzel"
+              />
+            </p>
+            <p className="control">
+              <button
+                className="button is-primary is-small is-justified is-rounded"
+                onClick={(e) => {
+                  e.preventDefault();
 
-                    setAssignments(
-                      unionBy(
-                        assignments,
-                        [{ name: assignmentName, description: assignmentDescription }],
-                        iteratee("name")
-                      )
-                    );
-                    setAssignmentName("");
-                    setAssignmentDescription("");
-                  }}
-                >
-                  Hinzufügen
-                </button>
-              </p>
-            </div>
+                  setAssignments(
+                    unionBy(
+                      assignments,
+                      [{ id: "", name: assignmentName, description: assignmentDescription }],
+                      iteratee("name")
+                    )
+                  );
+                  setAssignmentName("");
+                  setAssignmentDescription("");
+                }}
+              >
+                Hinzufügen
+              </button>
+            </p>
           </div>
         </div>
       </div>
-      <div className="field is-horizontal">
+      <div className="field">
         <p className="control">
-          <button className="button is-primary" onClick={handleSave}>
-            Erstellen
+          <button className="button is-primary is-rounded" onClick={handleSave}>
+            Speichern
           </button>
         </p>
       </div>

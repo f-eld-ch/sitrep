@@ -2,6 +2,7 @@ import { Division, Journal } from "./journal";
 
 export interface Location {
   name: string;
+  id: string;
   coordinates: string;
 }
 
@@ -44,4 +45,20 @@ export interface InsertIncidentVars {
 export interface DivisionInput {
   name: string,
   description: string,
+}
+
+export interface UpdateIncidentData {
+  update_locations_by_pk: Location
+  insert_divisions: {
+    affected_rows: Number
+  }
+  update_incidents_by_pk: Incident
+}
+
+export interface UpdateIncidentVars {
+  name: string
+  incidentId: string
+  location: string
+  locationId: string
+  divisions: DivisionInput[]
 }

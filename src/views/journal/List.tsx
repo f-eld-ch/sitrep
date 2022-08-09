@@ -10,7 +10,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export const GET_MESSAGES = gql`
-  query GetMessages($journalId: uuid) {
+  query GetMessages($journalId: uuid!) {
+    journals_by_pk(id: $journalId) {
+      incident {
+        id
+        divisions {
+          id
+          name
+          description
+        }
+      }
+    }
     messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _is_null: true } }, order_by: { time: desc }) {
       id
       content
@@ -62,7 +72,7 @@ function List(props: {
     );
 
   if (loading) return <Spinner />;
-  let divisions = new Set(data?.messages.map((m) => m.divisions.map((l) => l.division.name).flat()).flat());
+  let divisions = data?.journals_by_pk.incident.divisions.flat() || [];
 
   return (
     <div>
@@ -125,9 +135,9 @@ function List(props: {
                   }}
                 >
                   <option>Alle</option>
-                  {Array.from(divisions).map((element) => (
-                    <option key={element.toString()} value={element}>
-                      {element}
+                  {divisions.map((element) => (
+                    <option key={element.id} value={element.name}>
+                      {element.description}
                     </option>
                   ))}
                 </select>
