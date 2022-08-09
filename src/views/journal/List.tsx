@@ -81,7 +81,7 @@ function List(props: {
         <MessageTable messages={data?.messages} />
       </div>
       <div className="block is-hidden-print">
-        <div className="columns">
+        <div className="columns is-mobile">
           <div className="column is-narrow">
             <div className="control has-icons-left">
               <div className="select is-small is-rounded">
