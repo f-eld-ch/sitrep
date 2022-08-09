@@ -1,34 +1,34 @@
 table:
-  schema: public
   name: message_division
+  schema: public
 configuration:
-  custom_root_fields:
-    insert:
-      name: null
-      comment: ""
-    select_aggregate:
-      name: null
-      comment: ""
-    select_by_pk:
-      name: null
-      comment: ""
-    select:
-      name: null
-      comment: ""
-    delete:
-      name: null
-      comment: ""
-    update:
-      name: null
-      comment: ""
-    delete_by_pk:
-      name: null
-      comment: ""
-    update_by_pk:
-      name: null
-      comment: ""
   column_config: {}
   custom_column_names: {}
+  custom_root_fields:
+    delete:
+      comment: ""
+      name: null
+    delete_by_pk:
+      comment: ""
+      name: null
+    insert:
+      comment: ""
+      name: null
+    select:
+      comment: ""
+      name: null
+    select_aggregate:
+      comment: ""
+      name: null
+    select_by_pk:
+      comment: ""
+      name: null
+    update:
+      comment: ""
+      name: null
+    update_by_pk:
+      comment: ""
+      name: null
 object_relationships:
   - name: division
     using:

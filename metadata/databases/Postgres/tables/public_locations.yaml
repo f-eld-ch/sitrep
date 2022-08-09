@@ -1,22 +1,22 @@
 table:
-  schema: public
   name: locations
+  schema: public
 object_relationships:
   - name: incidentById
     using:
       foreign_key_constraint_on:
         column: location_id
         table:
-          schema: public
           name: incidents
+          schema: public
 array_relationships:
   - name: incident
     using:
       foreign_key_constraint_on:
         column: location_id
         table:
-          schema: public
           name: incidents
+          schema: public
 insert_permissions:
   - role: user
     permission:

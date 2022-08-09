@@ -1,6 +1,6 @@
 table:
-  schema: public
   name: journals
+  schema: public
 object_relationships:
   - name: incident
     using:
@@ -11,8 +11,8 @@ array_relationships:
       foreign_key_constraint_on:
         column: journal_id
         table:
-          schema: public
           name: messages
+          schema: public
 insert_permissions:
   - role: user
     permission:
