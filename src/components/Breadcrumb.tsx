@@ -17,7 +17,7 @@ export const GET_JOURNAL_DETAILS = gql`
   }
 `;
 
-export function Breadcrump() {
+export function Breadcrumb() {
   const { incidentId, journalId } = useParams();
 
   const { data: incidentData } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
@@ -25,7 +25,7 @@ export function Breadcrump() {
   });
 
   return (
-    <nav className="breadcrumb is-right has-bullet-separator is-small" aria-label="breadcrumbs">
+    <nav className="breadcrumb is-right has-bullet-separator" aria-label="breadcrumbs">
       <ul>
         {incidentData?.incidents_by_pk.name ? (
           <li>
@@ -34,7 +34,7 @@ export function Breadcrump() {
               to={`/incident/${incidentId}/edit`}
             >
               <span className="icon-text">
-                <FontAwesomeIcon icon={faExplosion} className="icon" />
+                <FontAwesomeIcon icon={faExplosion} className="icon " />
                 <span>{incidentData?.incidents_by_pk.name}</span>
               </span>
             </NavLink>
