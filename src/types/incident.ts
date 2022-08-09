@@ -47,6 +47,13 @@ export interface DivisionInput {
   description: string,
 }
 
+export interface DivisionUpdate {
+  name: string,
+  description: string,
+  incidentId: string
+}
+
+
 export interface UpdateIncidentData {
   update_locations_by_pk: Location
   insert_divisions: {
@@ -60,5 +67,5 @@ export interface UpdateIncidentVars {
   incidentId: string
   location: string
   locationId: string
-  divisions: DivisionInput[]
+  divisions: DivisionUpdate[]
 }
