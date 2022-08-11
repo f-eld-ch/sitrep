@@ -157,7 +157,7 @@ function Triage(props: {
                 <div className="block">
                   <div className="columns">
                     <div className="column">
-                      <h3 className="title is-size-3">Fachbereiche zuweisen</h3>
+                      <h3 className="title is-size-3">Meldefluss</h3>
                       <div className="field is-grouped is-grouped-multiline">
                         {data?.messages_by_pk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
