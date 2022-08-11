@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
-import { New as TaskNew } from "../tasks";
+import { NewForm as TaskNew } from "../tasks";
 import { GET_MESSAGES } from "./List";
 
 const GET_MESSAGE_FOR_TRIAGE = gql`
@@ -157,7 +157,7 @@ function Triage(props: {
                 <div className="block">
                   <div className="columns">
                     <div className="column">
-                      <h3 className="title is-size-3">Meldefluss</h3>
+                      <h3 className="title is-size-4">Meldefluss</h3>
                       <div className="field is-grouped is-grouped-multiline">
                         {data?.messages_by_pk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
@@ -186,7 +186,7 @@ function Triage(props: {
                       </div>
                     </div>
                     <div className="column">
-                      <h3 className="title is-size-3">Prorität zuweisen</h3>
+                      <h3 className="title is-size-4">Prorität zuweisen</h3>
                       <div className="select is-rounded is-small">
                         <select
                           defaultValue={message.priority.name}
@@ -203,6 +203,7 @@ function Triage(props: {
                       </div>
                     </div>
                     <div className="column">
+                      <h3 className="title is-size-4">Pendenz erstellen</h3>
                       <TaskNew />
                     </div>
                   </div>
