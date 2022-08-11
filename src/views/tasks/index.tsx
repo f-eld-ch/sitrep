@@ -1,2 +1,2 @@
 export { default as List } from "./List";
-export { default as New } from "./New";
+export { New, NewForm } from "./New";
