@@ -96,7 +96,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const { incident } = props;
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
-      { id: "", name: "Lage", description: "Lagekarte" },
+      { id: "", name: "Karte", description: "Nachrichtenkarte" },
+      { id: "", name: "Lage", description: "C Lage" },
       { id: "", name: "SC", description: "Stabchef" },
     ]
   );
