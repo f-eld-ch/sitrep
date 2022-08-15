@@ -12,7 +12,6 @@ $primary: hsl(18, 100, 52);
 $danger: rgb(214, 0, 0);
 $info: hsl(226, 100, 47);
 
-
 $section-padding: 0.5rem 0.5rem;
 $section-padding-desktop: 0.5rem 3rem;
 
@@ -71,13 +70,32 @@ $breadcrumb-item-color: $grey-dark;
 
 
 // Bulma Layout
-// @import "../node_modules/bulma/sass/layout/hero.sass";
+@import "../node_modules/bulma/sass/layout/hero.sass";
 @import "../node_modules/bulma/sass/layout/section.sass";
 @import "../node_modules/bulma/sass/layout/footer.sass";
 
-.is-fullheight {
-    height: 100vh;
+body {
+    &.default {
+        display: flex;
+        // use this if navbar is NOT fixed (default)
+        min-height: 100vh;
+        flex-direction: column;
+    }
+
+    &.has-navbar-fixed-top {
+        display: flex;
+        // use this if navbar is fixed
+        min-height: calc(100vh - #{$navbar-height});
+        flex-direction: column;
+    }
 }
+
+section {
+    &.is-fullheight-with-navbar {
+        min-height: calc(100vh - #{$navbar-height});
+    }
+}
+
 
 .content {
     h1 {

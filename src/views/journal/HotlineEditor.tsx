@@ -1,7 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faPhone, faUser } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import List from "./List";
 
 function HotlineEditor() {
@@ -32,7 +31,7 @@ function Hotline() {
             <p className="control is-expanded has-icons-left">
               <input className="input" type="text" placeholder="Name" />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faUser as IconProp} />
+                <FontAwesomeIcon icon={faUser} />
               </span>
             </p>
           </div>
@@ -48,7 +47,7 @@ function Hotline() {
             <p className="control is-expanded has-icons-left">
               <input className="input" type="tel" placeholder="Telefonnummer" />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faPhone as IconProp} />
+                <FontAwesomeIcon icon={faPhone} />
               </span>
             </p>
           </div>
@@ -64,7 +63,7 @@ function Hotline() {
             <p className="control is-expanded has-icons-left">
               <input className="input" type="text" placeholder="Zeit" />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faClock as IconProp} />
+                <FontAwesomeIcon icon={faClock} />
               </span>
             </p>
           </div>
