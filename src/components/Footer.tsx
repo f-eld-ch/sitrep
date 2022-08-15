@@ -9,7 +9,7 @@ function Footer() {
       <div className="content has-text-centered">
         <p>
           Made with <FontAwesomeIcon icon={faHeart as IconProp} color="red" /> in Switzerland by{" "}
-          <strong>ZSO Uri</strong> ({process.env.REACT_APP_VERSION} {process.env.REACT_APP_COMMIT_SHA})
+          <strong>ZSO Uri</strong>
         </p>
       </div>
     </footer>
