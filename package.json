@@ -1,6 +1,6 @@
 {
-  "name": "sitrep-ui-test",
-  "version": "0.1.0",
+  "name": "sitrep",
+  "version": "22.0.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.5.10",
