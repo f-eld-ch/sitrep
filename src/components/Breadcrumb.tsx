@@ -33,8 +33,10 @@ export function Breadcrumb() {
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
               to={`/incident/${incidentId}/edit`}
             >
-              <span className="icon-text">
-                <FontAwesomeIcon icon={faExplosion} className="icon " />
+              <span className="icon-text is-small">
+                <span className="icon">
+                  <FontAwesomeIcon icon={faExplosion} />
+                </span>
                 <span>{incidentData?.incidents_by_pk.name}</span>
               </span>
             </NavLink>
@@ -48,8 +50,10 @@ export function Breadcrumb() {
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
               to={`/incident/${incidentId}/journal/${journalId}/edit`}
             >
-              <span className="icon-text">
-                <FontAwesomeIcon icon={faBars} className="icon" />
+              <span className="icon-text is-small">
+                <span className="icon">
+                  <FontAwesomeIcon icon={faBars} />
+                </span>
                 <span>{incidentData?.incidents_by_pk.journals.find((j) => j.id === journalId)?.name}</span>
               </span>
             </NavLink>

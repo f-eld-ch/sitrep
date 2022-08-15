@@ -9,15 +9,15 @@ export interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   return (
-    <section className="columns is-flex-direction-column is-gapless is-fullheight">
+    <section className="columns is-flex-direction-column is-gapless is-fullheight-with-navbar">
       <div className="column is-narrow is-hidden-print">
         <Navbar />
       </div>
+      <div className="column is-narrow is-hidden-print">
+        <Breadcrumb />
+      </div>
       <div className="column">
-        <section className="section">
-          <Breadcrumb />
-          {props.children}
-        </section>
+        <section className="section">{props.children}</section>
       </div>
       <div className="column is-narrow is-hidden-print">
         <Footer />

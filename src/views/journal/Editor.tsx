@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import List, { GET_MESSAGES } from "./List";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 import { Link, useParams } from "react-router-dom";
 import dayjs from "dayjs";
@@ -255,7 +254,7 @@ function RadioInput(props: {
                 }}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faCircleArrowRight as IconProp} />
+                <FontAwesomeIcon icon={faCircleArrowRight} />
               </span>
             </p>
           </div>
@@ -280,7 +279,7 @@ function RadioInput(props: {
                 }}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faCircleArrowLeft as IconProp} />
+                <FontAwesomeIcon icon={faCircleArrowLeft} />
               </span>
             </p>
           </div>
@@ -304,7 +303,7 @@ function RadioInput(props: {
                 }}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faClock as IconProp} />
+                <FontAwesomeIcon icon={faClock} />
               </span>
             </p>
           </div>
