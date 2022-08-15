@@ -2,6 +2,7 @@ import { FunctionComponent, useContext, useState } from "react";
 import {
   faBars,
   faCaretDown,
+  faCodeCommit,
   faExplosion,
   faListCheck,
   faTruckMedical,
@@ -77,6 +78,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <ResourcesNavBar />
         </div>
         <div className="navbar-end">
+          <VersionNavBar />
           <UserNavBar />
         </div>
       </div>
@@ -84,6 +86,22 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   );
 };
 
+function VersionNavBar() {
+  return (
+    <div className="navbar-item">
+      <span className="icon-text">
+        <FontAwesomeIcon icon={faCodeCommit as IconProp} className="icon" />
+        {process.env.REACT_APP_VERSION === "develop" ? (
+          <span>{process.env.REACT_APP_SHA_VERSION}</span>
+        ) : (
+          <span>{process.env.REACT_APP_VERSION}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+// ({process.env.REACT_APP_VERSION} {process.env.REACT_APP_COMMIT_SHA})
 function UserNavBar() {
   const userState = useContext(UserContext);
 
