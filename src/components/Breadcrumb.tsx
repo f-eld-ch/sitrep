@@ -1,6 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import { faBars, faExplosion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import { IncidentDetailsData, IncidentDetailsVars } from "types";
 import { GET_INCIDENT_DETAILS } from "views/incident/Dashboard";
@@ -20,9 +21,13 @@ export const GET_JOURNAL_DETAILS = gql`
 export function Breadcrumb() {
   const { incidentId, journalId } = useParams();
 
-  const { data: incidentData } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
+  const { data: incidentData, refetch } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
     variables: { incidentId: incidentId || "" },
   });
+
+  useEffect(() => {
+    refetch({ incidentId: incidentId || "" });
+  }, [incidentId, journalId, refetch]);
 
   return (
     <nav className="breadcrumb is-right has-bullet-separator is-hidden-print" aria-label="breadcrumbs">

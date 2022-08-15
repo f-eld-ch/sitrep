@@ -15,6 +15,7 @@ import {
   UpdateIncidentData,
   UpdateIncidentVars,
 } from "types/incident";
+import { GET_INCIDENT_DETAILS } from "./Dashboard";
 import { GET_INCIDENTS } from "./List";
 
 function New() {
@@ -112,7 +113,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     onCompleted(data) {
       navigate(`../${data.insert_incidents_one.id}/journal/view`);
     },
-    refetchQueries: [{ query: GET_INCIDENTS }],
+    refetchQueries: [{ query: GET_INCIDENTS }, { query: GET_INCIDENT_DETAILS }],
   });
 
   const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
@@ -121,7 +122,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       onCompleted(data) {
         navigate(`../journal/view`);
       },
-      refetchQueries: [{ query: GET_INCIDENTS }],
+      refetchQueries: [{ query: GET_INCIDENTS }, { query: GET_INCIDENT_DETAILS }],
     }
   );
 

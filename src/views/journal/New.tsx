@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { InsertJournalData, InsertJournalVars } from "types/journal";
+import { GET_INCIDENT_DETAILS } from "views/incident/Dashboard";
 import { GET_JOURNALS } from "./Overview";
 
 function New() {
@@ -40,7 +41,7 @@ function NewForm() {
       // reset the form values
       navigate(`../${data.insert_journals_one.id}/edit`);
     },
-    refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }],
+    refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }, { query: GET_INCIDENT_DETAILS }],
   });
 
   const handleSave = () => {

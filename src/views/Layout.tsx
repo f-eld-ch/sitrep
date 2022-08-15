@@ -9,7 +9,7 @@ export interface LayoutProps {
 
 export const Layout = (props: LayoutProps) => {
   return (
-    <section className="columns is-flex-direction-column is-gapless is-fullheight-with-navbar">
+    <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
       <div className="column is-narrow is-hidden-print">
         <Navbar />
       </div>
