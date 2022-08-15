@@ -36,9 +36,9 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args:
-            - version=${{ steps.meta.outputs.version }}
-            - gitsha=${{ env.GITHUB_SHA }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            GIT_SHA=${{ env.GITHUB_SHA }}
       - name: Docker meta for hasura
         id: meta-hasura
         uses: docker/metadata-action@v4
