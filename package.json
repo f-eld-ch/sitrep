@@ -1,6 +1,6 @@
 {
-  "name": "sitrep-ui-test",
-  "version": "0.1.0",
+  "name": "sitrep",
+  "version": "22.0.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.5.10",
@@ -19,7 +19,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "VERSION=`git branch --show-current` GIT_SHA=`git rev-parse --short HEAD` react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

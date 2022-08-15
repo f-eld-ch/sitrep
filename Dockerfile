@@ -3,6 +3,10 @@ WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
 RUN yarn
 COPY . ./
+ARG GIT_SHA
+ENV GIT_SHA=${GIT_SHA}
+ARG VERSION
+ENV VERSION=${VERSION:-develop}
 RUN yarn build
 
 FROM quay.io/oauth2-proxy/oauth2-proxy:v7.3.0
