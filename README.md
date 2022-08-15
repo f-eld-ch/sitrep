@@ -1,5 +1,10 @@
 # Sitrep
 
+## Demo-Environment
+
+The current develop version is automatically deployed to: [https://sitrep-dev.zso-uri.ch](https://sitrep-dev.zso-uri.ch)
+Login is possible with your Github account.
+
 ### Local Development Environment
 
 A simple local development environment can be created using docker compose and the frontend can be run using yarn.
