@@ -38,7 +38,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
-            GIT_SHA=${{ env.GITHUB_SHA }}
+            GIT_SHA=${{ steps.meta.outputs.revision }}
       - name: Docker meta for hasura
         id: meta-hasura
         uses: docker/metadata-action@v4
