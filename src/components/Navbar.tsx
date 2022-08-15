@@ -91,7 +91,11 @@ function VersionNavBar() {
     <div className="navbar-item">
       <span className="icon-text">
         <FontAwesomeIcon icon={faCodeCommit as IconProp} className="icon" />
-        <span>{process.env.REACT_APP_VERSION}</span>
+        {process.env.REACT_APP_VERSION === "develop" ? (
+          <span>{process.env.REACT_APP_SHA_VERSION}</span>
+        ) : (
+          <span>{process.env.REACT_APP_VERSION}</span>
+        )}
       </span>
     </div>
   );
