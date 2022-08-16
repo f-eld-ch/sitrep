@@ -8,6 +8,7 @@ import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus
 import MessageTable from "./Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 
 export const GET_MESSAGES = gql`
   query GetMessages($journalId: uuid!) {
@@ -53,10 +54,12 @@ function List(props: {
   setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
   setTriageMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
 }) {
+  const { t } = useTranslation();
   const { journalId } = useParams();
-  const [triageFilter, setTriageFilter] = useState("Alle");
-  const [priorityFilter, setPriorityFilter] = useState("Alle");
-  const [assignmentFilter, setAssignmentFilter] = useState("Alle");
+  const [triageFilter, setTriageFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [assignmentFilter, setAssignmentFilter] = useState("all");
+
 
   const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GET_MESSAGES, {
     variables: { journalId: journalId || "" },
@@ -76,7 +79,7 @@ function List(props: {
 
   return (
     <div>
-      <h3 className="title is-3">Journal</h3>
+      <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
       <div className="block is-print">
         <MessageTable messages={data?.messages} />
       </div>
@@ -92,9 +95,9 @@ function List(props: {
                     setTriageFilter(e.currentTarget.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status}>{status}</option>
+                    <option key={status} label={t([`triage.${status}`, 'triage.pending'])}>{status}</option>
                   ))}
                 </select>
               </div>
@@ -113,9 +116,9 @@ function List(props: {
                     setPriorityFilter(e.currentTarget.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio}>{prio}</option>
+                    <option key={prio} label={t([`priority.${prio}`, 'priority.normal'])}>{prio}</option>
                   ))}
                 </select>
               </div>
@@ -134,7 +137,7 @@ function List(props: {
                     setAssignmentFilter(e.currentTarget.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {divisions.map((element) => (
                     <option key={element.id} value={element.name}>
                       {element.description}
@@ -152,11 +155,11 @@ function List(props: {
       <div className="block is-hidden-print">
         {data &&
           data.messages
-            .filter((message) => triageFilter === "Alle" || message.triage?.name === triageFilter)
-            .filter((message) => priorityFilter === "Alle" || message.priority?.name === priorityFilter)
+            .filter((message) => triageFilter === "all" || message.triage?.name === triageFilter)
+            .filter((message) => priorityFilter === "all" || message.priority?.name === priorityFilter)
             .filter(
               (message) =>
-                assignmentFilter === "Alle" || message.divisions?.find((d) => d.division.name === assignmentFilter)
+                assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
             )
             .map((message) => {
               return (

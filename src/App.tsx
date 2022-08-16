@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import "./App.scss";
@@ -12,7 +12,6 @@ import {
 } from "views/journal";
 import {
   List as IncidentList,
-  Dashboard as IncidentDashboard,
   New as IncidentNew,
   Editor as IncidentEditor,
 } from "views/incident";
@@ -23,9 +22,12 @@ import { default as client } from "./client";
 import { Layout } from "views/Layout";
 import { UserContext } from "utils";
 import { UserState } from "types";
+import { useTranslation } from "react-i18next";
 
 function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
+  const { i18n } = useTranslation();
+
 
   const setUserStateFromUserinfo = () => {
     fetch("/oauth2/userinfo", { credentials: "include" })
@@ -41,15 +43,17 @@ function App() {
       });
   };
 
+
   useEffect(() => {
     setUserStateFromUserinfo();
+    i18n.changeLanguage()
 
     const interval = setInterval(() => {
       setUserStateFromUserinfo();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [i18n]);
 
   return (
     <UserContext.Provider value={userState}>
@@ -75,14 +79,6 @@ function App() {
               />
 
               <Route path=":incidentId">
-                <Route
-                  path="dashboard"
-                  element={
-                    <Layout>
-                      <IncidentDashboard />
-                    </Layout>
-                  }
-                />
                 <Route
                   path="edit"
                   element={

@@ -1,7 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 function New() {
-  return <h3 className="title is-size-5">Neue Pendenz erfassen</h3>;
+  const { t } = useTranslation();
+
+  return <h3 className="title is-size-5 is-capitalized">{t('createNewTask')}</h3>;
 }
 
 function NewForm() {
