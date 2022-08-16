@@ -61,12 +61,12 @@ function Overview() {
 
   return (
     <div>
-      <h3 className="title is-size-3">{t('journalList')}</h3>
-      <h3 className="subtitle">{t('incident')}: {incident.name}</h3>
+      <h3 className="title is-size-3 is-capitalized">{t('journalList')}</h3>
+      <h3 className="subtitle is-capitalized">{t('incident')}: {incident.name}</h3>
 
       <div className="buttons">
         <button
-          className="button is-success is-small is-responsive is-rounded is-light"
+          className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
           onClick={() => navigate("../new")}
         >
           <span className="icon is-small">
@@ -87,7 +87,7 @@ function Overview() {
       <JournalTable
         journals={data.incidents[0].journals.filter((journal) => !filterClosed || journal.closedAt === null) || []}
       />
-    </div>
+    </div >
   );
 }
 

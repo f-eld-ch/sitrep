@@ -1,13 +1,12 @@
 {
     "add": "ajouter",
-    "addDivision": "Ajouter des départements",
     "all": "tout",
     "assignPriority": "attribuer la priorité",
     "close": "proche",
-    "closedAt": "Fermé",
+    "closedAt": "fermé",
     "create": "créer",
-    "createIncident": "créer un nouvel événement",
-    "createJournal": "Créer un nouveau journal",
+    "createIncident": "créer un nouvel incident",
+    "createJournal": "créer un nouveau journal",
     "createNewTask": "enregistrement en attente",
     "createdAt": "ouvert",
     "divisions": "départements",
@@ -16,9 +15,9 @@
     "editor": "éditeur",
     "enter": "entrer",
     "feed": "Feed",
-    "hideClosed": "Masquer fermé",
+    "hideClosed": "masquer fermé",
     "hotline": "Éditeur de la hotline",
-    "incident": "Incident",
+    "incident": "incident",
     "incidents": "incidentes",
     "journal": "journal",
     "journalList": "liste des revues",
@@ -42,7 +41,7 @@
     "preview": "aperçu",
     "priority": {
         "high": "important",
-        "normal": "Ordinaire"
+        "normal": "ordinaire"
     },
     "resources": "ressources",
     "save": "saveur",
@@ -50,7 +49,7 @@
     "short": "abréviation",
     "showClosed": "Afficher fermé",
     "state": "était debout",
-    "tasks": "questions en suspens",
+    "tasks": "affaires en cours",
     "tasksRequests": "affaires en cours / demandes / besoins",
     "triage": {
         "done": "trié",
