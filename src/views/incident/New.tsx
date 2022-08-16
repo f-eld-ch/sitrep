@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { reject, iteratee, unionBy } from "lodash";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Division } from "types";
 import {
@@ -19,9 +20,11 @@ import { GET_INCIDENT_DETAILS } from "./Dashboard";
 import { GET_INCIDENTS } from "./List";
 
 function New() {
+  const { t } = useTranslation();
+
   return (
     <>
-      <h3 className="title is-size-3">Ereignis erstellen</h3>
+      <h3 className="title is-size-3 is-capitalized">{t('createIncident')}</h3>
       <div className="box">
         <IncidentForm incident={undefined} />
       </div>
@@ -95,6 +98,8 @@ const UPDATE_INCIDENT = gql`
 
 function IncidentForm(props: { incident: Incident | undefined }) {
   const { incident } = props;
+  const { t } = useTranslation();
+
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
       { id: "", name: "Karte", description: "Nachrichtenkarte" },
@@ -159,7 +164,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Name</label>
+          <label className="label is-capitalized">{t('name')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -169,7 +174,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
-                placeholder="Name"
+                placeholder={t('name')}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faClipboard} />
@@ -180,7 +185,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Ort</label>
+          <label className="label is-capitalized">{t('location')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -190,7 +195,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.currentTarget.value)}
-                placeholder="Ort"
+                placeholder={t('location')}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faLocationDot} />
@@ -201,7 +206,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Fachbereiche</label>
+          <label className="label is-capitalized">{t('divisions')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline is-normal">
@@ -234,7 +239,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label className="label">Fachbereiche hinzufügen</label>
+          <label className="label is-capitalized">{t('add')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -244,7 +249,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={assignmentDescription}
                 onChange={(e) => setAssignmentDescription(e.currentTarget.value)}
-                placeholder="Name"
+                placeholder={t('name')}
               />
             </p>
             <p className="control">
@@ -253,12 +258,12 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 value={assignmentName}
                 type="text"
                 onChange={(e) => setAssignmentName(e.currentTarget.value)}
-                placeholder="Kürzel"
+                placeholder={t('short')}
               />
             </p>
             <p className="control">
               <button
-                className="button is-primary is-small is-justified is-rounded"
+                className="button is-primary is-small is-justified is-rounded is-capitalized"
                 onClick={(e) => {
                   e.preventDefault();
 
@@ -273,7 +278,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentDescription("");
                 }}
               >
-                Hinzufügen
+                {t('add')}
               </button>
             </p>
           </div>
@@ -281,8 +286,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field">
         <p className="control">
-          <button className="button is-primary is-rounded" onClick={handleSave}>
-            Speichern
+          <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
+            {t('save')}
           </button>
         </p>
       </div>

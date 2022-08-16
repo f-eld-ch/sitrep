@@ -10,6 +10,7 @@ import { Message, PriorityStatus, TriageStatus } from "types";
 import { gql, useMutation } from "@apollo/client";
 import JournalMessage from "components/JournalMessage";
 import TriageModal from "./TriageModal";
+import { t } from "i18next";
 
 function Editor() {
   const [messageToEdit, setMessageToEdit] = useState<Message>();
@@ -18,7 +19,7 @@ function Editor() {
     <div>
       <div className="columns">
         <div className="column is-half">
-          <h3 className="title is-3">Editor</h3>
+          <h3 className="title is-3 is-capitalized">{t('editor')}</h3>
           <InputBox messageToEdit={messageToEdit} setEditorMessage={setMessageToEdit} />
         </div>
         <div className="column">
@@ -237,7 +238,7 @@ function RadioInput(props: {
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Empfänger</label>
+          <label className="label is-capitalized">{t('message.receiver')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -247,7 +248,7 @@ function RadioInput(props: {
                 type="text"
                 value={receiver}
                 autoComplete="on"
-                placeholder="Name"
+                placeholder={t('name')}
                 onChange={(e) => {
                   e.preventDefault();
                   setReceiver(e.currentTarget.value);
@@ -262,7 +263,7 @@ function RadioInput(props: {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Sender</label>
+          <label className="label is-capitalized">{t('message.sender')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -272,7 +273,7 @@ function RadioInput(props: {
                 type="text"
                 value={sender}
                 autoComplete="on"
-                placeholder="Name"
+                placeholder={t('name')}
                 onChange={(e) => {
                   e.preventDefault();
                   setSender(e.currentTarget.value);
@@ -287,7 +288,7 @@ function RadioInput(props: {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Zeit</label>
+          <label className="label is-capitalized">{t('message.time')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -311,7 +312,7 @@ function RadioInput(props: {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Nachricht</label>
+          <label className="label is-capitalized">{t('message.content')}</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -319,7 +320,7 @@ function RadioInput(props: {
               <textarea
                 className="textarea"
                 autoFocus={true}
-                placeholder="Was wurde übermittelt?"
+                placeholder={t('message.contentHelp')}
                 rows={10}
                 value={content}
                 onChange={(e) => {
@@ -337,7 +338,7 @@ function RadioInput(props: {
           <div className="field">
             <div className="control">
               <button className="button is-primary is-rounded" onClick={() => handleSave()}>
-                Speichern
+                {t('save')}
               </button>
             </div>
           </div>
@@ -345,7 +346,7 @@ function RadioInput(props: {
       </div>
       {content !== "" || sender !== "" || receiver !== "" ? (
         <>
-          <div className="title is-size-4">Vorschau</div>
+          <div className="title is-size-4 is-capitalized">{t('preview')}</div>
           <JournalMessage
             id={undefined}
             message={content}

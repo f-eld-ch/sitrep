@@ -18,6 +18,7 @@ import {
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
 
 dayjs.locale(de);
 dayjs.extend(LocalizedFormat);
@@ -43,6 +44,7 @@ function Overview() {
   const { incidentId } = useParams();
   const [filterClosed, setFilterClosed] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { loading, error, data } = useQuery<JournalListData, JournalListVars>(GET_JOURNALS, {
     variables: { incidentId: incidentId || "" },
@@ -59,8 +61,8 @@ function Overview() {
 
   return (
     <div>
-      <h3 className="title is-size-3">Journal-Liste</h3>
-      <h3 className="subtitle">Ereignis: {incident.name}</h3>
+      <h3 className="title is-size-3">{t('journalList')}</h3>
+      <h3 className="subtitle">{t('incident')}: {incident.name}</h3>
 
       <div className="buttons">
         <button
@@ -70,7 +72,7 @@ function Overview() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={faPlusCircle} />
           </span>
-          <span>Erstellen</span>
+          <span>{t('create')}</span>
         </button>
         <button
           className="button is-primary is-small is-responsive is-rounded is-light"
@@ -79,7 +81,7 @@ function Overview() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
           </span>
-          <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
+          <span>{filterClosed ? t('showClosed') : t('hideClosed')}</span>
         </button>
       </div>
       <JournalTable
@@ -90,15 +92,17 @@ function Overview() {
 }
 
 function JournalTable(props: { journals: Journal[] }) {
+  const { t } = useTranslation();
+
   const { journals } = props;
   return (
     <table className="table is-hoverable is-narrow is-fullwidth is-striped">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Eröffnet</th>
-          <th>Geschlossen</th>
-          <th>Optionen</th>
+          <th>{t('name')}</th>
+          <th>{t('createdAt')}</th>
+          <th>{t('closedAt')}</th>
+          <th>{t('options')}</th>
         </tr>
       </thead>
       <tbody>
@@ -134,6 +138,8 @@ const CLOSE_JOURNAL = gql`
 function OptionButtons(props: { journal: Journal }) {
   const { incidentId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   const [closeJournal] = useMutation(CLOSE_JOURNAL, {
     refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }],
   });
@@ -141,23 +147,24 @@ function OptionButtons(props: { journal: Journal }) {
   let closeButtonClassNames = classNames({
     button: true,
     "is-light": true,
+    "is-capitalized": true,
     "is-danger": props.journal.closedAt === null,
     "is-info": props.journal.closedAt !== null,
   });
 
   return (
     <div className="buttons are-small">
-      <button className="button is-light is-link" onClick={() => navigate(`../${props.journal.id}/edit`)}>
+      <button className="button is-light is-link is-capitalized" onClick={() => navigate(`../${props.journal.id}/edit`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faEdit} />
         </span>
-        <span>Schreiben</span>
+        <span>{t('write')}</span>
       </button>
-      <button className="button is-light is-success" onClick={() => navigate(`../${props.journal.id}`)}>
+      <button className="button is-light is-success is-capitalized" onClick={() => navigate(`../${props.journal.id}`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faChartSimple} />
         </span>
-        <span>Feed</span>
+        <span>{t('feed')}</span>
       </button>
       {props.journal.closedAt === null ? (
         <button
@@ -174,7 +181,7 @@ function OptionButtons(props: { journal: Journal }) {
           <span className="icon">
             <FontAwesomeIcon icon={faFolderClosed} />
           </span>
-          <span>Beenden</span>
+          <span>{t('close')}</span>
         </button>
       ) : (
         <button
@@ -188,7 +195,7 @@ function OptionButtons(props: { journal: Journal }) {
           <span className="icon">
             <FontAwesomeIcon icon={faFolderOpen} />
           </span>
-          <span>Öffnen</span>
+          <span>{t('open')}</span>
         </button>
       )}
     </div>
