@@ -31,7 +31,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   return (
     <nav className="navbar is-fixed-top is-hidden-print">
       <div className="navbar-brand">
-        <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
+        <NavLink to="/" className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}>
           <figure className="image is-32x32">
             <img src={logo} alt="Logo" className="is-rounded" />
           </figure>
@@ -51,7 +51,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       <div className={navbarMenuClass}>
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
-            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
+            <NavLink className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")} to="/incident/list">
               <span className="icon-text">
                 <span className="icon">
                   <FontAwesomeIcon icon={faExplosion} />
