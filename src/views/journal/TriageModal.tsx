@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { JournalMessage, Spinner } from "components";
 import { union, reject } from "lodash";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
@@ -54,6 +55,8 @@ function Triage(props: {
 }) {
   const { message, setMessage } = props;
   const { journalId } = useParams();
+  const { t } = useTranslation();
+
   const [loadMessage, { loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
     GET_MESSAGE_FOR_TRIAGE,
     {
@@ -71,7 +74,7 @@ function Triage(props: {
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
     SAVE_MESSAGE_TRIAGE,
     {
-      onCompleted(data) {},
+      onCompleted(data) { },
       refetchQueries: [
         // { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
         { query: GET_MESSAGES, variables: { journalId: journalId } },
@@ -127,7 +130,7 @@ function Triage(props: {
         <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title is-size-2">Triage der Nachricht</p>
+            <p className="modal-card-title is-size-2 is-capitalized">{t('messageTriageTitle')}</p>
             <button className="delete" aria-label="close" onClick={() => setMessage(undefined)}></button>
           </header>
           <section className="modal-card-body">
@@ -157,7 +160,7 @@ function Triage(props: {
                 <div className="block">
                   <div className="columns">
                     <div className="column">
-                      <h3 className="title is-size-4">Meldefluss</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('messageFlow')}</h3>
                       <div className="field is-grouped is-grouped-multiline">
                         {data?.messages_by_pk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
@@ -186,7 +189,7 @@ function Triage(props: {
                       </div>
                     </div>
                     <div className="column">
-                      <h3 className="title is-size-4">Prorität zuweisen</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('assignPriority')}</h3>
                       <div className="select is-rounded is-small">
                         <select
                           defaultValue={message.priority.name}
@@ -197,13 +200,13 @@ function Triage(props: {
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option key={prio}>{prio}</option>
+                            <option key={prio} label={t([`priority.${prio}`, 'priority.normal'])}>{prio}</option>
                           ))}
                         </select>
                       </div>
                     </div>
                     <div className="column">
-                      <h3 className="title is-size-4">Pendenz erstellen</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('createNewTask')}</h3>
                       <TaskNew />
                     </div>
                   </div>
@@ -214,20 +217,20 @@ function Triage(props: {
           <footer className="modal-card-foot">
             <div className="buttons are-normal">
               <button
-                className="button is-rounded is-primary"
+                className="button is-rounded is-primary is-capitalized"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
                 }}
               >
-                Triagieren
+                {t('saveTriage')}
               </button>
               <button
-                className="button is-rounded"
+                className="button is-rounded is-capitalized"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
                 }}
               >
-                Mehr Informationen benötigt
+                {t('triage.moreinfo')}
               </button>
             </div>
           </footer>

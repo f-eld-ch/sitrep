@@ -15,6 +15,7 @@ import {
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
 
 export const GET_INCIDENTS = gql`
   query FetchIncidents {
@@ -36,6 +37,7 @@ export const GET_INCIDENTS = gql`
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { loading, error, data } = useQuery<IncidentListData>(GET_INCIDENTS);
 
@@ -44,16 +46,16 @@ function List() {
 
   return (
     <div>
-      <h3 className="title is-size-3">Ereignisse</h3>
+      <h3 className="title is-size-3 is-capitalized">{t('incidents')}</h3>
       <div className="buttons">
         <button
-          className="button is-success is-small is-responsive is-rounded is-light"
+          className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
           onClick={() => navigate("../new")}
         >
           <span className="icon is-small">
             <FontAwesomeIcon icon={faPlusCircle} />
           </span>
-          <span>Erstellen</span>
+          <span>{t('create')}</span>
         </button>
         <button
           className="button is-primary is-small is-responsive is-rounded is-light"
@@ -62,7 +64,7 @@ function List() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
           </span>
-          <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
+          <span>{filterClosed ? t('showClosed') : t('hideClosed')}</span>
         </button>
         <IncidentTable
           incidents={(data && data.incidents.filter((incident) => !filterClosed || incident.closedAt === null)) || []}
@@ -74,15 +76,17 @@ function List() {
 
 function IncidentTable(props: { incidents: Incident[] }) {
   const { incidents } = props;
+  const { t } = useTranslation();
+
   return (
     <table className="table is-hoverable is-fullwidth is-striped">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Ort</th>
-          <th>Eröffnet</th>
-          <th>Geschlossen</th>
-          <th>Optionen</th>
+          <th className="is-capitalized">{t('name')}</th>
+          <th className="is-capitalized">{t('location')}</th>
+          <th className="is-capitalized">{t('createdAt')}</th>
+          <th className="is-capitalized">{t('closedAt')}</th>
+          <th className="is-capitalized">{t('options')}</th>
         </tr>
       </thead>
       <tbody>
@@ -122,6 +126,7 @@ interface IOptionProps {
 
 function Option(props: IOptionProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [closeIncident] = useMutation(CLOSE_INCIDENT, {
     refetchQueries: [{ query: GET_INCIDENTS }, "FetchIncidents"],
@@ -132,21 +137,22 @@ function Option(props: IOptionProps) {
     "is-light": true,
     "is-danger": props.incident.closedAt === null,
     "is-info": props.incident.closedAt !== null,
+    "is-capitalized": true
   });
 
   return (
     <div className="buttons are-small">
-      <button className="button is-light is-success" onClick={() => navigate(`../${props.incident.id}/journal/view`)}>
+      <button className="button is-light is-success is-capitalized" onClick={() => navigate(`../${props.incident.id}/journal/view`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faArrowRightFromBracket} />
         </span>
-        <span>Eintreten</span>
+        <span>{t('enter')}</span>
       </button>
-      <button className="button is-light is-warning" onClick={() => navigate(`../${props.incident.id}/edit`)}>
+      <button className="button is-light is-warning is-capitalized" onClick={() => navigate(`../${props.incident.id}/edit`)}>
         <span className="icon">
           <FontAwesomeIcon icon={faEdit} />
         </span>
-        <span>Bearbeiten</span>
+        <span>{t('edit')}</span>
       </button>
       {props.incident.closedAt === null ? (
         <button
@@ -163,7 +169,7 @@ function Option(props: IOptionProps) {
           <span className="icon">
             <FontAwesomeIcon icon={faFolderClosed} />
           </span>
-          <span>Beenden</span>
+          <span>{t('close')}</span>
         </button>
       ) : (
         <button
@@ -177,7 +183,7 @@ function Option(props: IOptionProps) {
           <span className="icon">
             <FontAwesomeIcon icon={faFolderOpen} />
           </span>
-          <span>Öffnen</span>
+          <span>{t('open')}</span>
         </button>
       )}
     </div>

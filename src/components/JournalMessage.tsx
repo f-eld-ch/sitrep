@@ -11,6 +11,7 @@ import remarkable from "../utils/remarkable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { Message as MessageType } from "../types";
+import { useTranslation } from "react-i18next";
 
 export interface MessageProps {
   id: string | undefined;
@@ -45,6 +46,8 @@ function Message({
   setTriageMessage,
   origMessage,
 }: MessageProps) {
+  const { t } = useTranslation();
+
   let messageClassNames = classNames({
     message: true,
     "mb-2": true,
@@ -69,34 +72,34 @@ function Message({
             <nav className="level is-block">
               <div className="level-item has-text-centered">
                 <div className="mb-2">
-                  <p className="heading is-size-7">Sender</p>
+                  <p className="heading is-size-7">{t('message.sender')}</p>
                   <p className="subtitle is-size-7">{sender}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered">
                 <div className="mb-2">
-                  <p className="heading is-size-7">Emfänger</p>
+                  <p className="heading is-size-7">{t('message.receiver')}</p>
                   <p className="subtitle is-size-7">{receiver}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered">
                 <div className="mb-2">
-                  <p className="heading is-size-7">Zeit</p>
+                  <p className="heading is-size-7">{t('message.time')}</p>
                   <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
                 </div>
               </div>
               {triage !== TriageStatus.Pending && triage !== TriageStatus.Reset ? (
                 <div className="level-item has-text-centered">
                   <div className="">
-                    <p className="heading is-size-7">Prio</p>
+                    <p className="heading is-size-7">{t('message.priority')}</p>
                     <p className="subtitle is-size-7">{priority}</p>
                   </div>
                 </div>
               ) : (
                 <div className="level-item has-text-centered">
                   <div className="">
-                    <p className="heading is-size-7">Triage</p>
-                    <p className="subtitle is-size-7">notwendig</p>
+                    <p className="heading is-size-7">{t('message.triage')}</p>
+                    <p className="subtitle is-size-7">{t('triage.pending')}</p>
                   </div>
                 </div>
               )}
@@ -125,7 +128,7 @@ function Message({
           </div>
         </div>
         {showControls === true && id !== undefined ? (
-          <div className="tabs is-small is-right">
+          <div className="tabs is-small is-right is-capitalized">
             <ul>
               {setTriageMessage && origMessage ? (
                 <li>
@@ -133,7 +136,7 @@ function Message({
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faArrowsToEye} />
                     </span>
-                    <span>Triagieren</span>
+                    <span>{t('saveTriage')}</span>
                   </a>
                 </li>
               ) : (
@@ -144,7 +147,7 @@ function Message({
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faSquareCheck} />
                   </span>
-                  <span>Pendenz erfassen</span>
+                  <span>{t('createNewTask')}</span>
                 </a>
               </li>
               {setEditorMessage && triage !== TriageStatus.Triaged ? (
@@ -153,7 +156,7 @@ function Message({
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faEdit} />
                     </span>
-                    <span>Bearbeiten</span>
+                    <span>{t('edit')}</span>
                   </a>
                 </li>
               ) : (
