@@ -14,6 +14,11 @@
     "edit": "edit",
     "editIncident": "edit incident",
     "editor": "editor",
+    "email": {
+        "receiver": "Email recipient",
+        "sender": "Email sender"
+    },
+    "emailAddress": "E-mail address",
     "enter": "enter",
     "feed": "Feed",
     "hideClosed": "hide closed",
@@ -41,11 +46,16 @@
     "open": "open",
     "options": "options",
     "overview": "overview",
+    "phone": {
+        "sender": "caller"
+    },
+    "phoneNumber": "phone number",
     "preview": "preview",
     "priority": {
         "high": "important",
         "normal": "normal"
     },
+    "radioChannel": "channel",
     "requests": "requests",
     "requestsNeeds": "needs / requests",
     "resources": "resources",

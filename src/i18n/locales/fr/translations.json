@@ -14,6 +14,11 @@
     "edit": "éditer",
     "editIncident": "modifier l'incident",
     "editor": "éditeur",
+    "email": {
+        "receiver": "Destinataire du courriel",
+        "sender": "expéditeur de l'e-mail"
+    },
+    "emailAddress": "Adresse e-mail",
     "enter": "entrer",
     "feed": "Feed",
     "hideClosed": "masquer fermé",
@@ -41,11 +46,16 @@
     "open": "ouvert",
     "options": "options",
     "overview": "aperçu",
+    "phone": {
+        "sender": "votre interlocuteur"
+    },
+    "phoneNumber": "numéro de téléphone",
     "preview": "aperçu",
     "priority": {
         "high": "important",
         "normal": "ordinaire"
     },
+    "radioChannel": "canaliser",
     "requests": "demandes",
     "requestsNeeds": "besoins / demandes",
     "resources": "ressources",
