@@ -16,7 +16,7 @@ import { default as JournalMessage } from "./Message";
 
 function Triage(props: {
   message: Message | undefined;
-  setMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
+  setMessage: (message: Message | undefined) => void;
 }) {
   const { message, setMessage } = props;
   const { journalId } = useParams();

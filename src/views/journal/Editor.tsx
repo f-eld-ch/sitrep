@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useReducer, useState } from "react";
 
 import { useMutation } from "@apollo/client";
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
@@ -12,22 +12,135 @@ import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
 
+type State = {
+  sender: string;
+  receiver: string;
+  content: string;
+  time: Date | undefined
+  messageToEdit: Message | undefined
+  messageToTriage: Message | undefined
+}
+
+type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; }
+type Dispatch = (action: Action) => void
+
+
+const EditorContext = React.createContext<
+  { state: State; dispatch: Dispatch } | undefined
+>(undefined)
+
 function Editor() {
-  const [messageToEdit, setMessageToEdit] = useState<Message>();
-  const [messageToTriage, setMessageToTriage] = useState<Message>();
+  const { journalId } = useParams();
+  const [insertMessage, { error }] = useMutation(InsertMessage, {
+    onCompleted(data) {
+      // reset the form values
+      dispatch({ type: 'clear' })
+    },
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+  });
+
+  const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
+    onCompleted(data) {
+      // reset the form values
+      dispatch({ type: 'clear' })
+    },
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+  });
+
+  const editorReducer = (state: State, action: Action): State => {
+    switch (action.type) {
+      case 'save': {
+        if (state.messageToEdit?.id) {
+          updateMessage({
+            variables: {
+              messageId: state.messageToEdit.id,
+              time: state.time,
+              journalId: journalId,
+              content: state.content,
+              sender: state.sender,
+              receiver: state.receiver,
+            },
+          });
+        } else {
+          insertMessage({
+            variables: {
+              time: state.time || new Date(),
+              journalId: journalId,
+              content: state.content,
+              sender: state.sender,
+              receiver: state.receiver,
+            },
+          });
+        }
+        return Object.assign(state, {})
+      }
+      case 'set_sender': {
+        return Object.assign({}, state, { sender: action.sender })
+      }
+      case 'set_receiver': {
+        return Object.assign({}, state, { receiver: action.receiver })
+      }
+      case 'set_content': {
+        return Object.assign({}, state, { content: action.content })
+      }
+      case 'set_time': {
+        return Object.assign({}, state, { time: action.time })
+      }
+      case 'clear': {
+        return {
+          messageToTriage: undefined,
+          messageToEdit: undefined,
+          sender: "",
+          receiver: "",
+          time: undefined,
+          content: "",
+        }
+      }
+      case 'set_edit_message': {
+        return Object.assign({}, state, {
+          messageToEdit: action.message,
+          sender: action.message?.sender,
+          receiver: action.message?.receiver,
+          time: action.message?.time,
+          content: action.message?.content
+        })
+      }
+      case 'set_triage_message': {
+        return Object.assign({}, state, {
+          messageToTriage: action.message,
+        })
+      }
+      default: {
+        throw new Error(`Unhandled action type: ${action}`)
+      }
+    }
+  }
+
+  const [state, dispatch] = useReducer(editorReducer, { sender: "", receiver: "", time: undefined, content: "", messageToEdit: undefined, messageToTriage: undefined })
+
+
   return (
-    <div>
-      <div className="columns">
-        <div className="column is-half">
-          <h3 className="title is-3 is-capitalized">{t('editor')}</h3>
-          <InputBox messageToEdit={messageToEdit} setEditorMessage={setMessageToEdit} />
+    <EditorContext.Provider value={{ state, dispatch }}>
+      <div>
+        <div className="columns">
+          <div className="column is-half">
+            <h3 className="title is-3 is-capitalized">{t('editor')}</h3>
+            {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
+            {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
+            <InputBox />
+          </div>
+          <div className="column">
+            <List
+              showControls={true}
+              setEditorMessage={(message: Message | undefined) => dispatch({ type: "set_edit_message", message: message })}
+              setTriageMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })}
+            />
+
+          </div>
+          <TriageModal message={state.messageToTriage} setMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })} />
         </div>
-        <div className="column">
-          <List showControls={true} setEditorMessage={setMessageToEdit} setTriageMessage={setMessageToTriage} />
-        </div>
-        <TriageModal message={messageToTriage} setMessage={setMessageToTriage} />
       </div>
-    </div>
+    </EditorContext.Provider >
   );
 }
 
@@ -37,17 +150,14 @@ enum Medium {
   Email = "E-Mail",
 }
 
-function InputBox(props: {
-  messageToEdit: Message | undefined;
-  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
-}) {
+function InputBox() {
   const { incidentId, journalId } = useParams();
-  const { messageToEdit, setEditorMessage } = props;
+
   const [medium, setMedium] = useState(Medium.Radio);
 
   const renderFormContent = () => {
     if (medium === Medium.Radio) {
-      return <RadioInput messageToEdit={messageToEdit} setEditorMessage={setEditorMessage} />;
+      return <RadioInput />;
     }
     if (medium === Medium.Phone) {
       return <PhoneInput />;
@@ -57,7 +167,7 @@ function InputBox(props: {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     let selectMedium = e.currentTarget.value;
     if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone) {
@@ -76,7 +186,7 @@ function InputBox(props: {
           <div className="field is-narrow">
             <div className="control">
               <div className="select is-fullwidth">
-                <select value={medium} onChange={handleChange}>
+                <select value={medium} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
                     <option key={medium}>{medium}</option>
                   ))}
@@ -108,78 +218,16 @@ function EmailInput() {
 }
 
 
-function RadioInput(props: {
-  messageToEdit: Message | undefined;
-  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
-}) {
-  const { journalId } = useParams();
-  const { messageToEdit, setEditorMessage } = props;
-  const [sender, setSender] = useState("");
-  const [receiver, setReceiver] = useState("");
-  const [content, setContent] = useState("");
-  const [time, setTime] = useState<Date | undefined>(undefined);
+function RadioInput() {
 
-  useEffect(() => {
-    if (messageToEdit !== undefined) {
-      setSender(messageToEdit.sender);
-      setReceiver(messageToEdit.receiver);
-      setContent(messageToEdit.content);
-      setTime(dayjs(messageToEdit.time).toDate());
-    }
-  }, [messageToEdit]);
+  const value = useContext(EditorContext);
 
-  const [insertMessage, { error }] = useMutation(InsertMessage, {
-    onCompleted(data) {
-      // reset the form values
-      setSender("");
-      setReceiver("");
-      setContent("");
-      setTime(undefined);
-    },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
-  });
+  if (!value) return null;
 
-  const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
-    onCompleted(data) {
-      // reset the form values
-      setEditorMessage(undefined);
-      setSender("");
-      setReceiver("");
-      setContent("");
-      setTime(undefined);
-    },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
-  });
-
-  const handleSave = () => {
-    if (messageToEdit?.id) {
-      updateMessage({
-        variables: {
-          messageId: messageToEdit.id,
-          time: time || dayjs(messageToEdit.time).toDate(),
-          journalId: journalId,
-          content: content || messageToEdit.content,
-          sender: sender || messageToEdit.sender,
-          receiver: receiver || messageToEdit.receiver,
-        },
-      });
-    } else {
-      insertMessage({
-        variables: {
-          time: time || new Date(),
-          journalId: journalId,
-          content: content,
-          sender: sender,
-          receiver: receiver,
-        },
-      });
-    }
-  };
+  const { state, dispatch } = value;
 
   return (
     <div>
-      {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
-      {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label className="label is-capitalized">{t('message.receiver')}</label>
@@ -190,12 +238,12 @@ function RadioInput(props: {
               <input
                 className="input"
                 type="text"
-                value={receiver}
+                value={state.receiver}
                 autoComplete="on"
                 placeholder={t('name')}
                 onChange={(e) => {
                   e.preventDefault();
-                  setReceiver(e.currentTarget.value);
+                  dispatch({ type: 'set_receiver', receiver: e.currentTarget.value });
                 }}
               />
               <span className="icon is-small is-left">
@@ -215,12 +263,12 @@ function RadioInput(props: {
               <input
                 className="input"
                 type="text"
-                value={sender}
+                value={state.sender}
                 autoComplete="on"
                 placeholder={t('name')}
                 onChange={(e) => {
                   e.preventDefault();
-                  setSender(e.currentTarget.value);
+                  dispatch({ type: 'set_sender', sender: e.currentTarget.value });
                 }}
               />
               <span className="icon is-small is-left">
@@ -239,12 +287,12 @@ function RadioInput(props: {
             <p className="control is-expanded has-icons-left">
               <input
                 className="input"
-                value={dayjs(time).format("YYYY-MM-DDTHH:mm")}
+                value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
                 type="datetime-local"
                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                 onChange={(e) => {
                   e.preventDefault();
-                  e.currentTarget.value && setTime(dayjs(e.currentTarget.value).toDate());
+                  e.currentTarget.value && dispatch({ type: 'set_time', time: dayjs(e.currentTarget.value).toDate() });
                 }}
               />
               <span className="icon is-small is-left">
@@ -266,10 +314,10 @@ function RadioInput(props: {
                 autoFocus={true}
                 placeholder={t('message.contentHelp')}
                 rows={10}
-                value={content}
+                value={state.content}
                 onChange={(e) => {
                   e.preventDefault();
-                  setContent(e.currentTarget.value);
+                  dispatch({ type: 'set_content', content: e.currentTarget.value });
                 }}
               />
             </div>
@@ -281,24 +329,24 @@ function RadioInput(props: {
         <div className="field-body">
           <div className="field">
             <div className="control">
-              <button className="button is-primary is-rounded is-capitalized" onClick={() => handleSave()}>
+              <button className="button is-primary is-rounded is-capitalized" onClick={() => dispatch({ type: 'save' })}>
                 {t('save')}
               </button>
             </div>
           </div>
         </div>
       </div>
-      {content !== "" || sender !== "" || receiver !== "" ? (
+      {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
         <>
           <div className="title is-size-4 is-capitalized">{t('preview')}</div>
           <JournalMessage
             id={undefined}
-            message={content}
-            receiver={receiver}
-            sender={sender}
-            timeDate={time || new Date()}
-            priority={messageToEdit?.priority.name || PriorityStatus.Normal}
-            triage={messageToEdit?.triage.name || TriageStatus.Pending}
+            message={state.content}
+            receiver={state.receiver}
+            sender={state.sender}
+            timeDate={state.time || new Date()}
+            priority={state.messageToEdit?.priority.name || PriorityStatus.Normal}
+            triage={state.messageToEdit?.triage.name || TriageStatus.Pending}
             showControls={false}
             origMessage={undefined}
             setEditorMessage={undefined}
