@@ -3,14 +3,14 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { IncidentDetailsData, IncidentDetailsVars } from "types";
-import { GET_INCIDENT_DETAILS } from "./Dashboard";
+import { GetIncidentDetails } from "./graphql";
 import { IncidentForm } from "./New";
 
 function Editor() {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
+  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 

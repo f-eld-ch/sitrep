@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 
+import { useMutation } from "@apollo/client";
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import List, { GET_MESSAGES } from "./List";
-
-import { gql, useMutation } from "@apollo/client";
-import JournalMessage from "components/JournalMessage";
 import dayjs from "dayjs";
 import { t } from "i18next";
 import { Link, useParams } from "react-router-dom";
 import { Message, PriorityStatus, TriageStatus } from "types";
+import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
+import { default as List } from "./List";
+import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
 
 function Editor() {
@@ -107,62 +107,6 @@ function EmailInput() {
   );
 }
 
-const INSERT_MESSAGE = gql`
-  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String) {
-    insert_messages_one(
-      object: { content: $content, journalId: $journalId, receiver: $receiver, sender: $sender, time: $time }
-    ) {
-      id
-      createdAt
-      content
-      receiver
-      sender
-      time
-      updatedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-      divisions {
-        division {
-          name
-        }
-      }
-      deletedAt
-    }
-  }
-`;
-
-const UPDATE_MESSAGE = gql`
-  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz) {
-    update_messages_by_pk(
-      pk_columns: { id: $messageId }
-      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time }
-    ) {
-      id
-      createdAt
-      content
-      receiver
-      sender
-      time
-      updatedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-      divisions {
-        division {
-          name
-        }
-      }
-      deletedAt
-    }
-  }
-`;
 
 function RadioInput(props: {
   messageToEdit: Message | undefined;
@@ -184,7 +128,7 @@ function RadioInput(props: {
     }
   }, [messageToEdit]);
 
-  const [insertMessage, { error }] = useMutation(INSERT_MESSAGE, {
+  const [insertMessage, { error }] = useMutation(InsertMessage, {
     onCompleted(data) {
       // reset the form values
       setSender("");
@@ -192,10 +136,10 @@ function RadioInput(props: {
       setContent("");
       setTime(undefined);
     },
-    refetchQueries: [{ query: GET_MESSAGES, variables: { journalId: journalId } }],
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
-  const [updateMessage, { error: errorUpdate }] = useMutation(UPDATE_MESSAGE, {
+  const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
     onCompleted(data) {
       // reset the form values
       setEditorMessage(undefined);
@@ -204,7 +148,7 @@ function RadioInput(props: {
       setContent("");
       setTime(undefined);
     },
-    refetchQueries: [{ query: GET_MESSAGES, variables: { journalId: journalId } }],
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
   const handleSave = () => {

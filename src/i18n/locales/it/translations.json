@@ -35,6 +35,7 @@
         "triage": "stato di triage"
     },
     "messageFlow": "flusso di segnalazione",
+    "messageSheet": "Modulo di registrazione",
     "messageTriageTitle": "valuta il messaggio",
     "name": "nome",
     "open": "aprire",

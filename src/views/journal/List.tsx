@@ -1,53 +1,16 @@
 import React, { useState } from "react";
 
-import { gql, useQuery } from "@apollo/client";
-import { JournalMessage, Spinner } from "components";
-import { useParams } from "react-router-dom";
-
+import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
-import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
+import { useParams } from "react-router-dom";
+import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import { GetJournalMessages } from "./graphql";
+import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
 
-export const GET_MESSAGES = gql`
-  query GetMessages($journalId: uuid!) {
-    journals_by_pk(id: $journalId) {
-      incident {
-        id
-        divisions {
-          id
-          name
-          description
-        }
-      }
-    }
-    messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _is_null: true } }, order_by: { time: desc }) {
-      id
-      content
-      sender
-      receiver
-      time
-      createdAt
-      updatedAt
-      deletedAt
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
-      triage {
-        name
-        name
-      }
-      priority {
-        name
-      }
-    }
-  }
-`;
 
 function List(props: {
   showControls: boolean;
@@ -61,7 +24,7 @@ function List(props: {
   const [assignmentFilter, setAssignmentFilter] = useState("all");
 
 
-  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GET_MESSAGES, {
+  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
     pollInterval: 10000,
   });

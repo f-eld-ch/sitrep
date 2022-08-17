@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import classNames from "classnames";
-import { JournalMessage, Spinner } from "components";
+import { Spinner } from "components";
 import { reject, union } from "lodash";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,44 +10,9 @@ import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { NewForm as TaskNew } from "../tasks";
-import { GET_MESSAGES } from "./List";
+import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
+import { default as JournalMessage } from "./Message";
 
-const GET_MESSAGE_FOR_TRIAGE = gql`
-  query GetMessageForTriage($messageId: uuid!) {
-    messages_by_pk(id: $messageId) {
-      id
-      content
-      sender
-      receiver
-      time
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
-      createdAt
-      updatedAt
-      deletedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-      journal {
-        incident {
-          divisions {
-            id
-            name
-            description
-          }
-        }
-      }
-    }
-  }
-`;
 
 function Triage(props: {
   message: Message | undefined;
@@ -58,7 +23,7 @@ function Triage(props: {
   const { t } = useTranslation();
 
   const [loadMessage, { loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
-    GET_MESSAGE_FOR_TRIAGE,
+    GetMessageForTriage,
     {
       variables: { messageId: props.message?.id },
       fetchPolicy: "cache-and-network",
@@ -72,12 +37,11 @@ function Triage(props: {
   );
 
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
-    SAVE_MESSAGE_TRIAGE,
+    SaveMessageTriage,
     {
       onCompleted(data) { },
       refetchQueries: [
-        // { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
-        { query: GET_MESSAGES, variables: { journalId: journalId } },
+        { query: GetJournalMessages, variables: { journalId: journalId } },
       ],
     }
   );
@@ -239,35 +203,5 @@ function Triage(props: {
     </>
   );
 }
-
-const SAVE_MESSAGE_TRIAGE = gql`
-  mutation SaveMessageTriage(
-    $messageId: uuid!
-    $priority: priority_status_enum
-    $triage: triage_status_enum
-    $messageDivisions: [message_division_insert_input!]!
-  ) {
-    delete_message_division(where: { messageId: { _eq: $messageId } }) {
-      affected_rows
-    }
-    insert_message_division(objects: $messageDivisions) {
-      affected_rows
-    }
-    update_messages_by_pk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
-      id
-      divisions {
-        division {
-          name
-        }
-      }
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-    }
-  }
-`;
 
 export default Triage;

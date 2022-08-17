@@ -1,27 +1,15 @@
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { faBars, faExplosion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
 import { NavLink, useParams } from "react-router-dom";
 import { IncidentDetailsData, IncidentDetailsVars } from "types";
-import { GET_INCIDENT_DETAILS } from "views/incident/Dashboard";
-
-export const GET_JOURNAL_DETAILS = gql`
-  query GetJournalDetails($journalId: uuid!) {
-    journals_by_pk(id: $incidentId) {
-      id
-      name
-      createdAt
-      closedAt
-      updatedAt
-    }
-  }
-`;
+import { GetIncidentDetails } from "views/incident/graphql";
 
 export function Breadcrumb() {
   const { incidentId, journalId } = useParams();
 
-  const { data: incidentData, refetch } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
+  const { data: incidentData, refetch } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 

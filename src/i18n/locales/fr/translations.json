@@ -35,6 +35,7 @@
         "triage": "statut de triage"
     },
     "messageFlow": "flux de rapports",
+    "messageSheet": "formulaire d'inscription",
     "messageTriageTitle": "trier le message",
     "name": "nom",
     "open": "ouvert",
