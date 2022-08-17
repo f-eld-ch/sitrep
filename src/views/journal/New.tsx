@@ -83,7 +83,7 @@ function NewForm() {
       </div>
       <div className="field">
         <p className="control">
-          <button className="button is-primary is-rounded" onClick={handleSave}>
+          <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
             {t('create')}
           </button>
         </p>

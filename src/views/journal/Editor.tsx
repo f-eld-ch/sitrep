@@ -337,7 +337,7 @@ function RadioInput(props: {
         <div className="field-body">
           <div className="field">
             <div className="control">
-              <button className="button is-primary is-rounded" onClick={() => handleSave()}>
+              <button className="button is-primary is-rounded is-capitalized" onClick={() => handleSave()}>
                 {t('save')}
               </button>
             </div>
