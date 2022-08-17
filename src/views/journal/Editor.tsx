@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 
-import List, { GET_MESSAGES } from "./List";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import List, { GET_MESSAGES } from "./List";
 
-import { Link, useParams } from "react-router-dom";
-import dayjs from "dayjs";
-import { Message, PriorityStatus, TriageStatus } from "types";
 import { gql, useMutation } from "@apollo/client";
 import JournalMessage from "components/JournalMessage";
-import TriageModal from "./TriageModal";
+import dayjs from "dayjs";
 import { t } from "i18next";
+import { Link, useParams } from "react-router-dom";
+import { Message, PriorityStatus, TriageStatus } from "types";
+import TriageModal from "./TriageModal";
 
 function Editor() {
   const [messageToEdit, setMessageToEdit] = useState<Message>();

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 
+import { gql, useQuery } from "@apollo/client";
 import { JournalMessage, Spinner } from "components";
 import { useParams } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
 
+import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslation } from "react-i18next";
 import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
 import MessageTable from "./Table";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
-import { useTranslation } from "react-i18next";
 
 export const GET_MESSAGES = gql`
   query GetMessages($journalId: uuid!) {

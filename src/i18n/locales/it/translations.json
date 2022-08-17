@@ -7,6 +7,7 @@
     "create": "creare",
     "createIncident": "crea nuovo incidente",
     "createJournal": "crea un nuovo diario",
+    "createNewImmediateMeasures": "creare nuove misure immediate",
     "createNewTask": "crea una nuova attività",
     "createdAt": "aperto",
     "divisions": "dipartimenti",
@@ -17,6 +18,7 @@
     "feed": "Feed",
     "hideClosed": "nascondi chiuso",
     "hotline": "editore della linea diretta",
+    "immediateMeasures": "misure immediate",
     "incident": "incidente",
     "incidents": "incidenti",
     "journal": "diario delle operazioni",
@@ -43,7 +45,8 @@
         "high": "importante",
         "normal": "normale"
     },
-    "requestsNeeds": "richieste / bisogni",
+    "requests": "richieste",
+    "requestsNeeds": "bisogni/richieste",
     "resources": "risorse",
     "save": "salvare",
     "saveTriage": "triage",
@@ -52,6 +55,7 @@
     "state": "stava in piedi",
     "tasks": "faccende in sospeso",
     "tasksOrders": "Articoli / ordini in sospeso",
+    "tasksRequestOrders": "Bisogni / In attesa / Richieste",
     "triage": {
         "done": "triageto",
         "moreinfo": "più informazioni necessarie",

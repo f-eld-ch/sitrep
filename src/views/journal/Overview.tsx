@@ -1,13 +1,7 @@
-import React, { useState } from "react";
-import { useQuery, gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import dayjs from "dayjs";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
-import de from "dayjs/locale/de";
-import { Spinner } from "components";
-import { Journal, JournalListData, JournalListVars } from "types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartSimple,
   faEdit,
@@ -15,10 +9,16 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
-  faPlusCircle,
+  faPlusCircle
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Spinner } from "components";
+import dayjs from "dayjs";
+import de from "dayjs/locale/de";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import { useTranslation } from "react-i18next";
+import { Journal, JournalListData, JournalListVars } from "types";
 
 dayjs.locale(de);
 dayjs.extend(LocalizedFormat);

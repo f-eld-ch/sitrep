@@ -7,6 +7,7 @@
     "create": "créer",
     "createIncident": "créer un nouvel incident",
     "createJournal": "créer un nouveau journal",
+    "createNewImmediateMeasures": "créer de nouvelles mesures immédiates",
     "createNewTask": "enregistrement en attente",
     "createdAt": "ouvert",
     "divisions": "départements",
@@ -17,6 +18,7 @@
     "feed": "Feed",
     "hideClosed": "masquer fermé",
     "hotline": "Éditeur de la hotline",
+    "immediateMeasures": "mesures immédiates",
     "incident": "incident",
     "incidents": "incidentes",
     "journal": "journal des opérations",
@@ -43,7 +45,8 @@
         "high": "important",
         "normal": "ordinaire"
     },
-    "requestsNeeds": "demandes / besoins",
+    "requests": "demandes",
+    "requestsNeeds": "besoins / demandes",
     "resources": "ressources",
     "save": "saveur",
     "saveTriage": "triage",
@@ -52,6 +55,7 @@
     "state": "était debout",
     "tasks": "affaires en cours",
     "tasksOrders": "Articles / commandes en attente",
+    "tasksRequestOrders": "Besoins / En attente / Demandes",
     "triage": {
         "done": "trié",
         "moreinfo": "besoin de plus d'informations",

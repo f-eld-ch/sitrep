@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 import "./App.scss";
 
+import { List as ImmediateMeasuresList } from "views/immediateMeasures";
 import {
-  List as JournalMessageList,
-  Editor as JournalEditor,
-  HotlineEditor,
-  Overview as JournalOverview,
-  New as JournalNew,
-} from "views/journal";
-import {
-  List as IncidentList,
-  New as IncidentNew,
-  Editor as IncidentEditor,
+  Editor as IncidentEditor, List as IncidentList,
+  New as IncidentNew
 } from "views/incident";
+import {
+  Editor as JournalEditor,
+  HotlineEditor, List as JournalMessageList, New as JournalNew, Overview as JournalOverview
+} from "views/journal";
+import { List as RequestList } from "views/requests";
 import { List as ResourcesList } from "views/resource";
 import { List as TaskList } from "views/tasks";
+
 import { ApolloProvider } from "@apollo/client";
-import { default as client } from "./client";
-import { Layout } from "views/Layout";
-import { UserContext } from "utils";
-import { UserState } from "types";
 import { useTranslation } from "react-i18next";
+import { UserState } from "types";
+import { UserContext } from "utils";
+import { Layout } from "views/Layout";
+import { default as client } from "./client";
 
 function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
@@ -148,6 +147,22 @@ function App() {
                   element={
                     <Layout>
                       <TaskList />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="requests"
+                  element={
+                    <Layout>
+                      <RequestList />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="soma"
+                  element={
+                    <Layout>
+                      <ImmediateMeasuresList />
                     </Layout>
                   }
                 />

@@ -32,7 +32,7 @@ export interface IncidentDetailsVars {
 
 
 export interface InsertIncidentData {
-    insert_incidents_one: Incident
+  insert_incidents_one: Incident
 }
 
 export interface InsertIncidentVars {

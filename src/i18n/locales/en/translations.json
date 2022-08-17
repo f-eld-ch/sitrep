@@ -7,6 +7,7 @@
     "create": "create",
     "createIncident": "create new incident",
     "createJournal": "create message log",
+    "createNewImmediateMeasures": "create new immediate measures",
     "createNewTask": "create new task",
     "createdAt": "opened",
     "divisions": "divisions",
@@ -17,6 +18,7 @@
     "feed": "Feed",
     "hideClosed": "hide closed",
     "hotline": "call log editor",
+    "immediateMeasures": "immediate measures",
     "incident": "incidents",
     "incidents": "incidents",
     "journal": "operation journal",
@@ -43,7 +45,8 @@
         "high": "important",
         "normal": "normal"
     },
-    "requestsNeeds": "requests / needs",
+    "requests": "requests",
+    "requestsNeeds": "needs / requests",
     "resources": "resources",
     "save": "save",
     "saveTriage": "triage",
@@ -52,6 +55,7 @@
     "state": "state at",
     "tasks": "tasks",
     "tasksOrders": "Pending items / orders",
+    "tasksRequestOrders": "Needs / Pending Actions / Requests",
     "triage": {
         "done": "triaged",
         "moreinfo": "more information needed",
