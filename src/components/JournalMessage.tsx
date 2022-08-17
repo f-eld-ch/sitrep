@@ -1,17 +1,17 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from "react";
-import dayjs from "dayjs";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
-import de from "dayjs/locale/de";
-import relativeTime from "dayjs/plugin/relativeTime";
 import classNames from "classnames";
+import dayjs from "dayjs";
+import de from "dayjs/locale/de";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
+import React from "react";
 
-import { TriageStatus, PriorityStatus } from "types";
-import remarkable from "../utils/remarkable";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
-import { Message as MessageType } from "../types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
+import { PriorityStatus, TriageStatus } from "types";
+import { Message as MessageType } from "../types";
+import remarkable from "../utils/remarkable";
 
 export interface MessageProps {
   id: string | undefined;
@@ -130,6 +130,18 @@ function Message({
         {showControls === true && id !== undefined ? (
           <div className="tabs is-small is-right is-capitalized">
             <ul>
+              {setEditorMessage && triage !== TriageStatus.Triaged ? (
+                <li>
+                  <a onClick={() => setEditorMessage(origMessage)}>
+                    <span className="icon is-small">
+                      <FontAwesomeIcon icon={faEdit} />
+                    </span>
+                    <span>{t('edit')}</span>
+                  </a>
+                </li>
+              ) : (
+                <></>
+              )}
               {setTriageMessage && origMessage ? (
                 <li>
                   <a onClick={() => setTriageMessage(origMessage)}>
@@ -150,18 +162,6 @@ function Message({
                   <span>{t('createNewTask')}</span>
                 </a>
               </li>
-              {setEditorMessage && triage !== TriageStatus.Triaged ? (
-                <li>
-                  <a onClick={() => setEditorMessage(origMessage)}>
-                    <span className="icon is-small">
-                      <FontAwesomeIcon icon={faEdit} />
-                    </span>
-                    <span>{t('edit')}</span>
-                  </a>
-                </li>
-              ) : (
-                <></>
-              )}
             </ul>
           </div>
         ) : (

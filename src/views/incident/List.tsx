@@ -1,10 +1,4 @@
-import React, { useState } from "react";
-import { useQuery, gql, useMutation } from "@apollo/client";
-import { Link, useNavigate } from "react-router-dom";
-import { Spinner } from "components";
-import { Incident, IncidentListData } from "../../types";
-import dayjs from "dayjs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import {
   faArrowRightFromBracket,
   faEdit,
@@ -12,10 +6,16 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
-  faPlusCircle,
+  faPlusCircle
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Spinner } from "components";
+import dayjs from "dayjs";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
+import { Incident, IncidentListData } from "../../types";
 
 export const GET_INCIDENTS = gql`
   query FetchIncidents {

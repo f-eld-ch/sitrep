@@ -4,8 +4,8 @@ import { gql, useMutation } from "@apollo/client";
 import { faClipboard, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { reject, iteratee, unionBy } from "lodash";
-import React, { useState } from "react";
+import { iteratee, reject, unionBy } from "lodash";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Division } from "types";
@@ -14,7 +14,7 @@ import {
   InsertIncidentData,
   InsertIncidentVars,
   UpdateIncidentData,
-  UpdateIncidentVars,
+  UpdateIncidentVars
 } from "types/incident";
 import { GET_INCIDENT_DETAILS } from "./Dashboard";
 import { GET_INCIDENTS } from "./List";

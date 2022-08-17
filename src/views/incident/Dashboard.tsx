@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery, gql } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { Spinner } from "components";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { IncidentDetailsData, IncidentDetailsVars } from "../../types";
 
 function MapFrame() {
