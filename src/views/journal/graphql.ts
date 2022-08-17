@@ -197,7 +197,7 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
     }
   }
 `;
-export const GET_JOURNAL_DETAILS = gql`
+const GET_JOURNAL_DETAILS = gql`
   query GetJournalDetails($journalId: uuid!) {
     journals_by_pk(id: $incidentId) {
       id
