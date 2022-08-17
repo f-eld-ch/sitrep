@@ -19,8 +19,8 @@
     "hotline": "call log editor",
     "incident": "incidents",
     "incidents": "incidents",
-    "journal": "message log",
-    "journalList": "message log list",
+    "journal": "operation journal",
+    "journalList": "operation journal overview",
     "location": "location",
     "logout": "logout",
     "message": {
@@ -43,6 +43,7 @@
         "high": "important",
         "normal": "normal"
     },
+    "requestsNeeds": "requests / needs",
     "resources": "resources",
     "save": "save",
     "saveTriage": "triage",
@@ -50,7 +51,7 @@
     "showClosed": "show closed",
     "state": "state at",
     "tasks": "tasks",
-    "tasksRequests": "tasks / requests / needs",
+    "tasksOrders": "Pending items / orders",
     "triage": {
         "done": "triaged",
         "moreinfo": "more information needed",

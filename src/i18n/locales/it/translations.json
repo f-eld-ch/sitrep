@@ -19,8 +19,8 @@
     "hotline": "editore della linea diretta",
     "incident": "incidente",
     "incidents": "incidenti",
-    "journal": "rivista",
-    "journalList": "elenco dei diari",
+    "journal": "diario delle operazioni",
+    "journalList": "panoramica del diario delle operazioni",
     "location": "posizione",
     "logout": "disconnessione",
     "message": {
@@ -43,6 +43,7 @@
         "high": "importante",
         "normal": "normale"
     },
+    "requestsNeeds": "richieste / bisogni",
     "resources": "risorse",
     "save": "salvare",
     "saveTriage": "triage",
@@ -50,7 +51,7 @@
     "showClosed": "mostra chiusa",
     "state": "stava in piedi",
     "tasks": "faccende in sospeso",
-    "tasksRequests": "punti in sospeso / applicazioni / esigenze",
+    "tasksOrders": "Articoli / ordini in sospeso",
     "triage": {
         "done": "triageto",
         "moreinfo": "più informazioni necessarie",

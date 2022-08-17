@@ -19,8 +19,8 @@
     "hotline": "Hotline Editor",
     "incident": "Ereignis",
     "incidents": "Ereignisse",
-    "journal": "Journal",
-    "journalList": "Journal-Liste",
+    "journal": "Einsatzjournal",
+    "journalList": "Einsatzjournal-Übersicht",
     "location": "Ort",
     "logout": "abmelden",
     "message": {
@@ -43,6 +43,7 @@
         "high": "wichtig",
         "normal": "normal"
     },
+    "requestsNeeds": "Anträge / Bedürfnisse",
     "resources": "Mittel",
     "save": "speichern",
     "saveTriage": "triagieren",
@@ -50,7 +51,7 @@
     "showClosed": "Zeige geschlossene",
     "state": "Stand",
     "tasks": "Pendenzen",
-    "tasksRequests": "Pendenzen / Anträge / Bedürfnisse",
+    "tasksOrders": "Pendenzen / Aufträge",
     "triage": {
         "done": "triagiert",
         "moreinfo": "mehr Informationen benötigt",
