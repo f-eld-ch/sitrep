@@ -1,15 +1,12 @@
 import React, { useContext, useReducer, useState } from "react";
 
 import { useMutation } from "@apollo/client";
-import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import dayjs from "dayjs";
 import { t } from "i18next";
 import { Link, useParams } from "react-router-dom";
-import { Message, PriorityStatus, TriageStatus } from "types";
+import { Message } from "types";
+import { Email, Phone, Radio } from "./EditorForms";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
-import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
 
 type State = {
@@ -19,15 +16,47 @@ type State = {
   time: Date | undefined
   messageToEdit: Message | undefined
   messageToTriage: Message | undefined
+  media?: MediaDetail
 }
 
-type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; }
+type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
+export type PhoneDetail = {
+  type: 'Phone';
+  sender?: string;
+  receiver?: string;
+}
+
+export type EmailDetail = {
+  type: 'Email';
+  sender?: string;
+  receiver?: string;
+}
+
+export type RadioDetail = {
+  type: 'Radio';
+  channel: string;
+}
+
+type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; } | { type: 'set_media_detail', detail: MediaDetail; }
 type Dispatch = (action: Action) => void
 
 
-const EditorContext = React.createContext<
-  { state: State; dispatch: Dispatch } | undefined
->(undefined)
+export const EditorContext = React.createContext<
+  { state: State; dispatch: Dispatch }
+>({ state: initState(), dispatch: (action: Action) => { } })
+
+
+function initState(): State {
+  return {
+    messageToTriage: undefined,
+    messageToEdit: undefined,
+    sender: "",
+    receiver: "",
+    time: undefined,
+    content: "",
+    media: undefined,
+  }
+}
 
 function Editor() {
   const { journalId } = useParams();
@@ -86,6 +115,9 @@ function Editor() {
       case 'set_time': {
         return Object.assign({}, state, { time: action.time })
       }
+      case 'set_media_detail': {
+        return Object.assign({}, state, { mediaDetail: action.detail })
+      }
       case 'clear': {
         return {
           messageToTriage: undefined,
@@ -116,8 +148,7 @@ function Editor() {
     }
   }
 
-  const [state, dispatch] = useReducer(editorReducer, { sender: "", receiver: "", time: undefined, content: "", messageToEdit: undefined, messageToTriage: undefined })
-
+  const [state, dispatch] = useReducer(editorReducer, initState())
 
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
@@ -154,16 +185,17 @@ function InputBox() {
   const { incidentId, journalId } = useParams();
 
   const [medium, setMedium] = useState(Medium.Radio);
+  const { state, dispatch } = useEditorContext();
 
   const renderFormContent = () => {
     if (medium === Medium.Radio) {
-      return <RadioInput />;
+      return <Radio />;
     }
     if (medium === Medium.Phone) {
-      return <PhoneInput />;
+      return <Phone />;
     }
     if (medium === Medium.Email) {
-      return <EmailInput />;
+      return <Email />;
     }
   };
 
@@ -178,13 +210,13 @@ function InputBox() {
   return (
     <div className="box">
       <Link className="delete is-pulled-right is-small mb-2" to={"/incident/" + incidentId + "/journal/" + journalId} />
-      <div className="field is-horizontal">
+      <div className="mt-5 field is-horizontal">
         <div className="field-label is-normal">
           <label className="label">Medium</label>
         </div>
         <div className="field-body">
-          <div className="field is-narrow">
-            <div className="control">
+          <div className="field is-grouped is-grouped-multiline">
+            <p className="control is-narrow">
               <div className="select is-fullwidth">
                 <select value={medium} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
@@ -192,172 +224,33 @@ function InputBox() {
                   ))}
                 </select>
               </div>
-            </div>
+            </p>
+            {medium === Medium.Radio ?
+              <p className="control">
+                <input
+                  className="input"
+                  value={state.media?.type === "Radio" ? state.media?.channel : ""}
+                  type="text"
+                  onChange={(e) => {
+                    e.preventDefault();
+                    dispatch({ type: 'set_media_detail', detail: { type: 'Radio', channel: e.currentTarget.value } });
+                  }}
+                  placeholder={t('radioChannel')}
+                />
+              </p>
+              : <></>}
           </div>
         </div>
       </div>
       {renderFormContent()}
-    </div>
-  );
-}
-
-function PhoneInput() {
-  return (
-    <>
-      <p>Phone Form</p>
-    </>
-  );
-}
-
-function EmailInput() {
-  return (
-    <>
-      <p>Email Input</p>
-    </>
+    </div >
   );
 }
 
 
-function RadioInput() {
-
-  const value = useContext(EditorContext);
-
-  if (!value) return null;
-
-  const { state, dispatch } = value;
-
-  return (
-    <div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('message.receiver')}</label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <p className="control is-expanded has-icons-left">
-              <input
-                className="input"
-                type="text"
-                value={state.receiver}
-                autoComplete="on"
-                placeholder={t('name')}
-                onChange={(e) => {
-                  e.preventDefault();
-                  dispatch({ type: 'set_receiver', receiver: e.currentTarget.value });
-                }}
-              />
-              <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faCircleArrowRight} />
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('message.sender')}</label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <p className="control is-expanded has-icons-left">
-              <input
-                className="input"
-                type="text"
-                value={state.sender}
-                autoComplete="on"
-                placeholder={t('name')}
-                onChange={(e) => {
-                  e.preventDefault();
-                  dispatch({ type: 'set_sender', sender: e.currentTarget.value });
-                }}
-              />
-              <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faCircleArrowLeft} />
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('message.time')}</label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <p className="control is-expanded has-icons-left">
-              <input
-                className="input"
-                value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
-                type="datetime-local"
-                placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
-                onChange={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.value && dispatch({ type: 'set_time', time: dayjs(e.currentTarget.value).toDate() });
-                }}
-              />
-              <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faClock} />
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('message.content')}</label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <div className="control">
-              <textarea
-                className="textarea"
-                autoFocus={true}
-                placeholder={t('message.contentHelp')}
-                rows={10}
-                value={state.content}
-                onChange={(e) => {
-                  e.preventDefault();
-                  dispatch({ type: 'set_content', content: e.currentTarget.value });
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label"></div>
-        <div className="field-body">
-          <div className="field">
-            <div className="control">
-              <button className="button is-primary is-rounded is-capitalized" onClick={() => dispatch({ type: 'save' })}>
-                {t('save')}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
-        <>
-          <div className="title is-size-4 is-capitalized">{t('preview')}</div>
-          <JournalMessage
-            id={undefined}
-            message={state.content}
-            receiver={state.receiver}
-            sender={state.sender}
-            timeDate={state.time || new Date()}
-            priority={state.messageToEdit?.priority.name || PriorityStatus.Normal}
-            triage={state.messageToEdit?.triage.name || TriageStatus.Pending}
-            showControls={false}
-            origMessage={undefined}
-            setEditorMessage={undefined}
-            setTriageMessage={undefined}
-          />
-        </>
-      ) : (
-        <></>
-      )}
-    </div>
-  );
+export function useEditorContext(): { state: State; dispatch: Dispatch } {
+  const context = useContext(EditorContext);
+  return context;
 }
 
 export default Editor;
