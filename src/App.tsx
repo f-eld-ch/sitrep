@@ -5,13 +5,17 @@ import "./App.scss";
 
 import { List as ImmediateMeasuresList } from "views/immediateMeasures";
 import {
-  Editor as IncidentEditor, List as IncidentList,
+  Editor as IncidentEditor,
+  List as IncidentList,
   New as IncidentNew
 } from "views/incident";
 import {
   Editor as JournalEditor,
-  HotlineEditor, List as JournalMessageList, New as JournalNew, Overview as JournalOverview
+  List as JournalMessageList,
+  New as JournalNew,
+  Overview as JournalOverview
 } from "views/journal";
+
 import { List as RequestList } from "views/requests";
 import { List as ResourcesList } from "views/resource";
 import { List as TaskList } from "views/tasks";
@@ -118,17 +122,7 @@ function App() {
                       <Layout>
                         <JournalMessageList
                           showControls={false}
-                          setEditorMessage={undefined}
-                          setTriageMessage={undefined}
                         />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path=":journalId/hotline"
-                    element={
-                      <Layout>
-                        <HotlineEditor />
                       </Layout>
                     }
                   />

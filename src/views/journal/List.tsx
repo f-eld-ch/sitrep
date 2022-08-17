@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -14,8 +14,8 @@ import MessageTable from "./Table";
 
 function List(props: {
   showControls: boolean;
-  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
-  setTriageMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
 }) {
   const { t } = useTranslation();
   const { journalId } = useParams();

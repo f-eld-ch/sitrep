@@ -4,10 +4,10 @@ import dayjs from "dayjs";
 import de from "dayjs/locale/de";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
-import React from "react";
 
 import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
 import remarkable from "utils/remarkable";
@@ -23,8 +23,8 @@ export interface MessageProps {
   assignments?: String[];
   showControls: boolean;
   origMessage: MessageType | undefined;
-  setEditorMessage: React.Dispatch<React.SetStateAction<MessageType | undefined>> | undefined;
-  setTriageMessage: React.Dispatch<React.SetStateAction<MessageType | undefined>> | undefined;
+  setEditorMessage?: (message: MessageType | undefined) => void;
+  setTriageMessage?: (message: MessageType | undefined) => void;
 }
 
 dayjs.locale(de);
@@ -171,4 +171,4 @@ function Message({
   );
 }
 
-export default Message;
+export default memo(Message);
