@@ -36,6 +36,7 @@
         "triage": "Triage Status"
     },
     "messageFlow": "Meldefluss",
+    "messageSheet": "Meldezettel",
     "messageTriageTitle": "Triage der Nachricht",
     "name": "Name",
     "open": "öffnen",

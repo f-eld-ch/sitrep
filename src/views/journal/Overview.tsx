@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -19,26 +19,10 @@ import de from "dayjs/locale/de";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import { useTranslation } from "react-i18next";
 import { Journal, JournalListData, JournalListVars } from "types";
+import { CloseJournal, GetJournals } from "./graphql";
 
 dayjs.locale(de);
 dayjs.extend(LocalizedFormat);
-
-export const GET_JOURNALS = gql`
-  query GetJournals($incidentId: uuid) {
-    incidents(where: { id: { _eq: $incidentId } }) {
-      id
-      name
-      journals(order_by: { createdAt: asc }) {
-        id
-        name
-        createdAt
-        updatedAt
-        closedAt
-        deletedAt
-      }
-    }
-  }
-`;
 
 function Overview() {
   const { incidentId } = useParams();
@@ -46,7 +30,7 @@ function Overview() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<JournalListData, JournalListVars>(GET_JOURNALS, {
+  const { loading, error, data } = useQuery<JournalListData, JournalListVars>(GetJournals, {
     variables: { incidentId: incidentId || "" },
   });
 
@@ -123,25 +107,15 @@ function JournalTable(props: { journals: Journal[] }) {
   );
 }
 
-const CLOSE_JOURNAL = gql`
-  mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
-    update_journals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
-      affected_rows
-      returning {
-        id
-        closedAt
-      }
-    }
-  }
-`;
+
 
 function OptionButtons(props: { journal: Journal }) {
   const { incidentId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [closeJournal] = useMutation(CLOSE_JOURNAL, {
-    refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }],
+  const [closeJournal] = useMutation(CloseJournal, {
+    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
   });
 
   let closeButtonClassNames = classNames({

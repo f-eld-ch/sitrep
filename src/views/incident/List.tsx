@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   faArrowRightFromBracket,
   faEdit,
@@ -16,30 +16,15 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { Incident, IncidentListData } from "../../types";
+import { CloseIncident, GetIncidents } from "./graphql";
 
-export const GET_INCIDENTS = gql`
-  query FetchIncidents {
-    incidents(order_by: { createdAt: desc }) {
-      id
-      name
-      createdAt
-      updatedAt
-      deletedAt
-      closedAt
-      location {
-        name
-        coordinates
-      }
-    }
-  }
-`;
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentListData>(GET_INCIDENTS);
+  const { loading, error, data } = useQuery<IncidentListData>(GetIncidents);
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
@@ -108,17 +93,6 @@ function IncidentTable(props: { incidents: Incident[] }) {
   );
 }
 
-const CLOSE_INCIDENT = gql`
-  mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
-    update_incidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
-      affected_rows
-      returning {
-        id
-        closedAt
-      }
-    }
-  }
-`;
 
 interface IOptionProps {
   incident: Incident;
@@ -128,8 +102,8 @@ function Option(props: IOptionProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [closeIncident] = useMutation(CLOSE_INCIDENT, {
-    refetchQueries: [{ query: GET_INCIDENTS }, "FetchIncidents"],
+  const [closeIncident] = useMutation(CloseIncident, {
+    refetchQueries: [{ query: GetIncidents }, "FetchIncidents"],
   });
 
   let closeButtonClassNames = classNames({

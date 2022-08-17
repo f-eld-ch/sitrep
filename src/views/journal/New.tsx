@@ -1,12 +1,12 @@
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { InsertJournalData, InsertJournalVars } from "types/journal";
-import { GET_INCIDENT_DETAILS } from "views/incident/Dashboard";
-import { GET_JOURNALS } from "./Overview";
+import { GetIncidentDetails } from "views/incident/graphql";
+import { GetJournals, InsertJournal } from "./graphql";
 
 function New() {
   const { t } = useTranslation();
@@ -21,19 +21,6 @@ function New() {
   );
 }
 
-export const INSERT_JOURNAL = gql`
-  mutation InsertJournal($name: String!, $incidentId: uuid!) {
-    insert_journals_one(object: { incidentId: $incidentId, name: $name }) {
-      id
-      name
-      createdAt
-      updatedAt
-      closedAt
-      deletedAt
-    }
-  }
-`;
-
 function NewForm() {
   const { incidentId } = useParams();
   const [name, setName] = useState("");
@@ -41,12 +28,12 @@ function NewForm() {
   const { t } = useTranslation();
 
 
-  const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(INSERT_JOURNAL, {
+  const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(InsertJournal, {
     onCompleted(data) {
       // reset the form values
       navigate(`../${data.insert_journals_one.id}/edit`);
     },
-    refetchQueries: [{ query: GET_JOURNALS, variables: { incidentId: incidentId } }, { query: GET_INCIDENT_DETAILS }],
+    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }, { query: GetIncidentDetails }],
   });
 
   const handleSave = () => {

@@ -35,6 +35,7 @@
         "triage": "triage status"
     },
     "messageFlow": "reporting flow",
+    "messageSheet": "message sheet",
     "messageTriageTitle": "message triage",
     "name": "name",
     "open": "open",

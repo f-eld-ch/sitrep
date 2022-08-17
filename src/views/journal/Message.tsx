@@ -9,9 +9,8 @@ import React from "react";
 import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
-import { PriorityStatus, TriageStatus } from "types";
-import { Message as MessageType } from "../types";
-import remarkable from "../utils/remarkable";
+import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
+import remarkable from "utils/remarkable";
 
 export interface MessageProps {
   id: string | undefined;
