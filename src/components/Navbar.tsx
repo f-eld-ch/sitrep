@@ -2,6 +2,7 @@ import { FunctionComponent, useContext, useState } from "react";
 import {
   faBars,
   faCaretDown,
+  faClipboardQuestion,
   faCodeBranch,
   faExplosion,
   faListCheck,
@@ -79,8 +80,9 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </div>
           </div>
           <JournalNavBar />
-          <TasksNavBar />
           <ResourcesNavBar />
+          <TasksNavBar />
+          <RequestsNavBar />
         </div>
         <div className="navbar-end">
           <UserNavBar />
@@ -221,7 +223,30 @@ const TasksNavBar: FunctionComponent = () => {
           <span className="icon">
             <FontAwesomeIcon icon={faListCheck} />
           </span>
-          <span>{t('tasksRequests')}</span>
+          <span>{t('tasksOrders')}</span>
+        </span>
+      </NavLink>
+    </div>
+  );
+};
+
+const RequestsNavBar: FunctionComponent = () => {
+  let { incidentId } = useParams();
+  const { t } = useTranslation();
+
+  if (!incidentId) return <></>;
+
+  return (
+    <div className="navbar-item has-dropdown is-hoverable">
+      <NavLink
+        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        to={`/incident/${incidentId}/requests`}
+      >
+        <span className="icon-text is-capitalized">
+          <span className="icon">
+            <FontAwesomeIcon icon={faClipboardQuestion} />
+          </span>
+          <span>{t('requestsNeeds')}</span>
         </span>
       </NavLink>
     </div>

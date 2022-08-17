@@ -19,8 +19,8 @@
     "hotline": "Éditeur de la hotline",
     "incident": "incident",
     "incidents": "incidentes",
-    "journal": "journal",
-    "journalList": "liste des revues",
+    "journal": "journal des opérations",
+    "journalList": "présentation du journal des opérations",
     "location": "emplacement",
     "logout": "déconnexion",
     "message": {
@@ -43,6 +43,7 @@
         "high": "important",
         "normal": "ordinaire"
     },
+    "requestsNeeds": "demandes / besoins",
     "resources": "ressources",
     "save": "saveur",
     "saveTriage": "triage",
@@ -50,7 +51,7 @@
     "showClosed": "Afficher fermé",
     "state": "était debout",
     "tasks": "affaires en cours",
-    "tasksRequests": "affaires en cours / demandes / besoins",
+    "tasksOrders": "Articles / commandes en attente",
     "triage": {
         "done": "trié",
         "moreinfo": "besoin de plus d'informations",
