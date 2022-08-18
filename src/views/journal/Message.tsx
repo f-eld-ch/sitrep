@@ -112,7 +112,7 @@ function Message({
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t('message.priority')}</p>
-                  <p className="subtitle is-size-7">{priority}</p>
+                  <p className="subtitle is-size-7">{t([`priority.${priority}`, 'priority.normal'])}</p>
                 </div>
               </div>
 

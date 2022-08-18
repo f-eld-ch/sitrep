@@ -33,11 +33,15 @@
     "message": {
         "content": "content",
         "contentHelp": "What was submitted?",
+        "createdAt": "Recorded on the",
+        "id": "message number",
+        "name": "Report",
         "priority": "priority",
         "receiver": "receiver",
         "sender": "sender",
         "time": "time",
-        "triage": "triage status"
+        "triage": "triage status",
+        "type": "communication"
     },
     "messageFlow": "reporting flow",
     "messageSheet": "message sheet",

@@ -33,11 +33,15 @@
     "message": {
         "content": "contenuti",
         "contentHelp": "Cosa è stato presentato?",
+        "createdAt": "Registrato il",
+        "id": "numero del messaggio",
+        "name": "Rapporto",
         "priority": "priorità",
         "receiver": "destinatario",
         "sender": "mittente",
         "time": "volta",
-        "triage": "stato di triage"
+        "triage": "stato di triage",
+        "type": "comunicazione"
     },
     "messageFlow": "flusso di segnalazione",
     "messageSheet": "Modulo di registrazione",

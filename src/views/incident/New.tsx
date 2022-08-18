@@ -16,6 +16,7 @@ import {
   UpdateIncidentData,
   UpdateIncidentVars
 } from "types/incident";
+import { GetMessageForTriage } from "views/journal/graphql";
 import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
 
 function New() {
@@ -53,7 +54,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     onCompleted(data) {
       navigate(`../${data.insert_incidents_one.id}/journal/view`);
     },
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }, { query: GetMessageForTriage }],
   });
 
   const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
