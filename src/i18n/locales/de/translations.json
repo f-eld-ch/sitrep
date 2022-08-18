@@ -34,11 +34,15 @@
     "message": {
         "content": "Inhalt",
         "contentHelp": "Was wurde übermittelt?",
+        "createdAt": "Erfasst am",
+        "id": "Meldungs-Number",
+        "name": "Meldung",
         "priority": "Priorität",
         "receiver": "Empfänger",
         "sender": "Absender",
         "time": "Zeit",
-        "triage": "Triage Status"
+        "triage": "Triage Status",
+        "type": "Kommunikation"
     },
     "messageFlow": "Meldefluss",
     "messageSheet": "Meldezettel",

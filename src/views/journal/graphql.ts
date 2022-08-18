@@ -197,26 +197,15 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
     }
   }
 `;
-const GET_JOURNAL_DETAILS = gql`
-  query GetJournalDetails($journalId: uuid!) {
-    journals_by_pk(id: $incidentId) {
-      id
-      name
-      createdAt
-      closedAt
-      updatedAt
-    }
-  }
-`;
 
 export {
-    GET_MESSAGES as GetJournalMessages,
-    GET_JOURNALS as GetJournals,
-    INSERT_JOURNAL as InsertJournal,
-    CLOSE_JOURNAL as CloseJournal,
-    INSERT_MESSAGE as InsertMessage,
-    UPDATE_MESSAGE as UpdateMessage,
-    SAVE_MESSAGE_TRIAGE as SaveMessageTriage,
-    GET_MESSAGE_FOR_TRIAGE as GetMessageForTriage,
-    GET_JOURNAL_DETAILS as GetJournalDetails,
+  GET_MESSAGES as GetJournalMessages,
+  GET_JOURNALS as GetJournals,
+  INSERT_JOURNAL as InsertJournal,
+  CLOSE_JOURNAL as CloseJournal,
+  INSERT_MESSAGE as InsertMessage,
+  UPDATE_MESSAGE as UpdateMessage,
+  SAVE_MESSAGE_TRIAGE as SaveMessageTriage,
+  GET_MESSAGE_FOR_TRIAGE as GetMessageForTriage,
 };
+
