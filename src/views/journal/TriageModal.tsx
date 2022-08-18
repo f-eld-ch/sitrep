@@ -121,7 +121,7 @@ function Triage(props: {
                     origMessage={message}
                   />
                 </div>
-                <div className="block">
+                <div className="block mt-4">
                   <div className="columns">
                     <div className="column">
                       <h3 className="title is-size-4 is-capitalized">{t('messageFlow')}</h3>
