@@ -52,6 +52,7 @@
     },
     "phoneNumber": "Telefonnummer",
     "preview": "Vorschau",
+    "print": "Drucken",
     "priority": {
         "high": "wichtig",
         "normal": "normal"

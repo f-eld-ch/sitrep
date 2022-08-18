@@ -5,10 +5,11 @@ import de from "dayjs/locale/de";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 
-import { faArrowsToEye, faEdit, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useParams } from "react-router-dom";
 import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
 import remarkable from "utils/remarkable";
 
@@ -46,10 +47,9 @@ function Message({
   origMessage,
 }: MessageProps) {
   const { t } = useTranslation();
+  const { incidentId, journalId } = useParams();
 
-  let messageClassNames = classNames({
-    message: true,
-    "mb-2": true,
+  let colorClassNames = classNames({
     "is-danger":
       !(triage === TriageStatus.Pending || triage === TriageStatus.Reset) && priority === PriorityStatus.High,
     "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
@@ -57,10 +57,32 @@ function Message({
     "is-dark": triage === TriageStatus.Triaged,
   });
 
+  let messageClassNames = classNames(colorClassNames, {
+    message: true,
+    "pb-1": !showControls,
+    "mb-2": true,
+  });
+
   let assigmentsClassNames = classNames({
-    column: true,
+    "column": true,
+    "is-2": true,
+    "is-align-items-stretch": true,
     "is-justify-content-flex-end": true,
     "is-hidden": !assignments || assignments.length === 0,
+  });
+
+
+  let tabClassNames = classNames(colorClassNames, {
+    tabs: true,
+    "mb-0": true,
+    "is-small": true,
+    "is-right": true,
+    "is-capitalized": true,
+    "is-justify-content-flex-end": true,
+  });
+
+  let tagClassNames = classNames(colorClassNames, {
+    tag: true,
   });
 
   return (
@@ -97,12 +119,12 @@ function Message({
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t('message.triage')}</p>
-                  <p className="subtitle is-size-7">{t('triage.pending')}</p>
+                  <p className="subtitle is-size-7">{t([`triage.${triage}`, 'triage.pending'])}</p>
                 </div>
               </div>
             </nav>
           </div>
-          <div className="column is-full">
+          <div className="column is-full-touch is-four-fifth-desktop">
             <div
               className="content is-normal has-text-left"
               style={{ whiteSpace: "normal" }}
@@ -110,21 +132,23 @@ function Message({
             />
           </div>
           <div className={assigmentsClassNames}>
-            <div className="tags is-multiline is-justify-content-flex-end">
+            <div className="tags is-multiline">
               {assignments &&
                 assignments.map((a) => {
                   return (
-                    <span key={a.toString()} className="tag is-primary is-light">
+                    <span key={a.toString()} className={tagClassNames}>
                       {a}
                     </span>
                   );
                 })}
             </div>
           </div>
+
         </div>
         {showControls === true && id !== undefined ? (
-          <div className="tabs is-small is-right is-capitalized">
+          <div className={tabClassNames}>
             <ul>
+
               {setEditorMessage && triage !== TriageStatus.Triaged ? (
                 <li>
                   <a onClick={() => setEditorMessage(origMessage)}>
@@ -135,8 +159,12 @@ function Message({
                   </a>
                 </li>
               ) : (
-                <></>
-              )}
+                <Link to={`/incident/${incidentId}/journal/${journalId}/messages/${id}`} >
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faPrint} />
+                  </span>
+                  <span>{t('messageSheet')}</span>
+                </Link>)}
               {setTriageMessage && origMessage ? (
                 <li>
                   <a onClick={() => setTriageMessage(origMessage)}>
@@ -163,7 +191,7 @@ function Message({
           <></>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

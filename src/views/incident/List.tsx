@@ -93,7 +93,6 @@ function IncidentTable(props: { incidents: Incident[] }) {
   );
 }
 
-
 interface IOptionProps {
   incident: Incident;
 }

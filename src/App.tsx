@@ -24,6 +24,7 @@ import { ApolloProvider } from "@apollo/client";
 import { useTranslation } from "react-i18next";
 import { UserState } from "types";
 import { UserContext } from "utils";
+import MessageSheet from "views/journal/MessageSheet";
 import { Layout } from "views/Layout";
 import { default as client } from "./client";
 
@@ -123,6 +124,14 @@ function App() {
                         <JournalMessageList
                           showControls={false}
                         />
+                      </Layout>
+                    }
+                  />
+                  <Route
+                    path=":journalId/messages/:messageId"
+                    element={
+                      <Layout>
+                        <MessageSheet />
                       </Layout>
                     }
                   />

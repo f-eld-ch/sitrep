@@ -51,6 +51,7 @@
     },
     "phoneNumber": "numero di telefono",
     "preview": "anteprima",
+    "print": "Pressare",
     "priority": {
         "high": "importante",
         "normal": "normale"
