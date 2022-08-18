@@ -59,52 +59,50 @@ function Message({
 
   let assigmentsClassNames = classNames({
     column: true,
-    "is-1": true,
+    "is-justify-content-flex-end": true,
     "is-hidden": !assignments || assignments.length === 0,
   });
 
   return (
     <div className={messageClassNames}>
       <div className="message-body">
-        <div className="columns">
-          <div className="column is-2">
-            <nav className="level is-block">
-              <div className="level-item has-text-centered">
-                <div className="mb-2">
+        <div className="columns is-multiline is-mobile">
+          <div className="column is-full-tablet">
+            <nav className="level is-align-items-baseline">
+              <div className="level-item has-text-centered is-flex-shrink-1">
+                <div className="mb-0">
                   <p className="heading is-size-7">{t('message.sender')}</p>
                   <p className="subtitle is-size-7">{sender}</p>
                 </div>
               </div>
-              <div className="level-item has-text-centered">
-                <div className="mb-2">
+              <div className="level-item has-text-centered is-flex-shrink-1">
+                <div className="mb-0">
                   <p className="heading is-size-7">{t('message.receiver')}</p>
                   <p className="subtitle is-size-7">{receiver}</p>
                 </div>
               </div>
-              <div className="level-item has-text-centered">
-                <div className="mb-2">
+              <div className="level-item has-text-centered is-flex-shrink-1">
+                <div className="mb-0">
                   <p className="heading is-size-7">{t('message.time')}</p>
                   <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
                 </div>
               </div>
-              {triage !== TriageStatus.Pending && triage !== TriageStatus.Reset ? (
-                <div className="level-item has-text-centered">
-                  <div className="">
-                    <p className="heading is-size-7">{t('message.priority')}</p>
-                    <p className="subtitle is-size-7">{priority}</p>
-                  </div>
+              <div className="level-item has-text-centered is-flex-shrink-1">
+                <div className="mb-0">
+                  <p className="heading is-size-7">{t('message.priority')}</p>
+                  <p className="subtitle is-size-7">{priority}</p>
                 </div>
-              ) : (
-                <div className="level-item has-text-centered">
-                  <div className="">
-                    <p className="heading is-size-7">{t('message.triage')}</p>
-                    <p className="subtitle is-size-7">{t('triage.pending')}</p>
-                  </div>
+              </div>
+
+              <div className="level-item has-text-centered is-flex-shrink-1">
+                <div className="mb-0">
+                  <p className="heading is-size-7">{t('message.triage')}</p>
+                  <p className="subtitle is-size-7">{t('triage.pending')}</p>
                 </div>
-              )}
+              </div>
             </nav>
           </div>
-          <div className="column">
+          <div className="column is-full">
             <div
               className="content is-normal has-text-left"
               style={{ whiteSpace: "normal" }}
@@ -112,17 +110,15 @@ function Message({
             />
           </div>
           <div className={assigmentsClassNames}>
-            <div className="field is-grouped is-grouped-multiline">
-              <div className="tags">
-                {assignments &&
-                  assignments.map((a) => {
-                    return (
-                      <span key={a.toString()} className="tag is-grey is-light is-small">
-                        {a}
-                      </span>
-                    );
-                  })}
-              </div>
+            <div className="tags is-multiline is-justify-content-flex-end">
+              {assignments &&
+                assignments.map((a) => {
+                  return (
+                    <span key={a.toString()} className="tag is-primary is-light">
+                      {a}
+                    </span>
+                  );
+                })}
             </div>
           </div>
         </div>
