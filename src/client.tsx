@@ -10,11 +10,11 @@ const httpLink = new HttpLink({
 const client = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
-  defaultOptions: {
-    watchQuery: {
-      nextFetchPolicy: "cache-and-network",
-    },
-  },
+  // defaultOptions: {
+  //   watchQuery: {
+  //     nextFetchPolicy: "cache-and-network",
+  //   },
+  // },
 });
 
 export default client;

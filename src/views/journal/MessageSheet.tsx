@@ -60,9 +60,9 @@ function MessageSheet() {
                             <tr>
                                 <th>{t('message.type')}</th>
                                 <td colSpan={(numCols - 1) / 2}>
-                                    {t([`medium.${data?.messagesByPk.medium.name}`, `medium.${Medium.Radio}`])}
+                                    {t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}
                                 </td>
-                                {data?.messagesByPk.medium.name === Medium.Radio ?
+                                {data?.messagesByPk.mediumId === Medium.Radio ?
                                     <>
                                         <th>{t('radioChannel')}</th>
                                         <td colSpan={(numCols - 1) / 2}>

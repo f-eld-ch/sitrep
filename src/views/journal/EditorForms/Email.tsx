@@ -10,6 +10,11 @@ export function Email() {
 
     const { state, dispatch } = useEditorContext();
 
+    if (state.media.type !== Medium.Email) {
+        return null
+    }
+
+
     return (
         <div>
             <div className="field is-horizontal">
@@ -37,11 +42,11 @@ export function Email() {
                         <p className="control is-expanded">
                             <input
                                 className="input"
-                                value={state.media?.type === Medium.Email ? state.media?.sender : ""}
-                                type="email"
+                                value={state.media.sender || ""}
+                                type="text"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Email, sender: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { sender: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('emailAddress')}
                             />
@@ -59,7 +64,7 @@ export function Email() {
                             <input
                                 className="input"
                                 type="text"
-                                value={state.receiver}
+                                value={state.receiver || ""}
                                 autoComplete="on"
                                 placeholder={t('name')}
                                 onChange={(e) => {
@@ -74,11 +79,11 @@ export function Email() {
                         <p className="control is-expanded">
                             <input
                                 className="input"
-                                value={state.media?.type === Medium.Email ? state.media?.receiver : ""}
-                                type="email"
+                                value={state.media.receiver}
+                                type="text"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Email, receiver: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { receiver: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('emailAddress')}
                             />

@@ -19,9 +19,7 @@ const GET_MESSAGES = gql`
       receiver
       senderDetail
       receiverDetail
-      medium{
-        name
-      }
+      mediumId
       time
       createdAt
       updatedAt
@@ -89,9 +87,7 @@ const INSERT_MESSAGE = gql`
       sender
       senderDetail
       receiverDetail
-      medium{
-        name
-      }
+      mediumId
       time
       updatedAt
       triageId
@@ -119,9 +115,7 @@ const UPDATE_MESSAGE = gql`
       sender
       senderDetail
       receiverDetail
-      medium{
-        name
-      }
+      mediumId
       time
       updatedAt
       triageId
@@ -169,9 +163,7 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
       receiver
       senderDetail
       receiverDetail
-      medium{
-        name
-      }
+      mediumId
       time
       divisions {
         division {
