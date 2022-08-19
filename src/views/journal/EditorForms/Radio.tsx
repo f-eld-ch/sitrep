@@ -113,7 +113,10 @@ export function Radio() {
                 <div className="field-body">
                     <div className="field">
                         <div className="control">
-                            <button className="button is-primary is-rounded is-capitalized" onClick={() => dispatch({ type: 'save' })}>
+                            <button className="button is-primary is-rounded is-capitalized" onClick={(e) => {
+                                e.preventDefault();
+                                dispatch({ type: 'save' })
+                            }}>
                                 {t('save')}
                             </button>
                         </div>

@@ -21,19 +21,19 @@ type State = {
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
 export type PhoneDetail = {
-  type: 'Phone';
+  type: Medium.Phone;
   sender?: string;
   receiver?: string;
 }
 
 export type EmailDetail = {
-  type: 'Email';
+  type: Medium.Email;
   sender?: string;
   receiver?: string;
 }
 
 export type RadioDetail = {
-  type: 'Radio';
+  type: Medium.Radio;
   channel: string;
 }
 
@@ -65,6 +65,7 @@ function Editor() {
       // reset the form values
       dispatch({ type: 'clear' })
     },
+    fetchPolicy: 'network-only',
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
@@ -73,13 +74,16 @@ function Editor() {
       // reset the form values
       dispatch({ type: 'clear' })
     },
+    fetchPolicy: 'network-only',
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
   const editorReducer = (state: State, action: Action): State => {
     switch (action.type) {
       case 'save': {
+        console.log("reducing save", action, state);
         if (state.messageToEdit?.id) {
+          console.log("update")
           updateMessage({
             variables: {
               messageId: state.messageToEdit.id,
@@ -88,21 +92,29 @@ function Editor() {
               content: state.content,
               type: state.media?.type,
               sender: state.sender,
+              senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
               receiver: state.receiver,
+              receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
             },
           });
+          return Object.assign({}, state, {})
+
         } else {
+          console.log("insertMessage")
           insertMessage({
             variables: {
               time: state.time || new Date(),
               journalId: journalId,
               content: state.content,
+              type: state.media?.type,
               sender: state.sender,
+              senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
               receiver: state.receiver,
+              receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
             },
           });
         }
-        return Object.assign(state, {})
+        return Object.assign({}, state, {})
       }
       case 'set_sender': {
         return Object.assign({}, state, { sender: action.sender })
@@ -120,14 +132,7 @@ function Editor() {
         return Object.assign({}, state, { media: action.detail })
       }
       case 'clear': {
-        return {
-          messageToTriage: undefined,
-          messageToEdit: undefined,
-          sender: "",
-          receiver: "",
-          time: undefined,
-          content: "",
-        }
+        return initState()
       }
       case 'set_edit_message': {
         return Object.assign({}, state, {
@@ -210,7 +215,7 @@ function InputBox() {
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
-            <p className="control is-narrow">
+            <div className="control is-narrow">
               <div className="select is-fullwidth">
                 <select value={medium} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
@@ -218,20 +223,20 @@ function InputBox() {
                   ))}
                 </select>
               </div>
-            </p>
+            </div>
             {medium === Medium.Radio ?
-              <p className="control">
+              <div className="control">
                 <input
                   className="input"
-                  value={state.media?.type === "Radio" ? state.media?.channel : ""}
+                  value={state.media?.type === Medium.Radio ? state.media?.channel : ""}
                   type="text"
                   onChange={(e) => {
                     e.preventDefault();
-                    dispatch({ type: 'set_media_detail', detail: { type: 'Radio', channel: e.currentTarget.value } });
+                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Radio, channel: e.currentTarget.value } });
                   }}
                   placeholder={t('radioChannel')}
                 />
-              </p>
+              </div>
               : <></>}
           </div>
         </div>

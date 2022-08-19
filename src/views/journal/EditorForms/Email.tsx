@@ -2,7 +2,7 @@ import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/fre
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
-import { PriorityStatus, TriageStatus } from "types";
+import { Medium, PriorityStatus, TriageStatus } from "types";
 import { useEditorContext } from "../Editor";
 import { default as JournalMessage } from '../Message';
 
@@ -37,11 +37,11 @@ export function Email() {
                         <p className="control is-expanded">
                             <input
                                 className="input"
-                                value={state.media?.type === "Email" ? state.media?.sender : ""}
+                                value={state.media?.type === Medium.Email ? state.media?.sender : ""}
                                 type="email"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: 'Email', sender: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Email, sender: e.currentTarget.value } });
                                 }}
                                 placeholder={t('emailAddress')}
                             />
@@ -74,11 +74,11 @@ export function Email() {
                         <p className="control is-expanded">
                             <input
                                 className="input"
-                                value={state.media?.type === "Email" ? state.media?.receiver : ""}
+                                value={state.media?.type === Medium.Email ? state.media?.receiver : ""}
                                 type="email"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: 'Email', receiver: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Email, receiver: e.currentTarget.value } });
                                 }}
                                 placeholder={t('emailAddress')}
                             />
@@ -138,7 +138,10 @@ export function Email() {
                 <div className="field-body">
                     <div className="field">
                         <div className="control">
-                            <button className="button is-primary is-rounded is-capitalized" onClick={() => dispatch({ type: 'save' })}>
+                            <button className="button is-primary is-rounded is-capitalized" onClick={(e) => {
+                                e.preventDefault();
+                                dispatch({ type: 'save' })
+                            }}>
                                 {t('save')}
                             </button>
                         </div>

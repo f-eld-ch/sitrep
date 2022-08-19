@@ -2,7 +2,7 @@ import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/fre
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
-import { PriorityStatus, TriageStatus } from "types";
+import { Medium, PriorityStatus, TriageStatus } from "types";
 import { useEditorContext } from "../Editor";
 import { default as JournalMessage } from '../Message';
 
@@ -37,11 +37,11 @@ export function Phone() {
                         <p className="control">
                             <input
                                 className="input"
-                                value={state.media?.type === "Phone" ? state.media?.sender : ""}
+                                value={state.media?.type === Medium.Phone ? state.media?.sender : ""}
                                 type="tel"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: 'Phone', sender: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Phone, sender: e.currentTarget.value } });
                                 }}
                                 placeholder={t('phoneNumber')}
                             />
@@ -74,11 +74,11 @@ export function Phone() {
                         <p className="control">
                             <input
                                 className="input"
-                                value={state.media?.type === "Phone" ? state.media?.receiver : ""}
+                                value={state.media?.type === Medium.Phone ? state.media?.receiver : ""}
                                 type="tel"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: 'Phone', receiver: e.currentTarget.value }) });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: Medium.Phone, receiver: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('phoneNumber')}
                             />
@@ -137,7 +137,10 @@ export function Phone() {
                 <div className="field-body">
                     <div className="field">
                         <div className="control">
-                            <button className="button is-primary is-rounded is-capitalized" onClick={() => dispatch({ type: 'save' })}>
+                            <button className="button is-primary is-rounded is-capitalized" onClick={(e) => {
+                                e.preventDefault();
+                                dispatch({ type: 'save' })
+                            }}>
                                 {t('save')}
                             </button>
                         </div>

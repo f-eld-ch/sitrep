@@ -126,7 +126,7 @@ function List(props: {
             )
             .map((message) => {
               return (
-                <div className="column is-full is-gapless">
+                <div key={message.id} className="column is-full is-gapless">
                   <JournalMessage
                     key={message.id}
                     id={message.id}

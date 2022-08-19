@@ -33,9 +33,9 @@
     "logout": "abmelden",
     "mediumName": "Kommunikation",
     "medium": {
-        "Radio": "Funk",
-        "Phone": "Telefon",
-        "Email": "E-Mail"
+        "radio": "Funk",
+        "phone": "Telefon",
+        "email": "E-Mail"
     },
     "message": {
         "content": "Inhalt",

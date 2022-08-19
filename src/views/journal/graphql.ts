@@ -17,6 +17,11 @@ const GET_MESSAGES = gql`
       content
       sender
       receiver
+      senderDetail
+      receiverDetail
+      medium{
+        name
+      }
       time
       createdAt
       updatedAt
@@ -78,15 +83,20 @@ const CLOSE_JOURNAL = gql`
   }
 `;
 const INSERT_MESSAGE = gql`
-  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String) {
+  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String, $receiverDetail: String, $senderDetail: String, $type: medium_enum) {
     insert_messages_one(
-      object: { content: $content, journalId: $journalId, receiver: $receiver, sender: $sender, time: $time }
+      object: { content: $content, journalId: $journalId, receiver: $receiver, sender: $sender, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail}
     ) {
       id
       createdAt
       content
       receiver
       sender
+      senderDetail
+      receiverDetail
+      medium{
+        name
+      }
       time
       updatedAt
       priority {
@@ -104,17 +114,23 @@ const INSERT_MESSAGE = gql`
     }
   }
 `;
+
 const UPDATE_MESSAGE = gql`
-  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz) {
+  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz, $receiverDetail: String, $senderDetail: String, $type: medium_enum) {
     update_messages_by_pk(
       pk_columns: { id: $messageId }
-      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time }
+      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail }
     ) {
       id
       createdAt
       content
       receiver
       sender
+      senderDetail
+      receiverDetail
+      medium{
+        name
+      }
       time
       updatedAt
       priority {
@@ -168,6 +184,11 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
       content
       sender
       receiver
+      senderDetail
+      receiverDetail
+      medium{
+        name
+      }
       time
       divisions {
         division {

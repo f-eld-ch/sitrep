@@ -32,9 +32,9 @@
     "location": "emplacement",
     "logout": "déconnexion",
     "medium": {
-        "Email": "email",
-        "Phone": "téléphoner",
-        "Radio": "radio"
+        "email": "email",
+        "phone": "téléphoner",
+        "radio": "radio"
     },
     "mediumName": "la communication",
     "message": {

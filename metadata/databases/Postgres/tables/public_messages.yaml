@@ -55,7 +55,9 @@ insert_permissions:
         - journal_id
         - medium_id
         - receiver
+        - receiver_detail
         - sender
+        - sender_detail
         - time
 select_permissions:
   - role: user
@@ -66,7 +68,9 @@ select_permissions:
         - deleted_at
         - id
         - receiver
+        - receiver_detail
         - sender
+        - sender_detail
         - time
         - updated_at
       filter:
@@ -80,7 +84,9 @@ update_permissions:
         - medium_id
         - priority_id
         - receiver
+        - receiver_detail
         - sender
+        - sender_detail
         - time
         - triage_id
       filter:

@@ -14,9 +14,9 @@ export enum PriorityStatus {
 
 
 export enum Medium {
-  Radio = "Radio",
-  Phone = "Phone",
-  Email = "Email",
+  Radio = "radio",
+  Phone = "phone",
+  Email = "email",
 }
 
 export type Message = {
@@ -31,19 +31,24 @@ export type Message = {
   updatedAt: Date;
   deletedAt: Date;
   divisions: DivisionList[];
-  mediaType: Medium;
+  medium: MediumType;
   channel?: string;
   triage: Triage;
   priority: Priority;
 };
 
+export type MediumType = {
+  name: Medium;
+  description: string;
+}
+
 export type Triage = {
-  name: string;
+  name: TriageStatus;
   description: string;
 };
 
 export type Priority = {
-  name: string;
+  name: PriorityStatus;
   description: string;
 };
 
