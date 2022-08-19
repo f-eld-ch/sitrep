@@ -32,9 +32,9 @@
     "location": "posizione",
     "logout": "disconnessione",
     "medium": {
-        "email": "email",
-        "phone": "Telefono",
-        "radio": "radio"
+        "EMAIL": "email",
+        "PHONE": "Telefono",
+        "RADIO": "radio"
     },
     "mediumName": "comunicazione",
     "message": {
@@ -64,8 +64,8 @@
     "preview": "anteprima",
     "print": "Pressare",
     "priority": {
-        "high": "importante",
-        "normal": "normale"
+        "HIGH": "importante",
+        "NORMAL": "normale"
     },
     "radioChannel": "canale",
     "requests": "richieste",
@@ -80,10 +80,10 @@
     "tasksOrders": "Articoli / ordini in sospeso",
     "tasksRequestOrders": "Bisogni / In attesa / Richieste",
     "triage": {
-        "done": "triageto",
-        "moreinfo": "più informazioni necessarie",
-        "pending": "in attesa di",
-        "reset": "ripristina"
+        "DONE": "triageto",
+        "MOREINFO": "più informazioni necessarie",
+        "PENDING": "in attesa di",
+        "RESET": "ripristina"
     },
     "write": "scrivere"
 }

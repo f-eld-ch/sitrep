@@ -19,8 +19,8 @@ export interface MessageProps {
   receiver: string;
   timeDate: Date;
   message: string;
-  triage: string;
-  priority: string;
+  triage: TriageStatus;
+  priority: PriorityStatus;
   assignments?: String[];
   showControls: boolean;
   origMessage: MessageType | undefined;
@@ -110,14 +110,14 @@ function Message({
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t('message.priority')}</p>
-                  <p className="subtitle is-size-7">{t([`priority.${priority}`, 'priority.normal'])}</p>
+                  <p className="subtitle is-size-7">{t([`priority.${priority}`, `priority.${PriorityStatus.Normal}`])}</p>
                 </div>
               </div>
 
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t('message.triage')}</p>
-                  <p className="subtitle is-size-7">{t([`triage.${triage}`, 'triage.pending'])}</p>
+                  <p className="subtitle is-size-7">{t([`triage.${triage}`, `triage.${TriageStatus.Pending}`])}</p>
                 </div>
               </div>
             </nav>

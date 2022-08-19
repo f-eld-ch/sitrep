@@ -30,7 +30,7 @@ function Triage(props: {
       onCompleted: (data) => {
         setAssignments(data?.messagesByPk.divisions.map((d) => d.division));
         setPriority(
-          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priority.name) || PriorityStatus.Normal
+          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priorityId) || PriorityStatus.Normal
         );
       },
     }
@@ -156,7 +156,7 @@ function Triage(props: {
                       <h3 className="title is-size-4 is-capitalized">{t('assignPriority')}</h3>
                       <div className="select is-rounded is-small">
                         <select
-                          defaultValue={message.priority.name}
+                          defaultValue={message.priorityId}
                           onChange={(e) => {
                             e.preventDefault();
                             let prio = Object.values(PriorityStatus).find((p) => p === e.currentTarget.value);
@@ -164,7 +164,7 @@ function Triage(props: {
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option key={prio} label={t([`priority.${prio}`, 'priority.normal'])}>{prio}</option>
+                            <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
                           ))}
                         </select>
                       </div>
@@ -194,7 +194,7 @@ function Triage(props: {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
                 }}
               >
-                {t('triage.moreinfo')}
+                {t(`triage.${TriageStatus.MoreInfo}`)}
               </button>
             </div>
           </footer>

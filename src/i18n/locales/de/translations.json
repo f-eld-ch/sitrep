@@ -33,9 +33,9 @@
     "logout": "abmelden",
     "mediumName": "Kommunikation",
     "medium": {
-        "radio": "Funk",
-        "phone": "Telefon",
-        "email": "E-Mail"
+        "RADIO": "Funk",
+        "PHONE": "Telefon",
+        "EMAIL": "E-Mail"
     },
     "message": {
         "content": "Inhalt",
@@ -64,8 +64,8 @@
     "preview": "Vorschau",
     "print": "Drucken",
     "priority": {
-        "high": "wichtig",
-        "normal": "normal"
+        "HIGH": "wichtig",
+        "NORMAL": "normal"
     },
     "radioChannel": "Kanal",
     "requests": "Anträge",
@@ -80,10 +80,10 @@
     "tasksOrders": "Pendenzen / Aufträge",
     "tasksRequestOrders": "Bedürfnisse / Pendenzen / Anträge",
     "triage": {
-        "done": "triagiert",
-        "moreinfo": "mehr Informationen benötigt",
-        "pending": "pendent",
-        "reset": "zurückgesetzt"
+        "DONE": "triagiert",
+        "MOREINFO": "mehr Informationen benötigt",
+        "PENDING": "pendent",
+        "RESET": "zurückgesetzt"
     },
     "write": "schreiben"
 }

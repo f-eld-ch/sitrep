@@ -7,7 +7,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import { Medium, TriageMessageData, TriageMessageVars } from "types";
+import { Medium, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { GetMessageForTriage } from "./graphql";
 
 dayjs.locale(de);
@@ -60,7 +60,7 @@ function MessageSheet() {
                             <tr>
                                 <th>{t('message.type')}</th>
                                 <td colSpan={(numCols - 1) / 2}>
-                                    {t([`medium.${data?.messagesByPk.medium.name}`, 'medium.radio'])}
+                                    {t([`medium.${data?.messagesByPk.medium.name}`, `medium.${Medium.Radio}`])}
                                 </td>
                                 {data?.messagesByPk.medium.name === Medium.Radio ?
                                     <>
@@ -78,11 +78,11 @@ function MessageSheet() {
                             <tr>
                                 <th>{t('message.triage')}</th>
                                 <td colSpan={(numCols - 1) / 2}>
-                                    {t([`triage.${data?.messagesByPk.triage.name}`, 'triage.pending'])}
+                                    {t([`triage.${data?.messagesByPk.triageId}`, `triage.${TriageStatus.Pending}`])}
                                 </td>
                                 <th>{t('message.priority')}</th>
                                 <td colSpan={(numCols - 1) / 2}>
-                                    {t([`priority.${data?.messagesByPk.priority.name}`, 'priority.normal'])}
+                                    {t([`priority.${data?.messagesByPk.priorityId}`, `priority.${PriorityStatus.Normal}`])}
                                 </td>
                             </tr>
                             <tr style={{ height: "40px" }}>

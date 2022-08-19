@@ -33,13 +33,8 @@ const GET_MESSAGES = gql`
           description
         }
       }
-      triage {
-        name
-        name
-      }
-      priority {
-        name
-      }
+      triageId
+      priorityId
     }
   }
 `;
@@ -99,12 +94,8 @@ const INSERT_MESSAGE = gql`
       }
       time
       updatedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
+      triageId
+      priorityId
       divisions {
         division {
           name
@@ -133,12 +124,8 @@ const UPDATE_MESSAGE = gql`
       }
       time
       updatedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
+      triageId
+      priorityId
       divisions {
         division {
           name
@@ -168,12 +155,8 @@ const SAVE_MESSAGE_TRIAGE = gql`
           name
         }
       }
-      priority {
-        name
-      }
-      triage {
-        name
-      }
+      triageId
+      priorityId
     }
   }
 `;
@@ -200,12 +183,8 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
       createdAt
       updatedAt
       deletedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
+      triageId
+      priorityId
       journal {
         incident {
           divisions {

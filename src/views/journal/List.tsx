@@ -118,8 +118,8 @@ function List(props: {
       <div className="columns is-multiline is-hidden-print mb-3">
         {data &&
           data.messages
-            .filter((message) => triageFilter === "all" || message.triage?.name === triageFilter)
-            .filter((message) => priorityFilter === "all" || message.priority?.name === priorityFilter)
+            .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
+            .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
             .filter(
               (message) =>
                 assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
@@ -131,8 +131,8 @@ function List(props: {
                     key={message.id}
                     id={message.id}
                     assignments={message.divisions.map((d) => d.division.name)}
-                    triage={message.triage.name}
-                    priority={message.priority.name}
+                    triage={message.triageId}
+                    priority={message.priorityId}
                     sender={message.sender}
                     receiver={message.receiver}
                     message={message.content}

@@ -1,22 +1,21 @@
 import { Incident } from "./incident";
 
 export enum TriageStatus {
-  Pending = "pending",
-  Triaged = "done",
-  Reset = "reset",
-  MoreInfo = "moreinfo",
+  Pending = "PENDING",
+  Triaged = "DONE",
+  Reset = "RESET",
+  MoreInfo = "MOREINFO",
 }
 
 export enum PriorityStatus {
-  Normal = "normal",
-  High = "high",
+  Normal = "NORMAL",
+  High = "HIGH",
 }
 
-
 export enum Medium {
-  Radio = "radio",
-  Phone = "phone",
-  Email = "email",
+  Radio = "RADIO",
+  Phone = "PHONE",
+  Email = "EMAIL",
 }
 
 export type Message = {
@@ -33,8 +32,8 @@ export type Message = {
   divisions: DivisionList[];
   medium: MediumType;
   channel?: string;
-  triage: Triage;
-  priority: Priority;
+  triageId: TriageStatus;
+  priorityId: PriorityStatus;
 };
 
 export type MediumType = {

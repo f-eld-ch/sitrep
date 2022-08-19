@@ -32,9 +32,9 @@
     "location": "emplacement",
     "logout": "déconnexion",
     "medium": {
-        "email": "email",
-        "phone": "téléphoner",
-        "radio": "radio"
+        "EMAIL": "email",
+        "PHONE": "téléphoner",
+        "RADIO": "radio"
     },
     "mediumName": "la communication",
     "message": {
@@ -64,8 +64,8 @@
     "preview": "aperçu",
     "print": "Pour appuyer",
     "priority": {
-        "high": "important",
-        "normal": "ordinaire"
+        "HIGH": "important",
+        "NORMAL": "ordinaire"
     },
     "radioChannel": "canaliser",
     "requests": "demandes",
@@ -80,10 +80,10 @@
     "tasksOrders": "Articles / commandes en attente",
     "tasksRequestOrders": "Besoins / En attente / Demandes",
     "triage": {
-        "done": "trié",
-        "moreinfo": "besoin de plus d'informations",
-        "pending": "en attendant",
-        "reset": "réinitialiser"
+        "DONE": "trié",
+        "MOREINFO": "besoin de plus d'informations",
+        "PENDING": "en attendant",
+        "RESET": "réinitialiser"
     },
     "write": "écrivez"
 }
