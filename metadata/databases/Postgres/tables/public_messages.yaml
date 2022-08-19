@@ -8,6 +8,9 @@ object_relationships:
   - name: journal
     using:
       foreign_key_constraint_on: journal_id
+  - name: medium
+    using:
+      foreign_key_constraint_on: medium_id
   - name: priority
     using:
       foreign_key_constraint_on: priority_id
@@ -50,6 +53,7 @@ insert_permissions:
       columns:
         - content
         - journal_id
+        - medium_id
         - receiver
         - sender
         - time
@@ -73,6 +77,7 @@ update_permissions:
     permission:
       columns:
         - content
+        - medium_id
         - priority_id
         - receiver
         - sender
