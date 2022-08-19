@@ -59,8 +59,6 @@ function Message({
 
   let messageClassNames = classNames(colorClassNames, {
     message: true,
-    "pb-1": !showControls,
-    "mb-2": true,
   });
 
   let assigmentsClassNames = classNames({
@@ -74,6 +72,7 @@ function Message({
 
   let tabClassNames = classNames(colorClassNames, {
     tabs: true,
+    "is-clearfix": true,
     "mb-0": true,
     "is-small": true,
     "is-right": true,
@@ -148,7 +147,6 @@ function Message({
         {showControls === true && id !== undefined ? (
           <div className={tabClassNames}>
             <ul>
-
               {setEditorMessage && triage !== TriageStatus.Triaged ? (
                 <li>
                   <a onClick={() => setEditorMessage(origMessage)}>
