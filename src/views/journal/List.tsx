@@ -47,7 +47,7 @@ function List(props: {
         <MessageTable messages={data?.messages} />
       </div>
       <div className="is-hidden-print">
-        <div className="columns is-mobile">
+        <div className="columns">
           <div className="column is-narrow">
             <div className="control has-icons-left">
               <div className="select is-small is-rounded">
