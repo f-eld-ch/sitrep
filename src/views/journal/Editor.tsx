@@ -1,4 +1,4 @@
-import React, { useContext, useReducer } from "react";
+import React, { useContext, useEffect, useReducer } from "react";
 
 import { useMutation } from "@apollo/client";
 import { t } from "i18next";
@@ -17,6 +17,7 @@ type State = {
   messageToEdit: Message | undefined
   messageToTriage: Message | undefined
   media: MediaDetail
+  saving: Boolean
 }
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
@@ -55,6 +56,7 @@ function initState(): State {
     time: undefined,
     content: "",
     media: { type: Medium.Radio },
+    saving: false,
   }
 }
 
@@ -81,39 +83,7 @@ function Editor() {
   const editorReducer = (state: State, action: Action): State => {
     switch (action.type) {
       case 'save': {
-        console.log("reducing save", action, state);
-        if (state.messageToEdit?.id) {
-          updateMessage({
-            variables: {
-              messageId: state.messageToEdit.id,
-              time: state.time,
-              journalId: journalId,
-              content: state.content,
-              type: state.media?.type,
-              sender: state.sender,
-              senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
-              receiver: state.receiver,
-              receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
-            },
-          });
-          return Object.assign({}, state, {})
-
-        } else {
-          console.log("insertMessage")
-          insertMessage({
-            variables: {
-              time: state.time || new Date(),
-              journalId: journalId,
-              content: state.content,
-              type: state.media?.type,
-              sender: state.sender,
-              senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
-              receiver: state.receiver,
-              receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
-            },
-          });
-        }
-        return Object.assign({}, state, {})
+        return Object.assign({}, state, { saving: true })
       }
       case 'set_sender': {
         return Object.assign({}, state, { sender: action.sender })
@@ -155,6 +125,42 @@ function Editor() {
   }
 
   const [state, dispatch] = useReducer(editorReducer, initState())
+
+
+  useEffect(() => {
+    // exit if we don't need to save
+    if (!state.saving) return;
+
+    if (state.messageToEdit?.id) {
+      updateMessage({
+        variables: {
+          messageId: state.messageToEdit.id,
+          time: state.time,
+          journalId: journalId,
+          content: state.content,
+          type: state.media?.type,
+          sender: state.sender,
+          senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
+          receiver: state.receiver,
+          receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
+        },
+      });
+    } else {
+      insertMessage({
+        variables: {
+          time: state.time || new Date(),
+          journalId: journalId,
+          content: state.content,
+          type: state.media?.type,
+          sender: state.sender,
+          senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
+          receiver: state.receiver,
+          receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
+        },
+      });
+    }
+  }, [state, insertMessage, updateMessage, journalId]);
+
 
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
