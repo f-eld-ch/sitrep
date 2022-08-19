@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 const GET_MESSAGES = gql`
   query GetMessages($journalId: uuid!) {
-    journals_by_pk(id: $journalId) {
+    journalsByPk(id: $journalId) {
       incident {
         id
         divisions {
@@ -12,7 +12,7 @@ const GET_MESSAGES = gql`
         }
       }
     }
-    messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _is_null: true } }, order_by: { time: desc }) {
+    messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _isNull: true } }, orderBy: { time: DESC }) {
       id
       content
       sender
@@ -45,7 +45,7 @@ const GET_MESSAGES = gql`
 `;
 const INSERT_JOURNAL = gql`
   mutation InsertJournal($name: String!, $incidentId: uuid!) {
-    insert_journals_one(object: { incidentId: $incidentId, name: $name }) {
+    insertJournalsOne(object: { incidentId: $incidentId, name: $name }) {
       id
       name
       createdAt
@@ -60,7 +60,7 @@ const GET_JOURNALS = gql`
     incidents(where: { id: { _eq: $incidentId } }) {
       id
       name
-      journals(order_by: { createdAt: asc }) {
+      journals(orderBy: { createdAt: ASC }) {
         id
         name
         createdAt
@@ -73,7 +73,7 @@ const GET_JOURNALS = gql`
 `;
 const CLOSE_JOURNAL = gql`
   mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
-    update_journals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
+    updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
       affected_rows
       returning {
         id
@@ -83,8 +83,8 @@ const CLOSE_JOURNAL = gql`
   }
 `;
 const INSERT_MESSAGE = gql`
-  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String, $receiverDetail: String, $senderDetail: String, $type: medium_enum) {
-    insert_messages_one(
+  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String, $receiverDetail: String, $senderDetail: String, $type: MediumEnum) {
+    insertMessagesOne(
       object: { content: $content, journalId: $journalId, receiver: $receiver, sender: $sender, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail}
     ) {
       id
@@ -116,8 +116,8 @@ const INSERT_MESSAGE = gql`
 `;
 
 const UPDATE_MESSAGE = gql`
-  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz, $receiverDetail: String, $senderDetail: String, $type: medium_enum) {
-    update_messages_by_pk(
+  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz, $receiverDetail: String, $senderDetail: String, $type: MediumEnum) {
+    updateMessagesByPk(
       pk_columns: { id: $messageId }
       _set: { content: $content, sender: $sender, receiver: $receiver, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail }
     ) {
@@ -151,17 +151,17 @@ const UPDATE_MESSAGE = gql`
 const SAVE_MESSAGE_TRIAGE = gql`
   mutation SaveMessageTriage(
     $messageId: uuid!
-    $priority: priority_status_enum
-    $triage: triage_status_enum
-    $messageDivisions: [message_division_insert_input!]!
+    $priority: PriorityStatusEnum
+    $triage: TriageStatusEnum
+    $messageDivisions: [MessageDivisionInsertInput!]!
   ) {
-    delete_message_division(where: { messageId: { _eq: $messageId } }) {
+    deleteMessageDivision(where: { messageId: { _eq: $messageId } }) {
       affected_rows
     }
-    insert_message_division(objects: $messageDivisions) {
+    insertMessageDivision(objects: $messageDivisions) {
       affected_rows
     }
-    update_messages_by_pk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
+    updateMessagesByPk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
       id
       divisions {
         division {
@@ -179,7 +179,7 @@ const SAVE_MESSAGE_TRIAGE = gql`
 `;
 const GET_MESSAGE_FOR_TRIAGE = gql`
   query GetMessageForTriage($messageId: uuid!) {
-    messages_by_pk(id: $messageId) {
+    messagesByPk(id: $messageId) {
       id
       content
       sender

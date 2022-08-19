@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 const GET_INCIDENTS = gql`
   query FetchIncidents {
-    incidents(order_by: { createdAt: desc }) {
+    incidents(orderBy: { createdAt: DESC }) {
       id
       name
       createdAt
@@ -18,7 +18,7 @@ const GET_INCIDENTS = gql`
 `;
 const GET_INCIDENT_DETAILS = gql`
   query GetIncidentDetail($incidentId: uuid!) {
-    incidents_by_pk(id: $incidentId) {
+    incidentsByPk(id: $incidentId) {
       id
       name
       createdAt
@@ -45,10 +45,10 @@ const INSERT_INCIDENT = gql`
   mutation InsertIncident(
     $name: String!
     $location: String
-    $divisions: [divisions_insert_input!]!
+    $divisions: [DivisionsInsertInput!]!
     $journalName: String
   ) {
-    insert_incidents_one(
+    insertIncidentsOne(
       object: {
         name: $name
         location: { data: { name: $location } }
@@ -76,19 +76,19 @@ const UPDATE_INCIDENT = gql`
     $name: String!
     $location: String!
     $locationId: uuid!
-    $divisions: [divisions_insert_input!]!
+    $divisions: [DivisionsInsertInput!]!
   ) {
-    update_locations_by_pk(pk_columns: { id: $locationId }, _set: { name: $location }) {
+    updateLocationsByPk(pk_columns: { id: $locationId }, _set: { name: $location }) {
       id
       name
     }
-    insert_divisions(
+    insertDivisions(
       objects: $divisions
-      on_conflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
+      onConflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
     ) {
       affected_rows
     }
-    update_incidents_by_pk(pk_columns: { id: $incidentId }, _set: { name: $name }) {
+    updateIncidentsByPk(pk_columns: { id: $incidentId }, _set: { name: $name }) {
       id
       name
       journals {
@@ -105,7 +105,7 @@ const UPDATE_INCIDENT = gql`
 `;
 const CLOSE_INCIDENT = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
-    update_incidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
+    updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
       affected_rows
       returning {
         id
@@ -116,9 +116,10 @@ const CLOSE_INCIDENT = gql`
 `;
 
 export {
-    GET_INCIDENTS as GetIncidents,
-    GET_INCIDENT_DETAILS as GetIncidentDetails,
-    CLOSE_INCIDENT as CloseIncident,
-    INSERT_INCIDENT as InsertIncident,
-    UPDATE_INCIDENT as UpdateIncident,
+  GET_INCIDENTS as GetIncidents,
+  GET_INCIDENT_DETAILS as GetIncidentDetails,
+  CLOSE_INCIDENT as CloseIncident,
+  INSERT_INCIDENT as InsertIncident,
+  UPDATE_INCIDENT as UpdateIncident,
 };
+

@@ -38,7 +38,7 @@ function List(props: {
     );
 
   if (loading) return <Spinner />;
-  let divisions = data?.journals_by_pk.incident.divisions.flat() || [];
+  let divisions = data?.journalsByPk.incident.divisions.flat() || [];
 
   return (
     <div>

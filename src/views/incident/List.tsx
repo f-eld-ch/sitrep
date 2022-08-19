@@ -16,7 +16,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { Incident, IncidentListData } from "../../types";
-import { CloseIncident, GetIncidents } from "./graphql";
+import { CloseIncident, GetIncidentDetails, GetIncidents } from "./graphql";
 
 
 function List() {
@@ -102,7 +102,7 @@ function Option(props: IOptionProps) {
   const { t } = useTranslation();
 
   const [closeIncident] = useMutation(CloseIncident, {
-    refetchQueries: [{ query: GetIncidents }, "FetchIncidents"],
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
   });
 
   let closeButtonClassNames = classNames({

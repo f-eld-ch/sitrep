@@ -40,7 +40,7 @@ function Dashboard() {
   return (
     <div>
       <div className="container is-fluid has-text-centered mb-4">
-        <h1 className="title is-1 ">{data?.incidents_by_pk.name}</h1>
+        <h1 className="title is-1 ">{data?.incidentsByPk.name}</h1>
       </div>
       <div className="tile is-ancestor">
         <div className="tile is-3 is-vertical is-parent">

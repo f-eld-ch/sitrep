@@ -52,7 +52,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(InsertIncident, {
     onCompleted(data) {
-      navigate(`../${data.insert_incidents_one.id}/journal/view`);
+      navigate(`../${data.insertIncidentsOne.id}/journal/view`);
     },
     refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }, { query: GetMessageForTriage }],
   });
