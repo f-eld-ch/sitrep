@@ -43,10 +43,10 @@ function List(props: {
   return (
     <div>
       <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
-      <div className="block is-print">
+      <div className="is-print">
         <MessageTable messages={data?.messages} />
       </div>
-      <div className="block is-hidden-print">
+      <div className="is-hidden-print">
         <div className="columns is-mobile">
           <div className="column is-narrow">
             <div className="control has-icons-left">
@@ -115,7 +115,7 @@ function List(props: {
           </div>
         </div>
       </div>
-      <div className="block is-hidden-print">
+      <div className="columns is-multiline is-hidden-print">
         {data &&
           data.messages
             .filter((message) => triageFilter === "all" || message.triage?.name === triageFilter)
@@ -126,21 +126,23 @@ function List(props: {
             )
             .map((message) => {
               return (
-                <JournalMessage
-                  key={message.id}
-                  id={message.id}
-                  assignments={message.divisions.map((d) => d.division.name)}
-                  triage={message.triage.name}
-                  priority={message.priority.name}
-                  sender={message.sender}
-                  receiver={message.receiver}
-                  message={message.content}
-                  timeDate={new Date(message.time)}
-                  showControls={props.showControls}
-                  origMessage={message}
-                  setEditorMessage={props.setEditorMessage}
-                  setTriageMessage={props.setTriageMessage}
-                />
+                <div className="column is-full is-gapless">
+                  <JournalMessage
+                    key={message.id}
+                    id={message.id}
+                    assignments={message.divisions.map((d) => d.division.name)}
+                    triage={message.triage.name}
+                    priority={message.priority.name}
+                    sender={message.sender}
+                    receiver={message.receiver}
+                    message={message.content}
+                    timeDate={new Date(message.time)}
+                    showControls={props.showControls}
+                    origMessage={message}
+                    setEditorMessage={props.setEditorMessage}
+                    setTriageMessage={props.setTriageMessage}
+                  />
+                </div>
               );
             })}
       </div>
