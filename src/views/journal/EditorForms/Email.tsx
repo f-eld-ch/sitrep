@@ -157,8 +157,8 @@ export function Email() {
                         receiver={state.receiver}
                         sender={state.sender}
                         timeDate={state.time || new Date()}
-                        priority={state.messageToEdit?.priority.name || PriorityStatus.Normal}
-                        triage={state.messageToEdit?.triage.name || TriageStatus.Pending}
+                        priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
+                        triage={state.messageToEdit?.triageId || TriageStatus.Pending}
                         showControls={false}
                         origMessage={undefined}
                         setEditorMessage={undefined}

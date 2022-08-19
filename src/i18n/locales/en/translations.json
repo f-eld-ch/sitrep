@@ -32,9 +32,9 @@
     "location": "location",
     "logout": "logout",
     "medium": {
-        "email": "email",
-        "phone": "phone",
-        "radio": "radio"
+        "EMAIL": "email",
+        "PHONE": "phone",
+        "RADIO": "radio"
     },
     "mediumName": "communication",
     "message": {
@@ -64,8 +64,8 @@
     "preview": "preview",
     "print": "To press",
     "priority": {
-        "high": "important",
-        "normal": "normal"
+        "HIGH": "important",
+        "NORMAL": "normal"
     },
     "radioChannel": "channel",
     "requests": "requests",
@@ -80,10 +80,10 @@
     "tasksOrders": "Pending items / orders",
     "tasksRequestOrders": "Needs / Pending Actions / Requests",
     "triage": {
-        "done": "triaged",
-        "moreinfo": "more information needed",
-        "pending": "pending",
-        "reset": "reset"
+        "DONE": "triaged",
+        "MOREINFO": "more information needed",
+        "PENDING": "pending",
+        "RESET": "reset"
     },
     "write": "write"
 }
