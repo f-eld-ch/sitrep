@@ -7,7 +7,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-import { TriageMessageData, TriageMessageVars } from "types";
+import { Medium, TriageMessageData, TriageMessageVars } from "types";
 import { GetMessageForTriage } from "./graphql";
 
 dayjs.locale(de);
@@ -60,12 +60,20 @@ function MessageSheet() {
                             <tr>
                                 <th>{t('message.type')}</th>
                                 <td colSpan={(numCols - 1) / 2}>
-                                    {/* type */}
+                                    {t([`medium.${data?.messages_by_pk.medium.name}`, 'medium.radio'])}
                                 </td>
-                                <th>{t('phoneNumber')} / {t('radioChannel')}</th>
-                                <td colSpan={(numCols - 1) / 2}>
-                                    {/* channel */}
-                                </td>
+                                {data?.messages_by_pk.medium.name === Medium.Radio ?
+                                    <>
+                                        <th>{t('radioChannel')}</th>
+                                        <td colSpan={(numCols - 1) / 2}>
+                                            {data?.messages_by_pk.senderDetail}
+                                        </td>
+                                    </>
+                                    :
+                                    <>
+                                        <td colSpan={2}></td>
+                                    </>
+                                }
                             </tr>
                             <tr>
                                 <th>{t('message.triage')}</th>

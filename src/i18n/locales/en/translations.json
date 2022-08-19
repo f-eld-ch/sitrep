@@ -32,9 +32,9 @@
     "location": "location",
     "logout": "logout",
     "medium": {
-        "Email": "email",
-        "Phone": "phone",
-        "Radio": "radio"
+        "email": "email",
+        "phone": "phone",
+        "radio": "radio"
     },
     "mediumName": "communication",
     "message": {
