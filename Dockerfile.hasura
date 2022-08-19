@@ -1,3 +1,5 @@
 FROM docker.io/hasura/graphql-engine:v2.10.1.cli-migrations-v3
 COPY migrations /hasura-migrations
 COPY metadata /hasura-metadata 
+ENV HASURA_GRAPHQL_EXPERIMENTAL_FEATURES=naming_convention
+ENV HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION=graphql-default

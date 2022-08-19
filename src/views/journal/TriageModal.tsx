@@ -28,9 +28,9 @@ function Triage(props: {
       variables: { messageId: props.message?.id },
       fetchPolicy: "cache-and-network",
       onCompleted: (data) => {
-        setAssignments(data?.messages_by_pk.divisions.map((d) => d.division));
+        setAssignments(data?.messagesByPk.divisions.map((d) => d.division));
         setPriority(
-          Object.values(PriorityStatus).find((p) => p === data.messages_by_pk.priority.name) || PriorityStatus.Normal
+          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priority.name) || PriorityStatus.Normal
         );
       },
     }
@@ -126,7 +126,7 @@ function Triage(props: {
                     <div className="column">
                       <h3 className="title is-size-4 is-capitalized">{t('messageFlow')}</h3>
                       <div className="field is-grouped is-grouped-multiline">
-                        {data?.messages_by_pk.journal.incident.divisions.map((d) => {
+                        {data?.messagesByPk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
                           let tagsClass = classNames({
                             tag: true,

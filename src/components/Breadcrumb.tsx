@@ -20,7 +20,7 @@ export function Breadcrumb() {
   return (
     <nav className="breadcrumb is-right has-bullet-separator is-hidden-print" aria-label="breadcrumbs">
       <ul>
-        {incidentData?.incidents_by_pk.name ? (
+        {incidentData?.incidentsByPk.name ? (
           <li>
             <NavLink
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
@@ -30,14 +30,14 @@ export function Breadcrumb() {
                 <span className="icon">
                   <FontAwesomeIcon icon={faExplosion} />
                 </span>
-                <span>{incidentData?.incidents_by_pk.name}</span>
+                <span>{incidentData?.incidentsByPk.name}</span>
               </span>
             </NavLink>
           </li>
         ) : (
           <></>
         )}
-        {journalId && incidentData?.incidents_by_pk.journals.find((j) => j.id === journalId) ? (
+        {journalId && incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) ? (
           <li>
             <NavLink
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
@@ -47,7 +47,7 @@ export function Breadcrumb() {
                 <span className="icon">
                   <FontAwesomeIcon icon={faBars} />
                 </span>
-                <span>{incidentData?.incidents_by_pk.journals.find((j) => j.id === journalId)?.name}</span>
+                <span>{incidentData?.incidentsByPk.journals.find((j) => j.id === journalId)?.name}</span>
               </span>
             </NavLink>
           </li>

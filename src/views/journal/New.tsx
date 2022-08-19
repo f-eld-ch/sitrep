@@ -31,7 +31,7 @@ function NewForm() {
   const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(InsertJournal, {
     onCompleted(data) {
       // reset the form values
-      navigate(`../${data.insert_journals_one.id}/edit`);
+      navigate(`../${data.insertJournalsOne.id}/edit`);
     },
     refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }, { query: GetIncidentDetails }],
   });

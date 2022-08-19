@@ -23,7 +23,7 @@ function Editor() {
       <h3 className="title is-size-3 is-capitalized">{t('editIncident')}</h3>
 
       <div className="box">
-        <IncidentForm incident={data?.incidents_by_pk} />
+        <IncidentForm incident={data?.incidentsByPk} />
       </div>
     </>
   );

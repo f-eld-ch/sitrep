@@ -63,7 +63,7 @@ export interface Division {
 }
 
 export interface MessageListData {
-  journals_by_pk: Journal;
+  journalsByPk: Journal;
   messages: Message[];
 }
 
@@ -101,7 +101,7 @@ interface TriageMessage extends Message {
 }
 
 export interface TriageMessageData {
-  messages_by_pk: TriageMessage
+  messagesByPk: TriageMessage
 }
 
 export interface TriageMessageVars {
@@ -124,15 +124,15 @@ export interface SaveMessageTriageData {
   delete_message_division: {
     affected_rows: number;
   };
-  insert_message_division: {
+  insertMessageDivision: {
     affected_rows: number;
   };
-  update_messages_by_pk: Message;
+  updateMessagesByPk: Message;
 }
 
 
 export interface InsertJournalData {
-  insert_journals_one: Journal
+  insertJournalsOne: Journal
 }
 
 
