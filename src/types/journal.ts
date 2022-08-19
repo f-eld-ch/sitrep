@@ -12,16 +12,27 @@ export enum PriorityStatus {
   High = "high",
 }
 
+
+export enum Medium {
+  Radio = "Radio",
+  Phone = "Phone",
+  Email = "Email",
+}
+
 export type Message = {
   id: string;
   content: string;
   sender: string;
+  senderDetail?: string;
   receiver: string;
+  receiverDetail?: string;
   time: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
   divisions: DivisionList[];
+  mediaType: Medium;
+  channel?: string;
   triage: Triage;
   priority: Priority;
 };

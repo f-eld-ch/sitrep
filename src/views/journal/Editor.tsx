@@ -3,7 +3,7 @@ import React, { useContext, useReducer, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { t } from "i18next";
 import { Link, useParams } from "react-router-dom";
-import { Message } from "types";
+import { Medium, Message } from "types";
 import { Email, Phone, Radio } from "./EditorForms";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
@@ -86,6 +86,7 @@ function Editor() {
               time: state.time,
               journalId: journalId,
               content: state.content,
+              type: state.media?.type,
               sender: state.sender,
               receiver: state.receiver,
             },
@@ -116,7 +117,7 @@ function Editor() {
         return Object.assign({}, state, { time: action.time })
       }
       case 'set_media_detail': {
-        return Object.assign({}, state, { mediaDetail: action.detail })
+        return Object.assign({}, state, { media: action.detail })
       }
       case 'clear': {
         return {
@@ -175,15 +176,8 @@ function Editor() {
   );
 }
 
-enum Medium {
-  Radio = "Funk",
-  Phone = "Telefon",
-  Email = "E-Mail",
-}
-
 function InputBox() {
   const { incidentId, journalId } = useParams();
-
   const [medium, setMedium] = useState(Medium.Radio);
   const { state, dispatch } = useEditorContext();
 
@@ -212,7 +206,7 @@ function InputBox() {
       <Link className="delete is-pulled-right is-small mb-2" to={"/incident/" + incidentId + "/journal/" + journalId} />
       <div className="mt-5 field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Medium</label>
+          <label className="label is-capitalized">{t('mediumName')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -220,7 +214,7 @@ function InputBox() {
               <div className="select is-fullwidth">
                 <select value={medium} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
-                    <option key={medium}>{medium}</option>
+                    <option key={medium} label={t([`medium.${medium}`, 'medium.Radio'])}>{medium}</option>
                   ))}
                 </select>
               </div>
@@ -241,7 +235,7 @@ function InputBox() {
               : <></>}
           </div>
         </div>
-      </div>
+      </div >
       {renderFormContent()}
     </div >
   );

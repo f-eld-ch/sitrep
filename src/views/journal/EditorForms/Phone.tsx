@@ -38,7 +38,7 @@ export function Phone() {
                             <input
                                 className="input"
                                 value={state.media?.type === "Phone" ? state.media?.sender : ""}
-                                type="text"
+                                type="tel"
                                 onChange={(e) => {
                                     e.preventDefault();
                                     dispatch({ type: 'set_media_detail', detail: { type: 'Phone', sender: e.currentTarget.value } });
@@ -61,7 +61,7 @@ export function Phone() {
                                 type="text"
                                 value={state.sender}
                                 autoComplete="on"
-                                placeholder={`${t('name')}, ${t('phoneNumber')}`}
+                                placeholder={t('name')}
                                 onChange={(e) => {
                                     e.preventDefault();
                                     dispatch({ type: 'set_sender', sender: e.currentTarget.value });
@@ -75,10 +75,10 @@ export function Phone() {
                             <input
                                 className="input"
                                 value={state.media?.type === "Phone" ? state.media?.receiver : ""}
-                                type="text"
+                                type="tel"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: 'Phone', receiver: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: 'Phone', receiver: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('phoneNumber')}
                             />

@@ -38,7 +38,7 @@ export function Email() {
                             <input
                                 className="input"
                                 value={state.media?.type === "Email" ? state.media?.sender : ""}
-                                type="text"
+                                type="email"
                                 onChange={(e) => {
                                     e.preventDefault();
                                     dispatch({ type: 'set_media_detail', detail: { type: 'Email', sender: e.currentTarget.value } });
@@ -75,7 +75,7 @@ export function Email() {
                             <input
                                 className="input"
                                 value={state.media?.type === "Email" ? state.media?.receiver : ""}
-                                type="text"
+                                type="email"
                                 onChange={(e) => {
                                     e.preventDefault();
                                     dispatch({ type: 'set_media_detail', detail: { type: 'Email', receiver: e.currentTarget.value } });

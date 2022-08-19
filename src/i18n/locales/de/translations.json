@@ -31,6 +31,12 @@
     "journalList": "Einsatzjournal-Übersicht",
     "location": "Ort",
     "logout": "abmelden",
+    "mediumName": "Kommunikation",
+    "medium": {
+        "Radio": "Funk",
+        "Phone": "Telefon",
+        "Email": "E-Mail"
+    },
     "message": {
         "content": "Inhalt",
         "contentHelp": "Was wurde übermittelt?",

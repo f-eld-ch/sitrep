@@ -115,7 +115,7 @@ function List(props: {
           </div>
         </div>
       </div>
-      <div className="columns is-multiline is-hidden-print">
+      <div className="columns is-multiline is-hidden-print mb-3">
         {data &&
           data.messages
             .filter((message) => triageFilter === "all" || message.triage?.name === triageFilter)
