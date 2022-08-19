@@ -10,6 +10,10 @@ export function Phone() {
 
     const { state, dispatch } = useEditorContext();
 
+    if (state.media.type !== Medium.Phone) {
+        return null
+    }
+
     return (
         <div>
             <div className="field is-horizontal">
@@ -37,11 +41,11 @@ export function Phone() {
                         <p className="control">
                             <input
                                 className="input"
-                                value={state.media?.type === Medium.Phone ? state.media?.sender : ""}
-                                type="tel"
+                                value={state.media.receiver || ""}
+                                type="text"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Phone, sender: e.currentTarget.value } });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { receiver: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('phoneNumber')}
                             />
@@ -74,11 +78,11 @@ export function Phone() {
                         <p className="control">
                             <input
                                 className="input"
-                                value={state.media?.type === Medium.Phone ? state.media?.receiver : ""}
-                                type="tel"
+                                value={state.media.sender || ""}
+                                type="text"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: Medium.Phone, receiver: e.currentTarget.value }) });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { sender: e.currentTarget.value }) });
                                 }}
                                 placeholder={t('phoneNumber')}
                             />

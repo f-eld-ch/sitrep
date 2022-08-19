@@ -30,16 +30,10 @@ export type Message = {
   updatedAt: Date;
   deletedAt: Date;
   divisions: DivisionList[];
-  medium: MediumType;
-  channel?: string;
+  mediumId: Medium;
   triageId: TriageStatus;
   priorityId: PriorityStatus;
 };
-
-export type MediumType = {
-  name: Medium;
-  description: string;
-}
 
 export type Triage = {
   name: TriageStatus;

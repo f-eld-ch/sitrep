@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useState } from "react";
+import React, { useContext, useReducer } from "react";
 
 import { useMutation } from "@apollo/client";
 import { t } from "i18next";
@@ -16,7 +16,7 @@ type State = {
   time: Date | undefined
   messageToEdit: Message | undefined
   messageToTriage: Message | undefined
-  media?: MediaDetail
+  media: MediaDetail
 }
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
@@ -34,7 +34,7 @@ export type EmailDetail = {
 
 export type RadioDetail = {
   type: Medium.Radio;
-  channel: string;
+  channel?: string;
 }
 
 type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; } | { type: 'set_media_detail', detail: MediaDetail; }
@@ -54,7 +54,7 @@ function initState(): State {
     receiver: "",
     time: undefined,
     content: "",
-    media: undefined,
+    media: { type: Medium.Radio },
   }
 }
 
@@ -83,7 +83,6 @@ function Editor() {
       case 'save': {
         console.log("reducing save", action, state);
         if (state.messageToEdit?.id) {
-          console.log("update")
           updateMessage({
             variables: {
               messageId: state.messageToEdit.id,
@@ -140,7 +139,8 @@ function Editor() {
           sender: action.message?.sender,
           receiver: action.message?.receiver,
           time: action.message?.time,
-          content: action.message?.content
+          content: action.message?.content,
+          media: action.message?.mediumId === Medium.Radio ? { type: Medium.Radio, channel: action.message?.senderDetail || action.message?.receiverDetail || "" } : { type: action.message?.mediumId || Medium.Radio, sender: action.message?.senderDetail || "", receiver: action.message?.receiverDetail || "" },
         })
       }
       case 'set_triage_message': {
@@ -183,17 +183,16 @@ function Editor() {
 
 function InputBox() {
   const { incidentId, journalId } = useParams();
-  const [medium, setMedium] = useState(Medium.Radio);
   const { state, dispatch } = useEditorContext();
 
   const renderFormContent = () => {
-    if (medium === Medium.Radio) {
+    if (state.media?.type === Medium.Radio) {
       return <Radio />;
     }
-    if (medium === Medium.Phone) {
+    if (state.media?.type === Medium.Phone) {
       return <Phone />;
     }
-    if (medium === Medium.Email) {
+    if (state.media?.type === Medium.Email) {
       return <Email />;
     }
   };
@@ -202,7 +201,8 @@ function InputBox() {
     e.preventDefault();
     let selectMedium = e.currentTarget.value;
     if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone) {
-      setMedium(selectMedium);
+      dispatch({ type: 'set_media_detail', detail: { type: selectMedium } });
+
     }
   };
 
@@ -217,18 +217,18 @@ function InputBox() {
           <div className="field is-grouped is-grouped-multiline">
             <div className="control is-narrow">
               <div className="select is-fullwidth">
-                <select value={medium} onChange={handleMediumChange}>
+                <select value={state.media?.type} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
                     <option key={medium} label={t([`medium.${medium}`, 'medium.Radio'])}>{medium}</option>
                   ))}
                 </select>
               </div>
             </div>
-            {medium === Medium.Radio ?
+            {state.media.type === Medium.Radio ?
               <div className="control">
                 <input
                   className="input"
-                  value={state.media?.type === Medium.Radio ? state.media?.channel : ""}
+                  value={state.media.channel || ""}
                   type="text"
                   onChange={(e) => {
                     e.preventDefault();
