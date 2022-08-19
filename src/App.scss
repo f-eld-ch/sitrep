@@ -129,6 +129,11 @@ section {
 }
 
 
+.input:invalid {
+    border-color: $danger;
+}
+
+
 
 @media screen {
     .is-print {

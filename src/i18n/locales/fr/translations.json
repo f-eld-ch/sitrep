@@ -8,6 +8,7 @@
     "createIncident": "créer un nouvel incident",
     "createJournal": "créer un nouveau journal",
     "createNewImmediateMeasures": "créer de nouvelles mesures immédiates",
+    "createNewRequest": "Créer une nouvelle application",
     "createNewTask": "enregistrement en attente",
     "createdAt": "ouvert",
     "divisions": "départements",
@@ -30,6 +31,12 @@
     "journalList": "présentation du journal des opérations",
     "location": "emplacement",
     "logout": "déconnexion",
+    "medium": {
+        "Email": "email",
+        "Phone": "téléphoner",
+        "Radio": "radio"
+    },
+    "mediumName": "la communication",
     "message": {
         "content": "contenu",
         "contentHelp": "Qu'est-ce qui a été soumis?",

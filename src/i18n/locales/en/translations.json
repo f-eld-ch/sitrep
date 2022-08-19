@@ -8,6 +8,7 @@
     "createIncident": "create new incident",
     "createJournal": "create message log",
     "createNewImmediateMeasures": "create new immediate measures",
+    "createNewRequest": "Create a new application",
     "createNewTask": "create new task",
     "createdAt": "opened",
     "divisions": "divisions",
@@ -30,6 +31,12 @@
     "journalList": "operation journal overview",
     "location": "location",
     "logout": "logout",
+    "medium": {
+        "Email": "email",
+        "Phone": "phone",
+        "Radio": "radio"
+    },
+    "mediumName": "communication",
     "message": {
         "content": "content",
         "contentHelp": "What was submitted?",

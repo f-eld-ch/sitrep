@@ -8,6 +8,7 @@
     "createIncident": "crea nuovo incidente",
     "createJournal": "crea un nuovo diario",
     "createNewImmediateMeasures": "creare nuove misure immediate",
+    "createNewRequest": "Crea una nuova applicazione",
     "createNewTask": "crea una nuova attività",
     "createdAt": "aperto",
     "divisions": "dipartimenti",
@@ -30,6 +31,12 @@
     "journalList": "panoramica del diario delle operazioni",
     "location": "posizione",
     "logout": "disconnessione",
+    "medium": {
+        "Email": "email",
+        "Phone": "Telefono",
+        "Radio": "radio"
+    },
+    "mediumName": "comunicazione",
     "message": {
         "content": "contenuti",
         "contentHelp": "Cosa è stato presentato?",
