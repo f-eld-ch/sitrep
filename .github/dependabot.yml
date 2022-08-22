@@ -6,7 +6,7 @@ updates:
     directory: "/"
     target-branch: "develop"
     schedule:
-      interval: "daily"
+      interval: "weekly"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
