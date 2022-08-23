@@ -1,4 +1,6 @@
 import { useQuery } from "@apollo/client";
+import { faSquare, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Spinner } from "components";
 import dayjs from "dayjs";
 import de from "dayjs/locale/de";
@@ -26,9 +28,6 @@ function MessageSheet() {
         }
     );
 
-    const numAssignments = data?.messagesByPk.journal.incident.divisions.length || 0;
-    const maxCols = Math.max(5, numAssignments);
-    const numCols = maxCols % 2 ? maxCols + 1 : maxCols;
     return (
         <>
             <h3 className="title is-size-6 is-capitalized">{t('messageSheet')}</h3>
@@ -39,68 +38,81 @@ function MessageSheet() {
                     <table className="table is-bordered is-fullwidth">
                         <tbody>
                             <tr>
-                                <th rowSpan={6}>{t('message.name')}</th>
+                                <th rowSpan={6} style={{ width: "150px" }}>{t('message.name')}</th>
                                 <th>{t('message.sender')}</th>
-                                <td colSpan={numCols - 1}>{data?.messagesByPk.sender}</td>
+                                {data?.messagesByPk.mediumId === Medium.Radio || !data.messagesByPk.senderDetail?.length ?
+                                    <>
+                                        <td colSpan={3}>{data?.messagesByPk.sender}</td>
+                                    </>
+                                    :
+                                    <>
+                                        <td colSpan={3}>{data?.messagesByPk.sender} ({data?.messagesByPk.senderDetail})</td>
+                                    </>
+                                }
                             </tr>
                             <tr>
                                 <th>{t('message.receiver')}</th>
-                                <td colSpan={numCols - 1}>{data?.messagesByPk.receiver}</td>
-                            </tr>
+                                {data?.messagesByPk.mediumId === Medium.Radio || !data.messagesByPk.receiverDetail?.length ?
+                                    <>
+                                        <td colSpan={3}>{data?.messagesByPk.receiver}</td>
+                                    </>
+                                    :
+                                    <>
+                                        <td colSpan={3}>{data?.messagesByPk.receiver} ({data?.messagesByPk.receiverDetail})</td>
+                                    </>
+                                }                            </tr>
                             <tr>
                                 <th>{t('message.time')}</th>
-                                <td colSpan={(numCols - 1) / 2}>{dayjs(data?.messagesByPk.createdAt).format("LLL")}</td>
+                                <td>{dayjs(data?.messagesByPk.createdAt).format("LLL")}</td>
                                 <th>{t('message.createdAt')}</th>
-                                <td colSpan={(numCols - 1) / 2}>{dayjs(data?.messagesByPk.createdAt).format("LLL")}</td>
+                                <td>{dayjs(data?.messagesByPk.createdAt).format("LLL")}</td>
                             </tr>
                             <tr>
                                 <th>{t('message.id')}</th>
-                                <td colSpan={numCols - 1}>{data?.messagesByPk.id}</td>
+                                <td colSpan={3}>{data?.messagesByPk.id}</td>
                             </tr>
                             <tr>
                                 <th>{t('message.type')}</th>
-                                <td colSpan={(numCols - 1) / 2}>
-                                    {t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}
-                                </td>
+
                                 {data?.messagesByPk.mediumId === Medium.Radio ?
                                     <>
+                                        <td>{t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}</td>
                                         <th>{t('radioChannel')}</th>
-                                        <td colSpan={(numCols - 1) / 2}>
+                                        <td>
                                             {data?.messagesByPk.senderDetail}
                                         </td>
                                     </>
                                     :
                                     <>
-                                        <td colSpan={2}></td>
+                                        <td colSpan={3}>{t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}</td>
                                     </>
                                 }
                             </tr>
                             <tr>
                                 <th>{t('message.triage')}</th>
-                                <td colSpan={(numCols - 1) / 2}>
+                                <td>
                                     {t([`triage.${data?.messagesByPk.triageId}`, `triage.${TriageStatus.Pending}`])}
                                 </td>
                                 <th>{t('message.priority')}</th>
-                                <td colSpan={(numCols - 1) / 2}>
+                                <td>
                                     {t([`priority.${data?.messagesByPk.priorityId}`, `priority.${PriorityStatus.Normal}`])}
                                 </td>
-                            </tr>
-                            <tr style={{ height: "40px" }}>
-                                <td colSpan={numCols} style={{ border: "none" }} />
                             </tr>
 
                             <tr style={{ height: "400px" }}>
                                 <th>{t('message.content')}</th>
-                                <td colSpan={numCols} >{data?.messagesByPk.sender}</td>
+                                <td colSpan={4}>{data?.messagesByPk.sender}</td>
                             </tr>
-                            <tr style={{ height: "40px" }}>
-                                <td colSpan={numCols} style={{ border: "none" }} />
-                            </tr>
+                        </tbody>
+                    </table>
+                    <table className="table is-bordered is-fullwidth mt-2">
+                        <tbody>
+
                             <tr>
-                                <th rowSpan={2}>{t('messageFlow')}</th>
+                                <th rowSpan={2} style={{ width: "150px" }}>{t('messageFlow')}</th>
                                 {data?.messagesByPk.journal.incident.divisions.map((d) => {
                                     return (
-                                        <td>{d.name}</td>)
+                                        <td className="has-text-centered">{d.name}</td>)
                                 })}
                             </tr>
                             <tr>
@@ -110,13 +122,14 @@ function MessageSheet() {
                                     let isPresent = assignments.some((e) => e === d.name);
 
                                     return (
-                                        <td>{isPresent ? "x" : ""}</td>)
+                                        <td className="has-text-centered">{isPresent ? <FontAwesomeIcon icon={faSquareCheck} /> : <FontAwesomeIcon icon={faSquare} />}</td>)
                                 })}
                             </tr>
                         </tbody>
                     </table>
                 </>
-                : <></>}
+                : <></>
+            }
         </>
     );
 
