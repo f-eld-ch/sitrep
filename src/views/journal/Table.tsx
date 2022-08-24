@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
 import { Message } from "types";
-import remarkable from "utils/remarkable";
 
 function MessageTable(props: { messages: undefined | Message[] }) {
   const { t } = useTranslation();
@@ -28,8 +29,9 @@ function MessageTable(props: { messages: undefined | Message[] }) {
                 <td>
                   <div
                     className="content is-normal has-text-left"
-                    dangerouslySetInnerHTML={{ __html: remarkable.render(message.content) }}
-                  />
+                  >
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -39,4 +41,4 @@ function MessageTable(props: { messages: undefined | Message[] }) {
   );
 }
 
-export default MessageTable;
+export default memo(MessageTable);
