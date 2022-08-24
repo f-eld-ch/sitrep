@@ -111,7 +111,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.currentTarget.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder={t('name')}
               />
               <span className="icon is-small is-left">
@@ -132,7 +132,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input"
                 type="text"
                 value={location}
-                onChange={(e) => setLocation(e.currentTarget.value)}
+                onChange={(e) => setLocation(e.target.value)}
                 placeholder={t('location')}
               />
               <span className="icon is-small is-left">
@@ -186,7 +186,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input is-small"
                 type="text"
                 value={assignmentDescription}
-                onChange={(e) => setAssignmentDescription(e.currentTarget.value)}
+                onChange={(e) => setAssignmentDescription(e.target.value)}
                 placeholder={t('name')}
               />
             </p>
@@ -195,7 +195,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input is-small"
                 value={assignmentName}
                 type="text"
-                onChange={(e) => setAssignmentName(e.currentTarget.value)}
+                onChange={(e) => setAssignmentName(e.target.value)}
                 placeholder={t('short')}
               />
             </p>

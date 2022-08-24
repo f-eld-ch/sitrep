@@ -160,7 +160,7 @@ function Triage(props: {
                           defaultValue={message.priorityId}
                           onChange={(e) => {
                             e.preventDefault();
-                            let prio = Object.values(PriorityStatus).find((p) => p === e.currentTarget.value);
+                            let prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
                             if (prio !== undefined) setPriority(prio);
                           }}
                         >
