@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { faSquare, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { faSquare, faSquareCheck } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Spinner } from "components";
 import dayjs from "dayjs";
@@ -36,7 +36,7 @@ function MessageSheet() {
             {data?.messagesByPk ?
                 <>
                     <table className="table is-bordered is-fullwidth">
-                        <tbody>
+                        <tbody >
                             <tr>
                                 <th rowSpan={6} style={{ width: "150px" }}>{t('message.name')}</th>
                                 <th>{t('message.sender')}</th>
@@ -45,7 +45,7 @@ function MessageSheet() {
                                         <td colSpan={3}>{data?.messagesByPk.sender}</td>
                                     </>
                                     :
-                                    <>
+                                    <>l
                                         <td colSpan={3}>{data?.messagesByPk.sender} ({data?.messagesByPk.senderDetail})</td>
                                     </>
                                 }
@@ -105,7 +105,7 @@ function MessageSheet() {
                             </tr>
                         </tbody>
                     </table>
-                    <table className="table is-bordered is-fullwidth mt-2">
+                    <table className="table is-bordered is-fullwidth mt-2" style={{ "tableLayout": "fixed" }}>
                         <tbody>
 
                             <tr>

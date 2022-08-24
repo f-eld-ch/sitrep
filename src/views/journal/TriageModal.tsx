@@ -3,7 +3,8 @@
 import { useLazyQuery, useMutation } from "@apollo/client";
 import classNames from "classnames";
 import { Spinner } from "components";
-import { reject, union } from "lodash";
+import reject from "lodash/reject";
+import union from "lodash/union";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";

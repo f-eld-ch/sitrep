@@ -26,7 +26,7 @@ $tabs-border-bottom-width: 2px;
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
 
-
+$table-cell-border: 1px solid $grey;
 $breadcrumb-item-color: $grey-dark;
 
 // Bulma Elements
@@ -142,6 +142,7 @@ section {
 }
 
 @media print {
+
     @page {
         // size: A4 landscape;
 
