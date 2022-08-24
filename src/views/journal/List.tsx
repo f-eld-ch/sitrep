@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -45,7 +45,7 @@ function List(props: {
     <div>
       <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
       <div className="is-print">
-        <MessageTable messages={data?.messages} />
+        {props.showControls ? <></> : <MessageTable messages={data?.messages} />}
       </div>
       <div className="is-hidden-print">
         <div className="columns">
@@ -117,38 +117,54 @@ function List(props: {
         </div>
       </div>
       <div className="columns is-multiline is-hidden-print mb-3">
-        {data &&
-          data.messages
+        {data ?
+          <MemoMessages messages={data.messages
             .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
             .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
             .filter(
               (message) =>
                 assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
-            )
-            .map((message) => {
-              return (
-                <div key={message.id} className="column is-full is-gapless">
-                  <JournalMessage
-                    key={message.id}
-                    id={message.id}
-                    assignments={message.divisions.map((d) => d.division.name)}
-                    triage={message.triageId}
-                    priority={message.priorityId}
-                    sender={message.sender}
-                    receiver={message.receiver}
-                    message={message.content}
-                    timeDate={new Date(message.time)}
-                    showControls={props.showControls}
-                    origMessage={message}
-                    setEditorMessage={props.setEditorMessage}
-                    setTriageMessage={props.setTriageMessage}
-                  />
-                </div>
-              );
-            })}
+            )} showControls={props.showControls} setTriageMessage={props.setTriageMessage} setEditorMessage={props.setEditorMessage} /> : <></>
+        }
       </div>
     </div>
   );
 }
 
-export default List;
+const MemoMessages = memo(Messages);
+
+function Messages(props: {
+  showControls: boolean;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
+  messages: Message[];
+}) {
+
+  return (
+    <>
+      {props.messages.map((message) => {
+        return (
+          <div key={message.id} className="column is-full is-gapless">
+            <JournalMessage
+              key={message.id}
+              id={message.id}
+              assignments={message.divisions.map((d) => d.division.name)}
+              triage={message.triageId}
+              priority={message.priorityId}
+              sender={message.sender}
+              receiver={message.receiver}
+              message={message.content}
+              timeDate={new Date(message.time)}
+              showControls={props.showControls}
+              origMessage={message}
+              setEditorMessage={props.setEditorMessage}
+              setTriageMessage={props.setTriageMessage}
+            />
+          </div>
+        );
+      })}
+    </>
+  )
+}
+
+export default memo(List);

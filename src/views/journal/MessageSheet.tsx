@@ -8,6 +8,7 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { Medium, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { GetMessageForTriage } from "./graphql";
@@ -101,7 +102,7 @@ function MessageSheet() {
 
                             <tr style={{ height: "400px" }}>
                                 <th>{t('message.content')}</th>
-                                <td colSpan={4}>{data?.messagesByPk.sender}</td>
+                                <td colSpan={4}><ReactMarkdown>{data?.messagesByPk.content}</ReactMarkdown></td>
                             </tr>
                         </tbody>
                     </table>

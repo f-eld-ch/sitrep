@@ -9,9 +9,9 @@ import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
 import { Link, useParams } from "react-router-dom";
 import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
-import remarkable from "utils/remarkable";
 
 export interface MessageProps {
   id: string | undefined;
@@ -123,11 +123,8 @@ function Message({
             </nav>
           </div>
           <div className="column is-full-touch is-four-fifth-desktop">
-            <div
-              className="content is-normal has-text-left"
-              style={{ whiteSpace: "normal" }}
-              dangerouslySetInnerHTML={{ __html: remarkable.render(message) }}
-            />
+
+            <ReactMarkdown className="content is-normal has-text-left">{message}</ReactMarkdown>
           </div>
           <div className={assigmentsClassNames}>
             <div className="tags is-multiline">

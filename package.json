@@ -19,8 +19,8 @@
     "react-autocomplete-hint": "^2.0.0",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.4",
+    "react-markdown": "^8.0.3",
     "react-router-dom": "^6.2.2",
-    "remarkable": "^2.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -70,7 +70,6 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.13",
     "@types/react-router-dom": "^5.3.3",
-    "@types/remarkable": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^5.34.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
@@ -81,7 +80,6 @@
     "typescript": "^4.6.2"
   },
   "resolutions": {
-    "@svgr/webpack": "^6.3.1",
-    "highlight.js": "^11.6.0"
+    "@svgr/webpack": "^6.3.1"
   }
 }
