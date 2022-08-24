@@ -2,9 +2,11 @@ import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/fre
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
+import { Hint } from 'react-autocomplete-hint';
 import { PriorityStatus, TriageStatus } from "types";
 import { useEditorContext } from "../Editor";
 import { default as JournalMessage } from '../Message';
+
 
 export function Radio() {
 
@@ -18,22 +20,24 @@ export function Radio() {
                 </div>
                 <div className="field-body">
                     <div className="field">
-                        <p className="control is-expanded has-icons-left">
-                            <input
-                                className="input"
-                                type="text"
-                                value={state.receiver}
-                                autoComplete="on"
-                                placeholder={t('name')}
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    dispatch({ type: 'set_receiver', receiver: e.currentTarget.value });
-                                }}
-                            />
+                        <div className="control is-expanded has-icons-left">
+                            <Hint options={state.autocompleteDetails.senderReceiverNames} allowTabFill={true} allowEnterFill={true} >
+                                <input
+                                    className="input"
+                                    type="text"
+                                    value={state.receiver}
+                                    autoComplete="on"
+                                    placeholder={t('name')}
+                                    onChange={(e) => {
+                                        e.preventDefault();
+                                        dispatch({ type: 'set_receiver', receiver: e.target.value });
+                                    }}
+                                />
+                            </Hint>
                             <span className="icon is-small is-left">
                                 <FontAwesomeIcon icon={faCircleArrowRight} />
                             </span>
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -43,22 +47,24 @@ export function Radio() {
                 </div>
                 <div className="field-body">
                     <div className="field">
-                        <p className="control is-expanded has-icons-left">
-                            <input
-                                className="input"
-                                type="text"
-                                value={state.sender}
-                                autoComplete="on"
-                                placeholder={t('name')}
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    dispatch({ type: 'set_sender', sender: e.currentTarget.value });
-                                }}
-                            />
+                        <div className="control is-expanded has-icons-left">
+                            <Hint options={state.autocompleteDetails.senderReceiverNames} allowTabFill={true} allowEnterFill={true} >
+                                <input
+                                    className="input"
+                                    type="text"
+                                    value={state.sender}
+                                    autoComplete="on"
+                                    placeholder={t('name')}
+                                    onChange={(e) => {
+                                        e.preventDefault();
+                                        dispatch({ type: 'set_sender', sender: e.target.value });
+                                    }}
+                                />
+                            </Hint>
                             <span className="icon is-small is-left">
                                 <FontAwesomeIcon icon={faCircleArrowLeft} />
                             </span>
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -76,7 +82,7 @@ export function Radio() {
                                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    e.currentTarget.value && dispatch({ type: 'set_time', time: dayjs(e.currentTarget.value).toDate() });
+                                    e.target.value && dispatch({ type: 'set_time', time: dayjs(e.target.value).toDate() });
                                 }}
                             />
                             <span className="icon is-small is-left">
@@ -101,7 +107,7 @@ export function Radio() {
                                 value={state.content}
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_content', content: e.currentTarget.value });
+                                    dispatch({ type: 'set_content', content: e.target.value });
                                 }}
                             />
                         </div>

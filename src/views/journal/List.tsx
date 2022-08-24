@@ -56,7 +56,7 @@ function List(props: {
                   value={triageFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setTriageFilter(e.currentTarget.value);
+                    setTriageFilter(e.target.value);
                   }}
                 >
                   <option label={t('all')}>all</option>
@@ -77,7 +77,7 @@ function List(props: {
                   value={priorityFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setPriorityFilter(e.currentTarget.value);
+                    setPriorityFilter(e.target.value);
                   }}
                 >
                   <option label={t('all')}>all</option>
@@ -98,7 +98,7 @@ function List(props: {
                   value={assignmentFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setAssignmentFilter(e.currentTarget.value);
+                    setAssignmentFilter(e.target.value);
                   }}
                 >
                   <option label={t('all')}>all</option>

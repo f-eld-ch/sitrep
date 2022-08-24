@@ -1,13 +1,16 @@
 import React, { useContext, useEffect, useReducer } from "react";
 
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
+import uniq from "lodash/uniq";
+import { Hint } from "react-autocomplete-hint";
 import { Link, useParams } from "react-router-dom";
-import { Medium, Message } from "types";
+import { Medium, Message, MessageListData, MessageListVars } from "types";
 import { Email, Phone, Radio } from "./EditorForms";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import TriageModal from "./TriageModal";
+
 
 type State = {
   sender: string;
@@ -18,6 +21,7 @@ type State = {
   messageToTriage: Message | undefined
   media: MediaDetail
   saving: Boolean
+  autocompleteDetails: AutofillDetail
 }
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
@@ -38,7 +42,13 @@ export type RadioDetail = {
   channel?: string;
 }
 
-type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; } | { type: 'set_media_detail', detail: MediaDetail; }
+interface AutofillDetail {
+  senderReceiverNames: string[]
+  channelList: string[]
+  senderReceiverDetails: string[]
+}
+
+type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; } | { type: 'set_media_detail', detail: MediaDetail; } | { type: 'set_autofill_details', detail: AutofillDetail; }
 type Dispatch = (action: Action) => void
 
 
@@ -57,17 +67,22 @@ function initState(): State {
     content: "",
     media: { type: Medium.Radio },
     saving: false,
+    autocompleteDetails: { senderReceiverDetails: [], senderReceiverNames: [], channelList: [] },
   }
 }
 
 function Editor() {
   const { journalId } = useParams();
+  const { data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
+    fetchPolicy: 'cache-first',
+    variables: { journalId: journalId || "" },
+  });
+
   const [insertMessage, { error }] = useMutation(InsertMessage, {
     onCompleted(data) {
       // reset the form values
       dispatch({ type: 'clear' })
     },
-    fetchPolicy: 'network-only',
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
@@ -76,7 +91,6 @@ function Editor() {
       // reset the form values
       dispatch({ type: 'clear' })
     },
-    fetchPolicy: 'network-only',
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
@@ -101,7 +115,8 @@ function Editor() {
         return Object.assign({}, state, { media: action.detail })
       }
       case 'clear': {
-        return initState()
+        // keep autocompleteDetails
+        return Object.assign({}, initState(), { autocompleteDetails: state.autocompleteDetails });
       }
       case 'set_edit_message': {
         return Object.assign({}, state, {
@@ -116,6 +131,11 @@ function Editor() {
       case 'set_triage_message': {
         return Object.assign({}, state, {
           messageToTriage: action.message,
+        })
+      }
+      case 'set_autofill_details': {
+        return Object.assign({}, state, {
+          autocompleteDetails: action.detail,
         })
       }
       default: {
@@ -161,6 +181,17 @@ function Editor() {
     }
   }, [state, insertMessage, updateMessage, journalId]);
 
+  useEffect(() => {
+    dispatch({
+      type: 'set_autofill_details', detail:
+      {
+        senderReceiverNames: uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter((e) => e) || [],
+        senderReceiverDetails: uniq(data?.messages.filter(d => d.mediumId !== Medium.Radio).flatMap((d) => [d.senderDetail, d.receiverDetail])).filter((e) => e) || [],
+        channelList: uniq(data?.messages.filter(d => d.mediumId === Medium.Radio).map((d) => d.senderDetail)).filter((e) => e) || [],
+      }
+    })
+  }, [data, journalId])
+
 
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
@@ -205,7 +236,7 @@ function InputBox() {
 
   const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
-    let selectMedium = e.currentTarget.value;
+    let selectMedium = e.target.value;
     if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone) {
       dispatch({ type: 'set_media_detail', detail: { type: selectMedium } });
 
@@ -232,16 +263,18 @@ function InputBox() {
             </div>
             {state.media.type === Medium.Radio ?
               <div className="control">
-                <input
-                  className="input"
-                  value={state.media.channel || ""}
-                  type="text"
-                  onChange={(e) => {
-                    e.preventDefault();
-                    dispatch({ type: 'set_media_detail', detail: { type: Medium.Radio, channel: e.currentTarget.value } });
-                  }}
-                  placeholder={t('radioChannel')}
-                />
+                <Hint options={state.autocompleteDetails.channelList} allowTabFill={true} allowEnterFill={true} >
+                  <input
+                    className="input"
+                    value={state.media.channel || ""}
+                    type="text"
+                    onChange={(e) => {
+                      e.preventDefault();
+                      dispatch({ type: 'set_media_detail', detail: { type: Medium.Radio, channel: e.target.value } });
+                    }}
+                    placeholder={t('radioChannel')}
+                  />
+                </Hint>
               </div>
               : <></>}
           </div>
