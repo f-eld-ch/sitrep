@@ -22,9 +22,9 @@ export type Message = {
   id: string;
   content: string;
   sender: string;
-  senderDetail?: string;
+  senderDetail: string;
   receiver: string;
-  receiverDetail?: string;
+  receiverDetail: string;
   time: string;
   createdAt: Date;
   updatedAt: Date;

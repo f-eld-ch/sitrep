@@ -60,7 +60,7 @@ function NewForm() {
             placeholder={t('name')}
             onChange={(e) => {
               e.preventDefault();
-              setName(e.currentTarget.value);
+              setName(e.target.value);
             }}
           />
           <span className="icon is-small is-left">

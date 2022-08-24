@@ -2,6 +2,7 @@ import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/fre
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
+import { Hint } from "react-autocomplete-hint";
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { useEditorContext } from "../Editor";
 import { default as JournalMessage } from '../Message';
@@ -23,34 +24,40 @@ export function Email() {
                 </div>
                 <div className="field-body">
                     <div className="field is-grouped is-grouped-multiline">
-                        <p className="control is-expanded has-icons-left">
-                            <input
-                                className="input"
-                                type="text"
-                                value={state.sender}
-                                autoComplete="on"
-                                placeholder={t('name')}
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    dispatch({ type: 'set_sender', sender: e.currentTarget.value });
-                                }}
-                            />
+
+                        <div className="control is-expanded has-icons-left">
+                            <Hint options={state.autocompleteDetails.senderReceiverNames} allowTabFill={true} allowEnterFill={true} >
+                                <input
+                                    className="input"
+                                    type="text"
+                                    value={state.sender}
+                                    autoComplete="on"
+                                    placeholder={t('name')}
+                                    onChange={(e) => {
+                                        e.preventDefault();
+                                        dispatch({ type: 'set_sender', sender: e.target.value });
+                                    }}
+                                />
+                            </Hint>
                             <span className="icon is-small is-left">
                                 <FontAwesomeIcon icon={faCircleArrowLeft} />
                             </span>
-                        </p>
-                        <p className="control is-expanded">
-                            <input
-                                className="input"
-                                value={state.media.sender || ""}
-                                type="text"
-                                onChange={(e) => {
-                                    e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { sender: e.currentTarget.value }) });
-                                }}
-                                placeholder={t('emailAddress')}
-                            />
-                        </p>
+                        </div>
+                        <div className="control is-expanded">
+                            <Hint options={state.autocompleteDetails.senderReceiverDetails} allowTabFill={true} allowEnterFill={true} >
+                                <input
+                                    className="input"
+                                    value={state.media.sender || ""}
+                                    type="text"
+                                    onChange={(e) => {
+                                        e.preventDefault();
+                                        dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { sender: e.target.value }) });
+                                    }}
+                                    placeholder={t('emailAddress')}
+                                />
+                            </Hint>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,7 +76,7 @@ export function Email() {
                                 placeholder={t('name')}
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_receiver', receiver: e.currentTarget.value });
+                                    dispatch({ type: 'set_receiver', receiver: e.target.value });
                                 }}
                             />
                             <span className="icon is-small is-left">
@@ -83,7 +90,7 @@ export function Email() {
                                 type="text"
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { receiver: e.currentTarget.value }) });
+                                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { receiver: e.target.value }) });
                                 }}
                                 placeholder={t('emailAddress')}
                             />
@@ -106,7 +113,7 @@ export function Email() {
                                 placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    e.currentTarget.value && dispatch({ type: 'set_time', time: dayjs(e.currentTarget.value).toDate() });
+                                    e.target.value && dispatch({ type: 'set_time', time: dayjs(e.target.value).toDate() });
                                 }}
                             />
                             <span className="icon is-small is-left">
@@ -131,7 +138,7 @@ export function Email() {
                                 value={state.content}
                                 onChange={(e) => {
                                     e.preventDefault();
-                                    dispatch({ type: 'set_content', content: e.currentTarget.value });
+                                    dispatch({ type: 'set_content', content: e.target.value });
                                 }}
                             />
                         </div>
@@ -153,26 +160,28 @@ export function Email() {
                     </div>
                 </div>
             </div>
-            {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
-                <>
-                    <div className="title is-size-4 is-capitalized">{t('preview')}</div>
-                    <JournalMessage
-                        id={undefined}
-                        message={state.content}
-                        receiver={state.receiver}
-                        sender={state.sender}
-                        timeDate={state.time || new Date()}
-                        priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
-                        triage={state.messageToEdit?.triageId || TriageStatus.Pending}
-                        showControls={false}
-                        origMessage={undefined}
-                        setEditorMessage={undefined}
-                        setTriageMessage={undefined}
-                    />
-                </>
-            ) : (
-                <></>
-            )}
-        </div>
+            {
+                state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
+                    <>
+                        <div className="title is-size-4 is-capitalized">{t('preview')}</div>
+                        <JournalMessage
+                            id={undefined}
+                            message={state.content}
+                            receiver={state.receiver}
+                            sender={state.sender}
+                            timeDate={state.time || new Date()}
+                            priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
+                            triage={state.messageToEdit?.triageId || TriageStatus.Pending}
+                            showControls={false}
+                            origMessage={undefined}
+                            setEditorMessage={undefined}
+                            setTriageMessage={undefined}
+                        />
+                    </>
+                ) : (
+                    <></>
+                )
+            }
+        </div >
     );
 }
