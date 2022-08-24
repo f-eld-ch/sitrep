@@ -1,16 +1,17 @@
-import React, { useContext, useEffect, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useReducer } from "react";
 
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
 import { Hint } from "react-autocomplete-hint";
 import { Link, useParams } from "react-router-dom";
-import { Medium, Message, MessageListData, MessageListVars } from "types";
+import { Medium, Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
+import { default as JournalMessage } from './Message';
 import TriageModal from "./TriageModal";
-
 
 type State = {
   sender: string;
@@ -193,6 +194,16 @@ function Editor() {
   }, [data, journalId])
 
 
+  // create callbacks to have stable List renderings
+  const setEditorMessage = useCallback(
+    (message: Message | undefined) => dispatch({ type: "set_edit_message", message: message }),
+    [dispatch],
+  );
+  const setTriageMessage = useCallback(
+    (message: Message | undefined) => dispatch({ type: "set_triage_message", message: message }),
+    [dispatch],
+  );
+
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
       <div>
@@ -206,8 +217,8 @@ function Editor() {
           <div className="column">
             <List
               showControls={true}
-              setEditorMessage={(message: Message | undefined) => dispatch({ type: "set_edit_message", message: message })}
-              setTriageMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })}
+              setEditorMessage={setEditorMessage}
+              setTriageMessage={setTriageMessage}
             />
 
           </div>
@@ -221,6 +232,9 @@ function Editor() {
 function InputBox() {
   const { incidentId, journalId } = useParams();
   const { state, dispatch } = useEditorContext();
+
+  // debounce the content to prevent costly markdown renderings
+  const messageContentDebounced: string = useDebounce(state.content, 250);
 
   const renderFormContent = () => {
     if (state.media?.type === Medium.Radio) {
@@ -281,6 +295,26 @@ function InputBox() {
         </div>
       </div >
       {renderFormContent()}
+      {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
+        <>
+          <div className="title is-size-4 is-capitalized">{t('preview')}</div>
+          <JournalMessage
+            id={undefined}
+            message={messageContentDebounced}
+            receiver={state.receiver}
+            sender={state.sender}
+            timeDate={state.time || new Date()}
+            priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
+            triage={state.messageToEdit?.triageId || TriageStatus.Pending}
+            showControls={false}
+            origMessage={undefined}
+            setEditorMessage={undefined}
+            setTriageMessage={undefined}
+          />
+        </>
+      ) : (
+        <></>
+      )}
     </div >
   );
 }

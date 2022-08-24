@@ -3,9 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
 import { Hint } from "react-autocomplete-hint";
-import { Medium, PriorityStatus, TriageStatus } from "types";
+import { Medium } from "types";
 import { useEditorContext } from "../Editor";
-import { default as JournalMessage } from '../Message';
 
 export function Phone() {
 
@@ -160,26 +159,6 @@ export function Phone() {
                     </div>
                 </div>
             </div>
-            {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
-                <>
-                    <div className="title is-size-4 is-capitalized">{t('preview')}</div>
-                    <JournalMessage
-                        id={undefined}
-                        message={state.content}
-                        receiver={state.receiver}
-                        sender={state.sender}
-                        timeDate={state.time || new Date()}
-                        priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
-                        triage={state.messageToEdit?.triageId || TriageStatus.Pending}
-                        showControls={false}
-                        origMessage={undefined}
-                        setEditorMessage={undefined}
-                        setTriageMessage={undefined}
-                    />
-                </>
-            ) : (
-                <></>
-            )}
         </div>
     );
 }
