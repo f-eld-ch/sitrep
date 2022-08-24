@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -60,7 +61,7 @@ function List(props: {
                 >
                   <option label={t('all')}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status} label={t([`triage.${status}`, 'triage.pending'])}>{status}</option>
+                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`])}>{status}</option>
                   ))}
                 </select>
               </div>
@@ -81,7 +82,7 @@ function List(props: {
                 >
                   <option label={t('all')}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio} label={t([`priority.${prio}`, 'priority.normal'])}>{prio}</option>
+                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
                   ))}
                 </select>
               </div>
