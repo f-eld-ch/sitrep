@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 import "./App.scss";
@@ -21,12 +21,15 @@ import { List as ResourcesList } from "views/resource";
 import { List as TaskList } from "views/tasks";
 
 import { ApolloProvider } from "@apollo/client";
+import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { UserState } from "types";
 import { UserContext } from "utils";
 import MessageSheet from "views/journal/MessageSheet";
 import { Layout } from "views/Layout";
 import { default as client } from "./client";
+
+const Map = lazy(() => import('views/map'));
 
 function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
@@ -146,6 +149,16 @@ function App() {
                   }
                 />
                 <Route
+                  path="map"
+                  element={
+                    <Layout>
+                      <Suspense fallback={<Spinner />} >
+                        <Map />
+                      </Suspense>
+                    </Layout>
+                  }
+                />
+                <Route
                   path="tasks"
                   element={
                     <Layout>
@@ -175,7 +188,7 @@ function App() {
           </Routes>
         </Router>
       </ApolloProvider>
-    </UserContext.Provider>
+    </UserContext.Provider >
   );
 }
 
