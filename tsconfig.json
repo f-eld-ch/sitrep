@@ -19,7 +19,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": [
+      "mapbox__mapbox-gl-draw"
+    ]
   },
   "include": [
     "src"
