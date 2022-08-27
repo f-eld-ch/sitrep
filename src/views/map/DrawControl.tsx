@@ -1,14 +1,12 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { useControl } from "react-map-gl";
 
-import { Feature } from 'geojson';
-import { memo } from "react";
+import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
 import type { ControlPosition, MapRef } from "react-map-gl";
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
     position?: ControlPosition;
-    initialFeatures?: Record<string, Feature> | undefined;
-
+    setDraw: Dispatch<SetStateAction<MapboxDraw | undefined>>
     onCreate: (evt: any) => void;
     onUpdate: (evt: any) => void;
     onDelete: (evt: any) => void;
@@ -16,6 +14,13 @@ type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
 };
 
 function DrawControl(props: DrawControlProps) {
+    const [draw, setDraw] = useState<MapboxDraw>();
+    const { setDraw: setDrawInParent } = props;
+
+    useEffect(() => {
+        if (draw) setDrawInParent(draw)
+    }, [draw, setDrawInParent])
+
     useControl<MapboxDraw>(
         ({ map }: { map: MapRef }) => {
             map.on("draw.create", props.onCreate);
@@ -25,9 +30,7 @@ function DrawControl(props: DrawControlProps) {
             map.on("draw.delete", props.onDelete);
 
             const draw = new MapboxDraw(props);
-            // props.initialFeatures && Object.values(props.initialFeatures).forEach(element => {
-            //     element && draw.add(element);
-            // });
+            setDraw(draw);
 
             return draw;
         },
@@ -47,6 +50,7 @@ function DrawControl(props: DrawControlProps) {
 
     return null;
 }
+
 
 DrawControl.defaultProps = {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
