@@ -1,3 +1,4 @@
+
 export const style = [
     {
         'id': 'gl-draw-polygon-fill-inactive',
@@ -8,8 +9,8 @@ export const style = [
             ['!=', 'mode', 'static']
         ],
         'paint': {
-            'fill-color': '#0055ff',
-            'fill-outline-color': '#0055ff',
+            'fill-color': ['coalesce', ['get', 'user_color'], '#055ff'],
+            'fill-outline-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
             'fill-opacity': 0.1
         }
     },
@@ -20,7 +21,7 @@ export const style = [
         'paint': {
             'fill-color': '#fbb03b',
             'fill-outline-color': '#fbb03b',
-            'fill-opacity': 0.1
+            'fill-opacity': 0.3
         }
     },
     {
@@ -47,7 +48,7 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-color': '#0055ff',
+            'line-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
             'line-width': 2
         }
     },
@@ -78,8 +79,24 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-color': '#0055ff',
+            'line-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
             'line-width': 2
+        }
+    },
+    {
+        'id': 'gl-draw-line-symbol-inactive',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['==', 'meta', 'feature'],
+            ['has', 'user_icon'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'icon-image': ["get", "user_icon"],
+            'icon-allow-overlap': true,
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 18, 1],
         }
     },
     {
@@ -126,33 +143,33 @@ export const style = [
         }
     },
     {
-        'id': 'gl-draw-point-point-stroke-inactive',
-        'type': 'circle',
-        'filter': ['all',
-            ['==', 'active', 'false'],
-            ['==', '$type', 'Point'],
-            ['==', 'meta', 'feature'],
-            ['!=', 'mode', 'static']
-        ],
-        'paint': {
-            'circle-radius': 3,
-            'circle-opacity': 1,
-            'circle-color': '#fff'
-        }
-    },
-    {
-        'id': 'gl-draw-point-symbol',
+        'id': 'gl-draw-point-icon',
         'type': 'symbol',
         'filter': ['all',
-            // ['==', 'active', 'false'],
             ['==', '$type', 'Point'],
             ['==', 'meta', 'feature'],
+            ['has', 'user_icon'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
-            'icon-image': 'KantonalesFuehrungsorgan',
+            'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': 1 //['get', 'user_icon-name']
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 18, 1],
+        }
+    },
+    {
+        'id': 'gl-draw-text-name',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'meta', 'feature'],
+            ['has', 'user_name'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'text-field': ["coalesce", ["get", "user_name"]],
+            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-offset': [0, 1.25],
+            'text-anchor': 'top'
         }
     },
     {
@@ -162,10 +179,11 @@ export const style = [
             ['==', 'active', 'false'],
             ['==', '$type', 'Point'],
             ['==', 'meta', 'feature'],
+            ['!has', 'user_icon'],
             ['!=', 'mode', 'static']
         ],
         'paint': {
-            'circle-radius': 1,
+            'circle-radius': 3,
             'circle-color': '#0055ff'
         },
     },
@@ -175,6 +193,7 @@ export const style = [
         'filter': ['all',
             ['==', '$type', 'Point'],
             ['==', 'active', 'true'],
+            ['!has', 'user_icon'],
             ['!=', 'meta', 'midpoint']
         ],
         'paint': {
@@ -188,9 +207,10 @@ export const style = [
         'filter': ['all',
             ['==', '$type', 'Point'],
             ['!=', 'meta', 'midpoint'],
+            ['!has', 'user_icon'],
             ['==', 'active', 'true']],
         'paint': {
-            'circle-radius': 5,
+            'circle-radius': 3,
             'circle-color': '#fbb03b'
         }
     },
