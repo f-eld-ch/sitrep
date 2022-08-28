@@ -1,42 +1,55 @@
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import center from '@turf/center';
+import { feature as turfFeature, Geometry } from '@turf/helpers';
 import { Feature, FeatureCollection } from 'geojson';
+import uniqBy from 'lodash/uniqBy';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapRef, Marker, NavigationControl, ScaleControl } from 'react-map-gl';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import Github from 'react-color/lib/components/github/Github';
+import { FullscreenControl, Map, MapRef, NavigationControl, Popup, PopupProps, ScaleControl } from 'react-map-gl';
+import BabsPointMode from './BabsPointMode';
 import DrawControl from './DrawControl';
 import MapIcons, { BabsIcons } from './MapIcons';
 import style from './style';
+import StyleSwitcherControl from './StyleSwitcherControl';
 
 const modes = {
     ...MapboxDraw.modes,
+    'draw_point': BabsPointMode
 };
 
 
 export function MapComponent() {
     const [draw, setDraw] = useState<MapboxDraw>();
+    const [selectedFeature, setSelectedFeature] = useState<string | number | undefined>();
+    const [popupProps, setPopupProps] = useState<PopupProps>({ offset: 20, anchor: 'bottom', latitude: 46.87148, longitude: 8.62994, closeOnMove: false, focusAfterOpen: true, maxWidth: '50vw', onClose: () => setSelectedFeature(undefined) });
+    const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
+
+    const [viewState, setViewState] = useState({
+        latitude: 46.87148,
+        longitude: 8.62994,
+        zoom: 12,
+    });
+
     const mapRef = useRef<MapRef>();
 
-    const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": {}, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": {}, "geometry": { "coordinates": [8.636779598438778, 46.88505318042553], "type": "Point" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.599948601222138, 46.8865833274003], [8.601005240738544, 46.88780194963539], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.601665640436266, 46.88671873192163], [8.601005240738544, 46.88780194963539], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.601665640436266, 46.88671873192163], [8.601005240738544, 46.88780194963539], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.601665640436266, 46.88671873192163], [8.601848055588391, 46.887680102391215], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.601617016502672, 46.88775998179182], [8.601848055588391, 46.887680102391215], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.601617016502672, 46.88775998179182], [8.601848055588391, 46.887680102391215], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }, { "id": "beee8e1c04b4d5cc4ee175b129847389", "type": "Feature", "properties": {}, "geometry": { "coordinates": [[[8.604540756827362, 46.88790384354587], [8.611739113533702, 46.89034100033123], [8.615173191962015, 46.89052152605822], [8.616493991357515, 46.89029586880457], [8.618144990602701, 46.88844544351235], [8.623194670583871, 46.87836818856752], [8.62240219094656, 46.87723963716476], [8.620420991853337, 46.87642706545742], [8.614807594422444, 46.87647220865287], [8.608005477534704, 46.877329922150466], [8.605694078592592, 46.880760639041824], [8.602920399862057, 46.885048726685255], [8.601203360647872, 46.88784708326057], [8.60145493672394, 46.88775998179182], [8.601848055588391, 46.887680102391215], [8.604540756827362, 46.88790384354587]]], "type": "Polygon" } }] }
-    );
+    const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "icon": null, "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
+
     const onUpdate = useCallback(e => {
         console.log(e);
         setFeatures(curFeatureCollection => {
             const newFeatureCollection = { ...curFeatureCollection };
             const features: Feature[] = e.features;
             for (const f of features) {
-                if (f.geometry.type === "Point") {
-                    f.properties = Object.assign({}, f.properties, { "icon-name": BabsIcons.KantonalesFuehrungsorgan.name });
-                    draw?.setFeatureProperty(f.id?.toString() || "", "icon-name", BabsIcons.KantonalesFuehrungsorgan.name)
-                    console.log(draw?.getAll());
-                }
-                newFeatureCollection.features.push(f);
+                newFeatureCollection.features.unshift(f);
+                newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
             }
             return newFeatureCollection;
         });
-    }, [draw]);
+    }, []);
 
     const onDelete = useCallback(e => {
         setFeatures(curFeatureCollection => {
@@ -60,42 +73,55 @@ export function MapComponent() {
                 newFeatureCollection.features = curFeatureCollection.features.filter((e) => e.id !== f.id);
             }
             for (const f of createdFeatures) {
-                newFeatureCollection.features.push(f);
+                newFeatureCollection.features.unshift(f);
+                newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
             }
             return newFeatureCollection;
         });
     }, []);
 
-    const [symbols] = useState([{
-        id: 1,
-        coordinates: [46.88061, 8.64463],
-        icon: BabsIcons.KantonalesFuehrungsorgan.src,
-    },
-    {
-        id: 2,
-        coordinates: [46.88074, 8.61234],
-        icon: BabsIcons.KantonalesFuehrungsorgan.src,
-    },
-    {
-        id: 3,
-        coordinates: [46.86240, 8.62903],
-        icon: BabsIcons.KantonalesFuehrungsorgan.src,
-    },
-    ]);
 
-    const markers = useMemo(() => symbols.map(symbol => (
-        <Marker key={symbol.id}
-            latitude={symbol.coordinates[0]}
-            longitude={symbol.coordinates[1]}
-        >
-            <img src={symbol.icon} alt="KFO" width={48} height={48} />
+    const onSelectionChange = useCallback(e => {
+        console.log("onSelectionChange", e);
+        const features: Feature[] = e.features;
+        if (features.length === 1) {
+            const centerPoint = center(turfFeature(features[0].geometry as Geometry));
 
-        </Marker>)
-    ), [symbols]);
+            setPopupProps(curPopup => {
+                const newPopupProps = { ...curPopup };
+                console.log("showing popup at", centerPoint);
+                newPopupProps.latitude = centerPoint.geometry.coordinates[1];
+                newPopupProps.longitude = centerPoint.geometry.coordinates[0];
+                newPopupProps.focusAfterOpen = true;
+                return newPopupProps;
+            });
+            setSelectedFeature(features[0].id);
+            mapRef && mapRef.current && mapRef.current.flyTo({ center: [centerPoint.geometry.coordinates[0], centerPoint.geometry.coordinates[1]], essential: true })
+        }
+        else {
+            setSelectedFeature(undefined);
+        }
+    }, [setPopupProps, setSelectedFeature, mapRef]);
+
+    useEffect(() => {
+        if (!mapRef || !isMapLoaded || !draw) {
+            return;
+        }
+
+        draw.set(features);
+        console.log("setting features in Effect", features);
+    }, [draw, mapRef, features, isMapLoaded]);
 
     const onMapLoad = useCallback(() => {
-        mapRef && mapRef.current && mapRef.current.on("load", () => console.log("maploaded"))
-    }, []);
+        Object.values(BabsIcons).forEach(icon => {
+            console.log("adding Image", icon.name)
+            let customIcon = new Image(48, 48);
+            customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
+            customIcon.src = icon.src;
+        });
+        setIsMapLoaded(true);
+
+    }, [setIsMapLoaded, mapRef]);
 
     return (
         <>
@@ -104,14 +130,21 @@ export function MapComponent() {
                 onLoad={onMapLoad}
                 mapLib={maplibregl}
                 attributionControl={true}
-                initialViewState={{
-                    latitude: 46.87148,
-                    longitude: 8.62994,
-                    zoom: 12,
-                }}
+                {...viewState}
+                onMove={evt => setViewState(evt.viewState)}
                 style={{ minHeight: "85vh" }}
                 mapStyle={"https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"}
             >
+                <StyleSwitcherControl position={'bottom-right'} styles={[
+                    {
+                        title: "Basiskarte",
+                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
+                    },
+                    {
+                        title: "Satellit",
+                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
+                    }
+                ]} />
                 <FullscreenControl position={'top-left'} />
                 <NavigationControl position={'top-left'} visualizePitch={true} />
                 <DrawControl
@@ -124,26 +157,99 @@ export function MapComponent() {
                         trash: true,
                         point: true,
                         line_string: true,
-                        combine_features: false,
-                        uncombine_features: false,
+                        combine_features: true,
+                        uncombine_features: true,
                     }}
                     boxSelect={false}
                     clickBuffer={10}
-                    defaultMode="draw_point"
+                    defaultMode="simple_select"
                     modes={modes}
                     onCreate={onUpdate}
                     onUpdate={onUpdate}
                     onDelete={onDelete}
                     onCombine={onCombine}
+                    onSelectionChange={onSelectionChange}
                     userProperties={true}
                 />
-                <MapIcons draw={draw} initialFeatures={features} />
+                <MapIcons />
                 <ScaleControl unit={"metric"} position={'bottom-left'} />
-                {markers}
+                {selectedFeature &&
+                    <Popup {...popupProps}>
+                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
+                    </Popup>
+                }
             </Map>
-            {/* <div>{JSON.stringify(features)}</div> */}
+            <div>{JSON.stringify(features)}</div>
         </>
     );
+}
+
+function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined }) {
+    const { feature, onUpdate } = props;
+    const setIcon = useCallback((e) => {
+        if (feature !== undefined) {
+            feature.properties = Object.assign({}, feature.properties, { "icon": e.target.value });
+            onUpdate({ features: [feature] })
+        }
+    }, [onUpdate, feature]);
+
+    const setName = useCallback((e) => {
+        if (feature !== undefined) {
+            feature.properties = Object.assign({}, feature.properties, { "name": e.target.value });
+            onUpdate({ features: [feature] })
+        }
+    }, [onUpdate, feature]);
+
+    const setColor = useCallback((color) => {
+        if (feature !== undefined) {
+            feature.properties = Object.assign({}, feature.properties, { "color": color.hex });
+            onUpdate({ features: [feature] })
+        }
+    }, [onUpdate, feature]);
+
+    return (
+        <div className='container'>
+            <h3 className='title is-size-5'>Eigenschaften</h3>
+            {feature && (feature.geometry.type === "Point" || feature.geometry.type === "LineString") ?
+                <div className="field is-horizontal">
+                    <div className="field-label is-normal">
+                        <label className="label">Symbol</label>
+                    </div>
+                    <div className="field-body">
+                        <div className="field is-expanded">
+                            <div className="control">
+                                <div className="select">
+                                    <select onChange={setIcon}>
+                                        <option>Icon</option>
+
+                                        {Object.values(BabsIcons).map((icon) => (
+                                            <option key={icon.name} label={icon.description}>{icon.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                : <></>}
+            <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                    <label className="label">Name</label>
+                </div>
+                <div className="field-body">
+                    <div className="field is-expanded">
+                        <div className="field">
+                            <p className="control">
+                                <input className="input" type="text" placeholder="Name" value={feature?.properties?.name} onChange={setName} />
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {feature && feature.geometry.type !== "Point" && <Github colors={["#ff0000", "0000ff", "000000"]} onChangeComplete={setColor} />
+            }
+        </div >
+    )
 }
 
 export default memo(MapComponent);

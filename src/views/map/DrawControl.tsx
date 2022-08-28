@@ -11,6 +11,7 @@ type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
     onUpdate: (evt: any) => void;
     onDelete: (evt: any) => void;
     onCombine: (evt: any) => void;
+    onSelectionChange: (evt: any) => void;
 };
 
 function DrawControl(props: DrawControlProps) {
@@ -28,6 +29,7 @@ function DrawControl(props: DrawControlProps) {
             map.on("draw.combine", props.onCombine);
             map.on("draw.uncombine", props.onCombine);
             map.on("draw.delete", props.onDelete);
+            map.on("draw.selectionchange", props.onSelectionChange)
 
             const draw = new MapboxDraw(props);
             setDraw(draw);
@@ -60,7 +62,9 @@ DrawControl.defaultProps = {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onDelete: () => { },
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onCombine: () => { }
+    onCombine: () => { },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onSelectionChange: () => { }
 };
 
 export default memo(DrawControl);
