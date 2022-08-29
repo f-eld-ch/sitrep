@@ -1,38 +1,8 @@
-import ABCDekontaminationsstelle from 'assets/babs/ABCDekontaminationsstelle.svg';
-import AbsperrungEinsatzraum from 'assets/babs/AbsperrungEinsatzraum.svg';
-import KantonalesFuehrungsorgan from 'assets/babs/KantonalesFuehrungsorgan.svg';
-import Teilzerstoerung from 'assets/babs/Teilzerstoerung.svg';
+import { BabsIcons } from 'components/BabsIcons';
 
-
+import DefaultMaker from 'assets/marker.svg';
 import { memo, useEffect } from "react";
 import { useMap } from "react-map-gl";
-
-export const BabsIcons = {
-    ABCDekontaminationsstelle: {
-        name: 'ABCDekontaminationsstelle',
-        description: "ABC Dekontaminationsstelle",
-        src: ABCDekontaminationsstelle,
-        size: 48,
-    },
-    AbsperrungEinsatzraum: {
-        name: 'AbsperrungEinsatzraum',
-        description: "Absperrung des Einsatzraums",
-        src: AbsperrungEinsatzraum,
-        size: 48,
-    },
-    KantonalesFuehrungsorgan: {
-        name: 'KantonalesFuehrungsorgan',
-        description: "Kantonales Führungsorgan",
-        src: KantonalesFuehrungsorgan,
-        size: 48,
-    },
-    Teilzerstoerung: {
-        src: Teilzerstoerung,
-        name: 'Teilzerstoerung',
-        description: "Teilzerstörung",
-        size: 32,
-    }
-};
 
 type MapIconProps = {
     // initialFeatures?: FeatureCollection;
@@ -46,8 +16,13 @@ function MapIcons(props: MapIconProps) {
 
     useEffect(() => {
         map && map.current && map.current.on('load', function () {
+            // Add the default marker
+            let defaultMarker = new Image(32, 32);
+            defaultMarker.onload = () => map && map.current && !map.current.hasImage('default_marker') && map.current.addImage('default_marker', defaultMarker);
+            defaultMarker.src = DefaultMaker;
+
+            // add all BabsIcons
             Object.values(BabsIcons).forEach(icon => {
-                console.log("adding Image", icon.name)
                 let customIcon = new Image(icon.size, icon.size);
                 customIcon.onload = () => map && map.current && !map.current.hasImage(icon.name) && map.current.addImage(icon.name, customIcon)
                 customIcon.src = icon.src;
