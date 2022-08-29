@@ -3,16 +3,20 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import center from '@turf/center';
 import { feature as turfFeature, Geometry } from '@turf/helpers';
-import { Feature, FeatureCollection } from 'geojson';
+import DefaultMaker from 'assets/marker.svg';
+import { BabsIcons } from 'components/BabsIcons';
+import { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
+import isEmpty from 'lodash/isEmpty';
+import omitBy from 'lodash/omitBy';
 import uniqBy from 'lodash/uniqBy';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import Github from 'react-color/lib/components/github/Github';
+import { CirclePicker } from 'react-color';
 import { FullscreenControl, Map, MapRef, NavigationControl, Popup, PopupProps, ScaleControl } from 'react-map-gl';
-import BabsPointMode from './BabsPointMode';
 import DrawControl from './DrawControl';
-import MapIcons, { BabsIcons } from './MapIcons';
+import BabsPointMode from './DrawModes/BabsPointMode';
+import MapIcons from './MapIcons';
 import style from './style';
 import StyleSwitcherControl from './StyleSwitcherControl';
 
@@ -25,21 +29,21 @@ const modes = {
 export function MapComponent() {
     const [draw, setDraw] = useState<MapboxDraw>();
     const [selectedFeature, setSelectedFeature] = useState<string | number | undefined>();
-    const [popupProps, setPopupProps] = useState<PopupProps>({ offset: 20, anchor: 'bottom', latitude: 46.87148, longitude: 8.62994, closeOnMove: false, focusAfterOpen: true, maxWidth: '50vw', onClose: () => setSelectedFeature(undefined) });
+    const [popupProps, setPopupProps] = useState<PopupProps>({ offset: 20, latitude: 46.87148, longitude: 8.62994, closeOnMove: false, focusAfterOpen: true, maxWidth: '50vw', onClose: () => setSelectedFeature(undefined) });
     const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
 
     const [viewState, setViewState] = useState({
         latitude: 46.87148,
         longitude: 8.62994,
         zoom: 12,
+        bearing: 0,
     });
 
     const mapRef = useRef<MapRef>();
 
-    const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "icon": null, "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
-
+    // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "2b32999701a0c620d0f9259203ed63dd", "type": "Feature", "properties": { "icon": "AbsperrungVerkehrswege", "iconRotation": 45, }, "geometry": { "coordinates": [8.649638746498567, 46.87569952044984], "type": "Point" } }, { "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "color": "#0055ff", "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
+    const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
     const onUpdate = useCallback(e => {
-        console.log(e);
         setFeatures(curFeatureCollection => {
             const newFeatureCollection = { ...curFeatureCollection };
             const features: Feature[] = e.features;
@@ -82,14 +86,12 @@ export function MapComponent() {
 
 
     const onSelectionChange = useCallback(e => {
-        console.log("onSelectionChange", e);
         const features: Feature[] = e.features;
         if (features.length === 1) {
             const centerPoint = center(turfFeature(features[0].geometry as Geometry));
 
             setPopupProps(curPopup => {
                 const newPopupProps = { ...curPopup };
-                console.log("showing popup at", centerPoint);
                 newPopupProps.latitude = centerPoint.geometry.coordinates[1];
                 newPopupProps.longitude = centerPoint.geometry.coordinates[0];
                 newPopupProps.focusAfterOpen = true;
@@ -107,14 +109,16 @@ export function MapComponent() {
         if (!mapRef || !isMapLoaded || !draw) {
             return;
         }
-
         draw.set(features);
-        console.log("setting features in Effect", features);
     }, [draw, mapRef, features, isMapLoaded]);
 
     const onMapLoad = useCallback(() => {
+        // Add the default marker
+        let defaultMarker = new Image(32, 32);
+        defaultMarker.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage('default_marker') && mapRef.current.addImage('default_marker', defaultMarker);
+        defaultMarker.src = DefaultMaker;
+
         Object.values(BabsIcons).forEach(icon => {
-            console.log("adding Image", icon.name)
             let customIcon = new Image(48, 48);
             customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
             customIcon.src = icon.src;
@@ -175,37 +179,48 @@ export function MapComponent() {
                 <ScaleControl unit={"metric"} position={'bottom-left'} />
                 {selectedFeature &&
                     <Popup {...popupProps}>
-                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
+                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} bearing={viewState.bearing} />
                     </Popup>
                 }
             </Map>
-            <div>{JSON.stringify(features)}</div>
+            {/* <div>{JSON.stringify(features)}</div> */}
         </>
     );
 }
 
-function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined }) {
-    const { feature, onUpdate } = props;
-    const setIcon = useCallback((e) => {
-        if (feature !== undefined) {
-            feature.properties = Object.assign({}, feature.properties, { "icon": e.target.value });
-            onUpdate({ features: [feature] })
-        }
-    }, [onUpdate, feature]);
+function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined, bearing: number }) {
+    const { feature, onUpdate, bearing } = props;
+    const [iconFixed, setIconFixed] = useState<boolean>(feature && feature.properties && (feature.properties.iconRotation));
+    const [name, setName] = useState<string>((feature && feature.properties && feature.properties.name) || "");
+    const [icon, setIcon] = useState<string>((feature && feature.properties && feature.properties.icon) || "");
+    const [color, setColor] = useState<string>((feature && feature.properties && feature.properties.color) || "");
 
-    const setName = useCallback((e) => {
+    useEffect(() => {
         if (feature !== undefined) {
-            feature.properties = Object.assign({}, feature.properties, { "name": e.target.value });
-            onUpdate({ features: [feature] })
-        }
-    }, [onUpdate, feature]);
+            let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
+                "icon": icon,
+                "color": color,
+                "name": name,
+            });
+            feature.properties = omitBy(properties, isEmpty);
+            onUpdate({ features: [feature] });
 
-    const setColor = useCallback((color) => {
-        if (feature !== undefined) {
-            feature.properties = Object.assign({}, feature.properties, { "color": color.hex });
-            onUpdate({ features: [feature] })
         }
-    }, [onUpdate, feature]);
+    }, [onUpdate, feature, name, iconFixed, color, icon]);
+
+    const onIconFixed = useCallback((e) => {
+        setIconFixed(e.checked);
+        if (feature !== undefined) {
+            let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
+                "iconRotation": bearing,
+            });
+            if (iconFixed) {
+                delete properties["iconRotation"];
+            }
+            feature.properties = properties;
+            onUpdate({ features: [feature] });
+        }
+    }, [onUpdate, feature, iconFixed, setIconFixed, bearing]);
 
     return (
         <div className='container'>
@@ -219,7 +234,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         <div className="field is-expanded">
                             <div className="control">
                                 <div className="select">
-                                    <select onChange={setIcon}>
+                                    <select onChange={e => setIcon(e.target.value)}>
                                         <option>Icon</option>
 
                                         {Object.values(BabsIcons).map((icon) => (
@@ -229,9 +244,15 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                                 </div>
                             </div>
                         </div>
+                        {feature && feature.geometry.type === "Point" &&
+                            < label className="checkbox">
+                                <input type="checkbox" onChange={onIconFixed} checked={iconFixed} />
+                                Fixiert
+                            </label>}
                     </div>
                 </div>
-                : <></>}
+                : <></>
+            }
             <div className="field is-horizontal">
                 <div className="field-label is-normal">
                     <label className="label">Name</label>
@@ -240,13 +261,14 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                     <div className="field is-expanded">
                         <div className="field">
                             <p className="control">
-                                <input className="input" type="text" placeholder="Name" value={feature?.properties?.name} onChange={setName} />
+                                <input className="input" type="text" placeholder="Name" value={feature?.properties?.name} onChange={e => setName(e.target.value)} />
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
-            {feature && feature.geometry.type !== "Point" && <Github colors={["#ff0000", "0000ff", "000000"]} onChangeComplete={setColor} />
+            {
+                feature && feature.geometry.type !== "Point" && <CirclePicker colors={["#ff2b00", "#0055ff", "#000000"]} onChangeComplete={(color) => setColor(color.hex)} />
             }
         </div >
     )

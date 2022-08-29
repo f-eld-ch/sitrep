@@ -9,8 +9,8 @@ export const style = [
             ['!=', 'mode', 'static']
         ],
         'paint': {
-            'fill-color': ['coalesce', ['get', 'user_color'], '#055ff'],
-            'fill-outline-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
+            'fill-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'fill-outline-color': ['coalesce', ['get', 'user_color'], '#000000'],
             'fill-opacity': 0.1
         }
     },
@@ -31,7 +31,7 @@ export const style = [
             ['==', '$type', 'Point'],
             ['==', 'meta', 'midpoint']],
         'paint': {
-            'circle-radius': 3,
+            'circle-radius': 4,
             'circle-color': '#fbb03b'
         }
     },
@@ -48,7 +48,7 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
+            'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
             'line-width': 2
         }
     },
@@ -79,12 +79,12 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-color': ['coalesce', ['get', 'user_color'], '#0055ff'],
+            'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
             'line-width': 2
         }
     },
     {
-        'id': 'gl-draw-line-symbol-inactive',
+        'id': 'gl-draw-line-symbol',
         'type': 'symbol',
         'filter': ['all',
             ['==', 'active', 'false'],
@@ -96,7 +96,24 @@ export const style = [
         'layout': {
             'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 18, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
+        }
+    },
+    {
+        'id': 'gl-draw-line-symbol-active',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['==', 'meta', 'feature'],
+            ['==', 'active', 'true'],
+            ['has', 'user_icon'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'icon-image': ["get", "user_icon"],
+            'icon-allow-overlap': true,
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
         }
     },
     {
@@ -149,12 +166,51 @@ export const style = [
             ['==', '$type', 'Point'],
             ['==', 'meta', 'feature'],
             ['has', 'user_icon'],
+            ['!has', 'user_iconRotation'],
+        ],
+        'layout': {
+            'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
+            'icon-pitch-alignment': 'viewport',
+            'icon-allow-overlap': true,
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
+        }
+    },
+    {
+        'id': 'gl-draw-point-icon-rotation',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', '$type', 'Point'],
+            ['==', 'meta', 'feature'],
+            ['has', 'user_icon'],
+            ['has', 'user_iconRotation'],
+        ],
+        'layout': {
+            'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
+            'icon-allow-overlap': true,
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
+            'icon-rotation-alignment': 'map',
+            'icon-pitch-alignment': 'map',
+            'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0]
+        }
+    },
+    {
+        'id': 'gl-draw-text-name-point',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'meta', 'feature'],
+            ['has', 'user_name'],
+            ['==', '$type', 'Point'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
-            'icon-image': ["get", "user_icon"],
-            'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 18, 1],
+            'text-field': ["coalesce", ["get", "user_name"], ""],
+            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-anchor': 'center',
+            'text-size': ['interpolate', ['linear'], ['zoom'], 9, 0, 18, 16],
+            'text-offset': [0, 1.25],
+        },
+        'paint': {
+            'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
         }
     },
     {
@@ -163,13 +219,17 @@ export const style = [
         'filter': ['all',
             ['==', 'meta', 'feature'],
             ['has', 'user_name'],
+            ['!=', '$type', 'Point'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
-            'text-field': ["coalesce", ["get", "user_name"]],
+            'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["Frutiger Neue Condensed Bold"],
-            'text-offset': [0, 1.25],
-            'text-anchor': 'top'
+            'text-size': ['interpolate', ['linear'], ['zoom'], 9, 4, 18, 24],
+            'text-anchor': 'center'
+        },
+        'paint': {
+            'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
         }
     },
     {
@@ -183,7 +243,7 @@ export const style = [
             ['!=', 'mode', 'static']
         ],
         'paint': {
-            'circle-radius': 3,
+            'circle-radius': 5,
             'circle-color': '#0055ff'
         },
     },
@@ -210,53 +270,8 @@ export const style = [
             ['!has', 'user_icon'],
             ['==', 'active', 'true']],
         'paint': {
-            'circle-radius': 3,
+            'circle-radius': 5,
             'circle-color': '#fbb03b'
-        }
-    },
-    {
-        'id': 'gl-draw-polygon-fill-static',
-        'type': 'fill',
-        'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
-        'paint': {
-            'fill-color': '#404040',
-            'fill-outline-color': '#404040',
-            'fill-opacity': 0.1
-        }
-    },
-    {
-        'id': 'gl-draw-polygon-stroke-static',
-        'type': 'line',
-        'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
-        'layout': {
-            'line-cap': 'round',
-            'line-join': 'round'
-        },
-        'paint': {
-            'line-color': '#404040',
-            'line-width': 2
-        }
-    },
-    {
-        'id': 'gl-draw-line-static',
-        'type': 'line',
-        'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
-        'layout': {
-            'line-cap': 'round',
-            'line-join': 'round'
-        },
-        'paint': {
-            'line-color': '#404040',
-            'line-width': 2
-        }
-    },
-    {
-        'id': 'gl-draw-point-static',
-        'type': 'circle',
-        'filter': ['all', ['==', 'mode', 'static'], ['==', '$type', 'Point']],
-        'paint': {
-            'circle-radius': 1,
-            'circle-color': '#404040'
         }
     }
 ];
