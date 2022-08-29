@@ -14,6 +14,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { CirclePicker } from 'react-color';
 import { FullscreenControl, Map, MapRef, NavigationControl, Popup, PopupProps, ScaleControl } from 'react-map-gl';
+import { useParams } from 'react-router-dom';
+import useLocalStorage from 'utils/useLocalStorage';
 import DrawControl from './DrawControl';
 import BabsPointMode from './DrawModes/BabsPointMode';
 import MapIcons from './MapIcons';
@@ -41,19 +43,23 @@ export function MapComponent() {
 
     const mapRef = useRef<MapRef>();
 
+    const { incidentId } = useParams();
     // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "2b32999701a0c620d0f9259203ed63dd", "type": "Feature", "properties": { "icon": "AbsperrungVerkehrswege", "iconRotation": 45, }, "geometry": { "coordinates": [8.649638746498567, 46.87569952044984], "type": "Point" } }, { "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "color": "#0055ff", "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
-    const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
+    const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [] });
+    // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
+
     const onUpdate = useCallback(e => {
         setFeatures(curFeatureCollection => {
+
             const newFeatureCollection = { ...curFeatureCollection };
             const features: Feature[] = e.features;
             for (const f of features) {
                 newFeatureCollection.features.unshift(f);
-                newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
             }
+            newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
-    }, []);
+    }, [setFeatures]);
 
     const onDelete = useCallback(e => {
         setFeatures(curFeatureCollection => {
@@ -65,7 +71,7 @@ export function MapComponent() {
             }
             return newFeatureCollection;
         });
-    }, []);
+    }, [setFeatures]);
 
     const onCombine = useCallback(e => {
         setFeatures(curFeatureCollection => {
@@ -77,12 +83,12 @@ export function MapComponent() {
                 newFeatureCollection.features = curFeatureCollection.features.filter((e) => e.id !== f.id);
             }
             for (const f of createdFeatures) {
-                newFeatureCollection.features.unshift(f);
-                newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
+                newFeatureCollection.features?.unshift(f);
             }
+            newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
-    }, []);
+    }, [setFeatures]);
 
 
     const onSelectionChange = useCallback(e => {
@@ -106,7 +112,7 @@ export function MapComponent() {
     }, [setPopupProps, setSelectedFeature, mapRef]);
 
     useEffect(() => {
-        if (!mapRef || !isMapLoaded || !draw) {
+        if (!mapRef || !isMapLoaded || !draw || !features || isEmpty(features.features)) {
             return;
         }
         draw.set(features);
