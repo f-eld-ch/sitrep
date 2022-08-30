@@ -7,24 +7,23 @@ import DefaultMaker from 'assets/marker.svg';
 import { BabsIcons } from 'components/BabsIcons';
 import { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
 import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 import omitBy from 'lodash/omitBy';
 import uniqBy from 'lodash/uniqBy';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { CirclePicker } from 'react-color';
-import { FullscreenControl, Map, MapRef, NavigationControl, Popup, PopupProps, ScaleControl } from 'react-map-gl';
+import { FullscreenControl, Map, MapRef, NavigationControl, Popup, PopupProps, ScaleControl, useMap } from 'react-map-gl';
 import { useParams } from 'react-router-dom';
 import useLocalStorage from 'utils/useLocalStorage';
-import DrawControl from './DrawControl';
-import BabsPointMode from './DrawModes/BabsPointMode';
-import MapIcons from './MapIcons';
+import DrawControl from './controls/DrawControl';
+import ExportControl from './controls/ExportControl';
+import StyleSwitcherControl from './controls/StyleSwitcherControl';
 import style from './style';
-import StyleSwitcherControl from './StyleSwitcherControl';
-
 const modes = {
     ...MapboxDraw.modes,
-    'draw_point': BabsPointMode
+    // 'draw_point': BabsPointMode
 };
 
 
@@ -41,7 +40,7 @@ export function MapComponent() {
         bearing: 0,
     });
 
-    const mapRef = useRef<MapRef>();
+    const mapRef = useRef<MapRef>(null);
 
     const { incidentId } = useParams();
     // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "2b32999701a0c620d0f9259203ed63dd", "type": "Feature", "properties": { "icon": "AbsperrungVerkehrswege", "iconRotation": 45, }, "geometry": { "coordinates": [8.649638746498567, 46.87569952044984], "type": "Point" } }, { "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "color": "#0055ff", "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
@@ -130,31 +129,32 @@ export function MapComponent() {
             customIcon.src = icon.src;
         });
         setIsMapLoaded(true);
+        mapRef && mapRef.current && mapRef.current.on('styleimagemissing', function (e) {
+            const id = e.id; // id of the missing image
 
+            Object.values(BabsIcons).filter(icon => id === icon.name).forEach(icon => {
+                let customIcon = new Image(icon.size, icon.size);
+                customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
+                customIcon.src = icon.src;
+            });
+        });
     }, [setIsMapLoaded, mapRef]);
 
     return (
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
             <Map
-                onLoad={onMapLoad}
+                ref={mapRef}
                 mapLib={maplibregl}
+                onLoad={onMapLoad}
                 attributionControl={true}
+                minZoom={8}
+                maxZoom={19}
                 {...viewState}
-                onMove={evt => setViewState(evt.viewState)}
+                onMove={e => setViewState(e.viewState)}
                 style={{ minHeight: "85vh" }}
                 mapStyle={"https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"}
             >
-                <StyleSwitcherControl position={'bottom-right'} styles={[
-                    {
-                        title: "Basiskarte",
-                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
-                    },
-                    {
-                        title: "Satellit",
-                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
-                    }
-                ]} />
                 <FullscreenControl position={'top-left'} />
                 <NavigationControl position={'top-left'} visualizePitch={true} />
                 <DrawControl
@@ -181,11 +181,22 @@ export function MapComponent() {
                     onSelectionChange={onSelectionChange}
                     userProperties={true}
                 />
-                <MapIcons />
+                <StyleSwitcherControl position={'bottom-right'} styles={[
+                    {
+                        title: "Basiskarte",
+                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
+                    },
+                    {
+                        title: "Satellit",
+                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
+                    }
+                ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />
                 <ScaleControl unit={"metric"} position={'bottom-left'} />
+                <ExportControl />
+
                 {selectedFeature &&
                     <Popup {...popupProps}>
-                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} bearing={viewState.bearing} />
+                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
                     </Popup>
                 }
             </Map>
@@ -194,12 +205,13 @@ export function MapComponent() {
     );
 }
 
-function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined, bearing: number }) {
-    const { feature, onUpdate, bearing } = props;
-    const [iconFixed, setIconFixed] = useState<boolean>(feature && feature.properties && (feature.properties.iconRotation));
-    const [name, setName] = useState<string>((feature && feature.properties && feature.properties.name) || "");
-    const [icon, setIcon] = useState<string>((feature && feature.properties && feature.properties.icon) || "");
-    const [color, setColor] = useState<string>((feature && feature.properties && feature.properties.color) || "");
+function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined }) {
+    const map = useMap();
+    const { feature, onUpdate } = props;
+    const [iconRotation, setIconRotation] = useState<number | undefined>(feature && feature.properties && (feature.properties.iconRotation));
+    const [name, setName] = useState<string | undefined>((feature && feature.properties && feature.properties.name));
+    const [icon, setIcon] = useState<string | undefined>((feature && feature.properties && feature.properties.icon));
+    const [color, setColor] = useState<string | undefined>((feature && feature.properties && feature.properties.color));
 
     useEffect(() => {
         if (feature !== undefined) {
@@ -207,26 +219,13 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 "icon": icon,
                 "color": color,
                 "name": name,
+                "iconRotation": iconRotation
             });
-            feature.properties = omitBy(properties, isEmpty);
+            feature.properties = omitBy(properties, isUndefined);
             onUpdate({ features: [feature] });
 
         }
-    }, [onUpdate, feature, name, iconFixed, color, icon]);
-
-    const onIconFixed = useCallback((e) => {
-        setIconFixed(e.checked);
-        if (feature !== undefined) {
-            let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
-                "iconRotation": bearing,
-            });
-            if (iconFixed) {
-                delete properties["iconRotation"];
-            }
-            feature.properties = properties;
-            onUpdate({ features: [feature] });
-        }
-    }, [onUpdate, feature, iconFixed, setIconFixed, bearing]);
+    }, [onUpdate, feature, name, iconRotation, color, icon]);
 
     return (
         <div className='container'>
@@ -240,9 +239,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         <div className="field is-expanded">
                             <div className="control">
                                 <div className="select">
-                                    <select onChange={e => setIcon(e.target.value)}>
-                                        <option>Icon</option>
-
+                                    <select onChange={e => setIcon(e.target.value)} defaultValue={feature.properties?.icon}>
                                         {Object.values(BabsIcons).map((icon) => (
                                             <option key={icon.name} label={icon.description}>{icon.name}</option>
                                         ))}
@@ -252,7 +249,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         </div>
                         {feature && feature.geometry.type === "Point" &&
                             < label className="checkbox">
-                                <input type="checkbox" onChange={onIconFixed} checked={iconFixed} />
+                                <input type="checkbox" onChange={e => e.target.checked ? setIconRotation(map.current?.getBearing()) : setIconRotation(undefined)} checked={iconRotation !== undefined} />
                                 Fixiert
                             </label>}
                     </div>
