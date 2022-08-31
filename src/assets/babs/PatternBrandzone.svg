@@ -1,34 +1,31 @@
-<svg id="svg3606" width="150px" height="150px" version="1.2" viewBox="0 0 1160 1160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs id="defs3610">
+<svg width="150px" height="150px" version="1.2" viewBox="0 0 1160 1160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
     <clipPath id="clipPath7838-7-6">
-      <use id="use7840-0-2" xlink:href="#g7834-3"/>
+      <use xlink:href="#g7834-3"/>
     </clipPath>
     <clipPath id="clipPath7838-7-6-6">
-      <use id="use7840-0-2-1" xlink:href="#g7834-3-7"/>
+      <use xlink:href="#g7834-3-7"/>
     </clipPath>
   </defs>
   <g id="MasterSlide_1_Standard" transform="matrix(.93501 0 0 1.1167 66.224 -100.37)">
-    <g id="Drawing_1" transform="translate(-34.122 -7.3175)" fill="#f00">
+    <g transform="translate(-34.122 -7.3175)" fill="#f00">
       <g stroke-width="7.6278">
-        <rect id="rect6927-5-6" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1231.3" y="-940.34" width="68.168" height="1876.5"/>
-        <rect id="rect6927-5-2-9" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="422.34" y="-835.43" width="68.168" height="1876.5"/>
-        <rect id="rect6927-5-2-9-7" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="630.88" y="-872.93" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1231.3" y="-940.34" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="422.34" y="-835.43" width="68.168" height="1876.5"/>
       </g>
-      <g id="g7836-9" transform="translate(-430.7 -679.1)" clip-path="url(#clipPath7838-7-6)">
+      <g transform="translate(-430.7 -679.1)" clip-path="url(#clipPath7838-7-6)">
         <g id="g7834-3" fill="#f00">
-          <rect id="rect6927-5-60" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
         </g>
       </g>
-      <g id="g7836-9-8" transform="translate(769.67 393.53)" clip-path="url(#clipPath7838-7-6-6)">
+      <g transform="translate(769.67 393.53)" clip-path="url(#clipPath7838-7-6-6)">
         <g id="g7834-3-7" fill="#f00">
-          <rect id="rect6927-5-60-9" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
         </g>
       </g>
       <g stroke-width="7.6278">
-        <rect id="rect6927-5-2-9-7-6" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="232.46" y="-906.49" width="68.168" height="1876.5"/>
-        <rect id="rect6927-5-2-9-7-7" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1439.8" y="-968.61" width="68.168" height="1876.5"/>
-        <rect id="rect6927-5-2-9-7-7-9" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="826.85" y="-930.8" width="68.168" height="1876.5"/>
-        <rect id="rect6927-5-2-9-7-7-9-4" transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1041.4" y="-935.71" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="527.38" y="2231" width="68.168" height="1876.5" stroke-width="7.6278"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="826.85" y="-930.8" width="68.168" height="1876.5"/>
       </g>
     </g>
   </g>
