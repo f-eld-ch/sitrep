@@ -68,6 +68,11 @@ services:
         source: db_data
         target: /var/lib/postgresql/data
         volume: {}
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
 networks:
   default:
     name: sitrep_default

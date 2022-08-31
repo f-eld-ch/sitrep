@@ -3,9 +3,6 @@ import AbsperrungVerkehrswege from 'assets/babs/AbsperrungVerkehrswege.svg';
 import Angehoerigensammelstelle from 'assets/babs/Angehoerigensammelstelle.svg';
 import Atomunfall from 'assets/babs/Atomunfall.svg';
 import Autounfall from 'assets/babs/Autounfall.svg';
-import BeabsichtigteErkundung from 'assets/babs/BeabsichtigteErkundung.svg';
-import BeabsichtigterEinsatz from 'assets/babs/BeabsichtigterEinsatz.svg';
-import BeabsichtigteVerschiebung from 'assets/babs/BeabsichtigteVerschiebung.svg';
 import Beobachtung from 'assets/babs/Beobachtung.svg';
 import Beschaedigung from 'assets/babs/Beschaedigung.svg';
 import Betreuungsstelle from 'assets/babs/Betreuungsstelle.svg';
@@ -27,8 +24,8 @@ import Demogewaltlos from 'assets/babs/Demogewaltlos.svg';
 import Demogewaltsam from 'assets/babs/Demogewaltsam.svg';
 import Drohung from 'assets/babs/Drohung.svg';
 import Duerre from 'assets/babs/Duerre.svg';
-import DurchgefuehrteErkundung from 'assets/babs/DurchgefuehrteErkundung.svg';
 import EingesperrteAbgeschnittene from 'assets/babs/EingesperrteAbgeschnittene.svg';
+import Einsatz from 'assets/babs/Einsatz.svg';
 import Einsatzleiter from 'assets/babs/Einsatzleiter.svg';
 import Einsatzleitung from 'assets/babs/Einsatzleitung.svg';
 import Einsatzzentrale from 'assets/babs/Einsatzzentrale.svg';
@@ -74,6 +71,11 @@ import Obdachlose from 'assets/babs/Obdachlose.svg';
 import Oelverschmutzung from 'assets/babs/Oelverschmutzung.svg';
 import OffizierZugfuehrer from 'assets/babs/OffizierZugfuehrer.svg';
 import Patientensammelstelle from 'assets/babs/Patientensammelstelle.svg';
+import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
+import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
+import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
+import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
+import PatternZerstoert from 'assets/babs/PatternZerstoert.svg';
 import Pforte from 'assets/babs/Pforte.svg';
 import Pluenderung from 'assets/babs/Pluenderung.svg';
 import RadioaktiveStoffe from 'assets/babs/RadioaktiveStoffe.svg';
@@ -108,14 +110,23 @@ import Verletzte from 'assets/babs/Verletzte.svg';
 import Verletztennest from 'assets/babs/Verletztennest.svg';
 import Vermisste from 'assets/babs/Vermisste.svg';
 import Verpflegungsabgabestelle from 'assets/babs/Verpflegungsabgabestelle.svg';
+import Verschiebung from 'assets/babs/Verschiebung.svg';
 import Wasservsgausfall from 'assets/babs/Wasservsgausfall.svg';
 import Wasserwerfer from 'assets/babs/Wasserwerfer.svg';
-import ZerstoerteZonePattern from 'assets/babs/ZerstoerteZonePattern.svg';
 import ZivilesFuehrungsorgan from 'assets/babs/ZivilesFuehrungsorgan.svg';
 import Zug from 'assets/babs/Zug.svg';
 
+export interface BabsIcon {
+    name: string;
+    description: string;
+    src: string;
+    size: number;
+}
+export interface BabsIconType {
+    [key: string]: BabsIcon
+}
 
-export const BabsIcons = {
+export const BabsIcons: BabsIconType = {
     ABCDekontaminationsstelle: {
         name: 'ABCDekontaminationsstelle',
         description: "ABC Dekontaminationsstelle",
@@ -145,24 +156,6 @@ export const BabsIcons = {
         description: "Autounfall",
         src: Autounfall,
         size: 64,
-    },
-    BeabsichtigteErkundung: {
-        name: 'BeabsichtigteErkundung',
-        description: "Beabsichtigte Erkundung",
-        src: BeabsichtigteErkundung,
-        size: 48,
-    },
-    BeabsichtigterEinsatz: {
-        name: 'BeabsichtigterEinsatz',
-        description: "Beabsichtigter Einsatz",
-        src: BeabsichtigterEinsatz,
-        size: 48,
-    },
-    BeabsichtigteVerschiebung: {
-        name: 'BeabsichtigteVerschiebung',
-        description: "BeabsichtigteVerschiebung",
-        src: BeabsichtigteVerschiebung,
-        size: 48,
     },
     Beobachtung: {
         name: 'Beobachtung',
@@ -289,12 +282,6 @@ export const BabsIcons = {
         description: "Dürre",
         src: Duerre,
         size: 64,
-    },
-    DurchgefuehrteErkundung: {
-        name: 'DurchgefuehrteErkundung',
-        description: "Durchgefuehrte Erkundung",
-        src: DurchgefuehrteErkundung,
-        size: 32,
     },
     EingesperrteAbgeschnittene: {
         name: 'EingesperrteAbgeschnittene',
@@ -586,7 +573,6 @@ export const BabsIcons = {
         src: Patientensammelstelle,
         size: 32,
     },
-
     Pforte: {
         name: 'Pforte',
         description: "Pforte",
@@ -803,12 +789,6 @@ export const BabsIcons = {
         src: Wasserwerfer,
         size: 32,
     },
-    ZerstoerteZonePattern: {
-        name: 'ZerstoerteZonePattern',
-        description: "ZerstoerteZonePattern",
-        src: ZerstoerteZonePattern,
-        size: 32,
-    },
     ZivilesFuehrungsorgan: {
         name: 'ZivilesFuehrungsorgan',
         description: "Ziviles Führungsorgan",
@@ -821,6 +801,52 @@ export const BabsIcons = {
         src: Zug,
         size: 32,
     },
-
+    Einsatz: {
+        name: 'Einsatz',
+        description: "Einsatz",
+        src: Einsatz,
+        size: 32,
+    },
+    Verschiebung: {
+        name: 'Verschiebung',
+        description: "Verschiebung",
+        src: Verschiebung,
+        size: 32,
+    },
 };
 
+export const LinePatterns = {
+    PatternLineUnpassierbar: {
+        name: 'PatternLineUnpassierbar',
+        description: "Unpassierbar",
+        src: PatternLineUnpassierbar,
+        size: 32,
+    },
+    PatternLineErkundung: {
+        name: 'PatternLineErkundung',
+        description: "Erkundung",
+        src: PatternLineErkundung,
+        size: 32,
+    },
+    PatternLineBeabsichtigteErkundung: {
+        name: 'PatternLineBeabsichtigteErkundung',
+        description: "Beabsichtigte Erkundung",
+        src: PatternLineBeabsichtigteErkundung,
+        size: 32,
+    }
+}
+
+export const ZonePatterns = {
+    PatternBrandzone: {
+        name: 'PatternBrandzone',
+        description: "Brandzone",
+        src: PatternBrandzone,
+        size: 16,
+    },
+    PatternZerstoert: {
+        name: 'PatternZerstoert',
+        description: "Zerstörte Zone",
+        src: PatternZerstoert,
+        size: 32,
+    }
+};
