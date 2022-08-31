@@ -1,6 +1,21 @@
 
 export const style = [
     {
+        'id': 'gl-draw-polygon-fill-pattern-inactive',
+        'type': 'fill',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'Polygon'],
+            ['has', 'user_zoneType'],
+            ['in', 'user_zoneType', 'Brandzone', 'Zerstoerung'],
+            ['!=', 'mode', 'static']
+        ],
+        'paint': {
+            'fill-pattern': ['match', ['get', 'user_zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
+            'fill-opacity': 0.5
+        }
+    },
+    {
         'id': 'gl-draw-polygon-fill-inactive',
         'type': 'fill',
         'filter': ['all',
@@ -72,6 +87,7 @@ export const style = [
         'filter': ['all',
             ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
+            ['!has', 'user_lineType'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
@@ -80,7 +96,65 @@ export const style = [
         },
         'paint': {
             'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
-            'line-width': 2
+            'line-opacity': 0.7,
+            'line-width': 2,
+        }
+    },
+    {
+        'id': 'gl-draw-line-inactive-pattern',
+        'type': 'line',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        'paint': {
+            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'PatternLineUnpassierbar'],
+            'line-opacity': 0.7,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 19, 22],
+        }
+    },
+    {
+        'id': 'gl-draw-line-inactive-solidlines',
+        'type': 'line',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['in', 'user_lineType', 'schwerBegehbar', 'durchgeführteVerschiebung', 'durchgeführterEinsatz'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        'paint': {
+            'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'line-opacity': 0.7,
+            'line-width': 2,
+        }
+    },
+    {
+        'id': 'gl-draw-line-inactive-dashlines',
+        'type': 'line',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['in', 'user_lineType', 'begehbar', 'beabsichtigteVerschiebung', 'beabsichtigterEinsatz'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        'paint': {
+            'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'line-dasharray': [6, 4],
+            'line-width': 2,
         }
     },
     {
@@ -96,7 +170,7 @@ export const style = [
         'layout': {
             'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.2, 18, 1],
         }
     },
     {
@@ -206,8 +280,8 @@ export const style = [
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["Frutiger Neue Condensed Bold"],
             'text-anchor': 'center',
-            'text-size': ['interpolate', ['linear'], ['zoom'], 9, 0, 18, 16],
-            'text-offset': [0, 1.25],
+            'text-offset': [0, 1.75],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 9, 0, 18, 16]
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
@@ -230,6 +304,8 @@ export const style = [
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'text-halo-blur': 25,
+            'text-halo-color': '#fff'
         }
     },
     {

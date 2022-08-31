@@ -4,7 +4,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import center from '@turf/center';
 import { feature as turfFeature, Geometry } from '@turf/helpers';
 import DefaultMaker from 'assets/marker.svg';
-import { BabsIcons } from 'components/BabsIcons';
+import { BabsIcon, BabsIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
@@ -21,6 +21,7 @@ import DrawControl from './controls/DrawControl';
 import ExportControl from './controls/ExportControl';
 import StyleSwitcherControl from './controls/StyleSwitcherControl';
 import style from './style';
+
 const modes = {
     ...MapboxDraw.modes,
     // 'draw_point': BabsPointMode
@@ -131,8 +132,8 @@ export function MapComponent() {
         setIsMapLoaded(true);
         mapRef && mapRef.current && mapRef.current.on('styleimagemissing', function (e) {
             const id = e.id; // id of the missing image
-
-            Object.values(BabsIcons).filter(icon => id === icon.name).forEach(icon => {
+            console.log("missing image", id);
+            Object.values(Object.assign({}, BabsIcons, LinePatterns, ZonePatterns)).filter(icon => id === icon.name).forEach(icon => {
                 let customIcon = new Image(icon.size, icon.size);
                 customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
                 customIcon.src = icon.src;
@@ -200,7 +201,7 @@ export function MapComponent() {
                     </Popup>
                 }
             </Map>
-            {/* <div>{JSON.stringify(features)}</div> */}
+            <div>{JSON.stringify(features)}</div>
         </>
     );
 }
@@ -212,6 +213,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
     const [name, setName] = useState<string | undefined>((feature && feature.properties && feature.properties.name));
     const [icon, setIcon] = useState<string | undefined>((feature && feature.properties && feature.properties.icon));
     const [color, setColor] = useState<string | undefined>((feature && feature.properties && feature.properties.color));
+    const [kind, setKind] = useState<string | undefined>((feature && feature.properties && ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") ? feature.properties.lineType : feature.properties.zoneType)));
 
     useEffect(() => {
         if (feature !== undefined) {
@@ -219,18 +221,29 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 "icon": icon,
                 "color": color,
                 "name": name,
+                "lineType": feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString" ? kind : undefined,
+                "zoneType": feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon" ? kind : undefined,
                 "iconRotation": iconRotation
             });
             feature.properties = omitBy(properties, isUndefined);
             onUpdate({ features: [feature] });
 
         }
-    }, [onUpdate, feature, name, iconRotation, color, icon]);
+    }, [onUpdate, feature, name, iconRotation, color, icon, kind]);
+
+    let selectableTypes: typeof LineTypes | typeof ZoneTypes | undefined = undefined;
+
+    if (feature?.geometry.type === "LineString" || feature?.geometry.type === "MultiLineString") {
+        selectableTypes = LineTypes;
+    }
+    if (feature?.geometry.type === "Polygon" || feature?.geometry.type === "MultiPolygon") {
+        selectableTypes = ZoneTypes;
+    }
 
     return (
         <div className='container'>
             <h3 className='title is-size-5'>Eigenschaften</h3>
-            {feature && (feature.geometry.type === "Point" || feature.geometry.type === "LineString") ?
+            {feature && feature.geometry.type === "Point" ?
                 <div className="field is-horizontal">
                     <div className="field-label is-normal">
                         <label className="label">Symbol</label>
@@ -270,11 +283,96 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                     </div>
                 </div>
             </div>
+            <CirclePicker colors={[Colors.Red, Colors.Blue, Colors.Black]} onChangeComplete={(color) => setColor(color.hex)} />
+            <br />
             {
-                feature && feature.geometry.type !== "Point" && <CirclePicker colors={["#ff2b00", "#0055ff", "#000000"]} onChangeComplete={(color) => setColor(color.hex)} />
+                feature && feature.geometry.type !== "Point" &&
+                <div className="field is-horizontal">
+                    <div className="field-label is-normal">
+                        <label className="label">Typ</label>
+                    </div>
+                    <div className="field-body">
+                        <div className="field is-expanded">
+                            <div className="field">
+                                <div className="control">
+                                    <div className="select">
+                                        <select onChange={e => {
+                                            setKind(e.target.value);
+                                            let t = selectableTypes && Object.values(selectableTypes).find(a => a.name === e.target.value);
+                                            t && t.icon && setIcon(t.icon?.name);
+                                        }}
+                                            defaultValue={selectableTypes && Object.values(selectableTypes).find(e => e.name === kind)?.name}
+                                        >
+                                            <option>Typ wählen</option>
+                                            {
+                                                selectableTypes && Object.values(selectableTypes).filter(t => t.color === color).map((t: any) => (
+                                                    <option key={t.name} label={t.description}>{t.name}</option>
+                                                ))
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
         </div >
     )
 }
+
+interface TypesType {
+    name: string;
+    description: string;
+    color?: string;
+    icon?: BabsIcon;
+}
+
+interface SelectableTypes { [key: string]: TypesType }
+
+const Colors = {
+    Red: "#ff0000",
+    Blue: "#0000ff",
+    Black: '#000000',
+}
+
+const ZoneTypes: SelectableTypes = {
+    "Einsatzraum": { name: "Einsatzraum", description: "Einsatzraum", color: Colors.Blue },
+    "Schadengebiet": { name: "Schadengebiet", description: "Schadengebiet", color: Colors.Red },
+    "Brandzone": { name: "Brandzone", description: "Brandzone", color: Colors.Red },
+    "Zerstoerung": {
+        name: "Zerstoerung", description: "Zerstörte, unpassierbare Zone", color: Colors.Red
+    },
+};
+
+const LineTypes: SelectableTypes = {
+    "begehbar": {
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: BabsIcons.Beschaedigung,
+    },
+    "schwerBegehbar": {
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: BabsIcons.Teilzerstoerung,
+    },
+    "unpassierbar": {
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: BabsIcons.Totalzerstoerung,
+    },
+    "beabsichtigteErkundung": {
+        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+    },
+    "durchgeführteErkundung": {
+        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+    },
+    "beabsichtigteVerschiebung": {
+        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+    },
+    "durchgeführteVerschiebung": {
+        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+    },
+    "beabsichtigterEinsatz": {
+        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: BabsIcons.Einsatz,
+    },
+    "durchgeführterEinsatz": {
+        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: BabsIcons.Einsatz,
+    },
+};
 
 export default memo(MapComponent);

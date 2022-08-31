@@ -1,16 +1,54 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<svg version="1.2" width="150px" height="150px" viewBox="0 0 1160 1160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
- <g visibility="visible" id="MasterSlide_1_Standard">
-  <g id="Drawing_1">
-  <path fill="rgb(255,0,0)" stroke="none" d="M 578,878 L 1126,302 1106,282 558,858 578,878 Z"/>
-  <path fill="none" stroke="rgb(255,0,0)" d="M 578,878 L 1126,302 1106,282 558,858 578,878 Z"/>
-  <path fill="rgb(255,0,0)" stroke="none" d="M 398,878 L 946,302 926,282 378,858 398,878 Z"/>
-  <path fill="none" stroke="rgb(255,0,0)" d="M 398,878 L 946,302 926,282 378,858 398,878 Z"/>
-  <path fill="rgb(255,0,0)" stroke="none" d="M 219,878 L 766,302 746,282 198,858 219,878 Z"/>
-  <path fill="none" stroke="rgb(255,0,0)" d="M 219,878 L 766,302 746,282 198,858 219,878 Z"/>
-  <path fill="rgb(255,0,0)" stroke="none" d="M 39,878 L 587,302 567,282 19,858 39,878 Z"/>
-  <path fill="none" stroke="rgb(255,0,0)" d="M 39,878 L 587,302 567,282 19,858 39,878 Z"/>
+<svg width="150px" height="150px" version="1.2" viewBox="0 0 1160 1160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <clipPath id="clipPath7838">
+      <use xlink:href="#g7834"/>
+    </clipPath>
+    <clipPath id="clipPath7838-7-6">
+      <use xlink:href="#g7834-3"/>
+    </clipPath>
+    <clipPath id="clipPath7838-7-6-6">
+      <use xlink:href="#g7834-3-7"/>
+    </clipPath>
+    <clipPath id="clipPath7838-7-6-0">
+      <use xlink:href="#g7834-3-75"/>
+    </clipPath>
+    <clipPath id="clipPath7838-7-6-6-8">
+      <use xlink:href="#g7834-3-7-3"/>
+    </clipPath>
+  </defs>
+  <g id="MasterSlide_1_Standard" transform="matrix(.93501 0 0 1.1167 66.224 -100.37)">
+    <g transform="translate(-34.122 -7.3175)" fill="#f00">
+      <g transform="translate(-1.0466 -.1345)" clip-path="url(#clipPath7838)">
+        <g id="g7834" fill="#f00">
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+        </g>
+      </g>
+      <g stroke-width="7.6278">
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1231.3" y="-940.34" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="1035.3" y="-1003.2" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="422.34" y="-835.43" width="68.168" height="1876.5"/>
+        <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="629.12" y="-946.98" width="68.168" height="1876.5"/>
+      </g>
+      <g transform="translate(-430.7 -679.1)" clip-path="url(#clipPath7838-7-6)">
+        <g id="g7834-3" fill="#f00">
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+        </g>
+      </g>
+      <g transform="translate(-422.16 -426.96)" clip-path="url(#clipPath7838-7-6-0)">
+        <g id="g7834-3-75" fill="#f00">
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+        </g>
+      </g>
+      <g transform="translate(772 391.31)" clip-path="url(#clipPath7838-7-6-6)">
+        <g id="g7834-3-7" fill="#f00">
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+        </g>
+      </g>
+      <g transform="translate(681.4 202.08)" clip-path="url(#clipPath7838-7-6-6-8)">
+        <g id="g7834-3-7-3" fill="#f00">
+          <rect transform="matrix(.76672 .64199 -.76672 .64199 0 0)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+        </g>
+      </g>
+    </g>
   </g>
- </g>
 </svg>
