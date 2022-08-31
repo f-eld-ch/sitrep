@@ -1,11 +1,13 @@
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import bearing from '@turf/bearing';
 import center from '@turf/center';
-import { feature as turfFeature, Geometry } from '@turf/helpers';
+
+import { feature as turfFeature, Geometry, point } from '@turf/helpers';
 import DefaultMaker from 'assets/marker.svg';
 import { BabsIcon, BabsIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
-import { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
+import { Feature, FeatureCollection, GeoJsonProperties, LineString } from 'geojson';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import omitBy from 'lodash/omitBy';
@@ -206,6 +208,15 @@ export function MapComponent() {
     );
 }
 
+const calculateIconRotationForLines = (feature: Feature<LineString>): number => {
+
+    // get the first two points of the line to calculate the bearing
+    let point1 = point(feature.geometry.coordinates[0])
+    let point2 = point(feature.geometry.coordinates[1])
+
+    return bearing(point1, point2) + 90;
+}
+
 function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | undefined }) {
     const map = useMap();
     const { feature, onUpdate } = props;
@@ -223,7 +234,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 "name": name,
                 "lineType": feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString" ? kind : undefined,
                 "zoneType": feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon" ? kind : undefined,
-                "iconRotation": iconRotation
+                "iconRotation": feature.geometry.type === "LineString" ? calculateIconRotationForLines(feature as Feature<LineString>) : iconRotation
             });
             feature.properties = omitBy(properties, isUndefined);
             onUpdate({ features: [feature] });
@@ -303,7 +314,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                                         }}
                                             defaultValue={selectableTypes && Object.values(selectableTypes).find(e => e.name === kind)?.name}
                                         >
-                                            <option>Typ wählen</option>
+                                            <option label="Typ wählen" >{undefined}</option>
                                             {
                                                 selectableTypes && Object.values(selectableTypes).filter(t => t.color === color).map((t: any) => (
                                                     <option key={t.name} label={t.description}>{t.name}</option>
@@ -346,6 +357,9 @@ const ZoneTypes: SelectableTypes = {
 };
 
 const LineTypes: SelectableTypes = {
+    "Rutschgebiet": {
+        name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red,
+    },
     "begehbar": {
         name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: BabsIcons.Beschaedigung,
     },

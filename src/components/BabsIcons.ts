@@ -30,7 +30,6 @@ import Einsatzleiter from 'assets/babs/Einsatzleiter.svg';
 import Einsatzleitung from 'assets/babs/Einsatzleitung.svg';
 import Einsatzzentrale from 'assets/babs/Einsatzzentrale.svg';
 import Eisenbahnunglueck from 'assets/babs/Eisenbahnunglueck.svg';
-import Elektrizitaet from 'assets/babs/Elektrizitaet.svg';
 import Energieausfall from 'assets/babs/Energieausfall.svg';
 import Epidemie from 'assets/babs/Epidemie.svg';
 import Erdbeben from 'assets/babs/Erdbeben.svg';
@@ -42,6 +41,7 @@ import Flugzeugabsturz from 'assets/babs/Flugzeugabsturz.svg';
 import Gas from 'assets/babs/Gas.svg';
 import Gebaeudeeinsturz from 'assets/babs/Gebaeudeeinsturz.svg';
 import GefahrdurchLoeschenmitWasser from 'assets/babs/GefahrdurchLoeschenmitWasser.svg';
+import GefahrElektrizitaet from 'assets/babs/GefahrElektrizitaet.svg';
 import GefahrentafelmitUNNummer from 'assets/babs/GefahrentafelmitUNNummer.svg';
 import GefahrfuerGrundwasser from 'assets/babs/GefahrfuerGrundwasser.svg';
 import Gemeindefuehrungsorgan from 'assets/babs/Gemeindefuehrungsorgan.svg';
@@ -74,6 +74,7 @@ import Patientensammelstelle from 'assets/babs/Patientensammelstelle.svg';
 import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
 import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
 import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
+import PatternLineRutschgebiet from 'assets/babs/PatternLineRutschgebiet.svg';
 import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
 import PatternZerstoert from 'assets/babs/PatternZerstoert.svg';
 import Pforte from 'assets/babs/Pforte.svg';
@@ -81,7 +82,6 @@ import Pluenderung from 'assets/babs/Pluenderung.svg';
 import RadioaktiveStoffe from 'assets/babs/RadioaktiveStoffe.svg';
 import RegionalesFuehrungsorgan from 'assets/babs/RegionalesFuehrungsorgan.svg';
 import RettungsAchse from 'assets/babs/RettungsAchse.svg';
-import Rutschgebiet from 'assets/babs/Rutschgebiet.svg';
 import Sabotage from 'assets/babs/Sabotage.svg';
 import Sammelstelle from 'assets/babs/Sammelstelle.svg';
 import Sanitaetshilfsstelle from 'assets/babs/Sanitaetshilfsstelle.svg';
@@ -313,16 +313,10 @@ export const BabsIcons: BabsIconType = {
         src: Eisenbahnunglueck,
         size: 64,
     },
-    Elektrizitaet: {
-        name: 'Elektrizitaet',
-        description: "Elektrizität Ausfall / Probleme",
-        src: Elektrizitaet,
-        size: 64,
-    },
     GefahrElektrizitaet: {
         name: 'GefahrElektrizitaet',
         description: "Gefahr Elektrizität",
-        src: Elektrizitaet,
+        src: GefahrElektrizitaet,
         size: 64,
     },
 
@@ -603,12 +597,7 @@ export const BabsIcons: BabsIconType = {
         src: RettungsAchse,
         size: 32,
     },
-    Rutschgebiet: {
-        name: 'Rutschgebiet',
-        description: "Rutschgebiet",
-        src: Rutschgebiet,
-        size: 32,
-    },
+
     Sabotage: {
         name: 'Sabotage',
         description: "Sabotage",
@@ -833,7 +822,13 @@ export const LinePatterns = {
         description: "Beabsichtigte Erkundung",
         src: PatternLineBeabsichtigteErkundung,
         size: 32,
-    }
+    },
+    PatternLineRutschgebiet: {
+        name: 'PatternLineRutschgebiet',
+        description: "Rutschgebiet",
+        src: PatternLineRutschgebiet,
+        size: 32,
+    },
 }
 
 export const ZonePatterns = {
