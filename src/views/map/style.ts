@@ -106,7 +106,7 @@ export const style = [
         'filter': ['all',
             ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
-            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung'],
+            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
@@ -114,7 +114,7 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'PatternLineUnpassierbar'],
+            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'PatternLineUnpassierbar'],
             'line-opacity': 0.7,
             'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 19, 22],
         }
@@ -165,6 +165,7 @@ export const style = [
             ['==', '$type', 'LineString'],
             ['==', 'meta', 'feature'],
             ['has', 'user_icon'],
+            ['!has', 'user_iconRotation'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
@@ -180,14 +181,17 @@ export const style = [
             ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['==', 'meta', 'feature'],
-            ['==', 'active', 'true'],
+            ['has', 'user_iconRotation'],
             ['has', 'user_icon'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
             'icon-image': ["get", "user_icon"],
-            'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 18, 1],
+            'icon-allow-overlap': true,
+            'icon-rotation-alignment': 'map',
+            'icon-pitch-alignment': 'map',
+            'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0],
         }
     },
     {
