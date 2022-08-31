@@ -75,6 +75,7 @@ import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
 import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
 import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
 import PatternLineRutschgebiet from 'assets/babs/PatternLineRutschgebiet.svg';
+import PatternLineRutschgebietGespiegelt from 'assets/babs/PatternLineRutschgebietGespiegelt.svg';
 import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
 import PatternZerstoert from 'assets/babs/PatternZerstoert.svg';
 import Pforte from 'assets/babs/Pforte.svg';
@@ -827,6 +828,12 @@ export const LinePatterns = {
         name: 'PatternLineRutschgebiet',
         description: "Rutschgebiet",
         src: PatternLineRutschgebiet,
+        size: 32,
+    },
+    PatternLineRutschgebietGespiegelt: {
+        name: 'PatternLineRutschgebietGespiegelt',
+        description: "Rutschgebiet (umgekehrt)",
+        src: PatternLineRutschgebietGespiegelt,
         size: 32,
     },
 }

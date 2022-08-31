@@ -101,12 +101,12 @@ export const style = [
         }
     },
     {
-        'id': 'gl-draw-line-inactive-pattern',
+        'id': 'gl-draw-line-inactive-normalLine',
         'type': 'line',
         'filter': ['all',
             ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
-            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet'],
+            ['in', 'user_lineType', '', 'normal'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
@@ -114,7 +114,26 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'PatternLineUnpassierbar'],
+            'line-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'line-opacity': 0.7,
+            'line-width': 2,
+        }
+    },
+    {
+        'id': 'gl-draw-line-inactive-pattern',
+        'type': 'line',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'LineString'],
+            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet', 'RutschgebietGespiegelt'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'line-cap': 'round',
+            'line-join': 'round'
+        },
+        'paint': {
+            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar'],
             'line-opacity': 0.7,
             'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 19, 22],
         }

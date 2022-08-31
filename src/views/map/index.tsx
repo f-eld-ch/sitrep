@@ -8,10 +8,11 @@ import { feature as turfFeature, Geometry, point } from '@turf/helpers';
 import DefaultMaker from 'assets/marker.svg';
 import { BabsIcon, BabsIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import { Feature, FeatureCollection, GeoJsonProperties, LineString } from 'geojson';
+import { unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import omitBy from 'lodash/omitBy';
-import uniqBy from 'lodash/uniqBy';
+import pullAllBy from 'lodash/pullAllBy';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -55,10 +56,7 @@ export function MapComponent() {
 
             const newFeatureCollection = { ...curFeatureCollection };
             const features: Feature[] = e.features;
-            for (const f of features) {
-                newFeatureCollection.features.unshift(f);
-            }
-            newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
+            newFeatureCollection.features = unionBy(features, curFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
     }, [setFeatures]);
@@ -66,28 +64,23 @@ export function MapComponent() {
     const onDelete = useCallback(e => {
         setFeatures(curFeatureCollection => {
             const newFeatureCollection = { ...curFeatureCollection };
-            const features: Feature[] = e.features;
+            const deletedFeatures: Feature[] = e.features;
 
-            for (const f of features) {
-                newFeatureCollection.features = curFeatureCollection.features.filter((e) => e.id !== f.id);
-            }
+            newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
+
             return newFeatureCollection;
         });
     }, [setFeatures]);
 
     const onCombine = useCallback(e => {
+        console.log("onCombine", e);
         setFeatures(curFeatureCollection => {
             const newFeatureCollection = { ...curFeatureCollection };
             const createdFeatures: Feature[] = e.createdFeatures;
             const deletedFeatures: Feature[] = e.deletedFeatures;
 
-            for (const f of deletedFeatures) {
-                newFeatureCollection.features = curFeatureCollection.features.filter((e) => e.id !== f.id);
-            }
-            for (const f of createdFeatures) {
-                newFeatureCollection.features?.unshift(f);
-            }
-            newFeatureCollection.features = uniqBy(newFeatureCollection.features, 'id');
+            newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
+            newFeatureCollection.features = unionBy(createdFeatures, newFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
     }, [setFeatures]);
@@ -359,6 +352,9 @@ const ZoneTypes: SelectableTypes = {
 const LineTypes: SelectableTypes = {
     "Rutschgebiet": {
         name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red,
+    },
+    "RutschgebietGespiegelt": {
+        name: "RutschgebietGespiegelt", description: "Rutschgebiet (ungekehrt)", color: Colors.Red,
     },
     "begehbar": {
         name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: BabsIcons.Beschaedigung,
