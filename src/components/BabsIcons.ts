@@ -127,7 +127,11 @@ export interface BabsIconType {
     [key: string]: BabsIcon
 }
 
-export const BabsIcons: BabsIconType = {
+export interface GroupedIcons {
+    [key: string]: BabsIconType
+}
+
+export const EinrichtungenImEinsatzraum: BabsIconType = {
     ABCDekontaminationsstelle: {
         name: 'ABCDekontaminationsstelle',
         description: "ABC Dekontaminationsstelle",
@@ -146,30 +150,14 @@ export const BabsIcons: BabsIconType = {
         src: Angehoerigensammelstelle,
         size: 48,
     },
-    Atomunfall: {
-        name: 'Atomunfall',
-        description: "Atomunfall",
-        src: Atomunfall,
-        size: 64,
-    },
-    Autounfall: {
-        name: 'Autounfall',
-        description: "Autounfall",
-        src: Autounfall,
-        size: 64,
-    },
+
     Beobachtung: {
         name: 'Beobachtung',
         description: "Beobachtung",
         src: Beobachtung,
         size: 48,
     },
-    Beschaedigung: {
-        name: 'Beschaedigung',
-        description: "Beschädigung",
-        src: Beschaedigung,
-        size: 32,
-    },
+
     Betreuungsstelle: {
         name: 'Betreuungsstelle',
         description: "Betreuungsstelle",
@@ -182,243 +170,20 @@ export const BabsIcons: BabsIconType = {
         src: Betriebsstoffabgabestelle,
         size: 48,
     },
-    Bezirksfuehrungsorgan: {
-        name: 'Bezirksfuehrungsorgan',
-        description: "Bezirksfuehrungsorgan",
-        src: Bezirksfuehrungsorgan,
-        size: 48,
-    },
-    Biounfall: {
-        name: 'Biounfall',
-        description: "Biounfall",
-        src: Biounfall,
-        size: 64,
-    },
     BLaboratorium: {
         name: 'BLaboratorium',
         description: "Bio Laboratorium",
         src: BLaboratorium,
         size: 32,
     },
-    Bombenanschlag: {
-        name: 'Bombenanschlag',
-        description: "Bombenanschlag",
-        src: Bombenanschlag,
-        size: 64,
-    },
-    Bombendrohung: {
-        name: 'Bombendrohung',
-        description: "Bombendrohung",
-        src: Bombendrohung,
-        size: 64,
-    },
-    Brand: {
-        name: 'Brand',
-        description: "Brand",
-        src: Brand,
-        size: 48,
-    },
-    Brandanschlag: {
-        name: 'Brandanschlag',
-        description: "Brandanschlag",
-        src: Brandanschlag,
-        size: 64,
-    },
-    BrandeinzelnesGebaeudeFlamme: {
-        name: 'BrandeinzelnesGebaeudeFlamme',
-        description: "Brand (einzelnes Gebäude)",
-        src: BrandeinzelnesGebaeudeFlamme,
-        size: 32,
-    },
-    BranduebergriffErfolgt: {
-        name: 'BranduebergriffErfolgt',
-        description: "Brand-übergriff erfolgt",
-        src: BranduebergriffErfolgt,
-        size: 32,
-    },
-    BranduebergriffGefahr: {
-        name: 'BranduebergriffGefahr',
-        description: "Brand-übergriffsgefahr",
-        src: BranduebergriffGefahr,
-        size: 32,
-    },
-    Chemieunfall: {
-        name: 'Chemieunfall',
-        description: "Chemieunfall",
-        src: Chemieunfall,
-        size: 64,
-    },
-    Chemikalien: {
-        name: 'Chemikalien',
-        description: "Chemikalien",
-        src: Chemikalien,
-        size: 48,
-    },
+
     Debriefingstelle: {
         name: 'Debriefingstelle',
         description: "Debriefingstelle",
         src: Debriefingstelle,
         size: 32,
     },
-    Demogewaltlos: {
-        name: 'Demogewaltlos',
-        description: "Demo (gewaltlos)",
-        src: Demogewaltlos,
-        size: 64,
-    },
-    Demogewaltsam: {
-        name: 'Demogewaltsam',
-        description: "Demo (gewaltsam)",
-        src: Demogewaltsam,
-        size: 64,
-    },
-    Drohung: {
-        name: 'Drohung',
-        description: "Drohung",
-        src: Drohung,
-        size: 64,
-    },
-    Duerre: {
-        name: 'Duerre',
-        description: "Dürre",
-        src: Duerre,
-        size: 64,
-    },
-    EingesperrteAbgeschnittene: {
-        name: 'EingesperrteAbgeschnittene',
-        description: "Eingesperrte / Abgeschnittene",
-        src: EingesperrteAbgeschnittene,
-        size: 48,
-    },
-    Einsatzleiter: {
-        name: 'Einsatzleiter',
-        description: "Einsatzleiter",
-        src: Einsatzleiter,
-        size: 32,
-    },
-    Einsatzleitung: {
-        name: 'Einsatzleitung',
-        description: "Einsatzleitung",
-        src: Einsatzleitung,
-        size: 32,
-    },
-    Einsatzzentrale: {
-        name: 'Einsatzzentrale',
-        description: "Einsatzzentrale",
-        src: Einsatzzentrale,
-        size: 32,
-    },
-    Eisenbahnunglueck: {
-        name: 'Eisenbahnunglueck',
-        description: "Eisenbahnunglück",
-        src: Eisenbahnunglueck,
-        size: 64,
-    },
-    GefahrElektrizitaet: {
-        name: 'GefahrElektrizitaet',
-        description: "Gefahr Elektrizität",
-        src: GefahrElektrizitaet,
-        size: 64,
-    },
 
-    Energieausfall: {
-        name: 'Energieausfall',
-        description: "Energieausfall",
-        src: Energieausfall,
-        size: 64,
-    },
-
-    Epidemie: {
-        name: 'Epidemie',
-        description: "Epidemie",
-        src: Epidemie,
-        size: 64,
-    },
-    Erdbeben: {
-        name: 'Erdbeben',
-        description: "Erdbeben",
-        src: Erdbeben,
-        size: 64,
-    },
-    Erdrutsch: {
-        name: 'Erdrutsch',
-        description: "Erdrutsch",
-        src: Erdrutsch,
-        size: 64,
-    },
-    ExplosionGefahr: {
-        name: 'GefahrExplosion',
-        description: "Gefahr Explosion",
-        src: ExplosionGefahr,
-        size: 64,
-    },
-    Explosion: {
-        name: 'Explosion',
-        description: "Explosion",
-        src: Explosion,
-        size: 64,
-    },
-    Fluechtlinge: {
-        name: 'Fluechtlinge',
-        description: "Fluechtlinge",
-        src: Fluechtlinge,
-        size: 64,
-    },
-    Flugzeugabsturz: {
-        name: 'Flugzeugabsturz',
-        description: "Flugzeugabsturz",
-        src: Flugzeugabsturz,
-        size: 64,
-    },
-    Gas: {
-        name: 'Gas',
-        description: "Gas",
-        src: Gas,
-        size: 64,
-    },
-    Gebaeudeeinsturz: {
-        name: 'Gebaeudeeinsturz',
-        description: "Gebäudeeinsturz",
-        src: Gebaeudeeinsturz,
-        size: 64,
-    },
-    GefahrdurchLoeschenmitWasser: {
-        name: 'GefahrdurchLoeschenmitWasser',
-        description: "Gefahr durch Löschen mit Wasser",
-        src: GefahrdurchLoeschenmitWasser,
-        size: 64,
-    },
-    GefahrentafelmitUNNummer: {
-        name: 'GefahrentafelmitUNNummer',
-        description: "Gefahrentafel UN-Nummer",
-        src: GefahrentafelmitUNNummer,
-        size: 64,
-    },
-    GebaeudeeinGefahrfuerGrundwassersturz: {
-        name: 'GefahrfuerGrundwasser',
-        description: "Gefahr für Grundwasser",
-        src: GefahrfuerGrundwasser,
-        size: 64,
-    },
-    Gemeindefuehrungsorgan: {
-        name: 'Gemeindefuehrungsorgan',
-        description: "Gemeindeführungsorgan",
-        src: Gemeindefuehrungsorgan,
-        size: 48,
-    },
-    Gruppe: {
-        name: 'Gruppe',
-        description: "Gruppe",
-        src: Gruppe,
-        size: 32,
-    },
-
-    Gruppenfuehrer: {
-        name: 'Gruppenfuehrer',
-        description: "Gruppenfuehrer",
-        src: Gruppenfuehrer,
-        size: 32,
-    },
 
     Helikopterlandeplatz: {
         name: 'Helikopterlandeplatz',
@@ -441,12 +206,7 @@ export const BabsIcons: BabsIconType = {
         size: 32,
     },
 
-    Infrastrukturschaden: {
-        name: 'Infrastrukturschaden',
-        description: "Infrastrukturschaden",
-        src: Infrastrukturschaden,
-        size: 64,
-    },
+
 
     Kadaversammelstelle: {
         name: 'Kadaversammelstelle',
@@ -454,18 +214,7 @@ export const BabsIcons: BabsIconType = {
         src: Kadaversammelstelle,
         size: 32,
     },
-    Kanalisationsausfall: {
-        name: 'Kanalisationsausfall',
-        description: "Kanalisationsausfall",
-        src: Kanalisationsausfall,
-        size: 64,
-    },
-    KantonalesFuehrungsorgan: {
-        name: 'KantonalesFuehrungsorgan',
-        description: "Kantonales Führungsorgan",
-        src: KantonalesFuehrungsorgan,
-        size: 48,
-    },
+
     KGSNotdepot: {
         name: 'KGSNotdepot',
         description: "KGS Notdepot",
@@ -484,30 +233,8 @@ export const BabsIcons: BabsIconType = {
         src: KGSSammelpunkt,
         size: 32,
     },
-    KommandopostenFront: {
-        name: 'KommandopostenFront',
-        description: "Kommandoposten Front",
-        src: KommandopostenFront,
-        size: 32,
-    },
-    KommandopostenRueckwaertiges: {
-        name: 'KommandopostenRueckwaertiges',
-        description: "Kommandoposten Rückwaertiges",
-        src: KommandopostenRueckwaertiges,
-        size: 32,
-    },
-    Kommunikationsstoerung: {
-        name: 'Kommunikationsstoerung',
-        description: "Kommunikationsstörung",
-        src: Kommunikationsstoerung,
-        size: 32,
-    },
-    Kompanie: {
-        name: 'Kompanie',
-        description: "Kompanie",
-        src: Kompanie,
-        size: 32,
-    },
+
+
     Kontrollstelle: {
         name: 'Kontrollstelle',
         description: "Kontrollstelle",
@@ -520,48 +247,15 @@ export const BabsIcons: BabsIconType = {
         src: Kontrollzentrum,
         size: 32,
     },
-    Lawine: {
-        name: 'Lawine',
-        description: "Lawine",
-        src: Lawine,
-        size: 64,
-    },
-    Massenpanik: {
-        name: 'Massenpanik',
-        description: "Massenpanik",
-        src: Massenpanik,
-        size: 64,
-    },
+
     Materialdepot: {
         name: 'Materialdepot',
         description: "Materialdepot",
         src: Materialdepot,
         size: 32,
     },
-    MobileEinsatzzentrale: {
-        name: 'MobileEinsatzzentrale',
-        description: "Mobile Einsatzzentrale",
-        src: MobileEinsatzzentrale,
-        size: 32,
-    },
-    Obdachlose: {
-        name: 'Obdachlose',
-        description: "Obdachlose",
-        src: Obdachlose,
-        size: 48,
-    },
-    Oelverschmutzung: {
-        name: 'Oelverschmutzung',
-        description: "Ölverschmutzung",
-        src: Oelverschmutzung,
-        size: 64,
-    },
-    OffizierZugfuehrer: {
-        name: 'OffizierZugfuehrer',
-        description: "Offizier / Zugführer",
-        src: OffizierZugfuehrer,
-        size: 32,
-    },
+
+
     Patientensammelstelle: {
         name: 'Patientensammelstelle',
         description: "Patientensammelstelle",
@@ -574,37 +268,21 @@ export const BabsIcons: BabsIconType = {
         src: Pforte,
         size: 32,
     },
-    Pluenderung: {
-        name: 'Pluenderung',
-        description: "Pluenderung",
-        src: Pluenderung,
-        size: 64,
+
+
+    Streugutsammelstelle: {
+        name: 'Streugutsammelstelle',
+        description: "Streugutsammelstelle",
+        src: Streugutsammelstelle,
+        size: 32,
     },
-    RadioaktiveStoffe: {
-        name: 'RadioaktiveStoffe',
-        description: "RadioaktiveStoffe",
-        src: RadioaktiveStoffe,
-        size: 64,
-    },
-    RegionalesFuehrungsorgan: {
-        name: 'RegionalesFuehrungsorgan',
-        description: "RegionalesFuehrungsorgan",
-        src: RegionalesFuehrungsorgan,
-        size: 48,
-    },
-    RettungsAchse: {
-        name: 'RettungsAchse',
-        description: "RettungsAchse",
-        src: RettungsAchse,
+    Stuetzpunkt: {
+        name: 'Stuetzpunkt',
+        description: "Stuetzpunkt",
+        src: Stuetzpunkt,
         size: 32,
     },
 
-    Sabotage: {
-        name: 'Sabotage',
-        description: "Sabotage",
-        src: Sabotage,
-        size: 64,
-    },
     Sammelstelle: {
         name: 'Sammelstelle',
         description: "Sammelstelle",
@@ -623,78 +301,7 @@ export const BabsIcons: BabsIconType = {
         src: Sperre,
         size: 32,
     },
-    StandortmobileFuehrungsstelle: {
-        name: 'StandortmobileFuehrungsstelle',
-        description: "Mobile Führungsstelle",
-        src: StandortmobileFuehrungsstelle,
-        size: 32,
-    },
-    Starkniederschlag: {
-        name: 'Starkniederschlag',
-        description: "Starkniederschlag",
-        src: Starkniederschlag,
-        size: 64,
-    },
-    Stau: {
-        name: 'Stau',
-        description: "Stau",
-        src: Stau,
-        size: 64,
-    },
-    Streugutsammelstelle: {
-        name: 'Streugutsammelstelle',
-        description: "Streugutsammelstelle",
-        src: Streugutsammelstelle,
-        size: 32,
-    },
-    Stuetzpunkt: {
-        name: 'Stuetzpunkt',
-        description: "Stuetzpunkt",
-        src: Stuetzpunkt,
-        size: 32,
-    },
-    Sturm: {
-        name: 'Sturm',
-        description: "Sturm",
-        src: Sturm,
-        size: 64,
-    },
-    Tankloeschfahrzeug: {
-        name: 'Tankloeschfahrzeug',
-        description: "Tanklöschfahrzeug",
-        src: Tankloeschfahrzeug,
-        size: 32,
-    },
-    Teilzerstoerung: {
-        src: Teilzerstoerung,
-        name: 'Teilzerstoerung',
-        description: "Teilzerstörung",
-        size: 32,
-    },
-    Terroranschlag: {
-        name: 'Terroranschlag',
-        description: "Terroranschlag",
-        src: Terroranschlag,
-        size: 64,
-    },
-    Tierseuche: {
-        name: 'Tierseuche',
-        description: "Tierseuche",
-        src: Tierseuche,
-        size: 64,
-    },
-    Totalzerstoerung: {
-        src: Totalzerstoerung,
-        name: 'Totalzerstoerung',
-        description: "Totalzerstörung",
-        size: 32,
-    },
-    Tote: {
-        name: 'Tote',
-        description: "Tote",
-        src: Tote,
-        size: 48,
-    },
+
     Totensammelstelle: {
         name: 'Totensammelstelle',
         description: "Totensammelstelle",
@@ -706,18 +313,6 @@ export const BabsIcons: BabsIconType = {
         description: "Trinkwasserabgabestelle",
         src: Trinkwasserabgabestelle,
         size: 32,
-    },
-    Trupp: {
-        name: 'Trupp',
-        description: "Trupp",
-        src: Trupp,
-        size: 32,
-    },
-    Ueberschwemmung: {
-        name: 'Ueberschwemmung',
-        description: "Überschwemmung",
-        src: Ueberschwemmung,
-        size: 64,
     },
     Ueberwachung: {
         name: 'Ueberwachung',
@@ -731,23 +326,12 @@ export const BabsIcons: BabsIconType = {
         src: Umleitung,
         size: 32,
     },
-    Unfall: {
-        name: 'Unfall',
-        description: "Unfall",
-        src: Unfall,
-        size: 64,
-    },
+
     Verkehrsposten: {
         name: 'Verkehrsposten',
         description: "Verkehrsposten",
         src: Verkehrsposten,
         size: 32,
-    },
-    Verletzte: {
-        name: 'Verletzte',
-        description: "Verletzte",
-        src: Verletzte,
-        size: 48,
     },
     Verletztennest: {
         name: 'Verletztennest',
@@ -755,34 +339,46 @@ export const BabsIcons: BabsIconType = {
         src: Verletztennest,
         size: 32,
     },
-    Vermisste: {
-        name: 'Vermisste',
-        description: "Vermisste",
-        src: Vermisste,
-        size: 48,
-    },
+
     Verpflegungsabgabestelle: {
         name: 'Verpflegungsabgabestelle',
         description: "Verpflegungsabgabestelle",
         src: Verpflegungsabgabestelle,
         size: 32,
     },
-    Wasservsgausfall: {
-        name: 'Wasservsgausfall',
-        description: "Wasserversorgungs-Ausfall",
-        src: Wasservsgausfall,
-        size: 64,
-    },
-    Wasserwerfer: {
-        name: 'Wasserwerfer',
-        description: "Wasserwerfer",
-        src: Wasserwerfer,
+};
+
+export const ZivileMittel: BabsIconType = {
+    Einsatzleiter: {
+        name: 'Einsatzleiter',
+        description: "Einsatzleiter",
+        src: Einsatzleiter,
         size: 32,
     },
-    ZivilesFuehrungsorgan: {
-        name: 'ZivilesFuehrungsorgan',
-        description: "Ziviles Führungsorgan",
-        src: ZivilesFuehrungsorgan,
+    Gruppe: {
+        name: 'Gruppe',
+        description: "Gruppe",
+        src: Gruppe,
+        size: 32,
+    },
+
+    Gruppenfuehrer: {
+        name: 'Gruppenfuehrer',
+        description: "Gruppenfuehrer",
+        src: Gruppenfuehrer,
+        size: 32,
+    },
+    Kompanie: {
+        name: 'Kompanie',
+        description: "Kompanie",
+        src: Kompanie,
+        size: 32,
+    },
+
+    Trupp: {
+        name: 'Trupp',
+        description: "Trupp",
+        src: Trupp,
         size: 32,
     },
     Zug: {
@@ -791,6 +387,475 @@ export const BabsIcons: BabsIconType = {
         src: Zug,
         size: 32,
     },
+
+    OffizierZugfuehrer: {
+        name: 'OffizierZugfuehrer',
+        description: "Offizier / Zugführer",
+        src: OffizierZugfuehrer,
+        size: 32,
+    },
+};
+
+export const ZivileFuehrungsstandorte: BabsIconType = {
+
+    Bezirksfuehrungsorgan: {
+        name: 'Bezirksfuehrungsorgan',
+        description: "Bezirksfuehrungsorgan",
+        src: Bezirksfuehrungsorgan,
+        size: 48,
+    },
+
+    Einsatzleitung: {
+        name: 'Einsatzleitung',
+        description: "Einsatzleitung",
+        src: Einsatzleitung,
+        size: 32,
+    },
+    Einsatzzentrale: {
+        name: 'Einsatzzentrale',
+        description: "Einsatzzentrale",
+        src: Einsatzzentrale,
+        size: 32,
+    },
+    Gemeindefuehrungsorgan: {
+        name: 'Gemeindefuehrungsorgan',
+        description: "Gemeindeführungsorgan",
+        src: Gemeindefuehrungsorgan,
+        size: 48,
+    },
+    KantonalesFuehrungsorgan: {
+        name: 'KantonalesFuehrungsorgan',
+        description: "Kantonales Führungsorgan",
+        src: KantonalesFuehrungsorgan,
+        size: 48,
+    },
+    KommandopostenFront: {
+        name: 'KommandopostenFront',
+        description: "Kommandoposten Front",
+        src: KommandopostenFront,
+        size: 32,
+    },
+    KommandopostenRueckwaertiges: {
+        name: 'KommandopostenRueckwaertiges',
+        description: "Kommandoposten Rückwaertiges",
+        src: KommandopostenRueckwaertiges,
+        size: 32,
+    },
+
+    MobileEinsatzzentrale: {
+        name: 'MobileEinsatzzentrale',
+        description: "Mobile Einsatzzentrale",
+        src: MobileEinsatzzentrale,
+        size: 32,
+    },
+
+    RegionalesFuehrungsorgan: {
+        name: 'RegionalesFuehrungsorgan',
+        description: "RegionalesFuehrungsorgan",
+        src: RegionalesFuehrungsorgan,
+        size: 48,
+    },
+
+    ZivilesFuehrungsorgan: {
+        name: 'ZivilesFuehrungsorgan',
+        description: "Ziviles Führungsorgan",
+        src: ZivilesFuehrungsorgan,
+        size: 32,
+    },
+    StandortmobileFuehrungsstelle: {
+        name: 'StandortmobileFuehrungsstelle',
+        description: "Standort mobile Führungsstelle",
+        src: StandortmobileFuehrungsstelle,
+        size: 32,
+    },
+
+
+};
+
+export const Fahrzeuge: BabsIconType = {
+    Tankloeschfahrzeug: {
+        name: 'Tankloeschfahrzeug',
+        description: "Tanklöschfahrzeug",
+        src: Tankloeschfahrzeug,
+        size: 32,
+    },
+    Wasserwerfer: {
+        name: 'Wasserwerfer',
+        description: "Wasserwerfer",
+        src: Wasserwerfer,
+        size: 32,
+    },
+};
+
+export const Gefahren: BabsIconType = {
+    Chemikalien: {
+        name: 'Chemikalien',
+        description: "Chemikalien",
+        src: Chemikalien,
+        size: 48,
+    },
+
+    GefahrElektrizitaet: {
+        name: 'GefahrElektrizitaet',
+        description: "Gefahr Elektrizität",
+        src: GefahrElektrizitaet,
+        size: 64,
+    },
+    ExplosionGefahr: {
+        name: 'GefahrExplosion',
+        description: "Gefahr Explosion",
+        src: ExplosionGefahr,
+        size: 64,
+    },
+
+    Gas: {
+        name: 'Gas',
+        description: "Gas",
+        src: Gas,
+        size: 64,
+    },
+    GefahrdurchLoeschenmitWasser: {
+        name: 'GefahrdurchLoeschenmitWasser',
+        description: "Gefahr durch Löschen mit Wasser",
+        src: GefahrdurchLoeschenmitWasser,
+        size: 64,
+    },
+    GefahrentafelmitUNNummer: {
+        name: 'GefahrentafelmitUNNummer',
+        description: "Gefahrentafel UN-Nummer",
+        src: GefahrentafelmitUNNummer,
+        size: 64,
+    },
+    GebaeudeeinGefahrfuerGrundwassersturz: {
+        name: 'GefahrfuerGrundwasser',
+        description: "Gefahr für Grundwasser",
+        src: GefahrfuerGrundwasser,
+        size: 64,
+    },
+    Unfall: {
+        name: 'Unfall',
+        description: "Unfall",
+        src: Unfall,
+        size: 64,
+    },
+    RadioaktiveStoffe: {
+        name: 'RadioaktiveStoffe',
+        description: "RadioaktiveStoffe",
+        src: RadioaktiveStoffe,
+        size: 64,
+    },
+
+};
+
+export const Schaeden: BabsIconType = {
+    Beschaedigung: {
+        name: 'Beschaedigung',
+        description: "Beschädigung",
+        src: Beschaedigung,
+        size: 32,
+    },
+    BrandeinzelnesGebaeudeFlamme: {
+        name: 'BrandeinzelnesGebaeudeFlamme',
+        description: "Brand (einzelnes Gebäude)",
+        src: BrandeinzelnesGebaeudeFlamme,
+        size: 32,
+    },
+    Teilzerstoerung: {
+        src: Teilzerstoerung,
+        name: 'Teilzerstoerung',
+        description: "Teilzerstörung",
+        size: 32,
+    },
+
+    Totalzerstoerung: {
+        src: Totalzerstoerung,
+        name: 'Totalzerstoerung',
+        description: "Totalzerstörung",
+        size: 32,
+    },
+
+};
+
+export const SchaedenAuswirkungen: BabsIconType = {
+    EingesperrteAbgeschnittene: {
+        name: 'EingesperrteAbgeschnittene',
+        description: "Eingesperrte / Abgeschnittene",
+        src: EingesperrteAbgeschnittene,
+        size: 48,
+    },
+    Obdachlose: {
+        name: 'Obdachlose',
+        description: "Obdachlose",
+        src: Obdachlose,
+        size: 48,
+    },
+    Tote: {
+        name: 'Tote',
+        description: "Tote",
+        src: Tote,
+        size: 48,
+    },
+    Vermisste: {
+        name: 'Vermisste',
+        description: "Vermisste",
+        src: Vermisste,
+        size: 48,
+    },
+    Verletzte: {
+        name: 'Verletzte',
+        description: "Verletzte",
+        src: Verletzte,
+        size: 48,
+    },
+};
+
+export const BildhafteSignaturenGesellschaft: BabsIconType = {
+    Bombenanschlag: {
+        name: 'Bombenanschlag',
+        description: "Bombenanschlag",
+        src: Bombenanschlag,
+        size: 64,
+    },
+    Bombendrohung: {
+        name: 'Bombendrohung',
+        description: "Bombendrohung",
+        src: Bombendrohung,
+        size: 64,
+    },
+    Brandanschlag: {
+        name: 'Brandanschlag',
+        description: "Brandanschlag",
+        src: Brandanschlag,
+        size: 64,
+    },
+    Demogewaltlos: {
+        name: 'Demogewaltlos',
+        description: "Demo (gewaltlos)",
+        src: Demogewaltlos,
+        size: 64,
+    },
+    Demogewaltsam: {
+        name: 'Demogewaltsam',
+        description: "Demo (gewaltsam)",
+        src: Demogewaltsam,
+        size: 64,
+    },
+    Drohung: {
+        name: 'Drohung',
+        description: "Drohung",
+        src: Drohung,
+        size: 64,
+    },
+    Fluechtlinge: {
+        name: 'Fluechtlinge',
+        description: "Fluechtlinge",
+        src: Fluechtlinge,
+        size: 64,
+    },
+    Massenpanik: {
+        name: 'Massenpanik',
+        description: "Massenpanik",
+        src: Massenpanik,
+        size: 64,
+    },
+    Pluenderung: {
+        name: 'Pluenderung',
+        description: "Pluenderung",
+        src: Pluenderung,
+        size: 64,
+    },
+    Sabotage: {
+        name: 'Sabotage',
+        description: "Sabotage",
+        src: Sabotage,
+        size: 64,
+    },
+    Terroranschlag: {
+        name: 'Terroranschlag',
+        description: "Terroranschlag",
+        src: Terroranschlag,
+        size: 64,
+    },
+};
+
+export const BildhafteSignaturenTechnisch: BabsIconType = {
+    Atomunfall: {
+        name: 'Atomunfall',
+        description: "Atomunfall",
+        src: Atomunfall,
+        size: 64,
+    },
+    Autounfall: {
+        name: 'Autounfall',
+        description: "Autounfall",
+        src: Autounfall,
+        size: 64,
+    },
+    Brand: {
+        name: 'Brand',
+        description: "Brand",
+        src: Brand,
+        size: 64,
+    },
+    Biounfall: {
+        name: 'Biounfall',
+        description: "Biounfall",
+        src: Biounfall,
+        size: 64,
+    },
+    Chemieunfall: {
+        name: 'Chemieunfall',
+        description: "Chemieunfall",
+        src: Chemieunfall,
+        size: 64,
+    },
+    Eisenbahnunglueck: {
+        name: 'Eisenbahnunglueck',
+        description: "Eisenbahnunglück",
+        src: Eisenbahnunglueck,
+        size: 64,
+    },
+    Energieausfall: {
+        name: 'Energieausfall',
+        description: "Energieausfall",
+        src: Energieausfall,
+        size: 64,
+    },
+    Explosion: {
+        name: 'Explosion',
+        description: "Explosion",
+        src: Explosion,
+        size: 64,
+    },
+    Flugzeugabsturz: {
+        name: 'Flugzeugabsturz',
+        description: "Flugzeugabsturz",
+        src: Flugzeugabsturz,
+        size: 64,
+    },
+    Infrastrukturschaden: {
+        name: 'Infrastrukturschaden',
+        description: "Infrastrukturschaden",
+        src: Infrastrukturschaden,
+        size: 64,
+    },
+    Kanalisationsausfall: {
+        name: 'Kanalisationsausfall',
+        description: "Kanalisationsausfall",
+        src: Kanalisationsausfall,
+        size: 64,
+    },
+    Kommunikationsstoerung: {
+        name: 'Kommunikationsstoerung',
+        description: "Kommunikationsstörung",
+        src: Kommunikationsstoerung,
+        size: 64,
+    },
+    Oelverschmutzung: {
+        name: 'Oelverschmutzung',
+        description: "Ölverschmutzung",
+        src: Oelverschmutzung,
+        size: 64,
+    },
+    Stau: {
+        name: 'Stau',
+        description: "Stau",
+        src: Stau,
+        size: 64,
+    },
+    Wasservsgausfall: {
+        name: 'Wasservsgausfall',
+        description: "Wasserversorgungsausfall",
+        src: Wasservsgausfall,
+        size: 64,
+    },
+};
+
+export const BildhafteSignaturenNatur: BabsIconType = {
+    Duerre: {
+        name: 'Duerre',
+        description: "Dürre",
+        src: Duerre,
+        size: 64,
+    },
+    Epidemie: {
+        name: 'Epidemie',
+        description: "Epidemie",
+        src: Epidemie,
+        size: 64,
+    },
+    Erdbeben: {
+        name: 'Erdbeben',
+        description: "Erdbeben",
+        src: Erdbeben,
+        size: 64,
+    },
+    Erdrutsch: {
+        name: 'Erdrutsch',
+        description: "Erdrutsch",
+        src: Erdrutsch,
+        size: 64,
+    },
+    Gebaeudeeinsturz: {
+        name: 'Gebaeudeeinsturz',
+        description: "Gebäudeeinsturz",
+        src: Gebaeudeeinsturz,
+        size: 64,
+    },
+    Lawine: {
+        name: 'Lawine',
+        description: "Lawine",
+        src: Lawine,
+        size: 64,
+    },
+    Starkniederschlag: {
+        name: 'Starkniederschlag',
+        description: "Starkniederschlag",
+        src: Starkniederschlag,
+        size: 64,
+    },
+    Sturm: {
+        name: 'Sturm',
+        description: "Sturm",
+        src: Sturm,
+        size: 64,
+    },
+    Tierseuche: {
+        name: 'Tierseuche',
+        description: "Tierseuche",
+        src: Tierseuche,
+        size: 64,
+    },
+    Ueberschwemmung: {
+        name: 'Ueberschwemmung',
+        description: "Überschwemmung",
+        src: Ueberschwemmung,
+        size: 64,
+    },
+};
+
+
+export const Others: BabsIconType = {
+    BranduebergriffErfolgt: {
+        name: 'BranduebergriffErfolgt',
+        description: "Brand-übergriff erfolgt",
+        src: BranduebergriffErfolgt,
+        size: 32,
+    },
+    BranduebergriffGefahr: {
+        name: 'BranduebergriffGefahr',
+        description: "Brand-übergriffsgefahr",
+        src: BranduebergriffGefahr,
+        size: 32,
+    },
+
+    RettungsAchse: {
+        name: 'RettungsAchse',
+        description: "RettungsAchse",
+        src: RettungsAchse,
+        size: 32,
+    },
+
     Einsatz: {
         name: 'Einsatz',
         description: "Einsatz",
@@ -851,4 +916,32 @@ export const ZonePatterns = {
         src: PatternZerstoert,
         size: 32,
     }
+};
+
+export const IconGroups: GroupedIcons = {
+    'Schäden': Schaeden,
+    'Schadenauswirkungen': SchaedenAuswirkungen,
+    'Einrichtungen Im Einsatzraum': EinrichtungenImEinsatzraum,
+    'Zivile Mittel': ZivileMittel,
+    'Fahrzeuge': Fahrzeuge,
+    'Bildhafte Signaturen (Gesellschaft)': BildhafteSignaturenGesellschaft,
+    'Bildhafte Signaturen (Natur)': BildhafteSignaturenNatur,
+    'Bildhafte Signaturen (Technisch)': BildhafteSignaturenTechnisch,
+    'Gefahren': Gefahren,
+}
+
+export const AllIcons: BabsIconType = {
+    ...EinrichtungenImEinsatzraum,
+    ...ZivileMittel,
+    ...ZivileFuehrungsstandorte,
+    ...Fahrzeuge,
+    ...Gefahren,
+    ...Schaeden,
+    ...SchaedenAuswirkungen,
+    ...BildhafteSignaturenGesellschaft,
+    ...BildhafteSignaturenTechnisch,
+    ...BildhafteSignaturenNatur,
+    ...Others,
+    ...LinePatterns,
+    ...ZonePatterns,
 };

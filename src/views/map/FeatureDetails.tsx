@@ -1,6 +1,6 @@
 import bearing from "@turf/bearing";
 import { LineString, point } from "@turf/helpers";
-import { BabsIcon, BabsIcons } from "components/BabsIcons";
+import { BabsIcon, IconGroups, Others, Schaeden } from "components/BabsIcons";
 import { Feature, GeoJsonProperties } from "geojson";
 import { isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -74,8 +74,12 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                             <div className="control">
                                 <div className="select">
                                     <select onChange={e => setIcon(e.target.value)} defaultValue={icon}>
-                                        {Object.values(BabsIcons).map((icon) => (
-                                            <option key={icon.name} label={icon.description}>{icon.name}</option>
+                                        {Object.keys(IconGroups).map((group) => (
+                                            <optgroup label={group}>
+                                                {Object.values(IconGroups[group]).map((icon) => (
+                                                    <option key={icon.name} label={icon.description}>{icon.name}</option>
+                                                ))}
+                                            </optgroup>
                                         ))}
                                     </select>
                                 </div>
@@ -107,7 +111,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
             <CirclePicker colors={[Colors.Red, Colors.Blue, Colors.Black]} onChangeComplete={(color) => setColor(color.hex)} />
             <br />
             {
-                feature && feature.geometry.type !== "Point" &&
+                feature && feature.geometry.type !== "Point" && color &&
                 <div className="field is-horizontal">
                     <div className="field-label is-normal">
                         <label className="label">Typ</label>
@@ -170,31 +174,31 @@ const LineTypes: SelectableTypes = {
         name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red, icon: undefined,
     },
     "begehbar": {
-        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: BabsIcons.Beschaedigung,
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: Schaeden.Beschaedigung,
     },
     "schwerBegehbar": {
-        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: BabsIcons.Teilzerstoerung,
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: Schaeden.Teilzerstoerung,
     },
     "unpassierbar": {
-        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: BabsIcons.Totalzerstoerung,
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: Schaeden.Totalzerstoerung,
     },
     "beabsichtigteErkundung": {
-        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
     },
     "durchgeführteErkundung": {
-        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
     },
     "beabsichtigteVerschiebung": {
-        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
     },
     "durchgeführteVerschiebung": {
-        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: BabsIcons.Verschiebung,
+        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
     },
     "beabsichtigterEinsatz": {
-        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: BabsIcons.Einsatz,
+        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
     },
     "durchgeführterEinsatz": {
-        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: BabsIcons.Einsatz,
+        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
     },
 };
 

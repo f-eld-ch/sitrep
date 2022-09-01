@@ -5,7 +5,7 @@ import center from '@turf/center';
 
 import { feature as turfFeature, Geometry } from '@turf/helpers';
 import DefaultMaker from 'assets/marker.svg';
-import { BabsIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
+import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import { Feature, FeatureCollection } from 'geojson';
 import { unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
@@ -110,7 +110,7 @@ function MapComponent() {
         defaultMarker.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage('default_marker') && mapRef.current.addImage('default_marker', defaultMarker);
         defaultMarker.src = DefaultMaker;
 
-        Object.values(BabsIcons).forEach(icon => {
+        Object.values(AllIcons).forEach(icon => {
             let customIcon = new Image(48, 48);
             customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
             customIcon.src = icon.src;
@@ -119,7 +119,7 @@ function MapComponent() {
         mapRef && mapRef.current && mapRef.current.on('styleimagemissing', function (e) {
             const id = e.id; // id of the missing image
             console.log("missing image", id);
-            Object.values(Object.assign({}, BabsIcons, LinePatterns, ZonePatterns)).filter(icon => id === icon.name).forEach(icon => {
+            Object.values(Object.assign({}, AllIcons, LinePatterns, ZonePatterns)).filter(icon => id === icon.name).forEach(icon => {
                 let customIcon = new Image(icon.size, icon.size);
                 customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
                 customIcon.src = icon.src;
