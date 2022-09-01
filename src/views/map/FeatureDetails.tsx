@@ -62,7 +62,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
     }, [setIcon, selectableTypes])
 
     return (
-        <div className='container'>
+        <div>
             <h3 className='title is-size-5'>Eigenschaften</h3>
             {feature && feature.geometry.type === "Point" ?
                 <div className="field is-horizontal">
@@ -73,7 +73,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         <div className="field is-expanded">
                             <div className="control">
                                 <div className="select">
-                                    <select onChange={e => setIcon(e.target.value)} defaultValue={feature.properties?.icon}>
+                                    <select onChange={e => setIcon(e.target.value)} defaultValue={icon}>
                                         {Object.values(BabsIcons).map((icon) => (
                                             <option key={icon.name} label={icon.description}>{icon.name}</option>
                                         ))}
@@ -98,7 +98,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                     <div className="field is-expanded">
                         <div className="field">
                             <p className="control">
-                                <input className="input" type="text" placeholder="Name" value={feature?.properties?.name} onChange={e => setName(e.target.value)} />
+                                <input className="input" type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
                             </p>
                         </div>
                     </div>

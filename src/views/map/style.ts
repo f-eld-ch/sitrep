@@ -135,7 +135,7 @@ export const style = [
         'paint': {
             'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar'],
             'line-opacity': 0.7,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 19, 22],
+            'line-width': ['interpolate', ['exponential', 1], ['zoom'], 12, 2, 19, 22],
         }
     },
     {
@@ -190,7 +190,7 @@ export const style = [
         'layout': {
             'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['exponential', 1], ['zoom'], 12, 0.1, 19, 1],
         }
     },
     {
@@ -206,7 +206,7 @@ export const style = [
         ],
         'layout': {
             'icon-image': ["get", "user_icon"],
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['exponential', 1], ['zoom'], 12, 0.1, 19, 1],
             'icon-allow-overlap': true,
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
@@ -269,7 +269,7 @@ export const style = [
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-pitch-alignment': 'viewport',
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.1, 17, 1],
         }
     },
     {
@@ -284,7 +284,7 @@ export const style = [
         'layout': {
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.1, 17, 1],
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
             'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0]
@@ -304,26 +304,50 @@ export const style = [
             'text-font': ["Frutiger Neue Condensed Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 1.75],
-            'text-size': ['interpolate', ['linear'], ['zoom'], 9, 0, 18, 16]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 16]
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
         }
     },
     {
-        'id': 'gl-draw-text-name',
+        'id': 'gl-draw-text-name-Polygon',
         'type': 'symbol',
         'filter': ['all',
             ['==', 'meta', 'feature'],
             ['has', 'user_name'],
-            ['!=', '$type', 'Point'],
+            ['==', '$type', 'Polygon'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["Frutiger Neue Condensed Bold"],
-            'text-size': ['interpolate', ['exponential', 2], ['zoom'], 9, 4, 18, 24],
-            'symbol-placement': 'line',
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
+            'symbol-placement': 'point',
+            'text-offset': [0, 1],
+            'text-ignore-placement': true,
+            'text-anchor': 'center'
+        },
+        'paint': {
+            'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'text-halo-color': '#fff'
+        }
+    },
+    {
+        'id': 'gl-draw-text-name-LineString',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'meta', 'feature'],
+            ['has', 'user_name'],
+            ['==', '$type', 'LineString'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'text-field': ["coalesce", ["get", "user_name"], ""],
+            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
+            'symbol-placement': 'line-center',
+            'text-offset': [0, 1],
             'text-ignore-placement': true,
             'text-anchor': 'center'
         },
