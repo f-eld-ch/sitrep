@@ -15,15 +15,15 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl';
 import { useParams } from 'react-router-dom';
+import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
+import './control-panel.css';
 import DrawControl from './controls/DrawControl';
 import ExportControl from './controls/ExportControl';
 import FeatureDetailControlPanel from './controls/FeatureDetailControl';
 import StyleSwitcherControl from './controls/StyleSwitcherControl';
 import FeatureDetail from './FeatureDetails';
 import style from './style';
-
-import './control-panel.css';
 
 const modes = {
     ...MapboxDraw.modes,
@@ -130,60 +130,65 @@ function MapComponent() {
     return (
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
-            <Map
-                ref={mapRef}
-                mapLib={maplibregl}
-                onLoad={onMapLoad}
-                attributionControl={true}
-                minZoom={8}
-                maxZoom={19}
-                {...viewState}
-                onMove={e => setViewState(e.viewState)}
-                style={{ minHeight: "85vh" }}
-                mapStyle={"https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"}
-            >
-                <FullscreenControl position={'top-left'} />
-                <NavigationControl position={'top-left'} visualizePitch={true} />
-                <DrawControl
-                    position="top-right"
-                    setDraw={setDraw}
-                    displayControlsDefault={false}
-                    styles={style}
-                    controls={{
-                        polygon: true,
-                        trash: true,
-                        point: true,
-                        line_string: true,
-                        combine_features: true,
-                        uncombine_features: true,
-                    }}
-                    boxSelect={false}
-                    clickBuffer={10}
-                    defaultMode="simple_select"
-                    modes={modes}
-                    onCreate={onUpdate}
-                    onUpdate={onUpdate}
-                    onDelete={onDelete}
-                    onCombine={onCombine}
-                    onSelectionChange={onSelectionChange}
-                    userProperties={true}
-                />
-                <StyleSwitcherControl position={'bottom-right'} styles={[
-                    {
-                        title: "Basiskarte",
-                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
-                    },
-                    {
-                        title: "Satellit",
-                        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
-                    },
-                ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />
-                <ScaleControl unit={"metric"} position={'bottom-left'} />
-                <ExportControl />
-                <FeatureDetailControlPanel feature={features.features.filter(f => f.id === selectedFeature).shift()}>
-                    <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
-                </FeatureDetailControlPanel>
-            </Map>
+            <Notification timeout={5000} type={"warning"}>
+                <p>Das Lagebild wird nicht mit dem Server synchronisiert, aber lokal gespeichert.</p>
+            </Notification>
+            <div className='container-flex'>
+                <Map
+                    ref={mapRef}
+                    mapLib={maplibregl}
+                    onLoad={onMapLoad}
+                    attributionControl={true}
+                    minZoom={8}
+                    maxZoom={19}
+                    {...viewState}
+                    onMove={e => setViewState(e.viewState)}
+                    style={{ minHeight: "85vh" }}
+                    mapStyle={"https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"}
+                >
+                    <FullscreenControl position={'top-left'} />
+                    <NavigationControl position={'top-left'} visualizePitch={true} />
+                    <DrawControl
+                        position="top-right"
+                        setDraw={setDraw}
+                        displayControlsDefault={false}
+                        styles={style}
+                        controls={{
+                            polygon: true,
+                            trash: true,
+                            point: true,
+                            line_string: true,
+                            combine_features: true,
+                            uncombine_features: true,
+                        }}
+                        boxSelect={false}
+                        clickBuffer={10}
+                        defaultMode="simple_select"
+                        modes={modes}
+                        onCreate={onUpdate}
+                        onUpdate={onUpdate}
+                        onDelete={onDelete}
+                        onCombine={onCombine}
+                        onSelectionChange={onSelectionChange}
+                        userProperties={true}
+                    />
+                    <StyleSwitcherControl position={'bottom-right'} styles={[
+                        {
+                            title: "Basiskarte",
+                            uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
+                        },
+                        {
+                            title: "Satellit",
+                            uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
+                        },
+                    ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />
+                    <ScaleControl unit={"metric"} position={'bottom-left'} />
+                    <ExportControl />
+                    <FeatureDetailControlPanel feature={features.features.filter(f => f.id === selectedFeature).shift()}>
+                        <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
+                    </FeatureDetailControlPanel>
+                </Map>
+            </div>
         </>
     );
 }
