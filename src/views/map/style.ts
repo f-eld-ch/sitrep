@@ -190,7 +190,7 @@ export const style = [
         'layout': {
             'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['exponential', 1], ['zoom'], 12, 0.1, 19, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
         }
     },
     {
@@ -206,7 +206,7 @@ export const style = [
         ],
         'layout': {
             'icon-image': ["get", "user_icon"],
-            'icon-size': ['interpolate', ['exponential', 1], ['zoom'], 12, 0.1, 19, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
             'icon-allow-overlap': true,
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
@@ -269,7 +269,7 @@ export const style = [
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-pitch-alignment': 'viewport',
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
         }
     },
     {
@@ -284,7 +284,7 @@ export const style = [
         'layout': {
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
             'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0]
