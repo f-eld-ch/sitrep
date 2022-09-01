@@ -8,6 +8,7 @@ import {
   faCodeBranch,
   faExplosion,
   faFeed,
+  faMapLocationDot,
   faPen,
   faRightFromBracket,
   faTruckMedical,
@@ -94,6 +95,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <JournalNavBar />
           <ResourcesNavBar />
           <TasksNavBar />
+          <MapNavBar />
         </div>
         <div className="navbar-end">
           <UserNavBar />
@@ -296,6 +298,30 @@ const ResourcesNavBar: FunctionComponent = () => {
             <FontAwesomeIcon icon={faTruckMedical} />{" "}
           </span>
           <span>{t("resources")}</span>
+        </span>
+      </NavLink>
+    </div>
+  );
+};
+
+const MapNavBar: FunctionComponent = () => {
+  let { incidentId } = useParams();
+  const { t } = useTranslation();
+
+  if (!incidentId) return <></>;
+
+  return (
+    <div className="navbar-item has-dropdown is-hoverable">
+      <NavLink
+        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        to={`/incident/${incidentId}/map`}
+      >
+        <span className="icon-text is-capitalized">
+          <span className="icon">
+            <FontAwesomeIcon icon={faMapLocationDot} />
+          </span>
+          <span>{t("map")}</span>
+          <span className="has-text-warning	ml-1">(beta)</span>
         </span>
       </NavLink>
     </div>

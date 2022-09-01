@@ -31,6 +31,7 @@
     "journalList": "operation journal overview",
     "location": "location",
     "logout": "logout",
+    "map": "situation map",
     "medium": {
         "EMAIL": "email",
         "PHONE": "phone",
