@@ -34,6 +34,7 @@
     "map": "immagine della situazione",
     "medium": {
         "EMAIL": "email",
+        "OTHER": "Altro",
         "PHONE": "Telefono",
         "RADIO": "radio"
     },
@@ -57,6 +58,7 @@
     "name": "nome",
     "open": "aprire",
     "options": "opzioni",
+    "otherDetails": "particolari",
     "overview": "quadro",
     "phone": {
         "sender": "chiamante"
