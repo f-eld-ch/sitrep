@@ -16,6 +16,7 @@ export enum Medium {
   Radio = "RADIO",
   Phone = "PHONE",
   Email = "EMAIL",
+  Other = "OTHER",
 }
 
 export type Message = {
