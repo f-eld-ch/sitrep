@@ -3,11 +3,13 @@ import React, { useCallback, useContext, useEffect, useReducer } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import { Hint } from "react-autocomplete-hint";
 import { Link, useParams } from "react-router-dom";
 import { Medium, Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
+import { RadioChannelDetailInput } from "./EditorForms/Elements";
+import { Other } from "./EditorForms/Other";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import { default as JournalMessage } from './Message';
@@ -15,17 +17,20 @@ import TriageModal from "./TriageModal";
 
 type State = {
   sender: string;
+  senderDetail: string;
   receiver: string;
+  receiverDetail: string;
   content: string;
   time: Date | undefined
   messageToEdit: Message | undefined
   messageToTriage: Message | undefined
-  media: MediaDetail
+  media: Medium
   saving: Boolean
+  radioChannel: string;
   autocompleteDetails: AutofillDetail
 }
 
-type MediaDetail = PhoneDetail | EmailDetail | RadioDetail;
+type MediaDetail = PhoneDetail | EmailDetail | RadioDetail | OtherDetail;
 export type PhoneDetail = {
   type: Medium.Phone;
   sender?: string;
@@ -34,6 +39,12 @@ export type PhoneDetail = {
 
 export type EmailDetail = {
   type: Medium.Email;
+  sender?: string;
+  receiver?: string;
+}
+
+export type OtherDetail = {
+  type: Medium.Other;
   sender?: string;
   receiver?: string;
 }
@@ -64,10 +75,13 @@ function initState(): State {
     messageToEdit: undefined,
     sender: "",
     receiver: "",
+    receiverDetail: "",
+    senderDetail: "",
     time: undefined,
     content: "",
-    media: { type: Medium.Radio },
+    media: Medium.Radio,
     saving: false,
+    radioChannel: "",
     autocompleteDetails: { senderReceiverDetails: [], senderReceiverNames: [], channelList: [] },
   }
 }
@@ -113,7 +127,13 @@ function Editor() {
         return Object.assign({}, state, { time: action.time })
       }
       case 'set_media_detail': {
-        return Object.assign({}, state, { media: action.detail })
+        switch (action.detail.type) {
+          case Medium.Radio:
+            return Object.assign({}, state, { media: action.detail.type, radioChannel: action.detail.channel })
+          default:
+            let details = Object.assign({}, { sender: state.senderDetail, receiver: state.receiverDetail }, action.detail)
+            return Object.assign({}, state, { media: action.detail.type, senderDetail: details.sender, receiverDetail: details.receiver })
+        }
       }
       case 'clear': {
         // keep autocompleteDetails
@@ -126,7 +146,10 @@ function Editor() {
           receiver: action.message?.receiver,
           time: action.message?.time,
           content: action.message?.content,
-          media: action.message?.mediumId === Medium.Radio ? { type: Medium.Radio, channel: action.message?.senderDetail || action.message?.receiverDetail || "" } : { type: action.message?.mediumId || Medium.Radio, sender: action.message?.senderDetail || "", receiver: action.message?.receiverDetail || "" },
+          media: action.message?.mediumId || Medium.Radio,
+          senderDetail: action.message?.senderDetail,
+          receiverDetail: action.message?.receiverDetail,
+          radioChannel: action.message?.senderDetail,
         })
       }
       case 'set_triage_message': {
@@ -159,11 +182,11 @@ function Editor() {
           time: state.time,
           journalId: journalId,
           content: state.content,
-          type: state.media?.type,
+          type: state.media,
           sender: state.sender,
-          senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
+          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
+          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
         },
       });
     } else {
@@ -172,11 +195,11 @@ function Editor() {
           time: state.time || new Date(),
           journalId: journalId,
           content: state.content,
-          type: state.media?.type,
+          type: state.media,
           sender: state.sender,
-          senderDetail: state.media?.type !== Medium.Radio ? state.media?.sender : state.media.channel,
+          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail: state.media?.type !== Medium.Radio ? state.media?.receiver : state.media.channel,
+          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
         },
       });
     }
@@ -210,8 +233,8 @@ function Editor() {
         <div className="columns">
           <div className="column is-half">
             <h3 className="title is-3 is-capitalized">{t('editor')}</h3>
-            {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
-            {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
+            {error && <Notification type="error">{error?.message}</Notification>}
+            {errorUpdate && < Notification type="error">{errorUpdate?.message}</Notification>}
             <InputBox />
           </div>
           <div className="column">
@@ -220,7 +243,6 @@ function Editor() {
               setEditorMessage={setEditorMessage}
               setTriageMessage={setTriageMessage}
             />
-
           </div>
           <TriageModal message={state.messageToTriage} setMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })} />
         </div>
@@ -237,23 +259,25 @@ function InputBox() {
   const messageContentDebounced: string = useDebounce(state.content, 250);
 
   const renderFormContent = () => {
-    if (state.media?.type === Medium.Radio) {
+    if (state.media === Medium.Radio) {
       return <Radio />;
     }
-    if (state.media?.type === Medium.Phone) {
+    if (state.media === Medium.Phone) {
       return <Phone />;
     }
-    if (state.media?.type === Medium.Email) {
+    if (state.media === Medium.Email) {
       return <Email />;
+    }
+    if (state.media === Medium.Other) {
+      return <Other />;
     }
   };
 
   const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     let selectMedium = e.target.value;
-    if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone) {
+    if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone || selectMedium === Medium.Other) {
       dispatch({ type: 'set_media_detail', detail: { type: selectMedium } });
-
     }
   };
 
@@ -268,29 +292,14 @@ function InputBox() {
           <div className="field is-grouped is-grouped-multiline">
             <div className="control is-narrow">
               <div className="select is-fullwidth">
-                <select value={state.media?.type} onChange={handleMediumChange}>
+                <select value={state.media} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
-                    <option key={medium} label={t([`medium.${medium}`, 'medium.Radio'])}>{medium}</option>
+                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`])}>{medium}</option>
                   ))}
                 </select>
               </div>
             </div>
-            {state.media.type === Medium.Radio ?
-              <div className="control">
-                <Hint options={state.autocompleteDetails.channelList} allowTabFill={true} allowEnterFill={true} >
-                  <input
-                    className="input"
-                    value={state.media.channel || ""}
-                    type="text"
-                    onChange={(e) => {
-                      e.preventDefault();
-                      dispatch({ type: 'set_media_detail', detail: { type: Medium.Radio, channel: e.target.value } });
-                    }}
-                    placeholder={t('radioChannel')}
-                  />
-                </Hint>
-              </div>
-              : <></>}
+            {state.media === Medium.Radio && <RadioChannelDetailInput />}
           </div>
         </div>
       </div >

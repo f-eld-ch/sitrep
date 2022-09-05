@@ -35,7 +35,8 @@
     "medium": {
         "EMAIL": "E-Mail",
         "PHONE": "Telefon",
-        "RADIO": "Funk"
+        "RADIO": "Funk",
+        "OTHER": "Andere"
     },
     "mediumName": "Kommunikation",
     "message": {
@@ -57,6 +58,7 @@
     "name": "Name",
     "open": "öffnen",
     "options": "Optionen",
+    "otherDetails": "Details",
     "overview": "Übersicht",
     "phone": {
         "sender": "Anrufer"

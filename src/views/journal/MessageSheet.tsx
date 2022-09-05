@@ -34,7 +34,7 @@ function MessageSheet() {
             <h3 className="title is-size-6 is-capitalized">{t('messageSheet')}</h3>
             {loading ? <Spinner /> : <></>}
             {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
-            {data?.messagesByPk ?
+            {data?.messagesByPk &&
                 <>
                     <table className="table is-bordered is-fullwidth">
                         <tbody >
@@ -42,25 +42,17 @@ function MessageSheet() {
                                 <th rowSpan={6} style={{ width: "150px" }}>{t('message.name')}</th>
                                 <th>{t('message.sender')}</th>
                                 {data?.messagesByPk.mediumId === Medium.Radio || !data.messagesByPk.senderDetail?.length ?
-                                    <>
-                                        <td colSpan={3}>{data?.messagesByPk.sender}</td>
-                                    </>
+                                    <td colSpan={3}>{data?.messagesByPk.sender}</td>
                                     :
-                                    <>l
-                                        <td colSpan={3}>{data?.messagesByPk.sender} ({data?.messagesByPk.senderDetail})</td>
-                                    </>
+                                    <td colSpan={3}>{data?.messagesByPk.sender} ({data?.messagesByPk.senderDetail})</td>
                                 }
                             </tr>
                             <tr>
                                 <th>{t('message.receiver')}</th>
                                 {data?.messagesByPk.mediumId === Medium.Radio || !data.messagesByPk.receiverDetail?.length ?
-                                    <>
-                                        <td colSpan={3}>{data?.messagesByPk.receiver}</td>
-                                    </>
+                                    <td colSpan={3}>{data?.messagesByPk.receiver}</td>
                                     :
-                                    <>
-                                        <td colSpan={3}>{data?.messagesByPk.receiver} ({data?.messagesByPk.receiverDetail})</td>
-                                    </>
+                                    <td colSpan={3}>{data?.messagesByPk.receiver} ({data?.messagesByPk.receiverDetail})</td>
                                 }                            </tr>
                             <tr>
                                 <th>{t('message.time')}</th>
@@ -84,9 +76,7 @@ function MessageSheet() {
                                         </td>
                                     </>
                                     :
-                                    <>
-                                        <td colSpan={3}>{t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}</td>
-                                    </>
+                                    <td colSpan={3}>{t([`medium.${data?.messagesByPk.mediumId}`, `medium.${Medium.Radio}`])}</td>
                                 }
                             </tr>
                             <tr>
@@ -129,7 +119,6 @@ function MessageSheet() {
                         </tbody>
                     </table>
                 </>
-                : <></>
             }
         </>
     );
