@@ -84,7 +84,7 @@ function IncidentCard(props: { incident: Incident, closeIncident: any }) {
   const cardClass = classNames({
     card: true,
     "mb-3": true,
-    "has-background-white-bis": incident.closedAt
+    "has-background-primary-light": incident.closedAt
   });
   return (
     <div className={cardClass} >
@@ -106,8 +106,7 @@ function IncidentCard(props: { incident: Incident, closeIncident: any }) {
       </div>
       <footer className="card-footer">
         <button
-          className="card-footer-item is-capitalized has-text-success"
-          style={{ borderStyle: "none", backgroundColor: "inherit" }}
+          className="card-footer-item is-ahref is-capitalized"
           onClick={() => navigate(`../${props.incident.id}/journal/view`)}
         >
           <span className="icon">
@@ -116,8 +115,7 @@ function IncidentCard(props: { incident: Incident, closeIncident: any }) {
           <span>{t('enter')}</span>
         </button>
         <button
-          className="card-footer-item is-capitalized has-text-warning"
-          style={{ borderStyle: "none", backgroundColor: "inherit" }}
+          className="card-footer-item is-ahref is-capitalized"
           onClick={() => navigate(`../${incident.id}/edit`)}
         >
           <span className="icon">
@@ -127,8 +125,7 @@ function IncidentCard(props: { incident: Incident, closeIncident: any }) {
         </button>
         {incident.closedAt === null ? (
           <button
-            className="card-footer-item is-capitalized has-text-small has-text-danger"
-            style={{ borderStyle: "none", backgroundColor: "inherit" }}
+            className="card-footer-item is-ahref is-capitalized is-danger"
             onClick={() => {
               closeIncident({
                 variables: {
@@ -145,8 +142,7 @@ function IncidentCard(props: { incident: Incident, closeIncident: any }) {
           </button>
         ) : (
           <button
-            className="card-footer-item is-capitalized"
-            style={{ borderStyle: "none", backgroundColor: "inherit" }}
+            className="card-footer-item is-ahref is-capitalized is-success"
             onClick={() => {
               closeIncident({
                 variables: { incidentId: incident.id, closedAt: null },
