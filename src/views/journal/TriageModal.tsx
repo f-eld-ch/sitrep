@@ -182,7 +182,7 @@ function Triage(props: {
           <footer className="modal-card-foot">
             <div className="buttons are-normal">
               <button
-                className="button is-rounded is-primary is-capitalized"
+                className="button is-rounded is-primary is-small"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
                 }}
@@ -190,12 +190,12 @@ function Triage(props: {
                 {t('saveTriage')}
               </button>
               <button
-                className="button is-rounded is-capitalized"
+                className="button is-rounded is-small"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
                 }}
               >
-                {t(`triage.${TriageStatus.MoreInfo}`)}
+                {t(`saveMoreInfo`)}
               </button>
             </div>
           </footer>

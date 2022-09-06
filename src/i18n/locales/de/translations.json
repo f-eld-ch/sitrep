@@ -34,9 +34,9 @@
     "map": "Lagebild",
     "medium": {
         "EMAIL": "E-Mail",
+        "OTHER": "Andere",
         "PHONE": "Telefon",
-        "RADIO": "Funk",
-        "OTHER": "Andere"
+        "RADIO": "Funk"
     },
     "mediumName": "Kommunikation",
     "message": {
@@ -75,7 +75,8 @@
     "requestsNeeds": "Bedürfnisse / Anträge",
     "resources": "Mittel",
     "save": "speichern",
-    "saveTriage": "triagieren",
+    "saveMoreInfo": "Benötigt mehr Informationen",
+    "saveTriage": "Triagieren",
     "short": "Kürzel",
     "showClosed": "Zeige geschlossene",
     "state": "Stand",
