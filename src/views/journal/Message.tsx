@@ -75,7 +75,6 @@ function Message({
     "mb-0": true,
     "is-small": true,
     "is-right": true,
-    "is-capitalized": true,
     "is-justify-content-flex-end": true,
   });
 
