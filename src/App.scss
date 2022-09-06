@@ -11,6 +11,8 @@ $warning: rgb(236, 180, 25%);
 $primary: hsl(18, 100%, 52%);
 $danger: rgb(214, 0, 0%);
 $info: hsl(226, 100%, 47%);
+$link: hsl(226, 100%, 39%);
+$link-hover: hsl(18, 100%, 52%);
 
 $section-padding: 0.5rem 0.5rem;
 $section-padding-desktop: 0.5rem 3rem;
@@ -133,7 +135,21 @@ section {
     border-color: $danger;
 }
 
+button {
+    &.is-ahref {
+        appearance: unset;
+        background-color: transparent;
+        color: $link;
+        border: none;
+        // padding: 0;
+        font-size: 1em;
+        cursor: pointer;
 
+        &:hover {
+            color: $link-hover;
+        }
+    }
+}
 
 @media screen {
     .is-print {
