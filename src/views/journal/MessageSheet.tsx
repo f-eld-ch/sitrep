@@ -92,7 +92,7 @@ function MessageSheet() {
 
                             <tr style={{ height: "400px" }}>
                                 <th>{t('message.content')}</th>
-                                <td colSpan={4}><ReactMarkdown>{data?.messagesByPk.content}</ReactMarkdown></td>
+                                <td colSpan={4}><div className="content"><ReactMarkdown>{data?.messagesByPk.content}</ReactMarkdown></div></td>
                             </tr>
                         </tbody>
                     </table>

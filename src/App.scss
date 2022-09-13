@@ -2,11 +2,18 @@
 
 @import "~bulma/sass/utilities/initial-variables.sass";
 
-// Import a Google Font
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600");
-
+// Import the fonts
+@import url("assets/fira-code/fira-code.css");
+@import url("assets/open-sans/open-sans.css");
 // Update Bulma's global variables
-$family-sans-serif: "Open Sans", sans-serif;
+$family-sans-serif: 'Open Sans', sans-serif;
+$family-monospace: 'Fira Code', monospace;
+$weight-light: 100;
+$weight-normal: 300;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
 $warning: rgb(236, 180, 25%);
 $primary: hsl(18, 100%, 52%);
 $danger: rgb(214, 0, 0%);
