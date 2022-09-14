@@ -2,7 +2,7 @@ import bearing from "@turf/bearing";
 import { LineString, point } from "@turf/helpers";
 import { BabsIcon, IconGroups, Others, Schaeden } from "components/BabsIcons";
 import { Feature, GeoJsonProperties } from "geojson";
-import { isUndefined, omitBy } from "lodash";
+import { isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
 import { useMap } from "react-map-gl";
@@ -20,10 +20,25 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
     const map = useMap();
     const { feature, onUpdate } = props;
     const [iconRotation, setIconRotation] = useState<number | undefined>(feature && feature.properties && (feature.properties.iconRotation));
-    const [name, setName] = useState<string | undefined>((feature && feature.properties && feature.properties.name));
-    const [icon, setIcon] = useState<string | undefined>((feature && feature.properties && feature.properties.icon));
-    const [color, setColor] = useState<string | undefined>((feature && feature.properties && feature.properties.color));
-    const [kind, setKind] = useState<string | undefined>((feature && feature.properties && ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") ? feature.properties.lineType : feature.properties.zoneType)));
+    const [name, setName] = useState<string>((feature && feature.properties && feature.properties.name));
+    const [icon, setIcon] = useState<string>((feature && feature.properties && feature.properties.icon));
+    const [color, setColor] = useState<string>((feature && feature.properties && feature.properties.color));
+    const [kind, setKind] = useState<string>((feature && feature.properties && ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") ? feature.properties.lineType : feature.properties.zoneType)));
+
+    useEffect(() => {
+        if (feature && feature.properties) {
+            setIconRotation(feature.properties.iconRotation)
+            setName(feature.properties.name)
+            setIcon(feature.properties.icon)
+            setColor(feature.properties.color)
+            if ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString")) {
+                setKind(feature.properties.lineType)
+            }
+            else if (((feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon"))) {
+                setKind(feature.properties.zoneType)
+            }
+        }
+    }, [feature]);
 
     useEffect(() => {
         if (feature !== undefined) {
@@ -35,10 +50,10 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 "zoneType": feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon" ? kind : undefined,
                 "iconRotation": feature.geometry.type === "LineString" ? calculateIconRotationForLines(feature as Feature<LineString>) : iconRotation
             });
-            feature.properties = omitBy(properties, isUndefined);
-            onUpdate({ features: [feature] });
-
+            feature.properties = omitBy(properties, isUndefined || isEmpty);
+            onUpdate({ features: [feature] })
         }
+        return () => onUpdate({ features: [feature] });
     }, [onUpdate, feature, name, iconRotation, color, icon, kind]);
 
     let selectableTypes: typeof LineTypes | typeof ZoneTypes | undefined = undefined;
@@ -57,7 +72,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
             setIcon(t.icon?.name);
         }
         else {
-            setIcon(undefined);
+            setIcon("");
         }
     }, [setIcon, selectableTypes])
 
@@ -73,9 +88,9 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         <div className="field is-expanded">
                             <div className="control">
                                 <div className="select">
-                                    <select onChange={e => setIcon(e.target.value)} defaultValue={icon}>
+                                    <select onChange={e => setIcon(e.target.value)} value={icon}>
                                         {Object.keys(IconGroups).map((group) => (
-                                            <optgroup label={group}>
+                                            <optgroup label={group} key={group}>
                                                 {Object.values(IconGroups[group]).map((icon) => (
                                                     <option key={icon.name} label={icon.description}>{icon.name}</option>
                                                 ))}
@@ -87,7 +102,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         </div>
                         {feature && feature.geometry.type === "Point" &&
                             < label className="checkbox">
-                                <input type="checkbox" onChange={e => e.target.checked ? setIconRotation(map.current?.getBearing()) : setIconRotation(undefined)} checked={iconRotation !== undefined} />
+                                <input type="checkbox" onChange={e => e.target.checked ? setIconRotation(map.current?.getBearing()) : setIconRotation(undefined)} checked={iconRotation !== undefined} value={iconRotation} />
                                 Fixiert
                             </label>}
                     </div>
@@ -101,9 +116,9 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 <div className="field-body">
                     <div className="field is-expanded">
                         <div className="field">
-                            <p className="control">
-                                <input className="input" type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
-                            </p>
+                            <div className="control">
+                                <input className="input" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -122,9 +137,9 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                                 <div className="control">
                                     <div className="select">
                                         <select onChange={onTypeChange}
-                                            defaultValue={selectableTypes && Object.values(selectableTypes).find(e => e.name === kind)?.name}
+                                            value={selectableTypes && Object.values(selectableTypes).find(e => e.name === kind)?.name}
                                         >
-                                            <option label="Typ wählen" >{undefined}</option>
+                                            <option label="Typ wählen">{undefined}</option>
                                             {
                                                 selectableTypes && Object.values(selectableTypes).filter(t => t.color === color).map((t: any) => (
                                                     <option key={t.name} label={t.description}>{t.name}</option>
