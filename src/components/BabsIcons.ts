@@ -400,7 +400,7 @@ export const ZivileFuehrungsstandorte: BabsIconType = {
 
     Bezirksfuehrungsorgan: {
         name: 'Bezirksfuehrungsorgan',
-        description: "Bezirksfuehrungsorgan",
+        description: "Bezirksführungsorgan",
         src: Bezirksfuehrungsorgan,
         size: 48,
     },
@@ -437,7 +437,7 @@ export const ZivileFuehrungsstandorte: BabsIconType = {
     },
     KommandopostenRueckwaertiges: {
         name: 'KommandopostenRueckwaertiges',
-        description: "Kommandoposten Rückwaertiges",
+        description: "Kommandoposten Rückwärtiges",
         src: KommandopostenRueckwaertiges,
         size: 32,
     },
@@ -648,7 +648,7 @@ export const BildhafteSignaturenGesellschaft: BabsIconType = {
     },
     Fluechtlinge: {
         name: 'Fluechtlinge',
-        description: "Fluechtlinge",
+        description: "Flüchtlinge",
         src: Fluechtlinge,
         size: 64,
     },
@@ -660,7 +660,7 @@ export const BildhafteSignaturenGesellschaft: BabsIconType = {
     },
     Pluenderung: {
         name: 'Pluenderung',
-        description: "Pluenderung",
+        description: "Plünderung",
         src: Pluenderung,
         size: 64,
     },
@@ -838,13 +838,13 @@ export const BildhafteSignaturenNatur: BabsIconType = {
 export const Others: BabsIconType = {
     BranduebergriffErfolgt: {
         name: 'BranduebergriffErfolgt',
-        description: "Brand-übergriff erfolgt",
+        description: "Brandübergriff erfolgt",
         src: BranduebergriffErfolgt,
         size: 32,
     },
     BranduebergriffGefahr: {
         name: 'BranduebergriffGefahr',
-        description: "Brand-übergriffsgefahr",
+        description: "Brandübergriffsgefahr",
         src: BranduebergriffGefahr,
         size: 32,
     },
@@ -922,6 +922,7 @@ export const IconGroups: GroupedIcons = {
     'Schäden': Schaeden,
     'Schadenauswirkungen': SchaedenAuswirkungen,
     'Einrichtungen Im Einsatzraum': EinrichtungenImEinsatzraum,
+    'Zivile Führungsstandorte': ZivileFuehrungsstandorte,
     'Zivile Mittel': ZivileMittel,
     'Fahrzeuge': Fahrzeuge,
     'Bildhafte Signaturen (Gesellschaft)': BildhafteSignaturenGesellschaft,
