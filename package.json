@@ -17,7 +17,7 @@
     "classnames": "^2.3.1",
     "dayjs": "^1.10.8",
     "graphql": "^16.6.0",
-    "i18next": "^21.9.1",
+    "i18next": "^21.9.2",
     "i18next-browser-languagedetector": "^6.1.5",
     "lodash": "^4.17.21",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
@@ -31,7 +31,7 @@
     "react-map-gl": "^7.0.19",
     "react-markdown": "^8.0.3",
     "react-router-dom": "^6.2.2",
-    "usehooks-ts": "^2.6.0",
+    "usehooks-ts": "^2.7.0",
     "web-vitals": "^3.0.1"
   },
   "scripts": {
@@ -74,21 +74,21 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/classnames": "^2.3.1",
     "@types/jest": "^29.0.3",
-    "@types/lodash": "^4.14.183",
+    "@types/lodash": "^4.14.185",
     "@types/mapbox__mapbox-gl-draw": "^1.3.0",
-    "@types/node": "^18.7.15",
+    "@types/node": "^18.7.18",
     "@types/react": "^17.0.39",
     "@types/react-color": "^3.0.6",
     "@types/react-dom": "^17.0.13",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "react-scripts": "5.0.1",
     "sass": "^1.54.8",
     "source-map-explorer": "^2.5.2",
-    "typescript": "^4.8.2"
+    "typescript": "^4.8.3"
   },
   "resolutions": {
     "@svgr/webpack": "^6.3.1"
