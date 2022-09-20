@@ -14,7 +14,7 @@
     "@turf/helpers": "^6.5.0",
     "@watergis/mapbox-gl-export": "^1.2.18",
     "bulma": "^0.9.4",
-    "classnames": "^2.3.1",
+    "classnames": "^2.3.2",
     "dayjs": "^1.10.8",
     "graphql": "^16.6.0",
     "i18next": "^21.9.1",
