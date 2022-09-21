@@ -177,7 +177,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label className="label is-capitalized">{t('add')}</label>
+          <label className="label">{t('devisionAdd')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">

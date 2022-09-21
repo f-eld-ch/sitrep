@@ -1,11 +1,12 @@
 {
     "add": "hinzufügen",
+    "devisionAdd": "Neuer Fachbereich hinzufügen",
     "all": "alle",
     "assignPriority": "Priorität zuweisen",
     "close": "schliessen",
     "closedAt": "Geschlossen",
     "create": "erstellen",
-    "createIncident": "neues Ereignis erstellen",
+    "createIncident": "Neues Ereignis erstellen",
     "createJournal": "Neues Journal erstellen",
     "createNewImmediateMeasures": "Neue Sofortmassnahmen erstellen",
     "createNewRequest": "Neuen Antrag erstellen",

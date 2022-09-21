@@ -36,7 +36,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   return (
     <nav className="navbar is-fixed-top is-hidden-print">
       <div className="navbar-brand">
-        <NavLink to="/" className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}>
+        <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
           <figure className="image is-32x32">
             <img src={logo} alt="Logo" />
           </figure>
@@ -57,7 +57,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
             <NavLink
-              className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+              className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
               to="/incident/list"
             >
               <span className="icon-text">
@@ -69,20 +69,20 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </NavLink>
             <div className="navbar-dropdown is-boxed">
               <NavLink
-                className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
                 to="/incident/list"
               >
                 {t("overview")}
               </NavLink>
               <NavLink
-                className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
                 to="/incident/new"
               >
                 {t("createIncident")}
               </NavLink>
               {incidentId ? (
                 <NavLink
-                  className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+                  className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
                   to={`/incident/${incidentId}/edit`}
                 >
                   {t("editIncident")}
