@@ -41,13 +41,23 @@ function List(props: {
   if (loading) return <Spinner />;
   let divisions = data?.journalsByPk.incident.divisions.flat() || [];
 
+  let messages =
+    data?.messages
+      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
+      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
+      .filter(
+        (message) =>
+          assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
+      ) || [];
+
   return (
     <div>
-      <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
       <div className="is-print">
-        {props.showControls ? <></> : <MessageTable messages={data?.messages} />}
+        {props.showControls ? <></> : <MessageTable messages={messages} triageFilter={triageFilter} priorityFilter={priorityFilter} assignmentFilter={assignmentFilter} />}
       </div>
       <div className="is-hidden-print">
+        <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
+
         <div className="columns">
           <div className="column is-narrow">
             <div className="control has-icons-left">
@@ -118,13 +128,7 @@ function List(props: {
       </div>
       <div className="columns is-multiline is-hidden-print mb-3">
         {data ?
-          <MemoMessages messages={data.messages
-            .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
-            .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
-            .filter(
-              (message) =>
-                assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
-            )} showControls={props.showControls} setTriageMessage={props.setTriageMessage} setEditorMessage={props.setEditorMessage} /> : <></>
+          <MemoMessages messages={messages} showControls={props.showControls} setTriageMessage={props.setTriageMessage} setEditorMessage={props.setEditorMessage} /> : <></>
         }
       </div>
     </div>
