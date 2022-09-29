@@ -74,6 +74,7 @@ import Patientensammelstelle from 'assets/babs/Patientensammelstelle.svg';
 import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
 import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
 import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
+import PatternLineRettungsachse from 'assets/babs/PatternLineRettungsachse.svg';
 import PatternLineRutschgebiet from 'assets/babs/PatternLineRutschgebiet.svg';
 import PatternLineRutschgebietGespiegelt from 'assets/babs/PatternLineRutschgebietGespiegelt.svg';
 import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
@@ -881,6 +882,12 @@ export const LinePatterns = {
         name: 'PatternLineErkundung',
         description: "Erkundung",
         src: PatternLineErkundung,
+        size: 32,
+    },
+    PatternLineRettungsachse: {
+        name: 'PatternLineRettungsachse',
+        description: "Rettungsachse",
+        src: PatternLineRettungsachse,
         size: 32,
     },
     PatternLineBeabsichtigteErkundung: {

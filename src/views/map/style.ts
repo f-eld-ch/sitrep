@@ -141,7 +141,7 @@ export const style = [
         'filter': ['all',
             ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
-            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet', 'RutschgebietGespiegelt'],
+            ['in', 'user_lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet', 'RutschgebietGespiegelt', 'rettungsAchse'],
             ['!=', 'mode', 'static']
         ],
         'layout': {
@@ -149,7 +149,7 @@ export const style = [
             'line-join': 'round'
         },
         'paint': {
-            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar'],
+            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar', 'rettungsAchse', 'PatternLineRettungsachse'],
             'line-opacity': 0.7,
             'line-width': ['interpolate', ['exponential', 1], ['zoom'], 12, 2, 19, 22],
         }
@@ -206,7 +206,7 @@ export const style = [
         'layout': {
             'icon-image': ["get", "user_icon"],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
         }
     },
     {
@@ -222,7 +222,7 @@ export const style = [
         ],
         'layout': {
             'icon-image': ["get", "user_icon"],
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
             'icon-allow-overlap': true,
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
@@ -285,7 +285,7 @@ export const style = [
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-pitch-alignment': 'viewport',
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
         }
     },
     {
@@ -300,7 +300,7 @@ export const style = [
         'layout': {
             'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
             'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.1, 17, 1],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
             'icon-rotation-alignment': 'map',
             'icon-pitch-alignment': 'map',
             'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0]
@@ -323,7 +323,7 @@ export const style = [
             'text-anchor': 'center',
             'text-offset': [0, 0],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 17, 24]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
         'paint': {
             'text-color': '#ff0000',
@@ -346,7 +346,7 @@ export const style = [
             'text-anchor': 'right',
             'text-offset': [2.25, 0.25],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 17, 24]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
         'paint': {
             'text-color': '#ff0000',
@@ -368,7 +368,7 @@ export const style = [
             'text-anchor': 'center',
             'text-offset': [0, 1.75],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 16]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 11, 2, 17, 16]
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],

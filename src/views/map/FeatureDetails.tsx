@@ -207,6 +207,9 @@ const LineTypes: SelectableTypes = {
     "beabsichtigteVerschiebung": {
         name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
     },
+    "rettungsAchse": {
+        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: Others.Verschiebung,
+    },
     "durchgeführteVerschiebung": {
         name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
     },
