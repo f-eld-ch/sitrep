@@ -1,7 +1,7 @@
 
 export const style = [
     {
-        'id': 'gl-draw-polygon-fill-pattern-inactive',
+        'id': 'gl-draw-polygon-no-fill-pattern',
         'type': 'fill',
         'filter': ['all',
             ['==', 'active', 'false'],
@@ -16,7 +16,7 @@ export const style = [
         }
     },
     {
-        'id': 'gl-draw-polygon-fill-pattern-inactive',
+        'id': 'gl-draw-polygon-special-fill-pattern',
         'type': 'fill',
         'filter': ['all',
             ['==', 'active', 'false'],
