@@ -57,7 +57,6 @@ function MapComponent() {
             createdFeatures.forEach(f => {
                 if (f.properties) {
                     f.properties['createdAt'] = new Date();
-                    f.id = hat();
                     newFeatureCollection.features.push(f);
                 }
             })

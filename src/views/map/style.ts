@@ -307,11 +307,58 @@ export const style = [
         }
     },
     {
+        'id': 'gl-draw-text-special-placement-points-center',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'meta', 'feature'],
+            ['==', '$type', 'Point'],
+            ['has', 'user_name'],
+            ['has', 'user_icon'],
+            ['in', 'user_icon', 'EingesperrteAbgeschnittene', 'Obdachlose'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'text-field': ["coalesce", ["get", "user_name"], ""],
+            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-anchor': 'center',
+            'text-offset': [0, 0],
+            'text-ignore-placement': true,
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 17, 24]
+        },
+        'paint': {
+            'text-color': '#ff0000',
+        }
+    },
+    {
+        'id': 'gl-draw-text-special-placement-points-right',
+        'type': 'symbol',
+        'filter': ['all',
+            ['==', 'meta', 'feature'],
+            ['==', '$type', 'Point'],
+            ['has', 'user_name'],
+            ['has', 'user_icon'],
+            ['in', 'user_icon', 'Tote', 'Vermisste', 'Verletzte'],
+            ['!=', 'mode', 'static']
+        ],
+        'layout': {
+            'text-field': ["coalesce", ["get", "user_name"], ""],
+            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-anchor': 'right',
+            'text-offset': [2.25, 0.25],
+            'text-ignore-placement': true,
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 10, 17, 24]
+        },
+        'paint': {
+            'text-color': '#ff0000',
+        }
+    },
+    {
         'id': 'gl-draw-text-name-point',
         'type': 'symbol',
         'filter': ['all',
             ['==', 'meta', 'feature'],
             ['has', 'user_name'],
+            ['!in', 'user_icon', 'EingesperrteAbgeschnittene', 'Obdachlose', 'Tote', 'Vermisste', 'Verletzte'],
             ['==', '$type', 'Point'],
             ['!=', 'mode', 'static']
         ],
@@ -320,6 +367,7 @@ export const style = [
             'text-font': ["Frutiger Neue Condensed Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 1.75],
+            'text-ignore-placement': true,
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 16]
         },
         'paint': {
