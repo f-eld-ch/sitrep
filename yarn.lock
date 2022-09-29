@@ -2201,6 +2201,11 @@
   dependencies:
     "@types/unist" "*"
 
+"@types/hat@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@types/hat/-/hat-0.0.1.tgz#b275868c98801bafc025b6c90ba8f97ec896ba3b"
+  integrity sha512-GQoFDN07Knft7pvik72m/ddy8wmwMykzJEPZLoT7Wp3PHZsttdAbQ51qKf1DLWAdU6Ac31xon1Ji3g0hqQv6sw==
+
 "@types/history@^4.7.11":
   version "4.7.11"
   resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.11.tgz#56588b17ae8f50c53983a524fc3cc47437969d64"
@@ -5361,7 +5366,7 @@ hast-util-whitespace@^2.0.0:
   resolved "https://registry.yarnpkg.com/hast-util-whitespace/-/hast-util-whitespace-2.0.0.tgz#4fc1086467cc1ef5ba20673cb6b03cec3a970f1c"
   integrity sha512-Pkw+xBHuV6xFeJprJe2BBEoDV+AvQySaz3pPDRUs5PNZEMQjpXJJueqrpcHIXxnWTcAGi/UOCgVShlkY6kLoqg==
 
-hat@0.0.3:
+hat@0.0.3, hat@^0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/hat/-/hat-0.0.3.tgz#bb014a9e64b3788aed8005917413d4ff3d502d8a"
   integrity sha512-zpImx2GoKXy42fVDSEad2BPKuSQdLcqsCYa48K3zHSzM/ugWuYjLDr8IXxpVuL7uCLHw56eaiLxCRthhOzf5ug==

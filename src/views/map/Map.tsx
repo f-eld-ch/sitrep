@@ -1,15 +1,13 @@
 
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import center from '@turf/center';
 
-import { feature as turfFeature, Geometry } from '@turf/helpers';
 import DefaultMaker from 'assets/marker.svg';
 import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import { Feature, FeatureCollection } from 'geojson';
-import { unionBy } from 'lodash';
+import hat from 'hat';
+import { isEqual, unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
-import pullAllBy from 'lodash/pullAllBy';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -46,26 +44,92 @@ function MapComponent() {
     const mapRef = useRef<MapRef>(null);
 
     const { incidentId } = useParams();
-    // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [{ "id": "2b32999701a0c620d0f9259203ed63dd", "type": "Feature", "properties": { "icon": "AbsperrungVerkehrswege", "iconRotation": 45, }, "geometry": { "coordinates": [8.649638746498567, 46.87569952044984], "type": "Point" } }, { "id": "775e8f6bc028342da6049bcdf17ee089", "type": "Feature", "properties": { "icon": "Teilzerstoerung" }, "geometry": { "coordinates": [8.644308154993183, 46.86835026495743], "type": "Point" } }, { "id": "c008144cc88dbc8f2ccd88a700887d97", "type": "Feature", "properties": { "color": "#0055ff", "name": "KFS" }, "geometry": { "coordinates": [[[8.611160260763086, 46.89719418852033], [8.598904579366092, 46.88044272494358], [8.63760673114416, 46.847659384329376], [8.654162651627615, 46.86015763763265], [8.626641121474307, 46.88749661041737], [8.611160260763086, 46.89719418852033]]], "type": "Polygon" } }] });
-    const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [] });
+    const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [], });
     // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
+
+
+    const onCreate = useCallback(e => {
+        setFeatures(curFeatureCollection => {
+            console.log("[update]: current features created", e)
+
+            const newFeatureCollection = { ...curFeatureCollection };
+            const createdFeatures: Feature[] = e.features;
+            createdFeatures.forEach(f => {
+                if (f.properties) {
+                    f.properties['createdAt'] = new Date();
+                    newFeatureCollection.features.push(f);
+                }
+            })
+
+            console.log("Creating feature", createdFeatures)
+            newFeatureCollection.features = unionBy(newFeatureCollection.features, curFeatureCollection.features, 'id');
+            return newFeatureCollection;
+        });
+    }, [setFeatures]);
 
     const onUpdate = useCallback(e => {
         setFeatures(curFeatureCollection => {
-
+            // an update creates a deleted feature with the old properties and adds a new one with the new properties
             const newFeatureCollection = { ...curFeatureCollection };
-            const features: Feature[] = e.features;
-            newFeatureCollection.features = unionBy(features, curFeatureCollection.features, 'id');
+            newFeatureCollection.features = []
+
+            const updatedFeatures: Feature[] = e.features;
+            const modifiedFeatures: Feature[] = [];
+            updatedFeatures.forEach(f => {
+                console.log("[update]: current features updated", e)
+                if (f.properties) {
+
+                    // fetch the old element
+                    let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
+                    // make sure the old element is not identical to the current
+                    if (cur && isEqual(cur, f) && isEqual(cur?.properties, f?.properties)) {
+                        console.log("[update]: current ", cur)
+                        console.log("[update]: identical")
+                        return;
+                    }
+
+                    // if we found the old one and it got changed, close it
+                    if (cur && cur.properties) {
+                        cur.properties['deletedAt'] = new Date();
+                        console.log("[update] storing deleted feature", cur)
+                        modifiedFeatures.push(cur);
+                    }
+
+                    // generate a new ID and 
+                    f.id = hat();
+                    f.properties['createdAt'] = new Date();
+                    f.properties['achestorID'] = cur?.id;
+                    console.log("[update] storing added feature", f)
+
+                    modifiedFeatures.push(f);
+                }
+            });
+            console.log("[update] modified features", modifiedFeatures)
+
+            newFeatureCollection.features = [...curFeatureCollection.features, ...modifiedFeatures];
+            console.log("[update] resulting feature collection", newFeatureCollection)
+
             return newFeatureCollection;
         });
     }, [setFeatures]);
 
     const onDelete = useCallback(e => {
         setFeatures(curFeatureCollection => {
+            console.log("[delete]: current features updated", e)
+
             const newFeatureCollection = { ...curFeatureCollection };
             const deletedFeatures: Feature[] = e.features;
-
-            newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
+            deletedFeatures.forEach(f => {
+                if (f.properties) {
+                    // fetch the old element and close it
+                    let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
+                    if (cur && cur.properties) {
+                        cur.properties['deletedAt'] = new Date();
+                        newFeatureCollection.features.push(cur);
+                    }
+                }
+            });
+            newFeatureCollection.features = unionBy(newFeatureCollection.features, curFeatureCollection.features, 'id');
 
             return newFeatureCollection;
         });
@@ -74,11 +138,14 @@ function MapComponent() {
     const onCombine = useCallback(e => {
         console.log("onCombine", e);
         setFeatures(curFeatureCollection => {
-            const newFeatureCollection = { ...curFeatureCollection };
             const createdFeatures: Feature[] = e.createdFeatures;
             const deletedFeatures: Feature[] = e.deletedFeatures;
+            deletedFeatures.forEach(f => { if (f.properties) { f.properties['deletedAt'] = Date.now() } })
+            createdFeatures.forEach(f => { if (f.properties) { f.properties['createdAt'] = Date.now() } })
 
-            newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
+            const newFeatureCollection = { ...curFeatureCollection };
+
+            // newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
             newFeatureCollection.features = unionBy(createdFeatures, newFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
@@ -88,20 +155,24 @@ function MapComponent() {
     const onSelectionChange = useCallback(e => {
         const features: Feature[] = e.features;
         if (features.length === 1) {
-            const centerPoint = center(turfFeature(features[0].geometry as Geometry));
             setSelectedFeature(features[0].id);
-            mapRef && mapRef.current && mapRef.current.flyTo({ center: [centerPoint.geometry.coordinates[0], centerPoint.geometry.coordinates[1]], essential: true })
         }
         else {
             setSelectedFeature(undefined);
         }
-    }, [setSelectedFeature, mapRef]);
+    }, [setSelectedFeature]);
 
     useEffect(() => {
         if (!mapRef || !isMapLoaded || !draw || !features || isEmpty(features.features)) {
             return;
         }
-        draw.set(features);
+
+        console.log("current features", features)
+        let filteredFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
+        filteredFC.features = Object.assign([], features.features.filter(f => f.properties?.deletedAt === undefined))
+        console.log("applied features", filteredFC)
+
+        draw.set(filteredFC);
     }, [draw, mapRef, features, isMapLoaded]);
 
     const onMapLoad = useCallback(() => {
@@ -148,6 +219,9 @@ function MapComponent() {
                 >
                     <FullscreenControl position={'top-left'} />
                     <NavigationControl position={'top-left'} visualizePitch={true} />
+                    {/* <Source id="wms-geo" type="raster" tiles={[`https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=ch.bfs.gebaeude_wohnungs_register&LANG=de&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&STYLES=&BBOX={bbox-epsg-3857}`]} tileSize={256} >
+                        <Layer type='raster' />
+                    </Source> */}
                     <DrawControl
                         position="top-right"
                         setDraw={setDraw}
@@ -165,7 +239,7 @@ function MapComponent() {
                         clickBuffer={10}
                         defaultMode="simple_select"
                         modes={modes}
-                        onCreate={onUpdate}
+                        onCreate={onCreate}
                         onUpdate={onUpdate}
                         onDelete={onDelete}
                         onCombine={onCombine}
@@ -192,7 +266,14 @@ function MapComponent() {
         </>
     );
 }
-
+const layerStyle = {
+    id: 'point',
+    type: 'circle',
+    paint: {
+        'circle-radius': 10,
+        'circle-color': '#007cbf'
+    }
+};
 const MemoMap = memo(MapComponent);
 
 export { MemoMap as Map };

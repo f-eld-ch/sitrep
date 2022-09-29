@@ -59,7 +59,7 @@ services:
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    image: postgres:14
+    image: postgis/postgis:14-3.2
     networks:
       default: null
     restart: always

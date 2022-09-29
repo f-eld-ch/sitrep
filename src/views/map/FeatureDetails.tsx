@@ -50,8 +50,9 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                 "zoneType": feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon" ? kind : undefined,
                 "iconRotation": feature.geometry.type === "LineString" ? calculateIconRotationForLines(feature as Feature<LineString>) : iconRotation
             });
+
             feature.properties = omitBy(properties, isUndefined || isEmpty);
-            onUpdate({ features: [feature] })
+            onUpdate({ features: [feature], action: "featureDetail" });
         }
         return () => onUpdate({ features: [feature] });
     }, [onUpdate, feature, name, iconRotation, color, icon, kind]);
@@ -205,6 +206,9 @@ const LineTypes: SelectableTypes = {
     },
     "beabsichtigteVerschiebung": {
         name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
+    },
+    "rettungsAchse": {
+        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: Others.Verschiebung,
     },
     "durchgeführteVerschiebung": {
         name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
