@@ -27,7 +27,7 @@ export const style = [
         ],
         'paint': {
             'fill-pattern': ['match', ['get', 'user_zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
-            'fill-opacity': 0.5
+            'fill-opacity': 0.9
         }
     },
     {
