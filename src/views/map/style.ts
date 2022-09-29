@@ -7,6 +7,21 @@ export const style = [
             ['==', 'active', 'false'],
             ['==', '$type', 'Polygon'],
             ['has', 'user_zoneType'],
+            ['in', 'user_zoneType', 'Schadengebiet', 'Einsatzraum'],
+            ['!=', 'mode', 'static']
+        ],
+        'paint': {
+            'fill-outline-color': ['coalesce', ['get', 'user_color'], '#000000'],
+            'fill-opacity': 0
+        }
+    },
+    {
+        'id': 'gl-draw-polygon-fill-pattern-inactive',
+        'type': 'fill',
+        'filter': ['all',
+            ['==', 'active', 'false'],
+            ['==', '$type', 'Polygon'],
+            ['has', 'user_zoneType'],
             ['in', 'user_zoneType', 'Brandzone', 'Zerstoerung'],
             ['!=', 'mode', 'static']
         ],
@@ -21,12 +36,13 @@ export const style = [
         'filter': ['all',
             ['==', 'active', 'false'],
             ['==', '$type', 'Polygon'],
+            ['!in', 'user_zoneType', 'Brandzone', 'Zerstoerung', 'Schadengebiet', 'Einsatzraum'],
             ['!=', 'mode', 'static']
         ],
         'paint': {
             'fill-color': ['coalesce', ['get', 'user_color'], '#000000'],
             'fill-outline-color': ['coalesce', ['get', 'user_color'], '#000000'],
-            'fill-opacity': 0.1
+            'fill-opacity': 0.5
         }
     },
     {
@@ -323,8 +339,8 @@ export const style = [
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["Frutiger Neue Condensed Bold"],
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
-            'symbol-placement': 'point',
-            'text-offset': [0, 1],
+            'symbol-placement': 'line',
+            'text-offset': [0, 0.5],
             'text-ignore-placement': true,
             'text-anchor': 'center'
         },
