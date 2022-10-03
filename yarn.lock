@@ -10308,10 +10308,10 @@ url-parse@^1.5.3:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
 
-usehooks-ts@^2.7.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/usehooks-ts/-/usehooks-ts-2.7.0.tgz#11ca19368be621ec610d99deb224c23c006ce72b"
-  integrity sha512-HNNBgWBrLqnEkZQmdbxuMF4bdiqPw4iwh/RalCglhJJsPFZd4cgMbIBsB1SeavOAFkIJ5G8BheJYaEtKt9A8IA==
+usehooks-ts@^2.7.2:
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/usehooks-ts/-/usehooks-ts-2.7.2.tgz#5b1c166153f59fc63ae5408102be53608103c1d5"
+  integrity sha512-DeLqSnGg9VvpwPZA+6lKVURJKM9EBu7bbIXuYclQ9COO3w4lacnJa0uP0iJbC/lAmY7GlmPinjZfGNNmDTlUpg==
 
 util-deprecate@^1.0.1, util-deprecate@^1.0.2, util-deprecate@~1.0.1:
   version "1.0.2"
