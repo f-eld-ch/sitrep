@@ -1,60 +1,81 @@
-version: '3'
+name: sitrep
 services:
-  oauth2proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.3.0
-    restart: always
-    #network_mode: 'host'
-    ports:
-      - 4180:4180
+  graphql-engine:
     depends_on:
-    - "graphql-engine"
+      postgres:
+        condition: service_started
     environment:
-      OAUTH2_PROXY_COOKIE_SECRET: Sm_u-M9bRDNxu3Ukq2vCKFRbul3hDPIHxZpPACR6UHc=
-      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: true
-      OAUTH2_PROXY_PASS_ACCESS_TOKEN: true
-      OAUTH2_PROXY_HTTP_ADDRESS: ":4180"
-      OAUTH2_PROXY_PROVIDER: oidc
-      OAUTH2_PROXY_DISPLAY_NAME: Auth0
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log,
+        query-log
+      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: naming_convention
+      HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION: graphql-default
+      PG_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+    build:
+      dockerfile: Dockerfile.hasura
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8080"
+        protocol: tcp
+    restart: always
+  oauth2proxy:
+    depends_on:
+      graphql-engine:
+        condition: service_started
+    environment:
       OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
       OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
-      OAUTH2_PROXY_REDIRECT_URL: http://localhost:4180/oauth2/callback
-      OAUTH2_PROXY_OIDC_ISSUER_URL: https://greenhat.eu.auth0.com/
-      OAUTH2_PROXY_UPSTREAMS: "http://host.docker.internal:3000/"
-      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
       OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
-      OAUTH2_PROXY_PROXY_WEBSOCKETS: true
-      #ports:
-      # - "4180:4180"
-      # - "8443:443"
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET}
+      OAUTH2_PROXY_DISPLAY_NAME: Auth0
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_HTTP_ADDRESS: :4180
+      OAUTH2_PROXY_OIDC_ISSUER_URL: ${OAUTH2_PROXY_OIDC_ISSUER_URL}
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_PROXY_WEBSOCKETS: "true"
+      OAUTH2_PROXY_REDIRECT_URL: http://localhost:4180/oauth2/callback
+      OAUTH2_PROXY_UPSTREAMS: http://host.docker.internal:3000/
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      host.docker.internal: host-gateway
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.3.0
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 4180
+        published: "4180"
+        protocol: tcp
+    restart: always
   postgres:
-    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgis/postgis:14-3.2
+    networks:
+      default: null
     restart: always
     volumes:
-    - db_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: postgrespassword
-  graphql-engine:
-    image: hasura/graphql-engine:v2.9.0
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+        volume: {}
     ports:
-      - "8080:8080"
-    depends_on:
-    - "postgres"
-    restart: always
-    environment:
-      ## postgres database to store Hasura metadata
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
-      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
-      PG_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
-      ## enable the console served by server
-      HASURA_GRAPHQL_ENABLE_CONSOLE: "false" # set to "false" to disable console
-      ## enable debugging mode. It is recommended to disable this in production
-      HASURA_GRAPHQL_DEV_MODE: "true"
-      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
-      ## uncomment next line to set an admin secret
-      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
-      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
-      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+networks:
+  default:
+    name: sitrep_default
 volumes:
   db_data:
+    name: sitrep_db_data

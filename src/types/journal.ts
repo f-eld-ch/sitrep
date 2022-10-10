@@ -1,38 +1,48 @@
 import { Incident } from "./incident";
 
 export enum TriageStatus {
-  Pending = "pending",
-  Triaged = "done",
-  Reset = "reset",
-  MoreInfo = "moreinfo",
+  Pending = "PENDING",
+  Triaged = "DONE",
+  Reset = "RESET",
+  MoreInfo = "MOREINFO",
 }
 
 export enum PriorityStatus {
-  Normal = "normal",
-  High = "high",
+  Normal = "NORMAL",
+  High = "HIGH",
+}
+
+export enum Medium {
+  Radio = "RADIO",
+  Phone = "PHONE",
+  Email = "EMAIL",
+  Other = "OTHER",
 }
 
 export type Message = {
   id: string;
   content: string;
   sender: string;
+  senderDetail: string;
   receiver: string;
+  receiverDetail: string;
   time: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
   divisions: DivisionList[];
-  triage: Triage;
-  priority: Priority;
+  mediumId: Medium;
+  triageId: TriageStatus;
+  priorityId: PriorityStatus;
 };
 
 export type Triage = {
-  name: string;
+  name: TriageStatus;
   description: string;
 };
 
 export type Priority = {
-  name: string;
+  name: PriorityStatus;
   description: string;
 };
 
@@ -47,7 +57,7 @@ export interface Division {
 }
 
 export interface MessageListData {
-  journals_by_pk: Journal;
+  journalsByPk: Journal;
   messages: Message[];
 }
 
@@ -76,26 +86,16 @@ export interface JournalListVars {
   incidentId: string;
 }
 
-export interface TriageMessageData {
-  messages_by_pk: {
-    id: string;
-
-    content: string;
-    sender: string;
-    receiver: string;
-    divisions: DivisionList[];
-    time: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date;
-    triage: Triage;
-    priority: Priority;
-    journal: {
-      incident: {
-        divisions: Division[];
-      };
+interface TriageMessage extends Message {
+  journal: {
+    incident: {
+      divisions: Division[];
     };
   };
+}
+
+export interface TriageMessageData {
+  messagesByPk: TriageMessage
 }
 
 export interface TriageMessageVars {
@@ -118,15 +118,15 @@ export interface SaveMessageTriageData {
   delete_message_division: {
     affected_rows: number;
   };
-  insert_message_division: {
+  insertMessageDivision: {
     affected_rows: number;
   };
-  update_messages_by_pk: Message;
+  updateMessagesByPk: Message;
 }
 
 
 export interface InsertJournalData {
-  insert_journals_one: Journal
+  insertJournalsOne: Journal
 }
 
 

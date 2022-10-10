@@ -2,23 +2,32 @@
 
 @import "~bulma/sass/utilities/initial-variables.sass";
 
-// Import a Google Font
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600");
-
+// Import the fonts
+@import url("assets/fira-code/fira-code.css");
+@import url("assets/open-sans/open-sans.css");
 // Update Bulma's global variables
-$family-sans-serif: "Open Sans", sans-serif;
-$warning: rgb(236, 180, 25);
-$primary: hsl(18, 100, 52);
-$danger: rgb(214, 0, 0);
-$info: hsl(226, 100, 47);
+$family-sans-serif: 'Open Sans', sans-serif;
+$family-monospace: 'Fira Code', monospace;
+$weight-light: 100;
+$weight-normal: 300;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
 
+$warning: rgb(236, 180, 25%);
+$primary: hsl(18, 100%, 52%);
+$danger: rgb(214, 0, 0%);
+$info: hsl(226, 100%, 47%);
+$link: hsl(226, 100%, 39%);
+$link-hover: hsl(18, 100%, 52%);
 
 $section-padding: 0.5rem 0.5rem;
 $section-padding-desktop: 0.5rem 3rem;
 
 $footer-padding: 1rem 1.5rem 0.5rem;
 $modal-content-width: 80vw;
-
+$message-body-padding: 1rem 1rem 0rem 1rem;
+$tabs-border-bottom-width: 2px;
 
 // Import only what you neesd from Bulma
 @import "../node_modules/bulma/sass/base/_all.sass";
@@ -26,7 +35,7 @@ $modal-content-width: 80vw;
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
 
-
+$table-cell-border: 1px solid $grey;
 $breadcrumb-item-color: $grey-dark;
 
 // Bulma Elements
@@ -71,13 +80,36 @@ $breadcrumb-item-color: $grey-dark;
 
 
 // Bulma Layout
-// @import "../node_modules/bulma/sass/layout/hero.sass";
+@import "../node_modules/bulma/sass/layout/hero.sass";
 @import "../node_modules/bulma/sass/layout/section.sass";
 @import "../node_modules/bulma/sass/layout/footer.sass";
 
-.is-fullheight {
-    height: 100vh;
+body {
+    &.default {
+        display: flex;
+        // use this if navbar is NOT fixed (default)
+        min-height: 100vh;
+        flex-direction: column;
+    }
+
+    &.has-navbar-fixed-top {
+        display: flex;
+        // use this if navbar is fixed
+        min-height: calc(100vh - #{$navbar-height});
+        flex-direction: column;
+    }
 }
+
+section {
+    &.is-fullheight-with-navbar {
+        min-height: calc(100vh - #{$navbar-height});
+    }
+}
+
+.navbar {
+    width: 100vw;
+}
+
 
 .content {
     h1 {
@@ -106,6 +138,25 @@ $breadcrumb-item-color: $grey-dark;
 }
 
 
+.input:invalid {
+    border-color: $danger;
+}
+
+button {
+    &.is-ahref {
+        appearance: unset;
+        background-color: transparent;
+        color: $link;
+        border: none;
+        // padding: 0;
+        font-size: 1em;
+        cursor: pointer;
+
+        &:hover {
+            color: $link-hover;
+        }
+    }
+}
 
 @media screen {
     .is-print {
@@ -114,11 +165,16 @@ $breadcrumb-item-color: $grey-dark;
 }
 
 @media print {
+
     @page {
-        size: A4 landscape;
+        // size: A4 landscape;
 
         @bottom-right {
             content: counter(page);
+        }
+
+        @bottom-center {
+            content: "SitRep";
         }
     }
 

@@ -1,23 +1,31 @@
-import { FunctionComponent, useContext, useState } from "react";
 import {
   faBars,
   faCaretDown,
-  faCodeCommit,
+  faClipboard,
+  faClipboardCheck,
+  faClipboardList,
+  faClipboardQuestion,
+  faCodeBranch,
   faExplosion,
-  faListCheck,
+  faFeed,
+  faMapLocationDot,
+  faPen,
+  faRightFromBracket,
   faTruckMedical,
-  faUser,
+  faUser
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { FunctionComponent, useContext, useState } from "react";
 
 import logo from "assets/logo.svg";
+import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router-dom";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { UserContext } from "utils";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
+  const { t } = useTranslation();
 
   let { incidentId } = useParams();
   const navbarMenuClass = classNames({
@@ -30,7 +38,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       <div className="navbar-brand">
         <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
           <figure className="image is-32x32">
-            <img src={logo} alt="Logo" className="is-rounded" />
+            <img src={logo} alt="Logo" />
           </figure>
         </NavLink>
         <button
@@ -48,25 +56,36 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       <div className={navbarMenuClass}>
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
-            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
+            <NavLink
+              className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+              to="/incident/list"
+            >
               <span className="icon-text">
-                <FontAwesomeIcon icon={faExplosion as IconProp} className="icon" />
-                <span>Ereignis</span>
+                <span className="icon">
+                  <FontAwesomeIcon icon={faExplosion} />
+                </span>
+                <span>{t("incident")}</span>
               </span>
             </NavLink>
-            <div className="navbar-dropdown">
-              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
-                Übersicht
+            <div className="navbar-dropdown is-boxed">
+              <NavLink
+                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+                to="/incident/list"
+              >
+                {t("overview")}
               </NavLink>
-              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/new">
-                Neues Ereignis erstellen
+              <NavLink
+                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+                to="/incident/new"
+              >
+                {t("createIncident")}
               </NavLink>
               {incidentId ? (
                 <NavLink
                   className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
                   to={`/incident/${incidentId}/edit`}
                 >
-                  Ereignis bearbeiten
+                  {t("editIncident")}
                 </NavLink>
               ) : (
                 <></>
@@ -74,11 +93,11 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </div>
           </div>
           <JournalNavBar />
-          <TasksNavBar />
           <ResourcesNavBar />
+          <TasksNavBar />
+          <MapNavBar />
         </div>
         <div className="navbar-end">
-          <VersionNavBar />
           <UserNavBar />
         </div>
       </div>
@@ -89,8 +108,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
 function VersionNavBar() {
   return (
     <div className="navbar-item">
-      <span className="icon-text">
-        <FontAwesomeIcon icon={faCodeCommit as IconProp} className="icon" />
+      <span className="icon-text is-flex-wrap-nowrap">
+        <span className="icon">
+          <FontAwesomeIcon icon={faCodeBranch} />
+        </span>
         {process.env.REACT_APP_VERSION === "develop" ? (
           <span>{process.env.REACT_APP_SHA_VERSION}</span>
         ) : (
@@ -101,22 +122,33 @@ function VersionNavBar() {
   );
 }
 
-// ({process.env.REACT_APP_VERSION} {process.env.REACT_APP_COMMIT_SHA})
 function UserNavBar() {
   const userState = useContext(UserContext);
+  const { t } = useTranslation();
 
   if (!userState.isLoggedin) return <></>;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable is-left">
-      <div className="navbar-link">
-        <FontAwesomeIcon icon={faUser as IconProp} className="icon is-small" />
-      </div>
-      <div className="navbar-dropdown is-right">
-        <div className="navbar-item">{userState.username || userState.email}</div>
+      <div className="navbar-link" />
+      <div className="navbar-dropdown is-boxed is-right">
+        <VersionNavBar />
+        <div className="navbar-item">
+          <span className="icon-text is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faUser} />
+            </span>
+            <span>{userState.username || userState.email}</span>
+          </span>
+        </div>
         <hr className="navbar-divider" />
         <a className="navbar-item" href="/oauth2/sign_out">
-          Logout
+          <span className="icon-text is-flex-wrap-nowrap is-capitalized">
+            <span className="icon">
+              <FontAwesomeIcon icon={faRightFromBracket} />
+            </span>
+            <span>{t("logout")}</span>
+          </span>
         </a>
       </div>
     </div>
@@ -125,6 +157,8 @@ function UserNavBar() {
 
 const JournalNavBar: FunctionComponent = () => {
   let { incidentId, journalId } = useParams();
+  const { t } = useTranslation();
+
   if (!incidentId) return <></>;
 
   if (!journalId)
@@ -135,9 +169,11 @@ const JournalNavBar: FunctionComponent = () => {
           end={true}
           to={`/incident/${incidentId}/journal/view`}
         >
-          <span className="icon-text">
-            <FontAwesomeIcon icon={faBars as IconProp} className="icon" />
-            <span>Journal</span>
+          <span className="icon-text is-capitalized">
+            <span className="icon">
+              <FontAwesomeIcon icon={faBars} />
+            </span>
+            <span>{t("journal")}</span>
           </span>
         </NavLink>
       </div>
@@ -146,36 +182,41 @@ const JournalNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
         end={true}
         to={`/incident/${incidentId}/journal/view`}
       >
-        <span className="icon-text">
-          <FontAwesomeIcon icon={faBars as IconProp} className="icon" />
-          <span>Journal</span>
+        <span className="icon-text is-capitalized">
+          <span className="icon">
+            <FontAwesomeIcon icon={faBars} />
+          </span>
+          <span>{t("journal")}</span>
         </span>
       </NavLink>
-      <div className="navbar-dropdown">
+      <div className="navbar-dropdown is-boxed">
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
           end={true}
           to={`/incident/${incidentId}/journal/${journalId}`}
         >
-          Journal
+          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faFeed} />
+            </span>
+            <span>{t("journal")}-Feed</span>
+          </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
           end={true}
           to={`/incident/${incidentId}/journal/${journalId}/edit`}
         >
-          Editor
-        </NavLink>
-        <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
-          end={true}
-          to={`/incident/${incidentId}/journal/${journalId}/hotline`}
-        >
-          Hotline
+          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faPen} />
+            </span>
+            <span>{t("editor")}</span>
+          </span>
         </NavLink>
       </div>
     </div>
@@ -184,6 +225,8 @@ const JournalNavBar: FunctionComponent = () => {
 
 const TasksNavBar: FunctionComponent = () => {
   let { incidentId } = useParams();
+  const { t } = useTranslation();
+
   if (!incidentId) return <></>;
 
   return (
@@ -192,18 +235,56 @@ const TasksNavBar: FunctionComponent = () => {
         className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
         to={`/incident/${incidentId}/tasks`}
       >
-        <span className="icon-text">
-          {" "}
-          <FontAwesomeIcon icon={faListCheck as IconProp} className="icon" />
-          <span>Pendenzen / Anträge / Bedürfnisse</span>
+        <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+          <span className="icon">
+            <FontAwesomeIcon icon={faClipboard} />
+          </span>
+          <span>{t("tasksRequestOrders")}</span>
         </span>
       </NavLink>
+      <div className="navbar-dropdown is-boxed">
+        <NavLink
+          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          to={`/incident/${incidentId}/tasks`}
+        >
+          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faClipboardCheck} />
+            </span>
+            <span>{t("tasksOrders")}</span>
+          </span>
+        </NavLink>
+        <NavLink
+          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          to={`/incident/${incidentId}/requests`}
+        >
+          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faClipboardQuestion} />
+            </span>
+            <span>{t("requestsNeeds")}</span>
+          </span>
+        </NavLink>
+        <NavLink
+          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          to={`/incident/${incidentId}/soma`}
+        >
+          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faClipboardList} />
+            </span>
+            <span>{t("immediateMeasures")}</span>
+          </span>
+        </NavLink>
+      </div>
     </div>
   );
 };
 
 const ResourcesNavBar: FunctionComponent = () => {
   let { incidentId } = useParams();
+  const { t } = useTranslation();
+
   if (!incidentId) return <></>;
 
   return (
@@ -212,10 +293,35 @@ const ResourcesNavBar: FunctionComponent = () => {
         className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
         to={`/incident/${incidentId}/resources`}
       >
-        <span className="icon-text">
-          {" "}
-          <FontAwesomeIcon icon={faTruckMedical as IconProp} className="icon" />
-          <span>Mittel</span>
+        <span className="icon-text is-capitalized">
+          <span className="icon">
+            <FontAwesomeIcon icon={faTruckMedical} />{" "}
+          </span>
+          <span>{t("resources")}</span>
+        </span>
+      </NavLink>
+    </div>
+  );
+};
+
+const MapNavBar: FunctionComponent = () => {
+  let { incidentId } = useParams();
+  const { t } = useTranslation();
+
+  if (!incidentId) return <></>;
+
+  return (
+    <div className="navbar-item has-dropdown is-hoverable">
+      <NavLink
+        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        to={`/incident/${incidentId}/map`}
+      >
+        <span className="icon-text is-capitalized">
+          <span className="icon">
+            <FontAwesomeIcon icon={faMapLocationDot} />
+          </span>
+          <span>{t("map")}</span>
+          <span className="has-text-warning	ml-1">(beta)</span>
         </span>
       </NavLink>
     </div>

@@ -1,7 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 function List() {
-  return <h3 className="title is-size-3">Pendenzen</h3>;
+  const { t } = useTranslation();
+
+  return <h3 className="title is-size-3 is-capitalized">{t('tasks')}</h3>;
 }
 
 export default List;

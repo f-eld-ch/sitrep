@@ -1,10 +1,4 @@
-import React, { useState } from "react";
-import { useQuery, gql, useMutation } from "@apollo/client";
-import { Link, useNavigate } from "react-router-dom";
-import { Spinner } from "components";
-import { Incident, IncidentListData } from "../../types";
-import dayjs from "dayjs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   faArrowRightFromBracket,
   faEdit,
@@ -12,48 +6,42 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
-  faPlusCircle,
+  faPlusCircle
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Spinner } from "components";
+import dayjs from "dayjs";
+import { t } from "i18next";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { Incident, IncidentListData } from "../../types";
+import { CloseIncident, GetIncidentDetails, GetIncidents } from "./graphql";
 
-export const GET_INCIDENTS = gql`
-  query FetchIncidents {
-    incidents(order_by: { createdAt: desc }) {
-      id
-      name
-      createdAt
-      updatedAt
-      deletedAt
-      closedAt
-      location {
-        name
-        coordinates
-      }
-    }
-  }
-`;
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentListData>(GET_INCIDENTS);
+  const { loading, error, data } = useQuery<IncidentListData>(GetIncidents);
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
 
   return (
     <div>
-      <h3 className="title is-size-3">Ereignisse</h3>
+      <h3 className="title is-size-3 is-capitalized">{t('incidents')}</h3>
       <div className="buttons">
         <button
-          className="button is-success is-small is-responsive is-rounded is-light"
+          className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
           onClick={() => navigate("../new")}
         >
           <span className="icon is-small">
             <FontAwesomeIcon icon={faPlusCircle} />
           </span>
-          <span>Erstellen</span>
+          <span>{t('create')}</span>
         </button>
         <button
           className="button is-primary is-small is-responsive is-rounded is-light"
@@ -62,126 +50,114 @@ function List() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
           </span>
-          <span>{filterClosed ? "Zeige geschlossene" : "Verstecke geschlossene"}</span>
+          <span>{filterClosed ? t('showClosed') : t('hideClosed')}</span>
         </button>
-        <IncidentTable
-          incidents={(data && data.incidents.filter((incident) => !filterClosed || incident.closedAt === null)) || []}
-        />
       </div>
+      <IncidentCards
+        incidents={(data && data.incidents.filter((incident) => !filterClosed || incident.closedAt === null)) || []}
+      />
     </div>
   );
 }
 
-function IncidentTable(props: { incidents: Incident[] }) {
+function IncidentCards(props: { incidents: Incident[] }) {
   const { incidents } = props;
+  const [closeIncident] = useMutation(CloseIncident, {
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
+  });
+
   return (
-    <table className="table is-hoverable is-fullwidth is-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Ort</th>
-          <th>Eröffnet</th>
-          <th>Geschlossen</th>
-          <th>Optionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        {incidents.map((incident) => (
-          <tr key={incident.id}>
-            <td>
-              <Link to={`../${incident.id}/journal/view`}>{incident.name}</Link>
-            </td>
-            <td>{incident.location.name}</td>
-            <td>{dayjs(incident.createdAt).format("LLL")}</td>
-            <td>{incident.closedAt && dayjs(incident.closedAt).format("LLL")}</td>
-            <td>
-              <Option incident={incident} />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-const CLOSE_INCIDENT = gql`
-  mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
-    update_incidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
-      affected_rows
-      returning {
-        id
-        closedAt
+    <div className="container-flex">
+      {
+        incidents.map((incident) => (
+          <IncidentCard key={incident.id} incident={incident} closeIncident={closeIncident} />
+        ))
       }
-    }
-  }
-`;
-
-interface IOptionProps {
-  incident: Incident;
+    </div >
+  )
 }
 
-function Option(props: IOptionProps) {
+function IncidentCard(props: { incident: Incident, closeIncident: any }) {
+  const { incident, closeIncident } = props;
   const navigate = useNavigate();
 
-  const [closeIncident] = useMutation(CLOSE_INCIDENT, {
-    refetchQueries: [{ query: GET_INCIDENTS }, "FetchIncidents"],
+  const cardClass = classNames({
+    card: true,
+    "mb-3": true,
+    "has-background-primary-light": incident.closedAt
   });
-
-  let closeButtonClassNames = classNames({
-    button: true,
-    "is-light": true,
-    "is-danger": props.incident.closedAt === null,
-    "is-info": props.incident.closedAt !== null,
-  });
-
   return (
-    <div className="buttons are-small">
-      <button className="button is-light is-success" onClick={() => navigate(`../${props.incident.id}/journal/view`)}>
-        <span className="icon">
-          <FontAwesomeIcon icon={faArrowRightFromBracket} />
-        </span>
-        <span>Eintreten</span>
-      </button>
-      <button className="button is-light is-warning" onClick={() => navigate(`../${props.incident.id}/edit`)}>
-        <span className="icon">
-          <FontAwesomeIcon icon={faEdit} />
-        </span>
-        <span>Bearbeiten</span>
-      </button>
-      {props.incident.closedAt === null ? (
+    <div className={cardClass} >
+      <div className="card-content">
+        <div className="content has-text-small">
+          <h4 className="title is-5">{incident.name}</h4>
+          <div className="columns">
+            <div className="column is-one-third">
+              <strong>{t('location')}: </strong>{incident.location.name}
+            </div>
+            <div className="column is-one-third">
+              <strong>{t('createdAt')}: </strong>{dayjs(incident.createdAt).format("LLL")}
+            </div>
+            {incident.closedAt && <div className="column">
+              <strong>{t('closedAt')}: </strong>{dayjs(incident.closedAt).format("LLL")}
+            </div>}
+          </div>
+        </div>
+      </div>
+      <footer className="card-footer">
         <button
-          className={closeButtonClassNames}
-          onClick={() => {
-            closeIncident({
-              variables: {
-                incidentId: props.incident.id,
-                closedAt: new Date(),
-              },
-            });
-          }}
+          className="card-footer-item is-ahref is-capitalized"
+          onClick={() => navigate(`../${props.incident.id}/journal/view`)}
         >
           <span className="icon">
-            <FontAwesomeIcon icon={faFolderClosed} />
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
           </span>
-          <span>Beenden</span>
+          <span>{t('enter')}</span>
         </button>
-      ) : (
         <button
-          className={closeButtonClassNames}
-          onClick={() => {
-            closeIncident({
-              variables: { incidentId: props.incident.id, closedAt: null },
-            });
-          }}
+          className="card-footer-item is-ahref is-capitalized"
+          onClick={() => navigate(`../${incident.id}/edit`)}
         >
           <span className="icon">
-            <FontAwesomeIcon icon={faFolderOpen} />
+            <FontAwesomeIcon icon={faEdit} />
           </span>
-          <span>Öffnen</span>
+          <span>{t('edit')}</span>
         </button>
-      )}
+        {incident.closedAt === null ? (
+          <button
+            className="card-footer-item is-ahref is-capitalized is-danger"
+            onClick={() => {
+              closeIncident({
+                variables: {
+                  incidentId: incident.id,
+                  closedAt: new Date(),
+                },
+              });
+            }}
+          >
+            <span className="icon">
+              <FontAwesomeIcon icon={faFolderClosed} />
+            </span>
+            <span>{t('close')}</span>
+          </button>
+        ) : (
+          <button
+            className="card-footer-item is-ahref is-capitalized is-success"
+            onClick={() => {
+              closeIncident({
+                variables: { incidentId: incident.id, closedAt: null },
+              });
+            }}
+          >
+            <span className="icon">
+              <FontAwesomeIcon icon={faFolderOpen} />
+            </span>
+            <span>{t('open')}</span>
+          </button>
+        )}
+      </footer>
     </div>
-  );
+  )
 }
 
 export default List;

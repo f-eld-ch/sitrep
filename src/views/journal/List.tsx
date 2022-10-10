@@ -1,64 +1,31 @@
-import React, { useState } from "react";
+import { memo, useState } from "react";
 
-import { JournalMessage, Spinner } from "components";
-import { useParams } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
-
-import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "../../types";
-import MessageTable from "./Table";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export const GET_MESSAGES = gql`
-  query GetMessages($journalId: uuid!) {
-    journals_by_pk(id: $journalId) {
-      incident {
-        id
-        divisions {
-          id
-          name
-          description
-        }
-      }
-    }
-    messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _is_null: true } }, order_by: { time: desc }) {
-      id
-      content
-      sender
-      receiver
-      time
-      createdAt
-      updatedAt
-      deletedAt
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
-      triage {
-        name
-        name
-      }
-      priority {
-        name
-      }
-    }
-  }
-`;
+import { Spinner } from "components";
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
+import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import { GetJournalMessages } from "./graphql";
+import { default as JournalMessage } from "./Message";
+import MessageTable from "./Table";
+
 
 function List(props: {
   showControls: boolean;
-  setEditorMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
-  setTriageMessage: React.Dispatch<React.SetStateAction<Message | undefined>> | undefined;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
 }) {
+  const { t } = useTranslation();
   const { journalId } = useParams();
-  const [triageFilter, setTriageFilter] = useState("Alle");
-  const [priorityFilter, setPriorityFilter] = useState("Alle");
-  const [assignmentFilter, setAssignmentFilter] = useState("Alle");
+  const [triageFilter, setTriageFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [assignmentFilter, setAssignmentFilter] = useState("all");
 
-  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GET_MESSAGES, {
+
+  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
     pollInterval: 10000,
   });
@@ -72,16 +39,26 @@ function List(props: {
     );
 
   if (loading) return <Spinner />;
-  let divisions = data?.journals_by_pk.incident.divisions.flat() || [];
+  let divisions = data?.journalsByPk.incident.divisions.flat() || [];
+
+  let messages =
+    data?.messages
+      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
+      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
+      .filter(
+        (message) =>
+          assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
+      ) || [];
 
   return (
     <div>
-      <h3 className="title is-3">Journal</h3>
-      <div className="block is-print">
-        <MessageTable messages={data?.messages} />
+      <div className="is-print">
+        {props.showControls ? <></> : <MessageTable messages={messages} triageFilter={triageFilter} priorityFilter={priorityFilter} assignmentFilter={assignmentFilter} />}
       </div>
-      <div className="block is-hidden-print">
-        <div className="columns is-mobile">
+      <div className="is-hidden-print">
+        <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
+
+        <div className="columns">
           <div className="column is-narrow">
             <div className="control has-icons-left">
               <div className="select is-small is-rounded">
@@ -89,12 +66,12 @@ function List(props: {
                   value={triageFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setTriageFilter(e.currentTarget.value);
+                    setTriageFilter(e.target.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status}>{status}</option>
+                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`])}>{status}</option>
                   ))}
                 </select>
               </div>
@@ -110,12 +87,12 @@ function List(props: {
                   value={priorityFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setPriorityFilter(e.currentTarget.value);
+                    setPriorityFilter(e.target.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio}>{prio}</option>
+                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
                   ))}
                 </select>
               </div>
@@ -131,10 +108,10 @@ function List(props: {
                   value={assignmentFilter}
                   onChange={(e) => {
                     e.preventDefault();
-                    setAssignmentFilter(e.currentTarget.value);
+                    setAssignmentFilter(e.target.value);
                   }}
                 >
-                  <option>Alle</option>
+                  <option label={t('all')}>all</option>
                   {divisions.map((element) => (
                     <option key={element.id} value={element.name}>
                       {element.description}
@@ -149,37 +126,49 @@ function List(props: {
           </div>
         </div>
       </div>
-      <div className="block is-hidden-print">
-        {data &&
-          data.messages
-            .filter((message) => triageFilter === "Alle" || message.triage?.name === triageFilter)
-            .filter((message) => priorityFilter === "Alle" || message.priority?.name === priorityFilter)
-            .filter(
-              (message) =>
-                assignmentFilter === "Alle" || message.divisions?.find((d) => d.division.name === assignmentFilter)
-            )
-            .map((message) => {
-              return (
-                <JournalMessage
-                  key={message.id}
-                  id={message.id}
-                  assignments={message.divisions.map((d) => d.division.name)}
-                  triage={message.triage.name}
-                  priority={message.priority.name}
-                  sender={message.sender}
-                  receiver={message.receiver}
-                  message={message.content}
-                  timeDate={new Date(message.time)}
-                  showControls={props.showControls}
-                  origMessage={message}
-                  setEditorMessage={props.setEditorMessage}
-                  setTriageMessage={props.setTriageMessage}
-                />
-              );
-            })}
+      <div className="columns is-multiline is-hidden-print mb-3">
+        {data ?
+          <MemoMessages messages={messages} showControls={props.showControls} setTriageMessage={props.setTriageMessage} setEditorMessage={props.setEditorMessage} /> : <></>
+        }
       </div>
     </div>
   );
 }
 
-export default List;
+const MemoMessages = memo(Messages);
+
+function Messages(props: {
+  showControls: boolean;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
+  messages: Message[];
+}) {
+
+  return (
+    <>
+      {props.messages.map((message) => {
+        return (
+          <div key={message.id} className="column is-full is-gapless">
+            <JournalMessage
+              key={message.id}
+              id={message.id}
+              assignments={message.divisions.map((d) => d.division.name)}
+              triage={message.triageId}
+              priority={message.priorityId}
+              sender={message.sender}
+              receiver={message.receiver}
+              message={message.content}
+              timeDate={new Date(message.time)}
+              showControls={props.showControls}
+              origMessage={message}
+              setEditorMessage={props.setEditorMessage}
+              setTriageMessage={props.setTriageMessage}
+            />
+          </div>
+        );
+      })}
+    </>
+  )
+}
+
+export default memo(List);

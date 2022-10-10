@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { Spinner } from "components";
-import { IncidentDetailsData, IncidentDetailsVars } from "../../types";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { IncidentDetailsData, IncidentDetailsVars } from "types";
+import { GetIncidentDetails } from "./graphql";
 
 function MapFrame() {
   const [seconds, setSeconds] = useState(0);
@@ -24,36 +25,11 @@ function MapFrame() {
   );
 }
 
-export const GET_INCIDENT_DETAILS = gql`
-  query GetIncidentDetail($incidentId: uuid!) {
-    incidents_by_pk(id: $incidentId) {
-      id
-      name
-      createdAt
-      closedAt
-      updatedAt
-      location {
-        id
-        name
-        coordinates
-      }
-      divisions {
-        id
-        name
-        description
-      }
-      journals {
-        id
-        name
-      }
-    }
-  }
-`;
 
 function Dashboard() {
   const { incidentId } = useParams();
 
-  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GET_INCIDENT_DETAILS, {
+  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 
@@ -64,7 +40,7 @@ function Dashboard() {
   return (
     <div>
       <div className="container is-fluid has-text-centered mb-4">
-        <h1 className="title is-1 ">{data?.incidents_by_pk.name}</h1>
+        <h1 className="title is-1 ">{data?.incidentsByPk.name}</h1>
       </div>
       <div className="tile is-ancestor">
         <div className="tile is-3 is-vertical is-parent">

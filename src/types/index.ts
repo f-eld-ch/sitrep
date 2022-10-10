@@ -1,19 +1,12 @@
-export { TriageStatus, PriorityStatus } from "types/journal";
-export type { IncidentListData, Incident, Location, IncidentDetailsData, IncidentDetailsVars } from "types/incident";
+export type { Incident, IncidentDetailsData, IncidentDetailsVars, IncidentListData, Location } from "types/incident";
+export { Medium, PriorityStatus, TriageStatus } from "types/journal";
 export type {
-  Journal,
+  Division, DivisionList, Journal,
   JournalListData,
-  JournalListVars,
-  Message,
-  Triage,
-  Priority,
-  DivisionList,
-  Division,
-  MessageListData,
-  MessageListVars,
-  TriageMessageData,
-  TriageMessageVars,
+  JournalListVars, Message, MessageListData,
+  MessageListVars, Priority, Triage, TriageMessageData,
+  TriageMessageVars
 } from "types/journal";
-
-
 export type { UserState } from "types/user";
+
+

@@ -10,7 +10,7 @@
 
 import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
+import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 
@@ -41,7 +41,7 @@ registerRoute(
       return false;
     }
 
-       // If this is a URL that starts with /oauth2, skip.
+    // If this is a URL that starts with /oauth2, skip.
     if (url.pathname.startsWith('/oauth2')) {
       return false;
     }

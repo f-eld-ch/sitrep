@@ -1,11 +1,14 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/anchor-has-content */
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { faClipboard, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { reject, iteratee, unionBy } from "lodash";
-import React, { useState } from "react";
+import iteratee from "lodash/iteratee";
+import reject from "lodash/reject";
+import unionBy from "lodash/unionBy";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Division } from "types";
 import {
@@ -13,14 +16,17 @@ import {
   InsertIncidentData,
   InsertIncidentVars,
   UpdateIncidentData,
-  UpdateIncidentVars,
+  UpdateIncidentVars
 } from "types/incident";
-import { GET_INCIDENTS } from "./List";
+import { GetMessageForTriage } from "views/journal/graphql";
+import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
 
 function New() {
+  const { t } = useTranslation();
+
   return (
     <>
-      <h3 className="title is-size-3">Ereignis erstellen</h3>
+      <h3 className="title is-size-3 is-capitalized">{t('createIncident')}</h3>
       <div className="box">
         <IncidentForm incident={undefined} />
       </div>
@@ -28,72 +34,10 @@ function New() {
   );
 }
 
-export const INSERT_INCIDENT = gql`
-  mutation InsertIncident(
-    $name: String!
-    $location: String
-    $divisions: [divisions_insert_input!]!
-    $journalName: String
-  ) {
-    insert_incidents_one(
-      object: {
-        name: $name
-        location: { data: { name: $location } }
-        journals: { data: { name: $journalName } }
-        divisions: { data: $divisions }
-      }
-    ) {
-      id
-      name
-      journals {
-        id
-        name
-      }
-      divisions {
-        name
-        id
-        description
-      }
-    }
-  }
-`;
-
-const UPDATE_INCIDENT = gql`
-  mutation UpdateIncident(
-    $incidentId: uuid!
-    $name: String!
-    $location: String!
-    $locationId: uuid!
-    $divisions: [divisions_insert_input!]!
-  ) {
-    update_locations_by_pk(pk_columns: { id: $locationId }, _set: { name: $location }) {
-      id
-      name
-    }
-    insert_divisions(
-      objects: $divisions
-      on_conflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
-    ) {
-      affected_rows
-    }
-    update_incidents_by_pk(pk_columns: { id: $incidentId }, _set: { name: $name }) {
-      id
-      name
-      journals {
-        id
-        name
-      }
-      divisions {
-        name
-        id
-        description
-      }
-    }
-  }
-`;
-
 function IncidentForm(props: { incident: Incident | undefined }) {
   const { incident } = props;
+  const { t } = useTranslation();
+
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
       { id: "", name: "Karte", description: "Nachrichtenkarte" },
@@ -108,20 +52,20 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
-  const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(INSERT_INCIDENT, {
+  const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(InsertIncident, {
     onCompleted(data) {
-      navigate(`../${data.insert_incidents_one.id}/journal/view`);
+      navigate(`../${data.insertIncidentsOne.id}/journal/view`);
     },
-    refetchQueries: [{ query: GET_INCIDENTS }],
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }, { query: GetMessageForTriage }],
   });
 
   const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
-    UPDATE_INCIDENT,
+    UpdateIncident,
     {
       onCompleted(data) {
         navigate(`../journal/view`);
       },
-      refetchQueries: [{ query: GET_INCIDENTS }],
+      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
     }
   );
 
@@ -158,7 +102,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Name</label>
+          <label className="label is-capitalized">{t('name')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -167,8 +111,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.currentTarget.value)}
-                placeholder="Name"
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('name')}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faClipboard} />
@@ -179,7 +123,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Ort</label>
+          <label className="label is-capitalized">{t('location')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -188,8 +132,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input"
                 type="text"
                 value={location}
-                onChange={(e) => setLocation(e.currentTarget.value)}
-                placeholder="Ort"
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder={t('location')}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faLocationDot} />
@@ -200,7 +144,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Fachbereiche</label>
+          <label className="label is-capitalized">{t('divisions')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline is-normal">
@@ -233,7 +177,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label className="label">Fachbereiche hinzufügen</label>
+          <label className="label">{t('devisionAdd')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -242,8 +186,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input is-small"
                 type="text"
                 value={assignmentDescription}
-                onChange={(e) => setAssignmentDescription(e.currentTarget.value)}
-                placeholder="Name"
+                onChange={(e) => setAssignmentDescription(e.target.value)}
+                placeholder={t('name')}
               />
             </p>
             <p className="control">
@@ -251,13 +195,13 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="input is-small"
                 value={assignmentName}
                 type="text"
-                onChange={(e) => setAssignmentName(e.currentTarget.value)}
-                placeholder="Kürzel"
+                onChange={(e) => setAssignmentName(e.target.value)}
+                placeholder={t('short')}
               />
             </p>
             <p className="control">
               <button
-                className="button is-primary is-small is-justified is-rounded"
+                className="button is-primary is-small is-justified is-rounded is-capitalized"
                 onClick={(e) => {
                   e.preventDefault();
 
@@ -272,7 +216,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentDescription("");
                 }}
               >
-                Hinzufügen
+                {t('add')}
               </button>
             </p>
           </div>
@@ -280,8 +224,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field">
         <p className="control">
-          <button className="button is-primary is-rounded" onClick={handleSave}>
-            Speichern
+          <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
+            {t('save')}
           </button>
         </p>
       </div>

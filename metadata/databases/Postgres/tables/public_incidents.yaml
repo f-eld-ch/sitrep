@@ -21,14 +21,25 @@ array_relationships:
           name: journals
           schema: public
 insert_permissions:
-  - role: user
+  - role: editor
     permission:
       check: {}
       columns:
         - location_id
         - name
 select_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - name
+        - closed_at
+        - created_at
+        - deleted_at
+        - updated_at
+        - id
+        - location_id
+      filter: {}
+  - role: viewer
     permission:
       columns:
         - name
@@ -40,7 +51,7 @@ select_permissions:
         - location_id
       filter: {}
 update_permissions:
-  - role: user
+  - role: editor
     permission:
       columns:
         - closed_at
