@@ -9,12 +9,6 @@ select_permissions:
         - description
         - name
       filter: {}
-  - role: user
-    permission:
-      columns:
-        - description
-        - name
-      filter: {}
   - role: viewer
     permission:
       columns:
