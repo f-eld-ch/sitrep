@@ -34,7 +34,13 @@ configuration:
       comment: ""
       name: null
 select_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - name
+        - description
+      filter: {}
+  - role: viewer
     permission:
       columns:
         - name

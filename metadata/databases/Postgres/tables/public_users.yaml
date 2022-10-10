@@ -10,7 +10,14 @@ array_relationships:
           name: messages
           schema: public
 select_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - email
+        - id
+        - sub
+      filter: {}
+  - role: viewer
     permission:
       columns:
         - email

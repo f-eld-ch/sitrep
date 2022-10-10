@@ -3,7 +3,19 @@ table:
   schema: public
 is_enum: true
 select_permissions:
+  - role: editor
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
   - role: user
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
+  - role: viewer
     permission:
       columns:
         - description
