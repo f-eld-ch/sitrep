@@ -33,7 +33,10 @@ insert_permissions:
   - role: editor
     permission:
       check: {}
-      columns: []
+      columns:
+        - description
+        - incident_id
+        - name
 select_permissions:
   - role: editor
     permission:
