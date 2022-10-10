@@ -1,31 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 import "./App.scss";
 
+import { List as ImmediateMeasuresList } from "views/immediateMeasures";
 import {
-  List as JournalMessageList,
-  Editor as JournalEditor,
-  HotlineEditor,
-  Overview as JournalOverview,
-  New as JournalNew,
-} from "views/journal";
-import {
-  List as IncidentList,
-  Dashboard as IncidentDashboard,
-  New as IncidentNew,
   Editor as IncidentEditor,
+  List as IncidentList,
+  New as IncidentNew
 } from "views/incident";
+import {
+  Editor as JournalEditor,
+  List as JournalMessageList,
+  New as JournalNew,
+  Overview as JournalOverview
+} from "views/journal";
+
+import { List as RequestList } from "views/requests";
 import { List as ResourcesList } from "views/resource";
 import { List as TaskList } from "views/tasks";
+
 import { ApolloProvider } from "@apollo/client";
-import { default as client } from "./client";
-import { Layout } from "views/Layout";
-import { UserContext } from "utils";
+import { Spinner } from "components";
+import { useTranslation } from "react-i18next";
 import { UserState } from "types";
+import { UserContext } from "utils";
+import MessageSheet from "views/journal/MessageSheet";
+import { Layout } from "views/Layout";
+import { default as client } from "./client";
+
+const Map = lazy(() => import('views/map'));
 
 function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
+  const { i18n } = useTranslation();
+
 
   const setUserStateFromUserinfo = () => {
     fetch("/oauth2/userinfo", { credentials: "include" })
@@ -41,15 +50,17 @@ function App() {
       });
   };
 
+
   useEffect(() => {
     setUserStateFromUserinfo();
+    i18n.changeLanguage()
 
     const interval = setInterval(() => {
       setUserStateFromUserinfo();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [i18n]);
 
   return (
     <UserContext.Provider value={userState}>
@@ -75,14 +86,6 @@ function App() {
               />
 
               <Route path=":incidentId">
-                <Route
-                  path="dashboard"
-                  element={
-                    <Layout>
-                      <IncidentDashboard />
-                    </Layout>
-                  }
-                />
                 <Route
                   path="edit"
                   element={
@@ -123,17 +126,15 @@ function App() {
                       <Layout>
                         <JournalMessageList
                           showControls={false}
-                          setEditorMessage={undefined}
-                          setTriageMessage={undefined}
                         />
                       </Layout>
                     }
                   />
                   <Route
-                    path=":journalId/hotline"
+                    path=":journalId/messages/:messageId"
                     element={
                       <Layout>
-                        <HotlineEditor />
+                        <MessageSheet />
                       </Layout>
                     }
                   />
@@ -148,10 +149,36 @@ function App() {
                   }
                 />
                 <Route
+                  path="map"
+                  element={
+                    <Layout>
+                      <Suspense fallback={<Spinner />} >
+                        <Map />
+                      </Suspense>
+                    </Layout>
+                  }
+                />
+                <Route
                   path="tasks"
                   element={
                     <Layout>
                       <TaskList />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="requests"
+                  element={
+                    <Layout>
+                      <RequestList />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="soma"
+                  element={
+                    <Layout>
+                      <ImmediateMeasuresList />
                     </Layout>
                   }
                 />
@@ -161,7 +188,7 @@ function App() {
           </Routes>
         </Router>
       </ApolloProvider>
-    </UserContext.Provider>
+    </UserContext.Provider >
   );
 }
 

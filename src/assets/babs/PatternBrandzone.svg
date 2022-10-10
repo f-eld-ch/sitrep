@@ -1,0 +1,14 @@
+<svg width="150px" height="150px" version="1.2" viewBox="0 0 1160 1160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clipPath30940">
+      <rect x="-37.039" y="98.014" width="1240.6" height="1038.1" fill="none" stroke-dashoffset="17.778" stroke-linecap="round" stroke-miterlimit="3.7" stroke-width="45.409" style="paint-order:stroke fill markers"/>
+    </clipPath>
+  </defs>
+  <g transform="matrix(.93501 0 0 1.1167 34.32 -108.54)" clip-path="url(#clipPath30940)" fill="#f00">
+    <rect transform="matrix(.76672 .64199 -.76672 .64199 -430.7 -679.1)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+    <rect transform="matrix(.76672 .64199 -.76672 .64199 3.3511e-7 -2.6417e-6)" x="1231.3" y="-940.34" width="68.168" height="1876.5"/>
+    <rect transform="matrix(.76672 .64199 -.76672 .64199 3.3511e-7 -2.6417e-6)" x="422.34" y="-835.43" width="68.168" height="1876.5"/>
+    <rect transform="matrix(.76672 .64199 -.76672 .64199 769.67 393.53)" x="827.8" y="-898.63" width="68.168" height="1876.5" fill="#f00" stroke-width="7.6278"/>
+    <rect transform="matrix(.76672 .64199 -.76672 .64199 3.3511e-7 -2.6417e-6)" x="826.85" y="-930.8" width="68.168" height="1876.5"/>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
 
 
-export type  UserState  = {
+export type UserState = {
     isLoggedin: boolean;
     username: string;
     email: string;

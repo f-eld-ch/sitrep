@@ -1,50 +1,47 @@
 # Sitrep
+![Lage](docs/images/Lage1.png?raw=true "Lage")
+![Lage2](docs/images/Lage2.png?raw=true "Lage2")
+![Overview](docs/images/IncidentOverview.png?raw=true "Overview")
+![Editor](docs/images/MessageEditor.png?raw=true "Message Editor")
+![Feed](docs/images/JournalFeed.png?raw=true "Feed")
+![Triage](docs/images/Triage.png?raw=true "Triage")
 
-## Backend
+## Demo-Environment
 
-## Frontend
+The current develop version is automatically deployed to: [https://sitrep-dev.zso-uri.ch](https://sitrep-dev.zso-uri.ch)
+Login is possible with your Github account.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Local Development Environment
 
-### Available Scripts
+A simple local development environment can be created using docker compose and the frontend can be run using yarn.
 
-In the project directory, you can run:
+1. Install docker / docker compose and yarn / node 16+
 
-#### `yarn start`
+2. Create a .env.local file setting these variables:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Oauth2_PROXY clients can be created using Auth0.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```
+OAUTH2_PROXY_CLIENT_ID=...
+OAUTH2_PROXY_CLIENT_SECRET=...
+OAUTH2_PROXY_OIDC_ISSUER_URL=https://${TENANT.eu.auth0.com/
+HASURA_GRAPHQL_JWT_SECRET='{"type":"RS256","key":"-----BEGIN CERTIFICATE-----\n
+...
+}\n-----END CERTIFICATE-----\n","header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["user","editor"],"x-hasura-default-role":"user"}}'
+POSTGRES_PASSWORD=postgrespassword
+HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+```
 
-#### `yarn test`
+3. Run docker compose environment:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+docker compose --env-file .env.local up -d
+```
 
-#### `yarn build`
+4. Run yarn
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+yarn start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-#### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-### Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. Open [localhost:4180](http://localhost:4180/) and not the default port 3000. Port 4180 is the OAUTH2 proxy which will then proxy requests towards the yarn started nodejs server which will then proxy /api/graphql towards the Hasura backend.

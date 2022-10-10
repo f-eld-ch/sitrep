@@ -1,0 +1,17 @@
+table:
+  name: medium
+  schema: public
+is_enum: true
+select_permissions:
+  - role: editor
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
+  - role: viewer
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}

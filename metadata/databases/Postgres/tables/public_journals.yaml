@@ -14,14 +14,24 @@ array_relationships:
           name: messages
           schema: public
 insert_permissions:
-  - role: user
+  - role: editor
     permission:
       check: {}
       columns:
         - incident_id
         - name
 select_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - closed_at
+        - created_at
+        - deleted_at
+        - id
+        - name
+        - updated_at
+      filter: {}
+  - role: viewer
     permission:
       columns:
         - closed_at
@@ -32,7 +42,7 @@ select_permissions:
         - updated_at
       filter: {}
 update_permissions:
-  - role: user
+  - role: editor
     permission:
       columns:
         - closed_at

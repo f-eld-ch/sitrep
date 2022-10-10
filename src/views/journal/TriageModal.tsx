@@ -1,80 +1,48 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { gql, useMutation, useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import classNames from "classnames";
-import { JournalMessage, Spinner } from "components";
-import { union, reject } from "lodash";
+import { Spinner } from "components";
+import reject from "lodash/reject";
+import union from "lodash/union";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { NewForm as TaskNew } from "../tasks";
-import { GET_MESSAGES } from "./List";
+import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
+import { default as JournalMessage } from "./Message";
 
-const GET_MESSAGE_FOR_TRIAGE = gql`
-  query GetMessageForTriage($messageId: uuid!) {
-    messages_by_pk(id: $messageId) {
-      id
-      content
-      sender
-      receiver
-      time
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
-      createdAt
-      updatedAt
-      deletedAt
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-      journal {
-        incident {
-          divisions {
-            id
-            name
-            description
-          }
-        }
-      }
-    }
-  }
-`;
 
 function Triage(props: {
   message: Message | undefined;
-  setMessage: React.Dispatch<React.SetStateAction<Message | undefined>>;
+  setMessage: (message: Message | undefined) => void;
 }) {
   const { message, setMessage } = props;
   const { journalId } = useParams();
+  const { t } = useTranslation();
+
   const [loadMessage, { loading, error, data }] = useLazyQuery<TriageMessageData, TriageMessageVars>(
-    GET_MESSAGE_FOR_TRIAGE,
+    GetMessageForTriage,
     {
       variables: { messageId: props.message?.id },
       fetchPolicy: "cache-and-network",
       onCompleted: (data) => {
-        setAssignments(data?.messages_by_pk.divisions.map((d) => d.division));
+        setAssignments(data?.messagesByPk.divisions.map((d) => d.division));
         setPriority(
-          Object.values(PriorityStatus).find((p) => p === data.messages_by_pk.priority.name) || PriorityStatus.Normal
+          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priorityId) || PriorityStatus.Normal
         );
       },
     }
   );
 
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
-    SAVE_MESSAGE_TRIAGE,
+    SaveMessageTriage,
     {
-      onCompleted(data) {},
+      onCompleted(data) { },
       refetchQueries: [
-        // { query: GET_MESSAGE_FOR_TRIAGE, variables: { messageId: props.message?.id } },
-        { query: GET_MESSAGES, variables: { journalId: journalId } },
+        { query: GetJournalMessages, variables: { journalId: journalId } },
       ],
     }
   );
@@ -127,7 +95,7 @@ function Triage(props: {
         <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title is-size-2">Triage der Nachricht</p>
+            <p className="modal-card-title is-size-2 is-capitalized">{t('messageTriageTitle')}</p>
             <button className="delete" aria-label="close" onClick={() => setMessage(undefined)}></button>
           </header>
           <section className="modal-card-body">
@@ -154,12 +122,12 @@ function Triage(props: {
                     origMessage={message}
                   />
                 </div>
-                <div className="block">
+                <div className="block mt-4">
                   <div className="columns">
                     <div className="column">
-                      <h3 className="title is-size-4">Meldefluss</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('messageFlow')}</h3>
                       <div className="field is-grouped is-grouped-multiline">
-                        {data?.messages_by_pk.journal.incident.divisions.map((d) => {
+                        {data?.messagesByPk.journal.incident.divisions.map((d) => {
                           let isPresent = assignments.some((e) => e.name === d.name);
                           let tagsClass = classNames({
                             tag: true,
@@ -186,24 +154,24 @@ function Triage(props: {
                       </div>
                     </div>
                     <div className="column">
-                      <h3 className="title is-size-4">Prorität zuweisen</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('assignPriority')}</h3>
                       <div className="select is-rounded is-small">
                         <select
-                          defaultValue={message.priority.name}
+                          defaultValue={message.priorityId}
                           onChange={(e) => {
                             e.preventDefault();
-                            let prio = Object.values(PriorityStatus).find((p) => p === e.currentTarget.value);
+                            let prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
                             if (prio !== undefined) setPriority(prio);
                           }}
                         >
                           {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option key={prio}>{prio}</option>
+                            <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
                           ))}
                         </select>
                       </div>
                     </div>
                     <div className="column">
-                      <h3 className="title is-size-4">Pendenz erstellen</h3>
+                      <h3 className="title is-size-4 is-capitalized">{t('createNewTask')}</h3>
                       <TaskNew />
                     </div>
                   </div>
@@ -214,20 +182,20 @@ function Triage(props: {
           <footer className="modal-card-foot">
             <div className="buttons are-normal">
               <button
-                className="button is-rounded is-primary"
+                className="button is-rounded is-primary is-small"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
                 }}
               >
-                Triagieren
+                {t('saveTriage')}
               </button>
               <button
-                className="button is-rounded"
+                className="button is-rounded is-small"
                 onClick={() => {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
                 }}
               >
-                Mehr Informationen benötigt
+                {t(`saveMoreInfo`)}
               </button>
             </div>
           </footer>
@@ -236,35 +204,5 @@ function Triage(props: {
     </>
   );
 }
-
-const SAVE_MESSAGE_TRIAGE = gql`
-  mutation SaveMessageTriage(
-    $messageId: uuid!
-    $priority: priority_status_enum
-    $triage: triage_status_enum
-    $messageDivisions: [message_division_insert_input!]!
-  ) {
-    delete_message_division(where: { messageId: { _eq: $messageId } }) {
-      affected_rows
-    }
-    insert_message_division(objects: $messageDivisions) {
-      affected_rows
-    }
-    update_messages_by_pk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
-      id
-      divisions {
-        division {
-          name
-        }
-      }
-      priority {
-        name
-      }
-      triage {
-        name
-      }
-    }
-  }
-`;
 
 export default Triage;

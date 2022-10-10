@@ -23,7 +23,7 @@ export interface IncidentListData {
 }
 
 export interface IncidentDetailsData {
-  incidents_by_pk: Incident;
+  incidentsByPk: Incident;
 }
 
 export interface IncidentDetailsVars {
@@ -32,7 +32,7 @@ export interface IncidentDetailsVars {
 
 
 export interface InsertIncidentData {
-    insert_incidents_one: Incident
+  insertIncidentsOne: Incident
 }
 
 export interface InsertIncidentVars {
@@ -55,11 +55,11 @@ export interface DivisionUpdate {
 
 
 export interface UpdateIncidentData {
-  update_locations_by_pk: Location
-  insert_divisions: {
+  updateLocationsByPk: Location
+  insertDivisions: {
     affected_rows: Number
   }
-  update_incidents_by_pk: Incident
+  updateIncidentsByPk: Incident
 }
 
 export interface UpdateIncidentVars {
