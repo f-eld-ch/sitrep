@@ -31,7 +31,7 @@
     "react-i18next": "^11.18.5",
     "react-map-gl": "^7.0.19",
     "react-markdown": "^8.0.3",
-    "react-router-dom": "^6.4.1",
+    "react-router-dom": "^6.4.2",
     "usehooks-ts": "^2.7.2",
     "web-vitals": "^3.0.1"
   },
