@@ -30,15 +30,12 @@ array_relationships:
           name: message_division
           schema: public
 insert_permissions:
-  - role: user
+  - role: editor
     permission:
       check: {}
-      columns:
-        - description
-        - incident_id
-        - name
+      columns: []
 select_permissions:
-  - role: user
+  - role: editor
     permission:
       columns:
         - description
@@ -46,7 +43,14 @@ select_permissions:
         - name
       filter: {}
 update_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - description
+        - name
+      filter: {}
+      check: null
+  - role: viewer
     permission:
       columns:
         - description

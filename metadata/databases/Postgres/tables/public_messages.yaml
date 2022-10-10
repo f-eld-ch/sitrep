@@ -26,7 +26,7 @@ array_relationships:
           name: message_division
           schema: public
 insert_permissions:
-  - role: user
+  - role: editor
     permission:
       check:
         _and:
@@ -60,7 +60,26 @@ insert_permissions:
         - sender_detail
         - time
 select_permissions:
-  - role: user
+  - role: editor
+    permission:
+      columns:
+        - content
+        - created_at
+        - deleted_at
+        - id
+        - medium_id
+        - priority_id
+        - receiver
+        - receiver_detail
+        - sender
+        - sender_detail
+        - time
+        - triage_id
+        - updated_at
+      filter:
+        deleted_at:
+          _is_null: true
+  - role: viewer
     permission:
       columns:
         - content
@@ -80,7 +99,7 @@ select_permissions:
         deleted_at:
           _is_null: true
 update_permissions:
-  - role: user
+  - role: editor
     permission:
       columns:
         - content
