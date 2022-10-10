@@ -42,15 +42,15 @@ select_permissions:
         - id
         - name
       filter: {}
-update_permissions:
-  - role: editor
+  - role: viewer
     permission:
       columns:
         - description
+        - id
         - name
       filter: {}
-      check: null
-  - role: viewer
+update_permissions:
+  - role: editor
     permission:
       columns:
         - description
