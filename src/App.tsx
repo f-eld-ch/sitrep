@@ -35,18 +35,21 @@ function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
   const { i18n } = useTranslation();
 
-
   const setUserStateFromUserinfo = () => {
     fetch("/oauth2/userinfo", { credentials: "include" })
       .then((response) => {
-        if (response.ok) return response.json();
-        Promise.reject();
+        if (!response.ok) {
+          throw new Error("unauthenticated")
+        }
+        return response.json();
       })
       .then((userInfo) => {
-        setUserState({ isLoggedin: true, email: userInfo.email, username: userInfo.user });
+        setUserState({ isLoggedin: true, email: userInfo.email, username: userInfo.user || userInfo.preferredUsername });
       })
       .catch(() => {
         setUserState({ isLoggedin: false, email: "", username: "" });
+        // redirect to the login page of oAuth2Proxy
+        window.location.replace('/oauth2/sign_in');
       });
   };
 
