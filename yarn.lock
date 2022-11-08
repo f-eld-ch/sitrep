@@ -2641,10 +2641,10 @@
     "@typescript-eslint/types" "5.40.1"
     eslint-visitor-keys "^3.3.0"
 
-"@watergis/mapbox-gl-export@^1.2.18":
-  version "1.2.18"
-  resolved "https://registry.yarnpkg.com/@watergis/mapbox-gl-export/-/mapbox-gl-export-1.2.18.tgz#9ff487c623563971a4e7f5200c4d9fdbc35a6fac"
-  integrity sha512-Z6f3VrYpdyNIihbZ8d+PC9LM8UOIh6nPvJFfO5fIgrZIvdaJ5rpz+k967ntITpPMolJx6XTX3p2GMpa2DF/FZg==
+"@watergis/mapbox-gl-export@^1.2.21":
+  version "1.2.21"
+  resolved "https://registry.yarnpkg.com/@watergis/mapbox-gl-export/-/mapbox-gl-export-1.2.21.tgz#fd4a1ee511614264ceda063b60e8ca29a8c49764"
+  integrity sha512-0L09UtnAQwznjuluGFQyA4dpwbaQZi3H8Icvt2yI/TgglcJUsgU3Qv+ZjZA1vatJWrVpANh1phKlJRnEIC1gsQ==
   dependencies:
     fabric "^5.2.1"
     file-saver "^2.0.5"
