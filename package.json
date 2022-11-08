@@ -33,7 +33,7 @@
     "react-markdown": "^8.0.3",
     "react-router-dom": "^6.4.2",
     "usehooks-ts": "^2.7.2",
-    "web-vitals": "^3.0.3"
+    "web-vitals": "^3.0.4"
   },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
