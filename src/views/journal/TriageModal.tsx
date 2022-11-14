@@ -105,7 +105,7 @@ function Triage(props: {
               <Spinner />
             ) : (
               <>
-                <div className="container is-clearfix" style={{ all: "revert" }}>
+                <div className="container is-clearfix" >
                   <JournalMessage
                     showControls={false}
                     key={message.id}

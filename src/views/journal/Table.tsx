@@ -20,7 +20,7 @@ function MessageTable(props: { messages: undefined | Message[], assignmentFilter
       <table className="table is-fullwidth is-narrow">
         <thead>
           <tr>
-            <th className="is-capitalized" style={{ minWidth: "120px" }}>{t('message.time')}</th>
+            <th className="is-capitalized">{t('message.time')}</th>
             <th className="is-capitalized">{t('message.sender')}</th>
             <th className="is-capitalized">{t('message.receiver')}</th>
             <th className="is-capitalized">{t('message.content')}</th>

@@ -204,7 +204,7 @@ function MapComponent() {
             <Notification timeout={5000} type={"warning"}>
                 <p>Das Lagebild wird nicht mit dem Server synchronisiert, aber lokal gespeichert.</p>
             </Notification>
-            <div className='container-flex'>
+            <div className='mapbox container-flex'>
                 <Map
                     ref={mapRef}
                     mapLib={maplibregl}
@@ -214,7 +214,6 @@ function MapComponent() {
                     maxZoom={19}
                     {...viewState}
                     onMove={e => setViewState(e.viewState)}
-                    style={{ minHeight: "85vh" }}
                     mapStyle={"https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"}
                 >
                     <FullscreenControl position={'top-left'} />
