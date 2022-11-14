@@ -1,6 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useLazyQuery, useMutation } from "@apollo/client";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
 import reject from "lodash/reject";
@@ -95,7 +97,7 @@ function Triage(props: {
         <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title is-size-2 is-capitalized">{t('messageTriageTitle')}</p>
+            <p className="modal-card-title is-size-5">{t('messageTriageTitle')}</p>
             <button className="delete" aria-label="close" onClick={() => setMessage(undefined)}></button>
           </header>
           <section className="modal-card-body">
@@ -105,7 +107,7 @@ function Triage(props: {
               <Spinner />
             ) : (
               <>
-                <div className="container is-clearfix" >
+                <div className="container mb-5" >
                   <JournalMessage
                     showControls={false}
                     key={message.id}
@@ -122,57 +124,63 @@ function Triage(props: {
                     origMessage={message}
                   />
                 </div>
-                <div className="block mt-4">
-                  <div className="columns">
-                    <div className="column">
-                      <h3 className="title is-size-4 is-capitalized">{t('messageFlow')}</h3>
-                      <div className="field is-grouped is-grouped-multiline">
-                        {data?.messagesByPk.journal.incident.divisions.map((d) => {
-                          let isPresent = assignments.some((e) => e.name === d.name);
-                          let tagsClass = classNames({
-                            tag: true,
-                            "is-primary": isPresent,
-                          });
-                          return (
-                            <div key={d.name} className="control">
-                              <div className="tags has-addons">
-                                <a className={tagsClass} onClick={() => setAssignments(union(assignments, [d]))}>
-                                  {d.description || d.name}
-                                </a>
-                                {isPresent ? (
-                                  <a
-                                    className="tag is-delete"
-                                    onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
-                                  ></a>
-                                ) : (
-                                  <></>
-                                )}
+                <div className="container">
+                  <div className="block">
+                    <div className="columns">
+                      <div className="column">
+                        <h3 className="title is-size-5">{t('messageFlow')}</h3>
+                        <div className="field is-grouped is-grouped-multiline">
+                          {data?.messagesByPk.journal.incident.divisions.map((d) => {
+                            let isPresent = assignments.some((e) => e.name === d.name);
+                            let tagsClass = classNames({
+                              tag: true,
+                              "is-primary": isPresent,
+                              "is-dark": !isPresent,
+                            });
+                            return (
+                              <div key={d.name} className="control">
+                                <div className="tags has-addons">
+                                  <div className={tagsClass}>
+                                    {d.description || d.name}
+                                  </div>
+                                  {isPresent ? (
+                                    <a
+                                      className="tag is-light is-primary"
+                                      onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
+                                    ><FontAwesomeIcon icon={faMinus} /></a>
+                                  ) : (
+                                    <a
+                                      className="tag is-success is-light"
+                                      onClick={() => setAssignments(union(assignments, [d]))}
+                                    ><FontAwesomeIcon icon={faPlus} /></a>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                    <div className="column">
-                      <h3 className="title is-size-4 is-capitalized">{t('assignPriority')}</h3>
-                      <div className="select is-rounded is-small">
-                        <select
-                          defaultValue={message.priorityId}
-                          onChange={(e) => {
-                            e.preventDefault();
-                            let prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
-                            if (prio !== undefined) setPriority(prio);
-                          }}
-                        >
-                          {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
-                          ))}
-                        </select>
+                      <div className="column">
+                        <h3 className="title is-size-5">{t('assignPriority')}</h3>
+                        <div className="select is-rounded is-small">
+                          <select
+                            defaultValue={message.priorityId}
+                            onChange={(e) => {
+                              e.preventDefault();
+                              let prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
+                              if (prio !== undefined) setPriority(prio);
+                            }}
+                          >
+                            {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
+                              <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                    </div>
-                    <div className="column">
-                      <h3 className="title is-size-4 is-capitalized">{t('createNewTask')}</h3>
-                      <TaskNew />
+                      <div className="column">
+                        <h3 className="title is-size-5">{t('createNewTask')}</h3>
+                        <TaskNew />
+                      </div>
                     </div>
                   </div>
                 </div>
