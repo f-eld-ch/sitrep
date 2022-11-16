@@ -49,7 +49,7 @@ services:
       OAUTH2_PROXY_SKIP_AUTH_ROUTES: ^\/(manifest\.json|favicon\.ico|asset-manifest\.json|service-worker\.js\.map|service-worker\.js|robots\.txt|logo\d+\.png)
     extra_hosts:
       host.docker.internal: host-gateway
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.3.0
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
     networks:
       default: null
     ports:
