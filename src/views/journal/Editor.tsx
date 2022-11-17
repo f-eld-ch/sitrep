@@ -294,7 +294,7 @@ function InputBox() {
               <div className="select is-fullwidth">
                 <select value={state.media} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
-                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`])}>{medium}</option>
+                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}>{medium}</option>
                   ))}
                 </select>
               </div>
