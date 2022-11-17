@@ -3,7 +3,6 @@ import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom"
 
 import "./App.scss";
 
-import { List as ImmediateMeasuresList } from "views/immediateMeasures";
 import {
   Editor as IncidentEditor,
   List as IncidentList,
@@ -16,9 +15,10 @@ import {
   Overview as JournalOverview
 } from "views/journal";
 
-import { List as RequestList } from "views/requests";
+import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
+import { List as RequestList } from "views/measures/requests";
+import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
-import { List as TaskList } from "views/tasks";
 
 import { ApolloProvider } from "@apollo/client";
 import { Spinner } from "components";
