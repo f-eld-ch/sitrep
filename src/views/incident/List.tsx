@@ -25,7 +25,11 @@ function List() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentListData>(GetIncidents);
+  const { loading, error, data } = useQuery<IncidentListData>(GetIncidents,
+    {
+      pollInterval: 10000,
+    }
+  );
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
