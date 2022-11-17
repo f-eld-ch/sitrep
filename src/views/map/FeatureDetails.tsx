@@ -103,7 +103,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
                         </div>
                         {feature && feature.geometry.type === "Point" &&
                             < label className="checkbox">
-                                <input type="checkbox" onChange={e => e.target.checked ? setIconRotation(map.current?.getBearing()) : setIconRotation(undefined)} checked={iconRotation !== undefined} value={iconRotation} />
+                                <input type="checkbox" onChange={e => e.currentTarget.checked ? setIconRotation(map.current?.getBearing()) : setIconRotation(undefined)} checked={iconRotation !== undefined} value={iconRotation} />
                                 Fixiert
                             </label>}
                     </div>

@@ -93,8 +93,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </div>
           </div>
           <JournalNavBar />
-          <ResourcesNavBar />
-          <TasksNavBar />
+          {/* <ResourcesNavBar />
+          <TasksNavBar /> */}
           <MapNavBar />
         </div>
         <div className="navbar-end">
@@ -112,13 +112,9 @@ function VersionNavBar() {
         <span className="icon">
           <FontAwesomeIcon icon={faCodeBranch} />
         </span>
-        {process.env.REACT_APP_VERSION === "develop" ? (
-          <span>{process.env.REACT_APP_SHA_VERSION}</span>
-        ) : (
-          <span>{process.env.REACT_APP_VERSION}</span>
-        )}
+        <span><a href={`https://github.com/RedGecko/sitrep/commit/${process.env.REACT_APP_SHA_VERSION}`} target="_blank" rel="noopener noreferrer">{process.env.REACT_APP_VERSION}</a></span>
       </span>
-    </div>
+    </div >
   );
 }
 
