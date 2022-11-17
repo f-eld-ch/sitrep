@@ -137,9 +137,33 @@ section {
     text-decoration: none;
 }
 
+.table {
+    is-fixed {
+        table-layout: fixed;
+    }
+
+    .tbody {
+        tr {}
+    }
+
+}
+
+.message-sheet {
+    .firstRow {
+        width: 150px;
+    }
+
+    .contentBox {
+        height: 400px;
+    }
+}
 
 .input:invalid {
     border-color: $danger;
+}
+
+.mapboxgl-map {
+    min-height: 85vh;
 }
 
 button {

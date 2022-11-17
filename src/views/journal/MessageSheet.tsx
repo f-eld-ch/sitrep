@@ -36,10 +36,10 @@ function MessageSheet() {
             {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
             {data?.messagesByPk &&
                 <>
-                    <table className="table is-bordered is-fullwidth">
+                    <table className="table is-bordered is-fullwidth message-sheet ">
                         <tbody >
                             <tr>
-                                <th rowSpan={6} style={{ width: "150px" }}>{t('message.name')}</th>
+                                <th rowSpan={6} className="firstRow">{t('message.name')}</th>
                                 <th>{t('message.sender')}</th>
                                 {data?.messagesByPk.mediumId === Medium.Radio || !data.messagesByPk.senderDetail?.length ?
                                     <td colSpan={3}>{data?.messagesByPk.sender}</td>
@@ -90,17 +90,17 @@ function MessageSheet() {
                                 </td>
                             </tr>
 
-                            <tr style={{ height: "400px" }}>
+                            <tr className="contentBox">
                                 <th>{t('message.content')}</th>
                                 <td colSpan={4}><div className="content"><ReactMarkdown>{data?.messagesByPk.content}</ReactMarkdown></div></td>
                             </tr>
                         </tbody>
                     </table>
-                    <table className="table is-bordered is-fullwidth mt-2" style={{ "tableLayout": "fixed" }}>
+                    <table className="table is-bordered is-fullwidth mt-2 is-fixed message-sheet">
                         <tbody>
 
                             <tr>
-                                <th rowSpan={2} style={{ width: "150px" }}>{t('messageFlow')}</th>
+                                <th rowSpan={2} className="firstRow">{t('messageFlow')}</th>
                                 {data?.messagesByPk.journal.incident.divisions.map((d) => {
                                     return (
                                         <td className="has-text-centered">{d.name}</td>)

@@ -69,9 +69,9 @@ function List(props: {
                     setTriageFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all')}>all</option>
+                  <option label={t('all') as string}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`])}>{status}</option>
+                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}>{status}</option>
                   ))}
                 </select>
               </div>
@@ -90,9 +90,9 @@ function List(props: {
                     setPriorityFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all')}>all</option>
+                  <option label={t('all') as string}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
+                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>{prio}</option>
                   ))}
                 </select>
               </div>
@@ -111,7 +111,7 @@ function List(props: {
                     setAssignmentFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all')}>all</option>
+                  <option label={t('all') as string}>all</option>
                   {divisions.map((element) => (
                     <option key={element.id} value={element.name}>
                       {element.description}

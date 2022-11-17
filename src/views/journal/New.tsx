@@ -57,7 +57,7 @@ function NewForm() {
             className="input"
             type="text"
             value={name}
-            placeholder={t('name')}
+            placeholder={t('name') as string}
             onChange={(e) => {
               e.preventDefault();
               setName(e.target.value);

@@ -3,7 +3,6 @@ import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom"
 
 import "./App.scss";
 
-import { List as ImmediateMeasuresList } from "views/immediateMeasures";
 import {
   Editor as IncidentEditor,
   List as IncidentList,
@@ -16,9 +15,10 @@ import {
   Overview as JournalOverview
 } from "views/journal";
 
-import { List as RequestList } from "views/requests";
+import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
+import { List as RequestList } from "views/measures/requests";
+import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
-import { List as TaskList } from "views/tasks";
 
 import { ApolloProvider } from "@apollo/client";
 import { Spinner } from "components";
@@ -35,18 +35,21 @@ function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
   const { i18n } = useTranslation();
 
-
   const setUserStateFromUserinfo = () => {
     fetch("/oauth2/userinfo", { credentials: "include" })
       .then((response) => {
-        if (response.ok) return response.json();
-        Promise.reject();
+        if (!response.ok) {
+          throw new Error("unauthenticated")
+        }
+        return response.json();
       })
       .then((userInfo) => {
-        setUserState({ isLoggedin: true, email: userInfo.email, username: userInfo.user });
+        setUserState({ isLoggedin: true, email: userInfo.email, username: userInfo.user || userInfo.preferredUsername });
       })
       .catch(() => {
         setUserState({ isLoggedin: false, email: "", username: "" });
+        // redirect to the login page of oAuth2Proxy
+        window.location.replace('/oauth2/sign_in');
       });
   };
 

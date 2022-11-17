@@ -18,7 +18,7 @@ const SenderInput = () => {
                     type="text"
                     value={state.sender}
                     autoComplete="on"
-                    placeholder={t('name')}
+                    placeholder={t('name') as string}
                     onChange={(e) => {
                         e.preventDefault();
                         dispatch({ type: 'set_sender', sender: e.target.value });
@@ -43,7 +43,7 @@ const ReceiverInput = () => {
                     type="text"
                     value={state.receiver}
                     autoComplete="on"
-                    placeholder={t('name')}
+                    placeholder={t('name') as string}
                     onChange={(e) => {
                         e.preventDefault();
                         dispatch({ type: 'set_receiver', receiver: e.target.value });
@@ -66,7 +66,7 @@ const ContentInput = () => {
             <textarea
                 className="textarea"
                 autoFocus={true}
-                placeholder={t('message.contentHelp')}
+                placeholder={t('message.contentHelp') as string}
                 rows={10}
                 value={state.content}
                 onChange={(e) => {
@@ -153,7 +153,7 @@ const RadioChannelDetailInput = () => {
                         e.preventDefault();
                         dispatch({ type: 'set_media_detail', detail: { type: Medium.Radio, channel: e.target.value } });
                     }}
-                    placeholder={t('radioChannel')}
+                    placeholder={t('radioChannel') as string}
                 />
             </Hint>
         </div>
