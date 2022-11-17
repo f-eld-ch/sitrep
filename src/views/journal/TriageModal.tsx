@@ -172,7 +172,7 @@ function Triage(props: {
                             }}
                           >
                             {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                              <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`])}>{prio}</option>
+                              <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>{prio}</option>
                             ))}
                           </select>
                         </div>
