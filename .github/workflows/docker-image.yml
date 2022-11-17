@@ -31,10 +31,10 @@ jobs:
           images: ghcr.io/RedGecko/sitrep
           tags: |
             # set latest tag for default branch / ordered by priority
+            type=semver,pattern={{version}},prefix=v,priority=920
             type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},priority=910
             type=raw,value=develop,enable={{is_default_branch}},priority=905
             # priority 900
-            type=semver,pattern={{version}},prefix=v
             type=semver,pattern={{major}}.{{minor}},prefix=v
             type=semver,pattern={{major}},prefix=v
             # priority 700
@@ -42,8 +42,6 @@ jobs:
             # priority 600
             type=ref,event=branch
             type=ref,event=pr,prefix=pr-,enable=true
-            # priority 100
-            type=sha
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
