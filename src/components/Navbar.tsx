@@ -93,8 +93,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </div>
           </div>
           <JournalNavBar />
-          <ResourcesNavBar />
-          <TasksNavBar />
+          {/* <ResourcesNavBar />
+          <TasksNavBar /> */}
           <MapNavBar />
         </div>
         <div className="navbar-end">
