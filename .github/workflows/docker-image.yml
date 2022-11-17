@@ -32,6 +32,7 @@ jobs:
           tags: |
             # set latest tag for default branch / ordered by priority
             type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},priority=910
+            type=raw,value=develop,enable={{is_default_branch}},priority=905
             # priority 900
             type=semver,pattern={{version}},prefix=v
             type=semver,pattern={{major}}.{{minor}},prefix=v
