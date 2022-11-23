@@ -134,7 +134,7 @@ function UserNavBar() {
             <span className="icon">
               <FontAwesomeIcon icon={faUser} />
             </span>
-            <span>{userState.username || userState.email}</span>
+            <span>{userState.email || userState.username}</span>
           </span>
         </div>
         <hr className="navbar-divider" />
