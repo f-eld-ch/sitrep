@@ -86,7 +86,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
+    "lint-staged": "^13.0.4",
     "prettier": "^2.7.1",
     "react-scripts": "5.0.1",
     "sass": "^1.55.0",
