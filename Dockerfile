@@ -1,8 +1,8 @@
 FROM docker.io/library/node:19 as build-deps
 WORKDIR /usr/src/app
-COPY package.json yarn.lock ./
+COPY ui/package.json yarn.lock ./
 RUN yarn
-COPY . ./
+COPY ui ./
 ARG GIT_SHA
 ENV GIT_SHA=${GIT_SHA}
 ARG VERSION
