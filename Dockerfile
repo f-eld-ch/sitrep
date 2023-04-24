@@ -1,4 +1,4 @@
-FROM docker.io/library/node:19 as build-deps
+FROM docker.io/library/node:20 as build-deps
 WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
 RUN yarn
