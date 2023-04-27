@@ -19,7 +19,7 @@ A simple local development environment can be created using docker compose and t
 
 2. Create a .env.local file setting these variables:
 
-Oauth2_PROXY clients can be created using Auth0.
+Oauth2_PROXY clients can be created using Auth0....
 
 ```
 OAUTH2_PROXY_CLIENT_ID=...
