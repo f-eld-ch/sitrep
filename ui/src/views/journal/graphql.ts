@@ -50,17 +50,13 @@ const INSERT_JOURNAL = gql`
 `;
 const GET_JOURNALS = gql`
   query GetJournals($incidentId: uuid) {
-    incidents(where: { id: { _eq: $incidentId } }) {
+    journals(incidentId: $incidentId) {
       id
       name
-      journals(orderBy: { createdAt: ASC }) {
-        id
-        name
-        createdAt
-        updatedAt
-        closedAt
-        deletedAt
-      }
+      createdAt
+      updatedAt
+      closedAt
+      deletedAt
     }
   }
 `;

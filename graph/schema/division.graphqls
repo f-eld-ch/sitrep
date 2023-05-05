@@ -1,0 +1,8 @@
+
+type Division {
+  id: ID!
+  description: String
+  name: String
+
+  incident: Incident
+}

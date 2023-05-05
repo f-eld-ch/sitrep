@@ -1,0 +1,14 @@
+
+type Journal {
+  id: ID!
+  closedAt: timestamptz
+  createdAt: timestamptz!
+  updatedAt: timestamptz!
+  deletedAt: timestamptz
+  name: String!
+  messages: [Message!]
+}
+
+extend type Query {
+  journals(incidentId: ID!): [Journal!]
+}

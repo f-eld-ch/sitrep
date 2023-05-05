@@ -1,3 +1,4 @@
+//go:generate yarn build
 package ui
 
 import (

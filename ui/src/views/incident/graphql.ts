@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 const GET_INCIDENTS = gql`
   query FetchIncidents {
-    incidents(orderBy: { createdAt: DESC }) {
+    incidents {
       id
       name
       createdAt
@@ -11,7 +11,10 @@ const GET_INCIDENTS = gql`
       closedAt
       location {
         name
-        coordinates
+        coordinates {
+          lat
+          long
+        }
       }
     }
   }
@@ -27,7 +30,10 @@ const GET_INCIDENT_DETAILS = gql`
       location {
         id
         name
-        coordinates
+        coordinates {
+          lat
+          long
+        }
       }
       divisions {
         id
@@ -48,7 +54,7 @@ const INSERT_INCIDENT = gql`
     $divisions: [DivisionsInsertInput!]!
     $journalName: String
   ) {
-    insertIncidentsOne(
+    NewIncident(
       object: {
         name: $name
         location: { data: { name: $location } }
