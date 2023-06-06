@@ -1,7 +1,9 @@
-FROM docker.io/library/node:20 as build-deps
+FROM docker.io/library/node:18 as build-deps
 WORKDIR /usr/src/app
-COPY package.json yarn.lock ./
-RUN yarn
+COPY yarn.lock package.json .yarnrc.yml ./
+COPY .yarn ./.yarn
+RUN find ./
+RUN yarn install
 COPY . ./
 ARG GIT_SHA
 ENV GIT_SHA=${GIT_SHA}
