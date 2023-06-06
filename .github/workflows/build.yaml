@@ -15,7 +15,7 @@ jobs:
           cache-dependency-path: yarn.lock
 
       - name: Install packages
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Run tests
         run: yarn test

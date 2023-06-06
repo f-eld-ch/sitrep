@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 COPY yarn.lock package.json .yarnrc.yml ./
 COPY .yarn ./.yarn
 RUN find ./
-RUN yarn install
+RUN yarn install --immutable
 COPY . ./
 ARG GIT_SHA
 ENV GIT_SHA=${GIT_SHA}
