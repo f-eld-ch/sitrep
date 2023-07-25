@@ -12788,9 +12788,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^12.1.4":
-  version: 12.1.4
-  resolution: "react-i18next@npm:12.1.4"
+"react-i18next@npm:^12.3.1":
+  version: 12.3.1
+  resolution: "react-i18next@npm:12.3.1"
   dependencies:
     "@babel/runtime": ^7.20.6
     html-parse-stringify: ^3.0.1
@@ -12802,7 +12802,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: 6f0f8a47f0bf7da2c9ac383c88b6ef02446d9d1aa2609cfcc98d8a28999da85361f065fbe7f7f4af910df4e8d53af7879db4b9cd681274d582fc7bdd1b07813b
+  checksum: fe3f360e5184bc63861734e94bf625a09b9ec0d28fab41779a68758af258fd1737dde25ff7a88ddb66c1571a3e3de5b3403825a91b4949bf9832a00615acb87a
   languageName: node
   linkType: hard
 
@@ -13862,7 +13862,7 @@ __metadata:
     react-autocomplete-hint: ^2.0.0
     react-color: ^2.19.3
     react-dom: ^17.0.2
-    react-i18next: ^12.1.4
+    react-i18next: ^12.3.1
     react-map-gl: ^7.0.23
     react-markdown: ^8.0.7
     react-router-dom: ^6.11.0
