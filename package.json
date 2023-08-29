@@ -23,7 +23,7 @@
     "graphql": "^16.8.0",
     "hat": "^0.0.3",
     "i18next": "^23.2.11",
-    "i18next-browser-languagedetector": "^7.0.1",
+    "i18next-browser-languagedetector": "^7.1.0",
     "lodash": "^4.17.21",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "mapbox-gl-style-switcher": "^1.0.11",
