@@ -14,12 +14,10 @@
     "@turf/bearing": "^6.5.0",
     "@turf/center": "^6.5.0",
     "@turf/helpers": "^6.5.0",
-    "@typescript-eslint/parser": "^6.3.0",
     "@watergis/mapbox-gl-export": "^1.2.21",
     "bulma": "^0.9.4",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.8",
-    "eslint": "^8.48.0",
     "graphql": "^16.8.0",
     "hat": "^0.0.3",
     "i18next": "^23.2.11",
@@ -86,7 +84,9 @@
     "@types/react-color": "^3.0.6",
     "@types/react-dom": "^17.0.13",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
+    "eslint": "^8.48.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
     "prettier": "^2.8.8",
@@ -97,6 +97,7 @@
   },
   "resolutions": {
     "@svgr/webpack": "^6.5.1",
+    "json5": "^2.2.3",
     "semver": "^5.7.2"
   },
   "packageManager": "yarn@3.6.0"
