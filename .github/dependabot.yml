@@ -5,6 +5,8 @@ updates:
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
     target-branch: "develop"
+    reviewers:
+      - "@Redgecko/Reviewers"
     schedule:
       interval: "weekly"
 
@@ -12,6 +14,8 @@ updates:
   - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `root` directory
     directory: "/"
-    target-branch: "develop"    
+    target-branch: "develop"
+    reviewers:
+      - "@Redgecko/Reviewers"    
     schedule:
       interval: "weekly"
