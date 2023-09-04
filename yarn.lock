@@ -4075,16 +4075,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/mapbox-gl-export@npm:^1.2.21":
-  version: 1.2.21
-  resolution: "@watergis/mapbox-gl-export@npm:1.2.21"
+"@watergis/mapbox-gl-export@npm:^1.2.22":
+  version: 1.2.22
+  resolution: "@watergis/mapbox-gl-export@npm:1.2.22"
   dependencies:
     fabric: ^5.2.1
     file-saver: ^2.0.5
     js-loading-overlay: ^1.2.0
     jspdf: ^2.5.1
     mapbox-gl: ^1.13.2
-  checksum: 57d880402d23f07c6d1e43ec0eeb3b41bd0de58f9117c0ec971a2fac134258a504ce2ae52faa5f4c122c8c7845c05eb2570fb3e7d69007ebdc0dcf528bf23a92
+  checksum: b0957f514648e43c5b2e86ac7933bda68392ae44b284b34c06f06ec42f452495a593d626996c07438aef32e96160338f747856cecd7c6c997afb497b5bb9866c
   languageName: node
   linkType: hard
 
@@ -13919,7 +13919,7 @@ __metadata:
     "@types/react-router-dom": ^5.3.3
     "@typescript-eslint/eslint-plugin": ^6.5.0
     "@typescript-eslint/parser": ^6.5.0
-    "@watergis/mapbox-gl-export": ^1.2.21
+    "@watergis/mapbox-gl-export": ^1.2.22
     bulma: ^0.9.4
     classnames: ^2.3.2
     dayjs: ^1.11.8
