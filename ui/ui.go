@@ -10,7 +10,7 @@ import (
 )
 
 //go:embed all:build
-var StaticFiles embed.FS
+var uiFiles embed.FS
 
 type embedFileSystem struct {
 	http.FileSystem
@@ -26,11 +26,15 @@ func (e embedFileSystem) Exists(prefix string, path string) bool {
 }
 
 func EmbedFolder() static.ServeFileSystem {
-	fsys, err := fs.Sub(StaticFiles, "build")
+	fsys, err := fs.Sub(uiFiles, "build")
 	if err != nil {
 		panic(err)
 	}
 	return embedFileSystem{
 		FileSystem: http.FS(fsys),
 	}
+}
+
+func FS() http.FileSystem {
+	return http.FS(uiFiles)
 }

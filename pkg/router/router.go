@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -68,11 +67,11 @@ func CreateRouter() (*gin.Engine, error) {
 	}
 
 	r.Use(otelgin.Middleware("backend"))
-	r.Use(auth.AuthRequired())
+	// r.Use(auth.AuthRequired())
 	r.Use(static.Serve("/", ui.EmbedFolder()))
 	r.NoRoute(func(c *gin.Context) {
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") {
-			c.FileFromFS("index.html", http.FS(ui.StaticFiles))
+			c.FileFromFS("index.html", ui.FS())
 		}
 	})
 
