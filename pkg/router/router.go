@@ -9,9 +9,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/RedGecko/sitrep/graph"
+	oidcauth "github.com/RedGecko/sitrep/pkg/auth"
 	"github.com/RedGecko/sitrep/pkg/config"
 	"github.com/RedGecko/sitrep/ui"
-	oidcauth "github.com/TJM/gin-gonic-oidcauth"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/static"
@@ -86,10 +86,10 @@ func CreateRouter() (*gin.Engine, error) {
 	oidc.GET("/sign_in", auth.Login)
 	oidc.GET("/callback", auth.AuthCallback)
 	oidc.GET("/sign_out", auth.Logout)
-	oidc.GET("/userinfo", auth.AuthRequired(), userInfoHandler())
+	oidc.GET("/userinfo", auth.AuthRequiredWithoutRedirect(), userInfoHandler())
 	oidc.GET("/index.html", auth.AuthRequired())
 
-	api := r.Group("/api/v1", auth.AuthRequired())
+	api := r.Group("/api/v1", auth.AuthRequiredWithoutRedirect())
 	api.POST("/graphql", graphqlHandler())
 
 	admin := r.Group("/admin", auth.AuthRequired())

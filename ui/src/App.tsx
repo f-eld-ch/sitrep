@@ -187,7 +187,7 @@ function App() {
                 />
               </Route>
             </Route>
-            <Route path="/" element={<Navigate to="/incident/list" />} />
+            <Route path="*" element={<Navigate to="/incident/list" />} />
           </Routes>
         </Router>
       </ApolloProvider>

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	oidcauth "github.com/TJM/gin-gonic-oidcauth"
+	oidcauth "github.com/RedGecko/sitrep/pkg/auth"
 	"github.com/spf13/viper"
 )
 
