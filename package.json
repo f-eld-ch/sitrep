@@ -18,7 +18,7 @@
     "bulma": "^0.9.4",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.8",
-    "graphql": "^16.8.0",
+    "graphql": "^16.8.1",
     "hat": "^0.0.3",
     "i18next": "^23.2.11",
     "i18next-browser-languagedetector": "^7.1.0",
