@@ -6082,10 +6082,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.8":
-  version: 1.11.8
-  resolution: "dayjs@npm:1.11.8"
-  checksum: 4fe04b6df98ba6e5f89b49d80bba603cbf01e21a1b4a24ecb163c94c0ba5324a32ac234a139cee654f89d5277a2bcebca5347e6676c28a0a6d1a90f1d34a42b8
+"dayjs@npm:^1.11.10":
+  version: 1.11.10
+  resolution: "dayjs@npm:1.11.10"
+  checksum: a6b5a3813b8884f5cd557e2e6b7fa569f4c5d0c97aca9558e38534af4f2d60daafd3ff8c2000fed3435cfcec9e805bcebd99f90130c6d1c5ef524084ced588c4
   languageName: node
   linkType: hard
 
@@ -13853,7 +13853,7 @@ __metadata:
     "@watergis/mapbox-gl-export": ^1.2.22
     bulma: ^0.9.4
     classnames: ^2.3.2
-    dayjs: ^1.11.8
+    dayjs: ^1.11.10
     eslint: ^8.48.0
     graphql: ^16.8.1
     hat: ^0.0.3
