@@ -8,8 +8,7 @@ services:
       HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
-      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log,
-        query-log
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
@@ -43,11 +42,11 @@ services:
       OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
       OAUTH2_PROXY_PROVIDER: oidc
       OAUTH2_PROXY_PROXY_WEBSOCKETS: "true"
-      OAUTH2_PROXY_REDIRECT_URL: http://localhost:4180/oauth2/callback
-      OAUTH2_PROXY_UPSTREAMS: http://host.containers.internal:3000/
+      OAUTH2_PROXY_REDIRECT_URL: http://localhost:3000/oauth2/callback
+      OAUTH2_PROXY_UPSTREAMS: http://graphql-engine:8080/v1/graphql
       OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
       OAUTH2_PROXY_SKIP_AUTH_ROUTES: ^\/(manifest\.json|favicon\.ico|asset-manifest\.json|service-worker\.js\.map|service-worker\.js|robots\.txt|logo\d+\.png)
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.4.0
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
     networks:
       default: null
     ports:

@@ -5,9 +5,19 @@ module.exports = function (app) {
     "/v1/graphql",
     createProxyMiddleware({
       logger: console,
-      target: "http://localhost:8080",
+      target: "http://localhost:4180",
       changeOrigin: true,
       // ws: true,
+      plugins: [loggerPlugin],
+      debug: true,
+    })
+  );
+    app.use(
+    "/oauth2",
+    createProxyMiddleware({
+      logger: console,
+      target: "http://localhost:4180",
+      changeOrigin: true,
       plugins: [loggerPlugin],
       debug: true,
     })
