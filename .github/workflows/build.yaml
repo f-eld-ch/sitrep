@@ -15,9 +15,15 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: "go.mod"
+          cache: false
       - name: Install packages
         run: yarn install --immutable
         working-directory: ./ui
       - name: Run tests
         run: yarn test
         working-directory: ./ui
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          install-mode: "binary"
+          version: v1.55
