@@ -43,7 +43,7 @@ resolvers_always_return_pointers: true
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
- - "github.com/RedGecko/sitrep/graph/model"
+ - "github.com/f-eld-ch/sitrep/graph/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #

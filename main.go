@@ -15,10 +15,8 @@ limitations under the License.
 */
 package main
 
-import "github.com/RedGecko/sitrep/cmd"
-
-var (
-	Version string = "0.0.0-dev"
+import (
+	"github.com/f-eld-ch/sitrep/cmd"
 )
 
 func main() {

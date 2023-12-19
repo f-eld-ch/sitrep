@@ -1,0 +1,122 @@
+# Make sure to check the documentation at https://goreleaser.com
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 1
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-dev+{{.ShortCommit}}"
+
+builds:
+  - id: sitrep
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    binary: sitrep
+    ldflags:
+      - -s -w -X github.com/f-eld-ch/sitrep/internal/buildinfo.Version={{.Version}} -X github.com/f-eld-ch/sitrep/internal/buildinfo.GitComit={{.Commit}} -X github.com/f-eld-ch/sitrep/internal/buildinfo.BuildTime={{.Date}}
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+kos:
+  - # ID of this image.
+    id: sitrep
+
+    # Build ID that should be used to import the build settings.
+    build: sitrep
+    working_dir: .
+    ldflags:
+      - -s -w -X github.com/f-eld-ch/sitrep/internal/buildinfo.Version={{.Version}} -X github.com/f-eld-ch/sitrep/internal/buildinfo.GitComit={{.Commit}} -X github.com/f-eld-ch/sitrep/internal/buildinfo.BuildTime={{.Date}}
+    # Labels for the image.
+    #
+    # Since: v1.17
+    labels:
+      org.opencontainers.image.source: https://github.com/f-eld-ch/sitrep
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.revision: "{{.Commit}}"
+      org.opencontainers.image.vendor: "F-ELD"
+      org.opencontainers.image.licenses: "Apache-2.0"
+
+    base_image: cgr.dev/chainguard/static
+    # Repository to push to.
+    #
+    # Default: $KO_DOCKER_REPO
+    repository: ghcr.io/f-eld-ch/sitrep
+
+    # Platforms to build and publish.
+    #
+    # Default: 'linux/amd64'
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
+    # Tag to build and push.
+    # Empty tags are ignored.
+    #
+    # Default: 'latest'
+    # Templates: allowed
+    tags:
+      - latest
+      - "{{.Tag}}"
+      - "{{if not .Prerelease}}stable{{end}}"
+
+    # Creation time given to the image
+    # in seconds since the Unix epoch as a string.
+    #
+    # Since: v1.17
+    # Templates: allowed
+    creation_time: "{{.CommitTimestamp}}"
+
+    # Creation time given to the files in the kodata directory
+    # in seconds since the Unix epoch as a string.
+    #
+    # Since: v1.17
+    # Templates: allowed
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+
+    # SBOM format to use.
+    #
+    # Default: 'spdx'
+    # Valid options are: spdx, cyclonedx, go.version-m and none.
+    sbom: spdx
+
+    bare: true
+    preserve_import_paths: true
+    base_import_paths: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

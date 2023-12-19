@@ -6,17 +6,19 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+	with:
+          node-version-file: '.nvmrc'
+	  cache: 'yarn'
+          cache-dependency-path: 'ui/yarn.lock'
+      - uses: actions/setup-go@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
+          go-version-file: 'go.mod'
       - name: Install packages
-        run: yarn install
+        run: yarn install --immutable
         working-directory: ./ui
-
       - name: Run tests
         run: yarn test
         working-directory: ./ui
+

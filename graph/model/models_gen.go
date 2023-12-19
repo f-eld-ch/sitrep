@@ -2,20 +2,6 @@
 
 package model
 
-type NewIncident struct {
-	Name     string  `json:"name"`
-	Location string  `json:"location"`
-	Lat      float64 `json:"lat"`
-	Long     float64 `json:"long"`
-}
-
-type NewMessage struct {
-	Sender   string `json:"sender"`
-	Receiver string `json:"receiver"`
-	Time     string `json:"time"`
-	Message  string `json:"message"`
-}
-
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`

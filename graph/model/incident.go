@@ -17,3 +17,10 @@ type Incident struct {
 	Journals  []Journal  `json:"journals"`
 	Location  Location   `json:"location"`
 }
+
+type NewIncident struct {
+	Name     string  `json:"name"`
+	Location string  `json:"location"`
+	Lat      float64 `json:"lat"`
+	Long     float64 `json:"long"`
+}

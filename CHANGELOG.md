@@ -18,4 +18,4 @@ and this project adheres to [Calendar Versioning](https://calver.org/) with pate
 - Initial Version with a working scope for adding new incidents, corresponding journals and messages.
 - Triage workflow working on per-incident defined sets of division tags
 
-[unreleased]: https://github.com/Redgecko/sitrep/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/f-eld-ch/sitrep/compare/v1.0.0...HEAD
