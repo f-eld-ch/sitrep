@@ -6,7 +6,7 @@ function Footer() {
     <footer className="footer has-background-white-bis is-hidden-print">
       <div className="content has-text-centered">
         <p>
-          Made with <FontAwesomeIcon icon={faHeart} color="red" /> in Switzerland by <strong>ZSO Uri</strong>
+          Made with <FontAwesomeIcon icon={faHeart} color="red" /> in Switzerland by <strong>F-ELD</strong>
         </p>
       </div>
     </footer>
