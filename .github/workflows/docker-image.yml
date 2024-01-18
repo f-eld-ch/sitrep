@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/RedGecko/sitrep
+          images: ghcr.io/f-eld-ch/sitrep
           tags: |
             # set latest tag for default branch / ordered by priority
             type=semver,pattern={{version}},prefix=v,priority=920
@@ -56,7 +56,7 @@ jobs:
         id: meta-hasura
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/RedGecko/sitrep-hasura
+          images: ghcr.io/f-eld-ch/sitrep-hasura
           tags: |
             # set latest tag for default branch
             type=edge,branch=develop
