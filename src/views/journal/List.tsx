@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -23,7 +23,6 @@ function List(props: {
   const [triageFilter, setTriageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
-
 
   const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
@@ -143,6 +142,15 @@ function Messages(props: {
   setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
 }) {
+
+
+  // on new messages scale to top
+  useEffect(() => {
+    window.scroll({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }, [props.messages]);
 
   return (
     <>
