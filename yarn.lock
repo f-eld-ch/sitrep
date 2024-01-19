@@ -3420,10 +3420,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hat@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@types/hat@npm:0.0.1"
-  checksum: aa88ac297aaed715a0327e0a88572a733ea8b3ec840b1c37542f0adf8dabec2a890e3820ee6d41c3c075ef72911e11a23c2cb34a33fa7275fd40a4815466bbff
+"@types/hat@npm:^0.0.4":
+  version: 0.0.4
+  resolution: "@types/hat@npm:0.0.4"
+  checksum: 7e926e7b198ffb2655c64bfa2f4d3deb4bb50d60fa25210f0115169e4c99afee114efe2a58941c352a546195997e943d6971c6ab58a9d075f8cc5fab8d0f8df9
   languageName: node
   linkType: hard
 
@@ -13963,7 +13963,7 @@ __metadata:
     "@turf/bearing": ^6.5.0
     "@turf/center": ^6.5.0
     "@turf/helpers": ^6.5.0
-    "@types/hat": ^0.0.1
+    "@types/hat": ^0.0.4
     "@types/jest": ^29.5.3
     "@types/lodash": ^4.14.198
     "@types/mapbox-gl": ^2.7.18
