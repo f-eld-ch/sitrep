@@ -1,6 +1,6 @@
-import { Format, MapboxExportControl, PageOrientation, Size } from "@watergis/mapbox-gl-export";
-import '@watergis/mapbox-gl-export/css/styles.css';
-import { ControlPosition, useControl } from "react-map-gl";
+import { Format, MaplibreExportControl, PageOrientation, Size } from "@watergis/maplibre-gl-export";
+import '@watergis/maplibre-gl-export/dist/maplibre-gl-export.css';
+import { ControlPosition, useControl } from "react-map-gl/maplibre";
 
 export type ExportControlProps = {
     /** Placement of the control relative to the map. */
@@ -10,9 +10,9 @@ export type ExportControlProps = {
 
 function ExportControl(props: ExportControlProps): null {
     const { position } = props;
-    useControl<MapboxExportControl>(
+    useControl<MaplibreExportControl>(
         ({ map }) =>
-            new MapboxExportControl({
+            new MaplibreExportControl({
                 PageSize: Size.A3,
                 PageOrientation: PageOrientation.Landscape,
                 Format: Format.PDF,

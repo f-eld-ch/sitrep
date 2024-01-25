@@ -11,7 +11,7 @@ import isEmpty from 'lodash/isEmpty';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl';
+import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
@@ -265,14 +265,8 @@ function MapComponent() {
         </>
     );
 }
-const layerStyle = {
-    id: 'point',
-    type: 'circle',
-    paint: {
-        'circle-radius': 10,
-        'circle-color': '#007cbf'
-    }
-};
+
+
 const MemoMap = memo(MapComponent);
 
 export { MemoMap as Map };

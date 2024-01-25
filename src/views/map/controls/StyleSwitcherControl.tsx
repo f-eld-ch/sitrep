@@ -1,6 +1,6 @@
 import { MapboxStyleDefinition, MapboxStyleSwitcherControl, MapboxStyleSwitcherOptions } from "mapbox-gl-style-switcher";
 import React from "react";
-import { ControlPosition, useControl } from "react-map-gl";
+import { ControlPosition, useControl } from "react-map-gl/maplibre";
 
 import "mapbox-gl-style-switcher/styles.css";
 

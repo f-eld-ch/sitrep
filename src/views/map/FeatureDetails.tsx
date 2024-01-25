@@ -5,7 +5,7 @@ import { Feature, GeoJsonProperties } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
-import { useMap } from "react-map-gl";
+import { useMap } from "react-map-gl/maplibre";
 
 const calculateIconRotationForLines = (feature: Feature<LineString>): number => {
 
