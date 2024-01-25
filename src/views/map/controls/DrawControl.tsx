@@ -2,7 +2,7 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { useControl } from "react-map-gl";
 
 import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
-import type { ControlPosition, MapRef } from "react-map-gl";
+import type { ControlPosition } from "react-map-gl/maplibre";
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
     position?: ControlPosition;
@@ -23,7 +23,7 @@ function DrawControl(props: DrawControlProps) {
     }, [draw, setDrawInParent])
 
     useControl<MapboxDraw>(
-        ({ map }: { map: MapRef }) => {
+        ({ map }) => {
             map.on("draw.create", props.onCreate);
             map.on("draw.update", props.onUpdate);
             map.on("draw.combine", props.onCombine);
@@ -36,9 +36,7 @@ function DrawControl(props: DrawControlProps) {
 
             return draw;
         },
-        ({ map }: { map: MapRef }) => {
-
-            map.removeImage("KFO")
+        ({ map }) => {
             map.off("draw.create", props.onCreate);
             map.off("draw.update", props.onUpdate);
             map.off("draw.combine", props.onCombine);
