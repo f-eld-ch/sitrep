@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { memo, useState } from "react";
 import { useTimeout } from 'usehooks-ts';
 interface NotificationProps {
-    children: React.ReactChild | React.ReactChildren
+    children: React.ReactNode;
     type: NotificationType;
     timeout: number | null;
 }
