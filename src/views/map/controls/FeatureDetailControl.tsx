@@ -1,10 +1,10 @@
 import { Feature } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { memo, ReactChild, ReactChildren } from 'react';
+import { memo, ReactNode } from 'react';
 
 interface FeatureDetailControlPanelProps {
     feature: Feature | undefined;
-    children: ReactChild | ReactChildren;
+    children: ReactNode;
 }
 
 function FeatureDetailControlPanel(props: FeatureDetailControlPanelProps) {
