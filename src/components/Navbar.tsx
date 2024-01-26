@@ -324,4 +324,9 @@ const MapNavBar: FunctionComponent = () => {
   );
 };
 
+export {
+  TasksNavBar,
+  ResourcesNavBar,
+};
+
 export default Navbar;

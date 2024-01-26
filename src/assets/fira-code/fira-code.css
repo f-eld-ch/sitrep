@@ -1,8 +1,0 @@
-/* fira-code-regular */
-@font-face {
-	font-family: Fira Code;
-	font-style: normal;
-	font-weight: 400;
-	src: local("Fira Code Regular"), local("FiraCode-Regular"), url(fira-code-regular.woff2) format("woff2");
-}
-

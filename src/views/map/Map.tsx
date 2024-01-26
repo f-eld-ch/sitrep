@@ -4,14 +4,14 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 import DefaultMaker from 'assets/marker.svg';
 import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
-import { Feature, FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import hat from 'hat';
 import { isEqual, unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl';
+import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
@@ -48,7 +48,7 @@ function MapComponent() {
     // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
 
 
-    const onCreate = useCallback(e => {
+    const onCreate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
         setFeatures(curFeatureCollection => {
             console.log("[update]: current features created", e)
 
@@ -67,7 +67,7 @@ function MapComponent() {
         });
     }, [setFeatures]);
 
-    const onUpdate = useCallback(e => {
+    const onUpdate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
         setFeatures(curFeatureCollection => {
             // an update creates a deleted feature with the old properties and adds a new one with the new properties
             const newFeatureCollection = { ...curFeatureCollection };
@@ -113,7 +113,7 @@ function MapComponent() {
         });
     }, [setFeatures]);
 
-    const onDelete = useCallback(e => {
+    const onDelete = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
         setFeatures(curFeatureCollection => {
             console.log("[delete]: current features updated", e)
 
@@ -135,7 +135,7 @@ function MapComponent() {
         });
     }, [setFeatures]);
 
-    const onCombine = useCallback(e => {
+    const onCombine = useCallback((e: { createdFeatures: Feature<Geometry, GeoJsonProperties>[]; deletedFeatures: Feature<Geometry, GeoJsonProperties>[]; }) => {
         console.log("onCombine", e);
         setFeatures(curFeatureCollection => {
             const createdFeatures: Feature[] = e.createdFeatures;
@@ -152,7 +152,7 @@ function MapComponent() {
     }, [setFeatures]);
 
 
-    const onSelectionChange = useCallback(e => {
+    const onSelectionChange = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
         const features: Feature[] = e.features;
         if (features.length === 1) {
             setSelectedFeature(features[0].id);
@@ -265,14 +265,7 @@ function MapComponent() {
         </>
     );
 }
-const layerStyle = {
-    id: 'point',
-    type: 'circle',
-    paint: {
-        'circle-radius': 10,
-        'circle-color': '#007cbf'
-    }
-};
+
 const MemoMap = memo(MapComponent);
 
 export { MemoMap as Map };

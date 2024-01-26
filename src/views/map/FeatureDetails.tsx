@@ -3,9 +3,9 @@ import { LineString, point } from "@turf/helpers";
 import { BabsIcon, IconGroups, Others, Schaeden } from "components/BabsIcons";
 import { Feature, GeoJsonProperties } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
-import { memo, useCallback, useEffect, useState } from "react";
+import { SetStateAction, memo, useCallback, useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
-import { useMap } from "react-map-gl";
+import { useMap } from "react-map-gl/maplibre";
 
 const calculateIconRotationForLines = (feature: Feature<LineString>): number => {
 
@@ -66,7 +66,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
         selectableTypes = ZoneTypes;
     }
 
-    const onTypeChange = useCallback((e) => {
+    const onTypeChange = useCallback((e: { target: { value: SetStateAction<string>; }; }) => {
         setKind(e.target.value);
         let t = selectableTypes && Object.values(selectableTypes).find(a => a.name === e.target.value);
         if (t && t.icon) {

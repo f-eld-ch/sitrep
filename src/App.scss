@@ -3,11 +3,11 @@
 @import "~bulma/sass/utilities/initial-variables.sass";
 
 // Import the fonts
-@import url("assets/fira-code/fira-code.css");
-@import url("assets/open-sans/open-sans.css");
+@import url("assets/b612-mono/b612-mono.css");
+@import url("assets/b612/b612.css");
 // Update Bulma's global variables
-$family-sans-serif: 'Open Sans', sans-serif;
-$family-monospace: 'Fira Code', monospace;
+$family-sans-serif: 'B612', sans-serif;
+$family-monospace: 'B612 Mono', monospace;
 $weight-light: 100;
 $weight-normal: 300;
 $weight-medium: 500;
