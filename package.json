@@ -1,6 +1,6 @@
 {
   "name": "sitrep",
-  "version": "22.0.0",
+  "version": "24.1.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.8.10",
