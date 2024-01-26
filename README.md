@@ -19,7 +19,7 @@ A simple local development environment can be created using docker compose and t
 
 2. Create a .env.local file setting these variables:
 
-Oauth2_PROXY clients can be created using Auth0.
+Oauth2_PROXY clients can be created using Auth0....
 
 ```
 OAUTH2_PROXY_CLIENT_ID=...
@@ -44,4 +44,4 @@ docker compose --env-file .env.local up -d
 yarn start
 ```
 
-5. Open [localhost:4180](http://localhost:4180/) and not the default port 3000. Port 4180 is the OAUTH2 proxy which will then proxy requests towards the yarn started nodejs server which will then proxy /api/graphql towards the Hasura backend.
+5. Open [localhost:3000](http://localhost:3000/). This will automatically proxy to the OAUTH2 proxy which will then proxy requests towards the graphql-engine with its /v1/graphql

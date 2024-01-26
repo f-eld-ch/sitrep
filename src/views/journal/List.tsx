@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { useQuery } from "@apollo/client";
 import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
@@ -15,6 +15,7 @@ import MessageTable from "./Table";
 
 function List(props: {
   showControls: boolean;
+  autoScroll?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }) {
@@ -23,20 +24,31 @@ function List(props: {
   const [triageFilter, setTriageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
-
+  const { autoScroll = false } = props;
 
   const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
     pollInterval: 10000,
   });
 
-  if (error)
+  // on new messages scale to top
+  useEffect(() => {
+    if (autoScroll) {
+      window.scroll({
+        top: 0,
+        behavior: 'smooth'
+      })
+    }
+  }, [data?.messages, error, autoScroll]);
+
+  if (error) {
     return (
       <div className="notification is-danger is-light">
         <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
         <div className="block">{error.message}</div>
       </div>
     );
+  }
 
   if (loading) return <Spinner />;
   let divisions = data?.journalsByPk.incident.divisions.flat() || [];
@@ -49,6 +61,7 @@ function List(props: {
         (message) =>
           assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
       ) || [];
+
 
   return (
     <div>

@@ -129,6 +129,7 @@ function App() {
                       <Layout>
                         <JournalMessageList
                           showControls={false}
+                          autoScroll={true}
                         />
                       </Layout>
                     }
