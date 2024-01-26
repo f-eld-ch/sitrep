@@ -2,31 +2,71 @@
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
+import bearing from '@turf/bearing';
+import { point } from "@turf/helpers";
 import DefaultMaker from 'assets/marker.svg';
 import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
-import { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import hat from 'hat';
 import { isEqual, unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
+import { FullscreenControl, Layer, Map, MapRef, NavigationControl, ScaleControl, Source } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
+import FeatureDetail from './FeatureDetails';
 import './control-panel.css';
 import DrawControl from './controls/DrawControl';
 import ExportControl from './controls/ExportControl';
-import FeatureDetailControlPanel from './controls/FeatureDetailControl';
+import FeatureDetailControl from './controls/FeatureDetailControl';
 import StyleSwitcherControl from './controls/StyleSwitcherControl';
-import FeatureDetail from './FeatureDetails';
-import style from './style';
+import { drawStyle } from './style';
 
 const modes = {
     ...MapboxDraw.modes,
     // 'draw_point': BabsPointMode
 };
+
+const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometry, GeoJsonProperties>[] => {
+
+    if (f === undefined) {
+        return []
+    }
+
+    let features: Feature<Geometry, GeoJsonProperties>[] = [];
+
+    if (f.geometry.type === "LineString") {
+
+        if (f.properties?.iconEnd !== undefined && f.properties?.iconEnd !== "") {
+            // let startPoint = point(f.geometry.coordinates[0]);
+            // startPoint.id = f.id + ":end";
+            // startPoint.properties = {
+            //     parent: f.id,
+            //     icon: f.properties.icon,
+            //     iconRotation: bearing(point(f.geometry.coordinates[0]), point(f.geometry.coordinates[1])) + 90,
+            // }
+
+            if (f.geometry.coordinates?.length < 2) {
+                return features
+            }
+
+            let endPoint = point(f.geometry.coordinates.slice(-1)[0]);
+            endPoint.properties = {
+                parent: f.id,
+                icon: f.properties.iconEnd ?? f.properties.icon,
+                iconRotation: bearing(f.geometry.coordinates.slice(-1)[0], point(f.geometry.coordinates.slice(-2)[0])) + 90,
+            };
+            endPoint.id = f.id + ":end";
+            console.log(endPoint);
+            features.push(endPoint);
+        }
+    }
+
+    return features
+}
 
 
 function MapComponent() {
@@ -45,10 +85,11 @@ function MapComponent() {
 
     const { incidentId } = useParams();
     const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [], });
-    // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
+    const [enrichedFeatures, setEnrichedFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
 
 
-    const onCreate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    const onCreate = useCallback((e: any) => {
+        console.log("[onCreate]", e)
         setFeatures(curFeatureCollection => {
             console.log("[update]: current features created", e)
 
@@ -67,7 +108,9 @@ function MapComponent() {
         });
     }, [setFeatures]);
 
-    const onUpdate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    const onUpdate = useCallback((e: any) => {
+        console.log("[onUpdate]", e)
+
         setFeatures(curFeatureCollection => {
             // an update creates a deleted feature with the old properties and adds a new one with the new properties
             const newFeatureCollection = { ...curFeatureCollection };
@@ -83,15 +126,12 @@ function MapComponent() {
                     let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
                     // make sure the old element is not identical to the current
                     if (cur && isEqual(cur, f) && isEqual(cur?.properties, f?.properties)) {
-                        console.log("[update]: current ", cur)
-                        console.log("[update]: identical")
                         return;
                     }
 
                     // if we found the old one and it got changed, close it
                     if (cur && cur.properties) {
                         cur.properties['deletedAt'] = new Date();
-                        console.log("[update] storing deleted feature", cur)
                         modifiedFeatures.push(cur);
                     }
 
@@ -104,16 +144,15 @@ function MapComponent() {
                     modifiedFeatures.push(f);
                 }
             });
-            console.log("[update] modified features", modifiedFeatures)
-
             newFeatureCollection.features = [...curFeatureCollection.features, ...modifiedFeatures];
-            console.log("[update] resulting feature collection", newFeatureCollection)
 
             return newFeatureCollection;
         });
     }, [setFeatures]);
 
-    const onDelete = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    const onDelete = useCallback((e: any) => {
+        console.log("[onDelete]", e);
+
         setFeatures(curFeatureCollection => {
             console.log("[delete]: current features updated", e)
 
@@ -125,7 +164,7 @@ function MapComponent() {
                     let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
                     if (cur && cur.properties) {
                         cur.properties['deletedAt'] = new Date();
-                        newFeatureCollection.features.push(cur);
+                        newFeatureCollection.features.push(f);
                     }
                 }
             });
@@ -135,45 +174,55 @@ function MapComponent() {
         });
     }, [setFeatures]);
 
-    const onCombine = useCallback((e: { createdFeatures: Feature<Geometry, GeoJsonProperties>[]; deletedFeatures: Feature<Geometry, GeoJsonProperties>[]; }) => {
-        console.log("onCombine", e);
-        setFeatures(curFeatureCollection => {
-            const createdFeatures: Feature[] = e.createdFeatures;
-            const deletedFeatures: Feature[] = e.deletedFeatures;
-            deletedFeatures.forEach(f => { if (f.properties) { f.properties['deletedAt'] = Date.now() } })
-            createdFeatures.forEach(f => { if (f.properties) { f.properties['createdAt'] = Date.now() } })
+    // const onCombine = useCallback((e: { createdFeatures: Feature<Geometry, GeoJsonProperties>[]; deletedFeatures: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    //     console.log("onCombine", e);
+    //     setFeatures(curFeatureCollection => {
+    //         const createdFeatures: Feature[] = e.createdFeatures;
+    //         const deletedFeatures: Feature[] = e.deletedFeatures;
+    //         deletedFeatures.forEach(f => { if (f.properties) { f.properties['deletedAt'] = Date.now() } })
+    //         createdFeatures.forEach(f => { if (f.properties) { f.properties['createdAt'] = Date.now() } })
 
-            const newFeatureCollection = { ...curFeatureCollection };
+    //         const newFeatureCollection = { ...curFeatureCollection };
 
-            // newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
-            newFeatureCollection.features = unionBy(createdFeatures, newFeatureCollection.features, 'id');
-            return newFeatureCollection;
-        });
-    }, [setFeatures]);
+    //         // newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
+    //         newFeatureCollection.features = unionBy(createdFeatures, newFeatureCollection.features, 'id');
+    //         return newFeatureCollection;
+    //     });
+    // }, [setFeatures]);
 
 
     const onSelectionChange = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+        console.log("[onSelectionChange]", e)
         const features: Feature[] = e.features;
-        if (features.length === 1) {
-            setSelectedFeature(features[0].id);
+        if (features.length >= 1) {
+            const feature = features[0];
+            // always work on the parent feature
+            if (feature.properties?.parent) {
+                setSelectedFeature(feature.properties.parent);
+                draw?.changeMode('simple_select', { featureIds: [feature.properties.parent] })
+                return
+            }
+            setSelectedFeature(feature.id);
         }
         else {
             setSelectedFeature(undefined);
         }
-    }, [setSelectedFeature]);
+    }, [setSelectedFeature, draw]);
 
     useEffect(() => {
         if (!mapRef || !isMapLoaded || !draw || !features || isEmpty(features.features)) {
             return;
         }
-
-        console.log("current features", features)
         let filteredFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
+
         filteredFC.features = Object.assign([], features.features.filter(f => f.properties?.deletedAt === undefined))
-        console.log("applied features", filteredFC)
+
+        let enrichedFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
+        enrichedFC.features = Object.assign([], features.features.filter(f => f.properties?.deletedAt === undefined).filter(f => f.id !== selectedFeature).flatMap(f => enrichFeature(f)))
+        setEnrichedFeatures(enrichedFC)
 
         draw.set(filteredFC);
-    }, [draw, mapRef, features, isMapLoaded]);
+    }, [draw, mapRef, features, isMapLoaded, selectedFeature, setEnrichedFeatures]);
 
     const onMapLoad = useCallback(() => {
         // Add the default marker
@@ -221,18 +270,28 @@ function MapComponent() {
                     {/* <Source id="wms-geo" type="raster" tiles={[`https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=ch.bfs.gebaeude_wohnungs_register&LANG=de&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&STYLES=&BBOX={bbox-epsg-3857}`]} tileSize={256} >
                         <Layer type='raster' />
                     </Source> */}
+                    <Source id="enriched" type="geojson" data={enrichedFeatures} >
+                        <Layer type="symbol" layout={{
+                            'icon-image': ['coalesce', ["get", "icon"], 'default_marker'],
+                            'icon-allow-overlap': true,
+                            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
+                            'icon-rotation-alignment': 'map',
+                            'icon-pitch-alignment': 'map',
+                            'icon-rotate': ['coalesce', ["get", "iconRotation"], 0]
+                        }} />
+                    </Source>
                     <DrawControl
                         position="top-right"
                         setDraw={setDraw}
                         displayControlsDefault={false}
-                        styles={style}
+                        styles={drawStyle}
                         controls={{
                             polygon: true,
                             trash: true,
                             point: true,
                             line_string: true,
-                            combine_features: true,
-                            uncombine_features: true,
+                            combine_features: false,
+                            uncombine_features: false,
                         }}
                         boxSelect={false}
                         clickBuffer={10}
@@ -241,7 +300,7 @@ function MapComponent() {
                         onCreate={onCreate}
                         onUpdate={onUpdate}
                         onDelete={onDelete}
-                        onCombine={onCombine}
+                        // onCombine={onCombine}
                         onSelectionChange={onSelectionChange}
                         userProperties={true}
                     />
@@ -257,9 +316,9 @@ function MapComponent() {
                     ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />
                     <ScaleControl unit={"metric"} position={'bottom-left'} />
                     <ExportControl />
-                    <FeatureDetailControlPanel feature={features.features.filter(f => f.id === selectedFeature).shift()}>
+                    <FeatureDetailControl feature={features.features.filter(f => f.id === selectedFeature).shift()}>
                         <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
-                    </FeatureDetailControlPanel>
+                    </FeatureDetailControl>
                 </Map>
             </div>
         </>

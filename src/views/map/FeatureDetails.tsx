@@ -22,6 +22,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
     const [iconRotation, setIconRotation] = useState<number | undefined>(feature && feature.properties && (feature.properties.iconRotation));
     const [name, setName] = useState<string>((feature && feature.properties && feature.properties.name));
     const [icon, setIcon] = useState<string>((feature && feature.properties && feature.properties.icon));
+    const [iconEnd, setIconEnd] = useState<string | undefined>((feature && feature.properties && feature.properties.iconEnd));
     const [color, setColor] = useState<string>((feature && feature.properties && feature.properties.color));
     const [kind, setKind] = useState<string>((feature && feature.properties && ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") ? feature.properties.lineType : feature.properties.zoneType)));
 
@@ -44,6 +45,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
         if (feature !== undefined) {
             let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
                 "icon": icon,
+                "iconEnd": iconEnd,
                 "color": color,
                 "name": name,
                 "lineType": feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString" ? kind : undefined,
@@ -55,7 +57,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
             onUpdate({ features: [feature], action: "featureDetail" });
         }
         return () => onUpdate({ features: [feature] });
-    }, [onUpdate, feature, name, iconRotation, color, icon, kind]);
+    }, [onUpdate, feature, name, iconRotation, iconEnd, color, icon, kind]);
 
     let selectableTypes: typeof LineTypes | typeof ZoneTypes | undefined = undefined;
 
@@ -75,11 +77,17 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
         else {
             setIcon("");
         }
+        if (t && t.iconEnd) {
+            setIconEnd(t.iconEnd.name);
+        }
+        else {
+            setIconEnd(undefined);
+        }
     }, [setIcon, selectableTypes])
 
     return (
         <div>
-            <h3 className='title is-size-5'>Eigenschaften</h3>
+            < h3 className='title is-size-5' > Eigenschaften</h3 >
             {feature && feature.geometry.type === "Point" ?
                 <div className="field is-horizontal">
                     <div className="field-label is-normal">
@@ -163,6 +171,7 @@ interface TypesType {
     description: string;
     color?: string;
     icon?: BabsIcon;
+    iconEnd?: BabsIcon;
 }
 
 interface SelectableTypes { [key: string]: TypesType }
@@ -190,13 +199,13 @@ const LineTypes: SelectableTypes = {
         name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red, icon: undefined,
     },
     "begehbar": {
-        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: Schaeden.Beschaedigung,
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: Schaeden.Beschaedigung, iconEnd: Schaeden.Beschaedigung,
     },
     "schwerBegehbar": {
-        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: Schaeden.Teilzerstoerung,
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: Schaeden.Teilzerstoerung, iconEnd: Schaeden.Teilzerstoerung,
     },
     "unpassierbar": {
-        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: Schaeden.Totalzerstoerung,
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: Schaeden.Totalzerstoerung, iconEnd: Schaeden.Totalzerstoerung,
     },
     "beabsichtigteErkundung": {
         name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
