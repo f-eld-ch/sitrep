@@ -1,6 +1,6 @@
 import bearing from "@turf/bearing";
 import { LineString, point } from "@turf/helpers";
-import { BabsIcon, IconGroups, Others, Schaeden } from "components/BabsIcons";
+import { BabsIcon, IconGroups, } from "components/BabsIcons";
 import { Feature, GeoJsonProperties } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
 import { SetStateAction, memo, useCallback, useEffect, useState } from "react";
@@ -22,7 +22,6 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
     const [iconRotation, setIconRotation] = useState<number | undefined>(feature && feature.properties && (feature.properties.iconRotation));
     const [name, setName] = useState<string>((feature && feature.properties && feature.properties.name));
     const [icon, setIcon] = useState<string>((feature && feature.properties && feature.properties.icon));
-    const [iconEnd, setIconEnd] = useState<string | undefined>((feature && feature.properties && feature.properties.iconEnd));
     const [color, setColor] = useState<string>((feature && feature.properties && feature.properties.color));
     const [kind, setKind] = useState<string>((feature && feature.properties && ((feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") ? feature.properties.lineType : feature.properties.zoneType)));
 
@@ -45,7 +44,6 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
         if (feature !== undefined) {
             let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
                 "icon": icon,
-                "iconEnd": iconEnd,
                 "color": color,
                 "name": name,
                 "lineType": feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString" ? kind : undefined,
@@ -57,7 +55,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
             onUpdate({ features: [feature], action: "featureDetail" });
         }
         return () => onUpdate({ features: [feature] });
-    }, [onUpdate, feature, name, iconRotation, iconEnd, color, icon, kind]);
+    }, [onUpdate, feature, name, iconRotation, color, icon, kind]);
 
     let selectableTypes: typeof LineTypes | typeof ZoneTypes | undefined = undefined;
 
@@ -76,12 +74,6 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
         }
         else {
             setIcon("");
-        }
-        if (t && t.iconEnd) {
-            setIconEnd(t.iconEnd.name);
-        }
-        else {
-            setIconEnd(undefined);
         }
     }, [setIcon, selectableTypes])
 
@@ -171,7 +163,6 @@ interface TypesType {
     description: string;
     color?: string;
     icon?: BabsIcon;
-    iconEnd?: BabsIcon;
 }
 
 interface SelectableTypes { [key: string]: TypesType }
@@ -193,40 +184,40 @@ const ZoneTypes: SelectableTypes = {
 
 const LineTypes: SelectableTypes = {
     "Rutschgebiet": {
-        name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red, icon: undefined,
+        name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red,
     },
     "RutschgebietGespiegelt": {
-        name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red, icon: undefined,
+        name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red,
     },
     "begehbar": {
-        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: Schaeden.Beschaedigung, iconEnd: Schaeden.Beschaedigung,
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red,
     },
     "schwerBegehbar": {
-        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: Schaeden.Teilzerstoerung, iconEnd: Schaeden.Teilzerstoerung,
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red,
     },
     "unpassierbar": {
-        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: Schaeden.Totalzerstoerung, iconEnd: Schaeden.Totalzerstoerung,
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red,
     },
     "beabsichtigteErkundung": {
-        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue,
     },
     "durchgeführteErkundung": {
-        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue,
     },
     "beabsichtigteVerschiebung": {
-        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue,
     },
     "rettungsAchse": {
-        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue,
     },
     "durchgeführteVerschiebung": {
-        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue,
     },
     "beabsichtigterEinsatz": {
-        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
+        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue,
     },
     "durchgeführterEinsatz": {
-        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
+        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue,
     },
 };
 
