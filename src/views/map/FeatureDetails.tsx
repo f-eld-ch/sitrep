@@ -1,6 +1,6 @@
 import bearing from "@turf/bearing";
 import { LineString, point } from "@turf/helpers";
-import { BabsIcon, IconGroups, Others, Schaeden } from "components/BabsIcons";
+import { BabsIcon, IconGroups, } from "components/BabsIcons";
 import { Feature, GeoJsonProperties } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
 import { SetStateAction, memo, useCallback, useEffect, useState } from "react";
@@ -79,7 +79,7 @@ function FeatureDetail(props: { onUpdate: (e: any) => void, feature: Feature | u
 
     return (
         <div>
-            <h3 className='title is-size-5'>Eigenschaften</h3>
+            < h3 className='title is-size-5' > Eigenschaften</h3 >
             {feature && feature.geometry.type === "Point" ?
                 <div className="field is-horizontal">
                     <div className="field-label is-normal">
@@ -184,40 +184,40 @@ const ZoneTypes: SelectableTypes = {
 
 const LineTypes: SelectableTypes = {
     "Rutschgebiet": {
-        name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red, icon: undefined,
+        name: "Rutschgebiet", description: "Rutschgebiet", color: Colors.Red,
     },
     "RutschgebietGespiegelt": {
-        name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red, icon: undefined,
+        name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", color: Colors.Red,
     },
     "begehbar": {
-        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red, icon: Schaeden.Beschaedigung,
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", color: Colors.Red,
     },
     "schwerBegehbar": {
-        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red, icon: Schaeden.Teilzerstoerung,
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", color: Colors.Red,
     },
     "unpassierbar": {
-        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red, icon: Schaeden.Totalzerstoerung,
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", color: Colors.Red,
     },
     "beabsichtigteErkundung": {
-        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue,
     },
     "durchgeführteErkundung": {
-        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue,
     },
     "beabsichtigteVerschiebung": {
-        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue,
     },
     "rettungsAchse": {
-        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue,
     },
     "durchgeführteVerschiebung": {
-        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: Others.Verschiebung,
+        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue,
     },
     "beabsichtigterEinsatz": {
-        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
+        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue,
     },
     "durchgeführterEinsatz": {
-        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: Others.Einsatz,
+        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue,
     },
 };
 

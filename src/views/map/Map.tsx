@@ -4,7 +4,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 import DefaultMaker from 'assets/marker.svg';
 import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
-import { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import hat from 'hat';
 import { isEqual, unionBy } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
@@ -15,13 +15,14 @@ import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 
 import { useParams } from 'react-router-dom';
 import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
+import FeatureDetail from './FeatureDetails';
 import './control-panel.css';
 import DrawControl from './controls/DrawControl';
 import ExportControl from './controls/ExportControl';
-import FeatureDetailControlPanel from './controls/FeatureDetailControl';
+import FeatureDetailControl from './controls/FeatureDetailControl';
 import StyleSwitcherControl from './controls/StyleSwitcherControl';
-import FeatureDetail from './FeatureDetails';
-import style from './style';
+import { drawStyle } from './style';
+import EnrichedLayerFeatures from 'components/map/EnrichedLayerFeatures';
 
 const modes = {
     ...MapboxDraw.modes,
@@ -45,13 +46,9 @@ function MapComponent() {
 
     const { incidentId } = useParams();
     const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [], });
-    // const [features, setFeatures] = useState<FeatureCollection>({ "type": "FeatureCollection", "features": [] });
 
-
-    const onCreate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    const onCreate = useCallback((e: any) => {
         setFeatures(curFeatureCollection => {
-            console.log("[update]: current features created", e)
-
             const newFeatureCollection = { ...curFeatureCollection };
             const createdFeatures: Feature[] = e.features;
             createdFeatures.forEach(f => {
@@ -60,14 +57,14 @@ function MapComponent() {
                     newFeatureCollection.features.push(f);
                 }
             })
-
-            console.log("Creating feature", createdFeatures)
             newFeatureCollection.features = unionBy(newFeatureCollection.features, curFeatureCollection.features, 'id');
             return newFeatureCollection;
         });
     }, [setFeatures]);
 
-    const onUpdate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+    const onUpdate = useCallback((e: any) => {
+        console.log("[onUpdate]", e)
+
         setFeatures(curFeatureCollection => {
             // an update creates a deleted feature with the old properties and adds a new one with the new properties
             const newFeatureCollection = { ...curFeatureCollection };
@@ -76,22 +73,18 @@ function MapComponent() {
             const updatedFeatures: Feature[] = e.features;
             const modifiedFeatures: Feature[] = [];
             updatedFeatures.forEach(f => {
-                console.log("[update]: current features updated", e)
                 if (f.properties) {
 
                     // fetch the old element
                     let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
                     // make sure the old element is not identical to the current
                     if (cur && isEqual(cur, f) && isEqual(cur?.properties, f?.properties)) {
-                        console.log("[update]: current ", cur)
-                        console.log("[update]: identical")
                         return;
                     }
 
                     // if we found the old one and it got changed, close it
                     if (cur && cur.properties) {
                         cur.properties['deletedAt'] = new Date();
-                        console.log("[update] storing deleted feature", cur)
                         modifiedFeatures.push(cur);
                     }
 
@@ -99,24 +92,20 @@ function MapComponent() {
                     f.id = hat();
                     f.properties['createdAt'] = new Date();
                     f.properties['achestorID'] = cur?.id;
-                    console.log("[update] storing added feature", f)
-
                     modifiedFeatures.push(f);
                 }
             });
-            console.log("[update] modified features", modifiedFeatures)
-
             newFeatureCollection.features = [...curFeatureCollection.features, ...modifiedFeatures];
-            console.log("[update] resulting feature collection", newFeatureCollection)
 
             return newFeatureCollection;
         });
+
     }, [setFeatures]);
 
-    const onDelete = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
-        setFeatures(curFeatureCollection => {
-            console.log("[delete]: current features updated", e)
+    const onDelete = useCallback((e: any) => {
+        console.log("[onDelete]", e);
 
+        setFeatures(curFeatureCollection => {
             const newFeatureCollection = { ...curFeatureCollection };
             const deletedFeatures: Feature[] = e.features;
             deletedFeatures.forEach(f => {
@@ -125,7 +114,7 @@ function MapComponent() {
                     let cur: Feature | undefined = curFeatureCollection.features.find(c => c.id === f.id)
                     if (cur && cur.properties) {
                         cur.properties['deletedAt'] = new Date();
-                        newFeatureCollection.features.push(cur);
+                        newFeatureCollection.features.push(f);
                     }
                 }
             });
@@ -133,47 +122,38 @@ function MapComponent() {
 
             return newFeatureCollection;
         });
-    }, [setFeatures]);
+        setSelectedFeature(undefined);
 
-    const onCombine = useCallback((e: { createdFeatures: Feature<Geometry, GeoJsonProperties>[]; deletedFeatures: Feature<Geometry, GeoJsonProperties>[]; }) => {
-        console.log("onCombine", e);
-        setFeatures(curFeatureCollection => {
-            const createdFeatures: Feature[] = e.createdFeatures;
-            const deletedFeatures: Feature[] = e.deletedFeatures;
-            deletedFeatures.forEach(f => { if (f.properties) { f.properties['deletedAt'] = Date.now() } })
-            createdFeatures.forEach(f => { if (f.properties) { f.properties['createdAt'] = Date.now() } })
-
-            const newFeatureCollection = { ...curFeatureCollection };
-
-            // newFeatureCollection.features = pullAllBy(curFeatureCollection.features, deletedFeatures, 'id');
-            newFeatureCollection.features = unionBy(createdFeatures, newFeatureCollection.features, 'id');
-            return newFeatureCollection;
-        });
-    }, [setFeatures]);
-
+    }, [setFeatures, setSelectedFeature]);
 
     const onSelectionChange = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
+        console.log("[onSelectionChange]", e)
         const features: Feature[] = e.features;
-        if (features.length === 1) {
-            setSelectedFeature(features[0].id);
+        if (features.length >= 1) {
+            const feature = features[0];
+            // always work on the parent feature
+            if (feature.properties?.parent) {
+                setSelectedFeature(feature.properties.parent);
+                draw?.changeMode('simple_select', { featureIds: [feature.properties.parent] })
+                return
+            }
+            setSelectedFeature(feature.id);
         }
         else {
             setSelectedFeature(undefined);
         }
-    }, [setSelectedFeature]);
+    }, [setSelectedFeature, draw]);
 
     useEffect(() => {
         if (!mapRef || !isMapLoaded || !draw || !features || isEmpty(features.features)) {
             return;
         }
-
-        console.log("current features", features)
         let filteredFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
+
         filteredFC.features = Object.assign([], features.features.filter(f => f.properties?.deletedAt === undefined))
-        console.log("applied features", filteredFC)
 
         draw.set(filteredFC);
-    }, [draw, mapRef, features, isMapLoaded]);
+    }, [draw, mapRef, features, isMapLoaded, selectedFeature]);
 
     const onMapLoad = useCallback(() => {
         // Add the default marker
@@ -225,14 +205,14 @@ function MapComponent() {
                         position="top-right"
                         setDraw={setDraw}
                         displayControlsDefault={false}
-                        styles={style}
+                        styles={drawStyle}
                         controls={{
                             polygon: true,
                             trash: true,
                             point: true,
                             line_string: true,
-                            combine_features: true,
-                            uncombine_features: true,
+                            combine_features: false,
+                            uncombine_features: false,
                         }}
                         boxSelect={false}
                         clickBuffer={10}
@@ -241,10 +221,12 @@ function MapComponent() {
                         onCreate={onCreate}
                         onUpdate={onUpdate}
                         onDelete={onDelete}
-                        onCombine={onCombine}
+                        // onCombine={onCombine}
                         onSelectionChange={onSelectionChange}
                         userProperties={true}
                     />
+                    <EnrichedLayerFeatures featureCollection={features} selectedFeature={selectedFeature} />
+
                     <StyleSwitcherControl position={'bottom-right'} styles={[
                         {
                             title: "Basiskarte",
@@ -257,9 +239,9 @@ function MapComponent() {
                     ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />
                     <ScaleControl unit={"metric"} position={'bottom-left'} />
                     <ExportControl />
-                    <FeatureDetailControlPanel feature={features.features.filter(f => f.id === selectedFeature).shift()}>
+                    <FeatureDetailControl feature={features.features.filter(f => f.id === selectedFeature).shift()}>
                         <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
-                    </FeatureDetailControlPanel>
+                    </FeatureDetailControl>
                 </Map>
             </div>
         </>
