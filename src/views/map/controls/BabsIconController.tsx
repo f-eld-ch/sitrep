@@ -38,13 +38,13 @@ function IconController(props: BabsIconControllerProps) {
 
     return (
         <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ width: "80%", marginTop: "130px", }}>
-            {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
+            {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} name={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
         </div >
     );
 }
 
 function IconGroupMenu(props: GroupMenuProps) {
-    const { iconGroup, onUpdate, feature } = props;
+    const { iconGroup, onUpdate, feature, name } = props;
 
     const lastIcon = Object.values(iconGroup).pop();
     const [active, setActive] = useState<boolean>(false);
@@ -76,7 +76,7 @@ function IconGroupMenu(props: GroupMenuProps) {
     }
     return (
         <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ marginTop: '10px', marginBottom: '0px', flexFlow: "column wrap" }} >
-            <button key={lastIcon.name} title={lastIcon.description} onClick={() => setActive(!active)}><img src={lastIcon.src} alt={icon.name} /></button>
+            <button key={lastIcon.name} title={name} onClick={() => setActive(!active)}><img src={lastIcon.src} alt={icon.name} /></button>
         </ div>
     )
 }
@@ -234,6 +234,7 @@ const memoLineController = memo(LineController);
 const memoZoneController = memo(ZoneController);
 
 interface GroupMenuProps {
+    name: string
     iconGroup: BabsIconType
     feature: Feature<Geometry, GeoJsonProperties>
     onUpdate: (e: any) => void
