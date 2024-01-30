@@ -74,7 +74,7 @@ function IconController(props: BabsIconControllerProps) {
         <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
             {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} name={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
-                <button type="button" className='maplibregl-ctrl-icon' title="Rotation fixieren" onClick={() => { onRotateClick(!rotationLock) }}>
+                <button type="button" className='maplibregl-ctrl-icon' title={rotationLock ? "Fixierte Signatur lösen" : "Signatur fixieren"} onClick={() => { onRotateClick(!rotationLock) }}>
                     {rotationLock ? <FontAwesomeIcon icon={faLock} size="lg" /> : <FontAwesomeIcon icon={faLockOpen} size="lg" />}
 
                 </button>

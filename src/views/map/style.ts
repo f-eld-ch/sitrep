@@ -193,43 +193,6 @@ export const drawStyle = [
         }
     },
     {
-        'id': 'gl-draw-line-symbol',
-        'type': 'symbol',
-        'filter': ['all',
-            ['==', 'active', 'false'],
-            ['==', '$type', 'LineString'],
-            ['==', 'meta', 'feature'],
-            ['has', 'user_icon'],
-            ['!has', 'user_iconRotation'],
-            ['!=', 'mode', 'static']
-        ],
-        'layout': {
-            'icon-image': ["get", "user_icon"],
-            'icon-allow-overlap': true,
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
-        }
-    },
-    {
-        'id': 'gl-draw-line-symbol-active',
-        'type': 'symbol',
-        'filter': ['all',
-            ['==', 'active', 'false'],
-            ['==', '$type', 'LineString'],
-            ['==', 'meta', 'feature'],
-            ['has', 'user_iconRotation'],
-            ['has', 'user_icon'],
-            ['!=', 'mode', 'static']
-        ],
-        'layout': {
-            'icon-image': ["get", "user_icon"],
-            'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
-            'icon-allow-overlap': true,
-            'icon-rotation-alignment': 'map',
-            'icon-pitch-alignment': 'map',
-            'icon-rotate': ['coalesce', ["get", "user_iconRotation"], 0],
-        }
-    },
-    {
         'id': 'gl-draw-line-active',
         'type': 'line',
         'filter': ['all',
@@ -278,7 +241,6 @@ export const drawStyle = [
         'filter': ['all',
             ['==', '$type', 'Point'],
             ['==', 'meta', 'feature'],
-            ['==', 'active', 'false'],
             ['has', 'user_icon'],
             ['!has', 'user_iconRotation'],
         ],
@@ -295,7 +257,6 @@ export const drawStyle = [
         'filter': ['all',
             ['==', '$type', 'Point'],
             ['==', 'meta', 'feature'],
-            ['==', 'active', 'false'],
             ['has', 'user_icon'],
             ['has', 'user_iconRotation'],
         ],
