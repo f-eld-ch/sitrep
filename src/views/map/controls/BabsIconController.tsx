@@ -1,7 +1,8 @@
 import { icon } from "@fortawesome/fontawesome-svg-core";
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faHeading } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { BabsIcon, BabsIconType, IconGroups, LineTypesEinsatz, LineTypesSchaeden, ZonePatterns } from "components/BabsIcons";
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
@@ -270,6 +271,7 @@ function BabsIconController(props: BabsIconControllerProps) {
 function FeatureDetailControlPanel(props: BabsIconControllerProps) {
     const { selectedFeature, onUpdate } = props;
     const [enteredText, setEnteredText] = useState<string>(selectedFeature?.properties?.name);
+    const [active, setActive] = useState<boolean>(false);
 
     const onInput = useCallback((name: string) => {
         if (selectedFeature !== undefined) {
@@ -280,16 +282,20 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
             onUpdate({ features: [selectedFeature], action: "featureDetail" });
         }
 
-    }, [onUpdate, selectedFeature])
+        setEnteredText("");
+        setActive(!active);
+
+    }, [onUpdate, selectedFeature, setActive, active])
 
     useEffect(() => {
         if (selectedFeature === undefined) {
             setEnteredText("")
+            setActive(false)
             return
         }
 
         setEnteredText(selectedFeature.properties?.name || "")
-    }, [selectedFeature, setEnteredText])
+    }, [selectedFeature, setEnteredText, setActive])
 
     if (selectedFeature === undefined) {
         return null;
@@ -298,6 +304,30 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
     // no labels for line strings
     if (selectedFeature.geometry.type === 'LineString' || selectedFeature.geometry.type === 'MultiLineString') {
         return <></>
+    }
+
+
+    const btnClass = classNames({
+        'maplibregl-ctrl-icon': true,
+        'active': active,
+        'is-hidden': active,
+    });
+
+    const switcherClass = classNames({
+        'maplibregl-style-list': true,
+        'maplibregl-ctrl-icon': true,
+        'is-hidden': !active,
+    })
+
+
+    if (!active) {
+        return (
+            <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ marginRight: "45px" }}>
+                <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
+                    <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faHeading} size="lg" /></button>
+                </div>
+            </div >
+        )
     }
 
     return (
@@ -310,7 +340,6 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
                 }} value={enteredText} onKeyDown={(e) => {
                     if (e.key === "Enter") {
                         onInput(enteredText);
-                        setEnteredText("");
                     }
                 }} />
                 <span className="icon is-small is-left">
