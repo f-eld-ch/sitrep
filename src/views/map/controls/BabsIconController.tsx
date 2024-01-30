@@ -1,12 +1,13 @@
 import { icon } from "@fortawesome/fontawesome-svg-core";
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faArrowsRotate, faHeading } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { BabsIcon, BabsIconType, IconGroups, LineTypesEinsatz, LineTypesSchaeden, ZonePatterns } from "components/BabsIcons";
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useEffect, useState } from "react";
+import { useMap } from "react-map-gl";
 import "./BabsIconController.scss";
 
 const iconControllerFlexboxStyleRow = {
@@ -25,6 +26,37 @@ const iconControllerStyle = {
 
 function IconController(props: BabsIconControllerProps) {
     const { selectedFeature, onUpdate } = props;
+    const { current: map } = useMap();
+    const [rotationLock, setRotationLock] = useState<boolean>(!isUndefined(selectedFeature?.properties?.iconRotation));
+
+    const onRotateClick = useCallback((rotationLock: boolean) => {
+        if (selectedFeature === undefined) {
+            return
+        }
+
+        if (map === undefined) {
+            return
+        }
+
+        let properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+            "iconRotation": rotationLock ? map.getBearing() : undefined
+        });
+
+        selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
+
+        onUpdate({ features: [selectedFeature], action: "featureDetail" });
+
+    }, [onUpdate, selectedFeature, map])
+
+
+    useEffect(() => {
+        if (selectedFeature === undefined) {
+            setRotationLock(false)
+            return
+        }
+
+        setRotationLock(selectedFeature.properties?.iconRotation !== undefined)
+    }, [selectedFeature, setRotationLock])
 
     if (selectedFeature === undefined) {
         return <></>
@@ -34,9 +66,19 @@ function IconController(props: BabsIconControllerProps) {
         return <></>
     }
 
+    if (map === undefined) {
+        return <></>
+    }
+
     return (
         <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
             {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} name={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
+            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
+                <button type="button" className='maplibregl-ctrl-icon' title="Rotation fixieren" onClick={() => { onRotateClick(!rotationLock) }}>
+                    {rotationLock ? <FontAwesomeIcon icon={faLock} size="lg" /> : <FontAwesomeIcon icon={faLockOpen} size="lg" />}
+
+                </button>
+            </div>
         </div >
     );
 }
@@ -130,7 +172,6 @@ function LineController(props: BabsIconControllerProps) {
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
                 <button type="button" className='maplibregl-ctrl-icon' title="Richtung drehen" onClick={() => onRotateClick()}><FontAwesomeIcon icon={faArrowsRotate} size="lg" /></button>
             </div>
-
         </div >
     );
 }
@@ -306,19 +347,11 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
         return <></>
     }
 
-
     const btnClass = classNames({
         'maplibregl-ctrl-icon': true,
         'active': active,
         'is-hidden': active,
     });
-
-    const switcherClass = classNames({
-        'maplibregl-style-list': true,
-        'maplibregl-ctrl-icon': true,
-        'is-hidden': !active,
-    })
-
 
     if (!active) {
         return (

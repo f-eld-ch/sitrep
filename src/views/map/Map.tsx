@@ -12,7 +12,7 @@ import { isEqual, unionBy } from 'lodash';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapRef, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
+import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 import Notification from 'utils/Notification';
 import useLocalStorage from 'utils/useLocalStorage';
@@ -186,51 +186,52 @@ function MapComponent() {
                 <p>Das Lagebild wird nicht mit dem Server synchronisiert, aber lokal gespeichert.</p>
             </Notification>
             <div className='mapbox container-flex'>
-                <Map
-                    ref={mapRef}
-                    mapLib={maplibregl}
-                    onLoad={onMapLoad}
-                    attributionControl={true}
-                    minZoom={8}
-                    maxZoom={19}
-                    {...viewState}
-                    onMove={e => setViewState(e.viewState)}
-                    mapStyle={mapStyle.uri}
-                >
-                    <FullscreenControl position={'top-left'} />
-                    <NavigationControl position={'top-left'} visualizePitch={true} />
-                    {/* <Source id="wms-geo" type="raster" tiles={[`https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=ch.bfs.gebaeude_wohnungs_register&LANG=de&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&STYLES=&BBOX={bbox-epsg-3857}`]} tileSize={256} >
+                <MapProvider>
+                    <Map
+                        ref={mapRef}
+                        mapLib={maplibregl}
+                        onLoad={onMapLoad}
+                        attributionControl={true}
+                        minZoom={8}
+                        maxZoom={19}
+                        {...viewState}
+                        onMove={e => setViewState(e.viewState)}
+                        mapStyle={mapStyle.uri}
+                    >
+                        <FullscreenControl position={'top-left'} />
+                        <NavigationControl position={'top-left'} visualizePitch={true} />
+                        {/* <Source id="wms-geo" type="raster" tiles={[`https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=ch.bfs.gebaeude_wohnungs_register&LANG=de&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&STYLES=&BBOX={bbox-epsg-3857}`]} tileSize={256} >
                         <Layer type='raster' />
                     </Source> */}
-                    <DrawControl
-                        position="top-right"
-                        setDraw={setDraw}
-                        displayControlsDefault={false}
-                        styles={drawStyle}
-                        controls={{
-                            polygon: true,
-                            trash: true,
-                            point: true,
-                            line_string: true,
-                            combine_features: false,
-                            uncombine_features: false,
-                        }}
-                        boxSelect={false}
-                        clickBuffer={10}
-                        defaultMode="simple_select"
-                        modes={modes}
-                        onCreate={onCreate}
-                        onUpdate={onUpdate}
-                        onDelete={onDelete}
-                        // onCombine={onCombine}
-                        onSelectionChange={onSelectionChange}
-                        userProperties={true}
-                    />
-                    {/* <LayerControl /> */}
-                    <BabsIconController selectedFeature={features.features.filter(f => f.id === selectedFeature).shift()} onUpdate={onUpdate} />
-                    <EnrichedLayerFeatures featureCollection={features} selectedFeature={selectedFeature} />
+                        <DrawControl
+                            position="top-right"
+                            setDraw={setDraw}
+                            displayControlsDefault={false}
+                            styles={drawStyle}
+                            controls={{
+                                polygon: true,
+                                trash: true,
+                                point: true,
+                                line_string: true,
+                                combine_features: false,
+                                uncombine_features: false,
+                            }}
+                            boxSelect={false}
+                            clickBuffer={10}
+                            defaultMode="simple_select"
+                            modes={modes}
+                            onCreate={onCreate}
+                            onUpdate={onUpdate}
+                            onDelete={onDelete}
+                            // onCombine={onCombine}
+                            onSelectionChange={onSelectionChange}
+                            userProperties={true}
+                        />
+                        {/* <LayerControl /> */}
+                        <BabsIconController selectedFeature={features.features.filter(f => f.id === selectedFeature).shift()} onUpdate={onUpdate} />
+                        <EnrichedLayerFeatures featureCollection={features} selectedFeature={selectedFeature} />
 
-                    {/* <StyleSwitcherControl position={'bottom-right'} styles={[
+                        {/* <StyleSwitcherControl position={'bottom-right'} styles={[
                         {
                             title: "Basiskarte",
                             uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
@@ -240,13 +241,14 @@ function MapComponent() {
                             uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
                         },
                     ]} options={{ eventListeners: { onChange: () => { onMapLoad(); return true } } }} />*/}
-                    <StyleController />
-                    <ScaleControl unit={"metric"} position={'bottom-left'} />
-                    <ExportControl />
-                    {/* <FeatureDetailControl feature={features.features.filter(f => f.id === selectedFeature).shift()}>
+                        <StyleController />
+                        <ScaleControl unit={"metric"} position={'bottom-left'} />
+                        <ExportControl />
+                        {/* <FeatureDetailControl feature={features.features.filter(f => f.id === selectedFeature).shift()}>
                         <FeatureDetail onUpdate={onUpdate} feature={features.features.filter(f => f.id === selectedFeature).shift()} />
                     </FeatureDetailControl> */}
-                </Map>
+                    </Map>
+                </MapProvider>
             </div>
         </>
     );
