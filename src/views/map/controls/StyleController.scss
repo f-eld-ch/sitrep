@@ -34,3 +34,12 @@
         width: 100%;
     }
 }
+
+
+.mapboxgl-ctrl-group,
+.maplibregl-ctrl-group {
+    button {
+        width: 35px;
+        height: 35px;
+    }
+}
