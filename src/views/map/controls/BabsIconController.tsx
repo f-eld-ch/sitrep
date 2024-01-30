@@ -1,28 +1,25 @@
-import { makeVar } from "@apollo/client";
 import { icon } from "@fortawesome/fontawesome-svg-core";
-import { BabsIcon, BabsIconType, IconGroups, LinePatterns, ZonePatterns } from "components/BabsIcons";
+import { faFileText } from "@fortawesome/free-regular-svg-icons";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { BabsIcon, BabsIconType, IconGroups, LineTypesEinsatz, LineTypesSchaeden, ZonePatterns } from "components/BabsIcons";
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isEmpty, isUndefined, omitBy } from "lodash";
-import { memo, useCallback, useState } from "react";
-import "./StyleController.scss";
+import { memo, useCallback, useEffect, useState } from "react";
+import "./BabsIconController.scss";
 
-const MapStyles: MapStyle[] = [
-    {
-        name: "Basiskarte",
-        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
-    },
-    {
-        name: "Satellit",
-        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
-    },
-]
+const iconControllerFlexboxStyleRow = {
+    display: "flex", flexFlow: "row wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline',
+}
 
-export const selectedStyle = makeVar<MapStyle>(MapStyles[0]);
+const iconControllerFlexboxStyleColumn = {
+    display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline',
+}
 
 
-type MapStyle = {
-    name: string,
-    uri: string,
+const iconControllerStyle = {
+    width: "80%",
+    marginTop: "160px",
 }
 
 function IconController(props: BabsIconControllerProps) {
@@ -37,7 +34,7 @@ function IconController(props: BabsIconControllerProps) {
     }
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ width: "80%", marginTop: "130px", }}>
+        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
             {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} name={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
         </div >
     );
@@ -65,7 +62,7 @@ function IconGroupMenu(props: GroupMenuProps) {
 
     if (active || lastIcon === undefined) {
         return (
-            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "row wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline' }}>
+            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
                 {Object.values(iconGroup).map(
                     (icon) => (
                         <button key={icon.name} title={icon.description} onClick={() => onClickIcon(icon)} ><img src={icon.src} alt={icon.name} /></button>
@@ -75,7 +72,7 @@ function IconGroupMenu(props: GroupMenuProps) {
         )
     }
     return (
-        <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ marginTop: '10px', marginBottom: '0px', flexFlow: "column wrap" }} >
+        <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ marginTop: '5px', marginBottom: '0px', flexFlow: "column wrap" }} >
             <button key={lastIcon.name} title={name} onClick={() => setActive(!active)}><img src={lastIcon.src} alt={icon.name} /></button>
         </ div>
     )
@@ -86,17 +83,32 @@ function LineController(props: BabsIconControllerProps) {
     const { selectedFeature, onUpdate } = props;
 
     const onClickIcon = useCallback((i: TypesType) => {
-        if (selectedFeature !== undefined) {
-            let properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
-                "lineType": i.name,
-                "color": i.color,
-            });
-            selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
-            onUpdate({ features: [selectedFeature], action: "featureDetail" });
+        if (selectedFeature === undefined) {
+            return
         }
+
+        let properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+            "lineType": i.name,
+            "color": i.color,
+        });
+        selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
+        onUpdate({ features: [selectedFeature], action: "featureDetail" });
 
     }, [onUpdate, selectedFeature])
 
+    const onRotateClick = useCallback(() => {
+        if (selectedFeature === undefined) {
+            return
+        }
+
+        // reverse the coordinates
+        if (selectedFeature.geometry.type === 'LineString' || selectedFeature.geometry.type === 'MultiLineString') {
+            selectedFeature.geometry.coordinates = selectedFeature.geometry.coordinates.reverse()
+        }
+
+        onUpdate({ features: [selectedFeature], action: "featureDetail" });
+
+    }, [onUpdate, selectedFeature])
 
     if (selectedFeature === undefined) {
         return <></>
@@ -108,12 +120,14 @@ function LineController(props: BabsIconControllerProps) {
 
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ width: "80%", marginTop: "130px", }}>
-            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "row wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline' }}>
-
+        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
+            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
                 {Object.values(LineTypes).map((t) =>
                     (<button key={t.name} title={t.description} onClick={() => onClickIcon(t)} ><img src={t.icon.src} alt={icon.name} /></button>)
                 )}
+            </div>
+            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
+                <button type="button" className='maplibregl-ctrl-icon' title="Richtung drehen" onClick={() => onRotateClick()}><FontAwesomeIcon icon={faArrowsRotate} size="lg" /></button>
             </div>
 
         </div >
@@ -148,9 +162,8 @@ function ZoneController(props: BabsIconControllerProps) {
 
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ width: "80%", marginTop: "130px", }}>
-            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "row wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline' }}>
-
+        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
+            <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
                 {Object.values(ZoneTypes).map((t) =>
                     (<button key={t.name} title={t.description} onClick={() => onClickIcon(t)} ><img src={t.icon.src} alt={icon.name} /></button>)
                 )}
@@ -177,10 +190,10 @@ const Colors = {
 
 const ZoneTypes: SelectableTypes = {
     "Einsatzraum": {
-        name: "Einsatzraum", description: "Einsatzraum", icon: ZonePatterns.PatternZerstoert, color: Colors.Blue
+        name: "Einsatzraum", description: "Einsatzraum", icon: ZonePatterns.Einsatzraum, color: Colors.Blue
     },
     "Schadengebiet": {
-        name: "Schadengebiet", description: "Schadengebiet", icon: ZonePatterns.PatternZerstoert, color: Colors.Red
+        name: "Schadengebiet", description: "Schadengebiet", icon: ZonePatterns.Schadengebiet, color: Colors.Red
     },
     "Brandzone": {
         name: "Brandzone", description: "Brandzone", icon: ZonePatterns.PatternBrandzone, color: Colors.Red
@@ -192,40 +205,37 @@ const ZoneTypes: SelectableTypes = {
 
 const LineTypes: SelectableTypes = {
     "Rutschgebiet": {
-        name: "Rutschgebiet", description: "Rutschgebiet", icon: LinePatterns.PatternLineRutschgebiet, color: Colors.Red,
-    },
-    "RutschgebietGespiegelt": {
-        name: "RutschgebietGespiegelt", description: "Rutschgebiet (umgekehrt)", icon: LinePatterns.PatternLineRutschgebietGespiegelt, color: Colors.Red,
+        name: "Rutschgebiet", description: "Rutschgebiet", icon: LineTypesSchaeden.Rutschgebiet, color: Colors.Red,
     },
     "begehbar": {
-        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", icon: LinePatterns.PatternLineUnpassierbar, color: Colors.Red, // fixme
+        name: "begehbar", description: "Strasse erschwert befahrbar / begehbar", icon: LineTypesSchaeden.Strerschwertbefahrbarbegehbar, color: Colors.Red, // fixme
     },
     "schwerBegehbar": {
-        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", icon: LinePatterns.PatternLineUnpassierbar, color: Colors.Red, // fixme
+        name: "schwerBegehbar", description: "Strasse nicht befahrbar / schwer Begehbar", icon: LineTypesSchaeden.Strnichtbefahrbarschwerbegehbar, color: Colors.Red, // fixme
     },
     "unpassierbar": {
-        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", icon: LinePatterns.PatternLineUnpassierbar, color: Colors.Red,
+        name: "unpassierbar", description: "Strasse unpassierbar / gesperrt", icon: LineTypesSchaeden.Strunpassierbargesperrt, color: Colors.Red,
     },
     "beabsichtigteErkundung": {
-        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung
+        name: "beabsichtigteErkundung", description: "Beabsichtigte Erkundung", color: Colors.Blue, icon: LineTypesEinsatz.BeabsichtigteErkundung
     },
     "durchgeführteErkundung": {
-        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung // fixme
+        name: "durchgeführteErkundung", description: "Durchgeführte Erkundung", color: Colors.Blue, icon: LineTypesEinsatz.DurchgefuehrteErkundung // fixme
     },
     "beabsichtigteVerschiebung": {
-        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung // fixme
-    },
-    "rettungsAchse": {
-        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: LinePatterns.PatternLineRettungsachse
+        name: "beabsichtigteVerschiebung", description: "Beabsichtigte Verschiebung", color: Colors.Blue, icon: LineTypesEinsatz.BeabsichtigteVerschiebung // fixme
     },
     "durchgeführteVerschiebung": {
-        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung // fixme
+        name: "durchgeführteVerschiebung", description: "Durchgeführte Verschiebung", color: Colors.Blue, icon: LineTypesEinsatz.DurchgefuehrteVerschiebung // fixme
     },
     "beabsichtigterEinsatz": {
-        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung // fixme
+        name: "beabsichtigterEinsatz", description: "Beabsichtigter Einsatz", color: Colors.Blue, icon: LineTypesEinsatz.BeabsichtigterEinsatz // fixme
     },
     "durchgeführterEinsatz": {
-        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: LinePatterns.PatternLineErkundung// fixme
+        name: "durchgeführterEinsatz", description: "Durchgeführter Einsatz", color: Colors.Blue, icon: LineTypesEinsatz.DurchgefuehrterEinsatz// fixme
+    },
+    "rettungsAchse": {
+        name: "rettungsAchse", description: "Rettungs Achse", color: Colors.Blue, icon: LineTypesEinsatz.RettungsAchse
     },
 };
 
@@ -247,15 +257,70 @@ interface BabsIconControllerProps {
 }
 
 function BabsIconController(props: BabsIconControllerProps) {
-
     return (
         <>
+            <FeatureDetailControlPanel {...props} />
             <IconController {...props} />
             <LineController {...props} />
             <ZoneController {...props} />
         </>
     )
+}
 
+function FeatureDetailControlPanel(props: BabsIconControllerProps) {
+    const { selectedFeature, onUpdate } = props;
+    const [enteredText, setEnteredText] = useState<string>(selectedFeature?.properties?.name);
+
+    const onInput = useCallback((name: string) => {
+        if (selectedFeature !== undefined) {
+            let properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+                "name": name,
+            });
+            selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
+            onUpdate({ features: [selectedFeature], action: "featureDetail" });
+        }
+
+    }, [onUpdate, selectedFeature])
+
+    useEffect(() => {
+        if (selectedFeature === undefined) {
+            setEnteredText("")
+            return
+        }
+
+        setEnteredText(selectedFeature.properties?.name || "")
+    }, [selectedFeature, setEnteredText])
+
+    if (selectedFeature === undefined) {
+        return null;
+    }
+
+    // no labels for line strings
+    if (selectedFeature.geometry.type === 'LineString' || selectedFeature.geometry.type === 'MultiLineString') {
+        return <></>
+    }
+
+    return (
+        <div className="maplibregl-ctrl maplibregl-ctrl-top-right control-panel">
+            <h5 className="title is-5">Name</h5>
+            <div className="control has-icons-left has-icons-right">
+                <input className="input is-small" type="email" placeholder="Signaturtext" onChange={(e) => {
+                    e.preventDefault();
+                    setEnteredText(e.target.value);
+                }} value={enteredText} onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        onInput(enteredText);
+                        setEnteredText("");
+                    }
+                }} />
+                <span className="icon is-small is-left">
+                    <FontAwesomeIcon icon={faFileText} />
+                </span>
+            </div>
+            <button className="button is-primary is-small" onClick={() => onInput(enteredText)}>Speichern</button>
+
+        </div>
+    );
 }
 
 const memoBabsIconController = memo(BabsIconController);
