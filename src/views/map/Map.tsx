@@ -101,7 +101,8 @@ function MapComponent() {
             return newFeatureCollection;
         });
         setSelectedFeature(undefined);
-    }, [setFeatures, setSelectedFeature]);
+        draw?.changeMode("simple_select")
+    }, [setFeatures, setSelectedFeature, draw]);
 
     const onDelete = useCallback((e: any) => {
         console.log("[onDelete]", e);
@@ -124,7 +125,8 @@ function MapComponent() {
             return newFeatureCollection;
         });
         setSelectedFeature(undefined);
-    }, [setFeatures, setSelectedFeature]);
+        draw?.changeMode("simple_select")
+    }, [setFeatures, setSelectedFeature, draw]);
 
     const onSelectionChange = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[]; }) => {
         console.log("[onSelectionChange]", e)
@@ -141,6 +143,7 @@ function MapComponent() {
         }
         else {
             setSelectedFeature(undefined);
+            draw?.changeMode("simple_select")
         }
     }, [setSelectedFeature, draw]);
 
