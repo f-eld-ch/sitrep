@@ -5,7 +5,9 @@ import {
   faClipboardCheck,
   faClipboardList,
   faClipboardQuestion,
+  faClock,
   faCodeBranch,
+  faCog,
   faExplosion,
   faFeed,
   faMapLocationDot,
@@ -22,6 +24,7 @@ import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router-dom";
 import { UserContext } from "utils";
+import { useDate } from "utils/useDate";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
@@ -98,6 +101,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <MapNavBar />
         </div>
         <div className="navbar-end">
+          <div className="navbar-item is-left is-hoverable mr-3">
+            <CurrentTime />
+          </div>
+          <hr className="navbar-divider" />
           <UserNavBar />
         </div>
       </div>
@@ -105,9 +112,22 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   );
 };
 
+function CurrentTime() {
+  const { time } = useDate();
+
+  return (
+    <span className="icon-text is-flex-wrap-nowrap">
+      <span className="icon">
+        <FontAwesomeIcon icon={faClock} />
+      </span>
+      <span><strong>{time}</strong></span>
+    </span>
+  )
+}
+
 function VersionNavBar() {
   return (
-    <div className="navbar-item">
+    <div className="navbar-item is-left">
       <span className="icon-text is-flex-wrap-nowrap">
         <span className="icon">
           <FontAwesomeIcon icon={faCodeBranch} />
@@ -126,7 +146,9 @@ function UserNavBar() {
 
   return (
     <div className="navbar-item has-dropdown is-hoverable is-left">
-      <div className="navbar-link" />
+      <div className="navbar-link">
+        <FontAwesomeIcon icon={faCog} />
+      </div>
       <div className="navbar-dropdown is-boxed is-right">
         <VersionNavBar />
         <div className="navbar-item">
@@ -325,8 +347,7 @@ const MapNavBar: FunctionComponent = () => {
 };
 
 export {
-  TasksNavBar,
-  ResourcesNavBar,
+  ResourcesNavBar, TasksNavBar
 };
 
 export default Navbar;

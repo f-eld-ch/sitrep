@@ -164,8 +164,8 @@ function MapComponent() {
             console.log("missing image", id);
             Object.values(Object.assign({}, AllIcons, LinePatterns, ZonePatterns)).filter(icon => id === icon.name).forEach(icon => {
                 let customIcon = new Image(icon.size, icon.size);
-                customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
                 customIcon.src = icon.src;
+                customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
             });
         });
 
