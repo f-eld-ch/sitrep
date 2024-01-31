@@ -1,8 +1,8 @@
 
+import { useReactiveVar } from '@apollo/client';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-
-import { useReactiveVar } from '@apollo/client';
+import bbox from "@turf/bbox";
 import DefaultMaker from 'assets/marker.svg';
 import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import EnrichedLayerFeatures from 'components/map/EnrichedLayerFeatures';
@@ -23,6 +23,7 @@ import ExportControl from './controls/ExportControl';
 import { StyleController, selectedStyle } from './controls/StyleController';
 import { drawStyle } from './style';
 
+
 const modes = {
     ...MapboxDraw.modes,
     // 'draw_point': BabsPointMode
@@ -40,11 +41,10 @@ function MapComponent() {
 
     const { incidentId } = useParams();
     const [features, setFeatures] = useLocalStorage<FeatureCollection>(`map-incident-${incidentId}`, { "type": "FeatureCollection", "features": [], });
-
     const [viewState, setViewState] = useState({
         latitude: 46.87148,
         longitude: 8.62994,
-        zoom: 12,
+        zoom: 5,
         bearing: 0,
     });
 
@@ -169,7 +169,21 @@ function MapComponent() {
             });
         });
 
-    }, [setIsMapLoaded, mapRef]);
+        // set the right bounds of the map based on the feature collection
+        let filteredFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
+        filteredFC.features = Object.assign([], features.features.filter(f => f.properties?.deletedAt === undefined))
+        if (filteredFC.features.length > 0) {
+            let bboxArray = bbox(filteredFC);
+            mapRef && mapRef.current && mapRef.current.fitBounds(
+                [[bboxArray[0], bboxArray[1]], [bboxArray[2], bboxArray[3]]],
+                {
+                    animate: true,
+                    padding: { top: 30, bottom: 30, left: 30, right: 30, }
+                }
+            );
+        }
+
+    }, [setIsMapLoaded, mapRef, features]);
 
 
     useEffect(() => {
