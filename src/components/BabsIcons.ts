@@ -78,14 +78,14 @@ import Obdachlose from 'assets/babs/Obdachlose.svg';
 import Oelverschmutzung from 'assets/babs/Oelverschmutzung.svg';
 import OffizierZugfuehrer from 'assets/babs/OffizierZugfuehrer.svg';
 import Patientensammelstelle from 'assets/babs/Patientensammelstelle.svg';
-import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
+import PatternBrandzone from 'assets/babs/PatternBrandzone.png';
 import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
 import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
 import PatternLineRettungsachse from 'assets/babs/PatternLineRettungsachse.svg';
 import PatternLineRutschgebiet from 'assets/babs/PatternLineRutschgebiet.svg';
 import PatternLineRutschgebietGespiegelt from 'assets/babs/PatternLineRutschgebietGespiegelt.svg';
 import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
-import PatternZerstoert from 'assets/babs/PatternZerstoert.svg';
+import PatternZerstoert from 'assets/babs/PatternZerstoert.png';
 import Pforte from 'assets/babs/Pforte.svg';
 import Pluenderung from 'assets/babs/Pluenderung.svg';
 import RadioaktiveStoffe from 'assets/babs/RadioaktiveStoffe.svg';
@@ -996,7 +996,7 @@ export const ZonePatterns = {
         name: 'PatternBrandzone',
         description: "Brandzone",
         src: PatternBrandzone,
-        size: 16,
+        size: 32,
     },
     PatternZerstoert: {
         name: 'PatternZerstoert',

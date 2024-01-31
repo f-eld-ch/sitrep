@@ -441,6 +441,7 @@ export const displayStyle = [
         ],
         'paint': {
             'fill-pattern': ['match', ['get', 'zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
+            'fill-antialias': 'true',
             'fill-opacity': 0.9
         }
     },
