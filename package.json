@@ -1,6 +1,6 @@
 {
   "name": "sitrep",
-  "version": "24.1.1",
+  "version": "24.2.0",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.8.10",
@@ -99,5 +99,5 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.18"
   },
-  "packageManager": "yarn@3.6.0"
+  "packageManager": "yarn@4.1.0"
 }

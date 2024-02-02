@@ -3,13 +3,16 @@ import AbsperrungVerkehrswege from 'assets/babs/AbsperrungVerkehrswege.svg';
 import Angehoerigensammelstelle from 'assets/babs/Angehoerigensammelstelle.svg';
 import Atomunfall from 'assets/babs/Atomunfall.svg';
 import Autounfall from 'assets/babs/Autounfall.svg';
+import BLaboratorium from 'assets/babs/BLaboratorium.svg';
+import BeabsichtigteErkundung from 'assets/babs/BeabsichtigteErkundung.svg';
+import BeabsichtigteVerschiebung from 'assets/babs/BeabsichtigteVerschiebung.svg';
+import BeabsichtigterEinsatz from 'assets/babs/BeabsichtigterEinsatz.svg';
 import Beobachtung from 'assets/babs/Beobachtung.svg';
 import Beschaedigung from 'assets/babs/Beschaedigung.svg';
 import Betreuungsstelle from 'assets/babs/Betreuungsstelle.svg';
 import Betriebsstoffabgabestelle from 'assets/babs/Betriebsstoffabgabestelle.svg';
 import Bezirksfuehrungsorgan from 'assets/babs/Bezirksfuehrungsorgan.svg';
 import Biounfall from 'assets/babs/Biounfall.svg';
-import BLaboratorium from 'assets/babs/BLaboratorium.svg';
 import Bombenanschlag from 'assets/babs/Bombenanschlag.svg';
 import Bombendrohung from 'assets/babs/Bombendrohung.svg';
 import Brand from 'assets/babs/Brand.svg';
@@ -24,10 +27,14 @@ import Demogewaltlos from 'assets/babs/Demogewaltlos.svg';
 import Demogewaltsam from 'assets/babs/Demogewaltsam.svg';
 import Drohung from 'assets/babs/Drohung.svg';
 import Duerre from 'assets/babs/Duerre.svg';
+import DurchgefuehrteErkundung from 'assets/babs/DurchgefuehrteErkundung.svg';
+import DurchgefuehrteVerschiebung from 'assets/babs/DurchgefuehrteVerschiebung.svg';
+import DurchgefuehrterEinsatz from 'assets/babs/DurchgefuehrterEinsatz.svg';
 import EingesperrteAbgeschnittene from 'assets/babs/EingesperrteAbgeschnittene.svg';
 import Einsatz from 'assets/babs/Einsatz.svg';
 import Einsatzleiter from 'assets/babs/Einsatzleiter.svg';
 import Einsatzleitung from 'assets/babs/Einsatzleitung.svg';
+import Einsatzraum from 'assets/babs/Einsatzraum.svg';
 import Einsatzzentrale from 'assets/babs/Einsatzzentrale.svg';
 import Eisenbahnunglueck from 'assets/babs/Eisenbahnunglueck.svg';
 import Energieausfall from 'assets/babs/Energieausfall.svg';
@@ -40,8 +47,8 @@ import Fluechtlinge from 'assets/babs/Fluechtlinge.svg';
 import Flugzeugabsturz from 'assets/babs/Flugzeugabsturz.svg';
 import Gas from 'assets/babs/Gas.svg';
 import Gebaeudeeinsturz from 'assets/babs/Gebaeudeeinsturz.svg';
-import GefahrdurchLoeschenmitWasser from 'assets/babs/GefahrdurchLoeschenmitWasser.svg';
 import GefahrElektrizitaet from 'assets/babs/GefahrElektrizitaet.svg';
+import GefahrdurchLoeschenmitWasser from 'assets/babs/GefahrdurchLoeschenmitWasser.svg';
 import GefahrentafelmitUNNummer from 'assets/babs/GefahrentafelmitUNNummer.svg';
 import GefahrfuerGrundwasser from 'assets/babs/GefahrfuerGrundwasser.svg';
 import Gemeindefuehrungsorgan from 'assets/babs/Gemeindefuehrungsorgan.svg';
@@ -51,12 +58,12 @@ import Helikopterlandeplatz from 'assets/babs/Helikopterlandeplatz.svg';
 import Informationsstelle from 'assets/babs/Informationsstelle.svg';
 import Informationszentrum from 'assets/babs/Informationszentrum.svg';
 import Infrastrukturschaden from 'assets/babs/Infrastrukturschaden.svg';
-import Kadaversammelstelle from 'assets/babs/Kadaversammelstelle.svg';
-import Kanalisationsausfall from 'assets/babs/Kanalisationsausfall.svg';
-import KantonalesFuehrungsorgan from 'assets/babs/KantonalesFuehrungsorgan.svg';
 import KGSNotdepot from 'assets/babs/KGSNotdepot.svg';
 import KGSNotlager from 'assets/babs/KGSNotlager.svg';
 import KGSSammelpunkt from 'assets/babs/KGSSammelpunkt.svg';
+import Kadaversammelstelle from 'assets/babs/Kadaversammelstelle.svg';
+import Kanalisationsausfall from 'assets/babs/Kanalisationsausfall.svg';
+import KantonalesFuehrungsorgan from 'assets/babs/KantonalesFuehrungsorgan.svg';
 import KommandopostenFront from 'assets/babs/KommandopostenFront.svg';
 import KommandopostenRueckwaertiges from 'assets/babs/KommandopostenRueckwaertiges.svg';
 import Kommunikationsstoerung from 'assets/babs/Kommunikationsstoerung.svg';
@@ -71,27 +78,32 @@ import Obdachlose from 'assets/babs/Obdachlose.svg';
 import Oelverschmutzung from 'assets/babs/Oelverschmutzung.svg';
 import OffizierZugfuehrer from 'assets/babs/OffizierZugfuehrer.svg';
 import Patientensammelstelle from 'assets/babs/Patientensammelstelle.svg';
-import PatternBrandzone from 'assets/babs/PatternBrandzone.svg';
+import PatternBrandzone from 'assets/babs/PatternBrandzone.png';
 import PatternLineBeabsichtigteErkundung from 'assets/babs/PatternLineBeabsichtigteErkundung.svg';
 import PatternLineErkundung from 'assets/babs/PatternLineErkundung.svg';
 import PatternLineRettungsachse from 'assets/babs/PatternLineRettungsachse.svg';
 import PatternLineRutschgebiet from 'assets/babs/PatternLineRutschgebiet.svg';
 import PatternLineRutschgebietGespiegelt from 'assets/babs/PatternLineRutschgebietGespiegelt.svg';
 import PatternLineUnpassierbar from 'assets/babs/PatternLineUnpassierbar.svg';
-import PatternZerstoert from 'assets/babs/PatternZerstoert.svg';
+import PatternZerstoert from 'assets/babs/PatternZerstoert.png';
 import Pforte from 'assets/babs/Pforte.svg';
 import Pluenderung from 'assets/babs/Pluenderung.svg';
 import RadioaktiveStoffe from 'assets/babs/RadioaktiveStoffe.svg';
 import RegionalesFuehrungsorgan from 'assets/babs/RegionalesFuehrungsorgan.svg';
 import RettungsAchse from 'assets/babs/RettungsAchse.svg';
+import Rutschgebiet from 'assets/babs/Rutschgebiet.svg';
 import Sabotage from 'assets/babs/Sabotage.svg';
 import Sammelstelle from 'assets/babs/Sammelstelle.svg';
 import Sanitaetshilfsstelle from 'assets/babs/Sanitaetshilfsstelle.svg';
+import Schadengebiet from 'assets/babs/Schadengebiet.svg';
 import Sperre from 'assets/babs/Sperre.svg';
 import StandortmobileFuehrungsstelle from 'assets/babs/StandortmobileFuehrungsstelle.svg';
 import Starkniederschlag from 'assets/babs/Starkniederschlag.svg';
 import Stau from 'assets/babs/Stau.svg';
+import Strerschwertbefahrbarbegehbar from 'assets/babs/Strerschwertbefahrbarbegehbar.svg';
 import Streugutsammelstelle from 'assets/babs/Streugutsammelstelle.svg';
+import Strnichtbefahrbarschwerbegehbar from 'assets/babs/Strnichtbefahrbarschwerbegehbar.svg';
+import Strunpassierbargesperrt from 'assets/babs/Strunpassierbargesperrt.svg';
 import Stuetzpunkt from 'assets/babs/Stuetzpunkt.svg';
 import Sturm from 'assets/babs/Sturm.svg';
 import Tankloeschfahrzeug from 'assets/babs/Tankloeschfahrzeug.svg';
@@ -849,14 +861,12 @@ export const Others: BabsIconType = {
         src: BranduebergriffGefahr,
         size: 32,
     },
-
     RettungsAchse: {
         name: 'RettungsAchse',
         description: "RettungsAchse",
         src: RettungsAchse,
         size: 32,
     },
-
     Einsatz: {
         name: 'Einsatz',
         description: "Einsatz",
@@ -867,6 +877,77 @@ export const Others: BabsIconType = {
         name: 'Verschiebung',
         description: "Verschiebung",
         src: Verschiebung,
+        size: 32,
+    },
+};
+
+export const LineTypesEinsatz = {
+    BeabsichtigteErkundung: {
+        name: 'beabsichtigteErkundung',
+        description: "Beabsichtigte Erkundung",
+        src: BeabsichtigteErkundung,
+        size: 32,
+    },
+    BeabsichtigterEinsatz: {
+        name: 'beabsichtigterEinsatz',
+        description: "Beabsichtigter Einsatz",
+        src: BeabsichtigterEinsatz,
+        size: 32,
+    },
+    BeabsichtigteVerschiebung: {
+        name: 'beabsichtigteVerschiebung',
+        description: "Beabsichtigte Verschiebung",
+        src: BeabsichtigteVerschiebung,
+        size: 32,
+    },
+    DurchgefuehrteErkundung: {
+        name: 'durchgefuehrteErkundung',
+        description: "DurchgefuehrteErkundung",
+        src: DurchgefuehrteErkundung,
+        size: 32,
+    },
+    DurchgefuehrterEinsatz: {
+        name: 'durchgefuehrterEinsatz',
+        description: "Durchgefuehrter Einsatz",
+        src: DurchgefuehrterEinsatz,
+        size: 32,
+    },
+    DurchgefuehrteVerschiebung: {
+        name: 'durchgefuehrteVerschiebung',
+        description: "Durchgefuehrte Verschiebung",
+        src: DurchgefuehrteVerschiebung,
+        size: 32,
+    },
+    RettungsAchse: {
+        name: 'rettungsAchse',
+        description: "RettungsAchse",
+        src: RettungsAchse,
+        size: 32,
+    },
+};
+export const LineTypesSchaeden = {
+    Strnichtbefahrbarschwerbegehbar: {
+        name: 'schwerBegehbar',
+        description: "Strasse nicht befahrbar / schwer begehbar",
+        src: Strnichtbefahrbarschwerbegehbar,
+        size: 32,
+    },
+    Strunpassierbargesperrt: {
+        name: 'unpassierbar',
+        description: "Strasse unpassierbar / gesperrt",
+        src: Strunpassierbargesperrt,
+        size: 32,
+    },
+    Strerschwertbefahrbarbegehbar: {
+        name: 'begehbar',
+        description: "Strasse erschwert befahrbar / begehbar",
+        src: Strerschwertbefahrbarbegehbar,
+        size: 32,
+    },
+    Rutschgebiet: {
+        name: 'Rutschgebiet',
+        description: "Rutschgebiet",
+        src: Rutschgebiet,
         size: 32,
     },
 };
@@ -915,12 +996,24 @@ export const ZonePatterns = {
         name: 'PatternBrandzone',
         description: "Brandzone",
         src: PatternBrandzone,
-        size: 16,
+        size: 32,
     },
     PatternZerstoert: {
         name: 'PatternZerstoert',
         description: "Zerstörte Zone",
         src: PatternZerstoert,
+        size: 32,
+    },
+    Schadengebiet: {
+        name: 'Schadengebiet',
+        description: "Schadengebiet",
+        src: Schadengebiet,
+        size: 32,
+    },
+    Einsatzraum: {
+        name: 'Einsatzraum',
+        description: "Einsatzraum",
+        src: Einsatzraum,
         size: 32,
     }
 };
