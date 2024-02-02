@@ -6,7 +6,7 @@ export const useDate = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setNow(new Date());
-        }, 10 * 1000);
+        }, 1 * 1000);
         return () => {
             clearInterval(timer);
         }
@@ -16,6 +16,7 @@ export const useDate = () => {
     const time = dayjs(now).format("LT")
 
     return {
+        now,
         date,
         time,
     };
