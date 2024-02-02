@@ -6,6 +6,7 @@ import {
   faClipboardList,
   faClipboardQuestion,
   faCodeBranch,
+  faCog,
   faExplosion,
   faFeed,
   faMapLocationDot,
@@ -18,10 +19,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { FunctionComponent, useContext, useState } from "react";
 
+import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router-dom";
 import { UserContext } from "utils";
+import { useDate } from "utils/useDate";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
@@ -98,6 +101,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <MapNavBar />
         </div>
         <div className="navbar-end">
+          <CurrentTime />
+          <hr className="navbar-divider" />
           <UserNavBar />
         </div>
       </div>
@@ -105,9 +110,35 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   );
 };
 
+function CurrentTime() {
+  const { time, date } = useDate();
+
+  return (
+    <>
+      <div className="navbar-item is-right is-hidden-touch">
+        <span className="icon-text">
+          <span className="icon">
+            <FontAwesomeIcon icon={faCalendar} />
+          </span>
+          <span>{date}</span>
+        </span>
+      </div>
+      <div className="navbar-item is-right  is-hidden-touch">
+        <span className="icon-text">
+          <span className="icon">
+            <FontAwesomeIcon icon={faClock} />
+          </span>
+          <span>{time}</span>
+        </span>
+      </div>
+
+    </>
+  )
+}
+
 function VersionNavBar() {
   return (
-    <div className="navbar-item">
+    <div className="navbar-item is-left">
       <span className="icon-text is-flex-wrap-nowrap">
         <span className="icon">
           <FontAwesomeIcon icon={faCodeBranch} />
@@ -125,8 +156,10 @@ function UserNavBar() {
   if (!userState.isLoggedin) return <></>;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable is-left">
-      <div className="navbar-link" />
+    <div className="navbar-item has-dropdown is-hoverable is-left ml-3">
+      <div className="navbar-link">
+        <FontAwesomeIcon icon={faCog} />
+      </div>
       <div className="navbar-dropdown is-boxed is-right">
         <VersionNavBar />
         <div className="navbar-item">
@@ -325,8 +358,7 @@ const MapNavBar: FunctionComponent = () => {
 };
 
 export {
-  TasksNavBar,
-  ResourcesNavBar,
+  ResourcesNavBar, TasksNavBar
 };
 
 export default Navbar;
