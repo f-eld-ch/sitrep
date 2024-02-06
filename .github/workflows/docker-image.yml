@@ -1,4 +1,4 @@
-name: ci
+name: Build & Test & Push Image
 
 on:
   push:
@@ -12,13 +12,32 @@ on:
       - "main"
       - "develop"
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
+    name: "Test and Build"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: yarn
+          cache-dependency-path: "ui/yarn.lock"
+
+      - name: Install packages
+        run: yarn install --immutable
+        working-directory: ui
+
+      - name: Run ui tests
+        run: yarn test
+        working-directory: ui
+
+      - name: Build ui
+        run: yarn build
+        working-directory: ui
+
+      - uses: docker/login-action@v3
         if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
@@ -42,6 +61,7 @@ jobs:
             # priority 600
             type=ref,event=branch
             type=ref,event=pr,prefix=pr-,enable=true
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -52,6 +72,7 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             GIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+
       - name: Docker meta for hasura
         id: meta-hasura
         uses: docker/metadata-action@v5
@@ -67,6 +88,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},prefix=v,priority=410
             type=semver,pattern={{major}},prefix=v,priority=400
             type=sha
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
