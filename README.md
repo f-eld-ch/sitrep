@@ -29,7 +29,7 @@ HASURA_GRAPHQL_JWT_SECRET='{"type":"RS256","key":"-----BEGIN CERTIFICATE-----\n
 ...
 }\n-----END CERTIFICATE-----\n","header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["user","editor"],"x-hasura-default-role":"user"}}'
 POSTGRES_PASSWORD=postgrespassword
-HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+HASURA_GRAPHQL_ADMIN_SECRET=myadminsecretkey
 ```
 
 3. Run docker compose environment:
