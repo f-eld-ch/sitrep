@@ -1,20 +1,28 @@
 name: Automated Tests and Linting
 
-on: [push]
-
+on:
+  push:
+    branches-ignore:
+      - "main"
+      - "develop"
 jobs:
-  Test:
+  build:
     runs-on: ubuntu-latest
+    name: "Test and Build"
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
           cache: yarn
-          cache-dependency-path: yarn.lock
+          cache-dependency-path: "ui/yarn.lock"
 
       - name: Install packages
         run: yarn install --immutable
+        working-directory: ui
 
       - name: Run tests
         run: yarn test
+        working-directory: ui
