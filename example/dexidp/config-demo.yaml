@@ -1,0 +1,41 @@
+issuer: {{ getenv "DEX_ISSUER" "http://127.0.0.1:5556/dex" }}
+
+storage:
+  type: sqlite3
+  config:
+    file: var/sqlite/dex/dex.db
+
+web:
+  http: {{ getenv "DEX_WEB_HTTP" "0.0.0.0:5556" }}
+
+telemetry:
+  http: 127.0.0.1:5558
+
+logger:
+  level: {{ getenv "DEX_LOG_LEVEL" "debug" }}
+  format: {{ getenv "DEX_LOG_FORMAT" "text" }}
+
+staticClients:
+  - id: {{ getenv "OAUTH2_PROXY_CLIENT_ID" "sitrep" }}
+    redirectURIs:
+      - "http://localhost:4180/oauth2/callback"
+      - "http://localhost:3000/oauth2/callback"
+      -  {{ getenv "OAUTH2_PROXY_REDIRECT_URL" "https://localhost/oauth2/callback" }}
+    name: "Sitrep"
+    secret: {{ getenv "OAUTH2_PROXY_CLIENT_SECRET" "ZXhhbXBsZS1hcHAtc2VjcmV0" }}
+
+connectors:
+{{- if getenv "DEX_CONNECTORS_ENABLE_MOCK" }}
+  - type: mockCallback
+    id: mock
+    name: Example
+{{- end }}
+
+{{- if getenv "DEX_CONNECTORS_ENABLE_DEMO_USER" }}
+enablePasswordDB: true
+staticPasswords:
+  - email: "demo@sitrep.ch"
+    hash: "$2y$10$Og387KAsKCaYF.rZXElhluHR/13BYdtQQfERy.Wf3WVzTYT8j9BiW" # pw: sitrep-demo
+    username: "demo"
+    userID: "325d59a7-5240-4616-88d7-c2eb57fff7a6"
+{{- end }}
