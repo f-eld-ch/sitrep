@@ -45,3 +45,9 @@ yarn start
 ```
 
 5. Open [localhost:3000](http://localhost:3000/). This will automatically proxy to the OAUTH2 proxy which will then proxy requests towards the graphql-engine with its /v1/graphql
+
+
+### Translations
+
+* To correct or add **translations** we invite you to help us out [on Weblate](https://hosted.weblate.org/projects/sitrep).<br>
+[![Translation status](https://hosted.weblate.org/widgets/sitrep/-/287x66-grey.png)](https://hosted.weblate.org/engage/sitrep/)
