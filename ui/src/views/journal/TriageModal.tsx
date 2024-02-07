@@ -13,8 +13,8 @@ import { useParams } from "react-router-dom";
 import { Division, PriorityStatus, TriageMessageData, TriageMessageVars, TriageStatus } from "types";
 import { Message, MessageDivision, SaveMessageTriageData, SaveMessageTriageVars } from "types/journal";
 import { NewForm as TaskNew } from "../measures/tasks";
-import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 import { default as JournalMessage } from "./Message";
+import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 
 
 function Triage(props: {
@@ -42,7 +42,7 @@ function Triage(props: {
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
     SaveMessageTriage,
     {
-      onCompleted(data) { },
+      onCompleted() { },
       refetchQueries: [
         { query: GetJournalMessages, variables: { journalId: journalId } },
       ],

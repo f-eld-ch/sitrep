@@ -143,7 +143,7 @@ function VersionNavBar() {
         <span className="icon">
           <FontAwesomeIcon icon={faCodeBranch} />
         </span>
-        <span><a href={`https://github.com/RedGecko/sitrep/commit/${process.env.REACT_APP_SHA_VERSION}`} target="_blank" rel="noopener noreferrer">{process.env.REACT_APP_VERSION}</a></span>
+        <span><a href={`https://github.com/RedGecko/sitrep/commit/${import.meta.env.VITE_SHA_VERSION}`} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_VERSION}</a></span>
       </span>
     </div >
   );

@@ -11,7 +11,7 @@ export type ExportControlProps = {
 function ExportControl(props: ExportControlProps): null {
     const { position } = props;
     useControl<MaplibreExportControl>(
-        ({ map }) =>
+        () =>
             new MaplibreExportControl({
                 PageSize: Size.A3,
                 PageOrientation: PageOrientation.Landscape,
