@@ -52,7 +52,7 @@ function StyleController() {
             <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
                 <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faMap} size="lg" /></button>
                 <div className={switcherClass}>
-                    {MapStyles.map((s) => { return <button type="button" className={classNames({ "button": true, "active": style.name === s.name })} key={s.name} onClick={(e) => onClick(s)}>{s.name}</button> })}
+                    {MapStyles.map((s) => { return <button type="button" className={classNames({ "button": true, "active": style.name === s.name })} key={s.name} onClick={() => onClick(s)}>{s.name}</button> })}
                 </div >
             </div>
         </div >

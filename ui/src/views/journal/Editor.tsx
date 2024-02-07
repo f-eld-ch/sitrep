@@ -10,10 +10,10 @@ import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
 import { RadioChannelDetailInput } from "./EditorForms/Elements";
 import { Other } from "./EditorForms/Other";
-import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import { default as JournalMessage } from './Message';
 import TriageModal from "./TriageModal";
+import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 
 type State = {
   sender: string;
@@ -66,7 +66,7 @@ type Dispatch = (action: Action) => void
 
 export const EditorContext = React.createContext<
   { state: State; dispatch: Dispatch }
->({ state: initState(), dispatch: (action: Action) => { } })
+>({ state: initState(), dispatch: (action: Action) => { console.log(action) } })
 
 
 function initState(): State {
@@ -94,7 +94,7 @@ function Editor() {
   });
 
   const [insertMessage, { error }] = useMutation(InsertMessage, {
-    onCompleted(data) {
+    onCompleted() {
       // reset the form values
       dispatch({ type: 'clear' })
     },
@@ -102,7 +102,7 @@ function Editor() {
   });
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
-    onCompleted(data) {
+    onCompleted() {
       // reset the form values
       dispatch({ type: 'clear' })
     },

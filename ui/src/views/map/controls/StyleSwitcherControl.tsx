@@ -16,7 +16,7 @@ export type StyleSwitcherControlProps = {
 function StyleSwitcherControl(props: StyleSwitcherControlProps): null {
     const { styles, options } = props;
     useControl<MapboxStyleSwitcherControl>(
-        ({ mapLib }) =>
+        () =>
             new MapboxStyleSwitcherControl(styles, options),
         { position: props.position }
     );
