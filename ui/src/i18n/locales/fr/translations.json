@@ -18,13 +18,13 @@
     "editor": "éditeur",
     "email": {
         "receiver": "Destinataire du courriel",
-        "sender": "expéditeur de l'e-mail"
+        "sender": "expéditeur du courriel"
     },
-    "emailAddress": "Adresse e-mail",
+    "emailAddress": "Adresse courriel",
     "enter": "entrer",
-    "feed": "Feed",
+    "feed": "flux",
     "hideClosed": "masquer fermé",
-    "hotline": "Éditeur de la hotline",
+    "hotline": "Éditeur de la ligne directe",
     "immediateMeasures": "mesures immédiates",
     "incident": "incident",
     "incidents": "incidentes",
@@ -34,7 +34,7 @@
     "logout": "déconnexion",
     "map": "image de situation",
     "medium": {
-        "EMAIL": "email",
+        "EMAIL": "courriel",
         "OTHER": "Autre",
         "PHONE": "téléphoner",
         "RADIO": "radio"
@@ -42,7 +42,7 @@
     "mediumName": "la communication",
     "message": {
         "content": "contenu",
-        "contentHelp": "Qu'est-ce qui a été soumis?",
+        "contentHelp": "Qu'est-ce qui a été soumis ?",
         "createdAt": "Enregistré sur le",
         "id": "numéro de message",
         "name": "Signaler",

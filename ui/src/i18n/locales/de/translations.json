@@ -18,12 +18,12 @@
     "editor": "Editor",
     "email": {
         "receiver": "Email-Empfänger",
-        "sender": "Email-Sender"
+        "sender": "E-Mail-Sender"
     },
-    "emailAddress": "Email-Adresse",
+    "emailAddress": "E-Mail-Adresse",
     "enter": "eintreten",
     "feed": "Feed",
-    "hideClosed": "Verstecke  geschlossene",
+    "hideClosed": "Verstecke geschlossene",
     "hotline": "Hotline Editor",
     "immediateMeasures": "Sofortmassnahmen",
     "incident": "Ereignis",
