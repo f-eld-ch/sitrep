@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 function New() {
@@ -13,4 +12,7 @@ function NewForm() {
 
 export default New;
 
-export { NewForm, New };
+export { New, NewForm };
+
+
+

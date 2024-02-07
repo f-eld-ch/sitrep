@@ -62,7 +62,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
     UpdateIncident,
     {
-      onCompleted(data) {
+      onCompleted() {
         navigate(`../journal/view`);
       },
       refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
