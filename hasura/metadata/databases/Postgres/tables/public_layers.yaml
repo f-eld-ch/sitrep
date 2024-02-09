@@ -18,15 +18,19 @@ insert_permissions:
     permission:
       check: {}
       columns:
-        - name
+        - created_at
         - id
         - incident_id
+        - name
     comment: ""
 select_permissions:
   - role: editor
     permission:
       columns:
         - name
+        - created_at
+        - deleted_at
+        - updated_at
         - id
         - incident_id
       filter: {}
@@ -35,6 +39,9 @@ select_permissions:
     permission:
       columns:
         - name
+        - created_at
+        - deleted_at
+        - updated_at
         - id
         - incident_id
       filter: {}
@@ -43,7 +50,9 @@ update_permissions:
   - role: editor
     permission:
       columns:
+        - deleted_at
         - name
+        - updated_at
       filter: {}
-      check: {}
+      check: null
     comment: ""

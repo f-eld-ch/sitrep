@@ -1,0 +1,2 @@
+CREATE TABLE "public"."features" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "geometry" jsonb NOT NULL, "properties" jsonb NOT NULL, "layer_id" uuid NOT NULL, "created_at" timestamptz NOT NULL DEFAULT now(), "updated_at" timestamptz, "deleted_at" timestamptz, PRIMARY KEY ("id") , FOREIGN KEY ("layer_id") REFERENCES "public"."layers"("id") ON UPDATE restrict ON DELETE no action, UNIQUE ("id"));COMMENT ON TABLE "public"."features" IS E'Features for Layers';
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
