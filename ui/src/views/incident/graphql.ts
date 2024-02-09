@@ -78,7 +78,7 @@ const UPDATE_INCIDENT = gql`
     $locationId: uuid!
     $divisions: [DivisionsInsertInput!]!
   ) {
-    updateLocationsByPk(pk_columns: { id: $locationId }, _set: { name: $location }) {
+    updateLocationsByPk(pkColumns: { id: $locationId }, _set: { name: $location }) {
       id
       name
     }
@@ -86,9 +86,9 @@ const UPDATE_INCIDENT = gql`
       objects: $divisions
       onConflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
     ) {
-      affected_rows
+      affectedRows
     }
-    updateIncidentsByPk(pk_columns: { id: $incidentId }, _set: { name: $name }) {
+    updateIncidentsByPk(pkColumns: { id: $incidentId }, _set: { name: $name }) {
       id
       name
       journals {
@@ -106,7 +106,7 @@ const UPDATE_INCIDENT = gql`
 const CLOSE_INCIDENT = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
     updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
-      affected_rows
+      affectedRows
       returning {
         id
         closedAt
@@ -116,10 +116,9 @@ const CLOSE_INCIDENT = gql`
 `;
 
 export {
-  GET_INCIDENTS as GetIncidents,
-  GET_INCIDENT_DETAILS as GetIncidentDetails,
   CLOSE_INCIDENT as CloseIncident,
+  GET_INCIDENT_DETAILS as GetIncidentDetails,
+  GET_INCIDENTS as GetIncidents,
   INSERT_INCIDENT as InsertIncident,
   UPDATE_INCIDENT as UpdateIncident,
 };
-

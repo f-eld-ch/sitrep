@@ -14,8 +14,6 @@ services:
       HASURA_GRAPHQL_JWT_SECRET: '{"type":"RS256","jwk_url": "http://dex:5556/dex/keys" ,"header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["viewer","editor"],"x-hasura-default-role":"editor"}}'
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
-      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: naming_convention
-      HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION: graphql-default
       PG_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
     build:
       dockerfile: Dockerfile.hasura
