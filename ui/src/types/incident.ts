@@ -30,42 +30,40 @@ export interface IncidentDetailsVars {
   incidentId: string;
 }
 
-
 export interface InsertIncidentData {
-  insertIncidentsOne: Incident
+  insertIncidentsOne: Incident;
 }
 
 export interface InsertIncidentVars {
-  name: string
-  location: string
-  divisions: DivisionInput[]
-  journalName: string
+  name: string;
+  location: string;
+  divisions: DivisionInput[];
+  journalName: string;
 }
 
 export interface DivisionInput {
-  name: string,
-  description: string,
+  name: string;
+  description: string;
 }
 
 export interface DivisionUpdate {
-  name: string,
-  description: string,
-  incidentId: string
+  name: string;
+  description: string;
+  incidentId: string;
 }
 
-
 export interface UpdateIncidentData {
-  updateLocationsByPk: Location
+  updateLocationsByPk: Location;
   insertDivisions: {
-    affected_rows: Number
-  }
-  updateIncidentsByPk: Incident
+    affectedRows: Number;
+  };
+  updateIncidentsByPk: Incident;
 }
 
 export interface UpdateIncidentVars {
-  name: string
-  incidentId: string
-  location: string
-  locationId: string
-  divisions: DivisionUpdate[]
+  name: string;
+  incidentId: string;
+  location: string;
+  locationId: string;
+  divisions: DivisionUpdate[];
 }

@@ -76,7 +76,7 @@ export type Journal = {
 };
 
 export interface JournalListData {
-  incidents: Incident[]
+  incidents: Incident[];
   id: string;
   name: string;
   journals: Journal[];
@@ -95,7 +95,7 @@ interface TriageMessage extends Message {
 }
 
 export interface TriageMessageData {
-  messagesByPk: TriageMessage
+  messagesByPk: TriageMessage;
 }
 
 export interface TriageMessageVars {
@@ -116,19 +116,17 @@ export interface SaveMessageTriageVars {
 
 export interface SaveMessageTriageData {
   delete_message_division: {
-    affected_rows: number;
+    affectedRows: number;
   };
   insertMessageDivision: {
-    affected_rows: number;
+    affectedRows: number;
   };
   updateMessagesByPk: Message;
 }
 
-
 export interface InsertJournalData {
-  insertJournalsOne: Journal
+  insertJournalsOne: Journal;
 }
-
 
 export interface InsertJournalVars {
   name: string;

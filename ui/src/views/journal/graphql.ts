@@ -67,7 +67,7 @@ const GET_JOURNALS = gql`
 const CLOSE_JOURNAL = gql`
   mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
     updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
-      affected_rows
+      affectedRows
       returning {
         id
         closedAt
@@ -76,9 +76,27 @@ const CLOSE_JOURNAL = gql`
   }
 `;
 const INSERT_MESSAGE = gql`
-  mutation InsertMessage($journalId: uuid, $sender: String, $receiver: String, $time: timestamptz, $content: String, $receiverDetail: String, $senderDetail: String, $type: MediumEnum) {
+  mutation InsertMessage(
+    $journalId: uuid
+    $sender: String
+    $receiver: String
+    $time: timestamptz
+    $content: String
+    $receiverDetail: String
+    $senderDetail: String
+    $type: MediumEnum
+  ) {
     insertMessagesOne(
-      object: { content: $content, journalId: $journalId, receiver: $receiver, sender: $sender, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail}
+      object: {
+        content: $content
+        journalId: $journalId
+        receiver: $receiver
+        sender: $sender
+        time: $time
+        mediumId: $type
+        senderDetail: $senderDetail
+        receiverDetail: $receiverDetail
+      }
     ) {
       id
       createdAt
@@ -103,10 +121,27 @@ const INSERT_MESSAGE = gql`
 `;
 
 const UPDATE_MESSAGE = gql`
-  mutation UpdateMessage($messageId: uuid!, $content: String, $sender: String, $receiver: String, $time: timestamptz, $receiverDetail: String, $senderDetail: String, $type: MediumEnum) {
+  mutation UpdateMessage(
+    $messageId: uuid!
+    $content: String
+    $sender: String
+    $receiver: String
+    $time: timestamptz
+    $receiverDetail: String
+    $senderDetail: String
+    $type: MediumEnum
+  ) {
     updateMessagesByPk(
-      pk_columns: { id: $messageId }
-      _set: { content: $content, sender: $sender, receiver: $receiver, time: $time, mediumId: $type, senderDetail: $senderDetail, receiverDetail: $receiverDetail }
+      pkColumns: { id: $messageId }
+      _set: {
+        content: $content
+        sender: $sender
+        receiver: $receiver
+        time: $time
+        mediumId: $type
+        senderDetail: $senderDetail
+        receiverDetail: $receiverDetail
+      }
     ) {
       id
       createdAt
@@ -137,12 +172,12 @@ const SAVE_MESSAGE_TRIAGE = gql`
     $messageDivisions: [MessageDivisionInsertInput!]!
   ) {
     deleteMessageDivision(where: { messageId: { _eq: $messageId } }) {
-      affected_rows
+      affectedRows
     }
     insertMessageDivision(objects: $messageDivisions) {
-      affected_rows
+      affectedRows
     }
-    updateMessagesByPk(pk_columns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
+    updateMessagesByPk(pkColumns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
       id
       divisions {
         division {
@@ -191,13 +226,12 @@ const GET_MESSAGE_FOR_TRIAGE = gql`
 `;
 
 export {
+  CLOSE_JOURNAL as CloseJournal,
   GET_MESSAGES as GetJournalMessages,
   GET_JOURNALS as GetJournals,
-  INSERT_JOURNAL as InsertJournal,
-  CLOSE_JOURNAL as CloseJournal,
-  INSERT_MESSAGE as InsertMessage,
-  UPDATE_MESSAGE as UpdateMessage,
-  SAVE_MESSAGE_TRIAGE as SaveMessageTriage,
   GET_MESSAGE_FOR_TRIAGE as GetMessageForTriage,
+  INSERT_JOURNAL as InsertJournal,
+  INSERT_MESSAGE as InsertMessage,
+  SAVE_MESSAGE_TRIAGE as SaveMessageTriage,
+  UPDATE_MESSAGE as UpdateMessage,
 };
-
