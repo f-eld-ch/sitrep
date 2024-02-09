@@ -1,6 +1,6 @@
 version: 3
 endpoint: http://localhost:8080
-admin_secret: myadminsecretkey
+admin_secret: 388HMfQ00gEyg636O63S1jxRODTSoAiu_XHa0fXhtRo=
 metadata_directory: metadata
 actions:
   kind: synchronous
