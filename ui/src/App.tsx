@@ -1,18 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, HashRouter as Router, Routes } from "react-router-dom";
 
 import "./App.scss";
 
-import {
-  Editor as IncidentEditor,
-  List as IncidentList,
-  New as IncidentNew
-} from "views/incident";
+import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
 import {
   Editor as JournalEditor,
   List as JournalMessageList,
   New as JournalNew,
-  Overview as JournalOverview
+  Overview as JournalOverview,
 } from "views/journal";
 
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -29,7 +25,7 @@ import MessageSheet from "views/journal/MessageSheet";
 import { Layout } from "views/Layout";
 import { default as client } from "./client";
 
-const Map = lazy(() => import('views/map'));
+const Map = lazy(() => import("views/map"));
 
 function App() {
   const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
@@ -39,24 +35,27 @@ function App() {
     fetch("/oauth2/userinfo", { credentials: "include" })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("unauthenticated")
+          throw new Error("unauthenticated");
         }
         return response.json();
       })
       .then((userInfo) => {
-        setUserState({ isLoggedin: true, email: userInfo.email, username: userInfo.user || userInfo.preferredUsername });
+        setUserState({
+          isLoggedin: true,
+          email: userInfo.email,
+          username: userInfo.user || userInfo.preferredUsername,
+        });
       })
       .catch(() => {
         setUserState({ isLoggedin: false, email: "", username: "" });
         // redirect to the login page of oAuth2Proxy
-        window.location.replace('/oauth2/sign_in');
+        window.location.replace("/oauth2/sign_in");
       });
   };
 
-
   useEffect(() => {
     setUserStateFromUserinfo();
-    i18n.changeLanguage()
+    i18n.changeLanguage();
 
     const interval = setInterval(() => {
       setUserStateFromUserinfo();
@@ -127,10 +126,7 @@ function App() {
                     path=":journalId"
                     element={
                       <Layout>
-                        <JournalMessageList
-                          showControls={false}
-                          autoScroll={true}
-                        />
+                        <JournalMessageList showControls={false} autoScroll={true} />
                       </Layout>
                     }
                   />
@@ -156,7 +152,7 @@ function App() {
                   path="map"
                   element={
                     <Layout>
-                      <Suspense fallback={<Spinner />} >
+                      <Suspense fallback={<Spinner />}>
                         <Map />
                       </Suspense>
                     </Layout>
@@ -192,7 +188,7 @@ function App() {
           </Routes>
         </Router>
       </ApolloProvider>
-    </UserContext.Provider >
+    </UserContext.Provider>
   );
 }
 
