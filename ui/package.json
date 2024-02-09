@@ -40,7 +40,8 @@
     "start": "VERSION=dev GIT_SHA=HEAD vite",
     "build": "tsc && vite build",
     "test": "vitest",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-pwa-assets": "pwa-assets-generator"
   },
   "eslintConfig": {
     "extends": [
@@ -78,8 +79,10 @@
     "@types/react-color": "^3.0.11",
     "@types/react-dom": "^18.2.18",
     "@types/react-router-dom": "^5.3.3",
+    "@types/semver": "^7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "@vite-pwa/assets-generator": "^0.2.3",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "@vitest/coverage-v8": "^1.2.2",
     "eslint": "^8.56.0",
@@ -90,21 +93,23 @@
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.4",
     "sass": "^1.70.0",
+    "semver": "^7.6.0",
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.1.2",
     "typescript": "^4.9.5",
     "vite": "^5.0.12",
     "vite-plugin-checker": "^0.6.4",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-pwa": "^0.17.5",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.1",
     "vitest": "^1.2.2"
   },
   "resolutions": {
     "json5": "^2.2.3",
-    "semver": "^5.7.2",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.18"
+    "@types/react-dom": "^18.2.18",
+    "sharp": "^0.33.2"
   },
   "packageManager": "yarn@4.1.0"
 }
