@@ -1,4 +1,4 @@
-FROM docker.io/hasura/graphql-engine:v2.37.0-ce.cli-migrations-v3.ubi
+FROM docker.io/hasura/graphql-engine:v2.37.0-ce.cli-migrations-v3.ubuntu
 COPY hasura/migrations /hasura-migrations
 COPY hasura/metadata /hasura-metadata
 ENV HASURA_GRAPHQL_EXPERIMENTAL_FEATURES=naming_convention
