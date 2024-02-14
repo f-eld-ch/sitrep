@@ -27,7 +27,7 @@ export default defineConfig({
       typescript: true,
     }),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       injectRegister: "auto",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
@@ -66,7 +66,7 @@ export default defineConfig({
         start_url: ".",
         theme_color: "#000000",
         background_color: "#ffffff",
-      },
+      }
     }),
   ],
   resolve: {
