@@ -283,7 +283,7 @@ export const drawStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 0],
             'text-ignore-placement': true,
@@ -306,7 +306,7 @@ export const drawStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'right',
             'text-offset': [2.25, 0.25],
             'text-ignore-placement': true,
@@ -328,7 +328,7 @@ export const drawStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 1.75],
             'text-ignore-placement': true,
@@ -349,7 +349,7 @@ export const drawStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
             'symbol-placement': 'line',
             'text-offset': [0, 0.5],
@@ -372,7 +372,7 @@ export const drawStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
             'symbol-placement': 'line-center',
             'text-offset': [0, 1],
@@ -734,7 +734,7 @@ export const displayStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 0],
             'text-ignore-placement': true,
@@ -757,7 +757,7 @@ export const displayStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'right',
             'text-offset': [2.25, 0.25],
             'text-ignore-placement': true,
@@ -779,7 +779,7 @@ export const displayStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 1.75],
             'text-ignore-placement': true,
@@ -800,7 +800,7 @@ export const displayStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
             'symbol-placement': 'line',
             'text-offset': [0, 0.5],
@@ -823,7 +823,7 @@ export const displayStyle = [
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
-            'text-font': ["Frutiger Neue Condensed Bold"],
+            'text-font': ["B612 Bold"],
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 2, 17, 20],
             'symbol-placement': 'line-center',
             'text-offset': [0, 1],
