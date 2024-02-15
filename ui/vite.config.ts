@@ -30,7 +30,7 @@ export default defineConfig({
       registerType: "prompt",
       injectRegister: "auto",
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf}"],
         navigateFallbackDenylist: [
           /^\/oauth2/,
           /^\/api/,

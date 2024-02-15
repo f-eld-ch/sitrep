@@ -4,15 +4,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from "classnames";
 import React, { useCallback, useState } from "react";
 import "./StyleController.scss";
+import basisKarte from 'assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json?url';
+import basisKarteImagery from 'assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json?url';
 
 const MapStyles: MapStyle[] = [
     {
         name: "Basiskarte",
-        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json"
+        uri: basisKarte,
     },
     {
         name: "Satellit",
-        uri: "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/style.json"
+        uri: basisKarteImagery,
     },
 ]
 
