@@ -48,8 +48,6 @@ function App() {
       })
       .catch(() => {
         setUserState({ isLoggedin: false, email: "", username: "" });
-        // redirect to the login page of oAuth2Proxy
-        window.location.replace("/oauth2/sign_in");
       });
   };
 
