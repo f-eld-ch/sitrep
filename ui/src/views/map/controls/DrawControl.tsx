@@ -4,7 +4,6 @@ import { useControl } from "react-map-gl";
 import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
 import type { ControlPosition } from "react-map-gl/maplibre";
 
-
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
     position?: ControlPosition;
     setDraw: Dispatch<SetStateAction<MapboxDraw | undefined>>
@@ -37,7 +36,6 @@ function DrawControl(props: DrawControlProps) {
 
             const draw = new MapboxDraw(props);
             setDraw(draw);
-
             return draw;
         },
         ({ map }) => {
@@ -66,7 +64,7 @@ DrawControl.defaultProps = {
     onDelete: () => { },
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onCombine: () => { },
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // eslint-disable-nexexport default memo(DrawControl);t-line @typescript-eslint/no-empty-function
     onSelectionChange: () => { }
 };
 

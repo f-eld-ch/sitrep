@@ -2,6 +2,7 @@ import bearing from '@turf/bearing';
 import { point } from '@turf/helpers';
 import { BabsIcon, Schaeden, Others } from 'components/BabsIcons';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import { memo } from 'react';
 import { Layer, Source } from "react-map-gl";
 
 const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometry, GeoJsonProperties>[] => {
@@ -105,7 +106,7 @@ const EnrichLineStringMap: { [key: string]: EnrichLineConfig } = {
 
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
     let enrichedFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
-    enrichedFC.features = Object.assign([], props.featureCollection.features.filter(f => f.properties?.deletedAt === undefined).filter(f => f.id !== props.selectedFeature).flatMap(f => enrichFeature(f)))
+    enrichedFC.features = Object.assign([], props.featureCollection.features.filter(f => f.properties?.deletedAt === null).filter(f => f.id !== props.selectedFeature).flatMap(f => enrichFeature(f)))
 
     return <Source id="enriched" type="geojson" data={enrichedFC} >
         <Layer type="symbol" layout={{
@@ -119,7 +120,7 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
     </Source>
 }
 
-export const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
+const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
 
     return <>
         <EnrichedSymbolSource {...props} />
@@ -128,7 +129,12 @@ export const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
 
 interface EnrichedFeaturesProps {
     featureCollection: FeatureCollection;
-    selectedFeature: string | number | undefined
+    selectedFeature?: string | number | undefined
 }
 
-export default EnrichedFeaturesSource;
+const MemoEnrichedFeaturesSource = memo(EnrichedFeaturesSource);
+export {
+    MemoEnrichedFeaturesSource as EnrichedFeaturesSource
+}
+
+export default memo(EnrichedFeaturesSource);
