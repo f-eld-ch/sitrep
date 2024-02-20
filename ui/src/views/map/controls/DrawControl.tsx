@@ -19,7 +19,7 @@ function DrawControl(props: DrawControlProps) {
     const { setDraw: setDrawInParent } = props;
 
     useEffect(() => {
-        if (draw) setDrawInParent(draw)
+        setDrawInParent(draw)
     }, [draw, setDrawInParent])
 
     useControl<MapboxDraw>(
@@ -34,8 +34,9 @@ function DrawControl(props: DrawControlProps) {
             map.on("draw.delete", (e) => props.onDelete(e));
             map.on("draw.selectionchange", (e) => props.onSelectionChange(e))
 
-            const draw = new MapboxDraw(props);
+            let draw = new MapboxDraw(props);
             setDraw(draw);
+
             return draw;
         },
         ({ map }) => {

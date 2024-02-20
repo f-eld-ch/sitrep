@@ -102,14 +102,17 @@ const EnrichLineStringMap: { [key: string]: EnrichLineConfig } = {
     },
 }
 
-
-
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
+    const { id, featureCollection } = props;
     let enrichedFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
-    enrichedFC.features = Object.assign([], props.featureCollection.features.filter(f => f.properties?.deletedAt === null).filter(f => f.id !== props.selectedFeature).flatMap(f => enrichFeature(f)))
+    enrichedFC.features = Object.assign([],
+        featureCollection.features.filter(f => f.properties?.deletedAt === null)
+            .filter(f => f.id !== props.selectedFeature)
+            .flatMap(f => enrichFeature(f))
+    )
 
-    return <Source id="enriched" type="geojson" data={enrichedFC} >
-        <Layer type="symbol" layout={{
+    return <Source key={id} id={id} type="geojson" data={enrichedFC} >
+        <Layer id={id + "enriched-points"} type="symbol" layout={{
             'icon-image': ['coalesce', ["get", "icon"], 'default_marker'],
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
@@ -128,13 +131,15 @@ const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
 }
 
 interface EnrichedFeaturesProps {
+    id: string;
     featureCollection: FeatureCollection;
-    selectedFeature?: string | number | undefined
+    selectedFeature?: string | number | undefined;
 }
 
 const MemoEnrichedFeaturesSource = memo(EnrichedFeaturesSource);
 export {
-    MemoEnrichedFeaturesSource as EnrichedFeaturesSource
+    MemoEnrichedFeaturesSource as EnrichedFeaturesSource,
+    EnrichedSymbolSource
 }
 
 export default memo(EnrichedFeaturesSource);
