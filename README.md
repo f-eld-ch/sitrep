@@ -1,4 +1,5 @@
 # Sitrep
+
 ![Lage](docs/images/Lage1.png?raw=true "Lage")
 ![Lage2](docs/images/Lage2.png?raw=true "Lage2")
 ![Overview](docs/images/IncidentOverview.png?raw=true "Overview")
@@ -22,14 +23,13 @@ A simple local development environment can be created using docker compose and t
 Oauth2_PROXY clients can be created using Auth0....
 
 ```
-OAUTH2_PROXY_CLIENT_ID=...
-OAUTH2_PROXY_CLIENT_SECRET=...
-OAUTH2_PROXY_OIDC_ISSUER_URL=https://${TENANT.eu.auth0.com/
-HASURA_GRAPHQL_JWT_SECRET='{"type":"RS256","key":"-----BEGIN CERTIFICATE-----\n
-...
-}\n-----END CERTIFICATE-----\n","header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["user","editor"],"x-hasura-default-role":"user"}}'
+OAUTH2_PROXY_CLIENT_ID=sitrep
+OAUTH2_PROXY_CLIENT_SECRET=ds8LCRW4jhB58nWdMgZHeVISqx3O3e1o3g0LEr9H8tM=   # generate with: openssl rand -base64 32 | tr -- '+/' '-_'
+OAUTH2_PROXY_COOKIE_SECRET=kvicWov5Y_w10r2vmnxJTUTugMUtBp6_R4loxuANMtg= # generate with: openssl rand -base64 32 | tr -- '+/' '-_'
+HASURA_GRAPHQL_ADMIN_SECRET=388HMfQ00gEyg636O63S1jxRODTSoAiu_XHa0fXhtRo=  # generate with: openssl rand -base64 32 | tr -- '+/' '-_'
 POSTGRES_PASSWORD=postgrespassword
-HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+
+OAUTH2_PROXY_REDIRECT_URL=http://localhost:3000/oauth2/callback # port for yarn dev server%
 ```
 
 3. Run docker compose environment:
@@ -41,7 +41,12 @@ docker compose --env-file .env.local up -d
 4. Run yarn
 
 ```
-yarn start
+cd ui && yarn start
 ```
 
-5. Open [localhost:3000](http://localhost:3000/). This will automatically proxy to the OAUTH2 proxy which will then proxy requests towards the graphql-engine with its /v1/graphql
+5. Open [localhost:3000](http://localhost:3000/). This will automatically proxy to the OAUTH2 proxy which will then proxy requests towards the graphql-engine with its /v1/graphql. Authentication will be handled by the local dex IDP with it's mock provider. Just click on **Log in with Example**.
+
+### Translations
+
+- To correct or add **translations** we invite you to help us out [on Weblate](https://hosted.weblate.org/projects/sitrep).<br>
+  [![Translation status](https://hosted.weblate.org/widgets/sitrep/-/287x66-grey.png)](https://hosted.weblate.org/engage/sitrep/)
