@@ -3503,12 +3503,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mapbox-gl@npm:>=1.0.0, @types/mapbox-gl@npm:^2.7.19":
+"@types/mapbox-gl@npm:>=1.0.0":
   version: 2.7.19
   resolution: "@types/mapbox-gl@npm:2.7.19"
   dependencies:
     "@types/geojson": "npm:*"
   checksum: 10/fa80ff71b1b984801c6dc2307b8c99ef127631c8ee5096f9e010f39832a0976f57eda9a5599100f211e8eab4c63ff151f661c67af8afb52ad42ea04a13bf7a21
+  languageName: node
+  linkType: hard
+
+"@types/mapbox-gl@npm:^2.7.21":
+  version: 2.7.21
+  resolution: "@types/mapbox-gl@npm:2.7.21"
+  dependencies:
+    "@types/geojson": "npm:*"
+  checksum: 10/95ad2c0c135b090dfef9a5fc8e66a0f2ac70d44617c23e10984288fe268c49e9c72c3e801461a680ad60981c6b2fdd03a4f0df5ccc2bfa24f4b00c5ef6c66df4
   languageName: node
   linkType: hard
 
@@ -13666,7 +13675,7 @@ __metadata:
     "@types/hat": "npm:^0.0.4"
     "@types/jest": "npm:^29.5.11"
     "@types/lodash": "npm:^4.14.202"
-    "@types/mapbox-gl": "npm:^2.7.19"
+    "@types/mapbox-gl": "npm:^2.7.21"
     "@types/mapbox__mapbox-gl-draw": "npm:~1.3.3"
     "@types/node": "npm:^20.11.6"
     "@types/react": "npm:^18.2.48"
