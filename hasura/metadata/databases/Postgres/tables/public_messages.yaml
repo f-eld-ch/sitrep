@@ -1,0 +1,138 @@
+table:
+  name: messages
+  schema: public
+object_relationships:
+  - name: author
+    using:
+      foreign_key_constraint_on: author_sub
+  - name: journal
+    using:
+      foreign_key_constraint_on: journal_id
+  - name: medium
+    using:
+      foreign_key_constraint_on: medium_id
+  - name: priority
+    using:
+      foreign_key_constraint_on: priority_id
+  - name: triage
+    using:
+      foreign_key_constraint_on: triage_id
+array_relationships:
+  - name: divisions
+    using:
+      foreign_key_constraint_on:
+        column: message_id
+        table:
+          name: message_division
+          schema: public
+insert_permissions:
+  - role: editor
+    permission:
+      check:
+        _and:
+          - sender:
+              _ne: ""
+          - receiver:
+              _ne: ""
+          - content:
+              _ne: ""
+          - journal:
+              _and:
+                - closed_at:
+                    _is_null: true
+                - deleted_at:
+                    _is_null: true
+                - incident:
+                    _and:
+                      - closed_at:
+                          _is_null: true
+                      - deleted_at:
+                          _is_null: true
+      set:
+        author_sub: x-hasura-User-Id
+      columns:
+        - content
+        - journal_id
+        - medium_id
+        - receiver
+        - receiver_detail
+        - sender
+        - sender_detail
+        - time
+select_permissions:
+  - role: editor
+    permission:
+      columns:
+        - content
+        - created_at
+        - deleted_at
+        - id
+        - medium_id
+        - priority_id
+        - receiver
+        - receiver_detail
+        - sender
+        - sender_detail
+        - time
+        - triage_id
+        - updated_at
+      filter:
+        deleted_at:
+          _is_null: true
+  - role: viewer
+    permission:
+      columns:
+        - content
+        - created_at
+        - deleted_at
+        - id
+        - medium_id
+        - priority_id
+        - receiver
+        - receiver_detail
+        - sender
+        - sender_detail
+        - time
+        - triage_id
+        - updated_at
+      filter:
+        deleted_at:
+          _is_null: true
+update_permissions:
+  - role: editor
+    permission:
+      columns:
+        - content
+        - medium_id
+        - priority_id
+        - receiver
+        - receiver_detail
+        - sender
+        - sender_detail
+        - time
+        - triage_id
+      filter:
+        deleted_at:
+          _is_null: true
+      check:
+        _and:
+          - sender:
+              _ne: ""
+          - receiver:
+              _ne: ""
+          - content:
+              _ne: ""
+          - journal:
+              _and:
+                - closed_at:
+                    _is_null: true
+                - deleted_at:
+                    _is_null: true
+                - incident:
+                    _and:
+                      - closed_at:
+                          _is_null: true
+                      - deleted_at:
+                          _is_null: true
+      set:
+        author_sub: x-hasura-User-Id

@@ -1,0 +1,19 @@
+.control-panel {
+    font-family: "Open Sans";
+    font-size: 14px;
+    line-height: 18px;
+    background: #fff;
+    min-height: 200px;
+    min-width: 400px;
+    margin-right: 50px;
+    margin-top: 10px;
+    margin-left: 50px;
+    padding: 20px 20px 20px 20px !important;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+    display: block;
+    padding: 0;
+    outline: none;
+    border: 0;
+    box-sizing: border-box;
+    cursor: pointer;
+}
