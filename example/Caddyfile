@@ -1,0 +1,19 @@
+# add your IP / domain here
+sitrep.local, 10.40.1.125 {
+    log
+    reverse_proxy /dex* localhost:5556 {
+        header_up Host {host} # redundant
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}  # redundant
+        header_up X-Forwarded-Port {server_port} # redundant
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    reverse_proxy localhost:4180 {
+        header_up Host {host} # redundant
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}  # redundant
+        header_up X-Forwarded-Port {server_port} # redundant
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

@@ -1,0 +1,113 @@
+name: sitrep
+services:
+  graphql-engine:
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"RS256","jwk_url": "http://dex:5556/dex/keys" ,"header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["viewer","editor"],"x-hasura-default-role":"editor"}}'
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: naming_convention
+      HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION: graphql-default
+      PG_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+    image: ghcr.io/f-eld-ch/sitrep-hasura:edge
+    networks:
+      default: null
+    restart: always
+  sitrep:
+    depends_on:
+      graphql-engine:
+        condition: service_started
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET}
+      OAUTH2_PROXY_COOKIE_CSRF_PER_REQUEST: true
+      OAUTH2_PROXY_COOKIE_CSRF_EXPIRE: 5m
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_HTTP_ADDRESS: :4180
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_PROXY_WEBSOCKETS: "true"
+      OAUTH2_PROXY_UPSTREAMS: "http://graphql-engine:8080/v1/graphql,file:///static/#/"
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
+      OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: true
+      OAUTH2_PROXY_REDIRECT_URL: https://${SITREP_HOSTNAME}/oauth2/callback
+      OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: true
+      OAUTH2_PROXY_OIDC_ISSUER_URL: http://dex:5556/dex
+    image: ghcr.io/f-eld-ch/sitrep:edge
+    extra_hosts:
+      - "${SITREP_HOSTNAME}:host-gateway"
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 4180
+        published: "4180"
+        protocol: tcp
+    restart: always
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgis/postgis:14-3.2
+    networks:
+      default: null
+    restart: always
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+        volume: {}
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+  dex:
+    image: docker.io/dexidp/dex:v2.38.0
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      DEX_CONNECTORS_ENABLE_MOCK: "true"
+      DEX_CONNECTORS_ENABLE_DEMO_USER: "true"
+      DEX_ISSUER: https://${SITREP_HOSTNAME}/dex
+      OAUTH2_PROXY_REDIRECT_URL: https://${SITREP_HOSTNAME}/oauth2/callback
+    networks:
+      default: null
+    restart: always
+    extra_hosts:
+      - "${SITREP_HOSTNAME}:host-gateway"
+    command: dex serve /etc/dex/config-demo.yaml
+    volumes:
+      - type: bind
+        source: ./dexidp/config-demo.yaml
+        target: /etc/dex/config-demo.yaml
+        read_only: true
+      - type: volume
+        source: dex_data
+        target: /var/sqlite/dex
+        volume: {}
+    ports:
+      - mode: ingress
+        target: 5556
+        published: "5556"
+        protocol: tcp
+      - mode: ingress
+        target: 5557
+        published: "5557"
+        protocol: tcp
+networks:
+  default:
+    name: sitrep_default
+volumes:
+  db_data:
+    name: sitrep_db_data
+  dex_data:
+    name: sitrep_dex_data
