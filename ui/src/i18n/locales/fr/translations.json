@@ -57,6 +57,7 @@
     "messageSheet": "formulaire d'inscription",
     "messageTriageTitle": "trier le message",
     "name": "nom",
+    "incidentName": "nom d'incident",
     "open": "ouvert",
     "options": "options",
     "otherDetails": "détails",
