@@ -101,14 +101,17 @@ const EnrichLineStringMap: { [key: string]: EnrichLineConfig } = {
     },
 }
 
-
-
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
+    const { id, featureCollection } = props;
     let enrichedFC: FeatureCollection = { "type": "FeatureCollection", "features": [] };
-    enrichedFC.features = Object.assign([], props.featureCollection.features.filter(f => f.properties?.deletedAt === undefined).filter(f => f.id !== props.selectedFeature).flatMap(f => enrichFeature(f)))
+    enrichedFC.features = Object.assign([],
+        featureCollection.features.filter(f => f.properties?.deletedAt === null)
+            .filter(f => f.id !== props.selectedFeature)
+            .flatMap(f => enrichFeature(f))
+    )
 
-    return <Source id="enriched" type="geojson" data={enrichedFC} >
-        <Layer type="symbol" layout={{
+    return <Source key={id} id={id} type="geojson" data={enrichedFC} >
+        <Layer id={id + "enriched-points"} type="symbol" layout={{
             'icon-image': ['coalesce', ["get", "icon"], 'default_marker'],
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
@@ -119,7 +122,11 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
     </Source>
 }
 
-export const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
+const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
+
+    if (props.id === undefined) {
+        return null
+    }
 
     return <>
         <EnrichedSymbolSource {...props} />
@@ -127,8 +134,14 @@ export const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
 }
 
 interface EnrichedFeaturesProps {
+    id: string | undefined;
     featureCollection: FeatureCollection;
-    selectedFeature: string | number | undefined
+    selectedFeature?: string | number | undefined;
+}
+
+export {
+    EnrichedFeaturesSource,
+    EnrichedSymbolSource
 }
 
 export default EnrichedFeaturesSource;

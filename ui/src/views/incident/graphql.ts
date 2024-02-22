@@ -47,12 +47,14 @@ const INSERT_INCIDENT = gql`
     $location: String
     $divisions: [DivisionsInsertInput!]!
     $journalName: String
+    $layerName: String
   ) {
     insertIncidentsOne(
       object: {
         name: $name
         location: { data: { name: $location } }
         journals: { data: { name: $journalName } }
+        layers: { data: { name: $layerName } }
         divisions: { data: $divisions }
       }
     ) {
@@ -66,6 +68,10 @@ const INSERT_INCIDENT = gql`
         name
         id
         description
+      }
+      layers {
+        name
+        id
       }
     }
   }

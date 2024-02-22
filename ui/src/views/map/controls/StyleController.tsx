@@ -19,7 +19,7 @@ const MapStyles: MapStyle[] = [
 ]
 
 export const selectedStyle = makeVar<MapStyle>(MapStyles[0]);
-
+export const activeLayer = makeVar<string>("");
 
 type MapStyle = {
     name: string,

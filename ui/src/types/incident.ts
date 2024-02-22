@@ -1,4 +1,5 @@
 import { Division, Journal } from "./journal";
+import { Layer } from "./layer";
 
 export interface Location {
   name: string;
@@ -16,6 +17,7 @@ export type Incident = {
   location: Location;
   divisions: Division[];
   journals: Journal[];
+  layers: Layer[];
 };
 
 export interface IncidentListData {
@@ -39,6 +41,7 @@ export interface InsertIncidentVars {
   location: string;
   divisions: DivisionInput[];
   journalName: string;
+  layerName: string;
 }
 
 export interface DivisionInput {

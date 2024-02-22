@@ -1,19 +1,41 @@
 import { faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React from "react";
+import React, { useCallback, useContext, useState } from "react";
 import "./LayerControl.scss";
-
-import { } from 'components/BabsIcons';
+import { Layer } from 'types/layer';
+import classNames from 'classnames';
+import { LayerContext } from '../LayerContext';
 
 function LayerPanel() {
-    // const [active, setActive] = useState<string>()
-    // const [visble, setVisible] = useState<string>()
+    const [active, setActive] = useState<boolean>(false);
+    const { state, dispatch } = useContext(LayerContext);
+
+    const btnClass = classNames({
+        'maplibregl-ctrl-icon': true,
+        'active': active,
+        'is-hidden': active,
+    });
+
+    const switcherClass = classNames({
+        'maplibregl-layer-list': true,
+        'maplibregl-ctrl-icon': true,
+        'is-hidden': !active,
+        'mr-50': true,
+    })
+
+    const onClick = useCallback((l: Layer) => {
+        setActive(false);
+        dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: l.id } })
+    }, [dispatch]);
 
     return (
-        <div className="maplibregl-ctrl-bottom-right mapboxgl-ctrl-bottom-right">
-            <div className='mapboxgl-ctrl mapboxgl-ctrl-group'>
-                <button type="button" className='maplibregl-ctrl-icon'><FontAwesomeIcon icon={faLayerGroup} size="xl" /></button>
+        <div className="maplibregl-ctrl-bottom-right mapboxgl-ctrl-bottom-right" style={{ paddingBottom: "65px" }}>
+            <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
+                <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faLayerGroup} size="lg" /></button>
+                <div className={switcherClass}>
+                    {state.layers.map((l) => { return <button type="button" className={classNames({ "button": true, "active": state.activeLayer === l.id })} key={l.id} onClick={() => onClick(l)}>{l.name}</button> })}
+                </div >
             </div>
         </div >
     );

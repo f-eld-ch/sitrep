@@ -1,6 +1,8 @@
 - "!include public_divisions.yaml"
+- "!include public_features.yaml"
 - "!include public_incidents.yaml"
 - "!include public_journals.yaml"
+- "!include public_layers.yaml"
 - "!include public_locations.yaml"
 - "!include public_medium.yaml"
 - "!include public_message_division.yaml"
