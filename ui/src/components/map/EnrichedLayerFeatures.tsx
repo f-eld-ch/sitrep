@@ -2,7 +2,6 @@ import bearing from '@turf/bearing';
 import { point } from '@turf/helpers';
 import { BabsIcon, Schaeden, Others } from 'components/BabsIcons';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
-import { memo } from 'react';
 import { Layer, Source } from "react-map-gl";
 
 const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometry, GeoJsonProperties>[] => {
@@ -125,21 +124,24 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
 
 const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
 
+    if (props.id === undefined) {
+        return null
+    }
+
     return <>
         <EnrichedSymbolSource {...props} />
     </>
 }
 
 interface EnrichedFeaturesProps {
-    id: string;
+    id: string | undefined;
     featureCollection: FeatureCollection;
     selectedFeature?: string | number | undefined;
 }
 
-const MemoEnrichedFeaturesSource = memo(EnrichedFeaturesSource);
 export {
-    MemoEnrichedFeaturesSource as EnrichedFeaturesSource,
+    EnrichedFeaturesSource,
     EnrichedSymbolSource
 }
 
-export default memo(EnrichedFeaturesSource);
+export default EnrichedFeaturesSource;

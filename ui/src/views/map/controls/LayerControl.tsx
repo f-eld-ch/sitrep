@@ -1,20 +1,15 @@
 import { faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import "./LayerControl.scss";
 import { Layer } from 'types/layer';
-import { activeLayerVar } from 'cache';
 import classNames from 'classnames';
-import { useReactiveVar } from '@apollo/client';
+import { LayerContext } from '../LayerContext';
 
-function LayerPanel(props: { layers: Layer[] }) {
+function LayerPanel() {
     const [active, setActive] = useState<boolean>(false);
-    const activeLayer = useReactiveVar(activeLayerVar);
-
-    const [activeLayerState, setActiveLayerState] = useState<string>(activeLayer);
-
-    const { layers } = props;
+    const { state, dispatch } = useContext(LayerContext);
 
     const btnClass = classNames({
         'maplibregl-ctrl-icon': true,
@@ -31,19 +26,15 @@ function LayerPanel(props: { layers: Layer[] }) {
 
     const onClick = useCallback((l: Layer) => {
         setActive(false);
-        setActiveLayerState(l.id);
-    }, [setActive]);
-
-    useEffect(() => {
-        activeLayerVar(activeLayerState);
-    }, [activeLayerState])
+        dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: l.id } })
+    }, [dispatch]);
 
     return (
         <div className="maplibregl-ctrl-bottom-right mapboxgl-ctrl-bottom-right" style={{ paddingBottom: "65px" }}>
             <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
                 <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faLayerGroup} size="lg" /></button>
                 <div className={switcherClass}>
-                    {layers.map((l) => { return <button type="button" className={classNames({ "button": true, "active": activeLayer === l.id })} key={l.id} onClick={() => onClick(l)}>{l.name}</button> })}
+                    {state.layers.map((l) => { return <button type="button" className={classNames({ "button": true, "active": state.activeLayer === l.id })} key={l.id} onClick={() => onClick(l)}>{l.name}</button> })}
                 </div >
             </div>
         </div >

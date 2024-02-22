@@ -13,9 +13,7 @@ export type Layer = {
 };
 
 export type Feature = {
-  id: string;
-  name: string;
-  layer: Layer;
+  id: string | number | undefined;
   geometry: Geometry;
   properties: GeoJsonProperties;
   createdAt: Date;

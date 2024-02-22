@@ -1,51 +1,57 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { useControl } from "react-map-gl";
-
-import { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
-import type { ControlPosition } from "react-map-gl/maplibre";
+import { memo, useContext, useState } from "react";
+import { type ControlPosition } from "react-map-gl/maplibre";
+import { LayerContext } from "../LayerContext";
+import { FeatureEvent, CombineFeatureEvent } from "../Map";
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
     position?: ControlPosition;
-    setDraw: Dispatch<SetStateAction<MapboxDraw | undefined>>
-    onCreate: (e: any) => void;
-    onUpdate: (e: any) => void;
-    onDelete: (e: any) => void;
-    onCombine: (e: any) => void;
-    onSelectionChange: (e: any) => void;
+    onCreate: (e: FeatureEvent) => void
+    onUpdate: (e: FeatureEvent) => void
+    onDelete: (e: FeatureEvent) => void
+    onCombine: (e: CombineFeatureEvent) => void
+    onSelectionChange: (e: FeatureEvent) => void
 };
 
 function DrawControl(props: DrawControlProps) {
+    const { dispatch } = useContext(LayerContext);
     const [draw, setDraw] = useState<MapboxDraw>();
-    const { setDraw: setDrawInParent } = props;
 
-    useEffect(() => {
-        setDrawInParent(draw)
-    }, [draw, setDrawInParent])
+    const {
+        onCreate,
+        onDelete,
+        onUpdate,
+        onSelectionChange,
+        onCombine,
+    } = props;
 
     useControl<MapboxDraw>(
         ({ map }) => {
+            let d = new MapboxDraw(props);
+            setDraw(d);
 
-            // map.on("draw.create", (e) => console.log("onCreate:", e));
-            // map.on("draw.update", (e) => console.log("onUpdate:", e));
-            map.on("draw.create", (e) => props.onCreate(e));
-            map.on("draw.update", (e) => props.onUpdate(e));
-            map.on("draw.combine", (e) => props.onCombine(e));
-            map.on("draw.uncombine", (e) => props.onCombine(e));
-            map.on("draw.delete", (e) => props.onDelete(e));
-            map.on("draw.selectionchange", (e) => props.onSelectionChange(e))
-
-            let draw = new MapboxDraw(props);
-            setDraw(draw);
-
-            return draw;
+            map.on("draw.create", (e) => { onCreate(e) });
+            map.on("draw.update", (e) => { onUpdate(e) });
+            map.on("draw.combine", (e) => { onCombine(e) });
+            map.on("draw.uncombine", (e) => { onCombine(e) });
+            map.on("draw.delete", (e) => { onDelete(e) });
+            map.on("draw.selectionchange", (e) => { onSelectionChange(e) });
+            return d;
+        },
+        () => {
+            if (draw) {
+                dispatch({ type: "SET_DRAW", payload: { draw: draw } })
+            }
         },
         ({ map }) => {
-            map.off("draw.create", (e) => props.onCreate(e));
-            map.off("draw.update", (e) => props.onUpdate(e));
-            map.off("draw.combine", (e) => props.onCombine(e));
-            map.off("draw.uncombine", (e) => props.onCombine(e));
-            map.off("draw.delete", (e) => props.onDelete(e));
-            map.off("draw.selectionchange", (e) => props.onSelectionChange(e))
+            map.off("draw.create", (e) => onCreate(e));
+            map.off("draw.update", (e) => onUpdate(e));
+            map.off("draw.combine", (e) => onCombine(e));
+            map.off("draw.uncombine", (e) => onCombine(e));
+            map.off("draw.delete", (e) => onDelete(e));
+            map.off("draw.selectionchange", (e) => onSelectionChange(e))
+            dispatch({ type: "SET_DRAW", payload: { draw: undefined } })
         },
         {
             position: props.position
@@ -54,19 +60,4 @@ function DrawControl(props: DrawControlProps) {
 
     return null;
 }
-
-
-DrawControl.defaultProps = {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onCreate: (e: any) => console.log("onCreate:", e),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onUpdate: (e: any) => console.log("onCreate:", e),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onDelete: () => { },
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onCombine: () => { },
-    // eslint-disable-nexexport default memo(DrawControl);t-line @typescript-eslint/no-empty-function
-    onSelectionChange: () => { }
-};
-
 export default memo(DrawControl);

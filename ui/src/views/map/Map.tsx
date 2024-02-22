@@ -1,36 +1,33 @@
 
-import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import DefaultMaker from 'assets/marker.svg';
-import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
-import EnrichedLayerFeatures, { EnrichedSymbolSource } from 'components/map/EnrichedLayerFeatures';
-import { Feature, FeatureCollection } from 'geojson';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import { Dispatch, SetStateAction, memo, useCallback, useEffect, useRef, useState } from 'react';
-import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap } from 'react-map-gl/maplibre';
-import { useParams } from 'react-router-dom';
-import Notification from 'utils/Notification';
 import './control-panel.css';
-import { BabsIconController } from './controls/BabsIconController';
-import DrawControl from './controls/DrawControl';
-import ExportControl from './controls/ExportControl';
-import { StyleController, selectedStyle } from './controls/StyleController';
-import { displayStyle, drawStyle } from './style';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from './graphql';
 import { AddFeatureVars, DeleteFeatureVars, GetLayersData, GetLayersVars, Layer, ModifyFeatureVars } from 'types/layer';
-import { } from 'utils';
+import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
+import { BabsIconController } from './controls/BabsIconController';
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from './utils';
+import { displayStyle, drawStyle } from './style';
+import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
 import { first } from 'lodash';
-import { activeLayerVar } from 'cache';
-import bbox from "@turf/bbox";
-import LayerControl from './controls/LayerControl';
+import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap } from 'react-map-gl/maplibre';
 import { Layer as MapLayer } from 'react-map-gl';
+import { LayerContext, LayersProvider } from './LayerContext';
+import { StyleController, selectedStyle } from './controls/StyleController';
+import { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { useParams } from 'react-router-dom';
+import bbox from "@turf/bbox";
+import DefaultMaker from 'assets/marker.svg';
+import DrawControl from './controls/DrawControl';
+import EnrichedLayerFeatures, { EnrichedSymbolSource } from 'components/map/EnrichedLayerFeatures';
+import ExportControl from './controls/ExportControl';
+import LayerControl from './controls/LayerControl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import maplibregl from 'maplibre-gl';
 
 const modes = {
     ...MapboxDraw.modes,
-    // 'draw_point': BabsPointMode
 };
 
 function MapView() {
@@ -68,9 +65,6 @@ function MapView() {
     return (
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
-            <Notification timeout={5000} type={"warning"}>
-                <p>Das Lagebild wird nicht mit dem Server synchronisiert, aber lokal gespeichert.</p>
-            </Notification>
             <div className='mapbox container-flex'>
                 <MapProvider>
                     <Map
@@ -101,85 +95,52 @@ function MapView() {
 }
 
 function Layers() {
-    const { incidentId } = useParams();
-    const { data, loading } = useQuery<GetLayersData, GetLayersVars>(GetLayers, {
-        variables: { incidentId: incidentId || "" },
-        pollInterval: 1000,
-        fetchPolicy: "cache-first",
-    });
-
-    // setting active to first layer if none is active
-    if (data && data.layers?.length > 0 && data?.layers.filter(l => l.isActive).length === 0) {
-        let firstLayer = first(data.layers)?.id
-        activeLayerVar(firstLayer)
-    }
+    const { state } = useContext(LayerContext);
 
     return (
-        <>
-            {loading || !data ? <></> : <LayerControl layers={data.layers} />}
+        <LayersProvider >
+            <LayerFetcher />
+            <LayerControl />
 
             {/* Active Layer */}
-            <MemoActiveLayer layer={first(data?.layers.filter(l => l.isActive))} />
+            <ActiveLayer />
 
             {/* Inactive Layers */}
-            <InactiveLayers layers={data?.layers.filter(l => !l.isActive) || []} />
-        </>
+            <InactiveLayers layers={state.layers.filter(l => l.id !== state.activeLayer) || []} />
+        </LayersProvider>
     )
 }
-const MemoActiveLayer = memo(ActiveLayer);
-function ActiveLayer(props: { layer: Layer | undefined }) {
-    const { layer } = props;
-    const [initialized, setInitalized] = useState(false);
-    const { current: map } = useMap();
+
+
+// LayerFetcher polls from the layers and sets the layers from remote
+function LayerFetcher() {
     const { incidentId } = useParams();
-    const featureCollection = LayerToFeatureCollection(layer);
-    const [selectedFeature, setSelectedFeature] = useState<string | number | undefined>();
-    const [addFeature] = useMutation<Feature, AddFeatureVars>(AddFeatureToLayer, {
-        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
+    const { state, dispatch } = useContext(LayerContext);
+
+    const { data, loading } = useQuery<GetLayersData, GetLayersVars>(GetLayers, {
+        variables: { incidentId: incidentId || "" },
+        pollInterval: 3000,
+        fetchPolicy: "cache-and-network",
     });
-    const [modifyFeature] = useMutation<Feature, ModifyFeatureVars>(ModifyFeature, {
-        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
-    });
-
-    const [deleteFeature] = useMutation<Feature, DeleteFeatureVars>(DeleteFeature, {
-        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
-    });
-
-    const onCreate = useCallback((e: any) => {
-        const createdFeatures: Feature[] = e.features;
-        createdFeatures.forEach(f => {
-            if (layer?.id === undefined) {
-                return;
-            }
-
-            let feature = CleanFeature(f)
-            addFeature({ variables: { layerId: layer.id, geometry: feature.geometry, id: feature.id, properties: feature.properties } })
-        })
-        setSelectedFeature(first(createdFeatures)?.id)
-    }, [addFeature, layer, setSelectedFeature]);
-
-    const onUpdate = useCallback((e: any) => {
-        const updatedFeatures: Feature[] = e.features;
-        setSelectedFeature(undefined);
-        updatedFeatures.forEach(f => {
-            let feature = CleanFeature(f)
-            modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } })
-        });
-    }, [modifyFeature, setSelectedFeature]);
-
-    const onDelete = useCallback((e: any) => {
-        const deletedFeatures: Feature[] = e.features;
-        deletedFeatures.forEach(f => {
-            let feature = CleanFeature(f);
-            deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } })
-        });
-        setSelectedFeature(undefined);
-    }, [deleteFeature, setSelectedFeature]);
 
     useEffect(() => {
+        if (!loading && data && data.layers !== state.layers) {
+            dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
+        }
+    }, [data, dispatch, loading, state.activeLayer, state.layers])
 
+    return (<></>)
+}
+
+function ActiveLayer() {
+    const [initialized, setInitalized] = useState(false);
+    const { current: map } = useMap();
+    const { state } = useContext(LayerContext);
+    const featureCollection = LayerToFeatureCollection(first(state.layers.filter(l => l.id === state.activeLayer)));
+
+    useEffect(() => {
         let fc = FilterActiveFeatures(featureCollection);
-        if (initialized) {
+        if (initialized || !map?.loaded) {
             return
         }
         // only run this for the initialization as we don't want to continously 
@@ -195,67 +156,146 @@ function ActiveLayer(props: { layer: Layer | undefined }) {
             );
             setInitalized(true);
         }
-    }, [featureCollection, map, selectedFeature, initialized, setInitalized]);
+    }, [featureCollection, map, initialized, setInitalized]);
 
     return (
         <>
-            <MemoDraw featuresCollection={featureCollection} onCreate={onCreate} onDelete={onDelete} onUpdate={onUpdate} setSelectedFeature={setSelectedFeature} />
-            {layer && layer.id ? <EnrichedLayerFeatures id={layer.id} featureCollection={featureCollection} selectedFeature={selectedFeature} /> : <></>}
-            <BabsIconController selectedFeature={featureCollection.features.filter(f => f.id === selectedFeature).shift()} onUpdate={onUpdate} />
+            <MemoDraw activeLayer={state.activeLayer} />
+            <EnrichedLayerFeatures id={state.activeLayer} featureCollection={featureCollection} selectedFeature={state.selectedFeature} />
+            <BabsIconController />
         </>
     )
 }
 
-const MemoDraw = memo(Draw);
-function Draw(props:
-    {
-        onCreate: (e: any) => void,
-        onDelete: (e: any) => void,
-        onUpdate: (e: any) => void,
-        setSelectedFeature: Dispatch<SetStateAction<string | number | undefined>>,
-        featuresCollection: FeatureCollection
-    }) {
+const MemoDraw = memo(Draw)
+function Draw(props: { activeLayer: string | undefined }) {
+    const { state, dispatch } = useContext(LayerContext);
+    const { incidentId } = useParams();
+    const { current: map } = useMap();
 
-    const [draw, setDraw] = useState<MapboxDraw>();
-    const { onCreate, onUpdate, onDelete, setSelectedFeature, featuresCollection } = props;
+    const [addFeature] = useMutation<Feature, AddFeatureVars>(AddFeatureToLayer, {
+        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
+    });
+    const [modifyFeature] = useMutation<Feature, ModifyFeatureVars>(ModifyFeature, {
+        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
+    });
+
+    const [deleteFeature] = useMutation<Feature, DeleteFeatureVars>(DeleteFeature, {
+        refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }]
+    });
 
     const onSelectionChange = useCallback((e: any) => {
         const features: Feature[] = e.features;
         if (features?.length > 0) {
             const feature = first(features);
-            setSelectedFeature(feature?.id);
+            dispatch({ type: "SELECT_FEATURE", payload: { id: feature?.id } })
         }
         else {
-            setSelectedFeature(undefined);
-            draw && draw.changeMode("static");
+            dispatch({ type: "DESELECT_FEATURE", payload: {} });
         }
-    }, [draw, setSelectedFeature]);
+    }, [dispatch]);
 
-    const onCreateCallback = useCallback((e: any) => {
-        onCreate(e);
-        draw && draw.changeMode("static");
-    }, [draw, onCreate]);
+    const onCreate = useCallback((e: FeatureEvent) => {
+        if (props.activeLayer === undefined) {
+            console.log("undefined active layer")
+            return
+        }
 
-    const onUpdateCallback = useCallback((e: any) => {
-        onUpdate(e);
-        draw && draw.changeMode("static");
-    }, [draw, onUpdate]);
+        const createdFeatures: Feature[] = e.features;
+        createdFeatures.forEach(f => {
+            let feature = CleanFeature(f)
+            dispatch({
+                type: "ADD_FEATURE", payload: {
+                    layerId: props.activeLayer,
+                    feature: {
+                        geometry: feature.geometry,
+                        id: feature.id,
+                        properties: feature.properties,
+                        createdAt: f.properties?.createdAt,
+                        updatedAt: f.properties?.updatedAt,
+                        deletedAt: f.properties?.deletedAt,
+                    }
+                }
+            })
+            dispatch({ type: "SELECT_FEATURE", payload: { id: feature.id } })
+            addFeature({ variables: { layerId: props.activeLayer || "", geometry: feature.geometry, id: feature.id, properties: feature.properties } })
+        })
+    }, [props.activeLayer, dispatch, addFeature]);
 
-    const onDeleteCallback = useCallback((e: any) => {
-        onDelete(e);
-        draw && draw.changeMode("static");
-    }, [draw, onDelete]);
+    const onUpdate = useCallback((e: FeatureEvent) => {
+        console.log("[onUpdate]", e)
 
+        const updatedFeatures: Feature[] = e.features;
+        updatedFeatures.forEach(f => {
+            let feature = CleanFeature(f);
+            dispatch({
+                type: "MODIFY_FEATURE", payload: {
+                    layerId: props.activeLayer,
+                    feature: {
+                        geometry: feature.geometry,
+                        id: feature.id,
+                        properties: feature.properties,
+                        createdAt: f.properties?.createdAt,
+                        updatedAt: f.properties?.updatedAt,
+                        deletedAt: f.properties?.deletedAt,
+                    }
+                }
+            });
+            modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } });
+        });
+        dispatch({ type: "DESELECT_FEATURE", payload: {} });
+    }, [dispatch, props.activeLayer, modifyFeature]);
+
+    const onDelete = useCallback((e: FeatureEvent) => {
+        const deletedFeatures: Feature[] = e.features;
+        deletedFeatures.forEach(f => {
+            let feature = CleanFeature(f);
+            deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } })
+            dispatch({ type: "DELETE_FEATURE", payload: { featureId: f.id?.toString(), layerId: props.activeLayer } });
+        });
+        dispatch({ type: "DESELECT_FEATURE", payload: {} });
+    }, [dispatch, props.activeLayer, deleteFeature]);
+
+    const onCombine = useCallback((e: CombineFeatureEvent) => {
+        onCreate({ features: e.createdFeatures })
+        onDelete({ features: e.deletedFeatures })
+        dispatch({ type: "DESELECT_FEATURE", payload: {} });
+    }, [dispatch, onCreate, onDelete]);
+
+
+    // this is the effect which syncs the drawings
     useEffect(() => {
-        draw && draw.set(FilterActiveFeatures(featuresCollection));
-    }, [draw, featuresCollection]);
+        if (state.draw && map?.loaded) {
+            const featureCollection: FeatureCollection = FilterActiveFeatures(LayerToFeatureCollection(state.layers.find(l => l.id === props.activeLayer)))
+            state.draw.deleteAll()
+            state.draw.set(featureCollection)
+        }
+    }, [state.draw, map?.loaded, state.layers, props.activeLayer])
+
+    // this is the effect which syncs the drawings
+    useEffect(() => {
+        if (state.draw && map?.loaded) {
+            if (state.selectedFeature === undefined) {
+                state.draw?.changeMode("simple_select")
+            }
+        }
+    }, [state.draw, map?.loaded, state.selectedFeature])
+
+
+    if (props.activeLayer === undefined) {
+        return (<></>)
+    }
 
     return (
         <>
             <DrawControl
+                onSelectionChange={onSelectionChange}
+                onCreate={onCreate}
+                onUpdate={onUpdate}
+                onDelete={onDelete}
+                onCombine={onCombine}
                 position="top-right"
-                setDraw={setDraw}
-                displayControlsDefault={false}
+                displayControlsDefault={true}
                 styles={drawStyle}
                 controls={{
                     polygon: true,
@@ -269,11 +309,6 @@ function Draw(props:
                 clickBuffer={10}
                 defaultMode="simple_select"
                 modes={modes}
-                onCreate={onCreateCallback}
-                onUpdate={onUpdateCallback}
-                onDelete={onDeleteCallback}
-                // onCombine={onCombine}
-                onSelectionChange={onSelectionChange}
                 userProperties={true}
             />
         </>
@@ -312,3 +347,14 @@ function InactiveLayer(props: { featureCollection: FeatureCollection, id: string
 const MemoMap = MapView;
 
 export { MemoMap as Map };
+
+
+
+export type FeatureEvent = {
+    features: Feature<Geometry, GeoJsonProperties>[]
+}
+
+export type CombineFeatureEvent = {
+    deletedFeatures: Feature<Geometry, GeoJsonProperties>[]
+    createdFeatures: Feature<Geometry, GeoJsonProperties>[]
+}
