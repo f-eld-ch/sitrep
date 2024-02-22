@@ -90,7 +90,7 @@ const UPDATE_INCIDENT = gql`
     }
     insertDivisions(
       objects: $divisions
-      onConflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
+      onConflict: { constraint: divisions_name_incident_id_key, updateColumns: [description, name] }
     ) {
       affectedRows
     }
