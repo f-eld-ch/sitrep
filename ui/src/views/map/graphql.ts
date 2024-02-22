@@ -4,7 +4,6 @@ const GET_LAYERS = gql`
     query GetLayers($incidentId: uuid!) {
         layers(where: {incidentId: {_eq: $incidentId}}) {
             id
-            isActive @client
             name
             features {
                 id

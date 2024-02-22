@@ -287,6 +287,8 @@ export const drawStyle: LayerProps[] = [
             'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 0],
+            'icon-text-fit': "both",
+            'icon-text-fit-padding': [20, 20, 20, 20],
             'text-ignore-placement': true,
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
@@ -308,13 +310,14 @@ export const drawStyle: LayerProps[] = [
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["B612 Bold"],
-            'text-anchor': 'right',
-            'text-offset': [2.25, 0.25],
+            'text-anchor': 'left',
+            'text-offset': [1.5, 0.1],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
+            'text-justify': "right",
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 18, 28]
         },
         'paint': {
-            'text-color': '#ff0000',
+            'text-color': ['coalesce', ['get', 'user_color'], '#ff0000'],
         }
     },
     {
@@ -323,6 +326,7 @@ export const drawStyle: LayerProps[] = [
         'filter': ['all',
             ['==', 'meta', 'feature'],
             ['has', 'user_name'],
+            ['has', 'user_color'],
             ['!in', 'user_icon', 'EingesperrteAbgeschnittene', 'Obdachlose', 'Tote', 'Vermisste', 'Verletzte'],
             ['==', '$type', 'Point'],
             ['!=', 'mode', 'static']
@@ -331,9 +335,9 @@ export const drawStyle: LayerProps[] = [
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["B612 Bold"],
             'text-anchor': 'center',
-            'text-offset': [0, 1.75],
+            'text-offset': [0, 2],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 11, 2, 17, 16]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 16]
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
@@ -652,13 +656,13 @@ export const displayStyle: LayerProps[] = [
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
             'text-font': ["B612 Bold"],
-            'text-anchor': 'right',
-            'text-offset': [2.25, 0.25],
+            'text-anchor': 'left',
+            'text-offset': [3, 0],
             'text-ignore-placement': true,
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
         'paint': {
-            'text-color': '#ff0000',
+            'text-color': ['coalesce', ['get', 'color'], '#ff0000'],
         }
     },
     {

@@ -197,7 +197,6 @@ function Draw(props: { activeLayer: string | undefined }) {
 
     const onCreate = useCallback((e: FeatureEvent) => {
         if (props.activeLayer === undefined) {
-            console.log("undefined active layer")
             return
         }
 
@@ -223,8 +222,6 @@ function Draw(props: { activeLayer: string | undefined }) {
     }, [props.activeLayer, dispatch, addFeature]);
 
     const onUpdate = useCallback((e: FeatureEvent) => {
-        console.log("[onUpdate]", e)
-
         const updatedFeatures: Feature[] = e.features;
         updatedFeatures.forEach(f => {
             let feature = CleanFeature(f);
