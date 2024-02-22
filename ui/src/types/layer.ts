@@ -3,7 +3,6 @@ import { Incident } from "./incident";
 
 export type Layer = {
   id: string;
-  isActive: boolean;
   name: string;
   incident: Incident;
   features: Feature[];
