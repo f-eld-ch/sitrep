@@ -125,16 +125,18 @@ const ReceiverDetailInput = (props: { placeholder: string }) => {
     const { state, dispatch } = useEditorContext();
     return (
         <div className="control is-expanded">
-            <input
-                className="input"
-                value={state.receiverDetail}
-                type="text"
-                onChange={(e) => {
-                    e.preventDefault();
-                    dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: state.media, receiver: e.target.value }) });
-                }}
-                placeholder={props.placeholder}
-            />
+            <Hint options={state.autocompleteDetails.senderReceiverDetails} allowTabFill={true} allowEnterFill={true} >
+                <input
+                    className="input"
+                    value={state.receiverDetail}
+                    type="text"
+                    onChange={(e) => {
+                        e.preventDefault();
+                        dispatch({ type: 'set_media_detail', detail: Object.assign({}, state.media, { type: state.media, receiver: e.target.value }) });
+                    }}
+                    placeholder={props.placeholder}
+                />
+            </Hint>
         </div>
     )
 }
