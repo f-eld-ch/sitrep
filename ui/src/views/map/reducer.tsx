@@ -89,6 +89,8 @@ export type SetDrawLayer = {
 }
 
 export const layersReducer = (state: LayersState, action: LayersAction) => {
+    console.log("[layersReducer]", action)
+
     switch (action.type) {
         case 'SET_LAYERS':
             return action.payload.layers

@@ -191,6 +191,7 @@ function Draw(props: { activeLayer: string | undefined }) {
             dispatch({ type: "SELECT_FEATURE", payload: { id: feature?.id } })
         }
         else {
+            console.log("deselecting in onSelectionChange")
             dispatch({ type: "DESELECT_FEATURE", payload: {} });
         }
     }, [dispatch]);
@@ -240,7 +241,7 @@ function Draw(props: { activeLayer: string | undefined }) {
             });
             modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } });
         });
-        dispatch({ type: "DESELECT_FEATURE", payload: {} });
+        // dispatch({ type: "DESELECT_FEATURE", payload: {} });
     }, [dispatch, props.activeLayer, modifyFeature]);
 
     const onDelete = useCallback((e: FeatureEvent) => {
@@ -248,16 +249,16 @@ function Draw(props: { activeLayer: string | undefined }) {
         deletedFeatures.forEach(f => {
             let feature = CleanFeature(f);
             deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } })
-            dispatch({ type: "DELETE_FEATURE", payload: { featureId: f.id?.toString(), layerId: props.activeLayer } });
+            // dispatch({ type: "DELETE_FEATURE", payload: { featureId: f.id?.toString(), layerId: props.activeLayer } });
         });
         dispatch({ type: "DESELECT_FEATURE", payload: {} });
-    }, [dispatch, props.activeLayer, deleteFeature]);
+    }, [dispatch, deleteFeature]);
 
     const onCombine = useCallback((e: CombineFeatureEvent) => {
         onCreate({ features: e.createdFeatures })
         onDelete({ features: e.deletedFeatures })
-        dispatch({ type: "DESELECT_FEATURE", payload: {} });
-    }, [dispatch, onCreate, onDelete]);
+        // dispatch({ type: "DESELECT_FEATURE", payload: {} });
+    }, [onCreate, onDelete]);
 
 
     // this is the effect which syncs the drawings
@@ -269,12 +270,20 @@ function Draw(props: { activeLayer: string | undefined }) {
         }
     }, [state.draw, map?.loaded, state.layers, props.activeLayer])
 
-    // this is the effect which syncs the drawings
+    // this is the effect which syncs the feature selection
     useEffect(() => {
         if (state.draw && map?.loaded) {
             if (state.selectedFeature === undefined) {
                 state.draw?.changeMode("simple_select")
+                return
             }
+
+            // get the selected feature we have in our state and make sure
+            // to select it in the draw layer
+            let selectedFeature = state.draw.get(state.selectedFeature.toString());
+            if (selectedFeature === undefined) return
+
+            state.draw.changeMode("simple_select", { featureIds: [selectedFeature.id?.toString() || ""] })
         }
     }, [state.draw, map?.loaded, state.selectedFeature])
 
