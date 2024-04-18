@@ -1,4 +1,4 @@
-FROM quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
+FROM quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
 ENV OAUTH2_PROXY_PROXY_WEBSOCKETS=true \
     OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER=true \
     OAUTH2_PROXY_SKIP_AUTH_ROUTES='^\/(manifest\.json|favicon\.ico|asset-manifest\.json|service-worker\.js\.map|service-worker\.js|robots\.txt|logo\d+\.png)' \
