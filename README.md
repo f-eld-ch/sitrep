@@ -9,7 +9,7 @@
 
 ## Demo-Environment
 
-The current develop version is automatically deployed to: [https://sitrep-dev.zso-uri.ch](https://sitrep-dev.zso-uri.ch)
+The current develop version is automatically deployed to: [https://demo.sitrep.ch](https://demo.sitrep.ch)
 Login is possible with your Github account or sign-up for a new account at Auth0.
 
 ### Local Development Environment
