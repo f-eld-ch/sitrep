@@ -48,5 +48,9 @@ cd ui && yarn start
 
 ### Translations
 
-- To correct or add **translations** we invite you to help us out [on Weblate](https://hosted.weblate.org/projects/sitrep).<br>
-  [![Translation status](https://hosted.weblate.org/widgets/sitrep/-/287x66-grey.png)](https://hosted.weblate.org/engage/sitrep/)
+To correct or add **translations** we invite you to help us out [on Transifex](https://explore.transifex.com/f-eld/sitrep/).
+We currently support the following languages:
+- German (de)
+- English (en)
+- Italian (it)
+- French (fr)
