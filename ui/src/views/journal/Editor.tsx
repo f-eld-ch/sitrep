@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useReducer } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Medium, Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
@@ -11,7 +11,7 @@ import { Email, Phone, Radio } from "./EditorForms";
 import { RadioChannelDetailInput } from "./EditorForms/Elements";
 import { Other } from "./EditorForms/Other";
 import { default as List } from "./List";
-import { default as JournalMessage } from './Message';
+import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 
@@ -21,53 +21,64 @@ type State = {
   receiver: string;
   receiverDetail: string;
   content: string;
-  time: Date | undefined
-  messageToEdit: Message | undefined
-  messageToTriage: Message | undefined
-  media: Medium
-  saving: Boolean
+  time: Date | undefined;
+  messageToEdit: Message | undefined;
+  messageToTriage: Message | undefined;
+  media: Medium;
+  saving: Boolean;
   radioChannel: string;
-  autocompleteDetails: AutofillDetail
-}
+  autocompleteDetails: AutofillDetail;
+};
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail | OtherDetail;
 export type PhoneDetail = {
   type: Medium.Phone;
   sender?: string;
   receiver?: string;
-}
+};
 
 export type EmailDetail = {
   type: Medium.Email;
   sender?: string;
   receiver?: string;
-}
+};
 
 export type OtherDetail = {
   type: Medium.Other;
   sender?: string;
   receiver?: string;
-}
+};
 
 export type RadioDetail = {
   type: Medium.Radio;
   channel?: string;
-}
+};
 
 interface AutofillDetail {
-  senderReceiverNames: string[]
-  channelList: string[]
-  senderReceiverDetails: string[]
+  senderReceiverNames: string[];
+  channelList: string[];
+  senderReceiverDetails: string[];
 }
 
-type Action = { type: 'clear' } | { type: 'set_edit_message', message: Message | undefined } | { type: 'set_triage_message', message: Message | undefined } | { type: 'set_sender', sender: string } | { type: 'set_receiver'; receiver: string } | { type: 'set_content'; content: string } | { type: 'set_time'; time: Date | undefined } | { type: 'save'; } | { type: 'set_media_detail', detail: MediaDetail; } | { type: 'set_autofill_details', detail: AutofillDetail; }
-type Dispatch = (action: Action) => void
+type Action =
+  | { type: "clear" }
+  | { type: "set_edit_message"; message: Message | undefined }
+  | { type: "set_triage_message"; message: Message | undefined }
+  | { type: "set_sender"; sender: string }
+  | { type: "set_receiver"; receiver: string }
+  | { type: "set_content"; content: string }
+  | { type: "set_time"; time: Date | undefined }
+  | { type: "save" }
+  | { type: "set_media_detail"; detail: MediaDetail }
+  | { type: "set_autofill_details"; detail: AutofillDetail };
+type Dispatch = (action: Action) => void;
 
-
-export const EditorContext = React.createContext<
-  { state: State; dispatch: Dispatch }
->({ state: initState(), dispatch: (action: Action) => { console.log(action) } })
-
+export const EditorContext = React.createContext<{ state: State; dispatch: Dispatch }>({
+  state: initState(),
+  dispatch: (action: Action) => {
+    console.log(action);
+  },
+});
 
 function initState(): State {
   return {
@@ -83,20 +94,20 @@ function initState(): State {
     saving: false,
     radioChannel: "",
     autocompleteDetails: { senderReceiverDetails: [], senderReceiverNames: [], channelList: [] },
-  }
+  };
 }
 
 function Editor() {
   const { journalId } = useParams();
   const { data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
-    fetchPolicy: 'cache-first',
+    fetchPolicy: "cache-first",
     variables: { journalId: journalId || "" },
   });
 
   const [insertMessage, { error }] = useMutation(InsertMessage, {
     onCompleted() {
       // reset the form values
-      dispatch({ type: 'clear' })
+      dispatch({ type: "clear" });
     },
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
@@ -104,42 +115,50 @@ function Editor() {
   const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
     onCompleted() {
       // reset the form values
-      dispatch({ type: 'clear' })
+      dispatch({ type: "clear" });
     },
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
   const editorReducer = (state: State, action: Action): State => {
     switch (action.type) {
-      case 'save': {
-        return Object.assign({}, state, { saving: true })
+      case "save": {
+        return Object.assign({}, state, { saving: true });
       }
-      case 'set_sender': {
-        return Object.assign({}, state, { sender: action.sender })
+      case "set_sender": {
+        return Object.assign({}, state, { sender: action.sender });
       }
-      case 'set_receiver': {
-        return Object.assign({}, state, { receiver: action.receiver })
+      case "set_receiver": {
+        return Object.assign({}, state, { receiver: action.receiver });
       }
-      case 'set_content': {
-        return Object.assign({}, state, { content: action.content })
+      case "set_content": {
+        return Object.assign({}, state, { content: action.content });
       }
-      case 'set_time': {
-        return Object.assign({}, state, { time: action.time })
+      case "set_time": {
+        return Object.assign({}, state, { time: action.time });
       }
-      case 'set_media_detail': {
+      case "set_media_detail": {
         switch (action.detail.type) {
           case Medium.Radio:
-            return Object.assign({}, state, { media: action.detail.type, radioChannel: action.detail.channel })
+            return Object.assign({}, state, { media: action.detail.type, radioChannel: action.detail.channel });
           default:
-            let details = Object.assign({}, { sender: state.senderDetail, receiver: state.receiverDetail }, action.detail)
-            return Object.assign({}, state, { media: action.detail.type, senderDetail: details.sender, receiverDetail: details.receiver })
+            let details = Object.assign(
+              {},
+              { sender: state.senderDetail, receiver: state.receiverDetail },
+              action.detail,
+            );
+            return Object.assign({}, state, {
+              media: action.detail.type,
+              senderDetail: details.sender,
+              receiverDetail: details.receiver,
+            });
         }
       }
-      case 'clear': {
+      case "clear": {
         // keep autocompleteDetails
         return Object.assign({}, initState(), { autocompleteDetails: state.autocompleteDetails });
       }
-      case 'set_edit_message': {
+      case "set_edit_message": {
         return Object.assign({}, state, {
           messageToEdit: action.message,
           sender: action.message?.sender,
@@ -150,26 +169,25 @@ function Editor() {
           senderDetail: action.message?.senderDetail,
           receiverDetail: action.message?.receiverDetail,
           radioChannel: action.message?.senderDetail,
-        })
+        });
       }
-      case 'set_triage_message': {
+      case "set_triage_message": {
         return Object.assign({}, state, {
           messageToTriage: action.message,
-        })
+        });
       }
-      case 'set_autofill_details': {
+      case "set_autofill_details": {
         return Object.assign({}, state, {
           autocompleteDetails: action.detail,
-        })
+        });
       }
       default: {
-        throw new Error(`Unhandled action type: ${action}`)
+        throw new Error(`Unhandled action type: ${action}`);
       }
     }
-  }
+  };
 
-  const [state, dispatch] = useReducer(editorReducer, initState())
-
+  const [state, dispatch] = useReducer(editorReducer, initState());
 
   useEffect(() => {
     // exit if we don't need to save
@@ -207,15 +225,21 @@ function Editor() {
 
   useEffect(() => {
     dispatch({
-      type: 'set_autofill_details', detail:
-      {
+      type: "set_autofill_details",
+      detail: {
         senderReceiverNames: uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter((e) => e) || [],
-        senderReceiverDetails: uniq(data?.messages.filter(d => d.mediumId !== Medium.Radio).flatMap((d) => [d.senderDetail, d.receiverDetail])).filter((e) => e) || [],
-        channelList: uniq(data?.messages.filter(d => d.mediumId === Medium.Radio).map((d) => d.senderDetail)).filter((e) => e) || [],
-      }
-    })
-  }, [data, journalId])
-
+        senderReceiverDetails:
+          uniq(
+            data?.messages
+              .filter((d) => d.mediumId !== Medium.Radio)
+              .flatMap((d) => [d.senderDetail, d.receiverDetail]),
+          ).filter((e) => e) || [],
+        channelList:
+          uniq(data?.messages.filter((d) => d.mediumId === Medium.Radio).map((d) => d.senderDetail)).filter((e) => e) ||
+          [],
+      },
+    });
+  }, [data, journalId]);
 
   // create callbacks to have stable List renderings
   const setEditorMessage = useCallback(
@@ -232,22 +256,21 @@ function Editor() {
       <div>
         <div className="columns">
           <div className="column is-half">
-            <h3 className="title is-3 is-capitalized">{t('editor')}</h3>
+            <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
             {error && <Notification type="error">{error?.message}</Notification>}
-            {errorUpdate && < Notification type="error">{errorUpdate?.message}</Notification>}
+            {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
             <InputBox />
           </div>
           <div className="column">
-            <List
-              showControls={true}
-              setEditorMessage={setEditorMessage}
-              setTriageMessage={setTriageMessage}
-            />
+            <List showControls={true} setEditorMessage={setEditorMessage} setTriageMessage={setTriageMessage} />
           </div>
-          <TriageModal message={state.messageToTriage} setMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })} />
+          <TriageModal
+            message={state.messageToTriage}
+            setMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })}
+          />
         </div>
       </div>
-    </EditorContext.Provider >
+    </EditorContext.Provider>
   );
 }
 
@@ -276,17 +299,28 @@ function InputBox() {
   const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     let selectMedium = e.target.value;
-    if (selectMedium === Medium.Radio || selectMedium === Medium.Email || selectMedium === Medium.Phone || selectMedium === Medium.Other) {
-      dispatch({ type: 'set_media_detail', detail: { type: selectMedium } });
+    if (
+      selectMedium === Medium.Radio ||
+      selectMedium === Medium.Email ||
+      selectMedium === Medium.Phone ||
+      selectMedium === Medium.Other
+    ) {
+      dispatch({ type: "set_media_detail", detail: { type: selectMedium } });
     }
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="box">
-      <Link className="delete is-pulled-right is-small mb-2" to={"/incident/" + incidentId + "/journal/" + journalId} />
+      <button
+        className="delete is-pulled-right is-small mb-2"
+        onClick={() => navigate("/incident/" + incidentId + "/journal/" + journalId)}
+      />
+
       <div className="mt-5 field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('mediumName')}</label>
+          <label className="label is-capitalized">{t("mediumName")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -294,7 +328,9 @@ function InputBox() {
               <div className="select is-fullwidth">
                 <select value={state.media} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
-                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}>{medium}</option>
+                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}>
+                      {medium}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -302,11 +338,11 @@ function InputBox() {
             {state.media === Medium.Radio && <RadioChannelDetailInput />}
           </div>
         </div>
-      </div >
+      </div>
       {renderFormContent()}
       {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
         <>
-          <div className="title is-size-4 is-capitalized">{t('preview')}</div>
+          <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage
             id={undefined}
             message={messageContentDebounced}
@@ -324,10 +360,9 @@ function InputBox() {
       ) : (
         <></>
       )}
-    </div >
+    </div>
   );
 }
-
 
 export function useEditorContext(): { state: State; dispatch: Dispatch } {
   const context = useContext(EditorContext);
