@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useReducer } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import { Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Medium, Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
@@ -309,12 +309,15 @@ function InputBox() {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="box">
-      <Link
-        className="bulma-delete-mixin is-pulled-right is-small mb-2 "
-        to={"/incident/" + incidentId + "/journal/" + journalId}
+      <button
+        className="delete is-pulled-right is-small mb-2"
+        onClick={() => navigate("/incident/" + incidentId + "/journal/" + journalId)}
       />
+
       <div className="mt-5 field is-horizontal">
         <div className="field-label is-normal">
           <label className="label is-capitalized">{t("mediumName")}</label>
