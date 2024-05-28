@@ -1,5 +1,6 @@
+import { LayerProps } from "react-map-gl";
 
-export const drawStyle = [
+export const drawStyle: LayerProps[] = [
     {
         'id': 'gl-draw-polygon-no-fill-pattern',
         'type': 'fill',
@@ -286,6 +287,8 @@ export const drawStyle = [
             'text-font': ["B612 Bold"],
             'text-anchor': 'center',
             'text-offset': [0, 0],
+            'icon-text-fit': "both",
+            'icon-text-fit-padding': [20, 20, 20, 20],
             'text-ignore-placement': true,
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
@@ -307,13 +310,14 @@ export const drawStyle = [
         'layout': {
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["B612 Bold"],
-            'text-anchor': 'right',
-            'text-offset': [2.25, 0.25],
+            'text-anchor': 'left',
+            'text-offset': [1.5, 0.1],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
+            'text-justify': "right",
+            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 18, 28]
         },
         'paint': {
-            'text-color': '#ff0000',
+            'text-color': ['coalesce', ['get', 'user_color'], '#ff0000'],
         }
     },
     {
@@ -322,6 +326,7 @@ export const drawStyle = [
         'filter': ['all',
             ['==', 'meta', 'feature'],
             ['has', 'user_name'],
+            ['has', 'user_color'],
             ['!in', 'user_icon', 'EingesperrteAbgeschnittene', 'Obdachlose', 'Tote', 'Vermisste', 'Verletzte'],
             ['==', '$type', 'Point'],
             ['!=', 'mode', 'static']
@@ -330,9 +335,9 @@ export const drawStyle = [
             'text-field': ["coalesce", ["get", "user_name"], ""],
             'text-font': ["B612 Bold"],
             'text-anchor': 'center',
-            'text-offset': [0, 1.75],
+            'text-offset': [0, 2],
             'text-ignore-placement': true,
-            'text-size': ['interpolate', ['linear'], ['zoom'], 11, 2, 17, 16]
+            'text-size': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 16]
         },
         'paint': {
             'text-color': ['coalesce', ['get', 'user_color'], '#000000'],
@@ -427,32 +432,27 @@ export const drawStyle = [
     }
 ];
 
-export const displayStyle = [
-
+export const displayStyle: LayerProps[] = [
     {
         'id': 'gl-polygon-special-fill-pattern',
         'type': 'fill',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'Polygon'],
             ['has', 'zoneType'],
             ['in', 'zoneType', 'Brandzone', 'Zerstoerung'],
-            ['!=', 'mode', 'static']
         ],
         'paint': {
             'fill-pattern': ['match', ['get', 'zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
-            'fill-antialias': 'true',
+            'fill-antialias': true,
             'fill-opacity': 1
         }
     },
     {
-        'id': 'gl-polygon-fill-inactive',
+        'id': 'gl-polygon-fill',
         'type': 'fill',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'Polygon'],
             ['!in', 'zoneType', 'Brandzone', 'Zerstoerung', 'Schadengebiet', 'Einsatzraum'],
-            ['!=', 'mode', 'static']
         ],
         'paint': {
             'fill-color': ['coalesce', ['get', 'color'], '#000000'],
@@ -461,33 +461,10 @@ export const displayStyle = [
         }
     },
     {
-        'id': 'gl-polygon-fill-active',
-        'type': 'fill',
-        'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
-        'paint': {
-            'fill-color': '#fbb03b',
-            'fill-outline-color': '#fbb03b',
-            'fill-opacity': 0.3
-        }
-    },
-    {
-        'id': 'gl-polygon-midpoint',
-        'type': 'circle',
-        'filter': ['all',
-            ['==', '$type', 'Point'],
-            ['==', 'meta', 'midpoint']],
-        'paint': {
-            'circle-radius': 4,
-            'circle-color': '#fbb03b'
-        }
-    },
-    {
         'id': 'gl-polygon-stroke-inactive',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'Polygon'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -499,27 +476,11 @@ export const displayStyle = [
         }
     },
     {
-        'id': 'gl-polygon-stroke-active',
-        'type': 'line',
-        'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
-        'layout': {
-            'line-cap': 'round',
-            'line-join': 'round'
-        },
-        'paint': {
-            'line-color': '#fbb03b',
-            'line-dasharray': [0.2, 2],
-            'line-width': 2
-        }
-    },
-    {
         'id': 'gl-line-inactive',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['!has', 'lineType'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -535,10 +496,8 @@ export const displayStyle = [
         'id': 'gl-line-inactive-normalLine',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['in', 'lineType', '', 'normal'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -554,10 +513,8 @@ export const displayStyle = [
         'id': 'gl-line-inactive-pattern',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['in', 'lineType', 'unpassierbar', 'beabsichtigteErkundung', 'durchgeführteErkundung', 'Rutschgebiet', 'RutschgebietGespiegelt', 'rettungsAchse'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -573,10 +530,8 @@ export const displayStyle = [
         'id': 'gl-line-inactive-solidlines',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['in', 'lineType', 'schwerBegehbar', 'durchgeführteVerschiebung', 'durchgeführterEinsatz'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -592,10 +547,8 @@ export const displayStyle = [
         'id': 'gl-line-inactive-dashlines',
         'type': 'line',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
             ['in', 'lineType', 'begehbar', 'beabsichtigteVerschiebung', 'beabsichtigterEinsatz'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'line-cap': 'round',
@@ -611,12 +564,9 @@ export const displayStyle = [
         'id': 'gl-line-symbol',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
-            ['==', 'meta', 'feature'],
             ['has', 'icon'],
             ['!has', 'iconRotation'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'icon-image': ["get", "icon"],
@@ -628,12 +578,9 @@ export const displayStyle = [
         'id': 'gl-line-symbol-active',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'LineString'],
-            ['==', 'meta', 'feature'],
             ['has', 'iconRotation'],
             ['has', 'icon'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'icon-image': ["get", "icon"],
@@ -645,54 +592,10 @@ export const displayStyle = [
         }
     },
     {
-        'id': 'gl-line-active',
-        'type': 'line',
-        'filter': ['all',
-            ['==', '$type', 'LineString'],
-            ['==', 'active', 'true']
-        ],
-        'layout': {
-            'line-cap': 'round',
-            'line-join': 'round'
-        },
-        'paint': {
-            'line-color': '#fbb03b',
-            'line-dasharray': [0.2, 2],
-            'line-width': 2
-        }
-    },
-    {
-        'id': 'gl-polygon-and-line-vertex-stroke-inactive',
-        'type': 'circle',
-        'filter': ['all',
-            ['==', 'meta', 'vertex'],
-            ['==', '$type', 'Point'],
-            ['!=', 'mode', 'static']
-        ],
-        'paint': {
-            'circle-radius': 5,
-            'circle-color': '#fff'
-        }
-    },
-    {
-        'id': 'gl-polygon-and-line-vertex-inactive',
-        'type': 'circle',
-        'filter': ['all',
-            ['==', 'meta', 'vertex'],
-            ['==', '$type', 'Point'],
-            ['!=', 'mode', 'static']
-        ],
-        'paint': {
-            'circle-radius': 3,
-            'circle-color': '#fbb03b'
-        }
-    },
-    {
         'id': 'gl-point-icon',
         'type': 'symbol',
         'filter': ['all',
             ['==', '$type', 'Point'],
-            ['==', 'meta', 'feature'],
             ['has', 'icon'],
             ['!has', 'iconRotation'],
         ],
@@ -708,7 +611,6 @@ export const displayStyle = [
         'type': 'symbol',
         'filter': ['all',
             ['==', '$type', 'Point'],
-            ['==', 'meta', 'feature'],
             ['has', 'icon'],
             ['has', 'iconRotation'],
         ],
@@ -725,12 +627,10 @@ export const displayStyle = [
         'id': 'gl-text-special-placement-points-center',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'meta', 'feature'],
             ['==', '$type', 'Point'],
             ['has', 'name'],
             ['has', 'icon'],
             ['in', 'icon', 'EingesperrteAbgeschnittene', 'Obdachlose'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
@@ -748,34 +648,30 @@ export const displayStyle = [
         'id': 'gl-text-special-placement-points-right',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'meta', 'feature'],
             ['==', '$type', 'Point'],
             ['has', 'name'],
             ['has', 'icon'],
             ['in', 'icon', 'Tote', 'Vermisste', 'Verletzte'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
             'text-font': ["B612 Bold"],
-            'text-anchor': 'right',
-            'text-offset': [2.25, 0.25],
+            'text-anchor': 'left',
+            'text-offset': [3, 0],
             'text-ignore-placement': true,
             'text-size': ['interpolate', ['linear'], ['zoom'], 12, 4, 17, 22]
         },
         'paint': {
-            'text-color': '#ff0000',
+            'text-color': ['coalesce', ['get', 'color'], '#ff0000'],
         }
     },
     {
         'id': 'gl-text-name-point',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'meta', 'feature'],
             ['has', 'name'],
             ['!in', 'icon', 'EingesperrteAbgeschnittene', 'Obdachlose', 'Tote', 'Vermisste', 'Verletzte'],
             ['==', '$type', 'Point'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
@@ -793,10 +689,8 @@ export const displayStyle = [
         'id': 'gl-text-name-Polygon',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'meta', 'feature'],
             ['has', 'name'],
             ['==', '$type', 'Polygon'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
@@ -816,10 +710,8 @@ export const displayStyle = [
         'id': 'gl-text-name-LineString',
         'type': 'symbol',
         'filter': ['all',
-            ['==', 'meta', 'feature'],
             ['has', 'name'],
             ['==', '$type', 'LineString'],
-            ['!=', 'mode', 'static']
         ],
         'layout': {
             'text-field': ["coalesce", ["get", "name"], ""],
@@ -839,9 +731,7 @@ export const displayStyle = [
         'id': 'gl-point-inactive',
         'type': 'circle',
         'filter': ['all',
-            ['==', 'active', 'false'],
             ['==', '$type', 'Point'],
-            ['==', 'meta', 'feature'],
             ['!has', 'icon'],
             ['!=', 'mode', 'static']
         ],
@@ -855,28 +745,13 @@ export const displayStyle = [
         'type': 'circle',
         'filter': ['all',
             ['==', '$type', 'Point'],
-            ['==', 'active', 'true'],
             ['!has', 'icon'],
-            ['!=', 'meta', 'midpoint']
         ],
         'paint': {
             'circle-radius': 7,
             'circle-color': '#fff'
         }
     },
-    {
-        'id': 'gl-point-active',
-        'type': 'circle',
-        'filter': ['all',
-            ['==', '$type', 'Point'],
-            ['!=', 'meta', 'midpoint'],
-            ['!has', 'icon'],
-            ['==', 'active', 'true']],
-        'paint': {
-            'circle-radius': 5,
-            'circle-color': '#fbb03b'
-        }
-    }
 ];
 
 

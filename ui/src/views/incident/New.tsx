@@ -16,7 +16,7 @@ import {
   InsertIncidentData,
   InsertIncidentVars,
   UpdateIncidentData,
-  UpdateIncidentVars
+  UpdateIncidentVars,
 } from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
 import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
@@ -26,7 +26,7 @@ function New() {
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">{t('createIncident')}</h3>
+      <h3 className="title is-size-3 is-capitalized">{t("createIncident")}</h3>
       <div className="box">
         <IncidentForm incident={undefined} />
       </div>
@@ -43,7 +43,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       { id: "", name: "Karte", description: "Nachrichtenkarte" },
       { id: "", name: "Lage", description: "C Lage" },
       { id: "", name: "SC", description: "Stabchef" },
-    ]
+    ],
   );
   const [name, setName] = useState(incident?.name || "");
   const [location, setLocation] = useState(incident?.location.name || "");
@@ -59,15 +59,12 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }, { query: GetMessageForTriage }],
   });
 
-  const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(
-    UpdateIncident,
-    {
-      onCompleted() {
-        navigate(`../journal/view`);
-      },
-      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-    }
-  );
+  const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(UpdateIncident, {
+    onCompleted() {
+      navigate(`../journal/view`);
+    },
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
+  });
 
   const handleSave = () => {
     if (incident) {
@@ -89,6 +86,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         name: name,
         location: location,
         journalName: "Phase 1",
+        layerName: "Nachrichtenkarte",
         divisions: assignments.map((d) => {
           return { name: d.name, description: d.description };
         }),
@@ -102,7 +100,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('name')}</label>
+          <label className="label is-capitalized">{t('incidentName')}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -112,7 +110,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t('name') as string}
+                placeholder={t("name") as string}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faClipboard} />
@@ -123,7 +121,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('location')}</label>
+          <label className="label is-capitalized">{t("location")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -133,7 +131,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder={t('location') as string}
+                placeholder={t("location") as string}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faLocationDot} />
@@ -144,7 +142,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('divisions')}</label>
+          <label className="label is-capitalized">{t("divisions")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline is-normal">
@@ -177,7 +175,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label className="label">{t('devisionAdd')}</label>
+          <label className="label">{t("devisionAdd")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -187,7 +185,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 type="text"
                 value={assignmentDescription}
                 onChange={(e) => setAssignmentDescription(e.target.value)}
-                placeholder={t('name') as string}
+                placeholder={t("name") as string}
               />
             </p>
             <p className="control">
@@ -196,7 +194,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 value={assignmentName}
                 type="text"
                 onChange={(e) => setAssignmentName(e.target.value)}
-                placeholder={t('short') as string}
+                placeholder={t("short") as string}
               />
             </p>
             <p className="control">
@@ -209,14 +207,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                     unionBy(
                       assignments,
                       [{ id: "", name: assignmentName, description: assignmentDescription }],
-                      iteratee("name")
-                    )
+                      iteratee("name"),
+                    ),
                   );
                   setAssignmentName("");
                   setAssignmentDescription("");
                 }}
               >
-                {t('add')}
+                {t("add")}
               </button>
             </p>
           </div>
@@ -225,7 +223,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       <div className="field">
         <p className="control">
           <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
-            {t('save')}
+            {t("save")}
           </button>
         </p>
       </div>

@@ -1,10 +1,37 @@
-.Layer-Control {
-    .radio {
-        // display: block;
+.maplibregl-layer-list {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: block;
+    font-size: 11px;
+    padding: 5px;
+    text-align: right;
+    // width: 100%;
+    height: auto;
+    block-size: fit-content;
+    width: fit-content;
+    margin-right: 50px;
 
-        // &+.radio {
-        //     margin-left: 0;
-        //     margin-top: .5em;
-        // }
+    button.active {
+        font-weight: bold;
+    }
+
+    button:hover {
+        font-weight: bold;
+        color: black;
+    }
+
+    button:focus {
+        font-weight: bold;
+        color: black;
+    }
+
+    button {
+        // border-top: 1px solid #ddd;
+        // padding: 5px;
+        text-align: right;
+        border: none;
+        block-size: fit-content;
+        width: 100%;
     }
 }

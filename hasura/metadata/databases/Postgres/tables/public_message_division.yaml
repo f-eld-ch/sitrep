@@ -61,5 +61,4 @@ select_permissions:
 delete_permissions:
   - role: editor
     permission:
-      backend_only: false
       filter: {}

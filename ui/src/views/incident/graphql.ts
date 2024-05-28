@@ -47,12 +47,14 @@ const INSERT_INCIDENT = gql`
     $location: String
     $divisions: [DivisionsInsertInput!]!
     $journalName: String
+    $layerName: String
   ) {
     insertIncidentsOne(
       object: {
         name: $name
         location: { data: { name: $location } }
         journals: { data: { name: $journalName } }
+        layers: { data: { name: $layerName } }
         divisions: { data: $divisions }
       }
     ) {
@@ -66,6 +68,10 @@ const INSERT_INCIDENT = gql`
         name
         id
         description
+      }
+      layers {
+        name
+        id
       }
     }
   }
@@ -84,7 +90,7 @@ const UPDATE_INCIDENT = gql`
     }
     insertDivisions(
       objects: $divisions
-      onConflict: { constraint: divisions_name_incident_id_key, update_columns: [description, name] }
+      onConflict: { constraint: divisions_name_incident_id_key, updateColumns: [description, name] }
     ) {
       affectedRows
     }

@@ -1,0 +1,2 @@
+CREATE TABLE "public"."layers" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "incident_id" uuid NOT NULL, "name" text NOT NULL, "created_at" timestamptz NOT NULL DEFAULT now(), "updated_at" timestamptz, "deleted_at" timestamptz, PRIMARY KEY ("id") , FOREIGN KEY ("incident_id") REFERENCES "public"."incidents"("id") ON UPDATE restrict ON DELETE cascade, UNIQUE ("id"));COMMENT ON TABLE "public"."layers" IS E'Layers for Maps';
+CREATE EXTENSION IF NOT EXISTS pgcrypto;

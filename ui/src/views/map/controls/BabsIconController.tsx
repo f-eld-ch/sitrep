@@ -5,10 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { BabsIcon, BabsIconType, IconGroups, LineTypesEinsatz, LineTypesSchaeden, ZonePatterns } from "components/BabsIcons";
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { isEmpty, isUndefined, omitBy } from "lodash";
-import { memo, useCallback, useEffect, useState } from "react";
+import { first, isEmpty, isUndefined, omitBy } from "lodash";
+import { memo, useCallback, useContext, useEffect, useState } from "react";
 import { useMap } from "react-map-gl";
 import "./BabsIconController.scss";
+import { LayerToFeatureCollection } from "../utils";
+import { LayerContext } from "../LayerContext";
 
 const iconControllerFlexboxStyleRow = {
     display: "flex", flexFlow: "row wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline',
@@ -93,14 +95,13 @@ function IconGroupMenu(props: GroupMenuProps) {
         let properties: GeoJsonProperties = Object.assign({}, feature.properties, {
             "icon": i.name,
             "iconType": i.name,
-            // "iconRotation": feature.geometry.type === "LineString" ? calculateIconRotationForLines(feature as Feature<LineString>) : iconRotation
+            "color": ColorsForIconGroup[name],
         });
-
         feature.properties = omitBy(properties, isUndefined || isEmpty);
         onUpdate({ features: [feature], action: "featureDetail" });
         setActive(!active);
 
-    }, [setActive, active, onUpdate, feature])
+    }, [feature, name, onUpdate, active])
 
 
     if (active || lastIcon === undefined) {
@@ -146,11 +147,18 @@ function LineController(props: BabsIconControllerProps) {
 
         // reverse the coordinates
         if (selectedFeature.geometry.type === 'LineString' || selectedFeature.geometry.type === 'MultiLineString') {
-            selectedFeature.geometry.coordinates = selectedFeature.geometry.coordinates.reverse()
+            let feature = {
+                type: selectedFeature.type,
+                id: selectedFeature.id,
+                properties: selectedFeature.properties,
+                geometry: {
+                    type: selectedFeature.geometry.type,
+                    coordinates: [...selectedFeature.geometry.coordinates]
+                },
+            }
+            feature.geometry.coordinates.reverse()
+            onUpdate({ features: [feature], action: "featureDetail" });
         }
-
-        onUpdate({ features: [selectedFeature], action: "featureDetail" });
-
     }, [onUpdate, selectedFeature])
 
     if (selectedFeature === undefined) {
@@ -170,12 +178,11 @@ function LineController(props: BabsIconControllerProps) {
                 )}
             </div>
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
-                <button type="button" className='maplibregl-ctrl-icon' title="Richtung drehen" onClick={() => onRotateClick()}><FontAwesomeIcon icon={faArrowsRotate} size="lg" /></button>
+                <button type="button" className='maplibregl-ctrl-icon' title="Richtung useMapdrehen" onClick={() => onRotateClick()}><FontAwesomeIcon icon={faArrowsRotate} size="lg" /></button>
             </div>
         </div >
     );
 }
-
 
 
 function ZoneController(props: BabsIconControllerProps) {
@@ -227,8 +234,26 @@ interface TypesType {
 const Colors = {
     Red: "#ff0000",
     Blue: "#0000ff",
-    Black: '#000000',
+    Black: "#000000",
+    Orange: "#F38D11",
 }
+
+type ColorsForIconGroupType = {
+    [key: string]: string;
+};
+
+const ColorsForIconGroup: ColorsForIconGroupType = {
+    'Schäden': Colors.Red,
+    'Schadenauswirkungen': Colors.Red,
+    'Einrichtungen Im Einsatzraum': Colors.Blue,
+    'Zivile Führungsstandorte': Colors.Blue,
+    'Zivile Mittel': Colors.Blue,
+    'Fahrzeuge': Colors.Blue,
+    'Bildhafte Signaturen (Gesellschaft)': Colors.Red,
+    'Bildhafte Signaturen (Natur)': Colors.Red,
+    'Bildhafte Signaturen (Technisch)': Colors.Red,
+    'Gefahren': Colors.Red,
+};
 
 const ZoneTypes: SelectableTypes = {
     "Einsatzraum": {
@@ -298,13 +323,26 @@ interface BabsIconControllerProps {
     onUpdate: (e: any) => void
 }
 
-function BabsIconController(props: BabsIconControllerProps) {
+function BabsIconController() {
+    const { state } = useContext(LayerContext);
+    const layer = first(state.layers.filter(l => l.id === state.activeLayer));
+    const { current: map } = useMap();
+
+    const featureCollection = LayerToFeatureCollection(layer);
+    const selectedFeature = first(featureCollection.features.filter((f) => f.id === state.selectedFeature))
+
+    const onUpdate = useCallback((e: { features: Feature<Geometry, GeoJsonProperties>[] }) => {
+        const updatedFeatures: Feature[] = e.features;
+        // fire an map draw.update event
+        map?.getMap().fire("draw.update", { features: updatedFeatures, target: map });
+    }, [map]);
+
     return (
         <>
-            <FeatureDetailControlPanel {...props} />
-            <IconController {...props} />
-            <LineController {...props} />
-            <ZoneController {...props} />
+            <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
+            <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+            <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+            <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
         </>
     )
 }
@@ -385,12 +423,11 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
     );
 }
 
-const memoBabsIconController = memo(BabsIconController);
-export default memoBabsIconController;
+export default BabsIconController;
 
 export {
-    memoBabsIconController as BabsIconController, memoIconController as IconController,
+    BabsIconController,
+    memoIconController as IconController,
     memoLineController as LineController,
     memoZoneController as ZoneController
 };
-

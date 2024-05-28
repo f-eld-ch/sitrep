@@ -57,6 +57,7 @@
     "messageSheet": "message sheet",
     "messageTriageTitle": "message triage",
     "name": "name",
+    "incidentName": "incident name",
     "open": "open",
     "options": "options",
     "otherDetails": "details",

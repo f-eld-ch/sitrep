@@ -1,6 +1,6 @@
-import { ApolloClient, InMemoryCache } from "@apollo/client";
-
+import { ApolloClient } from "@apollo/client";
 import { HttpLink } from "@apollo/client";
+import { cache } from 'cache';
 
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_API_URL,
@@ -9,12 +9,14 @@ const httpLink = new HttpLink({
 
 const client = new ApolloClient({
   link: httpLink,
-  cache: new InMemoryCache(),
+  cache: cache,
   // defaultOptions: {
   //   watchQuery: {
   //     nextFetchPolicy: "cache-and-network",
   //   },
   // },
 });
+
+
 
 export default client;
