@@ -3,7 +3,7 @@
 set -euf -o pipefail
 
 echo "Generating Ignotion config from config.yaml"
-butane config.yaml > config.ign
+butane -d ../.. config.yaml > config.ign
 
 
 echo "Generating Raw Image"

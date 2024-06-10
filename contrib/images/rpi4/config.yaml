@@ -1,15 +1,14 @@
 variant: fcos
 version: 1.5.0
+ignition:
+  config:
+    merge:
+      - local: shared.ign
 passwd:
   users:
     - name: sitrep
       password_hash: $y$j9T$1Risz6zDWWycc.7AwElfT0$iNik1akIkBAsx33xe7L9tR/NSuEBzif1aKTuGc1UHX3 # LetMeIn
       groups:
         - wheel
+        - sudo
       shell: /bin/bash
-ignition:
-  config:
-    merge:
-      # source
-      #local: shared.ign
-    

@@ -1,0 +1,30 @@
+variant: fcos
+version: 1.5.0
+storage:
+  directories:
+    - path: /etc/sitrep
+      mode: 0644
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: sitrep
+    - path: /etc/containers/systemd/sitrep.kube
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Sitrep Quadlet Service
+
+          [Kube]
+          AutoUpdate=registry
+          Yaml=/etc/sitrep/local.yaml
+          ConfigMap=/etc/sitrep/local.config.yaml
+          PublishPort=4180:4180
+
+          [Install]
+          WantedBy=default.target
+    - path: /etc/sitrep/local.yaml
+      mode: 0644
+      contents:
+        local: local.yaml
