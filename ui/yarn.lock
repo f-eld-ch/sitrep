@@ -5097,13 +5097,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/bearing@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@turf/bearing@npm:6.5.0"
+"@turf/bearing@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@turf/bearing@npm:7.0.0"
   dependencies:
-    "@turf/helpers": "npm:^6.5.0"
-    "@turf/invariant": "npm:^6.5.0"
-  checksum: 10/f2883fb56d3017f9d0190937a92a2dae174e48f5165ea5540a5032caa03dd7980e5a95d298fd25e6bcc74cdf812d411af0e0c146112518ed3cd0d19795a1b645
+    "@turf/helpers": "npm:^7.0.0"
+    "@turf/invariant": "npm:^7.0.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10/afd0328ee6c3e6359c1f2d5d6df535e9d1697dfbeff9f33d96e0f2ba1bca2242b543565e8bb98b3a8ea5c44fce9826214e5fff098717287792bfbb102b00badc
   languageName: node
   linkType: hard
 
@@ -5124,12 +5125,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/invariant@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@turf/invariant@npm:6.5.0"
+"@turf/helpers@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@turf/helpers@npm:7.0.0"
   dependencies:
-    "@turf/helpers": "npm:^6.5.0"
-  checksum: 10/571003a39191bfe69b8bfd0efe97c18d307f0a7395ad52281ed869cfcd631e9f1a751d5e2a2af08fd8229e71f50e0e0c1ff7a1808eb8f666f15e65724d983585
+    deep-equal: "npm:^2.2.3"
+    tslib: "npm:^2.6.2"
+  checksum: 10/b356ba499634ff8e13af595c842e2c35efbfe365801848f4395577c402f3336a4e6fb0273dbb9c4dcb447636f29df304eaa68899dbf9368cff970170fe1ce39a
+  languageName: node
+  linkType: hard
+
+"@turf/invariant@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@turf/invariant@npm:7.0.0"
+  dependencies:
+    "@turf/helpers": "npm:^7.0.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10/5361c27ab080104e08b44c5b49d69c890f9bcb7713512ae78a01c0dd1f5dac1936704c64bfb45c3a05cc8e5fb3ca0648aa92050c80d22c04a373cf3b7eb94683
   languageName: node
   linkType: hard
 
@@ -7586,6 +7598,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deep-equal@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "deep-equal@npm:2.2.3"
+  dependencies:
+    array-buffer-byte-length: "npm:^1.0.0"
+    call-bind: "npm:^1.0.5"
+    es-get-iterator: "npm:^1.1.3"
+    get-intrinsic: "npm:^1.2.2"
+    is-arguments: "npm:^1.1.1"
+    is-array-buffer: "npm:^3.0.2"
+    is-date-object: "npm:^1.0.5"
+    is-regex: "npm:^1.1.4"
+    is-shared-array-buffer: "npm:^1.0.2"
+    isarray: "npm:^2.0.5"
+    object-is: "npm:^1.1.5"
+    object-keys: "npm:^1.1.1"
+    object.assign: "npm:^4.1.4"
+    regexp.prototype.flags: "npm:^1.5.1"
+    side-channel: "npm:^1.0.4"
+    which-boxed-primitive: "npm:^1.0.2"
+    which-collection: "npm:^1.0.1"
+    which-typed-array: "npm:^1.1.13"
+  checksum: 10/1ce49d0b71d0f14d8ef991a742665eccd488dfc9b3cada069d4d7a86291e591c92d2589c832811dea182b4015736b210acaaebce6184be356c1060d176f5a05f
+  languageName: node
+  linkType: hard
+
 "deep-is@npm:^0.1.3":
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
@@ -7968,6 +8006,23 @@ __metadata:
     is-string: "npm:^1.0.5"
     isarray: "npm:^2.0.5"
   checksum: 10/a8b1a454de2b95e0def4213b489514fbe013fe834dabc4ee02ded937f409fc09a6aed6e89f2e29523f74f5001dd7293ef6613f0f8ce733895b8deb5ec12eeff4
+  languageName: node
+  linkType: hard
+
+"es-get-iterator@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "es-get-iterator@npm:1.1.3"
+  dependencies:
+    call-bind: "npm:^1.0.2"
+    get-intrinsic: "npm:^1.1.3"
+    has-symbols: "npm:^1.0.3"
+    is-arguments: "npm:^1.1.1"
+    is-map: "npm:^2.0.2"
+    is-set: "npm:^2.0.2"
+    is-string: "npm:^1.0.7"
+    isarray: "npm:^2.0.5"
+    stop-iteration-iterator: "npm:^1.0.0"
+  checksum: 10/bc2194befbe55725f9489098626479deee3c801eda7e83ce0dff2eb266a28dc808edb9b623ff01d31ebc1328f09d661333d86b601036692c2e3c1a6942319433
   languageName: node
   linkType: hard
 
@@ -9653,7 +9708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"internal-slot@npm:^1.0.5":
+"internal-slot@npm:^1.0.4, internal-slot@npm:^1.0.5":
   version: 1.0.7
   resolution: "internal-slot@npm:1.0.7"
   dependencies:
@@ -13750,7 +13805,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.4.5"
     "@testing-library/react": "npm:^16.0.0"
     "@testing-library/user-event": "npm:^14.5.2"
-    "@turf/bearing": "npm:^6.5.0"
+    "@turf/bearing": "npm:^7.0.0"
     "@turf/center": "npm:^6.5.0"
     "@turf/helpers": "npm:^6.5.0"
     "@types/hat": "npm:^0.0.4"
@@ -14060,6 +14115,15 @@ __metadata:
   version: 3.7.0
   resolution: "std-env@npm:3.7.0"
   checksum: 10/6ee0cca1add3fd84656b0002cfbc5bfa20340389d9ba4720569840f1caa34bce74322aef4c93f046391583e50649d0cf81a5f8fe1d411e50b659571690a45f12
+  languageName: node
+  linkType: hard
+
+"stop-iteration-iterator@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "stop-iteration-iterator@npm:1.0.0"
+  dependencies:
+    internal-slot: "npm:^1.0.4"
+  checksum: 10/2a23a36f4f6bfa63f46ae2d53a3f80fe8276110b95a55345d8ed3d92125413494033bc8697eb774e8f7aeb5725f70e3d69753caa2ecacdac6258c16fa8aa8b0f
   languageName: node
   linkType: hard
 
@@ -14687,6 +14751,13 @@ __metadata:
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.6.2":
+  version: 2.6.3
+  resolution: "tslib@npm:2.6.3"
+  checksum: 10/52109bb681f8133a2e58142f11a50e05476de4f075ca906d13b596ae5f7f12d30c482feb0bff167ae01cfc84c5803e575a307d47938999246f5a49d174fc558c
   languageName: node
   linkType: hard
 
