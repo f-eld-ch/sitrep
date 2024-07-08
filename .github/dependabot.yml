@@ -3,10 +3,10 @@ updates:
   # Enable version updates for npm
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/"
+    directory: "/ui"
     target-branch: "develop"
     reviewers:
-      - "@Redgecko/Reviewers"
+      - "@f-eld-ch/Reviewers"
     schedule:
       interval: "weekly"
 
@@ -16,6 +16,6 @@ updates:
     directory: "/"
     target-branch: "develop"
     reviewers:
-      - "@Redgecko/Reviewers"    
+      - "@f-eld-ch/Reviewers"    
     schedule:
       interval: "weekly"
