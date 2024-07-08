@@ -13759,7 +13759,7 @@ __metadata:
     "@types/mapbox-gl": "npm:^2.7.21"
     "@types/mapbox__mapbox-gl-draw": "npm:~1.4.6"
     "@types/node": "npm:^20.12.11"
-    "@types/react": "npm:^18.3.2"
+    "@types/react": "npm:^18.3.3"
     "@types/react-color": "npm:^3.0.12"
     "@types/react-dom": "npm:^18.3.0"
     "@types/react-router-dom": "npm:^5.3.3"
