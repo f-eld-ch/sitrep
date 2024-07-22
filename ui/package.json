@@ -34,7 +34,7 @@
     "react-router-dom": "^6.23.1",
     "usehooks-ts": "^3.1.0",
     "uuid": "^9.0.1",
-    "web-vitals": "^3.5.2"
+    "web-vitals": "^4.2.2"
   },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
