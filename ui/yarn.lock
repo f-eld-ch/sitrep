@@ -5412,12 +5412,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.12.11":
-  version: 20.12.11
-  resolution: "@types/node@npm:20.12.11"
+"@types/node@npm:^20.14.11":
+  version: 20.14.11
+  resolution: "@types/node@npm:20.14.11"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10/c6afe7c2c4504a4f488814d7b306ebad16bf42cbb43bf9db9fe1aed8c5fb99235593c3be5088979a64526b106cf022256688e2f002811be8273d87dc2e0d484f
+  checksum: 10/344e1ce1ed16c86ed1c4209ab4d1de67db83dd6b694a6fabe295c47144dde2c58dabddae9f39a0a2bdd246e95f8d141ccfe848e464884b48b8918df4f7788025
   languageName: node
   linkType: hard
 
@@ -13765,7 +13765,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.1"
     "@types/mapbox-gl": "npm:^2.7.21"
     "@types/mapbox__mapbox-gl-draw": "npm:~1.4.6"
-    "@types/node": "npm:^20.12.11"
+    "@types/node": "npm:^20.14.11"
     "@types/react": "npm:^18.3.3"
     "@types/react-color": "npm:^3.0.12"
     "@types/react-dom": "npm:^18.3.0"
