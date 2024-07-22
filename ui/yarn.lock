@@ -13817,7 +13817,7 @@ __metadata:
     vite-plugin-svgr: "npm:^4.2.0"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^1.6.0"
-    web-vitals: "npm:^3.5.2"
+    web-vitals: "npm:^4.2.2"
   languageName: unknown
   linkType: soft
 
@@ -15509,10 +15509,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-vitals@npm:^3.5.2":
-  version: 3.5.2
-  resolution: "web-vitals@npm:3.5.2"
-  checksum: 10/59c5d7775c32977eb9156d186113f4de66c235cfea7a113d2f430ef25db25a5efe1980d2ba466f7ceefc7b1a3847764933dc1567b6d9b8f340d12e75209e3f79
+"web-vitals@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "web-vitals@npm:4.2.2"
+  checksum: 10/97d0b814be809385d7e94d03a421545082c19a0a6fa580a5a11d799d6a122247006c0c3ef847aad4ce888630a7fcf2347ef77c4b2f1e3a5c9b105c6f5138c7e7
   languageName: node
   linkType: hard
 
