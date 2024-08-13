@@ -10,7 +10,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mapbox/mapbox-gl-draw": "~1.4.3",
-    "@turf/bearing": "^6.5.0",
+    "@turf/bearing": "^7.1.0",
     "@turf/center": "^6.5.0",
     "@turf/helpers": "^6.5.0",
     "@watergis/maplibre-gl-export": "~2.0.1",

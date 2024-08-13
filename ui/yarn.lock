@@ -5097,13 +5097,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/bearing@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@turf/bearing@npm:6.5.0"
+"@turf/bearing@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "@turf/bearing@npm:7.1.0"
   dependencies:
-    "@turf/helpers": "npm:^6.5.0"
-    "@turf/invariant": "npm:^6.5.0"
-  checksum: 10/f2883fb56d3017f9d0190937a92a2dae174e48f5165ea5540a5032caa03dd7980e5a95d298fd25e6bcc74cdf812d411af0e0c146112518ed3cd0d19795a1b645
+    "@turf/helpers": "npm:^7.1.0"
+    "@turf/invariant": "npm:^7.1.0"
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.6.2"
+  checksum: 10/124bab9b2bfbcc922ad471b424abca1c14754572a97397911913712d9ade16f56e025f4d649a80f7894ffdab4e46348c66a6959ee724428c17f1a8c19b8cbe6c
   languageName: node
   linkType: hard
 
@@ -5124,12 +5126,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/invariant@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@turf/invariant@npm:6.5.0"
+"@turf/helpers@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "@turf/helpers@npm:7.1.0"
   dependencies:
-    "@turf/helpers": "npm:^6.5.0"
-  checksum: 10/571003a39191bfe69b8bfd0efe97c18d307f0a7395ad52281ed869cfcd631e9f1a751d5e2a2af08fd8229e71f50e0e0c1ff7a1808eb8f666f15e65724d983585
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.6.2"
+  checksum: 10/13075ac700d67f10db5d948658bc8c6c8092e15ff3f562659717af30996ce46958a4a8a561fb5fdf11ca3db0cc6617433ea8def0f3c9c79c0400c56350a9a360
+  languageName: node
+  linkType: hard
+
+"@turf/invariant@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "@turf/invariant@npm:7.1.0"
+  dependencies:
+    "@turf/helpers": "npm:^7.1.0"
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.6.2"
+  checksum: 10/3f35c8c26a6921f5810c8c3296983199efcb0e28f9849e691f3e534691637e3ecc22716a5956b57a22aa9c12a80f8a7b4bb4127166fd0b0292b3ce9a3df364e0
   languageName: node
   linkType: hard
 
@@ -13749,7 +13763,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.4.6"
     "@testing-library/react": "npm:^16.0.0"
     "@testing-library/user-event": "npm:^14.5.2"
-    "@turf/bearing": "npm:^6.5.0"
+    "@turf/bearing": "npm:^7.1.0"
     "@turf/center": "npm:^6.5.0"
     "@turf/helpers": "npm:^6.5.0"
     "@types/hat": "npm:^0.0.4"
@@ -14690,6 +14704,13 @@ __metadata:
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.6.2":
+  version: 2.6.3
+  resolution: "tslib@npm:2.6.3"
+  checksum: 10/52109bb681f8133a2e58142f11a50e05476de4f075ca906d13b596ae5f7f12d30c482feb0bff167ae01cfc84c5803e575a307d47938999246f5a49d174fc558c
   languageName: node
   linkType: hard
 
