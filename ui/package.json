@@ -72,7 +72,7 @@
     "@testing-library/user-event": "^14.5.2",
     "@types/hat": "^0.0.4",
     "@types/jest": "^29.5.12",
-    "@types/lodash": "^4.17.1",
+    "@types/lodash": "^4.17.7",
     "@types/mapbox-gl": "^2.7.21",
     "@types/mapbox__mapbox-gl-draw": "~1.4.6",
     "@types/node": "^20.14.11",
