@@ -10,19 +10,22 @@ import {
   faExplosion,
   faFeed,
   faMapLocationDot,
+  faMoon,
   faPen,
   faRightFromBracket,
+  faSun,
   faTruckMedical,
-  faUser
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { FunctionComponent, useContext, useState } from "react";
+import { FunctionComponent, useContext, useEffect, useState } from "react";
 
 import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router-dom";
+import { useDarkMode } from "usehooks-ts";
 import { UserContext } from "utils";
 import { useDate } from "utils/useDate";
 
@@ -59,10 +62,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       <div className={navbarMenuClass}>
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
-            <NavLink
-              className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
-              to="/incident/list"
-            >
+            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
               <span className="icon-text">
                 <span className="icon">
                   <FontAwesomeIcon icon={faExplosion} />
@@ -71,16 +71,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </span>
             </NavLink>
             <div className="navbar-dropdown is-boxed">
-              <NavLink
-                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
-                to="/incident/list"
-              >
+              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
                 {t("overview")}
               </NavLink>
-              <NavLink
-                className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
-                to="/incident/new"
-              >
+              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/new">
                 {t("createIncident")}
               </NavLink>
               {incidentId ? (
@@ -110,6 +104,37 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   );
 };
 
+function DarkModeSwitcher() {
+  const { isDarkMode, toggle } = useDarkMode();
+
+  useEffect(
+    () => {
+      const element = window.document.querySelector(":root");
+      if (isDarkMode) {
+        element?.classList.add("theme-dark");
+        element?.classList.remove("theme-light");
+      } else {
+        element?.classList.remove("theme-dark");
+        element?.classList.add("theme-light");
+      }
+    },
+    [isDarkMode], // Only re-call effect when value changes
+  );
+
+  return (
+    <div className="navbar-item">
+      <button onClick={toggle}>
+        <span className="icon-text is-flex-wrap-nowrap">
+          <span className="icon">
+            <FontAwesomeIcon icon={isDarkMode ? faMoon : faSun} />
+          </span>
+          <span>{isDarkMode ? "Dark" : "Light"}</span>
+        </span>
+      </button>
+    </div>
+  );
+}
+
 function CurrentTime() {
   const { time, date } = useDate();
 
@@ -131,9 +156,8 @@ function CurrentTime() {
           <span>{time}</span>
         </span>
       </div>
-
     </>
-  )
+  );
 }
 
 function VersionNavBar() {
@@ -143,9 +167,17 @@ function VersionNavBar() {
         <span className="icon">
           <FontAwesomeIcon icon={faCodeBranch} />
         </span>
-        <span><a href={`https://github.com/RedGecko/sitrep/commit/${import.meta.env.VITE_SHA_VERSION}`} target="_blank" rel="noopener noreferrer">{import.meta.env.VITE_VERSION}</a></span>
+        <span>
+          <a
+            href={`https://github.com/RedGecko/sitrep/commit/${import.meta.env.VITE_SHA_VERSION}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {import.meta.env.VITE_VERSION}
+          </a>
+        </span>
       </span>
-    </div >
+    </div>
   );
 }
 
@@ -170,6 +202,7 @@ function UserNavBar() {
             <span>{userState.email || userState.username}</span>
           </span>
         </div>
+        <DarkModeSwitcher />
         <hr className="navbar-divider" />
         <a className="navbar-item" href="/oauth2/sign_out">
           <span className="icon-text is-flex-wrap-nowrap is-capitalized">
@@ -357,8 +390,6 @@ const MapNavBar: FunctionComponent = () => {
   );
 };
 
-export {
-  ResourcesNavBar, TasksNavBar
-};
+export { ResourcesNavBar, TasksNavBar };
 
 export default Navbar;

@@ -1,7 +1,6 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { useControl } from "react-map-gl";
 import { memo, useContext, useState } from "react";
-import { type ControlPosition } from "react-map-gl/maplibre";
+import { useControl, type ControlPosition } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 import { FeatureEvent, CombineFeatureEvent } from "../Map";
 
@@ -41,6 +40,7 @@ function DrawControl(props: DrawControlProps) {
         },
         () => {
             if (draw) {
+                MapboxDraw
                 dispatch({ type: "SET_DRAW", payload: { draw: draw } })
             }
         },
