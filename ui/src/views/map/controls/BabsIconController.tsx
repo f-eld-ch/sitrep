@@ -7,7 +7,7 @@ import { BabsIcon, BabsIconType, IconGroups, LineTypesEinsatz, LineTypesSchaeden
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
-import { useMap } from "react-map-gl";
+import { useMap } from "react-map-gl/maplibre";
 import "./BabsIconController.scss";
 import { LayerToFeatureCollection } from "../utils";
 import { LayerContext } from "../LayerContext";

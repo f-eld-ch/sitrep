@@ -10,8 +10,7 @@ import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from './
 import { displayStyle, drawStyle } from './style';
 import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
 import { first } from 'lodash';
-import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap } from 'react-map-gl/maplibre';
-import { Layer as MapLayer } from 'react-map-gl';
+import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap, Layer as MapLayer } from 'react-map-gl/maplibre';
 import { LayerContext, LayersProvider } from './LayerContext';
 import { StyleController, selectedStyle } from './controls/StyleController';
 import { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
