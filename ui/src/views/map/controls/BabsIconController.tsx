@@ -73,7 +73,7 @@ function IconController(props: BabsIconControllerProps) {
     }
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
+        <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
             {Object.keys(IconGroups).map((group) => <IconGroupMenu key={group} name={group} iconGroup={IconGroups[group]} onUpdate={onUpdate} feature={selectedFeature} />)}
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{ display: "flex", flexFlow: "column wrap", flexGrow: 2, flexShrink: 4, flexBasis: 0, justifyContent: 'flex-end', alignSelf: 'baseline', marginTop: "5px" }}>
                 <button type="button" className='maplibregl-ctrl-icon' title={rotationLock ? "Fixierte Signatur lösen" : "Signatur fixieren"} onClick={() => { onRotateClick(!rotationLock) }}>
@@ -171,7 +171,7 @@ function LineController(props: BabsIconControllerProps) {
 
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
+        <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
                 {Object.values(LineTypes).map((t) =>
                     (<button key={t.name} title={t.description} onClick={() => onClickIcon(t)} ><img src={t.icon.src} alt={icon.name} /></button>)
@@ -211,7 +211,7 @@ function ZoneController(props: BabsIconControllerProps) {
 
 
     return (
-        <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={iconControllerStyle}>
+        <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
             <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
                 {Object.values(ZoneTypes).map((t) =>
                     (<button key={t.name} title={t.description} onClick={() => onClickIcon(t)} ><img src={t.icon.src} alt={icon.name} /></button>)
@@ -393,8 +393,8 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
 
     if (!active) {
         return (
-            <div className="maplibregl-ctrl-top-right mapboxgl-ctrl-top-right" style={{ marginRight: "45px" }}>
-                <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
+            <div className="maplibregl-ctrl-top-right" style={{ marginRight: "45px" }}>
+                <div className='maplibregl-ctrl maplibregl-ctrl-group' >
                     <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faHeading} size="lg" /></button>
                 </div>
             </div >

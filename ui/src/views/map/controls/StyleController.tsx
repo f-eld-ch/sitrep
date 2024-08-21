@@ -50,14 +50,12 @@ function StyleController() {
     }, [setActive]);
 
     return (
-        <div className="maplibregl-ctrl-bottom-right mapboxgl-ctrl-bottom-right" style={{ paddingBottom: "15px" }}>
-            <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
-                <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faMap} size="lg" /></button>
-                <div className={switcherClass}>
-                    {MapStyles.map((s) => { return <button type="button" className={classNames({ "button": true, "active": style.name === s.name })} key={s.name} onClick={() => onClick(s)}>{s.name}</button> })}
-                </div >
-            </div>
-        </div >
+        <div className='maplibregl-ctrl maplibregl-ctrl-group' >
+            <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faMap} size="lg" /></button>
+            <div className={switcherClass}>
+                {MapStyles.map((s) => { return <button type="button" className={classNames({ "button": true, "active": style.name === s.name })} key={s.name} onClick={() => onClick(s)}>{s.name}</button> })}
+            </div >
+        </div>
     );
 }
 

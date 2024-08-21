@@ -50,8 +50,5 @@ function ExportControl(props: ExportControlProps): null {
 
     return null;
 }
-ExportControl.defaultProps = {
-    position: 'bottom-left'
-};
 
 export default ExportControl;
