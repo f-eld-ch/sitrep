@@ -14,6 +14,15 @@ updates:
     labels:
       - "javascript"
       - "dependencies"
+    ignore:
+      - dependency-name: "@types/mapbox-gl"
+        versions: "> 2.x"
+      - dependency-name: "@types/mapbox__mapbox-gl-draw"
+        versions: "> 1.4.6"
+      - dependency-name: "@types/node"
+        versions: ">= 22.x, < 23"
+      - dependency-name: maplibre-gl
+        versions: ">= 4.a, < 5"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
