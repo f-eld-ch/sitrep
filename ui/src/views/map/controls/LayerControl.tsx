@@ -30,13 +30,11 @@ function LayerPanel() {
     }, [dispatch]);
 
     return (
-        <div className="maplibregl-ctrl-bottom-right mapboxgl-ctrl-bottom-right" style={{ paddingBottom: "65px" }}>
-            <div className='mapboxgl-ctrl mapboxgl-ctrl-group' >
-                <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faLayerGroup} size="lg" /></button>
-                <div className={switcherClass}>
-                    {state.layers.map((l) => { return <button type="button" className={classNames({ "button": true, "active": state.activeLayer === l.id })} key={l.id} onClick={() => onClick(l)}>{l.name}</button> })}
-                </div >
-            </div>
+        <div className='maplibregl-ctrl maplibregl-ctrl-group' >
+            <button type="button" className={btnClass} onClick={() => setActive(!active)}><FontAwesomeIcon icon={faLayerGroup} size="lg" /></button>
+            < div className={switcherClass} >
+                {state.layers.map((l) => { return <button type="button" className={classNames({ "button": true, "active": state.activeLayer === l.id })} key={l.id} onClick={() => onClick(l)}>{l.name}</button> })}
+            </div >
         </div >
     );
 }

@@ -1,5 +1,6 @@
-import { Format, MaplibreExportControl, PageOrientation, Size } from "@watergis/maplibre-gl-export";
+import { Language, Format, MaplibreExportControl, PageOrientation, Size } from "@watergis/maplibre-gl-export";
 import '@watergis/maplibre-gl-export/dist/maplibre-gl-export.css';
+import i18next from "i18next";
 import { ControlPosition, useControl } from "react-map-gl/maplibre";
 
 export type ExportControlProps = {
@@ -7,6 +8,18 @@ export type ExportControlProps = {
     position?: ControlPosition;
     // options: ConstructorParameters<typeof MapboxExportControl>
 };
+
+function getLanguage(): Language {
+    switch (i18next.language) {
+        case "de":
+            return "de"
+        case "fr":
+            return "fr"
+
+        default:
+            return "en"
+    }
+}
 
 function ExportControl(props: ExportControlProps): null {
     const { position } = props;
@@ -19,14 +32,23 @@ function ExportControl(props: ExportControlProps): null {
                 DPI: 300,
                 Crosshair: false,
                 PrintableArea: true,
+                Local: getLanguage(),
+                attributionOptions: {
+                    style: {
+                        "textSize": 16,
+                        "textHaloColor": "#FFFFFF",
+                        "textHaloWidth": 0.8,
+                        "textColor": "#000000",
+                        "fallbackTextFont": ["B612 Mono"]
+                    },
+                    visibility: "visible",
+                    position: "bottom-right"
+                }
             }),
         { position: position }
     );
 
     return null;
 }
-ExportControl.defaultProps = {
-    position: 'bottom-left'
-};
 
 export default ExportControl;

@@ -1,6 +1,5 @@
 
 import './control-panel.css';
-import 'maplibre-gl/dist/maplibre-gl.css';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from './graphql';
 import { AddFeatureVars, DeleteFeatureVars, GetLayersData, GetLayersVars, Layer, ModifyFeatureVars } from 'types/layer';
@@ -10,8 +9,7 @@ import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from './
 import { displayStyle, drawStyle } from './style';
 import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
 import { first } from 'lodash';
-import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap } from 'react-map-gl/maplibre';
-import { Layer as MapLayer } from 'react-map-gl';
+import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap, Layer as MapLayer, AttributionControl } from 'react-map-gl/maplibre';
 import { LayerContext, LayersProvider } from './LayerContext';
 import { StyleController, selectedStyle } from './controls/StyleController';
 import { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -65,26 +63,29 @@ function MapView() {
     return (
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
-            <div className='mapbox container-flex'>
+            <div className='maplibre container-flex'>
                 <MapProvider>
                     <Map
                         ref={mapRef}
                         mapLib={maplibregl}
                         onLoad={onMapLoad}
-                        attributionControl={true}
+                        attributionControl={false}
                         minZoom={8}
                         maxZoom={19}
                         {...viewState}
                         onMove={e => setViewState(e.viewState)}
                         mapStyle={mapStyle.uri}
+                        touchPitch={true}
+                        touchZoomRotate={true}
+                        scrollZoom={true}
                     >
 
+                        <AttributionControl position='bottom-left' compact={true} />
                         {/* All Map Controls */}
                         <FullscreenControl position={'top-left'} />
                         <NavigationControl position={'top-left'} visualizePitch={true} />
-                        <StyleController />
                         <ScaleControl unit={"metric"} position={'bottom-left'} />
-                        <ExportControl />
+                        <ExportControl position="bottom-left" />
                         {/* Layersprovider and Draw */}
                         <Layers />
                     </Map>
@@ -100,7 +101,10 @@ function Layers() {
     return (
         <LayersProvider >
             <LayerFetcher />
-            <LayerControl />
+            <div className="maplibregl-ctrl-bottom-right" >
+                <LayerControl />
+                <StyleController />
+            </div>
 
             {/* Active Layer */}
             <ActiveLayer />

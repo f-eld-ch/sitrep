@@ -3,12 +3,26 @@ updates:
   # Enable version updates for npm
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/"
+    directory: "/ui"
     target-branch: "develop"
     reviewers:
-      - "@Redgecko/Reviewers"
+      - "@f-eld-ch/Reviewers"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+      time: "20:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "javascript"
+      - "dependencies"
+    ignore:
+      - dependency-name: "@types/mapbox-gl"
+        versions: "> 2.x"
+      - dependency-name: "@types/mapbox__mapbox-gl-draw"
+        versions: "> 1.4.6"
+      - dependency-name: "@types/node"
+        versions: ">= 22.x, < 23"
+      - dependency-name: maplibre-gl
+        versions: ">= 4.a, < 5"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
@@ -16,6 +30,36 @@ updates:
     directory: "/"
     target-branch: "develop"
     reviewers:
-      - "@Redgecko/Reviewers"    
+      - "@f-eld-ch/Reviewers"    
     schedule:
       interval: "weekly"
+    labels:
+      - "docker"
+      - "dependencies"
+
+  # Enable version updates for Go
+  - package-ecosystem: "gomod"
+    directory: "/"
+    target-branch: "develop"
+    reviewers:
+      - "@f-eld-ch/Reviewers"    
+    schedule:
+      interval: "daily"
+      time: "20:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "golang"
+      - "dependencies"
+      
+  # Enable version updates for Github Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "develop"
+    reviewers:
+      - "@f-eld-ch/Reviewers"    
+    schedule:
+      interval: "daily"
+      time: "20:00"
+    labels:
+      - "gh-actions"
+      - "dependencies"
