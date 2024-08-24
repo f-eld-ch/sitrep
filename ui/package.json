@@ -94,7 +94,7 @@
     "sass": "^1.77.8",
     "semver": "^7.6.3",
     "source-map-explorer": "^2.5.3",
-    "ts-jest": "^29.2.4",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "vite-plugin-checker": "^0.7.2",
