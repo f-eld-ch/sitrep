@@ -1,0 +1,14 @@
+builds:
+  - id: sitrep
+    ldflags:
+      - -s -w
+      - -extldflags "-static"
+      - -X github.com/f-eld-ch/sitrep/internal/buildinfo.Version={{ .Env.Version }}
+      - -X github.com/f-eld-ch/sitrep/internal/buildinfo.GitCommit={{ .Git.ShortCommit }}
+      - -X github.com/f-eld-ch/sitrep/internal/buildinfo.BuildTime={{ .Git.CommitDate }}
+    image-label:
+
+defaultPlatforms:
+  - linux/arm64
+  - linux/amd64
+  - windows/amd64

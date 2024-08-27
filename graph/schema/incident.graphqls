@@ -1,0 +1,40 @@
+
+type Incident {
+  id: ID!
+  closedAt: timestamptz
+  createdAt: timestamptz!
+  updatedAt: timestamptz!
+  deletedAt: timestamptz
+  divisions: [Division!]
+  name: String!
+  journals: [Journal!]
+  location: Location!
+}
+
+
+type Location {
+  id: ID!
+  name: String!
+  coordinates: Coordinate
+  createdAt: timestamptz!
+}
+
+type Coordinate {
+  lat: Float!
+  long: Float!
+}
+
+input NewIncident {
+  name: String!
+  location: String!
+  lat: Float!
+  long: Float!
+}
+
+extend type Query {
+    incidents: [Incident!]!
+}
+
+extend type Mutation {
+  NewIncident(incident: NewIncident!): Incident!
+}

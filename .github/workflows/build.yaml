@@ -12,17 +12,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
           cache: yarn
           cache-dependency-path: "ui/yarn.lock"
-
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - uses: ko-build/setup-ko@v0.7
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
-
       - name: Run tests
         run: yarn test
         working-directory: ui
+      - run: go generate ./...
+      - run: go test ./...
+      - run: ko build -b --image-label org.opencontainers.image.source=$(git remote get-url origin) --image-label org.opencontainers.image.revision=$(git rev-parse HEAD)

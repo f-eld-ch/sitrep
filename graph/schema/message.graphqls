@@ -1,0 +1,33 @@
+
+
+type Message {
+  id: ID!
+  closedAt: timestamptz
+  createdAt: timestamptz!
+  updatedAt: timestamptz!
+  deletedAt: timestamptz
+
+  author: User
+
+  receiver: String!
+  receiverDetail: String
+  sender: String!
+  senderDetail: String
+  time: timestamptz!
+
+  # priority: PriorityStatus
+  # priorityId: PriorityStatusEnum
+  # medium: Medium
+  # mediumId: MediumEnum
+  # triage: TriageStatus!
+  # triageId: TriageStatusEnum!
+
+}
+
+
+input NewMessage {
+  sender: String!
+  receiver: String!
+  time: timestamptz!
+  message: String!
+}
