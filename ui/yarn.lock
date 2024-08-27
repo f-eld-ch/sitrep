@@ -3115,7 +3115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^20.3.0":
+"@maplibre/maplibre-gl-style-spec@npm:^20.3.0, @maplibre/maplibre-gl-style-spec@npm:^20.3.1":
   version: 20.3.1
   resolution: "@maplibre/maplibre-gl-style-spec@npm:20.3.1"
   dependencies:
@@ -4540,14 +4540,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/maplibre-gl-export@npm:~3.8.2":
-  version: 3.8.2
-  resolution: "@watergis/maplibre-gl-export@npm:3.8.2"
+"@watergis/maplibre-gl-export@npm:~3.8.3":
+  version: 3.8.3
+  resolution: "@watergis/maplibre-gl-export@npm:3.8.3"
   dependencies:
     js-loading-overlay: "npm:^1.2.0"
     jspdf: "npm:^2.5.1"
-    maplibre-gl: "npm:^4.1.0"
-  checksum: 10/72122609c22ca327ca631462e2726547ee829d68fcc0655c41f9e4a467da58fa5b365bd71a22b69cf327bede7ebebf474dce2646c1bf83086a4dbd3e196795a0
+    maplibre-gl: "npm:^4.6.0"
+  checksum: 10/62312a15262209baba69876059345abd71e1b27b38c320b136b2be3ff6ef42a0aca728306a547bfcb12d4b1cf09f3e509a180c9faa75ea8414202213fdc65115
   languageName: node
   linkType: hard
 
@@ -7434,6 +7434,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"global-prefix@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "global-prefix@npm:4.0.0"
+  dependencies:
+    ini: "npm:^4.1.3"
+    kind-of: "npm:^6.0.3"
+    which: "npm:^4.0.0"
+  checksum: 10/535489396c0e5828682f081f5227556a3b7a30ebecde9f5eb35aee4aea121fe5c5fb1b04e0fba85d1e34e6004687e51b306bdd446d391eca8449adbb4666dbe2
+  languageName: node
+  linkType: hard
+
 "globals@npm:^11.1.0":
   version: 11.12.0
   resolution: "globals@npm:11.12.0"
@@ -7952,6 +7963,13 @@ __metadata:
   version: 1.3.8
   resolution: "ini@npm:1.3.8"
   checksum: 10/314ae176e8d4deb3def56106da8002b462221c174ddb7ce0c49ee72c8cd1f9044f7b10cc555a7d8850982c3b9ca96fc212122749f5234bc2b6fb05fb942ed566
+  languageName: node
+  linkType: hard
+
+"ini@npm:^4.1.3":
+  version: 4.1.3
+  resolution: "ini@npm:4.1.3"
+  checksum: 10/f536b414d1442e5b233429e2b56efcdb354109b2d65ddd489e5939d8f0f5ad23c88aa2b19c92987249d0dd63ba8192e9aeb1a02b0459549c5a9ff31acd729a5d
   languageName: node
   linkType: hard
 
@@ -8495,6 +8513,13 @@ __metadata:
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
   checksum: 10/7c9f715c03aff08f35e98b1fadae1b9267b38f0615d501824f9743f3aab99ef10e303ce7db3f186763a0b70a19de5791ebfc854ff884d5a8c4d92211f642ec92
+  languageName: node
+  linkType: hard
+
+"isexe@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "isexe@npm:3.1.1"
+  checksum: 10/7fe1931ee4e88eb5aa524cd3ceb8c882537bc3a81b02e438b240e47012eef49c86904d0f0e593ea7c3a9996d18d0f1f3be8d3eaa92333977b0c3a9d353d5563e
   languageName: node
   linkType: hard
 
@@ -9398,7 +9423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kind-of@npm:^6.0.2":
+"kind-of@npm:^6.0.2, kind-of@npm:^6.0.3":
   version: 6.0.3
   resolution: "kind-of@npm:6.0.3"
   checksum: 10/5873d303fb36aad875b7538798867da2ae5c9e328d67194b0162a3659a627d22f742fc9c4ae95cd1704132a24b00cae5041fc00c0f6ef937dc17080dc4dbb962
@@ -9761,7 +9786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:4.5.2, maplibre-gl@npm:^4.1.0":
+"maplibre-gl@npm:4.5.2":
   version: 4.5.2
   resolution: "maplibre-gl@npm:4.5.2"
   dependencies:
@@ -9792,6 +9817,40 @@ __metadata:
     tinyqueue: "npm:^3.0.0"
     vt-pbf: "npm:^3.1.3"
   checksum: 10/112bdb65ced7751cb4ec3d5333e1ef38c6409ca21ad871098c3a6d218fbae21511ea0e6e250f5573ae8d8507e7384b912b9058be255e9a19b077022f9d7b2acc
+  languageName: node
+  linkType: hard
+
+"maplibre-gl@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "maplibre-gl@npm:4.6.0"
+  dependencies:
+    "@mapbox/geojson-rewind": "npm:^0.5.2"
+    "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
+    "@mapbox/point-geometry": "npm:^0.1.0"
+    "@mapbox/tiny-sdf": "npm:^2.0.6"
+    "@mapbox/unitbezier": "npm:^0.0.1"
+    "@mapbox/vector-tile": "npm:^1.3.1"
+    "@mapbox/whoots-js": "npm:^3.1.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^20.3.1"
+    "@types/geojson": "npm:^7946.0.14"
+    "@types/geojson-vt": "npm:3.2.5"
+    "@types/mapbox__point-geometry": "npm:^0.1.4"
+    "@types/mapbox__vector-tile": "npm:^1.3.4"
+    "@types/pbf": "npm:^3.0.5"
+    "@types/supercluster": "npm:^7.1.3"
+    earcut: "npm:^3.0.0"
+    geojson-vt: "npm:^4.0.2"
+    gl-matrix: "npm:^3.4.3"
+    global-prefix: "npm:^4.0.0"
+    kdbush: "npm:^4.0.2"
+    murmurhash-js: "npm:^1.0.0"
+    pbf: "npm:^3.3.0"
+    potpack: "npm:^2.0.0"
+    quickselect: "npm:^3.0.0"
+    supercluster: "npm:^8.0.1"
+    tinyqueue: "npm:^3.0.0"
+    vt-pbf: "npm:^3.1.3"
+  checksum: 10/ddfe52d5663c26ac6fe016af68dac6a2449b603a4400a3bf6344f18bc8f0409c02ca2717aa725144857a83a89dbaa456200bc0ec2ee8f4ef3e19de4996bb79bb
   languageName: node
   linkType: hard
 
@@ -12288,7 +12347,7 @@ __metadata:
     "@vite-pwa/assets-generator": "npm:^0.2.4"
     "@vitejs/plugin-react-swc": "npm:^3.7.0"
     "@vitest/coverage-v8": "npm:^2.0.5"
-    "@watergis/maplibre-gl-export": "npm:~3.8.2"
+    "@watergis/maplibre-gl-export": "npm:~3.8.3"
     bulma: "npm:^1.0.2"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.13"
@@ -14263,6 +14322,17 @@ __metadata:
   bin:
     node-which: ./bin/node-which
   checksum: 10/4782f8a1d6b8fc12c65e968fea49f59752bf6302dc43036c3bf87da718a80710f61a062516e9764c70008b487929a73546125570acea95c5b5dcc8ac3052c70f
+  languageName: node
+  linkType: hard
+
+"which@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "which@npm:4.0.0"
+  dependencies:
+    isexe: "npm:^3.1.1"
+  bin:
+    node-which: bin/which.js
+  checksum: 10/f17e84c042592c21e23c8195108cff18c64050b9efb8459589116999ea9da6dd1509e6a1bac3aeebefd137be00fabbb61b5c2bc0aa0f8526f32b58ee2f545651
   languageName: node
   linkType: hard
 
