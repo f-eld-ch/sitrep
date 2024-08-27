@@ -11,6 +11,13 @@ updates:
       interval: "daily"
       time: "20:00"
     open-pull-requests-limit: 10
+    groups:
+      development-dependencies:
+        dependency-type: "development"
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"       
     labels:
       - "javascript"
       - "dependencies"
