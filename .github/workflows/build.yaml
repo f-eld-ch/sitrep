@@ -21,6 +21,15 @@ jobs:
         with:
           go-version: "stable"
       - uses: ko-build/setup-ko@v0.7
+      - name: Setup Golang caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
@@ -29,4 +38,13 @@ jobs:
         working-directory: ui
       - run: go generate ./...
       - run: go test ./...
-      - run: ko build -b --image-label org.opencontainers.image.source=$(git remote get-url origin) --image-label org.opencontainers.image.revision=$(git rev-parse HEAD)
+      - name: Ko Build
+        env:
+          Version: ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+        run: >
+          ko build -B . --tags "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          --image-label org.opencontainers.image.authors="F-ELD Team"
+          --image-label org.opencontainers.image.revision=$(git rev-parse HEAD)
+          --image-label org.opencontainers.image.source=$(git remote get-url origin)
+          --image-label org.opencontainers.image.url="https://github.com/f-eld-ch/sitrep"
+          --image-label org.opencontainers.image.vendor="F-ELD"
