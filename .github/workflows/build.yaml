@@ -38,11 +38,29 @@ jobs:
         working-directory: ui
       - run: go generate ./...
       - run: go test ./...
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/f-eld-ch/sitrep
+          tags: |
+            # set latest tag for default branch / ordered by priority
+            type=semver,pattern={{version}},prefix=v,priority=920
+            type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},priority=910
+            type=raw,value=develop,enable={{is_default_branch}},priority=905
+            # priority 900
+            type=semver,pattern={{major}}.{{minor}},prefix=v
+            type=semver,pattern={{major}},prefix=v
+            # priority 700
+            type=edge,branch=develop
+            # priority 600
+            type=ref,event=branch
+            type=ref,event=pr,prefix=pr-,enable=true
       - name: Ko Build
         env:
           Version: ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
         run: >
-          ko build -B . --tags "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          ko build -B . --tags ${{ steps.meta.outputs.tags }}
           --image-label org.opencontainers.image.authors="F-ELD Team"
           --image-label org.opencontainers.image.revision=$(git rev-parse HEAD)
           --image-label org.opencontainers.image.source=$(git remote get-url origin)
