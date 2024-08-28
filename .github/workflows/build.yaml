@@ -21,15 +21,6 @@ jobs:
         with:
           go-version: "stable"
       - uses: ko-build/setup-ko@v0.7
-      - name: Setup Golang caches
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
