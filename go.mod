@@ -13,7 +13,6 @@ require (
 	github.com/unrolled/secure v1.13.0
 	github.com/vektah/gqlparser/v2 v2.5.10
 	github.com/zitadel/oidc/v3 v3.28.2
-	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611
 )
 
 require (
@@ -34,6 +33,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 

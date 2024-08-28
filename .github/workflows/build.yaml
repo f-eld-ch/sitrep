@@ -36,8 +36,12 @@ jobs:
       - name: Run tests
         run: yarn test
         working-directory: ui
-      - run: go generate ./...
-      - run: go test ./...
+      - name: Install Go dependencies
+        run: go mod download
+      - name: Run Go Generate to generate assets
+        run: go generate ./...
+      - name: Go Test
+        run: go test ./...
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -56,13 +60,31 @@ jobs:
             # priority 600
             type=ref,event=branch
             type=ref,event=pr,prefix=pr-,enable=true
+      - name: Prepare Image Tags and Labels
+        id: image_tags_labels
+        run: |
+          # prepare tags
+          tags=""
+          separator=""
+          prefix=${KO_DOCKER_REPO}
+          IFS=$'\n'
+          for tag in ${DOCKER_METADATA_OUTPUT_TAGS}; do
+            tags="$tags${separator}${tag#${prefix}:}"
+            separator=","
+          done
+          echo "tags=$tags" >> $GITHUB_OUTPUT
+
+          # prepare labels
+          labels=""
+          IFS=$'\n'
+          separator=""
+          for label in ${DOCKER_METADATA_OUTPUT_LABELS}; do
+            labels="${labels}${separator}--image-label '$label'"
+            separator=" "
+          done
+          echo "labels=$labels" >> $GITHUB_OUTPUT
       - name: Ko Build
         env:
-          Version: ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          Version: ${{ steps.meta.outputs.verison }}
         run: >
-          ko build -B . --tags ${{ steps.meta.outputs.tags }}
-          --image-label org.opencontainers.image.authors="F-ELD Team"
-          --image-label org.opencontainers.image.revision=$(git rev-parse HEAD)
-          --image-label org.opencontainers.image.source=$(git remote get-url origin)
-          --image-label org.opencontainers.image.url="https://github.com/f-eld-ch/sitrep"
-          --image-label org.opencontainers.image.vendor="F-ELD"
+          ko build --bare . --tags ${{ steps.image_tags_labels.outputs.tags }} ${{ steps.image_tags_labels.outputs.labels }}
