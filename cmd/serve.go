@@ -12,6 +12,7 @@ import (
 	"log/slog"
 
 	http_adapter "github.com/f-eld-ch/sitrep/internal/adapters/http"
+	"github.com/f-eld-ch/sitrep/internal/adapters/otel"
 	"github.com/f-eld-ch/sitrep/internal/application"
 	"github.com/f-eld-ch/sitrep/internal/logger"
 	"github.com/f-eld-ch/sitrep/pkg/http/router"
@@ -51,26 +52,21 @@ var serveCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		otelAdapter := otel.NewAdapter()
+
 		app := application.New()
 		app.AddAdapters(
-			// grpc.NewAdapter("grpc", ":8080"),
-			http_adapter.NewAdapter(&http.Server{Addr: fmt.Sprintf(":%d", httpPort), Handler: r, TLSConfig: tlsConfig}),
+			http_adapter.NewAdapter(
+				&http.Server{
+					Addr:      fmt.Sprintf(":%d", httpPort),
+					Handler:   r,
+					TLSConfig: tlsConfig,
+				},
+			),
+			otelAdapter,
 		)
 
 		app.Run(cmd.Context())
-
-		// grpcServer := grpc.NewServer(
-		// 	grpc.ServerConfig{
-		// 		ServerMinTime: config.Env.GRPC.ServerMinTime,
-		// 		ServerTime:    config.Env.GRPC.ServerTime,
-		// 		ServerTimeout: config.Env.GRPC.ServerTimeout,
-		// 	},
-		// 	logger,
-		// )
-
-		// app.Run()
-
-		// r.Run(fmt.Sprintf(":%d", viper.GetUint16("port")))
 	},
 }
 
