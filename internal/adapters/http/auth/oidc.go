@@ -69,17 +69,15 @@ type AuthInfo struct {
 }
 
 func MarshalUserInfo(sm *scs.SessionManager) func(http.ResponseWriter, *http.Request, *oidc.Tokens[*oidc.IDTokenClaims], string, rp.RelyingParty, *oidc.UserInfo) {
-
 	return func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
-
 		i := AuthInfo{UserInfo: info, IDToken: tokens}
+		userInfo, _ := json.Marshal(i)
 		sm.Put(r.Context(), IDTokenKey, tokens.IDToken)
+		sm.Put(r.Context(), AuthInfoKey, userInfo)
 		sm.Put(r.Context(), RefreshTokenKey, tokens.RefreshToken)
 		sm.Put(r.Context(), AccessTokenKey, tokens.AccessToken)
-
 		sm.Put(r.Context(), UserIDKey, FirstNonEmpty([]string{i.UserInfo.PreferredUsername, i.UserInfo.Subject, i.IDToken.IDTokenClaims.Subject}))
 		sm.Put(r.Context(), EmailKey, FirstNonEmpty([]string{i.UserInfo.Email, i.IDToken.IDTokenClaims.Email}))
-
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	}
 }
@@ -98,8 +96,9 @@ func UserInfoHandler() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		type User struct {
-			UserID string `json:"user"`
-			Email  string `json:"email"`
+			UserID   string   `json:"user"`
+			Email    string   `json:"email"`
+			AuthInfo AuthInfo `json:"authInfo"`
 		}
 
 		u := User{}

@@ -8,7 +8,7 @@ import (
 
 	"log/slog"
 
-	"github.com/f-eld-ch/sitrep/internal/logger"
+	"github.com/f-eld-ch/sitrep/internal/adapters/logger"
 )
 
 const (

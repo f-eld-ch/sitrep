@@ -13,10 +13,10 @@ const (
 	AccessTokenKey  string = "access-token"
 	RefreshTokenKey string = "refresh-token"
 
-	UserInfo  string = "user-info"
-	UserIDKey string = "userID"
-	EmailKey  string = "email"
-	GroupsKey string = "groups"
+	AuthInfoKey string = "authInfo"
+	UserIDKey   string = "userID"
+	EmailKey    string = "email"
+	GroupsKey   string = "groups"
 
 	AuthenticatedKey string = "authenticated"
 )

@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/f-eld-ch/sitrep/internal/logger"
+	"github.com/f-eld-ch/sitrep/internal/adapters/logger"
 )
 
 // Adapter interface

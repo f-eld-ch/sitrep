@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/f-eld-ch/sitrep/internal/metadata"
+	"github.com/f-eld-ch/sitrep/internal/adapters/logger/metadata"
 )
 
 var Logger slog.Logger

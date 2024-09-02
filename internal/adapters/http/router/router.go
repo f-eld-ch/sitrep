@@ -9,7 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/alexedwards/scs/v2"
 	"github.com/f-eld-ch/sitrep/graph"
-	"github.com/f-eld-ch/sitrep/pkg/http/auth"
+	"github.com/f-eld-ch/sitrep/internal/adapters/http/auth"
 	"github.com/f-eld-ch/sitrep/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

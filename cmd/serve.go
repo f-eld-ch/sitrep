@@ -12,10 +12,10 @@ import (
 	"log/slog"
 
 	http_adapter "github.com/f-eld-ch/sitrep/internal/adapters/http"
+	"github.com/f-eld-ch/sitrep/internal/adapters/http/router"
+	"github.com/f-eld-ch/sitrep/internal/adapters/logger"
 	"github.com/f-eld-ch/sitrep/internal/adapters/otel"
 	"github.com/f-eld-ch/sitrep/internal/application"
-	"github.com/f-eld-ch/sitrep/internal/logger"
-	"github.com/f-eld-ch/sitrep/pkg/http/router"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
