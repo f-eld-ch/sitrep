@@ -13,6 +13,7 @@ import (
 	"github.com/f-eld-ch/sitrep/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/riandyrn/otelchi"
 	"github.com/sagikazarmark/slog-shim"
 	"github.com/unrolled/secure"
 	"github.com/unrolled/secure/cspbuilder"
@@ -65,6 +66,7 @@ func CreateRouter() (*chi.Mux, error) {
 	})
 
 	r := chi.NewRouter()
+	r.Use(otelchi.Middleware("sitrep", otelchi.WithChiRoutes(r)))
 	r.Use(middleware.RealIP)
 	r.Use(httplog.RequestLogger(logger))
 	r.Use(auth.SessionWith(sessionManager))
