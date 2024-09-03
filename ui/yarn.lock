@@ -4428,9 +4428,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vite-pwa/assets-generator@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "@vite-pwa/assets-generator@npm:0.2.4"
+"@vite-pwa/assets-generator@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "@vite-pwa/assets-generator@npm:0.2.5"
   dependencies:
     cac: "npm:^6.7.14"
     colorette: "npm:^2.0.20"
@@ -4440,7 +4440,7 @@ __metadata:
     unconfig: "npm:^0.3.11"
   bin:
     pwa-assets-generator: bin/pwa-assets-generator.mjs
-  checksum: 10/2fb28ce3730af8619431c46fda65316fffb5b9c716d494a5a4470e5524d1116a4d730cd2c010310f4f080cbe24fac7702e7c3861872e32a892c2ec742bae037d
+  checksum: 10/0ca97cd814006a6197dea098ba954c005613669ea2fed45cb07825716830ccd6c6b87d31f6cc334074f543891e107fcb606d506de31151baa5bbf6fd50e029fd
   languageName: node
   linkType: hard
 
@@ -6632,9 +6632,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:^7.35.0":
-  version: 7.35.0
-  resolution: "eslint-plugin-react@npm:7.35.0"
+"eslint-plugin-react@npm:^7.35.2":
+  version: 7.35.2
+  resolution: "eslint-plugin-react@npm:7.35.2"
   dependencies:
     array-includes: "npm:^3.1.8"
     array.prototype.findlast: "npm:^1.2.5"
@@ -6656,7 +6656,7 @@ __metadata:
     string.prototype.repeat: "npm:^1.0.0"
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
-  checksum: 10/fa0a54f9ea249cf89d92bb5983bf7df741da3709a0ebd6a885a67d05413ed302fd8b64c9dc819b33df8efa6d8b06f5e56b1f6965a9be7cc3e79054da4dbae5ed
+  checksum: 10/f4631612444f9066c8007e9433c0972754b75d33be410cd18dcf003e4209600240dec3e50a9962aae35e9a08920a1eb60e51d3cc140e5f6c95582e727ebec74e
   languageName: node
   linkType: hard
 
@@ -12322,7 +12322,7 @@ __metadata:
     "@types/uuid": "npm:^10.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.4.0"
     "@typescript-eslint/parser": "npm:^8.4.0"
-    "@vite-pwa/assets-generator": "npm:^0.2.4"
+    "@vite-pwa/assets-generator": "npm:^0.2.5"
     "@vitejs/plugin-react-swc": "npm:^3.7.0"
     "@vitest/coverage-v8": "npm:^2.0.5"
     "@watergis/maplibre-gl-export": "npm:~3.8.3"
@@ -12330,7 +12330,7 @@ __metadata:
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.13"
     eslint: "npm:^9.9.1"
-    eslint-plugin-react: "npm:^7.35.0"
+    eslint-plugin-react: "npm:^7.35.2"
     globals: "npm:^15.9.0"
     graphql: "npm:^16.9.0"
     hat: "npm:^0.0.3"
@@ -12360,10 +12360,10 @@ __metadata:
     typescript: "npm:^5.5.4"
     usehooks-ts: "npm:^3.1.0"
     uuid: "npm:^10.0.0"
-    vite: "npm:^5.4.2"
+    vite: "npm:^5.4.3"
     vite-plugin-checker: "npm:^0.7.2"
     vite-plugin-eslint: "npm:^1.8.1"
-    vite-plugin-pwa: "npm:^0.20.2"
+    vite-plugin-pwa: "npm:^0.20.3"
     vite-plugin-svgr: "npm:^4.2.0"
     vite-tsconfig-paths: "npm:^5.0.1"
     vitest: "npm:^2.0.5"
@@ -13882,9 +13882,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-pwa@npm:^0.20.2":
-  version: 0.20.2
-  resolution: "vite-plugin-pwa@npm:0.20.2"
+"vite-plugin-pwa@npm:^0.20.3":
+  version: 0.20.3
+  resolution: "vite-plugin-pwa@npm:0.20.3"
   dependencies:
     debug: "npm:^4.3.4"
     pretty-bytes: "npm:^6.1.1"
@@ -13899,7 +13899,7 @@ __metadata:
   peerDependenciesMeta:
     "@vite-pwa/assets-generator":
       optional: true
-  checksum: 10/335e339cf4b02ab04b35578df50c0eb7e53d0cd689e59e731cb51032c5c76a20b0c41441921c5b99425b18ea59850074707f6d832bb77c02a3d1f26be5b43849
+  checksum: 10/733d749a413e8cb25b267e20a39a4edf3f24e13c9e15461948d25ed71aa579275db143cd06c4203e98ec54fbbb684c55db0ef94f20b500a4323f954a2c16b7bc
   languageName: node
   linkType: hard
 
