@@ -19,7 +19,7 @@
     "dayjs": "^1.11.13",
     "graphql": "^16.9.0",
     "hat": "^0.0.3",
-    "i18next": "^23.14.0",
+    "i18next": "^23.15.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "lodash": "^4.17.21",
     "mapbox-gl-style-switcher": "^1.0.11",
