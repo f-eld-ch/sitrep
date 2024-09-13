@@ -68,7 +68,7 @@
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/hat": "^0.0.4",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.13",
     "@types/lodash": "^4.17.7",
     "@types/mapbox__mapbox-gl-draw": "~1.4.6",
     "@types/node": "^20.16.5",
@@ -82,9 +82,9 @@
     "@typescript-eslint/parser": "^8.5.0",
     "@vite-pwa/assets-generator": "^0.2.6",
     "@vitejs/plugin-react-swc": "^3.7.0",
-    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/coverage-v8": "^2.1.0",
     "eslint": "^9.10.0",
-    "eslint-plugin-react": "^7.36.0",
+    "eslint-plugin-react": "^7.36.1",
     "globals": "^15.9.0",
     "husky": "^9.1.6",
     "jest": "^29.7.0",
@@ -103,7 +103,7 @@
     "vite-plugin-pwa": "^0.20.5",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^5.0.1",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.0"
   },
   "resolutions": {
     "vite": "^5.4.2",
