@@ -3070,7 +3070,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 8.0,
+            "minzoom": 8,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "miter",
@@ -3168,11 +3168,11 @@
                     "stops": [
                         [
                             7,
-                            "rgba(255, 50, 50, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ],
                         [
                             15,
-                            "rgba(255, 80, 80, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ]
                     ]
                 },
@@ -3464,7 +3464,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 7.0,
+            "minzoom": 7,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "miter",
@@ -6652,7 +6652,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 8.0,
+            "minzoom": 8,
             "layout": {
                 "visibility": "visible"
             },
@@ -6748,11 +6748,11 @@
                     "stops": [
                         [
                             7,
-                            "rgba(255, 50, 50, 1)"
+                            "rgba(238, 234, 234, 1)"
                         ],
                         [
                             15,
-                            "rgba(255, 80, 80, 1)"
+                            "rgba(116, 114, 114, 1)"
                         ]
                     ]
                 },
@@ -8276,7 +8276,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 7.0,
+            "minzoom": 7,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "round",
@@ -9424,7 +9424,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 10.0,
+            "minzoom": 10,
             "layout": {
                 "line-cap": "round",
                 "visibility": "visible"
@@ -9517,11 +9517,11 @@
                     "stops": [
                         [
                             7,
-                            "rgba(255, 50, 50, 1)"
+                            "rgba(206, 132, 132, 1)"
                         ],
                         [
                             15,
-                            "rgba(255, 80, 80, 1)"
+                            "rgba(85, 53, 53, 1)"
                         ]
                     ]
                 },
@@ -12531,7 +12531,7 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 12.0,
+            "minzoom": 12,
             "layout": {
                 "visibility": "visible"
             },
@@ -12541,11 +12541,11 @@
                     "stops": [
                         [
                             7,
-                            "rgba(255, 50, 50, 1)"
+                            "rgba(156, 155, 155, 1)"
                         ],
                         [
                             15,
-                            "rgba(255, 80, 80, 1)"
+                            "rgba(106, 105, 105, 1)"
                         ]
                     ]
                 },
@@ -12643,10 +12643,10 @@
             "type": "symbol",
             "source": "base_v1.0.0",
             "source-layer": "transportation_name",
-            "minzoom": 13.0,
+            "minzoom": 13,
             "layout": {
                 "text-font": [
-                    "B612 Regular"
+                    "B612 Italic"
                 ],
                 "text-size": [
                     "interpolate",
@@ -12715,7 +12715,10 @@
                 "symbol-avoid-edges": true,
                 "text-letter-spacing": 0.1,
                 "text-pitch-alignment": "map",
-                "text-rotation-alignment": "map"
+                "text-rotation-alignment": "map",
+                "icon-anchor": "center",
+                "icon-pitch-alignment": "auto",
+                "icon-allow-overlap": true
             },
             "paint": {
                 "text-color": [
@@ -12727,11 +12730,10 @@
                     [
                         "rail",
                         "transit",
-                        "cable_car",
                         "gondola",
                         "chair_lift"
                     ],
-                    "rgba(255, 50, 50, 1)",
+                    "rgba(170, 170, 170, 1)",
                     [
                         "ferry",
                         "car_ferry"
@@ -12792,8 +12794,6 @@
                 [
                     "!in",
                     "class",
-                    "cable_car",
-                    "gondola",
                     "chair_lift",
                     "drag_lift",
                     "aerialway_transportation",
@@ -14274,7 +14274,7 @@
             "type": "symbol",
             "source": "base_v1.0.0",
             "source-layer": "poi",
-            "minzoom": 14.0,
+            "minzoom": 14,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -14300,7 +14300,7 @@
                         "subclass"
                     ],
                     "railway_station",
-                    "square_red",
+                    "circle_dark_grey_6",
                     "castle",
                     "castle_grey",
                     ""
@@ -14360,8 +14360,8 @@
                         "subclass"
                     ],
                     "railway_station",
-                    "rgba(255, 50, 50, 1)",
-                    "rgba(48, 48, 48, 1)"
+                    "rgba(18, 16, 16, 1)",
+                    "rgba(18, 16, 16, 1)"
                 ],
                 "text-opacity": 1,
                 "text-halo-blur": 1,
