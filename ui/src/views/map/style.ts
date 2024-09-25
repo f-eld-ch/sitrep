@@ -27,7 +27,7 @@ export const drawStyle: LayerProps[] = [
             ['!=', 'mode', 'static']
         ],
         'paint': {
-            'fill-pattern': ['match', ['get', 'user_zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
+            'fill-pattern': ['match', ['get', 'user_zoneType'], 'Brandzone', 'babs:PatternBrandzone', 'Zerstoerung', 'babs:PatternZerstoert', 'babs:PatternBrandzone'],
             'fill-opacity': 1
         }
     },
@@ -150,7 +150,7 @@ export const drawStyle: LayerProps[] = [
             'line-join': 'round'
         },
         'paint': {
-            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar', 'rettungsAchse', 'PatternLineRettungsachse'],
+            'line-pattern': ['match', ['get', 'user_lineType'], 'unpassierbar', 'babs:PatternLineUnpassierbar', 'beabsichtigteErkundung', 'babs:PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'babs:PatternLineErkundung', 'Rutschgebiet', 'babs:PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'babs:PatternLineRutschgebietGespiegelt', 'babs:PatternLineUnpassierbar', 'rettungsAchse', 'babs:PatternLineRettungsachse'],
             'line-opacity': 0.7,
             'line-width': ['interpolate', ['exponential', 1], ['zoom'], 12, 2, 19, 22],
         }
@@ -246,7 +246,7 @@ export const drawStyle: LayerProps[] = [
             ['!has', 'user_iconRotation'],
         ],
         'layout': {
-            'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "user_icon"]], ["get", "user_icon"], 'default_marker'],
             'icon-pitch-alignment': 'viewport',
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
@@ -262,7 +262,7 @@ export const drawStyle: LayerProps[] = [
             ['has', 'user_iconRotation'],
         ],
         'layout': {
-            'icon-image': ['coalesce', ["get", "user_icon"], 'default_marker'],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "user_icon"]], ["get", "user_icon"], 'default_marker'],
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
             'icon-rotation-alignment': 'map',
@@ -442,7 +442,7 @@ export const displayStyle: LayerProps[] = [
             ['in', 'zoneType', 'Brandzone', 'Zerstoerung'],
         ],
         'paint': {
-            'fill-pattern': ['match', ['get', 'zoneType'], 'Brandzone', 'PatternBrandzone', 'Zerstoerung', 'PatternZerstoert', 'PatternBrandzone'],
+            'fill-pattern': ['match', ['get', 'zoneType'], 'Brandzone', 'babs:PatternBrandzone', 'Zerstoerung', 'babs:PatternZerstoert', 'babs:PatternBrandzone'],
             'fill-antialias': true,
             'fill-opacity': 1
         }
@@ -521,7 +521,7 @@ export const displayStyle: LayerProps[] = [
             'line-join': 'round'
         },
         'paint': {
-            'line-pattern': ['match', ['get', 'lineType'], 'unpassierbar', 'PatternLineUnpassierbar', 'beabsichtigteErkundung', 'PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'PatternLineErkundung', 'Rutschgebiet', 'PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'PatternLineRutschgebietGespiegelt', 'PatternLineUnpassierbar', 'rettungsAchse', 'PatternLineRettungsachse'],
+            'line-pattern': ['match', ['get', 'lineType'], 'unpassierbar', 'babs:PatternLineUnpassierbar', 'beabsichtigteErkundung', 'babs:PatternLineBeabsichtigteErkundung', 'durchgeführteErkundung', 'babs:PatternLineErkundung', 'Rutschgebiet', 'babs:PatternLineRutschgebiet', 'RutschgebietGespiegelt', 'babs:PatternLineRutschgebietGespiegelt', 'babs:PatternLineUnpassierbar', 'rettungsAchse', 'babs:PatternLineRettungsachse'],
             'line-opacity': 0.7,
             'line-width': ['interpolate', ['exponential', 1], ['zoom'], 12, 2, 19, 22],
         }
@@ -569,7 +569,7 @@ export const displayStyle: LayerProps[] = [
             ['!has', 'iconRotation'],
         ],
         'layout': {
-            'icon-image': ["get", "icon"],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "icon"]], ["get", "icon"], 'default_marker'],
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
         }
@@ -583,7 +583,7 @@ export const displayStyle: LayerProps[] = [
             ['has', 'icon'],
         ],
         'layout': {
-            'icon-image': ["get", "icon"],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "icon"]], ["get", "icon"], 'default_marker'],
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
             'icon-allow-overlap': true,
             'icon-rotation-alignment': 'map',
@@ -600,7 +600,7 @@ export const displayStyle: LayerProps[] = [
             ['!has', 'iconRotation'],
         ],
         'layout': {
-            'icon-image': ['coalesce', ["get", "icon"], 'default_marker'],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "icon"]], ["get", "icon"], 'default_marker'],
             'icon-pitch-alignment': 'viewport',
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
@@ -615,7 +615,7 @@ export const displayStyle: LayerProps[] = [
             ['has', 'iconRotation'],
         ],
         'layout': {
-            'icon-image': ['coalesce', ["get", "icon"], 'default_marker'],
+            'icon-image': ['coalesce', ['concat', "babs:", ["get", "icon"]], ["get", "icon"], 'default_marker'],
             'icon-allow-overlap': true,
             'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.1, 17, 1],
             'icon-rotation-alignment': 'map',

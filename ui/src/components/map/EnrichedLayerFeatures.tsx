@@ -20,7 +20,7 @@ const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometr
                 startPoint.id = f.id + ":start";
                 startPoint.properties = {
                     parent: f.id,
-                    icon: enrich.iconStart.name,
+                    icon: "babs:" + enrich.iconStart.name,
                     iconRotation: bearing(point(f.geometry.coordinates[0]), point(f.geometry.coordinates[1])) + enrich.iconRotation,
                 }
                 features.push(startPoint)
@@ -31,7 +31,7 @@ const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometr
                 endPoint.id = f.id + ":end";
                 endPoint.properties = {
                     parent: f.id,
-                    icon: enrich.iconEnd.name,
+                    icon: "babs:" + enrich.iconEnd.name,
                     iconRotation: bearing(f.geometry.coordinates.slice(-1)[0], point(f.geometry.coordinates.slice(-2)[0])) + enrich.iconRotation,
                 };
                 features.push(endPoint);
