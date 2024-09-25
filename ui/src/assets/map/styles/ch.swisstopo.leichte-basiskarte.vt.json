@@ -14353,16 +14353,7 @@
                 "symbol-avoid-edges": true
             },
             "paint": {
-                "text-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    "railway_station",
-                    "rgba(18, 16, 16, 1)",
-                    "rgba(18, 16, 16, 1)"
-                ],
+                "text-color": "rgba(18, 16, 16, 1)",
                 "text-opacity": 1,
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(242, 242, 242, 0.6)",
@@ -16513,7 +16504,16 @@
         "ga:branch": "master"
     },
     "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
-    "sprite": "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/sprite/sprite",
+    "sprite": [
+        {
+            "id": "default",
+            "url": "/map/sprites/sprite"
+        },
+        {
+            "id": "babs",
+            "url": "/map/sprites/babs"
+        }
+    ],
     "bearing": 0.0,
     "pitch": 0.0,
     "center": [

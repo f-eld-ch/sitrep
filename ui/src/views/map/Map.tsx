@@ -3,7 +3,6 @@ import './control-panel.css';
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from './graphql';
 import { AddFeatureVars, DeleteFeatureVars, GetLayersData, GetLayersVars, Layer, ModifyFeatureVars } from 'types/layer';
-import { AllIcons, LinePatterns, ZonePatterns } from 'components/BabsIcons';
 import { BabsIconController } from './controls/BabsIconController';
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from './utils';
 import { displayStyle, drawStyle } from './style';
@@ -23,6 +22,7 @@ import ExportControl from './controls/ExportControl';
 import LayerControl from './controls/LayerControl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import maplibregl from 'maplibre-gl';
+import classNames from 'classnames';
 
 const modes = {
     ...MapboxDraw.modes,
@@ -30,6 +30,7 @@ const modes = {
 
 function MapView() {
     const mapRef = useRef<MapRef>(null);
+    const [loaded, setLoaded] = useState<boolean>(false);
     const mapStyle = useReactiveVar(selectedStyle);
     const [viewState, setViewState] = useState({
         latitude: 46.87148,
@@ -38,32 +39,27 @@ function MapView() {
         bearing: 0,
     });
 
+    maplibregl.setMaxParallelImageRequests(150);
+    maplibregl.setWorkerCount(6);
+
     const onMapLoad = useCallback(() => {
+        setLoaded(true);
         // Add the default marker
         let defaultMarker = new Image(32, 32);
         defaultMarker.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage('default_marker') && mapRef.current.addImage('default_marker', defaultMarker);
         defaultMarker.src = DefaultMaker;
 
-        Object.values(AllIcons).forEach(icon => {
-            let customIcon = new Image(48, 48);
-            customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
-            customIcon.src = icon.src;
-        });
-        mapRef && mapRef.current && mapRef.current.on('styleimagemissing', function (e) {
-            const id = e.id;
-            Object.values(Object.assign({}, AllIcons, LinePatterns, ZonePatterns)).filter(icon => id === icon.name).forEach(icon => {
-                let customIcon = new Image(icon.size, icon.size);
-                customIcon.src = icon.src;
-                customIcon.onload = () => mapRef && mapRef.current && !mapRef.current.hasImage(icon.name) && mapRef.current.addImage(icon.name, customIcon)
-            });
-        });
+    }, [mapRef, setLoaded]);
 
-    }, [mapRef]);
+    const mapClass = classNames({
+        'maplibre': true,
+        "container-flex": true,
+    });
 
     return (
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
-            <div className='maplibre container-flex'>
+            <div className={mapClass}>
                 <MapProvider>
                     <Map
                         ref={mapRef}
@@ -78,8 +74,9 @@ function MapView() {
                         touchPitch={true}
                         touchZoomRotate={true}
                         scrollZoom={true}
-                    >
+                        reuseMaps={true}
 
+                    >
                         <AttributionControl position='bottom-left' compact={true} />
                         {/* All Map Controls */}
                         <FullscreenControl position={'top-left'} />
@@ -87,7 +84,7 @@ function MapView() {
                         <ScaleControl unit={"metric"} position={'bottom-left'} />
                         <ExportControl position="bottom-left" />
                         {/* Layersprovider and Draw */}
-                        <Layers />
+                        {loaded ? <Layers /> : <></>}
                     </Map>
                 </MapProvider>
             </div >

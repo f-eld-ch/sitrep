@@ -567,11 +567,11 @@
                     "stops": [
                         [
                             12,
-                            "rgba(240, 60, 60, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ]
                     ]
                 },
@@ -2410,11 +2410,11 @@
                     "stops": [
                         [
                             12,
-                            "rgba(240, 60, 60, 1)"
+                            "rgba(238, 234, 234, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(116, 114, 114, 1)"
                         ]
                     ]
                 },
@@ -3198,7 +3198,7 @@
                 "text-rotation-alignment": "map"
             },
             "paint": {
-                "text-color": "rgba(255, 175, 180, 1)",
+                "text-color": "rgba(227, 227, 227, 1)",
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(32,32,32, 1)",
                 "text-halo-width": [
@@ -3373,33 +3373,21 @@
             "type": "line",
             "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 12.0,
+            "minzoom": 12,
             "layout": {
-                "line-cap": "butt",
                 "visibility": "visible"
             },
             "paint": {
-                "line-blur": {
-                    "stops": [
-                        [
-                            14,
-                            0.6
-                        ],
-                        [
-                            18,
-                            0.4
-                        ]
-                    ]
-                },
+                "line-blur": 0.25,
                 "line-color": {
                     "stops": [
                         [
-                            12,
-                            "rgba(240, 60, 60, 1)"
+                            7,
+                            "rgba(156, 155, 155, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(106, 105, 105, 1)"
                         ]
                     ]
                 },
@@ -3412,7 +3400,7 @@
                         "zoom"
                     ],
                     8,
-                    1,
+                    0.2,
                     14,
                     [
                         "match",
@@ -3423,8 +3411,8 @@
                         [
                             "cable_car"
                         ],
-                        1.5,
-                        1
+                        2,
+                        0.75
                     ],
                     18,
                     [
@@ -3436,7 +3424,7 @@
                         [
                             "cable_car"
                         ],
-                        2,
+                        4,
                         1.5
                     ]
                 ],
@@ -3448,10 +3436,37 @@
                     [
                         "zoom"
                     ],
+                    12,
+                    0,
+                    13,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "cable_car",
+                            "gondola"
+                        ],
+                        1,
+                        0
+                    ],
                     14,
-                    1,
-                    15,
-                    0.8
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "cable_car",
+                            "gondola",
+                            "chair_lift"
+                        ],
+                        1,
+                        0
+                    ]
                 ]
             },
             "filter": [
@@ -3746,7 +3761,7 @@
                         "subclass"
                     ],
                     "railway_station",
-                    "square_red",
+                    "circle_dark_grey_6",
                     "castle",
                     "castle_white",
                     "hospital",
@@ -3811,16 +3826,7 @@
                 "text-letter-spacing": 0.03
             },
             "paint": {
-                "text-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    "railway_station",
-                    "rgba(255, 175, 180, 1)",
-                    "rgba(255, 255, 250, 1)"
-                ],
+                "text-color": "rgba(240, 240, 240, 1)",
                 "icon-opacity": [
                     "step",
                     [
@@ -7018,7 +7024,16 @@
         "ga:branch": "master"
     },
     "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
-    "sprite": "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.imagerybasemap.vt/sprite/sprite",
+    "sprite": [
+        {
+            "id": "default",
+            "url": "/map/sprites/sprite"
+        },
+        {
+            "id": "babs",
+            "url": "/map/sprites/babs"
+        }
+    ],
     "bearing": 0.0,
     "pitch": 0.0,
     "center": [
