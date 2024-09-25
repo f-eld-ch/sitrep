@@ -16507,7 +16507,7 @@
     "sprite": [
         {
             "id": "default",
-            "url": "/map/sprites/sprite"
+            "url": "/map/sprites/basemap"
         },
         {
             "id": "babs",

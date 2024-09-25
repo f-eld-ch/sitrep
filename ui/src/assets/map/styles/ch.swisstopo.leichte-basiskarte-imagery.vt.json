@@ -7027,7 +7027,7 @@
     "sprite": [
         {
             "id": "default",
-            "url": "/map/sprites/sprite"
+            "url": "/map/sprites/imagery"
         },
         {
             "id": "babs",

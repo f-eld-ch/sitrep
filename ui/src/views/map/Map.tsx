@@ -8,10 +8,10 @@ import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from './
 import { displayStyle, drawStyle } from './style';
 import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
 import { first } from 'lodash';
-import { FullscreenControl, Map, MapProvider, MapRef, NavigationControl, ScaleControl, Source, useMap, Layer as MapLayer, AttributionControl } from 'react-map-gl/maplibre';
+import { FullscreenControl, Map, MapProvider, NavigationControl, ScaleControl, Source, useMap, Layer as MapLayer, AttributionControl } from 'react-map-gl/maplibre';
 import { LayerContext, LayersProvider } from './LayerContext';
 import { StyleController, selectedStyle } from './controls/StyleController';
-import { memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useContext, useEffect, useState } from 'react';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import bbox from "@turf/bbox";
@@ -28,22 +28,10 @@ const modes = {
 };
 
 function MapView() {
-    const mapRef = useRef<MapRef>(null);
-    const mapStyle = useReactiveVar(selectedStyle);
-    const [viewState, setViewState] = useState({
-        latitude: 46.87148,
-        longitude: 8.62994,
-        zoom: 5,
-        bearing: 0,
-    });
 
+    const mapStyle = useReactiveVar(selectedStyle);
     maplibregl.setMaxParallelImageRequests(150);
     maplibregl.setWorkerCount(6);
-
-    const onMapLoad = useCallback(() => {
-        console.log("loaded map", mapRef.current?._mapId)
-
-    }, [mapRef]);
 
     const mapClass = classNames({
         'maplibre': true,
@@ -54,30 +42,31 @@ function MapView() {
         <>
             <h3 className="title is-size-3 is-capitalized">Lage</h3>
             <div className={mapClass}>
-                <MapProvider>
-                    <Map
-                        // ref={mapRef}
-                        mapLib={maplibregl}
-                        onLoad={onMapLoad}
-                        attributionControl={false}
-                        minZoom={9}
-                        maxZoom={19}
-                        {...viewState}
-                        onMove={e => { setViewState(e.viewState) }}
-                        mapStyle={mapStyle.uri}
-                        scrollZoom={true}
-                        reuseMaps={false}
-                    >
-                        <AttributionControl position='bottom-left' compact={true} />
-                        {/* All Map Controls */}
-                        <FullscreenControl position={'top-left'} />
-                        <NavigationControl position={'top-left'} visualizePitch={true} />
-                        <ScaleControl unit={"metric"} position={'bottom-left'} />
-                        <ExportControl position="bottom-left" />
-                        {/* Layersprovider and Draw */}
-                        <Layers />
-                    </Map>
-                </MapProvider>
+                <Map
+                    mapLib={maplibregl}
+                    onLoad={(e) => console.log(e)}
+                    initialViewState={{
+                        latitude: 46.87148,
+                        longitude: 8.62994,
+                        zoom: 5,
+                        bearing: 0,
+                    }}
+                    attributionControl={false}
+                    minZoom={9}
+                    maxZoom={19}
+                    mapStyle={mapStyle.uri}
+                    scrollZoom={true}
+                    reuseMaps={false}
+                >
+                    <AttributionControl position='bottom-left' compact={true} />
+                    {/* All Map Controls */}
+                    <FullscreenControl position={'top-left'} />
+                    <NavigationControl position={'top-left'} visualizePitch={true} />
+                    <ScaleControl unit={"metric"} position={'bottom-left'} />
+                    <ExportControl position="bottom-left" />
+                    {/* Layersprovider and Draw */}
+                    <Layers />
+                </Map>
             </div >
         </>
     );
@@ -333,11 +322,17 @@ function InactiveLayer(props: { featureCollection: FeatureCollection, id: string
     )
 }
 
-const MemoMap = MapView;
-
-export { MemoMap as Map };
 
 
+function MapWithProvder() {
+    return (
+        <MapProvider>
+            <MapView />
+        </MapProvider>
+    )
+}
+
+export { MapWithProvder as Map };
 
 export type FeatureEvent = {
     features: Feature<Geometry, GeoJsonProperties>[]
