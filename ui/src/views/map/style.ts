@@ -754,5 +754,4 @@ export const displayStyle: LayerProps[] = [
     },
 ];
 
-
 export default drawStyle;
