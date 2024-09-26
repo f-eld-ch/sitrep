@@ -4155,12 +4155,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.16.8":
-  version: 20.16.8
-  resolution: "@types/node@npm:20.16.8"
+"@types/node@npm:^20.16.9":
+  version: 20.16.9
+  resolution: "@types/node@npm:20.16.9"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/e4917ff29c1d8f2c4e2c7081a50d1c53738aa3cf21b11fc26956e72d679e6eeefc3db87d8e1ebd2d67b4205fb6992102197d6aa11f8d1404bf81a81dfc195578
+  checksum: 10/cc7e57775ce80348f72a7026910ee0082bf3e0f5af33b3cdc3ce10df64e51bb70b0e8ce4726ecf53cc9c4ba239d340d76831de38ecc7e317e41fb71f793b6e93
   languageName: node
   linkType: hard
 
@@ -12352,7 +12352,7 @@ __metadata:
     "@types/jest": "npm:^29.5.13"
     "@types/lodash": "npm:^4.17.9"
     "@types/mapbox__mapbox-gl-draw": "npm:~1.4.6"
-    "@types/node": "npm:^20.16.8"
+    "@types/node": "npm:^20.16.9"
     "@types/react": "npm:^18.3.9"
     "@types/react-color": "npm:^3.0.12"
     "@types/react-dom": "npm:^18.3.0"
@@ -13976,8 +13976,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^5.4.2":
-  version: 5.4.6
-  resolution: "vite@npm:5.4.6"
+  version: 5.4.8
+  resolution: "vite@npm:5.4.8"
   dependencies:
     esbuild: "npm:^0.21.3"
     fsevents: "npm:~2.3.3"
@@ -14014,7 +14014,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/8489fa55c48675fc12b64bf7af58b5e2f8a11b2aebc63cb177861bd53dc196d7c496d6918f5a8c48828f51b6fe498166a1a2350334bbfaae10d015a0c71f1c77
+  checksum: 10/17fdffa558abaf854f04ead7d3ddd76e4556a59871f9ac63cca3fc20a79979984837d8dddaae4b171e3d73061f781e4eec0f6d3babdbce2b4d111d29cf474c1c
   languageName: node
   linkType: hard
 
