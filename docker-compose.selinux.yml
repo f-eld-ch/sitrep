@@ -1,0 +1,118 @@
+name: sitrep
+services:
+  graphql-engine:
+    depends_on:
+      postgres:
+        condition: service_started
+      dex:
+        condition: service_started
+    environment:
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"RS256","jwk_url": "http://dex:5556/dex/keys" ,"header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["viewer","editor"],"x-hasura-default-role":"editor"}}'
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      PG_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+    build:
+      dockerfile: Dockerfile.hasura
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8080"
+        protocol: tcp
+    restart: always
+  oauth2proxy:
+    depends_on:
+      graphql-engine:
+        condition: service_started
+      dex:
+        condition: service_started
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET}
+      OAUTH2_PROXY_COOKIE_CSRF_PER_REQUEST: true
+      OAUTH2_PROXY_COOKIE_CSRF_EXPIRE: 5m
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_HTTP_ADDRESS: :4180
+      OAUTH2_PROXY_OIDC_ISSUER_URL: http://dex:5556/dex
+      OAUTH2_PROXY_INSECURE_OIDC_SKIP_ISSUER_VERIFICATION: true
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: "true"
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_PROXY_WEBSOCKETS: "true"
+      OAUTH2_PROXY_UPSTREAMS: http://graphql-engine:8080/v1/graphql
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: true
+      OAUTH2_PROXY_REDIRECT_URL: ${OAUTH2_PROXY_REDIRECT_URL}
+      # disable autodiscovery due to token endpoint not properly accessible on localhost for oauth2proxy
+      OAUTH2_PROXY_SKIP_OIDC_DISCOVERY: "true"
+      OAUTH2_PROXY_OIDC_JWKS_URL: http://dex:5556/dex/keys
+      OAUTH2_PROXY_LOGIN_URL: http://localhost:5556/dex/auth
+      OAUTH2_PROXY_REDEEM_URL: http://dex:5556/dex/token
+      OAUTH2_PROXY_SKIP_AUTH_ROUTES: ^\/(manifest\.json|favicon\.ico|asset-manifest\.json|service-worker\.js\.map|service-worker\.js|robots\.txt|logo\d+\.png)
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1
+    restart: always
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 4180
+        published: "4180"
+        protocol: tcp
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgis/postgis:14-3.2
+    networks:
+      default: null
+    restart: always
+    volumes:
+      - type: volume
+        source: db_data
+        target: /var/lib/postgresql/data
+        volume: {}
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+  dex:
+    image: docker.io/dexidp/dex:v2.38.0
+    restart: always
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      DEX_CONNECTORS_ENABLE_MOCK: "true"
+      DEX_CONNECTORS_ENABLE_DEMO_USER: "true"
+      DEX_ISSUER: http://localhost:5556/dex
+    networks:
+      default: null
+    command: dex serve /etc/dex/config-demo.yaml
+    volumes:
+      - "./example/dexidp/config-demo.yaml:/etc/dex/config-demo.yaml:Z"
+      - type: volume
+        source: dex_data
+        target: /var/sqlite/dex
+        volume: {}
+    ports:
+      - mode: ingress
+        target: 5556
+        published: "5556"
+        protocol: tcp
+      - mode: ingress
+        target: 5557
+        published: "5557"
+        protocol: tcp
+networks:
+  default:
+    name: sitrep_default
+volumes:
+  db_data:
+    name: sitrep_db_data
+  dex_data:
+    name: sitrep_dex_data
