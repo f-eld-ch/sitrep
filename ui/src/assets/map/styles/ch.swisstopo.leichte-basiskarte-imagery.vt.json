@@ -1,10 +1,10 @@
 {
     "version": 8,
-    "id": "18808082-340d-4827-9c35-a22244e6a16d",
-    "name": "imagerybasemap_v3.0.0",
+    "id": "0b8f7418-1dcb-48a2-aff6-57e2a9439ffc",
+    "name": "imagerybasemap_v1.15.0",
     "sources": {
-        "leichtebasiskarte_v3.0.1": {
-            "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.leichte-basiskarte.vt/v3.0.1/tiles.json",
+        "base_v1.0.0": {
+            "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.base.vt/v1.0.0/tiles.json",
             "type": "vector"
         },
         "swissimage_wmts": {
@@ -36,7 +36,7 @@
         {
             "id": "water_line",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "waterway",
             "minzoom": 9.0,
             "layout": {
@@ -224,15 +224,25 @@
                     "!=",
                     "intermittent",
                     1
+                ],
+                [
+                    "!in",
+                    "class",
+                    "riverbank",
+                    "shoreline",
+                    "shoreline_changing_level"
                 ]
             ]
         },
         {
             "id": "park",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "park",
             "minzoom": 7.0,
+            "layout": {
+                "visibility": "visible"
+            },
             "paint": {
                 "line-color": "rgba(112, 180, 70, 1)",
                 "line-width": [
@@ -276,7 +286,7 @@
         {
             "id": "boundary_disputed",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "boundary",
             "minzoom": 0.0,
             "layout": {
@@ -286,7 +296,7 @@
             },
             "paint": {
                 "line-blur": 1,
-                "line-color": "rgba(255, 0, 255, 1)",
+                "line-color": "hsl(318,65%,45%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -337,7 +347,7 @@
                         ],
                         2,
                         16,
-                        10
+                        7
                     ]
                 ],
                 "line-opacity": 0.4,
@@ -374,7 +384,7 @@
         {
             "id": "boundary",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "boundary",
             "minzoom": 0.0,
             "layout": {
@@ -384,7 +394,7 @@
             },
             "paint": {
                 "line-blur": 1,
-                "line-color": "rgba(188, 40, 144, 1)",
+                "line-color": "hsl(318,65%,45%)",
                 "line-width": [
                     "interpolate",
                     [
@@ -424,7 +434,7 @@
                         ],
                         2,
                         16,
-                        10
+                        7
                     ]
                 ],
                 "line-opacity": 0.4
@@ -457,7 +467,7 @@
         {
             "id": "tunnel_public_transport",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 8.0,
             "layout": {
@@ -557,11 +567,11 @@
                     "stops": [
                         [
                             12,
-                            "rgba(240, 60, 60, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(170, 170, 170, 1)"
                         ]
                     ]
                 },
@@ -573,7 +583,18 @@
                     [
                         "zoom"
                     ],
-                    8,
+                    9,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "subclass"
+                        ],
+                        "rail",
+                        0.75,
+                        0
+                    ],
+                    10,
                     [
                         "match",
                         [
@@ -604,12 +625,24 @@
                                     "yard",
                                     "siding"
                                 ],
-                                0.2,
-                                1
+                                0,
+                                0.75
                             ],
-                            0.2
+                            0.5
                         ],
-                        0.2
+                        [
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            [
+                                "cable_car",
+                                "funicular"
+                            ],
+                            0.75,
+                            0.5
+                        ]
                     ],
                     14,
                     [
@@ -618,6 +651,8 @@
                             "get",
                             "class"
                         ],
+                        "transit",
+                        1,
                         [
                             "rail"
                         ],
@@ -642,16 +677,24 @@
                                     "yard",
                                     "siding"
                                 ],
-                                0.2,
-                                1.5
+                                0,
+                                2
                             ],
-                            1.5
+                            1
                         ],
                         [
-                            "cable_car"
-                        ],
-                        1.5,
-                        1
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            [
+                                "cable_car",
+                                "funicular"
+                            ],
+                            1,
+                            0
+                        ]
                     ],
                     18,
                     [
@@ -661,35 +704,22 @@
                             "class"
                         ],
                         [
-                            "rail"
+                            "transit"
                         ],
+                        1.5,
                         [
                             "match",
                             [
                                 "get",
-                                "subclass"
+                                "service"
                             ],
                             [
-                                "rail",
-                                "narrow_gauge",
-                                "rack_rail"
+                                "yard",
+                                "siding"
                             ],
-                            [
-                                "match",
-                                [
-                                    "get",
-                                    "service"
-                                ],
-                                [
-                                    "yard",
-                                    "siding"
-                                ],
-                                1.5,
-                                2
-                            ],
+                            1.5,
                             2
-                        ],
-                        1.5
+                        ]
                     ]
                 ],
                 "line-opacity": [
@@ -774,9 +804,9 @@
         {
             "id": "tunnel_road",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 7.0,
+            "minzoom": 8.0,
             "layout": {
                 "line-cap": "butt",
                 "line-join": "miter",
@@ -898,55 +928,65 @@
                     [
                         "zoom"
                     ],
-                    7,
-                    [
-                        "literal",
-                        0
-                    ],
                     8,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway",
-                            "trunk",
-                            "primary"
+                            5,
+                            10,
+                            99
                         ],
                         1,
-                        0
-                    ],
-                    9,
-                    [
-                        "match",
                         [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "motorway",
-                            "trunk",
-                            "primary"
-                        ],
-                        1.1,
-                        0
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            1,
+                            0
+                        ]
                     ],
                     10,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway",
-                            "trunk",
-                            "primary",
-                            "secondary"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
                         ],
-                        1.2,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway",
+                                "trunk"
+                            ],
+                            1.2,
+                            [
+                                "primary",
+                                "secondary",
+                                "tertiary",
+                                "minor"
+                            ],
+                            1,
+                            0
+                        ],
                         0
                     ],
                     11,
@@ -954,33 +994,37 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway",
-                            "trunk",
-                            "primary",
-                            "secondary"
-                        ],
-                        1.3,
-                        0
-                    ],
-                    12,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
                         ],
                         [
-                            "motorway",
-                            "trunk",
-                            "primary",
-                            "secondary",
-                            "tertiary"
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway",
+                                "trunk"
+                            ],
+                            1.3,
+                            [
+                                "primary",
+                                "secondary",
+                                "tertiary",
+                                "minor"
+                            ],
+                            1,
+                            0
                         ],
-                        1.4,
-                        0
+                        0.25
                     ],
                     13,
                     [
@@ -1054,26 +1098,34 @@
                     ]
                 ],
                 "line-offset": 0,
-                "line-opacity": {
-                    "stops": [
+                "line-opacity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    8,
+                    0,
+                    9,
+                    [
+                        "match",
                         [
-                            9,
-                            0
+                            "get",
+                            "oneway"
                         ],
-                        [
-                            10,
-                            0.4
-                        ],
-                        [
-                            16,
-                            0.35
-                        ],
-                        [
-                            17,
-                            0.25
-                        ]
-                    ]
-                },
+                        2,
+                        0,
+                        0.4
+                    ],
+                    10,
+                    0.6,
+                    15,
+                    0.35,
+                    16,
+                    0.25
+                ],
                 "line-dasharray": [
                     6,
                     3
@@ -1091,11 +1143,24 @@
                     "class",
                     "rail",
                     "ferry",
+                    "car_ferry",
                     "transit",
                     "cable_car",
+                    "chair_lift",
                     "gondola",
+                    "drag_lift",
+                    "aerialway_transportation",
+                    "aerialway_closed",
+                    "aerialway_goods",
+                    "goods_conveyor",
                     "path",
-                    "footway"
+                    "footway",
+                    "trail",
+                    "rail",
+                    "track",
+                    "transit",
+                    "via_ferrata",
+                    "mask_terrain"
                 ],
                 [
                     "==",
@@ -1107,7 +1172,7 @@
         {
             "id": "tunnel_road_path_footway",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 6.0,
             "layout": {
@@ -1138,11 +1203,11 @@
                 "line-opacity": {
                     "stops": [
                         [
-                            16,
+                            15,
                             0.4
                         ],
                         [
-                            17,
+                            16,
                             0.3
                         ]
                     ]
@@ -1178,7 +1243,7 @@
         {
             "id": "road_via_ferrata",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 14.0,
             "layout": {
@@ -1246,7 +1311,7 @@
         {
             "id": "road_paths",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 13.0,
             "layout": {
@@ -1287,11 +1352,11 @@
                 "line-opacity": {
                     "stops": [
                         [
-                            16,
+                            15,
                             0.35
                         ],
                         [
-                            17,
+                            16,
                             0.275
                         ]
                     ]
@@ -1337,7 +1402,7 @@
         {
             "id": "road_fill",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 8.0,
             "layout": {
@@ -1381,30 +1446,43 @@
                         "zoom"
                     ],
                     7,
-                    [
-                        "literal",
-                        0
-                    ],
+                    0,
                     8,
                     [
                         "match",
                         [
                             "get",
-                            "ramp"
-                        ],
-                        1,
-                        0.5,
-                        2
-                    ],
-                    10,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway"
+                            5,
+                            10,
+                            99
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                0.5,
+                                2
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            2,
+                            2
                         ],
                         [
                             "match",
@@ -1413,22 +1491,118 @@
                                 "ramp"
                             ],
                             1,
-                            1.5,
-                            2.75
+                            0.5,
+                            0
+                        ]
+                    ],
+                    9,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
                         ],
                         [
-                            "trunk"
+                            5,
+                            10,
+                            99
                         ],
-                        2.75,
                         [
                             "match",
                             [
                                 "get",
-                                "is_route"
+                                "class"
                             ],
-                            11,
-                            0,
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                0.75,
+                                2.25
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            2.25,
                             2
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            0.75,
+                            0
+                        ]
+                    ],
+                    10,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
+                        ],
+                        [
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                0.75,
+                                2.75
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            2.75,
+                            "primary",
+                            2.5,
+                            "secondary",
+                            2.5,
+                            "tertiary",
+                            2,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            1.5,
+                            0
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "ramp"
+                            ],
+                            1,
+                            0.75,
+                            0
                         ]
                     ],
                     11,
@@ -1436,10 +1610,51 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                1.25,
+                                3.25
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            3.25,
+                            "primary",
+                            3,
+                            "secondary",
+                            3,
+                            "tertiary",
+                            2.5,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            1.75,
+                            0
                         ],
                         [
                             "match",
@@ -1448,22 +1663,8 @@
                                 "ramp"
                             ],
                             1,
-                            1.5,
-                            2.75
-                        ],
-                        [
-                            "trunk"
-                        ],
-                        2.75,
-                        [
-                            "match",
-                            [
-                                "get",
-                                "is_route"
-                            ],
-                            11,
-                            0,
-                            2
+                            1.25,
+                            0
                         ]
                     ],
                     12,
@@ -1471,10 +1672,51 @@
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                1.5,
+                                3.75
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            3.75,
+                            "primary",
+                            4,
+                            "secondary",
+                            3.5,
+                            "tertiary",
+                            3,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            2,
+                            0
                         ],
                         [
                             "match",
@@ -1484,119 +1726,93 @@
                             ],
                             1,
                             1.5,
-                            3.75
-                        ],
-                        [
-                            "trunk"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "oneway"
-                            ],
-                            1,
-                            3.75,
-                            3.75
-                        ],
-                        [
-                            "primary"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "is_route"
-                            ],
-                            [
-                                5,
-                                6,
-                                7,
-                                8,
-                                9,
-                                10,
-                                99
-                            ],
-                            3.75,
                             0
-                        ],
-                        [
-                            "secondary"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "is_route"
-                            ],
-                            [
-                                5,
-                                6,
-                                7,
-                                8,
-                                9,
-                                10,
-                                99
-                            ],
-                            3.25,
-                            0
-                        ],
-                        [
-                            "tertiary"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "is_route"
-                            ],
-                            [
-                                5,
-                                6,
-                                7,
-                                8,
-                                9,
-                                10,
-                                99
-                            ],
-                            2.25,
-                            0
-                        ],
-                        [
-                            "minor",
-                            "path",
-                            "track",
-                            "footway"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "is_route"
-                            ],
-                            [
-                                5,
-                                6,
-                                7,
-                                8,
-                                9,
-                                10,
-                                99
-                            ],
-                            2,
-                            0
-                        ],
-                        0
+                        ]
                     ],
                     13,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "is_route"
                         ],
                         [
-                            "motorway"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                1.75,
+                                4.5
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            4.5,
+                            "primary",
+                            4.5,
+                            "secondary",
+                            4,
+                            "tertiary",
+                            3.5,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            2.5,
+                            2
+                        ],
+                        11,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway",
+                                "trunk"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                1.75,
+                                4.5
+                            ],
+                            "primary",
+                            3,
+                            "secondary",
+                            2.75,
+                            "tertiary",
+                            2.75,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            2,
+                            2
                         ],
                         [
                             "match",
@@ -1605,171 +1821,346 @@
                                 "ramp"
                             ],
                             1,
-                            2.75,
-                            4.25
+                            1.75,
+                            0
+                        ]
+                    ],
+                    14,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
                         ],
                         [
-                            "trunk"
+                            5,
+                            6,
+                            7,
+                            8,
+                            10,
+                            99
                         ],
                         [
                             "match",
                             [
                                 "get",
-                                "oneway"
+                                "class"
                             ],
-                            1,
-                            4.25,
-                            4.25
+                            [
+                                "motorway"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                2.75,
+                                5.5
+                            ],
+                            [
+                                "trunk"
+                            ],
+                            5.5,
+                            "primary",
+                            5.5,
+                            "secondary",
+                            5,
+                            "tertiary",
+                            4,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            3,
+                            2.5
                         ],
                         [
-                            "primary"
-                        ],
-                        4.25,
-                        [
-                            "secondary"
-                        ],
-                        3.75,
-                        [
-                            "tertiary"
-                        ],
-                        2.75,
-                        [
-                            "minor"
-                        ],
-                        1.75,
-                        0
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway",
+                                "trunk"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                2.75,
+                                5.5
+                            ],
+                            "primary",
+                            3.5,
+                            "secondary",
+                            3,
+                            "tertiary",
+                            3,
+                            [
+                                "minor",
+                                "service"
+                            ],
+                            2.5,
+                            2.5
+                        ]
                     ],
                     15,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "subclass"
                         ],
-                        [
-                            "motorway"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "ramp"
-                            ],
-                            1,
-                            5,
-                            6.5
-                        ],
-                        [
-                            "trunk"
-                        ],
+                        "funicular",
+                        3,
                         [
                             "match",
                             [
                                 "get",
-                                "oneway"
+                                "class"
                             ],
-                            1,
+                            [
+                                "motorway",
+                                "motorway_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                5,
+                                6.5
+                            ],
+                            [
+                                "trunk",
+                                "trunk_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "oneway"
+                                ],
+                                1,
+                                6.5,
+                                10.5
+                            ],
+                            [
+                                "primary",
+                                "primary_construction"
+                            ],
                             6.5,
-                            7.5
-                        ],
-                        [
-                            "primary"
-                        ],
-                        7.5,
-                        [
-                            "secondary"
-                        ],
-                        6.5,
-                        [
-                            "tertiary",
-                            "rail"
-                        ],
-                        5.5,
-                        [
-                            "minor"
-                        ],
-                        3.5,
-                        2.5
+                            [
+                                "secondary",
+                                "secondary_construction"
+                            ],
+                            5.5,
+                            [
+                                "tertiary",
+                                "tertiary_construction"
+                            ],
+                            4.5,
+                            [
+                                "minor",
+                                "minor_construction",
+                                "service",
+                                "service_construction"
+                            ],
+                            3.5,
+                            [
+                                "rail",
+                                "rail_construction"
+                            ],
+                            5,
+                            [
+                                "track",
+                                "track_construction",
+                                "path",
+                                "path_construction",
+                                "footway",
+                                "footway_construction",
+                                "transit",
+                                "transit_construction"
+                            ],
+                            1.25,
+                            3
+                        ]
                     ],
                     16,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "subclass"
                         ],
-                        [
-                            "motorway"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "ramp"
-                            ],
-                            1,
-                            8.5,
-                            10.5
-                        ],
-                        [
-                            "trunk"
-                        ],
+                        "funicular",
+                        6,
                         [
                             "match",
                             [
                                 "get",
-                                "oneway"
+                                "class"
                             ],
-                            1,
-                            10.5,
-                            13.5
-                        ],
-                        [
-                            "primary"
-                        ],
-                        13.5,
-                        [
-                            "secondary"
-                        ],
-                        11.5,
-                        [
-                            "tertiary",
-                            "rail"
-                        ],
-                        9.5,
-                        [
-                            "minor"
-                        ],
-                        7.5,
-                        6.5
+                            [
+                                "motorway",
+                                "motorway_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                8,
+                                10
+                            ],
+                            [
+                                "trunk",
+                                "trunk_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "oneway"
+                                ],
+                                1,
+                                10,
+                                13
+                            ],
+                            [
+                                "primary",
+                                "primary_construction"
+                            ],
+                            10,
+                            [
+                                "secondary",
+                                "secondary_construction"
+                            ],
+                            9,
+                            [
+                                "tertiary",
+                                "tertiary_construction"
+                            ],
+                            8,
+                            [
+                                "minor",
+                                "minor_construction",
+                                "service",
+                                "service_construction"
+                            ],
+                            7,
+                            [
+                                "rail",
+                                "rail_construction"
+                            ],
+                            9.5,
+                            [
+                                "track",
+                                "track_construction",
+                                "path",
+                                "path_construction",
+                                "footway",
+                                "footway_construction",
+                                "transit",
+                                "transit_construction"
+                            ],
+                            6.5,
+                            6
+                        ]
                     ],
                     20,
                     [
                         "match",
                         [
                             "get",
-                            "class"
+                            "subclass"
                         ],
+                        "funicular",
+                        20,
                         [
-                            "motorway",
-                            "trunk",
-                            "primary",
-                            "rail"
-                        ],
-                        117,
-                        [
-                            "secondary"
-                        ],
-                        112,
-                        [
-                            "tertiary"
-                        ],
-                        107,
-                        [
-                            "minor"
-                        ],
-                        97,
-                        92
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "motorway",
+                                "motorway_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "ramp"
+                                ],
+                                1,
+                                112,
+                                126
+                            ],
+                            [
+                                "trunk",
+                                "trunk_construction"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "oneway"
+                                ],
+                                1,
+                                126,
+                                136
+                            ],
+                            [
+                                "primary",
+                                "primary_construction"
+                            ],
+                            117,
+                            [
+                                "secondary",
+                                "secondary_construction"
+                            ],
+                            112,
+                            [
+                                "tertiary",
+                                "tertiary_construction"
+                            ],
+                            107,
+                            [
+                                "minor",
+                                "minor_construction",
+                                "service",
+                                "service_construction"
+                            ],
+                            97,
+                            [
+                                "rail",
+                                "rail_construction"
+                            ],
+                            120,
+                            [
+                                "track",
+                                "track_construction",
+                                "path",
+                                "path_construction",
+                                "footway",
+                                "footway_construction",
+                                "transit",
+                                "transit_construction"
+                            ],
+                            81,
+                            92
+                        ]
                     ]
                 ],
                 "line-opacity": [
@@ -1784,22 +2175,10 @@
                     8,
                     0,
                     9,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "motorway",
-                            "trunk"
-                        ],
-                        0.3,
-                        0.4
-                    ],
-                    16,
                     0.3,
-                    17,
+                    15,
+                    0.2,
+                    16,
                     [
                         "match",
                         [
@@ -1830,17 +2209,23 @@
                         "class"
                     ],
                     [
-                        "ferry",
                         "cable_car",
                         "car_ferry",
                         "chair_lift",
+                        "ferry",
                         "gondola",
+                        "drag_lift",
+                        "aerialway_transportation",
+                        "aerialway_closed",
+                        "aerialway_goods",
+                        "goods_conveyor",
                         "path",
                         "footway",
                         "trail",
                         "rail",
                         "transit",
-                        "via_ferrata"
+                        "via_ferrata",
+                        "mask_terrain"
                     ],
                     false,
                     true
@@ -1865,7 +2250,7 @@
         {
             "id": "car_ferry",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 10.0,
             "layout": {
@@ -1946,7 +2331,7 @@
         {
             "id": "ferry",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 12.0,
             "layout": {
@@ -2000,7 +2385,7 @@
         {
             "id": "public_transport",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
             "minzoom": 9.0,
             "layout": {
@@ -2016,82 +2401,8 @@
                     [
                         "zoom"
                     ],
-                    8,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "rail"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "subclass"
-                            ],
-                            [
-                                "rail",
-                                "narrow_gauge",
-                                "rack_rail"
-                            ],
-                            [
-                                "match",
-                                [
-                                    "get",
-                                    "service"
-                                ],
-                                [
-                                    "yard",
-                                    "siding"
-                                ],
-                                2.5,
-                                0.6
-                            ],
-                            0.6
-                        ],
-                        0.6
-                    ],
                     14,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "rail"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "subclass"
-                            ],
-                            [
-                                "rail",
-                                "narrow_gauge",
-                                "rack_rail"
-                            ],
-                            [
-                                "match",
-                                [
-                                    "get",
-                                    "service"
-                                ],
-                                [
-                                    "yard",
-                                    "siding"
-                                ],
-                                2.5,
-                                0.6
-                            ],
-                            0.6
-                        ],
-                        0.6
-                    ],
+                    0.6,
                     18,
                     0.4
                 ],
@@ -2099,11 +2410,11 @@
                     "stops": [
                         [
                             12,
-                            "rgba(240, 60, 60, 1)"
+                            "rgba(238, 234, 234, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(116, 114, 114, 1)"
                         ]
                     ]
                 },
@@ -2115,7 +2426,161 @@
                     [
                         "zoom"
                     ],
+                    9,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
+                        ],
+                        99,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            "rail",
+                            0.75,
+                            0
+                        ],
+                        0
+                    ],
+                    10,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
+                        ],
+                        99,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            [
+                                "rail"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "subclass"
+                                ],
+                                [
+                                    "rail",
+                                    "narrow_gauge",
+                                    "rack_rail"
+                                ],
+                                [
+                                    "match",
+                                    [
+                                        "get",
+                                        "service"
+                                    ],
+                                    [
+                                        "yard",
+                                        "siding"
+                                    ],
+                                    0,
+                                    0.75
+                                ],
+                                0.5
+                            ],
+                            0.5
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            [
+                                "cable_car",
+                                "funicular"
+                            ],
+                            0.75,
+                            0
+                        ]
+                    ],
+                    14,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "is_route"
+                        ],
+                        99,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "class"
+                            ],
+                            "transit",
+                            1,
+                            [
+                                "rail"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "subclass"
+                                ],
+                                [
+                                    "rail",
+                                    "narrow_gauge",
+                                    "rack_rail"
+                                ],
+                                2,
+                                1
+                            ],
+                            0
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            [
+                                "cable_car",
+                                "funicular"
+                            ],
+                            1,
+                            0
+                        ]
+                    ],
+                    16,
+                    0.5
+                ],
+                "line-opacity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
                     8,
+                    0,
+                    9,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "rail"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
                     [
                         "match",
                         [
@@ -2134,7 +2599,8 @@
                             [
                                 "rail",
                                 "narrow_gauge",
-                                "rack_rail"
+                                "rack_rail",
+                                "funicular"
                             ],
                             [
                                 "match",
@@ -2146,12 +2612,51 @@
                                     "yard",
                                     "siding"
                                 ],
-                                0.2,
+                                0,
                                 1
                             ],
-                            0.2
+                            0
                         ],
-                        0.2
+                        0
+                    ],
+                    13,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "rail"
+                        ],
+                        [
+                            "match",
+                            [
+                                "get",
+                                "subclass"
+                            ],
+                            [
+                                "rail",
+                                "narrow_gauge",
+                                "rack_rail",
+                                "funicular"
+                            ],
+                            [
+                                "match",
+                                [
+                                    "get",
+                                    "service"
+                                ],
+                                [
+                                    "yard",
+                                    "siding"
+                                ],
+                                0,
+                                1
+                            ],
+                            0
+                        ],
+                        1
                     ],
                     14,
                     [
@@ -2172,7 +2677,8 @@
                             [
                                 "rail",
                                 "narrow_gauge",
-                                "rack_rail"
+                                "rack_rail",
+                                "funicular"
                             ],
                             [
                                 "match",
@@ -2184,108 +2690,16 @@
                                     "yard",
                                     "siding"
                                 ],
-                                0.2,
-                                1.5
+                                0,
+                                1
                             ],
-                            1.5
+                            0
                         ],
-                        [
-                            "cable_car"
-                        ],
-                        1.5,
                         1
                     ],
-                    18,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "rail"
-                        ],
-                        [
-                            "match",
-                            [
-                                "get",
-                                "subclass"
-                            ],
-                            [
-                                "rail",
-                                "narrow_gauge",
-                                "rack_rail"
-                            ],
-                            [
-                                "match",
-                                [
-                                    "get",
-                                    "service"
-                                ],
-                                [
-                                    "yard",
-                                    "siding"
-                                ],
-                                1.5,
-                                2
-                            ],
-                            2
-                        ],
-                        1.5
-                    ]
-                ],
-                "line-opacity": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    9,
-                    0,
-                    10,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "service"
-                        ],
-                        [
-                            "siding"
-                        ],
-                        0,
-                        1
-                    ],
-                    12,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "service"
-                        ],
-                        [
-                            "siding"
-                        ],
-                        0,
-                        1
-                    ],
-                    13,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "service"
-                        ],
-                        [
-                            "siding"
-                        ],
-                        0,
-                        1
-                    ],
+                    15,
+                    1,
                     16,
-                    0.5,
-                    17,
                     0
                 ]
             },
@@ -2312,7 +2726,7 @@
         {
             "id": "spot_elevation",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "spot_elevation",
             "minzoom": 14.0,
             "layout": {
@@ -2416,9 +2830,197 @@
             ]
         },
         {
+            "id": "boundary_canton_l_label",
+            "type": "symbol",
+            "source": "base_v1.0.0",
+            "source-layer": "boundary",
+            "minzoom": 13.0,
+            "layout": {
+                "text-font": [
+                    "B612 Regular"
+                ],
+                "text-size": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    13,
+                    11,
+                    18,
+                    14
+                ],
+                "text-field": [
+                    "get",
+                    "adm4_l"
+                ],
+                "visibility": "visible",
+                "text-offset": [
+                    0,
+                    1
+                ],
+                "text-justify": "center",
+                "text-padding": 0.01,
+                "symbol-spacing": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    13,
+                    200,
+                    18,
+                    400
+                ],
+                "text-max-angle": 30,
+                "text-transform": "uppercase",
+                "symbol-placement": "line",
+                "icon-keep-upright": false,
+                "text-keep-upright": true,
+                "text-allow-overlap": false,
+                "text-letter-spacing": 0.3,
+                "text-pitch-alignment": "auto",
+                "text-ignore-placement": true,
+                "text-rotation-alignment": "auto"
+            },
+            "paint": {
+                "text-color": "hsl(300,90%,84%)",
+                "text-opacity": 0.9,
+                "text-halo-blur": 1,
+                "text-halo-color": "rgba(16, 16, 16, 1)",
+                "text-halo-width": 1.5,
+                "text-translate-anchor": "viewport"
+            },
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "admin_level"
+                    ],
+                    [
+                        2,
+                        4
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "!=",
+                    [
+                        "get",
+                        "adm4_l"
+                    ],
+                    [
+                        "get",
+                        "adm4_r"
+                    ]
+                ]
+            ]
+        },
+        {
+            "id": "boundary_canton_r_label",
+            "type": "symbol",
+            "source": "base_v1.0.0",
+            "source-layer": "boundary",
+            "minzoom": 13.0,
+            "layout": {
+                "text-font": [
+                    "B612 Regular"
+                ],
+                "text-size": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    13,
+                    11,
+                    18,
+                    14
+                ],
+                "text-field": [
+                    "get",
+                    "adm4_r"
+                ],
+                "visibility": "visible",
+                "text-offset": [
+                    0,
+                    -1
+                ],
+                "text-justify": "center",
+                "text-padding": 0.01,
+                "symbol-spacing": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    13,
+                    200,
+                    18,
+                    400
+                ],
+                "text-max-angle": 30,
+                "text-transform": "uppercase",
+                "symbol-placement": "line",
+                "icon-keep-upright": false,
+                "text-keep-upright": true,
+                "text-allow-overlap": false,
+                "text-letter-spacing": 0.3,
+                "text-pitch-alignment": "auto",
+                "text-ignore-placement": true,
+                "text-rotation-alignment": "auto"
+            },
+            "paint": {
+                "text-color": "hsl(300,90%,84%)",
+                "text-opacity": 0.9,
+                "text-halo-blur": 1,
+                "text-halo-color": "rgba(16, 16, 16, 1)",
+                "text-halo-width": 1.5,
+                "text-translate-anchor": "viewport"
+            },
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "admin_level"
+                    ],
+                    [
+                        2,
+                        4
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "!=",
+                    [
+                        "get",
+                        "adm4_l"
+                    ],
+                    [
+                        "get",
+                        "adm4_r"
+                    ]
+                ]
+            ]
+        },
+        {
             "id": "waterway_line_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "waterway",
             "minzoom": 13.0,
             "layout": {
@@ -2487,6 +3089,7 @@
                     "get",
                     "name:latin"
                 ],
+                "visibility": "visible",
                 "text-padding": 0,
                 "symbol-spacing": 650,
                 "symbol-z-order": "auto",
@@ -2554,7 +3157,7 @@
         {
             "id": "public_transportation_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation_name",
             "minzoom": 13.0,
             "layout": {
@@ -2595,7 +3198,7 @@
                 "text-rotation-alignment": "map"
             },
             "paint": {
-                "text-color": "rgba(255, 175, 180, 1)",
+                "text-color": "rgba(227, 227, 227, 1)",
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(32,32,32, 1)",
                 "text-halo-width": [
@@ -2623,17 +3226,14 @@
                     "in",
                     "class",
                     "rail",
-                    "transit",
-                    "cable_car",
-                    "gondola",
-                    "chair_lift"
+                    "transit"
                 ]
             ]
         },
         {
             "id": "transportation_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation_name",
             "minzoom": 13.0,
             "layout": {
@@ -2750,45 +3350,44 @@
                     "!in",
                     "class",
                     "rail",
+                    "ferry",
+                    "car_ferry",
                     "transit",
                     "cable_car",
+                    "chair_lift",
                     "gondola",
-                    "chair_lift"
+                    "drag_lift",
+                    "aerialway_transportation",
+                    "aerialway_closed",
+                    "aerialway_goods",
+                    "goods_conveyor",
+                    "rail",
+                    "transit",
+                    "via_ferrata",
+                    "mask_terrain"
                 ]
             ]
         },
         {
             "id": "aerialway",
             "type": "line",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation",
-            "minzoom": 12.0,
+            "minzoom": 12,
             "layout": {
-                "line-cap": "butt",
                 "visibility": "visible"
             },
             "paint": {
-                "line-blur": {
-                    "stops": [
-                        [
-                            14,
-                            0.6
-                        ],
-                        [
-                            18,
-                            0.4
-                        ]
-                    ]
-                },
+                "line-blur": 0.25,
                 "line-color": {
                     "stops": [
                         [
-                            12,
-                            "rgba(240, 60, 60, 1)"
+                            7,
+                            "rgba(156, 155, 155, 1)"
                         ],
                         [
                             15,
-                            "rgba(240, 80, 85, 1)"
+                            "rgba(106, 105, 105, 1)"
                         ]
                     ]
                 },
@@ -2801,7 +3400,7 @@
                         "zoom"
                     ],
                     8,
-                    1,
+                    0.2,
                     14,
                     [
                         "match",
@@ -2812,8 +3411,8 @@
                         [
                             "cable_car"
                         ],
-                        1.5,
-                        1
+                        2,
+                        0.75
                     ],
                     18,
                     [
@@ -2825,7 +3424,7 @@
                         [
                             "cable_car"
                         ],
-                        2,
+                        4,
                         1.5
                     ]
                 ],
@@ -2837,10 +3436,37 @@
                     [
                         "zoom"
                     ],
+                    12,
+                    0,
+                    13,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "cable_car",
+                            "gondola"
+                        ],
+                        1,
+                        0
+                    ],
                     14,
-                    1,
-                    15,
-                    0.8
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "cable_car",
+                            "gondola",
+                            "chair_lift"
+                        ],
+                        1,
+                        0
+                    ]
                 ]
             },
             "filter": [
@@ -2857,10 +3483,10 @@
         {
             "id": "road_number",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "transportation_name",
-            "minzoom": 11.0,
-            "maxzoom": 24.0,
+            "minzoom": 13.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -2942,7 +3568,7 @@
         {
             "id": "area_name_glacier_point_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "area_name",
             "minzoom": 14.0,
             "layout": {
@@ -2963,6 +3589,7 @@
                     20
                 ],
                 "text-field": "{name:latin}",
+                "visibility": "visible",
                 "symbol-spacing": {
                     "stops": [
                         [
@@ -3009,7 +3636,7 @@
         {
             "id": "area_name_glacier_line_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "area_name",
             "minzoom": 12.0,
             "layout": {
@@ -3030,6 +3657,7 @@
                     20
                 ],
                 "text-field": "{name:latin}",
+                "visibility": "visible",
                 "symbol-spacing": {
                     "stops": [
                         [
@@ -3085,699 +3713,9 @@
             ]
         },
         {
-            "id": "poi_rank3",
-            "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
-            "source-layer": "poi",
-            "minzoom": 15.0,
-            "layout": {
-                "icon-size": 1,
-                "text-font": [
-                    "B612 Regular"
-                ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    14,
-                    12,
-                    18,
-                    16
-                ],
-                "icon-image": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "tram_stop",
-                        "bus_stop",
-                        "elevator",
-                        "halt",
-                        "cable_car_station",
-                        "gondola_station",
-                        "chair_lift_station",
-                        "aerialway_station",
-                        "subway_entrance",
-                        "subway_stop"
-                    ],
-                    "dot_red",
-                    "waterfall",
-                    "waterfall_blue",
-                    "observation_tower",
-                    "observation_tower_white",
-                    [
-                        "survey_point",
-                        "surveying_pyramid"
-                    ],
-                    "dot_black_4",
-                    ""
-                ],
-                "text-field": [
-                    "get",
-                    "name:latin"
-                ],
-                "visibility": "visible",
-                "icon-rotate": [
-                    "to-number",
-                    [
-                        "get",
-                        "direction"
-                    ]
-                ],
-                "text-anchor": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "halt",
-                        "tram_stop",
-                        "bus_stop",
-                        "elevator",
-                        "cable_car_station",
-                        "gondola_station",
-                        "chair_lift_station",
-                        "aerialway_station",
-                        "subway_entrance",
-                        "subway_stop",
-                        "survey_point",
-                        "surveying_pyramid"
-                    ],
-                    "bottom-left",
-                    [
-                        "driving_centre",
-                        "waterfall",
-                        "observation_tower",
-                        "stone_1",
-                        "stone_2",
-                        "stone_3",
-                        "stone_4",
-                        "stone_5"
-                    ],
-                    "left",
-                    "center"
-                ],
-                "text-offset": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    "observation_tower",
-                    [
-                        "literal",
-                        [
-                            0.5,
-                            0.2
-                        ]
-                    ],
-                    "waterfall",
-                    [
-                        "literal",
-                        [
-                            0.5,
-                            0.1
-                        ]
-                    ],
-                    [
-                        "literal",
-                        [
-                            0.4,
-                            0.1
-                        ]
-                    ]
-                ],
-                "text-justify": "left",
-                "text-padding": 2,
-                "icon-optional": false,
-                "text-optional": false,
-                "text-max-width": 10,
-                "icon-allow-overlap": false,
-                "text-letter-spacing": 0.03,
-                "icon-ignore-placement": false,
-                "icon-rotation-alignment": "map"
-            },
-            "paint": {
-                "text-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "halt",
-                        "tram_stop",
-                        "bus_stop",
-                        "elevator",
-                        "cable_car_station",
-                        "gondola_station",
-                        "chair_lift_station",
-                        "aerialway_station",
-                        "subway_entrance",
-                        "subway_stop"
-                    ],
-                    "rgba(255, 175, 180, 1)",
-                    "waterfall",
-                    "rgba(150, 220, 255,1)",
-                    "rgba(255, 255, 250, 1)"
-                ],
-                "icon-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    15,
-                    [
-                        "case",
-                        [
-                            "has",
-                            "name"
-                        ],
-                        1,
-                        0
-                    ]
-                ],
-                "text-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    15,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "subclass"
-                        ],
-                        [
-                            "monument",
-                            "stone_1",
-                            "stone_2",
-                            "stone_3",
-                            "stone_4",
-                            "stone_5",
-                            "tower"
-                        ],
-                        0,
-                        1
-                    ],
-                    16,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "monument",
-                            "stone"
-                        ],
-                        0,
-                        1
-                    ],
-                    17,
-                    1
-                ],
-                "text-halo-blur": 1,
-                "text-halo-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "halt",
-                        "tram_stop",
-                        "bus_stop",
-                        "elevator",
-                        "cable_car_station",
-                        "gondola_station",
-                        "chair_lift_station",
-                        "aerialway_station",
-                        "subway_entrance",
-                        "subway_stop"
-                    ],
-                    "rgba(32, 32, 32, 1)",
-                    "rgba(48, 48, 48, 1)"
-                ],
-                "text-halo-width": 2
-            },
-            "filter": [
-                "all",
-                [
-                    "match",
-                    [
-                        "get",
-                        "class"
-                    ],
-                    [
-                        "allottments",
-                        "attraction",
-                        "aerialway",
-                        "bus",
-                        "building",
-                        "cave",
-                        "elevator",
-                        "entrance",
-                        "garden",
-                        "monument",
-                        "museum",
-                        "place_of_worship",
-                        "railway",
-                        "survey_point",
-                        "stone",
-                        "tower",
-                        "wastewater_plant",
-                        "waterfall"
-                    ],
-                    true,
-                    false
-                ],
-                [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "allottments",
-                        "attraction",
-                        "cave",
-                        "building",
-                        "bus_stop",
-                        "cable_car_station",
-                        "chair_lift_station",
-                        "driving_centre",
-                        "elevator",
-                        "garden",
-                        "gondola_station",
-                        "halt",
-                        "monument",
-                        "museum",
-                        "observation_tower",
-                        "aerialway_station",
-                        "stone_1",
-                        "stone_2",
-                        "stone_3",
-                        "stone_4",
-                        "stone_5",
-                        "subway_entrance",
-                        "subway_stop",
-                        "survey_point",
-                        "surveying_pyramid",
-                        "tram_stop",
-                        "tower",
-                        "wastewater_plant",
-                        "waterfall",
-                        ""
-                    ],
-                    true,
-                    false
-                ]
-            ]
-        },
-        {
-            "id": "poi_rank2",
-            "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
-            "source-layer": "poi",
-            "minzoom": 13.0,
-            "layout": {
-                "icon-size": 1,
-                "text-font": [
-                    "B612 Regular"
-                ],
-                "text-size": [
-                    "interpolate",
-                    [
-                        "linear"
-                    ],
-                    [
-                        "zoom"
-                    ],
-                    14,
-                    12,
-                    18,
-                    16
-                ],
-                "icon-image": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "camp_site",
-                        "caravan_site"
-                    ],
-                    "camping_white",
-                    [
-                        "golf_course",
-                        "golf"
-                    ],
-                    "golf_white",
-                    [
-                        "ferry",
-                        "car_ferry",
-                        "ferry_terminal"
-                    ],
-                    "dot_blue",
-                    "funicular_stop",
-                    "dot_red",
-                    "observation",
-                    "observation_tower_white",
-                    "wind_turbine",
-                    "windturbine_white",
-                    "communications_tower",
-                    "communications_tower_white",
-                    ""
-                ],
-                "text-field": [
-                    "get",
-                    "name:latin"
-                ],
-                "visibility": "visible",
-                "icon-offset": [
-                    0,
-                    0
-                ],
-                "text-anchor": [
-                    "match",
-                    [
-                        "get",
-                        "class"
-                    ],
-                    [
-                        "monastery",
-                        "lodging"
-                    ],
-                    "left",
-                    [
-                        "match",
-                        [
-                            "get",
-                            "subclass"
-                        ],
-                        [
-                            "caravan_site",
-                            "camp_site",
-                            "golf_course",
-                            "golf",
-                            "communications_tower",
-                            "observation"
-                        ],
-                        "left",
-                        [
-                            "ferry",
-                            "car_ferry",
-                            "ferry_terminal",
-                            "funicular_stop"
-                        ],
-                        "bottom-left",
-                        "center"
-                    ]
-                ],
-                "text-offset": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "ferry",
-                        "car_ferry",
-                        "ferry_terminal",
-                        "funicular_stop"
-                    ],
-                    [
-                        "literal",
-                        [
-                            0.4,
-                            0.1
-                        ]
-                    ],
-                    [
-                        "literal",
-                        [
-                            0.8,
-                            0.1
-                        ]
-                    ]
-                ],
-                "text-justify": "left",
-                "icon-optional": false,
-                "text-optional": true,
-                "text-max-width": 10,
-                "icon-allow-overlap": false,
-                "text-letter-spacing": [
-                    "match",
-                    [
-                        "get",
-                        "class"
-                    ],
-                    [
-                        "park",
-                        "attraction"
-                    ],
-                    0.05,
-                    0.03
-                ],
-                "icon-ignore-placement": false
-            },
-            "paint": {
-                "text-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "ferry",
-                        "car_ferry",
-                        "ferry_terminal",
-                        "weir"
-                    ],
-                    "rgba(150, 220, 255,1)",
-                    "funicular_stop",
-                    "rgba(255, 175, 180, 1)",
-                    "rgba(255, 255, 250, 1)"
-                ],
-                "icon-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    14,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "subclass"
-                        ],
-                        [
-                            "wind_turbine",
-                            "caravan_site",
-                            "camp_site",
-                            "communications_tower",
-                            "ferry",
-                            "car_ferry",
-                            "ferry_terminal",
-                            "funicular_stop",
-                            "golf_course",
-                            "golf",
-                            "observation",
-                            "cemetery",
-                            "stadium",
-                            "park"
-                        ],
-                        1,
-                        0
-                    ],
-                    16,
-                    1
-                ],
-                "text-opacity": [
-                    "step",
-                    [
-                        "zoom"
-                    ],
-                    0,
-                    14,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "ferry_terminal",
-                            "funicular",
-                            "golf",
-                            "golf_course",
-                            "cemetery",
-                            "ruins",
-                            "stadium",
-                            "park",
-                            "pitch"
-                        ],
-                        1,
-                        0
-                    ],
-                    15,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "campsite",
-                            "ferry",
-                            "ferry_terminal",
-                            "funicular",
-                            "golf",
-                            "golf_course",
-                            "cemetery",
-                            "stadium",
-                            "park",
-                            "pitch",
-                            "place_of_worship",
-                            "ruins",
-                            "sports_centre",
-                            "zoo"
-                        ],
-                        1,
-                        0
-                    ],
-                    16,
-                    [
-                        "match",
-                        [
-                            "get",
-                            "class"
-                        ],
-                        [
-                            "campsite",
-                            "dam",
-                            "ferry_terminal",
-                            "fuel",
-                            "funicular",
-                            "golf",
-                            "golf_course",
-                            "horse_racing",
-                            "lodging",
-                            "cemetery",
-                            "stadium",
-                            "military",
-                            "park",
-                            "pitch",
-                            "place_of_worship",
-                            "power",
-                            "ruins",
-                            "sports_centre",
-                            "tower",
-                            "zoo"
-                        ],
-                        1,
-                        0
-                    ],
-                    17,
-                    1
-                ],
-                "text-halo-blur": 1,
-                "text-halo-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "funicular_stop"
-                    ],
-                    "rgba(32,32,32, 1)",
-                    "rgba(48, 48, 48, 1)"
-                ],
-                "text-halo-width": 2
-            },
-            "filter": [
-                "any",
-                [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    [
-                        "observatory",
-                        "tower",
-                        "communications_tower"
-                    ],
-                    true,
-                    false
-                ],
-                [
-                    "match",
-                    [
-                        "get",
-                        "class"
-                    ],
-                    [
-                        "antenna_area",
-                        "cemetery",
-                        "college",
-                        "ferry_terminal",
-                        "funicular",
-                        "attraction",
-                        "fuel",
-                        "golf",
-                        "golf_course",
-                        "horse_racing",
-                        "lock",
-                        "lodging",
-                        "military",
-                        "monastery",
-                        "park",
-                        "pitch",
-                        "prison",
-                        "ruins",
-                        "school",
-                        "sports_centre",
-                        "stadium",
-                        "swimming_pool",
-                        "university",
-                        "power",
-                        "weir",
-                        "zoo"
-                    ],
-                    true,
-                    false
-                ],
-                [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    "camp_site",
-                    true,
-                    false
-                ]
-            ]
-        },
-        {
             "id": "poi_rank1",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "poi",
             "minzoom": 14.0,
             "layout": {
@@ -3823,7 +3761,7 @@
                         "subclass"
                     ],
                     "railway_station",
-                    "square_red",
+                    "circle_dark_grey_6",
                     "castle",
                     "castle_white",
                     "hospital",
@@ -3888,16 +3826,7 @@
                 "text-letter-spacing": 0.03
             },
             "paint": {
-                "text-color": [
-                    "match",
-                    [
-                        "get",
-                        "subclass"
-                    ],
-                    "railway_station",
-                    "rgba(255, 175, 180, 1)",
-                    "rgba(255, 255, 250, 1)"
-                ],
+                "text-color": "rgba(240, 240, 240, 1)",
                 "icon-opacity": [
                     "step",
                     [
@@ -3995,14 +3924,14 @@
         {
             "id": "place_other",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
             "minzoom": 11.0,
             "maxzoom": 17.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
-                    "B612 Regular"
+                    "B612 Bold"
                 ],
                 "text-size": [
                     "interpolate",
@@ -4167,10 +4096,10 @@
         {
             "id": "peaks_other",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 15.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -4355,10 +4284,10 @@
         {
             "id": "peaks_rank5+",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 13.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -4536,10 +4465,10 @@
         {
             "id": "peaks_rank4",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 12.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -4717,10 +4646,10 @@
         {
             "id": "peaks_rank3",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 11.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -4859,8 +4788,74 @@
             },
             "paint": {
                 "text-color": "rgba(255, 255, 248, 1)",
-                "icon-opacity": 1,
-                "text-opacity": 1,
+                "icon-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    8,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "alpine_peak",
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "alpine_peak",
+                            "main_peak"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    8,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "alpine_peak",
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "alpine_peak",
+                            "main_peak"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
                 "icon-halo-blur": 0,
                 "text-halo-blur": 1,
                 "icon-halo-width": 0,
@@ -4898,10 +4893,10 @@
         {
             "id": "peaks_rank2",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 10.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -5040,8 +5035,74 @@
             },
             "paint": {
                 "text-color": "rgba(255, 255, 248, 1)",
-                "icon-opacity": 1,
-                "text-opacity": 1,
+                "icon-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    8,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "alpine_peak",
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "alpine_peak",
+                            "main_peak"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    8,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        "alpine_peak",
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "alpine_peak",
+                            "main_peak"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
                 "icon-halo-blur": 0,
                 "text-halo-blur": 1,
                 "icon-halo-color": "rgba(0, 0, 0, 0)",
@@ -5080,14 +5141,14 @@
         {
             "id": "place_hamlet_isolated_dwelling",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
-            "minzoom": 11.0,
+            "minzoom": 12.0,
             "maxzoom": 17.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
-                    "B612 Regular"
+                    "B612 Bold"
                 ],
                 "text-size": [
                     "interpolate",
@@ -5280,10 +5341,10 @@
         {
             "id": "place_country_exclave",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
             "minzoom": 11.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "text-font": [
                     "B612 Bold"
@@ -5312,8 +5373,8 @@
                 "text-letter-spacing": 0.12
             },
             "paint": {
-                "text-color": "rgba(255, 147, 255, 0.9)",
-                "text-opacity": 1,
+                "text-color": "hsl(300,90%,80%)",
+                "text-opacity": 0.9,
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(16, 16, 16, 1)",
                 "text-halo-width": 1
@@ -5336,14 +5397,14 @@
         {
             "id": "place_village",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
             "minzoom": 7.0,
             "maxzoom": 16.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
-                    "B612 Regular"
+                    "B612 Bold"
                 ],
                 "text-size": [
                     "interpolate",
@@ -5443,11 +5504,161 @@
                     [
                         "zoom"
                     ],
+                    0,
+                    7,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "capital"
+                        ],
+                        [
+                            2,
+                            4
+                        ],
+                        1,
+                        0
+                    ],
+                    8,
+                    [
+                        "case",
+                        [
+                            ">",
+                            14,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    9,
+                    [
+                        "case",
+                        [
+                            ">",
+                            15,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    10,
+                    [
+                        "case",
+                        [
+                            ">",
+                            18,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "case",
+                        [
+                            ">",
+                            28,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
                     1,
                     13,
                     0
                 ],
-                "text-opacity": 1,
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    7,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "capital"
+                        ],
+                        [
+                            2,
+                            4
+                        ],
+                        1,
+                        0
+                    ],
+                    8,
+                    [
+                        "case",
+                        [
+                            ">",
+                            14,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    9,
+                    [
+                        "case",
+                        [
+                            ">",
+                            15,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    10,
+                    [
+                        "case",
+                        [
+                            ">",
+                            18,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    11,
+                    [
+                        "case",
+                        [
+                            ">",
+                            28,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(48, 48, 48, 1)",
                 "text-halo-width": 1.5
@@ -5464,10 +5675,10 @@
         {
             "id": "peaks_rank1",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "mountain_peak",
             "minzoom": 9.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "icon-size": 1,
                 "text-font": [
@@ -5626,7 +5837,29 @@
                     10,
                     1
                 ],
-                "text-opacity": 1,
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    9,
+                    [
+                        "case",
+                        [
+                            "<=",
+                            3200,
+                            [
+                                "get",
+                                "ele"
+                            ]
+                        ],
+                        1,
+                        0
+                    ],
+                    10,
+                    1
+                ],
                 "icon-halo-blur": 0,
                 "text-halo-blur": 1,
                 "icon-halo-color": "rgba(255, 255, 255, 1)",
@@ -5665,7 +5898,7 @@
         {
             "id": "aerodrome_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "aerodrome_label",
             "minzoom": 11.0,
             "layout": {
@@ -5740,6 +5973,7 @@
                     "get",
                     "name:latin"
                 ],
+                "visibility": "visible",
                 "icon-anchor": "center",
                 "text-anchor": "left",
                 "text-offset": [
@@ -5771,10 +6005,51 @@
             "paint": {
                 "text-color": "rgba(255, 255, 250, 1)",
                 "icon-opacity": [
-                    "literal",
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "international",
+                            "regional"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
                     1
                 ],
-                "text-opacity": 1,
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    11,
+                    [
+                        "match",
+                        [
+                            "get",
+                            "class"
+                        ],
+                        [
+                            "international",
+                            "regional"
+                        ],
+                        1,
+                        0
+                    ],
+                    12,
+                    1
+                ],
                 "text-halo-blur": 1,
                 "icon-halo-width": 0,
                 "text-halo-color": "rgba(48, 48, 48, 1)",
@@ -5804,7 +6079,7 @@
         {
             "id": "place_town",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
             "minzoom": 6.0,
             "maxzoom": 15.0,
@@ -5911,11 +6186,73 @@
                     [
                         "zoom"
                     ],
+                    0,
+                    6,
+                    [
+                        "case",
+                        [
+                            ">",
+                            10,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "capital"
+                            ],
+                            [
+                                2,
+                                4
+                            ],
+                            1,
+                            0
+                        ]
+                    ],
+                    8,
                     1,
                     12,
                     0
                 ],
-                "text-opacity": 1,
+                "text-opacity": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    6,
+                    [
+                        "case",
+                        [
+                            ">",
+                            10,
+                            [
+                                "get",
+                                "rank"
+                            ]
+                        ],
+                        1,
+                        [
+                            "match",
+                            [
+                                "get",
+                                "capital"
+                            ],
+                            [
+                                2,
+                                4
+                            ],
+                            1,
+                            0
+                        ]
+                    ],
+                    8,
+                    1
+                ],
                 "text-halo-blur": 1,
                 "text-halo-color": "rgba(48, 48, 48, 1)",
                 "text-halo-width": 1.5
@@ -5932,10 +6269,10 @@
         {
             "id": "water_name_point_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "water_name",
             "minzoom": 7.0,
-            "maxzoom": 24.0,
+            "maxzoom": 22.0,
             "layout": {
                 "text-font": [
                     "B612 Italic"
@@ -6317,7 +6654,7 @@
         {
             "id": "park_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "park",
             "minzoom": 8.0,
             "maxzoom": 18.0,
@@ -6343,6 +6680,7 @@
                     28
                 ],
                 "text-field": "{name:latin}",
+                "visibility": "visible",
                 "text-padding": [
                     "interpolate",
                     [
@@ -6384,7 +6722,7 @@
         {
             "id": "area_name_massif_label",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "area_name",
             "minzoom": 11.0,
             "layout": {
@@ -6405,6 +6743,7 @@
                     23
                 ],
                 "text-field": "{name:latin}",
+                "visibility": "visible",
                 "symbol-spacing": {
                     "stops": [
                         [
@@ -6464,7 +6803,7 @@
         {
             "id": "place_city",
             "type": "symbol",
-            "source": "leichtebasiskarte_v3.0.1",
+            "source": "base_v1.0.0",
             "source-layer": "place",
             "minzoom": 2.0,
             "maxzoom": 13.0,
@@ -6565,14 +6904,136 @@
         }
     ],
     "metadata": {
-        "maputnik:renderer": "mbgljs",
-        "openmaptiles:version": "3.x",
-        "ga:version": "v1.13.0",
-        "ga:publisher": "CI:ac3e99d6-5d72-4d5b-9d12-59f8c5af5468",
+        "maptiler:template": {
+            "groups": [
+                {
+                    "id": "HTRhC5uNor6RDy5nPccLk",
+                    "icon": "variant2",
+                    "name": "label",
+                    "layers": [
+                        "place_city",
+                        "area_name_massif_label",
+                        "park_label",
+                        "water_name_point_label",
+                        "place_town",
+                        "aerodrome_label",
+                        "place_village",
+                        "place_country_exclave",
+                        "place_hamlet_isolated_dwelling",
+                        "place_other",
+                        "area_name_glacier_line_label",
+                        "area_name_glacier_point_label"
+                    ]
+                },
+                {
+                    "id": "UZ5NoGREoXyWMKvxy0_c3",
+                    "icon": "poi",
+                    "name": "poi",
+                    "layers": [
+                        "poi_rank1"
+                    ]
+                },
+                {
+                    "id": "nY2FkLbFM-XVY_uuMY6kP",
+                    "icon": "terrain",
+                    "name": "mountain_peak",
+                    "layers": [
+                        "peaks_rank1",
+                        "peaks_rank2",
+                        "peaks_rank3",
+                        "peaks_rank4",
+                        "peaks_rank5+",
+                        "peaks_other"
+                    ]
+                },
+                {
+                    "id": "rC9bGjQLn98NdUCE2ObLc",
+                    "icon": "transport",
+                    "name": "transportation",
+                    "layers": [
+                        "ferry",
+                        "car_ferry",
+                        "public_transport",
+                        "road_fill",
+                        "road_paths",
+                        "road_via_ferrata",
+                        "tunnel_road_path_footway",
+                        "tunnel_road",
+                        "tunnel_public_transport",
+                        "road_number",
+                        "public_transportation_label",
+                        "aerialway",
+                        "transportation_label"
+                    ]
+                },
+                {
+                    "id": "administrative",
+                    "icon": "administrative",
+                    "name": "boundary",
+                    "layers": [
+                        "boundary_canton_l_label",
+                        "boundary_canton_r_label",
+                        "boundary",
+                        "boundary_disputed",
+                        "park"
+                    ]
+                },
+                {
+                    "id": "38biI46S8IApkhroETSU0",
+                    "icon": "terrain",
+                    "name": "terrain",
+                    "layers": [
+                        "spot_elevation"
+                    ]
+                },
+                {
+                    "id": "rwXlmJdxx8aLmg8LxrDO7",
+                    "icon": "water",
+                    "name": "water",
+                    "layers": [
+                        "water_line",
+                        "waterway_line_label"
+                    ]
+                },
+                {
+                    "id": "background",
+                    "icon": "background",
+                    "name": "Background",
+                    "layers": [
+                        "background"
+                    ]
+                }
+            ],
+            "viewState": {
+                "mapType": "Style",
+                "activeBlock": "rC9bGjQLn98NdUCE2ObLc",
+                "toolPanelType": "Layers",
+                "selectedLayers": [
+                    "tunnel_road"
+                ],
+                "propertyPanelType": "Edit",
+                "editorFocusProperty": null,
+                "layersViewPanelType": "Verticality"
+            },
+            "userSettings": {
+                "preferredViewPanelType": "Verticality"
+            }
+        },
+        "ga:version": "v1.17.0",
+        "ga:publisher": "CI:597e6ccf-63c7-4a22-9279-940877bf6866",
         "ga:branch": "master"
     },
     "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
-    "sprite": "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte-imagery.vt/sprite/sprite",
+    "sprite": [
+        {
+            "id": "default",
+            "url": "/map/sprites/imagery"
+        },
+        {
+            "id": "babs",
+            "url": "/map/sprites/babs"
+        }
+    ],
     "bearing": 0.0,
     "pitch": 0.0,
     "center": [

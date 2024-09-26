@@ -38,6 +38,12 @@ OAUTH2_PROXY_REDIRECT_URL=http://localhost:3000/oauth2/callback # port for yarn 
 docker compose --env-file .env.local up -d
 ```
 
+If you are running on a SElinux enabled machine, use the selinux compose file:
+```
+docker compose -f docker-compose.selinux.yml --env-file .env.local up -d
+```
+
+
 4. Run yarn
 
 ```

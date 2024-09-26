@@ -72,8 +72,6 @@ $grey-lightest: hsl(221, 14%, 93%);
 @import url("assets/b612-mono/b612-mono.css");
 @import url("assets/b612/b612.css");
 
-@import "maplibre-gl/dist/maplibre-gl";
-
 // Other customizations
 section {
   &.is-fullheight-with-navbar {
@@ -131,22 +129,6 @@ section {
   border-color: $red;
 }
 
-.maplibregl-map {
-  min-height: 79vh;
-}
-
-.maplibregl-ctrl-bottom-right .maplibregl-ctrl {
-  float: right;
-  margin: 0 10px px 30px 0;
-}
-
-.mapboxgl-ctrl-group {
-  @extend .maplibregl-ctrl-group !optional;
-}
-
-.mapboxgl-ctrl {
-  @extend .maplibregl-ctrl !optional;
-}
 
 @media screen {
   .is-print {

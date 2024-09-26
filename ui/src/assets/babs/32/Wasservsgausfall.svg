@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32">
+<defs>
+<filter id="filter-remove-color-and-invert-alpha" x="0%" y="0%" width="100%" height="100%">
+<feColorMatrix color-interpolation-filters="sRGB" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -1 1"/>
+</filter>
+<filter id="filter-0" x="0%" y="0%" width="100%" height="100%">
+<feImage xlink:href="#compositing-group-1" result="source" x="0" y="0" width="38.4" height="38.4"/>
+<feImage xlink:href="#compositing-group-2" result="destination" x="0" y="0" width="38.4" height="38.4"/>
+<feComposite in="source" in2="destination" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" color-interpolation-filters="sRGB"/>
+</filter>
+<image id="source-7" x="0" y="0" width="134" height="134" xlink:href="data:image/png;base64,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"/>
+<g id="compositing-group-0" transform="translate(3.2, 3.2)">
+<rect x="-3.2" y="-3.2" width="38.4" height="38.4" fill="rgb(0%, 0%, 0%)" fill-opacity="0"/>
+<rect x="-3.2" y="-3.2" width="38.4" height="38.4" fill="rgb(100%, 100%, 100%)" fill-opacity="1"/>
+</g>
+<mask id="mask-0">
+<use xlink:href="#compositing-group-0"/>
+</mask>
+<mask id="mask-1">
+<use xlink:href="#compositing-group-0" filter="url(#filter-remove-color-and-invert-alpha)"/>
+</mask>
+<g id="compositing-group-1" mask="url(#mask-0)">
+<g transform="translate(3.2, 3.2)">
+<use xlink:href="#source-7" transform="matrix(0.24, 0, 0, 0.24, 0, 0)"/>
+</g>
+</g>
+<g id="compositing-group-2" mask="url(#mask-1)">
+<g transform="translate(3.2, 3.2)">
+</g>
+</g>
+</defs>
+<g filter="url(#filter-0)" transform="translate(-3.2, -3.2)">
+<rect x="0" y="0" width="38.4" height="38.4" fill="rgb(0%, 0%, 0%)" fill-opacity="1"/>
+</g>
+</svg>
