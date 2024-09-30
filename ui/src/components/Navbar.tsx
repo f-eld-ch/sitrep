@@ -25,7 +25,7 @@ import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router-dom";
-import { useDarkMode } from "usehooks-ts";
+import { useDarkMode } from "utils/useDarkMode";
 import { UserContext } from "utils";
 import { useDate } from "utils/useDate";
 
