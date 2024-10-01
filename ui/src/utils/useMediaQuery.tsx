@@ -1,27 +1,44 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-function useMediaQuery(query: string): boolean {
+import { useIsomorphicLayoutEffect } from "usehooks-ts";
+
+type UseMediaQueryOptions = {
+  defaultValue?: boolean;
+  initializeWithValue?: boolean;
+};
+
+const IS_SERVER = typeof window === "undefined";
+
+export function useMediaQuery(
+  query: string,
+  { defaultValue = false, initializeWithValue = true }: UseMediaQueryOptions = {},
+): boolean {
   const getMatches = (query: string): boolean => {
-    // Prevents SSR issues
-    if (typeof window !== "undefined") {
-      return window.matchMedia(query).matches;
+    if (IS_SERVER) {
+      return defaultValue;
     }
-    return false;
+    return window.matchMedia(query).matches;
   };
 
-  const [matches, setMatches] = useState<boolean>(getMatches(query));
+  const [matches, setMatches] = useState<boolean>(() => {
+    if (initializeWithValue) {
+      return getMatches(query);
+    }
+    return defaultValue;
+  });
 
+  // Handles the change event of the media query.
   function handleChange() {
     setMatches(getMatches(query));
   }
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const matchMedia = window.matchMedia(query);
 
     // Triggered at the first client-side load and if query changes
     handleChange();
 
-    // Listen matchMedia
+    // Use deprecated `addListener` and `removeListener` to support Safari < 14 (#135)
     if (matchMedia.addListener) {
       matchMedia.addListener(handleChange);
     } else {
@@ -35,10 +52,7 @@ function useMediaQuery(query: string): boolean {
         matchMedia.removeEventListener("change", handleChange);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   return matches;
 }
-
-export default useMediaQuery;

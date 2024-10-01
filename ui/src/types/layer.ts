@@ -16,10 +16,9 @@ export type Feature = {
   geometry: Geometry;
   properties: GeoJsonProperties;
   createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
 };
-
 
 export interface GetLayersData {
   layers: Layer[];
@@ -29,7 +28,6 @@ export interface GetLayersVars {
   incidentId: string;
 }
 
-
 export interface AddFeatureVars {
   layerId: string;
   geometry: Geometry;
@@ -37,10 +35,18 @@ export interface AddFeatureVars {
   id: string | number | undefined;
 }
 
+export interface AddFeatureResponse {
+  insertFeaturesOne: Feature | undefined;
+}
+
 export interface ModifyFeatureVars {
   id: string | number | undefined;
   geometry: Geometry;
   properties: GeoJsonProperties;
+}
+
+export interface ModifyFeatureResponse {
+  updateFeaturesByPk: Feature | undefined;
 }
 
 export interface DeleteFeatureVars {

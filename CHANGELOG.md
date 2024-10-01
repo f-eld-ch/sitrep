@@ -9,6 +9,28 @@ and this project adheres to [Calendar Versioning](https://calver.org/) with pate
 
 **Full Changelog**: https://github.com/f-eld-ch/sitrep/compare/main...develop
 
+## v24.10.0
+### Features
+- **(map)** cleanup icon styling for map - ([8327e53](https://github.com/f-eld-ch/sitrep/commit/8327e5367b4347e90f002e07cd7753cf644f6a40)) - Daniel Aschwanden
+- **(map)** improve map drawing synchronization (#447) - ([2ae1a2f](https://github.com/f-eld-ch/sitrep/commit/2ae1a2f4504c959a04eb64ed98d87e4641b6ae6c)) - Dani Aschwanden
+- **(ui)** automatically update service worker - ([8879b4c](https://github.com/f-eld-ch/sitrep/commit/8879b4cfd96da98b57df7184231488144c0b19de)) - Daniel Aschwanden
+
+### Bug Fixes
+- **(sw)** update service worker - ([2e120d9](https://github.com/f-eld-ch/sitrep/commit/2e120d91d9dcb425bf5226a32ba21c50a4536a2d)) - Daniel Aschwanden
+- **(ui)** make darkMode persistent - ([40e4e77](https://github.com/f-eld-ch/sitrep/commit/40e4e77f0bd4f6ad0295d433b4c0aeae8ecfb2e4)) - Daniel Aschwanden
+
+
+### Miscellaneous Chores
+- **(deps)** cleanup resolutions - ([29a664e](https://github.com/f-eld-ch/sitrep/commit/29a664e5132ceb1f1d94b91a6b5794c3784381e2)) - Daniel Aschwanden
+- **(deps)** update rollup to 4.22.4 - ([8a7380e](https://github.com/f-eld-ch/sitrep/commit/8a7380e7e32636a6f37323b632e6063e328cfcc6)) - Daniel Aschwanden
+- **(deps-dev)** bump the development-dependencies group (#446) - ([ba98b10](https://github.com/f-eld-ch/sitrep/commit/ba98b107dbf5b7462780f5f4ad338d789af80b73)) - dependabot[bot]
+- **(deps-dev)** upgrade yarn to 4.5.0 - ([4e41a8d](https://github.com/f-eld-ch/sitrep/commit/4e41a8dfa8c97d1f8b05dd8218c236e9ce450e7d)) - Daniel Aschwanden
+- **(deps-dev)** bump the development-dependencies group across 1 directory with 4 updates (#445) - ([72dcec4](https://github.com/f-eld-ch/sitrep/commit/72dcec4e1d0aa0e140311ce6333992383378cacd)) - dependabot[bot]
+- adds CODEOWNERS file - ([e1b842d](https://github.com/f-eld-ch/sitrep/commit/e1b842d4a76718651fc211906edf41aa21042cdc)) - Dani Aschwanden
+- update Changelog - ([505a014](https://github.com/f-eld-ch/sitrep/commit/505a014a6f0d94024583a174467ea811dbe80637)) - Daniel Aschwanden
+
+**Full Changelog**: https://github.com/f-eld-ch/sitrep/compare/v24.9.0...v24.10.0
+
 ## v24.9.0
 ### What's Changed
 - feat(map): also adjust imagery map with new style
