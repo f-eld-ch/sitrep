@@ -1,5 +1,4 @@
 name: Automated Tests and Linting
-
 on:
   push:
     branches-ignore:
@@ -18,11 +17,9 @@ jobs:
           node-version-file: ".nvmrc"
           cache: yarn
           cache-dependency-path: "ui/yarn.lock"
-
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
-
       - name: Run tests
         run: yarn test
         working-directory: ui
