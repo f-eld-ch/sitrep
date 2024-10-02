@@ -1,4 +1,4 @@
-name: Build & Test & Push Image
+name: Changelog
 on:
   push:
     branches:
