@@ -13,10 +13,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.CHANGELOG_APP_ID }}
+          private-key: ${{ secrets.CHANGELOG_APP_SECRET }}
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
       - name: Generate changelog
         uses: orhun/git-cliff-action@v4
         with:
@@ -28,8 +34,8 @@ jobs:
       - name: Commit
         run: |
           git checkout ${GITHUB_REF_NAME}
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'f-eld-ch-changelog[bot]'
+          git config user.email 'f-eld-ch-changelog[bot]@users.noreply.github.com'
           set +e
           git add CHANGELOG.md
           git commit -m "chore(changelog): Update changelog [skip ci]"
