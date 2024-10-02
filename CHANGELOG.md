@@ -3,6 +3,7 @@
 ### ⚙️  Other
 
 - *(deps)* Bump ytanikin/PRConventionalCommits from 1.1.0 to 1.3.0 ([#450](https://github.com/f-eld-ch/sitrep/issues/450)) - ([c8ed466](https://github.com/f-eld-ch/sitrep/commit/c8ed466fea65fda46f15826a8aae3332b6f0bb8a))
+- Use forked ConventionalCommits validation workflow ([#453](https://github.com/f-eld-ch/sitrep/issues/453)) - ([0c28812](https://github.com/f-eld-ch/sitrep/commit/0c28812b18868a4e3d8636b84aba88c6acdb107e))
 - Use dedicated app for changelog ([#451](https://github.com/f-eld-ch/sitrep/issues/451)) - ([4864691](https://github.com/f-eld-ch/sitrep/commit/486469108df6eb4654f7d872ab877a16ad2fb84e))
 
 
