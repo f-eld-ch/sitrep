@@ -2,7 +2,12 @@ name: PR Conventional Commit Validation
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
-
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+  repository-projects: read
 jobs:
   validate-pr-title:
     runs-on: ubuntu-latest
