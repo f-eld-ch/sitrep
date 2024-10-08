@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -38,7 +36,6 @@ function Triage(props: { message: Message | undefined; setMessage: (message: Mes
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
     SaveMessageTriage,
     {
-      onCompleted() {},
       refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
     },
   );

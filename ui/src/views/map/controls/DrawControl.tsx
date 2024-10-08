@@ -46,7 +46,6 @@ function DrawControl(props: DrawControlProps) {
     },
     () => {
       if (draw) {
-        MapboxDraw;
         dispatch({ type: "SET_DRAW", payload: { draw: draw } });
       }
     },

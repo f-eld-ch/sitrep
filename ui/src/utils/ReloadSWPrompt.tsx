@@ -11,10 +11,11 @@ export function ReloadPrompt() {
   } = useRegisterSW({
     onRegistered(r) {
       console.log("SW Registered: " + r);
-      r &&
-        setInterval(() => {
-          r.update();
-        }, intervalMS);
+      if (r === undefined) return;
+
+      setInterval(() => {
+        r.update();
+      }, intervalMS);
       setOfflineReady(true);
     },
     onRegisterError(error) {

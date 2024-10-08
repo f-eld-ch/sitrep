@@ -198,7 +198,7 @@ function LineController(props: BabsIconControllerProps) {
     }
 
     // reverse the coordinates
-    if (selectedFeature.geometry.type === "LineString" || selectedFeature.geometry.type === "MultiLineString") {
+    if (selectedFeature.geometry.type === "LineString") {
       const feature = {
         type: selectedFeature.type,
         id: selectedFeature.id,
@@ -217,7 +217,7 @@ function LineController(props: BabsIconControllerProps) {
     return <></>;
   }
 
-  if (selectedFeature.geometry.type !== "LineString" && selectedFeature.geometry.type !== "MultiLineString") {
+  if (selectedFeature.geometry.type !== "LineString") {
     return <></>;
   }
 
@@ -429,12 +429,12 @@ interface GroupMenuProps {
   name: string;
   iconGroup: BabsIconType;
   feature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: any) => void;
+  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
 interface BabsIconControllerProps {
   selectedFeature: Feature<Geometry, GeoJsonProperties> | undefined;
-  onUpdate: (e: any) => void;
+  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
 function BabsIconController() {

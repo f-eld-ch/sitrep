@@ -122,7 +122,7 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
         layout={{
           "icon-image": ["coalesce", ["get", "icon"], "default_marker"],
           "icon-allow-overlap": true,
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
           "icon-rotation-alignment": "map",
           "icon-pitch-alignment": "map",
           "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],

@@ -231,13 +231,13 @@ function Draw(props: { activeLayer: string | undefined }) {
   });
 
   const onSelectionChange = useCallback(
-    (e: any) => {
+    (e: FeatureEvent) => {
       const features: Feature[] = e.features;
       if (features?.length > 0) {
         const feature = first(features);
         dispatch({ type: "SELECT_FEATURE", payload: { id: feature?.id?.toString() } });
       } else {
-        dispatch({ type: "DESELECT_FEATURE", payload: {} });
+        dispatch({ type: "DESELECT_FEATURE", payload: null });
       }
     },
     [dispatch],
@@ -272,7 +272,7 @@ function Draw(props: { activeLayer: string | undefined }) {
         const feature = CleanFeature(f);
         modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } });
       });
-      dispatch({ type: "DESELECT_FEATURE", payload: {} });
+      dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
     [dispatch, props.activeLayer, modifyFeature],
   );
@@ -284,7 +284,7 @@ function Draw(props: { activeLayer: string | undefined }) {
         const feature = CleanFeature(f);
         deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } });
       });
-      dispatch({ type: "DESELECT_FEATURE", payload: {} });
+      dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
     [dispatch, props.activeLayer, deleteFeature],
   );
@@ -293,7 +293,7 @@ function Draw(props: { activeLayer: string | undefined }) {
     (e: CombineFeatureEvent) => {
       onCreate({ features: e.createdFeatures });
       onDelete({ features: e.deletedFeatures });
-      dispatch({ type: "DESELECT_FEATURE", payload: {} });
+      dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
     [dispatch, onCreate, onDelete],
   );

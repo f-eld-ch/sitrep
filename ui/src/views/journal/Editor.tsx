@@ -138,20 +138,26 @@ function Editor() {
         return Object.assign({}, state, { time: action.time });
       }
       case "set_media_detail": {
-        switch (action.detail.type) {
+        const details = {
+          sender: state.senderDetail,
+          receiver: state.receiverDetail,
+          ...action.detail,
+        };
+
+        switch (details.type) {
           case Medium.Radio:
-            return Object.assign({}, state, { media: action.detail.type, radioChannel: action.detail.channel });
+            return {
+              ...state,
+              media: details.type,
+              radioChannel: details.channel || "",
+            };
           default:
-            const details = Object.assign(
-              {},
-              { sender: state.senderDetail, receiver: state.receiverDetail },
-              action.detail,
-            );
-            return Object.assign({}, state, {
-              media: action.detail.type,
+            return {
+              ...state,
+              media: details.type,
               senderDetail: details.sender,
               receiverDetail: details.receiver,
-            });
+            };
         }
       }
       case "clear": {

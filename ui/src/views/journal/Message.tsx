@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import classNames from "classnames";
 import dayjs from "dayjs";
 import de from "dayjs/locale/de";
