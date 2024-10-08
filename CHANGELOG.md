@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(ui)* Improve mono-font-family ([#459](https://github.com/f-eld-ch/sitrep/issues/459)) - ([8335b34](https://github.com/f-eld-ch/sitrep/commit/8335b34dc1be3cc1690d4d82098f17d04de9a632))
+
 ### ⚙️  Other
 
 - *(deps)* Bump i18next from 23.15.1 to 23.15.2 in /ui ([#457](https://github.com/f-eld-ch/sitrep/issues/457)) - ([1a46b1b](https://github.com/f-eld-ch/sitrep/commit/1a46b1bbd9a0a74625968b8e4abb442091ad3cf0))
