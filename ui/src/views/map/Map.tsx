@@ -74,6 +74,7 @@ function MapView() {
           mapStyle={mapStyle.uri}
           scrollZoom={true}
           reuseMaps={false}
+          RTLTextPlugin={undefined}
         >
           <AttributionControl position="bottom-left" compact={true} />
           {/* All Map Controls */}
