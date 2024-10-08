@@ -8,12 +8,12 @@ export type LayersState = Layer[];
 export type ActiveLayerState = string | undefined;
 export type DrawState = MapboxDraw | undefined;
 
-export type LayerState = {
+export interface LayerState {
   layers: LayersState;
   activeLayer: string | undefined;
   selectedFeature: SelectedFeatureState;
   draw: DrawState;
-};
+}
 
 const initialState: LayerState = {
   layers: [],

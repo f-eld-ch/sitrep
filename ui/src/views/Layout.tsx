@@ -11,11 +11,11 @@ export interface LayoutProps {
 }
 
 export const Layout = (props: LayoutProps) => {
-  let [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { i18n } = useTranslation();
   const userState = useContext(UserContext);
 
-  let lang = searchParams.get("lang");
+  const lang = searchParams.get("lang");
   useEffect(() => {
     i18n.changeLanguage(lang || undefined);
   }, [lang, searchParams, i18n]);

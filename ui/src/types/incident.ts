@@ -7,7 +7,7 @@ export interface Location {
   coordinates: string;
 }
 
-export type Incident = {
+export interface Incident {
   id: string;
   name: string;
   createdAt: Date;
@@ -18,7 +18,7 @@ export type Incident = {
   divisions: Division[];
   journals: Journal[];
   layers: Layer[];
-};
+}
 
 export interface IncidentListData {
   incidents: Incident[];
@@ -58,7 +58,7 @@ export interface DivisionUpdate {
 export interface UpdateIncidentData {
   updateLocationsByPk: Location;
   insertDivisions: {
-    affectedRows: Number;
+    affectedRows: number;
   };
   updateIncidentsByPk: Incident;
 }

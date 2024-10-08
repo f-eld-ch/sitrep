@@ -48,6 +48,10 @@ jobs:
         run: yarn install --immutable
         working-directory: ui
 
+      - name: Lint ui files
+        run: yarn lint
+        working-directory: ui
+
       - name: Run ui tests
         run: yarn test
         working-directory: ui

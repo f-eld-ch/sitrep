@@ -10,12 +10,12 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      // eslint-disable-next-line prefer-template
       console.log("SW Registered: " + r);
-      r &&
-        setInterval(() => {
-          r.update();
-        }, intervalMS);
+      if (r === undefined) return;
+
+      setInterval(() => {
+        r.update();
+      }, intervalMS);
       setOfflineReady(true);
     },
     onRegisterError(error) {

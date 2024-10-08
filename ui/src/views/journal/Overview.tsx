@@ -9,7 +9,7 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
-  faPlusCircle
+  faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -47,8 +47,10 @@ function Overview() {
 
   return (
     <div>
-      <h3 className="title is-size-3 is-capitalized">{t('journalList')}</h3>
-      <h3 className="subtitle is-capitalized">{t('incident')}: {incident.name}</h3>
+      <h3 className="title is-size-3 is-capitalized">{t("journalList")}</h3>
+      <h3 className="subtitle is-capitalized">
+        {t("incident")}: {incident.name}
+      </h3>
 
       <div className="buttons">
         <button
@@ -58,7 +60,7 @@ function Overview() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={faPlusCircle} />
           </span>
-          <span>{t('create')}</span>
+          <span>{t("create")}</span>
         </button>
         <button
           className="button is-primary is-small is-responsive is-rounded is-light"
@@ -67,7 +69,7 @@ function Overview() {
           <span className="icon is-small">
             <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
           </span>
-          <span>{filterClosed ? t('showClosed') : t('hideClosed')}</span>
+          <span>{filterClosed ? t("showClosed") : t("hideClosed")}</span>
         </button>
       </div>
 
@@ -75,72 +77,66 @@ function Overview() {
         journals={data.incidents[0].journals.filter((journal) => !filterClosed || journal.closedAt === null) || []}
         incidentId={incidentId}
       />
-    </div >
+    </div>
   );
 }
 
-
-function JournalCards(props: { journals: Journal[], incidentId: string | undefined }) {
+function JournalCards(props: { journals: Journal[]; incidentId: string | undefined }) {
   const { journals, incidentId } = props;
+
+  return (
+    <div className="container-flex">
+      {journals.map((journal) => (
+        <JournalCard key={journal.id} journal={journal} incidentId={incidentId} />
+      ))}
+    </div>
+  );
+}
+
+function JournalCard(props: { journal: Journal; incidentId: string | undefined }) {
+  const { journal, incidentId } = props;
+  const navigate = useNavigate();
 
   const [closeJournal] = useMutation(CloseJournal, {
     refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
   });
 
-
-  return (
-    <div className="container-flex">
-      {
-        journals.map((journal) => (
-          <JournalCard key={journal.id} journal={journal} closeJournal={closeJournal} />
-        ))
-      }
-    </div >
-  )
-}
-
-function JournalCard(props: { journal: Journal, closeJournal: any }) {
-  const { journal, closeJournal } = props;
-  const navigate = useNavigate();
-
   const cardClass = classNames({
     card: true,
     "mb-3": true,
-    "has-background-primary-light": journal.closedAt
+    "has-background-primary-light": journal.closedAt,
   });
   return (
-    <div className={cardClass} >
+    <div className={cardClass}>
       <div className="card-content">
         <div className="content has-text-small">
           <h4 className="title is-5">{journal.name}</h4>
           <div className="columns">
             <div className="column is-one-third">
-              <strong>{t('createdAt')}: </strong>{dayjs(journal.createdAt).format("LLL")}
+              <strong>{t("createdAt")}: </strong>
+              {dayjs(journal.createdAt).format("LLL")}
             </div>
-            {journal.closedAt && <div className="column">
-              <strong>{t('closedAt')}: </strong>{dayjs(journal.closedAt).format("LLL")}
-            </div>}
+            {journal.closedAt && (
+              <div className="column">
+                <strong>{t("closedAt")}: </strong>
+                {dayjs(journal.closedAt).format("LLL")}
+              </div>
+            )}
           </div>
         </div>
       </div>
       <footer className="card-footer">
-        <button
-          className="card-footer-item is-ahref is-capitalized"
-          onClick={() => navigate(`../${journal.id}/edit`)}
-        >
+        <button className="card-footer-item is-ahref is-capitalized" onClick={() => navigate(`../${journal.id}/edit`)}>
           <span className="icon">
             <FontAwesomeIcon icon={faEdit} />
           </span>
-          <span>{t('write')}</span>
+          <span>{t("write")}</span>
         </button>
-        <button
-          className="card-footer-item is-ahref is-capitalized"
-          onClick={() => navigate(`../${journal.id}`)}
-        >
+        <button className="card-footer-item is-ahref is-capitalized" onClick={() => navigate(`../${journal.id}`)}>
           <span className="icon">
             <FontAwesomeIcon icon={faChartSimple} />
           </span>
-          <span>{t('feed')}</span>
+          <span>{t("feed")}</span>
         </button>
         {journal.closedAt === null ? (
           <button
@@ -157,7 +153,7 @@ function JournalCard(props: { journal: Journal, closeJournal: any }) {
             <span className="icon">
               <FontAwesomeIcon icon={faFolderClosed} />
             </span>
-            <span>{t('close')}</span>
+            <span>{t("close")}</span>
           </button>
         ) : (
           <button
@@ -168,18 +164,18 @@ function JournalCard(props: { journal: Journal, closeJournal: any }) {
                   journalId: journal.id,
                   closedAt: undefined,
                 },
-              })
+              });
             }}
           >
             <span className="icon">
               <FontAwesomeIcon icon={faFolderOpen} />
             </span>
-            <span>{t('open')}</span>
+            <span>{t("open")}</span>
           </button>
         )}
       </footer>
     </div>
-  )
+  );
 }
 
 export default Overview;

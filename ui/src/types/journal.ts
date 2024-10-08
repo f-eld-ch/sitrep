@@ -19,7 +19,7 @@ export enum Medium {
   Other = "OTHER",
 }
 
-export type Message = {
+export interface Message {
   id: string;
   content: string;
   sender: string;
@@ -34,17 +34,17 @@ export type Message = {
   mediumId: Medium;
   triageId: TriageStatus;
   priorityId: PriorityStatus;
-};
+}
 
-export type Triage = {
+export interface Triage {
   name: TriageStatus;
   description: string;
-};
+}
 
-export type Priority = {
+export interface Priority {
   name: PriorityStatus;
   description: string;
-};
+}
 
 export interface DivisionList {
   division: Division;
@@ -65,7 +65,7 @@ export interface MessageListVars {
   journalId: string;
 }
 
-export type Journal = {
+export interface Journal {
   id: string;
   name: string;
   incident: Incident;
@@ -73,7 +73,7 @@ export type Journal = {
   updatedAt: Date;
   closedAt: Date;
   deletedAt: Date;
-};
+}
 
 export interface JournalListData {
   incidents: Incident[];

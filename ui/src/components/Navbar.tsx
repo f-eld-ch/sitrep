@@ -33,7 +33,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
   const { t } = useTranslation();
 
-  let { incidentId } = useParams();
+  const { incidentId } = useParams();
   const navbarMenuClass = classNames({
     "navbar-menu": true,
     "is-active": isMenuActive,
@@ -218,7 +218,7 @@ function UserNavBar() {
 }
 
 const JournalNavBar: FunctionComponent = () => {
-  let { incidentId, journalId } = useParams();
+  const { incidentId, journalId } = useParams();
   const { t } = useTranslation();
 
   if (!incidentId) return <></>;
@@ -286,7 +286,7 @@ const JournalNavBar: FunctionComponent = () => {
 };
 
 const TasksNavBar: FunctionComponent = () => {
-  let { incidentId } = useParams();
+  const { incidentId } = useParams();
   const { t } = useTranslation();
 
   if (!incidentId) return <></>;
@@ -344,7 +344,7 @@ const TasksNavBar: FunctionComponent = () => {
 };
 
 const ResourcesNavBar: FunctionComponent = () => {
-  let { incidentId } = useParams();
+  const { incidentId } = useParams();
   const { t } = useTranslation();
 
   if (!incidentId) return <></>;
@@ -367,7 +367,7 @@ const ResourcesNavBar: FunctionComponent = () => {
 };
 
 const MapNavBar: FunctionComponent = () => {
-  let { incidentId } = useParams();
+  const { incidentId } = useParams();
   const { t } = useTranslation();
 
   if (!incidentId) return <></>;

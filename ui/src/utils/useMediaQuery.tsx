@@ -2,10 +2,10 @@ import { useState } from "react";
 
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
-type UseMediaQueryOptions = {
+interface UseMediaQueryOptions {
   defaultValue?: boolean;
   initializeWithValue?: boolean;
-};
+}
 
 const IS_SERVER = typeof window === "undefined";
 

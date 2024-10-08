@@ -6,7 +6,6 @@ import { useEventCallback } from "usehooks-ts";
 import { useEventListener } from "usehooks-ts";
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface WindowEventMap {
     "local-storage": CustomEvent;
   }
@@ -16,7 +15,7 @@ declare global {
  * Options for customizing the behavior of serialization and deserialization.
  * @template T - The type of the state to be stored in local storage.
  */
-type UseLocalStorageOptions<T> = {
+interface UseLocalStorageOptions<T> {
   /** A function to serialize the value before storing it. */
   serializer?: (value: T) => string;
   /** A function to deserialize the stored value. */
@@ -26,7 +25,7 @@ type UseLocalStorageOptions<T> = {
    * @default true
    */
   initializeWithValue?: boolean;
-};
+}
 
 const IS_SERVER = typeof window === "undefined";
 
@@ -144,7 +143,6 @@ export function useLocalStorage<T>(
     const value = readValue();
     setValue(value);
     setStoredValue(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   const handleStorageChange = useCallback(
