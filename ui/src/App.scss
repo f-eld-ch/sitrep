@@ -13,8 +13,9 @@ $grey-lighter: hsl(221, 14%, 86%);
 $grey-lightest: hsl(221, 14%, 93%);
 
 // Override global Sass variables from the /utilities folder
-@use "bulma/sass/utilities" with ($family-primary: '"B612",sans-serif',
-  $family-monospace: '"B612 Mono", monospace',
+@use "bulma/sass/utilities" with (
+  $family-primary: "B612",
+  $family-monospace: "B612 Mono",
   $primary: $orange,
   $warning: $yellow,
   $danger: $red,
@@ -31,7 +32,8 @@ $grey-lightest: hsl(221, 14%, 93%);
   $grey: $grey,
   $grey-light: $grey-light,
   $grey-lighter: $grey-lighter,
-  $grey-lightest: $grey-lightest);
+  $grey-lightest: $grey-lightest
+);
 
 // Import the components we need
 @forward "bulma/sass/base";
@@ -41,12 +43,20 @@ $grey-lightest: hsl(221, 14%, 93%);
 @forward "bulma/sass/components/breadcrumb";
 @forward "bulma/sass/components/card";
 @forward "bulma/sass/components/dropdown";
-@use "bulma/sass/components/message" with ($message-body-padding: 1em 1.5em 0em 1em);
-@use "bulma/sass/components/modal" with ($modal-content-width: 80rem);
-@use "bulma/sass/components/navbar" with ($navbar-height: $navbar-height);
+@use "bulma/sass/components/message" with (
+  $message-body-padding: 1em 1.5em 0em 1em
+);
+@use "bulma/sass/components/modal" with (
+  $modal-content-width: 80rem
+);
+@use "bulma/sass/components/navbar" with (
+  $navbar-height: $navbar-height
+);
 @forward "bulma/sass/components/tabs";
 
-@use "bulma/sass/form" with ($input-shadow: none);
+@use "bulma/sass/form" with (
+  $input-shadow: none
+);
 
 // Import the bulma elements we need
 @forward "bulma/sass/elements/box";
@@ -60,7 +70,9 @@ $grey-lightest: hsl(221, 14%, 93%);
 @forward "bulma/sass/elements/tag";
 @forward "bulma/sass/elements/title";
 
-@use "bulma/sass/layout/footer" with ($footer-padding: 2rem 1.5rem 2rem);
+@use "bulma/sass/layout/footer" with (
+  $footer-padding: 2rem 1.5rem 2rem
+);
 @forward "bulma/sass/layout/hero";
 @forward "bulma/sass/layout/section";
 @forward "bulma/sass/layout/level";
@@ -112,7 +124,8 @@ section {
   }
 
   .tbody {
-    tr {}
+    tr {
+    }
   }
 }
 
@@ -129,7 +142,6 @@ section {
 .input:invalid {
   border-color: $red;
 }
-
 
 @media screen {
   .is-print {
