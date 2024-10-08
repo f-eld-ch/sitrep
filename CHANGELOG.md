@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 23.15.1 to 23.15.2 in /ui ([#457](https://github.com/f-eld-ch/sitrep/issues/457)) - ([1a46b1b](https://github.com/f-eld-ch/sitrep/commit/1a46b1bbd9a0a74625968b8e4abb442091ad3cf0))
 - *(deps)* Bump ytanikin/PRConventionalCommits from 1.1.0 to 1.3.0 ([#450](https://github.com/f-eld-ch/sitrep/issues/450)) - ([c8ed466](https://github.com/f-eld-ch/sitrep/commit/c8ed466fea65fda46f15826a8aae3332b6f0bb8a))
 - Add proper permisisons to PR Validation - ([afcb730](https://github.com/f-eld-ch/sitrep/commit/afcb730e6bafebc3a74b29008a87cbf91b3d0ecc))
 - Use forked ConventionalCommits validation workflow ([#453](https://github.com/f-eld-ch/sitrep/issues/453)) - ([0c28812](https://github.com/f-eld-ch/sitrep/commit/0c28812b18868a4e3d8636b84aba88c6acdb107e))
