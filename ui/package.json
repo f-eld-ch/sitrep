@@ -42,7 +42,7 @@
     "build": "tsc && vite build",
     "test": "vitest",
     "preview": "vite preview",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx src",
+    "lint": "eslint src",
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "browserslist": {
