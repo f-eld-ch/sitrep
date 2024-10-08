@@ -25,7 +25,6 @@ function MapFrame() {
   );
 }
 
-
 function Dashboard() {
   const { incidentId } = useParams();
 
