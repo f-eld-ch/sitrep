@@ -1,37 +1,40 @@
+import eslint from "@eslint/js";
+import prettierConfig from "eslint-config-prettier";
 import react from "eslint-plugin-react";
 import globals from "globals";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
+import tseslint from "typescript-eslint";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
+export default [
+  ...tseslint.config(
+    eslint.configs.recommended,
+    ...tseslint.configs.recommended,
+    ...tseslint.configs.stylistic,
+    ...tseslint.configs.strict,
+    prettierConfig,
+  ),
+  {
+    files: ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+    ignores: ["**/*.config.js", "!**/eslint.config.js"],
 
-export default [...compat.extends("eslint:recommended", "plugin:react/recommended"), {
     plugins: {
-        react,
+      react,
     },
 
     languageOptions: {
-        globals: {
-            ...globals.browser,
-        },
+      globals: {
+        ...globals.browser,
+      },
 
-        ecmaVersion: 12,
-        sourceType: "module",
+      ecmaVersion: 12,
+      sourceType: "module",
 
-        parserOptions: {
-            ecmaFeatures: {
-                jsx: true,
-            },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
         },
+      },
     },
 
     rules: {},
-}];
+  },
+];

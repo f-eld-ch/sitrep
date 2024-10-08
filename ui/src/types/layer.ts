@@ -1,7 +1,7 @@
 import { GeoJsonProperties, Geometry } from "geojson";
 import { Incident } from "./incident";
 
-export type Layer = {
+export interface Layer {
   id: string;
   name: string;
   incident: Incident;
@@ -9,16 +9,16 @@ export type Layer = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
-};
+}
 
-export type Feature = {
+export interface Feature {
   id: string | number | undefined;
   geometry: Geometry;
   properties: GeoJsonProperties;
   createdAt: Date;
   updatedAt: Date | null;
   deletedAt: Date | null;
-};
+}
 
 export interface GetLayersData {
   layers: Layer[];

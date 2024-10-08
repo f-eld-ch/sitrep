@@ -136,14 +136,14 @@ function ActiveLayer() {
   const featureCollection = LayerToFeatureCollection(first(state.layers.filter((l) => l.id === state.activeLayer)));
 
   useEffect(() => {
-    let fc = FilterActiveFeatures(featureCollection);
+    const fc = FilterActiveFeatures(featureCollection);
     if (initialized || !map?.loaded) {
       return;
     }
     // only run this for the initialization as we don't want to continously
     // change the map viewport on new features
     if (map !== undefined && fc.features.length > 0) {
-      let bboxArray = bbox(fc);
+      const bboxArray = bbox(fc);
       map.fitBounds(
         [
           [bboxArray[0], bboxArray[1]],
@@ -251,7 +251,7 @@ function Draw(props: { activeLayer: string | undefined }) {
 
       const createdFeatures: Feature[] = e.features;
       createdFeatures.forEach((f) => {
-        let feature = CleanFeature(f);
+        const feature = CleanFeature(f);
         addFeature({
           variables: {
             layerId: props.activeLayer || "",
@@ -269,7 +269,7 @@ function Draw(props: { activeLayer: string | undefined }) {
     (e: FeatureEvent) => {
       const updatedFeatures: Feature[] = e.features;
       updatedFeatures.forEach((f) => {
-        let feature = CleanFeature(f);
+        const feature = CleanFeature(f);
         modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } });
       });
       dispatch({ type: "DESELECT_FEATURE", payload: {} });
@@ -281,7 +281,7 @@ function Draw(props: { activeLayer: string | undefined }) {
     (e: FeatureEvent) => {
       const deletedFeatures: Feature[] = e.features;
       deletedFeatures.forEach((f) => {
-        let feature = CleanFeature(f);
+        const feature = CleanFeature(f);
         deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } });
       });
       dispatch({ type: "DESELECT_FEATURE", payload: {} });
@@ -400,11 +400,11 @@ function MapWithProvder() {
 
 export { MapWithProvder as Map };
 
-export type FeatureEvent = {
+export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
-};
+}
 
-export type CombineFeatureEvent = {
+export interface CombineFeatureEvent {
   deletedFeatures: Feature<Geometry, GeoJsonProperties>[];
   createdFeatures: Feature<Geometry, GeoJsonProperties>[];
-};
+}

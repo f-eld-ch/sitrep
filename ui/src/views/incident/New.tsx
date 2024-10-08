@@ -100,7 +100,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t('incidentName')}</label>
+          <label className="label is-capitalized">{t("incidentName")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
@@ -147,7 +147,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline is-normal">
             {assignments.map((d) => {
-              let tagsClass = classNames({
+              const tagsClass = classNames({
                 tag: true,
                 "is-primary": !d.id,
                 "is-info": d.id,

@@ -12,7 +12,6 @@ import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
 
-
 function List(props: {
   showControls: boolean;
   autoScroll?: boolean;
@@ -36,8 +35,8 @@ function List(props: {
     if (autoScroll) {
       window.scroll({
         top: 0,
-        behavior: 'smooth'
-      })
+        behavior: "smooth",
+      });
     }
   }, [data?.messages, error, autoScroll]);
 
@@ -51,25 +50,32 @@ function List(props: {
   }
 
   if (loading) return <Spinner />;
-  let divisions = data?.journalsByPk.incident.divisions.flat() || [];
+  const divisions = data?.journalsByPk.incident.divisions.flat() || [];
 
-  let messages =
+  const messages =
     data?.messages
       .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
       .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
       .filter(
-        (message) =>
-          assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter)
+        (message) => assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter),
       ) || [];
-
 
   return (
     <div>
       <div className="is-print">
-        {props.showControls ? <></> : <MessageTable messages={messages} triageFilter={triageFilter} priorityFilter={priorityFilter} assignmentFilter={assignmentFilter} />}
+        {props.showControls ? (
+          <></>
+        ) : (
+          <MessageTable
+            messages={messages}
+            triageFilter={triageFilter}
+            priorityFilter={priorityFilter}
+            assignmentFilter={assignmentFilter}
+          />
+        )}
       </div>
       <div className="is-hidden-print">
-        <h3 className="title is-3 is-capitalized">{t('journal')}</h3>
+        <h3 className="title is-3 is-capitalized">{t("journal")}</h3>
 
         <div className="columns">
           <div className="column is-narrow">
@@ -82,9 +88,11 @@ function List(props: {
                     setTriageFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all') as string}>all</option>
+                  <option label={t("all") as string}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}>{status}</option>
+                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}>
+                      {status}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -103,9 +111,11 @@ function List(props: {
                     setPriorityFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all') as string}>all</option>
+                  <option label={t("all") as string}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>{prio}</option>
+                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>
+                      {prio}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -124,7 +134,7 @@ function List(props: {
                     setAssignmentFilter(e.target.value);
                   }}
                 >
-                  <option label={t('all') as string}>all</option>
+                  <option label={t("all") as string}>all</option>
                   {divisions.map((element) => (
                     <option key={element.id} value={element.name}>
                       {element.description}
@@ -140,9 +150,16 @@ function List(props: {
         </div>
       </div>
       <div className="columns is-multiline is-hidden-print mb-3">
-        {data ?
-          <MemoMessages messages={messages} showControls={props.showControls} setTriageMessage={props.setTriageMessage} setEditorMessage={props.setEditorMessage} /> : <></>
-        }
+        {data ? (
+          <MemoMessages
+            messages={messages}
+            showControls={props.showControls}
+            setTriageMessage={props.setTriageMessage}
+            setEditorMessage={props.setEditorMessage}
+          />
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
@@ -156,7 +173,6 @@ function Messages(props: {
   setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
 }) {
-
   return (
     <>
       {props.messages.map((message) => {
@@ -181,7 +197,7 @@ function Messages(props: {
         );
       })}
     </>
-  )
+  );
 }
 
 export default memo(List);

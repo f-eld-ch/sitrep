@@ -21,7 +21,7 @@ export interface MessageProps {
   message: string;
   triage: TriageStatus;
   priority: PriorityStatus;
-  assignments?: String[];
+  assignments?: string[];
   showControls: boolean;
   origMessage: MessageType | undefined;
   setEditorMessage?: (message: MessageType | undefined) => void;
@@ -49,7 +49,7 @@ function Message({
   const { t } = useTranslation();
   const { incidentId, journalId } = useParams();
 
-  let colorClassNames = classNames({
+  const colorClassNames = classNames({
     "is-danger":
       !(triage === TriageStatus.Pending || triage === TriageStatus.Reset) && priority === PriorityStatus.High,
     "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
@@ -57,20 +57,19 @@ function Message({
     "is-dark": triage === TriageStatus.Triaged,
   });
 
-  let messageClassNames = classNames(colorClassNames, {
+  const messageClassNames = classNames(colorClassNames, {
     message: true,
   });
 
-  let assigmentsClassNames = classNames({
-    "column": true,
+  const assigmentsClassNames = classNames({
+    column: true,
     "is-2": true,
     "is-align-items-stretch": true,
     "is-justify-content-flex-end": true,
     "is-hidden": !assignments || assignments.length === 0,
   });
 
-
-  let tabClassNames = classNames(colorClassNames, {
+  const tabClassNames = classNames(colorClassNames, {
     tabs: true,
     "mb-0": true,
     "is-small": true,
@@ -78,7 +77,7 @@ function Message({
     "is-justify-content-flex-end": true,
   });
 
-  let tagClassNames = classNames(colorClassNames, {
+  const tagClassNames = classNames(colorClassNames, {
     tag: true,
   });
 
@@ -90,39 +89,40 @@ function Message({
             <nav className="level is-align-items-baseline">
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t('message.sender')}</p>
+                  <p className="heading is-size-7">{t("message.sender")}</p>
                   <p className="subtitle is-size-7">{sender}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t('message.receiver')}</p>
+                  <p className="heading is-size-7">{t("message.receiver")}</p>
                   <p className="subtitle is-size-7">{receiver}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t('message.time')}</p>
+                  <p className="heading is-size-7">{t("message.time")}</p>
                   <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t('message.priority')}</p>
-                  <p className="subtitle is-size-7">{t([`priority.${priority}`, `priority.${PriorityStatus.Normal}`])}</p>
+                  <p className="heading is-size-7">{t("message.priority")}</p>
+                  <p className="subtitle is-size-7">
+                    {t([`priority.${priority}`, `priority.${PriorityStatus.Normal}`])}
+                  </p>
                 </div>
               </div>
 
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t('message.triage')}</p>
+                  <p className="heading is-size-7">{t("message.triage")}</p>
                   <p className="subtitle is-size-7">{t([`triage.${triage}`, `triage.${TriageStatus.Pending}`])}</p>
                 </div>
               </div>
             </nav>
           </div>
           <div className="column is-full-touch is-four-fifth-desktop">
-
             <ReactMarkdown className="content is-normal has-text-left">{message}</ReactMarkdown>
           </div>
           <div className={assigmentsClassNames}>
@@ -137,7 +137,6 @@ function Message({
                 })}
             </div>
           </div>
-
         </div>
         {showControls === true && id !== undefined ? (
           <div className={tabClassNames}>
@@ -148,23 +147,24 @@ function Message({
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faEdit} />
                     </span>
-                    <span>{t('edit')}</span>
+                    <span>{t("edit")}</span>
                   </a>
                 </li>
               ) : (
-                <Link to={`/incident/${incidentId}/journal/${journalId}/messages/${id}`} >
+                <Link to={`/incident/${incidentId}/journal/${journalId}/messages/${id}`}>
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faPrint} />
                   </span>
-                  <span>{t('messageSheet')}</span>
-                </Link>)}
+                  <span>{t("messageSheet")}</span>
+                </Link>
+              )}
               {setTriageMessage && origMessage ? (
                 <li>
                   <a onClick={() => setTriageMessage(origMessage)}>
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faArrowsToEye} />
                     </span>
-                    <span>{t('saveTriage')}</span>
+                    <span>{t("saveTriage")}</span>
                   </a>
                 </li>
               ) : (
@@ -175,7 +175,7 @@ function Message({
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faSquareCheck} />
                   </span>
-                  <span>{t('createNewTask')}</span>
+                  <span>{t("createNewTask")}</span>
                 </a>
               </li>
             </ul>
@@ -184,7 +184,7 @@ function Message({
           <></>
         )}
       </div>
-    </div >
+    </div>
   );
 }
 
