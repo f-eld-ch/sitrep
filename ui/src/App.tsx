@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import { UserState } from "types";
 import { UserContext } from "utils";
 import MessageSheet from "views/journal/MessageSheet";
-import { Layout } from "views/Layout";
+import { Layout, LayoutMarginLess } from "views/Layout";
 import { default as client } from "./client";
 
 const Map = lazy(() => import("views/map"));
@@ -149,11 +149,11 @@ function App() {
                 <Route
                   path="map"
                   element={
-                    <Layout>
+                    <LayoutMarginLess>
                       <Suspense fallback={<Spinner />}>
                         <Map />
                       </Suspense>
-                    </Layout>
+                    </LayoutMarginLess>
                   }
                 />
                 <Route

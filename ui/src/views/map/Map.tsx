@@ -51,13 +51,14 @@ function MapView() {
   maplibregl.setWorkerCount(6);
 
   const mapClass = classNames({
-    maplibre: true,
-    "container-flex": true,
+    "is-flex-grow-1": true,
+    "is-align-items-stretch": true,
+    "is-align-self-strech": true,
+    "mt-3": true,
   });
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">Lage</h3>
       <div className={mapClass}>
         <Map
           mapLib={maplibregl}

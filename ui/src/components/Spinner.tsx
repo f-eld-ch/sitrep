@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Spinner() {
   return (
-    <div className="has-text-centered">
+    <div className="container is-flex is-justify-content-center is-align-items-center has-text-centered">
       <FontAwesomeIcon icon={faSpinner} spin size="4x" />
     </div>
   );

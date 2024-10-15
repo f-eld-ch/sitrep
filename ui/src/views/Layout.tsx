@@ -23,19 +23,43 @@ export const Layout = (props: LayoutProps) => {
   if (!userState.isLoggedin) return <Login />;
 
   return (
-    <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
-      <div className="column is-narrow is-hidden-print">
-        <Navbar />
-      </div>
-      <div className="column is-narrow is-hidden-print">
-        <ReloadPrompt />
-      </div>
-      <div className="column">
-        <section className="section">{props.children}</section>
-      </div>
-      <div className="column is-narrow is-hidden-print">
-        <Footer />
-      </div>
-    </section>
+    <>
+      <Navbar />
+      <ReloadPrompt />
+      <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
+        <div className="column">
+          <section className="section">{props.children}</section>
+        </div>
+        <div className="column is-narrow is-hidden-print">
+          <Footer />
+        </div>
+      </section>
+    </>
+  );
+};
+
+export const LayoutMarginLess = (props: LayoutProps) => {
+  const [searchParams] = useSearchParams();
+  const { i18n } = useTranslation();
+  const userState = useContext(UserContext);
+
+  const lang = searchParams.get("lang");
+  useEffect(() => {
+    i18n.changeLanguage(lang || undefined);
+  }, [lang, searchParams, i18n]);
+
+  if (!userState.isLoggedin) return <Login />;
+
+  return (
+    <>
+      <Navbar />
+      <ReloadPrompt />
+      <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
+        <div className="column is-flex">{props.children}</div>
+        <div className="column is-narrow is-hidden-print">
+          <Footer />
+        </div>
+      </section>
+    </>
   );
 };
