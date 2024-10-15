@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(map)* Improve Map layout to have more space ([#469](https://github.com/f-eld-ch/sitrep/issues/469)) - ([e2f266e](https://github.com/f-eld-ch/sitrep/commit/e2f266e7e23f695165c90b039e368f1b3d5d5db9))
+
 ### 🐛 Bug Fixes
 
 - *(ui)* Improve mono-font-family ([#459](https://github.com/f-eld-ch/sitrep/issues/459)) - ([8335b34](https://github.com/f-eld-ch/sitrep/commit/8335b34dc1be3cc1690d4d82098f17d04de9a632))
