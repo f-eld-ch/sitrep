@@ -1,7 +1,8 @@
 @import "maplibre-gl/dist/maplibre-gl";
 
-.maplibregl-map {
-  min-height: 79vh;
+.maplibregl-canvas {
+  @extend .maplibregl-canvas !optional;
+  outline: none !important;
 }
 
 .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
