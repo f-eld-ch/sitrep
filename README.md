@@ -39,10 +39,10 @@ docker compose --env-file .env.local up -d
 ```
 
 If you are running on a SElinux enabled machine, use the selinux compose file:
+
 ```
 docker compose -f docker-compose.selinux.yml --env-file .env.local up -d
 ```
-
 
 4. Run yarn
 
@@ -56,7 +56,20 @@ cd ui && yarn start
 
 To correct or add **translations** we invite you to help us out [on Transifex](https://explore.transifex.com/f-eld/sitrep/).
 We currently support the following languages:
+
 - German (de)
 - English (en)
 - Italian (it)
 - French (fr)
+
+## License
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[GNU Affero General Public License](LICENSE) for more details.
