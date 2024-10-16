@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 📚 Documentation
+
+- Adjust licsense to use AGPLv3 ([#470](https://github.com/f-eld-ch/sitrep/issues/470)) - ([eeac052](https://github.com/f-eld-ch/sitrep/commit/eeac052a060924ae20bf1742a907ee6f4c0e12c9))
+
+
 ## [24.10.1](https://github.com/f-eld-ch/sitrep/compare/v24.10.0..v24.10.1) - 2024-10-15
 
 ### ⛰️  Features
