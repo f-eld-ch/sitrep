@@ -3,7 +3,7 @@ import { Footer, Navbar } from "components";
 import React, { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { UserContext, ReloadPrompt } from "utils";
+import { UserContext } from "utils";
 import { Login } from "./Login";
 
 export interface LayoutProps {
@@ -25,7 +25,6 @@ export const Layout = (props: LayoutProps) => {
   return (
     <>
       <Navbar />
-      <ReloadPrompt />
       <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
         <div className="column">
           <section className="section">{props.children}</section>
@@ -53,7 +52,6 @@ export const LayoutMarginLess = (props: LayoutProps) => {
   return (
     <>
       <Navbar />
-      <ReloadPrompt />
       <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
         <div className="column is-flex">{props.children}</div>
         <div className="column is-narrow is-hidden-print">
