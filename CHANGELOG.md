@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 23.16.0 to 23.16.2 in /ui ([#474](https://github.com/f-eld-ch/sitrep/issues/474)) - ([f98a7d1](https://github.com/f-eld-ch/sitrep/commit/f98a7d1d0afcdb2a3bb208ee2706df0255d6f08f))
 - *(deps)* Bump react-i18next from 15.0.3 to 15.1.0 in /ui ([#475](https://github.com/f-eld-ch/sitrep/issues/475)) - ([0404632](https://github.com/f-eld-ch/sitrep/commit/04046324aa605973b6255d815c0621d932b7c292))
 
 
