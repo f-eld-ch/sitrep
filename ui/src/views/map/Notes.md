@@ -1,5 +1,3 @@
-
-
 ## WMTS Service
 
 https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml

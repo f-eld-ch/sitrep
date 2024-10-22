@@ -46,7 +46,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf,json}"],
         navigateFallbackDenylist: [/^\/oauth2/, /^\/api/],
         maximumFileSizeToCacheInBytes: 3145728, // 3MB
       },

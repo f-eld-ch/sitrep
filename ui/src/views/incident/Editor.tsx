@@ -20,7 +20,7 @@ function Editor() {
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">{t('editIncident')}</h3>
+      <h3 className="title is-size-3 is-capitalized">{t("editIncident")}</h3>
 
       <div className="box">
         <IncidentForm incident={data?.incidentsByPk} />

@@ -1,17 +1,20 @@
-import ReloadPrompt from "ReloadSWPromt";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { ReloadPrompt } from "utils";
 import "./i18n";
 import reportWebVitals from "./reportWebVitals";
-
 const container = document.getElementById("root");
 
-const root = createRoot(container!);
+if (!container) {
+  throw new Error("No root element found");
+}
+
+const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <ReloadPrompt />
     <App />
+    <ReloadPrompt />
   </React.StrictMode>,
 );
 

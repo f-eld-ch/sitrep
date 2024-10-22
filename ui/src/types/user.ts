@@ -1,7 +1,5 @@
-
-
-export type UserState = {
-    isLoggedin: boolean;
-    username: string;
-    email: string;
+export interface UserState {
+  isLoggedin: boolean;
+  username: string;
+  email: string;
 }

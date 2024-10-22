@@ -1,0 +1,947 @@
+{
+  "ABCDekontaminationsstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 0
+  },
+  "AbsperrungVerkehrswege": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 0
+  },
+  "Angehoerigensammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 0
+  },
+  "Atomunfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 0
+  },
+  "Autounfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 0
+  },
+  "BLaboratorium": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 160,
+    "y": 0
+  },
+  "BeabsichtigteErkundung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 192,
+    "y": 0
+  },
+  "BeabsichtigteVerschiebung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 224,
+    "y": 0
+  },
+  "BeabsichtigterEinsatz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 256,
+    "y": 0
+  },
+  "Beobachtung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 288,
+    "y": 0
+  },
+  "Beschaedigung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 320,
+    "y": 0
+  },
+  "Betreuungsstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 352,
+    "y": 0
+  },
+  "Betriebsstoffabgabestelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 384,
+    "y": 0
+  },
+  "Bezirksfuehrungsorgan": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 416,
+    "y": 0
+  },
+  "Biounfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 448,
+    "y": 0
+  },
+  "Bombenanschlag": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 480,
+    "y": 0
+  },
+  "Bombendrohung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 32
+  },
+  "Brand": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 64
+  },
+  "Brandanschlag": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 96
+  },
+  "BrandeinzelnesGebaeudeFlamme": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 128
+  },
+  "BranduebergriffErfolgt": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 160
+  },
+  "BranduebergriffGefahr": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 192
+  },
+  "Chemieunfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 224
+  },
+  "Chemikalien": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 256
+  },
+  "Debriefingstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 288
+  },
+  "Demogewaltlos": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 320
+  },
+  "Demogewaltsam": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 352
+  },
+  "Drohung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 384
+  },
+  "Duerre": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 416
+  },
+  "DurchgefuehrteErkundung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 448
+  },
+  "DurchgefuehrteVerschiebung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 0,
+    "y": 480
+  },
+  "DurchgefuehrterEinsatz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 32
+  },
+  "EingesperrteAbgeschnittene": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 32
+  },
+  "Einsatz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 32
+  },
+  "Einsatzleiter": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 32
+  },
+  "Einsatzleitung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 160,
+    "y": 32
+  },
+  "Einsatzraum": {
+    "height": 18,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 438
+  },
+  "Einsatzzentrale": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 192,
+    "y": 32
+  },
+  "Eisenbahnunglueck": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 224,
+    "y": 32
+  },
+  "Energieausfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 256,
+    "y": 32
+  },
+  "Epidemie": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 288,
+    "y": 32
+  },
+  "Erdbeben": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 320,
+    "y": 32
+  },
+  "Erdrutsch": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 352,
+    "y": 32
+  },
+  "Explosion": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 384,
+    "y": 32
+  },
+  "ExplosionGefahr": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 416,
+    "y": 32
+  },
+  "Fluechtlinge": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 448,
+    "y": 32
+  },
+  "Flugzeugabsturz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 480,
+    "y": 32
+  },
+  "Gas": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 64
+  },
+  "Gebaeudeeinsturz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 96
+  },
+  "GefahrElektrizitaet": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 128
+  },
+  "GefahrdurchLoeschenmitWasser": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 160
+  },
+  "GefahrentafelmitUNNummer": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 192
+  },
+  "GefahrfuerGrundwasser": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 224
+  },
+  "Gemeindefuehrungsorgan": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 256
+  },
+  "Gruppe": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 288
+  },
+  "Gruppenfuehrer": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 320
+  },
+  "Helikopterlandeplatz": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 352
+  },
+  "Informationsstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 384
+  },
+  "Informationszentrum": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 416
+  },
+  "Infrastrukturschaden": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 448
+  },
+  "KGSNotdepot": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 32,
+    "y": 480
+  },
+  "KGSNotlager": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 64
+  },
+  "KGSSammelpunkt": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 64
+  },
+  "Kadaversammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 64
+  },
+  "Kanalisationsausfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 160,
+    "y": 64
+  },
+  "KantonalesFuehrungsorgan": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 192,
+    "y": 64
+  },
+  "KommandopostenFront": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 224,
+    "y": 64
+  },
+  "KommandopostenRueckwaertiges": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 256,
+    "y": 64
+  },
+  "Kommunikationsstoerung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 288,
+    "y": 64
+  },
+  "Kompanie": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 320,
+    "y": 64
+  },
+  "Kontrollstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 352,
+    "y": 64
+  },
+  "Kontrollzentrum": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 384,
+    "y": 64
+  },
+  "Lawine": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 416,
+    "y": 64
+  },
+  "Massenpanik": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 448,
+    "y": 64
+  },
+  "Materialdepot": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 480,
+    "y": 64
+  },
+  "MobileEinsatzzentrale": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 96
+  },
+  "Obdachlose": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 128
+  },
+  "Oelverschmutzung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 160
+  },
+  "OffizierZugfuehrer": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 192
+  },
+  "Patientensammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 224
+  },
+  "PatternBeabsichtigteErkundung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 256
+  },
+  "PatternBrandzone": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 288
+  },
+  "PatternLineBeabsichtigteErkundung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 320
+  },
+  "PatternLineErkundung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 352
+  },
+  "PatternLineRettungsachse": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 384
+  },
+  "PatternLineRutschgebiet": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 416
+  },
+  "PatternLineRutschgebietGespiegelt": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 448
+  },
+  "PatternLineUnpassierbar": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 64,
+    "y": 480
+  },
+  "PatternZerstoert": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 96
+  },
+  "Pforte": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 96
+  },
+  "Pluenderung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 160,
+    "y": 96
+  },
+  "RadioaktiveStoffe": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 192,
+    "y": 96
+  },
+  "RegionalesFuehrungsorgan": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 224,
+    "y": 96
+  },
+  "RettungsAchse": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 256,
+    "y": 96
+  },
+  "Rutschgebiet": {
+    "height": 22,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 416
+  },
+  "Sabotage": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 288,
+    "y": 96
+  },
+  "Sammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 320,
+    "y": 96
+  },
+  "Sanitaetshilfsstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 352,
+    "y": 96
+  },
+  "Sanitaetsumladestelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 384,
+    "y": 96
+  },
+  "Schadengebiet": {
+    "height": 18,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 456
+  },
+  "Sperre": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 416,
+    "y": 96
+  },
+  "StandortmobileFuehrungsstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 448,
+    "y": 96
+  },
+  "Starkniederschlag": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 480,
+    "y": 96
+  },
+  "Stau": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 128
+  },
+  "Strerschwertbefahrbarbegehbar": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 160
+  },
+  "Streugutsammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 192
+  },
+  "Strnichtbefahrbarschwerbegehbar": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 224
+  },
+  "Strunpassierbargesperrt": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 256
+  },
+  "Stuetzpunkt": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 288
+  },
+  "Sturm": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 320
+  },
+  "Tankloeschfahrzeug": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 352
+  },
+  "Teilzerstoerung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 384
+  },
+  "Terroranschlag": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 416
+  },
+  "Tierseuche": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 448
+  },
+  "Totalzerstoerung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 96,
+    "y": 480
+  },
+  "Tote": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 128
+  },
+  "Totensammelstelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 160,
+    "y": 128
+  },
+  "Trinkwasserabgabestelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 192,
+    "y": 128
+  },
+  "TruemmerbereichSignatur": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 224,
+    "y": 128
+  },
+  "Trupp": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 256,
+    "y": 128
+  },
+  "UeberschwemmtesGebiet": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 288,
+    "y": 128
+  },
+  "Ueberschwemmung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 320,
+    "y": 128
+  },
+  "Ueberwachung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 352,
+    "y": 128
+  },
+  "Umleitung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 384,
+    "y": 128
+  },
+  "Unfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 416,
+    "y": 128
+  },
+  "Verkehrsposten": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 448,
+    "y": 128
+  },
+  "Verletzte": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 480,
+    "y": 128
+  },
+  "Verletztennest": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 160
+  },
+  "Vermisste": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 192
+  },
+  "Verpflegungsabgabestelle": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 224
+  },
+  "Verschiebung": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 256
+  },
+  "Wasservsgausfall": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 288
+  },
+  "Wasserwerfer": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 320
+  },
+  "ZivilesFuehrungsorgan": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 352
+  },
+  "Zug": {
+    "height": 32,
+    "pixelRatio": 1,
+    "width": 32,
+    "x": 128,
+    "y": 384
+  }
+}

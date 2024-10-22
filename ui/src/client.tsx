@@ -1,6 +1,6 @@
 import { ApolloClient } from "@apollo/client";
 import { HttpLink } from "@apollo/client";
-import { cache } from 'cache';
+import { cache } from "cache";
 
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_API_URL,
@@ -16,7 +16,5 @@ const client = new ApolloClient({
   //   },
   // },
 });
-
-
 
 export default client;

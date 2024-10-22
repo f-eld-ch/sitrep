@@ -13,7 +13,7 @@ function New() {
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">{t('createJournal')}</h3>
+      <h3 className="title is-size-3 is-capitalized">{t("createJournal")}</h3>
       <div className="box">
         <NewForm />
       </div>
@@ -26,7 +26,6 @@ function NewForm() {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const { t } = useTranslation();
-
 
   const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(InsertJournal, {
     onCompleted(data) {
@@ -57,7 +56,7 @@ function NewForm() {
             className="input"
             type="text"
             value={name}
-            placeholder={t('name') as string}
+            placeholder={t("name") as string}
             onChange={(e) => {
               e.preventDefault();
               setName(e.target.value);
@@ -71,7 +70,7 @@ function NewForm() {
       <div className="field">
         <p className="control">
           <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
-            {t('create')}
+            {t("create")}
           </button>
         </p>
       </div>

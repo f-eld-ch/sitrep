@@ -1,5 +1,4 @@
 name: Build & Test & Push Image
-
 on:
   push:
     branches:
@@ -15,10 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: "Test and Build"
-    steps:        
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
@@ -48,6 +46,10 @@ jobs:
 
       - name: Install packages
         run: yarn install --immutable
+        working-directory: ui
+
+      - name: Lint ui files
+        run: yarn lint
         working-directory: ui
 
       - name: Run ui tests
@@ -81,7 +83,6 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             GIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-
       - name: Docker meta for hasura
         id: meta-hasura
         uses: docker/metadata-action@v5

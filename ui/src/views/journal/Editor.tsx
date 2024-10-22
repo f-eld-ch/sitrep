@@ -15,7 +15,7 @@ import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 
-type State = {
+interface State {
   sender: string;
   senderDetail: string;
   receiver: string;
@@ -25,34 +25,34 @@ type State = {
   messageToEdit: Message | undefined;
   messageToTriage: Message | undefined;
   media: Medium;
-  saving: Boolean;
+  saving: boolean;
   radioChannel: string;
   autocompleteDetails: AutofillDetail;
-};
+}
 
 type MediaDetail = PhoneDetail | EmailDetail | RadioDetail | OtherDetail;
-export type PhoneDetail = {
+export interface PhoneDetail {
   type: Medium.Phone;
   sender?: string;
   receiver?: string;
-};
+}
 
-export type EmailDetail = {
+export interface EmailDetail {
   type: Medium.Email;
   sender?: string;
   receiver?: string;
-};
+}
 
-export type OtherDetail = {
+export interface OtherDetail {
   type: Medium.Other;
   sender?: string;
   receiver?: string;
-};
+}
 
-export type RadioDetail = {
+export interface RadioDetail {
   type: Medium.Radio;
   channel?: string;
-};
+}
 
 interface AutofillDetail {
   senderReceiverNames: string[];
@@ -138,20 +138,26 @@ function Editor() {
         return Object.assign({}, state, { time: action.time });
       }
       case "set_media_detail": {
-        switch (action.detail.type) {
+        const details = {
+          sender: state.senderDetail,
+          receiver: state.receiverDetail,
+          ...action.detail,
+        };
+
+        switch (details.type) {
           case Medium.Radio:
-            return Object.assign({}, state, { media: action.detail.type, radioChannel: action.detail.channel });
+            return {
+              ...state,
+              media: details.type,
+              radioChannel: details.channel || "",
+            };
           default:
-            let details = Object.assign(
-              {},
-              { sender: state.senderDetail, receiver: state.receiverDetail },
-              action.detail,
-            );
-            return Object.assign({}, state, {
-              media: action.detail.type,
+            return {
+              ...state,
+              media: details.type,
               senderDetail: details.sender,
               receiverDetail: details.receiver,
-            });
+            };
         }
       }
       case "clear": {
@@ -298,7 +304,7 @@ function InputBox() {
 
   const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
-    let selectMedium = e.target.value;
+    const selectMedium = e.target.value;
     if (
       selectMedium === Medium.Radio ||
       selectMedium === Medium.Email ||

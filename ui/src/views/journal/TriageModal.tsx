@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,11 +14,7 @@ import { NewForm as TaskNew } from "../measures/tasks";
 import { default as JournalMessage } from "./Message";
 import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 
-
-function Triage(props: {
-  message: Message | undefined;
-  setMessage: (message: Message | undefined) => void;
-}) {
+function Triage(props: { message: Message | undefined; setMessage: (message: Message | undefined) => void }) {
   const { message, setMessage } = props;
   const { journalId } = useParams();
   const { t } = useTranslation();
@@ -33,20 +27,17 @@ function Triage(props: {
       onCompleted: (data) => {
         setAssignments(data?.messagesByPk.divisions.map((d) => d.division));
         setPriority(
-          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priorityId) || PriorityStatus.Normal
+          Object.values(PriorityStatus).find((p) => p === data.messagesByPk.priorityId) || PriorityStatus.Normal,
         );
       },
-    }
+    },
   );
 
   const [saveMessageTriage, { error: errorSet }] = useMutation<SaveMessageTriageData, SaveMessageTriageVars>(
     SaveMessageTriage,
     {
-      onCompleted() { },
-      refetchQueries: [
-        { query: GetJournalMessages, variables: { journalId: journalId } },
-      ],
-    }
+      refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+    },
   );
 
   const [priority, setPriority] = useState(PriorityStatus.Normal);
@@ -70,8 +61,8 @@ function Triage(props: {
             {
               divisionId: d.id,
               messageId: messageId,
-            }
-          )
+            },
+          ),
         ),
       },
       onCompleted() {
@@ -97,7 +88,7 @@ function Triage(props: {
         <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title is-size-5">{t('messageTriageTitle')}</p>
+            <p className="modal-card-title is-size-5">{t("messageTriageTitle")}</p>
             <button className="delete" aria-label="close" onClick={() => setMessage(undefined)}></button>
           </header>
           <section className="modal-card-body">
@@ -107,7 +98,7 @@ function Triage(props: {
               <Spinner />
             ) : (
               <>
-                <div className="container mb-5" >
+                <div className="container mb-5">
                   <JournalMessage
                     showControls={false}
                     key={message.id}
@@ -128,11 +119,11 @@ function Triage(props: {
                   <div className="block">
                     <div className="columns">
                       <div className="column">
-                        <h3 className="title is-size-5">{t('messageFlow')}</h3>
+                        <h3 className="title is-size-5">{t("messageFlow")}</h3>
                         <div className="field is-grouped is-grouped-multiline">
                           {data?.messagesByPk.journal.incident.divisions.map((d) => {
-                            let isPresent = assignments.some((e) => e.name === d.name);
-                            let tagsClass = classNames({
+                            const isPresent = assignments.some((e) => e.name === d.name);
+                            const tagsClass = classNames({
                               tag: true,
                               "is-primary": isPresent,
                               "is-dark": !isPresent,
@@ -140,19 +131,21 @@ function Triage(props: {
                             return (
                               <div key={d.name} className="control">
                                 <div className="tags has-addons">
-                                  <div className={tagsClass}>
-                                    {d.description || d.name}
-                                  </div>
+                                  <div className={tagsClass}>{d.description || d.name}</div>
                                   {isPresent ? (
                                     <a
                                       className="tag is-light is-primary"
                                       onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
-                                    ><FontAwesomeIcon icon={faMinus} /></a>
+                                    >
+                                      <FontAwesomeIcon icon={faMinus} />
+                                    </a>
                                   ) : (
                                     <a
                                       className="tag is-success is-light"
                                       onClick={() => setAssignments(union(assignments, [d]))}
-                                    ><FontAwesomeIcon icon={faPlus} /></a>
+                                    >
+                                      <FontAwesomeIcon icon={faPlus} />
+                                    </a>
                                   )}
                                 </div>
                               </div>
@@ -161,24 +154,29 @@ function Triage(props: {
                         </div>
                       </div>
                       <div className="column">
-                        <h3 className="title is-size-5">{t('assignPriority')}</h3>
+                        <h3 className="title is-size-5">{t("assignPriority")}</h3>
                         <div className="select is-rounded is-small">
                           <select
                             defaultValue={message.priorityId}
                             onChange={(e) => {
                               e.preventDefault();
-                              let prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
+                              const prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
                               if (prio !== undefined) setPriority(prio);
                             }}
                           >
                             {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                              <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>{prio}</option>
+                              <option
+                                key={prio}
+                                label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}
+                              >
+                                {prio}
+                              </option>
                             ))}
                           </select>
                         </div>
                       </div>
                       <div className="column">
-                        <h3 className="title is-size-5">{t('createNewTask')}</h3>
+                        <h3 className="title is-size-5">{t("createNewTask")}</h3>
                         <TaskNew />
                       </div>
                     </div>
@@ -195,7 +193,7 @@ function Triage(props: {
                   if (message !== undefined) handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
                 }}
               >
-                {t('saveTriage')}
+                {t("saveTriage")}
               </button>
               <button
                 className="button is-rounded is-small"
