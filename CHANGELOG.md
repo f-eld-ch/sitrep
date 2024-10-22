@@ -4,6 +4,10 @@
 
 - Adjust licsense to use AGPLv3 ([#470](https://github.com/f-eld-ch/sitrep/issues/470)) - ([eeac052](https://github.com/f-eld-ch/sitrep/commit/eeac052a060924ae20bf1742a907ee6f4c0e12c9))
 
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 15.0.3 to 15.1.0 in /ui ([#475](https://github.com/f-eld-ch/sitrep/issues/475)) - ([0404632](https://github.com/f-eld-ch/sitrep/commit/04046324aa605973b6255d815c0621d932b7c292))
+
 
 ## [24.10.1](https://github.com/f-eld-ch/sitrep/compare/v24.10.0..v24.10.1) - 2024-10-15
 
