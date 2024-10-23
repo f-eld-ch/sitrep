@@ -4,11 +4,11 @@
   "name": "lightbasemap_v1.15.0",
   "sources": {
     "terrain_v1.0.0": {
-      "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.relief.vt/v1.0.0/tiles.json",
+      "url": "pmtiles://https://maps.sitrep.ch/ch.swisstopo.relief.vt.pmtiles",
       "type": "vector"
     },
     "base_v1.0.0": {
-      "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.base.vt/v1.0.0/tiles.json",
+      "url": "pmtiles://https://maps.sitrep.ch/ch.swisstopo.base.vt.pmtiles",
       "type": "vector"
     }
   },

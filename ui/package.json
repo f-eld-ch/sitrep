@@ -26,6 +26,7 @@
     "lodash": "^4.17.21",
     "mapbox-gl-style-switcher": "^1.0.11",
     "maplibre-gl": "4.7.1",
+    "pmtiles": "^3.2.0",
     "react": "^18.3.1",
     "react-autocomplete-hint": "^2.0.0",
     "react-color": "^2.19.3",

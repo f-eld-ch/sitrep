@@ -14,6 +14,8 @@ import {
 import { BabsIconController } from "./controls/BabsIconController";
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
 import { displayStyle, drawStyle } from "./style";
+import { Protocol } from "pmtiles";
+
 import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
 import { first } from "lodash";
 import {
@@ -47,8 +49,6 @@ const modes = {
 
 function MapView() {
   const mapStyle = useReactiveVar(selectedStyle);
-  maplibregl.setMaxParallelImageRequests(150);
-  maplibregl.setWorkerCount(6);
 
   const mapClass = classNames({
     "is-flex-grow-1": true,
@@ -56,6 +56,16 @@ function MapView() {
     "is-align-self-strech": true,
     "mt-3": true,
   });
+
+  useEffect(() => {
+    const protocol = new Protocol();
+    maplibregl.setMaxParallelImageRequests(150);
+    maplibregl.setWorkerCount(6);
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+    return () => {
+      maplibregl.removeProtocol("pmtiles");
+    };
+  }, []);
 
   return (
     <>

@@ -4277,6 +4277,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/leaflet@npm:^1.9.8":
+  version: 1.9.14
+  resolution: "@types/leaflet@npm:1.9.14"
+  dependencies:
+    "@types/geojson": "npm:*"
+  checksum: 10/70fbc69a4d6a3168a14072211e7738ad80954b8786105c4a0ec0615e88a5dbe131b1beff7b30594b293db2e1cb3f88a87d1ec1c89e128018bd42393dfcfcc69b
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:^4.17.12":
   version: 4.17.12
   resolution: "@types/lodash@npm:4.17.12"
@@ -7324,6 +7333,13 @@ __metadata:
   version: 0.4.8
   resolution: "fflate@npm:0.4.8"
   checksum: 10/c0c75029bcbefd0b47cede4ad2a3698f571e38d3d93dfbb96d744c655ec3bf5e31111044c2c01fa3965109874f5be8b5a6b3686b958392693689665cbabf3ece
+  languageName: node
+  linkType: hard
+
+"fflate@npm:^0.8.0":
+  version: 0.8.2
+  resolution: "fflate@npm:0.8.2"
+  checksum: 10/2bd26ba6d235d428de793c6a0cd1aaa96a06269ebd4e21b46c8fd1bd136abc631acf27e188d47c3936db090bf3e1ede11d15ce9eae9bffdc4bfe1b9dc66ca9cb
   languageName: node
   linkType: hard
 
@@ -11330,6 +11346,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pmtiles@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "pmtiles@npm:3.2.0"
+  dependencies:
+    "@types/leaflet": "npm:^1.9.8"
+    fflate: "npm:^0.8.0"
+  checksum: 10/54ebafff0417eca4e2011d25a057afac7398574ad872f36dc1d7699b2c2a553f6e2654503c9b9565a2b2d256ffdf4a16e0d6a82d601410feda25c5fae515f462
+  languageName: node
+  linkType: hard
+
 "possible-typed-array-names@npm:^1.0.0":
   version: 1.0.0
   resolution: "possible-typed-array-names@npm:1.0.0"
@@ -12659,6 +12685,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:4.7.1"
+    pmtiles: "npm:^3.2.0"
     prettier: "npm:^3.3.3"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"

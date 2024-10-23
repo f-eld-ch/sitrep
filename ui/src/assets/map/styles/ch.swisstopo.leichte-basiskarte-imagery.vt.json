@@ -4,7 +4,7 @@
   "name": "imagerybasemap_v1.15.0",
   "sources": {
     "base_v1.0.0": {
-      "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.base.vt/v1.0.0/tiles.json",
+      "url": "pmtiles://https://maps.sitrep.ch/ch.swisstopo.base.vt.pmtiles",
       "type": "vector"
     },
     "swissimage_wmts": {
