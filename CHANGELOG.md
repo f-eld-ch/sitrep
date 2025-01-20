@@ -7,6 +7,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.7.1 to v7.8.1 ([#641](https://github.com/f-eld-ch/sitrep/issues/641)) - ([f28f508](https://github.com/f-eld-ch/sitrep/commit/f28f508aab477679b8ee4af5c95c0615afc32b2e))
 - *(deps)* Bump react-router from 7.1.1 to 7.1.2 in /ui ([#635](https://github.com/f-eld-ch/sitrep/issues/635)) - ([728849c](https://github.com/f-eld-ch/sitrep/commit/728849cdbb939482d5bbfc50864ba1b4b91eac8e))
 - *(deps)* Bump @apollo/client from 3.12.5 to 3.12.6 in /ui ([#633](https://github.com/f-eld-ch/sitrep/issues/633)) - ([157b945](https://github.com/f-eld-ch/sitrep/commit/157b94557be43d9b72f33b04b5b17c238608c7f6))
 - *(deps)* Bump uuid from 11.0.4 to 11.0.5 in /ui ([#624](https://github.com/f-eld-ch/sitrep/issues/624)) - ([05f5577](https://github.com/f-eld-ch/sitrep/commit/05f55777ed718c2d5092f33a09bc0b101bf81908))
