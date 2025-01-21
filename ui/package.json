@@ -74,7 +74,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
-    "@testing-library/user-event": "^14.6.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/eslint__js": "^8.42.3",
     "@types/hat": "^0.0.4",
@@ -92,7 +92,7 @@
     "@typescript-eslint/typescript-estree": "^8.21.0",
     "@vite-pwa/assets-generator": "^0.2.6",
     "@vitejs/plugin-react-swc": "^3.7.2",
-    "@vitest/coverage-v8": "^3.0.2",
+    "@vitest/coverage-v8": "^3.0.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -116,7 +116,7 @@
     "vite-plugin-pwa": "^0.21.1",
     "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.2"
+    "vitest": "^3.0.3"
   },
   "resolutions": {
     "sharp": "^0.33.5",
