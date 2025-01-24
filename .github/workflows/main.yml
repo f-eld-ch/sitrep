@@ -12,12 +12,12 @@ on:
       - "develop"
 jobs:
   featureflags:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     name: "Validate & Push Feature Flags"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: f-eld-ch/flipt-setup-action@main
+      - uses: flipt-io/setup-action@v0.2.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: flipt validate
