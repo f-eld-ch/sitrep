@@ -81,7 +81,7 @@
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.14",
     "@types/mapbox__mapbox-gl-draw": "~1.4.6",
-    "@types/node": "^20.17.14",
+    "@types/node": "^20.17.16",
     "@types/react": "^18.3.18",
     "@types/react-color": "^3.0.13",
     "@types/react-dom": "^18.3.5",
@@ -92,7 +92,7 @@
     "@typescript-eslint/typescript-estree": "^8.21.0",
     "@vite-pwa/assets-generator": "^0.2.6",
     "@vitejs/plugin-react-swc": "^3.7.2",
-    "@vitest/coverage-v8": "^3.0.3",
+    "@vitest/coverage-v8": "^3.0.4",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -101,7 +101,7 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jsdom": "^26.0.0",
-    "lint-staged": "^15.4.1",
+    "lint-staged": "^15.4.2",
     "prettier": "^3.4.2",
     "rollup-plugin-visualizer": "^5.14.0",
     "sass": "^1.83.4",
@@ -116,7 +116,7 @@
     "vite-plugin-pwa": "^0.21.1",
     "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.3"
+    "vitest": "^3.0.4"
   },
   "resolutions": {
     "sharp": "^0.33.5",
