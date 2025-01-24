@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: flipt-io/setup-action@v0.2.0
+      - uses: f-eld-ch/flipt-setup-action@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: flipt validate
@@ -31,7 +31,7 @@ jobs:
           flipt bundle build sitrep-featureflags:latest
           flipt bundle push sitrep-featureflags:latest ghcr.io/f-eld-ch/sitrep/featureflags:develop
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     name: "Test and Build"
     steps:
       - name: Checkout
