@@ -1,4 +1,4 @@
-## [25.1.1](https://github.com/f-eld-ch/sitrep/compare/v25.1.0..v25.1.1) - 2025-01-27
+## [unreleased]
 
 ### ⛰️  Features
 
