@@ -2,6 +2,13 @@
 
 ### ⛰️  Features
 
+- *(feature-flags)* Adjust SitrepManaged segment - ([2211110](https://github.com/f-eld-ch/sitrep/commit/22111100501028c48593de24ffc3aa205fda7843))
+
+
+## [25.1.1](https://github.com/f-eld-ch/sitrep/compare/v25.1.0..v25.1.1) - 2025-01-27
+
+### ⛰️  Features
+
 - *(lang)* Translate translations.json in fr ([#631](https://github.com/f-eld-ch/sitrep/issues/631)) - ([e296bf2](https://github.com/f-eld-ch/sitrep/commit/e296bf21bee71c813230af263dfe544e0e8efa5c))
 - *(ui)* Add hosted by VSHN in footer for managed instances ([#621](https://github.com/f-eld-ch/sitrep/issues/621)) - ([28efe2b](https://github.com/f-eld-ch/sitrep/commit/28efe2b02586049b1c6e443309ccacc3d22c126b))
 
