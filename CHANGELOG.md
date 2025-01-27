@@ -4,6 +4,10 @@
 
 - *(feature-flags)* Adjust SitrepManaged segment - ([2211110](https://github.com/f-eld-ch/sitrep/commit/22111100501028c48593de24ffc3aa205fda7843))
 
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.12.7 to 3.12.8 in /ui ([#650](https://github.com/f-eld-ch/sitrep/issues/650)) - ([a3ed5aa](https://github.com/f-eld-ch/sitrep/commit/a3ed5aa4dca79ec985c3f74efbf87a26b0a0e64f))
+
 
 ## [25.1.1](https://github.com/f-eld-ch/sitrep/compare/v25.1.0..v25.1.1) - 2025-01-27
 
