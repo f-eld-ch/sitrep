@@ -29,7 +29,7 @@ flags:
     enabled: false
     rollouts:
       - segment:
-          key: Development
+          key: SitrepManaged
           value: true
 segments:
   - key: Development
