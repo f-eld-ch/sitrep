@@ -12323,15 +12323,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-map-gl@npm:~7.1.8":
-  version: 7.1.8
-  resolution: "react-map-gl@npm:7.1.8"
+"react-map-gl@npm:~7.1.9":
+  version: 7.1.9
+  resolution: "react-map-gl@npm:7.1.9"
   dependencies:
     "@maplibre/maplibre-gl-style-spec": "npm:^19.2.1"
     "@types/mapbox-gl": "npm:>=1.0.0"
   peerDependencies:
     mapbox-gl: ">=1.13.0"
-    maplibre-gl: ">=1.13.0"
+    maplibre-gl: ">=1.13.0 <5.0.0"
     react: ">=16.3.0"
     react-dom: ">=16.3.0"
   peerDependenciesMeta:
@@ -12339,7 +12339,7 @@ __metadata:
       optional: true
     maplibre-gl:
       optional: true
-  checksum: 10/bfeb1c5cb5a59186e744e7d517d185cd81934399b21549038980c1ae64f544e006e6a6e252b14292c48d97272966bad5496d295d50f0f5d4e7870b22cfd4d1bc
+  checksum: 10/a0b55a7b81e3298a4c9e14f62aad27ece8f91b48bd09752bc654f55d521218debef11ec2d591132f4bad2d6131377c038f9fd60a7f24198bcaddd9fcdbb3024e
   languageName: node
   linkType: hard
 
@@ -13449,7 +13449,7 @@ __metadata:
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.3.1"
     react-i18next: "npm:^15.4.0"
-    react-map-gl: "npm:~7.1.8"
+    react-map-gl: "npm:~7.1.9"
     react-markdown: "npm:^9.0.3"
     react-router: "npm:^7.1.3"
     rollup-plugin-visualizer: "npm:^5.14.0"
