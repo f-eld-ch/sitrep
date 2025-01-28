@@ -19,7 +19,7 @@
     "@turf/bearing": "^7.2.0",
     "@turf/center": "^7.2.0",
     "@turf/helpers": "^7.2.0",
-    "@watergis/maplibre-gl-export": "~3.8.5",
+    "@watergis/maplibre-gl-export": "~4.0.0",
     "bulma": "^1.0.3",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.13",

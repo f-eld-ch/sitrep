@@ -4908,13 +4908,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/maplibre-gl-export@npm:~3.8.5":
-  version: 3.8.5
-  resolution: "@watergis/maplibre-gl-export@npm:3.8.5"
+"@watergis/maplibre-gl-export@npm:~4.0.0":
+  version: 4.0.0
+  resolution: "@watergis/maplibre-gl-export@npm:4.0.0"
   dependencies:
     jspdf: "npm:^2.5.2"
-    maplibre-gl: "npm:^4.7.1"
-  checksum: 10/2ed0f33bcfe98182856b02e901b831ed3487f92ea3dc04f89ff4cd7c582f8a62f9ff5faba0eee9d6f32465f0b453c60dbd6d1d7367340ed814682164104a8891
+    maplibre-gl: "npm:^5.0.1"
+  checksum: 10/21be3d8c551525a52b6cdc85645e6f643970dcb75186454b8bb5f8255538b147bef14ee93ca01b353b3723241b780b26589954e4dc3f14fb6829712c19caaf95
   languageName: node
   linkType: hard
 
@@ -13422,7 +13422,7 @@ __metadata:
     "@vite-pwa/assets-generator": "npm:^0.2.6"
     "@vitejs/plugin-react-swc": "npm:^3.7.2"
     "@vitest/coverage-v8": "npm:^3.0.4"
-    "@watergis/maplibre-gl-export": "npm:~3.8.5"
+    "@watergis/maplibre-gl-export": "npm:~4.0.0"
     bulma: "npm:^1.0.3"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.13"
