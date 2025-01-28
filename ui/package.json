@@ -30,7 +30,7 @@
     "i18next-browser-languagedetector": "^8.0.2",
     "lodash": "^4.17.21",
     "mapbox-gl-style-switcher": "^1.0.11",
-    "maplibre-gl": "4.7.1",
+    "maplibre-gl": "5.1.0",
     "react": "^18.3.1",
     "react-autocomplete-hint": "^2.0.0",
     "react-color": "^2.19.3",
@@ -122,7 +122,7 @@
     "sharp": "^0.33.5",
     "braces": "^3.0.3",
     "rollup": "^4.22.4",
-    "maplibre-gl": "4.7.1"
+    "maplibre-gl": "5.1.0"
   },
   "packageManager": "yarn@4.6.0"
 }
