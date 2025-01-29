@@ -79,7 +79,7 @@
     "@types/eslint__js": "^8.42.3",
     "@types/hat": "^0.0.4",
     "@types/jest": "^29.5.14",
-    "@types/lodash": "^4.17.14",
+    "@types/lodash": "^4.17.15",
     "@types/mapbox__mapbox-gl-draw": "~1.4.6",
     "@types/node": "^20.17.16",
     "@types/react": "^18.3.18",
