@@ -119,6 +119,7 @@
     "vitest": "^3.0.4"
   },
   "resolutions": {
+    "vite": "^6.0.11",
     "sharp": "^0.33.5",
     "braces": "^3.0.3",
     "rollup": "^4.22.4",
