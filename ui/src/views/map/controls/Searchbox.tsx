@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { useMap } from "react-map-gl/maplibre";
+import { useMap } from "@vis.gl/react-maplibre";
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
 import parse from "html-react-parser";
@@ -60,14 +60,14 @@ function SearchControl() {
   const search = (input: string) => {
     fetch(
       BASE_URL +
-        "?" +
-        new URLSearchParams({
-          searchText: input,
-          type: "locations",
-          geometryFormat: "geojson",
-          origins: "address,gazetteer,parcel",
-          limit: "10",
-        }),
+      "?" +
+      new URLSearchParams({
+        searchText: input,
+        type: "locations",
+        geometryFormat: "geojson",
+        origins: "address,gazetteer,parcel",
+        limit: "10",
+      }),
     )
       .then((response) => response.json())
       .then((data) => {

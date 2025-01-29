@@ -1,4 +1,4 @@
-import { LayerProps } from "react-map-gl/maplibre";
+import { LayerProps } from "@vis.gl/react-maplibre";
 
 export const drawStyle: LayerProps[] = [
   {

@@ -1,25 +1,25 @@
 import {
-  MapboxStyleDefinition,
-  MapboxStyleSwitcherControl,
-  MapboxStyleSwitcherOptions,
-} from "mapbox-gl-style-switcher";
+  MaplibreStyleDefinition,
+  MaplibreStyleSwitcherControl,
+  MaplibreStyleSwitcherOptions,
+} from "./style-switcher";
 import React from "react";
-import { ControlPosition, useControl } from "react-map-gl/maplibre";
+import { ControlPosition, useControl } from "@vis.gl/react-maplibre";
 
-import "mapbox-gl-style-switcher/styles.css";
+import "./style-switcher/styleSwitcher.scss";
 
 export interface StyleSwitcherControlProps {
   /** Placement of the control relative to the map. */
   position?: ControlPosition;
   /** CSS style override, applied to the control's container */
   style?: React.CSSProperties;
-  styles: MapboxStyleDefinition[];
-  options?: MapboxStyleSwitcherOptions;
+  styles: MaplibreStyleDefinition[];
+  options?: MaplibreStyleSwitcherOptions;
 }
 
 function StyleSwitcherControl(props: StyleSwitcherControlProps): null {
   const { styles, options } = props;
-  useControl<MapboxStyleSwitcherControl>(() => new MapboxStyleSwitcherControl(styles, options), {
+  useControl<MaplibreStyleSwitcherControl>(() => new MaplibreStyleSwitcherControl(styles, options), {
     position: props.position,
   });
 

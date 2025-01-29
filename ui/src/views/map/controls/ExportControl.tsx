@@ -1,7 +1,7 @@
 import { Language, Format, MaplibreExportControl, PageOrientation, Size } from "@watergis/maplibre-gl-export";
 import "@watergis/maplibre-gl-export/dist/maplibre-gl-export.css";
 import i18next from "i18next";
-import { ControlPosition, useControl } from "react-map-gl/maplibre";
+import { ControlPosition, useControl } from "@vis.gl/react-maplibre";
 
 export interface ExportControlProps {
   /** Placement of the control relative to the map. */

@@ -1,6 +1,6 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { memo, useContext, useState } from "react";
-import { useControl, type ControlPosition } from "react-map-gl/maplibre";
+import { useControl, type ControlPosition } from "@vis.gl/react-maplibre";
 import { LayerContext } from "../LayerContext";
 import { FeatureEvent, CombineFeatureEvent } from "../Map";
 

@@ -2,7 +2,7 @@ import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
 import { BabsIcon, Schaeden, Others } from "components/BabsIcons";
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
-import { Layer, Source } from "react-map-gl/maplibre";
+import { Layer, Source } from "@vis.gl/react-maplibre";
 
 const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometry, GeoJsonProperties>[] => {
   if (f === undefined) {

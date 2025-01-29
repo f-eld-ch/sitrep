@@ -14,7 +14,7 @@ import {
 import { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
-import { useMap } from "react-map-gl/maplibre";
+import { useMap } from "@vis.gl/react-maplibre";
 import { LayerContext } from "../LayerContext";
 import { LayerToFeatureCollection } from "../utils";
 import "./BabsIconController.scss";

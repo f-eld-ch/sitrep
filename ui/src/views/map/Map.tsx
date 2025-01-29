@@ -26,7 +26,7 @@ import {
   useMap,
   Layer as MapLayer,
   AttributionControl,
-} from "react-map-gl/maplibre";
+} from "@vis.gl/react-maplibre";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { StyleController, selectedStyle } from "./controls/StyleController";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
