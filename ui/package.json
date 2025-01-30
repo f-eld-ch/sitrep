@@ -105,7 +105,7 @@
     "prettier": "^3.4.2",
     "rollup-plugin-visualizer": "^5.14.0",
     "sass": "^1.83.4",
-    "semver": "^7.6.3",
+    "semver": "^7.7.0",
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.3",
