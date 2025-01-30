@@ -12,7 +12,7 @@ on:
       - "develop"
 jobs:
   featureflags:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: "Validate & Push Feature Flags"
     steps:
       - name: Checkout
@@ -31,7 +31,7 @@ jobs:
           flipt bundle build sitrep-featureflags:latest
           flipt bundle push sitrep-featureflags:latest ghcr.io/f-eld-ch/sitrep/featureflags:develop
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     name: "Test and Build"
     steps:
       - name: Checkout
