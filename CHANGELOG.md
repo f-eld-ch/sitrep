@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(cicd)* Use ubuntu arm runners ([#637](https://github.com/f-eld-ch/sitrep/issues/637)) - ([d1bd49f](https://github.com/f-eld-ch/sitrep/commit/d1bd49f99cef8ea2f19d7d1c1bf9a40694f2031d))
 - *(deps)* Bump react-map-gl from 7.1.8 to 7.1.9 in /ui ([#653](https://github.com/f-eld-ch/sitrep/issues/653)) - ([162bbbc](https://github.com/f-eld-ch/sitrep/commit/162bbbc9e55b964eaae084eba40336597e1a5996))
 - *(deps)* Bump i18next from 24.2.1 to 24.2.2 in /ui ([#651](https://github.com/f-eld-ch/sitrep/issues/651)) - ([5c848cd](https://github.com/f-eld-ch/sitrep/commit/5c848cd1273ec724969028a7ecb37c141b8f9c2a))
 - *(deps)* Bump @apollo/client from 3.12.7 to 3.12.8 in /ui ([#650](https://github.com/f-eld-ch/sitrep/issues/650)) - ([a3ed5aa](https://github.com/f-eld-ch/sitrep/commit/a3ed5aa4dca79ec985c3f74efbf87a26b0a0e64f))
