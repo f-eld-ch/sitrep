@@ -2,11 +2,27 @@
 
 ### ⛰️  Features
 
+- *(feature-flags)* Adjust SitrepManaged segment - ([2211110](https://github.com/f-eld-ch/sitrep/commit/22111100501028c48593de24ffc3aa205fda7843))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-map-gl from 7.1.8 to 7.1.9 in /ui ([#653](https://github.com/f-eld-ch/sitrep/issues/653)) - ([162bbbc](https://github.com/f-eld-ch/sitrep/commit/162bbbc9e55b964eaae084eba40336597e1a5996))
+- *(deps)* Bump i18next from 24.2.1 to 24.2.2 in /ui ([#651](https://github.com/f-eld-ch/sitrep/issues/651)) - ([5c848cd](https://github.com/f-eld-ch/sitrep/commit/5c848cd1273ec724969028a7ecb37c141b8f9c2a))
+- *(deps)* Bump @apollo/client from 3.12.7 to 3.12.8 in /ui ([#650](https://github.com/f-eld-ch/sitrep/issues/650)) - ([a3ed5aa](https://github.com/f-eld-ch/sitrep/commit/a3ed5aa4dca79ec985c3f74efbf87a26b0a0e64f))
+
+
+## [25.1.1](https://github.com/f-eld-ch/sitrep/compare/v25.1.0..v25.1.1) - 2025-01-27
+
+### ⛰️  Features
+
 - *(lang)* Translate translations.json in fr ([#631](https://github.com/f-eld-ch/sitrep/issues/631)) - ([e296bf2](https://github.com/f-eld-ch/sitrep/commit/e296bf21bee71c813230af263dfe544e0e8efa5c))
 - *(ui)* Add hosted by VSHN in footer for managed instances ([#621](https://github.com/f-eld-ch/sitrep/issues/621)) - ([28efe2b](https://github.com/f-eld-ch/sitrep/commit/28efe2b02586049b1c6e443309ccacc3d22c126b))
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 3.12.6 to 3.12.7 in /ui ([#646](https://github.com/f-eld-ch/sitrep/issues/646)) - ([f934de8](https://github.com/f-eld-ch/sitrep/commit/f934de84fbc904ffe65e5dbefd54f8dcdaa726b6))
+- *(deps)* Bump react-router from 7.1.2 to 7.1.3 in /ui ([#643](https://github.com/f-eld-ch/sitrep/issues/643)) - ([42807bc](https://github.com/f-eld-ch/sitrep/commit/42807bc20e1928f9021e7a4c21786bc26d55e5cb))
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.7.1 to v7.8.1 ([#641](https://github.com/f-eld-ch/sitrep/issues/641)) - ([f28f508](https://github.com/f-eld-ch/sitrep/commit/f28f508aab477679b8ee4af5c95c0615afc32b2e))
 - *(deps)* Bump react-router from 7.1.1 to 7.1.2 in /ui ([#635](https://github.com/f-eld-ch/sitrep/issues/635)) - ([728849c](https://github.com/f-eld-ch/sitrep/commit/728849cdbb939482d5bbfc50864ba1b4b91eac8e))
 - *(deps)* Bump @apollo/client from 3.12.5 to 3.12.6 in /ui ([#633](https://github.com/f-eld-ch/sitrep/issues/633)) - ([157b945](https://github.com/f-eld-ch/sitrep/commit/157b94557be43d9b72f33b04b5b17c238608c7f6))
 - *(deps)* Bump uuid from 11.0.4 to 11.0.5 in /ui ([#624](https://github.com/f-eld-ch/sitrep/issues/624)) - ([05f5577](https://github.com/f-eld-ch/sitrep/commit/05f55777ed718c2d5092f33a09bc0b101bf81908))
