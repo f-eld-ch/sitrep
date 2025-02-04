@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(cicd)* Use ubuntu arm runners ([#637](https://github.com/f-eld-ch/sitrep/issues/637)) - ([d1bd49f](https://github.com/f-eld-ch/sitrep/commit/d1bd49f99cef8ea2f19d7d1c1bf9a40694f2031d))
+- *(deps)* Bump react-router from 7.1.4 to 7.1.5 in /ui ([#660](https://github.com/f-eld-ch/sitrep/issues/660)) - ([192ccfb](https://github.com/f-eld-ch/sitrep/commit/192ccfbbbdbc1ac9f411608da10e0d14a68ea99d))
 - *(deps)* Bump react-router from 7.1.3 to 7.1.4 in /ui ([#657](https://github.com/f-eld-ch/sitrep/issues/657)) - ([dcc3d1c](https://github.com/f-eld-ch/sitrep/commit/dcc3d1c58dbc9545a7123cf61d6939a2953a9a64))
 - *(deps)* Bump react-map-gl from 7.1.8 to 7.1.9 in /ui ([#653](https://github.com/f-eld-ch/sitrep/issues/653)) - ([162bbbc](https://github.com/f-eld-ch/sitrep/commit/162bbbc9e55b964eaae084eba40336597e1a5996))
 - *(deps)* Bump i18next from 24.2.1 to 24.2.2 in /ui ([#651](https://github.com/f-eld-ch/sitrep/issues/651)) - ([5c848cd](https://github.com/f-eld-ch/sitrep/commit/5c848cd1273ec724969028a7ecb37c141b8f9c2a))
