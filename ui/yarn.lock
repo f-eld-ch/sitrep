@@ -4428,15 +4428,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mapbox-gl@npm:>=1.0.0":
-  version: 2.7.19
-  resolution: "@types/mapbox-gl@npm:2.7.19"
-  dependencies:
-    "@types/geojson": "npm:*"
-  checksum: 10/fa80ff71b1b984801c6dc2307b8c99ef127631c8ee5096f9e010f39832a0976f57eda9a5599100f211e8eab4c63ff151f661c67af8afb52ad42ea04a13bf7a21
-  languageName: node
-  linkType: hard
-
 "@types/mapbox__mapbox-gl-draw@npm:~1.4.6":
   version: 1.4.6
   resolution: "@types/mapbox__mapbox-gl-draw@npm:1.4.6"
@@ -4771,6 +4762,36 @@ __metadata:
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
   checksum: 10/c6fe89a505e513a7592e1438280db1c075764793a2397877ff1351721fe8792a966a5359769e30242b3cd023f2efb9e63ca2ca88019d73b564488cc20e3eab12
+  languageName: node
+  linkType: hard
+
+"@vis.gl/react-mapbox@npm:8.0.1":
+  version: 8.0.1
+  resolution: "@vis.gl/react-mapbox@npm:8.0.1"
+  peerDependencies:
+    mapbox-gl: ">=3.5.0"
+    react: ">=16.3.0"
+    react-dom: ">=16.3.0"
+  peerDependenciesMeta:
+    mapbox-gl:
+      optional: true
+  checksum: 10/051b493203884cdbff352f25e2c7e1d0dbf5847596c298003da43dd50842befca45ca92c39d3018b07c7a44e06951f68bb2ebda9859af31c37b191fc8468f299
+  languageName: node
+  linkType: hard
+
+"@vis.gl/react-maplibre@npm:8.0.1":
+  version: 8.0.1
+  resolution: "@vis.gl/react-maplibre@npm:8.0.1"
+  dependencies:
+    "@maplibre/maplibre-gl-style-spec": "npm:^19.2.1"
+  peerDependencies:
+    maplibre-gl: ">=4.0.0"
+    react: ">=16.3.0"
+    react-dom: ">=16.3.0"
+  peerDependenciesMeta:
+    maplibre-gl:
+      optional: true
+  checksum: 10/e745948d0d514f0f330740bc54759c2128f2db1ecea96cdbcd6691b02b774ca45e975b1056902af295854810e726ba97c3328de1792897d8a74303e348ad9055
   languageName: node
   linkType: hard
 
@@ -12323,15 +12344,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-map-gl@npm:~7.1.9":
-  version: 7.1.9
-  resolution: "react-map-gl@npm:7.1.9"
+"react-map-gl@npm:~8.0.1":
+  version: 8.0.1
+  resolution: "react-map-gl@npm:8.0.1"
   dependencies:
-    "@maplibre/maplibre-gl-style-spec": "npm:^19.2.1"
-    "@types/mapbox-gl": "npm:>=1.0.0"
+    "@vis.gl/react-mapbox": "npm:8.0.1"
+    "@vis.gl/react-maplibre": "npm:8.0.1"
   peerDependencies:
     mapbox-gl: ">=1.13.0"
-    maplibre-gl: ">=1.13.0 <5.0.0"
+    maplibre-gl: ">=1.13.0"
     react: ">=16.3.0"
     react-dom: ">=16.3.0"
   peerDependenciesMeta:
@@ -12339,7 +12360,7 @@ __metadata:
       optional: true
     maplibre-gl:
       optional: true
-  checksum: 10/a0b55a7b81e3298a4c9e14f62aad27ece8f91b48bd09752bc654f55d521218debef11ec2d591132f4bad2d6131377c038f9fd60a7f24198bcaddd9fcdbb3024e
+  checksum: 10/8bc3ba42901f399aec72dbb037200806457beeae4b769e3c02e3c43dbb50cb479ed1c047136a5dfd91483ae3c38e9449ba90b222af6abc8dee8c2edf59fbaf2c
   languageName: node
   linkType: hard
 
@@ -13458,7 +13479,7 @@ __metadata:
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.3.1"
     react-i18next: "npm:^15.4.0"
-    react-map-gl: "npm:~7.1.9"
+    react-map-gl: "npm:~8.0.1"
     react-markdown: "npm:^9.0.3"
     react-router: "npm:^7.1.5"
     rollup-plugin-visualizer: "npm:^5.14.0"
