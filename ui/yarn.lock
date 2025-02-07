@@ -13028,9 +13028,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.83.4":
-  version: 1.83.4
-  resolution: "sass@npm:1.83.4"
+"sass@npm:^1.84.0":
+  version: 1.84.0
+  resolution: "sass@npm:1.84.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -13041,7 +13041,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/9a7d1c6be1a9e711a1c561d189b9816aa7715f6d0ec0b2ec181f64163788d0caaf4741924eeadce558720b58b1de0e9b21b9dae6a0d14489c4d2a142d3f3b12e
+  checksum: 10/e0c093f13800276f7441c6925aa707dbba59a7ecd6e21925f1e04980970c3fb18b1cc5e7193f9bbed569a87dfb41ed780f5c6153f0b3def3e0ae1ccf80cf282e
   languageName: node
   linkType: hard
 
@@ -13462,7 +13462,7 @@ __metadata:
     react-markdown: "npm:^9.0.3"
     react-router: "npm:^7.1.5"
     rollup-plugin-visualizer: "npm:^5.14.0"
-    sass: "npm:^1.83.4"
+    sass: "npm:^1.84.0"
     semver: "npm:^7.7.1"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.2.5"
@@ -13470,7 +13470,7 @@ __metadata:
     typescript-eslint: "npm:^8.23.0"
     usehooks-ts: "npm:^3.1.0"
     uuid: "npm:^11.0.5"
-    vite: "npm:^6.0.11"
+    vite: "npm:^6.1.0"
     vite-plugin-checker: "npm:^0.8.0"
     vite-plugin-eslint: "npm:^1.8.1"
     vite-plugin-pwa: "npm:^0.21.1"
