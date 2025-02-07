@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(cicd)* Use ubuntu arm runners ([#637](https://github.com/f-eld-ch/sitrep/issues/637)) - ([d1bd49f](https://github.com/f-eld-ch/sitrep/commit/d1bd49f99cef8ea2f19d7d1c1bf9a40694f2031d))
+- *(deps)* Bump @apollo/client from 3.12.9 to 3.12.10 in /ui ([#665](https://github.com/f-eld-ch/sitrep/issues/665)) - ([2713aec](https://github.com/f-eld-ch/sitrep/commit/2713aecf11cd4a7bb87eab4b59323a4c594a1797))
 - *(deps)* Bump react-map-gl from 7.1.9 to 8.0.1 in /ui ([#668](https://github.com/f-eld-ch/sitrep/issues/668)) - ([e64aff7](https://github.com/f-eld-ch/sitrep/commit/e64aff748de82a8eef3a05157f3b5595e8aecc7b))
 - *(deps)* Bump usehooks-ts from 3.1.0 to 3.1.1 in /ui ([#666](https://github.com/f-eld-ch/sitrep/issues/666)) - ([168465f](https://github.com/f-eld-ch/sitrep/commit/168465f45a0a2c3ac8c10d92a3e63275f018ce15))
 - *(deps)* Bump @apollo/client from 3.12.8 to 3.12.9 in /ui ([#661](https://github.com/f-eld-ch/sitrep/issues/661)) - ([4cc9fce](https://github.com/f-eld-ch/sitrep/commit/4cc9fce26f444b27d54cb4fe9e7bf41aea98c59a))
