@@ -69,9 +69,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.12.9":
-  version: 3.12.9
-  resolution: "@apollo/client@npm:3.12.9"
+"@apollo/client@npm:^3.12.10":
+  version: 3.12.10
+  resolution: "@apollo/client@npm:3.12.10"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@wry/caches": "npm:^1.0.0"
@@ -88,7 +88,7 @@ __metadata:
     zen-observable-ts: "npm:^1.2.5"
   peerDependencies:
     graphql: ^15.0.0 || ^16.0.0
-    graphql-ws: ^5.5.5
+    graphql-ws: ^5.5.5 || ^6.0.3
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
     subscriptions-transport-ws: ^0.9.0 || ^0.11.0
@@ -101,7 +101,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 10/88ea23a133ae0437687855b4e58f79dc1dfa70e8b95d5df70a372d5513a7eb18d5b71764e2ef79da07ea7553c80f810f5cefb4136da7e27ea7150dba844aac18
+  checksum: 10/0a742d77345669b318725926657cbe322e58d28a862d25b8d00a9eb427b48d998ddcd0838fd35f191c3bde8164c68d76005eff184ea0af69dd0bfc478691feb1
   languageName: node
   linkType: hard
 
@@ -13430,7 +13430,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sitrep@workspace:."
   dependencies:
-    "@apollo/client": "npm:^3.12.9"
+    "@apollo/client": "npm:^3.12.10"
     "@eslint/compat": "npm:^1.2.6"
     "@eslint/eslintrc": "npm:^3.2.0"
     "@eslint/js": "npm:^9.19.0"
