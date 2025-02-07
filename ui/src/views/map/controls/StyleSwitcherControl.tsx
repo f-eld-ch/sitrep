@@ -19,6 +19,7 @@ export interface StyleSwitcherControlProps {
 
 function StyleSwitcherControl(props: StyleSwitcherControlProps): null {
   const { styles, options } = props;
+  // @ts-expect-error - MapboxStyleSwitcherControl is has wrong types declared
   useControl<MapboxStyleSwitcherControl>(() => new MapboxStyleSwitcherControl(styles, options), {
     position: props.position,
   });

@@ -41,6 +41,7 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import maplibregl from "maplibre-gl";
 import classNames from "classnames";
 import SearchControl from "./controls/Searchbox";
+import { validate as validateUUID, v3 as uuidv3 } from "uuid";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -254,8 +255,16 @@ function Draw(props: { activeLayer: string | undefined }) {
       }
 
       const createdFeatures: Feature[] = e.features;
-      createdFeatures.forEach((f) => {
+      createdFeatures.forEach((f: Feature) => {
         const feature = CleanFeature(f);
+        console.log("on create feature", f);
+
+        if (!validateUUID(f.id)) {
+          console.log("feature id is not valid", f.id);
+          feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
+          console.log("new ID generated", feature.id);
+        }
+
         addFeature({
           variables: {
             layerId: props.activeLayer || "",
@@ -264,9 +273,13 @@ function Draw(props: { activeLayer: string | undefined }) {
             properties: feature.properties,
           },
         });
+        if (f.id !== undefined) {
+          console.log("deleting feature", f.id.toString());
+          state.draw?.delete([f.id.toString()]);
+        }
       });
     },
-    [props.activeLayer, dispatch, addFeature],
+    [props.activeLayer, dispatch, addFeature, state.draw],
   );
 
   const onUpdate = useCallback(
