@@ -19,15 +19,18 @@ function DrawControl(props: DrawControlProps) {
 
   const { onCreate, onDelete, onUpdate, onSelectionChange, onCombine } = props;
 
+  // @ts-expect-error - Map$1 issue in definitivelyTyped: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/70497
   useControl<MapboxDraw>(
     ({ map }) => {
       const d = new MapboxDraw(props);
       setDraw(d);
 
       map.on("draw.create", (e) => {
+        console.log("draw.create", e);
         onCreate(e);
       });
       map.on("draw.update", (e) => {
+        console.log("draw.update", e);
         onUpdate(e);
       });
       map.on("draw.combine", (e) => {
@@ -40,6 +43,7 @@ function DrawControl(props: DrawControlProps) {
         onDelete(e);
       });
       map.on("draw.selectionchange", (e) => {
+        console.log("draw.selectionchange", e);
         onSelectionChange(e);
       });
       return d;

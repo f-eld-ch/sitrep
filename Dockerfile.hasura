@@ -3,3 +3,4 @@ COPY hasura/migrations /hasura-migrations
 COPY hasura/metadata /hasura-metadata
 ENV HASURA_GRAPHQL_EXPERIMENTAL_FEATURES=naming_convention
 ENV HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION=graphql-default
+ENV HASURA_GRAPHQL_ENABLE_TELEMETRY=false
