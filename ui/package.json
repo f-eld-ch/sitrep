@@ -14,7 +14,7 @@
     "@mapbox/mapbox-gl-draw": "~1.5.0",
     "@openfeature/core": "^1.7.0",
     "@openfeature/flipt-web-provider": "^0.1.1",
-    "@openfeature/react-sdk": "^0.4.10",
+    "@openfeature/react-sdk": "^0.4.11",
     "@openfeature/web-sdk": "^1.4.0",
     "@turf/bearing": "^7.2.0",
     "@turf/center": "^7.2.0",
