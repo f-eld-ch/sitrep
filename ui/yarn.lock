@@ -3305,10 +3305,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/core@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "@openfeature/core@npm:1.6.0"
-  checksum: 10/017460339bb86125166cc379352f1079f6a021ca817e0beac6eb10d4251ab7ca0ae5917ff3d67e388ae8061bf61a2b28058c6921ae43d62dfd490238de7437c4
+"@openfeature/core@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "@openfeature/core@npm:1.7.0"
+  checksum: 10/78acd24c5b07f42d936066ff7c00e22367bebca2518db1785865b43e51b20ed4d7c5a8dff6cdfb6d364b7752f15d866e228db87e445d381385d1a8cb2dd50960
   languageName: node
   linkType: hard
 
@@ -13440,7 +13440,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^6.7.2"
     "@fortawesome/react-fontawesome": "npm:^0.2.2"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
-    "@openfeature/core": "npm:^1.6.0"
+    "@openfeature/core": "npm:^1.7.0"
     "@openfeature/flipt-web-provider": "npm:^0.1.1"
     "@openfeature/react-sdk": "npm:^0.4.10"
     "@openfeature/web-sdk": "npm:^1.4.0"
