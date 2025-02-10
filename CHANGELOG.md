@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/core from 1.6.0 to 1.7.0 in /ui ([#670](https://github.com/f-eld-ch/sitrep/issues/670)) - ([4c19c6a](https://github.com/f-eld-ch/sitrep/commit/4c19c6a0e3aafb8e4fa604d3d182adf20c5f6501))
 - *(deps)* Bump @apollo/client from 3.12.10 to 3.12.11 in /ui ([#671](https://github.com/f-eld-ch/sitrep/issues/671)) - ([a8a0be1](https://github.com/f-eld-ch/sitrep/commit/a8a0be101cdaca93c8b7df2f901d2b9118c2ccd5))
 
 
