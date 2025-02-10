@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.12.10 to 3.12.11 in /ui ([#671](https://github.com/f-eld-ch/sitrep/issues/671)) - ([a8a0be1](https://github.com/f-eld-ch/sitrep/commit/a8a0be101cdaca93c8b7df2f901d2b9118c2ccd5))
+
+
 ## [25.2.0](https://github.com/f-eld-ch/sitrep/compare/v25.1.1..v25.2.0) - 2025-02-07
 
 ### ⛰️  Features
