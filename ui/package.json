@@ -15,7 +15,7 @@
     "@openfeature/core": "^1.7.0",
     "@openfeature/flipt-web-provider": "^0.1.1",
     "@openfeature/react-sdk": "^0.4.11",
-    "@openfeature/web-sdk": "^1.4.0",
+    "@openfeature/web-sdk": "^1.4.1",
     "@turf/bearing": "^7.2.0",
     "@turf/center": "^7.2.0",
     "@turf/helpers": "^7.2.0",
