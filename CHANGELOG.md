@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/web-sdk from 1.4.0 to 1.4.1 in /ui ([#673](https://github.com/f-eld-ch/sitrep/issues/673)) - ([c52a683](https://github.com/f-eld-ch/sitrep/commit/c52a683cf9b5b945ef6b2db0db2cbed3b31c5bec))
 - *(deps)* Bump @openfeature/react-sdk from 0.4.10 to 0.4.11 in /ui ([#674](https://github.com/f-eld-ch/sitrep/issues/674)) - ([d25f0c9](https://github.com/f-eld-ch/sitrep/commit/d25f0c90c6a8c29ac4ca70205686e17f276fcd97))
 - *(deps)* Bump @openfeature/core from 1.6.0 to 1.7.0 in /ui ([#670](https://github.com/f-eld-ch/sitrep/issues/670)) - ([4c19c6a](https://github.com/f-eld-ch/sitrep/commit/4c19c6a0e3aafb8e4fa604d3d182adf20c5f6501))
 - *(deps)* Bump @apollo/client from 3.12.10 to 3.12.11 in /ui ([#671](https://github.com/f-eld-ch/sitrep/issues/671)) - ([a8a0be1](https://github.com/f-eld-ch/sitrep/commit/a8a0be101cdaca93c8b7df2f901d2b9118c2ccd5))
