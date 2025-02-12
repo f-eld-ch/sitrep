@@ -13,7 +13,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mapbox/mapbox-gl-draw": "~1.5.0",
     "@openfeature/core": "^1.7.0",
-    "@openfeature/flipt-web-provider": "^0.1.1",
+    "@openfeature/flipt-web-provider": "^0.1.2",
     "@openfeature/react-sdk": "^0.4.11",
     "@openfeature/web-sdk": "^1.4.1",
     "@turf/bearing": "^7.2.0",
