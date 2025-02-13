@@ -20,7 +20,6 @@ import { useTranslation } from "react-i18next";
 import { ApolloProvider } from "@apollo/client";
 import { Spinner } from "components";
 import { UserProvider } from "utils";
-import MessageSheet from "views/journal/MessageSheet";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { default as client } from "client";
 import { Provider as FeatureFlagProvider } from "FeatureFlags";
@@ -121,14 +120,6 @@ function App() {
                       element={
                         <Layout>
                           <JournalMessageList showControls={false} autoScroll={true} />
-                        </Layout>
-                      }
-                    />
-                    <Route
-                      path=":journalId/messages/:messageId"
-                      element={
-                        <Layout>
-                          <MessageSheet />
                         </Layout>
                       }
                     />

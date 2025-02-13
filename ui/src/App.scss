@@ -155,24 +155,32 @@ section {
 }
 
 @media print {
+  html,
+  body {
+    height: initial !important;
+    overflow: initial !important;
+    -webkit-print-color-adjust: exact;
+  }
+
   @page {
-    // size: A4 landscape;
+    margin: 10mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+
+    font-family: "B612";
+    font-size: 11px;
 
     @bottom-right {
       content: counter(page);
+      font-family: "B612";
+      font-size: 9px;
     }
 
     @bottom-center {
       content: "SitRep";
+      font-family: "B612";
+      font-size: 9px;
     }
-  }
-
-  .is-hidden-print {
-    // .no-break {
-    //     word-break: normal;
-    //     min-width: 150px;
-    // }
-    display: none !important;
   }
 
   .table {

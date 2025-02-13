@@ -4,51 +4,45 @@ import dayjs from "dayjs";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
-import { Link, useParams } from "react-router";
-import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
+import { Message, PriorityStatus, TriageStatus, Division } from "types";
+import { useReactToPrint } from "react-to-print";
+import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {
   id: string | undefined;
-  sender: string;
-  receiver: string;
-  timeDate: Date;
-  message: string;
-  triage: TriageStatus;
-  priority: PriorityStatus;
-  assignments?: string[];
+  message: Message;
+  divisions: Division[];
   showControls: boolean;
-  origMessage: MessageType | undefined;
-  setEditorMessage?: (message: MessageType | undefined) => void;
-  setTriageMessage?: (message: MessageType | undefined) => void;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
 }
 
-function Message({
+const MessageContainer = ({
   id,
-  sender,
-  receiver,
   message,
-  timeDate,
-  triage,
-  priority,
-  assignments,
   showControls = false,
   setEditorMessage,
   setTriageMessage,
-  origMessage,
-}: MessageProps) {
+  divisions,
+}: MessageProps) => {
   const { t, i18n } = useTranslation();
-  const { incidentId, journalId } = useParams();
   const showTasks = useBooleanFlagValue("show-tasks", false);
+  const messageSheetRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: messageSheetRef,
+    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
+  });
 
   const colorClassNames = classNames({
     "is-danger":
-      !(triage === TriageStatus.Pending || triage === TriageStatus.Reset) && priority === PriorityStatus.High,
-    "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
-    "is-success": triage === TriageStatus.MoreInfo,
-    "is-dark": triage === TriageStatus.Triaged,
+      !(message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset) &&
+      message.priorityId === PriorityStatus.High,
+    "is-warning": message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset,
+    "is-success": message.triageId === TriageStatus.MoreInfo,
+    "is-dark": message.triageId === TriageStatus.Triaged,
   });
 
   const messageClassNames = classNames(colorClassNames, {
@@ -60,7 +54,7 @@ function Message({
     "is-2": true,
     "is-align-items-stretch": true,
     "is-justify-content-flex-end": true,
-    "is-hidden": !assignments || assignments.length === 0,
+    "is-hidden": !message.divisions || message.divisions.length === 0,
   });
 
   const tabClassNames = classNames(colorClassNames, {
@@ -84,26 +78,26 @@ function Message({
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t("message.sender")}</p>
-                  <p className="subtitle is-size-7">{sender}</p>
+                  <p className="subtitle is-size-7">{message.sender}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t("message.receiver")}</p>
-                  <p className="subtitle is-size-7">{receiver}</p>
+                  <p className="subtitle is-size-7">{message.receiver}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t("message.time")}</p>
-                  <p className="subtitle is-size-7">{dayjs(timeDate).locale(i18n.language).format("LLL")}</p>
+                  <p className="subtitle is-size-7">{dayjs(message.time).locale(i18n.language).format("LLL")}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t("message.priority")}</p>
                   <p className="subtitle is-size-7">
-                    {t([`priority.${priority}`, `priority.${PriorityStatus.Normal}`])}
+                    {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
                   </p>
                 </div>
               </div>
@@ -111,33 +105,33 @@ function Message({
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
                   <p className="heading is-size-7">{t("message.triage")}</p>
-                  <p className="subtitle is-size-7">{t([`triage.${triage}`, `triage.${TriageStatus.Pending}`])}</p>
+                  <p className="subtitle is-size-7">
+                    {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
+                  </p>
                 </div>
               </div>
             </nav>
           </div>
           <div className="column is-full-touch is-four-fifth-desktop">
-            <ReactMarkdown className="content is-normal has-text-left">{message}</ReactMarkdown>
+            <ReactMarkdown className="content is-normal has-text-left">{message.content}</ReactMarkdown>
           </div>
           <div className={assigmentsClassNames}>
             <div className="tags is-multiline">
-              {assignments &&
-                assignments.map((a) => {
-                  return (
-                    <span key={a.toString()} className={tagClassNames}>
-                      {a}
-                    </span>
-                  );
-                })}
+              {message.divisions &&
+                message.divisions.map((d) => (
+                  <span key={d.division.id} className={tagClassNames}>
+                    {d.division.name}
+                  </span>
+                ))}
             </div>
           </div>
         </div>
         {showControls === true && id !== undefined ? (
           <div className={tabClassNames}>
             <ul>
-              {setEditorMessage && triage !== TriageStatus.Triaged ? (
+              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <li>
-                  <a onClick={() => setEditorMessage(origMessage)}>
+                  <a onClick={() => setEditorMessage(message)}>
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faEdit} />
                     </span>
@@ -145,16 +139,16 @@ function Message({
                   </a>
                 </li>
               ) : (
-                <Link to={`/incident/${incidentId}/journal/${journalId}/messages/${id}`}>
+                <a onClick={() => handlePrint()}>
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faPrint} />
                   </span>
                   <span>{t("messageSheet")}</span>
-                </Link>
+                </a>
               )}
-              {setTriageMessage && origMessage ? (
+              {setTriageMessage && message ? (
                 <li>
-                  <a onClick={() => setTriageMessage(origMessage)}>
+                  <a onClick={() => setTriageMessage(message)}>
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faArrowsToEye} />
                     </span>
@@ -177,6 +171,9 @@ function Message({
                 <></>
               )}
             </ul>
+            <div style={{ display: "none" }}>
+              <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
+            </div>
           </div>
         ) : (
           <></>
@@ -184,6 +181,6 @@ function Message({
       </div>
     </div>
   );
-}
+};
 
-export default memo(Message);
+export default memo(MessageContainer);

@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useReducer } from "react";
+import dayjs from "dayjs";
 
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
@@ -327,6 +328,26 @@ function InputBox() {
 
   const navigate = useNavigate();
 
+  const message: Message = Object.assign(
+    {},
+    {
+      id: state.messageToEdit?.id || "",
+      content: messageContentDebounced,
+      sender: state.sender,
+      senderDetail: state.senderDetail,
+      receiver: state.receiver,
+      receiverDetail: state.receiverDetail,
+      mediumId: state.media,
+      createdAt: state.messageToEdit?.createdAt || new Date(),
+      updatedAt: state.messageToEdit?.updatedAt || new Date(),
+      divisions: state.messageToEdit?.divisions || [],
+      deletedAt: state.messageToEdit?.deletedAt || new Date(),
+      time: dayjs(state.time).format("DD.MM.YYYY HH:mm:ss"),
+      priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
+      triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
+    },
+  );
+
   return (
     <div className="box">
       <button
@@ -361,14 +382,9 @@ function InputBox() {
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage
             id={undefined}
-            message={messageContentDebounced}
-            receiver={state.receiver}
-            sender={state.sender}
-            timeDate={state.time || new Date()}
-            priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
-            triage={state.messageToEdit?.triageId || TriageStatus.Pending}
+            message={message}
             showControls={false}
-            origMessage={undefined}
+            divisions={[]}
             setEditorMessage={undefined}
             setTriageMessage={undefined}
           />

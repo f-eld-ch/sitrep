@@ -1,13 +1,14 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useRef } from "react";
 
 import { useQuery } from "@apollo/client";
-import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faBell, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useReactToPrint } from "react-to-print";
 
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus, Division } from "types";
 import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -24,6 +25,8 @@ function List(props: {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
   const { autoScroll = false } = props;
+  const tableRef = useRef(null);
+  const handlePrint = useReactToPrint({ contentRef: tableRef, pageStyle: "@page { size: A4 landscape;}" });
 
   const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
@@ -61,19 +64,7 @@ function List(props: {
       ) || [];
 
   return (
-    <div>
-      <div className="is-print">
-        {props.showControls ? (
-          <></>
-        ) : (
-          <MessageTable
-            messages={messages}
-            triageFilter={triageFilter}
-            priorityFilter={priorityFilter}
-            assignmentFilter={assignmentFilter}
-          />
-        )}
-      </div>
+    <>
       <div className="is-hidden-print">
         <h3 className="title is-3 is-capitalized">{t("journal")}</h3>
 
@@ -147,12 +138,19 @@ function List(props: {
               </div>
             </div>
           </div>
+          <div className="column is-narrow">
+            <button className="button is-small is-rounded" onClick={() => handlePrint()}>
+              <FontAwesomeIcon icon={faPrint} />
+              &nbsp;{t("print")}
+            </button>
+          </div>
         </div>
       </div>
       <div className="columns is-multiline is-hidden-print mb-3">
         {data ? (
           <MemoMessages
             messages={messages}
+            divisions={divisions}
             showControls={props.showControls}
             setTriageMessage={props.setTriageMessage}
             setEditorMessage={props.setEditorMessage}
@@ -161,7 +159,16 @@ function List(props: {
           <></>
         )}
       </div>
-    </div>
+      <div style={{ display: "none" }}>
+        <MessageTable
+          ref={tableRef}
+          messages={messages}
+          triageFilter={triageFilter}
+          priorityFilter={priorityFilter}
+          assignmentFilter={assignmentFilter}
+        />
+      </div>
+    </>
   );
 }
 
@@ -172,6 +179,7 @@ function Messages(props: {
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
+  divisions: Division[];
 }) {
   return (
     <>
@@ -181,15 +189,9 @@ function Messages(props: {
             <JournalMessage
               key={message.id}
               id={message.id}
-              assignments={message.divisions.map((d) => d.division.name)}
-              triage={message.triageId}
-              priority={message.priorityId}
-              sender={message.sender}
-              receiver={message.receiver}
-              message={message.content}
-              timeDate={new Date(message.time)}
+              message={message}
+              divisions={props.divisions}
               showControls={props.showControls}
-              origMessage={message}
               setEditorMessage={props.setEditorMessage}
               setTriageMessage={props.setTriageMessage}
             />

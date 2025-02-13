@@ -105,16 +105,10 @@ function Triage(props: { message: Message | undefined; setMessage: (message: Mes
                     showControls={false}
                     key={message.id}
                     id={message.id}
-                    assignments={assignments.map((a) => a.name)}
-                    triage={TriageStatus.Triaged}
-                    priority={priority}
-                    sender={message.sender}
-                    receiver={message.receiver}
-                    message={message.content}
-                    timeDate={new Date(message.time)}
+                    message={message}
+                    divisions={assignments}
                     setEditorMessage={undefined}
                     setTriageMessage={undefined}
-                    origMessage={message}
                   />
                 </div>
                 <div className="container">

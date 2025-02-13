@@ -12443,6 +12443,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-to-print@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "react-to-print@npm:3.0.5"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ~19
+  checksum: 10/ab122904516fbabfbb5613f701131f18d92a3878a377497586493fee0d264f01ee7b8aaa67f83007de97d2b205d28c0ba349b4affae63b47f131bd0b6ccdeab5
+  languageName: node
+  linkType: hard
+
 "react@npm:^18.3.1":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
@@ -13515,6 +13524,7 @@ __metadata:
     react-map-gl: "npm:~8.0.1"
     react-markdown: "npm:^9.0.3"
     react-router: "npm:^7.1.5"
+    react-to-print: "npm:^3.0.5"
     rollup-plugin-visualizer: "npm:^5.14.0"
     sass: "npm:^1.84.0"
     semver: "npm:^7.7.1"
