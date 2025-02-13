@@ -4481,12 +4481,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.17.17":
-  version: 20.17.17
-  resolution: "@types/node@npm:20.17.17"
+"@types/node@npm:^20.17.18":
+  version: 20.17.18
+  resolution: "@types/node@npm:20.17.18"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10/97319597fb277185df99271e20fc29f2bdd772090ffcd31a7aed6c5e59cd530352ed74674dd4bff9ed2950731e6309afef7c2a1a02331bdd15fda0022263585a
+  checksum: 10/577482a2172c74c80d8658eea1fc157ab7b787b11fa2ecf82aa167ddd0f1da1c0c26e773d0c02b307875ed5ab6c2d5812ef69af98b1939c88c65c04f5922a4b9
   languageName: node
   linkType: hard
 
@@ -8236,10 +8236,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^15.14.0":
-  version: 15.14.0
-  resolution: "globals@npm:15.14.0"
-  checksum: 10/e35ffbdbc024d6381efca906f67211a7bbf935db2af8c14a65155785479e28b3e475950e5933bb6b296eed54b6dcd924e25b26dbc8579b1bde9d5d25916e1c5f
+"globals@npm:^15.15.0":
+  version: 15.15.0
+  resolution: "globals@npm:15.15.0"
+  checksum: 10/7f561c87b2fd381b27fc2db7df8a4ea7a9bb378667b8a7193e61fd2ca3a876479174e2a303a74345fbea6e1242e16db48915c1fd3bf35adcf4060a795b425e18
   languageName: node
   linkType: hard
 
@@ -12132,12 +12132,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.5.0":
-  version: 3.5.0
-  resolution: "prettier@npm:3.5.0"
+"prettier@npm:^3.5.1":
+  version: 3.5.1
+  resolution: "prettier@npm:3.5.1"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10/fc26c74bd317282f2a49ffe3ac0ffa79adbe6b2d7a1cdcadd96acf7fec77d3fa45b15f3728c1a2f281f4beccb35d97207187452a581d4919d18b460d0c37e480
+  checksum: 10/09ab168e651e50c2c79804d65f17a68129ce1c573830b2fb08c988b585add8076b8d995789034d66a14338d6b8835e8c591e0fc1bc90f4344af9645738636d01
   languageName: node
   linkType: hard
 
@@ -13473,7 +13473,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/lodash": "npm:^4.17.15"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.8"
-    "@types/node": "npm:^20.17.17"
+    "@types/node": "npm:^20.17.18"
     "@types/react": "npm:^18.3.18"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^18.3.5"
@@ -13493,7 +13493,7 @@ __metadata:
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     eslint-plugin-react: "npm:^7.37.4"
-    globals: "npm:^15.14.0"
+    globals: "npm:^15.15.0"
     graphql: "npm:^16.10.0"
     hat: "npm:^0.0.3"
     html-react-parser: "npm:^5.2.2"
@@ -13506,7 +13506,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:5.1.0"
-    prettier: "npm:^3.5.0"
+    prettier: "npm:^3.5.1"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
