@@ -74,7 +74,6 @@ function StyleController() {
 
   const onClick = useCallback(
     (u: MapStyle) => {
-      console.log("selected map style", u);
       setActive(false);
       selectedStyle(u);
     },
