@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 3.12.11 to 3.13.1 in /ui ([#682](https://github.com/f-eld-ch/sitrep/issues/682)) - ([6aebf8f](https://github.com/f-eld-ch/sitrep/commit/6aebf8f19e65b7aa6a098059a9f1defab9f66e3e))
 - *(deps)* Bump flipt-io/setup-action from 0.2.0 to 0.3.1 ([#679](https://github.com/f-eld-ch/sitrep/issues/679)) - ([fbb8a7c](https://github.com/f-eld-ch/sitrep/commit/fbb8a7cbdf3f355d349e0eb77bc15df26444f0ac))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#677](https://github.com/f-eld-ch/sitrep/issues/677)) - ([6e95a63](https://github.com/f-eld-ch/sitrep/commit/6e95a6337b289908535678e4a93ec0ffcd7c0789))
 - *(deps)* Bump @openfeature/web-sdk from 1.4.0 to 1.4.1 in /ui ([#673](https://github.com/f-eld-ch/sitrep/issues/673)) - ([c52a683](https://github.com/f-eld-ch/sitrep/commit/c52a683cf9b5b945ef6b2db0db2cbed3b31c5bec))
