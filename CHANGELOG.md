@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(journal)* Improve print dialogs for Messages and Journals ([#681](https://github.com/f-eld-ch/sitrep/issues/681)) - ([ad29bcf](https://github.com/f-eld-ch/sitrep/commit/ad29bcf21345ef03e8ebfd968bca0ca62070c983))
+
 ### ⚙️  Other
 
 - *(deps)* Bump flipt-io/setup-action from 0.2.0 to 0.3.1 ([#679](https://github.com/f-eld-ch/sitrep/issues/679)) - ([fbb8a7c](https://github.com/f-eld-ch/sitrep/commit/fbb8a7cbdf3f355d349e0eb77bc15df26444f0ac))
