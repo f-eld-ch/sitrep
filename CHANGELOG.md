@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#686](https://github.com/f-eld-ch/sitrep/issues/686)) - ([5224d09](https://github.com/f-eld-ch/sitrep/commit/5224d0980a497f9fcb1409c870a357c6ed7f8548))
+
+
 ## [25.2.1](https://github.com/f-eld-ch/sitrep/compare/v25.2.0..v25.2.1) - 2025-02-17
 
 ### ⛰️  Features
