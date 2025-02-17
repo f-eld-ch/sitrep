@@ -26,11 +26,9 @@ function DrawControl(props: DrawControlProps) {
       setDraw(d);
 
       map.on("draw.create", (e) => {
-        console.log("draw.create", e);
         onCreate(e);
       });
       map.on("draw.update", (e) => {
-        console.log("draw.update", e);
         onUpdate(e);
       });
       map.on("draw.combine", (e) => {
@@ -43,7 +41,6 @@ function DrawControl(props: DrawControlProps) {
         onDelete(e);
       });
       map.on("draw.selectionchange", (e) => {
-        console.log("draw.selectionchange", e);
         onSelectionChange(e);
       });
       return d;

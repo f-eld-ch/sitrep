@@ -65,7 +65,6 @@ function MapView() {
       <div className={mapClass} data-theme="light">
         <Map
           mapLib={maplibregl}
-          onLoad={(e) => console.log(e)}
           initialViewState={{
             latitude: 46.87148,
             longitude: 8.62994,
@@ -75,7 +74,7 @@ function MapView() {
           attributionControl={false}
           minZoom={9}
           maxZoom={19}
-          mapStyle={mapStyle.uri}
+          mapStyle={mapStyle.style}
           scrollZoom={true}
           reuseMaps={false}
           RTLTextPlugin={undefined}
@@ -257,12 +256,9 @@ function Draw(props: { activeLayer: string | undefined }) {
       const createdFeatures: Feature[] = e.features;
       createdFeatures.forEach((f: Feature) => {
         const feature = CleanFeature(f);
-        console.log("on create feature", f);
 
         if (!validateUUID(f.id)) {
-          console.log("feature id is not valid", f.id);
           feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
-          console.log("new ID generated", feature.id);
         }
 
         addFeature({
@@ -274,7 +270,6 @@ function Draw(props: { activeLayer: string | undefined }) {
           },
         });
         if (f.id !== undefined) {
-          console.log("deleting feature", f.id.toString());
           state.draw?.delete([f.id.toString()]);
         }
       });
