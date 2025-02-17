@@ -4,26 +4,55 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { useCallback, useState } from "react";
 import "./StyleController.scss";
-import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json?url";
-import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json?url";
+import { StyleSpecification } from "maplibre-gl";
+import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
+import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 
 const MapStyles: MapStyle[] = [
   {
     name: "Basiskarte",
-    uri: basisKarte,
+    style: ExpandRelativeURLs(basisKarte as StyleSpecification),
   },
   {
     name: "Satellit",
-    uri: basisKarteImagery,
+    style: ExpandRelativeURLs(basisKarteImagery as StyleSpecification),
   },
 ];
+
+function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecification {
+  const convertToAbsoluteURL = (url: string | undefined): string | undefined => {
+    if (!url) return undefined;
+    if (url.startsWith("http")) return url;
+
+    const absoluteURL = new URL(url, window.location.href).toString();
+    return absoluteURL.replace("%7Brange%7D", "{range}").replace("%7Bfontstack%7D", "{fontstack}");
+  };
+
+  return {
+    ...previousStyle,
+    glyphs: convertToAbsoluteURL(previousStyle.glyphs),
+    sprite:
+      typeof previousStyle.sprite === "string"
+        ? previousStyle.sprite.startsWith("http")
+          ? previousStyle.sprite
+          : new URL(previousStyle.sprite, window.location.href).href
+        : Object.assign(
+            [],
+            previousStyle.sprite?.map((s) => {
+              return Object.assign({}, s, {
+                url: s.url.startsWith("http") ? s.url?.toString() : new URL(s.url, window.location.href).href,
+              });
+            }),
+          ),
+  };
+}
 
 export const selectedStyle = makeVar<MapStyle>(MapStyles[0]);
 export const activeLayer = makeVar<string>("");
 
 interface MapStyle {
   name: string;
-  uri: string;
+  style: StyleSpecification;
 }
 
 function StyleController() {

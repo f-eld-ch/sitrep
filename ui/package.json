@@ -52,7 +52,10 @@
     "test": "vitest",
     "preview": "vite preview",
     "lint": "eslint src",
-    "generate-pwa-assets": "pwa-assets-generator"
+    "generate-pwa-assets": "pwa-assets-generator",
+    "gl-style-migrate": "gl-style-migrate",
+    "gl-style-format": "gl-style-format",
+    "gl-style-validate": "gl-style-validate"
   },
   "browserslist": {
     "production": [
@@ -73,6 +76,7 @@
     "@eslint/compat": "^1.2.6",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.20.0",
+    "@maplibre/maplibre-gl-style-spec": "^23.1.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -119,7 +123,7 @@
   },
   "resolutions": {
     "sharp": "^0.33.5",
-    "maplibre-gl": "4.7.1",
+    "maplibre-gl": "5.1.0",
     "dompurify": "3.2.4"
   },
   "packageManager": "yarn@4.6.0"

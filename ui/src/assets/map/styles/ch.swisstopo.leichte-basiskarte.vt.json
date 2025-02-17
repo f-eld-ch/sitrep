@@ -6424,15 +6424,15 @@
     "ga:publisher": "CI:597e6ccf-63c7-4a22-9279-940877bf6866",
     "ga:branch": "master"
   },
-  "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
+  "glyphs": "./map/fonts/{fontstack}/{range}.pbf",
   "sprite": [
     {
       "id": "default",
-      "url": "/map/sprites/basemap"
+      "url": "./map/sprites/basemap"
     },
     {
       "id": "babs",
-      "url": "/map/sprites/babs"
+      "url": "./map/sprites/babs"
     }
   ],
   "bearing": 0.0,

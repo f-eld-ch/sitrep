@@ -60,6 +60,7 @@ function MapView() {
     "theme-light": true,
   });
 
+  console.log(mapStyle.style);
   return (
     <>
       <div className={mapClass} data-theme="light">
@@ -75,7 +76,7 @@ function MapView() {
           attributionControl={false}
           minZoom={9}
           maxZoom={19}
-          mapStyle={mapStyle.uri}
+          mapStyle={mapStyle.style}
           scrollZoom={true}
           reuseMaps={false}
           RTLTextPlugin={undefined}
