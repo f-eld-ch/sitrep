@@ -1,30 +1,33 @@
 import dayjs from "dayjs";
-import { memo } from "react";
+import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import { Message } from "types";
 
-function MessageTable(props: {
-  messages: undefined | Message[];
-  assignmentFilter: string;
-  triageFilter: string;
-  priorityFilter: string;
-}) {
+const MessageTable = (
+  props: {
+    messages: undefined | Message[];
+    assignmentFilter: string;
+    triageFilter: string;
+    priorityFilter: string;
+  },
+  ref: React.Ref<HTMLDivElement>,
+) => {
   const { t } = useTranslation();
   const { assignmentFilter, priorityFilter, triageFilter } = props;
 
   return (
-    <div className="is-clearfix">
+    <div ref={ref} className="is-clearfix is-block" style={{ overflow: "visible" }}>
       <h3 className="title is-3">
         {t("journal")}
         {assignmentFilter === "all" && triageFilter === "all" && priorityFilter === "all" ? <></> : " (gefiltert)"}
       </h3>
 
       <h5 className="subtitle is-7">
-        {t("state")}: {dayjs(Date.now()).format("LLL")}
+        {t("state")}: {dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
       </h5>
       <FilterState assignmentFilter={assignmentFilter} priorityFilter={priorityFilter} triageFilter={triageFilter} />
-      <table className="table is-fullwidth is-narrow">
+      <table className="table is-fullwidth is-narrow" style={{ pageBreakInside: "auto" }}>
         <thead>
           <tr>
             <th className="is-capitalized">{t("message.time")}</th>
@@ -38,10 +41,12 @@ function MessageTable(props: {
             props.messages.map((message) => (
               <tr key={message.id}>
                 <td>{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
-                <td>{message.sender}</td>
-                <td>{message.receiver}</td>
+                <td>{message.senderDetail ? `${message.sender}\n(${message.senderDetail})` : message.sender}</td>
                 <td>
-                  <div className="content is-normal has-text-left">
+                  {message.receiverDetail ? `${message.receiver}\n(${message.receiverDetail})` : message.receiver}
+                </td>
+                <td>
+                  <div className="content is-normal has-text-left" style={{ pageBreakInside: "avoid" }}>
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
                 </td>
@@ -51,7 +56,7 @@ function MessageTable(props: {
       </table>
     </div>
   );
-}
+};
 
 function FilterState(props: { assignmentFilter: string; triageFilter: string; priorityFilter: string }) {
   const { assignmentFilter, priorityFilter, triageFilter } = props;
@@ -83,4 +88,4 @@ function FilterState(props: { assignmentFilter: string; triageFilter: string; pr
   );
 }
 
-export default memo(MessageTable);
+export default forwardRef(MessageTable);

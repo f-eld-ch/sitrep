@@ -220,7 +220,7 @@
   },
   "phoneNumber": "phone number",
   "preview": "preview",
-  "print": "To press",
+  "print": "Print",
   "priority": {
     "HIGH": "important",
     "NORMAL": "normal"
