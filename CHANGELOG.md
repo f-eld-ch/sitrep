@@ -10,6 +10,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Upgrade hasura to 2.45.2 - ([74ae8bb](https://github.com/f-eld-ch/sitrep/commit/74ae8bbb12c60f7e8ad2adf6d39e5e18f05d836c))
 - *(deps)* Bump @openfeature/core from 1.7.0 to 1.7.1 in /ui ([#685](https://github.com/f-eld-ch/sitrep/issues/685)) - ([8a9d8b2](https://github.com/f-eld-ch/sitrep/commit/8a9d8b298eed3dc69b2f7decc5c3a27dc9c4c32a))
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#686](https://github.com/f-eld-ch/sitrep/issues/686)) - ([5224d09](https://github.com/f-eld-ch/sitrep/commit/5224d0980a497f9fcb1409c870a357c6ed7f8548))
 
