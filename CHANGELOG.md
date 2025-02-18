@@ -4,6 +4,10 @@
 
 - *(journal)* Show sender and receiver detail information - ([0ce3777](https://github.com/f-eld-ch/sitrep/commit/0ce37776d538c5f69975a56a5aa25d414de44916))
 
+### 🐛 Bug Fixes
+
+- *(journal)* Fix invalid date in journal message preview - ([4a075b4](https://github.com/f-eld-ch/sitrep/commit/4a075b479ae16588ef9384129402ebd572ded104))
+
 ### ⚙️  Other
 
 - *(deps)* Bump @openfeature/core from 1.7.0 to 1.7.1 in /ui ([#685](https://github.com/f-eld-ch/sitrep/issues/685)) - ([8a9d8b2](https://github.com/f-eld-ch/sitrep/commit/8a9d8b298eed3dc69b2f7decc5c3a27dc9c4c32a))
