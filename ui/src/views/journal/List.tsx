@@ -12,6 +12,7 @@ import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus
 import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
+import classNames from "classnames";
 
 function List(props: {
   showControls: boolean;
@@ -24,13 +25,19 @@ function List(props: {
   const [triageFilter, setTriageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
-  const { autoScroll = false } = props;
+  const { autoScroll = false, showControls = true } = props;
   const tableRef = useRef(null);
   const handlePrint = useReactToPrint({ contentRef: tableRef, pageStyle: "@page { size: A4 landscape;}" });
 
   const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
     variables: { journalId: journalId || "" },
     pollInterval: 10000,
+  });
+
+  const printButtonClass = classNames({
+    "is-hidden": !showControls,
+    column: true,
+    "is-narrow": true,
   });
 
   // on new messages scale to top
@@ -138,7 +145,7 @@ function List(props: {
               </div>
             </div>
           </div>
-          <div className="column is-narrow">
+          <div className={printButtonClass}>
             <button className="button is-small is-rounded" onClick={() => handlePrint()}>
               <FontAwesomeIcon icon={faPrint} />
               &nbsp;{t("print")}

@@ -77,25 +77,39 @@ const MessageContainer = ({
             <nav className="level is-align-items-baseline">
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.sender")}</p>
-                  <p className="subtitle is-size-7">{message.sender}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.sender")}</p>
+                  <p className="subtitle is-size-7">
+                    <div className="columns is-gapless is-multiline">
+                      <div className="column is-full">{message.sender}</div>
+                      <div className="column is-full is-italic">
+                        {message.senderDetail ? `(${message.senderDetail})` : ""}
+                      </div>
+                    </div>
+                  </p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.receiver")}</p>
-                  <p className="subtitle is-size-7">{message.receiver}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.receiver")}</p>
+                  <p className="subtitle is-size-7">
+                    <div className="columns is-gapless is-multiline">
+                      <div className="column is-full">{message.receiver}</div>
+                      <div className="column is-full is-italic">
+                        {message.receiverDetail ? `(${message.receiverDetail})` : ""}
+                      </div>
+                    </div>
+                  </p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.time")}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.time")}</p>
                   <p className="subtitle is-size-7">{dayjs(message.time).locale(i18n.language).format("LLL")}</p>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.priority")}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.priority")}</p>
                   <p className="subtitle is-size-7">
                     {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
                   </p>
@@ -104,7 +118,7 @@ const MessageContainer = ({
 
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.triage")}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.triage")}</p>
                   <p className="subtitle is-size-7">
                     {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
                   </p>
@@ -131,7 +145,7 @@ const MessageContainer = ({
             <ul>
               {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <li>
-                  <a onClick={() => setEditorMessage(message)}>
+                  <a className="has-text-weight-bold" onClick={() => setEditorMessage(message)}>
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faEdit} />
                     </span>
@@ -139,7 +153,7 @@ const MessageContainer = ({
                   </a>
                 </li>
               ) : (
-                <a onClick={() => handlePrint()}>
+                <a className="has-text-weight-bold" onClick={() => handlePrint()}>
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faPrint} />
                   </span>
@@ -148,7 +162,7 @@ const MessageContainer = ({
               )}
               {setTriageMessage && message ? (
                 <li>
-                  <a onClick={() => setTriageMessage(message)}>
+                  <a className="has-text-weight-bold" onClick={() => setTriageMessage(message)}>
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faArrowsToEye} />
                     </span>
@@ -160,7 +174,7 @@ const MessageContainer = ({
               )}
               {showTasks ? (
                 <li>
-                  <a>
+                  <a className="has-text-weight-bold">
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faSquareCheck} />
                     </span>
