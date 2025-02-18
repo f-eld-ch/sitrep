@@ -26,7 +26,7 @@ export interface Message {
   senderDetail: string;
   receiver: string;
   receiverDetail: string;
-  time: string;
+  time: Date;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;

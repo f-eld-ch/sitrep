@@ -1,6 +1,4 @@
 import React, { useCallback, useContext, useEffect, useReducer } from "react";
-import dayjs from "dayjs";
-
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
@@ -342,7 +340,7 @@ function InputBox() {
       updatedAt: state.messageToEdit?.updatedAt || new Date(),
       divisions: state.messageToEdit?.divisions || [],
       deletedAt: state.messageToEdit?.deletedAt || new Date(),
-      time: dayjs(state.time).format("DD.MM.YYYY HH:mm:ss"),
+      time: state.time || new Date(),
       priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
       triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     },
