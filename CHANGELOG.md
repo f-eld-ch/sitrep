@@ -4,6 +4,10 @@
 
 - *(journal)* Improve journal message list view - ([a20903b](https://github.com/f-eld-ch/sitrep/commit/a20903b073200996ea7f8b38503eac490128dc58))
 
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 15.4.0 to 15.4.1 in /ui ([#689](https://github.com/f-eld-ch/sitrep/issues/689)) - ([fe3a76b](https://github.com/f-eld-ch/sitrep/commit/fe3a76bed355ef55bce32e29014da5407d1b98f3))
+
 
 ## [25.2.3](https://github.com/f-eld-ch/sitrep/compare/v25.2.2..v25.2.3) - 2025-02-19
 
