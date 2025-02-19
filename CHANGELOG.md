@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump uuid from 11.0.5 to 11.1.0 in /ui ([#688](https://github.com/f-eld-ch/sitrep/issues/688)) - ([261472c](https://github.com/f-eld-ch/sitrep/commit/261472c6daafbbd521893b9ee76372594d9e3f6b))
 - *(deps)* Bump @openfeature/core from 1.7.1 to 1.7.2 in /ui ([#690](https://github.com/f-eld-ch/sitrep/issues/690)) - ([bbfd87c](https://github.com/f-eld-ch/sitrep/commit/bbfd87cd44f78f4d67966a3d1cc99758c817d445))
 - *(deps)* Bump react-i18next from 15.4.0 to 15.4.1 in /ui ([#689](https://github.com/f-eld-ch/sitrep/issues/689)) - ([fe3a76b](https://github.com/f-eld-ch/sitrep/commit/fe3a76bed355ef55bce32e29014da5407d1b98f3))
 
