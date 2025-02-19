@@ -36,7 +36,7 @@
     "react-autocomplete-hint": "^2.0.0",
     "react-color": "^2.19.3",
     "react-dom": "^18.3.1",
-    "react-i18next": "^15.4.0",
+    "react-i18next": "^15.4.1",
     "react-map-gl": "~8.0.1",
     "react-markdown": "^9.0.3",
     "react-router": "^7.1.5",
