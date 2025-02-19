@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(journal)* Improve journal message list view - ([a20903b](https://github.com/f-eld-ch/sitrep/commit/a20903b073200996ea7f8b38503eac490128dc58))
+
+
 ## [25.2.3](https://github.com/f-eld-ch/sitrep/compare/v25.2.2..v25.2.3) - 2025-02-19
 
 ### ⛰️  Features
