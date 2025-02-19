@@ -152,7 +152,7 @@ function List(props: {
           </div>
         </div>
       </div>
-      <div className="columns is-multiline is-hidden-print mb-3">
+      <div className="columns is-multiline is-gapless">
         {data ? (
           <MemoMessages
             messages={messages}
@@ -191,7 +191,7 @@ function Messages(props: {
     <>
       {props.messages.map((message) => {
         return (
-          <div key={message.id} className="column is-full is-gapless">
+          <div key={message.id} className="column is-full mt-3">
             <JournalMessage
               key={message.id}
               id={message.id}

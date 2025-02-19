@@ -47,13 +47,15 @@ const MessageContainer = ({
 
   const messageClassNames = classNames(colorClassNames, {
     message: true,
+    "mb-3": !showControls,
   });
 
   const assigmentsClassNames = classNames({
     column: true,
-    "is-2": true,
-    "is-align-items-stretch": true,
-    "is-justify-content-flex-end": true,
+    "is-full": true,
+    "is-flex-shrink-0": true,
+    "is-flex-grow-0": true,
+    "is-justify-content-flex-start": true,
     "is-hidden": !message.divisions || message.divisions.length === 0,
   });
 
@@ -71,8 +73,8 @@ const MessageContainer = ({
 
   return (
     <div className={messageClassNames}>
-      <div className="message-body">
-        <div className="columns is-multiline is-mobile">
+      <div className="message-body px-0">
+        <div className="columns px-3 is-multiline is-mobile">
           <div className="column is-full">
             <nav className="level is-align-items-baseline">
               <div className="level-item has-text-centered is-flex-shrink-2">
@@ -126,10 +128,7 @@ const MessageContainer = ({
               </div>
             </nav>
           </div>
-          <div
-            className="column is-full-touch is-four-fifth-desktop"
-            style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
-          >
+          <div className="column is-full" style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
             <ReactMarkdown className="content is-normal has-text-left">{message.content}</ReactMarkdown>
           </div>
           <div className={assigmentsClassNames}>
@@ -144,7 +143,7 @@ const MessageContainer = ({
           </div>
         </div>
         {showControls === true && id !== undefined ? (
-          <div className={tabClassNames}>
+          <div className={tabClassNames} style={{ borderBottomRightRadius: "4px" }}>
             <ul>
               {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <li>
