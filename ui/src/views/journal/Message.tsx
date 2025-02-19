@@ -137,7 +137,7 @@ const MessageContainer = ({
               {message.divisions &&
                 message.divisions.map((d) => (
                   <span key={d.division.id} className={tagClassNames}>
-                    {d.division.name}
+                    {d.division.name && d.division.name.trim() !== "" ? d.division.name : d.division.description}
                   </span>
                 ))}
             </div>

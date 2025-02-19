@@ -109,15 +109,15 @@ function MessageSheet(
             {divisions?.map((d) => {
               return (
                 <td key={message.id + d.id} className="has-text-centered">
-                  {d.name}
+                  {d.name && d.name.trim() !== "" ? d.name : d.description}
                 </td>
               );
             })}
           </tr>
           <tr>
             {divisions?.map((d) => {
-              const assignments = message.divisions.map((e) => e.division.name);
-              const isPresent = assignments.some((e) => e === d.name);
+              const assignments = message.divisions.map((e) => e.division.id);
+              const isPresent = assignments.some((e) => e === d.id);
               return (
                 <td key={message.id + d.id} className="has-text-centered">
                   {isPresent ? <FontAwesomeIcon icon={faSquareCheck} /> : <FontAwesomeIcon icon={faSquare} />}

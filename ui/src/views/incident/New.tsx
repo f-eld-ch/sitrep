@@ -38,6 +38,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
+      // TODO: this needs translations
       { id: "", name: "Karte", description: "Nachrichtenkarte" },
       { id: "", name: "Lage", description: "C Lage" },
       { id: "", name: "SC", description: "Stabchef" },
@@ -211,6 +212,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentName("");
                   setAssignmentDescription("");
                 }}
+                disabled={assignmentName === "" || assignmentDescription === ""}
               >
                 {t("add")}
               </button>
