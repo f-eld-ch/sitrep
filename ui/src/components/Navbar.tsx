@@ -54,6 +54,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         <button
           className="navbar-burger burger"
           data-target="navbarBasic"
+          aria-label="Toggle menu"
           onClick={(e) => {
             e.preventDefault();
             setIsMenuActive(!isMenuActive);
@@ -63,7 +64,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         </button>
       </div>
 
-      <div className={navbarMenuClass}>
+      <div className={navbarMenuClass} data-testid="navbar-menu">
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
             <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active has-text-dark" : "")}>
