@@ -2,6 +2,13 @@
 
 ### ⛰️  Features
 
+- *(journal)* Improve responsiveness and overflow behavior of messages - ([cfb6f21](https://github.com/f-eld-ch/sitrep/commit/cfb6f2173278332f3e934bce6357cb7bc0729442))
+
+
+## [25.2.2](https://github.com/f-eld-ch/sitrep/compare/v25.2.1..v25.2.2) - 2025-02-18
+
+### ⛰️  Features
+
 - *(journal)* Show sender and receiver detail information - ([0ce3777](https://github.com/f-eld-ch/sitrep/commit/0ce37776d538c5f69975a56a5aa25d414de44916))
 
 ### 🐛 Bug Fixes
