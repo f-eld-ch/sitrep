@@ -18,11 +18,13 @@
   "editor": "Editor",
   "email": {
     "receiver": "Email-Empfänger",
-    "sender": "E-Mail-Sender"
+    "sender": "Email-Sender"
   },
-  "emailAddress": "E-Mail-Adresse",
+  "emailAddress": "Email-Adresse",
   "enter": "eintreten",
   "feed": "Feed",
+  "filter": "Filter",
+  "filtered": "gefiltert",
   "hideClosed": "Verstecke geschlossene",
   "hotline": "Hotline Editor",
   "immediateMeasures": "Sofortmassnahmen",
@@ -187,7 +189,7 @@
     }
   },
   "medium": {
-    "EMAIL": "E-Mail",
+    "EMAIL": "Email",
     "OTHER": "Andere",
     "PHONE": "Telefon",
     "RADIO": "Funk"

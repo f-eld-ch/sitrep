@@ -13,6 +13,7 @@ $grey: hsl(221, 14%, 48%);
 $grey-light: hsl(221, 14%, 71%);
 $grey-lighter: hsl(221, 14%, 86%);
 $grey-lightest: hsl(221, 14%, 93%);
+$tablet: 769px;
 
 // Override global Sass variables from the /utilities folder
 @use "bulma/sass/utilities" with (
@@ -34,11 +35,12 @@ $grey-lightest: hsl(221, 14%, 93%);
   $grey: $grey,
   $grey-light: $grey-light,
   $grey-lighter: $grey-lighter,
-  $grey-lightest: $grey-lightest
+  $grey-lightest: $grey-lightest,
+  $tablet: $tablet
 );
 
 // Import the components we need
-@forward "bulma/sass/base" with (
+@use "bulma/sass/base" with (
   $body-overflow-y: "auto"
 );
 
@@ -94,6 +96,13 @@ $grey-lightest: hsl(221, 14%, 93%);
 section {
   &.is-fullheight-with-navbar {
     min-height: calc(100vh - #{$navbar-height});
+  }
+}
+
+@media (max-width: $tablet) {
+  .level {
+    // make sure to align the level elements centered for the mobile view
+    align-items: center !important;
   }
 }
 

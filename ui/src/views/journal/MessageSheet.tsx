@@ -23,10 +23,17 @@ function MessageSheet(
     return;
   }
 
+  const cellStyle = {
+    wordWrap: "break-word" as const,
+    wordBreak: "break-all" as const,
+    whiteSpace: "normal" as const,
+    overflowWrap: "break-word" as const,
+  };
+
   return (
     <div ref={ref}>
       <h3 className="title is-size-6 is-capitalized">{t("messageSheet")}</h3>
-      <table className="table is-bordered is-fullwidth message-sheet ">
+      <table className="table is-bordered is-fullwidth message-sheet">
         <tbody>
           <tr>
             <th rowSpan={6} className="firstRow">
@@ -34,9 +41,11 @@ function MessageSheet(
             </th>
             <th>{t("message.sender")}</th>
             {message.mediumId === Medium.Radio || !message.senderDetail?.length ? (
-              <td colSpan={3}>{message.sender}</td>
+              <td colSpan={3} style={cellStyle}>
+                {message.sender}
+              </td>
             ) : (
-              <td colSpan={3}>
+              <td colSpan={3} style={cellStyle}>
                 {message.sender} ({message.senderDetail})
               </td>
             )}
@@ -44,9 +53,11 @@ function MessageSheet(
           <tr>
             <th>{t("message.receiver")}</th>
             {message.mediumId === Medium.Radio || !message.receiverDetail?.length ? (
-              <td colSpan={3}>{message.receiver}</td>
+              <td colSpan={3} style={cellStyle}>
+                {message.receiver}
+              </td>
             ) : (
-              <td colSpan={3}>
+              <td colSpan={3} style={cellStyle}>
                 {message.receiver} ({message.receiverDetail})
               </td>
             )}
@@ -81,7 +92,7 @@ function MessageSheet(
           </tr>
           <tr className="contentBox">
             <th>{t("message.content")}</th>
-            <td colSpan={4}>
+            <td colSpan={4} style={cellStyle}>
               <div className="content">
                 <ReactMarkdown>{message.content}</ReactMarkdown>
               </div>

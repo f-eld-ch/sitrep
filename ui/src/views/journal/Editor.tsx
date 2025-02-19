@@ -269,14 +269,14 @@ function Editor() {
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
       <div>
-        <div className="columns">
+        <div className="columns is-tablet">
           <div className="column is-half">
             <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
             {error && <Notification type="error">{error?.message}</Notification>}
             {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
             <InputBox />
           </div>
-          <div className="column">
+          <div className="column is-half">
             <List showControls={true} setEditorMessage={setEditorMessage} setTriageMessage={setTriageMessage} />
           </div>
           <TriageModal
@@ -354,12 +354,12 @@ function InputBox() {
       />
 
       <div className="mt-5 field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("mediumName")}</label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
-            <div className="control is-narrow">
+            <div className="control is-normal is-flex-shrink-2 is-flex-wrap-wrap">
               <div className="select is-fullwidth">
                 <select value={state.media} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (

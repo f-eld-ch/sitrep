@@ -73,41 +73,41 @@ const MessageContainer = ({
     <div className={messageClassNames}>
       <div className="message-body">
         <div className="columns is-multiline is-mobile">
-          <div className="column is-full-tablet">
+          <div className="column is-full">
             <nav className="level is-align-items-baseline">
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-2">
                 <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">{t("message.sender")}</p>
-                  <p className="subtitle is-size-7">
+                  <div className="heading is-size-7 has-text-weight-bold">{t("message.sender")}</div>
+                  <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
                       <div className="column is-full">{message.sender}</div>
                       <div className="column is-full is-italic">
                         {message.senderDetail ? `(${message.senderDetail})` : ""}
                       </div>
                     </div>
-                  </p>
+                  </div>
                 </div>
               </div>
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-2">
                 <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">{t("message.receiver")}</p>
-                  <p className="subtitle is-size-7">
+                  <div className="heading is-size-7 has-text-weight-bold">{t("message.receiver")}</div>
+                  <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
                       <div className="column is-full">{message.receiver}</div>
                       <div className="column is-full is-italic">
                         {message.receiverDetail ? `(${message.receiverDetail})` : ""}
                       </div>
                     </div>
-                  </p>
+                  </div>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">{t("message.time")}</p>
-                  <p className="subtitle is-size-7">{dayjs(message.time).locale(i18n.language).format("LLL")}</p>
+                  <div className="heading is-size-7 has-text-weight-bold">{t("message.time")}</div>
+                  <div className="subtitle is-size-7">{dayjs(message.time).locale(i18n.language).format("LLL")}</div>
                 </div>
               </div>
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
                   <p className="heading is-size-7 has-text-weight-bold">{t("message.priority")}</p>
                   <p className="subtitle is-size-7">
@@ -116,7 +116,7 @@ const MessageContainer = ({
                 </div>
               </div>
 
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
                   <p className="heading is-size-7 has-text-weight-bold">{t("message.triage")}</p>
                   <p className="subtitle is-size-7">
@@ -126,7 +126,10 @@ const MessageContainer = ({
               </div>
             </nav>
           </div>
-          <div className="column is-full-touch is-four-fifth-desktop">
+          <div
+            className="column is-full-touch is-four-fifth-desktop"
+            style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
+          >
             <ReactMarkdown className="content is-normal has-text-left">{message.content}</ReactMarkdown>
           </div>
           <div className={assigmentsClassNames}>

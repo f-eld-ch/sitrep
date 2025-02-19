@@ -10,7 +10,7 @@ const SenderInput = () => {
   const { state, dispatch } = useEditorContext();
 
   return (
-    <div className="control is-expanded has-icons-left">
+    <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <Hint options={state.autocompleteDetails.senderReceiverNames} allowTabFill={true} allowEnterFill={true}>
         <input
           className="input"
@@ -35,7 +35,7 @@ const ReceiverInput = () => {
   const { state, dispatch } = useEditorContext();
 
   return (
-    <div className="control is-expanded has-icons-left">
+    <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <Hint options={state.autocompleteDetails.senderReceiverNames} allowTabFill={true} allowEnterFill={true}>
         <input
           className="input"
@@ -78,7 +78,7 @@ const ContentInput = () => {
 const TimeInput = () => {
   const { state, dispatch } = useEditorContext();
   return (
-    <div className="control is-expanded has-icons-left">
+    <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <input
         className="input"
         value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
@@ -99,7 +99,7 @@ const TimeInput = () => {
 const SenderDetailInput = (props: { placeholder: string }) => {
   const { state, dispatch } = useEditorContext();
   return (
-    <div className="control is-expanded">
+    <div className="control is-expanded is-flex-shrink-3">
       <Hint options={state.autocompleteDetails.senderReceiverDetails} allowTabFill={true} allowEnterFill={true}>
         <input
           className="input"
@@ -122,7 +122,7 @@ const SenderDetailInput = (props: { placeholder: string }) => {
 const ReceiverDetailInput = (props: { placeholder: string }) => {
   const { state, dispatch } = useEditorContext();
   return (
-    <div className="control is-expanded">
+    <div className="control is-expanded is-flex-shrink-3">
       <Hint options={state.autocompleteDetails.senderReceiverDetails} allowTabFill={true} allowEnterFill={true}>
         <input
           className="input"
@@ -146,7 +146,7 @@ const RadioChannelDetailInput = () => {
   const { state, dispatch } = useEditorContext();
 
   return (
-    <div className="control">
+    <div className="control is-narrow is-flex-shrink-4">
       <Hint options={state.autocompleteDetails.channelList} allowTabFill={true} allowEnterFill={true}>
         <input
           className="input"

@@ -13,10 +13,10 @@ export function Email() {
   return (
     <div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-narrow is-flex-shrink-0">
           <label className="label is-capitalized">{t("email.sender")}</label>
         </div>
-        <div className="field-body">
+        <div className="field-body is-flex-shrink-1">
           <div className="field is-grouped is-grouped-multiline">
             <SenderInput />
             <SenderDetailInput placeholder={t("emailAddress")} />
@@ -24,10 +24,10 @@ export function Email() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-narrow is-flex-shrink-0">
           <label className="label is-capitalized">{t("email.receiver")}</label>
         </div>
-        <div className="field-body">
+        <div className="field-body is-flex-shrink-1">
           <div className="field is-grouped is-grouped-multiline">
             <ReceiverInput />
             <ReceiverDetailInput placeholder={t("emailAddress")} />
@@ -36,7 +36,7 @@ export function Email() {
       </div>
 
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("message.time")}</label>
         </div>
         <div className="field-body">
@@ -46,7 +46,7 @@ export function Email() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("message.content")}</label>
         </div>
         <div className="field-body">

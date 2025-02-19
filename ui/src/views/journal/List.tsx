@@ -74,8 +74,7 @@ function List(props: {
     <>
       <div className="is-hidden-print">
         <h3 className="title is-3 is-capitalized">{t("journal")}</h3>
-
-        <div className="columns">
+        <div className="columns is-mobile is-multiline is-2">
           <div className="column is-narrow">
             <div className="control has-icons-left">
               <div className="select is-small is-rounded">

@@ -13,7 +13,7 @@ export function Phone() {
   return (
     <div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("message.receiver")}</label>
         </div>
         <div className="field-body">
@@ -24,7 +24,7 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("phone.sender")}</label>
         </div>
         <div className="field-body">
@@ -35,7 +35,7 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("message.time")}</label>
         </div>
         <div className="field-body">
@@ -45,7 +45,7 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
+        <div className="field-label is-normal is-flex-shrink-0">
           <label className="label is-capitalized">{t("message.content")}</label>
         </div>
         <div className="field-body">

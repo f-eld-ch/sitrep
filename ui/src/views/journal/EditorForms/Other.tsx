@@ -28,7 +28,7 @@ export function Other() {
           <label className="label is-capitalized">{t("message.receiver")}</label>
         </div>
         <div className="field-body">
-          <div className="field is-grouped is-grouped-multiline">
+          <div className="field is-grouped is-grouped-multiline is-flex-shrink-2">
             <ReceiverInput />
             <ReceiverDetailInput placeholder={t("otherDetails")} />
           </div>
