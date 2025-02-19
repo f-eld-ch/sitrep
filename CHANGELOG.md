@@ -4,6 +4,10 @@
 
 - *(journal)* Improve responsiveness and overflow behavior of messages - ([cfb6f21](https://github.com/f-eld-ch/sitrep/commit/cfb6f2173278332f3e934bce6357cb7bc0729442))
 
+### 🐛 Bug Fixes
+
+- *(journal)* Properly validate and support division assignments - ([e0b8ddb](https://github.com/f-eld-ch/sitrep/commit/e0b8ddbecb562e280294b2402c16ceadb2058978))
+
 
 ## [25.2.2](https://github.com/f-eld-ch/sitrep/compare/v25.2.1..v25.2.2) - 2025-02-18
 
