@@ -128,7 +128,7 @@ const MessageContainer = ({
               </div>
             </nav>
           </div>
-          <div className="column is-full" style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+          <div className="column is-full" style={{ wordBreak: "break-word" }}>
             <div className="content is-normal has-text-left">
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
