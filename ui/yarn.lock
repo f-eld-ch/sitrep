@@ -12072,9 +12072,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.1.5":
-  version: 7.1.5
-  resolution: "react-router@npm:7.1.5"
+"react-router@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "react-router@npm:7.2.0"
   dependencies:
     "@types/cookie": "npm:^0.6.0"
     cookie: "npm:^1.0.1"
@@ -12086,7 +12086,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/3802ff0e0419aa53c1824b1ad2ebac6facb918306c67ff64ed86b5cbc49197c15f077b84e425f57beb24dd01cd5818a100da5269b8e160deee62b06fda008b56
+  checksum: 10/2b8d51bf0787d088c1b12857a686719fa922256a8ac84045e64c98b86c5ff81a4b76d49a25e6fb9bc9f582fb0d92233207917573358a26dd40ad4e91b01bfb66
   languageName: node
   linkType: hard
 
@@ -13095,7 +13095,7 @@ __metadata:
     react-i18next: "npm:^15.4.1"
     react-map-gl: "npm:~8.0.1"
     react-markdown: "npm:^9.0.3"
-    react-router: "npm:^7.1.5"
+    react-router: "npm:^7.2.0"
     react-to-print: "npm:^3.0.5"
     rollup-plugin-visualizer: "npm:^5.14.0"
     sass: "npm:^1.85.0"
