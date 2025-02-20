@@ -2,6 +2,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(journal)* Improve markdown rendering of message content - ([ea9ef62](https://github.com/f-eld-ch/sitrep/commit/ea9ef629b36f3fd18bd698b836cef1e9ee38fa32))
 - *(journal)* Improve journal message list view - ([a20903b](https://github.com/f-eld-ch/sitrep/commit/a20903b073200996ea7f8b38503eac490128dc58))
 
 ### ⚙️  Other
