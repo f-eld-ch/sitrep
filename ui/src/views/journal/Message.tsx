@@ -129,7 +129,9 @@ const MessageContainer = ({
             </nav>
           </div>
           <div className="column is-full" style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
-            <ReactMarkdown className="content is-normal has-text-left">{message.content}</ReactMarkdown>
+            <div className="content is-normal has-text-left">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
           </div>
           <div className={assigmentsClassNames}>
             <div className="tags is-multiline">
