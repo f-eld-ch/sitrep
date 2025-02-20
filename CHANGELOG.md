@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-markdown from 9.0.3 to 10.0.0 in /ui ([#693](https://github.com/f-eld-ch/sitrep/issues/693)) - ([948e35d](https://github.com/f-eld-ch/sitrep/commit/948e35de5e6a46bc1695b55b5a99e23b457c886e))
 - *(deps)* Bump react-router from 7.1.5 to 7.2.0 in /ui ([#691](https://github.com/f-eld-ch/sitrep/issues/691)) - ([bde84d6](https://github.com/f-eld-ch/sitrep/commit/bde84d64d73a0bb0c17652f46a320885a1a74f62))
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#694](https://github.com/f-eld-ch/sitrep/issues/694)) - ([32a986a](https://github.com/f-eld-ch/sitrep/commit/32a986a4d771676202f5a21d7f1b23749d4b979c))
 - *(deps)* Bump uuid from 11.0.5 to 11.1.0 in /ui ([#688](https://github.com/f-eld-ch/sitrep/issues/688)) - ([261472c](https://github.com/f-eld-ch/sitrep/commit/261472c6daafbbd521893b9ee76372594d9e3f6b))
