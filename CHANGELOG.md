@@ -1,4 +1,4 @@
-## [unreleased]
+## [25.2.4](https://github.com/f-eld-ch/sitrep/compare/v25.2.3..v25.2.4) - 2025-02-20
 
 ### 🐛 Bug Fixes
 
