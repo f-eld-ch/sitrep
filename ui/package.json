@@ -82,7 +82,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/eslint-config-prettier": "^6.11.3",
-    "@types/eslint__js": "^8.42.3",
+    "@types/eslint__js": "^9.14.0",
     "@types/hat": "^0.0.4",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.15",
