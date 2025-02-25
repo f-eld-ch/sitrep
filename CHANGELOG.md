@@ -3,6 +3,8 @@
 ### 🐛 Bug Fixes
 
 - *(map)* Make sure GefahrExplosion is properly named - ([d170ce3](https://github.com/f-eld-ch/sitrep/commit/d170ce3b971b486070c2420ae7aeb38e44213f8c))
+- *(ui)* Adjust version info link to Changelog - ([6411d99](https://github.com/f-eld-ch/sitrep/commit/6411d9988301aa2bcde6131209c945f123507c70))
+- *(ui)* Change F-ELD link in footer - ([ddcae12](https://github.com/f-eld-ch/sitrep/commit/ddcae126500516eede2b7e114842eccc0e9eda89))
 
 ### ⚙️  Other
 
