@@ -35,12 +35,7 @@ function Footer() {
           </span>
           in Switzerland by
           <strong className="has-text-current">
-            <a
-              className="has-text-current ml-1"
-              href="https://github.com/f-eld-ch"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a className="has-text-current ml-1" href="https://www.f-eld.ch" target="_blank" rel="noopener noreferrer">
               F-ELD
             </a>
           </strong>
