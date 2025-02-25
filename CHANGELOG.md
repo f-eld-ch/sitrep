@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(map)* Make sure GefahrExplosion is properly named - ([d170ce3](https://github.com/f-eld-ch/sitrep/commit/d170ce3b971b486070c2420ae7aeb38e44213f8c))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 5.1.0 to 5.1.1 in /ui ([#697](https://github.com/f-eld-ch/sitrep/issues/697)) - ([2fcc34a](https://github.com/f-eld-ch/sitrep/commit/2fcc34a8f4fc06a1d7c2e9d7931d651cbb7f354b))
