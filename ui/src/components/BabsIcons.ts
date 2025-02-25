@@ -42,7 +42,7 @@ import Epidemie from "assets/babs/Epidemie.svg";
 import Erdbeben from "assets/babs/Erdbeben.svg";
 import Erdrutsch from "assets/babs/Erdrutsch.svg";
 import Explosion from "assets/babs/Explosion.svg";
-import ExplosionGefahr from "assets/babs/ExplosionGefahr.svg";
+import GefahrExplosion from "assets/babs/GefahrExplosion.svg";
 import Fluechtlinge from "assets/babs/Fluechtlinge.svg";
 import Flugzeugabsturz from "assets/babs/Flugzeugabsturz.svg";
 import Gas from "assets/babs/Gas.svg";
@@ -501,10 +501,10 @@ export const Gefahren: BabsIconType = {
     src: GefahrElektrizitaet,
     size: 64,
   },
-  ExplosionGefahr: {
+  GefahrExplosion: {
     name: "GefahrExplosion",
     description: "Gefahr Explosion",
-    src: ExplosionGefahr,
+    src: GefahrExplosion,
     size: 64,
   },
 

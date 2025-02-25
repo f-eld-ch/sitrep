@@ -180,7 +180,7 @@ function VersionNavBar() {
         </span>
         <span>
           <a
-            href={`https://github.com/RedGecko/sitrep/commit/${import.meta.env.VITE_SHA_VERSION}`}
+            href={`https://github.com/RedGecko/sitrep/blob/${import.meta.env.VITE_SHA_VERSION}/CHANGELOG.md`}
             target="_blank"
             rel="noopener noreferrer"
           >
