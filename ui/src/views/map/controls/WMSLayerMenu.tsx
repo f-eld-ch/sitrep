@@ -16,18 +16,28 @@ const WMS_SERVERS = [
     { name: "map.geo.sz.ch", url: "https://map.geo.sz.ch/mapserv_proxy" },
 ];
 
+const getBaseDomain = (url: string) => {
+    try {
+        return new URL(url).hostname;
+    } catch (error) {
+        console.error("Invalid URL:", error);
+        return url;
+    }
+};
+
 const WMSLayerMenu = (props: { disable: () => void }) => {
     const [layers, setLayers] = useState<Layer[]>([]);
     const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
     const [selectedServer, setSelectedServer] = useState<string>(WMS_SERVERS[0].url);
     const [customServer, setCustomServer] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [serverLayersCache, setServerLayersCache] = useState<Record<string, Layer[]>>({});
     const { dispatch } = useContext(LayerContext);
     const { disable } = props;
     const { t } = useTranslation();
 
     useEffect(() => {
-        if (selectedServer) {
+        if (selectedServer && !serverLayersCache[selectedServer]) {
             setIsLoading(true);
             fetch(`${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities`)
                 .then((response) => response.text())
@@ -41,11 +51,14 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
                         key: `${layer.getElementsByTagName("Name")[0].textContent || ""}-${index}`,
                     }));
                     setLayers(layers);
+                    setServerLayersCache((prevCache) => ({ ...prevCache, [selectedServer]: layers }));
                     setIsLoading(false);
                 })
                 .catch((error) => { console.error("Error fetching WMS layers:", error); setIsLoading(false); });
+        } else if (serverLayersCache[selectedServer]) {
+            setLayers(serverLayersCache[selectedServer]);
         }
-    }, [selectedServer]);
+    }, [selectedServer, serverLayersCache]);
 
     const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const layerName = event.target.value;
@@ -67,7 +80,12 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
     };
 
     const handleCustomServerSubmit = () => {
-        setSelectedServer(customServer);
+        if (customServer) {
+            const baseDomain = getBaseDomain(customServer);
+            setSelectedServer(customServer);
+            WMS_SERVERS.push({ name: baseDomain, url: customServer });
+            setCustomServer("");
+        }
     };
 
     return (

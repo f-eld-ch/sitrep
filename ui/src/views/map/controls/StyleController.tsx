@@ -77,7 +77,7 @@ function StyleController() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black">
+      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
         <button type="button" className={btnClass} onClick={() => setActive(!active)}>
           <FontAwesomeIcon icon={faMap} size="lg" />
         </button>
@@ -86,13 +86,13 @@ function StyleController() {
   }
 
   return (
-    <nav className="panel has-background-white" style={{ pointerEvents: "auto" }}>
-      <p className="panel-heading">
-        {t("styleController.maps")}
-        <button className="delete is-pulled-right" onClick={() => setActive(!active)}></button>
+    <nav className="panel has-background-white is-align-self-flex-end" style={{ pointerEvents: "auto" }}>
+      <p className="panel-heading is-flex is-justify-content-space-between is-align-items-center is-size-6">
+        <span className="px-2">{t("styleController.maps")}</span>
+        <button className="delete is-align-self-flex-end" onClick={() => setActive(!active)}></button>
       </p>
       {MapStyles.map((s) => (
-        <div className="panel-block">
+        <div className="panel-block is-size-7">
           <a
             key={s.name}
             className={classNames({ "is-active": style.name === s.name })}

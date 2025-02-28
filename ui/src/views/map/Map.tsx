@@ -100,7 +100,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right">
+      <div className="maplibregl-ctrl-bottom-right is-flex is-flex-direction-column mx-2 my-2">
         <LayerControl />
         <StyleController />
       </div>

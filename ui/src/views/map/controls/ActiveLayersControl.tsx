@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
 import { LayerContext, WMSLayer } from "../LayerContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faTrash, faHexagonNodesBolt, faDrawPolygon } from "@fortawesome/free-solid-svg-icons";
 import { Layer } from "types/layer";
+import classNames from "classnames";
 
 const ActiveLayersControl: React.FC = () => {
     const { state, dispatch } = useContext(LayerContext);
@@ -24,15 +25,24 @@ const ActiveLayersControl: React.FC = () => {
     };
 
     return (
-        <div className="active-layers-control">
+        <div className="active-layers-control is-size-7">
             {state.layers.map((layer: Layer) => (
-                <div key={layer.id} className="panel-block is-align-items-flex-end is-justify-content-space-between" >
-                    <span onClick={() => handleLayerClick(layer.id)}>{layer.name}</span>
+                <div key={layer.id} className={classNames({ "panel-block": true, "is-align-items-flex-start": true, "is-justify-content-space-between": true, "is-active": state.activeLayer === layer.name })}>
+                    <div className="mr-3 is-align-items-flex-start is-align-content-center">
+                        <span className="panel-icon" style={{ verticalAlign: "center" }}>
+                            <FontAwesomeIcon icon={faDrawPolygon} size="lg" />
+                        </span>
+                        <a onClick={() => handleLayerClick(layer.id)}>{layer.name}</a>
+                    </div>
                 </div>
+
             ))}
             {state.wmsLayers.map((layer: WMSLayer) => (
                 <div key={layer.name} className="panel-block is-align-items-flex-start is-justify-content-space-between">
-                    <div className="mr-3">
+                    <div className="mr-3 is-align-items-flex-start is-align-content-center">
+                        <span className="panel-icon" style={{ verticalAlign: "center" }}>
+                            <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
+                        </span>
                         <span>{layer.title}</span>
                     </div>
                     <div className="is-align-items-flex-end">
@@ -53,8 +63,9 @@ const ActiveLayersControl: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            ))}
-        </div>
+            ))
+            }
+        </div >
     );
 };
 

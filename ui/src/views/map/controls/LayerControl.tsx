@@ -21,7 +21,7 @@ function LayerPanel() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black my-3">
+      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
         <button type="button" className={btnClass} onClick={() => setActive(!active)}>
           <FontAwesomeIcon icon={faLayerGroup} size="lg" />
         </button>
@@ -30,12 +30,13 @@ function LayerPanel() {
   }
 
   return (
-    <nav className="panel has-background-white my-3 mx-2" style={{ pointerEvents: "auto" }}>
-      <p className="panel-heading">
+    <nav className="panel has-background-white is-align-self-flex-end" style={{ pointerEvents: "auto" }}>
+      <p className="panel-heading is-flex is-justify-content-space-between is-align-items-center is-size-6">
         {t("layerControl.layers")}
-        <button className="delete is-pulled-right" onClick={() => setActive(!active)}></button>
+        <button className="delete is-align-self-flex-end" onClick={() => setActive(!active)}></button>
       </p>
-      <div className="panel-tabs">
+
+      <div className="panel-tabs is-size-7">
         <a
           className={classNames({ "is-active": activeTab === "drawing" })}
           onClick={() => setActiveTab("drawing")}
