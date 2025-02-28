@@ -42,6 +42,7 @@ import maplibregl from "maplibre-gl";
 import classNames from "classnames";
 import SearchControl from "./controls/Searchbox";
 import { validate as validateUUID, v3 as uuidv3 } from "uuid";
+import ActiveWMSLayers from "./ActiveWMSLayers";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -89,7 +90,7 @@ function MapView() {
           {/* Layersprovider and Draw */}
           <Layers />
         </Map>
-      </div>
+      </div >
     </>
   );
 }
@@ -110,6 +111,7 @@ function Layers() {
 
       {/* Inactive Layers */}
       <InactiveLayers layers={state.layers.filter((l) => l.id !== state.activeLayer) || []} />
+      <ActiveWMSLayers />
     </>
   );
 }
@@ -393,10 +395,12 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   return (
     <>
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
+
       <Source key={id} id={id} type="geojson" data={featureCollection}>
         {displayStyle.map((s) => (
           <MapLayer key={s.id} id={s.id + id} {...s} />
         ))}
+
       </Source>
     </>
   );

@@ -16,7 +16,7 @@ const MapStyles: MapStyle[] = [
   {
     name: "Satellit",
     style: ExpandRelativeURLs(basisKarteImagery as StyleSpecification),
-  },
+  }
 ];
 
 function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecification {
@@ -37,13 +37,13 @@ function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecificati
           ? previousStyle.sprite
           : new URL(previousStyle.sprite, window.location.href).href
         : Object.assign(
-            [],
-            previousStyle.sprite?.map((s) => {
-              return Object.assign({}, s, {
-                url: s.url.startsWith("http") ? s.url?.toString() : new URL(s.url, window.location.href).href,
-              });
-            }),
-          ),
+          [],
+          previousStyle.sprite?.map((s) => {
+            return Object.assign({}, s, {
+              url: s.url.startsWith("http") ? s.url?.toString() : new URL(s.url, window.location.href).href,
+            });
+          }),
+        ),
   };
 }
 
@@ -62,14 +62,6 @@ function StyleController() {
 
   const btnClass = classNames({
     "maplibregl-ctrl-icon": true,
-    active: active,
-    "is-hidden": active,
-  });
-
-  const switcherClass = classNames({
-    "maplibregl-style-list": true,
-    "maplibregl-ctrl-icon": true,
-    "is-hidden": !active,
   });
 
   const onClick = useCallback(
@@ -80,26 +72,36 @@ function StyleController() {
     [setActive],
   );
 
-  return (
-    <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black">
-      <button type="button" className={btnClass} onClick={() => setActive(!active)}>
-        <FontAwesomeIcon icon={faMap} size="lg" />
-      </button>
-      <div className={switcherClass}>
-        {MapStyles.map((s) => {
-          return (
-            <button
-              type="button"
-              className={classNames({ button: true, active: style.name === s.name })}
-              key={s.name}
-              onClick={() => onClick(s)}
-            >
-              {s.name}
-            </button>
-          );
-        })}
+  if (!active) {
+    return (
+      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black">
+        <button type="button" className={btnClass} onClick={() => setActive(!active)}>
+          <FontAwesomeIcon icon={faMap} size="lg" />
+        </button>
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <nav className="panel has-background-white" style={{ pointerEvents: "auto" }}>
+      <p className="panel-heading">
+        Karten
+        <button className="delete is-pulled-right" onClick={() => setActive(!active)}></button>
+      </p>
+      {MapStyles.map((s) => (
+        <div className="panel-block">
+
+          <a
+            key={s.name}
+            className={classNames({ "is-active": style.name === s.name })}
+            onClick={() => onClick(s)}
+          >
+            {s.name}
+          </a>
+        </div>
+
+      ))}
+    </nav>
   );
 }
 
