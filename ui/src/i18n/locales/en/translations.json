@@ -247,5 +247,20 @@
     "RESET": "reset"
   },
   "write": "write",
-  "updateNotification": "A new version is available. Please refresh the page with the refresh button."
+  "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
+  "wmsLayerMenu": {
+    "selectServer": "Select WMS Server",
+    "customServer": "Custom Server",
+    "enterServerUrl": "Enter WMS Server URL",
+    "fetchLayers": "Fetch Layers",
+    "selectLayer": "Select a layer"
+  },
+  "layerControl": {
+    "layers": "Layers",
+    "activeLayers": "Active Layers",
+    "addWmsLayers": "Add WMS Layers"
+  },
+  "styleController": {
+    "maps": "Maps"
+  }
 }

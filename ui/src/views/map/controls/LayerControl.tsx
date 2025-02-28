@@ -6,10 +6,12 @@ import "./LayerControl.scss";
 import classNames from "classnames";
 import WMSLayerMenu from "./WMSLayerMenu";
 import ActiveLayersControl from "./ActiveLayersControl";
+import { useTranslation } from "react-i18next";
 
 function LayerPanel() {
   const [active, setActive] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("drawing");
+  const { t } = useTranslation();
 
   const btnClass = classNames({
     "maplibregl-ctrl-icon": true,
@@ -30,7 +32,7 @@ function LayerPanel() {
   return (
     <nav className="panel has-background-white my-3 mx-2" style={{ pointerEvents: "auto" }}>
       <p className="panel-heading">
-        Layers
+        {t("layerControl.layers")}
         <button className="delete is-pulled-right" onClick={() => setActive(!active)}></button>
       </p>
       <div className="panel-tabs">
@@ -38,13 +40,13 @@ function LayerPanel() {
           className={classNames({ "is-active": activeTab === "drawing" })}
           onClick={() => setActiveTab("drawing")}
         >
-          Active Layers
+          {t("layerControl.activeLayers")}
         </a>
         <a
           className={classNames({ "is-active": activeTab === "wms" })}
           onClick={() => setActiveTab("wms")}
         >
-          Add WMS Layers
+          {t("layerControl.addWmsLayers")}
         </a>
       </div>
       {activeTab === "drawing" && <ActiveLayersControl />}
@@ -52,6 +54,5 @@ function LayerPanel() {
     </nav >
   );
 }
-
 
 export default React.memo(LayerPanel);

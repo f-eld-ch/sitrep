@@ -3,6 +3,7 @@ import { faMap } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./StyleController.scss";
 import { StyleSpecification } from "maplibre-gl";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
@@ -60,6 +61,8 @@ function StyleController() {
 
   const style = useReactiveVar(selectedStyle);
 
+  const { t } = useTranslation();
+
   const btnClass = classNames({
     "maplibregl-ctrl-icon": true,
   });
@@ -85,12 +88,11 @@ function StyleController() {
   return (
     <nav className="panel has-background-white" style={{ pointerEvents: "auto" }}>
       <p className="panel-heading">
-        Karten
+        {t("styleController.maps")}
         <button className="delete is-pulled-right" onClick={() => setActive(!active)}></button>
       </p>
       {MapStyles.map((s) => (
         <div className="panel-block">
-
           <a
             key={s.name}
             className={classNames({ "is-active": style.name === s.name })}
