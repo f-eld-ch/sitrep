@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(map)* Allow WMS layers to be loaded from remote servers ([#703](https://github.com/f-eld-ch/sitrep/issues/703)) - ([d773269](https://github.com/f-eld-ch/sitrep/commit/d773269d937371736fcf7b437b99a1478a1af132))
+
+
 ## [25.2.5](https://github.com/f-eld-ch/sitrep/compare/v25.2.4..v25.2.5) - 2025-02-25
 
 ### 🐛 Bug Fixes
