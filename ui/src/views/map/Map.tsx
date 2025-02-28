@@ -395,12 +395,10 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   return (
     <>
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
-
       <Source key={id} id={id} type="geojson" data={featureCollection}>
         {displayStyle.map((s) => (
           <MapLayer key={s.id} id={s.id + id} {...s} />
         ))}
-
       </Source>
     </>
   );
