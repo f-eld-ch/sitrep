@@ -2490,7 +2490,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:*, @eslint/js@npm:9.21.0, @eslint/js@npm:^9.21.0":
+"@eslint/js@npm:9.21.0, @eslint/js@npm:^9.21.0":
   version: 9.21.0
   resolution: "@eslint/js@npm:9.21.0"
   checksum: 10/6c03f96a3e7c5825e780c707edbaa211ca976007a7194794a1e0cfaba76eae8759c9076ac15cab929b57323a117a385e99711395cbb3e58b8af7e5d95097160c
@@ -4241,15 +4241,6 @@ __metadata:
     "@types/estree": "npm:*"
     "@types/json-schema": "npm:*"
   checksum: 10/9e4805e770ea90a561e1f69e5edce28b8f66e92e290705100e853c7c252cf87bef654168d0d47fc60c0effbe4517dd7a8d2fa6d3f04c7f831367d568009fd368
-  languageName: node
-  linkType: hard
-
-"@types/eslint__js@npm:^9.14.0":
-  version: 9.14.0
-  resolution: "@types/eslint__js@npm:9.14.0"
-  dependencies:
-    "@eslint/js": "npm:*"
-  checksum: 10/2bffe2e3d9401b6a530ba7fe8961ea786a6cf520abe11ef59435934df593fdd927c3cb3ac7afcd1c77961f0fab9a99d0d86b678f1124a96402105fd43309d38c
   languageName: node
   linkType: hard
 
@@ -13284,7 +13275,6 @@ __metadata:
     "@turf/center": "npm:^7.2.0"
     "@turf/helpers": "npm:^7.2.0"
     "@types/eslint-config-prettier": "npm:^6.11.3"
-    "@types/eslint__js": "npm:^9.14.0"
     "@types/hat": "npm:^0.0.4"
     "@types/jest": "npm:^29.5.14"
     "@types/lodash": "npm:^4.17.15"
