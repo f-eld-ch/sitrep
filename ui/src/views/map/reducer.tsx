@@ -1,5 +1,5 @@
 import { Layer } from "types/layer";
-import { ActiveLayerState, DrawState, LayersState, SelectedFeatureState } from "./LayerContext";
+import { ActiveLayerState, DrawState, LayersState, SelectedFeatureState, WMSLayersState } from "./LayerContext";
 import { first } from "lodash";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
@@ -11,7 +11,12 @@ export type LayersAction =
   | SelectFeatureAction
   | DeselectFeature
   | SetActiveLayer
-  | SetDrawLayer;
+  | SetDrawLayer
+  | AddWMSLayerAction
+  | UpdateWMSLayerOpacityAction
+  | ToggleLayerVisibilityAction
+  | UpdateLayerOpacityAction
+  | RemoveWMSLayerAction;
 
 export interface SetLayerAction {
   type: "SET_LAYERS";
@@ -60,6 +65,47 @@ export interface SetDrawLayer {
   };
 }
 
+export interface AddWMSLayerAction {
+  type: "ADD_WMS_LAYER";
+  payload: {
+    layerName: string;
+    title: string;
+    opacity: number;
+    server: string;
+  };
+}
+
+export interface UpdateWMSLayerOpacityAction {
+  type: "UPDATE_WMS_LAYER_OPACITY";
+  payload: {
+    layerName: string;
+    opacity: number;
+  };
+}
+
+export interface ToggleLayerVisibilityAction {
+  type: "TOGGLE_LAYER_VISIBILITY";
+  payload: {
+    layerName: string;
+    isVisible: boolean;
+  };
+}
+
+export interface UpdateLayerOpacityAction {
+  type: "UPDATE_LAYER_OPACITY";
+  payload: {
+    layerName: string;
+    opacity: number;
+  };
+}
+
+export interface RemoveWMSLayerAction {
+  type: "REMOVE_WMS_LAYER";
+  payload: {
+    layerName: string;
+  };
+}
+
 export const layersReducer = (state: LayersState, action: LayersAction) => {
   switch (action.type) {
     case "SET_LAYERS":
@@ -68,6 +114,14 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
       return [...state, action.payload.layer];
     case "REMOVE_LAYER":
       return [...state.filter((layer) => layer.id !== action.payload.id)];
+    case "TOGGLE_LAYER_VISIBILITY":
+      return state.map((layer) =>
+        layer.id === action.payload.layerName ? { ...layer, isVisible: action.payload.isVisible } : layer
+      );
+    case "UPDATE_LAYER_OPACITY":
+      return state.map((layer) =>
+        layer.id === action.payload.layerName ? { ...layer, opacity: action.payload.opacity } : layer
+      );
     default:
       return state;
   }
@@ -103,6 +157,28 @@ export const drawReducer = (state: DrawState, action: LayersAction) => {
   switch (action.type) {
     case "SET_DRAW":
       return action.payload.draw;
+    default:
+      return state;
+  }
+};
+
+export const wmsLayersReducer = (state: WMSLayersState, action: LayersAction) => {
+  switch (action.type) {
+    case "ADD_WMS_LAYER":
+      if (state.some((layer) => layer.name === action.payload.layerName)) {
+        return state;
+      }
+      return [...state, { name: action.payload.layerName, title: action.payload.title, opacity: action.payload.opacity, server: action.payload.server, isVisible: true }];
+    case "UPDATE_WMS_LAYER_OPACITY":
+      return state.map((layer) =>
+        layer.name === action.payload.layerName ? { ...layer, opacity: action.payload.opacity } : layer
+      );
+    case "TOGGLE_LAYER_VISIBILITY":
+      return state.map((layer) =>
+        layer.name === action.payload.layerName ? { ...layer, isVisible: action.payload.isVisible } : layer
+      );
+    case "REMOVE_WMS_LAYER":
+      return state.filter((layer) => layer.name !== action.payload.layerName);
     default:
       return state;
   }

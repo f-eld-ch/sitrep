@@ -237,6 +237,9 @@
   "short": "abréviation",
   "showClosed": "Afficher fermé",
   "state": "était debout",
+  "styleController": {
+    "maps": "Cartes"
+  },
   "tasks": "affaires en cours",
   "tasksOrders": "Articles / commandes en attente",
   "tasksRequestOrders": "Besoins / En attente / Demandes",
@@ -245,6 +248,17 @@
     "MOREINFO": "besoin de plus d'informations",
     "PENDING": "en attente",
     "RESET": "réinitialiser"
+  },
+  "layerControl": {
+    "layers": "Calques",
+    "activeLayers": "Calques actives",
+    "addWmsLayers": "Ajouter des calques WMS"
+  },
+  "wmsLayerMenu": {
+    "customServer": "Serveur personnalisé",
+    "enterServerUrl": "Entrez l'URL du serveur",
+    "fetchLayers": "Récupérer les calques",
+    "selectLayer": "Sélectionner une calques"
   },
   "write": "écrivez",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh."

@@ -247,5 +247,20 @@
     "RESET": "zurückgesetzt"
   },
   "write": "schreiben",
-  "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button."
+  "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
+  "wmsLayerMenu": {
+    "selectServer": "WMS-Server auswählen",
+    "customServer": "Benutzerdefinierter Server",
+    "enterServerUrl": "WMS-Server-URL eingeben",
+    "fetchLayers": "Layer abrufen",
+    "selectLayer": "Layer auswählen"
+  },
+  "layerControl": {
+    "layers": "Layer",
+    "activeLayers": "Aktive Layer",
+    "addWmsLayers": "WMS-Layer hinzufügen"
+  },
+  "styleController": {
+    "maps": "Karten"
+  }
 }

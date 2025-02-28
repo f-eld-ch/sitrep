@@ -237,6 +237,9 @@
   "short": "abbreviazione",
   "showClosed": "mostra chiusa",
   "state": "stava in piedi",
+  "styleController": {
+    "maps": "Carte"
+  },
   "tasks": "faccende in sospeso",
   "tasksOrders": "Articoli / ordini in sospeso",
   "tasksRequestOrders": "Bisogni / In attesa / Richieste",
@@ -245,6 +248,17 @@
     "MOREINFO": "più informazioni necessarie",
     "PENDING": "in attesa di",
     "RESET": "ripristina"
+  },
+  "layerControl": {
+    "layers": "Livelli",
+    "activeLayers": "Livelli attivi",
+    "addWmsLayers": "Aggiungi livelli WMS"
+  },
+  "wmsLayerMenu": {
+    "customServer": "Server personalizzato",
+    "enterServerUrl": "Inserisci l'URL del server",
+    "fetchLayers": "Recupera livelli",
+    "selectLayer": "Seleziona livello"
   },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento."

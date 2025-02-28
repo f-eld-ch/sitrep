@@ -42,6 +42,7 @@ import maplibregl from "maplibre-gl";
 import classNames from "classnames";
 import SearchControl from "./controls/Searchbox";
 import { validate as validateUUID, v3 as uuidv3 } from "uuid";
+import ActiveWMSLayers from "./ActiveWMSLayers";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -89,7 +90,7 @@ function MapView() {
           {/* Layersprovider and Draw */}
           <Layers />
         </Map>
-      </div>
+      </div >
     </>
   );
 }
@@ -99,7 +100,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right">
+      <div className="maplibregl-ctrl-bottom-right is-flex is-flex-direction-column mx-2 my-2">
         <LayerControl />
         <StyleController />
       </div>
@@ -110,6 +111,7 @@ function Layers() {
 
       {/* Inactive Layers */}
       <InactiveLayers layers={state.layers.filter((l) => l.id !== state.activeLayer) || []} />
+      <ActiveWMSLayers />
     </>
   );
 }
