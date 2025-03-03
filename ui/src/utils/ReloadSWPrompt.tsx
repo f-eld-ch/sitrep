@@ -10,7 +10,7 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log("SW Registered: " + r);
+      console.log(`SW Registered: ${r}`);
       if (r === undefined) return;
 
       setInterval(() => {
@@ -33,9 +33,13 @@ export function ReloadPrompt() {
       {needRefresh && offlineReady && (
         <div className="container is-fluid mt-2 pt-4">
           <div className="notification is-danger  mt-2">
-            <button className="delete" onClick={close}></button>
+            <button type="button" className="delete" onClick={close} />
             <span>{t("updateNotification")}</span>
-            <button className="button is-danger is-light is-small ml-2" onClick={() => updateServiceWorker(true)}>
+            <button
+              type="button"
+              className="button is-danger is-light is-small ml-2"
+              onClick={() => updateServiceWorker(true)}
+            >
               Reload
             </button>
           </div>

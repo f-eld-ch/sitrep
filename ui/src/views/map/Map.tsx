@@ -1,7 +1,34 @@
 import "./control-panel.css";
 import "./Map.scss";
-import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from "./graphql";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import bbox from "@turf/bbox";
+import classNames from "classnames";
+import EnrichedLayerFeatures, {
+  EnrichedSymbolSource,
+} from "components/map/EnrichedLayerFeatures";
+import type {
+  Feature,
+  FeatureCollection,
+  GeoJsonProperties,
+  Geometry,
+} from "geojson";
+import { first } from "lodash";
+import maplibregl from "maplibre-gl";
+import { memo, useCallback, useContext, useEffect, useState } from "react";
 import {
+  AttributionControl,
+  FullscreenControl,
+  Map as MapClass,
+  Layer as MapLayer,
+  MapProvider,
+  NavigationControl,
+  ScaleControl,
+  Source,
+  useMap,
+} from "react-map-gl/maplibre";
+import { useParams } from "react-router";
+import type {
   AddFeatureResponse,
   AddFeatureVars,
   DeleteFeatureVars,
@@ -11,38 +38,27 @@ import {
   ModifyFeatureResponse,
   ModifyFeatureVars,
 } from "types/layer";
-import { BabsIconController } from "./controls/BabsIconController";
-import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
-import { displayStyle, drawStyle } from "./style";
-import { Feature, Geometry, GeoJsonProperties, FeatureCollection } from "geojson";
-import { first } from "lodash";
-import {
-  FullscreenControl,
-  Map,
-  MapProvider,
-  NavigationControl,
-  ScaleControl,
-  Source,
-  useMap,
-  Layer as MapLayer,
-  AttributionControl,
-} from "react-map-gl/maplibre";
+import { v3 as uuidv3, validate as validateUUID } from "uuid";
+import ActiveWMSLayers from "./ActiveWMSLayers";
 import { LayerContext, LayersProvider } from "./LayerContext";
-import { StyleController, selectedStyle } from "./controls/StyleController";
-import { memo, useCallback, useContext, useEffect, useState } from "react";
-import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
-import { useParams } from "react-router";
-import bbox from "@turf/bbox";
+import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
-import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import maplibregl from "maplibre-gl";
-import classNames from "classnames";
 import SearchControl from "./controls/Searchbox";
-import { validate as validateUUID, v3 as uuidv3 } from "uuid";
-import ActiveWMSLayers from "./ActiveWMSLayers";
+import { StyleController, selectedStyle } from "./controls/StyleController";
+import {
+  AddFeatureToLayer,
+  DeleteFeature,
+  GetLayers,
+  ModifyFeature,
+} from "./graphql";
+import { displayStyle, drawStyle } from "./style";
+import {
+  CleanFeature,
+  FilterActiveFeatures,
+  LayerToFeatureCollection,
+} from "./utils";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -64,7 +80,7 @@ function MapView() {
   return (
     <>
       <div className={mapClass} data-theme="light">
-        <Map
+        <MapClass
           mapLib={maplibregl}
           initialViewState={{
             latitude: 46.87148,
@@ -89,8 +105,8 @@ function MapView() {
           <ExportControl position="bottom-left" />
           {/* Layersprovider and Draw */}
           <Layers />
-        </Map>
-      </div >
+        </MapClass>
+      </div>
     </>
   );
 }
@@ -110,7 +126,9 @@ function Layers() {
       <BabsIconController />
 
       {/* Inactive Layers */}
-      <InactiveLayers layers={state.layers.filter((l) => l.id !== state.activeLayer) || []} />
+      <InactiveLayers
+        layers={state.layers.filter((l) => l.id !== state.activeLayer) || []}
+      />
       <ActiveWMSLayers />
     </>
   );
@@ -131,7 +149,7 @@ function LayerFetcher() {
     if (!loading && data && data.layers !== state.layers) {
       dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
     }
-  }, [data, dispatch, loading, state.activeLayer, state.layers]);
+  }, [data, dispatch, loading, state.layers]);
 
   return <></>;
 }
@@ -140,7 +158,9 @@ function ActiveLayer() {
   const [initialized, setInitalized] = useState(false);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
-  const featureCollection = LayerToFeatureCollection(first(state.layers.filter((l) => l.id === state.activeLayer)));
+  const featureCollection = LayerToFeatureCollection(
+    first(state.layers.filter((l) => l.id === state.activeLayer)),
+  );
 
   useEffect(() => {
     const fc = FilterActiveFeatures(featureCollection);
@@ -163,7 +183,7 @@ function ActiveLayer() {
       );
       setInitalized(true);
     }
-  }, [featureCollection, map, initialized, setInitalized]);
+  }, [featureCollection, map, initialized]);
 
   return (
     <>
@@ -183,65 +203,86 @@ function Draw(props: { activeLayer: string | undefined }) {
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
-  const [addFeature] = useMutation<AddFeatureResponse, AddFeatureVars>(AddFeatureToLayer, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-    onCompleted: (data: AddFeatureResponse) => {
-      if (data.insertFeaturesOne?.id) {
-        dispatch({ type: "SELECT_FEATURE", payload: { id: data.insertFeaturesOne.id.toString() } });
-      }
+  const [addFeature] = useMutation<AddFeatureResponse, AddFeatureVars>(
+    AddFeatureToLayer,
+    {
+      refetchQueries: [
+        { query: GetLayers, variables: { incidentId: incidentId } },
+      ],
+      onCompleted: (data: AddFeatureResponse) => {
+        if (data.insertFeaturesOne?.id) {
+          dispatch({
+            type: "SELECT_FEATURE",
+            payload: { id: data.insertFeaturesOne.id.toString() },
+          });
+        }
+      },
+      onError: (error) => {
+        console.error("Error adding feature:", error);
+      },
+      optimisticResponse: (vars) => {
+        return {
+          __typename: "Mutation",
+          insertFeaturesOne: {
+            __typename: "Feature",
+            id: vars.id,
+            geometry: { ...vars.geometry, __typename: "Geometry" },
+            properties: { ...vars.properties, __typename: "Properties" },
+            createdAt: new Date(),
+            updatedAt: null,
+            deletedAt: null,
+          },
+        };
+      },
     },
-    onError: (error) => {
-      console.error("Error adding feature:", error);
+  );
+  const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(
+    ModifyFeature,
+    {
+      refetchQueries: [
+        { query: GetLayers, variables: { incidentId: incidentId } },
+      ],
+      onError: (error) => {
+        console.error("Error adding feature:", error);
+      },
+      optimisticResponse: (vars, { IGNORE }) => {
+        if (vars.properties?.deletedAt) {
+          return IGNORE;
+        }
+        return {
+          __typename: "Mutation",
+          updateFeaturesByPk: {
+            __typename: "Feature",
+            id: vars.id,
+            geometry: { ...vars.geometry, __typename: "Geometry" },
+            properties: { ...vars.properties, __typename: "Properties" },
+            createdAt: vars.properties?.createdAt || new Date(),
+            updatedAt: vars.properties?.updatedAt || new Date(),
+            deletedAt: null,
+          },
+        };
+      },
     },
-    optimisticResponse: (vars) => {
-      return {
-        __typename: "Mutation",
-        insertFeaturesOne: {
-          __typename: "Feature",
-          id: vars.id,
-          geometry: { ...vars.geometry, __typename: "Geometry" },
-          properties: { ...vars.properties, __typename: "Properties" },
-          createdAt: new Date(),
-          updatedAt: null,
-          deletedAt: null,
-        },
-      };
-    },
-  });
-  const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(ModifyFeature, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-    onError: (error) => {
-      console.error("Error adding feature:", error);
-    },
-    optimisticResponse: (vars, { IGNORE }) => {
-      if (vars.properties?.deletedAt) {
-        return IGNORE;
-      }
-      return {
-        __typename: "Mutation",
-        updateFeaturesByPk: {
-          __typename: "Feature",
-          id: vars.id,
-          geometry: { ...vars.geometry, __typename: "Geometry" },
-          properties: { ...vars.properties, __typename: "Properties" },
-          createdAt: vars.properties?.createdAt || new Date(),
-          updatedAt: vars.properties?.updatedAt || new Date(),
-          deletedAt: null,
-        },
-      };
-    },
-  });
+  );
 
-  const [deleteFeature] = useMutation<Feature, DeleteFeatureVars>(DeleteFeature, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-  });
+  const [deleteFeature] = useMutation<Feature, DeleteFeatureVars>(
+    DeleteFeature,
+    {
+      refetchQueries: [
+        { query: GetLayers, variables: { incidentId: incidentId } },
+      ],
+    },
+  );
 
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {
       const features: Feature[] = e.features;
       if (features?.length > 0) {
         const feature = first(features);
-        dispatch({ type: "SELECT_FEATURE", payload: { id: feature?.id?.toString() } });
+        dispatch({
+          type: "SELECT_FEATURE",
+          payload: { id: feature?.id?.toString() },
+        });
       } else {
         dispatch({ type: "DESELECT_FEATURE", payload: null });
       }
@@ -256,7 +297,7 @@ function Draw(props: { activeLayer: string | undefined }) {
       }
 
       const createdFeatures: Feature[] = e.features;
-      createdFeatures.forEach((f: Feature) => {
+      for (const f of createdFeatures) {
         const feature = CleanFeature(f);
 
         if (!validateUUID(f.id)) {
@@ -274,33 +315,39 @@ function Draw(props: { activeLayer: string | undefined }) {
         if (f.id !== undefined) {
           state.draw?.delete([f.id.toString()]);
         }
-      });
+      }
     },
-    [props.activeLayer, dispatch, addFeature, state.draw],
+    [props.activeLayer, addFeature, state.draw],
   );
 
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
       const updatedFeatures: Feature[] = e.features;
-      updatedFeatures.forEach((f) => {
+      for (const f of updatedFeatures) {
         const feature = CleanFeature(f);
-        modifyFeature({ variables: { id: feature.id, geometry: feature.geometry, properties: feature.properties } });
-      });
+        modifyFeature({
+          variables: {
+            id: feature.id,
+            geometry: feature.geometry,
+            properties: feature.properties,
+          },
+        });
+      }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, props.activeLayer, modifyFeature],
+    [dispatch, modifyFeature],
   );
 
   const onDelete = useCallback(
     (e: FeatureEvent) => {
       const deletedFeatures: Feature[] = e.features;
-      deletedFeatures.forEach((f) => {
+      for (const f of deletedFeatures) {
         const feature = CleanFeature(f);
         deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } });
-      });
+      }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, props.activeLayer, deleteFeature],
+    [dispatch, deleteFeature],
   );
 
   const onCombine = useCallback(
@@ -316,7 +363,9 @@ function Draw(props: { activeLayer: string | undefined }) {
   useEffect(() => {
     if (state.draw && map?.loaded) {
       const featureCollection: FeatureCollection = FilterActiveFeatures(
-        LayerToFeatureCollection(state.layers.find((l) => l.id === props.activeLayer)),
+        LayerToFeatureCollection(
+          state.layers.find((l) => l.id === props.activeLayer),
+        ),
       );
       state.draw.deleteAll();
       state.draw.set(featureCollection);
@@ -340,10 +389,12 @@ function Draw(props: { activeLayer: string | undefined }) {
       }
 
       // select the feature in the draw control
-      state.draw.changeMode("simple_select", { featureIds: [state.selectedFeature] });
+      state.draw.changeMode("simple_select", {
+        featureIds: [state.selectedFeature],
+      });
       return;
     }
-  }, [state.draw, map?.loaded, state.selectedFeature, state.layers, props.activeLayer]);
+  }, [state.draw, map?.loaded, state.selectedFeature]);
 
   if (props.activeLayer === undefined) {
     return <></>;
@@ -384,12 +435,19 @@ function InactiveLayers(props: { layers: Layer[] }) {
   return (
     <>
       {layers.map((l) => (
-        <InactiveLayer key={l.id} id={l.id} featureCollection={FilterActiveFeatures(LayerToFeatureCollection(l))} />
+        <InactiveLayer
+          key={l.id}
+          id={l.id}
+          featureCollection={FilterActiveFeatures(LayerToFeatureCollection(l))}
+        />
       ))}
     </>
   );
 }
-function InactiveLayer(props: { featureCollection: FeatureCollection; id: string }) {
+function InactiveLayer(props: {
+  featureCollection: FeatureCollection;
+  id: string;
+}) {
   const { featureCollection, id } = props;
 
   return (

@@ -7,7 +7,13 @@ import { forwardRef } from "react";
 
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
-import { Division, Medium, Message, PriorityStatus, TriageStatus } from "types";
+import {
+  type Division,
+  Medium,
+  type Message,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
 
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
@@ -40,7 +46,8 @@ function MessageSheet(
               {t("message.name")}
             </th>
             <th>{t("message.sender")}</th>
-            {message.mediumId === Medium.Radio || !message.senderDetail?.length ? (
+            {message.mediumId === Medium.Radio ||
+            !message.senderDetail?.length ? (
               <td colSpan={3} style={cellStyle}>
                 {message.sender}
               </td>
@@ -52,7 +59,8 @@ function MessageSheet(
           </tr>
           <tr>
             <th>{t("message.receiver")}</th>
-            {message.mediumId === Medium.Radio || !message.receiverDetail?.length ? (
+            {message.mediumId === Medium.Radio ||
+            !message.receiverDetail?.length ? (
               <td colSpan={3} style={cellStyle}>
                 {message.receiver}
               </td>
@@ -64,9 +72,13 @@ function MessageSheet(
           </tr>
           <tr>
             <th>{t("message.time")}</th>
-            <td>{dayjs(message.createdAt).locale(i18n.language).format("LLL")}</td>
+            <td>
+              {dayjs(message.createdAt).locale(i18n.language).format("LLL")}
+            </td>
             <th>{t("message.createdAt")}</th>
-            <td>{dayjs(message.createdAt).locale(i18n.language).format("LLL")}</td>
+            <td>
+              {dayjs(message.createdAt).locale(i18n.language).format("LLL")}
+            </td>
           </tr>
           <tr>
             <th>{t("message.id")}</th>
@@ -76,19 +88,33 @@ function MessageSheet(
             <th>{t("message.type")}</th>
             {message.mediumId === Medium.Radio ? (
               <>
-                <td>{t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}</td>
+                <td>
+                  {t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}
+                </td>
                 <th>{t("radioChannel")}</th>
                 <td>{message.senderDetail}</td>
               </>
             ) : (
-              <td colSpan={3}>{t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}</td>
+              <td colSpan={3}>
+                {t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}
+              </td>
             )}
           </tr>
           <tr>
             <th>{t("message.triage")}</th>
-            <td>{t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}</td>
+            <td>
+              {t([
+                `triage.${message.triageId}`,
+                `triage.${TriageStatus.Pending}`,
+              ])}
+            </td>
             <th>{t("message.priority")}</th>
-            <td>{t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}</td>
+            <td>
+              {t([
+                `priority.${message.priorityId}`,
+                `priority.${PriorityStatus.Normal}`,
+              ])}
+            </td>
           </tr>
           <tr className="contentBox">
             <th>{t("message.content")}</th>
@@ -120,7 +146,11 @@ function MessageSheet(
               const isPresent = assignments.some((e) => e === d.id);
               return (
                 <td key={message.id + d.id} className="has-text-centered">
-                  {isPresent ? <FontAwesomeIcon icon={faSquareCheck} /> : <FontAwesomeIcon icon={faSquare} />}
+                  {isPresent ? (
+                    <FontAwesomeIcon icon={faSquareCheck} />
+                  ) : (
+                    <FontAwesomeIcon icon={faSquare} />
+                  )}
                 </td>
               );
             })}

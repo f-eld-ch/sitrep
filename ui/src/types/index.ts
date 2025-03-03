@@ -1,4 +1,10 @@
-export type { Incident, IncidentDetailsData, IncidentDetailsVars, IncidentListData, Location } from "types/incident";
+export type {
+  Incident,
+  IncidentDetailsData,
+  IncidentDetailsVars,
+  IncidentListData,
+  Location,
+} from "types/incident";
 export { Medium, PriorityStatus, TriageStatus } from "types/journal";
 export type {
   Division,

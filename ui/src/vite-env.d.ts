@@ -3,7 +3,7 @@
 /// <reference types="vite-plugin-pwa/client" />
 /// <reference types="vite-plugin-pwa/react" />
 
-import { FC, SVGProps } from "react";
+import type { FC, SVGProps } from "react";
 
 declare module "*.png";
 declare module "*.jpeg";

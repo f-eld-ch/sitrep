@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
-import classNames from "classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { useMap } from "react-map-gl/maplibre";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
+import parse from "html-react-parser";
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
-import parse from "html-react-parser";
+import { useCallback, useState } from "react";
+import { useMap } from "react-map-gl/maplibre";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
 
@@ -59,15 +59,13 @@ function SearchControl() {
 
   const search = (input: string) => {
     fetch(
-      BASE_URL +
-        "?" +
-        new URLSearchParams({
-          searchText: input,
-          type: "locations",
-          geometryFormat: "geojson",
-          origins: "address,gazetteer,parcel",
-          limit: "10",
-        }),
+      `${BASE_URL}?${new URLSearchParams({
+        searchText: input,
+        type: "locations",
+        geometryFormat: "geojson",
+        origins: "address,gazetteer,parcel",
+        limit: "10",
+      })}`,
     )
       .then((response) => response.json())
       .then((data) => {
@@ -116,12 +114,15 @@ function SearchControl() {
           </div>
           <div className="dropdown-menu" id="dropdown-menu">
             <div className="dropdown-content">
-              {searchResults &&
-                searchResults.map((result: SearchFeature) => (
-                  <a onClick={() => flyTo(result)} key={result.id} className="dropdown-item">
-                    {parse(result.properties.label)}
-                  </a>
-                ))}
+              {searchResults?.map((result: SearchFeature) => (
+                <a
+                  onClick={() => flyTo(result)}
+                  key={result.id}
+                  className="dropdown-item"
+                >
+                  {parse(result.properties.label)}
+                </a>
+              ))}
             </div>
           </div>
         </div>

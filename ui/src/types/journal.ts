@@ -1,4 +1,4 @@
-import { Incident } from "./incident";
+import type { Incident } from "./incident";
 
 export enum TriageStatus {
   Pending = "PENDING",

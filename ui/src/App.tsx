@@ -1,9 +1,13 @@
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, HashRouter as Router, Routes } from "react-router";
 
 import "./App.scss";
 
-import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
+import {
+  Editor as IncidentEditor,
+  List as IncidentList,
+  New as IncidentNew,
+} from "views/incident";
 import {
   Editor as JournalEditor,
   List as JournalMessageList,
@@ -16,21 +20,21 @@ import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
 
-import { useTranslation } from "react-i18next";
 import { ApolloProvider } from "@apollo/client";
+import { Provider as FeatureFlagProvider } from "FeatureFlags";
+import { default as client } from "client";
 import { Spinner } from "components";
+import { useTranslation } from "react-i18next";
 import { UserProvider } from "utils";
 import { Layout, LayoutMarginLess } from "views/Layout";
-import { default as client } from "client";
-import { Provider as FeatureFlagProvider } from "FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import de from "dayjs/locale/de";
+import en from "dayjs/locale/en";
 import fr from "dayjs/locale/fr";
 import it from "dayjs/locale/it";
-import en from "dayjs/locale/en";
-const Map = lazy(() => import("views/map"));
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+const MapView = lazy(() => import("views/map"));
 
 function App() {
   const { i18n } = useTranslation();
@@ -54,7 +58,7 @@ function App() {
     };
     const lang = locale(i18n.language);
     dayjs.locale(lang.toString());
-  }, [i18n.language]);
+  }, [i18n.language, i18n.changeLanguage]);
 
   return (
     <UserProvider>
@@ -119,7 +123,10 @@ function App() {
                       path=":journalId"
                       element={
                         <Layout>
-                          <JournalMessageList showControls={false} autoScroll={true} />
+                          <JournalMessageList
+                            showControls={false}
+                            autoScroll={true}
+                          />
                         </Layout>
                       }
                     />
@@ -138,7 +145,7 @@ function App() {
                     element={
                       <LayoutMarginLess>
                         <Suspense fallback={<Spinner />}>
-                          <Map />
+                          <MapView />
                         </Suspense>
                       </LayoutMarginLess>
                     }

@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client";
 import { Spinner } from "components";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { IncidentDetailsData, IncidentDetailsVars } from "types";
+import type { IncidentDetailsData, IncidentDetailsVars } from "types";
 import { GetIncidentDetails } from "./graphql";
 
 function MapFrame() {
@@ -28,11 +28,15 @@ function MapFrame() {
 function Dashboard() {
   const { incidentId } = useParams();
 
-  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
+  const { loading, error, data } = useQuery<
+    IncidentDetailsData,
+    IncidentDetailsVars
+  >(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
+  if (error)
+    return <div className="notification is-danger">{error.message}</div>;
 
   if (loading) return <Spinner />;
 

@@ -1,7 +1,13 @@
-import { Layer } from "types/layer";
-import { ActiveLayerState, DrawState, LayersState, SelectedFeatureState, WMSLayersState } from "./LayerContext";
+import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { first } from "lodash";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type { Layer } from "types/layer";
+import type {
+  ActiveLayerState,
+  DrawState,
+  LayersState,
+  SelectedFeatureState,
+  WMSLayersState,
+} from "./LayerContext";
 
 // All valid actions
 export type LayersAction =
@@ -116,18 +122,25 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
       return [...state.filter((layer) => layer.id !== action.payload.id)];
     case "TOGGLE_LAYER_VISIBILITY":
       return state.map((layer) =>
-        layer.id === action.payload.layerName ? { ...layer, isVisible: action.payload.isVisible } : layer
+        layer.id === action.payload.layerName
+          ? { ...layer, isVisible: action.payload.isVisible }
+          : layer,
       );
     case "UPDATE_LAYER_OPACITY":
       return state.map((layer) =>
-        layer.id === action.payload.layerName ? { ...layer, opacity: action.payload.opacity } : layer
+        layer.id === action.payload.layerName
+          ? { ...layer, opacity: action.payload.opacity }
+          : layer,
       );
     default:
       return state;
   }
 };
 
-export const selectedFeatureReducer = (state: SelectedFeatureState, action: LayersAction) => {
+export const selectedFeatureReducer = (
+  state: SelectedFeatureState,
+  action: LayersAction,
+) => {
   switch (action.type) {
     case "SELECT_FEATURE":
       return action.payload.id;
@@ -138,7 +151,10 @@ export const selectedFeatureReducer = (state: SelectedFeatureState, action: Laye
   }
 };
 
-export const activeLayerReducer = (state: ActiveLayerState, action: LayersAction) => {
+export const activeLayerReducer = (
+  state: ActiveLayerState,
+  action: LayersAction,
+) => {
   switch (action.type) {
     case "SET_ACTIVE_LAYER":
       return action.payload.layerId;
@@ -162,20 +178,36 @@ export const drawReducer = (state: DrawState, action: LayersAction) => {
   }
 };
 
-export const wmsLayersReducer = (state: WMSLayersState, action: LayersAction) => {
+export const wmsLayersReducer = (
+  state: WMSLayersState,
+  action: LayersAction,
+) => {
   switch (action.type) {
     case "ADD_WMS_LAYER":
       if (state.some((layer) => layer.name === action.payload.layerName)) {
         return state;
       }
-      return [...state, { name: action.payload.layerName, title: action.payload.title, opacity: action.payload.opacity, server: action.payload.server, isVisible: true }];
+      return [
+        ...state,
+        {
+          name: action.payload.layerName,
+          title: action.payload.title,
+          opacity: action.payload.opacity,
+          server: action.payload.server,
+          isVisible: true,
+        },
+      ];
     case "UPDATE_WMS_LAYER_OPACITY":
       return state.map((layer) =>
-        layer.name === action.payload.layerName ? { ...layer, opacity: action.payload.opacity } : layer
+        layer.name === action.payload.layerName
+          ? { ...layer, opacity: action.payload.opacity }
+          : layer,
       );
     case "TOGGLE_LAYER_VISIBILITY":
       return state.map((layer) =>
-        layer.name === action.payload.layerName ? { ...layer, isVisible: action.payload.isVisible } : layer
+        layer.name === action.payload.layerName
+          ? { ...layer, isVisible: action.payload.isVisible }
+          : layer,
       );
     case "REMOVE_WMS_LAYER":
       return state.filter((layer) => layer.name !== action.payload.layerName);
