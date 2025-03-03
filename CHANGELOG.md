@@ -4,6 +4,10 @@
 
 - *(map)* Allow WMS layers to be loaded from remote servers ([#703](https://github.com/f-eld-ch/sitrep/issues/703)) - ([d773269](https://github.com/f-eld-ch/sitrep/commit/d773269d937371736fcf7b437b99a1478a1af132))
 
+### ⚙️  Other
+
+- *(deps)* Bump react-markdown from 10.0.0 to 10.0.1 in /ui ([#706](https://github.com/f-eld-ch/sitrep/issues/706)) - ([9acc6d8](https://github.com/f-eld-ch/sitrep/commit/9acc6d88693df163c6b64c3b4dd71b01a68b6280))
+
 
 ## [25.2.5](https://github.com/f-eld-ch/sitrep/compare/v25.2.4..v25.2.5) - 2025-02-25
 
