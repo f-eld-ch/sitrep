@@ -1,5 +1,5 @@
-import { GeoJsonProperties, Geometry } from "geojson";
-import { Incident } from "./incident";
+import type { GeoJsonProperties, Geometry } from "geojson";
+import type { Incident } from "./incident";
 
 export interface Layer {
   id: string;

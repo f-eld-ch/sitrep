@@ -1,18 +1,30 @@
-import { memo, useEffect, useState, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@apollo/client";
-import { faArrowsToEye, faBell, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faBell,
+  faPrint,
+  faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useReactToPrint } from "react-to-print";
 
+import classNames from "classnames";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus, Division } from "types";
-import { GetJournalMessages } from "./graphql";
+import {
+  type Division,
+  type Message,
+  type MessageListData,
+  type MessageListVars,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
-import classNames from "classnames";
+import { GetJournalMessages } from "./graphql";
 
 function List(props: {
   showControls: boolean;
@@ -27,12 +39,18 @@ function List(props: {
   const [assignmentFilter, setAssignmentFilter] = useState("all");
   const { autoScroll = false, showControls = true } = props;
   const tableRef = useRef(null);
-  const handlePrint = useReactToPrint({ contentRef: tableRef, pageStyle: "@page { size: A4 landscape;}" });
-
-  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
-    variables: { journalId: journalId || "" },
-    pollInterval: 10000,
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+    pageStyle: "@page { size: A4 landscape;}",
   });
+
+  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(
+    GetJournalMessages,
+    {
+      variables: { journalId: journalId || "" },
+      pollInterval: 10000,
+    },
+  );
 
   const printButtonClass = classNames({
     "is-hidden": !showControls,
@@ -48,12 +66,14 @@ function List(props: {
         behavior: "smooth",
       });
     }
-  }, [data?.messages, error, autoScroll]);
+  }, [autoScroll]);
 
   if (error) {
     return (
       <div className="notification is-danger is-light">
-        <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
+        <div className="block has-text-weight-semibold">
+          Ups, da ging was schief:
+        </div>
         <div className="block">{error.message}</div>
       </div>
     );
@@ -64,10 +84,18 @@ function List(props: {
 
   const messages =
     data?.messages
-      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
-      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
       .filter(
-        (message) => assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter),
+        (message) =>
+          triageFilter === "all" || message.triageId === triageFilter,
+      )
+      .filter(
+        (message) =>
+          priorityFilter === "all" || message.priorityId === priorityFilter,
+      )
+      .filter(
+        (message) =>
+          assignmentFilter === "all" ||
+          message.divisions?.find((d) => d.division.name === assignmentFilter),
       ) || [];
 
   return (
@@ -87,7 +115,15 @@ function List(props: {
                 >
                   <option label={t("all") as string}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}>
+                    <option
+                      key={status}
+                      label={
+                        t([
+                          `triage.${status}`,
+                          `triage.${TriageStatus.Pending}`,
+                        ]) as string
+                      }
+                    >
                       {status}
                     </option>
                   ))}
@@ -110,7 +146,15 @@ function List(props: {
                 >
                   <option label={t("all") as string}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>
+                    <option
+                      key={prio}
+                      label={
+                        t([
+                          `priority.${prio}`,
+                          `priority.${PriorityStatus.Normal}`,
+                        ]) as string
+                      }
+                    >
                       {prio}
                     </option>
                   ))}
@@ -145,7 +189,11 @@ function List(props: {
             </div>
           </div>
           <div className={printButtonClass}>
-            <button className="button is-small is-rounded" onClick={() => handlePrint()}>
+            <button
+              type="button"
+              className="button is-small is-rounded"
+              onClick={() => handlePrint()}
+            >
               <FontAwesomeIcon icon={faPrint} />
               &nbsp;{t("print")}
             </button>

@@ -102,7 +102,7 @@
         "editorFocusProperty": null,
         "layersViewPanelType": "Verticality"
       },
-      "userSettings": {"preferredViewPanelType": "Verticality"}
+      "userSettings": { "preferredViewPanelType": "Verticality" }
     },
     "ga:version": "v1.17.0",
     "ga:publisher": "CI:597e6ccf-63c7-4a22-9279-940877bf6866",
@@ -128,8 +128,8 @@
     }
   },
   "sprite": [
-    {"id": "default", "url": "./map/sprites/imagery"},
-    {"id": "babs", "url": "./map/sprites/babs"}
+    { "id": "default", "url": "./map/sprites/imagery" },
+    { "id": "babs", "url": "./map/sprites/babs" }
   ],
   "glyphs": "./map/fonts/{fontstack}/{range}.pbf",
   "transition": {},
@@ -137,10 +137,10 @@
     {
       "id": "background",
       "type": "background",
-      "layout": {"visibility": "visible"},
-      "paint": {"background-color": "rgba(187, 187, 187, 1)"}
+      "layout": { "visibility": "visible" },
+      "paint": { "background-color": "rgba(187, 187, 187, 1)" }
     },
-    {"id": "swissimage", "type": "raster", "source": "swissimage_wmts"},
+    { "id": "swissimage", "type": "raster", "source": "swissimage_wmts" },
     {
       "id": "water_line",
       "type": "line",
@@ -158,7 +158,7 @@
           true
         ]
       ],
-      "layout": {"visibility": "visible"},
+      "layout": { "visibility": "visible" },
       "paint": {
         "line-blur": 0,
         "line-color": "rgb(0, 103, 208)",
@@ -254,7 +254,7 @@
       "source-layer": "park",
       "minzoom": 7,
       "filter": ["match", ["get", "class"], ["national_park"], true, false],
-      "layout": {"visibility": "visible"},
+      "layout": { "visibility": "visible" },
       "paint": {
         "line-color": "rgba(112, 180, 70, 1)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 9, 3, 13, 3, 18, 8],
@@ -653,7 +653,7 @@
     {
       "id": "tunnel_road_path_footway",
       "type": "line",
-      "metadata": {"maputnik:comment": "casing color for motorway is brown"},
+      "metadata": { "maputnik:comment": "casing color for motorway is brown" },
       "source": "base_v1.0.0",
       "source-layer": "transportation",
       "minzoom": 6,
@@ -1161,7 +1161,7 @@
       "source-layer": "transportation",
       "minzoom": 10,
       "filter": ["==", ["get", "class"], "car_ferry"],
-      "layout": {"visibility": "visible"},
+      "layout": { "visibility": "visible" },
       "paint": {
         "line-blur": 0.4,
         "line-color": "rgba(125, 187, 218, 1)",
@@ -1199,7 +1199,7 @@
       "source-layer": "transportation",
       "minzoom": 12,
       "filter": ["==", ["get", "class"], "ferry"],
-      "layout": {"visibility": "visible"},
+      "layout": { "visibility": "visible" },
       "paint": {
         "line-blur": 0.4,
         "line-color": "rgba(125, 187, 218, 1)",
@@ -1230,7 +1230,7 @@
         ["match", ["get", "brunnel"], ["tunnel"], false, true],
         ["==", ["geometry-type"], "LineString"]
       ],
-      "layout": {"line-cap": "butt", "visibility": "visible"},
+      "layout": { "line-cap": "butt", "visibility": "visible" },
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 14, 0.6, 18, 0.4],
         "line-color": [
@@ -1728,7 +1728,7 @@
         true,
         false
       ],
-      "layout": {"visibility": "visible"},
+      "layout": { "visibility": "visible" },
       "paint": {
         "line-blur": 0.25,
         "line-color": [
@@ -2176,7 +2176,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",
@@ -2286,7 +2286,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",
@@ -2392,7 +2392,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",
@@ -2498,7 +2498,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",
@@ -2624,7 +2624,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",
@@ -2967,7 +2967,7 @@
           "\n",
           {},
           ["get", "ele"],
-          {"font-scale": 0.75}
+          { "font-scale": 0.75 }
         ],
         "visibility": "visible",
         "icon-anchor": "center",

@@ -1,11 +1,21 @@
-import { createContext, useReducer, useEffect, useCallback, useContext, ReactNode, Dispatch } from "react";
-import { UserState } from "types";
+import {
+  type Dispatch,
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
+import type { UserState } from "types";
 
 // Define the initial state
 const initialState: UserState = { isLoggedin: false, username: "", email: "" };
 
 // Define action types
-type UserAction = { type: "LOGIN"; payload: { username: string; email: string } } | { type: "LOGOUT" };
+type UserAction =
+  | { type: "LOGIN"; payload: { username: string; email: string } }
+  | { type: "LOGOUT" };
 
 // Define the reducer function
 const userReducer = (state: UserState, action: UserAction): UserState => {
@@ -88,7 +98,7 @@ const UserInfoFetcher = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [userState]);
+  }, [setUserStateFromUserinfo]);
 
   return <></>;
 };

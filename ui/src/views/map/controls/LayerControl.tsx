@@ -4,9 +4,9 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import React, { useState } from "react";
 import "./LayerControl.scss";
 import classNames from "classnames";
-import WMSLayerMenu from "./WMSLayerMenu";
-import ActiveLayersControl from "./ActiveLayersControl";
 import { useTranslation } from "react-i18next";
+import ActiveLayersControl from "./ActiveLayersControl";
+import WMSLayerMenu from "./WMSLayerMenu";
 
 function LayerPanel() {
   const [active, setActive] = useState<boolean>(false);
@@ -22,7 +22,11 @@ function LayerPanel() {
   if (!active) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
-        <button type="button" className={btnClass} onClick={() => setActive(!active)}>
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => setActive(!active)}
+        >
           <FontAwesomeIcon icon={faLayerGroup} size="lg" />
         </button>
       </div>
@@ -30,10 +34,17 @@ function LayerPanel() {
   }
 
   return (
-    <nav className="panel has-background-white is-align-self-flex-end" style={{ pointerEvents: "auto" }}>
+    <nav
+      className="panel has-background-white is-align-self-flex-end"
+      style={{ pointerEvents: "auto" }}
+    >
       <p className="panel-heading is-flex is-justify-content-space-between is-align-items-center is-size-6">
         {t("layerControl.layers")}
-        <button className="delete is-align-self-flex-end" onClick={() => setActive(!active)}></button>
+        <button
+          type="button"
+          className="delete is-align-self-flex-end"
+          onClick={() => setActive(!active)}
+        />
       </p>
 
       <div className="panel-tabs is-size-7">
@@ -51,8 +62,14 @@ function LayerPanel() {
         </a>
       </div>
       {activeTab === "drawing" && <ActiveLayersControl />}
-      {activeTab === "wms" && <WMSLayerMenu disable={() => { setActiveTab("drawing") }} />}
-    </nav >
+      {activeTab === "wms" && (
+        <WMSLayerMenu
+          disable={() => {
+            setActiveTab("drawing");
+          }}
+        />
+      )}
+    </nav>
   );
 }
 

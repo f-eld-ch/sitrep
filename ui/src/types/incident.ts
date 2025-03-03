@@ -1,5 +1,5 @@
-import { Division, Journal } from "./journal";
-import { Layer } from "./layer";
+import type { Division, Journal } from "./journal";
+import type { Layer } from "./layer";
 
 export interface Location {
   name: string;

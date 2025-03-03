@@ -16,7 +16,7 @@ import { t } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Incident, IncidentListData } from "../../types";
+import type { Incident, IncidentListData } from "../../types";
 import { CloseIncident, GetIncidentDetails, GetIncidents } from "./graphql";
 
 function List() {
@@ -28,7 +28,8 @@ function List() {
     pollInterval: 10000,
   });
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
+  if (error)
+    return <div className="notification is-danger">{error.message}</div>;
   if (loading) return <Spinner />;
 
   return (
@@ -36,6 +37,7 @@ function List() {
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
       <div className="buttons">
         <button
+          type="button"
           className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
           onClick={() => navigate("../new")}
         >
@@ -45,6 +47,7 @@ function List() {
           <span>{t("create")}</span>
         </button>
         <button
+          type="button"
           className="button is-primary is-small is-responsive is-rounded is-light"
           onClick={() => setFilterClosed(!filterClosed)}
         >
@@ -55,7 +58,11 @@ function List() {
         </button>
       </div>
       <IncidentCards
-        incidents={(data && data.incidents.filter((incident) => !filterClosed || incident.closedAt === null)) || []}
+        incidents={
+          data?.incidents.filter(
+            (incident) => !filterClosed || incident.closedAt === null,
+          ) || []
+        }
       />
     </div>
   );
@@ -110,6 +117,7 @@ function IncidentCard(props: { incident: Incident }) {
       </div>
       <footer className="card-footer">
         <button
+          type="button"
           className="card-footer-item is-ahref is-capitalized"
           onClick={() => navigate(`../${props.incident.id}/journal/view`)}
         >
@@ -118,7 +126,11 @@ function IncidentCard(props: { incident: Incident }) {
           </span>
           <span>{t("enter")}</span>
         </button>
-        <button className="card-footer-item is-ahref is-capitalized" onClick={() => navigate(`../${incident.id}/edit`)}>
+        <button
+          type="button"
+          className="card-footer-item is-ahref is-capitalized"
+          onClick={() => navigate(`../${incident.id}/edit`)}
+        >
           <span className="icon">
             <FontAwesomeIcon icon={faEdit} />
           </span>
@@ -126,6 +138,7 @@ function IncidentCard(props: { incident: Incident }) {
         </button>
         {incident.closedAt === null ? (
           <button
+            type="button"
             className="card-footer-item is-ahref is-capitalized is-danger"
             onClick={() => {
               closeIncident({
@@ -143,6 +156,7 @@ function IncidentCard(props: { incident: Incident }) {
           </button>
         ) : (
           <button
+            type="button"
             className="card-footer-item is-ahref is-capitalized is-success"
             onClick={() => {
               closeIncident({

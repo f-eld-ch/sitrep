@@ -1,9 +1,9 @@
+import { faSignIn } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import logo from "assets/logo.svg";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
-import logo from "assets/logo.svg";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignIn } from "@fortawesome/free-solid-svg-icons";
 
 export const Login = () => {
   const [searchParams] = useSearchParams();
@@ -12,7 +12,7 @@ export const Login = () => {
   const lang = searchParams.get("lang");
   useEffect(() => {
     i18n.changeLanguage(lang || undefined);
-  }, [lang, searchParams, i18n]);
+  }, [lang, i18n]);
 
   return (
     <section className="hero is-fullheight">
@@ -26,6 +26,7 @@ export const Login = () => {
               </figure>
               <hr />
               <button
+                type="submit"
                 className="button is-block is-primary is-large is-fullwidth"
                 onClick={() => {
                   // forward to oauth2 login

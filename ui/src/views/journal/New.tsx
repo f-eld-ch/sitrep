@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { InsertJournalData, InsertJournalVars } from "types/journal";
+import type { InsertJournalData, InsertJournalVars } from "types/journal";
 import { GetIncidentDetails } from "views/incident/graphql";
 import { GetJournals, InsertJournal } from "./graphql";
 
@@ -27,12 +27,18 @@ function NewForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(InsertJournal, {
+  const [insertJournal, { error }] = useMutation<
+    InsertJournalData,
+    InsertJournalVars
+  >(InsertJournal, {
     onCompleted(data) {
       // reset the form values
       navigate(`../${data.insertJournalsOne.id}/edit`);
     },
-    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }, { query: GetIncidentDetails }],
+    refetchQueries: [
+      { query: GetJournals, variables: { incidentId: incidentId } },
+      { query: GetIncidentDetails },
+    ],
   });
 
   const handleSave = () => {
@@ -48,7 +54,11 @@ function NewForm() {
 
   return (
     <>
-      {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
+      {error ? (
+        <div className="notification is-danger">{error?.message}</div>
+      ) : (
+        <></>
+      )}
 
       <div className="field">
         <p className="control has-icons-left has-icons-right">
@@ -69,7 +79,11 @@ function NewForm() {
       </div>
       <div className="field">
         <p className="control">
-          <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
+          <button
+            type="button"
+            className="button is-primary is-rounded is-capitalized"
+            onClick={handleSave}
+          >
             {t("create")}
           </button>
         </p>

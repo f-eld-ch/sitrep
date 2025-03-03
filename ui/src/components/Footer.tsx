@@ -1,7 +1,7 @@
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import VSHN from "../assets/vshn.svg";
 
 function Footer() {
@@ -20,7 +20,9 @@ function Footer() {
             </span>
             <span>
               <strong>
-                <p className="is-size-7 is-family-monospace has-text-current">SitRep</p>
+                <p className="is-size-7 is-family-monospace has-text-current">
+                  SitRep
+                </p>
               </strong>
             </span>
           </span>
@@ -35,7 +37,12 @@ function Footer() {
           </span>
           in Switzerland by
           <strong className="has-text-current">
-            <a className="has-text-current ml-1" href="https://www.f-eld.ch" target="_blank" rel="noopener noreferrer">
+            <a
+              className="has-text-current ml-1"
+              href="https://www.f-eld.ch"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               F-ELD
             </a>
           </strong>
@@ -61,7 +68,12 @@ function FooterManaged() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img src={VSHN} alt="VSHN" className="is-align-self-center" style={{ minHeight: "0.7rem" }} />
+        <img
+          src={VSHN}
+          alt="VSHN"
+          className="is-align-self-center"
+          style={{ minHeight: "0.7rem" }}
+        />
       </a>
     </div>
   );

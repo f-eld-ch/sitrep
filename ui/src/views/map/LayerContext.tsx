@@ -1,7 +1,15 @@
-import React, { createContext, useReducer } from "react";
-import { LayersAction, layersReducer, selectedFeatureReducer, activeLayerReducer, drawReducer, wmsLayersReducer } from "./reducer";
-import { Layer } from "types/layer";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type React from "react";
+import { createContext, useReducer } from "react";
+import type { Layer } from "types/layer";
+import {
+  type LayersAction,
+  activeLayerReducer,
+  drawReducer,
+  layersReducer,
+  selectedFeatureReducer,
+  wmsLayersReducer,
+} from "./reducer";
 
 export type SelectedFeatureState = string | undefined;
 export type LayersState = Layer[];
@@ -41,7 +49,10 @@ const LayerContext = createContext<{
   dispatch: () => null,
 });
 
-const mainReducer = ({ layers, activeLayer, selectedFeature, draw, wmsLayers }: LayerState, action: LayersAction) => ({
+const mainReducer = (
+  { layers, activeLayer, selectedFeature, draw, wmsLayers }: LayerState,
+  action: LayersAction,
+) => ({
   layers: layersReducer(layers, action),
   activeLayer: activeLayerReducer(activeLayer, action),
   selectedFeature: selectedFeatureReducer(selectedFeature, action),
@@ -52,7 +63,11 @@ const mainReducer = ({ layers, activeLayer, selectedFeature, draw, wmsLayers }: 
 const LayersProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(mainReducer, initialState);
 
-  return <LayerContext.Provider value={{ state, dispatch }}>{children}</LayerContext.Provider>;
+  return (
+    <LayerContext.Provider value={{ state, dispatch }}>
+      {children}
+    </LayerContext.Provider>
+  );
 };
 
 export { LayerContext, LayersProvider };

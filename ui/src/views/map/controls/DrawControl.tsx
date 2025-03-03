@@ -1,8 +1,8 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { memo, useContext, useState } from "react";
-import { useControl, type ControlPosition } from "react-map-gl/maplibre";
+import { type ControlPosition, useControl } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
-import { FeatureEvent, CombineFeatureEvent } from "../Map";
+import type { CombineFeatureEvent, FeatureEvent } from "../Map";
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
   position?: ControlPosition;

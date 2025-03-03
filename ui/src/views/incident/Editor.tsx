@@ -2,19 +2,23 @@ import { useQuery } from "@apollo/client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { IncidentDetailsData, IncidentDetailsVars } from "types";
-import { GetIncidentDetails } from "./graphql";
+import type { IncidentDetailsData, IncidentDetailsVars } from "types";
 import { IncidentForm } from "./New";
+import { GetIncidentDetails } from "./graphql";
 
 function Editor() {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
+  const { loading, error, data } = useQuery<
+    IncidentDetailsData,
+    IncidentDetailsVars
+  >(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
+  if (error)
+    return <div className="notification is-danger">{error.message}</div>;
 
   if (loading) return <Spinner />;
 

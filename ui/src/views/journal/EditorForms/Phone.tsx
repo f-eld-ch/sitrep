@@ -14,7 +14,9 @@ export function Phone() {
     <div>
       <div className="field is-horizontal">
         <div className="field-label is-normal is-flex-shrink-0">
-          <label className="label is-capitalized">{t("message.receiver")}</label>
+          <label htmlFor="receiver-input" className="label is-capitalized">
+            {t("message.receiver")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -25,7 +27,9 @@ export function Phone() {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal is-flex-shrink-0">
-          <label className="label is-capitalized">{t("phone.sender")}</label>
+          <label htmlFor="sender-input" className="label is-capitalized">
+            {t("phone.sender")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -36,7 +40,9 @@ export function Phone() {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal is-flex-shrink-0">
-          <label className="label is-capitalized">{t("message.time")}</label>
+          <label htmlFor="time-input" className="label is-capitalized">
+            {t("message.time")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -46,7 +52,9 @@ export function Phone() {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal is-flex-shrink-0">
-          <label className="label is-capitalized">{t("message.content")}</label>
+          <label htmlFor="content-input" className="label is-capitalized">
+            {t("message.content")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -55,7 +63,7 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label"></div>
+        <div className="field-label" />
         <div className="field-body">
           <div className="field">
             <SaveButton />
