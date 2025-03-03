@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.1.1 to 5.2.0 in /ui ([#707](https://github.com/f-eld-ch/sitrep/issues/707)) - ([d2ed6fd](https://github.com/f-eld-ch/sitrep/commit/d2ed6fd678a4a7a22cc440652313f39e142b713e))
 - *(deps)* Bump react-markdown from 10.0.0 to 10.0.1 in /ui ([#706](https://github.com/f-eld-ch/sitrep/issues/706)) - ([9acc6d8](https://github.com/f-eld-ch/sitrep/commit/9acc6d88693df163c6b64c3b4dd71b01a68b6280))
 
 
