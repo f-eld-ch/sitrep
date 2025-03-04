@@ -39,7 +39,8 @@
     "rotate": "Direzione di rotazione",
     "layer": "Livello",
     "unlock": "Rilasciare l'allineamento",
-    "lock": "Fissare l'allineamento"
+    "lock": "Fissare l'allineamento",
+    "Gefahrenkarte": "Carte dei pericoli"
   },
   "babs": {
     "groups": {

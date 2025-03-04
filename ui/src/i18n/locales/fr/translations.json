@@ -39,7 +39,8 @@
     "rotate": "Tourner la signe",
     "layer": "calque",
     "unlock": "Désamarrer le signe",
-    "lock": "Verrouiller le signe"
+    "lock": "Verrouiller le signe",
+    "Gefahrenkarte": "Cartes des dangers"
   },
   "babs": {
     "groups": {

@@ -39,7 +39,8 @@
     "rotate": "Richtung drehen",
     "layer": "Layer",
     "unlock": "Fixierte Signatur lösen",
-    "lock": "Signatur fixieren"
+    "lock": "Signatur fixieren",
+    "Gefahrenkarte": "Gefahrenkarten"
   },
   "babs": {
     "groups": {

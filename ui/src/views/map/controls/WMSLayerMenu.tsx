@@ -3,19 +3,14 @@ import type React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LayerContext } from "../LayerContext";
+import WMSCapabilities from "ol/format/WMSCapabilities";
+import type { Options as WMSCapabilitiesOptions } from "ol/format/WMSCapabilities";
 
 interface Layer {
   name: string;
   title: string;
   key: string;
 }
-
-const WMS_SERVERS = [
-  { name: "geo.admin.ch", url: "https://wms.geo.admin.ch" },
-  { name: "geo.ur.ch", url: "https://geo.ur.ch/wms" },
-  { name: "sitn.ne.ch", url: "https://sitn.ne.ch/services/wms" },
-  { name: "map.geo.sz.ch", url: "https://map.geo.sz.ch/mapserv_proxy" },
-];
 
 const getBaseDomain = (url: string) => {
   try {
@@ -26,12 +21,29 @@ const getBaseDomain = (url: string) => {
   }
 };
 
+interface WMSLayer {
+  Name: string;
+  Title: string;
+  CRS: string[];
+  Layer?: WMSLayer[];
+}
+
+const extractLayers = (layer: WMSLayer): WMSLayer[] => {
+  let layers: WMSCapabilitiesOptions[] = [];
+  if (layer.Layer) {
+    for (const subLayer of layer.Layer) {
+      layers = layers.concat(extractLayers(subLayer));
+    }
+  } else {
+    layers.push(layer);
+  }
+  return layers;
+};
+
 const WMSLayerMenu = (props: { disable: () => void }) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
-  const [selectedServer, setSelectedServer] = useState<string>(
-    WMS_SERVERS[0].url,
-  );
+  const [selectedServer, setSelectedServer] = useState<string>("");
   const [customServer, setCustomServer] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [serverLayersCache, setServerLayersCache] = useState<
@@ -39,7 +51,29 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
   >({});
   const { dispatch } = useContext(LayerContext);
   const { disable } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const languageMap: Record<string, string> = {
+    de: "ger",
+    fr: "fra",
+    it: "ita",
+    en: "ger",
+  };
+
+  const language = languageMap[i18n.language] || "ger";
+
+  const WMS_SERVERS = [
+    { name: t("mapview.Gefahrenkarte"), url: `https://geodienste.ch/db/gefahrenkarten_v1_3_0/${language}` },
+    { name: "geo.admin.ch", url: "https://wms.geo.admin.ch" },
+    { name: "geo.ur.ch", url: "https://geo.ur.ch/wms" },
+    { name: "sitn.ne.ch", url: "https://sitn.ne.ch/services/wms" },
+    { name: "map.geo.sz.ch", url: "https://map.geo.sz.ch/mapserv_proxy" },
+  ];
+
+  useEffect(() => {
+    const initialServer = WMS_SERVERS[0].url;
+    setSelectedServer(initialServer);
+  }, [WMS_SERVERS[0].url]);
 
   useEffect(() => {
     if (selectedServer && !serverLayersCache[selectedServer]) {
@@ -49,14 +83,18 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
       )
         .then((response) => response.text())
         .then((data) => {
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(data, "text/xml");
-          const layerElements = xml.getElementsByTagName("Layer");
-          const layers = Array.from(layerElements).map((layer, index) => ({
-            name: layer.getElementsByTagName("Name")[0].textContent || "",
-            title: layer.getElementsByTagName("Title")[0].textContent || "",
-            key: `${layer.getElementsByTagName("Name")[0].textContent || ""}-${index}`,
+          const parser = new WMSCapabilities();
+          const result = parser.read(data) as WMSCapabilitiesOptions;
+          const allLayers = extractLayers(result.Capability.Layer);
+          const layers = allLayers.filter((layer: WMSCapabilitiesOptions) => {
+            const hasEPSG3857 = layer.CRS.includes("EPSG:3857");
+            return hasEPSG3857;
+          }).map((layer: WMSCapabilitiesOptions, index: number) => ({
+            name: layer.Name,
+            title: layer.Title,
+            key: `${layer.Name}-${index}`,
           }));
+          console.log("Fetched WMS layers:", layers);
           setLayers(layers);
           setServerLayersCache((prevCache) => ({
             ...prevCache,

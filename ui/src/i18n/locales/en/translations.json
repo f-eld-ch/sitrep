@@ -39,7 +39,8 @@
     "rotate": "Turn direction",
     "layer": "Layer",
     "unlock": "Unlock symbol",
-    "lock": "Lock Symbol"
+    "lock": "Lock Symbol",
+    "Gefahrenkarte": "Hazard map"
   },
   "babs": {
     "groups": {
