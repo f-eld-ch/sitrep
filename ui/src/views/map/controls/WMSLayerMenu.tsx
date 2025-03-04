@@ -79,7 +79,9 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
     if (selectedServer && !serverLayersCache[selectedServer]) {
       setIsLoading(true);
       fetch(
-        `${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities`,
+        `${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities`, {
+        mode: 'no-cors'
+      }
       )
         .then((response) => response.text())
         .then((data) => {
