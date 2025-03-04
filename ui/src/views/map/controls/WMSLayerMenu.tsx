@@ -4,7 +4,6 @@ import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LayerContext } from "../LayerContext";
 import WMSCapabilities from "ol/format/WMSCapabilities";
-import type { Options as WMSCapabilitiesOptions } from "ol/format/WMSCapabilities";
 
 interface Layer {
   name: string;
@@ -29,7 +28,7 @@ interface WMSLayer {
 }
 
 const extractLayers = (layer: WMSLayer): WMSLayer[] => {
-  let layers: WMSCapabilitiesOptions[] = [];
+  let layers: WMSLayer[] = [];
   if (layer.Layer) {
     for (const subLayer of layer.Layer) {
       layers = layers.concat(extractLayers(subLayer));
@@ -86,12 +85,12 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
         .then((response) => response.text())
         .then((data) => {
           const parser = new WMSCapabilities();
-          const result = parser.read(data) as WMSCapabilitiesOptions;
+          const result = parser.read(data);
           const allLayers = extractLayers(result.Capability.Layer);
-          const layers = allLayers.filter((layer: WMSCapabilitiesOptions) => {
+          const layers = allLayers.filter((layer: WMSLayer) => {
             const hasEPSG3857 = layer.CRS.includes("EPSG:3857");
             return hasEPSG3857;
-          }).map((layer: WMSCapabilitiesOptions, index: number) => ({
+          }).map((layer: WMSLayer, index: number) => ({
             name: layer.Name,
             title: layer.Title,
             key: `${layer.Name}-${index}`,
