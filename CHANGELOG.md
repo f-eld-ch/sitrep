@@ -5,6 +5,10 @@
 - *(map)* Improve WMS layer parsing - ([1cd5672](https://github.com/f-eld-ch/sitrep/commit/1cd56721b01b33e0419eb8d5b60ede521f61702f))
 - *(map)* Allow WMS layers to be loaded from remote servers ([#703](https://github.com/f-eld-ch/sitrep/issues/703)) - ([d773269](https://github.com/f-eld-ch/sitrep/commit/d773269d937371736fcf7b437b99a1478a1af132))
 
+### 🐛 Bug Fixes
+
+- *(map)* Make sure to fetch WMS with proper CORS options - ([90c11c9](https://github.com/f-eld-ch/sitrep/commit/90c11c96686f56d9255ee7f4b706a71bd1f4e47c))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 5.1.1 to 5.2.0 in /ui ([#707](https://github.com/f-eld-ch/sitrep/issues/707)) - ([d2ed6fd](https://github.com/f-eld-ch/sitrep/commit/d2ed6fd678a4a7a22cc440652313f39e142b713e))
