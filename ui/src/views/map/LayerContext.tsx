@@ -23,6 +23,7 @@ export interface WMSLayer {
   server: string;
   opacity: number;
   isVisible: boolean;
+  legendURL?: string;
 }
 
 export interface LayerState {

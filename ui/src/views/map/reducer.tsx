@@ -78,6 +78,7 @@ export interface AddWMSLayerAction {
     title: string;
     opacity: number;
     server: string;
+    legendURL?: string;
   };
 }
 
@@ -195,6 +196,7 @@ export const wmsLayersReducer = (
           opacity: action.payload.opacity,
           server: action.payload.server,
           isVisible: true,
+          legendURL: action.payload.legendURL,
         },
       ];
     case "UPDATE_WMS_LAYER_OPACITY":
