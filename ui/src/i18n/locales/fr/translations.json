@@ -40,7 +40,11 @@
     "layer": "calque",
     "unlock": "Désamarrer le signe",
     "lock": "Verrouiller le signe",
-    "Gefahrenkarte": "Cartes des dangers"
+    "Gefahrenkarte": "Cartes des dangers",
+    "wmsLayerMenu": {
+      "errorFetchingLayers": "Erreur lors de la récupération des calques.",
+      "noLayersFound": "Aucun calque compatible trouvé. Le serveur WMS doit prendre en charge la projection EPSG:3857."
+    }
   },
   "babs": {
     "groups": {

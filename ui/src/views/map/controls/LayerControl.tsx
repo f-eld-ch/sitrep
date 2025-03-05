@@ -21,7 +21,7 @@ function LayerPanel() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
+      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end" >
         <button
           type="button"
           className={btnClass}
@@ -35,8 +35,8 @@ function LayerPanel() {
 
   return (
     <nav
-      className="panel has-background-white is-align-self-flex-end"
-      style={{ pointerEvents: "auto" }}
+      className="panel has-background-white is-align-self-flex-end "
+      style={{ pointerEvents: "auto", width: "40vh" }}
     >
       <p className="panel-heading is-flex is-justify-content-space-between is-align-items-center is-size-6">
         {t("layerControl.layers")}

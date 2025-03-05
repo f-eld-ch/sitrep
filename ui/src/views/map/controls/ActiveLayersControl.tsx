@@ -53,6 +53,7 @@ const ActiveLayersControl: React.FC = () => {
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
               <FontAwesomeIcon icon={faDrawPolygon} size="lg" />
             </span>
+            {/* biome-ignore lint/a11y/useValidAnchor: not needed */}
             <a onClick={() => handleLayerClick(layer.id)}>{layer.name}</a>
           </div>
         </div>
@@ -60,25 +61,26 @@ const ActiveLayersControl: React.FC = () => {
       {state.wmsLayers.map((layer: WMSLayer) => (
         <div
           key={layer.name}
-          className="panel-block is-align-items-flex-start is-justify-content-space-between"
+          className="panel-block is-align-items-center is-justify-content-space-between"
         >
-          <div className="mr-3 is-align-items-flex-start is-align-content-center">
+          <div className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2">
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
               <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
             </span>
             <span>{layer.title}</span>
           </div>
-          <div className="is-align-items-flex-end">
+          <div className="is-align-items-flex-end is-flex-shrink-0">
             <button
+              className="mr-2 is-align-self-center"
               type="button"
               onClick={() =>
                 handleVisibilityToggle(layer.name, !layer.isVisible)
               }
-              style={{ marginRight: "10px" }}
             >
               <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
             </button>
             <input
+              className="mr-2"
               type="range"
               min="0"
               max="1"
@@ -90,15 +92,15 @@ const ActiveLayersControl: React.FC = () => {
                   Number.parseFloat(e.target.value),
                 )
               }
-              style={{ marginRight: "10px" }}
             />
             <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
               <FontAwesomeIcon icon={faTrash} />
             </button>
           </div>
         </div>
-      ))}
-    </div>
+      ))
+      }
+    </div >
   );
 };
 
