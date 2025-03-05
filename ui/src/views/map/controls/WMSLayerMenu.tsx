@@ -129,7 +129,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
     } else if (serverLayersCache[selectedServer]) {
       setLayers(serverLayersCache[selectedServer]);
     }
-  }, [selectedServer, serverLayersCache]);
+  }, [selectedServer, serverLayersCache, i18n.language]);
 
   const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const layerName = event.target.value;
