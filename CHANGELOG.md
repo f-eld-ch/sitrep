@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Add legend for WMS layers ([#709](https://github.com/f-eld-ch/sitrep/issues/709)) - ([0f7ca59](https://github.com/f-eld-ch/sitrep/commit/0f7ca59ede85cf647283f6d87664c879f03bbf89))
 - *(map)* Improve WMS layer parsing - ([1cd5672](https://github.com/f-eld-ch/sitrep/commit/1cd56721b01b33e0419eb8d5b60ede521f61702f))
 - *(map)* Allow WMS layers to be loaded from remote servers ([#703](https://github.com/f-eld-ch/sitrep/issues/703)) - ([d773269](https://github.com/f-eld-ch/sitrep/commit/d773269d937371736fcf7b437b99a1478a1af132))
 
