@@ -7,6 +7,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(map)* Improve WMS layer loading and show proper error messages - ([994883b](https://github.com/f-eld-ch/sitrep/commit/994883ba5e868c344b6178e76a4baa2e07cd3ec9))
 - *(map)* Make sure to fetch WMS with proper CORS options - ([90c11c9](https://github.com/f-eld-ch/sitrep/commit/90c11c96686f56d9255ee7f4b706a71bd1f4e47c))
 
 ### ⚙️  Other
