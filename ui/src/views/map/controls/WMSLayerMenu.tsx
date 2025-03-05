@@ -12,6 +12,7 @@ const FETCH_LAYERS_ERROR = new Error("wmsLayerMenu.errorFetchingLayers");
 type WMSLayerMenuError = typeof NO_LAYERS_FOUND_ERROR | typeof FETCH_LAYERS_ERROR;
 
 interface Layer {
+  legendURL: string | undefined;
   name: string;
   title: string;
   key: string;
@@ -31,16 +32,23 @@ interface WMSLayer {
   Title: string;
   CRS: string[];
   Layer?: WMSLayer[];
+  Style?: {
+    LegendURL?: {
+      OnlineResource: string;
+    }[];
+  }[];
+  legendURL?: string;
 }
 
-const extractLayers = (layer: WMSLayer): WMSLayer[] => {
+const extractLayers = (layer: WMSLayer, server: string): WMSLayer[] => {
   let layers: WMSLayer[] = [];
   if (layer.Layer) {
     for (const subLayer of layer.Layer) {
-      layers = layers.concat(extractLayers(subLayer));
+      layers = layers.concat(extractLayers(subLayer, server));
     }
   } else {
-    layers.push(layer);
+    const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
+    layers.push({ ...layer, legendURL: legendURL ? legendURL : undefined });
   }
   return layers;
 };
@@ -71,9 +79,6 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
   const WMS_SERVERS = [
     { name: t("mapview.Gefahrenkarte"), url: `https://geodienste.ch/db/gefahrenkarten_v1_3_0/${language}` },
     { name: "geo.admin.ch", url: "https://wms.geo.admin.ch" },
-    { name: "geo.ur.ch", url: "https://geo.ur.ch/wms" },
-    { name: "sitn.ne.ch", url: "https://sitn.ne.ch/services/wms" },
-    { name: "map.geo.sz.ch", url: "https://map.geo.sz.ch/mapserv_proxy" },
   ];
 
   useEffect(() => {
@@ -86,14 +91,13 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
       setIsLoading(true);
       setError(null);
       fetch(
-        `${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities`
+        `${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`
       )
         .then((response) => response.text())
         .then((data) => {
           const parser = new WMSCapabilities();
           const result = parser.read(data);
-          console.log(result);
-          const allLayers = extractLayers(result.Capability.Layer);
+          const allLayers = extractLayers(result.Capability.Layer, selectedServer);
           const layers = allLayers.filter((layer: WMSLayer) => {
             const hasEPSG3857 = layer.CRS?.includes("EPSG:3857") || result.Capability.Layer.CRS?.includes("EPSG:3857");
             return hasEPSG3857;
@@ -101,11 +105,11 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
             name: layer.Name,
             title: layer.Title,
             key: `${layer.Name}-${index}`,
+            legendURL: layer.legendURL,
           })).sort((a, b) => a.title.localeCompare(b.title));
           if (layers.length === 0) {
             throw NO_LAYERS_FOUND_ERROR;
           }
-          console.log("Fetched WMS layers:", layers);
           setLayers(layers);
           setServerLayersCache((prevCache) => ({
             ...prevCache,
@@ -115,7 +119,6 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
         })
         .catch((error) => {
           if (error !== NO_LAYERS_FOUND_ERROR) {
-            console.error("Error fetching WMS layers:", error);
             setError(FETCH_LAYERS_ERROR)
           } else {
             setError(error);
@@ -126,7 +129,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
     } else if (serverLayersCache[selectedServer]) {
       setLayers(serverLayersCache[selectedServer]);
     }
-  }, [selectedServer, serverLayersCache]);
+  }, [selectedServer, serverLayersCache, i18n.language]);
 
   const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const layerName = event.target.value;
@@ -140,6 +143,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
           title: layer.title,
           opacity: 0.7,
           server: selectedServer,
+          legendURL: layer.legendURL,
         },
       });
       disable();
