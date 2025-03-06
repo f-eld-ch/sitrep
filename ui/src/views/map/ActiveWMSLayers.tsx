@@ -4,13 +4,13 @@ import { LayerContext, type WMSLayer } from "./LayerContext";
 
 const ActiveWMSLayers = () => {
   const { state } = useContext(LayerContext);
-  if (!state.wmsLayers) {
+  if (!state.wms.activeLayers) {
     return null;
   }
 
   return (
     <>
-      {state.wmsLayers
+      {state.wms.activeLayers
         .filter((layer: WMSLayer) => layer.isVisible)
         .map((layer: WMSLayer) => (
           <Source

@@ -64,7 +64,7 @@ const ActiveLayersControl: React.FC = () => {
           </div>
         </div>
       ))}
-      {state.wmsLayers.map((layer: WMSLayer) => (
+      {state.wms.activeLayers.map((layer: WMSLayer) => (
         <div
           key={layer.name}
           className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap"
@@ -123,8 +123,7 @@ const ActiveLayersControl: React.FC = () => {
             </div>
           )}
         </div>
-      ))
-      }
+      ))}
     </div >
   );
 };

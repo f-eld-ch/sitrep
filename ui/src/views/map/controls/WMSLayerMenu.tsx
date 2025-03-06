@@ -2,9 +2,8 @@ import classNames from "classnames";
 import type React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LayerContext } from "../LayerContext";
+import { LayerContext, type WMSLayer as StateLayer, type WMSServer } from "../LayerContext";
 import WMSCapabilities from "ol/format/WMSCapabilities";
-
 
 const NO_LAYERS_FOUND_ERROR = new Error("wmsLayerMenu.noLayersFound");
 const FETCH_LAYERS_ERROR = new Error("wmsLayerMenu.errorFetchingLayers");
@@ -15,7 +14,9 @@ interface Layer {
   legendURL: string | undefined;
   name: string;
   title: string;
+  server: string;
   key: string;
+  crs: string[];
 }
 
 const getBaseDomain = (url: string) => {
@@ -27,11 +28,11 @@ const getBaseDomain = (url: string) => {
   }
 };
 
-interface WMSLayer {
+interface WMSCapabilitiesLayer {
   Name: string;
   Title: string;
   CRS: string[];
-  Layer?: WMSLayer[];
+  Layer?: WMSCapabilitiesLayer[];
   Style?: {
     LegendURL?: {
       OnlineResource: string;
@@ -40,81 +41,77 @@ interface WMSLayer {
   legendURL?: string;
 }
 
-const extractLayers = (layer: WMSLayer, server: string): WMSLayer[] => {
-  let layers: WMSLayer[] = [];
+const extractLayers = (layer: WMSCapabilitiesLayer, server: string): Layer[] => {
+  let layers: Layer[] = [];
   if (layer.Layer) {
     for (const subLayer of layer.Layer) {
       layers = layers.concat(extractLayers(subLayer, server));
     }
   } else {
     const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
-    layers.push({ ...layer, legendURL: legendURL ? legendURL : undefined });
+    layers.push({
+      ...layer,
+      legendURL: legendURL ? legendURL : undefined,
+      name: layer.Name,
+      title: layer.Title,
+      server,
+      key: `${layer.Name}-${server}`,
+      crs: layer.CRS,
+    });
   }
   return layers;
 };
 
 const WMSLayerMenu = (props: { disable: () => void }) => {
-  const [layers, setLayers] = useState<Layer[]>([]);
+  const [layers, setLayers] = useState<StateLayer[]>([]);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
-  const [selectedServer, setSelectedServer] = useState<string>("");
   const [customServer, setCustomServer] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [serverLayersCache, setServerLayersCache] = useState<
-    Record<string, Layer[]>
-  >({});
   const [error, setError] = useState<WMSLayerMenuError | null>(null);
-  const { dispatch } = useContext(LayerContext);
+  const { dispatch, state } = useContext(LayerContext);
   const { disable } = props;
   const { t, i18n } = useTranslation();
 
-  const languageMap: Record<string, string> = {
-    de: "ger",
-    fr: "fra",
-    it: "ita",
-    en: "ger",
-  };
-
-  const language = languageMap[i18n.language] || "ger";
-
-  const WMS_SERVERS = [
-    { name: t("mapview.Gefahrenkarte"), url: `https://geodienste.ch/db/gefahrenkarten_v1_3_0/${language}` },
-    { name: "geo.admin.ch", url: "https://wms.geo.admin.ch" },
-  ];
+  useEffect(() => {
+    const initialServer = state.wms.servers[0].url;
+    dispatch({ type: "SET_WMS_SERVER", payload: { server: initialServer } });
+  }, [state.wms.servers, dispatch]);
 
   useEffect(() => {
-    const initialServer = WMS_SERVERS[0].url;
-    setSelectedServer(initialServer);
-  }, [WMS_SERVERS[0].url]);
-
-  useEffect(() => {
-    if (selectedServer && !serverLayersCache[selectedServer]) {
+    if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
       setIsLoading(true);
       setError(null);
       fetch(
-        `${selectedServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`
+        `${state.wms.currentServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`
       )
         .then((response) => response.text())
         .then((data) => {
           const parser = new WMSCapabilities();
           const result = parser.read(data);
-          const allLayers = extractLayers(result.Capability.Layer, selectedServer);
-          const layers = allLayers.filter((layer: WMSLayer) => {
-            const hasEPSG3857 = layer.CRS?.includes("EPSG:3857") || result.Capability.Layer.CRS?.includes("EPSG:3857");
+          const allLayers = extractLayers(result.Capability.Layer, state.wms.currentServer);
+          const layers = allLayers.filter((layer: Layer) => {
+            const hasEPSG3857 = layer.crs?.includes("EPSG:3857") || result.Capability.Layer.CRS?.includes("EPSG:3857");
             return hasEPSG3857;
-          }).map((layer: WMSLayer, index: number) => ({
-            name: layer.Name,
-            title: layer.Title,
-            key: `${layer.Name}-${index}`,
+          }).map((layer: Layer, index: number) => ({
+            name: layer.name,
+            title: layer.title,
+            key: `${layer.name}-${index}`,
             legendURL: layer.legendURL,
+            isVisible: true,
+            opacity: 1,
+            server: state.wms.currentServer,
           })).sort((a, b) => a.title.localeCompare(b.title));
           if (layers.length === 0) {
             throw NO_LAYERS_FOUND_ERROR;
           }
           setLayers(layers);
-          setServerLayersCache((prevCache) => ({
-            ...prevCache,
-            [selectedServer]: layers,
-          }));
+          dispatch({
+            type: "SET_WMS_SERVER_LAYERS_CACHE",
+            payload: {
+              server: state.wms.currentServer,
+              layers: layers
+            },
+          });
           setIsLoading(false);
         })
         .catch((error) => {
@@ -126,10 +123,16 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
           setLayers([]);
           setIsLoading(false);
         });
-    } else if (serverLayersCache[selectedServer]) {
-      setLayers(serverLayersCache[selectedServer]);
+    } else if (state.wms.availableLayers[state.wms.currentServer]) {
+      const layers = state.wms.availableLayers[state.wms.currentServer].map((layer: StateLayer) => ({
+        ...layer,
+        isVisible: true,
+        opacity: 1,
+        server: state.wms.currentServer,
+      }));
+      setLayers(layers);
     }
-  }, [selectedServer, serverLayersCache, i18n.language]);
+  }, [state.wms.currentServer, state.wms.availableLayers, i18n.language, dispatch]);
 
   const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const layerName = event.target.value;
@@ -142,7 +145,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
           layerName: layerName,
           title: layer.title,
           opacity: 0.7,
-          server: selectedServer,
+          server: state.wms.currentServer,
           legendURL: layer.legendURL,
         },
       });
@@ -151,7 +154,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
   };
 
   const handleServerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedServer(event.target.value);
+    dispatch({ type: "SET_WMS_SERVER", payload: { server: event.target.value } });
     setCustomServer("");
   };
 
@@ -164,11 +167,15 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
   const handleCustomServerSubmit = () => {
     if (customServer) {
       const baseDomain = getBaseDomain(customServer);
-      setSelectedServer(customServer);
-      WMS_SERVERS.push({ name: baseDomain, url: customServer });
+      dispatch({ type: "SET_WMS_SERVER", payload: { server: customServer } });
+      dispatch({ type: "ADD_CUSTOM_WMS_SERVER", payload: { server: { name: baseDomain, url: customServer } } });
       setCustomServer("");
     }
   };
+
+  const filteredServers = state.wms.servers.filter(
+    (server) => !server.language || server.language === i18n.language
+  );
 
   return (
     <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column">
@@ -178,9 +185,9 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
             <select
               className="mb-2"
               onChange={handleServerSelect}
-              value={selectedServer}
+              value={state.wms.currentServer}
             >
-              {WMS_SERVERS.map((server) => (
+              {filteredServers.map((server: WMSServer) => (
                 <option key={server.url} value={server.url}>
                   {server.name}
                 </option>
@@ -190,7 +197,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
           </div>
         </div>
 
-        {selectedServer === "" && (
+        {state.wms.currentServer === "" && (
           <div className="column">
             <input
               type="text"
@@ -209,7 +216,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
             </button>
           </div>
         )}
-        {selectedServer && (
+        {state.wms.currentServer && (
           <div className="column">
             <div
               className={classNames({
@@ -227,8 +234,8 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
                 <option value="" disabled>
                   {t("wmsLayerMenu.selectLayer")}
                 </option>
-                {layers.map((layer) => (
-                  <option key={layer.key} value={layer.name}>
+                {layers.map((layer, index) => (
+                  <option key={`${layer.name}-${index}`} value={layer.name}>
                     {layer.title}
                   </option>
                 ))}

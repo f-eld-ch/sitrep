@@ -40,7 +40,6 @@
     "layer": "Layer",
     "unlock": "Unlock symbol",
     "lock": "Lock Symbol",
-    "Gefahrenkarte": "Hazard map",
     "wmsLayerMenu": {
       "errorFetchingLayers": "Error fetching layers",
       "noLayersFound": "No compatible layers found. WMS Server must support EPSG:3857 projection."
