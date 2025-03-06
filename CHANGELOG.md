@@ -11,6 +11,10 @@
 - *(map)* Improve WMS layer loading and show proper error messages - ([994883b](https://github.com/f-eld-ch/sitrep/commit/994883ba5e868c344b6178e76a4baa2e07cd3ec9))
 - *(map)* Make sure to fetch WMS with proper CORS options - ([90c11c9](https://github.com/f-eld-ch/sitrep/commit/90c11c96686f56d9255ee7f4b706a71bd1f4e47c))
 
+### 🚜 Refactor
+
+- *(map)* Optimize WMS state handling ([#710](https://github.com/f-eld-ch/sitrep/issues/710)) - ([35050cd](https://github.com/f-eld-ch/sitrep/commit/35050cd7b18e3915716d2e21818cd8ebcfbfa0c5))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 5.1.1 to 5.2.0 in /ui ([#707](https://github.com/f-eld-ch/sitrep/issues/707)) - ([d2ed6fd](https://github.com/f-eld-ch/sitrep/commit/d2ed6fd678a4a7a22cc440652313f39e142b713e))
