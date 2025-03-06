@@ -40,7 +40,6 @@
     "layer": "Layer",
     "unlock": "Fixierte Signatur lösen",
     "lock": "Signatur fixieren",
-    "Gefahrenkarte": "Gefahrenkarten",
     "wmsLayerMenu": {
       "errorFetchingLayers": "WMS Server konnte nicht erreicht werden oder keine Layer gefunden.",
       "noLayersFound": "Keine kompatiblen Layers gefunden. WMS Server muss EPSG:3857 Projektion unterstützen."

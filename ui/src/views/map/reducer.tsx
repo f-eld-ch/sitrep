@@ -6,7 +6,9 @@ import type {
   DrawState,
   LayersState,
   SelectedFeatureState,
-  WMSLayersState,
+  WMSLayer,
+  WMSState,
+  WMSServer,
 } from "./LayerContext";
 
 // All valid actions
@@ -22,7 +24,10 @@ export type LayersAction =
   | UpdateWMSLayerOpacityAction
   | ToggleLayerVisibilityAction
   | UpdateLayerOpacityAction
-  | RemoveWMSLayerAction;
+  | RemoveWMSLayerAction
+  | SetWMSServerAction
+  | SetWMSServerLayersCacheAction
+  | AddCustomWMSServerAction;
 
 export interface SetLayerAction {
   type: "SET_LAYERS";
@@ -113,6 +118,28 @@ export interface RemoveWMSLayerAction {
   };
 }
 
+export interface SetWMSServerAction {
+  type: "SET_WMS_SERVER";
+  payload: {
+    server: string;
+  };
+}
+
+export interface SetWMSServerLayersCacheAction {
+  type: "SET_WMS_SERVER_LAYERS_CACHE";
+  payload: {
+    server: string;
+    layers: WMSLayer[];
+  };
+}
+
+export interface AddCustomWMSServerAction {
+  type: "ADD_CUSTOM_WMS_SERVER";
+  payload: {
+    server: WMSServer;
+  };
+}
+
 export const layersReducer = (state: LayersState, action: LayersAction) => {
   switch (action.type) {
     case "SET_LAYERS":
@@ -179,40 +206,67 @@ export const drawReducer = (state: DrawState, action: LayersAction) => {
   }
 };
 
-export const wmsLayersReducer = (
-  state: WMSLayersState,
-  action: LayersAction,
-) => {
+export const wmsReducer = (state: WMSState, action: LayersAction) => {
   switch (action.type) {
     case "ADD_WMS_LAYER":
-      if (state.some((layer) => layer.name === action.payload.layerName)) {
+      if (state.activeLayers.some((layer) => layer.name === action.payload.layerName)) {
         return state;
       }
-      return [
+      return {
         ...state,
-        {
-          name: action.payload.layerName,
-          title: action.payload.title,
-          opacity: action.payload.opacity,
-          server: action.payload.server,
-          isVisible: true,
-          legendURL: action.payload.legendURL,
-        },
-      ];
+        activeLayers: [
+          ...state.activeLayers,
+          {
+            name: action.payload.layerName,
+            title: action.payload.title,
+            opacity: action.payload.opacity,
+            server: action.payload.server,
+            isVisible: true,
+            legendURL: action.payload.legendURL,
+          },
+        ],
+      };
     case "UPDATE_WMS_LAYER_OPACITY":
-      return state.map((layer) =>
-        layer.name === action.payload.layerName
-          ? { ...layer, opacity: action.payload.opacity }
-          : layer,
-      );
+      return {
+        ...state,
+        activeLayers: state.activeLayers.map((layer) =>
+          layer.name === action.payload.layerName
+            ? { ...layer, opacity: action.payload.opacity }
+            : layer,
+        ),
+      };
     case "TOGGLE_LAYER_VISIBILITY":
-      return state.map((layer) =>
-        layer.name === action.payload.layerName
-          ? { ...layer, isVisible: action.payload.isVisible }
-          : layer,
-      );
+      return {
+        ...state,
+        activeLayers: state.activeLayers.map((layer) =>
+          layer.name === action.payload.layerName
+            ? { ...layer, isVisible: action.payload.isVisible }
+            : layer,
+        ),
+      };
     case "REMOVE_WMS_LAYER":
-      return state.filter((layer) => layer.name !== action.payload.layerName);
+      return {
+        ...state,
+        activeLayers: state.activeLayers.filter((layer) => layer.name !== action.payload.layerName),
+      };
+    case "SET_WMS_SERVER":
+      return {
+        ...state,
+        currentServer: action.payload.server,
+      };
+    case "SET_WMS_SERVER_LAYERS_CACHE":
+      return {
+        ...state,
+        availableLayers: {
+          ...state.availableLayers,
+          [action.payload.server]: action.payload.layers,
+        },
+      };
+    case "ADD_CUSTOM_WMS_SERVER":
+      return {
+        ...state,
+        servers: [...state.servers, action.payload.server],
+      };
     default:
       return state;
   }

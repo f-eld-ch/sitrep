@@ -40,7 +40,6 @@
     "layer": "Livello",
     "unlock": "Rilasciare l'allineamento",
     "lock": "Fissare l'allineamento",
-    "Gefahrenkarte": "Carte dei pericoli",
     "wmsLayerMenu": {
       "errorFetchingLayers": "Impossibile raggiungere il server WMS o non sono stati trovati livelli.",
       "noLayersFound": "Nessun livello compatibile trovato. Il server WMS deve supportare la proiezione EPSG:3857."
