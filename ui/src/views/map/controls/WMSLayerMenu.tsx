@@ -234,8 +234,8 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
                 <option value="" disabled>
                   {t("wmsLayerMenu.selectLayer")}
                 </option>
-                {layers.map((layer) => (
-                  <option key={layer.key} value={layer.name}>
+                {layers.map((layer, index) => (
+                  <option key={`${layer.name}-${index}`} value={layer.name}>
                     {layer.title}
                   </option>
                 ))}
