@@ -4,6 +4,10 @@
 
 - *(map)* Support multiple drawing layers ([#713](https://github.com/f-eld-ch/sitrep/issues/713)) - ([27d22b7](https://github.com/f-eld-ch/sitrep/commit/27d22b7b92fd5f3d4c3e1985ac97cef183ce1205))
 
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.13.1 to 3.13.2 in /ui ([#712](https://github.com/f-eld-ch/sitrep/issues/712)) - ([4a271fe](https://github.com/f-eld-ch/sitrep/commit/4a271fe49429a9314fc79e79f227a36d73b1a98c))
+
 
 ## [25.3.0](https://github.com/f-eld-ch/sitrep/compare/v25.2.5..v25.3.0) - 2025-03-06
 
