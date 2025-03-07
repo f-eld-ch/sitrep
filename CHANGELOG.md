@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Add translations for new drawing and WMS layer menu ([#714](https://github.com/f-eld-ch/sitrep/issues/714)) - ([4291477](https://github.com/f-eld-ch/sitrep/commit/42914774fae0dc920a730389af0775490bdbffbc))
 - *(map)* Support multiple drawing layers ([#713](https://github.com/f-eld-ch/sitrep/issues/713)) - ([27d22b7](https://github.com/f-eld-ch/sitrep/commit/27d22b7b92fd5f3d4c3e1985ac97cef183ce1205))
 
 ### ⚙️  Other
