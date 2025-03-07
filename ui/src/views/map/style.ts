@@ -527,15 +527,35 @@ export const drawStyle: LayerProps[] = [
   },
 ];
 
+
+
+
 export const displayStyle: LayerProps[] = [
+  // **
   {
-    id: "gl-polygon-special-fill-pattern",
+    id: "gl-draw-polygon-no-fill-pattern",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "$type", "Polygon"],
+      ["has", "zoneType"],
+      ["in", "zoneType", "Schadengebiet", "Einsatzraum"],
+
+    ],
+    paint: {
+      "fill-outline-color": ["coalesce", ["get", "color"], "#000000"],
+      "fill-opacity": 0,
+    },
+  },
+  {
+    id: "gl-draw-polygon-special-fill-pattern",
     type: "fill",
     filter: [
       "all",
       ["==", "$type", "Polygon"],
       ["has", "zoneType"],
       ["in", "zoneType", "Brandzone", "Zerstoerung"],
+
     ],
     paint: {
       "fill-pattern": [
@@ -547,12 +567,11 @@ export const displayStyle: LayerProps[] = [
         "babs:PatternZerstoert",
         "babs:PatternBrandzone",
       ],
-      "fill-antialias": true,
       "fill-opacity": 1,
     },
   },
   {
-    id: "gl-polygon-fill",
+    id: "gl-draw-polygon-fill-inactive",
     type: "fill",
     filter: [
       "all",
@@ -565,6 +584,7 @@ export const displayStyle: LayerProps[] = [
         "Schadengebiet",
         "Einsatzraum",
       ],
+
     ],
     paint: {
       "fill-color": ["coalesce", ["get", "color"], "#000000"],
@@ -573,9 +593,12 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-polygon-stroke-inactive",
+    id: "gl-draw-polygon-stroke-inactive",
     type: "line",
-    filter: ["all", ["==", "$type", "Polygon"]],
+    filter: [
+      "all",
+      ["==", "$type", "Polygon"],
+    ],
     layout: {
       "line-cap": "round",
       "line-join": "round",
@@ -586,9 +609,13 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-inactive",
+    id: "gl-draw-line-inactive",
     type: "line",
-    filter: ["all", ["==", "$type", "LineString"], ["!has", "lineType"]],
+    filter: [
+      "all",
+      ["==", "$type", "LineString"],
+      ["!has", "lineType"],
+    ],
     layout: {
       "line-cap": "round",
       "line-join": "round",
@@ -600,7 +627,7 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-inactive-normalLine",
+    id: "gl-draw-line-inactive-normalLine",
     type: "line",
     filter: [
       "all",
@@ -618,7 +645,7 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-inactive-pattern",
+    id: "gl-draw-line-inactive-pattern",
     type: "line",
     filter: [
       "all",
@@ -633,6 +660,7 @@ export const displayStyle: LayerProps[] = [
         "RutschgebietGespiegelt",
         "rettungsAchse",
       ],
+
     ],
     layout: {
       "line-cap": "round",
@@ -669,7 +697,7 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-inactive-solidlines",
+    id: "gl-draw-line-inactive-solidlines",
     type: "line",
     filter: [
       "all",
@@ -693,7 +721,7 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-inactive-dashlines",
+    id: "gl-draw-line-inactive-dashlines",
     type: "line",
     filter: [
       "all",
@@ -717,54 +745,39 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-line-symbol",
-    type: "symbol",
+    id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
+    type: "circle",
     filter: [
       "all",
-      ["==", "$type", "LineString"],
-      ["has", "icon"],
-      ["!has", "iconRotation"],
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
     ],
-    layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "icon"]],
-        ["get", "icon"],
-        "default_marker",
-      ],
-      "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+    paint: {
+      "circle-radius": 5,
+      "circle-color": "#fff",
     },
   },
   {
-    id: "gl-line-symbol-active",
-    type: "symbol",
+    id: "gl-draw-polygon-and-line-vertex-inactive",
+    type: "circle",
     filter: [
       "all",
-      ["==", "$type", "LineString"],
-      ["has", "iconRotation"],
-      ["has", "icon"],
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
+
     ],
-    layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "icon"]],
-        ["get", "icon"],
-        "default_marker",
-      ],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
-      "icon-allow-overlap": true,
-      "icon-rotation-alignment": "map",
-      "icon-pitch-alignment": "map",
-      "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],
+    paint: {
+      "circle-radius": 3,
+      "circle-color": "#fbb03b",
     },
   },
   {
-    id: "gl-point-icon",
+    id: "gl-draw-point-icon",
     type: "symbol",
     filter: [
       "all",
       ["==", "$type", "Point"],
+
       ["has", "icon"],
       ["!has", "iconRotation"],
     ],
@@ -781,7 +794,7 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-point-icon-rotation",
+    id: "gl-draw-point-icon-rotation",
     type: "symbol",
     filter: [
       "all",
@@ -804,20 +817,25 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-text-special-placement-points-center",
+    id: "gl-draw-text-special-placement-points-center",
     type: "symbol",
     filter: [
       "all",
+
       ["==", "$type", "Point"],
+
       ["has", "name"],
       ["has", "icon"],
       ["in", "icon", "EingesperrteAbgeschnittene", "Obdachlose"],
+
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
       "text-offset": [0, 0],
+      "icon-text-fit": "both",
+      "icon-text-fit-padding": [20, 20, 20, 20],
       "text-ignore-placement": true,
       "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
     },
@@ -826,33 +844,37 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-text-special-placement-points-right",
+    id: "gl-draw-text-special-placement-points-right",
     type: "symbol",
     filter: [
       "all",
+
       ["==", "$type", "Point"],
       ["has", "name"],
       ["has", "icon"],
       ["in", "icon", "Tote", "Vermisste", "Verletzte"],
+
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
-      "text-offset": [3, 0],
+      "text-offset": [1.5, 0.1],
       "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
+      "text-justify": "right",
+      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 18, 28],
     },
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#ff0000"],
     },
   },
   {
-    id: "gl-text-name-point",
+    id: "gl-draw-text-name-point",
     type: "symbol",
     filter: [
       "all",
       ["has", "name"],
+      ["has", "color"],
       [
         "!in",
         "icon",
@@ -863,23 +885,29 @@ export const displayStyle: LayerProps[] = [
         "Verletzte",
       ],
       ["==", "$type", "Point"],
+
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
-      "text-offset": [0, 1.75],
+      "text-offset": [0, 2],
       "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 11, 2, 17, 16],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 16],
     },
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#000000"],
     },
   },
   {
-    id: "gl-text-name-Polygon",
+    id: "gl-draw-text-name-Polygon",
     type: "symbol",
-    filter: ["all", ["has", "name"], ["==", "$type", "Polygon"]],
+    filter: [
+      "all",
+      ["has", "name"],
+      ["==", "$type", "Polygon"],
+
+    ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
       "text-font": ["B612 Bold"],
@@ -895,9 +923,14 @@ export const displayStyle: LayerProps[] = [
     },
   },
   {
-    id: "gl-text-name-LineString",
+    id: "gl-draw-text-name-LineString",
     type: "symbol",
-    filter: ["all", ["has", "name"], ["==", "$type", "LineString"]],
+    filter: [
+      "all",
+      ["has", "name"],
+      ["==", "$type", "LineString"],
+
+    ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
       "text-font": ["B612 Bold"],
@@ -910,29 +943,6 @@ export const displayStyle: LayerProps[] = [
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#000000"],
       "text-halo-color": "#fff",
-    },
-  },
-  {
-    id: "gl-point-inactive",
-    type: "circle",
-    filter: [
-      "all",
-      ["==", "$type", "Point"],
-      ["!has", "icon"],
-      ["!=", "mode", "static"],
-    ],
-    paint: {
-      "circle-radius": 5,
-      "circle-color": "#0055ff",
-    },
-  },
-  {
-    id: "gl-point-stroke-active",
-    type: "circle",
-    filter: ["all", ["==", "$type", "Point"], ["!has", "icon"]],
-    paint: {
-      "circle-radius": 7,
-      "circle-color": "#fff",
     },
   },
 ];

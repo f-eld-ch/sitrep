@@ -14,16 +14,15 @@ import type {
 // All valid actions
 export type LayersAction =
   | SetLayerAction
-  | AddLayerAction
   | RemoveLayerAction
+  | ToggleLayerVisibilityAction
   | SelectFeatureAction
   | DeselectFeature
   | SetActiveLayer
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
-  | ToggleLayerVisibilityAction
-  | UpdateLayerOpacityAction
+  | ToggleWMSLayerVisibilityAction
   | RemoveWMSLayerAction
   | SetWMSServerAction
   | SetWMSServerLayersCacheAction
@@ -33,13 +32,6 @@ export interface SetLayerAction {
   type: "SET_LAYERS";
   payload: {
     layers: Layer[];
-  };
-}
-
-export interface AddLayerAction {
-  type: "ADD_LAYER";
-  payload: {
-    layer: Layer;
   };
 }
 
@@ -54,6 +46,14 @@ export interface SetActiveLayer {
   type: "SET_ACTIVE_LAYER";
   payload: {
     layerId: string;
+  };
+}
+
+export interface ToggleLayerVisibilityAction {
+  type: "TOGGLE_LAYER_VISIBILITY";
+  payload: {
+    layerId: string;
+    isVisible: boolean;
   };
 }
 
@@ -95,19 +95,11 @@ export interface UpdateWMSLayerOpacityAction {
   };
 }
 
-export interface ToggleLayerVisibilityAction {
-  type: "TOGGLE_LAYER_VISIBILITY";
+export interface ToggleWMSLayerVisibilityAction {
+  type: "TOGGLE_WMS_LAYER_VISIBILITY";
   payload: {
     layerName: string;
     isVisible: boolean;
-  };
-}
-
-export interface UpdateLayerOpacityAction {
-  type: "UPDATE_LAYER_OPACITY";
-  payload: {
-    layerName: string;
-    opacity: number;
   };
 }
 
@@ -143,27 +135,20 @@ export interface AddCustomWMSServerAction {
 export const layersReducer = (state: LayersState, action: LayersAction) => {
   switch (action.type) {
     case "SET_LAYERS":
-      return action.payload.layers;
-    case "ADD_LAYER":
-      return [...state, action.payload.layer];
-    case "REMOVE_LAYER":
-      return [...state.filter((layer) => layer.id !== action.payload.id)];
+      return action.payload.layers.map((layer) => ({
+        layer,
+        isVisible: true,
+      }));
     case "TOGGLE_LAYER_VISIBILITY":
-      return state.map((layer) =>
-        layer.id === action.payload.layerName
-          ? { ...layer, isVisible: action.payload.isVisible }
-          : layer,
-      );
-    case "UPDATE_LAYER_OPACITY":
-      return state.map((layer) =>
-        layer.id === action.payload.layerName
-          ? { ...layer, opacity: action.payload.opacity }
-          : layer,
+      return state.map((s) =>
+        s.layer.id === action.payload.layerId
+          ? { ...s, isVisible: action.payload.isVisible }
+          : s,
       );
     default:
       return state;
   }
-};
+}
 
 export const selectedFeatureReducer = (
   state: SelectedFeatureState,
@@ -235,7 +220,7 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
             : layer,
         ),
       };
-    case "TOGGLE_LAYER_VISIBILITY":
+    case "TOGGLE_WMS_LAYER_VISIBILITY":
       return {
         ...state,
         activeLayers: state.activeLayers.map((layer) =>

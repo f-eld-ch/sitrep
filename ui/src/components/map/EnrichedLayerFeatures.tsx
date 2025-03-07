@@ -131,9 +131,9 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
   );
 
   return (
-    <Source key={id} id={id} type="geojson" data={enrichedFC}>
+    <Source key={id} type="geojson" data={enrichedFC}>
       <Layer
-        id={`${id}enriched-points`}
+        id={`${id}-enriched-points`}
         type="symbol"
         layout={{
           "icon-image": ["coalesce", ["get", "icon"], "default_marker"],

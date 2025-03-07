@@ -255,8 +255,9 @@
   },
   "layerControl": {
     "layers": "Calques",
-    "activeLayers": "Calques actives",
-    "addWmsLayers": "Ajouter des calques WMS"
+    "drawingLayers": "Calques de dessin",
+    "wmsLayers": "Calques WMS",
+    "addWMSLayer": "Ajouter un calque WMS"
   },
   "wmsLayerMenu": {
     "customServer": "Serveur personnalisé",
