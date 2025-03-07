@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🚜 Refactor
+
+- *(map)* Adds map styles generator function for display and draw - ([a7f59f0](https://github.com/f-eld-ch/sitrep/commit/a7f59f0d55abc25bb8add7fc6fa43f075a49cce3))
+
+
 ## [25.3.1](https://github.com/f-eld-ch/sitrep/compare/v25.3.0..v25.3.1) - 2025-03-07
 
 ### ⛰️  Features
