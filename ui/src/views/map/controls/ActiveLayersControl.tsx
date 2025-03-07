@@ -10,8 +10,7 @@ import classNames from "classnames";
 import type React from "react";
 import { useContext, useState } from "react";
 import { useMutation } from "@apollo/client";
-import type { Layer } from "types/layer";
-import { type DrawingLayerState, LayerContext } from "../LayerContext";
+import { LayerContext } from "../LayerContext";
 import { AddLayer, GetLayers } from "../graphql";
 import { useParams } from "react-router";
 
@@ -36,18 +35,6 @@ const ActiveLayersControl: React.FC = () => {
       onError: (error) => {
         console.error("Error adding feature:", error);
       },
-      optimisticResponse: (id: any) => {
-        return {
-          __typename: "Mutation",
-          insertFeaturesOne: {
-            __typename: "Layer",
-            id: id,
-            createdAt: new Date(),
-            updatedAt: null,
-            deletedAt: null,
-          },
-        };
-      },
     });
     setLayerName("");
     setShowAddLayer(false);
@@ -56,13 +43,13 @@ const ActiveLayersControl: React.FC = () => {
   const handleVisibilityToggle = (layerId: string, isVisible: boolean) => {
     dispatch({
       type: "TOGGLE_LAYER_VISIBILITY",
-      payload: { layerName: layerId, isVisible },
+      payload: { layerId: layerId, isVisible },
     });
   };
 
   return (
     <div className="active-layers-control is-size-7">
-      {state.layers.map((s: DrawingLayerState) => (
+      {state.layers.map((s) => (
         <div
           key={s.layer.id}
           className={classNames({
@@ -79,17 +66,29 @@ const ActiveLayersControl: React.FC = () => {
             {/* biome-ignore lint/a11y/useValidAnchor: not needed */}
             <a onClick={() => handleLayerClick(s.layer.id)}>{s.layer.name}</a>
           </div>
-          <div className="is-align-items-flex-end is-flex-shrink-0">
-            <button
-              className="mr-2 is-align-self-center"
-              type="button"
-              onClick={() =>
-                handleVisibilityToggle(s.layer.id, !s.isVisible)
-              }
-            >
-              <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
-            </button>
-          </div>
+          {s.layer.id !== state.activeLayer && (
+            <div className="is-align-items-flex-end is-flex-shrink-0">
+              <button
+                className="mr-2 is-align-self-center"
+                type="button"
+                onClick={() =>
+                  handleVisibilityToggle(s.layer.id, !s.isVisible)
+                }
+              >
+                <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
+              </button>
+              <button
+                className="mr-2 is-align-self-center"
+                type="button"
+                onClick={() =>
+                  handleLayerClick(s.layer.id)
+                }
+              >
+                <FontAwesomeIcon icon={faEdit} />
+              </button>
+            </div>
+          )}
+
         </div>
       ))}
       {!showAddLayer && (

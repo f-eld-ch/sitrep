@@ -1,6 +1,6 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { first } from "lodash";
-import type { AddLayersVars, Layer } from "types/layer";
+import type { Layer } from "types/layer";
 import type {
   ActiveLayerState,
   DrawState,
@@ -14,15 +14,15 @@ import type {
 // All valid actions
 export type LayersAction =
   | SetLayerAction
-  | AddLayerAction
   | RemoveLayerAction
+  | ToggleLayerVisibilityAction
   | SelectFeatureAction
   | DeselectFeature
   | SetActiveLayer
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
-  | ToggleLayerVisibilityAction
+  | ToggleWMSLayerVisibilityAction
   | RemoveWMSLayerAction
   | SetWMSServerAction
   | SetWMSServerLayersCacheAction
@@ -32,13 +32,6 @@ export interface SetLayerAction {
   type: "SET_LAYERS";
   payload: {
     layers: Layer[];
-  };
-}
-
-export interface AddLayerAction {
-  type: "ADD_LAYER";
-  payload: {
-    layer: AddLayersVars;
   };
 }
 
@@ -53,6 +46,14 @@ export interface SetActiveLayer {
   type: "SET_ACTIVE_LAYER";
   payload: {
     layerId: string;
+  };
+}
+
+export interface ToggleLayerVisibilityAction {
+  type: "TOGGLE_LAYER_VISIBILITY";
+  payload: {
+    layerId: string;
+    isVisible: boolean;
   };
 }
 
@@ -94,8 +95,8 @@ export interface UpdateWMSLayerOpacityAction {
   };
 }
 
-export interface ToggleLayerVisibilityAction {
-  type: "TOGGLE_LAYER_VISIBILITY";
+export interface ToggleWMSLayerVisibilityAction {
+  type: "TOGGLE_WMS_LAYER_VISIBILITY";
   payload: {
     layerName: string;
     isVisible: boolean;
@@ -132,30 +133,22 @@ export interface AddCustomWMSServerAction {
 }
 
 export const layersReducer = (state: LayersState, action: LayersAction) => {
-  console.log(state, action);
   switch (action.type) {
     case "SET_LAYERS":
-      return [
-        ...state,
-        action.payload.layers.map((layer) => ({
-          layer,
-          isVisible: true,
-        }))
-      ];
-    case "ADD_LAYER":
-      return [...state, action.payload.layer];
-    case "REMOVE_LAYER":
-      return [...state.filter((l) => l.layer.id !== action.payload.id)];
+      return action.payload.layers.map((layer) => ({
+        layer,
+        isVisible: true,
+      }));
     case "TOGGLE_LAYER_VISIBILITY":
-      return state.map((l) =>
-        l.layer.id === action.payload.layerName
-          ? { ...l, isVisible: action.payload.isVisible }
-          : l,
+      return state.map((s) =>
+        s.layer.id === action.payload.layerId
+          ? { ...s, isVisible: action.payload.isVisible }
+          : s,
       );
     default:
       return state;
   }
-};
+}
 
 export const selectedFeatureReducer = (
   state: SelectedFeatureState,
@@ -227,7 +220,7 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
             : layer,
         ),
       };
-    case "TOGGLE_LAYER_VISIBILITY":
+    case "TOGGLE_WMS_LAYER_VISIBILITY":
       return {
         ...state,
         activeLayers: state.activeLayers.map((layer) =>

@@ -78,7 +78,7 @@ const WMSLayerMenu = () => {
 
   const handleVisibilityToggle = (layerName: string, isVisible: boolean) => {
     dispatch({
-      type: "TOGGLE_LAYER_VISIBILITY",
+      type: "TOGGLE_WMS_LAYER_VISIBILITY",
       payload: { layerName, isVisible },
     });
   };

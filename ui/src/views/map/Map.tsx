@@ -13,9 +13,9 @@ import type {
   GeoJsonProperties,
   Geometry,
 } from "geojson";
-import { first } from "lodash";
+import { first, isEqual } from "lodash";
 import maplibregl from "maplibre-gl";
-import { memo, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   AttributionControl,
   FullscreenControl,
@@ -128,7 +128,7 @@ function Layers() {
       {/* Inactive Layers */}
       <InactiveLayers
         layers={state.layers
-          .filter((l) => l.layer.id !== state.activeLayer)
+          .filter((l) => l.layer?.id !== state.activeLayer)
           .filter((l) => l.isVisible)
           .map((l) => l.layer) || []}
       />
@@ -149,9 +149,11 @@ function LayerFetcher() {
   });
 
   useEffect(() => {
-    if (!loading && data && data.layers !== state.layers.map((l) => l.layer).filter((l) => l)) {
-      console.log("dispatching layers", state.layers.map((l) => l.layer));
-      dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
+    if (!loading && data) {
+      const stateLayers = state.layers.map((l) => l.layer);
+      if (!isEqual(data.layers, stateLayers)) {
+        dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
+      }
     }
   }, [data, dispatch, loading, state.layers]);
 
@@ -163,7 +165,7 @@ function ActiveLayer() {
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = LayerToFeatureCollection(
-    first(state.layers.filter((l) => l.layer.id === state.activeLayer))?.layer,
+    first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
   );
 
   useEffect(() => {
@@ -360,7 +362,7 @@ function Draw() {
       onDelete({ features: e.deletedFeatures });
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, onCreate, onDelete],
+    [dispatch, onCreate, onDelete, state.activeLayer],
   );
 
   // this is the effect which syncs the drawings

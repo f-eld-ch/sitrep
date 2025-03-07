@@ -1,5 +1,5 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { act, useCallback, useContext, useDeferredValue, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { type ControlPosition, useControl, useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 import type { CombineFeatureEvent, FeatureEvent } from "../Map";
@@ -34,11 +34,11 @@ function DrawControl(props: DrawControlProps) {
     map?.on("draw.create", create);
     map?.triggerRepaint();
     refCreate.current = create;
-  }, [create, map, refCreate]);
+  }, [create, map]);
 
   // @ts-expect-error - Map$1 issue in definitivelyTyped: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/70497
   useControl<MapboxDraw>(
-    ({ }) => {
+    () => {
       const d = new MapboxDraw(props);
       setDraw(d);
       return d;
