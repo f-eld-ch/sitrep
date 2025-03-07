@@ -175,7 +175,8 @@ const WMSLayerMenu = () => {
           legendURL: layer.legendURL,
         },
       });
-      setShowAddLayer
+      setShowAddLayer(false);
+      setSelectedLayer(null);
     }
   };
 
