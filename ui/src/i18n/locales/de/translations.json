@@ -261,6 +261,8 @@
   },
   "layerControl": {
     "layers": "Layer",
+    "addLayer": "Layer hinzufügen",
+    "layerName": "Layer-Name",
     "drawingLayers": "Zeichnungs-Layer",
     "wmsLayers": "WMS-Layer",
     "addWMSLayer": "WMS-Layer hinzufügen"

@@ -255,6 +255,8 @@
   },
   "layerControl": {
     "layers": "Livelli",
+    "addLayer": "Aggiungi livello",
+    "layerName": "Nome del livello",
     "drawingLayers": "Livelli di disegno",
     "wmsLayers": "Livelli WMS",
     "addWMSLayer": "Aggiungi livello WMS"
