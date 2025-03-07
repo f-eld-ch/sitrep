@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(map)* Support multiple drawing layers ([#713](https://github.com/f-eld-ch/sitrep/issues/713)) - ([27d22b7](https://github.com/f-eld-ch/sitrep/commit/27d22b7b92fd5f3d4c3e1985ac97cef183ce1205))
+
+
 ## [25.3.0](https://github.com/f-eld-ch/sitrep/compare/v25.2.5..v25.3.0) - 2025-03-06
 
 ### ⛰️  Features
