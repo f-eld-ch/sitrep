@@ -53,12 +53,12 @@ import {
   GetLayers,
   ModifyFeature,
 } from "./graphql";
-import { displayStyle, drawStyle } from "./style";
 import {
   CleanFeature,
   FilterActiveFeatures,
   LayerToFeatureCollection,
 } from "./utils";
+import { createMapStyle } from "./styleGenerator";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -416,7 +416,7 @@ function Draw() {
         onCombine={onCombine}
         position="top-right"
         displayControlsDefault={true}
-        styles={drawStyle}
+        styles={createMapStyle({ forDraw: true })}
         controls={{
           polygon: true,
           trash: true,
@@ -461,7 +461,7 @@ function InactiveLayer(props: {
     <>
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
       <Source key={id} id={id} type="geojson" data={featureCollection}>
-        {displayStyle.map((s) => (
+        {createMapStyle({ forDraw: false }).map((s) => (
           <MapLayer  {...s} key={s.id} id={`${s.id}-${id}`} />
         ))}
       </Source>
