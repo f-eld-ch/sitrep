@@ -261,8 +261,9 @@
   },
   "layerControl": {
     "layers": "Layers",
-    "activeLayers": "Active Layers",
-    "addWmsLayers": "Add WMS Layers"
+    "drawingLayers": "Drawing Layers",
+    "wmsLayers": "WMS Layers",
+    "addWMSLayer": "Add WMS Layer"
   },
   "styleController": {
     "maps": "Maps"

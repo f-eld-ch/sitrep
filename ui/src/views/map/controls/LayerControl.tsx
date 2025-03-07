@@ -52,22 +52,18 @@ function LayerPanel() {
           className={classNames({ "is-active": activeTab === "drawing" })}
           onClick={() => setActiveTab("drawing")}
         >
-          {t("layerControl.activeLayers")}
+          {t("layerControl.drawingLayers")}
         </a>
         <a
           className={classNames({ "is-active": activeTab === "wms" })}
           onClick={() => setActiveTab("wms")}
         >
-          {t("layerControl.addWmsLayers")}
+          {t("layerControl.wmsLayers")}
         </a>
       </div>
       {activeTab === "drawing" && <ActiveLayersControl />}
       {activeTab === "wms" && (
-        <WMSLayerMenu
-          disable={() => {
-            setActiveTab("drawing");
-          }}
-        />
+        <WMSLayerMenu />
       )}
     </nav>
   );

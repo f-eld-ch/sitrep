@@ -11,6 +11,11 @@ export interface Layer {
   deletedAt: Date;
 }
 
+export interface AddLayersVars {
+  incidentId: string;
+  name: string;
+};
+
 export interface Feature {
   id: string | number | undefined;
   geometry: Geometry;

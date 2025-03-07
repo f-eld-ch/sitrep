@@ -2,8 +2,10 @@ import classNames from "classnames";
 import type React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LayerContext, type WMSLayer as StateLayer, type WMSServer } from "../LayerContext";
+import { LayerContext, type WMSLayer, type WMSLayer as StateLayer, type WMSServer } from "../LayerContext";
 import WMSCapabilities from "ol/format/WMSCapabilities";
+import { faHexagonNodesBolt, faInfoCircle, faEye, faEyeSlash, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const NO_LAYERS_FOUND_ERROR = new Error("wmsLayerMenu.noLayersFound");
 const FETCH_LAYERS_ERROR = new Error("wmsLayerMenu.errorFetchingLayers");
@@ -62,15 +64,39 @@ const extractLayers = (layer: WMSCapabilitiesLayer, server: string): Layer[] => 
   return layers;
 };
 
-const WMSLayerMenu = (props: { disable: () => void }) => {
+const WMSLayerMenu = () => {
   const [layers, setLayers] = useState<StateLayer[]>([]);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
   const [customServer, setCustomServer] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<WMSLayerMenuError | null>(null);
+  const [showAddLayer, setShowAddLayer] = useState<boolean>(false);
   const { dispatch, state } = useContext(LayerContext);
-  const { disable } = props;
   const { t, i18n } = useTranslation();
+
+  const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
+
+  const handleVisibilityToggle = (layerName: string, isVisible: boolean) => {
+    dispatch({
+      type: "TOGGLE_LAYER_VISIBILITY",
+      payload: { layerName, isVisible },
+    });
+  };
+
+  const handleWMSOpacityChange = (layerName: string, opacity: number) => {
+    dispatch({
+      type: "UPDATE_WMS_LAYER_OPACITY",
+      payload: { layerName, opacity },
+    });
+  };
+
+  const handleDeleteLayer = (layerName: string) => {
+    dispatch({ type: "REMOVE_WMS_LAYER", payload: { layerName } });
+  };
+
+  const handleInfoToggle = (layerName: string) => {
+    setExpandedLayer(expandedLayer === layerName ? null : layerName);
+  };
 
   useEffect(() => {
     const initialServer = state.wms.servers[0].url;
@@ -149,7 +175,7 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
           legendURL: layer.legendURL,
         },
       });
-      disable();
+      setShowAddLayer
     }
   };
 
@@ -178,88 +204,164 @@ const WMSLayerMenu = (props: { disable: () => void }) => {
   );
 
   return (
-    <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column">
-      <div className="columns is-multiline">
-        <div className="column">
-          <div className="select is-small">
-            <select
-              className="mb-2"
-              onChange={handleServerSelect}
-              value={state.wms.currentServer}
-            >
-              {filteredServers.map((server: WMSServer) => (
-                <option key={server.url} value={server.url}>
-                  {server.name}
-                </option>
-              ))}
-              <option value="">{t("wmsLayerMenu.customServer")}</option>
-            </select>
-          </div>
-        </div>
-
-        {state.wms.currentServer === "" && (
-          <div className="column">
-            <input
-              type="text"
-              placeholder={t("wmsLayerMenu.enterServerUrl")}
-              value={customServer}
-              onChange={handleCustomServerChange}
-              className="input is-small mb-2"
-            />
-
-            <button
-              type="button"
-              onClick={handleCustomServerSubmit}
-              className="button is-primary"
-            >
-              {t("wmsLayerMenu.fetchLayers")}
-            </button>
-          </div>
-        )}
-        {state.wms.currentServer && (
-          <div className="column">
-            <div
-              className={classNames({
-                select: true,
-                "is-small": true,
-                "is-loading": isLoading,
-              })}
-            >
-              <select
-                className="is-align-items-flex-start is-justify-content-space-between"
-                onChange={handleLayerSelect}
-                value={selectedLayer || ""}
-                style={{ width: "100%" }}
-              >
-                <option value="" disabled>
-                  {t("wmsLayerMenu.selectLayer")}
-                </option>
-                {layers.map((layer, index) => (
-                  <option key={`${layer.name}-${index}`} value={layer.name}>
-                    {layer.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
+    <>
       {
-        error && (
-          <div className="columns is-flex-grow-1" >
-            <div className="column is-full">
-              <div className="notification is-danger" style={{ width: "100%" }}>
-                <button type="button" className="delete is-align-self-flex-end" onClick={() => setError(null)} />
-                {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
-                {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
+        state.wms.activeLayers.map((layer: WMSLayer) => (
+          <div
+            key={layer.name}
+            className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap is-size-7"
+          >
+            <div className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2" style={{ width: "50%" }}>
+              <span className="panel-icon" style={{ verticalAlign: "center" }}>
+                <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
+              </span>
+              <span>{layer.title}</span>
+            </div>
+            <div className="is-flex-direction-row	is-align-items-flex-end is-flex-shrink-0 is-flex-wrap-wrap" style={{ width: "45%" }}>
+              {layer.legendURL && (
+                <button
+                  className="mr-2 is-align-self-center"
+                  type="button"
+                  onClick={() => handleInfoToggle(layer.name)}
+                >
+                  <FontAwesomeIcon icon={faInfoCircle} />
+                </button>
+              )}
+
+              <button
+                className="mr-2 is-align-self-center"
+                type="button"
+                onClick={() =>
+                  handleVisibilityToggle(layer.name, !layer.isVisible)
+                }
+              >
+                <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
+              </button>
+              <input
+                className="mr-2"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={layer.opacity}
+                onChange={(e) =>
+                  handleWMSOpacityChange(
+                    layer.name,
+                    Number.parseFloat(e.target.value),
+                  )
+                }
+              />
+              <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+            </div>
+            {expandedLayer === layer.name && (
+              <div className="is-align-content-center">
+                <img
+                  src={layer.legendURL}
+                  alt={`${layer.title}`}
+                  style={{ width: "100%" }}
+                />
+              </div>
+            )}
+          </div>
+        ))
+      }
+      <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column">
+        {!showAddLayer && (
+          <button
+            type="button"
+            className="button is-small is-rounded"
+            onClick={() => setShowAddLayer(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+            {t("layerControl.addWMSLayer")}
+          </button>
+        )}
+
+        {showAddLayer && (
+          <div className="columns is-multiline">
+            <div className="column">
+              <div className="select is-small">
+                <select
+                  className="mb-2"
+                  onChange={handleServerSelect}
+                  value={state.wms.currentServer}
+                >
+                  {filteredServers.map((server: WMSServer) => (
+                    <option key={server.url} value={server.url}>
+                      {server.name}
+                    </option>
+                  ))}
+                  <option value="">{t("wmsLayerMenu.customServer")}</option>
+                </select>
               </div>
             </div>
+
+            {state.wms.currentServer === "" && (
+              <div className="column">
+                <input
+                  type="text"
+                  placeholder={t("wmsLayerMenu.enterServerUrl")}
+                  value={customServer}
+                  onChange={handleCustomServerChange}
+                  className="input is-small mb-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleCustomServerSubmit}
+                  className="button is-primary"
+                >
+                  {t("wmsLayerMenu.fetchLayers")}
+                </button>
+              </div>
+            )}
+            {state.wms.currentServer && (
+              <div className="column">
+                <div
+                  className={classNames({
+                    select: true,
+                    "is-small": true,
+                    "is-loading": isLoading,
+                  })}
+                >
+                  <select
+                    className="is-align-items-flex-start is-justify-content-space-between"
+                    onChange={handleLayerSelect}
+                    value={selectedLayer || ""}
+                    style={{ width: "100%" }}
+                  >
+                    <option value="" disabled>
+                      {t("wmsLayerMenu.selectLayer")}
+                    </option>
+                    {layers.map((layer, index) => (
+                      <option key={`${layer.name}-${index}`} value={layer.name}>
+                        {layer.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
-        )
-      }
-    </div >
-  );
+        )}
+
+        {
+          error && (
+            <div className="columns is-flex-grow-1" >
+              <div className="column is-full">
+                <div className="notification is-danger" style={{ width: "100%" }}>
+                  <button type="button" className="delete is-align-self-flex-end" onClick={() => setError(null)} />
+                  {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
+                  {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
+                </div>
+              </div>
+            </div>
+          )
+        }
+      </div >
+    </>);
 };
 
 export default WMSLayerMenu;

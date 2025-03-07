@@ -127,7 +127,10 @@ function Layers() {
 
       {/* Inactive Layers */}
       <InactiveLayers
-        layers={state.layers.filter((l) => l.id !== state.activeLayer) || []}
+        layers={state.layers
+          .filter((l) => l.layer.id !== state.activeLayer)
+          .filter((l) => l.isVisible)
+          .map((l) => l.layer) || []}
       />
       <ActiveWMSLayers />
     </>
@@ -146,7 +149,8 @@ function LayerFetcher() {
   });
 
   useEffect(() => {
-    if (!loading && data && data.layers !== state.layers) {
+    if (!loading && data && data.layers !== state.layers.map((l) => l.layer).filter((l) => l)) {
+      console.log("dispatching layers", state.layers.map((l) => l.layer));
       dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
     }
   }, [data, dispatch, loading, state.layers]);
@@ -159,7 +163,7 @@ function ActiveLayer() {
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = LayerToFeatureCollection(
-    first(state.layers.filter((l) => l.id === state.activeLayer)),
+    first(state.layers.filter((l) => l.layer.id === state.activeLayer))?.layer,
   );
 
   useEffect(() => {
@@ -187,7 +191,7 @@ function ActiveLayer() {
 
   return (
     <>
-      <MemoDraw activeLayer={state.activeLayer} />
+      <Draw />
       <EnrichedLayerFeatures
         id={state.activeLayer}
         featureCollection={featureCollection}
@@ -197,8 +201,7 @@ function ActiveLayer() {
   );
 }
 
-const MemoDraw = memo(Draw);
-function Draw(props: { activeLayer: string | undefined }) {
+function Draw() {
   const { state, dispatch } = useContext(LayerContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
@@ -236,6 +239,7 @@ function Draw(props: { activeLayer: string | undefined }) {
       },
     },
   );
+
   const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(
     ModifyFeature,
     {
@@ -291,8 +295,8 @@ function Draw(props: { activeLayer: string | undefined }) {
   );
 
   const onCreate = useCallback(
-    (e: FeatureEvent) => {
-      if (props.activeLayer === undefined) {
+    (e: FeatureEvent, layer: string | undefined) => {
+      if (layer === undefined) {
         return;
       }
 
@@ -306,7 +310,7 @@ function Draw(props: { activeLayer: string | undefined }) {
 
         addFeature({
           variables: {
-            layerId: props.activeLayer || "",
+            layerId: layer || "",
             geometry: feature.geometry,
             id: feature.id,
             properties: feature.properties,
@@ -317,7 +321,7 @@ function Draw(props: { activeLayer: string | undefined }) {
         }
       }
     },
-    [props.activeLayer, addFeature, state.draw],
+    [addFeature, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -352,7 +356,7 @@ function Draw(props: { activeLayer: string | undefined }) {
 
   const onCombine = useCallback(
     (e: CombineFeatureEvent) => {
-      onCreate({ features: e.createdFeatures });
+      onCreate({ features: e.createdFeatures }, state.activeLayer);
       onDelete({ features: e.deletedFeatures });
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
@@ -364,13 +368,13 @@ function Draw(props: { activeLayer: string | undefined }) {
     if (state.draw && map?.loaded) {
       const featureCollection: FeatureCollection = FilterActiveFeatures(
         LayerToFeatureCollection(
-          state.layers.find((l) => l.id === props.activeLayer),
+          state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
         ),
       );
       state.draw.deleteAll();
       state.draw.set(featureCollection);
     }
-  }, [state.draw, map?.loaded, state.layers, props.activeLayer]);
+  }, [state.draw, map?.loaded, state.layers, state.activeLayer]);
 
   // this is the effect which syncs the drawings
   useEffect(() => {
@@ -396,7 +400,7 @@ function Draw(props: { activeLayer: string | undefined }) {
     }
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
-  if (props.activeLayer === undefined) {
+  if (state.activeLayer === undefined) {
     return <></>;
   }
 
@@ -424,6 +428,7 @@ function Draw(props: { activeLayer: string | undefined }) {
         defaultMode="simple_select"
         modes={modes}
         userProperties={true}
+        activeLayer={state.activeLayer}
       />
     </>
   );
@@ -455,7 +460,7 @@ function InactiveLayer(props: {
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
       <Source key={id} id={id} type="geojson" data={featureCollection}>
         {displayStyle.map((s) => (
-          <MapLayer key={s.id} id={s.id + id} {...s} />
+          <MapLayer  {...s} key={s.id} id={`${s.id}-${id}`} />
         ))}
       </Source>
     </>

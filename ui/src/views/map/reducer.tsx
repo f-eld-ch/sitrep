@@ -1,6 +1,6 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { first } from "lodash";
-import type { Layer } from "types/layer";
+import type { AddLayersVars, Layer } from "types/layer";
 import type {
   ActiveLayerState,
   DrawState,
@@ -23,7 +23,6 @@ export type LayersAction =
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
   | ToggleLayerVisibilityAction
-  | UpdateLayerOpacityAction
   | RemoveWMSLayerAction
   | SetWMSServerAction
   | SetWMSServerLayersCacheAction
@@ -39,7 +38,7 @@ export interface SetLayerAction {
 export interface AddLayerAction {
   type: "ADD_LAYER";
   payload: {
-    layer: Layer;
+    layer: AddLayersVars;
   };
 }
 
@@ -103,14 +102,6 @@ export interface ToggleLayerVisibilityAction {
   };
 }
 
-export interface UpdateLayerOpacityAction {
-  type: "UPDATE_LAYER_OPACITY";
-  payload: {
-    layerName: string;
-    opacity: number;
-  };
-}
-
 export interface RemoveWMSLayerAction {
   type: "REMOVE_WMS_LAYER";
   payload: {
@@ -141,24 +132,25 @@ export interface AddCustomWMSServerAction {
 }
 
 export const layersReducer = (state: LayersState, action: LayersAction) => {
+  console.log(state, action);
   switch (action.type) {
     case "SET_LAYERS":
-      return action.payload.layers;
+      return [
+        ...state,
+        action.payload.layers.map((layer) => ({
+          layer,
+          isVisible: true,
+        }))
+      ];
     case "ADD_LAYER":
       return [...state, action.payload.layer];
     case "REMOVE_LAYER":
-      return [...state.filter((layer) => layer.id !== action.payload.id)];
+      return [...state.filter((l) => l.layer.id !== action.payload.id)];
     case "TOGGLE_LAYER_VISIBILITY":
-      return state.map((layer) =>
-        layer.id === action.payload.layerName
-          ? { ...layer, isVisible: action.payload.isVisible }
-          : layer,
-      );
-    case "UPDATE_LAYER_OPACITY":
-      return state.map((layer) =>
-        layer.id === action.payload.layerName
-          ? { ...layer, opacity: action.payload.opacity }
-          : layer,
+      return state.map((l) =>
+        l.layer.id === action.payload.layerName
+          ? { ...l, isVisible: action.payload.isVisible }
+          : l,
       );
     default:
       return state;

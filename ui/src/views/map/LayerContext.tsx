@@ -12,12 +12,17 @@ import {
 } from "./reducer";
 
 export type SelectedFeatureState = string | undefined;
-export type LayersState = Layer[];
+export type LayersState = DrawingLayerState[];
 export type ActiveLayerState = string | undefined;
 export type DrawState = MapboxDraw | undefined;
 export type WMSLayersState = WMSLayer[];
 export type WMSServerLayersCacheState = Record<string, WMSLayer[]>;
 
+
+export interface DrawingLayerState {
+  layer: Layer;
+  isVisible: boolean
+}
 export interface WMSLayer {
   name: string;
   title: string;
