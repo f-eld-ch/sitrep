@@ -137,7 +137,9 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
     case "SET_LAYERS":
       return action.payload.layers.map((layer) => ({
         layer,
-        isVisible: true,
+        isVisible: state.some((s) => s.layer.id === layer.id)
+          ? state.find((s) => s.layer.id === layer.id)?.isVisible ?? true
+          : true,
       }));
     case "TOGGLE_LAYER_VISIBILITY":
       return state.map((s) =>

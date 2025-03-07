@@ -13,6 +13,7 @@ import { useMutation } from "@apollo/client";
 import { LayerContext } from "../LayerContext";
 import { AddLayer, GetLayers } from "../graphql";
 import { useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 
 const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
@@ -20,6 +21,8 @@ const ActiveLayersControl: React.FC = () => {
   const [layerName, setLayerName] = useState<string>("");
   const [addLayer] = useMutation(AddLayer);
   const { incidentId } = useParams();
+  const { t } = useTranslation();
+
 
   const handleLayerClick = (layerId: string) => {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
@@ -98,8 +101,10 @@ const ActiveLayersControl: React.FC = () => {
             className="button is-small is-rounded"
             onClick={() => setShowAddLayer(true)}
           >
-            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-            Add Layer
+            <span className="icon is-small">
+              <FontAwesomeIcon icon={faPlus} />
+            </span>
+            <span>{t("layerControl.addLayer")}</span>
           </button>
         </div>
       )}
@@ -107,17 +112,21 @@ const ActiveLayersControl: React.FC = () => {
         <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
           <input
             type="text"
-            placeholder="Enter layer name"
+            placeholder={t("layerControl.layerName")}
             value={layerName}
             onChange={(e) => setLayerName(e.target.value)}
             className="input is-small mb-2"
           />
           <button
             type="submit"
-            className="button is-primary is-small"
+            disabled={layerName.trim() === ""}
+            className="button is-primary is-small is-rounded"
             onClick={() => handleAddLayer(layerName)}
           >
-            Add Layer
+            <span className="icon is-small">
+              <FontAwesomeIcon icon={faPlus} />
+            </span>
+            <span>{t("layerControl.addLayer")}</span>
           </button>
         </div>
       )}
