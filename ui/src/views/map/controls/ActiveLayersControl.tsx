@@ -1,130 +1,127 @@
 import {
   faDrawPolygon,
+  faEdit,
   faEye,
   faEyeSlash,
-  faHexagonNodesBolt,
-  faInfoCircle,
-  faTrash,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import type React from "react";
 import { useContext, useState } from "react";
-import type { Layer } from "types/layer";
-import { LayerContext, type WMSLayer } from "../LayerContext";
+import { useMutation } from "@apollo/client";
+import { LayerContext } from "../LayerContext";
+import { AddLayer, GetLayers } from "../graphql";
+import { useParams } from "react-router";
 
 const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
-  const [expandedLayer, setExpandedLayer] = useState<string | null>(null);
-
-  const handleVisibilityToggle = (layerName: string, isVisible: boolean) => {
-    dispatch({
-      type: "TOGGLE_LAYER_VISIBILITY",
-      payload: { layerName, isVisible },
-    });
-  };
-
-  const handleWMSOpacityChange = (layerName: string, opacity: number) => {
-    dispatch({
-      type: "UPDATE_WMS_LAYER_OPACITY",
-      payload: { layerName, opacity },
-    });
-  };
+  const [showAddLayer, setShowAddLayer] = useState<boolean>(false);
+  const [layerName, setLayerName] = useState<string>("");
+  const [addLayer] = useMutation(AddLayer);
+  const { incidentId } = useParams();
 
   const handleLayerClick = (layerId: string) => {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
   };
 
-  const handleDeleteLayer = (layerName: string) => {
-    dispatch({ type: "REMOVE_WMS_LAYER", payload: { layerName } });
+  const handleAddLayer = (layerName: string) => {
+    if (layerName.trim() === "") return;
+    addLayer({
+      variables: { incidentId, name: layerName },
+      refetchQueries: [
+        { query: GetLayers, variables: { incidentId: incidentId } },
+      ],
+      onError: (error) => {
+        console.error("Error adding feature:", error);
+      },
+    });
+    setLayerName("");
+    setShowAddLayer(false);
   };
 
-  const handleInfoToggle = (layerName: string) => {
-    setExpandedLayer(expandedLayer === layerName ? null : layerName);
+  const handleVisibilityToggle = (layerId: string, isVisible: boolean) => {
+    dispatch({
+      type: "TOGGLE_LAYER_VISIBILITY",
+      payload: { layerId: layerId, isVisible },
+    });
   };
 
   return (
     <div className="active-layers-control is-size-7">
-      {state.layers.map((layer: Layer) => (
+      {state.layers.map((s) => (
         <div
-          key={layer.id}
+          key={s.layer.id}
           className={classNames({
             "panel-block": true,
             "is-align-items-flex-start": true,
             "is-justify-content-space-between": true,
-            "is-active": state.activeLayer === layer.name,
+            "is-active": state.activeLayer === s.layer.id,
           })}
         >
           <div className="mr-3 is-align-items-flex-start is-align-content-center">
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
-              <FontAwesomeIcon icon={faDrawPolygon} size="lg" />
+              <FontAwesomeIcon icon={state.activeLayer === s.layer.id ? faEdit : faDrawPolygon} size="lg" />
             </span>
             {/* biome-ignore lint/a11y/useValidAnchor: not needed */}
-            <a onClick={() => handleLayerClick(layer.id)}>{layer.name}</a>
+            <a onClick={() => handleLayerClick(s.layer.id)}>{s.layer.name}</a>
           </div>
-        </div>
-      ))}
-      {state.wms.activeLayers.map((layer: WMSLayer) => (
-        <div
-          key={layer.name}
-          className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap"
-        >
-          <div className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2" style={{ width: "50%" }}>
-            <span className="panel-icon" style={{ verticalAlign: "center" }}>
-              <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
-            </span>
-            <span>{layer.title}</span>
-          </div>
-          <div className="is-flex-direction-row	is-align-items-flex-end is-flex-shrink-0 is-flex-wrap-wrap" style={{ width: "45%" }}>
-            {layer.legendURL && (
+          {s.layer.id !== state.activeLayer && (
+            <div className="is-align-items-flex-end is-flex-shrink-0">
               <button
                 className="mr-2 is-align-self-center"
                 type="button"
-                onClick={() => handleInfoToggle(layer.name)}
+                onClick={() =>
+                  handleVisibilityToggle(s.layer.id, !s.isVisible)
+                }
               >
-                <FontAwesomeIcon icon={faInfoCircle} />
+                <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
               </button>
-            )}
-
-            <button
-              className="mr-2 is-align-self-center"
-              type="button"
-              onClick={() =>
-                handleVisibilityToggle(layer.name, !layer.isVisible)
-              }
-            >
-              <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
-            </button>
-            <input
-              className="mr-2"
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={layer.opacity}
-              onChange={(e) =>
-                handleWMSOpacityChange(
-                  layer.name,
-                  Number.parseFloat(e.target.value),
-                )
-              }
-            />
-            <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-          </div>
-          {expandedLayer === layer.name && (
-            <div className="is-align-content-center">
-              <img
-                src={layer.legendURL}
-                alt={`${layer.title}`}
-                style={{ width: "100%" }}
-              />
+              <button
+                className="mr-2 is-align-self-center"
+                type="button"
+                onClick={() =>
+                  handleLayerClick(s.layer.id)
+                }
+              >
+                <FontAwesomeIcon icon={faEdit} />
+              </button>
             </div>
           )}
+
         </div>
       ))}
-    </div >
+      {!showAddLayer && (
+        <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
+          <button
+            type="button"
+            className="button is-small is-rounded"
+            onClick={() => setShowAddLayer(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+            Add Layer
+          </button>
+        </div>
+      )}
+      {showAddLayer && (
+        <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
+          <input
+            type="text"
+            placeholder="Enter layer name"
+            value={layerName}
+            onChange={(e) => setLayerName(e.target.value)}
+            className="input is-small mb-2"
+          />
+          <button
+            type="submit"
+            className="button is-primary is-small"
+            onClick={() => handleAddLayer(layerName)}
+          >
+            Add Layer
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

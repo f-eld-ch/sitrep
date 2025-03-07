@@ -255,8 +255,9 @@
   },
   "layerControl": {
     "layers": "Livelli",
-    "activeLayers": "Livelli attivi",
-    "addWmsLayers": "Aggiungi livelli WMS"
+    "drawingLayers": "Livelli di disegno",
+    "wmsLayers": "Livelli WMS",
+    "addWMSLayer": "Aggiungi livello WMS"
   },
   "wmsLayerMenu": {
     "customServer": "Server personalizzato",
