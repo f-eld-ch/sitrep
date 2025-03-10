@@ -8,6 +8,10 @@
 
 - *(map)* Adds map styles generator function for display and draw - ([a7f59f0](https://github.com/f-eld-ch/sitrep/commit/a7f59f0d55abc25bb8add7fc6fa43f075a49cce3))
 
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.13.2 to 3.13.3 in /ui ([#716](https://github.com/f-eld-ch/sitrep/issues/716)) - ([26b82fa](https://github.com/f-eld-ch/sitrep/commit/26b82fa827e9ad5a26c8f1a89952fc87ffce75a9))
+
 
 ## [25.3.1](https://github.com/f-eld-ch/sitrep/compare/v25.3.0..v25.3.1) - 2025-03-07
 
