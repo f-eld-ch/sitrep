@@ -10,6 +10,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.2.0 to 7.3.0 in /ui ([#718](https://github.com/f-eld-ch/sitrep/issues/718)) - ([e9cc3eb](https://github.com/f-eld-ch/sitrep/commit/e9cc3eb73624b44ea2498ef084df5182c95193d9))
 - *(deps)* Bump react-markdown from 10.0.1 to 10.1.0 in /ui ([#717](https://github.com/f-eld-ch/sitrep/issues/717)) - ([b5300d2](https://github.com/f-eld-ch/sitrep/commit/b5300d243c8ebcb60967abaa12b8210b6c2bcfe9))
 - *(deps)* Bump @apollo/client from 3.13.2 to 3.13.3 in /ui ([#716](https://github.com/f-eld-ch/sitrep/issues/716)) - ([26b82fa](https://github.com/f-eld-ch/sitrep/commit/26b82fa827e9ad5a26c8f1a89952fc87ffce75a9))
 
