@@ -396,13 +396,11 @@ const drawStyle: LayerProps[] = [
         type: "symbol",
         filter: [
             "all",
-            ["==", "meta", "feature"],
             ["==", "$type", "Point"],
-            ["==", "active", "false"],
+            ["==", "meta", "feature"],
             ["has", "user_name"],
             ["has", "user_icon"],
             ["in", "user_icon", "EingesperrteAbgeschnittene", "Obdachlose"],
-            ["!=", "mode", "static"],
         ],
         layout: {
             "text-field": ["coalesce", ["get", "user_name"], ""],
@@ -423,12 +421,11 @@ const drawStyle: LayerProps[] = [
         type: "symbol",
         filter: [
             "all",
-            ["==", "meta", "feature"],
             ["==", "$type", "Point"],
+            ["==", "meta", "feature"],
             ["has", "user_name"],
             ["has", "user_icon"],
             ["in", "user_icon", "Tote", "Vermisste", "Verletzte"],
-            ["!=", "mode", "static"],
         ],
         layout: {
             "text-field": ["coalesce", ["get", "user_name"], ""],
@@ -448,7 +445,7 @@ const drawStyle: LayerProps[] = [
         type: "symbol",
         filter: [
             "all",
-            ["==", "meta", "feature"],
+            ["==", "active", "false"],
             ["has", "user_name"],
             ["has", "user_color"],
             [
@@ -461,6 +458,7 @@ const drawStyle: LayerProps[] = [
                 "Verletzte",
             ],
             ["==", "$type", "Point"],
+            ["==", "meta", "feature"],
             ["!=", "mode", "static"],
         ],
         layout: {
@@ -480,9 +478,10 @@ const drawStyle: LayerProps[] = [
         type: "symbol",
         filter: [
             "all",
-            ["==", "meta", "feature"],
+            ["==", "active", "false"],
             ["has", "user_name"],
             ["==", "$type", "Polygon"],
+            ["==", "meta", "feature"],
             ["!=", "mode", "static"],
         ],
         layout: {
@@ -504,9 +503,10 @@ const drawStyle: LayerProps[] = [
         type: "symbol",
         filter: [
             "all",
-            ["==", "meta", "feature"],
+            ["==", "active", "false"],
             ["has", "user_name"],
             ["==", "$type", "LineString"],
+            ["==", "meta", "feature"],
             ["!=", "mode", "static"],
         ],
         layout: {

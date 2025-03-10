@@ -1,3 +1,4 @@
+import type { FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 
 /**
@@ -8,6 +9,8 @@ export interface MapStyleOptions {
     forDraw: boolean;
 }
 
+type FilterCondition = Array<string | number | boolean | FilterCondition>;
+
 /**
  * Creates map layer styles for either drawing or display mode
  * @param options Configuration options for style generation
@@ -17,18 +20,97 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     // Property prefix changes based on mode
     const propPrefix = options.forDraw ? "user_" : "";
 
-    // These arrays hold conditional filter elements based on the mode
-    const drawModeFilter = options.forDraw ?
-        [["!=", "mode", "static"]] :
-        [];
+    // Generate filter conditions based on mode
+    function createFilter(baseConditions: FilterCondition[]): FilterSpecification {
+        // If we're not in draw mode, the filter is simpler
+        if (!options.forDraw) {
+            return ["all", ...baseConditions] as FilterSpecification;
+        }
 
-    const activeStateFilter = options.forDraw ?
-        [["==", "active", "false"]] :
-        [];
+        const isVertexFilter = baseConditions.some(cond =>
+            Array.isArray(cond) &&
+            cond[0] === "==" &&
+            cond[1] === "meta" &&
+            cond[2] === "vertex"
+        );
 
-    const metaFeatureFilter = options.forDraw ?
-        [["==", "meta", "feature"]] :
-        [];
+        // Check if this is an icon filter (needs special handling to match original order)
+        const isIconFilter = baseConditions.some(cond =>
+            Array.isArray(cond) &&
+            cond[0] === "has" &&
+            cond[1] === `${propPrefix}icon`
+        );
+
+        // For vertex filters, preserve exact original order
+        if (isVertexFilter) {
+            return ["all",
+                ...baseConditions,
+                ["!=", "mode", "static"]
+            ] as unknown as FilterSpecification;
+        }
+
+        // For icon filters, we need to insert meta:feature between $type and has:icon
+        if (isIconFilter) {
+            const typeIndex = baseConditions.findIndex(cond =>
+                Array.isArray(cond) &&
+                cond[0] === "==" &&
+                cond[1] === "$type" &&
+                cond[2] === "Point"
+            );
+
+            if (typeIndex >= 0) {
+                // Create a new conditions array with meta:feature inserted after $type
+                const result: FilterCondition = ["all"];
+
+                // Add conditions in the right order:
+                // 1. $type condition
+                result.push(baseConditions[typeIndex]);
+
+                // 2. meta:feature condition
+                result.push(["==", "meta", "feature"]);
+
+                // 3. All other conditions except $type
+                baseConditions.forEach((cond, i) => {
+                    if (i !== typeIndex) {
+                        result.push(cond);
+                    }
+                });
+
+                return result as FilterSpecification;
+            }
+        }
+
+        // For standard filters
+        const conditions: FilterCondition[] = [...baseConditions];
+
+        // Add active condition for non-vertex, non-icon filters
+        if (!isIconFilter && !conditions.some(cond =>
+            Array.isArray(cond) &&
+            cond[0] === "==" &&
+            cond[1] === "active"
+        )) {
+            // Insert active condition at the beginning
+            conditions.unshift(["==", "active", "false"]);
+        }
+
+        // Add meta feature condition for filters with name properties
+        if (baseConditions.some(cond =>
+            Array.isArray(cond) &&
+            cond[0] === "has" &&
+            cond[1] && typeof cond[1] === "string" && cond[1].includes("name")
+        ) && !baseConditions.some(cond =>
+            Array.isArray(cond) &&
+            cond[0] === "==" &&
+            cond[1] === "meta"
+        )) {
+            conditions.push(["==", "meta", "feature"]);
+        }
+
+        // Add mode-specific condition at the end
+        conditions.push(["!=", "mode", "static"]);
+
+        return ["all", ...conditions] as FilterSpecification;
+    }
 
     // Start with styles common to both modes, organized by type
     const styles: LayerProps[] = [
@@ -36,14 +118,11 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-no-fill-pattern",
             type: "fill",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "Polygon"],
                 ["has", `${propPrefix}zoneType`],
                 ["in", `${propPrefix}zoneType`, "Schadengebiet", "Einsatzraum"],
-                ...drawModeFilter,
-            ],
+            ]),
             paint: {
                 "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
                 "fill-opacity": 0,
@@ -52,14 +131,11 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-special-fill-pattern",
             type: "fill",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "Polygon"],
                 ["has", `${propPrefix}zoneType`],
                 ["in", `${propPrefix}zoneType`, "Brandzone", "Zerstoerung"],
-                ...drawModeFilter,
-            ],
+            ]),
             paint: {
                 "fill-pattern": [
                     "match",
@@ -76,9 +152,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-fill-inactive",
             type: "fill",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "Polygon"],
                 [
                     "!in",
@@ -88,8 +162,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
                     "Schadengebiet",
                     "Einsatzraum",
                 ],
-                ...drawModeFilter,
-            ],
+            ]),
             paint: {
                 "fill-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
                 "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
@@ -99,12 +172,9 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-stroke-inactive",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "Polygon"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -119,13 +189,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-line-inactive",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "LineString"],
                 ["!has", `${propPrefix}lineType`],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -139,13 +206,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-line-inactive-normalLine",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "LineString"],
                 ["in", `${propPrefix}lineType`, "", "normal"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -159,9 +223,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-line-inactive-pattern",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "LineString"],
                 [
                     "in",
@@ -173,8 +235,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
                     "RutschgebietGespiegelt",
                     "rettungsAchse",
                 ],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -212,9 +273,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-line-inactive-solidlines",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "LineString"],
                 [
                     "in",
@@ -223,8 +282,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
                     "durchgeführteVerschiebung",
                     "durchgeführterEinsatz",
                 ],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -238,9 +296,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-line-inactive-dashlines",
             type: "line",
-            filter: [
-                "all",
-                ...activeStateFilter,
+            filter: createFilter([
                 ["==", "$type", "LineString"],
                 [
                     "in",
@@ -249,8 +305,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
                     "beabsichtigteVerschiebung",
                     "beabsichtigterEinsatz",
                 ],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "line-cap": "round",
                 "line-join": "round",
@@ -266,12 +321,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
             type: "circle",
-            filter: [
-                "all",
+            filter: createFilter([
                 ["==", "meta", "vertex"],
                 ["==", "$type", "Point"],
-                ...drawModeFilter,
-            ],
+            ]),
             paint: {
                 "circle-radius": 5,
                 "circle-color": "#fff",
@@ -280,12 +333,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-polygon-and-line-vertex-inactive",
             type: "circle",
-            filter: [
-                "all",
+            filter: createFilter([
                 ["==", "meta", "vertex"],
                 ["==", "$type", "Point"],
-                ...drawModeFilter,
-            ],
+            ]),
             paint: {
                 "circle-radius": 3,
                 "circle-color": "#fbb03b",
@@ -294,13 +345,11 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-point-icon",
             type: "symbol",
-            filter: [
-                "all",
+            filter: createFilter([
                 ["==", "$type", "Point"],
-                ...metaFeatureFilter,
                 ["has", `${propPrefix}icon`],
                 ["!has", `${propPrefix}iconRotation`],
-            ],
+            ]),
             layout: {
                 "icon-image": [
                     "coalesce",
@@ -316,13 +365,11 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-point-icon-rotation",
             type: "symbol",
-            filter: [
-                "all",
+            filter: createFilter([
                 ["==", "$type", "Point"],
-                ...metaFeatureFilter,
                 ["has", `${propPrefix}icon`],
                 ["has", `${propPrefix}iconRotation`],
-            ],
+            ]),
             layout: {
                 "icon-image": [
                     "coalesce",
@@ -342,16 +389,12 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-text-special-placement-points-center",
             type: "symbol",
-            filter: [
-                "all",
-                ...metaFeatureFilter,
+            filter: createFilter([
                 ["==", "$type", "Point"],
-                ...activeStateFilter,
                 ["has", `${propPrefix}name`],
                 ["has", `${propPrefix}icon`],
                 ["in", `${propPrefix}icon`, "EingesperrteAbgeschnittene", "Obdachlose"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
                 "text-font": ["B612 Bold"],
@@ -369,15 +412,12 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-text-special-placement-points-right",
             type: "symbol",
-            filter: [
-                "all",
-                ...metaFeatureFilter,
+            filter: createFilter([
                 ["==", "$type", "Point"],
                 ["has", `${propPrefix}name`],
                 ["has", `${propPrefix}icon`],
                 ["in", `${propPrefix}icon`, "Tote", "Vermisste", "Verletzte"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
                 "text-font": ["B612 Bold"],
@@ -394,9 +434,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-text-name-point",
             type: "symbol",
-            filter: [
-                "all",
-                ...metaFeatureFilter,
+            filter: createFilter([
                 ["has", `${propPrefix}name`],
                 ["has", `${propPrefix}color`],
                 [
@@ -409,8 +447,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
                     "Verletzte",
                 ],
                 ["==", "$type", "Point"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
                 "text-font": ["B612 Bold"],
@@ -426,13 +463,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-text-name-Polygon",
             type: "symbol",
-            filter: [
-                "all",
-                ...metaFeatureFilter,
+            filter: createFilter([
                 ["has", `${propPrefix}name`],
                 ["==", "$type", "Polygon"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
                 "text-font": ["B612 Bold"],
@@ -450,13 +484,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         {
             id: "gl-draw-text-name-LineString",
             type: "symbol",
-            filter: [
-                "all",
-                ...metaFeatureFilter,
+            filter: createFilter([
                 ["has", `${propPrefix}name`],
                 ["==", "$type", "LineString"],
-                ...drawModeFilter,
-            ],
+            ]),
             layout: {
                 "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
                 "text-font": ["B612 Bold"],
