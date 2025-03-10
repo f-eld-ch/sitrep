@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(map)* Reset WMS Layer selection again after adding it - ([8af7ec7](https://github.com/f-eld-ch/sitrep/commit/8af7ec799f9ce9b32d8321ea7227b7cab84d5656))
+
 ### 🚜 Refactor
 
 - *(map)* Adds map styles generator function for display and draw - ([a7f59f0](https://github.com/f-eld-ch/sitrep/commit/a7f59f0d55abc25bb8add7fc6fa43f075a49cce3))
