@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @babel/runtime ([#724](https://github.com/f-eld-ch/sitrep/issues/724)) - ([b8a8730](https://github.com/f-eld-ch/sitrep/commit/b8a873070f2cd594e74293f20d659454024675ed))
 - *(deps)* Bump @apollo/client from 3.13.3 to 3.13.4 in /ui ([#721](https://github.com/f-eld-ch/sitrep/issues/721)) - ([44d8bf0](https://github.com/f-eld-ch/sitrep/commit/44d8bf0de0bba5136c0d4ba4c849fef7e71cc480))
 - *(deps)* Bump @babel/helpers ([#723](https://github.com/f-eld-ch/sitrep/issues/723)) - ([a50cf7c](https://github.com/f-eld-ch/sitrep/commit/a50cf7cfbeb88057d9eaf4867a4e825cf2ec761f))
 
