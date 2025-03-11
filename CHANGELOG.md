@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump @babel/helpers ([#723](https://github.com/f-eld-ch/sitrep/issues/723)) - ([a50cf7c](https://github.com/f-eld-ch/sitrep/commit/a50cf7cfbeb88057d9eaf4867a4e825cf2ec761f))
+
+
 ## [25.3.2](https://github.com/f-eld-ch/sitrep/compare/v25.3.1..v25.3.2) - 2025-03-10
 
 ### 🐛 Bug Fixes
