@@ -1799,7 +1799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.8.4":
   version: 7.26.10
   resolution: "@babel/runtime@npm:7.26.10"
   dependencies:
@@ -4638,13 +4638,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/maplibre-gl-export@npm:~4.0.0":
-  version: 4.0.0
-  resolution: "@watergis/maplibre-gl-export@npm:4.0.0"
+"@watergis/maplibre-gl-export@npm:~4.0.1":
+  version: 4.0.1
+  resolution: "@watergis/maplibre-gl-export@npm:4.0.1"
   dependencies:
-    jspdf: "npm:^2.5.2"
-    maplibre-gl: "npm:^5.0.1"
-  checksum: 10/21be3d8c551525a52b6cdc85645e6f643970dcb75186454b8bb5f8255538b147bef14ee93ca01b353b3723241b780b26589954e4dc3f14fb6829712c19caaf95
+    jspdf: "npm:^3.0.0"
+    maplibre-gl: "npm:^5.2.0"
+  checksum: 10/3e8bff91652964173e8910a8e41e810d04e2816575c61fd89cb478d0fcc89c22c7a6d6929b404cc8df12f48a8ebdad255663fe9ece76b9fcd24749b74344956a
   languageName: node
   linkType: hard
 
@@ -8832,16 +8832,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:^2.5.2":
-  version: 2.5.2
-  resolution: "jspdf@npm:2.5.2"
+"jspdf@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "jspdf@npm:3.0.0"
   dependencies:
-    "@babel/runtime": "npm:^7.23.2"
+    "@babel/runtime": "npm:^7.26.0"
     atob: "npm:^2.1.2"
     btoa: "npm:^1.2.1"
     canvg: "npm:^3.0.6"
     core-js: "npm:^3.6.0"
-    dompurify: "npm:^2.5.4"
+    dompurify: "npm:^3.2.4"
     fflate: "npm:^0.8.1"
     html2canvas: "npm:^1.0.0-rc.5"
   dependenciesMeta:
@@ -8853,7 +8853,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: 10/8e82c5b342c99bf7a1ac2470a01b2f5a9e6638749704b89aef858daad37054160ce41081913bbc2f4a8f76fb848bc7c4296f8fa5d781de94926bc1b8d97c2238
+  checksum: 10/c3ada3970619cf85a4687ee40955d16223b9f0c66236535aa6302f48553104c982f2bc8d221c0c0aefa35ad88ef1803ac1b618aba3cd87d801809a998dd38c3c
   languageName: node
   linkType: hard
 
@@ -11500,7 +11500,7 @@ __metadata:
     "@types/uuid": "npm:^10.0.0"
     "@vitejs/plugin-react-swc": "npm:^3.8.0"
     "@vitest/coverage-v8": "npm:^3.0.8"
-    "@watergis/maplibre-gl-export": "npm:~4.0.0"
+    "@watergis/maplibre-gl-export": "npm:~4.0.1"
     bulma: "npm:^1.0.3"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.13"

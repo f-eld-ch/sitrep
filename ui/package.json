@@ -20,7 +20,7 @@
     "@turf/center": "^7.2.0",
     "@turf/helpers": "^7.2.0",
     "@types/mapbox__mapbox-gl-draw": "^1.4.8",
-    "@watergis/maplibre-gl-export": "~4.0.0",
+    "@watergis/maplibre-gl-export": "~4.0.1",
     "bulma": "^1.0.3",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.13",
