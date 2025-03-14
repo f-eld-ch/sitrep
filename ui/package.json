@@ -1,6 +1,6 @@
 {
   "name": "sitrep",
-  "version": "25.3.2",
+  "version": "25.3.3",
   "licsense": "AGPL-3.0-or-later",
   "private": true,
   "type": "module",
@@ -98,7 +98,7 @@
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.2.6",
     "typescript": "^5.8.2",
-    "vite": "^6.2.1",
+    "vite": "^6.2.2",
     "vite-plugin-biome": "^1.0.12",
     "vite-plugin-pwa": "^0.21.1",
     "vite-plugin-svgr": "^4.3.0",
