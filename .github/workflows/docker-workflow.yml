@@ -28,10 +28,10 @@ jobs:
             network=host
       
       - name: Download UI build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ui-build
-          path: ui/dist/
+          path: ui/build/
       
       - name: Docker meta for main app
         id: meta-app
