@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(cicd)* Optimize CICD pipelines ([#727](https://github.com/f-eld-ch/sitrep/issues/727)) - ([41e71cf](https://github.com/f-eld-ch/sitrep/commit/41e71cf9381035f90b63a3c470a5c864b1474cf4))
+
+
 ## [25.3.3](https://github.com/f-eld-ch/sitrep/compare/v25.3.2..v25.3.3) - 2025-03-14
 
 ### ⚙️  Other
