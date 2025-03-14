@@ -30,102 +30,25 @@ jobs:
         run: |
           flipt bundle build sitrep-featureflags:latest
           flipt bundle push sitrep-featureflags:latest ghcr.io/f-eld-ch/sitrep/featureflags:develop
-  build:
-    runs-on: ubuntu-24.04-arm
-    name: "Test and Build"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: yarn
-          cache-dependency-path: "ui/yarn.lock"
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/f-eld-ch/sitrep
-          tags: |
-            # set latest tag for default branch / ordered by priority
-            type=semver,pattern={{version}},prefix=v,priority=920
-            type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'main') }},priority=910
-            type=raw,value=develop,enable={{is_default_branch}},priority=905
-            # priority 900
-            type=semver,pattern={{major}}.{{minor}},prefix=v
-            type=semver,pattern={{major}},prefix=v
-            # priority 700
-            type=edge,branch=develop
-            # priority 600
-            type=ref,event=branch
-            type=ref,event=pr,prefix=pr-,enable=true
-
-      - name: Install packages
-        run: yarn install --immutable
-        working-directory: ui
-
-      - name: Lint ui files
-        run: yarn lint
-        working-directory: ui
-
-      - name: Run ui tests
-        run: yarn test
-        working-directory: ui
-
-      - name: Build ui
-        run: yarn build
-        env:
-          VERSION: ${{ steps.meta.outputs.version }}
-          GIT_SHA: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-        working-directory: ui
-
-      - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ steps.meta.outputs.version }}
-            GIT_SHA=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
-      - name: Docker meta for hasura
-        id: meta-hasura
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/f-eld-ch/sitrep-hasura
-          tags: |
-            # set latest tag for default branch
-            type=edge,branch=develop
-            type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=ref,event=branch
-            type=ref,event=pr,prefix=pr-,enable=true,priority=600
-            type=semver,pattern={{version}},prefix=v,priority=420
-            type=semver,pattern={{major}}.{{minor}},prefix=v,priority=410
-            type=semver,pattern={{major}},prefix=v,priority=400
-            type=sha
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.hasura
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-hasura.outputs.tags }}
-          labels: ${{ steps.meta-hasura.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  
+  ui-build:
+    name: "UI Build and Test"
+    uses: ./.github/workflows/ui-workflow.yml
+    with:
+      build: true
+  
+  # Run hasura build in parallel with UI build as it doesn't depend on UI artifacts
+  hasura-build:
+    name: "Build and Push Hasura Image" 
+    uses: ./.github/workflows/hasura-workflow.yml
+    with:
+      push: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
+  
+  docker-build:
+    name: "Build and Push Sitrep Image"
+    needs: ui-build  # Only depends on UI, not on hasura
+    uses: ./.github/workflows/docker-workflow.yml
+    with:
+      push: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
