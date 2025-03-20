@@ -55,9 +55,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.13.4":
-  version: 3.13.4
-  resolution: "@apollo/client@npm:3.13.4"
+"@apollo/client@npm:^3.13.5":
+  version: 3.13.5
+  resolution: "@apollo/client@npm:3.13.5"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@wry/caches": "npm:^1.0.0"
@@ -87,7 +87,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 10/35ddc4bc66c5fdd5f1561e5a3c36759f1ddba10de020441f7594d63ea72300ff75813878f17677b4e06a30749ce255f7f66c25a0af718d407ff1a51abf7205fd
+  checksum: 10/be6df8793dc0839bcb94f61a3a9f4dcc5a36ea9aff3eb4dc65980af8d4d2f3b1255882350d557ca62c91edd6b2ba4f56dff0baf22ac96ea07b8a06bf956139a9
   languageName: node
   linkType: hard
 
@@ -11468,7 +11468,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sitrep@workspace:."
   dependencies:
-    "@apollo/client": "npm:^3.13.4"
+    "@apollo/client": "npm:^3.13.5"
     "@biomejs/biome": "npm:1.9.4"
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"
