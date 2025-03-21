@@ -1799,7 +1799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.26.10, @babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.10, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.8.4":
   version: 7.26.10
   resolution: "@babel/runtime@npm:7.26.10"
   dependencies:
@@ -5322,7 +5322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canvg@npm:^3.0.6":
+"canvg@npm:^3.0.11":
   version: 3.0.11
   resolution: "canvg@npm:3.0.11"
   dependencies:
@@ -8832,14 +8832,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "jspdf@npm:3.0.0"
+"jspdf@npm:3.0.1":
+  version: 3.0.1
+  resolution: "jspdf@npm:3.0.1"
   dependencies:
-    "@babel/runtime": "npm:^7.26.0"
+    "@babel/runtime": "npm:^7.26.7"
     atob: "npm:^2.1.2"
     btoa: "npm:^1.2.1"
-    canvg: "npm:^3.0.6"
+    canvg: "npm:^3.0.11"
     core-js: "npm:^3.6.0"
     dompurify: "npm:^3.2.4"
     fflate: "npm:^0.8.1"
@@ -8853,7 +8853,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: 10/c3ada3970619cf85a4687ee40955d16223b9f0c66236535aa6302f48553104c982f2bc8d221c0c0aefa35ad88ef1803ac1b618aba3cd87d801809a998dd38c3c
+  checksum: 10/faa8e6f534b507140be768c2e18e6a2281772fa34d07d5f1d3388097cf058c30821fffb77c68e104d2c992d43843e43414901d39f53593739500a559377c4add
   languageName: node
   linkType: hard
 
