@@ -3,6 +3,7 @@
 ### ⚙️  Other
 
 - *(cicd)* Optimize CICD pipelines ([#727](https://github.com/f-eld-ch/sitrep/issues/727)) - ([41e71cf](https://github.com/f-eld-ch/sitrep/commit/41e71cf9381035f90b63a3c470a5c864b1474cf4))
+- *(deps)* Bump @apollo/client from 3.13.4 to 3.13.5 in /ui ([#733](https://github.com/f-eld-ch/sitrep/issues/733)) - ([156ad3a](https://github.com/f-eld-ch/sitrep/commit/156ad3ae07c628b3dd67ad5dfb59d3b8eb8c59a5))
 
 
 ## [25.3.3](https://github.com/f-eld-ch/sitrep/compare/v25.3.2..v25.3.3) - 2025-03-14
