@@ -6,6 +6,7 @@
 - *(deps)* Bump canvg ([#728](https://github.com/f-eld-ch/sitrep/issues/728)) - ([4118420](https://github.com/f-eld-ch/sitrep/commit/411842044f9071707220d4741b7b62f9383b247d))
 - *(deps)* Bump react-router from 7.3.0 to 7.4.0 in /ui ([#731](https://github.com/f-eld-ch/sitrep/issues/731)) - ([5b83921](https://github.com/f-eld-ch/sitrep/commit/5b839219c8d5f21460cbe07162a8d1ff489e0dbf))
 - *(deps)* Bump @apollo/client from 3.13.4 to 3.13.5 in /ui ([#733](https://github.com/f-eld-ch/sitrep/issues/733)) - ([156ad3a](https://github.com/f-eld-ch/sitrep/commit/156ad3ae07c628b3dd67ad5dfb59d3b8eb8c59a5))
+- *(security)* Upgrade jdPDF to v3.0.1 ([#734](https://github.com/f-eld-ch/sitrep/issues/734)) - ([822a5c0](https://github.com/f-eld-ch/sitrep/commit/822a5c043322d8836622e1b866eec44f19ed9373))
 
 
 ## [25.3.3](https://github.com/f-eld-ch/sitrep/compare/v25.3.2..v25.3.3) - 2025-03-14
