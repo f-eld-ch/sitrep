@@ -3,6 +3,7 @@
 ### ⚙️  Other
 
 - *(cicd)* Optimize CICD pipelines ([#727](https://github.com/f-eld-ch/sitrep/issues/727)) - ([41e71cf](https://github.com/f-eld-ch/sitrep/commit/41e71cf9381035f90b63a3c470a5c864b1474cf4))
+- *(deps)* Bump react-router from 7.3.0 to 7.4.0 in /ui ([#731](https://github.com/f-eld-ch/sitrep/issues/731)) - ([5b83921](https://github.com/f-eld-ch/sitrep/commit/5b839219c8d5f21460cbe07162a8d1ff489e0dbf))
 - *(deps)* Bump @apollo/client from 3.13.4 to 3.13.5 in /ui ([#733](https://github.com/f-eld-ch/sitrep/issues/733)) - ([156ad3a](https://github.com/f-eld-ch/sitrep/commit/156ad3ae07c628b3dd67ad5dfb59d3b8eb8c59a5))
 
 
