@@ -5394,43 +5394,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-name@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "color-name@npm:2.0.0"
-  checksum: 10/10a1addae41de2987d6b90dbd3cfade266c2e6f680ce21749911df4493b4fae07654862c6b5358bdd13e155461acb4eedaa5e0ba172bf13542cdcca10866cf2b
-  languageName: node
-  linkType: hard
-
 "color-name@npm:~1.1.4":
   version: 1.1.4
   resolution: "color-name@npm:1.1.4"
   checksum: 10/b0445859521eb4021cd0fb0cc1a75cecf67fceecae89b63f62b201cca8d345baf8b952c966862a9d9a2632987d4f6581f0ec8d957dfacece86f0a7919316f610
-  languageName: node
-  linkType: hard
-
-"color-parse@npm:^2.0.0":
-  version: 2.0.2
-  resolution: "color-parse@npm:2.0.2"
-  dependencies:
-    color-name: "npm:^2.0.0"
-  checksum: 10/64963587057e024edbce3f009e73e69b1d1b31d6f9955eed853748b8cb14d4e3bb49064da9c7452a22f5326a1197fa6c483483a53868e815f4cba30b6b1c36cc
-  languageName: node
-  linkType: hard
-
-"color-rgba@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "color-rgba@npm:3.0.0"
-  dependencies:
-    color-parse: "npm:^2.0.0"
-    color-space: "npm:^2.0.0"
-  checksum: 10/003b5fa70a77f46df3753e4b941154986163ccabbd9a8a80b2ca6cc4a0c9e505f3d4909c46a0b085e095d19b80297cf1c02dfefa33666b9ea1661ff52b3597bc
-  languageName: node
-  linkType: hard
-
-"color-space@npm:^2.0.0, color-space@npm:^2.0.1":
-  version: 2.3.1
-  resolution: "color-space@npm:2.3.1"
-  checksum: 10/574885c366e9ad4fddaed174f8ccd2529346834712c6d86168331527176d3eb997dbeef495756397ee21e52e9cb31ee7e60e8d81f17ece96358f8329dbb7265f
   languageName: node
   linkType: hard
 
@@ -9828,18 +9795,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ol@npm:^10.4.0":
-  version: 10.4.0
-  resolution: "ol@npm:10.4.0"
+"ol@npm:^10.5.0":
+  version: 10.5.0
+  resolution: "ol@npm:10.5.0"
   dependencies:
     "@types/rbush": "npm:4.0.0"
-    color-rgba: "npm:^3.0.0"
-    color-space: "npm:^2.0.1"
     earcut: "npm:^3.0.0"
     geotiff: "npm:^2.1.3"
     pbf: "npm:4.0.1"
     rbush: "npm:^4.0.0"
-  checksum: 10/14bbecd938a4f71d4d2f6db6f168e6403259f9256b1ab599783c22093927092770c2cd7ff85540701a3d0a512250dcb5663e15ae490d2c18545ba9e261b08d7c
+  checksum: 10/a08fcc112e4661f49ec0ae80dda2805c42cb84db9f8c84d84a0a190e8f6569782ce08a0e6f7164e8a4de4e7708ad2d61b64afc8dd2f3ed2226b2d9be26138e9e
   languageName: node
   linkType: hard
 
@@ -11245,7 +11210,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:5.3.0"
-    ol: "npm:^10.4.0"
+    ol: "npm:^10.5.0"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
