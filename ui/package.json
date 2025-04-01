@@ -98,7 +98,7 @@
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.3.0",
     "typescript": "^5.8.2",
-    "vite": "^6.2.3",
+    "vite": "^6.2.4",
     "vite-plugin-biome": "^1.0.12",
     "vite-plugin-pwa": "^0.21.2",
     "vite-plugin-svgr": "^4.3.0",
