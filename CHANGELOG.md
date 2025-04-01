@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump react-map-gl from 8.0.1 to 8.0.2 in /ui ([#744](https://github.com/f-eld-ch/sitrep/issues/744)) - ([88fd468](https://github.com/f-eld-ch/sitrep/commit/88fd468fe71d0ea050b02f457117cfc888c1efc3))
+
+
 ## [25.3.4](https://github.com/f-eld-ch/sitrep/compare/v25.3.3..v25.3.4) - 2025-03-28
 
 ### ⚙️  Other
