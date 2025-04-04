@@ -7066,9 +7066,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "html-react-parser@npm:5.2.2"
+"html-react-parser@npm:^5.2.3":
+  version: 5.2.3
+  resolution: "html-react-parser@npm:5.2.3"
   dependencies:
     domhandler: "npm:5.0.3"
     html-dom-parser: "npm:5.0.13"
@@ -7080,7 +7080,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/ac5f0e6fbd7ba566e886687deb838853ff1e4134804b4953f97af34747450156d059242e9213c4bef7b2735c014134083f561980538ffd0b3d8f27027a2b1298
+  checksum: 10/f2382575499b972393f6124d0d001d80b2b86d4b9a60f0a7cec5e918bd9522c63a70f12f2f3c44f7a3f48f50f8b2be6091019ff0e935f4ef6dcc84b4f899fbb0
   languageName: node
   linkType: hard
 
@@ -10971,9 +10971,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.86.1":
-  version: 1.86.1
-  resolution: "sass@npm:1.86.1"
+"sass@npm:^1.86.2":
+  version: 1.86.2
+  resolution: "sass@npm:1.86.2"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -10984,7 +10984,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/81f6815a3d7598655a5ade51605d712dc7608ff40e91c4a4f8e8ce9740e6c94de08b3375d0f2f610f9d0c08106bc3a1a6a16eb18510f47bd02d9868e0c0ee109
+  checksum: 10/0c4a7f169576083369ccee9523b5f875383efdd44e45fbe3f1fee80c6d46fbaac3110f60ac4ae3fa64430dc5c5e5fbf5a6d8d6e038981f7757face257b506ebc
   languageName: node
   linkType: hard
 
@@ -11200,7 +11200,7 @@ __metadata:
     globals: "npm:^16.0.0"
     graphql: "npm:^16.10.0"
     hat: "npm:^0.0.3"
-    html-react-parser: "npm:^5.2.2"
+    html-react-parser: "npm:^5.2.3"
     husky: "npm:^9.1.7"
     i18next: "npm:^24.2.3"
     i18next-browser-languagedetector: "npm:^8.0.4"
@@ -11220,14 +11220,14 @@ __metadata:
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.4.1"
     react-to-print: "npm:^3.0.5"
-    sass: "npm:^1.86.1"
+    sass: "npm:^1.86.2"
     semver: "npm:^7.7.1"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.8.2"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
-    vite: "npm:^6.2.4"
+    vite: "npm:^6.2.5"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.0"
     vite-plugin-svgr: "npm:^4.3.0"

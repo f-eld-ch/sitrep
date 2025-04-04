@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump html-react-parser from 5.2.2 to 5.2.3 in /ui ([#751](https://github.com/f-eld-ch/sitrep/issues/751)) - ([b11e3e5](https://github.com/f-eld-ch/sitrep/commit/b11e3e5278e4686e4f5dfd96e83a0a8c2135cab4))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.8.1 to v7.8.2 ([#743](https://github.com/f-eld-ch/sitrep/issues/743)) - ([ee66dbb](https://github.com/f-eld-ch/sitrep/commit/ee66dbb83ca6b6abd1b76d99c7b5451f2cce386e))
 - *(deps)* Bump react-router from 7.4.0 to 7.4.1 in /ui ([#748](https://github.com/f-eld-ch/sitrep/issues/748)) - ([aace17b](https://github.com/f-eld-ch/sitrep/commit/aace17bd0a433313cf29392ab7e4f3f5ea304a29))
 - *(deps)* Bump ol from 10.4.0 to 10.5.0 in /ui ([#746](https://github.com/f-eld-ch/sitrep/issues/746)) - ([ffe7243](https://github.com/f-eld-ch/sitrep/commit/ffe7243426c307f456459c48cef84bd5925916b7))
