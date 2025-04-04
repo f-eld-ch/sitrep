@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 3.13.5 to 3.13.6 in /ui ([#756](https://github.com/f-eld-ch/sitrep/issues/756)) - ([f54a9b5](https://github.com/f-eld-ch/sitrep/commit/f54a9b53af3bc7c6b09fb59e8d3791dd5c7b77e2))
 - *(deps)* Bump actions/create-github-app-token from 1 to 2 ([#752](https://github.com/f-eld-ch/sitrep/issues/752)) - ([3717c8c](https://github.com/f-eld-ch/sitrep/commit/3717c8c7e9dccd4d5ad41a500be4d0716d7e4018))
 - *(deps)* Bump html-react-parser from 5.2.2 to 5.2.3 in /ui ([#751](https://github.com/f-eld-ch/sitrep/issues/751)) - ([b11e3e5](https://github.com/f-eld-ch/sitrep/commit/b11e3e5278e4686e4f5dfd96e83a0a8c2135cab4))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.8.1 to v7.8.2 ([#743](https://github.com/f-eld-ch/sitrep/issues/743)) - ([ee66dbb](https://github.com/f-eld-ch/sitrep/commit/ee66dbb83ca6b6abd1b76d99c7b5451f2cce386e))
