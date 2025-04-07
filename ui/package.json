@@ -97,7 +97,7 @@
     "semver": "^7.7.1",
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.3.1",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "vite": "^6.2.5",
     "vite-plugin-biome": "^1.0.12",
     "vite-plugin-pwa": "^1.0.0",
