@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 3.13.6 to 3.13.7 in /ui ([#762](https://github.com/f-eld-ch/sitrep/issues/762)) - ([49b03f9](https://github.com/f-eld-ch/sitrep/commit/49b03f98f251e79f8223eff2260a98a6662f10dc))
 - *(deps)* Bump react-to-print from 3.0.5 to 3.0.6 in /ui ([#759](https://github.com/f-eld-ch/sitrep/issues/759)) - ([94e1289](https://github.com/f-eld-ch/sitrep/commit/94e12893270cb2aa98661bd04cc5f4c6d13da091))
 - *(deps)* Bump @openfeature/core from 1.7.2 to 1.8.0 in /ui ([#764](https://github.com/f-eld-ch/sitrep/issues/764)) - ([c8fd513](https://github.com/f-eld-ch/sitrep/commit/c8fd513e9dfdaec849a5ea8e3cfa4fd629acf76b))
 - *(deps)* Bump react-map-gl from 8.0.2 to 8.0.3 in /ui ([#760](https://github.com/f-eld-ch/sitrep/issues/760)) - ([378fa70](https://github.com/f-eld-ch/sitrep/commit/378fa70c3b613ffda5ad9ebff6f607df51a84732))
