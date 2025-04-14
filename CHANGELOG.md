@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-map-gl from 8.0.2 to 8.0.3 in /ui ([#760](https://github.com/f-eld-ch/sitrep/issues/760)) - ([378fa70](https://github.com/f-eld-ch/sitrep/commit/378fa70c3b613ffda5ad9ebff6f607df51a84732))
 - *(deps)* Bump react-router from 7.4.1 to 7.5.0 in /ui ([#757](https://github.com/f-eld-ch/sitrep/issues/757)) - ([0b5e09e](https://github.com/f-eld-ch/sitrep/commit/0b5e09eb5dbd638772e16f1517e2b7f3ba153a28))
 - *(deps)* Bump @apollo/client from 3.13.5 to 3.13.6 in /ui ([#756](https://github.com/f-eld-ch/sitrep/issues/756)) - ([f54a9b5](https://github.com/f-eld-ch/sitrep/commit/f54a9b53af3bc7c6b09fb59e8d3791dd5c7b77e2))
 - *(deps)* Bump actions/create-github-app-token from 1 to 2 ([#752](https://github.com/f-eld-ch/sitrep/issues/752)) - ([3717c8c](https://github.com/f-eld-ch/sitrep/commit/3717c8c7e9dccd4d5ad41a500be4d0716d7e4018))
