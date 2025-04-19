@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.5.0 to 7.5.1 in /ui ([#775](https://github.com/f-eld-ch/sitrep/issues/775)) - ([908b6f6](https://github.com/f-eld-ch/sitrep/commit/908b6f68972ac16f96d4b9cb4d111e0f92fcc107))
 - *(deps)* Bump @apollo/client from 3.13.7 to 3.13.8 in /ui ([#776](https://github.com/f-eld-ch/sitrep/issues/776)) - ([dc965d9](https://github.com/f-eld-ch/sitrep/commit/dc965d9bc7eea02105ca8b8eae57db18ff452376))
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#777](https://github.com/f-eld-ch/sitrep/issues/777)) - ([09b8b62](https://github.com/f-eld-ch/sitrep/commit/09b8b62f5ee8de0c5ddda6980608f63a30f0712f))
 - *(deps)* Bump @openfeature/react-sdk from 0.4.11 to 1.0.0 in /ui ([#769](https://github.com/f-eld-ch/sitrep/issues/769)) - ([7f8e417](https://github.com/f-eld-ch/sitrep/commit/7f8e417168237122ed897c6e9720d1c7b187132d))
