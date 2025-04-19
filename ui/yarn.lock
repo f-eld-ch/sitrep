@@ -4308,9 +4308,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vis.gl/react-mapbox@npm:8.0.3":
-  version: 8.0.3
-  resolution: "@vis.gl/react-mapbox@npm:8.0.3"
+"@vis.gl/react-mapbox@npm:8.0.4":
+  version: 8.0.4
+  resolution: "@vis.gl/react-mapbox@npm:8.0.4"
   peerDependencies:
     mapbox-gl: ">=3.5.0"
     react: ">=16.3.0"
@@ -4318,13 +4318,13 @@ __metadata:
   peerDependenciesMeta:
     mapbox-gl:
       optional: true
-  checksum: 10/bae27c89934580687dbc0103109b0002879ef007b21cb1c16b2b79554c426cddc9e56c7e288e9192f5238babf3f5b095af66e367f2257b463cf675435ed78f73
+  checksum: 10/0d5223c4dc00ef98b22b0620dd0ee1fc206f0f63b5f3bfdcaa822bae54a1159ab994698a4536fd6fd6101412786d4c860c198aac6e31e64a0af5ec0ac740b64e
   languageName: node
   linkType: hard
 
-"@vis.gl/react-maplibre@npm:8.0.3":
-  version: 8.0.3
-  resolution: "@vis.gl/react-maplibre@npm:8.0.3"
+"@vis.gl/react-maplibre@npm:8.0.4":
+  version: 8.0.4
+  resolution: "@vis.gl/react-maplibre@npm:8.0.4"
   dependencies:
     "@maplibre/maplibre-gl-style-spec": "npm:^19.2.1"
   peerDependencies:
@@ -4334,7 +4334,7 @@ __metadata:
   peerDependenciesMeta:
     maplibre-gl:
       optional: true
-  checksum: 10/a4ef546ca8243fd12404dad1b26bbc7f78d9de211ad8db2d33e73e6dbfd0e26a154c0a7d3b4a201d5584a01ec4e345b0c6f2249eb1181d5aff65de449462e1f6
+  checksum: 10/1ac0323a77930a7186a3bde8f9fd7af856cd99fd43aaa72368ea7e36793c402c85e41b6efb0586c85d3cdb6b4fc970f64d93d4c207e8ecfa9a643b0f6fa49c11
   languageName: node
   linkType: hard
 
@@ -10349,12 +10349,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-map-gl@npm:~8.0.3":
-  version: 8.0.3
-  resolution: "react-map-gl@npm:8.0.3"
+"react-map-gl@npm:~8.0.4":
+  version: 8.0.4
+  resolution: "react-map-gl@npm:8.0.4"
   dependencies:
-    "@vis.gl/react-mapbox": "npm:8.0.3"
-    "@vis.gl/react-maplibre": "npm:8.0.3"
+    "@vis.gl/react-mapbox": "npm:8.0.4"
+    "@vis.gl/react-maplibre": "npm:8.0.4"
   peerDependencies:
     mapbox-gl: ">=1.13.0"
     maplibre-gl: ">=1.13.0"
@@ -10365,7 +10365,7 @@ __metadata:
       optional: true
     maplibre-gl:
       optional: true
-  checksum: 10/0fa9ba9ff926a928658e5d29f6e579bd8aec65de7ed0c9a0179f051cec9551470e6201c0756921d1e7cf1cdb4299feb3865cc2854cca7ffc2ba82ede065db8bd
+  checksum: 10/273c9fb888a0fa70d9b6bfce0db1958896b8b8307725209a75860055b79a094a23056e03a063b407f56db17ecaafbfb4d8b8560764b862efabe45900223b2a1d
   languageName: node
   linkType: hard
 
@@ -11157,7 +11157,7 @@ __metadata:
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.3.1"
     react-i18next: "npm:^15.4.1"
-    react-map-gl: "npm:~8.0.3"
+    react-map-gl: "npm:~8.0.4"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.5.1"
     react-to-print: "npm:^3.0.6"
