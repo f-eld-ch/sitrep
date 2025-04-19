@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#777](https://github.com/f-eld-ch/sitrep/issues/777)) - ([09b8b62](https://github.com/f-eld-ch/sitrep/commit/09b8b62f5ee8de0c5ddda6980608f63a30f0712f))
 - *(deps)* Bump @openfeature/react-sdk from 0.4.11 to 1.0.0 in /ui ([#769](https://github.com/f-eld-ch/sitrep/issues/769)) - ([7f8e417](https://github.com/f-eld-ch/sitrep/commit/7f8e417168237122ed897c6e9720d1c7b187132d))
 - *(deps)* Bump @openfeature/web-sdk from 1.4.1 to 1.5.0 in /ui ([#768](https://github.com/f-eld-ch/sitrep/issues/768)) - ([705740f](https://github.com/f-eld-ch/sitrep/commit/705740f793907dc69d6b99df606fe07a3f57f341))
 - *(deps)* Bump @apollo/client from 3.13.6 to 3.13.7 in /ui ([#762](https://github.com/f-eld-ch/sitrep/issues/762)) - ([49b03f9](https://github.com/f-eld-ch/sitrep/commit/49b03f98f251e79f8223eff2260a98a6662f10dc))
