@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump bulma from 1.0.3 to 1.0.4 in /ui ([#780](https://github.com/f-eld-ch/sitrep/issues/780)) - ([a571060](https://github.com/f-eld-ch/sitrep/commit/a57106077a3768d2c56a67f59ec02e33b2ff34ec))
 - *(deps)* Bump maplibre-gl from 5.3.1 to 5.4.0 in /ui ([#779](https://github.com/f-eld-ch/sitrep/issues/779)) - ([f05fbc8](https://github.com/f-eld-ch/sitrep/commit/f05fbc842e9d6021e597db6e50d453a633a69f55))
 - *(deps)* Bump i18next from 24.2.3 to 25.0.1 in /ui ([#781](https://github.com/f-eld-ch/sitrep/issues/781)) - ([8d7dcf3](https://github.com/f-eld-ch/sitrep/commit/8d7dcf39b97c5f6b9a61423fb2ce5d72d4d329a4))
 - *(deps)* Bump maplibre-gl from 5.3.0 to 5.3.1 in /ui ([#771](https://github.com/f-eld-ch/sitrep/issues/771)) - ([ea91dd3](https://github.com/f-eld-ch/sitrep/commit/ea91dd39c83081a40b724b62e8299cf269b13fee))
