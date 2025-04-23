@@ -3002,9 +3002,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^23.2.0":
-  version: 23.2.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:23.2.0"
+"@maplibre/maplibre-gl-style-spec@npm:^23.2.1":
+  version: 23.2.1
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:23.2.1"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
     "@mapbox/unitbezier": "npm:^0.0.1"
@@ -3017,7 +3017,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/f7febe23eb8e6b3265eeeac96281dfdbace866aba7ff2e436ed88d8e6ad76ac48863d0ea7f0684eacef2306790a63252d2f09d5a130c9dc9f32d5e3742e8550b
+  checksum: 10/17b7c9e1169ae91f1d27d2a743594e1b58327be28e80ae8026b81d1f512534846a5c42eb5a9173a776ac22452325f381461f2b884e759645650a1bd9dea9b0ab
   languageName: node
   linkType: hard
 
@@ -11190,7 +11190,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^6.7.2"
     "@fortawesome/react-fontawesome": "npm:^0.2.2"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
-    "@maplibre/maplibre-gl-style-spec": "npm:^23.2.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^23.2.1"
     "@openfeature/core": "npm:^1.8.0"
     "@openfeature/flipt-web-provider": "npm:^0.1.3"
     "@openfeature/react-sdk": "npm:^1.0.0"
