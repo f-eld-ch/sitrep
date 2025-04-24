@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 15.4.1 to 15.5.1 in /ui ([#786](https://github.com/f-eld-ch/sitrep/issues/786)) - ([8e8eb63](https://github.com/f-eld-ch/sitrep/commit/8e8eb63992b5cfabbe865dc4d687cb201c1be998))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.0.2 to 0.0.3 in /ui ([#785](https://github.com/f-eld-ch/sitrep/issues/785)) - ([fe2e410](https://github.com/f-eld-ch/sitrep/commit/fe2e41085a62cd2822d88af7e1a9c8d35dcec9f2))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#761](https://github.com/f-eld-ch/sitrep/issues/761)) - ([fc189c9](https://github.com/f-eld-ch/sitrep/commit/fc189c9b183347f4a144b53a98a75aa844bd65f2))
 - *(deps)* Bump bulma from 1.0.3 to 1.0.4 in /ui ([#780](https://github.com/f-eld-ch/sitrep/issues/780)) - ([a571060](https://github.com/f-eld-ch/sitrep/commit/a57106077a3768d2c56a67f59ec02e33b2ff34ec))
