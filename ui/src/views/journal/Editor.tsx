@@ -1,10 +1,16 @@
-import React, { useCallback, useContext, useEffect, useReducer } from "react";
-
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import { useNavigate, useParams } from "react-router-dom";
-import { Medium, Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
+import React, { useCallback, useContext, useEffect, useReducer } from "react";
+import { useNavigate, useParams } from "react-router";
+import {
+  Medium,
+  type Message,
+  type MessageListData,
+  type MessageListVars,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
@@ -74,7 +80,10 @@ type Action =
   | { type: "set_autofill_details"; detail: AutofillDetail };
 type Dispatch = (action: Action) => void;
 
-export const EditorContext = React.createContext<{ state: State; dispatch: Dispatch }>({
+export const EditorContext = React.createContext<{
+  state: State;
+  dispatch: Dispatch;
+}>({
   state: initState(),
   dispatch: (action: Action) => {
     console.log(action);
@@ -94,16 +103,23 @@ function initState(): State {
     media: Medium.Radio,
     saving: false,
     radioChannel: "",
-    autocompleteDetails: { senderReceiverDetails: [], senderReceiverNames: [], channelList: [] },
+    autocompleteDetails: {
+      senderReceiverDetails: [],
+      senderReceiverNames: [],
+      channelList: [],
+    },
   };
 }
 
 function Editor() {
   const { journalId } = useParams();
-  const { data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
-    fetchPolicy: "cache-first",
-    variables: { journalId: journalId || "" },
-  });
+  const { data } = useQuery<MessageListData, MessageListVars>(
+    GetJournalMessages,
+    {
+      fetchPolicy: "cache-first",
+      variables: { journalId: journalId || "" },
+    },
+  );
 
   const [insertMessage, { error }] = useMutation(InsertMessage, {
     onCompleted() {
@@ -113,7 +129,9 @@ function Editor() {
     onError() {
       dispatch({ type: "save_error" });
     },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+    refetchQueries: [
+      { query: GetJournalMessages, variables: { journalId: journalId } },
+    ],
   });
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
@@ -124,7 +142,9 @@ function Editor() {
     onError() {
       dispatch({ type: "save_error" });
     },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+    refetchQueries: [
+      { query: GetJournalMessages, variables: { journalId: journalId } },
+    ],
   });
 
   const editorReducer = (state: State, action: Action): State => {
@@ -172,7 +192,9 @@ function Editor() {
       }
       case "clear": {
         // keep autocompleteDetails
-        return Object.assign({}, initState(), { autocompleteDetails: state.autocompleteDetails });
+        return Object.assign({}, initState(), {
+          autocompleteDetails: state.autocompleteDetails,
+        });
       }
       case "set_edit_message": {
         return Object.assign({}, state, {
@@ -218,9 +240,15 @@ function Editor() {
           content: state.content,
           type: state.media,
           sender: state.sender,
-          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
+          senderDetail:
+            state.media !== Medium.Radio
+              ? state.senderDetail
+              : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
+          receiverDetail:
+            state.media !== Medium.Radio
+              ? state.receiverDetail
+              : state.radioChannel,
         },
       });
     } else {
@@ -231,9 +259,15 @@ function Editor() {
           content: state.content,
           type: state.media,
           sender: state.sender,
-          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
+          senderDetail:
+            state.media !== Medium.Radio
+              ? state.senderDetail
+              : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
+          receiverDetail:
+            state.media !== Medium.Radio
+              ? state.receiverDetail
+              : state.radioChannel,
         },
       });
     }
@@ -243,7 +277,10 @@ function Editor() {
     dispatch({
       type: "set_autofill_details",
       detail: {
-        senderReceiverNames: uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter((e) => e) || [],
+        senderReceiverNames:
+          uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter(
+            (e) => e,
+          ) || [],
         senderReceiverDetails:
           uniq(
             data?.messages
@@ -251,38 +288,53 @@ function Editor() {
               .flatMap((d) => [d.senderDetail, d.receiverDetail]),
           ).filter((e) => e) || [],
         channelList:
-          uniq(data?.messages.filter((d) => d.mediumId === Medium.Radio).map((d) => d.senderDetail)).filter((e) => e) ||
-          [],
+          uniq(
+            data?.messages
+              .filter((d) => d.mediumId === Medium.Radio)
+              .map((d) => d.senderDetail),
+          ).filter((e) => e) || [],
       },
     });
-  }, [data, journalId]);
+  }, [data]);
 
   // create callbacks to have stable List renderings
   const setEditorMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_edit_message", message: message }),
-    [dispatch],
+    (message: Message | undefined) =>
+      dispatch({ type: "set_edit_message", message: message }),
+    [],
   );
   const setTriageMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_triage_message", message: message }),
-    [dispatch],
+    (message: Message | undefined) =>
+      dispatch({ type: "set_triage_message", message: message }),
+    [],
   );
 
   return (
     <EditorContext.Provider value={{ state, dispatch }}>
       <div>
-        <div className="columns">
+        <div className="columns is-tablet">
           <div className="column is-half">
             <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
-            {error && <Notification type="error">{error?.message}</Notification>}
-            {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
+            {error && (
+              <Notification type="error">{error?.message}</Notification>
+            )}
+            {errorUpdate && (
+              <Notification type="error">{errorUpdate?.message}</Notification>
+            )}
             <InputBox />
           </div>
-          <div className="column">
-            <List showControls={true} setEditorMessage={setEditorMessage} setTriageMessage={setTriageMessage} />
+          <div className="column is-half">
+            <List
+              showControls={true}
+              setEditorMessage={setEditorMessage}
+              setTriageMessage={setTriageMessage}
+            />
           </div>
           <TriageModal
             message={state.messageToTriage}
-            setMessage={(message: Message | undefined) => dispatch({ type: "set_triage_message", message: message })}
+            setMessage={(message: Message | undefined) =>
+              dispatch({ type: "set_triage_message", message: message })
+            }
           />
         </div>
       </div>
@@ -327,24 +379,59 @@ function InputBox() {
 
   const navigate = useNavigate();
 
+  const message: Message = Object.assign(
+    {},
+    {
+      id: state.messageToEdit?.id || "",
+      content: messageContentDebounced,
+      sender: state.sender,
+      senderDetail: state.senderDetail,
+      receiver: state.receiver,
+      receiverDetail: state.receiverDetail,
+      mediumId: state.media,
+      createdAt: state.messageToEdit?.createdAt || new Date(),
+      updatedAt: state.messageToEdit?.updatedAt || new Date(),
+      divisions: state.messageToEdit?.divisions || [],
+      deletedAt: state.messageToEdit?.deletedAt || new Date(),
+      time: state.time || new Date(),
+      priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
+      triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
+    },
+  );
+
   return (
     <div className="box">
       <button
+        type="button"
         className="delete is-pulled-right is-small mb-2"
-        onClick={() => navigate("/incident/" + incidentId + "/journal/" + journalId)}
+        onClick={() => navigate(`/incident/${incidentId}/journal/${journalId}`)}
       />
 
       <div className="mt-5 field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("mediumName")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="medium" className="label is-capitalized">
+            {t("mediumName")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
-            <div className="control is-narrow">
+            <div className="control is-normal is-flex-shrink-2 is-flex-wrap-wrap">
               <div className="select is-fullwidth">
-                <select value={state.media} onChange={handleMediumChange}>
+                <select
+                  id="medium"
+                  value={state.media}
+                  onChange={handleMediumChange}
+                >
                   {Object.values(Medium).map((medium: Medium) => (
-                    <option key={medium} label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}>
+                    <option
+                      key={medium}
+                      label={
+                        t([
+                          `medium.${medium}`,
+                          `medium.${Medium.Other}`,
+                        ]) as string
+                      }
+                    >
                       {medium}
                     </option>
                   ))}
@@ -361,14 +448,9 @@ function InputBox() {
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage
             id={undefined}
-            message={messageContentDebounced}
-            receiver={state.receiver}
-            sender={state.sender}
-            timeDate={state.time || new Date()}
-            priority={state.messageToEdit?.priorityId || PriorityStatus.Normal}
-            triage={state.messageToEdit?.triageId || TriageStatus.Pending}
+            message={message}
             showControls={false}
-            origMessage={undefined}
+            divisions={[]}
             setEditorMessage={undefined}
             setTriageMessage={undefined}
           />

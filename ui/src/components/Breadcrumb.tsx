@@ -2,23 +2,29 @@ import { useQuery } from "@apollo/client";
 import { faBars, faExplosion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
-import { NavLink, useParams } from "react-router-dom";
-import { IncidentDetailsData, IncidentDetailsVars } from "types";
+import { NavLink, useParams } from "react-router";
+import type { IncidentDetailsData, IncidentDetailsVars } from "types";
 import { GetIncidentDetails } from "views/incident/graphql";
 
 export function Breadcrumb() {
   const { incidentId, journalId } = useParams();
 
-  const { data: incidentData, refetch } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
+  const { data: incidentData, refetch } = useQuery<
+    IncidentDetailsData,
+    IncidentDetailsVars
+  >(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
   });
 
   useEffect(() => {
     refetch({ incidentId: incidentId || "" });
-  }, [incidentId, journalId, refetch]);
+  }, [incidentId, refetch]);
 
   return (
-    <nav className="breadcrumb is-right has-bullet-separator is-hidden-print" aria-label="breadcrumbs">
+    <nav
+      className="breadcrumb is-right has-bullet-separator is-hidden-print"
+      aria-label="breadcrumbs"
+    >
       <ul>
         {incidentData?.incidentsByPk.name ? (
           <li>
@@ -37,7 +43,8 @@ export function Breadcrumb() {
         ) : (
           <></>
         )}
-        {journalId && incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) ? (
+        {journalId &&
+        incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) ? (
           <li>
             <NavLink
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
@@ -47,7 +54,13 @@ export function Breadcrumb() {
                 <span className="icon">
                   <FontAwesomeIcon icon={faBars} />
                 </span>
-                <span>{incidentData?.incidentsByPk.journals.find((j) => j.id === journalId)?.name}</span>
+                <span>
+                  {
+                    incidentData?.incidentsByPk.journals.find(
+                      (j) => j.id === journalId,
+                    )?.name
+                  }
+                </span>
               </span>
             </NavLink>
           </li>

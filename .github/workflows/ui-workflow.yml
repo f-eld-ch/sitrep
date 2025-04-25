@@ -1,0 +1,70 @@
+name: UI Build & Test
+on:
+  workflow_call:
+    inputs:
+      build:
+        description: 'Whether to build the UI'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    name: "UI Test and Build"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: yarn
+          cache-dependency-path: "ui/yarn.lock"
+      
+      - name: Extract version
+        id: version
+        if: inputs.build
+        run: |
+          # For tags, use the tag name without v prefix
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          # For branches, use branch name
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            VERSION=${GITHUB_REF#refs/heads/}
+          # For pull requests, use PR number
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            VERSION=pr-${{ github.event.pull_request.number }}
+          # Otherwise fallback to commit SHA
+          else
+            VERSION=${GITHUB_SHA::8}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Install packages
+        run: yarn install --immutable
+        working-directory: ui
+      
+      - name: Lint ui files
+        run: yarn lint
+        working-directory: ui
+      
+      - name: Run ui tests
+        run: yarn test
+        working-directory: ui
+      
+      - name: Build ui
+        if: inputs.build
+        run: yarn build
+        env:
+          GIT_SHA: ${{ github.sha }}
+          VERSION: ${{ steps.version.outputs.version }}
+        working-directory: ui
+      
+      - name: Upload UI build artifacts
+        if: inputs.build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-build
+          path: ui/build/
+          retention-days: 1

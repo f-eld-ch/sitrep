@@ -1,6 +1,11 @@
-import { FeatureCollection, Feature, Geometry, GeoJsonProperties } from "geojson";
+import type {
+  Feature,
+  FeatureCollection,
+  GeoJsonProperties,
+  Geometry,
+} from "geojson";
 import { omit } from "lodash";
-import { Layer, Feature as GraphQlFeature } from "types/layer";
+import type { Feature as GraphQlFeature, Layer } from "types/layer";
 
 interface LayerMap {
   active: FeatureCollection;
@@ -10,24 +15,38 @@ interface LayerMap {
 const LayersToLayerMap = (layers: Layer[], activeLayerId: string): LayerMap => {
   // let featureCollections: FeatureCollection[] = []
 
-  const layerMap: LayerMap = { active: { features: [], type: "FeatureCollection" }, inactive: [] };
+  const layerMap: LayerMap = {
+    active: { features: [], type: "FeatureCollection" },
+    inactive: [],
+  };
 
-  layers.forEach((layer) => {
+  for (const layer of layers) {
     const fc: FeatureCollection = LayerToFeatureCollection(layer);
     if (layer.id === activeLayerId) {
       layerMap.active = fc;
     } else {
       layerMap.inactive.push(fc);
     }
-  });
+  }
 
   return layerMap;
 };
 
-const LayerToFeatureCollection = (layer: Layer | undefined): FeatureCollection => {
+const LayerToFeatureCollection = (
+  layer: Layer | undefined,
+): FeatureCollection => {
   const fc: FeatureCollection = { features: [], type: "FeatureCollection" };
 
-  layer?.features.forEach((f) => fc.features.push(ConvertFeatureToGeoJsonFeature(f, layer.id)));
+  const features = layer?.features || [];
+
+  for (const f of features) {
+    if (f === undefined) {
+      continue;
+    }
+    fc.features.push(
+      ConvertFeatureToGeoJsonFeature(f, f.id ? f.id.toString() : ""),
+    );
+  }
 
   return fc;
 };
@@ -48,7 +67,10 @@ function ConvertFeatureToGeoJsonFeature(f: GraphQlFeature, layerId: string) {
 }
 
 function FilterActiveFeatures(fc: FeatureCollection) {
-  const filteredFC: FeatureCollection = { type: "FeatureCollection", features: [] };
+  const filteredFC: FeatureCollection = {
+    type: "FeatureCollection",
+    features: [],
+  };
   filteredFC.features = Object.assign(
     [],
     fc.features.filter((f) => f.properties?.deletedAt === null),
@@ -62,7 +84,12 @@ function CleanFeature(f: Feature) {
     type: "Feature",
     id: f.id,
     geometry: f.geometry,
-    properties: omit(f.properties, ["createdAt", "updatedAt", "deletedAt", "layerId"]),
+    properties: omit(f.properties, [
+      "createdAt",
+      "updatedAt",
+      "deletedAt",
+      "layerId",
+    ]),
   };
 
   return feature;

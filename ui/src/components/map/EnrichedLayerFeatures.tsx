@@ -1,10 +1,17 @@
 import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
-import { BabsIcon, Schaeden, Others } from "components/BabsIcons";
-import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
+import { type BabsIcon, Others, Schaeden } from "components/BabsIcons";
+import type {
+  Feature,
+  FeatureCollection,
+  GeoJsonProperties,
+  Geometry,
+} from "geojson";
 import { Layer, Source } from "react-map-gl/maplibre";
 
-const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometry, GeoJsonProperties>[] => {
+const enrichFeature = (
+  f: Feature<Geometry, GeoJsonProperties>,
+): Feature<Geometry, GeoJsonProperties>[] => {
   if (f === undefined) {
     return [];
   }
@@ -12,29 +19,35 @@ const enrichFeature = (f: Feature<Geometry, GeoJsonProperties>): Feature<Geometr
   const features: Feature<Geometry, GeoJsonProperties>[] = [];
 
   if (f.geometry.type === "LineString") {
-    const enrich: EnrichLineConfig | undefined = EnrichLineStringMap[f.properties?.lineType];
+    const enrich: EnrichLineConfig | undefined =
+      EnrichLineStringMap[f.properties?.lineType];
     if (enrich !== undefined) {
       if (enrich.iconStart) {
         const startPoint = point(f.geometry.coordinates[0]);
-        startPoint.id = f.id + ":start";
+        startPoint.id = `${f.id}:start`;
         startPoint.properties = {
           parent: f.id,
-          icon: "babs:" + enrich.iconStart.name,
+          icon: `babs:${enrich.iconStart.name}`,
           iconRotation:
-            bearing(point(f.geometry.coordinates[0]), point(f.geometry.coordinates[1])) + enrich.iconRotation,
+            bearing(
+              point(f.geometry.coordinates[0]),
+              point(f.geometry.coordinates[1]),
+            ) + enrich.iconRotation,
         };
         features.push(startPoint);
       }
 
       if (enrich.iconEnd) {
         const endPoint = point(f.geometry.coordinates.slice(-1)[0]);
-        endPoint.id = f.id + ":end";
+        endPoint.id = `${f.id}:end`;
         endPoint.properties = {
           parent: f.id,
-          icon: "babs:" + enrich.iconEnd.name,
+          icon: `babs:${enrich.iconEnd.name}`,
           iconRotation:
-            bearing(f.geometry.coordinates.slice(-1)[0], point(f.geometry.coordinates.slice(-2)[0])) +
-            enrich.iconRotation,
+            bearing(
+              f.geometry.coordinates.slice(-1)[0],
+              point(f.geometry.coordinates.slice(-2)[0]),
+            ) + enrich.iconRotation,
         };
         features.push(endPoint);
       }
@@ -105,7 +118,10 @@ const EnrichLineStringMap: Record<string, EnrichLineConfig> = {
 
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
   const { id, featureCollection } = props;
-  const enrichedFC: FeatureCollection = { type: "FeatureCollection", features: [] };
+  const enrichedFC: FeatureCollection = {
+    type: "FeatureCollection",
+    features: [],
+  };
   enrichedFC.features = Object.assign(
     [],
     featureCollection.features
@@ -115,9 +131,9 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
   );
 
   return (
-    <Source key={id} id={id} type="geojson" data={enrichedFC}>
+    <Source key={id} type="geojson" data={enrichedFC}>
       <Layer
-        id={id + "enriched-points"}
+        id={`${id}-enriched-points`}
         type="symbol"
         layout={{
           "icon-image": ["coalesce", ["get", "icon"], "default_marker"],

@@ -56,7 +56,16 @@ const DELETE_FEATURE = gql`
   }
 `;
 
+const ADD_LAYER = gql`
+  mutation AddLayer($incidentId: uuid!, $name: String!) {
+    insertLayersOne(object: {incidentId: $incidentId, name: $name }) {
+      id
+    }
+  }
+`;
+
 export {
+  ADD_LAYER as AddLayer,
   GET_LAYERS as GetLayers,
   ADD_FEATURE as AddFeatureToLayer,
   MODIFY_FEATURE as ModifyFeature,

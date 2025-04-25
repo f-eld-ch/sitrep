@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const useDate = () => {
+  const { i18n } = useTranslation();
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
@@ -12,8 +14,8 @@ export const useDate = () => {
     };
   }, []);
 
-  const date = dayjs(now).format("LL");
-  const time = dayjs(now).format("LT");
+  const date = dayjs(now).locale(i18n.language).format("LL");
+  const time = dayjs(now).locale(i18n.language).format("LT");
 
   return {
     now,

@@ -307,13 +307,6 @@
     "x": 768,
     "y": 64
   },
-  "ExplosionGefahr": {
-    "height": 64,
-    "pixelRatio": 2,
-    "width": 64,
-    "x": 832,
-    "y": 64
-  },
   "Fluechtlinge": {
     "height": 64,
     "pixelRatio": 2,
@@ -348,6 +341,13 @@
     "width": 64,
     "x": 64,
     "y": 256
+  },
+  "GefahrExplosion": {
+    "height": 64,
+    "pixelRatio": 2,
+    "width": 64,
+    "x": 832,
+    "y": 64
   },
   "GefahrdurchLoeschenmitWasser": {
     "height": 64,

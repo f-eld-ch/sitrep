@@ -1,5 +1,298 @@
 ## [unreleased]
 
+### ⚙️  Other
+
+- *(dependabot)* Update reviewer for update PRs - ([42b4361](https://github.com/f-eld-ch/sitrep/commit/42b4361325bc56a34bc702441b295f91a9bc345c))
+- *(deps)* Bump react-router from 7.5.1 to 7.5.2 in /ui ([#788](https://github.com/f-eld-ch/sitrep/issues/788)) - ([1e6118f](https://github.com/f-eld-ch/sitrep/commit/1e6118f91b0660c6de31667eee99191c9e7f34b1))
+- *(deps)* Bump react-i18next from 15.4.1 to 15.5.1 in /ui ([#786](https://github.com/f-eld-ch/sitrep/issues/786)) - ([8e8eb63](https://github.com/f-eld-ch/sitrep/commit/8e8eb63992b5cfabbe865dc4d687cb201c1be998))
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.0.2 to 0.0.3 in /ui ([#785](https://github.com/f-eld-ch/sitrep/issues/785)) - ([fe2e410](https://github.com/f-eld-ch/sitrep/commit/fe2e41085a62cd2822d88af7e1a9c8d35dcec9f2))
+- *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#761](https://github.com/f-eld-ch/sitrep/issues/761)) - ([fc189c9](https://github.com/f-eld-ch/sitrep/commit/fc189c9b183347f4a144b53a98a75aa844bd65f2))
+- *(deps)* Bump bulma from 1.0.3 to 1.0.4 in /ui ([#780](https://github.com/f-eld-ch/sitrep/issues/780)) - ([a571060](https://github.com/f-eld-ch/sitrep/commit/a57106077a3768d2c56a67f59ec02e33b2ff34ec))
+- *(deps)* Bump maplibre-gl from 5.3.1 to 5.4.0 in /ui ([#779](https://github.com/f-eld-ch/sitrep/issues/779)) - ([f05fbc8](https://github.com/f-eld-ch/sitrep/commit/f05fbc842e9d6021e597db6e50d453a633a69f55))
+- *(deps)* Bump i18next from 24.2.3 to 25.0.1 in /ui ([#781](https://github.com/f-eld-ch/sitrep/issues/781)) - ([8d7dcf3](https://github.com/f-eld-ch/sitrep/commit/8d7dcf39b97c5f6b9a61423fb2ce5d72d4d329a4))
+- *(deps)* Bump maplibre-gl from 5.3.0 to 5.3.1 in /ui ([#771](https://github.com/f-eld-ch/sitrep/issues/771)) - ([ea91dd3](https://github.com/f-eld-ch/sitrep/commit/ea91dd39c83081a40b724b62e8299cf269b13fee))
+- *(deps)* Bump react-map-gl from 8.0.3 to 8.0.4 in /ui ([#773](https://github.com/f-eld-ch/sitrep/issues/773)) - ([fc7a772](https://github.com/f-eld-ch/sitrep/commit/fc7a772d62f7342ec3d4eae0ad3b4c9192de9cc5))
+- *(deps)* Bump react-router from 7.5.0 to 7.5.1 in /ui ([#775](https://github.com/f-eld-ch/sitrep/issues/775)) - ([908b6f6](https://github.com/f-eld-ch/sitrep/commit/908b6f68972ac16f96d4b9cb4d111e0f92fcc107))
+- *(deps)* Bump @apollo/client from 3.13.7 to 3.13.8 in /ui ([#776](https://github.com/f-eld-ch/sitrep/issues/776)) - ([dc965d9](https://github.com/f-eld-ch/sitrep/commit/dc965d9bc7eea02105ca8b8eae57db18ff452376))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#777](https://github.com/f-eld-ch/sitrep/issues/777)) - ([09b8b62](https://github.com/f-eld-ch/sitrep/commit/09b8b62f5ee8de0c5ddda6980608f63a30f0712f))
+- *(deps)* Bump @openfeature/react-sdk from 0.4.11 to 1.0.0 in /ui ([#769](https://github.com/f-eld-ch/sitrep/issues/769)) - ([7f8e417](https://github.com/f-eld-ch/sitrep/commit/7f8e417168237122ed897c6e9720d1c7b187132d))
+- *(deps)* Bump @openfeature/web-sdk from 1.4.1 to 1.5.0 in /ui ([#768](https://github.com/f-eld-ch/sitrep/issues/768)) - ([705740f](https://github.com/f-eld-ch/sitrep/commit/705740f793907dc69d6b99df606fe07a3f57f341))
+- *(deps)* Bump @apollo/client from 3.13.6 to 3.13.7 in /ui ([#762](https://github.com/f-eld-ch/sitrep/issues/762)) - ([49b03f9](https://github.com/f-eld-ch/sitrep/commit/49b03f98f251e79f8223eff2260a98a6662f10dc))
+- *(deps)* Bump react-to-print from 3.0.5 to 3.0.6 in /ui ([#759](https://github.com/f-eld-ch/sitrep/issues/759)) - ([94e1289](https://github.com/f-eld-ch/sitrep/commit/94e12893270cb2aa98661bd04cc5f4c6d13da091))
+- *(deps)* Bump @openfeature/core from 1.7.2 to 1.8.0 in /ui ([#764](https://github.com/f-eld-ch/sitrep/issues/764)) - ([c8fd513](https://github.com/f-eld-ch/sitrep/commit/c8fd513e9dfdaec849a5ea8e3cfa4fd629acf76b))
+- *(deps)* Bump react-map-gl from 8.0.2 to 8.0.3 in /ui ([#760](https://github.com/f-eld-ch/sitrep/issues/760)) - ([378fa70](https://github.com/f-eld-ch/sitrep/commit/378fa70c3b613ffda5ad9ebff6f607df51a84732))
+- *(deps)* Bump react-router from 7.4.1 to 7.5.0 in /ui ([#757](https://github.com/f-eld-ch/sitrep/issues/757)) - ([0b5e09e](https://github.com/f-eld-ch/sitrep/commit/0b5e09eb5dbd638772e16f1517e2b7f3ba153a28))
+- *(deps)* Bump @apollo/client from 3.13.5 to 3.13.6 in /ui ([#756](https://github.com/f-eld-ch/sitrep/issues/756)) - ([f54a9b5](https://github.com/f-eld-ch/sitrep/commit/f54a9b53af3bc7c6b09fb59e8d3791dd5c7b77e2))
+- *(deps)* Bump actions/create-github-app-token from 1 to 2 ([#752](https://github.com/f-eld-ch/sitrep/issues/752)) - ([3717c8c](https://github.com/f-eld-ch/sitrep/commit/3717c8c7e9dccd4d5ad41a500be4d0716d7e4018))
+- *(deps)* Bump html-react-parser from 5.2.2 to 5.2.3 in /ui ([#751](https://github.com/f-eld-ch/sitrep/issues/751)) - ([b11e3e5](https://github.com/f-eld-ch/sitrep/commit/b11e3e5278e4686e4f5dfd96e83a0a8c2135cab4))
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.8.1 to v7.8.2 ([#743](https://github.com/f-eld-ch/sitrep/issues/743)) - ([ee66dbb](https://github.com/f-eld-ch/sitrep/commit/ee66dbb83ca6b6abd1b76d99c7b5451f2cce386e))
+- *(deps)* Bump react-router from 7.4.0 to 7.4.1 in /ui ([#748](https://github.com/f-eld-ch/sitrep/issues/748)) - ([aace17b](https://github.com/f-eld-ch/sitrep/commit/aace17bd0a433313cf29392ab7e4f3f5ea304a29))
+- *(deps)* Bump ol from 10.4.0 to 10.5.0 in /ui ([#746](https://github.com/f-eld-ch/sitrep/issues/746)) - ([ffe7243](https://github.com/f-eld-ch/sitrep/commit/ffe7243426c307f456459c48cef84bd5925916b7))
+- *(deps)* Bump react-map-gl from 8.0.1 to 8.0.2 in /ui ([#744](https://github.com/f-eld-ch/sitrep/issues/744)) - ([88fd468](https://github.com/f-eld-ch/sitrep/commit/88fd468fe71d0ea050b02f457117cfc888c1efc3))
+
+
+## [25.3.4](https://github.com/f-eld-ch/sitrep/compare/v25.3.3..v25.3.4) - 2025-03-28
+
+### ⚙️  Other
+
+- *(cicd)* Optimize CICD pipelines ([#727](https://github.com/f-eld-ch/sitrep/issues/727)) - ([41e71cf](https://github.com/f-eld-ch/sitrep/commit/41e71cf9381035f90b63a3c470a5c864b1474cf4))
+- *(deps)* Bump maplibre-gl from 5.2.0 to 5.3.0 in /ui ([#739](https://github.com/f-eld-ch/sitrep/issues/739)) - ([7549d0a](https://github.com/f-eld-ch/sitrep/commit/7549d0ad2c53e27ac00469f0a6e7fcd4e34ca1d7))
+- *(deps)* Bump canvg ([#728](https://github.com/f-eld-ch/sitrep/issues/728)) - ([4118420](https://github.com/f-eld-ch/sitrep/commit/411842044f9071707220d4741b7b62f9383b247d))
+- *(deps)* Bump react-router from 7.3.0 to 7.4.0 in /ui ([#731](https://github.com/f-eld-ch/sitrep/issues/731)) - ([5b83921](https://github.com/f-eld-ch/sitrep/commit/5b839219c8d5f21460cbe07162a8d1ff489e0dbf))
+- *(deps)* Bump @apollo/client from 3.13.4 to 3.13.5 in /ui ([#733](https://github.com/f-eld-ch/sitrep/issues/733)) - ([156ad3a](https://github.com/f-eld-ch/sitrep/commit/156ad3ae07c628b3dd67ad5dfb59d3b8eb8c59a5))
+- *(security)* Upgrade jdPDF to v3.0.1 ([#734](https://github.com/f-eld-ch/sitrep/issues/734)) - ([822a5c0](https://github.com/f-eld-ch/sitrep/commit/822a5c043322d8836622e1b866eec44f19ed9373))
+
+
+## [25.3.3](https://github.com/f-eld-ch/sitrep/compare/v25.3.2..v25.3.3) - 2025-03-14
+
+### ⚙️  Other
+
+- *(deps)* Bump i18next from 24.2.2 to 24.2.3 in /ui ([#726](https://github.com/f-eld-ch/sitrep/issues/726)) - ([5548dd6](https://github.com/f-eld-ch/sitrep/commit/5548dd69e1b586bfec4657ee5ea7d3f6d26767b8))
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#722](https://github.com/f-eld-ch/sitrep/issues/722)) - ([5a893ca](https://github.com/f-eld-ch/sitrep/commit/5a893caced8484aa80e996f112bd6583fd2e7c10))
+- *(deps)* Bump @babel/runtime ([#724](https://github.com/f-eld-ch/sitrep/issues/724)) - ([b8a8730](https://github.com/f-eld-ch/sitrep/commit/b8a873070f2cd594e74293f20d659454024675ed))
+- *(deps)* Bump @apollo/client from 3.13.3 to 3.13.4 in /ui ([#721](https://github.com/f-eld-ch/sitrep/issues/721)) - ([44d8bf0](https://github.com/f-eld-ch/sitrep/commit/44d8bf0de0bba5136c0d4ba4c849fef7e71cc480))
+- *(deps)* Bump @babel/helpers ([#723](https://github.com/f-eld-ch/sitrep/issues/723)) - ([a50cf7c](https://github.com/f-eld-ch/sitrep/commit/a50cf7cfbeb88057d9eaf4867a4e825cf2ec761f))
+
+
+## [25.3.2](https://github.com/f-eld-ch/sitrep/compare/v25.3.1..v25.3.2) - 2025-03-10
+
+### 🐛 Bug Fixes
+
+- *(map)* Reset WMS Layer selection again after adding it - ([8af7ec7](https://github.com/f-eld-ch/sitrep/commit/8af7ec799f9ce9b32d8321ea7227b7cab84d5656))
+
+### 🚜 Refactor
+
+- *(map)* Adds map styles generator function for display and draw - ([a7f59f0](https://github.com/f-eld-ch/sitrep/commit/a7f59f0d55abc25bb8add7fc6fa43f075a49cce3))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-router from 7.2.0 to 7.3.0 in /ui ([#718](https://github.com/f-eld-ch/sitrep/issues/718)) - ([e9cc3eb](https://github.com/f-eld-ch/sitrep/commit/e9cc3eb73624b44ea2498ef084df5182c95193d9))
+- *(deps)* Bump react-markdown from 10.0.1 to 10.1.0 in /ui ([#717](https://github.com/f-eld-ch/sitrep/issues/717)) - ([b5300d2](https://github.com/f-eld-ch/sitrep/commit/b5300d243c8ebcb60967abaa12b8210b6c2bcfe9))
+- *(deps)* Bump @apollo/client from 3.13.2 to 3.13.3 in /ui ([#716](https://github.com/f-eld-ch/sitrep/issues/716)) - ([26b82fa](https://github.com/f-eld-ch/sitrep/commit/26b82fa827e9ad5a26c8f1a89952fc87ffce75a9))
+
+
+## [25.3.1](https://github.com/f-eld-ch/sitrep/compare/v25.3.0..v25.3.1) - 2025-03-07
+
+### ⛰️  Features
+
+- *(map)* Add translations for new drawing and WMS layer menu ([#714](https://github.com/f-eld-ch/sitrep/issues/714)) - ([4291477](https://github.com/f-eld-ch/sitrep/commit/42914774fae0dc920a730389af0775490bdbffbc))
+- *(map)* Support multiple drawing layers ([#713](https://github.com/f-eld-ch/sitrep/issues/713)) - ([27d22b7](https://github.com/f-eld-ch/sitrep/commit/27d22b7b92fd5f3d4c3e1985ac97cef183ce1205))
+
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.13.1 to 3.13.2 in /ui ([#712](https://github.com/f-eld-ch/sitrep/issues/712)) - ([4a271fe](https://github.com/f-eld-ch/sitrep/commit/4a271fe49429a9314fc79e79f227a36d73b1a98c))
+
+
+## [25.3.0](https://github.com/f-eld-ch/sitrep/compare/v25.2.5..v25.3.0) - 2025-03-06
+
+### ⛰️  Features
+
+- *(map)* Add legend for WMS layers ([#709](https://github.com/f-eld-ch/sitrep/issues/709)) - ([0f7ca59](https://github.com/f-eld-ch/sitrep/commit/0f7ca59ede85cf647283f6d87664c879f03bbf89))
+- *(map)* Improve WMS layer parsing - ([1cd5672](https://github.com/f-eld-ch/sitrep/commit/1cd56721b01b33e0419eb8d5b60ede521f61702f))
+- *(map)* Allow WMS layers to be loaded from remote servers ([#703](https://github.com/f-eld-ch/sitrep/issues/703)) - ([d773269](https://github.com/f-eld-ch/sitrep/commit/d773269d937371736fcf7b437b99a1478a1af132))
+
+### 🐛 Bug Fixes
+
+- *(map)* Improve WMS layer loading and show proper error messages - ([994883b](https://github.com/f-eld-ch/sitrep/commit/994883ba5e868c344b6178e76a4baa2e07cd3ec9))
+- *(map)* Make sure to fetch WMS with proper CORS options - ([90c11c9](https://github.com/f-eld-ch/sitrep/commit/90c11c96686f56d9255ee7f4b706a71bd1f4e47c))
+
+### 🚜 Refactor
+
+- *(map)* Optimize WMS state handling ([#710](https://github.com/f-eld-ch/sitrep/issues/710)) - ([35050cd](https://github.com/f-eld-ch/sitrep/commit/35050cd7b18e3915716d2e21818cd8ebcfbfa0c5))
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 5.1.1 to 5.2.0 in /ui ([#707](https://github.com/f-eld-ch/sitrep/issues/707)) - ([d2ed6fd](https://github.com/f-eld-ch/sitrep/commit/d2ed6fd678a4a7a22cc440652313f39e142b713e))
+- *(deps)* Bump react-markdown from 10.0.0 to 10.0.1 in /ui ([#706](https://github.com/f-eld-ch/sitrep/issues/706)) - ([9acc6d8](https://github.com/f-eld-ch/sitrep/commit/9acc6d88693df163c6b64c3b4dd71b01a68b6280))
+
+
+## [25.2.5](https://github.com/f-eld-ch/sitrep/compare/v25.2.4..v25.2.5) - 2025-02-25
+
+### 🐛 Bug Fixes
+
+- *(map)* Make sure GefahrExplosion is properly named - ([d170ce3](https://github.com/f-eld-ch/sitrep/commit/d170ce3b971b486070c2420ae7aeb38e44213f8c))
+- *(ui)* Adjust version info link to Changelog - ([6411d99](https://github.com/f-eld-ch/sitrep/commit/6411d9988301aa2bcde6131209c945f123507c70))
+- *(ui)* Change F-ELD link in footer - ([ddcae12](https://github.com/f-eld-ch/sitrep/commit/ddcae126500516eede2b7e114842eccc0e9eda89))
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 5.1.0 to 5.1.1 in /ui ([#697](https://github.com/f-eld-ch/sitrep/issues/697)) - ([2fcc34a](https://github.com/f-eld-ch/sitrep/commit/2fcc34a8f4fc06a1d7c2e9d7931d651cbb7f354b))
+
+
+## [25.2.4](https://github.com/f-eld-ch/sitrep/compare/v25.2.3..v25.2.4) - 2025-02-20
+
+### 🐛 Bug Fixes
+
+- *(journal)* Improve markdown rendering of message content - ([ea9ef62](https://github.com/f-eld-ch/sitrep/commit/ea9ef629b36f3fd18bd698b836cef1e9ee38fa32))
+- *(journal)* Improve journal message list view - ([a20903b](https://github.com/f-eld-ch/sitrep/commit/a20903b073200996ea7f8b38503eac490128dc58))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-markdown from 9.0.3 to 10.0.0 in /ui ([#693](https://github.com/f-eld-ch/sitrep/issues/693)) - ([948e35d](https://github.com/f-eld-ch/sitrep/commit/948e35de5e6a46bc1695b55b5a99e23b457c886e))
+- *(deps)* Bump react-router from 7.1.5 to 7.2.0 in /ui ([#691](https://github.com/f-eld-ch/sitrep/issues/691)) - ([bde84d6](https://github.com/f-eld-ch/sitrep/commit/bde84d64d73a0bb0c17652f46a320885a1a74f62))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#694](https://github.com/f-eld-ch/sitrep/issues/694)) - ([32a986a](https://github.com/f-eld-ch/sitrep/commit/32a986a4d771676202f5a21d7f1b23749d4b979c))
+- *(deps)* Bump uuid from 11.0.5 to 11.1.0 in /ui ([#688](https://github.com/f-eld-ch/sitrep/issues/688)) - ([261472c](https://github.com/f-eld-ch/sitrep/commit/261472c6daafbbd521893b9ee76372594d9e3f6b))
+- *(deps)* Bump @openfeature/core from 1.7.1 to 1.7.2 in /ui ([#690](https://github.com/f-eld-ch/sitrep/issues/690)) - ([bbfd87c](https://github.com/f-eld-ch/sitrep/commit/bbfd87cd44f78f4d67966a3d1cc99758c817d445))
+- *(deps)* Bump react-i18next from 15.4.0 to 15.4.1 in /ui ([#689](https://github.com/f-eld-ch/sitrep/issues/689)) - ([fe3a76b](https://github.com/f-eld-ch/sitrep/commit/fe3a76bed355ef55bce32e29014da5407d1b98f3))
+
+
+## [25.2.3](https://github.com/f-eld-ch/sitrep/compare/v25.2.2..v25.2.3) - 2025-02-19
+
+### ⛰️  Features
+
+- *(journal)* Improve responsiveness and overflow behavior of messages - ([cfb6f21](https://github.com/f-eld-ch/sitrep/commit/cfb6f2173278332f3e934bce6357cb7bc0729442))
+
+### 🐛 Bug Fixes
+
+- *(journal)* Properly validate and support division assignments - ([e0b8ddb](https://github.com/f-eld-ch/sitrep/commit/e0b8ddbecb562e280294b2402c16ceadb2058978))
+
+
+## [25.2.2](https://github.com/f-eld-ch/sitrep/compare/v25.2.1..v25.2.2) - 2025-02-18
+
+### ⛰️  Features
+
+- *(journal)* Show sender and receiver detail information - ([0ce3777](https://github.com/f-eld-ch/sitrep/commit/0ce37776d538c5f69975a56a5aa25d414de44916))
+
+### 🐛 Bug Fixes
+
+- *(journal)* Fix invalid date in journal message preview - ([4a075b4](https://github.com/f-eld-ch/sitrep/commit/4a075b479ae16588ef9384129402ebd572ded104))
+
+### ⚙️  Other
+
+- *(deps)* Upgrade hasura to 2.45.2 - ([74ae8bb](https://github.com/f-eld-ch/sitrep/commit/74ae8bbb12c60f7e8ad2adf6d39e5e18f05d836c))
+- *(deps)* Bump @openfeature/core from 1.7.0 to 1.7.1 in /ui ([#685](https://github.com/f-eld-ch/sitrep/issues/685)) - ([8a9d8b2](https://github.com/f-eld-ch/sitrep/commit/8a9d8b298eed3dc69b2f7decc5c3a27dc9c4c32a))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#686](https://github.com/f-eld-ch/sitrep/issues/686)) - ([5224d09](https://github.com/f-eld-ch/sitrep/commit/5224d0980a497f9fcb1409c870a357c6ed7f8548))
+
+
+## [25.2.1](https://github.com/f-eld-ch/sitrep/compare/v25.2.0..v25.2.1) - 2025-02-17
+
+### ⛰️  Features
+
+- *(journal)* Improve print dialogs for Messages and Journals ([#681](https://github.com/f-eld-ch/sitrep/issues/681)) - ([ad29bcf](https://github.com/f-eld-ch/sitrep/commit/ad29bcf21345ef03e8ebfd968bca0ca62070c983))
+
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.12.11 to 3.13.1 in /ui ([#682](https://github.com/f-eld-ch/sitrep/issues/682)) - ([6aebf8f](https://github.com/f-eld-ch/sitrep/commit/6aebf8f19e65b7aa6a098059a9f1defab9f66e3e))
+- *(deps)* Bump flipt-io/setup-action from 0.2.0 to 0.3.1 ([#679](https://github.com/f-eld-ch/sitrep/issues/679)) - ([fbb8a7c](https://github.com/f-eld-ch/sitrep/commit/fbb8a7cbdf3f355d349e0eb77bc15df26444f0ac))
+- *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#677](https://github.com/f-eld-ch/sitrep/issues/677)) - ([6e95a63](https://github.com/f-eld-ch/sitrep/commit/6e95a6337b289908535678e4a93ec0ffcd7c0789))
+- *(deps)* Bump @openfeature/web-sdk from 1.4.0 to 1.4.1 in /ui ([#673](https://github.com/f-eld-ch/sitrep/issues/673)) - ([c52a683](https://github.com/f-eld-ch/sitrep/commit/c52a683cf9b5b945ef6b2db0db2cbed3b31c5bec))
+- *(deps)* Bump @openfeature/react-sdk from 0.4.10 to 0.4.11 in /ui ([#674](https://github.com/f-eld-ch/sitrep/issues/674)) - ([d25f0c9](https://github.com/f-eld-ch/sitrep/commit/d25f0c90c6a8c29ac4ca70205686e17f276fcd97))
+- *(deps)* Bump @openfeature/core from 1.6.0 to 1.7.0 in /ui ([#670](https://github.com/f-eld-ch/sitrep/issues/670)) - ([4c19c6a](https://github.com/f-eld-ch/sitrep/commit/4c19c6a0e3aafb8e4fa604d3d182adf20c5f6501))
+- *(deps)* Bump @apollo/client from 3.12.10 to 3.12.11 in /ui ([#671](https://github.com/f-eld-ch/sitrep/issues/671)) - ([a8a0be1](https://github.com/f-eld-ch/sitrep/commit/a8a0be101cdaca93c8b7df2f901d2b9118c2ccd5))
+
+
+## [25.2.0](https://github.com/f-eld-ch/sitrep/compare/v25.1.1..v25.2.0) - 2025-02-07
+
+### ⛰️  Features
+
+- *(feature-flags)* Adjust SitrepManaged segment - ([2211110](https://github.com/f-eld-ch/sitrep/commit/22111100501028c48593de24ffc3aa205fda7843))
+
+### ⚙️  Other
+
+- *(cicd)* Use ubuntu arm runners ([#637](https://github.com/f-eld-ch/sitrep/issues/637)) - ([d1bd49f](https://github.com/f-eld-ch/sitrep/commit/d1bd49f99cef8ea2f19d7d1c1bf9a40694f2031d))
+- *(deps)* Bump @apollo/client from 3.12.9 to 3.12.10 in /ui ([#665](https://github.com/f-eld-ch/sitrep/issues/665)) - ([2713aec](https://github.com/f-eld-ch/sitrep/commit/2713aecf11cd4a7bb87eab4b59323a4c594a1797))
+- *(deps)* Bump react-map-gl from 7.1.9 to 8.0.1 in /ui ([#668](https://github.com/f-eld-ch/sitrep/issues/668)) - ([e64aff7](https://github.com/f-eld-ch/sitrep/commit/e64aff748de82a8eef3a05157f3b5595e8aecc7b))
+- *(deps)* Bump usehooks-ts from 3.1.0 to 3.1.1 in /ui ([#666](https://github.com/f-eld-ch/sitrep/issues/666)) - ([168465f](https://github.com/f-eld-ch/sitrep/commit/168465f45a0a2c3ac8c10d92a3e63275f018ce15))
+- *(deps)* Bump @apollo/client from 3.12.8 to 3.12.9 in /ui ([#661](https://github.com/f-eld-ch/sitrep/issues/661)) - ([4cc9fce](https://github.com/f-eld-ch/sitrep/commit/4cc9fce26f444b27d54cb4fe9e7bf41aea98c59a))
+- *(deps)* Bump react-router from 7.1.4 to 7.1.5 in /ui ([#660](https://github.com/f-eld-ch/sitrep/issues/660)) - ([192ccfb](https://github.com/f-eld-ch/sitrep/commit/192ccfbbbdbc1ac9f411608da10e0d14a68ea99d))
+- *(deps)* Bump react-router from 7.1.3 to 7.1.4 in /ui ([#657](https://github.com/f-eld-ch/sitrep/issues/657)) - ([dcc3d1c](https://github.com/f-eld-ch/sitrep/commit/dcc3d1c58dbc9545a7123cf61d6939a2953a9a64))
+- *(deps)* Bump react-map-gl from 7.1.8 to 7.1.9 in /ui ([#653](https://github.com/f-eld-ch/sitrep/issues/653)) - ([162bbbc](https://github.com/f-eld-ch/sitrep/commit/162bbbc9e55b964eaae084eba40336597e1a5996))
+- *(deps)* Bump i18next from 24.2.1 to 24.2.2 in /ui ([#651](https://github.com/f-eld-ch/sitrep/issues/651)) - ([5c848cd](https://github.com/f-eld-ch/sitrep/commit/5c848cd1273ec724969028a7ecb37c141b8f9c2a))
+- *(deps)* Bump @apollo/client from 3.12.7 to 3.12.8 in /ui ([#650](https://github.com/f-eld-ch/sitrep/issues/650)) - ([a3ed5aa](https://github.com/f-eld-ch/sitrep/commit/a3ed5aa4dca79ec985c3f74efbf87a26b0a0e64f))
+
+
+## [25.1.1](https://github.com/f-eld-ch/sitrep/compare/v25.1.0..v25.1.1) - 2025-01-27
+
+### ⛰️  Features
+
+- *(lang)* Translate translations.json in fr ([#631](https://github.com/f-eld-ch/sitrep/issues/631)) - ([e296bf2](https://github.com/f-eld-ch/sitrep/commit/e296bf21bee71c813230af263dfe544e0e8efa5c))
+- *(ui)* Add hosted by VSHN in footer for managed instances ([#621](https://github.com/f-eld-ch/sitrep/issues/621)) - ([28efe2b](https://github.com/f-eld-ch/sitrep/commit/28efe2b02586049b1c6e443309ccacc3d22c126b))
+
+### ⚙️  Other
+
+- *(deps)* Bump @apollo/client from 3.12.6 to 3.12.7 in /ui ([#646](https://github.com/f-eld-ch/sitrep/issues/646)) - ([f934de8](https://github.com/f-eld-ch/sitrep/commit/f934de84fbc904ffe65e5dbefd54f8dcdaa726b6))
+- *(deps)* Bump react-router from 7.1.2 to 7.1.3 in /ui ([#643](https://github.com/f-eld-ch/sitrep/issues/643)) - ([42807bc](https://github.com/f-eld-ch/sitrep/commit/42807bc20e1928f9021e7a4c21786bc26d55e5cb))
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.7.1 to v7.8.1 ([#641](https://github.com/f-eld-ch/sitrep/issues/641)) - ([f28f508](https://github.com/f-eld-ch/sitrep/commit/f28f508aab477679b8ee4af5c95c0615afc32b2e))
+- *(deps)* Bump react-router from 7.1.1 to 7.1.2 in /ui ([#635](https://github.com/f-eld-ch/sitrep/issues/635)) - ([728849c](https://github.com/f-eld-ch/sitrep/commit/728849cdbb939482d5bbfc50864ba1b4b91eac8e))
+- *(deps)* Bump @apollo/client from 3.12.5 to 3.12.6 in /ui ([#633](https://github.com/f-eld-ch/sitrep/issues/633)) - ([157b945](https://github.com/f-eld-ch/sitrep/commit/157b94557be43d9b72f33b04b5b17c238608c7f6))
+- *(deps)* Bump uuid from 11.0.4 to 11.0.5 in /ui ([#624](https://github.com/f-eld-ch/sitrep/issues/624)) - ([05f5577](https://github.com/f-eld-ch/sitrep/commit/05f55777ed718c2d5092f33a09bc0b101bf81908))
+- *(deps)* Bump @apollo/client from 3.12.4 to 3.12.5 in /ui ([#626](https://github.com/f-eld-ch/sitrep/issues/626)) - ([7b9f71c](https://github.com/f-eld-ch/sitrep/commit/7b9f71c8e8d2509dbeb756ef51d99899c50e46b4))
+- *(deps)* Bump uuid from 11.0.3 to 11.0.4 in /ui ([#618](https://github.com/f-eld-ch/sitrep/issues/618)) - ([f957449](https://github.com/f-eld-ch/sitrep/commit/f957449d94a90608d7aedb1f1cc9d014b906fdab))
+- *(deps)* Bump react-markdown from 9.0.1 to 9.0.3 in /ui ([#619](https://github.com/f-eld-ch/sitrep/issues/619)) - ([c817101](https://github.com/f-eld-ch/sitrep/commit/c8171015620cb4b69d7f3b840ac3055fe0483c06))
+- *(deps)* Bump i18next from 24.2.0 to 24.2.1 in /ui ([#620](https://github.com/f-eld-ch/sitrep/issues/620)) - ([7dde835](https://github.com/f-eld-ch/sitrep/commit/7dde835b7ee3b94ab41b50c610ff2235e8c55cf0))
+
+
+## [25.1.0](https://github.com/f-eld-ch/sitrep/compare/v24.12.1..v25.1.0) - 2025-01-06
+
+### ⛰️  Features
+
+- *(lang)* Translate translations.json in it ([#614](https://github.com/f-eld-ch/sitrep/issues/614)) - ([ba3243e](https://github.com/f-eld-ch/sitrep/commit/ba3243e645b731bbd027ecc61e13d16874224568))
+- *(lang)* Translate translations.json in en ([#615](https://github.com/f-eld-ch/sitrep/issues/615)) - ([975023b](https://github.com/f-eld-ch/sitrep/commit/975023b584ce4b009a8fed92ff0405e05d15f125))
+- *(lang)* Updates for project Sitrep and language it ([#612](https://github.com/f-eld-ch/sitrep/issues/612)) - ([d3735b6](https://github.com/f-eld-ch/sitrep/commit/d3735b6d34cd5dfced2f121f2419a50d740e45bd))
+- *(lang)* Translate translations.json in fr ([#610](https://github.com/f-eld-ch/sitrep/issues/610)) - ([5ab1668](https://github.com/f-eld-ch/sitrep/commit/5ab166860f9c00b85e15bbab41ee22ecf12a0bee))
+- *(lang)* Translate translations.json in en ([#608](https://github.com/f-eld-ch/sitrep/issues/608)) - ([63043ba](https://github.com/f-eld-ch/sitrep/commit/63043ba4779818a3a8c4a88ce829ab432e2a80a2))
+- *(map)* Add translations for map ([#607](https://github.com/f-eld-ch/sitrep/issues/607)) - ([a606535](https://github.com/f-eld-ch/sitrep/commit/a606535ec8170e35571ac0bf3f609f4309ac8a91))
+- *(ui)* Remove beta label from situation map nav item - ([e5fc2f8](https://github.com/f-eld-ch/sitrep/commit/e5fc2f8282eafa5655b5dbb3354614ed2c4b5eb2))
+
+### 🐛 Bug Fixes
+
+- *(i18n)* Format times and dates according to locale ([#572](https://github.com/f-eld-ch/sitrep/issues/572)) - ([204bbae](https://github.com/f-eld-ch/sitrep/commit/204bbaea4b402306a5e5f52c9a30e9509adbbb9a))
+- *(lang)* Update german translation of map icons - ([208325f](https://github.com/f-eld-ch/sitrep/commit/208325f4764c2b28a1853498aab4af62b590508e))
+- *(map)* Do not reload while editing text of feature ([#579](https://github.com/f-eld-ch/sitrep/issues/579)) - ([78f7f7f](https://github.com/f-eld-ch/sitrep/commit/78f7f7f0b4856ba64fdbd4a417fe0f82388e9748))
+- *(map)* Fix searchbar icon - ([b7e1f98](https://github.com/f-eld-ch/sitrep/commit/b7e1f98dfaffae53f064d4630d19bd964c4d563d))
+- *(ui)* Improve footer padding - ([3224fc2](https://github.com/f-eld-ch/sitrep/commit/3224fc2442fde9a838f6b3ca3f3b85ea55d73998))
+- *(ui)* Improve content clipping - ([9dc35d3](https://github.com/f-eld-ch/sitrep/commit/9dc35d34cba2cb79dfc05e9fc59e85506dd5267d))
+- *(ui)* Reduce footer size to improve smaller screen experience - ([e9518a7](https://github.com/f-eld-ch/sitrep/commit/e9518a7349ef500411c2c89e30c37a1f715e5222))
+- Minor dark-theme improvements - ([d681b9a](https://github.com/f-eld-ch/sitrep/commit/d681b9a92252d836163b63cb59803358f20c69cc))
+
+### 📚 Documentation
+
+- *(security)* Add security.md documentation - ([426ad11](https://github.com/f-eld-ch/sitrep/commit/426ad116b9ca4920ee8f8b44ba8c72468dd88cdc))
+
+### ⚙️  Other
+
+- *(deps)* Upgrade react-router to v7.1.1 ([#616](https://github.com/f-eld-ch/sitrep/issues/616)) - ([1d6a6c7](https://github.com/f-eld-ch/sitrep/commit/1d6a6c7c9efde0b56e35ef68254000f6f047b605))
+- *(deps)* Replace react-html-parser with html-react-parser - ([29f311a](https://github.com/f-eld-ch/sitrep/commit/29f311a1d227598f6f3192ff61d6e6879256f284))
+- *(deps)* Bump @turf/helpers from 7.1.0 to 7.2.0 in /ui ([#601](https://github.com/f-eld-ch/sitrep/issues/601)) - ([527ab2e](https://github.com/f-eld-ch/sitrep/commit/527ab2eb117030d4ef24d3320e5cbb9939d14315))
+- *(deps)* Bump @turf/bearing from 7.1.0 to 7.2.0 in /ui ([#600](https://github.com/f-eld-ch/sitrep/issues/600)) - ([6285612](https://github.com/f-eld-ch/sitrep/commit/6285612b9f878fb98432dee5133c9586e62f3225))
+- *(deps)* Bump @turf/center from 7.1.0 to 7.2.0 in /ui ([#602](https://github.com/f-eld-ch/sitrep/issues/602)) - ([cbfd0cc](https://github.com/f-eld-ch/sitrep/commit/cbfd0cc254d9c802c70dc5ff26365301ffa57c63))
+- *(deps)* Bump react-i18next from 15.2.0 to 15.4.0 in /ui ([#599](https://github.com/f-eld-ch/sitrep/issues/599)) - ([8a2968c](https://github.com/f-eld-ch/sitrep/commit/8a2968cc4e1bcf2ace3a19f7c5218307c8ca0c75))
+- *(deps)* Bump bulma from 1.0.2 to 1.0.3 in /ui ([#597](https://github.com/f-eld-ch/sitrep/issues/597)) - ([110f162](https://github.com/f-eld-ch/sitrep/commit/110f16206882943317eba1f3a449aa8ec63c6d58))
+- *(deps)* Bump i18next from 24.1.2 to 24.2.0 in /ui ([#589](https://github.com/f-eld-ch/sitrep/issues/589)) - ([d75f887](https://github.com/f-eld-ch/sitrep/commit/d75f887ebac54fc9ec0428054492123e33551e80))
+- *(deps)* Bump react-map-gl from 7.1.7 to 7.1.8 in /ui ([#590](https://github.com/f-eld-ch/sitrep/issues/590)) - ([68a909f](https://github.com/f-eld-ch/sitrep/commit/68a909f66a34f1e6a242c2a65834a4ca138a8182))
+- *(deps)* Bump @apollo/client from 3.12.3 to 3.12.4 in /ui ([#587](https://github.com/f-eld-ch/sitrep/issues/587)) - ([cb4c4a4](https://github.com/f-eld-ch/sitrep/commit/cb4c4a4b60807a7d6466e0750d611dd289e69d1e))
+- *(deps)* Bump @openfeature/react-sdk from 0.4.9 to 0.4.10 in /ui ([#583](https://github.com/f-eld-ch/sitrep/issues/583)) - ([2644781](https://github.com/f-eld-ch/sitrep/commit/2644781491c9686396d6f27d6c61abd1860cb353))
+- *(deps)* Bump @openfeature/web-sdk from 1.3.2 to 1.4.0 in /ui ([#585](https://github.com/f-eld-ch/sitrep/issues/585)) - ([0b4d782](https://github.com/f-eld-ch/sitrep/commit/0b4d78298f52f957915cfea668ca8b764a598eb8))
+- *(deps)* Bump @openfeature/core from 1.5.0 to 1.6.0 in /ui ([#584](https://github.com/f-eld-ch/sitrep/issues/584)) - ([40213fb](https://github.com/f-eld-ch/sitrep/commit/40213fb5af2254a078174a580861d91ae5348e21))
+- *(deps)* Bump i18next from 24.1.0 to 24.1.2 in /ui ([#581](https://github.com/f-eld-ch/sitrep/issues/581)) - ([8147e96](https://github.com/f-eld-ch/sitrep/commit/8147e96a25bbe5dab84f3a1e75d978c360a6d2c4))
+- *(deps)* Bump the fontawesome group in /ui with 4 updates ([#580](https://github.com/f-eld-ch/sitrep/issues/580)) - ([c4e7f76](https://github.com/f-eld-ch/sitrep/commit/c4e7f7662269bec38076f4adee20790d0a176a75))
+- *(deps)* Bump graphql from 16.9.0 to 16.10.0 in /ui ([#574](https://github.com/f-eld-ch/sitrep/issues/574)) - ([a9b6fce](https://github.com/f-eld-ch/sitrep/commit/a9b6fce868736db4133956a8a31406abe603260c))
+- *(deps)* Bump @apollo/client from 3.11.10 to 3.12.3 in /ui ([#569](https://github.com/f-eld-ch/sitrep/issues/569)) - ([50564e5](https://github.com/f-eld-ch/sitrep/commit/50564e52fe5043d2c218257aede67115d419ff0b))
+- *(deps)* Bump react-i18next from 15.1.4 to 15.2.0 in /ui ([#570](https://github.com/f-eld-ch/sitrep/issues/570)) - ([dd2e0ad](https://github.com/f-eld-ch/sitrep/commit/dd2e0ad169b1edfd462d55f41ec841ac3ca71b09))
+- *(deps)* Bump i18next from 24.0.5 to 24.1.0 in /ui ([#568](https://github.com/f-eld-ch/sitrep/issues/568)) - ([70613f6](https://github.com/f-eld-ch/sitrep/commit/70613f654fb6dcdbfe629893c74d02fd8030a0d3))
+- *(deps)* Bump nanoid ([#566](https://github.com/f-eld-ch/sitrep/issues/566)) - ([b72b6fb](https://github.com/f-eld-ch/sitrep/commit/b72b6fbce3483c3956885bfb78de006bab9682d6))
+- *(deps)* Bump react-i18next from 15.1.3 to 15.1.4 in /ui ([#562](https://github.com/f-eld-ch/sitrep/issues/562)) - ([7d440c6](https://github.com/f-eld-ch/sitrep/commit/7d440c65e90c54c21926b5bc0c2086fdd66fb8a7))
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#564](https://github.com/f-eld-ch/sitrep/issues/564)) - ([fef0797](https://github.com/f-eld-ch/sitrep/commit/fef07978cc2123562f89ac4cce38ea941259582d))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#563](https://github.com/f-eld-ch/sitrep/issues/563)) - ([1d8f273](https://github.com/f-eld-ch/sitrep/commit/1d8f27328f2be404eed85751e12dc0acf2e28317))
+- *(deps)* Bump @openfeature/react-sdk from 0.4.8 to 0.4.9 in /ui ([#549](https://github.com/f-eld-ch/sitrep/issues/549)) - ([3669f0a](https://github.com/f-eld-ch/sitrep/commit/3669f0a97519d59d69c6d241419a70cb62c010cf))
+
+## New Contributors ❤️
+
+* @transifex-integration[bot] made their first contribution in [#614](https://github.com/f-eld-ch/sitrep/pull/614)
+
+## [24.12.1](https://github.com/f-eld-ch/sitrep/compare/v24.12.0..v24.12.1) - 2024-12-04
+
+### ⛰️  Features
+
+- *(map)* Add searchbox ([#551](https://github.com/f-eld-ch/sitrep/issues/551)) - ([e5012b8](https://github.com/f-eld-ch/sitrep/commit/e5012b8453e1c9f630d857c21dfea49ed26288ce))
+
+### 🐛 Bug Fixes
+
+- *(messages)* Properly hide create tasks from Message component - ([4e769db](https://github.com/f-eld-ch/sitrep/commit/4e769dbedcaba4c12071b753b37f0ee40c520c8c))
+
+
+## [24.12.0](https://github.com/f-eld-ch/sitrep/compare/v24.11.0..v24.12.0) - 2024-12-04
+
 ### 🐛 Bug Fixes
 
 - *(ui)* Text color in footer changed to be adaptive ([#500](https://github.com/f-eld-ch/sitrep/issues/500)) - ([21a9a60](https://github.com/f-eld-ch/sitrep/commit/21a9a60c90a963b921b2ceb5655b982e89a7c594))
@@ -7,6 +300,24 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 24.0.2 to 24.0.5 in /ui ([#544](https://github.com/f-eld-ch/sitrep/issues/544)) - ([170f686](https://github.com/f-eld-ch/sitrep/commit/170f686dc455b41269b80f541e00b2315b754eb0))
+- *(deps)* Bump i18next from 23.16.8 to 24.0.2 in /ui ([#532](https://github.com/f-eld-ch/sitrep/issues/532)) - ([1848ac6](https://github.com/f-eld-ch/sitrep/commit/1848ac6c1e3dbdf559eae85af46739c9ea8b6de1))
+- *(deps)* Bump react-i18next from 15.1.1 to 15.1.3 in /ui ([#538](https://github.com/f-eld-ch/sitrep/issues/538)) - ([c190fae](https://github.com/f-eld-ch/sitrep/commit/c190fae480c6dc549d362346e5ec814ef366aa73))
+- *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#540](https://github.com/f-eld-ch/sitrep/issues/540)) - ([086850a](https://github.com/f-eld-ch/sitrep/commit/086850a68f6ad7829b40e108fa7034cccfdc167c))
+- *(deps)* Bump the fontawesome group in /ui with 4 updates ([#529](https://github.com/f-eld-ch/sitrep/issues/529)) - ([689fdfc](https://github.com/f-eld-ch/sitrep/commit/689fdfcd649b0ee8c868f82a99b821bb4ec39374))
+- *(deps)* Bump i18next from 23.16.6 to 23.16.8 in /ui ([#524](https://github.com/f-eld-ch/sitrep/issues/524)) - ([141f3e2](https://github.com/f-eld-ch/sitrep/commit/141f3e2e4510c47ecab5b866276ff7a9581cf44b))
+- *(deps)* Upgrade hasura to v2.44.0-ce ([#522](https://github.com/f-eld-ch/sitrep/issues/522)) - ([066129b](https://github.com/f-eld-ch/sitrep/commit/066129bfe3003c32d20dc564f697112b33251500))
+- *(deps)* Bump i18next from 23.16.5 to 23.16.6 in /ui ([#518](https://github.com/f-eld-ch/sitrep/issues/518)) - ([7bbc9ad](https://github.com/f-eld-ch/sitrep/commit/7bbc9ad2f1483c24094bb2dc2a48e50302cb1045))
+- *(deps)* Bump cross-spawn ([#514](https://github.com/f-eld-ch/sitrep/issues/514)) - ([faa2ef8](https://github.com/f-eld-ch/sitrep/commit/faa2ef882bf1bddc9cc459ca515aa8aaac391d58))
+- *(deps)* Bump @eslint/plugin-kit ([#513](https://github.com/f-eld-ch/sitrep/issues/513)) - ([e3e283c](https://github.com/f-eld-ch/sitrep/commit/e3e283cfcaaf87750eef867805ed0ce668de4eec))
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#510](https://github.com/f-eld-ch/sitrep/issues/510)) - ([9dc556f](https://github.com/f-eld-ch/sitrep/commit/9dc556f03ca4319154bb044e95d99d765dc23383))
+- *(deps)* Bump @apollo/client from 3.11.9 to 3.11.10 in /ui ([#508](https://github.com/f-eld-ch/sitrep/issues/508)) - ([a238bdf](https://github.com/f-eld-ch/sitrep/commit/a238bdfa833d52623bd991858744d83e57270a0b))
+- *(deps)* Bump uuid from 11.0.2 to 11.0.3 in /ui ([#507](https://github.com/f-eld-ch/sitrep/issues/507)) - ([df9e7d6](https://github.com/f-eld-ch/sitrep/commit/df9e7d6a0ea60b485c2a3b5d2ea9e07cd6edb117))
+- *(deps)* Bump i18next from 23.16.4 to 23.16.5 in /ui ([#505](https://github.com/f-eld-ch/sitrep/issues/505)) - ([615213f](https://github.com/f-eld-ch/sitrep/commit/615213f559c84a9b3e6741f9047f54303385183e))
+- *(deps)* Bump react-i18next from 15.1.0 to 15.1.1 in /ui ([#503](https://github.com/f-eld-ch/sitrep/issues/503)) - ([a719574](https://github.com/f-eld-ch/sitrep/commit/a719574ddbb2510bc2b7a51134c93f50aefee53d))
+- *(deps)* Bump react-router-dom from 6.27.0 to 6.28.0 in /ui ([#502](https://github.com/f-eld-ch/sitrep/issues/502)) - ([b641d5a](https://github.com/f-eld-ch/sitrep/commit/b641d5a8be28e5f623c33251678de25859e3ab12))
+- *(deps)* Bump @openfeature/web-sdk from 1.3.1 to 1.3.2 in /ui ([#504](https://github.com/f-eld-ch/sitrep/issues/504)) - ([ec14e62](https://github.com/f-eld-ch/sitrep/commit/ec14e626bdf4cb50b36f51e8932f4526f6b65a1f))
+- *(deps)* Bump @apollo/client from 3.11.8 to 3.11.9 in /ui ([#501](https://github.com/f-eld-ch/sitrep/issues/501)) - ([81c7b2c](https://github.com/f-eld-ch/sitrep/commit/81c7b2ce99d11ba8202c7e5cf033bde3973efec0))
 - *(dev-env)* Fix local docker compose files - ([5c5d823](https://github.com/f-eld-ch/sitrep/commit/5c5d8238a7c656a0ad275c0e432ede62a4fb2d02))
 
 ### Build
@@ -466,7 +777,10 @@ Details:
 
 ## New Contributors ❤️
 
+* @nimdanitro made their first contribution
 * @weblate made their first contribution
+* @dependabot[bot] made their first contribution
+* @lukastresch made their first contribution
 * @snyk-bot made their first contribution
 
 Made with ♥️  in Switzerland by F-ELD

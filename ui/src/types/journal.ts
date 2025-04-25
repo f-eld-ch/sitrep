@@ -1,4 +1,4 @@
-import { Incident } from "./incident";
+import type { Incident } from "./incident";
 
 export enum TriageStatus {
   Pending = "PENDING",
@@ -26,7 +26,7 @@ export interface Message {
   senderDetail: string;
   receiver: string;
   receiverDetail: string;
-  time: string;
+  time: Date;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;

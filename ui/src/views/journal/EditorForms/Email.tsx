@@ -13,10 +13,12 @@ export function Email() {
   return (
     <div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("email.sender")}</label>
+        <div className="field-label is-narrow is-flex-shrink-0">
+          <label htmlFor="sender-input" className="label is-capitalized">
+            {t("email.sender")}
+          </label>
         </div>
-        <div className="field-body">
+        <div className="field-body is-flex-shrink-1">
           <div className="field is-grouped is-grouped-multiline">
             <SenderInput />
             <SenderDetailInput placeholder={t("emailAddress")} />
@@ -24,10 +26,12 @@ export function Email() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("email.receiver")}</label>
+        <div className="field-label is-narrow is-flex-shrink-0">
+          <label htmlFor="receiver-input" className="label is-capitalized">
+            {t("email.receiver")}
+          </label>
         </div>
-        <div className="field-body">
+        <div className="field-body is-flex-shrink-1">
           <div className="field is-grouped is-grouped-multiline">
             <ReceiverInput />
             <ReceiverDetailInput placeholder={t("emailAddress")} />
@@ -36,8 +40,10 @@ export function Email() {
       </div>
 
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.time")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="time-input" className="label is-capitalized">
+            {t("message.time")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -46,8 +52,10 @@ export function Email() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.content")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="content-input" className="label is-capitalized">
+            {t("message.content")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -56,7 +64,7 @@ export function Email() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label"></div>
+        <div className="field-label" />
         <div className="field-body">
           <div className="field">
             <SaveButton />

@@ -18,19 +18,21 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
-import { FunctionComponent, useContext, useEffect, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import classNames from "classnames";
+import { type FunctionComponent, useContext, useEffect, useState } from "react";
 
 import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
-import { NavLink, useParams } from "react-router-dom";
-import { useDarkMode } from "utils/useDarkMode";
+import { NavLink, useParams } from "react-router";
 import { UserContext } from "utils";
+import { useDarkMode } from "utils/useDarkMode";
 import { useDate } from "utils/useDate";
 
-const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
+const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
+  isActive = false,
+}) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
   const { t } = useTranslation();
 
@@ -46,27 +48,39 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   return (
     <nav className="navbar is-fixed-top is-hidden-print">
       <div className="navbar-brand">
-        <NavLink to="/" className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}>
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+          }
+        >
           <figure className="image is-32x32">
             <img src={logo} alt="Logo" />
           </figure>
         </NavLink>
         <button
+          type="button"
           className="navbar-burger burger"
           data-target="navbarBasic"
+          aria-label="Toggle menu"
           onClick={(e) => {
             e.preventDefault();
             setIsMenuActive(!isMenuActive);
           }}
         >
-          <FontAwesomeIcon icon={faCaretDown}></FontAwesomeIcon>
+          <FontAwesomeIcon icon={faCaretDown} />
         </button>
       </div>
 
-      <div className={navbarMenuClass}>
+      <div className={navbarMenuClass} data-testid="navbar-menu">
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
-            <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+              }
+            >
               <span className="icon-text">
                 <span className="icon">
                   <FontAwesomeIcon icon={faExplosion} />
@@ -75,15 +89,27 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </span>
             </NavLink>
             <div className="navbar-dropdown">
-              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/list">
+              <NavLink
+                className={({ isActive }) =>
+                  `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                }
+                to="/incident/list"
+              >
                 {t("overview")}
               </NavLink>
-              <NavLink className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")} to="/incident/new">
+              <NavLink
+                className={({ isActive }) =>
+                  `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                }
+                to="/incident/new"
+              >
                 {t("createIncident")}
               </NavLink>
               {incidentId ? (
                 <NavLink
-                  className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+                  className={({ isActive }) =>
+                    `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                  }
                   to={`/incident/${incidentId}/edit`}
                 >
                   {t("editIncident")}
@@ -127,7 +153,7 @@ function DarkModeSwitcher() {
 
   return (
     <div className="navbar-item">
-      <button onClick={toggle}>
+      <button type="button" onClick={toggle}>
         <span className="icon-text is-flex-wrap-nowrap">
           <span className="icon">
             <FontAwesomeIcon icon={isDarkMode ? faMoon : faSun} />
@@ -152,7 +178,7 @@ function CurrentTime() {
           <span>{date}</span>
         </span>
       </div>
-      <div className="navbar-item is-right  is-hidden-touch">
+      <div className="navbar-item is-right is-hidden-touch">
         <span className="icon-text">
           <span className="icon">
             <FontAwesomeIcon icon={faClock} />
@@ -173,7 +199,7 @@ function VersionNavBar() {
         </span>
         <span>
           <a
-            href={`https://github.com/RedGecko/sitrep/commit/${import.meta.env.VITE_SHA_VERSION}`}
+            href={`https://github.com/RedGecko/sitrep/blob/${import.meta.env.VITE_SHA_VERSION}/CHANGELOG.md`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -186,7 +212,7 @@ function VersionNavBar() {
 }
 
 function UserNavBar() {
-  const userState = useContext(UserContext);
+  const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
 
   if (!userState.isLoggedin) return <></>;
@@ -231,7 +257,9 @@ const JournalNavBar: FunctionComponent = () => {
     return (
       <div className="navbar-item has-dropdown is-hoverable">
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+          }
           end={true}
           to={`/incident/${incidentId}/journal/view`}
         >
@@ -248,7 +276,9 @@ const JournalNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+        className={({ isActive }) =>
+          `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+        }
         end={true}
         to={`/incident/${incidentId}/journal/view`}
       >
@@ -261,7 +291,9 @@ const JournalNavBar: FunctionComponent = () => {
       </NavLink>
       <div className="navbar-dropdown">
         <NavLink
-          className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+          }
           end={true}
           to={`/incident/${incidentId}/journal/${journalId}`}
         >
@@ -273,7 +305,9 @@ const JournalNavBar: FunctionComponent = () => {
           </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => "navbar-item is-capitalized" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+          }
           end={true}
           to={`/incident/${incidentId}/journal/${journalId}/edit`}
         >
@@ -298,7 +332,9 @@ const TasksNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        className={({ isActive }) =>
+          `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+        }
         to={`/incident/${incidentId}/tasks`}
       >
         <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -310,7 +346,9 @@ const TasksNavBar: FunctionComponent = () => {
       </NavLink>
       <div className="navbar-dropdown">
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+          }
           to={`/incident/${incidentId}/tasks`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -321,7 +359,9 @@ const TasksNavBar: FunctionComponent = () => {
           </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+          }
           to={`/incident/${incidentId}/requests`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -332,7 +372,9 @@ const TasksNavBar: FunctionComponent = () => {
           </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+          className={({ isActive }) =>
+            `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+          }
           to={`/incident/${incidentId}/soma`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -356,7 +398,9 @@ const ResourcesNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        className={({ isActive }) =>
+          `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+        }
         to={`/incident/${incidentId}/resources`}
       >
         <span className="icon-text is-capitalized">
@@ -379,7 +423,9 @@ const MapNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => "navbar-item" + (isActive ? " is-active" : "")}
+        className={({ isActive }) =>
+          `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+        }
         to={`/incident/${incidentId}/map`}
       >
         <span className="icon-text is-capitalized">
@@ -387,7 +433,6 @@ const MapNavBar: FunctionComponent = () => {
             <FontAwesomeIcon icon={faMapLocationDot} />
           </span>
           <span>{t("map")}</span>
-          <span className="has-text-warning	ml-1">(beta)</span>
         </span>
       </NavLink>
     </div>

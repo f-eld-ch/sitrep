@@ -7,7 +7,13 @@ interface NotificationProps {
   timeout: number | null;
 }
 
-type NotificationType = "warning" | "info" | "error" | "primary" | "link" | "success";
+type NotificationType =
+  | "warning"
+  | "info"
+  | "error"
+  | "primary"
+  | "link"
+  | "success";
 
 function Notification(props: NotificationProps) {
   const { type, timeout, children } = props;
@@ -30,7 +36,11 @@ function Notification(props: NotificationProps) {
   if (!visible) return null;
   return (
     <div className={notificationClass}>
-      <button className="delete" onClick={() => setVisible(false)}></button>
+      <button
+        type="button"
+        className="delete"
+        onClick={() => setVisible(false)}
+      />
       {children}
     </div>
   );

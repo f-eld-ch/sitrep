@@ -13,8 +13,10 @@ export function Phone() {
   return (
     <div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.receiver")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="receiver-input" className="label is-capitalized">
+            {t("message.receiver")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -24,8 +26,10 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("phone.sender")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="sender-input" className="label is-capitalized">
+            {t("phone.sender")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -35,8 +39,10 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.time")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="time-input" className="label is-capitalized">
+            {t("message.time")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -45,8 +51,10 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.content")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="content-input" className="label is-capitalized">
+            {t("message.content")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -55,7 +63,7 @@ export function Phone() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label"></div>
+        <div className="field-label" />
         <div className="field-body">
           <div className="field">
             <SaveButton />

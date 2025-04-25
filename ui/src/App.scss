@@ -1,4 +1,6 @@
-$orange: #f5743d;
+$orange: hsl(18, 89%, 62%);
+$orange-lighter: hsl(18, 89%, 42%);
+
 $yellow: #ecb341;
 $red: #d60000;
 $blue: #0030cc;
@@ -11,16 +13,16 @@ $grey: hsl(221, 14%, 48%);
 $grey-light: hsl(221, 14%, 71%);
 $grey-lighter: hsl(221, 14%, 86%);
 $grey-lightest: hsl(221, 14%, 93%);
+$tablet: 769px;
 
 // Override global Sass variables from the /utilities folder
-@use "bulma/sass/utilities" with (
-  $family-primary: "B612",
+@use "bulma/sass/utilities" with ($family-primary: "B612",
   $family-monospace: "B612 Mono",
   $primary: $orange,
   $warning: $yellow,
   $danger: $red,
   $info: $blue,
-  $link: $orange,
+  $link: $orange-lighter,
   $weight-light: 100,
   $weight-normal: 300,
   $weight-medium: 500,
@@ -32,31 +34,29 @@ $grey-lightest: hsl(221, 14%, 93%);
   $grey: $grey,
   $grey-light: $grey-light,
   $grey-lighter: $grey-lighter,
-  $grey-lightest: $grey-lightest
-);
+  $grey-lightest: $grey-lightest,
+  $tablet: $tablet);
 
 // Import the components we need
-@forward "bulma/sass/base";
+@use "bulma/sass/base" with ($body-overflow-y: "auto"
+);
+
 @forward "bulma/sass/helpers";
 @forward "bulma/sass/grid";
 
 @forward "bulma/sass/components/breadcrumb";
 @forward "bulma/sass/components/card";
 @forward "bulma/sass/components/dropdown";
-@use "bulma/sass/components/message" with (
-  $message-body-padding: 1em 1.5em 0em 1em
-);
-@use "bulma/sass/components/modal" with (
-  $modal-content-width: 80rem
-);
-@use "bulma/sass/components/navbar" with (
-  $navbar-height: $navbar-height
-);
+@forward "bulma/sass/components/panel" with ($panel-heading-padding: 1em 1.25em,
+  $panel-heading-line-height: 0.8em,
+  $panel-heading-size: 0.8em);
+
+@use "bulma/sass/components/message" with ($message-body-padding: 1em 1.5em 0em 1em);
+@use "bulma/sass/components/modal" with ($modal-content-width: 80rem);
+@use "bulma/sass/components/navbar" with ($navbar-height: $navbar-height);
 @forward "bulma/sass/components/tabs";
 
-@use "bulma/sass/form" with (
-  $input-shadow: none
-);
+@use "bulma/sass/form" with ($input-shadow: none);
 
 // Import the bulma elements we need
 @forward "bulma/sass/elements/box";
@@ -70,9 +70,7 @@ $grey-lightest: hsl(221, 14%, 93%);
 @forward "bulma/sass/elements/tag";
 @forward "bulma/sass/elements/title";
 
-@use "bulma/sass/layout/footer" with (
-  $footer-padding: 2rem 1.5rem 2rem
-);
+@use "bulma/sass/layout/footer" with ($footer-padding: 0.5rem 1.5rem 0.5rem);
 @forward "bulma/sass/layout/hero";
 @forward "bulma/sass/layout/section";
 @forward "bulma/sass/layout/level";
@@ -89,6 +87,13 @@ $grey-lightest: hsl(221, 14%, 93%);
 section {
   &.is-fullheight-with-navbar {
     min-height: calc(100vh - #{$navbar-height});
+  }
+}
+
+@media (max-width: $tablet) {
+  .level {
+    // make sure to align the level elements centered for the mobile view
+    align-items: center !important;
   }
 }
 
@@ -124,8 +129,7 @@ section {
   }
 
   .tbody {
-    tr {
-    }
+    tr {}
   }
 }
 
@@ -150,24 +154,33 @@ section {
 }
 
 @media print {
+
+  html,
+  body {
+    height: initial !important;
+    overflow: initial !important;
+    -webkit-print-color-adjust: exact;
+  }
+
   @page {
-    // size: A4 landscape;
+    margin: 10mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+
+    font-family: "B612";
+    font-size: 11px;
 
     @bottom-right {
       content: counter(page);
+      font-family: "B612";
+      font-size: 9px;
     }
 
     @bottom-center {
       content: "SitRep";
+      font-family: "B612";
+      font-size: 9px;
     }
-  }
-
-  .is-hidden-print {
-    // .no-break {
-    //     word-break: normal;
-    //     min-width: 150px;
-    // }
-    display: none !important;
   }
 
   .table {

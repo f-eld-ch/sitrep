@@ -1,10 +1,10 @@
 import {
-  MapboxStyleDefinition,
+  type MapboxStyleDefinition,
   MapboxStyleSwitcherControl,
-  MapboxStyleSwitcherOptions,
+  type MapboxStyleSwitcherOptions,
 } from "mapbox-gl-style-switcher";
-import React from "react";
-import { ControlPosition, useControl } from "react-map-gl/maplibre";
+import type React from "react";
+import { type ControlPosition, useControl } from "react-map-gl/maplibre";
 
 import "mapbox-gl-style-switcher/styles.css";
 
@@ -19,9 +19,13 @@ export interface StyleSwitcherControlProps {
 
 function StyleSwitcherControl(props: StyleSwitcherControlProps): null {
   const { styles, options } = props;
-  useControl<MapboxStyleSwitcherControl>(() => new MapboxStyleSwitcherControl(styles, options), {
-    position: props.position,
-  });
+  // @ts-expect-error - MapboxStyleSwitcherControl is has wrong types declared
+  useControl<MapboxStyleSwitcherControl>(
+    () => new MapboxStyleSwitcherControl(styles, options),
+    {
+      position: props.position,
+    },
+  );
 
   return null;
 }

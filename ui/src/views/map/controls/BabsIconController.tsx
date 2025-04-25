@@ -1,23 +1,28 @@
-import { icon } from "@fortawesome/fontawesome-svg-core";
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsRotate,
+  faHeading,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import {
-  BabsIcon,
-  BabsIconType,
+  type BabsIcon,
+  type BabsIconType,
   IconGroups,
   LineTypesEinsatz,
   LineTypesSchaeden,
   ZonePatterns,
 } from "components/BabsIcons";
-import { Feature, GeoJsonProperties, Geometry } from "geojson";
+import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
-import "./BabsIconController.scss";
-import { LayerToFeatureCollection } from "../utils";
 import { LayerContext } from "../LayerContext";
+import { LayerToFeatureCollection } from "../utils";
+import "./BabsIconController.scss";
 
 const iconControllerFlexboxStyleRow = {
   display: "flex",
@@ -44,10 +49,13 @@ const iconControllerStyle = {
   marginTop: "160px",
 };
 
-function IconController(props: BabsIconControllerProps) {
+const IconController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
   const { current: map } = useMap();
-  const [rotationLock, setRotationLock] = useState<boolean>(!isUndefined(selectedFeature?.properties?.iconRotation));
+  const [rotationLock, setRotationLock] = useState<boolean>(
+    !isUndefined(selectedFeature?.properties?.iconRotation),
+  );
+  const { t } = useTranslation();
 
   const onRotateClick = useCallback(
     (rotationLock: boolean) => {
@@ -59,9 +67,13 @@ function IconController(props: BabsIconControllerProps) {
         return;
       }
 
-      const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
-        iconRotation: rotationLock ? map.getBearing() : undefined,
-      });
+      const properties: GeoJsonProperties = Object.assign(
+        {},
+        selectedFeature.properties,
+        {
+          iconRotation: rotationLock ? map.getBearing() : undefined,
+        },
+      );
 
       selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
 
@@ -77,7 +89,7 @@ function IconController(props: BabsIconControllerProps) {
     }
 
     setRotationLock(selectedFeature.properties?.iconRotation !== undefined);
-  }, [selectedFeature, setRotationLock]);
+  }, [selectedFeature]);
 
   if (selectedFeature === undefined) {
     return <></>;
@@ -118,31 +130,40 @@ function IconController(props: BabsIconControllerProps) {
         <button
           type="button"
           className="maplibregl-ctrl-icon"
-          title={rotationLock ? "Fixierte Signatur lösen" : "Signatur fixieren"}
+          title={rotationLock ? t("mapview.unlock") : t("mapview.unlock")}
           onClick={() => {
             onRotateClick(!rotationLock);
           }}
         >
-          {rotationLock ? <FontAwesomeIcon icon={faLock} size="lg" /> : <FontAwesomeIcon icon={faLockOpen} size="lg" />}
+          {rotationLock ? (
+            <FontAwesomeIcon icon={faLock} size="lg" />
+          ) : (
+            <FontAwesomeIcon icon={faLockOpen} size="lg" />
+          )}
         </button>
       </div>
     </div>
   );
-}
+});
 
 function IconGroupMenu(props: GroupMenuProps) {
   const { iconGroup, onUpdate, feature, name } = props;
+  const { t } = useTranslation();
 
   const lastIcon = Object.values(iconGroup).pop();
   const [active, setActive] = useState<boolean>(false);
 
   const onClickIcon = useCallback(
     (i: BabsIcon) => {
-      const properties: GeoJsonProperties = Object.assign({}, feature.properties, {
-        icon: i.name,
-        iconType: i.name,
-        color: ColorsForIconGroup[name],
-      });
+      const properties: GeoJsonProperties = Object.assign(
+        {},
+        feature.properties,
+        {
+          icon: i.name,
+          iconType: i.name,
+          color: ColorsForIconGroup[name],
+        },
+      );
       feature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [feature], action: "featureDetail" });
       setActive(!active);
@@ -152,10 +173,18 @@ function IconGroupMenu(props: GroupMenuProps) {
 
   if (active || lastIcon === undefined) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
+      <div
+        className="maplibregl-ctrl maplibregl-ctrl-group"
+        style={iconControllerFlexboxStyleRow}
+      >
         {Object.values(iconGroup).map((icon) => (
-          <button key={icon.name} title={icon.description} onClick={() => onClickIcon(icon)}>
-            <img src={icon.src} alt={icon.name} />
+          <button
+            type="button"
+            key={icon.name}
+            title={t(`babs.icons.${icon.description}`)}
+            onClick={() => onClickIcon(icon)}
+          >
+            <img src={icon.src} alt={t(`babs.icons.${icon.description}`)} />
           </button>
         ))}
       </div>
@@ -166,15 +195,26 @@ function IconGroupMenu(props: GroupMenuProps) {
       className="maplibregl-ctrl maplibregl-ctrl-group"
       style={{ marginTop: "5px", marginBottom: "0px", flexFlow: "column wrap" }}
     >
-      <button key={lastIcon.name} title={name} onClick={() => setActive(!active)}>
-        <img src={lastIcon.src} alt={icon.name} />
+      <button
+        type="button"
+        key={lastIcon.name}
+        title={t(`babs.groups.${name}`)}
+        onClick={() => setActive(!active)}
+      >
+        <img
+          src={lastIcon.src}
+          title={t(`babs.groups.${name}`)}
+          alt={t(`babs.groups.${name}`)}
+          aria-label={t(`babs.groups.${name}`)}
+        />
       </button>
     </div>
   );
 }
 
-function LineController(props: BabsIconControllerProps) {
+const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
+  const { t } = useTranslation();
 
   const onClickIcon = useCallback(
     (i: TypesType) => {
@@ -182,10 +222,14 @@ function LineController(props: BabsIconControllerProps) {
         return;
       }
 
-      const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
-        lineType: i.name,
-        color: i.color,
-      });
+      const properties: GeoJsonProperties = Object.assign(
+        {},
+        selectedFeature.properties,
+        {
+          lineType: i.name,
+          color: i.color,
+        },
+      );
       selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [selectedFeature], action: "featureDetail" });
     },
@@ -223,10 +267,18 @@ function LineController(props: BabsIconControllerProps) {
 
   return (
     <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
-      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
-        {Object.values(LineTypes).map((t) => (
-          <button key={t.name} title={t.description} onClick={() => onClickIcon(t)}>
-            <img src={t.icon.src} alt={icon.name} />
+      <div
+        className="maplibregl-ctrl maplibregl-ctrl-group"
+        style={iconControllerFlexboxStyleColumn}
+      >
+        {Object.values(LineTypes).map((l) => (
+          <button
+            type="button"
+            key={l.name}
+            title={t(`babs.lines.${l.description}`)}
+            onClick={() => onClickIcon(l)}
+          >
+            <img src={l.icon.src} alt={t(`babs.lines.${l.description}`)} />
           </button>
         ))}
       </div>
@@ -245,8 +297,8 @@ function LineController(props: BabsIconControllerProps) {
       >
         <button
           type="button"
-          className="maplibregl-ctrl-icon"
-          title="Richtung useMapdrehen"
+          className="maplibregl-ctrl-icon has-text-dark"
+          title={t("mapview.rotate")}
           onClick={() => onRotateClick()}
         >
           <FontAwesomeIcon icon={faArrowsRotate} size="lg" />
@@ -254,18 +306,23 @@ function LineController(props: BabsIconControllerProps) {
       </div>
     </div>
   );
-}
+});
 
-function ZoneController(props: BabsIconControllerProps) {
+const ZoneController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
+  const { t } = useTranslation();
 
   const onClickIcon = useCallback(
     (i: TypesType) => {
       if (selectedFeature !== undefined) {
-        const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
-          zoneType: i.name,
-          color: i.color,
-        });
+        const properties: GeoJsonProperties = Object.assign(
+          {},
+          selectedFeature.properties,
+          {
+            zoneType: i.name,
+            color: i.color,
+          },
+        );
         selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
         onUpdate({ features: [selectedFeature], action: "featureDetail" });
       }
@@ -277,22 +334,33 @@ function ZoneController(props: BabsIconControllerProps) {
     return <></>;
   }
 
-  if (selectedFeature.geometry.type !== "Polygon" && selectedFeature.geometry.type !== "MultiPolygon") {
+  if (
+    selectedFeature.geometry.type !== "Polygon" &&
+    selectedFeature.geometry.type !== "MultiPolygon"
+  ) {
     return <></>;
   }
 
   return (
     <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
-      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleColumn}>
-        {Object.values(ZoneTypes).map((t) => (
-          <button key={t.name} title={t.description} onClick={() => onClickIcon(t)}>
-            <img src={t.icon.src} alt={icon.name} />
+      <div
+        className="maplibregl-ctrl maplibregl-ctrl-group"
+        style={iconControllerFlexboxStyleColumn}
+      >
+        {Object.values(ZoneTypes).map((l) => (
+          <button
+            type="button"
+            key={l.name}
+            title={t(`babs.zones.${l.description}`)}
+            onClick={() => onClickIcon(l)}
+          >
+            <img src={l.icon.src} alt={t(`babs.zones.${l.description}`)} />
           </button>
         ))}
       </div>
     </div>
   );
-}
+});
 
 type SelectableTypes = Record<string, TypesType>;
 
@@ -421,60 +489,75 @@ const LineTypes: SelectableTypes = {
   },
 };
 
-const memoIconController = memo(IconController);
-const memoLineController = memo(LineController);
-const memoZoneController = memo(ZoneController);
-
 interface GroupMenuProps {
   name: string;
   iconGroup: BabsIconType;
   feature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
+  onUpdate: (e: {
+    features: Feature<Geometry, GeoJsonProperties>[];
+    action: string;
+  }) => void;
 }
 
 interface BabsIconControllerProps {
   selectedFeature: Feature<Geometry, GeoJsonProperties> | undefined;
-  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
+  onUpdate: (e: {
+    features: Feature<Geometry, GeoJsonProperties>[];
+    action: string;
+  }) => void;
 }
 
-function BabsIconController() {
+const BabsIconController = () => {
   const { state } = useContext(LayerContext);
-  const layer = first(state.layers.filter((l) => l.id === state.activeLayer));
+  const layer = first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer));
   const { current: map } = useMap();
 
   const featureCollection = LayerToFeatureCollection(layer);
-  const selectedFeature = first(featureCollection.features.filter((f) => f.id === state.selectedFeature));
+  const selectedFeature = first(
+    featureCollection.features.filter((f) => f.id === state.selectedFeature),
+  );
 
   const onUpdate = useCallback(
     (e: { features: Feature<Geometry, GeoJsonProperties>[] }) => {
       const updatedFeatures: Feature[] = e.features;
       // fire an map draw.update event
-      map?.getMap().fire("draw.update", { features: updatedFeatures, target: map });
+      map
+        ?.getMap()
+        .fire("draw.update", { features: updatedFeatures, target: map });
     },
     [map],
   );
 
   return (
     <>
-      <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      <FeatureDetailControlPanel
+        selectedFeature={selectedFeature}
+        onUpdate={onUpdate}
+      />
       <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
     </>
   );
-}
+};
 
-function FeatureDetailControlPanel(props: BabsIconControllerProps) {
+const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const [enteredText, setEnteredText] = useState<string>(selectedFeature?.properties?.name);
+  const [enteredText, setEnteredText] = useState<string>(
+    selectedFeature?.properties?.name,
+  );
   const [active, setActive] = useState<boolean>(false);
-
+  const { t } = useTranslation();
   const onInput = useCallback(
     (name: string) => {
       if (selectedFeature !== undefined) {
-        const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
-          name: name,
-        });
+        const properties: GeoJsonProperties = Object.assign(
+          {},
+          selectedFeature.properties,
+          {
+            name: name,
+          },
+        );
         selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
         onUpdate({ features: [selectedFeature], action: "featureDetail" });
       }
@@ -482,7 +565,7 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
       setEnteredText("");
       setActive(!active);
     },
-    [onUpdate, selectedFeature, setActive, active],
+    [onUpdate, selectedFeature, active],
   );
 
   useEffect(() => {
@@ -493,14 +576,17 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
     }
 
     setEnteredText(selectedFeature.properties?.name || "");
-  }, [selectedFeature, setEnteredText, setActive]);
+  }, [selectedFeature]);
 
   if (selectedFeature === undefined) {
     return null;
   }
 
   // no labels for line strings
-  if (selectedFeature.geometry.type === "LineString" || selectedFeature.geometry.type === "MultiLineString") {
+  if (
+    selectedFeature.geometry.type === "LineString" ||
+    selectedFeature.geometry.type === "MultiLineString"
+  ) {
     return <></>;
   }
 
@@ -512,9 +598,16 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl-top-right" style={{ marginRight: "45px" }}>
+      <div
+        className="maplibregl-ctrl-top-right has-text-black"
+        style={{ marginRight: "45px" }}
+      >
         <div className="maplibregl-ctrl maplibregl-ctrl-group">
-          <button type="button" className={btnClass} onClick={() => setActive(!active)}>
+          <button
+            type="button"
+            className={btnClass}
+            onClick={() => setActive(!active)}
+          >
             <FontAwesomeIcon icon={faHeading} size="lg" />
           </button>
         </div>
@@ -524,14 +617,13 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
 
   return (
     <div className="maplibregl-ctrl maplibregl-ctrl-top-right control-panel">
-      <h5 className="title is-5">Name</h5>
-      <div className="control has-icons-left has-icons-right">
+      <h5 className="title is-5">{t("name")}</h5>
+      <div className="control has-icons-left has-icons-right mb-1">
         <input
           className="input is-small"
-          type="email"
-          placeholder="Signaturtext"
+          type="text"
+          placeholder={t("name")}
           onChange={(e) => {
-            e.preventDefault();
             setEnteredText(e.target.value);
           }}
           value={enteredText}
@@ -545,18 +637,23 @@ function FeatureDetailControlPanel(props: BabsIconControllerProps) {
           <FontAwesomeIcon icon={faFileText} />
         </span>
       </div>
-      <button className="button is-primary is-small" onClick={() => onInput(enteredText)}>
-        Speichern
+      <button
+        type="button"
+        className="button is-primary is-small"
+        onClick={() => onInput(enteredText)}
+      >
+        {t("save")}
       </button>
     </div>
   );
-}
+});
 
 export default BabsIconController;
 
 export {
   BabsIconController,
-  memoIconController as IconController,
-  memoLineController as LineController,
-  memoZoneController as ZoneController,
+  FeatureDetailControlPanel,
+  IconController,
+  LineController,
+  ZoneController,
 };

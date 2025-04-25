@@ -1,4 +1,4 @@
-import { Map } from "./Map";
+import { Map as ImportMap } from "./Map";
 
-export default Map;
-export { Map };
+export default ImportMap;
+export { ImportMap as Map };

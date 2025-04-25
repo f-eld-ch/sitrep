@@ -1,4 +1,4 @@
-# Sitrep
+# SitRep
 
 ![Lage](docs/images/Lage1.png?raw=true "Lage")
 ![Lage2](docs/images/Lage2.png?raw=true "Lage2")
@@ -11,6 +11,12 @@
 
 The current develop version is automatically deployed to: [https://demo.sitrep.ch](https://demo.sitrep.ch)
 Login is possible with your Github account or sign-up for a new account at Auth0.
+
+## SitRep As A Service
+
+[F-ELD](https://www.sitrep.ch) is offering SitRep as a managed service for organizations which are members of the F-ELD association.
+The managed services are hosted on a secure infrastructure in Switzerland and are operated by the F-ELD team.
+The hosting partner is [VSHN](https://www.vshn.ch). For further information, please reach out to [info@f-eld.ch](mailto:info@f-eld.ch).
 
 ### Local Development Environment
 
@@ -73,3 +79,9 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 [GNU Affero General Public License](LICENSE) for more details.
+
+## Partners and Supporters
+
+<img src="https://www.szsv-fspc.ch/images/logos/logo_szsv_freigestellt.png" height="96px" alt="SZSV / FSPC"/>
+
+<img src="ui/src/assets/vshn.svg" height="64px" alt="VSHN"/>

@@ -1,14 +1,12 @@
 /// <reference types="vitest" />
 
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import path from "node:path";
 import { defineConfig } from "vite";
-import { checker } from "vite-plugin-checker";
-import eslint from "vite-plugin-eslint";
+import biomePlugin from 'vite-plugin-biome';
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
-import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -37,11 +35,7 @@ export default defineConfig({
     react({ devTarget: "es2022" }),
     viteTsconfigPaths(),
     svgrPlugin(),
-    eslint(),
-    visualizer(),
-    checker({
-      typescript: true,
-    }),
+    biomePlugin(),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",

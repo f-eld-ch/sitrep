@@ -1,3 +1,3 @@
-export { UserContext } from "./UserContext";
+export { UserContext, UserProvider } from "./UserContext";
 
 export { ReloadPrompt } from "./ReloadSWPrompt";

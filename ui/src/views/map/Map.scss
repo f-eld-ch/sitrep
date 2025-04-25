@@ -1,4 +1,4 @@
-@import "maplibre-gl/dist/maplibre-gl";
+@use "maplibre-gl/dist/maplibre-gl";
 
 .maplibregl-canvas {
   @extend .maplibregl-canvas !optional;

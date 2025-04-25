@@ -1,5 +1,5 @@
-import { GeoJsonProperties, Geometry } from "geojson";
-import { Incident } from "./incident";
+import type { GeoJsonProperties, Geometry } from "geojson";
+import type { Incident } from "./incident";
 
 export interface Layer {
   id: string;
@@ -10,6 +10,11 @@ export interface Layer {
   updatedAt: Date;
   deletedAt: Date;
 }
+
+export interface AddLayersVars {
+  incidentId: string;
+  name: string;
+};
 
 export interface Feature {
   id: string | number | undefined;

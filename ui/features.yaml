@@ -21,6 +21,16 @@ flags:
       - segment:
           key: Development
           value: true
+  # nimdanitro: flag for indicating that it is a sitrep managed instances
+  - key: is-sitrep-managed
+    name: Sitrep Managed
+    type: BOOLEAN_FLAG_TYPE
+    description: Indicate that the instance is managed by Sitrep
+    enabled: false
+    rollouts:
+      - segment:
+          key: SitrepManaged
+          value: true
 segments:
   - key: Development
     name: Development
@@ -30,3 +40,11 @@ segments:
         operator: isoneof
         value: '["dev.sitrep.ch","localhost","127.0.0.1"]'
     match_type: ALL_MATCH_TYPE
+  - key: SitrepManaged
+    name: SitrepManaged
+    constraints:
+      - type: STRING_COMPARISON_TYPE
+        property: domain
+        operator: suffix
+        value: ".sitrep.ch"
+    match_type: ANY_MATCH_TYPE

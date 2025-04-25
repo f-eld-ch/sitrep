@@ -6,7 +6,7 @@ updates:
     directory: "/ui"
     target-branch: "develop"
     reviewers:
-      - "@f-eld-ch/Reviewers"
+      - "@f-eld-ch/core-development"
     schedule:
       interval: "daily"
       time: "20:00"
@@ -18,6 +18,10 @@ updates:
         update-types:
           - "minor"
           - "patch"       
+      fontawesome:
+        applies-to: version-updates
+        patterns:
+          - "@fortawesome*"
     labels:
       - "javascript"
       - "dependencies"
@@ -49,7 +53,7 @@ updates:
     directory: "/"
     target-branch: "develop"
     reviewers:
-      - "@f-eld-ch/Reviewers"    
+      - "@f-eld-ch/core-development"
     schedule:
       interval: "daily"
       time: "20:00"
@@ -63,7 +67,7 @@ updates:
     directory: "/"
     target-branch: "develop"
     reviewers:
-      - "@f-eld-ch/Reviewers"    
+      - "@f-eld-ch/core-development"
     schedule:
       interval: "daily"
       time: "20:00"

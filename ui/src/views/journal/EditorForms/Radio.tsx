@@ -1,12 +1,20 @@
 import { t } from "i18next";
-import { ContentInput, ReceiverInput, SaveButton, SenderInput, TimeInput } from "./Elements";
+import {
+  ContentInput,
+  ReceiverInput,
+  SaveButton,
+  SenderInput,
+  TimeInput,
+} from "./Elements";
 
 export function Radio() {
   return (
     <div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.receiver")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="receiver-input" className="label is-capitalized">
+            {t("message.receiver")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -15,8 +23,10 @@ export function Radio() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.sender")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="sender-input" className="label is-capitalized">
+            {t("message.sender")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -25,8 +35,10 @@ export function Radio() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.time")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="time-input" className="label is-capitalized">
+            {t("message.time")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -35,8 +47,10 @@ export function Radio() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("message.content")}</label>
+        <div className="field-label is-normal is-flex-shrink-0">
+          <label htmlFor="content-input" className="label is-capitalized">
+            {t("message.content")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -45,7 +59,7 @@ export function Radio() {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label"></div>
+        <div className="field-label" />
         <div className="field-body">
           <div className="field">
             <SaveButton />

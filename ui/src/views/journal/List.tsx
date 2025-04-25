@@ -1,16 +1,30 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@apollo/client";
-import { faArrowsToEye, faBell, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faBell,
+  faPrint,
+  faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useReactToPrint } from "react-to-print";
 
+import classNames from "classnames";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import { Message, MessageListData, MessageListVars, PriorityStatus, TriageStatus } from "types";
-import { GetJournalMessages } from "./graphql";
+import { useParams } from "react-router";
+import {
+  type Division,
+  type Message,
+  type MessageListData,
+  type MessageListVars,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
+import { GetJournalMessages } from "./graphql";
 
 function List(props: {
   showControls: boolean;
@@ -23,11 +37,25 @@ function List(props: {
   const [triageFilter, setTriageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
-  const { autoScroll = false } = props;
+  const { autoScroll = false, showControls = true } = props;
+  const tableRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+    pageStyle: "@page { size: A4 landscape;}",
+  });
 
-  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(GetJournalMessages, {
-    variables: { journalId: journalId || "" },
-    pollInterval: 10000,
+  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(
+    GetJournalMessages,
+    {
+      variables: { journalId: journalId || "" },
+      pollInterval: 10000,
+    },
+  );
+
+  const printButtonClass = classNames({
+    "is-hidden": !showControls,
+    column: true,
+    "is-narrow": true,
   });
 
   // on new messages scale to top
@@ -38,12 +66,14 @@ function List(props: {
         behavior: "smooth",
       });
     }
-  }, [data?.messages, error, autoScroll]);
+  }, [autoScroll]);
 
   if (error) {
     return (
       <div className="notification is-danger is-light">
-        <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
+        <div className="block has-text-weight-semibold">
+          Ups, da ging was schief:
+        </div>
         <div className="block">{error.message}</div>
       </div>
     );
@@ -54,30 +84,25 @@ function List(props: {
 
   const messages =
     data?.messages
-      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
-      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
       .filter(
-        (message) => assignmentFilter === "all" || message.divisions?.find((d) => d.division.name === assignmentFilter),
+        (message) =>
+          triageFilter === "all" || message.triageId === triageFilter,
+      )
+      .filter(
+        (message) =>
+          priorityFilter === "all" || message.priorityId === priorityFilter,
+      )
+      .filter(
+        (message) =>
+          assignmentFilter === "all" ||
+          message.divisions?.find((d) => d.division.name === assignmentFilter),
       ) || [];
 
   return (
-    <div>
-      <div className="is-print">
-        {props.showControls ? (
-          <></>
-        ) : (
-          <MessageTable
-            messages={messages}
-            triageFilter={triageFilter}
-            priorityFilter={priorityFilter}
-            assignmentFilter={assignmentFilter}
-          />
-        )}
-      </div>
+    <>
       <div className="is-hidden-print">
         <h3 className="title is-3 is-capitalized">{t("journal")}</h3>
-
-        <div className="columns">
+        <div className="columns is-mobile is-multiline is-2">
           <div className="column is-narrow">
             <div className="control has-icons-left">
               <div className="select is-small is-rounded">
@@ -90,7 +115,15 @@ function List(props: {
                 >
                   <option label={t("all") as string}>all</option>
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
-                    <option key={status} label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}>
+                    <option
+                      key={status}
+                      label={
+                        t([
+                          `triage.${status}`,
+                          `triage.${TriageStatus.Pending}`,
+                        ]) as string
+                      }
+                    >
                       {status}
                     </option>
                   ))}
@@ -113,7 +146,15 @@ function List(props: {
                 >
                   <option label={t("all") as string}>all</option>
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                    <option key={prio} label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}>
+                    <option
+                      key={prio}
+                      label={
+                        t([
+                          `priority.${prio}`,
+                          `priority.${PriorityStatus.Normal}`,
+                        ]) as string
+                      }
+                    >
                       {prio}
                     </option>
                   ))}
@@ -147,12 +188,23 @@ function List(props: {
               </div>
             </div>
           </div>
+          <div className={printButtonClass}>
+            <button
+              type="button"
+              className="button is-small is-rounded"
+              onClick={() => handlePrint()}
+            >
+              <FontAwesomeIcon icon={faPrint} />
+              &nbsp;{t("print")}
+            </button>
+          </div>
         </div>
       </div>
-      <div className="columns is-multiline is-hidden-print mb-3">
+      <div className="columns is-multiline is-gapless">
         {data ? (
           <MemoMessages
             messages={messages}
+            divisions={divisions}
             showControls={props.showControls}
             setTriageMessage={props.setTriageMessage}
             setEditorMessage={props.setEditorMessage}
@@ -161,7 +213,16 @@ function List(props: {
           <></>
         )}
       </div>
-    </div>
+      <div style={{ display: "none" }}>
+        <MessageTable
+          ref={tableRef}
+          messages={messages}
+          triageFilter={triageFilter}
+          priorityFilter={priorityFilter}
+          assignmentFilter={assignmentFilter}
+        />
+      </div>
+    </>
   );
 }
 
@@ -172,24 +233,19 @@ function Messages(props: {
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
+  divisions: Division[];
 }) {
   return (
     <>
       {props.messages.map((message) => {
         return (
-          <div key={message.id} className="column is-full is-gapless">
+          <div key={message.id} className="column is-full mt-3">
             <JournalMessage
               key={message.id}
               id={message.id}
-              assignments={message.divisions.map((d) => d.division.name)}
-              triage={message.triageId}
-              priority={message.priorityId}
-              sender={message.sender}
-              receiver={message.receiver}
-              message={message.content}
-              timeDate={new Date(message.time)}
+              message={message}
+              divisions={props.divisions}
               showControls={props.showControls}
-              origMessage={message}
               setEditorMessage={props.setEditorMessage}
               setTriageMessage={props.setTriageMessage}
             />

@@ -1,71 +1,76 @@
 import classNames from "classnames";
 import dayjs from "dayjs";
-import de from "dayjs/locale/de";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
-import relativeTime from "dayjs/plugin/relativeTime";
 
-import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faEdit,
+  faPrint,
+  faSquareCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { memo } from "react";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
-import { Link, useParams } from "react-router-dom";
-import { Message as MessageType, PriorityStatus, TriageStatus } from "types";
+import { useReactToPrint } from "react-to-print";
+import {
+  type Division,
+  type Message,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
+import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {
   id: string | undefined;
-  sender: string;
-  receiver: string;
-  timeDate: Date;
-  message: string;
-  triage: TriageStatus;
-  priority: PriorityStatus;
-  assignments?: string[];
+  message: Message;
+  divisions: Division[];
   showControls: boolean;
-  origMessage: MessageType | undefined;
-  setEditorMessage?: (message: MessageType | undefined) => void;
-  setTriageMessage?: (message: MessageType | undefined) => void;
+  setEditorMessage?: (message: Message | undefined) => void;
+  setTriageMessage?: (message: Message | undefined) => void;
 }
 
-dayjs.locale(de);
-dayjs.extend(LocalizedFormat);
-dayjs.extend(relativeTime);
-
-function Message({
+const MessageContainer = ({
   id,
-  sender,
-  receiver,
   message,
-  timeDate,
-  triage,
-  priority,
-  assignments,
   showControls = false,
   setEditorMessage,
   setTriageMessage,
-  origMessage,
-}: MessageProps) {
-  const { t } = useTranslation();
-  const { incidentId, journalId } = useParams();
+  divisions,
+}: MessageProps) => {
+  const { t, i18n } = useTranslation();
+  const showTasks = useBooleanFlagValue("show-tasks", false);
+  const messageSheetRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: messageSheetRef,
+    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
+  });
 
   const colorClassNames = classNames({
     "is-danger":
-      !(triage === TriageStatus.Pending || triage === TriageStatus.Reset) && priority === PriorityStatus.High,
-    "is-warning": triage === TriageStatus.Pending || triage === TriageStatus.Reset,
-    "is-success": triage === TriageStatus.MoreInfo,
-    "is-dark": triage === TriageStatus.Triaged,
+      !(
+        message.triageId === TriageStatus.Pending ||
+        message.triageId === TriageStatus.Reset
+      ) && message.priorityId === PriorityStatus.High,
+    "is-warning":
+      message.triageId === TriageStatus.Pending ||
+      message.triageId === TriageStatus.Reset,
+    "is-success": message.triageId === TriageStatus.MoreInfo,
+    "is-dark": message.triageId === TriageStatus.Triaged,
   });
 
   const messageClassNames = classNames(colorClassNames, {
     message: true,
+    "mb-3": !showControls,
   });
 
   const assigmentsClassNames = classNames({
     column: true,
-    "is-2": true,
-    "is-align-items-stretch": true,
-    "is-justify-content-flex-end": true,
-    "is-hidden": !assignments || assignments.length === 0,
+    "is-full": true,
+    "is-flex-shrink-0": true,
+    "is-flex-grow-0": true,
+    "is-justify-content-flex-start": true,
+    "is-hidden": !message.divisions || message.divisions.length === 0,
   });
 
   const tabClassNames = classNames(colorClassNames, {
@@ -82,67 +87,112 @@ function Message({
 
   return (
     <div className={messageClassNames}>
-      <div className="message-body">
-        <div className="columns is-multiline is-mobile">
-          <div className="column is-full-tablet">
+      <div className="message-body px-0">
+        <div className="columns px-3 is-multiline is-mobile">
+          <div className="column is-full">
             <nav className="level is-align-items-baseline">
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-2">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.sender")}</p>
-                  <p className="subtitle is-size-7">{sender}</p>
+                  <div className="heading is-size-7 has-text-weight-bold">
+                    {t("message.sender")}
+                  </div>
+                  <div className="subtitle is-size-7">
+                    <div className="columns is-gapless is-multiline">
+                      <div className="column is-full">{message.sender}</div>
+                      <div className="column is-full is-italic">
+                        {message.senderDetail
+                          ? `(${message.senderDetail})`
+                          : ""}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="level-item has-text-centered is-flex-shrink-2">
+                <div className="mb-0">
+                  <div className="heading is-size-7 has-text-weight-bold">
+                    {t("message.receiver")}
+                  </div>
+                  <div className="subtitle is-size-7">
+                    <div className="columns is-gapless is-multiline">
+                      <div className="column is-full">{message.receiver}</div>
+                      <div className="column is-full is-italic">
+                        {message.receiverDetail
+                          ? `(${message.receiverDetail})`
+                          : ""}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.receiver")}</p>
-                  <p className="subtitle is-size-7">{receiver}</p>
+                  <div className="heading is-size-7 has-text-weight-bold">
+                    {t("message.time")}
+                  </div>
+                  <div className="subtitle is-size-7">
+                    {dayjs(message.time).locale(i18n.language).format("LLL")}
+                  </div>
                 </div>
               </div>
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.time")}</p>
-                  <p className="subtitle is-size-7">{dayjs(timeDate).format("LLL")}</p>
-                </div>
-              </div>
-              <div className="level-item has-text-centered is-flex-shrink-1">
-                <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.priority")}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">
+                    {t("message.priority")}
+                  </p>
                   <p className="subtitle is-size-7">
-                    {t([`priority.${priority}`, `priority.${PriorityStatus.Normal}`])}
+                    {t([
+                      `priority.${message.priorityId}`,
+                      `priority.${PriorityStatus.Normal}`,
+                    ])}
                   </p>
                 </div>
               </div>
 
-              <div className="level-item has-text-centered is-flex-shrink-1">
+              <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
-                  <p className="heading is-size-7">{t("message.triage")}</p>
-                  <p className="subtitle is-size-7">{t([`triage.${triage}`, `triage.${TriageStatus.Pending}`])}</p>
+                  <p className="heading is-size-7 has-text-weight-bold">
+                    {t("message.triage")}
+                  </p>
+                  <p className="subtitle is-size-7">
+                    {t([
+                      `triage.${message.triageId}`,
+                      `triage.${TriageStatus.Pending}`,
+                    ])}
+                  </p>
                 </div>
               </div>
             </nav>
           </div>
-          <div className="column is-full-touch is-four-fifth-desktop">
-            <ReactMarkdown className="content is-normal has-text-left">{message}</ReactMarkdown>
+          <div className="column is-full" style={{ wordBreak: "break-word" }}>
+            <div className="content is-normal has-text-left">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
           </div>
           <div className={assigmentsClassNames}>
             <div className="tags is-multiline">
-              {assignments &&
-                assignments.map((a) => {
-                  return (
-                    <span key={a.toString()} className={tagClassNames}>
-                      {a}
-                    </span>
-                  );
-                })}
+              {message.divisions?.map((d) => (
+                <span key={d.division.id} className={tagClassNames}>
+                  {d.division.name && d.division.name.trim() !== ""
+                    ? d.division.name
+                    : d.division.description}
+                </span>
+              ))}
             </div>
           </div>
         </div>
         {showControls === true && id !== undefined ? (
-          <div className={tabClassNames}>
+          <div
+            className={tabClassNames}
+            style={{ borderBottomRightRadius: "4px" }}
+          >
             <ul>
-              {setEditorMessage && triage !== TriageStatus.Triaged ? (
+              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <li>
-                  <a onClick={() => setEditorMessage(origMessage)}>
+                  <a
+                    className="has-text-weight-bold"
+                    onClick={() => setEditorMessage(message)}
+                  >
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faEdit} />
                     </span>
@@ -150,16 +200,22 @@ function Message({
                   </a>
                 </li>
               ) : (
-                <Link to={`/incident/${incidentId}/journal/${journalId}/messages/${id}`}>
+                <a
+                  className="has-text-weight-bold"
+                  onClick={() => handlePrint()}
+                >
                   <span className="icon is-small">
                     <FontAwesomeIcon icon={faPrint} />
                   </span>
                   <span>{t("messageSheet")}</span>
-                </Link>
+                </a>
               )}
-              {setTriageMessage && origMessage ? (
+              {setTriageMessage && message ? (
                 <li>
-                  <a onClick={() => setTriageMessage(origMessage)}>
+                  <a
+                    className="has-text-weight-bold"
+                    onClick={() => setTriageMessage(message)}
+                  >
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faArrowsToEye} />
                     </span>
@@ -169,15 +225,26 @@ function Message({
               ) : (
                 <></>
               )}
-              <li>
-                <a>
-                  <span className="icon is-small">
-                    <FontAwesomeIcon icon={faSquareCheck} />
-                  </span>
-                  <span>{t("createNewTask")}</span>
-                </a>
-              </li>
+              {showTasks ? (
+                <li>
+                  <a className="has-text-weight-bold">
+                    <span className="icon is-small">
+                      <FontAwesomeIcon icon={faSquareCheck} />
+                    </span>
+                    <span>{t("createNewTask")}</span>
+                  </a>
+                </li>
+              ) : (
+                <></>
+              )}
             </ul>
+            <div style={{ display: "none" }}>
+              <MessageSheet
+                ref={messageSheetRef}
+                message={message}
+                divisions={divisions}
+              />
+            </div>
           </div>
         ) : (
           <></>
@@ -185,6 +252,6 @@ function Message({
       </div>
     </div>
   );
-}
+};
 
-export default memo(Message);
+export default memo(MessageContainer);

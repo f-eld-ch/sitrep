@@ -7,9 +7,9 @@ import reject from "lodash/reject";
 import unionBy from "lodash/unionBy";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { Division } from "types";
-import {
+import { useNavigate } from "react-router";
+import type { Division } from "types";
+import type {
   Incident,
   InsertIncidentData,
   InsertIncidentVars,
@@ -17,7 +17,12 @@ import {
   UpdateIncidentVars,
 } from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
-import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
+import {
+  GetIncidentDetails,
+  GetIncidents,
+  InsertIncident,
+  UpdateIncident,
+} from "./graphql";
 
 function New() {
   const { t } = useTranslation();
@@ -38,6 +43,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
+      // TODO: this needs translations
       { id: "", name: "Karte", description: "Nachrichtenkarte" },
       { id: "", name: "Lage", description: "C Lage" },
       { id: "", name: "SC", description: "Stabchef" },
@@ -50,16 +56,26 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
-  const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(InsertIncident, {
+  const [insertIncident, { error }] = useMutation<
+    InsertIncidentData,
+    InsertIncidentVars
+  >(InsertIncident, {
     onCompleted(data) {
       navigate(`../${data.insertIncidentsOne.id}/journal/view`);
     },
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }, { query: GetMessageForTriage }],
+    refetchQueries: [
+      { query: GetIncidents },
+      { query: GetIncidentDetails },
+      { query: GetMessageForTriage },
+    ],
   });
 
-  const [updateIncident, { error: errorUpdate }] = useMutation<UpdateIncidentData, UpdateIncidentVars>(UpdateIncident, {
+  const [updateIncident, { error: errorUpdate }] = useMutation<
+    UpdateIncidentData,
+    UpdateIncidentVars
+  >(UpdateIncident, {
     onCompleted() {
-      navigate(`../journal/view`);
+      navigate("../journal/view");
     },
     refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
   });
@@ -73,7 +89,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           location: location,
           locationId: incident.location.id,
           divisions: assignments.map((d) => {
-            return { name: d.name, description: d.description, incidentId: incident.id };
+            return {
+              name: d.name,
+              description: d.description,
+              incidentId: incident.id,
+            };
           }),
         },
       });
@@ -94,16 +114,27 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   return (
     <>
-      {error ? <div className="notification is-danger">{error?.message}</div> : <></>}
-      {errorUpdate ? <div className="notification is-danger">{errorUpdate?.message}</div> : <></>}
+      {error ? (
+        <div className="notification is-danger">{error?.message}</div>
+      ) : (
+        <></>
+      )}
+      {errorUpdate ? (
+        <div className="notification is-danger">{errorUpdate?.message}</div>
+      ) : (
+        <></>
+      )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("incidentName")}</label>
+          <label htmlFor="name" className="label is-capitalized">
+            {t("incidentName")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
             <p className="control has-icons-left has-icons-right is-expanded">
               <input
+                id="name"
                 className="input"
                 type="text"
                 value={name}
@@ -119,12 +150,15 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("location")}</label>
+          <label htmlFor="location" className="label is-capitalized">
+            {t("location")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-normal">
             <p className="control has-icons-left has-icons-right is-expanded">
               <input
+                id="location"
                 className="input"
                 type="text"
                 value={location}
@@ -140,7 +174,9 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label is-capitalized">{t("divisions")}</label>
+          <label htmlFor="divisions" className="label is-capitalized">
+            {t("divisions")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline is-normal">
@@ -154,13 +190,19 @@ function IncidentForm(props: { incident: Incident | undefined }) {
               return (
                 <div key={d.name} className="control">
                   <div className="tags has-addons">
-                    <p className={tagsClass}>{`${d.description} (${d.name})`}</p>
+                    <p
+                      className={tagsClass}
+                    >{`${d.description} (${d.name})`}</p>
                     {d.id ? (
                       <></>
                     ) : (
                       <a
                         className="tag is-delete"
-                        onClick={() => setAssignments(reject(assignments, (e) => e.name === d.name))}
+                        onClick={() =>
+                          setAssignments(
+                            reject(assignments, (e) => e.name === d.name),
+                          )
+                        }
                       />
                     )}
                   </div>
@@ -173,7 +215,9 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label className="label">{t("devisionAdd")}</label>
+          <label htmlFor="divisions" className="label">
+            {t("devisionAdd")}
+          </label>
         </div>
         <div className="field-body">
           <div className="field is-grouped is-grouped-multiline">
@@ -188,6 +232,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             </p>
             <p className="control">
               <input
+                id="divisions"
                 className="input is-small"
                 value={assignmentName}
                 type="text"
@@ -197,6 +242,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             </p>
             <p className="control">
               <button
+                type="submit"
                 className="button is-primary is-small is-justified is-rounded is-capitalized"
                 onClick={(e) => {
                   e.preventDefault();
@@ -204,13 +250,20 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignments(
                     unionBy(
                       assignments,
-                      [{ id: "", name: assignmentName, description: assignmentDescription }],
+                      [
+                        {
+                          id: "",
+                          name: assignmentName,
+                          description: assignmentDescription,
+                        },
+                      ],
                       iteratee("name"),
                     ),
                   );
                   setAssignmentName("");
                   setAssignmentDescription("");
                 }}
+                disabled={assignmentName === "" || assignmentDescription === ""}
               >
                 {t("add")}
               </button>
@@ -220,7 +273,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field">
         <p className="control">
-          <button className="button is-primary is-rounded is-capitalized" onClick={handleSave}>
+          <button
+            type="submit"
+            className="button is-primary is-rounded is-capitalized"
+            onClick={handleSave}
+          >
             {t("save")}
           </button>
         </p>

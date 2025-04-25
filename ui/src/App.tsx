@@ -1,9 +1,13 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { Navigate, Route, HashRouter as Router, Routes } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
+import { Navigate, Route, HashRouter as Router, Routes } from "react-router";
 
 import "./App.scss";
 
-import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
+import {
+  Editor as IncidentEditor,
+  List as IncidentList,
+  New as IncidentNew,
+} from "views/incident";
 import {
   Editor as JournalEditor,
   List as JournalMessageList,
@@ -17,54 +21,47 @@ import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
 
 import { ApolloProvider } from "@apollo/client";
+import { Provider as FeatureFlagProvider } from "FeatureFlags";
+import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
-import { UserState } from "types";
-import { UserContext } from "utils";
-import MessageSheet from "views/journal/MessageSheet";
+import { UserProvider } from "utils";
 import { Layout, LayoutMarginLess } from "views/Layout";
-import { default as client } from "client";
-import { Provider as FeatureFlagProvider } from "FeatureFlags";
-
-const Map = lazy(() => import("views/map"));
+import "./i18n";
+import dayjs from "dayjs";
+import de from "dayjs/locale/de";
+import en from "dayjs/locale/en";
+import fr from "dayjs/locale/fr";
+import it from "dayjs/locale/it";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+const MapView = lazy(() => import("views/map"));
 
 function App() {
-  const [userState, setUserState] = useState<UserState>({ isLoggedin: false, email: "", username: "" });
   const { i18n } = useTranslation();
-
-  const setUserStateFromUserinfo = () => {
-    fetch("/oauth2/userinfo", { credentials: "include" })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("unauthenticated");
-        }
-        return response.json();
-      })
-      .then((userInfo) => {
-        setUserState({
-          isLoggedin: true,
-          email: userInfo.email,
-          username: userInfo.user || userInfo.preferredUsername,
-        });
-      })
-      .catch(() => {
-        setUserState({ isLoggedin: false, email: "", username: "" });
-      });
-  };
+  dayjs.extend(LocalizedFormat);
 
   useEffect(() => {
-    setUserStateFromUserinfo();
     i18n.changeLanguage();
-
-    const interval = setInterval(() => {
-      setUserStateFromUserinfo();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [i18n]);
+    const locale = (lang: string) => {
+      switch (lang) {
+        case "de":
+          return de;
+        case "en":
+          return en;
+        case "fr":
+          return fr;
+        case "it":
+          return it;
+        default:
+          return en;
+      }
+    };
+    const lang = locale(i18n.language);
+    dayjs.locale(lang.toString());
+  }, [i18n.language, i18n.changeLanguage]);
 
   return (
-    <UserContext.Provider value={userState}>
+    <UserProvider>
       <ApolloProvider client={client}>
         <FeatureFlagProvider>
           <Router>
@@ -126,15 +123,10 @@ function App() {
                       path=":journalId"
                       element={
                         <Layout>
-                          <JournalMessageList showControls={false} autoScroll={true} />
-                        </Layout>
-                      }
-                    />
-                    <Route
-                      path=":journalId/messages/:messageId"
-                      element={
-                        <Layout>
-                          <MessageSheet />
+                          <JournalMessageList
+                            showControls={false}
+                            autoScroll={true}
+                          />
                         </Layout>
                       }
                     />
@@ -153,7 +145,7 @@ function App() {
                     element={
                       <LayoutMarginLess>
                         <Suspense fallback={<Spinner />}>
-                          <Map />
+                          <MapView />
                         </Suspense>
                       </LayoutMarginLess>
                     }
@@ -189,7 +181,7 @@ function App() {
           </Router>
         </FeatureFlagProvider>
       </ApolloProvider>
-    </UserContext.Provider>
+    </UserProvider>
   );
 }
 

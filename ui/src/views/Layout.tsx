@@ -1,8 +1,9 @@
 // Layout.jsx
 import { Footer, Navbar } from "components";
-import React, { useContext, useEffect } from "react";
+import type React from "react";
+import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { UserContext } from "utils";
 import { Login } from "./Login";
 
@@ -13,12 +14,12 @@ export interface LayoutProps {
 export const Layout = (props: LayoutProps) => {
   const [searchParams] = useSearchParams();
   const { i18n } = useTranslation();
-  const userState = useContext(UserContext);
+  const { state: userState } = useContext(UserContext);
 
   const lang = searchParams.get("lang");
   useEffect(() => {
     i18n.changeLanguage(lang || undefined);
-  }, [lang, searchParams, i18n]);
+  }, [lang, i18n]);
 
   if (!userState.isLoggedin) return <Login />;
 
@@ -40,12 +41,12 @@ export const Layout = (props: LayoutProps) => {
 export const LayoutMarginLess = (props: LayoutProps) => {
   const [searchParams] = useSearchParams();
   const { i18n } = useTranslation();
-  const userState = useContext(UserContext);
+  const { state: userState } = useContext(UserContext);
 
   const lang = searchParams.get("lang");
   useEffect(() => {
     i18n.changeLanguage(lang || undefined);
-  }, [lang, searchParams, i18n]);
+  }, [lang, i18n]);
 
   if (!userState.isLoggedin) return <Login />;
 

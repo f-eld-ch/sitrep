@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from "@apollo/client";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 
 import {
   faChartSimple,
@@ -15,15 +17,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
 import dayjs from "dayjs";
-import de from "dayjs/locale/de";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import { t } from "i18next";
 import { useTranslation } from "react-i18next";
-import { Journal, JournalListData, JournalListVars } from "types";
+import type { Journal, JournalListData, JournalListVars } from "types";
 import { CloseJournal, GetJournals } from "./graphql";
-
-dayjs.locale(de);
-dayjs.extend(LocalizedFormat);
 
 function Overview() {
   const { incidentId } = useParams();
@@ -31,17 +28,30 @@ function Overview() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<JournalListData, JournalListVars>(GetJournals, {
-    variables: { incidentId: incidentId || "" },
-    pollInterval: 10000,
-  });
+  useEffect(() => {
+    dayjs.extend(LocalizedFormat);
+    dayjs.extend(relativeTime);
+  }, []);
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
+  const { loading, error, data } = useQuery<JournalListData, JournalListVars>(
+    GetJournals,
+    {
+      variables: { incidentId: incidentId || "" },
+      pollInterval: 10000,
+    },
+  );
+
+  if (error)
+    return <div className="notification is-danger">{error.message}</div>;
 
   if (loading) return <Spinner />;
 
   if (!data || !(data.incidents.length === 1))
-    return <div className="notification is-danger">Unerwarteter Fehler beim Laden des Ereignisses.</div>;
+    return (
+      <div className="notification is-danger">
+        Unerwarteter Fehler beim Laden des Ereignisses.
+      </div>
+    );
 
   const incident = data.incidents[0];
 
@@ -54,6 +64,7 @@ function Overview() {
 
       <div className="buttons">
         <button
+          type="button"
           className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
           onClick={() => navigate("../new")}
         >
@@ -63,6 +74,7 @@ function Overview() {
           <span>{t("create")}</span>
         </button>
         <button
+          type="button"
           className="button is-primary is-small is-responsive is-rounded is-light"
           onClick={() => setFilterClosed(!filterClosed)}
         >
@@ -74,31 +86,47 @@ function Overview() {
       </div>
 
       <JournalCards
-        journals={data.incidents[0].journals.filter((journal) => !filterClosed || journal.closedAt === null) || []}
+        journals={
+          data.incidents[0].journals.filter(
+            (journal) => !filterClosed || journal.closedAt === null,
+          ) || []
+        }
         incidentId={incidentId}
       />
     </div>
   );
 }
 
-function JournalCards(props: { journals: Journal[]; incidentId: string | undefined }) {
+function JournalCards(props: {
+  journals: Journal[];
+  incidentId: string | undefined;
+}) {
   const { journals, incidentId } = props;
 
   return (
     <div className="container-flex">
       {journals.map((journal) => (
-        <JournalCard key={journal.id} journal={journal} incidentId={incidentId} />
+        <JournalCard
+          key={journal.id}
+          journal={journal}
+          incidentId={incidentId}
+        />
       ))}
     </div>
   );
 }
 
-function JournalCard(props: { journal: Journal; incidentId: string | undefined }) {
+function JournalCard(props: {
+  journal: Journal;
+  incidentId: string | undefined;
+}) {
   const { journal, incidentId } = props;
   const navigate = useNavigate();
 
   const [closeJournal] = useMutation(CloseJournal, {
-    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
+    refetchQueries: [
+      { query: GetJournals, variables: { incidentId: incidentId } },
+    ],
   });
 
   const cardClass = classNames({
@@ -126,13 +154,21 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
         </div>
       </div>
       <footer className="card-footer">
-        <button className="card-footer-item is-ahref is-capitalized" onClick={() => navigate(`../${journal.id}/edit`)}>
+        <button
+          type="button"
+          className="card-footer-item is-ahref is-capitalized"
+          onClick={() => navigate(`../${journal.id}/edit`)}
+        >
           <span className="icon">
             <FontAwesomeIcon icon={faEdit} />
           </span>
           <span>{t("write")}</span>
         </button>
-        <button className="card-footer-item is-ahref is-capitalized" onClick={() => navigate(`../${journal.id}`)}>
+        <button
+          type="button"
+          className="card-footer-item is-ahref is-capitalized"
+          onClick={() => navigate(`../${journal.id}`)}
+        >
           <span className="icon">
             <FontAwesomeIcon icon={faChartSimple} />
           </span>
@@ -140,6 +176,7 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
         </button>
         {journal.closedAt === null ? (
           <button
+            type="button"
             className="card-footer-item is-ahref is-capitalized"
             onClick={() => {
               closeJournal({
@@ -157,6 +194,7 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
           </button>
         ) : (
           <button
+            type="button"
             className="card-footer-item is-ahref is-capitalized is-success"
             onClick={() => {
               closeJournal({
