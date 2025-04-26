@@ -8,16 +8,16 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/domain"
 	"github.com/f-eld-ch/sitrep/internal/domain/incident"
 	"github.com/google/uuid"
-	"github.com/hallgren/eventsourcing"
+	"github.com/hallgren/eventsourcing/aggregate"
 )
 
 func init() {
 	uuid.EnableRandPool()
-	eventsourcing.SetIDFunc(func() string { return domain.GenerateUUID().String() })
+	aggregate.SetIDFunc(func() string { return domain.GenerateUUID().String() })
 }
 
 type IncidentAggregate struct {
-	eventsourcing.AggregateRoot
+	aggregate.Root
 	incident incident.Incident
 }
 
@@ -32,8 +32,8 @@ func OpenIncident(name, location string) (*IncidentAggregate, error) {
 	}
 
 	ia := IncidentAggregate{incident: *i}
-	ia.TrackChange(&ia, &Opened{Name: name, At: time.Now()})
-	ia.TrackChange(&ia, &Locate{incident.Location{Name: location}})
+	aggregate.TrackChange(&ia, &Opened{Name: name, At: time.Now()})
+	aggregate.TrackChange(&ia, &Locate{incident.Location{Name: location}})
 
 	return &ia, nil
 }
@@ -44,7 +44,7 @@ func (i *IncidentAggregate) Close() error {
 		return errors.New("already closed incident")
 	}
 
-	i.TrackChange(i, &Closed{At: time.Now()})
+	aggregate.TrackChange(i, &Closed{At: time.Now()})
 	return nil
 }
 

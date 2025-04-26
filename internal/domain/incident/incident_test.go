@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/f-eld-ch/sitrep/internal/domain/incident"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/f-eld-ch/sitrep/internal/domain/incident"
 )
 
 func TestOpenIncident(t *testing.T) {

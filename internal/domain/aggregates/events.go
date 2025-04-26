@@ -7,6 +7,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/domain/journal"
 	"github.com/hallgren/eventsourcing"
+	"github.com/hallgren/eventsourcing/aggregate"
 )
 
 // Transition the person state dependent on the events
@@ -30,7 +31,7 @@ func (i *IncidentAggregate) Transition(event eventsourcing.Event) {
 }
 
 // Register the Aggregate to all events
-func (f *IncidentAggregate) Register(r eventsourcing.RegisterFunc) {
+func (f *IncidentAggregate) Register(r aggregate.RegisterFunc) {
 	r(
 		&Opened{},
 		&Closed{},
