@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.8.2 to v7.9.0 ([#790](https://github.com/f-eld-ch/sitrep/issues/790)) - ([b28795d](https://github.com/f-eld-ch/sitrep/commit/b28795d87cab184749cb86d867e70f20055cb823))
+
+
 ## [25.4.0](https://github.com/f-eld-ch/sitrep/compare/v25.3.4..v25.4.0) - 2025-04-26
 
 ### ⚙️  Other
