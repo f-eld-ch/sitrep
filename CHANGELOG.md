@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.5.2 to 7.5.3 in /ui ([#794](https://github.com/f-eld-ch/sitrep/issues/794)) - ([3b3adf6](https://github.com/f-eld-ch/sitrep/commit/3b3adf6bd09d9b83819ab40d36b248e578610fd0))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.8.2 to v7.9.0 ([#790](https://github.com/f-eld-ch/sitrep/issues/790)) - ([b28795d](https://github.com/f-eld-ch/sitrep/commit/b28795d87cab184749cb86d867e70f20055cb823))
 
 
