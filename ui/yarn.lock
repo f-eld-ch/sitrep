@@ -7210,12 +7210,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-browser-languagedetector@npm:^8.0.5":
-  version: 8.0.5
-  resolution: "i18next-browser-languagedetector@npm:8.0.5"
+"i18next-browser-languagedetector@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "i18next-browser-languagedetector@npm:8.1.0"
   dependencies:
     "@babel/runtime": "npm:^7.23.2"
-  checksum: 10/536b7ad6faa2dc7bb64294466372119f02299701f70aa6875c846ed147c478df71c07706dd3e49fb7686186c88af4e66942eb083490405244faba2a959273e4b
+  checksum: 10/34b94ec7832842f16933fde46fe88b36fdc6985bd0a17315f7a5741400be32f5d2d3bd6977929001fb067f82cc696645546d7458febd6983926711d691633c50
   languageName: node
   linkType: hard
 
@@ -11227,7 +11227,7 @@ __metadata:
     html-react-parser: "npm:^5.2.3"
     husky: "npm:^9.1.7"
     i18next: "npm:^25.0.2"
-    i18next-browser-languagedetector: "npm:^8.0.5"
+    i18next-browser-languagedetector: "npm:^8.1.0"
     jest: "npm:^29.7.0"
     jsdom: "npm:^26.1.0"
     lint-staged: "npm:^15.5.1"
