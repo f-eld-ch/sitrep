@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#797](https://github.com/f-eld-ch/sitrep/issues/797)) - ([5b7eef1](https://github.com/f-eld-ch/sitrep/commit/5b7eef1165309a09fe1bf5f5d98bb33200425097))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.0.3 to 0.0.4 in /ui ([#798](https://github.com/f-eld-ch/sitrep/issues/798)) - ([f9bab85](https://github.com/f-eld-ch/sitrep/commit/f9bab8562b5bc6295a74e558d6f533fd9b34989d))
 - *(deps)* Bump i18next from 25.0.1 to 25.0.2 in /ui ([#791](https://github.com/f-eld-ch/sitrep/issues/791)) - ([38dd51c](https://github.com/f-eld-ch/sitrep/commit/38dd51cb4cbb89bf4a9d512c20b2f78a6c567305))
 - *(deps)* Bump graphql from 16.10.0 to 16.11.0 in /ui ([#792](https://github.com/f-eld-ch/sitrep/issues/792)) - ([07cb2b2](https://github.com/f-eld-ch/sitrep/commit/07cb2b2a8f8e34f5ee7f208424ee66a16645a3ad))
