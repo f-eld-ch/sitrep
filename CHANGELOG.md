@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump i18next from 25.0.2 to 25.1.1 in /ui ([#800](https://github.com/f-eld-ch/sitrep/issues/800)) - ([6f61022](https://github.com/f-eld-ch/sitrep/commit/6f61022dc35bf6cd45ba36a2bedf7c5f232ae5a9))
+
+
 ## [25.5.0](https://github.com/f-eld-ch/sitrep/compare/v25.4.0..v25.5.0) - 2025-05-04
 
 ### ⚙️  Other
