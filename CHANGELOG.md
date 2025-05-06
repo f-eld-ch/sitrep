@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.4.0 to 5.5.0 in /ui ([#801](https://github.com/f-eld-ch/sitrep/issues/801)) - ([2dd420b](https://github.com/f-eld-ch/sitrep/commit/2dd420b8393935217247b3571126e4600683ec4e))
 - *(deps)* Bump i18next from 25.0.2 to 25.1.1 in /ui ([#800](https://github.com/f-eld-ch/sitrep/issues/800)) - ([6f61022](https://github.com/f-eld-ch/sitrep/commit/6f61022dc35bf6cd45ba36a2bedf7c5f232ae5a9))
 
 
