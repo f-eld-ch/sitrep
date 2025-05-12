@@ -10911,9 +10911,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.87.0":
-  version: 1.87.0
-  resolution: "sass@npm:1.87.0"
+"sass@npm:^1.88.0":
+  version: 1.88.0
+  resolution: "sass@npm:1.88.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -10924,7 +10924,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/43c7d9567baf08619edf46b1419882c5459d456968bb7f220eb92d2cb9c344218dbb93f00c4e76624cfd4f862531d37be731845da6a5b538cf10516746908297
+  checksum: 10/dfe4aec19409d7eabca793bb5b464d81b636c853be33157b1d8121959be3f066f22ebe1d233d0eaaf29fac21cd746ba29acb50ed9bbf6e0a3b892c8e5ed0daa5
   languageName: node
   linkType: hard
 
@@ -10972,6 +10972,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10/4cfa1eb91ef3751e20fc52e47a935a0118d56d6f15a837ab814da0c150778ba2ca4f1a4d9068b33070ea4273629e615066664c2cfcd7c272caf7a8a0f6518b2c
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.7.2":
+  version: 7.7.2
+  resolution: "semver@npm:7.7.2"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/7a24cffcaa13f53c09ce55e05efe25cd41328730b2308678624f8b9f5fc3093fc4d189f47950f0b811ff8f3c3039c24a2c36717ba7961615c682045bf03e1dda
   languageName: node
   linkType: hard
 
@@ -11161,8 +11170,8 @@ __metadata:
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.6.0"
     react-to-print: "npm:^3.1.0"
-    sass: "npm:^1.87.0"
-    semver: "npm:^7.7.1"
+    sass: "npm:^1.88.0"
+    semver: "npm:^7.7.2"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.3.2"
     typescript: "npm:^5.8.3"
