@@ -27,7 +27,7 @@
     "dayjs": "^1.11.13",
     "graphql": "^16.11.0",
     "hat": "^0.0.3",
-    "html-react-parser": "^5.2.3",
+    "html-react-parser": "^5.2.5",
     "i18next": "^25.1.2",
     "i18next-browser-languagedetector": "^8.1.0",
     "lodash": "^4.17.21",
