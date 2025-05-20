@@ -2325,12 +2325,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flipt-io/flipt-client-js@npm:0.0.4":
-  version: 0.0.4
-  resolution: "@flipt-io/flipt-client-js@npm:0.0.4"
+"@flipt-io/flipt-client-js@npm:0.0.6":
+  version: 0.0.6
+  resolution: "@flipt-io/flipt-client-js@npm:0.0.6"
   dependencies:
     node-fetch: "npm:^3.3.0"
-  checksum: 10/3e271e86a089e9683d45010cca424371755a5861db48b8b65bd7b62803af3c1af519398b958c9fa3a4fbc7ad11e0bc4cca4d6b3a7bed8c75658ff399ea074510
+  checksum: 10/146ad1e33657cc0845308a6df433f15c2c9b8ef80514f402d3919635d4a38f634994bb1d415b37f3b394ccb096a35f1f326615d8c927584bd220bf7e1b535cd5
   languageName: node
   linkType: hard
 
@@ -11129,7 +11129,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^3.13.8"
     "@biomejs/biome": "npm:1.9.4"
-    "@flipt-io/flipt-client-js": "npm:0.0.4"
+    "@flipt-io/flipt-client-js": "npm:0.0.6"
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"
     "@fortawesome/free-regular-svg-icons": "npm:^6.7.2"
