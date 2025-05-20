@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.1.3 to 25.2.0 in /ui ([#818](https://github.com/f-eld-ch/sitrep/issues/818)) - ([8d9e410](https://github.com/f-eld-ch/sitrep/commit/8d9e410fc73edac34d73218ccd9ff2a47b344d6f))
 - *(deps)* Bump i18next from 25.1.2 to 25.1.3 in /ui ([#814](https://github.com/f-eld-ch/sitrep/issues/814)) - ([6b96663](https://github.com/f-eld-ch/sitrep/commit/6b966631db3fb18b1735205807d8bc785bbae4b6))
 - *(deps)* Bump web-vitals from 4.2.4 to 5.0.1 in /ui ([#812](https://github.com/f-eld-ch/sitrep/issues/812)) - ([4dc6fe5](https://github.com/f-eld-ch/sitrep/commit/4dc6fe53ad9060aee32d7018c72a4eb629076e08))
 - *(deps)* Bump undici from 7.8.0 to 7.9.0 in /ui ([#808](https://github.com/f-eld-ch/sitrep/issues/808)) - ([f5ca37b](https://github.com/f-eld-ch/sitrep/commit/f5ca37b9045eeb493cdf494bf264ed336edf7b78))
