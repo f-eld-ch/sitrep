@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 15.5.1 to 15.5.2 in /ui ([#821](https://github.com/f-eld-ch/sitrep/issues/821)) - ([94f3e04](https://github.com/f-eld-ch/sitrep/commit/94f3e04b1eef520a4321dcb2ef92c524b76b7130))
 - *(deps)* Bump undici from 7.9.0 to 7.10.0 in /ui ([#820](https://github.com/f-eld-ch/sitrep/issues/820)) - ([6181d5e](https://github.com/f-eld-ch/sitrep/commit/6181d5ea645c3ac446385e74b82990d3a20c930d))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.0.4 to 0.0.5 in /ui ([#817](https://github.com/f-eld-ch/sitrep/issues/817)) - ([0d53ee3](https://github.com/f-eld-ch/sitrep/commit/0d53ee359013939c3028c6a389a1441aa4328f98))
 - *(deps)* Bump i18next from 25.1.3 to 25.2.0 in /ui ([#818](https://github.com/f-eld-ch/sitrep/issues/818)) - ([8d9e410](https://github.com/f-eld-ch/sitrep/commit/8d9e410fc73edac34d73218ccd9ff2a47b344d6f))
