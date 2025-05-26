@@ -14,11 +14,11 @@ on:
       - "develop"
 jobs:
   featureflags:
+    runs-on: ubuntu-24.04
+    name: "Validate & Push Feature Flags"
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-24.04
-    name: "Validate & Push Feature Flags"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,13 +38,18 @@ jobs:
   
   ui-build:
     name: "UI Build and Test"
+    permissions:
+      contents: read
     uses: ./.github/workflows/ui-workflow.yml
     with:
       build: true
   
   # Run hasura build in parallel with UI build as it doesn't depend on UI artifacts
   hasura-build:
-    name: "Build and Push Hasura Image" 
+    name: "Build and Push Hasura Image"
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/hasura-workflow.yml
     with:
       push: ${{ github.event_name != 'pull_request' }}
@@ -52,6 +57,9 @@ jobs:
   
   docker-build:
     name: "Build and Push Sitrep Image"
+    permissions:
+      contents: read
+      packages: write
     needs: ui-build  # Only depends on UI, not on hasura
     uses: ./.github/workflows/docker-workflow.yml
     with:
