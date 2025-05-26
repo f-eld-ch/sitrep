@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(map)* Persist WMS layer state locally in localStorage ([#823](https://github.com/f-eld-ch/sitrep/issues/823)) - ([888b0ef](https://github.com/f-eld-ch/sitrep/commit/888b0ef3f6be15f11d51389d29f5a86bb84ff9b0))
+
 ### ⚙️  Other
 
 - *(cicd)* Adjust github action permissions ([#824](https://github.com/f-eld-ch/sitrep/issues/824)) - ([f30dc68](https://github.com/f-eld-ch/sitrep/commit/f30dc68f7a8edab133b3e8ea38dac9ece27b226a))
