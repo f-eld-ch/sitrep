@@ -2,6 +2,8 @@ name: Automated Tests and Linting
 permissions:
   contents: read
   packages: write
+  id-token: write
+  actions: write
 on:
   push:
     branches-ignore:
