@@ -1,6 +1,6 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import type React from "react";
-import { createContext, useReducer, type Reducer } from "react";
+import { createContext, useEffect, useReducer, type Reducer } from "react";
 import type { Layer } from "types/layer";
 import {
   type LayersAction,
@@ -91,8 +91,24 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
   wms: wmsReducer(wms, action),
 });
 
+// This key is used to store the WMS state in localStorage
+const wmsLocalStorageKey = "wmsLayersState";
+
 const LayersProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, dispatch] = useReducer(mainReducer, initialState);
+  const [state, dispatch] = useReducer(
+    mainReducer,
+    initialState,
+    (initialState) => {
+      // get the WMS state from localStorage if it exists
+      const wms = localStorage.getItem(wmsLocalStorageKey);
+      return wms ? { ...initialState, wms: JSON.parse(wms) } : initialState;
+    }
+  );
+
+  // store the WMS state in localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(wmsLocalStorageKey, JSON.stringify(state.wms));
+  }, [state.wms]);
 
   return (
     <LayerContext.Provider value={{ state, dispatch }}>
