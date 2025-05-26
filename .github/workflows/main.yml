@@ -1,4 +1,9 @@
 name: Build & Test & Push Image
+permissions:
+  actions: write
+  contents: read
+  packages: write
+  id-token: write
 on:
   push:
     branches:
@@ -33,13 +38,14 @@ jobs:
   
   ui-build:
     name: "UI Build and Test"
+
     uses: ./.github/workflows/ui-workflow.yml
     with:
       build: true
   
   # Run hasura build in parallel with UI build as it doesn't depend on UI artifacts
   hasura-build:
-    name: "Build and Push Hasura Image" 
+    name: "Build and Push Hasura Image"
     uses: ./.github/workflows/hasura-workflow.yml
     with:
       push: ${{ github.event_name != 'pull_request' }}

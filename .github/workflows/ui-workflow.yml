@@ -8,6 +8,11 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
 jobs:
   ui:
     runs-on: ubuntu-latest
