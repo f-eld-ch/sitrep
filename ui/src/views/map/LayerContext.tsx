@@ -100,8 +100,13 @@ const LayersProvider = ({ children }: { children: React.ReactNode }) => {
     initialState,
     (initialState) => {
       // get the WMS state from localStorage if it exists
-      const wms = localStorage.getItem(wmsLocalStorageKey);
-      return wms ? { ...initialState, wms: JSON.parse(wms) } : initialState;
+      try {
+        const wms = localStorage.getItem(wmsLocalStorageKey);
+        return wms ? { ...initialState, wms: JSON.parse(wms) } : initialState;
+      } catch (error) {
+        console.error("Failed to parse WMS state from localStorage:", error);
+        return initialState;
+      }
     }
   );
 
