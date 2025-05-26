@@ -1,4 +1,7 @@
 name: Automated Tests and Linting
+permissions:
+  contents: read
+  packages: write
 on:
   push:
     branches-ignore:
