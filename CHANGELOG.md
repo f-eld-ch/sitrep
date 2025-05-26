@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(cicd)* Adjust github action permissions ([#824](https://github.com/f-eld-ch/sitrep/issues/824)) - ([f30dc68](https://github.com/f-eld-ch/sitrep/commit/f30dc68f7a8edab133b3e8ea38dac9ece27b226a))
+
+
 ## [25.5.1](https://github.com/f-eld-ch/sitrep/compare/v25.5.0..v25.5.1) - 2025-05-24
 
 ### ⚙️  Other
