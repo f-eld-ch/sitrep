@@ -1,4 +1,8 @@
 name: Hasura Build & Push
+permissions:
+  contents: read
+  packages: write
+  id-token: write
 on:
   workflow_call:
     inputs:
