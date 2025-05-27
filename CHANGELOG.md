@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Improve WMS layer detection and custom server handling ([#828](https://github.com/f-eld-ch/sitrep/issues/828)) - ([9b83119](https://github.com/f-eld-ch/sitrep/commit/9b831199d0374b11e2ac5a517777fba504892081))
 - *(map)* Persist WMS layer state locally in localStorage ([#823](https://github.com/f-eld-ch/sitrep/issues/823)) - ([888b0ef](https://github.com/f-eld-ch/sitrep/commit/888b0ef3f6be15f11d51389d29f5a86bb84ff9b0))
 
 ### ⚙️  Other
