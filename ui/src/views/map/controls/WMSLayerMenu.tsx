@@ -107,7 +107,7 @@ const WMSLayerMenu = () => {
     if (state.wms.currentServer === "" && state.wms.servers.length > 0) {
       dispatch({ type: "SET_WMS_SERVER", payload: { server: initialServer } });
     }
-  }, [state.wms.servers, dispatch]);
+  }, [state.wms.servers, state.wms.currentServer, dispatch]);
 
   useEffect(() => {
     if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
