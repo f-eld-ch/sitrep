@@ -26,6 +26,7 @@ export type LayersAction =
   | RemoveWMSLayerAction
   | SetWMSServerAction
   | SetWMSServerLayersCacheAction
+  | RemoveWMSServerAction
   | AddCustomWMSServerAction;
 
 export interface SetLayerAction {
@@ -122,6 +123,13 @@ export interface SetWMSServerLayersCacheAction {
   payload: {
     server: string;
     layers: WMSLayer[];
+  };
+}
+
+export interface RemoveWMSServerAction {
+  type: "REMOVE_WMS_SERVER";
+  payload: {
+    server: string;
   };
 }
 
@@ -253,6 +261,18 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
       return {
         ...state,
         servers: [...state.servers, action.payload.server],
+        currentServer: action.payload.server.url,
+      };
+    case "REMOVE_WMS_SERVER":
+      return {
+        ...state,
+        servers: state.servers.filter((server) => server.url !== action.payload.server),
+        availableLayers: Object.fromEntries(
+          Object.entries(state.availableLayers).filter(
+            ([key]) => key !== action.payload.server,
+          ),
+        ),
+        currentServer: state.servers.length > 0 ? state.servers[0].url : "",
       };
     default:
       return state;
