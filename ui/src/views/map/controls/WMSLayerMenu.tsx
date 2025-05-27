@@ -45,21 +45,21 @@ interface WMSCapabilitiesLayer {
 
 const extractLayers = (layer: WMSCapabilitiesLayer, server: string): Layer[] => {
   let layers: Layer[] = [];
+  const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
+  layers.push({
+    ...layer,
+    legendURL: legendURL ? legendURL : undefined,
+    name: layer.Name,
+    title: layer.Title,
+    server,
+    key: `${layer.Name}-${server}`,
+    crs: layer.CRS,
+  });
+  // Recursively extract sub-layers if they exist
   if (layer.Layer) {
     for (const subLayer of layer.Layer) {
       layers = layers.concat(extractLayers(subLayer, server));
     }
-  } else {
-    const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
-    layers.push({
-      ...layer,
-      legendURL: legendURL ? legendURL : undefined,
-      name: layer.Name,
-      title: layer.Title,
-      server,
-      key: `${layer.Name}-${server}`,
-      crs: layer.CRS,
-    });
   }
   return layers;
 };
@@ -81,6 +81,10 @@ const WMSLayerMenu = () => {
       type: "TOGGLE_WMS_LAYER_VISIBILITY",
       payload: { layerName, isVisible },
     });
+
+    if (!isVisible) {
+      setError(null);
+    }
   };
 
   const handleWMSOpacityChange = (layerName: string, opacity: number) => {
@@ -100,7 +104,9 @@ const WMSLayerMenu = () => {
 
   useEffect(() => {
     const initialServer = state.wms.servers[0].url;
-    dispatch({ type: "SET_WMS_SERVER", payload: { server: initialServer } });
+    if (state.wms.currentServer === "" && state.wms.servers.length > 0) {
+      dispatch({ type: "SET_WMS_SERVER", payload: { server: initialServer } });
+    }
   }, [state.wms.servers, dispatch]);
 
   useEffect(() => {
@@ -143,6 +149,12 @@ const WMSLayerMenu = () => {
         .catch((error) => {
           if (error !== NO_LAYERS_FOUND_ERROR) {
             setError(FETCH_LAYERS_ERROR)
+            dispatch({
+              type: "REMOVE_WMS_SERVER",
+              payload: {
+                server: state.wms.currentServer,
+              },
+            });
           } else {
             setError(error);
           }
@@ -182,21 +194,23 @@ const WMSLayerMenu = () => {
 
   const handleServerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch({ type: "SET_WMS_SERVER", payload: { server: event.target.value } });
-    setCustomServer("");
+    setCustomServer(event.target.value);
   };
 
   const handleCustomServerChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    if (event.target.value === "") {
+      return;
+    }
     setCustomServer(event.target.value);
   };
 
   const handleCustomServerSubmit = () => {
     if (customServer) {
       const baseDomain = getBaseDomain(customServer);
-      dispatch({ type: "SET_WMS_SERVER", payload: { server: customServer } });
       dispatch({ type: "ADD_CUSTOM_WMS_SERVER", payload: { server: { name: baseDomain, url: customServer } } });
-      setCustomServer("");
+      setCustomServer(customServer);
     }
   };
 
