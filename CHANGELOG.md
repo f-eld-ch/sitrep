@@ -8,6 +8,7 @@
 ### ⚙️  Other
 
 - *(cicd)* Adjust github action permissions ([#824](https://github.com/f-eld-ch/sitrep/issues/824)) - ([f30dc68](https://github.com/f-eld-ch/sitrep/commit/f30dc68f7a8edab133b3e8ea38dac9ece27b226a))
+- *(deps)* Bump react-router from 7.6.0 to 7.6.1 in /ui ([#826](https://github.com/f-eld-ch/sitrep/issues/826)) - ([a5c0b16](https://github.com/f-eld-ch/sitrep/commit/a5c0b16e802c2df4950f64dd8a81c389025821a3))
 
 
 ## [25.5.1](https://github.com/f-eld-ch/sitrep/compare/v25.5.0..v25.5.1) - 2025-05-24
