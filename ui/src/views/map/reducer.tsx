@@ -245,6 +245,7 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
         activeLayers: state.activeLayers.filter((layer) => layer.name !== action.payload.layerName),
       };
     case "SET_WMS_SERVER":
+      console.log("Setting WMS server:", action.payload.server);
       return {
         ...state,
         currentServer: action.payload.server,

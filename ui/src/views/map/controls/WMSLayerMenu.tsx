@@ -103,13 +103,6 @@ const WMSLayerMenu = () => {
   };
 
   useEffect(() => {
-    const initialServer = state.wms.servers[0].url;
-    if (state.wms.currentServer === "" && state.wms.servers.length > 0) {
-      dispatch({ type: "SET_WMS_SERVER", payload: { server: initialServer } });
-    }
-  }, [state.wms.servers, state.wms.currentServer, dispatch]);
-
-  useEffect(() => {
     if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
       setIsLoading(true);
       setError(null);
@@ -194,15 +187,12 @@ const WMSLayerMenu = () => {
 
   const handleServerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch({ type: "SET_WMS_SERVER", payload: { server: event.target.value } });
-    setCustomServer(event.target.value);
+    setCustomServer("");
   };
 
   const handleCustomServerChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    if (event.target.value === "") {
-      return;
-    }
     setCustomServer(event.target.value);
   };
 
