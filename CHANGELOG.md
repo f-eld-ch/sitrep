@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(map)* Fix adding customServers - ([d589364](https://github.com/f-eld-ch/sitrep/commit/d58936422914d34b9293b7743dafb7f1c829c4f1))
+
+
 ## [25.5.2](https://github.com/f-eld-ch/sitrep/compare/v25.5.1..v25.5.2) - 2025-05-28
 
 ### ⛰️  Features
