@@ -1,5 +1,12 @@
 ## [unreleased]
 
+### ⚙️  Other
+
+- *(deps)* Bump web-vitals from 5.0.1 to 5.0.2 in /ui ([#830](https://github.com/f-eld-ch/sitrep/issues/830)) - ([2542089](https://github.com/f-eld-ch/sitrep/commit/2542089de610675e675c8c4f564475bf8e4e99df))
+
+
+## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
+
 ### 🐛 Bug Fixes
 
 - *(map)* Fix adding customServers - ([d589364](https://github.com/f-eld-ch/sitrep/commit/d58936422914d34b9293b7743dafb7f1c829c4f1))
