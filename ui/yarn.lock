@@ -3055,14 +3055,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/flipt-web-provider@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "@openfeature/flipt-web-provider@npm:0.1.3"
+"@openfeature/flipt-web-provider@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "@openfeature/flipt-web-provider@npm:0.1.4"
   peerDependencies:
-    "@flipt-io/flipt-client-js": ^0.0.1
+    "@flipt-io/flipt-client-js": ^0.0.1 || ^0.0.2
     "@openfeature/web-sdk": ^1.0.0
     undici: ^5.0.0
-  checksum: 10/4af61eda315a342664bd953fbf1f43b7d606c6d5234bac21f979bb82091cc30e36024e11d8485a4bee41fea82a3e51702df8fabc75d0e7341947d92315c019a6
+  checksum: 10/45b9b8559c786c7782c152050be1e95f1e71bb1a6f2d165aa31ec3d24c40a2941d6f193f5913e08dda93ca171033651fe64d64cb562609547e6000a6f25e910d
   languageName: node
   linkType: hard
 
@@ -11182,7 +11182,7 @@ __metadata:
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
     "@maplibre/maplibre-gl-style-spec": "npm:^23.3.0"
     "@openfeature/core": "npm:^1.8.0"
-    "@openfeature/flipt-web-provider": "npm:^0.1.3"
+    "@openfeature/flipt-web-provider": "npm:^0.1.4"
     "@openfeature/react-sdk": "npm:^1.0.0"
     "@openfeature/web-sdk": "npm:^1.5.0"
     "@testing-library/dom": "npm:^10.4.0"
