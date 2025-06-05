@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.5.0 to 5.6.0 in /ui ([#834](https://github.com/f-eld-ch/sitrep/issues/834)) - ([3d495af](https://github.com/f-eld-ch/sitrep/commit/3d495af4cc177617a1541214d8007744a0b5bf9f))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#833](https://github.com/f-eld-ch/sitrep/issues/833)) - ([3da6215](https://github.com/f-eld-ch/sitrep/commit/3da621508ac52ea99fe30eebe769d881adb17d9a))
 - *(deps)* Bump web-vitals from 5.0.1 to 5.0.2 in /ui ([#830](https://github.com/f-eld-ch/sitrep/issues/830)) - ([2542089](https://github.com/f-eld-ch/sitrep/commit/2542089de610675e675c8c4f564475bf8e4e99df))
 
