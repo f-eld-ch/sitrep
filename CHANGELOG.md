@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#833](https://github.com/f-eld-ch/sitrep/issues/833)) - ([3da6215](https://github.com/f-eld-ch/sitrep/commit/3da621508ac52ea99fe30eebe769d881adb17d9a))
 - *(deps)* Bump web-vitals from 5.0.1 to 5.0.2 in /ui ([#830](https://github.com/f-eld-ch/sitrep/issues/830)) - ([2542089](https://github.com/f-eld-ch/sitrep/commit/2542089de610675e675c8c4f564475bf8e4e99df))
 
 
