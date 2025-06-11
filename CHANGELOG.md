@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump flipt-io/setup-action from 0.3.1 to 0.4.0 ([#840](https://github.com/f-eld-ch/sitrep/issues/840)) - ([ed28f0f](https://github.com/f-eld-ch/sitrep/commit/ed28f0fc0f12ea094294f6dbbfa04c503ca8398e))
 - *(deps)* Bump react-router from 7.6.1 to 7.6.2 in /ui ([#835](https://github.com/f-eld-ch/sitrep/issues/835)) - ([9bfab83](https://github.com/f-eld-ch/sitrep/commit/9bfab834360314b4a793c89dec8bf4b2ef06c318))
 - *(deps)* Bump maplibre-gl from 5.5.0 to 5.6.0 in /ui ([#834](https://github.com/f-eld-ch/sitrep/issues/834)) - ([3d495af](https://github.com/f-eld-ch/sitrep/commit/3d495af4cc177617a1541214d8007744a0b5bf9f))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#833](https://github.com/f-eld-ch/sitrep/issues/833)) - ([3da6215](https://github.com/f-eld-ch/sitrep/commit/3da621508ac52ea99fe30eebe769d881adb17d9a))
