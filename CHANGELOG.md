@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump web-vitals from 5.0.2 to 5.0.3 in /ui ([#845](https://github.com/f-eld-ch/sitrep/issues/845)) - ([e25b9a4](https://github.com/f-eld-ch/sitrep/commit/e25b9a417788240a6009dc62efe5934aa446f4ca))
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#842](https://github.com/f-eld-ch/sitrep/issues/842)) - ([ff6db6b](https://github.com/f-eld-ch/sitrep/commit/ff6db6bebaa3aa58e9b75f5cce91695defb354b1))
 - *(deps)* Bump react-i18next from 15.5.2 to 15.5.3 in /ui ([#849](https://github.com/f-eld-ch/sitrep/issues/849)) - ([59a1ec2](https://github.com/f-eld-ch/sitrep/commit/59a1ec21bbdacb2cd9e1de68f97e9fb51c629297))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.0.6 to 0.1.0 in /ui ([#838](https://github.com/f-eld-ch/sitrep/issues/838)) - ([afdf678](https://github.com/f-eld-ch/sitrep/commit/afdf6785dcbd2e7c623cddf19845aede8ada4a4d))
