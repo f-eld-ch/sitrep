@@ -10289,16 +10289,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ol@npm:^10.5.0":
-  version: 10.5.0
-  resolution: "ol@npm:10.5.0"
+"ol@npm:^10.6.0":
+  version: 10.6.0
+  resolution: "ol@npm:10.6.0"
   dependencies:
     "@types/rbush": "npm:4.0.0"
     earcut: "npm:^3.0.0"
     geotiff: "npm:^2.1.3"
     pbf: "npm:4.0.1"
     rbush: "npm:^4.0.0"
-  checksum: 10/a08fcc112e4661f49ec0ae80dda2805c42cb84db9f8c84d84a0a190e8f6569782ce08a0e6f7164e8a4de4e7708ad2d61b64afc8dd2f3ed2226b2d9be26138e9e
+  checksum: 10/942fe6c0b55b24a6b1538d78ad221962476bfcba5b1316f427235d50aa817ca5ed805e8d3b5c6129b5da245ba0b66cd8bf359403230bb939648a1a78bffb0ca3
   languageName: node
   linkType: hard
 
@@ -11676,7 +11676,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:5.6.0"
-    ol: "npm:^10.5.0"
+    ol: "npm:^10.6.0"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
