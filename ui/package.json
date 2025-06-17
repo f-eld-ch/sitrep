@@ -94,7 +94,7 @@
     "husky": "^9.1.7",
     "jest": "^30.0.0",
     "jsdom": "^26.1.0",
-    "lint-staged": "^16.1.0",
+    "lint-staged": "^16.1.2",
     "sass": "^1.89.2",
     "semver": "^7.7.2",
     "source-map-explorer": "^2.5.3",
