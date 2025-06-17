@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump ol from 10.5.0 to 10.6.0 in /ui ([#851](https://github.com/f-eld-ch/sitrep/issues/851)) - ([dcab81b](https://github.com/f-eld-ch/sitrep/commit/dcab81b9127a4eb98700322cbcc7882d200e07f0))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#837](https://github.com/f-eld-ch/sitrep/issues/837)) - ([f4d42ff](https://github.com/f-eld-ch/sitrep/commit/f4d42ff17e03df26b05c2ace495d8d143b651a46))
 - *(deps)* Bump brace-expansion ([#846](https://github.com/f-eld-ch/sitrep/issues/846)) - ([488f0ae](https://github.com/f-eld-ch/sitrep/commit/488f0ae279ed3bb1f8a98c9a9a0512d38d92c01a))
 - *(deps)* Bump web-vitals from 5.0.2 to 5.0.3 in /ui ([#845](https://github.com/f-eld-ch/sitrep/issues/845)) - ([e25b9a4](https://github.com/f-eld-ch/sitrep/commit/e25b9a417788240a6009dc62efe5934aa446f4ca))
