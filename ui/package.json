@@ -20,7 +20,7 @@
     "@turf/bearing": "^7.2.0",
     "@turf/center": "^7.2.0",
     "@turf/helpers": "^7.2.0",
-    "@types/mapbox__mapbox-gl-draw": "^1.4.8",
+    "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@watergis/maplibre-gl-export": "~4.0.1",
     "bulma": "^1.0.4",
     "classnames": "^2.5.1",
@@ -82,10 +82,10 @@
     "@types/hat": "^0.0.4",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.18",
-    "@types/node": "^22.13.12",
-    "@types/react": "^18.3.20",
+    "@types/node": "^22.15.33",
+    "@types/react": "^18.3.23",
     "@types/react-color": "^3.0.13",
-    "@types/react-dom": "^18.3.5",
+    "@types/react-dom": "^18.3.7",
     "@types/semver": "^7.7.0",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
@@ -108,11 +108,11 @@
     "vitest": "^3.2.4"
   },
   "resolutions": {
-    "vite": "6.3.5",
-    "sharp": "^0.33.5",
-    "maplibre-gl": "5.6.0",
+    "brace-expansion": "2.0.2",
     "dompurify": "3.2.4",
-    "jspdf": "3.0.1"
+    "jspdf": "3.0.1",
+    "maplibre-gl": "5.6.0",
+    "sharp": "^0.33.5"
   },
   "packageManager": "yarn@4.8.1"
 }
