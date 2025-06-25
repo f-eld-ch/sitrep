@@ -9,10 +9,12 @@ import { t } from "i18next";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useEditorContext } from "../Editor";
+import { useId } from "react";
 
 const SenderInput = () => {
   const { state, dispatch } = useEditorContext();
 
+  const id = useId();
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <Hint
@@ -21,7 +23,7 @@ const SenderInput = () => {
         allowEnterFill={true}
       >
         <input
-          id="sender-input"
+          id={id}
           className="input"
           type="text"
           value={state.sender}
@@ -42,6 +44,7 @@ const SenderInput = () => {
 
 const ReceiverInput = () => {
   const { state, dispatch } = useEditorContext();
+  const id = useId();
 
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
@@ -51,7 +54,7 @@ const ReceiverInput = () => {
         allowEnterFill={true}
       >
         <input
-          id="receiver-input"
+          id={id}
           className="input"
           type="text"
           value={state.receiver}
@@ -72,10 +75,11 @@ const ReceiverInput = () => {
 
 const ContentInput = () => {
   const { state, dispatch } = useEditorContext();
+  const id = useId();
   return (
     <div className="control">
       <textarea
-        id="content-input"
+        id={id}
         className="textarea"
         placeholder={t("message.contentHelp") as string}
         rows={10}
@@ -91,10 +95,11 @@ const ContentInput = () => {
 
 const TimeInput = () => {
   const { state, dispatch } = useEditorContext();
+  const id = useId();
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <input
-        id="time-input"
+        id={id}
         className="input"
         value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
         type="datetime-local"
@@ -113,6 +118,7 @@ const TimeInput = () => {
 
 const SenderDetailInput = (props: { placeholder: string }) => {
   const { state, dispatch } = useEditorContext();
+  const id = useId();
   return (
     <div className="control is-expanded is-flex-shrink-3">
       <Hint
@@ -121,7 +127,7 @@ const SenderDetailInput = (props: { placeholder: string }) => {
         allowEnterFill={true}
       >
         <input
-          id="sender-detail-input"
+          id={id}
           className="input"
           value={state.senderDetail}
           type="text"
@@ -144,6 +150,7 @@ const SenderDetailInput = (props: { placeholder: string }) => {
 
 const ReceiverDetailInput = (props: { placeholder: string }) => {
   const { state, dispatch } = useEditorContext();
+  const id = useId();
   return (
     <div className="control is-expanded is-flex-shrink-3">
       <Hint
@@ -152,7 +159,7 @@ const ReceiverDetailInput = (props: { placeholder: string }) => {
         allowEnterFill={true}
       >
         <input
-          id="receiver-detail-input"
+          id={id}
           className="input"
           value={state.receiverDetail}
           type="text"
@@ -175,7 +182,7 @@ const ReceiverDetailInput = (props: { placeholder: string }) => {
 
 const RadioChannelDetailInput = () => {
   const { state, dispatch } = useEditorContext();
-
+  const id = useId();
   return (
     <div className="control is-narrow is-flex-shrink-4">
       <Hint
@@ -184,7 +191,7 @@ const RadioChannelDetailInput = () => {
         allowEnterFill={true}
       >
         <input
-          id="radio-channel-input"
+          id={id}
           className="input"
           value={state.radioChannel || ""}
           type="text"

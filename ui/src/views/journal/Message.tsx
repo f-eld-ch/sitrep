@@ -181,7 +181,7 @@ const MessageContainer = ({
             </div>
           </div>
         </div>
-        {showControls === true && id !== undefined ? (
+        {showControls === true && id !== undefined && (
           <div
             className={tabClassNames}
             style={{ borderBottomRightRadius: "4px" }}
@@ -210,7 +210,7 @@ const MessageContainer = ({
                   <span>{t("messageSheet")}</span>
                 </a>
               )}
-              {setTriageMessage && message ? (
+              {setTriageMessage && message && (
                 <li>
                   <a
                     className="has-text-weight-bold"
@@ -222,10 +222,8 @@ const MessageContainer = ({
                     <span>{t("saveTriage")}</span>
                   </a>
                 </li>
-              ) : (
-                <></>
               )}
-              {showTasks ? (
+              {showTasks && (
                 <li>
                   <a className="has-text-weight-bold">
                     <span className="icon is-small">
@@ -234,8 +232,6 @@ const MessageContainer = ({
                     <span>{t("createNewTask")}</span>
                   </a>
                 </li>
-              ) : (
-                <></>
               )}
             </ul>
             <div style={{ display: "none" }}>
@@ -246,8 +242,6 @@ const MessageContainer = ({
               />
             </div>
           </div>
-        ) : (
-          <></>
         )}
       </div>
     </div>

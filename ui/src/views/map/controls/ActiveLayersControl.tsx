@@ -66,7 +66,6 @@ const ActiveLayersControl: React.FC = () => {
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
               <FontAwesomeIcon icon={state.activeLayer === s.layer.id ? faEdit : faDrawPolygon} size="lg" />
             </span>
-            {/* biome-ignore lint/a11y/useValidAnchor: not needed */}
             <a onClick={() => handleLayerClick(s.layer.id)}>{s.layer.name}</a>
           </div>
           {s.layer.id !== state.activeLayer && (

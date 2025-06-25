@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import React, { useCallback, useContext, useEffect, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useReducer, useId } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   Medium,
@@ -399,6 +399,7 @@ function InputBox() {
     },
   );
 
+  const mediumId = useId();
   return (
     <div className="box">
       <button
@@ -418,7 +419,7 @@ function InputBox() {
             <div className="control is-normal is-flex-shrink-2 is-flex-wrap-wrap">
               <div className="select is-fullwidth">
                 <select
-                  id="medium"
+                  id={mediumId}
                   value={state.media}
                   onChange={handleMediumChange}
                 >
@@ -443,7 +444,7 @@ function InputBox() {
         </div>
       </div>
       {renderFormContent()}
-      {state.content !== "" || state.sender !== "" || state.receiver !== "" ? (
+      {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage
@@ -455,8 +456,6 @@ function InputBox() {
             setTriageMessage={undefined}
           />
         </>
-      ) : (
-        <></>
       )}
     </div>
   );

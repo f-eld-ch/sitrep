@@ -26,7 +26,7 @@ export function Breadcrumb() {
       aria-label="breadcrumbs"
     >
       <ul>
-        {incidentData?.incidentsByPk.name ? (
+        {incidentData?.incidentsByPk.name && (
           <li>
             <NavLink
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
@@ -40,11 +40,8 @@ export function Breadcrumb() {
               </span>
             </NavLink>
           </li>
-        ) : (
-          <></>
         )}
-        {journalId &&
-        incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) ? (
+        {journalId && incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) && (
           <li>
             <NavLink
               className={({ isActive }) => (isActive ? "is-active" : undefined)}
@@ -64,8 +61,6 @@ export function Breadcrumb() {
               </span>
             </NavLink>
           </li>
-        ) : (
-          <></>
         )}
       </ul>
     </nav>

@@ -4,7 +4,7 @@ import classNames from "classnames";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
-import { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
@@ -93,6 +93,7 @@ function SearchControl() {
     "is-active": !isEmpty(searchResults),
   });
 
+  const id  = useId();
   return (
     <div className="is-flex is-justify-content-center	is-align-content-center mt-3">
       <div className={dropdown}>
@@ -112,7 +113,7 @@ function SearchControl() {
               </span>
             </div>
           </div>
-          <div className="dropdown-menu" id="dropdown-menu">
+          <div className="dropdown-menu" id={id}>
             <div className="dropdown-content">
               {searchResults?.map((result: SearchFeature) => (
                 <a

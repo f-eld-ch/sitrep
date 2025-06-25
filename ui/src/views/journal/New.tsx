@@ -54,10 +54,8 @@ function NewForm() {
 
   return (
     <>
-      {error ? (
+      {error && (
         <div className="notification is-danger">{error?.message}</div>
-      ) : (
-        <></>
       )}
 
       <div className="field">
