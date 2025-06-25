@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.1.0 to 0.2.0 in /ui ([#861](https://github.com/f-eld-ch/sitrep/issues/861)) - ([8602681](https://github.com/f-eld-ch/sitrep/commit/8602681b40e7e5eabb8e0c4d09ac47f9a2cae9f4))
 - *(deps)* Bump ol from 10.6.0 to 10.6.1 in /ui ([#859](https://github.com/f-eld-ch/sitrep/issues/859)) - ([8dbee95](https://github.com/f-eld-ch/sitrep/commit/8dbee95a1ff2be793f7c317c9ea5ae03facf799f))
 - *(deps)* Bump ol from 10.5.0 to 10.6.0 in /ui ([#851](https://github.com/f-eld-ch/sitrep/issues/851)) - ([dcab81b](https://github.com/f-eld-ch/sitrep/commit/dcab81b9127a4eb98700322cbcc7882d200e07f0))
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#837](https://github.com/f-eld-ch/sitrep/issues/837)) - ([f4d42ff](https://github.com/f-eld-ch/sitrep/commit/f4d42ff17e03df26b05c2ace495d8d143b651a46))
