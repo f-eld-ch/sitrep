@@ -201,7 +201,7 @@ function List(props: {
         </div>
       </div>
       <div className="columns is-multiline is-gapless">
-        {data ? (
+        {data && (
           <MemoMessages
             messages={messages}
             divisions={divisions}
@@ -209,8 +209,6 @@ function List(props: {
             setTriageMessage={props.setTriageMessage}
             setEditorMessage={props.setEditorMessage}
           />
-        ) : (
-          <></>
         )}
       </div>
       <div style={{ display: "none" }}>

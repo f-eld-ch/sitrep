@@ -105,7 +105,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
               >
                 {t("createIncident")}
               </NavLink>
-              {incidentId ? (
+              {incidentId && (
                 <NavLink
                   className={({ isActive }) =>
                     `navbar-item${isActive ? " is-active has-text-dark" : ""}`
@@ -114,14 +114,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
                 >
                   {t("editIncident")}
                 </NavLink>
-              ) : (
-                <></>
               )}
             </div>
           </div>
           <JournalNavBar />
-          {showResources ? <ResourcesNavBar /> : <></>}
-          {showTasks ? <TasksNavBar /> : <></>}
+          {showResources && <ResourcesNavBar />}
+          {showTasks && <TasksNavBar />}
           <MapNavBar />
         </div>
         <div className="navbar-end">

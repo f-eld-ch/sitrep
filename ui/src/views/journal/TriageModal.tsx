@@ -128,19 +128,15 @@ function Triage(props: {
             />
           </header>
           <section className="modal-card-body">
-            {error ? (
+            {error && (
               <div className="notification is-danger">
                 Error: {error.message}
               </div>
-            ) : (
-              <></>
             )}
-            {errorSet ? (
+            {errorSet && (
               <div className="notification is-danger">
                 Error: {errorSet.message}
               </div>
-            ) : (
-              <></>
             )}
             {loading ? (
               <Spinner />

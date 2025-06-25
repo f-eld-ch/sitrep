@@ -5,7 +5,7 @@ import classNames from "classnames";
 import iteratee from "lodash/iteratee";
 import reject from "lodash/reject";
 import unionBy from "lodash/unionBy";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Division } from "types";
@@ -112,21 +112,21 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     });
   };
 
+  const nameID = useId()
+  const locationID = useId()
+  const divisionsID = useId()
+
   return (
     <>
-      {error ? (
+      {error && (
         <div className="notification is-danger">{error?.message}</div>
-      ) : (
-        <></>
       )}
-      {errorUpdate ? (
+      {errorUpdate && (
         <div className="notification is-danger">{errorUpdate?.message}</div>
-      ) : (
-        <></>
       )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label htmlFor="name" className="label is-capitalized">
+          <label htmlFor={nameID} className="label is-capitalized">
             {t("incidentName")}
           </label>
         </div>
@@ -134,7 +134,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           <div className="field is-grouped is-normal">
             <p className="control has-icons-left has-icons-right is-expanded">
               <input
-                id="name"
+                id={nameID}
                 className="input"
                 type="text"
                 value={name}
@@ -150,7 +150,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label htmlFor="location" className="label is-capitalized">
+          <label htmlFor={locationID} className="label is-capitalized">
             {t("location")}
           </label>
         </div>
@@ -158,7 +158,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           <div className="field is-grouped is-normal">
             <p className="control has-icons-left has-icons-right is-expanded">
               <input
-                id="location"
+                id={locationID}
                 className="input"
                 type="text"
                 value={location}
@@ -174,7 +174,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label htmlFor="divisions" className="label is-capitalized">
+          <label htmlFor={divisionsID} className="label is-capitalized">
             {t("divisions")}
           </label>
         </div>
@@ -193,9 +193,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                     <p
                       className={tagsClass}
                     >{`${d.description} (${d.name})`}</p>
-                    {d.id ? (
-                      <></>
-                    ) : (
+                    {d.id  === "" && (
                       <a
                         className="tag is-delete"
                         onClick={() =>
@@ -215,7 +213,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       <div className="field is-horizontal">
         <div className="field-label is-small">
-          <label htmlFor="divisions" className="label">
+          <label htmlFor={divisionsID} className="label">
             {t("devisionAdd")}
           </label>
         </div>
@@ -232,7 +230,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             </p>
             <p className="control">
               <input
-                id="divisions"
+                id={divisionsID}
                 className="input is-small"
                 value={assignmentName}
                 type="text"

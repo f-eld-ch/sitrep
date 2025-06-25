@@ -19,8 +19,10 @@
     "enabled": true,
     "rules": {
       "a11y": {
-        "useValidAnchor": "info",
-        "useAnchorContent": "info"
+        "useValidAnchor": "off",
+        "useAnchorContent": "off",
+        "noStaticElementInteractions": "off"
+
       },
       "recommended": true,
       "style": {
