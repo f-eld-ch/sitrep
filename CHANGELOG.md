@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/core from 1.8.0 to 1.8.1 in /ui ([#866](https://github.com/f-eld-ch/sitrep/issues/866)) - ([fbeacad](https://github.com/f-eld-ch/sitrep/commit/fbeacadf5abe0016f7c2b6dfa04e2d343d430d8a))
 - *(deps)* Bump react-router from 7.6.2 to 7.6.3 in /ui ([#867](https://github.com/f-eld-ch/sitrep/issues/867)) - ([112397e](https://github.com/f-eld-ch/sitrep/commit/112397ece4e7b2affa58a3b4b836594243133e3b))
 - *(deps)* Bump undici from 7.10.0 to 7.11.0 in /ui ([#868](https://github.com/f-eld-ch/sitrep/issues/868)) - ([d3aa2b1](https://github.com/f-eld-ch/sitrep/commit/d3aa2b15ae3b1ae7746176a309e1563e750eb56a))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.1.0 to 0.2.0 in /ui ([#861](https://github.com/f-eld-ch/sitrep/issues/861)) - ([8602681](https://github.com/f-eld-ch/sitrep/commit/8602681b40e7e5eabb8e0c4d09ac47f9a2cae9f4))
