@@ -10913,9 +10913,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.6.2":
-  version: 7.6.2
-  resolution: "react-router@npm:7.6.2"
+"react-router@npm:^7.6.3":
+  version: 7.6.3
+  resolution: "react-router@npm:7.6.3"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -10925,7 +10925,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/38a8473c7358d873eb60cc6660deae16a629701b8867ee00e67871ff61009b90f73853235ef3b0f2e43ebedee697389afc7bf170df069823dc872be79798965b
+  checksum: 10/c970729d17e705d793ffe602cc034274c6064f514fe401ee03e37c4c27baa70be04367bbf6242f9a1c7777a19e4cb67f5a024954224622ce6bee2cefc52e0b90
   languageName: node
   linkType: hard
 
@@ -11663,7 +11663,7 @@ __metadata:
     react-i18next: "npm:^15.5.3"
     react-map-gl: "npm:~8.0.4"
     react-markdown: "npm:^10.1.0"
-    react-router: "npm:^7.6.2"
+    react-router: "npm:^7.6.3"
     react-to-print: "npm:^3.1.0"
     sass: "npm:^1.89.2"
     semver: "npm:^7.7.2"
