@@ -13,7 +13,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mapbox/mapbox-gl-draw": "~1.5.0",
-    "@openfeature/core": "^1.8.0",
+    "@openfeature/core": "^1.8.1",
     "@openfeature/flipt-web-provider": "^0.1.5",
     "@openfeature/react-sdk": "^1.0.0",
     "@openfeature/web-sdk": "^1.5.0",
