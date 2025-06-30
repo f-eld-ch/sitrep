@@ -41,7 +41,7 @@
     "react-i18next": "^15.5.3",
     "react-map-gl": "~8.0.4",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.6.2",
+    "react-router": "^7.6.3",
     "react-to-print": "^3.1.0",
     "undici": "^7.11.0",
     "usehooks-ts": "^3.1.1",
