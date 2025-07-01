@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-to-print from 3.1.0 to 3.1.1 in /ui ([#871](https://github.com/f-eld-ch/sitrep/issues/871)) - ([597b315](https://github.com/f-eld-ch/sitrep/commit/597b3154032d5407228359b1ed9d3f0e90f9d2e4))
 - *(deps)* Bump @openfeature/core from 1.8.0 to 1.8.1 in /ui ([#866](https://github.com/f-eld-ch/sitrep/issues/866)) - ([fbeacad](https://github.com/f-eld-ch/sitrep/commit/fbeacadf5abe0016f7c2b6dfa04e2d343d430d8a))
 - *(deps)* Bump react-router from 7.6.2 to 7.6.3 in /ui ([#867](https://github.com/f-eld-ch/sitrep/issues/867)) - ([112397e](https://github.com/f-eld-ch/sitrep/commit/112397ece4e7b2affa58a3b4b836594243133e3b))
 - *(deps)* Bump undici from 7.10.0 to 7.11.0 in /ui ([#868](https://github.com/f-eld-ch/sitrep/issues/868)) - ([d3aa2b1](https://github.com/f-eld-ch/sitrep/commit/d3aa2b15ae3b1ae7746176a309e1563e750eb56a))
