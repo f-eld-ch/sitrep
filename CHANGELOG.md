@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.2.1 to 25.3.0 in /ui ([#870](https://github.com/f-eld-ch/sitrep/issues/870)) - ([9867a56](https://github.com/f-eld-ch/sitrep/commit/9867a56f4e774c4292287bb67c570faedd917fa9))
 - *(deps)* Bump react-to-print from 3.1.0 to 3.1.1 in /ui ([#871](https://github.com/f-eld-ch/sitrep/issues/871)) - ([597b315](https://github.com/f-eld-ch/sitrep/commit/597b3154032d5407228359b1ed9d3f0e90f9d2e4))
 - *(deps)* Bump @openfeature/core from 1.8.0 to 1.8.1 in /ui ([#866](https://github.com/f-eld-ch/sitrep/issues/866)) - ([fbeacad](https://github.com/f-eld-ch/sitrep/commit/fbeacadf5abe0016f7c2b6dfa04e2d343d430d8a))
 - *(deps)* Bump react-router from 7.6.2 to 7.6.3 in /ui ([#867](https://github.com/f-eld-ch/sitrep/issues/867)) - ([112397e](https://github.com/f-eld-ch/sitrep/commit/112397ece4e7b2affa58a3b4b836594243133e3b))
