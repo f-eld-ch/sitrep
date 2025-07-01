@@ -11,7 +11,7 @@ function New() {
 }
 
 function NewForm() {
-  return;
+  return null;
 }
 
 export default New;
