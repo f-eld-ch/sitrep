@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { UserContext, UserProvider } from "./UserContext";
 import { useContext } from "react";
@@ -32,7 +32,7 @@ describe("UserContext", () => {
         expect(screen.getByTestId("email").textContent).toBe("");
     });
 
-    it("updates state on LOGIN action", () => {
+    it("updates state on LOGIN action", async () => {
         render(
             <UserProvider>
                 <TestComponent />
@@ -41,9 +41,11 @@ describe("UserContext", () => {
         act(() => {
             fireEvent.click(screen.getByText("Login"));
         });
-        expect(screen.getByTestId("isLoggedin").textContent).toBe("true");
-        expect(screen.getByTestId("username").textContent).toBe("foo");
-        expect(screen.getByTestId("email").textContent).toBe("foo@bar.com");
+        await waitFor(() => {
+            expect(screen.getByTestId("isLoggedin").textContent).toBe("true");
+            expect(screen.getByTestId("username").textContent).toBe("foo");
+            expect(screen.getByTestId("email").textContent).toBe("foo@bar.com");
+        });
     });
 
     it("resets state on LOGOUT action", () => {
