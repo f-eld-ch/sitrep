@@ -9,7 +9,7 @@ import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.jso
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 import type { StyleSpecification } from "maplibre-gl";
 
-const MapStyles: MapStyle[] = [
+export const MapStyles: MapStyle[] = [
   {
     name: "Basiskarte",
     style: ExpandRelativeURLs(basisKarte as StyleSpecification),
@@ -44,15 +44,15 @@ function ExpandRelativeURLs(
           ? previousStyle.sprite
           : new URL(previousStyle.sprite, window.location.href).href
         : Object.assign(
-            [],
-            previousStyle.sprite?.map((s) => {
-              return Object.assign({}, s, {
-                url: s.url.startsWith("http")
-                  ? s.url?.toString()
-                  : new URL(s.url, window.location.href).href,
-              });
-            }),
-          ),
+          [],
+          previousStyle.sprite?.map((s) => {
+            return Object.assign({}, s, {
+              url: s.url.startsWith("http")
+                ? s.url?.toString()
+                : new URL(s.url, window.location.href).href,
+            });
+          }),
+        ),
   };
 }
 

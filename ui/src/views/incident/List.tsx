@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Incident, IncidentListData } from "../../types";
 import { CloseIncident, GetIncidentDetails, GetIncidents } from "./graphql";
+import type { MutationFunction } from "@apollo/client";
+import type { CloseIncidentMutation, CloseIncidentMutationVariables } from "./graphql";
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
@@ -26,6 +28,9 @@ function List() {
 
   const { loading, error, data } = useQuery<IncidentListData>(GetIncidents, {
     pollInterval: 10000,
+  });
+  const [closeIncident] = useMutation<CloseIncidentMutation, CloseIncidentMutationVariables>(CloseIncident, {
+    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
   });
 
   if (error)
@@ -63,29 +68,27 @@ function List() {
             (incident) => !filterClosed || incident.closedAt === null,
           ) || []
         }
+        closeIncident={closeIncident}
       />
     </div>
   );
 }
 
-function IncidentCards(props: { incidents: Incident[] }) {
-  const { incidents } = props;
+export function IncidentCards(props: { incidents: Incident[]; closeIncident: MutationFunction<CloseIncidentMutation, CloseIncidentMutationVariables> }) {
+  const { incidents, closeIncident } = props;
 
   return (
     <div className="container-flex">
       {incidents.map((incident) => (
-        <IncidentCard key={incident.id} incident={incident} />
+        <IncidentCard key={incident.id} incident={incident} closeIncident={closeIncident} />
       ))}
     </div>
   );
 }
 
-function IncidentCard(props: { incident: Incident }) {
-  const { incident } = props;
+export function IncidentCard(props: { incident: Incident; closeIncident: MutationFunction<CloseIncidentMutation, CloseIncidentMutationVariables> }) {
+  const { incident, closeIncident } = props;
   const navigate = useNavigate();
-  const [closeIncident] = useMutation(CloseIncident, {
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-  });
 
   const cardClass = classNames({
     card: true,
@@ -118,6 +121,7 @@ function IncidentCard(props: { incident: Incident }) {
       <footer className="card-footer">
         <button
           type="button"
+          data-testid="enter-button"
           className="card-footer-item is-ahref is-capitalized"
           onClick={() => navigate(`../${props.incident.id}/journal/view`)}
         >
@@ -128,6 +132,7 @@ function IncidentCard(props: { incident: Incident }) {
         </button>
         <button
           type="button"
+          data-testid="edit-button"
           className="card-footer-item is-ahref is-capitalized"
           onClick={() => navigate(`../${incident.id}/edit`)}
         >
@@ -139,6 +144,7 @@ function IncidentCard(props: { incident: Incident }) {
         {incident.closedAt === null ? (
           <button
             type="button"
+            data-testid="close-button"
             className="card-footer-item is-ahref is-capitalized is-danger"
             onClick={() => {
               closeIncident({
@@ -150,7 +156,7 @@ function IncidentCard(props: { incident: Incident }) {
             }}
           >
             <span className="icon">
-              <FontAwesomeIcon icon={faFolderClosed} />
+              <FontAwesomeIcon icon={faFolderClosed} />CloseIncidentMutationVariables
             </span>
             <span>{t("close")}</span>
           </button>
@@ -158,6 +164,7 @@ function IncidentCard(props: { incident: Incident }) {
           <button
             type="button"
             className="card-footer-item is-ahref is-capitalized is-success"
+            data-testid="open-button"
             onClick={() => {
               closeIncident({
                 variables: { incidentId: incident.id, closedAt: null },
