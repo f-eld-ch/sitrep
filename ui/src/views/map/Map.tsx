@@ -79,33 +79,33 @@ function MapView() {
 
   return (
     <div className={mapClass} data-theme="light">
-        <MapClass
-          mapLib={maplibregl}
-          initialViewState={{
-            latitude: 46.87148,
-            longitude: 8.62994,
-            zoom: 5,
-            bearing: 0,
-          }}
-          attributionControl={false}
-          minZoom={9}
-          maxZoom={19}
-          mapStyle={mapStyle.style}
-          scrollZoom={true}
-          reuseMaps={false}
-          RTLTextPlugin={undefined}
-        >
-          <SearchControl />
-          <AttributionControl position="bottom-left" compact={true} />
-          {/* All Map Controls */}
-          <FullscreenControl position={"top-left"} />
-          <NavigationControl position={"top-left"} visualizePitch={true} />
-          <ScaleControl unit={"metric"} position={"bottom-left"} />
-          <ExportControl position="bottom-left" />
-          {/* Layersprovider and Draw */}
-          <Layers />
-        </MapClass>
-      </div>
+      <MapClass
+        mapLib={maplibregl}
+        initialViewState={{
+          latitude: 46.87148,
+          longitude: 8.62994,
+          zoom: 5,
+          bearing: 0,
+        }}
+        attributionControl={false}
+        minZoom={9}
+        maxZoom={19}
+        mapStyle={mapStyle.style}
+        scrollZoom={true}
+        reuseMaps={false}
+        RTLTextPlugin={undefined}
+      >
+        <SearchControl />
+        <AttributionControl position="bottom-left" compact={true} />
+        {/* All Map Controls */}
+        <FullscreenControl position={"top-left"} />
+        <NavigationControl position={"top-left"} visualizePitch={true} />
+        <ScaleControl unit={"metric"} position={"bottom-left"} />
+        <ExportControl position="bottom-left" />
+        {/* Layersprovider and Draw */}
+        <Layers />
+      </MapClass>
+    </div>
   );
 }
 
@@ -157,7 +157,7 @@ function LayerFetcher() {
     }
   }, [data, dispatch, loading, state.layers]);
 
-  return <></>;
+  return null;
 }
 
 function ActiveLayer() {
@@ -407,34 +407,34 @@ function Draw() {
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
   if (state.activeLayer === undefined) {
-    return <></>;
+    return;
   }
 
   return (
     <DrawControl
-        onSelectionChange={onSelectionChange}
-        onCreate={onCreate}
-        onUpdate={onUpdate}
-        onDelete={onDelete}
-        onCombine={onCombine}
-        position="top-right"
-        displayControlsDefault={true}
-        styles={createMapStyle({ forDraw: true })}
-        controls={{
-          polygon: true,
-          trash: true,
-          point: true,
-          line_string: true,
-          combine_features: false,
-          uncombine_features: false,
-        }}
-        boxSelect={false}
-        clickBuffer={10}
-        defaultMode="simple_select"
-        modes={modes}
-        userProperties={true}
-        activeLayer={state.activeLayer}
-      />
+      onSelectionChange={onSelectionChange}
+      onCreate={onCreate}
+      onUpdate={onUpdate}
+      onDelete={onDelete}
+      onCombine={onCombine}
+      position="top-right"
+      displayControlsDefault={true}
+      styles={createMapStyle({ forDraw: true })}
+      controls={{
+        polygon: true,
+        trash: true,
+        point: true,
+        line_string: true,
+        combine_features: false,
+        uncombine_features: false,
+      }}
+      boxSelect={false}
+      clickBuffer={10}
+      defaultMode="simple_select"
+      modes={modes}
+      userProperties={true}
+      activeLayer={state.activeLayer}
+    />
   );
 }
 

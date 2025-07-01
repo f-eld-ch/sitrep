@@ -100,7 +100,7 @@ const UserInfoFetcher = () => {
     return () => clearInterval(interval);
   }, [setUserStateFromUserinfo]);
 
-  return <></>;
+  return null;
 };
 
 export { UserContext, UserProvider };

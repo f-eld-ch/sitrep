@@ -92,15 +92,15 @@ const IconController = memo((props: BabsIconControllerProps) => {
   }, [selectedFeature]);
 
   if (selectedFeature === undefined) {
-    return <></>;
+    return;
   }
 
   if (selectedFeature.geometry.type !== "Point") {
-    return <></>;
+    return;
   }
 
   if (map === undefined) {
-    return <></>;
+    return;
   }
 
   return (
@@ -258,11 +258,11 @@ const LineController = memo((props: BabsIconControllerProps) => {
   }, [onUpdate, selectedFeature]);
 
   if (selectedFeature === undefined) {
-    return <></>;
+    return;
   }
 
   if (selectedFeature.geometry.type !== "LineString") {
-    return <></>;
+    return;
   }
 
   return (
@@ -331,14 +331,14 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   );
 
   if (selectedFeature === undefined) {
-    return <></>;
+    return;
   }
 
   if (
     selectedFeature.geometry.type !== "Polygon" &&
     selectedFeature.geometry.type !== "MultiPolygon"
   ) {
-    return <></>;
+    return;
   }
 
   return (
@@ -591,7 +591,7 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
     selectedFeature.geometry.type === "LineString" ||
     selectedFeature.geometry.type === "MultiLineString"
   ) {
-    return <></>;
+    return;
   }
 
   const btnClass = classNames({

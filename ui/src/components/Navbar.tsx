@@ -212,7 +212,7 @@ function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
 
-  if (!userState.isLoggedin) return <></>;
+  if (!userState.isLoggedin) return;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable is-left ml-3">
@@ -248,7 +248,7 @@ const JournalNavBar: FunctionComponent = () => {
   const { incidentId, journalId } = useParams();
   const { t } = useTranslation();
 
-  if (!incidentId) return <></>;
+  if (!incidentId) return;
 
   if (!journalId)
     return (
@@ -324,7 +324,7 @@ const TasksNavBar: FunctionComponent = () => {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  if (!incidentId) return <></>;
+  if (!incidentId) return;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable">
@@ -390,7 +390,7 @@ const ResourcesNavBar: FunctionComponent = () => {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  if (!incidentId) return <></>;
+  if (!incidentId) return;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable">
@@ -415,7 +415,7 @@ const MapNavBar: FunctionComponent = () => {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  if (!incidentId) return <></>;
+  if (!incidentId) return;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable">
