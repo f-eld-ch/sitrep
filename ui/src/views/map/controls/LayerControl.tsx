@@ -21,7 +21,7 @@ function LayerPanel() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end" >
+      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
         <button
           type="button"
           className={btnClass}
@@ -62,9 +62,7 @@ function LayerPanel() {
         </a>
       </div>
       {activeTab === "drawing" && <ActiveLayersControl />}
-      {activeTab === "wms" && (
-        <WMSLayerMenu />
-      )}
+      {activeTab === "wms" && <WMSLayerMenu />}
     </nav>
   );
 }

@@ -1,9 +1,9 @@
 /// <reference types="vitest" />
 
-import react from "@vitejs/plugin-react-swc";
 import path from "node:path";
+import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
-import biomePlugin from 'vite-plugin-biome';
+import biomePlugin from "vite-plugin-biome";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
@@ -23,7 +23,11 @@ export default defineConfig({
         minifyInternalExports: true,
         sourcemap: false,
         manualChunks: {
-          maplibregl: ["maplibre-gl", "@watergis/maplibre-gl-export", "@mapbox/mapbox-gl-draw"],
+          maplibregl: [
+            "maplibre-gl",
+            "@watergis/maplibre-gl-export",
+            "@mapbox/mapbox-gl-draw",
+          ],
         },
       },
     },

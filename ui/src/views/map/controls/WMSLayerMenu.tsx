@@ -1,16 +1,30 @@
+import {
+  faEye,
+  faEyeSlash,
+  faHexagonNodesBolt,
+  faInfoCircle,
+  faPlus,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import WMSCapabilities from "ol/format/WMSCapabilities";
 import type React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LayerContext, type WMSLayer, type WMSLayer as StateLayer, type WMSServer } from "../LayerContext";
-import WMSCapabilities from "ol/format/WMSCapabilities";
-import { faHexagonNodesBolt, faInfoCircle, faEye, faEyeSlash, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  LayerContext,
+  type WMSLayer as StateLayer,
+  type WMSLayer,
+  type WMSServer,
+} from "../LayerContext";
 
 const NO_LAYERS_FOUND_ERROR = new Error("wmsLayerMenu.noLayersFound");
 const FETCH_LAYERS_ERROR = new Error("wmsLayerMenu.errorFetchingLayers");
 
-type WMSLayerMenuError = typeof NO_LAYERS_FOUND_ERROR | typeof FETCH_LAYERS_ERROR;
+type WMSLayerMenuError =
+  | typeof NO_LAYERS_FOUND_ERROR
+  | typeof FETCH_LAYERS_ERROR;
 
 interface Layer {
   legendURL: string | undefined;
@@ -43,7 +57,10 @@ interface WMSCapabilitiesLayer {
   legendURL?: string;
 }
 
-const extractLayers = (layer: WMSCapabilitiesLayer, server: string): Layer[] => {
+const extractLayers = (
+  layer: WMSCapabilitiesLayer,
+  server: string,
+): Layer[] => {
   let layers: Layer[] = [];
   const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
   layers.push({
@@ -103,29 +120,40 @@ const WMSLayerMenu = () => {
   };
 
   useEffect(() => {
-    if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
+    if (
+      state.wms.currentServer &&
+      !state.wms.availableLayers[state.wms.currentServer]
+    ) {
       setIsLoading(true);
       setError(null);
       fetch(
-        `${state.wms.currentServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`
+        `${state.wms.currentServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`,
       )
         .then((response) => response.text())
         .then((data) => {
           const parser = new WMSCapabilities();
           const result = parser.read(data);
-          const allLayers = extractLayers(result.Capability.Layer, state.wms.currentServer);
-          const layers = allLayers.filter((layer: Layer) => {
-            const hasEPSG3857 = layer.crs?.includes("EPSG:3857") || result.Capability.Layer.CRS?.includes("EPSG:3857");
-            return hasEPSG3857;
-          }).map((layer: Layer, index: number) => ({
-            name: layer.name,
-            title: layer.title,
-            key: `${layer.name}-${index}`,
-            legendURL: layer.legendURL,
-            isVisible: true,
-            opacity: 1,
-            server: state.wms.currentServer,
-          })).sort((a, b) => a.title.localeCompare(b.title));
+          const allLayers = extractLayers(
+            result.Capability.Layer,
+            state.wms.currentServer,
+          );
+          const layers = allLayers
+            .filter((layer: Layer) => {
+              const hasEPSG3857 =
+                layer.crs?.includes("EPSG:3857") ||
+                result.Capability.Layer.CRS?.includes("EPSG:3857");
+              return hasEPSG3857;
+            })
+            .map((layer: Layer, index: number) => ({
+              name: layer.name,
+              title: layer.title,
+              key: `${layer.name}-${index}`,
+              legendURL: layer.legendURL,
+              isVisible: true,
+              opacity: 1,
+              server: state.wms.currentServer,
+            }))
+            .sort((a, b) => a.title.localeCompare(b.title));
           if (layers.length === 0) {
             throw NO_LAYERS_FOUND_ERROR;
           }
@@ -134,14 +162,14 @@ const WMSLayerMenu = () => {
             type: "SET_WMS_SERVER_LAYERS_CACHE",
             payload: {
               server: state.wms.currentServer,
-              layers: layers
+              layers: layers,
             },
           });
           setIsLoading(false);
         })
         .catch((error) => {
           if (error !== NO_LAYERS_FOUND_ERROR) {
-            setError(FETCH_LAYERS_ERROR)
+            setError(FETCH_LAYERS_ERROR);
             dispatch({
               type: "REMOVE_WMS_SERVER",
               payload: {
@@ -155,15 +183,22 @@ const WMSLayerMenu = () => {
           setIsLoading(false);
         });
     } else if (state.wms.availableLayers[state.wms.currentServer]) {
-      const layers = state.wms.availableLayers[state.wms.currentServer].map((layer: StateLayer) => ({
-        ...layer,
-        isVisible: true,
-        opacity: 1,
-        server: state.wms.currentServer,
-      }));
+      const layers = state.wms.availableLayers[state.wms.currentServer].map(
+        (layer: StateLayer) => ({
+          ...layer,
+          isVisible: true,
+          opacity: 1,
+          server: state.wms.currentServer,
+        }),
+      );
       setLayers(layers);
     }
-  }, [state.wms.currentServer, state.wms.availableLayers, i18n.language, dispatch]);
+  }, [
+    state.wms.currentServer,
+    state.wms.availableLayers,
+    i18n.language,
+    dispatch,
+  ]);
 
   const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const layerName = event.target.value;
@@ -186,7 +221,10 @@ const WMSLayerMenu = () => {
   };
 
   const handleServerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch({ type: "SET_WMS_SERVER", payload: { server: event.target.value } });
+    dispatch({
+      type: "SET_WMS_SERVER",
+      payload: { server: event.target.value },
+    });
     setCustomServer("");
   };
 
@@ -199,79 +237,86 @@ const WMSLayerMenu = () => {
   const handleCustomServerSubmit = () => {
     if (customServer) {
       const baseDomain = getBaseDomain(customServer);
-      dispatch({ type: "ADD_CUSTOM_WMS_SERVER", payload: { server: { name: baseDomain, url: customServer } } });
+      dispatch({
+        type: "ADD_CUSTOM_WMS_SERVER",
+        payload: { server: { name: baseDomain, url: customServer } },
+      });
       setCustomServer(customServer);
     }
   };
 
   const filteredServers = state.wms.servers.filter(
-    (server) => !server.language || server.language === i18n.language
+    (server) => !server.language || server.language === i18n.language,
   );
 
   return (
     <>
-      {
-        state.wms.activeLayers.map((layer: WMSLayer) => (
+      {state.wms.activeLayers.map((layer: WMSLayer) => (
+        <div
+          key={layer.name}
+          className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap is-size-7"
+        >
           <div
-            key={layer.name}
-            className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap is-size-7"
+            className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2"
+            style={{ width: "50%" }}
           >
-            <div className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2" style={{ width: "50%" }}>
-              <span className="panel-icon" style={{ verticalAlign: "center" }}>
-                <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
-              </span>
-              <span>{layer.title}</span>
-            </div>
-            <div className="is-flex-direction-row	is-align-items-flex-end is-flex-shrink-0 is-flex-wrap-wrap" style={{ width: "45%" }}>
-              {layer.legendURL && (
-                <button
-                  className="mr-2 is-align-self-center"
-                  type="button"
-                  onClick={() => handleInfoToggle(layer.name)}
-                >
-                  <FontAwesomeIcon icon={faInfoCircle} />
-                </button>
-              )}
-
+            <span className="panel-icon" style={{ verticalAlign: "center" }}>
+              <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
+            </span>
+            <span>{layer.title}</span>
+          </div>
+          <div
+            className="is-flex-direction-row	is-align-items-flex-end is-flex-shrink-0 is-flex-wrap-wrap"
+            style={{ width: "45%" }}
+          >
+            {layer.legendURL && (
               <button
                 className="mr-2 is-align-self-center"
                 type="button"
-                onClick={() =>
-                  handleVisibilityToggle(layer.name, !layer.isVisible)
-                }
+                onClick={() => handleInfoToggle(layer.name)}
               >
-                <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
+                <FontAwesomeIcon icon={faInfoCircle} />
               </button>
-              <input
-                className="mr-2"
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={layer.opacity}
-                onChange={(e) =>
-                  handleWMSOpacityChange(
-                    layer.name,
-                    Number.parseFloat(e.target.value),
-                  )
-                }
-              />
-              <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
-                <FontAwesomeIcon icon={faTrash} />
-              </button>
-            </div>
-            {expandedLayer === layer.name && (
-              <div className="is-align-content-center">
-                <img
-                  src={layer.legendURL}
-                  alt={`${layer.title}`}
-                  style={{ width: "100%" }}
-                />
-              </div>
             )}
+
+            <button
+              className="mr-2 is-align-self-center"
+              type="button"
+              onClick={() =>
+                handleVisibilityToggle(layer.name, !layer.isVisible)
+              }
+            >
+              <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
+            </button>
+            <input
+              className="mr-2"
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={layer.opacity}
+              onChange={(e) =>
+                handleWMSOpacityChange(
+                  layer.name,
+                  Number.parseFloat(e.target.value),
+                )
+              }
+            />
+            <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
           </div>
-        ))
-      }
+          {expandedLayer === layer.name && (
+            <div className="is-align-content-center">
+              <img
+                src={layer.legendURL}
+                alt={`${layer.title}`}
+                style={{ width: "100%" }}
+              />
+            </div>
+          )}
+        </div>
+      ))}
       <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column">
         {!showAddLayer && (
           <button
@@ -352,21 +397,26 @@ const WMSLayerMenu = () => {
           </div>
         )}
 
-        {
-          error && (
-            <div className="columns is-flex-grow-1" >
-              <div className="column is-full">
-                <div className="notification is-danger" style={{ width: "100%" }}>
-                  <button type="button" className="delete is-align-self-flex-end" onClick={() => setError(null)} />
-                  {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
-                  {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
-                </div>
+        {error && (
+          <div className="columns is-flex-grow-1">
+            <div className="column is-full">
+              <div className="notification is-danger" style={{ width: "100%" }}>
+                <button
+                  type="button"
+                  className="delete is-align-self-flex-end"
+                  onClick={() => setError(null)}
+                />
+                {error === NO_LAYERS_FOUND_ERROR &&
+                  t("mapview.wmsLayerMenu.noLayersFound")}
+                {error === FETCH_LAYERS_ERROR &&
+                  t("mapview.wmsLayerMenu.errorFetchingLayers")}
               </div>
             </div>
-          )
-        }
-      </div >
-    </>);
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default WMSLayerMenu;

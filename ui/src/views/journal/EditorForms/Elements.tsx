@@ -6,10 +6,10 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
+import { useId } from "react";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useEditorContext } from "../Editor";
-import { useId } from "react";
 
 const SenderInput = () => {
   const { state, dispatch } = useEditorContext();

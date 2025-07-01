@@ -112,15 +112,13 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     });
   };
 
-  const nameID = useId()
-  const locationID = useId()
-  const divisionsID = useId()
+  const nameID = useId();
+  const locationID = useId();
+  const divisionsID = useId();
 
   return (
     <>
-      {error && (
-        <div className="notification is-danger">{error?.message}</div>
-      )}
+      {error && <div className="notification is-danger">{error?.message}</div>}
       {errorUpdate && (
         <div className="notification is-danger">{errorUpdate?.message}</div>
       )}
@@ -193,7 +191,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                     <p
                       className={tagsClass}
                     >{`${d.description} (${d.name})`}</p>
-                    {d.id  === "" && (
+                    {d.id === "" && (
                       <a
                         className="tag is-delete"
                         onClick={() =>

@@ -121,6 +121,17 @@ const CLOSE_INCIDENT = gql`
   }
 `;
 
+export type CloseIncidentMutation = {
+  updateIncidents: {
+    affectedRows: number;
+    returning: { id: string; closedAt: Date | null }[];
+  } | null;
+};
+export type CloseIncidentMutationVariables = {
+  incidentId?: string;
+  closedAt?: Date | null;
+};
+
 export {
   CLOSE_INCIDENT as CloseIncident,
   GET_INCIDENT_DETAILS as GetIncidentDetails,

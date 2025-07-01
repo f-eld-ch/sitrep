@@ -23,12 +23,12 @@ import type {
   SaveMessageTriageVars,
 } from "types/journal";
 import { NewForm as TaskNew } from "../measures/tasks";
-import { default as JournalMessage } from "./Message";
 import {
   GetJournalMessages,
   GetMessageForTriage,
   SaveMessageTriage,
 } from "./graphql";
+import { default as JournalMessage } from "./Message";
 
 function Triage(props: {
   message: Message | undefined;
@@ -112,8 +112,7 @@ function Triage(props: {
   });
 
   return (
-    <>
-      <div className={modalClassNames}>
+    <div className={modalClassNames}>
         <div className="modal-background" />
         <div className="modal-card">
           <header className="modal-card-head">
@@ -291,7 +290,6 @@ function Triage(props: {
           </footer>
         </div>
       </div>
-    </>
   );
 }
 

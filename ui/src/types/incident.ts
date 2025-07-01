@@ -11,9 +11,9 @@ export interface Incident {
   id: string;
   name: string;
   createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date;
-  closedAt: Date;
+  updatedAt: Date | null;
+  deletedAt: Date | null;
+  closedAt: Date | null;
   location: Location;
   divisions: Division[];
   journals: Journal[];

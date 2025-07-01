@@ -1,10 +1,11 @@
 import classNames from "classnames";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { useTimeout } from "usehooks-ts";
+
 interface NotificationProps {
   children: React.ReactNode;
   type: NotificationType;
-  timeout: number | null;
+  timeout?: number | null;
 }
 
 type NotificationType =
@@ -15,9 +16,11 @@ type NotificationType =
   | "link"
   | "success";
 
-function Notification(props: NotificationProps) {
-  const { type, timeout, children } = props;
-
+function Notification({
+  type = "info",
+  timeout = 5000,
+  children,
+}: NotificationProps & { timeout?: number }) {
   const [visible, setVisible] = useState(true);
   const hide = () => setVisible(false);
 
@@ -46,9 +49,4 @@ function Notification(props: NotificationProps) {
   );
 }
 
-Notification.defaultProps = {
-  className: "notification is-info",
-  timeout: 5000,
-};
-
-export default memo(Notification);
+export default Notification;

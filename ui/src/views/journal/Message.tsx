@@ -1,6 +1,3 @@
-import classNames from "classnames";
-import dayjs from "dayjs";
-
 import {
   faArrowsToEye,
   faEdit,
@@ -9,6 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import classNames from "classnames";
+import dayjs from "dayjs";
 import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
@@ -191,6 +190,7 @@ const MessageContainer = ({
                 <li>
                   <a
                     className="has-text-weight-bold"
+                    data-testid="edit-button"
                     onClick={() => setEditorMessage(message)}
                   >
                     <span className="icon is-small">
@@ -202,6 +202,7 @@ const MessageContainer = ({
               ) : (
                 <a
                   className="has-text-weight-bold"
+                  data-testid="print-button"
                   onClick={() => handlePrint()}
                 >
                   <span className="icon is-small">
@@ -214,6 +215,7 @@ const MessageContainer = ({
                 <li>
                   <a
                     className="has-text-weight-bold"
+                    data-testid="save-triage-button"
                     onClick={() => setTriageMessage(message)}
                   >
                     <span className="icon is-small">
@@ -225,7 +227,10 @@ const MessageContainer = ({
               )}
               {showTasks && (
                 <li>
-                  <a className="has-text-weight-bold">
+                  <a
+                    className="has-text-weight-bold"
+                    data-testid="create-task-button"
+                  >
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faSquareCheck} />
                     </span>

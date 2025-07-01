@@ -1,5 +1,4 @@
-import { ApolloClient } from "@apollo/client";
-import { HttpLink } from "@apollo/client";
+import { ApolloClient, HttpLink } from "@apollo/client";
 import { cache } from "cache";
 
 const httpLink = new HttpLink({

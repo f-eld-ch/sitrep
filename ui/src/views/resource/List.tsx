@@ -4,9 +4,7 @@ function List() {
   const { t } = useTranslation();
 
   return (
-    <>
-      <h3 className="title is-size-3 is-capitalized">{t("resources")}</h3>
-    </>
+    <h3 className="title is-size-3 is-capitalized">{t("resources")}</h3>
   );
 }
 

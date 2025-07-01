@@ -1,9 +1,4 @@
 import { useMutation, useQuery } from "@apollo/client";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
-
 import {
   faChartSimple,
   faEdit,
@@ -17,8 +12,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
 import dayjs from "dayjs";
+import LocalizedFormat from "dayjs/plugin/localizedFormat";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { t } from "i18next";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router";
 import type { Journal, JournalListData, JournalListVars } from "types";
 import { CloseJournal, GetJournals } from "./graphql";
 

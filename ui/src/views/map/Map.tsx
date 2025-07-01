@@ -40,7 +40,6 @@ import type {
 } from "types/layer";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
-import { LayerContext, LayersProvider } from "./LayerContext";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
 import ExportControl from "./controls/ExportControl";
@@ -53,12 +52,13 @@ import {
   GetLayers,
   ModifyFeature,
 } from "./graphql";
+import { LayerContext, LayersProvider } from "./LayerContext";
+import { createMapStyle } from "./styleGenerator";
 import {
   CleanFeature,
   FilterActiveFeatures,
   LayerToFeatureCollection,
 } from "./utils";
-import { createMapStyle } from "./styleGenerator";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -78,36 +78,34 @@ function MapView() {
   });
 
   return (
-    <>
-      <div className={mapClass} data-theme="light">
-        <MapClass
-          mapLib={maplibregl}
-          initialViewState={{
-            latitude: 46.87148,
-            longitude: 8.62994,
-            zoom: 5,
-            bearing: 0,
-          }}
-          attributionControl={false}
-          minZoom={9}
-          maxZoom={19}
-          mapStyle={mapStyle.style}
-          scrollZoom={true}
-          reuseMaps={false}
-          RTLTextPlugin={undefined}
-        >
-          <SearchControl />
-          <AttributionControl position="bottom-left" compact={true} />
-          {/* All Map Controls */}
-          <FullscreenControl position={"top-left"} />
-          <NavigationControl position={"top-left"} visualizePitch={true} />
-          <ScaleControl unit={"metric"} position={"bottom-left"} />
-          <ExportControl position="bottom-left" />
-          {/* Layersprovider and Draw */}
-          <Layers />
-        </MapClass>
-      </div>
-    </>
+    <div className={mapClass} data-theme="light">
+      <MapClass
+        mapLib={maplibregl}
+        initialViewState={{
+          latitude: 46.87148,
+          longitude: 8.62994,
+          zoom: 5,
+          bearing: 0,
+        }}
+        attributionControl={false}
+        minZoom={9}
+        maxZoom={19}
+        mapStyle={mapStyle.style}
+        scrollZoom={true}
+        reuseMaps={false}
+        RTLTextPlugin={undefined}
+      >
+        <SearchControl />
+        <AttributionControl position="bottom-left" compact={true} />
+        {/* All Map Controls */}
+        <FullscreenControl position={"top-left"} />
+        <NavigationControl position={"top-left"} visualizePitch={true} />
+        <ScaleControl unit={"metric"} position={"bottom-left"} />
+        <ExportControl position="bottom-left" />
+        {/* Layersprovider and Draw */}
+        <Layers />
+      </MapClass>
+    </div>
   );
 }
 
@@ -127,10 +125,12 @@ function Layers() {
 
       {/* Inactive Layers */}
       <InactiveLayers
-        layers={state.layers
-          .filter((l) => l.layer?.id !== state.activeLayer)
-          .filter((l) => l.isVisible)
-          .map((l) => l.layer) || []}
+        layers={
+          state.layers
+            .filter((l) => l.layer?.id !== state.activeLayer)
+            .filter((l) => l.isVisible)
+            .map((l) => l.layer) || []
+        }
       />
       <ActiveWMSLayers />
     </>
@@ -157,7 +157,7 @@ function LayerFetcher() {
     }
   }, [data, dispatch, loading, state.layers]);
 
-  return <></>;
+  return null;
 }
 
 function ActiveLayer() {
@@ -165,7 +165,11 @@ function ActiveLayer() {
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = LayerToFeatureCollection(
-    first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+    first(
+      state.layers
+        .filter((l) => l.layer.id === state.activeLayer)
+        .map((l) => l.layer),
+    ),
   );
 
   useEffect(() => {
@@ -403,36 +407,34 @@ function Draw() {
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
   if (state.activeLayer === undefined) {
-    return <></>;
+    return;
   }
 
   return (
-    <>
-      <DrawControl
-        onSelectionChange={onSelectionChange}
-        onCreate={onCreate}
-        onUpdate={onUpdate}
-        onDelete={onDelete}
-        onCombine={onCombine}
-        position="top-right"
-        displayControlsDefault={true}
-        styles={createMapStyle({ forDraw: true })}
-        controls={{
-          polygon: true,
-          trash: true,
-          point: true,
-          line_string: true,
-          combine_features: false,
-          uncombine_features: false,
-        }}
-        boxSelect={false}
-        clickBuffer={10}
-        defaultMode="simple_select"
-        modes={modes}
-        userProperties={true}
-        activeLayer={state.activeLayer}
-      />
-    </>
+    <DrawControl
+      onSelectionChange={onSelectionChange}
+      onCreate={onCreate}
+      onUpdate={onUpdate}
+      onDelete={onDelete}
+      onCombine={onCombine}
+      position="top-right"
+      displayControlsDefault={true}
+      styles={createMapStyle({ forDraw: true })}
+      controls={{
+        polygon: true,
+        trash: true,
+        point: true,
+        line_string: true,
+        combine_features: false,
+        uncombine_features: false,
+      }}
+      boxSelect={false}
+      clickBuffer={10}
+      defaultMode="simple_select"
+      modes={modes}
+      userProperties={true}
+      activeLayer={state.activeLayer}
+    />
   );
 }
 
@@ -462,7 +464,7 @@ function InactiveLayer(props: {
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
       <Source key={id} id={id} type="geojson" data={featureCollection}>
         {createMapStyle({ forDraw: false }).map((s) => (
-          <MapLayer  {...s} key={s.id} id={`${s.id}-${id}`} />
+          <MapLayer {...s} key={s.id} id={`${s.id}-${id}`} />
         ))}
       </Source>
     </>
