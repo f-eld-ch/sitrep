@@ -1,10 +1,10 @@
 import {
-  type ReportCallback,
   onCLS,
   onFCP,
   onINP,
   onLCP,
   onTTFB,
+  type ReportCallback,
 } from "web-vitals";
 
 const reportWebVitals = (onPerfEntry?: ReportCallback) => {

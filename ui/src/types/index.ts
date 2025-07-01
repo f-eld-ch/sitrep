@@ -5,7 +5,6 @@ export type {
   IncidentListData,
   Location,
 } from "types/incident";
-export { Medium, PriorityStatus, TriageStatus } from "types/journal";
 export type {
   Division,
   DivisionList,
@@ -20,4 +19,5 @@ export type {
   TriageMessageData,
   TriageMessageVars,
 } from "types/journal";
+export { Medium, PriorityStatus, TriageStatus } from "types/journal";
 export type { UserState } from "types/user";

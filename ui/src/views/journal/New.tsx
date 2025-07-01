@@ -54,9 +54,7 @@ function NewForm() {
 
   return (
     <>
-      {error && (
-        <div className="notification is-danger">{error?.message}</div>
-      )}
+      {error && <div className="notification is-danger">{error?.message}</div>}
 
       <div className="field">
         <p className="control has-icons-left has-icons-right">

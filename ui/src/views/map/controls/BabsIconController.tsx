@@ -509,7 +509,11 @@ interface BabsIconControllerProps {
 
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
-  const layer = first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer));
+  const layer = first(
+    state.layers
+      .filter((l) => l.layer.id === state.activeLayer)
+      .map((l) => l.layer),
+  );
   const { current: map } = useMap();
 
   const featureCollection = LayerToFeatureCollection(layer);

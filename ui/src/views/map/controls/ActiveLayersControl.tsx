@@ -1,3 +1,4 @@
+import { useMutation } from "@apollo/client";
 import {
   faDrawPolygon,
   faEdit,
@@ -9,11 +10,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import type React from "react";
 import { useContext, useState } from "react";
-import { useMutation } from "@apollo/client";
-import { LayerContext } from "../LayerContext";
-import { AddLayer, GetLayers } from "../graphql";
-import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router";
+import { AddLayer, GetLayers } from "../graphql";
+import { LayerContext } from "../LayerContext";
 
 const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
@@ -22,7 +22,6 @@ const ActiveLayersControl: React.FC = () => {
   const [addLayer] = useMutation(AddLayer);
   const { incidentId } = useParams();
   const { t } = useTranslation();
-
 
   const handleLayerClick = (layerId: string) => {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
@@ -64,7 +63,10 @@ const ActiveLayersControl: React.FC = () => {
         >
           <div className="mr-3 is-align-items-flex-start is-align-content-center">
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
-              <FontAwesomeIcon icon={state.activeLayer === s.layer.id ? faEdit : faDrawPolygon} size="lg" />
+              <FontAwesomeIcon
+                icon={state.activeLayer === s.layer.id ? faEdit : faDrawPolygon}
+                size="lg"
+              />
             </span>
             <a onClick={() => handleLayerClick(s.layer.id)}>{s.layer.name}</a>
           </div>
@@ -73,24 +75,19 @@ const ActiveLayersControl: React.FC = () => {
               <button
                 className="mr-2 is-align-self-center"
                 type="button"
-                onClick={() =>
-                  handleVisibilityToggle(s.layer.id, !s.isVisible)
-                }
+                onClick={() => handleVisibilityToggle(s.layer.id, !s.isVisible)}
               >
                 <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
               </button>
               <button
                 className="mr-2 is-align-self-center"
                 type="button"
-                onClick={() =>
-                  handleLayerClick(s.layer.id)
-                }
+                onClick={() => handleLayerClick(s.layer.id)}
               >
                 <FontAwesomeIcon icon={faEdit} />
               </button>
             </div>
           )}
-
         </div>
       ))}
       {!showAddLayer && (

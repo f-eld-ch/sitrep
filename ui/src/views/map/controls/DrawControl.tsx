@@ -1,6 +1,10 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { type ControlPosition, useControl, useMap } from "react-map-gl/maplibre";
+import {
+  type ControlPosition,
+  useControl,
+  useMap,
+} from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 import type { CombineFeatureEvent, FeatureEvent } from "../Map";
 
@@ -18,14 +22,23 @@ function DrawControl(props: DrawControlProps) {
   const { dispatch } = useContext(LayerContext);
   const [draw, setDraw] = useState<MapboxDraw>();
 
-
   const { current: map } = useMap();
 
-  const { activeLayer, onCreate, onDelete, onUpdate, onSelectionChange, onCombine } = props;
+  const {
+    activeLayer,
+    onCreate,
+    onDelete,
+    onUpdate,
+    onSelectionChange,
+    onCombine,
+  } = props;
 
-  const create = useCallback((e: FeatureEvent) => {
-    onCreate(e, activeLayer);
-  }, [onCreate, activeLayer]);
+  const create = useCallback(
+    (e: FeatureEvent) => {
+      onCreate(e, activeLayer);
+    },
+    [onCreate, activeLayer],
+  );
 
   const refCreate = useRef(create);
 

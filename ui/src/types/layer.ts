@@ -14,7 +14,7 @@ export interface Layer {
 export interface AddLayersVars {
   incidentId: string;
   name: string;
-};
+}
 
 export interface Feature {
   id: string | number | undefined;

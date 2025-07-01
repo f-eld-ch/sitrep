@@ -1,3 +1,4 @@
+import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import {
   faBars,
   faCaretDown,
@@ -19,11 +20,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import logo from "assets/logo.svg";
 import classNames from "classnames";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
-
-import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
-import logo from "assets/logo.svg";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { UserContext } from "utils";

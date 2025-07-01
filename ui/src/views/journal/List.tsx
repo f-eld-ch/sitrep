@@ -1,5 +1,3 @@
-import { memo, useEffect, useRef, useState } from "react";
-
 import { useQuery } from "@apollo/client";
 import {
   faArrowsToEye,
@@ -8,12 +6,12 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useReactToPrint } from "react-to-print";
-
 import classNames from "classnames";
 import { Spinner } from "components";
+import { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { useReactToPrint } from "react-to-print";
 import {
   type Division,
   type Message,
@@ -22,9 +20,9 @@ import {
   PriorityStatus,
   TriageStatus,
 } from "types";
+import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
-import { GetJournalMessages } from "./graphql";
 
 function List(props: {
   showControls: boolean;

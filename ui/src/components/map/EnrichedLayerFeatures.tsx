@@ -154,9 +154,7 @@ const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
   }
 
   return (
-    <>
-      <EnrichedSymbolSource {...props} />
-    </>
+    <EnrichedSymbolSource {...props} />
   );
 };
 

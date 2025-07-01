@@ -3,8 +3,8 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import type { IncidentDetailsData, IncidentDetailsVars } from "types";
-import { IncidentForm } from "./New";
 import { GetIncidentDetails } from "./graphql";
+import { IncidentForm } from "./New";
 
 function Editor() {
   const { incidentId } = useParams();

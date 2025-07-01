@@ -41,27 +41,32 @@ export function Breadcrumb() {
             </NavLink>
           </li>
         )}
-        {journalId && incidentData?.incidentsByPk.journals.find((j) => j.id === journalId) && (
-          <li>
-            <NavLink
-              className={({ isActive }) => (isActive ? "is-active" : undefined)}
-              to={`/incident/${incidentId}/journal/${journalId}/edit`}
-            >
-              <span className="icon-text is-small">
-                <span className="icon">
-                  <FontAwesomeIcon icon={faBars} />
+        {journalId &&
+          incidentData?.incidentsByPk.journals.find(
+            (j) => j.id === journalId,
+          ) && (
+            <li>
+              <NavLink
+                className={({ isActive }) =>
+                  isActive ? "is-active" : undefined
+                }
+                to={`/incident/${incidentId}/journal/${journalId}/edit`}
+              >
+                <span className="icon-text is-small">
+                  <span className="icon">
+                    <FontAwesomeIcon icon={faBars} />
+                  </span>
+                  <span>
+                    {
+                      incidentData?.incidentsByPk.journals.find(
+                        (j) => j.id === journalId,
+                      )?.name
+                    }
+                  </span>
                 </span>
-                <span>
-                  {
-                    incidentData?.incidentsByPk.journals.find(
-                      (j) => j.id === journalId,
-                    )?.name
-                  }
-                </span>
-              </span>
-            </NavLink>
-          </li>
-        )}
+              </NavLink>
+            </li>
+          )}
       </ul>
     </nav>
   );

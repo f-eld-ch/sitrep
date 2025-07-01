@@ -1,8 +1,14 @@
-import { Suspense, lazy, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, HashRouter as Router, Routes } from "react-router";
 
 import "./App.scss";
 
+import { Provider as FeatureFlagProvider } from "FeatureFlags";
+import { ApolloProvider } from "@apollo/client";
+import { default as client } from "client";
+import { Spinner } from "components";
+import { useTranslation } from "react-i18next";
+import { UserProvider } from "utils";
 import {
   Editor as IncidentEditor,
   List as IncidentList,
@@ -14,19 +20,11 @@ import {
   New as JournalNew,
   Overview as JournalOverview,
 } from "views/journal";
-
+import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
-
-import { ApolloProvider } from "@apollo/client";
-import { Provider as FeatureFlagProvider } from "FeatureFlags";
-import { default as client } from "client";
-import { Spinner } from "components";
-import { useTranslation } from "react-i18next";
-import { UserProvider } from "utils";
-import { Layout, LayoutMarginLess } from "views/Layout";
 import "./i18n";
 import dayjs from "dayjs";
 import de from "dayjs/locale/de";
@@ -34,6 +32,7 @@ import en from "dayjs/locale/en";
 import fr from "dayjs/locale/fr";
 import it from "dayjs/locale/it";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
+
 const MapView = lazy(() => import("views/map"));
 
 function App() {

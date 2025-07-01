@@ -5,8 +5,8 @@ import classNames from "classnames";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./StyleController.scss";
-import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
+import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 import type { StyleSpecification } from "maplibre-gl";
 
 const MapStyles: MapStyle[] = [

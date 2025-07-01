@@ -7,8 +7,8 @@ import type {
   LayersState,
   SelectedFeatureState,
   WMSLayer,
-  WMSState,
   WMSServer,
+  WMSState,
 } from "./LayerContext";
 
 // All valid actions
@@ -146,7 +146,7 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
       return action.payload.layers.map((layer) => ({
         layer,
         isVisible: state.some((s) => s.layer.id === layer.id)
-          ? state.find((s) => s.layer.id === layer.id)?.isVisible ?? true
+          ? (state.find((s) => s.layer.id === layer.id)?.isVisible ?? true)
           : true,
       }));
     case "TOGGLE_LAYER_VISIBILITY":
@@ -158,7 +158,7 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
     default:
       return state;
   }
-}
+};
 
 export const selectedFeatureReducer = (
   state: SelectedFeatureState,
@@ -204,7 +204,11 @@ export const drawReducer = (state: DrawState, action: LayersAction) => {
 export const wmsReducer = (state: WMSState, action: LayersAction) => {
   switch (action.type) {
     case "ADD_WMS_LAYER":
-      if (state.activeLayers.some((layer) => layer.name === action.payload.layerName)) {
+      if (
+        state.activeLayers.some(
+          (layer) => layer.name === action.payload.layerName,
+        )
+      ) {
         return state;
       }
       return {
@@ -242,7 +246,9 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
     case "REMOVE_WMS_LAYER":
       return {
         ...state,
-        activeLayers: state.activeLayers.filter((layer) => layer.name !== action.payload.layerName),
+        activeLayers: state.activeLayers.filter(
+          (layer) => layer.name !== action.payload.layerName,
+        ),
       };
     case "SET_WMS_SERVER":
       console.log("Setting WMS server:", action.payload.server);
@@ -267,7 +273,9 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
     case "REMOVE_WMS_SERVER":
       return {
         ...state,
-        servers: state.servers.filter((server) => server.url !== action.payload.server),
+        servers: state.servers.filter(
+          (server) => server.url !== action.payload.server,
+        ),
         availableLayers: Object.fromEntries(
           Object.entries(state.availableLayers).filter(
             ([key]) => key !== action.payload.server,

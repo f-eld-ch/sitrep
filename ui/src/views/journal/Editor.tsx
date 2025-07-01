@@ -1,7 +1,13 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import React, { useCallback, useContext, useEffect, useReducer, useId } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useReducer,
+} from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   Medium,
@@ -16,10 +22,10 @@ import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
 import { RadioChannelDetailInput } from "./EditorForms/Elements";
 import { Other } from "./EditorForms/Other";
+import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
-import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 
 interface State {
   sender: string;
@@ -444,7 +450,9 @@ function InputBox() {
         </div>
       </div>
       {renderFormContent()}
-      {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
+      {(state.content !== "" ||
+        state.sender !== "" ||
+        state.receiver !== "") && (
         <>
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage

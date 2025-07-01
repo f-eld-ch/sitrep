@@ -1,11 +1,11 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import type React from "react";
-import { createContext, useEffect, useReducer, type Reducer } from "react";
+import { createContext, type Reducer, useEffect, useReducer } from "react";
 import type { Layer } from "types/layer";
 import {
-  type LayersAction,
   activeLayerReducer,
   drawReducer,
+  type LayersAction,
   layersReducer,
   selectedFeatureReducer,
   wmsReducer,
@@ -18,10 +18,9 @@ export type DrawState = MapboxDraw | undefined;
 export type WMSLayersState = WMSLayer[];
 export type WMSServerLayersCacheState = Record<string, WMSLayer[]>;
 
-
 export interface DrawingLayerState {
   layer: Layer;
-  isVisible: boolean
+  isVisible: boolean;
 }
 export interface WMSLayer {
   name: string;
@@ -63,10 +62,26 @@ const initialState: LayerState = {
     availableLayers: {},
     currentServer: "",
     servers: [
-      { name: "Hazard Map (geodienste.ch)", url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ger", language: "en" },
-      { name: "Gefahrenkarte (geodienste.ch)", url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ger", language: "de" },
-      { name: "Cartes des dangers (geodienste.ch)", url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/fra", language: "fr" },
-      { name: "Carte dei pericoli (geodienste.ch)", url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ita", language: "it" },
+      {
+        name: "Hazard Map (geodienste.ch)",
+        url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ger",
+        language: "en",
+      },
+      {
+        name: "Gefahrenkarte (geodienste.ch)",
+        url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ger",
+        language: "de",
+      },
+      {
+        name: "Cartes des dangers (geodienste.ch)",
+        url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/fra",
+        language: "fr",
+      },
+      {
+        name: "Carte dei pericoli (geodienste.ch)",
+        url: "https://geodienste.sitrep.ch/db/gefahrenkarten_v1_3_0/ita",
+        language: "it",
+      },
       { name: "geo.admin.ch", url: "https://wms.geo.admin.ch" },
     ],
   },
@@ -107,7 +122,7 @@ const LayersProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Failed to parse WMS state from localStorage:", error);
         return initialState;
       }
-    }
+    },
   );
 
   // store the WMS state in localStorage whenever it changes

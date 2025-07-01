@@ -40,7 +40,6 @@ import type {
 } from "types/layer";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
-import { LayerContext, LayersProvider } from "./LayerContext";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
 import ExportControl from "./controls/ExportControl";
@@ -53,12 +52,13 @@ import {
   GetLayers,
   ModifyFeature,
 } from "./graphql";
+import { LayerContext, LayersProvider } from "./LayerContext";
+import { createMapStyle } from "./styleGenerator";
 import {
   CleanFeature,
   FilterActiveFeatures,
   LayerToFeatureCollection,
 } from "./utils";
-import { createMapStyle } from "./styleGenerator";
 
 const modes = {
   ...MapboxDraw.modes,
@@ -78,8 +78,7 @@ function MapView() {
   });
 
   return (
-    <>
-      <div className={mapClass} data-theme="light">
+    <div className={mapClass} data-theme="light">
         <MapClass
           mapLib={maplibregl}
           initialViewState={{
@@ -107,7 +106,6 @@ function MapView() {
           <Layers />
         </MapClass>
       </div>
-    </>
   );
 }
 
@@ -127,10 +125,12 @@ function Layers() {
 
       {/* Inactive Layers */}
       <InactiveLayers
-        layers={state.layers
-          .filter((l) => l.layer?.id !== state.activeLayer)
-          .filter((l) => l.isVisible)
-          .map((l) => l.layer) || []}
+        layers={
+          state.layers
+            .filter((l) => l.layer?.id !== state.activeLayer)
+            .filter((l) => l.isVisible)
+            .map((l) => l.layer) || []
+        }
       />
       <ActiveWMSLayers />
     </>
@@ -165,7 +165,11 @@ function ActiveLayer() {
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = LayerToFeatureCollection(
-    first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+    first(
+      state.layers
+        .filter((l) => l.layer.id === state.activeLayer)
+        .map((l) => l.layer),
+    ),
   );
 
   useEffect(() => {
@@ -407,8 +411,7 @@ function Draw() {
   }
 
   return (
-    <>
-      <DrawControl
+    <DrawControl
         onSelectionChange={onSelectionChange}
         onCreate={onCreate}
         onUpdate={onUpdate}
@@ -432,7 +435,6 @@ function Draw() {
         userProperties={true}
         activeLayer={state.activeLayer}
       />
-    </>
   );
 }
 
@@ -462,7 +464,7 @@ function InactiveLayer(props: {
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
       <Source key={id} id={id} type="geojson" data={featureCollection}>
         {createMapStyle({ forDraw: false }).map((s) => (
-          <MapLayer  {...s} key={s.id} id={`${s.id}-${id}`} />
+          <MapLayer {...s} key={s.id} id={`${s.id}-${id}`} />
         ))}
       </Source>
     </>

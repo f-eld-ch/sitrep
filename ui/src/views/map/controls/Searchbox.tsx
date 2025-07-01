@@ -93,7 +93,7 @@ function SearchControl() {
     "is-active": !isEmpty(searchResults),
   });
 
-  const id  = useId();
+  const id = useId();
   return (
     <div className="is-flex is-justify-content-center	is-align-content-center mt-3">
       <div className={dropdown}>

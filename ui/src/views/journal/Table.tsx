@@ -23,7 +23,10 @@ const MessageTable = (
     overflowWrap: "break-word" as const,
   };
 
-  const isFiltered = (assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all");
+  const isFiltered =
+    assignmentFilter !== "all" ||
+    triageFilter !== "all" ||
+    priorityFilter !== "all";
 
   return (
     <div
@@ -32,7 +35,7 @@ const MessageTable = (
       style={{ overflow: "visible" }}
     >
       <h3 className="title is-3">
-        { t("journal")}
+        {t("journal")}
         {isFiltered && ` (${t("filtered")})`}
       </h3>
 
