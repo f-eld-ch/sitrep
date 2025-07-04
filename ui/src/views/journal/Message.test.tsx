@@ -3,6 +3,8 @@ import MessageContainer from "./Message";
 import { vi } from "vitest";
 import type { Message, Division } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
+import fc from "fast-check";
+import Triage from "./TriageModal";
 
 // Mock useTranslation
 vi.mock("react-i18next", () => ({
@@ -112,5 +114,41 @@ describe("MessageContainer", () => {
             />
         );
         fireEvent.click(screen.getByTestId("create-task-button"));
+    });
+
+    it("renders with random message data (fast-check)", () => {
+        fc.assert(
+            fc.property(
+                fc.record({
+                    id: fc.uuid(),
+                    sender: fc.string({ minLength: 1 }).filter(s => s.trim().length > 0),
+                    senderDetail: fc.string(),
+                    receiver: fc.string({ minLength: 1 }).filter(s => s.trim().length > 0),
+                    receiverDetail: fc.string(),
+                    time: fc.date(),
+                    content: fc.string({ minLength: 10 }),
+                    priorityId: fc.constantFrom(PriorityStatus.High, PriorityStatus.Normal),
+                    triageId: fc.constantFrom(TriageStatus.Pending, TriageStatus.Triaged, TriageStatus.MoreInfo),
+                    divisions: fc.constant([]),
+                    createdAt: fc.date(),
+                    updatedAt: fc.date(),
+                    deletedAt: fc.date(),
+                    mediumId: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
+                }),
+                (msg) => {
+                    render(
+                        <MessageContainer
+                            id={msg.id}
+                            message={{ ...msg, divisions: [...msg.divisions] } as Message}
+                            divisions={[]}
+                            showControls={false}
+                        />
+                        , { reactStrictMode: false });
+                    expect(screen.getByTestId(`sender-${msg.id}`).textContent).toBe(msg.sender);
+                    expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(msg.receiver);
+                }
+            ),
+            { numRuns: 100 }
+        );
     });
 });
