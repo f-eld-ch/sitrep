@@ -24,7 +24,7 @@
 
 ## New Contributors ❤️
 
-* @step-security-bot made their first contribution in [#877](https://github.com/f-eld-ch/sitrep/pull/877)
+* @step-security-bot made their first contribution in [#878](https://github.com/f-eld-ch/sitrep/pull/878)
 
 ## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
 
