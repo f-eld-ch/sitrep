@@ -13,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: PR Conventional Commit Validation
-        uses: f-eld-ch/PRConventionalCommits@main
+        uses: f-eld-ch/PRConventionalCommits@86cd82507a797d18a90dd54260ac0effb2f32786 # main
         with:
           task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert", "security"]'
