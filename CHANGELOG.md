@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump actions/upload-artifact from 4.6.1 to 4.6.2 ([#883](https://github.com/f-eld-ch/sitrep/issues/883)) - ([3455da3](https://github.com/f-eld-ch/sitrep/commit/3455da35bc9237226894e0afacf5b136b0e2a4cc))
 - *(deps)* Bump react-i18next from 15.5.3 to 15.6.0 in /ui ([#876](https://github.com/f-eld-ch/sitrep/issues/876)) - ([6d0b2b1](https://github.com/f-eld-ch/sitrep/commit/6d0b2b111a7ce71ac59654d5bb76d26373357236))
 - *(deps)* Bump maplibre-gl from 5.6.0 to 5.6.1 in /ui ([#874](https://github.com/f-eld-ch/sitrep/issues/874)) - ([17c6f92](https://github.com/f-eld-ch/sitrep/commit/17c6f92cc6635fbf1042d59a5aabf19253cd520e))
 - *(deps)* Bump i18next from 25.2.1 to 25.3.0 in /ui ([#870](https://github.com/f-eld-ch/sitrep/issues/870)) - ([9867a56](https://github.com/f-eld-ch/sitrep/commit/9867a56f4e774c4292287bb67c570faedd917fa9))
