@@ -4,7 +4,6 @@ import { vi } from "vitest";
 import type { Message, Division } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
 import fc from "fast-check";
-import Triage from "./TriageModal";
 
 // Mock useTranslation
 vi.mock("react-i18next", () => ({
