@@ -1,8 +1,5 @@
 name: Auto Assign
-permissions:
-  issues: write
-  pull-requests: write
-  contents: read
+permissions: read-all
 on:
   issues:
     types: [opened]

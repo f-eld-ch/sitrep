@@ -1,4 +1,7 @@
 # SitRep
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10863/badge)](https://www.bestpractices.dev/projects/10863)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/f-eld-ch/sitrep/badge)](https://scorecard.dev/viewer/?uri=github.com/f-eld-ch/sitrep)
+
 
 ![Lage](docs/images/Lage1.png?raw=true "Lage")
 ![Lage2](docs/images/Lage2.png?raw=true "Lage2")

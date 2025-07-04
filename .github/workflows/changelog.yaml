@@ -1,6 +1,5 @@
 name: Changelog
-permissions:
-  contents: write
+permissions: read-all
 on:
   push:
     branches:

@@ -8,15 +8,15 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: read
-  actions: read
-  packages: read
+permissions: read-all
 
 jobs:
   ui:
     runs-on: ubuntu-latest
     name: "UI Test and Build"
+    permissions:
+      actions: read
+      packages: read  
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
