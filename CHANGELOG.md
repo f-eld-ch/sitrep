@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.6.0 to 5.6.1 in /ui ([#874](https://github.com/f-eld-ch/sitrep/issues/874)) - ([17c6f92](https://github.com/f-eld-ch/sitrep/commit/17c6f92cc6635fbf1042d59a5aabf19253cd520e))
 - *(deps)* Bump i18next from 25.2.1 to 25.3.0 in /ui ([#870](https://github.com/f-eld-ch/sitrep/issues/870)) - ([9867a56](https://github.com/f-eld-ch/sitrep/commit/9867a56f4e774c4292287bb67c570faedd917fa9))
 - *(deps)* Bump react-to-print from 3.1.0 to 3.1.1 in /ui ([#871](https://github.com/f-eld-ch/sitrep/issues/871)) - ([597b315](https://github.com/f-eld-ch/sitrep/commit/597b3154032d5407228359b1ed9d3f0e90f9d2e4))
 - *(deps)* Bump @openfeature/core from 1.8.0 to 1.8.1 in /ui ([#866](https://github.com/f-eld-ch/sitrep/issues/866)) - ([fbeacad](https://github.com/f-eld-ch/sitrep/commit/fbeacadf5abe0016f7c2b6dfa04e2d343d430d8a))
