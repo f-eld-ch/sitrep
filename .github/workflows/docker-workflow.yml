@@ -1,9 +1,5 @@
 name: Docker Build & Push
-permissions:
-  actions: write
-  contents: read
-  packages: write
-  id-token: write
+permissions: read-all
 on:
   workflow_call:
     inputs:
@@ -15,6 +11,11 @@ on:
 
 jobs:
   docker:
+    permissions:
+      actions: write
+      contents: read
+      packages: write
+      id-token: write
     runs-on: ubuntu-24.04-arm
     name: "Build and Push Sitrep Image"
     steps:
