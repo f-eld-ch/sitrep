@@ -97,8 +97,8 @@ const MessageContainer = ({
                   </div>
                   <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
-                      <div className="column is-full">{message.sender}</div>
-                      <div className="column is-full is-italic">
+                      <div className="column is-full" data-testid={`sender-${message.id}`}>{message.sender}</div>
+                      <div className="column is-full is-italic" data-testid={`sender-detail-${message.id}`}>
                         {message.senderDetail
                           ? `(${message.senderDetail})`
                           : ""}
@@ -109,13 +109,13 @@ const MessageContainer = ({
               </div>
               <div className="level-item has-text-centered is-flex-shrink-2">
                 <div className="mb-0">
-                  <div className="heading is-size-7 has-text-weight-bold">
+                  <div className="heading is-size-7 has-text-weight-bold" >
                     {t("message.receiver")}
                   </div>
                   <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
-                      <div className="column is-full">{message.receiver}</div>
-                      <div className="column is-full is-italic">
+                      <div className="column is-full" data-testid={`receiver-${message.id}`}>{message.receiver}</div>
+                      <div className="column is-full is-italic" data-testid={`receiver-detail-${message.id}`}>
                         {message.receiverDetail
                           ? `(${message.receiverDetail})`
                           : ""}
@@ -164,7 +164,7 @@ const MessageContainer = ({
             </nav>
           </div>
           <div className="column is-full" style={{ wordBreak: "break-word" }}>
-            <div className="content is-normal has-text-left">
+            <div className="content is-normal has-text-left" data-testid={`content-${message.id}`}>
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           </div>
