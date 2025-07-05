@@ -1,10 +1,9 @@
-import { fc} from "@fast-check/vitest";
+import { fc } from "@fast-check/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import type { Division, Message } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
 import MessageContainer from "./Message";
-
 
 // Mock useTranslation
 vi.mock("react-i18next", () => ({
