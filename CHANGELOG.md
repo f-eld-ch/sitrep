@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.3.0 to 25.3.1 in /ui ([#884](https://github.com/f-eld-ch/sitrep/issues/884)) - ([4fd062d](https://github.com/f-eld-ch/sitrep/commit/4fd062da8bdeb84a2e1d1664f153fc2c3c1d76d4))
 - *(deps)* Bump ossf/scorecard-action from 2.4.1 to 2.4.2 ([#882](https://github.com/f-eld-ch/sitrep/issues/882)) - ([a001005](https://github.com/f-eld-ch/sitrep/commit/a001005569c1dfed93ea7f96fcb5fc33714f7242))
 - *(deps)* Bump actions/upload-artifact from 4.6.1 to 4.6.2 ([#883](https://github.com/f-eld-ch/sitrep/issues/883)) - ([3455da3](https://github.com/f-eld-ch/sitrep/commit/3455da35bc9237226894e0afacf5b136b0e2a4cc))
 - *(deps)* Bump react-i18next from 15.5.3 to 15.6.0 in /ui ([#876](https://github.com/f-eld-ch/sitrep/issues/876)) - ([6d0b2b1](https://github.com/f-eld-ch/sitrep/commit/6d0b2b111a7ce71ac59654d5bb76d26373357236))
