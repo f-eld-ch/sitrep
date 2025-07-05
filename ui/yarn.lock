@@ -2539,6 +2539,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fast-check/vitest@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@fast-check/vitest@npm:0.2.1"
+  dependencies:
+    fast-check: "npm:^3.0.0 || ^4.0.0"
+  peerDependencies:
+    vitest: ^1 || ^2 || ^3
+  checksum: 10/7c3c4b57e83fdfd5138e671300c149ee0977045103b68f4d0f9972072aaa30964a30043e43d1d1a4b503a086b20f61cc5c5432006534cb67de258e9b4dccdc72
+  languageName: node
+  linkType: hard
+
 "@flipt-io/flipt-client-js@npm:0.2.0":
   version: 0.2.0
   resolution: "@flipt-io/flipt-client-js@npm:0.2.0"
@@ -6840,6 +6851,15 @@ __metadata:
   version: 3.0.2
   resolution: "extend@npm:3.0.2"
   checksum: 10/59e89e2dc798ec0f54b36d82f32a27d5f6472c53974f61ca098db5d4648430b725387b53449a34df38fd0392045434426b012f302b3cc049a6500ccf82877e4e
+  languageName: node
+  linkType: hard
+
+"fast-check@npm:^3.0.0 || ^4.0.0":
+  version: 4.2.0
+  resolution: "fast-check@npm:4.2.0"
+  dependencies:
+    pure-rand: "npm:^7.0.0"
+  checksum: 10/1ef33d2683f61fed9bc51de1dd410b06faed0aa5fd0c7e8f1babea48e982d4d848a6cd06b627625068cd60236b612c4ed68c3d0b1ebf13df07be71faf100211b
   languageName: node
   linkType: hard
 
@@ -11609,6 +11629,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^3.13.8"
     "@biomejs/biome": "npm:2.0.6"
+    "@fast-check/vitest": "npm:^0.2.1"
     "@flipt-io/flipt-client-js": "npm:0.2.0"
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"

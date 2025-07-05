@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
+    "@fast-check/vitest": "^0.2.1",
     "@maplibre/maplibre-gl-style-spec": "^23.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
