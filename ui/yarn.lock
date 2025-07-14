@@ -2539,14 +2539,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fast-check/vitest@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@fast-check/vitest@npm:0.2.1"
+"@fast-check/vitest@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "@fast-check/vitest@npm:0.2.2"
   dependencies:
     fast-check: "npm:^3.0.0 || ^4.0.0"
   peerDependencies:
     vitest: ^1 || ^2 || ^3
-  checksum: 10/7c3c4b57e83fdfd5138e671300c149ee0977045103b68f4d0f9972072aaa30964a30043e43d1d1a4b503a086b20f61cc5c5432006534cb67de258e9b4dccdc72
+  checksum: 10/1a06a3f33b91da1686166650a5cb25c4f25442a5f9177a929746f215f6156d43b13bfc70ec0319d1a1f7e433c3e1b636c02ae15cf899ad93ee0192da5a708d7f
   languageName: node
   linkType: hard
 
@@ -4469,12 +4469,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^24.0.11":
-  version: 24.0.11
-  resolution: "@types/node@npm:24.0.11"
+"@types/node@npm:^24.0.13":
+  version: 24.0.13
+  resolution: "@types/node@npm:24.0.13"
   dependencies:
     undici-types: "npm:~7.8.0"
-  checksum: 10/cdef579ab2933fabd7d19ba8a05e0ff1f95e95dc2f68b7e4660a1bcff67799a3f537e436d27392138e7a46f8f9bc6411f3566e0ecded50e66d9e3dab854694f4
+  checksum: 10/e438734b2f1ec1cbb88ca47134389e074fc8392f747dd1a81b9432b7d0503113c07f4238ff98a512101d576652e6cddb5faf9bc9a79dd602ce2dfc36602a365b
   languageName: node
   linkType: hard
 
@@ -11620,7 +11620,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^3.13.8"
     "@biomejs/biome": "npm:2.1.1"
-    "@fast-check/vitest": "npm:^0.2.1"
+    "@fast-check/vitest": "npm:^0.2.2"
     "@flipt-io/flipt-client-js": "npm:0.2.0"
     "@fortawesome/fontawesome-svg-core": "npm:^6.7.2"
     "@fortawesome/free-brands-svg-icons": "npm:^6.7.2"
@@ -11644,7 +11644,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.20"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^24.0.11"
+    "@types/node": "npm:^24.0.13"
     "@types/react": "npm:^18.3.23"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^18.3.7"
@@ -11688,7 +11688,7 @@ __metadata:
     undici: "npm:^7.11.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
-    vite: "npm:^7.0.3"
+    vite: "npm:^7.0.4"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.1"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -13205,9 +13205,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "vite@npm:7.0.3"
+"vite@npm:^7.0.4":
+  version: 7.0.4
+  resolution: "vite@npm:7.0.4"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.4.6"
@@ -13256,7 +13256,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/75068d79283e46be98395dd3a42eac9db4c92d550a9458049fc1501eb47944ac4bded55ce304d760f84dc91baf223e4d77069ccb222d2eb468644bed571c11a0
+  checksum: 10/e5609e6b67658d0f4bb807d21290c515e3a1c2e085aa9507404f17d836a5b830d0a8bff36f67a0509361044843c9ccb4a0b7033a511dfb5d1dc5ded49aedaa91
   languageName: node
   linkType: hard
 
