@@ -83,7 +83,7 @@
     "@types/hat": "^0.0.4",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^24.0.13",
+    "@types/node": "^24.0.14",
     "@types/react": "^18.3.23",
     "@types/react-color": "^3.0.13",
     "@types/react-dom": "^18.3.7",
