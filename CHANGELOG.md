@@ -1,7 +1,3 @@
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
 ## [25.7.0](https://github.com/f-eld-ch/sitrep/compare/v25.5.3..v25.7.0) - 2025-07-16
 
 ### ⚙️  Other
@@ -532,7 +528,7 @@ All notable changes to this project will be documented in this file.
 
 ## New Contributors ❤️
 
-* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
+* @sebug made their first contribution
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
@@ -592,6 +588,10 @@ All notable changes to this project will be documented in this file.
 
 - *(deps)* Bump ip from 2.0.0 to 2.0.1 in /ui ([#351](https://github.com/f-eld-ch/sitrep/issues/351)) - ([e1e13b5](https://github.com/f-eld-ch/sitrep/commit/e1e13b59e23c2e99c0102a7286181dac4903ad71))
 
+## New Contributors ❤️
+
+* @lukastresch made their first contribution
+* @dependabot[bot] made their first contribution
 
 ## [24.2.1](https://github.com/f-eld-ch/sitrep/compare/v24.2.0..v24.2.1) - 2024-02-20
 
@@ -870,8 +870,5 @@ Details:
 
 * @nimdanitro made their first contribution
 * @weblate made their first contribution
-* @dependabot[bot] made their first contribution
-* @lukastresch made their first contribution
-* @snyk-bot made their first contribution
 
 Made with ♥️  in Switzerland by F-ELD
