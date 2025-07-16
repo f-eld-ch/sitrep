@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Upgrade hasura to v2.48.1 ([#891](https://github.com/f-eld-ch/sitrep/issues/891)) - ([ddf29a6](https://github.com/f-eld-ch/sitrep/commit/ddf29a6d5f6cedae45cc2b33cc4ca236105305eb))
 - *(deps)* Bump i18next from 25.3.1 to 25.3.2 in /ui ([#888](https://github.com/f-eld-ch/sitrep/issues/888)) - ([fa98bb9](https://github.com/f-eld-ch/sitrep/commit/fa98bb919fa0d50e33b2b293a04bb52241b89338))
 - *(deps)* Bump i18next from 25.3.0 to 25.3.1 in /ui ([#884](https://github.com/f-eld-ch/sitrep/issues/884)) - ([4fd062d](https://github.com/f-eld-ch/sitrep/commit/4fd062da8bdeb84a2e1d1664f153fc2c3c1d76d4))
 - *(deps)* Bump ossf/scorecard-action from 2.4.1 to 2.4.2 ([#882](https://github.com/f-eld-ch/sitrep/issues/882)) - ([a001005](https://github.com/f-eld-ch/sitrep/commit/a001005569c1dfed93ea7f96fcb5fc33714f7242))
@@ -527,7 +528,7 @@
 
 ## New Contributors ❤️
 
-* @sebug made their first contribution
+* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
@@ -867,5 +868,6 @@ Details:
 * @weblate made their first contribution
 * @dependabot[bot] made their first contribution
 * @lukastresch made their first contribution
+* @snyk-bot made their first contribution
 
 Made with ♥️  in Switzerland by F-ELD
