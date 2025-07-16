@@ -20,6 +20,7 @@ staticClients:
     redirectURIs:
       - "http://localhost:4180/oauth2/callback"
       - "http://localhost:3000/oauth2/callback"
+      - "http://localhost:8081/oauth2/callback"
       -  {{ getenv "OAUTH2_PROXY_REDIRECT_URL" "https://localhost/oauth2/callback" }}
     name: "Sitrep"
     secret: {{ getenv "OAUTH2_PROXY_CLIENT_SECRET" "ZXhhbXBsZS1hcHAtc2VjcmV0" }}
