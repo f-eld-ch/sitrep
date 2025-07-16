@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -56,6 +57,31 @@ func NewServer(opts ...Option) *Server {
 			return c.Path() == "/health"
 		}),
 	))
+
+	// Cache-Control middleware for /assets/* and /map/*
+	s.router.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Before(func() {
+				path := c.Request().URL.Path
+				if c.Response().Status == http.StatusOK {
+					if strings.HasPrefix(path, "/assets/") {
+						c.Response().Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+						return
+					}
+					// map is not immutable, so we set a shorter cache time
+					if strings.HasPrefix(path, "/map/") {
+						c.Response().Header().Set("Cache-Control", "public, max-age=604800")
+						return
+					}
+				}
+
+				// for everything else set no-cache
+				c.Response().Header().Set("Cache-Control", "no-store")
+			})
+
+			return next(c)
+		}
+	})
 
 	s.router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		HTML5:      true,
