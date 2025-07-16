@@ -1,0 +1,114 @@
+package server
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync/atomic"
+	"time"
+
+	"github.com/f-eld-ch/sitrep/server/auth"
+	"github.com/f-eld-ch/sitrep/ui"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+)
+
+type Server struct {
+	logger         *slog.Logger
+	isShuttingDown atomic.Bool
+	port           uint
+	address        string
+	auth.Enforcer
+	router *echo.Echo
+	*http.Server
+}
+
+func NewServer(opts ...Option) *Server {
+	s := &Server{
+		logger:   slog.Default().WithGroup("server"),
+		port:     8081,
+		address:  "",
+		router:   echo.New(),
+		Enforcer: auth.NewLocalEnforcer(),
+	}
+
+	s.router.Use(middleware.Recover())
+
+	s.router.Use(middleware.Secure())
+	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+	s.router.Use(middleware.RequestID())
+
+	// Use the otelecho middleware with options
+	s.router.Use(otelecho.Middleware("server",
+		otelecho.WithSkipper(func(c echo.Context) bool {
+			// Skip tracing for health check endpoints
+			return c.Path() == "/health"
+		}),
+	))
+
+	s.router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		HTML5:      true,
+		Root:       ui.Build,
+		Filesystem: http.FS(ui.Assets),
+		Index:      "index.html",
+	}))
+
+	for _, opt := range opts {
+		err := opt(s)
+		if err != nil {
+			s.logger.Error("failed to apply server option", "error", err)
+			return nil
+		}
+	}
+
+	// OIDC handlers
+	oidc := s.router.Group("/oauth2")
+	oidc.GET("/sign_in", s.Enforcer.SignInHandler)
+	oidc.GET("/callback", s.Enforcer.CallbackHandler)
+	oidc.GET("/sign_out", s.Enforcer.SignOutHandler)
+	oidc.GET("/userinfo", s.Enforcer.UserInfoHandler)
+
+	s.Server = &http.Server{
+		Addr:    net.JoinHostPort(s.address, fmt.Sprint(s.port)),
+		Handler: s.router,
+	}
+
+	return s
+}
+
+func (s *Server) ListenAndServe(ctx context.Context) error {
+	s.isShuttingDown.Store(false)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer cancel()
+
+	go func() {
+		<-ctx.Done()
+		s.logger.Info("shutting down server")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := s.Server.Shutdown(ctx)
+		if err != nil {
+			s.logger.Error("failed to shutdown server", "error", err)
+		}
+	}()
+
+	//  signal and shutdown the server gracefully
+	s.Server.RegisterOnShutdown(func() {
+		s.isShuttingDown.Store(true)
+	})
+
+	s.logger.Info("starting server", "address", s.Addr)
+	return s.Server.ListenAndServe()
+}
