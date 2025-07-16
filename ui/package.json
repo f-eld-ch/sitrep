@@ -1,6 +1,6 @@
 {
   "name": "sitrep",
-  "version": "25.5.3",
+  "version": "25.7.0",
   "licsense": "AGPL-3.0-or-later",
   "private": true,
   "type": "module",

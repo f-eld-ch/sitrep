@@ -1,4 +1,8 @@
-## [unreleased]
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [25.7.0](https://github.com/f-eld-ch/sitrep/compare/v25.5.3..v25.7.0) - 2025-07-16
 
 ### ⚙️  Other
 
