@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
-	"github.com/zitadel/logging"
 
 	"github.com/zitadel/oidc/v3/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/v3/pkg/http"
@@ -34,10 +33,6 @@ func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, k
 	}
 	// enable outgoing request logging
 	client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
-	logging.EnableHTTPClient(client,
-		logging.WithClientGroup("client"),
-		logging.WithFallbackLogger(o.logger),
-	)
 
 	cookieHandler := httphelper.NewCookieHandler([]byte(key), []byte(key), httphelper.WithSameSite(http.SameSiteDefaultMode))
 	options := []rp.Option{

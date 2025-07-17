@@ -9,7 +9,20 @@ import (
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
+// Version is the version of the application, set at build time.
+var (
+	version     = "dev"
+	environment = "development" // can be overridden by environment variable
+)
+
 func main() {
+	ctx := context.Background()
+	shutdown, err := setupOpenTelemetry(ctx)
+	if err != nil {
+		slog.Error("failed to configure OpenTelemetry", "error", err)
+		return
+	}
+
 	opts := []server.Option{
 		server.WithPort(8081),
 	}
@@ -40,11 +53,16 @@ func main() {
 
 	server := server.NewServer(opts...)
 
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
-
-	err := server.ListenAndServe(context.Background())
+	err = server.ListenAndServe(ctx)
 	if err != nil {
 		slog.Error("failed to start server", "error", err)
 	}
 	slog.Info("server stopped")
+
+	err = shutdown(ctx)
+	if err != nil {
+		slog.Error("failed to shutdown OpenTelemetry", "error", err)
+	}
+
+	slog.Info("Sitrep shutdown complete")
 }

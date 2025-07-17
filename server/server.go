@@ -49,15 +49,6 @@ func NewServer(opts ...Option) *Server {
 		AllowCredentials: true,
 	}))
 	s.router.Use(middleware.RequestID())
-
-	// Use the otelecho middleware with options
-	s.router.Use(otelecho.Middleware("server",
-		otelecho.WithSkipper(func(c echo.Context) bool {
-			// Skip tracing for health check endpoints
-			return c.Path() == "/health"
-		}),
-	))
-
 	// Cache-Control middleware for /assets/* and /map/*
 	s.router.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -82,6 +73,14 @@ func NewServer(opts ...Option) *Server {
 			return next(c)
 		}
 	})
+
+	// Use the otelecho middleware with options
+	s.router.Use(otelecho.Middleware("server",
+		otelecho.WithSkipper(func(c echo.Context) bool {
+			// Skip tracing for health check endpoints
+			return c.Path() == "/health" || strings.HasPrefix(c.Path(), "/assets") || strings.HasPrefix(c.Path(), "/map")
+		}),
+	))
 
 	s.router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		HTML5:      true,
