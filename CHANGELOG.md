@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github/codeql-action from 3.29.2 to 3.29.4 ([#903](https://github.com/f-eld-ch/sitrep/issues/903)) - ([536a0b3](https://github.com/f-eld-ch/sitrep/commit/536a0b3ed25ed16874abdf404b4473fb12af0a2f))
 - *(deps)* Bump the fontawesome group across 1 directory with 5 updates ([#902](https://github.com/f-eld-ch/sitrep/issues/902)) - ([c5b0630](https://github.com/f-eld-ch/sitrep/commit/c5b0630fef64dd1b29caf9adfc883b7983197141))
 - *(deps)* Bump react-i18next from 15.6.0 to 15.6.1 in /ui ([#900](https://github.com/f-eld-ch/sitrep/issues/900)) - ([b3ed236](https://github.com/f-eld-ch/sitrep/commit/b3ed236bf4e00c4fd89f332c8ef09460fc9991b9))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.9.0 to v7.10.0 ([#897](https://github.com/f-eld-ch/sitrep/issues/897)) - ([43ade70](https://github.com/f-eld-ch/sitrep/commit/43ade705589ee7cb9244ad5579747e6985bb1cec))
