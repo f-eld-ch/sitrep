@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 15.6.0 to 15.6.1 in /ui ([#900](https://github.com/f-eld-ch/sitrep/issues/900)) - ([b3ed236](https://github.com/f-eld-ch/sitrep/commit/b3ed236bf4e00c4fd89f332c8ef09460fc9991b9))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.9.0 to v7.10.0 ([#897](https://github.com/f-eld-ch/sitrep/issues/897)) - ([43ade70](https://github.com/f-eld-ch/sitrep/commit/43ade705589ee7cb9244ad5579747e6985bb1cec))
 - *(deps)* Bump undici from 7.11.0 to 7.12.0 in /ui ([#895](https://github.com/f-eld-ch/sitrep/issues/895)) - ([802a81c](https://github.com/f-eld-ch/sitrep/commit/802a81c5458e6d671b224023e0c5f2aaf3f68257))
 - *(deps)* Bump html-react-parser from 5.2.5 to 5.2.6 in /ui ([#894](https://github.com/f-eld-ch/sitrep/issues/894)) - ([4534d7c](https://github.com/f-eld-ch/sitrep/commit/4534d7c3d95a6bbc5da10cf4de03f32b9ccc9a9e))
