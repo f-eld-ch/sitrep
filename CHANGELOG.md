@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.11.0 to 7.12.0 in /ui ([#895](https://github.com/f-eld-ch/sitrep/issues/895)) - ([802a81c](https://github.com/f-eld-ch/sitrep/commit/802a81c5458e6d671b224023e0c5f2aaf3f68257))
 - *(deps)* Bump html-react-parser from 5.2.5 to 5.2.6 in /ui ([#894](https://github.com/f-eld-ch/sitrep/issues/894)) - ([4534d7c](https://github.com/f-eld-ch/sitrep/commit/4534d7c3d95a6bbc5da10cf4de03f32b9ccc9a9e))
 - *(deps)* Bump react-router from 7.6.3 to 7.7.1 in /ui ([#904](https://github.com/f-eld-ch/sitrep/issues/904)) - ([a3727d5](https://github.com/f-eld-ch/sitrep/commit/a3727d59a4535469049d90abffe0181bab271c0a))
 
