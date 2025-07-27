@@ -17,14 +17,13 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-var OIDC rp.RelyingParty
-
 type OIDCClient struct {
 	rp           rp.RelyingParty
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
 }
 
+// NewOIDC returns a new OIDCClient
 func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, key string) (*OIDCClient, error) {
 	var err error
 	o := &OIDCClient{
@@ -59,7 +58,7 @@ func state() string {
 	return u.String()
 }
 
-// /oauth2/sign_in
+// SignInHandler initiates the authentication /oauth2/sign_in
 func (o *OIDCClient) SignInHandler(c echo.Context) error {
 	_, err := o.userInfoFrom(c)
 	// if already logged in redirect to main
@@ -67,13 +66,10 @@ func (o *OIDCClient) SignInHandler(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/")
 	}
 
-	urlOptions := []rp.URLParamOpt{
-		rp.WithPromptURLParam("Welcome back!"),
-	}
-	return echo.WrapHandler(rp.AuthURLHandler(state, o.rp, urlOptions...))(c)
+	return echo.WrapHandler(rp.AuthURLHandler(state, o.rp))(c)
 }
 
-// /oauth2/callback
+// CallbackHandler handles the auth callback from route /oauth2/callback
 func (o *OIDCClient) CallbackHandler(c echo.Context) error {
 	return echo.WrapHandler(rp.CodeExchangeHandler(rp.UserinfoCallback(o.marshalUserinfo(c)), o.rp))(c)
 }
@@ -103,7 +99,7 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 	}
 }
 
-// /oauth2/sign_out
+// SignOutHandler handles the signout /oauth2/sign_out
 func (o *OIDCClient) SignOutHandler(c echo.Context) error {
 	cookie, err := o.secureCookie.Encode("id_token", "")
 	if err != nil {
