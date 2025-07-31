@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github/codeql-action from 3.29.4 to 3.29.5 ([#911](https://github.com/f-eld-ch/sitrep/issues/911)) - ([fb6d866](https://github.com/f-eld-ch/sitrep/commit/fb6d866e957377dfe8c76aedf0d9b875477e4023))
 - *(deps)* Bump orhun/git-cliff-action from 4.4.2 to 4.5.1 ([#906](https://github.com/f-eld-ch/sitrep/issues/906)) - ([33f0cad](https://github.com/f-eld-ch/sitrep/commit/33f0cad799870870a9ac0445c43c19f47dbcaac2))
 - *(deps)* Bump github/codeql-action from 3.29.2 to 3.29.4 ([#903](https://github.com/f-eld-ch/sitrep/issues/903)) - ([536a0b3](https://github.com/f-eld-ch/sitrep/commit/536a0b3ed25ed16874abdf404b4473fb12af0a2f))
 - *(deps)* Bump the fontawesome group across 1 directory with 5 updates ([#902](https://github.com/f-eld-ch/sitrep/issues/902)) - ([c5b0630](https://github.com/f-eld-ch/sitrep/commit/c5b0630fef64dd1b29caf9adfc883b7983197141))
