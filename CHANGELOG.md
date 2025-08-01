@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump web-vitals from 5.0.3 to 5.1.0 in /ui ([#913](https://github.com/f-eld-ch/sitrep/issues/913)) - ([c26e121](https://github.com/f-eld-ch/sitrep/commit/c26e121619d5336add2a4561c47021e3ba580e4a))
 - *(deps)* Bump @apollo/client from 3.13.8 to 3.13.9 in /ui ([#908](https://github.com/f-eld-ch/sitrep/issues/908)) - ([f71252d](https://github.com/f-eld-ch/sitrep/commit/f71252dfff4f540375afa75675a33575f56702b7))
 - *(deps)* Bump undici from 7.12.0 to 7.13.0 in /ui ([#912](https://github.com/f-eld-ch/sitrep/issues/912)) - ([e4baa7b](https://github.com/f-eld-ch/sitrep/commit/e4baa7b1f9eabf5d240a7d14a028622d4668b664))
 - *(deps)* Bump github/codeql-action from 3.29.4 to 3.29.5 ([#911](https://github.com/f-eld-ch/sitrep/issues/911)) - ([fb6d866](https://github.com/f-eld-ch/sitrep/commit/fb6d866e957377dfe8c76aedf0d9b875477e4023))
@@ -545,7 +546,7 @@
 
 ## New Contributors ❤️
 
-* @sebug made their first contribution
+* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
