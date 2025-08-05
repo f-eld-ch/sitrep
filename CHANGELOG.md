@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump docker/login-action from 3.4.0 to 3.5.0 ([#916](https://github.com/f-eld-ch/sitrep/issues/916)) - ([0679c30](https://github.com/f-eld-ch/sitrep/commit/0679c307a9f9a502d46b3c017dfe93adeaf8292c))
 - *(deps)* Bump docker/metadata-action from 5.7.0 to 5.8.0 ([#915](https://github.com/f-eld-ch/sitrep/issues/915)) - ([c7ca858](https://github.com/f-eld-ch/sitrep/commit/c7ca858daddcab56106c7f18d01faba203980051))
 - *(deps)* Bump web-vitals from 5.0.3 to 5.1.0 in /ui ([#913](https://github.com/f-eld-ch/sitrep/issues/913)) - ([c26e121](https://github.com/f-eld-ch/sitrep/commit/c26e121619d5336add2a4561c47021e3ba580e4a))
 - *(deps)* Bump @apollo/client from 3.13.8 to 3.13.9 in /ui ([#908](https://github.com/f-eld-ch/sitrep/issues/908)) - ([f71252d](https://github.com/f-eld-ch/sitrep/commit/f71252dfff4f540375afa75675a33575f56702b7))
