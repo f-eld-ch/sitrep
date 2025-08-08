@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(ui)* Fix wrong translation for Incident List - ([37891b3](https://github.com/f-eld-ch/sitrep/commit/37891b328c9d4871b877e9580387b73f6f588946))
+
 ### ⚙️  Other
 
 - *(deps)* Bump react-router from 7.7.1 to 7.8.0 in /ui ([#921](https://github.com/f-eld-ch/sitrep/issues/921)) - ([98419f7](https://github.com/f-eld-ch/sitrep/commit/98419f7768f36bea2cdfed29694f9dfe70facbc3))
