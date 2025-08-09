@@ -4642,12 +4642,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^24.2.0":
-  version: 24.2.0
-  resolution: "@types/node@npm:24.2.0"
+"@types/node@npm:^24.2.1":
+  version: 24.2.1
+  resolution: "@types/node@npm:24.2.1"
   dependencies:
     undici-types: "npm:~7.10.0"
-  checksum: 10/b81501e05f15df28102baac60afbc82d30009ee0bf4dee41b7fa326ec5789d0d83dd28c418e04dc30a9513ab6afb9813edc75042aef751336d8dcfefe099709c
+  checksum: 10/cdfa7b30b2f1de71c4cf0b66ee05c71c8f39819a817bb78b4ba10545d4ca1ea9988a3614885806e90401e92938aa08e08489b1b920ba5c1406a028295019734f
   languageName: node
   linkType: hard
 
@@ -5868,10 +5868,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.4.1":
-  version: 5.4.1
-  resolution: "chalk@npm:5.4.1"
-  checksum: 10/29df3ffcdf25656fed6e95962e2ef86d14dfe03cd50e7074b06bad9ffbbf6089adbb40f75c00744d843685c8d008adaf3aed31476780312553caf07fa86e5bc7
+"chalk@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "chalk@npm:5.5.0"
+  checksum: 10/19f6905b47b628541976a534e2f39c3779f7f9276ff9693cb8f7cdb3e3e09ee5dee16e0c3768632fbb41c2a1f1653ee0041ea7730428b804068945eb0bab09c4
   languageName: node
   linkType: hard
 
@@ -9252,11 +9252,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:^16.1.4":
-  version: 16.1.4
-  resolution: "lint-staged@npm:16.1.4"
+"lint-staged@npm:^16.1.5":
+  version: 16.1.5
+  resolution: "lint-staged@npm:16.1.5"
   dependencies:
-    chalk: "npm:^5.4.1"
+    chalk: "npm:^5.5.0"
     commander: "npm:^14.0.0"
     debug: "npm:^4.4.1"
     lilconfig: "npm:^3.1.3"
@@ -9265,10 +9265,10 @@ __metadata:
     nano-spawn: "npm:^1.0.2"
     pidtree: "npm:^0.6.0"
     string-argv: "npm:^0.3.2"
-    yaml: "npm:^2.8.0"
+    yaml: "npm:^2.8.1"
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 10/71330be72e1ca37715f4098eefdc634c6cb4948323ba1e88717b11376f18d8add9b851e5289f0814f10d25aa379aa77efba73ef0b717931632b8f6aae6c3f61d
+  checksum: 10/02b284f89d7b8118e1b27b1f2068017ed84407e57a1166463789caa65f3429f206372c483bc37304ce03dcb30bd1dd3e624f0502ae4973d440fe73cdd04e0747
   languageName: node
   linkType: hard
 
@@ -11873,7 +11873,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.20"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^24.2.0"
+    "@types/node": "npm:^24.2.1"
     "@types/react": "npm:^18.3.23"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^18.3.7"
@@ -11895,7 +11895,7 @@ __metadata:
     i18next-browser-languagedetector: "npm:^8.2.0"
     jest: "npm:^30.0.5"
     jsdom: "npm:^26.1.0"
-    lint-staged: "npm:^16.1.4"
+    lint-staged: "npm:^16.1.5"
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:5.6.2"
@@ -11917,7 +11917,7 @@ __metadata:
     undici: "npm:^7.13.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
-    vite: "npm:^7.1.0"
+    vite: "npm:^7.1.1"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.2"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -13443,9 +13443,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.1.0":
-  version: 7.1.0
-  resolution: "vite@npm:7.1.0"
+"vite@npm:^7.1.1":
+  version: 7.1.1
+  resolution: "vite@npm:7.1.1"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.4.6"
@@ -13494,7 +13494,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/255f17e7933306e05a6ae7136c8e7d29b48e35e2c657da75f515a8a6b802c008e46fdd62e4ec35a3aca64cdd17ad1dc3998c6c4a32650c79d5f7f3b0f9ddcbb8
+  checksum: 10/42d13cee247410843a1dad3507600f886f8139c9e718a94c2981f0810a6b35a9b78a71b9bae5c375559ea404b22f545ead7d530431629850b4c47c232af06fd5
   languageName: node
   linkType: hard
 
@@ -14067,12 +14067,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.8.0":
-  version: 2.8.0
-  resolution: "yaml@npm:2.8.0"
+"yaml@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "yaml@npm:2.8.1"
   bin:
     yaml: bin.mjs
-  checksum: 10/7d4bd9c10d0e467601f496193f2ac254140f8e36f96f5ff7f852b9ce37974168eb7354f4c36dc8837dde527a2043d004b6aff48818ec24a69ab2dd3c6b6c381c
+  checksum: 10/eae07b3947d405012672ec17ce27348aea7d1fa0534143355d24a43a58f5e05652157ea2182c4fe0604f0540be71f99f1173f9d61018379404507790dff17665
   languageName: node
   linkType: hard
 
