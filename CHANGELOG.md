@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github/codeql-action from 3.29.7 to 3.29.8 ([#923](https://github.com/f-eld-ch/sitrep/issues/923)) - ([658eda9](https://github.com/f-eld-ch/sitrep/commit/658eda93e1fa2d6d40be9b100d19250818d6ebe1))
 - *(deps)* Bump react-router from 7.7.1 to 7.8.0 in /ui ([#921](https://github.com/f-eld-ch/sitrep/issues/921)) - ([98419f7](https://github.com/f-eld-ch/sitrep/commit/98419f7768f36bea2cdfed29694f9dfe70facbc3))
 - *(deps)* Bump maplibre-gl from 5.6.1 to 5.6.2 in /ui ([#918](https://github.com/f-eld-ch/sitrep/issues/918)) - ([d718b85](https://github.com/f-eld-ch/sitrep/commit/d718b85a25ba92a23d49b09c8514ecc6ccfa915d))
 - *(deps)* Bump docker/login-action from 3.4.0 to 3.5.0 ([#916](https://github.com/f-eld-ch/sitrep/issues/916)) - ([0679c30](https://github.com/f-eld-ch/sitrep/commit/0679c307a9f9a502d46b3c017dfe93adeaf8292c))
