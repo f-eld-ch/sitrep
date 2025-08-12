@@ -1,30 +1,11 @@
 import { FliptWebProvider } from "@openfeature/flipt-web-provider";
 import {
-  type EvaluationContext,
-  InMemoryProvider,
   OpenFeature,
   OpenFeatureProvider,
 } from "@openfeature/react-sdk";
 import { type PropsWithChildren, useContext, useEffect } from "react";
 
 import { UserContext } from "utils";
-
-const localFlagConfig = {
-  "new-message": {
-    disabled: false,
-    variants: {
-      on: true,
-      off: false,
-    },
-    defaultVariant: "on",
-    contextEvaluator: (context: EvaluationContext) => {
-      if (context.silly) {
-        return "on";
-      }
-      return "off";
-    },
-  },
-};
 
 const Provider = (props: PropsWithChildren) => {
   const { children } = props;
@@ -33,8 +14,7 @@ const Provider = (props: PropsWithChildren) => {
   useEffect(() => {
     const fliptProvider = new FliptWebProvider("sitrep-ui", {
       url: "https://flipt.sitrep.ch",
-    });
-    OpenFeature.setProvider("local", new InMemoryProvider(localFlagConfig));
+    }, console );
     OpenFeature.setProvider(fliptProvider);
   }, []);
 
