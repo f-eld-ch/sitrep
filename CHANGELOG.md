@@ -1,7 +1,39 @@
-## [unreleased]
+## [25.8.0](https://github.com/f-eld-ch/sitrep/compare/v25.7.0..v25.8.0) - 2025-08-12
+
+### 🐛 Bug Fixes
+
+- *(ui)* Downgrade openfeature/flipt-web-provider to 0.1.2 ([#932](https://github.com/f-eld-ch/sitrep/issues/932)) - ([16d7ee1](https://github.com/f-eld-ch/sitrep/commit/16d7ee1e4ad98cd4368673b7df44839f05553ddd))
+- *(ui)* Fix wrong translation for Incident List - ([37891b3](https://github.com/f-eld-ch/sitrep/commit/37891b328c9d4871b877e9580387b73f6f588946))
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.3.2 to 25.3.4 in /ui ([#930](https://github.com/f-eld-ch/sitrep/issues/930)) - ([497f339](https://github.com/f-eld-ch/sitrep/commit/497f3391b8807decf82cd62bd318dc0cf6da5ac7))
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.10.0 to v7.11.0 ([#928](https://github.com/f-eld-ch/sitrep/issues/928)) - ([c589ce9](https://github.com/f-eld-ch/sitrep/commit/c589ce974a61ebe059ce7a82b089eb35114f1b09))
+- *(deps)* Bump github/codeql-action from 3.29.7 to 3.29.8 ([#923](https://github.com/f-eld-ch/sitrep/issues/923)) - ([658eda9](https://github.com/f-eld-ch/sitrep/commit/658eda93e1fa2d6d40be9b100d19250818d6ebe1))
+- *(deps)* Bump react-router from 7.7.1 to 7.8.0 in /ui ([#921](https://github.com/f-eld-ch/sitrep/issues/921)) - ([98419f7](https://github.com/f-eld-ch/sitrep/commit/98419f7768f36bea2cdfed29694f9dfe70facbc3))
+- *(deps)* Bump maplibre-gl from 5.6.1 to 5.6.2 in /ui ([#918](https://github.com/f-eld-ch/sitrep/issues/918)) - ([d718b85](https://github.com/f-eld-ch/sitrep/commit/d718b85a25ba92a23d49b09c8514ecc6ccfa915d))
+- *(deps)* Bump docker/login-action from 3.4.0 to 3.5.0 ([#916](https://github.com/f-eld-ch/sitrep/issues/916)) - ([0679c30](https://github.com/f-eld-ch/sitrep/commit/0679c307a9f9a502d46b3c017dfe93adeaf8292c))
+- *(deps)* Bump docker/metadata-action from 5.7.0 to 5.8.0 ([#915](https://github.com/f-eld-ch/sitrep/issues/915)) - ([c7ca858](https://github.com/f-eld-ch/sitrep/commit/c7ca858daddcab56106c7f18d01faba203980051))
+- *(deps)* Bump web-vitals from 5.0.3 to 5.1.0 in /ui ([#913](https://github.com/f-eld-ch/sitrep/issues/913)) - ([c26e121](https://github.com/f-eld-ch/sitrep/commit/c26e121619d5336add2a4561c47021e3ba580e4a))
+- *(deps)* Bump @apollo/client from 3.13.8 to 3.13.9 in /ui ([#908](https://github.com/f-eld-ch/sitrep/issues/908)) - ([f71252d](https://github.com/f-eld-ch/sitrep/commit/f71252dfff4f540375afa75675a33575f56702b7))
+- *(deps)* Bump undici from 7.12.0 to 7.13.0 in /ui ([#912](https://github.com/f-eld-ch/sitrep/issues/912)) - ([e4baa7b](https://github.com/f-eld-ch/sitrep/commit/e4baa7b1f9eabf5d240a7d14a028622d4668b664))
+- *(deps)* Bump github/codeql-action from 3.29.4 to 3.29.5 ([#911](https://github.com/f-eld-ch/sitrep/issues/911)) - ([fb6d866](https://github.com/f-eld-ch/sitrep/commit/fb6d866e957377dfe8c76aedf0d9b875477e4023))
+- *(deps)* Bump orhun/git-cliff-action from 4.4.2 to 4.5.1 ([#906](https://github.com/f-eld-ch/sitrep/issues/906)) - ([33f0cad](https://github.com/f-eld-ch/sitrep/commit/33f0cad799870870a9ac0445c43c19f47dbcaac2))
+- *(deps)* Bump github/codeql-action from 3.29.2 to 3.29.4 ([#903](https://github.com/f-eld-ch/sitrep/issues/903)) - ([536a0b3](https://github.com/f-eld-ch/sitrep/commit/536a0b3ed25ed16874abdf404b4473fb12af0a2f))
+- *(deps)* Bump the fontawesome group across 1 directory with 5 updates ([#902](https://github.com/f-eld-ch/sitrep/issues/902)) - ([c5b0630](https://github.com/f-eld-ch/sitrep/commit/c5b0630fef64dd1b29caf9adfc883b7983197141))
+- *(deps)* Bump react-i18next from 15.6.0 to 15.6.1 in /ui ([#900](https://github.com/f-eld-ch/sitrep/issues/900)) - ([b3ed236](https://github.com/f-eld-ch/sitrep/commit/b3ed236bf4e00c4fd89f332c8ef09460fc9991b9))
+- *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.9.0 to v7.10.0 ([#897](https://github.com/f-eld-ch/sitrep/issues/897)) - ([43ade70](https://github.com/f-eld-ch/sitrep/commit/43ade705589ee7cb9244ad5579747e6985bb1cec))
+- *(deps)* Bump undici from 7.11.0 to 7.12.0 in /ui ([#895](https://github.com/f-eld-ch/sitrep/issues/895)) - ([802a81c](https://github.com/f-eld-ch/sitrep/commit/802a81c5458e6d671b224023e0c5f2aaf3f68257))
+- *(deps)* Bump html-react-parser from 5.2.5 to 5.2.6 in /ui ([#894](https://github.com/f-eld-ch/sitrep/issues/894)) - ([4534d7c](https://github.com/f-eld-ch/sitrep/commit/4534d7c3d95a6bbc5da10cf4de03f32b9ccc9a9e))
+- *(deps)* Bump react-router from 7.6.3 to 7.7.1 in /ui ([#904](https://github.com/f-eld-ch/sitrep/issues/904)) - ([a3727d5](https://github.com/f-eld-ch/sitrep/commit/a3727d59a4535469049d90abffe0181bab271c0a))
+
+
+## [25.7.0](https://github.com/f-eld-ch/sitrep/compare/v25.5.3..v25.7.0) - 2025-07-16
+
+### ⚙️  Other
+
+- *(deps)* Upgrade hasura to v2.48.1 ([#891](https://github.com/f-eld-ch/sitrep/issues/891)) - ([ddf29a6](https://github.com/f-eld-ch/sitrep/commit/ddf29a6d5f6cedae45cc2b33cc4ca236105305eb))
+- *(deps)* Bump i18next from 25.3.1 to 25.3.2 in /ui ([#888](https://github.com/f-eld-ch/sitrep/issues/888)) - ([fa98bb9](https://github.com/f-eld-ch/sitrep/commit/fa98bb919fa0d50e33b2b293a04bb52241b89338))
 - *(deps)* Bump i18next from 25.3.0 to 25.3.1 in /ui ([#884](https://github.com/f-eld-ch/sitrep/issues/884)) - ([4fd062d](https://github.com/f-eld-ch/sitrep/commit/4fd062da8bdeb84a2e1d1664f153fc2c3c1d76d4))
 - *(deps)* Bump ossf/scorecard-action from 2.4.1 to 2.4.2 ([#882](https://github.com/f-eld-ch/sitrep/issues/882)) - ([a001005](https://github.com/f-eld-ch/sitrep/commit/a001005569c1dfed93ea7f96fcb5fc33714f7242))
 - *(deps)* Bump actions/upload-artifact from 4.6.1 to 4.6.2 ([#883](https://github.com/f-eld-ch/sitrep/issues/883)) - ([3455da3](https://github.com/f-eld-ch/sitrep/commit/3455da35bc9237226894e0afacf5b136b0e2a4cc))

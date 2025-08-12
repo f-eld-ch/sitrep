@@ -3,22 +3,6 @@
 # dependencies
 .idea
 .vscode
-node_modules
-ui/node_modules
-ui/stats.html
-ui/.pnp.*
-ui/.yarn/*
-!ui/.yarn/patches
-!ui/.yarn/plugins
-!ui/.yarn/releases
-!ui/.yarn/sdks
-!ui/.yarn/versions
-
-# testing
-ui/coverage
-
-# production
-ui/build
 
 # misc
 .DS_Store
@@ -52,37 +36,3 @@ coverage
 
 # nyc test coverage
 .nyc_output
-
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
-.grunt
-
-# Bower dependency directory (https://bower.io/)
-bower_components
-
-# node-waf configuration
-.lock-wscript
-
-# Compiled binary addons (http://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directories
-ui/node_modules/
-ui/jspm_packages/
-
-# Typescript v1 declaration files
-ui/typings/
-
-# Optional npm cache directory
-ui/.npm
-
-# Optional eslint cache
-ui/.eslintcache
-
-# Optional REPL history
-ui/.node_repl_history
-
-# Output of 'npm pack'
-ui/*.tgz
-
-# Yarn Integrity file
-ui/.yarn-integrity
