@@ -7,6 +7,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.3.2 to 25.3.4 in /ui ([#930](https://github.com/f-eld-ch/sitrep/issues/930)) - ([497f339](https://github.com/f-eld-ch/sitrep/commit/497f3391b8807decf82cd62bd318dc0cf6da5ac7))
 - *(deps)* Bump oauth2-proxy/oauth2-proxy from v7.10.0 to v7.11.0 ([#928](https://github.com/f-eld-ch/sitrep/issues/928)) - ([c589ce9](https://github.com/f-eld-ch/sitrep/commit/c589ce974a61ebe059ce7a82b089eb35114f1b09))
 - *(deps)* Bump github/codeql-action from 3.29.7 to 3.29.8 ([#923](https://github.com/f-eld-ch/sitrep/issues/923)) - ([658eda9](https://github.com/f-eld-ch/sitrep/commit/658eda93e1fa2d6d40be9b100d19250818d6ebe1))
 - *(deps)* Bump react-router from 7.7.1 to 7.8.0 in /ui ([#921](https://github.com/f-eld-ch/sitrep/issues/921)) - ([98419f7](https://github.com/f-eld-ch/sitrep/commit/98419f7768f36bea2cdfed29694f9dfe70facbc3))
