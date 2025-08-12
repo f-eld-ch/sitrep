@@ -2,6 +2,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(ui)* Downgrade openfeature/flipt-web-provider to 0.1.2 ([#932](https://github.com/f-eld-ch/sitrep/issues/932)) - ([16d7ee1](https://github.com/f-eld-ch/sitrep/commit/16d7ee1e4ad98cd4368673b7df44839f05553ddd))
 - *(ui)* Fix wrong translation for Incident List - ([37891b3](https://github.com/f-eld-ch/sitrep/commit/37891b328c9d4871b877e9580387b73f6f588946))
 
 ### ⚙️  Other
