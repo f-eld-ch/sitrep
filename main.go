@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
-	"os"
 
 	"github.com/f-eld-ch/sitrep/server"
 	"github.com/f-eld-ch/sitrep/server/auth"
+	"github.com/spf13/viper"
 )
 
 // Version is the version of the application, set at build time.
@@ -14,6 +14,19 @@ var (
 	version     = "dev"
 	environment = "development" // can be overridden by environment variable
 )
+
+func init() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+
+	_ = viper.BindEnv("oidc_client_id", "OIDC_CLIENT_ID", "OAUTH2_CLIENT_ID")
+	_ = viper.BindEnv("oidc_issuer", "OIDC_ISSUER", "OAUTH2_ISSUER")
+	_ = viper.BindEnv("oidc_client_secret", "OIDC_CLIENT_SECRET", "OAUTH2_CLIENT_SECRET")
+	_ = viper.BindEnv("oidc_redirect_url", "OIDC_REDIRECT_URL", "OAUTH2_REDIRECT_URL")
+	_ = viper.BindEnv("cookie_key", "COOKIE_KEY", "OAUTH2_COOKIE_KEY", "OIDC_COOKIE_KEY")
+}
 
 func main() {
 	ctx := context.Background()
@@ -27,12 +40,12 @@ func main() {
 		server.WithPort(8081),
 	}
 
-	if os.Getenv("OIDC_CLIENT_ID") != "" && os.Getenv("OIDC_ISSUER") != "" {
-		issuer := os.Getenv("OIDC_ISSUER")
-		clientID := os.Getenv("OIDC_CLIENT_ID")
-		clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
-		redirectURI := os.Getenv("OIDC_REDIRECT_URL")
-		key := os.Getenv("OIDC_COOKIE_KEY")
+	if viper.GetString("oidc_client_id") != "" && viper.GetString("oidc_issuer") != "" {
+		clientID := viper.GetString("oidc_client_id")
+		issuer := viper.GetString("oidc_issuer")
+		clientSecret := viper.GetString("oidc_client_secret")
+		redirectURI := viper.GetString("oidc_redirect_url")
+		key := viper.GetString("cookie_key")
 
 		oidcClient, err := auth.NewOIDC(context.Background(), issuer, clientID, clientSecret, redirectURI, key)
 		if err != nil {
