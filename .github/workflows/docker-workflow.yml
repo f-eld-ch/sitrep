@@ -36,8 +36,7 @@ jobs:
 
       - name: Install Go dependencies
         run: go mod download
-      - name: Run Go Generate to generate assets
-        run: go generate ./...
+
       - name: Go Test
         run: go test ./...
 
