@@ -48,7 +48,7 @@
   },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start": "VERSION=dev GIT_SHA=HEAD vite",
+    "start": "vite",
     "build": "tsc && vite build",
     "test": "vitest",
     "preview": "vite preview",

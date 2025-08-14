@@ -22,17 +22,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
-        with:
-          # Enable driver-specific options for improved caching
-          driver-opts: |
-            image=moby/buildkit:latest
-            network=host
       
       - name: Download UI build artifacts
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
@@ -40,9 +29,21 @@ jobs:
           name: ui-build
           path: ui/build/
       
-      - name: Docker meta for main app
-        id: meta-app
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - uses: ko-build/setup-ko@v0.9
+
+      - name: Install Go dependencies
+        run: go mod download
+      - name: Run Go Generate to generate assets
+        run: go generate ./...
+      - name: Go Test
+        run: go test ./...
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/f-eld-ch/sitrep
           tags: |
@@ -58,33 +59,31 @@ jobs:
             # priority 600
             type=ref,event=branch
             type=ref,event=pr,prefix=pr-,enable=true
-      
-      - name: Login to GHCR
-        if: inputs.push
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build and push sitrep image
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-        with:
-          context: .
-          push: ${{ inputs.push }}
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta-app.outputs.tags }}
-          labels: ${{ steps.meta-app.outputs.labels }}
-          # Improved caching configuration
-          cache-from: |
-            type=gha,scope=sitrep-${{ github.ref_name }}
-            type=gha,scope=sitrep-main
-          cache-to: type=gha,mode=max,scope=sitrep-${{ github.ref_name }}
-          # Add provenance and SBOM attestation
-          provenance: mode=max
-          sbom: true
-          # Optimized build arguments
-          build-args: |
-            VERSION=${{ fromJSON(steps.meta-app.outputs.json).labels['org.opencontainers.image.version'] || 'dev' }}
-            GIT_SHA=${{ github.sha }}
-            BUILDTIME=${{ fromJSON(steps.meta-app.outputs.json).labels['org.opencontainers.image.created'] }}
+      - name: Prepare Image Tags and Labels
+        id: image_tags_labels
+        run: |
+          # prepare tags
+          tags=""
+          separator=""
+          prefix=${KO_DOCKER_REPO}
+          IFS=$'\n'
+          for tag in ${DOCKER_METADATA_OUTPUT_TAGS}; do
+            tags="$tags${separator}${tag#${prefix}:}"
+            separator=","
+          done
+          echo "tags=$tags" >> $GITHUB_OUTPUT
+
+          # prepare labels
+          labels=""
+          IFS=$'\n'
+          separator=""
+          for label in ${DOCKER_METADATA_OUTPUT_LABELS}; do
+            labels="${labels}${separator}--image-label '$label'"
+            separator=" "
+          done
+          echo "labels=$labels" >> $GITHUB_OUTPUT
+      - name: Ko Build
+        env:
+          Version: ${{ steps.meta.outputs.version }}
+        run: >
+          ko build --bare . --tags ${{ steps.image_tags_labels.outputs.tags }} ${{ steps.image_tags_labels.outputs.labels }}

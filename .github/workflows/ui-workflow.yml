@@ -27,25 +27,6 @@ jobs:
           cache: yarn
           cache-dependency-path: "ui/yarn.lock"
       
-      - name: Extract version
-        id: version
-        if: inputs.build
-        run: |
-          # For tags, use the tag name without v prefix
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          # For branches, use branch name
-          elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            VERSION=${GITHUB_REF#refs/heads/}
-          # For pull requests, use PR number
-          elif [[ $GITHUB_REF == refs/pull/* ]]; then
-            VERSION=pr-${{ github.event.pull_request.number }}
-          # Otherwise fallback to commit SHA
-          else
-            VERSION=${GITHUB_SHA::8}
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
@@ -61,9 +42,6 @@ jobs:
       - name: Build ui
         if: inputs.build
         run: yarn build
-        env:
-          GIT_SHA: ${{ github.sha }}
-          VERSION: ${{ steps.version.outputs.version }}
         working-directory: ui
       
       - name: Upload UI build artifacts
