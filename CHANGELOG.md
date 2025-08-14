@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump @openfeature/web-sdk from 1.5.0 to 1.6.0 in /ui ([#939](https://github.com/f-eld-ch/sitrep/issues/939)) - ([d770971](https://github.com/f-eld-ch/sitrep/commit/d770971729e6fc2c7ac4026cb47a16823c35228c))
+- *(deps)* Bump @openfeature/core from 1.8.1 to 1.9.0 in /ui ([#938](https://github.com/f-eld-ch/sitrep/issues/938)) - ([790f17e](https://github.com/f-eld-ch/sitrep/commit/790f17e2902dec3cedff4c9fd74ffa7a480225ca))
+
+
 ## [25.8.0](https://github.com/f-eld-ch/sitrep/compare/v25.7.0..v25.8.0) - 2025-08-12
 
 ### 🐛 Bug Fixes
