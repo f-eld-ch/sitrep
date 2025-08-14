@@ -10,7 +10,7 @@ import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
 process.env.VITE_SHA_VERSION = git.long("../");
-process.env.VITE_VERSION = git.tag("../");
+process.env.VITE_VERSION = git.tag(false);
 
 // https://vitejs.dev/config/
 export default defineConfig({

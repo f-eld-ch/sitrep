@@ -21,11 +21,11 @@ func init() {
 	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 
-	_ = viper.BindEnv("oidc_client_id", "OIDC_CLIENT_ID", "OAUTH2_CLIENT_ID")
-	_ = viper.BindEnv("oidc_issuer", "OIDC_ISSUER", "OAUTH2_ISSUER")
-	_ = viper.BindEnv("oidc_client_secret", "OIDC_CLIENT_SECRET", "OAUTH2_CLIENT_SECRET")
-	_ = viper.BindEnv("oidc_redirect_url", "OIDC_REDIRECT_URL", "OAUTH2_REDIRECT_URL")
-	_ = viper.BindEnv("cookie_key", "COOKIE_KEY", "OAUTH2_COOKIE_KEY", "OIDC_COOKIE_KEY")
+	_ = viper.BindEnv("oidc_client_id", "OIDC_CLIENT_ID", "OAUTH2_PROXY_CLIENT_ID")
+	_ = viper.BindEnv("oidc_issuer", "OIDC_ISSUER", "OAUTH2_PROXY_OIDC_ISSUER_URL")
+	_ = viper.BindEnv("oidc_client_secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET")
+	_ = viper.BindEnv("oidc_redirect_url", "OIDC_REDIRECT_URL", "OAUTH2_PROXY_REDIRECT_URL")
+	_ = viper.BindEnv("cookie_key", "COOKIE_KEY", "OAUTH2_PROXY_COOKIE_SECRET", "OIDC_COOKIE_KEY")
 }
 
 func main() {
