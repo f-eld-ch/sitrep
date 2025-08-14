@@ -3364,10 +3364,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/core@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "@openfeature/core@npm:1.8.1"
-  checksum: 10/0d779718705d09a056b3e2a62f9a6b22706374f4caf0bc48ad9232993c9bc44a180d8408861e72dbbc7a423ec7b87444c23ca16e86456b6754cc3de78aa2e688
+"@openfeature/core@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@openfeature/core@npm:1.9.0"
+  checksum: 10/c6d20edc09053afd99752fe46d8328158680950bca4b86679f67f79249d7226eea127b31fffdc38e26ecb729f2bab5a4a5a7c1db708ae76b7fbbac68cd56f094
   languageName: node
   linkType: hard
 
@@ -11819,7 +11819,7 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^0.2.3"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
     "@maplibre/maplibre-gl-style-spec": "npm:^23.3.0"
-    "@openfeature/core": "npm:^1.8.1"
+    "@openfeature/core": "npm:^1.9.0"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
     "@openfeature/react-sdk": "npm:^1.0.0"
     "@openfeature/web-sdk": "npm:^1.5.0"
