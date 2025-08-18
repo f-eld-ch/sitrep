@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.8.0 to 7.8.1 in /ui ([#944](https://github.com/f-eld-ch/sitrep/issues/944)) - ([e3dff8a](https://github.com/f-eld-ch/sitrep/commit/e3dff8a27afbe090ba1e91c58f3ec36b6c28ea08))
 - *(deps)* Bump @openfeature/web-sdk from 1.6.0 to 1.6.1 in /ui ([#941](https://github.com/f-eld-ch/sitrep/issues/941)) - ([ea5ed46](https://github.com/f-eld-ch/sitrep/commit/ea5ed461cabadc9708a4606d0727974d512ed31a))
 - *(deps)* Bump i18next from 25.3.4 to 25.3.6 in /ui ([#942](https://github.com/f-eld-ch/sitrep/issues/942)) - ([8232b1d](https://github.com/f-eld-ch/sitrep/commit/8232b1daf9e917abc01b28f7370eb868c231d90d))
 - *(deps)* Bump flipt-io/setup-action from 0.4.0 to 0.5.0 ([#936](https://github.com/f-eld-ch/sitrep/issues/936)) - ([e24208b](https://github.com/f-eld-ch/sitrep/commit/e24208be5b0aeaafe0cbbd0bccb599511fbb9eae))
