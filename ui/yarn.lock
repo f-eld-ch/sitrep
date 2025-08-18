@@ -3393,12 +3393,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/web-sdk@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "@openfeature/web-sdk@npm:1.6.0"
+"@openfeature/web-sdk@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "@openfeature/web-sdk@npm:1.6.1"
   peerDependencies:
-    "@openfeature/core": ^1.8.0
-  checksum: 10/5f63cae76d8d9a22dfe1e124034a0ef6f543be6371df44f72d67b2ab54d7ad16d5e1bff88621f776259ecf5eaf0a839810c14ab2b8c0ea27bca9b1d3353e7764
+    "@openfeature/core": ^1.9.0
+  checksum: 10/8bd7d1ea386e21cdd7492cab2fd1d2b138b4e6a376a4c0a40244633e5955f6452039bc2633fc5230bd7b494506a4137ba7210d40850634f9618f77a0ee435f9d
   languageName: node
   linkType: hard
 
@@ -11821,7 +11821,7 @@ __metadata:
     "@openfeature/core": "npm:^1.9.0"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
     "@openfeature/react-sdk": "npm:^1.0.0"
-    "@openfeature/web-sdk": "npm:^1.6.0"
+    "@openfeature/web-sdk": "npm:^1.6.1"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.7.0"
     "@testing-library/react": "npm:^16.3.0"
