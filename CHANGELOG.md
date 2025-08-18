@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.3.4 to 25.3.6 in /ui ([#942](https://github.com/f-eld-ch/sitrep/issues/942)) - ([8232b1d](https://github.com/f-eld-ch/sitrep/commit/8232b1daf9e917abc01b28f7370eb868c231d90d))
 - *(deps)* Bump flipt-io/setup-action from 0.4.0 to 0.5.0 ([#936](https://github.com/f-eld-ch/sitrep/issues/936)) - ([e24208b](https://github.com/f-eld-ch/sitrep/commit/e24208be5b0aeaafe0cbbd0bccb599511fbb9eae))
 - *(deps)* Bump @openfeature/web-sdk from 1.5.0 to 1.6.0 in /ui ([#939](https://github.com/f-eld-ch/sitrep/issues/939)) - ([d770971](https://github.com/f-eld-ch/sitrep/commit/d770971729e6fc2c7ac4026cb47a16823c35228c))
 - *(deps)* Bump @openfeature/core from 1.8.1 to 1.9.0 in /ui ([#938](https://github.com/f-eld-ch/sitrep/issues/938)) - ([790f17e](https://github.com/f-eld-ch/sitrep/commit/790f17e2902dec3cedff4c9fd74ffa7a480225ca))
