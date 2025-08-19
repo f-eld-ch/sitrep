@@ -11878,6 +11878,7 @@ __metadata:
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.1.2"
+    vite-bundle-analyzer: "npm:^1.2.1"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.2"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -13279,6 +13280,15 @@ __metadata:
     unist-util-stringify-position: "npm:^4.0.0"
     vfile-message: "npm:^4.0.0"
   checksum: 10/7f8412f9ce7709d3be4041fd68a159e2cf96f9c9a4f095bcb18d1561009757b8efb37b71d0ae087e5202fe0e3b3162aae0adf92e30e2448a45645912c23c4ab2
+  languageName: node
+  linkType: hard
+
+"vite-bundle-analyzer@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "vite-bundle-analyzer@npm:1.2.1"
+  bin:
+    analyze: dist/bin.js
+  checksum: 10/8be1159e02608140785034fb0233ac5ecba31fc8fb9e29f42b451dc04d092382a63785d846dce17d8ebab716761bc9f356c5c89be357b479492848ad655090bd
   languageName: node
   linkType: hard
 
