@@ -10950,14 +10950,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^15.6.1":
-  version: 15.6.1
-  resolution: "react-i18next@npm:15.6.1"
+"react-i18next@npm:^15.7.1":
+  version: 15.7.1
+  resolution: "react-i18next@npm:15.7.1"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
     html-parse-stringify: "npm:^3.0.1"
   peerDependencies:
-    i18next: ">= 23.2.3"
+    i18next: ">= 23.4.0"
     react: ">= 16.8.0"
     typescript: ^5
   peerDependenciesMeta:
@@ -10967,7 +10967,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/f8da83078eabbd4eadf848754881fb65a5c97de72f778b473a4a64add18d4b39794a1da9c95cce827ce30d5236328807228dfbe566dbc355cd0b46d3cbb110c3
+  checksum: 10/4484e26207c7843eba2236ce151134c53ec7cfb30d25a1ed7b8bc5b304c33ec335e7aa86322548bd9896508796149a06f90206b0f30e3dabf099a0af4149bbbd
   languageName: node
   linkType: hard
 
@@ -11864,7 +11864,7 @@ __metadata:
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.3.1"
-    react-i18next: "npm:^15.6.1"
+    react-i18next: "npm:^15.7.1"
     react-map-gl: "npm:~8.0.4"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.8.1"
