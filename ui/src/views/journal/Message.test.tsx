@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useUniqueElementIds: required to test for ids */
 import { fc } from "@fast-check/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
