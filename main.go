@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"errors"
 	"log/slog"
+	"net/http"
 
 	"github.com/f-eld-ch/sitrep/server"
 	"github.com/f-eld-ch/sitrep/server/auth"
@@ -13,8 +15,7 @@ import (
 
 // Version is the version of the application, set at build time.
 var (
-	version     = "dev"
-	environment = "development" // can be overridden by environment variable
+	version = "dev"
 )
 
 func init() {
@@ -93,7 +94,7 @@ func main() {
 	server := server.NewServer(opts...)
 
 	err = server.ListenAndServe(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("failed to start server", "error", err)
 	}
 	slog.Info("server stopped")

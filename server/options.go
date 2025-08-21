@@ -1,14 +1,12 @@
 package server
 
 import (
-	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/f-eld-ch/sitrep/server/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/zitadel/logging"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -46,11 +44,6 @@ func WithApiV1Proxy(upstream string) Option {
 		hasura, _ := url.Parse(upstream)
 
 		client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
-		logging.EnableHTTPClient(client,
-			logging.WithClientGroup("client"),
-			logging.WithFallbackLogger(slog.Default().WithGroup("hasura_client")),
-		)
-
 		apiv1.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 			// add the id token to the request to hasura
 			return func(c echo.Context) error {

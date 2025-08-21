@@ -47,7 +47,6 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 		resource.WithAttributes(
 			semconv.ServiceName("sitrep"),
 			semconv.ServiceVersion(version),
-			semconv.DeploymentEnvironmentName(environment),
 		),
 	)
 	if err != nil {

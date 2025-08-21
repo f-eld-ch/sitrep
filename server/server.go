@@ -12,11 +12,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/f-eld-ch/sitrep/server/auth"
-	"github.com/f-eld-ch/sitrep/ui"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	slogecho "github.com/samber/slog-echo"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+
+	"github.com/f-eld-ch/sitrep/server/auth"
+	"github.com/f-eld-ch/sitrep/ui"
 )
 
 type Server struct {
@@ -41,6 +43,16 @@ func NewServer(opts ...Option) *Server {
 	s.router.Use(middleware.Recover())
 
 	s.router.Use(middleware.Secure())
+
+	config := slogecho.Config{
+		WithSpanID:       true,
+		WithTraceID:      true,
+		DefaultLevel:     slog.LevelInfo,
+		ClientErrorLevel: slog.LevelWarn,
+		ServerErrorLevel: slog.LevelError,
+	}
+	s.router.Use(slogecho.NewWithConfig(slog.Default().WithGroup("http"), config))
+
 	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
