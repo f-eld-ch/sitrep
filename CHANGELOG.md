@@ -12,6 +12,7 @@
 - *(deps)* Bump flipt-io/setup-action from 0.4.0 to 0.5.0 ([#936](https://github.com/f-eld-ch/sitrep/issues/936)) - ([e24208b](https://github.com/f-eld-ch/sitrep/commit/e24208be5b0aeaafe0cbbd0bccb599511fbb9eae))
 - *(deps)* Bump @openfeature/web-sdk from 1.5.0 to 1.6.0 in /ui ([#939](https://github.com/f-eld-ch/sitrep/issues/939)) - ([d770971](https://github.com/f-eld-ch/sitrep/commit/d770971729e6fc2c7ac4026cb47a16823c35228c))
 - *(deps)* Bump @openfeature/core from 1.8.1 to 1.9.0 in /ui ([#938](https://github.com/f-eld-ch/sitrep/issues/938)) - ([790f17e](https://github.com/f-eld-ch/sitrep/commit/790f17e2902dec3cedff4c9fd74ffa7a480225ca))
+- *(ui)* Improve chunksizes of build assets ([#950](https://github.com/f-eld-ch/sitrep/issues/950)) - ([a9e0708](https://github.com/f-eld-ch/sitrep/commit/a9e07086b3425810958151f998f5953df1c6f637))
 
 
 ## [25.8.0](https://github.com/f-eld-ch/sitrep/compare/v25.7.0..v25.8.0) - 2025-08-12
