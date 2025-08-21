@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.3.6 to 25.4.0 in /ui ([#954](https://github.com/f-eld-ch/sitrep/issues/954)) - ([d88686a](https://github.com/f-eld-ch/sitrep/commit/d88686a2ba8dcce136921f37f0b711aaf20dfddd))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#953](https://github.com/f-eld-ch/sitrep/issues/953)) - ([81811e8](https://github.com/f-eld-ch/sitrep/commit/81811e8b22ace071382b15ca13833d0fb3f22302))
 - *(deps)* Bump undici from 7.13.0 to 7.14.0 in /ui ([#946](https://github.com/f-eld-ch/sitrep/issues/946)) - ([c5a481f](https://github.com/f-eld-ch/sitrep/commit/c5a481f0b2963db312bd3ae5a5e4dee73c34093a))
 - *(deps)* Bump @openfeature/react-sdk from 1.0.0 to 1.0.1 in /ui ([#949](https://github.com/f-eld-ch/sitrep/issues/949)) - ([d1d2e48](https://github.com/f-eld-ch/sitrep/commit/d1d2e4846d6c7aefb2e83498eb94d5443e9d34e3))
