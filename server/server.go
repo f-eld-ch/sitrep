@@ -14,7 +14,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	slogecho "github.com/samber/slog-echo"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 
 	"github.com/f-eld-ch/sitrep/server/auth"
@@ -41,22 +40,21 @@ func NewServer(opts ...Option) *Server {
 	}
 
 	s.router.Use(middleware.Recover())
-
 	s.router.Use(middleware.Secure())
 
-	config := slogecho.Config{
-		WithSpanID:         true,
-		WithTraceID:        true,
-		WithRequestID:      true,
-		WithRequestHeader:  true,
-		WithResponseHeader: true,
-		WithUserAgent:      true,
+	// config := slogecho.Config{
+	// 	WithSpanID:         true,
+	// 	WithTraceID:        true,
+	// 	WithRequestID:      true,
+	// 	WithRequestHeader:  true,
+	// 	WithResponseHeader: true,
+	// 	WithUserAgent:      true,
 
-		DefaultLevel:     slog.LevelInfo,
-		ClientErrorLevel: slog.LevelWarn,
-		ServerErrorLevel: slog.LevelError,
-	}
-	s.router.Use(slogecho.NewWithConfig(slog.Default().WithGroup("http"), config))
+	// 	DefaultLevel:     slog.LevelInfo,
+	// 	ClientErrorLevel: slog.LevelWarn,
+	// 	ServerErrorLevel: slog.LevelError,
+	// }
+	// s.router.Use(slogecho.NewWithConfig(slog.Default().WithGroup("http"), config))
 
 	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
