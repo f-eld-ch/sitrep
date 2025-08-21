@@ -5,9 +5,11 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"time"
 
 	slogmulti "github.com/samber/slog-multi"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -80,6 +82,15 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	}
 	shutdownFuncs = append(shutdownFuncs, loggerProvider.Shutdown)
 	global.SetLoggerProvider(loggerProvider)
+
+	// set up runtime exporter
+	err = runtime.Start(
+		runtime.WithMinimumReadMemStatsInterval(5*time.Second),
+		runtime.WithMeterProvider(meterProvider),
+	)
+	if err != nil {
+		return shutdown, err
+	}
 
 	return
 }

@@ -45,8 +45,13 @@ func NewServer(opts ...Option) *Server {
 	s.router.Use(middleware.Secure())
 
 	config := slogecho.Config{
-		WithSpanID:       true,
-		WithTraceID:      true,
+		WithSpanID:         true,
+		WithTraceID:        true,
+		WithRequestID:      true,
+		WithRequestHeader:  true,
+		WithResponseHeader: true,
+		WithUserAgent:      true,
+
 		DefaultLevel:     slog.LevelInfo,
 		ClientErrorLevel: slog.LevelWarn,
 		ServerErrorLevel: slog.LevelError,
