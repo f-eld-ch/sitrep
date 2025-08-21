@@ -101,6 +101,7 @@
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2",
     "vite": "^7.1.2",
+    "vite-bundle-analyzer": "^1.2.1",
     "vite-plugin-biome": "^1.0.12",
     "vite-plugin-pwa": "^1.0.2",
     "vite-plugin-svgr": "^4.3.0",
