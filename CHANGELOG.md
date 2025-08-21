@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(backend)* Minimal go backend to replace oauth2_proxy ([#943](https://github.com/f-eld-ch/sitrep/issues/943)) - ([fc4b631](https://github.com/f-eld-ch/sitrep/commit/fc4b63105e44dd1b53495f3e0fae3d023ad122b9))
+
 ### ⚙️  Other
 
 - *(deps)* Bump react-i18next from 15.6.1 to 15.7.0 in /ui ([#955](https://github.com/f-eld-ch/sitrep/issues/955)) - ([fa58e3f](https://github.com/f-eld-ch/sitrep/commit/fa58e3f17d7411c32f062ccf6f4e90dff0d0ca78))
