@@ -3383,13 +3383,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@openfeature/react-sdk@npm:1.0.0"
+"@openfeature/react-sdk@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@openfeature/react-sdk@npm:1.0.1"
   peerDependencies:
     "@openfeature/web-sdk": ^1.5.0
     react: ">=16.8.0"
-  checksum: 10/33806e874613be222aa2589c9f93d233796468d75c59df922f435b44d8988e71f1dce07c01b0a78c55846eac4a75347ac2cd50c2b90fd65a22d708963f5841be
+  checksum: 10/55d3e3785c2cd98eb956fa88cc13b1fc007b2e0260aa05395b7e6122791774c7ad4ce9f25578999c8ac70bfac6c652910fc74025f5da46b0f2c52b050f714761
   languageName: node
   linkType: hard
 
@@ -11820,7 +11820,7 @@ __metadata:
     "@maplibre/maplibre-gl-style-spec": "npm:^23.3.0"
     "@openfeature/core": "npm:^1.9.0"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
-    "@openfeature/react-sdk": "npm:^1.0.0"
+    "@openfeature/react-sdk": "npm:^1.0.1"
     "@openfeature/web-sdk": "npm:^1.6.1"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.7.0"
@@ -11874,7 +11874,7 @@ __metadata:
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.1"
     typescript: "npm:^5.9.2"
-    undici: "npm:^7.13.0"
+    undici: "npm:^7.14.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.1.2"
@@ -12933,10 +12933,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.13.0":
-  version: 7.13.0
-  resolution: "undici@npm:7.13.0"
-  checksum: 10/a51ba5c95046159e7def34d67a48605ff913e357e2aab6d51f2201f8ed09f9237f90d5bbe1beb6b3cc890940b500dc0c208527cf597de27d4a964a8c5f721f65
+"undici@npm:^7.14.0":
+  version: 7.14.0
+  resolution: "undici@npm:7.14.0"
+  checksum: 10/df71e67fcc07fcc6c641d43f6a51b05f94441b7dc5e198b5cabe00b10400b0304c33f1ade5d2b48b06a7098ce1e7fbd49feecae47a531c805e1351053a8788bf
   languageName: node
   linkType: hard
 
