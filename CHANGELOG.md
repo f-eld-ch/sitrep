@@ -2,10 +2,18 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 15.6.1 to 15.7.0 in /ui ([#955](https://github.com/f-eld-ch/sitrep/issues/955)) - ([fa58e3f](https://github.com/f-eld-ch/sitrep/commit/fa58e3f17d7411c32f062ccf6f4e90dff0d0ca78))
+- *(deps)* Bump i18next from 25.3.6 to 25.4.0 in /ui ([#954](https://github.com/f-eld-ch/sitrep/issues/954)) - ([d88686a](https://github.com/f-eld-ch/sitrep/commit/d88686a2ba8dcce136921f37f0b711aaf20dfddd))
+- *(deps)* Bump @fortawesome/react-fontawesome ([#953](https://github.com/f-eld-ch/sitrep/issues/953)) - ([81811e8](https://github.com/f-eld-ch/sitrep/commit/81811e8b22ace071382b15ca13833d0fb3f22302))
+- *(deps)* Bump undici from 7.13.0 to 7.14.0 in /ui ([#946](https://github.com/f-eld-ch/sitrep/issues/946)) - ([c5a481f](https://github.com/f-eld-ch/sitrep/commit/c5a481f0b2963db312bd3ae5a5e4dee73c34093a))
+- *(deps)* Bump @openfeature/react-sdk from 1.0.0 to 1.0.1 in /ui ([#949](https://github.com/f-eld-ch/sitrep/issues/949)) - ([d1d2e48](https://github.com/f-eld-ch/sitrep/commit/d1d2e4846d6c7aefb2e83498eb94d5443e9d34e3))
+- *(deps)* Bump react-router from 7.8.0 to 7.8.1 in /ui ([#944](https://github.com/f-eld-ch/sitrep/issues/944)) - ([e3dff8a](https://github.com/f-eld-ch/sitrep/commit/e3dff8a27afbe090ba1e91c58f3ec36b6c28ea08))
+- *(deps)* Bump @openfeature/web-sdk from 1.6.0 to 1.6.1 in /ui ([#941](https://github.com/f-eld-ch/sitrep/issues/941)) - ([ea5ed46](https://github.com/f-eld-ch/sitrep/commit/ea5ed461cabadc9708a4606d0727974d512ed31a))
 - *(deps)* Bump i18next from 25.3.4 to 25.3.6 in /ui ([#942](https://github.com/f-eld-ch/sitrep/issues/942)) - ([8232b1d](https://github.com/f-eld-ch/sitrep/commit/8232b1daf9e917abc01b28f7370eb868c231d90d))
 - *(deps)* Bump flipt-io/setup-action from 0.4.0 to 0.5.0 ([#936](https://github.com/f-eld-ch/sitrep/issues/936)) - ([e24208b](https://github.com/f-eld-ch/sitrep/commit/e24208be5b0aeaafe0cbbd0bccb599511fbb9eae))
 - *(deps)* Bump @openfeature/web-sdk from 1.5.0 to 1.6.0 in /ui ([#939](https://github.com/f-eld-ch/sitrep/issues/939)) - ([d770971](https://github.com/f-eld-ch/sitrep/commit/d770971729e6fc2c7ac4026cb47a16823c35228c))
 - *(deps)* Bump @openfeature/core from 1.8.1 to 1.9.0 in /ui ([#938](https://github.com/f-eld-ch/sitrep/issues/938)) - ([790f17e](https://github.com/f-eld-ch/sitrep/commit/790f17e2902dec3cedff4c9fd74ffa7a480225ca))
+- *(ui)* Improve chunksizes of build assets ([#950](https://github.com/f-eld-ch/sitrep/issues/950)) - ([a9e0708](https://github.com/f-eld-ch/sitrep/commit/a9e07086b3425810958151f998f5953df1c6f637))
 
 
 ## [25.8.0](https://github.com/f-eld-ch/sitrep/compare/v25.7.0..v25.8.0) - 2025-08-12

@@ -4,6 +4,7 @@ import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
+import { analyzer } from "vite-bundle-analyzer";
 import biomePlugin from "vite-plugin-biome";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
@@ -17,22 +18,39 @@ export default defineConfig({
 	base: "/",
 	build: {
 		outDir: "build",
-		sourcemap: false,
+		sourcemap: true,
 		minify: "esbuild",
+		chunkSizeWarningLimit: 1000,
 		rollupOptions: {
 			treeshake: {
 				preset: "recommended",
 			},
 			output: {
 				minifyInternalExports: true,
-				sourcemap: false,
 				manualChunks: {
 					maplibregl: [
 						"maplibre-gl",
+					],
+					maplibreDeps: [
 						"@watergis/maplibre-gl-export",
 						"@mapbox/mapbox-gl-draw",
 					],
+					apollo: ["@apollo/client"],
+					utils: [
+						"@fortawesome/fontawesome-svg-core",
+						"@fortawesome/free-solid-svg-icons",
+						"@fortawesome/free-regular-svg-icons",
+						"@fortawesome/free-brands-svg-icons",
+						"@fortawesome/react-fontawesome",
+						"lodash",
+					],
+					flipt: [
+						"@flipt-io/flipt-client-browser",
+					]
 				},
+				assetFileNames: "assets/[name]-[hash][extname]",
+				chunkFileNames: "assets/[name]-[hash].js",
+				entryFileNames: "assets/[name]-[hash].js",
 			},
 		},
 	},
@@ -44,6 +62,7 @@ export default defineConfig({
 		viteTsconfigPaths(),
 		svgrPlugin(),
 		biomePlugin(),
+		analyzer({ analyzerMode: "static", enabled: false }),
 		VitePWA({
 			registerType: "autoUpdate",
 			injectRegister: "auto",

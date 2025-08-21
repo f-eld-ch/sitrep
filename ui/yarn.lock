@@ -2607,15 +2607,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "@fortawesome/react-fontawesome@npm:0.2.3"
+"@fortawesome/react-fontawesome@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "@fortawesome/react-fontawesome@npm:0.2.5"
   dependencies:
     prop-types: "npm:^15.8.1"
   peerDependencies:
     "@fortawesome/fontawesome-svg-core": ~1 || ~6 || ~7
     react: ^16.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/cd0da6a27748c7c8efa22ea9b3449bc0d0fbd0010623d462771d17e77a915cd1abbc1b2b73663a1c888a0510bdde2eb483760b61e80780d8b684714d18728983
+  checksum: 10/c6dab486b2f4e01f124eece70fda800d510bf6ce6434b28986b5c6bd9ab07856c0f43eeaccc75885ab7677d89e0a9c2c498486ecd3bd676d3561827fed6276c4
   languageName: node
   linkType: hard
 
@@ -3383,22 +3383,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@openfeature/react-sdk@npm:1.0.0"
+"@openfeature/react-sdk@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@openfeature/react-sdk@npm:1.0.1"
   peerDependencies:
     "@openfeature/web-sdk": ^1.5.0
     react: ">=16.8.0"
-  checksum: 10/33806e874613be222aa2589c9f93d233796468d75c59df922f435b44d8988e71f1dce07c01b0a78c55846eac4a75347ac2cd50c2b90fd65a22d708963f5841be
+  checksum: 10/55d3e3785c2cd98eb956fa88cc13b1fc007b2e0260aa05395b7e6122791774c7ad4ce9f25578999c8ac70bfac6c652910fc74025f5da46b0f2c52b050f714761
   languageName: node
   linkType: hard
 
-"@openfeature/web-sdk@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "@openfeature/web-sdk@npm:1.6.0"
+"@openfeature/web-sdk@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "@openfeature/web-sdk@npm:1.6.1"
   peerDependencies:
-    "@openfeature/core": ^1.8.0
-  checksum: 10/5f63cae76d8d9a22dfe1e124034a0ef6f543be6371df44f72d67b2ab54d7ad16d5e1bff88621f776259ecf5eaf0a839810c14ab2b8c0ea27bca9b1d3353e7764
+    "@openfeature/core": ^1.9.0
+  checksum: 10/8bd7d1ea386e21cdd7492cab2fd1d2b138b4e6a376a4c0a40244633e5955f6452039bc2633fc5230bd7b494506a4137ba7210d40850634f9618f77a0ee435f9d
   languageName: node
   linkType: hard
 
@@ -7862,9 +7862,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^25.3.6":
-  version: 25.3.6
-  resolution: "i18next@npm:25.3.6"
+"i18next@npm:^25.4.0":
+  version: 25.4.0
+  resolution: "i18next@npm:25.4.0"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
   peerDependencies:
@@ -7872,7 +7872,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/158ec6eaa19c87ae9f5f5d3d5d3e772fc4e0985f6ebc84dacc12e681296622a40d64ff92647c66aece0f3917fd9ae3eed56c376a010b6647b61f8d7df7993863
+  checksum: 10/9d2b9a644a94f3e52dcba982dfe4075466ebb6e4b648c108020ffde5d1d3a27132f50172cee8bdf1f9ab3f8a7edc7dcb8c44c67813224b06b2c644032a467ef7
   languageName: node
   linkType: hard
 
@@ -10993,14 +10993,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^15.6.1":
-  version: 15.6.1
-  resolution: "react-i18next@npm:15.6.1"
+"react-i18next@npm:^15.7.1":
+  version: 15.7.1
+  resolution: "react-i18next@npm:15.7.1"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
     html-parse-stringify: "npm:^3.0.1"
   peerDependencies:
-    i18next: ">= 23.2.3"
+    i18next: ">= 23.4.0"
     react: ">= 16.8.0"
     typescript: ^5
   peerDependenciesMeta:
@@ -11010,7 +11010,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/f8da83078eabbd4eadf848754881fb65a5c97de72f778b473a4a64add18d4b39794a1da9c95cce827ce30d5236328807228dfbe566dbc355cd0b46d3cbb110c3
+  checksum: 10/4484e26207c7843eba2236ce151134c53ec7cfb30d25a1ed7b8bc5b304c33ec335e7aa86322548bd9896508796149a06f90206b0f30e3dabf099a0af4149bbbd
   languageName: node
   linkType: hard
 
@@ -11084,9 +11084,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^7.8.0":
-  version: 7.8.0
-  resolution: "react-router@npm:7.8.0"
+"react-router@npm:^7.8.1":
+  version: 7.8.1
+  resolution: "react-router@npm:7.8.1"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -11096,7 +11096,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/bb46458bd15f73749a82d8ba0818d9ea98088378d569fd500aa4477cd08c1e359241b97de579f29e8bc78f8b81c76f660255b27a6249c305e4c66399f073e4df
+  checksum: 10/70ccac82d7e63f7775ea8b13fd48d20b34f078850e80bbf6dfd5a4985c33b41f11c72e23bfdfe90fb073fd08fa2d99205ee6abe123525f2b74addd3454f88423
   languageName: node
   linkType: hard
 
@@ -11906,13 +11906,13 @@ __metadata:
     "@fortawesome/free-brands-svg-icons": "npm:^7.0.0"
     "@fortawesome/free-regular-svg-icons": "npm:^7.0.0"
     "@fortawesome/free-solid-svg-icons": "npm:^7.0.0"
-    "@fortawesome/react-fontawesome": "npm:^0.2.3"
+    "@fortawesome/react-fontawesome": "npm:^0.2.5"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
     "@maplibre/maplibre-gl-style-spec": "npm:^23.3.0"
     "@openfeature/core": "npm:^1.9.0"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
-    "@openfeature/react-sdk": "npm:^1.0.0"
-    "@openfeature/web-sdk": "npm:^1.6.0"
+    "@openfeature/react-sdk": "npm:^1.0.1"
+    "@openfeature/web-sdk": "npm:^1.6.1"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.7.0"
     "@testing-library/react": "npm:^16.3.0"
@@ -11943,7 +11943,7 @@ __metadata:
     hat: "npm:^0.0.3"
     html-react-parser: "npm:^5.2.6"
     husky: "npm:^9.1.7"
-    i18next: "npm:^25.3.6"
+    i18next: "npm:^25.4.0"
     i18next-browser-languagedetector: "npm:^8.2.0"
     jest: "npm:^30.0.5"
     jsdom: "npm:^26.1.0"
@@ -11956,20 +11956,21 @@ __metadata:
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.3.1"
-    react-i18next: "npm:^15.6.1"
+    react-i18next: "npm:^15.7.1"
     react-map-gl: "npm:~8.0.4"
     react-markdown: "npm:^10.1.0"
-    react-router: "npm:^7.8.0"
+    react-router: "npm:^7.8.1"
     react-to-print: "npm:^3.1.1"
     sass: "npm:^1.90.0"
     semver: "npm:^7.7.2"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.1"
     typescript: "npm:^5.9.2"
-    undici: "npm:^7.13.0"
+    undici: "npm:^7.14.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.1.2"
+    vite-bundle-analyzer: "npm:^1.2.1"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.2"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -13024,10 +13025,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.13.0":
-  version: 7.13.0
-  resolution: "undici@npm:7.13.0"
-  checksum: 10/a51ba5c95046159e7def34d67a48605ff913e357e2aab6d51f2201f8ed09f9237f90d5bbe1beb6b3cc890940b500dc0c208527cf597de27d4a964a8c5f721f65
+"undici@npm:^7.14.0":
+  version: 7.14.0
+  resolution: "undici@npm:7.14.0"
+  checksum: 10/df71e67fcc07fcc6c641d43f6a51b05f94441b7dc5e198b5cabe00b10400b0304c33f1ade5d2b48b06a7098ce1e7fbd49feecae47a531c805e1351053a8788bf
   languageName: node
   linkType: hard
 
@@ -13371,6 +13372,15 @@ __metadata:
     unist-util-stringify-position: "npm:^4.0.0"
     vfile-message: "npm:^4.0.0"
   checksum: 10/7f8412f9ce7709d3be4041fd68a159e2cf96f9c9a4f095bcb18d1561009757b8efb37b71d0ae087e5202fe0e3b3162aae0adf92e30e2448a45645912c23c4ab2
+  languageName: node
+  linkType: hard
+
+"vite-bundle-analyzer@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "vite-bundle-analyzer@npm:1.2.1"
+  bin:
+    analyze: dist/bin.js
+  checksum: 10/8be1159e02608140785034fb0233ac5ecba31fc8fb9e29f42b451dc04d092382a63785d846dce17d8ebab716761bc9f356c5c89be357b479492848ad655090bd
   languageName: node
   linkType: hard
 
