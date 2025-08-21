@@ -65,6 +65,7 @@ export default defineConfig({
 		analyzer({ analyzerMode: "static", enabled: false }),
 		VitePWA({
 			registerType: "autoUpdate",
+			strategies: "generateSW",
 			injectRegister: "auto",
 			workbox: {
 				globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf,json}"],

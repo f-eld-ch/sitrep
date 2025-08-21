@@ -38,12 +38,12 @@ func WithOidc(oidcClient *auth.OIDCClient) Option {
 	}
 }
 
-func WithApiV1Proxy() Option {
+func WithApiV1Proxy(upstream string) Option {
 	return func(s *Server) error {
 		// Protect API routes
 		apiv1 := s.router.Group("/v1/graphql")
 		apiv1.Use(s.Enforcer.RequireLogin)
-		hasura, _ := url.Parse("http://localhost:8080")
+		hasura, _ := url.Parse(upstream)
 
 		client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 		logging.EnableHTTPClient(client,
