@@ -48,7 +48,7 @@
   },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start": "VERSION=dev GIT_SHA=HEAD vite",
+    "start": "vite",
     "build": "tsc && vite build",
     "test": "vitest",
     "preview": "vite preview",
@@ -90,6 +90,7 @@
     "@vitejs/plugin-react-swc": "^4.0.1",
     "@vitest/coverage-v8": "^3.2.4",
     "fast-check": "^4.2.0",
+    "git-rev-sync": "^3.0.2",
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "jest": "^30.0.5",

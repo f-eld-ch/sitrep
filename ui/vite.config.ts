@@ -2,12 +2,16 @@
 
 import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
+import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
 import biomePlugin from "vite-plugin-biome";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
+
+process.env.VITE_SHA_VERSION = git.long("../");
+process.env.VITE_VERSION = git.tag(false);
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -58,9 +62,10 @@ export default defineConfig({
 		viteTsconfigPaths(),
 		svgrPlugin(),
 		biomePlugin(),
-		analyzer({ analyzerMode: "static", enabled: false}),
+		analyzer({ analyzerMode: "static", enabled: false }),
 		VitePWA({
 			registerType: "autoUpdate",
+			strategies: "generateSW",
 			injectRegister: "auto",
 			workbox: {
 				globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf,json}"],
