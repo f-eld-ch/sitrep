@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
 	"log/slog"
 
 	"github.com/f-eld-ch/sitrep/server"
@@ -32,6 +34,24 @@ func init() {
 	viper.SetDefault("server_port", 4180)
 }
 
+// deriveCookieKey returns a 32-byte key derived from the provided input.
+// If input is empty, it generates a random 32-byte key.
+// The returned value is a string whose underlying bytes are exactly 32 bytes long,
+// suitable for libraries that expect a 32-byte secret.
+func deriveCookieKey(input string) string {
+	if input == "" {
+		b := make([]byte, 32)
+		_, err := rand.Read(b)
+		if err != nil {
+			// fallback: use zeroed bytes (should rarely happen)
+			return string(make([]byte, 32))
+		}
+		return string(b)
+	}
+	sum := sha256.Sum256([]byte(input))
+	return string(sum[:])
+}
+
 func main() {
 	ctx := context.Background()
 	shutdown, err := setupOpenTelemetry(ctx)
@@ -49,8 +69,10 @@ func main() {
 		issuer := viper.GetString("oidc_issuer")
 		clientSecret := viper.GetString("oidc_client_secret")
 		redirectURI := viper.GetString("oidc_redirect_url")
-		key := viper.GetString("cookie_key")
+		keyInput := viper.GetString("cookie_key")
+		key := deriveCookieKey(keyInput)
 
+		// Pass the derived key (32 bytes) to the OIDC constructor
 		oidcClient, err := auth.NewOIDC(context.Background(), issuer, clientID, clientSecret, redirectURI, key)
 		if err != nil {
 			slog.Error("failed to create OIDC client", "error", err)
