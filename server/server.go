@@ -13,11 +13,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 
 	"github.com/f-eld-ch/sitrep/server/auth"
-	"github.com/f-eld-ch/sitrep/ui"
 )
 
 type Server struct {
@@ -39,71 +36,6 @@ func NewServer(opts ...Option) *Server {
 		Enforcer: auth.NewLocalEnforcer(),
 	}
 
-	s.router.Use(middleware.Recover())
-	s.router.Use(middleware.Secure())
-
-	// config := slogecho.Config{
-	// 	WithSpanID:         true,
-	// 	WithTraceID:        true,
-	// 	WithRequestID:      true,
-	// 	WithRequestHeader:  true,
-	// 	WithResponseHeader: true,
-	// 	WithUserAgent:      true,
-
-	// 	DefaultLevel:     slog.LevelInfo,
-	// 	ClientErrorLevel: slog.LevelWarn,
-	// 	ServerErrorLevel: slog.LevelError,
-	// }
-	// s.router.Use(slogecho.NewWithConfig(slog.Default().WithGroup("http"), config))
-
-	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
-		AllowHeaders:     []string{"Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
-	s.router.Use(middleware.RequestID())
-	// Cache-Control middleware for /assets/* and /map/*
-	s.router.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Response().Before(func() {
-				path := c.Request().URL.Path
-				if c.Response().Status == http.StatusOK {
-					if strings.HasPrefix(path, "/assets/") {
-						c.Response().Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-						return
-					}
-					// map is not immutable, so we set a shorter cache time
-					if strings.HasPrefix(path, "/map/") {
-						c.Response().Header().Set("Cache-Control", "public, max-age=604800")
-						return
-					}
-				}
-
-				// for everything else set no-cache
-				c.Response().Header().Set("Cache-Control", "no-store")
-			})
-
-			return next(c)
-		}
-	})
-
-	// Use the otelecho middleware with options
-	s.router.Use(otelecho.Middleware("server",
-		otelecho.WithSkipper(func(c echo.Context) bool {
-			// Skip tracing for health check endpoints
-			return c.Path() == "/health" || strings.HasPrefix(c.Path(), "/assets") || strings.HasPrefix(c.Path(), "/map")
-		}),
-	))
-
-	s.router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		HTML5:      true,
-		Root:       ui.Build,
-		Filesystem: http.FS(ui.Assets),
-		Index:      "index.html",
-	}))
-
 	for _, opt := range opts {
 		err := opt(s)
 		if err != nil {
@@ -112,12 +44,9 @@ func NewServer(opts ...Option) *Server {
 		}
 	}
 
-	// OIDC handlers
-	oidc := s.router.Group("/oauth2")
-	oidc.GET("/sign_in", s.Enforcer.SignInHandler)
-	oidc.GET("/callback", s.Enforcer.CallbackHandler)
-	oidc.GET("/sign_out", s.Enforcer.SignOutHandler)
-	oidc.GET("/userinfo", s.Enforcer.UserInfoHandler)
+	// register routes && middlewares
+	s.RegisterMiddlewares()
+	s.RegisterRoutes()
 
 	s.Server = &http.Server{
 		Addr:    net.JoinHostPort(s.address, fmt.Sprint(s.port)),
@@ -151,4 +80,28 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 
 	s.logger.Info("starting server", "address", s.Addr)
 	return s.Server.ListenAndServe()
+}
+
+func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Response().Before(func() {
+			path := c.Request().URL.Path
+			if c.Response().Status == http.StatusOK {
+				if strings.HasPrefix(path, "/assets/") {
+					c.Response().Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+					return
+				}
+				// map is not immutable, so we set a shorter cache time
+				if strings.HasPrefix(path, "/map/") {
+					c.Response().Header().Set("Cache-Control", "public, max-age=604800")
+					return
+				}
+			}
+
+			// for everything else set no-cache
+			c.Response().Header().Set("Cache-Control", "no-store")
+		})
+
+		return next(c)
+	}
 }
