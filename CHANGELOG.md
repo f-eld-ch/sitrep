@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(backend)* Add health check routes ([#960](https://github.com/f-eld-ch/sitrep/issues/960)) - ([bc09ece](https://github.com/f-eld-ch/sitrep/commit/bc09ece32d63df7b3135ce4a25877c3bdfd45516))
 - *(backend)* Minimal go backend to replace oauth2_proxy ([#943](https://github.com/f-eld-ch/sitrep/issues/943)) - ([fc4b631](https://github.com/f-eld-ch/sitrep/commit/fc4b63105e44dd1b53495f3e0fae3d023ad122b9))
 
 ### ⚙️  Other
@@ -82,6 +83,9 @@
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#833](https://github.com/f-eld-ch/sitrep/issues/833)) - ([3da6215](https://github.com/f-eld-ch/sitrep/commit/3da621508ac52ea99fe30eebe769d881adb17d9a))
 - *(deps)* Bump web-vitals from 5.0.1 to 5.0.2 in /ui ([#830](https://github.com/f-eld-ch/sitrep/issues/830)) - ([2542089](https://github.com/f-eld-ch/sitrep/commit/2542089de610675e675c8c4f564475bf8e4e99df))
 
+## New Contributors ❤️
+
+* @step-security-bot made their first contribution in [#878](https://github.com/f-eld-ch/sitrep/pull/878)
 
 ## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
 
@@ -413,6 +417,9 @@
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#563](https://github.com/f-eld-ch/sitrep/issues/563)) - ([1d8f273](https://github.com/f-eld-ch/sitrep/commit/1d8f27328f2be404eed85751e12dc0acf2e28317))
 - *(deps)* Bump @openfeature/react-sdk from 0.4.8 to 0.4.9 in /ui ([#549](https://github.com/f-eld-ch/sitrep/issues/549)) - ([3669f0a](https://github.com/f-eld-ch/sitrep/commit/3669f0a97519d59d69c6d241419a70cb62c010cf))
 
+## New Contributors ❤️
+
+* @transifex-integration[bot] made their first contribution in [#614](https://github.com/f-eld-ch/sitrep/pull/614)
 
 ## [24.12.1](https://github.com/f-eld-ch/sitrep/compare/v24.12.0..v24.12.1) - 2024-12-04
 
@@ -573,6 +580,9 @@
 - *(deps)* Bump micromatch ([#400](https://github.com/f-eld-ch/sitrep/issues/400)) - ([f93589a](https://github.com/f-eld-ch/sitrep/commit/f93589af303956bc28e526106c80cb8330dd6d94))
 - *(docker)* Add selinux compose file - ([33d4c5f](https://github.com/f-eld-ch/sitrep/commit/33d4c5fbea7517f4ffe5c1d009d010b57f6cef4d))
 
+## New Contributors ❤️
+
+* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
@@ -906,5 +916,12 @@ Details:
 - Upgrade oauth2-proxy to 7.4.0, closes #106 - ([6a79342](https://github.com/f-eld-ch/sitrep/commit/6a7934224e17140124251de9e05047bdec630680))
 - Update dependencies to fix minimatch ReDoS - ([45792bc](https://github.com/f-eld-ch/sitrep/commit/45792bcadd5603c0a3577742084414b9e0b6bc86))
 
+## New Contributors ❤️
+
+* @nimdanitro made their first contribution
+* @weblate made their first contribution
+* @dependabot[bot] made their first contribution
+* @lukastresch made their first contribution
+* @snyk-bot made their first contribution
 
 Made with ♥️  in Switzerland by F-ELD
