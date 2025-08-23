@@ -7,6 +7,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.14.0 to 7.15.0 in /ui ([#962](https://github.com/f-eld-ch/sitrep/issues/962)) - ([e3f926d](https://github.com/f-eld-ch/sitrep/commit/e3f926dd86da2e7c5a592eb0719657e8baeb758d))
 - *(deps)* Bump github/codeql-action from 3.29.10 to 3.29.11 ([#957](https://github.com/f-eld-ch/sitrep/issues/957)) - ([eda77cd](https://github.com/f-eld-ch/sitrep/commit/eda77cd6dc241878219749a89e618669cfbad600))
 - *(deps)* Bump react-i18next from 15.6.1 to 15.7.0 in /ui ([#955](https://github.com/f-eld-ch/sitrep/issues/955)) - ([fa58e3f](https://github.com/f-eld-ch/sitrep/commit/fa58e3f17d7411c32f062ccf6f4e90dff0d0ca78))
 - *(deps)* Bump i18next from 25.3.6 to 25.4.0 in /ui ([#954](https://github.com/f-eld-ch/sitrep/issues/954)) - ([d88686a](https://github.com/f-eld-ch/sitrep/commit/d88686a2ba8dcce136921f37f0b711aaf20dfddd))
