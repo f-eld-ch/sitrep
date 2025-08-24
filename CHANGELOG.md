@@ -7,6 +7,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @fortawesome/react-fontawesome from 0.2.5 to 3.0.0 in /ui in the fontawesome group ([#961](https://github.com/f-eld-ch/sitrep/issues/961)) - ([23f5557](https://github.com/f-eld-ch/sitrep/commit/23f5557930606542b747ad790325bec37d6d31b8))
 - *(deps)* Bump react-router from 7.8.1 to 7.8.2 in /ui ([#963](https://github.com/f-eld-ch/sitrep/issues/963)) - ([c42701a](https://github.com/f-eld-ch/sitrep/commit/c42701a1ab8fbba43cf8da960069514c670a8c56))
 - *(deps)* Bump undici from 7.14.0 to 7.15.0 in /ui ([#962](https://github.com/f-eld-ch/sitrep/issues/962)) - ([e3f926d](https://github.com/f-eld-ch/sitrep/commit/e3f926dd86da2e7c5a592eb0719657e8baeb758d))
 - *(deps)* Bump github/codeql-action from 3.29.10 to 3.29.11 ([#957](https://github.com/f-eld-ch/sitrep/issues/957)) - ([eda77cd](https://github.com/f-eld-ch/sitrep/commit/eda77cd6dc241878219749a89e618669cfbad600))
