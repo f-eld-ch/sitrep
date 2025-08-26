@@ -15,6 +15,8 @@ import (
 	httphelper "github.com/zitadel/oidc/v3/pkg/http"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type OIDCClient struct {
@@ -22,6 +24,8 @@ type OIDCClient struct {
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
 }
+
+var ErrUnauthorized = errors.New("unauthorized")
 
 // NewOIDC returns a new OIDCClient
 func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, key string) (*OIDCClient, error) {
@@ -121,7 +125,9 @@ func (o *OIDCClient) SignOutHandler(c echo.Context) error {
 func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
 	userInfo, err := o.userInfoFrom(c)
 	if err != nil {
-		o.logger.Error("failed to get user failed to getinfo", "error", err)
+		if !errors.Is(err, ErrUnauthorized) {
+			o.logger.Error("failed to get user info", "error.message", err.Error())
+		}
 		return c.JSON(http.StatusUnauthorized, "Unauthorized")
 	}
 	return c.JSON(http.StatusOK, userInfo)
@@ -130,14 +136,14 @@ func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
 func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 	idToken := o.decodedTokenFrom(c, "id_token")
 	if idToken == "" {
-		return nil, errors.New("unauthorized")
+		return nil, ErrUnauthorized
 	}
 
 	claims := &oidc.IDTokenClaims{}
 	_, err := oidc.ParseToken(idToken, claims)
 	if err != nil {
-		o.logger.Error("failed to parse id_token", "error", err)
-		return nil, errors.New("unauthorized")
+		o.logger.Error("failed to parse id_token", "error.message", err.Error())
+		return nil, ErrUnauthorized
 	}
 
 	accessToken := o.decodedTokenFrom(c, "access_token")
@@ -148,6 +154,7 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 		PreferredUsername: claims.PreferredUsername,
 		IDToken:           idToken,
 		AccessToken:       accessToken,
+		SessionID:         claims.SessionID,
 	}, nil
 }
 
@@ -193,12 +200,19 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
 		if err != nil {
-			o.logger.Error("failed to get user info", "error", err)
+			o.logger.Error("failed to get user info", string(semconv.ErrorMessageKey), err)
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
 		c.Set("id_token", userInfo.IDToken)
 		c.Set("access_token", userInfo.AccessToken)
 		c.Set("user_info", userInfo)
+
+		span := trace.SpanFromContext(c.Request().Context())
+		span.SetAttributes(
+			semconv.EnduserID(userInfo.Email),
+			semconv.EnduserPseudoID(userInfo.User),
+			semconv.SessionID(userInfo.SessionID),
+		)
 		return next(c)
 	}
 }

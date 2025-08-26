@@ -112,9 +112,9 @@
   "resolutions": {
     "brace-expansion": "2.0.2",
     "dompurify": "3.2.4",
-    "jspdf": "3.0.1",
+    "jspdf": "3.0.2",
     "maplibre-gl": "5.6.2",
     "sharp": "^0.33.5"
   },
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.9.4"
 }
