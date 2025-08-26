@@ -7418,6 +7418,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gl-matrix@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "gl-matrix@npm:3.4.4"
+  checksum: 10/0a19a881fbfa2cdcff2b5ece0f62041d17e55665393349653e8742a20e43d4516239c68ac6798baa7c35b0c7bd6c9226e70e7824af162228d471eba358a03090
+  languageName: node
+  linkType: hard
+
 "glob@npm:^10.3.10, glob@npm:^10.4.1":
   version: 10.4.5
   resolution: "glob@npm:10.4.5"
@@ -9653,9 +9660,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:5.6.2":
-  version: 5.6.2
-  resolution: "maplibre-gl@npm:5.6.2"
+"maplibre-gl@npm:5.7.0":
+  version: 5.7.0
+  resolution: "maplibre-gl@npm:5.7.0"
   dependencies:
     "@mapbox/geojson-rewind": "npm:^0.5.2"
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
@@ -9671,7 +9678,7 @@ __metadata:
     "@types/supercluster": "npm:^7.1.3"
     earcut: "npm:^3.0.2"
     geojson-vt: "npm:^4.0.2"
-    gl-matrix: "npm:^3.4.3"
+    gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.0.2"
     murmurhash-js: "npm:^1.0.0"
     pbf: "npm:^4.0.1"
@@ -9679,7 +9686,7 @@ __metadata:
     quickselect: "npm:^3.0.0"
     supercluster: "npm:^8.0.1"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/20de56268e2cbe4889f02fc39a3d3c6a86942b6d5a5e47367c608ed5a53b8c48d000d86130f3ec296428585d3de4076196940a8508934caf210cff71d31e4a85
+  checksum: 10/3cde2a446c5579669b62401759cbae132fea273d1cfdd108a0a55697f4f199ea5ce7ae48c8b4f11a2b9bf8bcdbfac546c222417dd4d9a30ba2f488223ccad8f9
   languageName: node
   linkType: hard
 
@@ -11984,7 +11991,7 @@ __metadata:
     lint-staged: "npm:^16.1.5"
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
-    maplibre-gl: "npm:5.6.2"
+    maplibre-gl: "npm:5.7.0"
     ol: "npm:^10.6.1"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
