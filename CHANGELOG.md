@@ -4,6 +4,10 @@
 
 - *(server)* Add enduser information to traces ([#969](https://github.com/f-eld-ch/sitrep/issues/969)) - ([cec50da](https://github.com/f-eld-ch/sitrep/commit/cec50da5a07bdf5d5eefce6ac3b4dcd001bceec6))
 
+### ⚙️  Other
+
+- *(deps)* Bump i18next from 25.4.0 to 25.4.2 in /ui ([#967](https://github.com/f-eld-ch/sitrep/issues/967)) - ([9c99e14](https://github.com/f-eld-ch/sitrep/commit/9c99e14200155060299d01b0d2e435e202f47d19))
+
 
 ## [25.8.2](https://github.com/f-eld-ch/sitrep/compare/v25.8.1..v25.8.2) - 2025-08-26
 
