@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 15.7.1 to 15.7.2 in /ui ([#964](https://github.com/f-eld-ch/sitrep/issues/964)) - ([46c6d30](https://github.com/f-eld-ch/sitrep/commit/46c6d30b606a8960c0fed778bfbfbdff800becd6))
 - *(deps)* Bump maplibre-gl from 5.6.2 to 5.7.0 in /ui ([#968](https://github.com/f-eld-ch/sitrep/issues/968)) - ([c32b880](https://github.com/f-eld-ch/sitrep/commit/c32b880fc76d858d514cd999445c60f4fd1d65c1))
 - *(deps)* Bump i18next from 25.4.0 to 25.4.2 in /ui ([#967](https://github.com/f-eld-ch/sitrep/issues/967)) - ([9c99e14](https://github.com/f-eld-ch/sitrep/commit/9c99e14200155060299d01b0d2e435e202f47d19))
 
