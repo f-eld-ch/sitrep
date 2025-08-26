@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(server)* Add enduser information to traces ([#969](https://github.com/f-eld-ch/sitrep/issues/969)) - ([cec50da](https://github.com/f-eld-ch/sitrep/commit/cec50da5a07bdf5d5eefce6ac3b4dcd001bceec6))
+
+
 ## [25.8.2](https://github.com/f-eld-ch/sitrep/compare/v25.8.1..v25.8.2) - 2025-08-26
 
 ### 🐛 Bug Fixes
