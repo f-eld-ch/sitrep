@@ -1949,12 +1949,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.26.7, @babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.11.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.8.4":
   version: 7.26.10
   resolution: "@babel/runtime@npm:7.26.10"
   dependencies:
     regenerator-runtime: "npm:^0.14.0"
   checksum: 10/9d7ff8e96abe3791047c1138789c742411e3ef19c4d7ca18ce916f83cec92c06ec5dc64401759f6dd1e377cf8a01bbd2c62e033eb7550f435cf6579768d0d4a5
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.26.9":
+  version: 7.28.3
+  resolution: "@babel/runtime@npm:7.28.3"
+  checksum: 10/f2415e4dbface7496f6fc561d640b44be203071fb0dfb63fbe338c7d2d2047419cb054ef13d1ebb8fc11e35d2b55aa3045def4b985e8b82aea5d7e58e1133e52
   languageName: node
   linkType: hard
 
@@ -4656,6 +4663,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/pako@npm:^2.0.3":
+  version: 2.0.4
+  resolution: "@types/pako@npm:2.0.4"
+  checksum: 10/9be5167f5cb45d405d92e8b320219e6d26f244880893425abb16b998cde0386185f048d60de609672f1e8654c44b77344e754138da3784460f4543fe8576fa62
+  languageName: node
+  linkType: hard
+
 "@types/pbf@npm:*":
   version: 3.0.2
   resolution: "@types/pbf@npm:3.0.2"
@@ -5438,15 +5452,6 @@ __metadata:
   version: 1.0.0
   resolution: "at-least-node@npm:1.0.0"
   checksum: 10/463e2f8e43384f1afb54bc68485c436d7622acec08b6fad269b421cb1d29cebb5af751426793d0961ed243146fe4dc983402f6d5a51b720b277818dbf6f2e49e
-  languageName: node
-  linkType: hard
-
-"atob@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "atob@npm:2.1.2"
-  bin:
-    atob: bin/atob.js
-  checksum: 10/0624406cc0295533b38b60ab2e3b028aa7b8225f37e0cde6be3bc5c13a8015c889b192e874fd7660671179cef055f2e258855f372b0e495bd4096cf0b4785c25
   languageName: node
   linkType: hard
 
@@ -7038,6 +7043,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-png@npm:^6.2.0":
+  version: 6.4.0
+  resolution: "fast-png@npm:6.4.0"
+  dependencies:
+    "@types/pako": "npm:^2.0.3"
+    iobuffer: "npm:^5.3.2"
+    pako: "npm:^2.1.0"
+  checksum: 10/b6eaf71f5f5e6e9e6b56ea9f60f214cbe1879e309d47eb7fc5fcf1ed85fb284cd4483ab128e2259389d4db8ef22e266b54853386b8362bae3babb0e4dc626347
+  languageName: node
+  linkType: hard
+
 "fb-watchman@npm:^2.0.2":
   version: 2.0.2
   resolution: "fb-watchman@npm:2.0.2"
@@ -8007,6 +8023,13 @@ __metadata:
   version: 1.4.0
   resolution: "interpret@npm:1.4.0"
   checksum: 10/5beec568d3f60543d0f61f2c5969d44dffcb1a372fe5abcdb8013968114d4e4aaac06bc971a4c9f5bd52d150881d8ebad72a8c60686b1361f5f0522f39c0e1a3
+  languageName: node
+  linkType: hard
+
+"iobuffer@npm:^5.3.2":
+  version: 5.4.0
+  resolution: "iobuffer@npm:5.4.0"
+  checksum: 10/7f7afe12ee94e34dcf129a5fbb38838f63d6502970f5aa4722c728d65b90ac828c660cd5ec5423bd2b4f348483ba8d6f3e3ad9a5908810bc0f4fae774b3f0e39
   languageName: node
   linkType: hard
 
@@ -9219,16 +9242,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:3.0.1":
-  version: 3.0.1
-  resolution: "jspdf@npm:3.0.1"
+"jspdf@npm:3.0.2":
+  version: 3.0.2
+  resolution: "jspdf@npm:3.0.2"
   dependencies:
-    "@babel/runtime": "npm:^7.26.7"
-    atob: "npm:^2.1.2"
-    btoa: "npm:^1.2.1"
+    "@babel/runtime": "npm:^7.26.9"
     canvg: "npm:^3.0.11"
     core-js: "npm:^3.6.0"
     dompurify: "npm:^3.2.4"
+    fast-png: "npm:^6.2.0"
     fflate: "npm:^0.8.1"
     html2canvas: "npm:^1.0.0-rc.5"
   dependenciesMeta:
@@ -9240,7 +9262,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: 10/faa8e6f534b507140be768c2e18e6a2281772fa34d07d5f1d3388097cf058c30821fffb77c68e104d2c992d43843e43414901d39f53593739500a559377c4add
+  checksum: 10/8d193eb3192931cf1f84a0b6324dad8566ea38e31b40cef20709819c97216036df3c2be45fbbaac06c4265f658bc0119f8f7e9e57359f498c5f6cb5abdaaf254
   languageName: node
   linkType: hard
 
@@ -10568,7 +10590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:^2.0.4":
+"pako@npm:^2.0.4, pako@npm:^2.1.0":
   version: 2.1.0
   resolution: "pako@npm:2.1.0"
   checksum: 10/38a04991d0ec4f4b92794a68b8c92bf7340692c5d980255c92148da96eb3e550df7a86a7128b5ac0c65ecddfe5ef3bbe9c6dab13e1bc315086e759b18f7c1401
