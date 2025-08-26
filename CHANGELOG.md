@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(map)* Make sure map style files are properly prefixed - ([7a29692](https://github.com/f-eld-ch/sitrep/commit/7a2969293c11640153d981a9fe81b4e14d2bd244))
+
+
 ## [25.8.1](https://github.com/f-eld-ch/sitrep/compare/v25.8.0..v25.8.1) - 2025-08-26
 
 ### ⛰️  Features
