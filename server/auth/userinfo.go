@@ -6,4 +6,5 @@ type UserInfo struct {
 	PreferredUsername string `json:"preferredUsername"`
 	IDToken           string `json:"idToken"`
 	AccessToken       string `json:"-"`
+	SessionID         string `json:"-"`
 }
