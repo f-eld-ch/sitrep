@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump actions/dependency-review-action from 4.7.2 to 4.7.3 ([#970](https://github.com/f-eld-ch/sitrep/issues/970)) - ([9ca0d9a](https://github.com/f-eld-ch/sitrep/commit/9ca0d9adb429b62f134c7c95335201607dfc19ae))
+
+
 ## [25.8.3](https://github.com/f-eld-ch/sitrep/compare/v25.8.2..v25.8.3) - 2025-08-26
 
 ### ⛰️  Features
