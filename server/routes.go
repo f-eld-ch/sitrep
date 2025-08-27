@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/f-eld-ch/sitrep/server/mbtiles"
 	"github.com/f-eld-ch/sitrep/ui"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,6 +26,12 @@ func (s *Server) RegisterRoutes() {
 	oidc.GET("/callback", s.Enforcer.CallbackHandler)
 	oidc.GET("/sign_out", s.Enforcer.SignOutHandler)
 	oidc.GET("/userinfo", s.Enforcer.UserInfoHandler)
+
+	// register map tiles handler
+	tilesHandler := mbtiles.NewHandler(s.router)
+	if tilesHandler != nil {
+		s.Server.RegisterOnShutdown(tilesHandler.Close)
+	}
 }
 
 func (s *Server) RegisterMiddlewares() {

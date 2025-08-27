@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/f-eld-ch/sitrep/server/auth"
+	"github.com/f-eld-ch/sitrep/server/mbtiles"
 )
 
 type Server struct {
@@ -25,6 +26,7 @@ type Server struct {
 	auth.Enforcer
 	router *echo.Echo
 	*http.Server
+	tilesHandler *mbtiles.Handler
 }
 
 func NewServer(opts ...Option) *Server {
@@ -44,14 +46,14 @@ func NewServer(opts ...Option) *Server {
 		}
 	}
 
-	// register routes && middlewares
-	s.RegisterMiddlewares()
-	s.RegisterRoutes()
-
 	s.Server = &http.Server{
 		Addr:    net.JoinHostPort(s.address, fmt.Sprint(s.port)),
 		Handler: s.router,
 	}
+
+	// register routes && middlewares
+	s.RegisterMiddlewares()
+	s.RegisterRoutes()
 
 	return s
 }
@@ -76,6 +78,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 	//  signal and shutdown the server gracefully
 	s.Server.RegisterOnShutdown(func() {
 		s.isShuttingDown.Store(true)
+		s.tilesHandler.Close()
 	})
 
 	s.logger.Info("starting server", "address", s.Addr)
