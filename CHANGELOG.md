@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump dayjs from 1.11.14 to 1.11.15 in /ui ([#976](https://github.com/f-eld-ch/sitrep/issues/976)) - ([64f4449](https://github.com/f-eld-ch/sitrep/commit/64f444909af2de5c6ccbf91c1854c346d2833f4e))
 - *(deps)* Bump @fortawesome/react-fontawesome from 3.0.0 to 3.0.1 in /ui in the fontawesome group ([#974](https://github.com/f-eld-ch/sitrep/issues/974)) - ([6a15786](https://github.com/f-eld-ch/sitrep/commit/6a15786b385a47cde83c9baf816a04cd1b05f56b))
 - *(deps)* Bump dayjs from 1.11.13 to 1.11.14 in /ui ([#972](https://github.com/f-eld-ch/sitrep/issues/972)) - ([1ab463a](https://github.com/f-eld-ch/sitrep/commit/1ab463a697aed1d2da540bd1c2aaac15dd26a6a6))
 - *(deps)* Bump actions/dependency-review-action from 4.7.2 to 4.7.3 ([#970](https://github.com/f-eld-ch/sitrep/issues/970)) - ([9ca0d9a](https://github.com/f-eld-ch/sitrep/commit/9ca0d9adb429b62f134c7c95335201607dfc19ae))
