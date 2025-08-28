@@ -12011,7 +12011,7 @@ __metadata:
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.1.3"
-    vite-bundle-analyzer: "npm:^1.2.1"
+    vite-bundle-analyzer: "npm:^1.2.2"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.3"
     vite-plugin-svgr: "npm:^4.5.0"
@@ -13416,12 +13416,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-bundle-analyzer@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "vite-bundle-analyzer@npm:1.2.1"
+"vite-bundle-analyzer@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "vite-bundle-analyzer@npm:1.2.2"
   bin:
     analyze: dist/bin.js
-  checksum: 10/8be1159e02608140785034fb0233ac5ecba31fc8fb9e29f42b451dc04d092382a63785d846dce17d8ebab716761bc9f356c5c89be357b479492848ad655090bd
+  checksum: 10/7b46076ef349dc7f3d0fedc99a0e60851ad39e3adfcb69970980584b43f95dd8fb39d07d73d1017f78a0e6f0961ea2466847f84e3e6de2f53c559684f2fee330
   languageName: node
   linkType: hard
 
