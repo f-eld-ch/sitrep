@@ -57,10 +57,6 @@ export default defineConfig({
 	define: {
 		global: "window",
 	},
-	ssr: {
-		// ensure react-fontawesome is not externalized to Node at runtime
-		noExternal: ["@fortawesome/react-fontawesome"],
-	},
 	plugins: [
 		react({ devTarget: "es2022" }),
 		viteTsconfigPaths(),
