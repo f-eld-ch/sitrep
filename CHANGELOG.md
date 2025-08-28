@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump dayjs from 1.11.13 to 1.11.14 in /ui ([#972](https://github.com/f-eld-ch/sitrep/issues/972)) - ([1ab463a](https://github.com/f-eld-ch/sitrep/commit/1ab463a697aed1d2da540bd1c2aaac15dd26a6a6))
 - *(deps)* Bump actions/dependency-review-action from 4.7.2 to 4.7.3 ([#970](https://github.com/f-eld-ch/sitrep/issues/970)) - ([9ca0d9a](https://github.com/f-eld-ch/sitrep/commit/9ca0d9adb429b62f134c7c95335201607dfc19ae))
 
 
