@@ -7020,12 +7020,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-check@npm:^3.0.0 || ^4.0.0, fast-check@npm:^4.2.0":
+"fast-check@npm:^3.0.0 || ^4.0.0":
   version: 4.2.0
   resolution: "fast-check@npm:4.2.0"
   dependencies:
     pure-rand: "npm:^7.0.0"
   checksum: 10/1ef33d2683f61fed9bc51de1dd410b06faed0aa5fd0c7e8f1babea48e982d4d848a6cd06b627625068cd60236b612c4ed68c3d0b1ebf13df07be71faf100211b
+  languageName: node
+  linkType: hard
+
+"fast-check@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "fast-check@npm:4.3.0"
+  dependencies:
+    pure-rand: "npm:^7.0.0"
+  checksum: 10/5f51abb65f4752b61e85e445fb061fe3b2571984c4f2ee77dccf1d95d023380db9405245d49103548c738f1e979a62bd8c9a5a96b675f1d259f3ec4b19076505
   languageName: node
   linkType: hard
 
@@ -11977,7 +11986,7 @@ __metadata:
     bulma: "npm:^1.0.4"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.15"
-    fast-check: "npm:^4.2.0"
+    fast-check: "npm:^4.3.0"
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^16.3.0"
     graphql: "npm:^16.11.0"
@@ -12011,7 +12020,7 @@ __metadata:
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.1.3"
-    vite-bundle-analyzer: "npm:^1.2.2"
+    vite-bundle-analyzer: "npm:^1.2.3"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.0.3"
     vite-plugin-svgr: "npm:^4.5.0"
@@ -13416,12 +13425,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-bundle-analyzer@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "vite-bundle-analyzer@npm:1.2.2"
+"vite-bundle-analyzer@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "vite-bundle-analyzer@npm:1.2.3"
   bin:
     analyze: dist/bin.js
-  checksum: 10/7b46076ef349dc7f3d0fedc99a0e60851ad39e3adfcb69970980584b43f95dd8fb39d07d73d1017f78a0e6f0961ea2466847f84e3e6de2f53c559684f2fee330
+  checksum: 10/efa2df7f73ebdb012224e238f7ace2e9f3919f3debe0093a40804bb9e70fc320cfeb24a99728bb51cb9acaba0c3151a5462b848e1e664c0b2c91db60dbf522eb
   languageName: node
   linkType: hard
 
