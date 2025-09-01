@@ -6236,10 +6236,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.15":
-  version: 1.11.15
-  resolution: "dayjs@npm:1.11.15"
-  checksum: 10/09e411cf71db962465563fa968276cf9162721bd5cff514bf94e6ed087b5e7d58135cbb5739ad380e44fa8148858378f3c36e2992e263dac64c06ba133a2ae8d
+"dayjs@npm:^1.11.18":
+  version: 1.11.18
+  resolution: "dayjs@npm:1.11.18"
+  checksum: 10/7d29a90834cf4da2feb437c2f34b8235c3f94493a06d2f1bf9f506f1fa49eadf796f26e1d685b9fe8cb5e75ce6ee067825115e196f1af3d07b3552ff857bfc39
   languageName: node
   linkType: hard
 
@@ -11983,7 +11983,7 @@ __metadata:
     "@watergis/maplibre-gl-export": "npm:~4.0.1"
     bulma: "npm:^1.0.4"
     classnames: "npm:^2.5.1"
-    dayjs: "npm:^1.11.15"
+    dayjs: "npm:^1.11.18"
     fast-check: "npm:^4.3.0"
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^16.3.0"
