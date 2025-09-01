@@ -2614,15 +2614,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fortawesome/react-fontawesome@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@fortawesome/react-fontawesome@npm:3.0.1"
-  dependencies:
-    semver: "npm:^7.7.2"
+"@fortawesome/react-fontawesome@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@fortawesome/react-fontawesome@npm:3.0.2"
   peerDependencies:
     "@fortawesome/fontawesome-svg-core": ~6 || ~7
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/8cb61a6f93bf457448643ed5911173f58fd08c91a86b40855bb5d3361c81c01a34d09bdda9dfa645d403967f725861f4998e1b5b53c84f472dc6fb90a3fe1810
+  checksum: 10/39f25b3814b5e8a26cb60028929158fa032b724388588b9c9e256cf657ea18a73db2560054058240e91efa6daf58398f60e25d9a5ccd97655b2472a992191968
   languageName: node
   linkType: hard
 
@@ -11956,7 +11954,7 @@ __metadata:
     "@fortawesome/free-brands-svg-icons": "npm:^7.0.0"
     "@fortawesome/free-regular-svg-icons": "npm:^7.0.0"
     "@fortawesome/free-solid-svg-icons": "npm:^7.0.0"
-    "@fortawesome/react-fontawesome": "npm:^3.0.1"
+    "@fortawesome/react-fontawesome": "npm:^3.0.2"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.0"
     "@maplibre/maplibre-gl-style-spec": "npm:^23.3.0"
     "@openfeature/core": "npm:^1.9.0"
