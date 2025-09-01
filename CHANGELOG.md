@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
 - *(deps)* Bump react-i18next from 15.7.2 to 15.7.3 in /ui ([#977](https://github.com/f-eld-ch/sitrep/issues/977)) - ([881f88a](https://github.com/f-eld-ch/sitrep/commit/881f88aa65bdd9bc2adf1cb1f8abfae0e27d7e8f))
 - *(deps)* Bump dayjs from 1.11.14 to 1.11.15 in /ui ([#976](https://github.com/f-eld-ch/sitrep/issues/976)) - ([64f4449](https://github.com/f-eld-ch/sitrep/commit/64f444909af2de5c6ccbf91c1854c346d2833f4e))
 - *(deps)* Bump @fortawesome/react-fontawesome from 3.0.0 to 3.0.1 in /ui in the fontawesome group ([#974](https://github.com/f-eld-ch/sitrep/issues/974)) - ([6a15786](https://github.com/f-eld-ch/sitrep/commit/6a15786b385a47cde83c9baf816a04cd1b05f56b))
