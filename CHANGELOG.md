@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(backend)* Use otel semconv v1.37 - ([490b554](https://github.com/f-eld-ch/sitrep/commit/490b554e34ee9ba7ba38c9bdab876e59b528efcd))
+
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
