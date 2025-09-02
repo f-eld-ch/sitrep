@@ -3,6 +3,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump the otel group across 1 directory with 4 updates ([#995](https://github.com/f-eld-ch/sitrep/issues/995)) - ([6d10ced](https://github.com/f-eld-ch/sitrep/commit/6d10ced1494e532da27d42bd70e01a0d77eba962))
 - *(deps)* Bump dayjs from 1.11.15 to 1.11.18 in /ui ([#992](https://github.com/f-eld-ch/sitrep/issues/992)) - ([6014cde](https://github.com/f-eld-ch/sitrep/commit/6014cde9384b59f33a8edfdd00fbadcb3a6b8271))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#993](https://github.com/f-eld-ch/sitrep/issues/993)) - ([e00e29f](https://github.com/f-eld-ch/sitrep/commit/e00e29f6396584f0496f5f0d867ca321286d2d38))
 - *(deps)* Bump go.opentelemetry.io/otel from 1.37.0 to 1.38.0 ([#988](https://github.com/f-eld-ch/sitrep/issues/988)) - ([81d7162](https://github.com/f-eld-ch/sitrep/commit/81d71623e05f31b03a9e8068341b0dc9d24f5d87))
