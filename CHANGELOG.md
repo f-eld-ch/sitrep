@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump maplibre-gl from 5.7.0 to 5.7.1 in /ui ([#1008](https://github.com/f-eld-ch/sitrep/issues/1008)) - ([0b79315](https://github.com/f-eld-ch/sitrep/commit/0b793155eac7bf53fa1beed59cf2bb7bb7720f82))
 - *(deps)* Bump actions/setup-go from 5.5.0 to 6.0.0 ([#1004](https://github.com/f-eld-ch/sitrep/issues/1004)) - ([7f47052](https://github.com/f-eld-ch/sitrep/commit/7f470528e8c4bd6932ca9351c358d50f1cd07983))
 - *(deps)* Bump github.com/spf13/viper from 1.20.1 to 1.21.0 ([#1013](https://github.com/f-eld-ch/sitrep/issues/1013)) - ([59ee203](https://github.com/f-eld-ch/sitrep/commit/59ee2039ae5b84c01a374655a5e98318aa37f69f))
 - *(deps)* Bump github/codeql-action from 3.30.0 to 3.30.3 ([#1019](https://github.com/f-eld-ch/sitrep/issues/1019)) - ([8694691](https://github.com/f-eld-ch/sitrep/commit/869469157b8f67ce797d6accff51df33a58bed6d))
