@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump uuid from 11.1.0 to 13.0.0 in /ui ([#1014](https://github.com/f-eld-ch/sitrep/issues/1014)) - ([c314750](https://github.com/f-eld-ch/sitrep/commit/c314750d9f7754854befb0fa9675c484d9880fa3))
 - *(deps)* Bump undici from 7.15.0 to 7.16.0 in /ui ([#1015](https://github.com/f-eld-ch/sitrep/issues/1015)) - ([2cdd290](https://github.com/f-eld-ch/sitrep/commit/2cdd290ee951fcc5bab428ce9fd3e61e82d8d796))
 - *(deps)* Bump maplibre-gl from 5.7.0 to 5.7.1 in /ui ([#1008](https://github.com/f-eld-ch/sitrep/issues/1008)) - ([0b79315](https://github.com/f-eld-ch/sitrep/commit/0b793155eac7bf53fa1beed59cf2bb7bb7720f82))
 - *(deps)* Bump actions/setup-go from 5.5.0 to 6.0.0 ([#1004](https://github.com/f-eld-ch/sitrep/issues/1004)) - ([7f47052](https://github.com/f-eld-ch/sitrep/commit/7f470528e8c4bd6932ca9351c358d50f1cd07983))
