@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump actions/setup-node from 4.4.0 to 5.0.0 ([#1006](https://github.com/f-eld-ch/sitrep/issues/1006)) - ([9ce0143](https://github.com/f-eld-ch/sitrep/commit/9ce0143649ad7c3f2813acfd7d9ab49326842f10))
 - *(deps)* Bump github.com/samber/slog-multi from 1.4.1 to 1.5.0 ([#1005](https://github.com/f-eld-ch/sitrep/issues/1005)) - ([0ba8b5b](https://github.com/f-eld-ch/sitrep/commit/0ba8b5b6d5de6791e08bfe6858414aade682bce1))
 - *(deps)* Bump uuid from 11.1.0 to 13.0.0 in /ui ([#1014](https://github.com/f-eld-ch/sitrep/issues/1014)) - ([c314750](https://github.com/f-eld-ch/sitrep/commit/c314750d9f7754854befb0fa9675c484d9880fa3))
 - *(deps)* Bump undici from 7.15.0 to 7.16.0 in /ui ([#1015](https://github.com/f-eld-ch/sitrep/issues/1015)) - ([2cdd290](https://github.com/f-eld-ch/sitrep/commit/2cdd290ee951fcc5bab428ce9fd3e61e82d8d796))
