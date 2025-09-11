@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump github/codeql-action from 3.30.0 to 3.30.3 ([#1019](https://github.com/f-eld-ch/sitrep/issues/1019)) - ([8694691](https://github.com/f-eld-ch/sitrep/commit/869469157b8f67ce797d6accff51df33a58bed6d))
 - *(deps)* Update fontawesome to 7.0.1 ([#1000](https://github.com/f-eld-ch/sitrep/issues/1000)) - ([d789f97](https://github.com/f-eld-ch/sitrep/commit/d789f97b952978e00b4b04a02b2fb713e7475bfa))
 - *(deps)* Bump github/codeql-action from 3.29.11 to 3.30.0 ([#997](https://github.com/f-eld-ch/sitrep/issues/997)) - ([7f0bac6](https://github.com/f-eld-ch/sitrep/commit/7f0bac6b23998d5b5a2c7bc6187e780b873a2e61))
 - *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#981](https://github.com/f-eld-ch/sitrep/issues/981)) - ([90750fd](https://github.com/f-eld-ch/sitrep/commit/90750fd160b27029a3e1850caf98806d612ab621))
