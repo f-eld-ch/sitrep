@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump react-router from 7.8.2 to 7.9.0 in /ui ([#1021](https://github.com/f-eld-ch/sitrep/issues/1021)) - ([baf371a](https://github.com/f-eld-ch/sitrep/commit/baf371a8d86a373938a76d1fc57834de27945671))
 - *(deps)* Bump i18next from 25.4.2 to 25.5.2 in /ui ([#1010](https://github.com/f-eld-ch/sitrep/issues/1010)) - ([1a3b647](https://github.com/f-eld-ch/sitrep/commit/1a3b64735292b0582a0d825310fd59f8944d665a))
 - *(deps)* Bump actions/setup-node from 4.4.0 to 5.0.0 ([#1006](https://github.com/f-eld-ch/sitrep/issues/1006)) - ([9ce0143](https://github.com/f-eld-ch/sitrep/commit/9ce0143649ad7c3f2813acfd7d9ab49326842f10))
 - *(deps)* Bump github.com/samber/slog-multi from 1.4.1 to 1.5.0 ([#1005](https://github.com/f-eld-ch/sitrep/issues/1005)) - ([0ba8b5b](https://github.com/f-eld-ch/sitrep/commit/0ba8b5b6d5de6791e08bfe6858414aade682bce1))
