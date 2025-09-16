@@ -7,6 +7,8 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump react-router from 7.9.0 to 7.9.1 in /ui ([#1027](https://github.com/f-eld-ch/sitrep/issues/1027)) - ([5ce0eba](https://github.com/f-eld-ch/sitrep/commit/5ce0eba06163c854d85a52f430b048fc1c15463e))
+- *(deps)* Bump actions/create-github-app-token from 2.1.2 to 2.1.4 ([#1028](https://github.com/f-eld-ch/sitrep/issues/1028)) - ([989d8d2](https://github.com/f-eld-ch/sitrep/commit/989d8d2589ac6e8d66056f7a15e324c5f2eef4f8))
 - *(deps)* Bump actions/create-github-app-token from 2.1.1 to 2.1.2 ([#1022](https://github.com/f-eld-ch/sitrep/issues/1022)) - ([00deae1](https://github.com/f-eld-ch/sitrep/commit/00deae1d5cfaf2d5b1eece836e644bdbef8b0234))
 - *(deps)* Bump react-router from 7.8.2 to 7.9.0 in /ui ([#1021](https://github.com/f-eld-ch/sitrep/issues/1021)) - ([baf371a](https://github.com/f-eld-ch/sitrep/commit/baf371a8d86a373938a76d1fc57834de27945671))
 - *(deps)* Bump i18next from 25.4.2 to 25.5.2 in /ui ([#1010](https://github.com/f-eld-ch/sitrep/issues/1010)) - ([1a3b647](https://github.com/f-eld-ch/sitrep/commit/1a3b64735292b0582a0d825310fd59f8944d665a))
@@ -140,9 +142,6 @@
 - *(deps)* Bump @openfeature/flipt-web-provider in /ui ([#833](https://github.com/f-eld-ch/sitrep/issues/833)) - ([3da6215](https://github.com/f-eld-ch/sitrep/commit/3da621508ac52ea99fe30eebe769d881adb17d9a))
 - *(deps)* Bump web-vitals from 5.0.1 to 5.0.2 in /ui ([#830](https://github.com/f-eld-ch/sitrep/issues/830)) - ([2542089](https://github.com/f-eld-ch/sitrep/commit/2542089de610675e675c8c4f564475bf8e4e99df))
 
-## New Contributors ❤️
-
-* @step-security-bot made their first contribution in [#878](https://github.com/f-eld-ch/sitrep/pull/878)
 
 ## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
 
@@ -474,9 +473,6 @@
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#563](https://github.com/f-eld-ch/sitrep/issues/563)) - ([1d8f273](https://github.com/f-eld-ch/sitrep/commit/1d8f27328f2be404eed85751e12dc0acf2e28317))
 - *(deps)* Bump @openfeature/react-sdk from 0.4.8 to 0.4.9 in /ui ([#549](https://github.com/f-eld-ch/sitrep/issues/549)) - ([3669f0a](https://github.com/f-eld-ch/sitrep/commit/3669f0a97519d59d69c6d241419a70cb62c010cf))
 
-## New Contributors ❤️
-
-* @transifex-integration[bot] made their first contribution in [#614](https://github.com/f-eld-ch/sitrep/pull/614)
 
 ## [24.12.1](https://github.com/f-eld-ch/sitrep/compare/v24.12.0..v24.12.1) - 2024-12-04
 
@@ -637,9 +633,6 @@
 - *(deps)* Bump micromatch ([#400](https://github.com/f-eld-ch/sitrep/issues/400)) - ([f93589a](https://github.com/f-eld-ch/sitrep/commit/f93589af303956bc28e526106c80cb8330dd6d94))
 - *(docker)* Add selinux compose file - ([33d4c5f](https://github.com/f-eld-ch/sitrep/commit/33d4c5fbea7517f4ffe5c1d009d010b57f6cef4d))
 
-## New Contributors ❤️
-
-* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
@@ -973,12 +966,5 @@ Details:
 - Upgrade oauth2-proxy to 7.4.0, closes #106 - ([6a79342](https://github.com/f-eld-ch/sitrep/commit/6a7934224e17140124251de9e05047bdec630680))
 - Update dependencies to fix minimatch ReDoS - ([45792bc](https://github.com/f-eld-ch/sitrep/commit/45792bcadd5603c0a3577742084414b9e0b6bc86))
 
-## New Contributors ❤️
-
-* @nimdanitro made their first contribution
-* @weblate made their first contribution
-* @dependabot[bot] made their first contribution
-* @lukastresch made their first contribution
-* @snyk-bot made their first contribution
 
 Made with ♥️  in Switzerland by F-ELD
