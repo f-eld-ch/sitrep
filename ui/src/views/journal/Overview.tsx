@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import {
   faChartSimple,
   faEdit,
@@ -18,7 +18,7 @@ import { t } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import type { Journal, JournalListData, JournalListVars } from "types";
+import type { Journal } from "types";
 import { CloseJournal, GetJournals } from "./graphql";
 
 function Overview() {
@@ -32,9 +32,7 @@ function Overview() {
     dayjs.extend(relativeTime);
   }, []);
 
-  const { loading, error, data } = useQuery<JournalListData, JournalListVars>(
-    GetJournals,
-    {
+  const { loading, error, data } = useQuery(GetJournals, {
       variables: { incidentId: incidentId || "" },
       pollInterval: 10000,
     },

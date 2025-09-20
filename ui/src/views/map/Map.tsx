@@ -1,6 +1,6 @@
 import "./control-panel.css";
 import "./Map.scss";
-import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client/react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
 import classNames from "classnames";
@@ -29,14 +29,7 @@ import {
 } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
 import type {
-  AddFeatureResponse,
-  AddFeatureVars,
-  DeleteFeatureVars,
-  GetLayersData,
-  GetLayersVars,
   Layer,
-  ModifyFeatureResponse,
-  ModifyFeatureVars,
 } from "types/layer";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
@@ -142,7 +135,7 @@ function LayerFetcher() {
   const { incidentId } = useParams();
   const { state, dispatch } = useContext(LayerContext);
 
-  const { data, loading } = useQuery<GetLayersData, GetLayersVars>(GetLayers, {
+  const { data, loading } = useQuery(GetLayers, {
     variables: { incidentId: incidentId || "" },
     pollInterval: 2000,
     fetchPolicy: "cache-and-network",
@@ -212,13 +205,11 @@ function Draw() {
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
-  const [addFeature] = useMutation<AddFeatureResponse, AddFeatureVars>(
-    AddFeatureToLayer,
-    {
+  const [addFeature] = useMutation(AddFeatureToLayer,{
       refetchQueries: [
         { query: GetLayers, variables: { incidentId: incidentId } },
       ],
-      onCompleted: (data: AddFeatureResponse) => {
+      onCompleted: (data) => {
         if (data.insertFeaturesOne?.id) {
           dispatch({
             type: "SELECT_FEATURE",
@@ -246,9 +237,7 @@ function Draw() {
     },
   );
 
-  const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(
-    ModifyFeature,
-    {
+  const [modifyFeature] = useMutation(ModifyFeature, {
       refetchQueries: [
         { query: GetLayers, variables: { incidentId: incidentId } },
       ],
@@ -275,9 +264,7 @@ function Draw() {
     },
   );
 
-  const [deleteFeature] = useMutation<Feature, DeleteFeatureVars>(
-    DeleteFeature,
-    {
+  const [deleteFeature] = useMutation(DeleteFeature, {
       refetchQueries: [
         { query: GetLayers, variables: { incidentId: incidentId } },
       ],

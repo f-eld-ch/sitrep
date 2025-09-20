@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import {
   faArrowsToEye,
   faBell,
@@ -15,8 +15,6 @@ import { useReactToPrint } from "react-to-print";
 import {
   type Division,
   type Message,
-  type MessageListData,
-  type MessageListVars,
   PriorityStatus,
   TriageStatus,
 } from "types";
@@ -42,9 +40,7 @@ function List(props: {
     pageStyle: "@page { size: A4 landscape;}",
   });
 
-  const { loading, error, data } = useQuery<MessageListData, MessageListVars>(
-    GetJournalMessages,
-    {
+  const { loading, error, data } = useQuery(GetJournalMessages, {
       variables: { journalId: journalId || "" },
       pollInterval: 10000,
     },
@@ -78,7 +74,7 @@ function List(props: {
   }
 
   if (loading) return <Spinner />;
-  const divisions = data?.journalsByPk.incident.divisions.flat() || [];
+  const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
 
   const messages =
     data?.messages

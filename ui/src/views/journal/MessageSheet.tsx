@@ -46,7 +46,7 @@ function MessageSheet(
               {t("message.name")}
             </th>
             <th>{t("message.sender")}</th>
-            {message.mediumId === Medium.Radio ||
+            {message.medium === Medium.Radio ||
             !message.senderDetail?.length ? (
               <td colSpan={3} style={cellStyle}>
                 {message.sender}
@@ -59,7 +59,7 @@ function MessageSheet(
           </tr>
           <tr>
             <th>{t("message.receiver")}</th>
-            {message.mediumId === Medium.Radio ||
+            {message.medium === Medium.Radio ||
             !message.receiverDetail?.length ? (
               <td colSpan={3} style={cellStyle}>
                 {message.receiver}
@@ -86,17 +86,17 @@ function MessageSheet(
           </tr>
           <tr>
             <th>{t("message.type")}</th>
-            {message.mediumId === Medium.Radio ? (
+            {message.medium === Medium.Radio ? (
               <>
                 <td>
-                  {t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}
+                  {t([`medium.${message.medium}`, `medium.${Medium.Radio}`])}
                 </td>
                 <th>{t("radioChannel")}</th>
                 <td>{message.senderDetail}</td>
               </>
             ) : (
               <td colSpan={3}>
-                {t([`medium.${message.mediumId}`, `medium.${Medium.Radio}`])}
+                {t([`medium.${message.medium}`, `medium.${Medium.Radio}`])}
               </td>
             )}
           </tr>

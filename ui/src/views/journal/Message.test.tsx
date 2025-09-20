@@ -50,7 +50,7 @@ describe("MessageContainer", () => {
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: new Date(0),
-		mediumId: Medium.Email,
+		medium: Medium.Email,
 	};
 	const divisions: Division[] = [];
 
@@ -150,7 +150,7 @@ describe("MessageContainer", () => {
 					createdAt: fc.date(),
 					updatedAt: fc.date(),
 					deletedAt: fc.date(),
-					mediumId: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
+					medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
 				}),
 				(msg) => {
 					render(

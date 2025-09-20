@@ -1,10 +1,9 @@
-import { useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import type { InsertJournalData, InsertJournalVars } from "types/journal";
 import { GetIncidentDetails } from "views/incident/graphql";
 import { GetJournals, InsertJournal } from "./graphql";
 
@@ -27,13 +26,10 @@ function NewForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [insertJournal, { error }] = useMutation<
-    InsertJournalData,
-    InsertJournalVars
-  >(InsertJournal, {
-    onCompleted(data) {
+  const [insertJournal, { error }] = useMutation(InsertJournal, {
+    onCompleted() {
       // reset the form values
-      navigate(`../${data.insertJournalsOne.id}/edit`);
+      navigate(`../${incidentId}/edit`);
     },
     refetchQueries: [
       { query: GetJournals, variables: { incidentId: incidentId } },

@@ -70,3 +70,15 @@ export interface UpdateIncidentVars {
   locationId: string;
   divisions: DivisionUpdate[];
 }
+
+export type CloseIncidentMutation = {
+  updateIncidents: {
+    affectedRows: number;
+    returning: { id: string; closedAt: Date | null }[];
+  } | null;
+};
+export type CloseIncidentMutationVariables = {
+  incidentId?: string;
+  closedAt?: Date | null;
+};
+
