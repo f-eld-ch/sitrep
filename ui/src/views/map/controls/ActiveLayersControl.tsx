@@ -68,9 +68,12 @@ const ActiveLayersControl: React.FC = () => {
 								size="lg"
 							/>
 						</span>
-						{/** biome-ignore lint/a11y/noStaticElementInteractions: styling issue */}
-            {/** biome-ignore lint/a11y/useValidAnchor: styling issue */}
-            <a onClick={() => handleLayerClick(s.layer.id)}>{s.layer.name}</a>
+            <button
+              type="button"
+              onClick={() => handleLayerClick(s.layer.id)}
+            >
+              {s.layer.name}
+            </button>
 					</div>
 					{s.layer.id !== state.activeLayer && (
 						<div className="is-align-items-flex-end is-flex-shrink-0">
@@ -96,7 +99,6 @@ const ActiveLayersControl: React.FC = () => {
 				<div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
 					<button
 						type="button"
-						className="button is-small is-rounded"
 						onClick={() => setShowAddLayer(true)}
 					>
 						<span className="icon is-small">
