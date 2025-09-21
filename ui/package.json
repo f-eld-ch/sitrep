@@ -31,7 +31,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "lodash": "^4.17.21",
     "mapbox-gl-style-switcher": "^1.0.11",
-    "maplibre-gl": "5.7.1",
+    "maplibre-gl": "5.7.3",
     "ol": "^10.6.1",
     "react": "^18.3.1",
     "react-autocomplete-hint": "^2.0.0",
@@ -114,7 +114,7 @@
     "brace-expansion": "2.0.2",
     "dompurify": "3.2.4",
     "jspdf": "3.0.2",
-    "maplibre-gl": "5.7.1",
+    "maplibre-gl": "5.7.3",
     "sharp": "^0.33.5"
   },
   "packageManager": "yarn@4.9.4"
