@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump @apollo/client from 3.13.9 to 4.0.5 in /ui ([#1024](https://github.com/f-eld-ch/sitrep/issues/1024)) - ([f6eccd3](https://github.com/f-eld-ch/sitrep/commit/f6eccd35617a7bdb9be6cff70b3fd3dbb21f695c))
 - *(deps)* Bump react-router from 7.9.0 to 7.9.1 in /ui ([#1027](https://github.com/f-eld-ch/sitrep/issues/1027)) - ([5ce0eba](https://github.com/f-eld-ch/sitrep/commit/5ce0eba06163c854d85a52f430b048fc1c15463e))
 - *(deps)* Bump actions/create-github-app-token from 2.1.2 to 2.1.4 ([#1028](https://github.com/f-eld-ch/sitrep/issues/1028)) - ([989d8d2](https://github.com/f-eld-ch/sitrep/commit/989d8d2589ac6e8d66056f7a15e324c5f2eef4f8))
 - *(deps)* Bump actions/create-github-app-token from 2.1.1 to 2.1.2 ([#1022](https://github.com/f-eld-ch/sitrep/issues/1022)) - ([00deae1](https://github.com/f-eld-ch/sitrep/commit/00deae1d5cfaf2d5b1eece836e644bdbef8b0234))
