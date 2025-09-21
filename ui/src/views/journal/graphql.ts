@@ -1,6 +1,26 @@
-import { gql } from "@apollo/client";
+import { gql, type TypedDocumentNode } from "@apollo/client";
+import type {
+  CloseJournalData,
+  CloseJournalVars,
+  GetJournalMessagesData,
+  GetJournalMessagesVars,
+  GetJournalsData,
+  GetJournalsVars,
+  InsertJournalData,
+  InsertJournalVars,
+  InsertMessageVars,
+  Message,
+  SaveMessageTriageData,
+  SaveMessageTriageVars,
+  TriageMessageData,
+  TriageMessageVars,
+  UpdateMessageVars,
+} from "types/journal";
 
-const GET_MESSAGES = gql`
+const GET_MESSAGES: TypedDocumentNode<
+  GetJournalMessagesData,
+  GetJournalMessagesVars
+> = gql`
   query GetMessages($journalId: uuid!) {
     journalsByPk(id: $journalId) {
       incident {
@@ -36,7 +56,8 @@ const GET_MESSAGES = gql`
     }
   }
 `;
-const INSERT_JOURNAL = gql`
+const INSERT_JOURNAL: TypedDocumentNode<InsertJournalData, InsertJournalVars> =
+  gql`
   mutation InsertJournal($name: String!, $incidentId: uuid!) {
     insertJournalsOne(object: { incidentId: $incidentId, name: $name }) {
       id
@@ -48,7 +69,7 @@ const INSERT_JOURNAL = gql`
     }
   }
 `;
-const GET_JOURNALS = gql`
+const GET_JOURNALS: TypedDocumentNode<GetJournalsData, GetJournalsVars> = gql`
   query GetJournals($incidentId: uuid) {
     incidents(where: { id: { _eq: $incidentId } }) {
       id
@@ -64,7 +85,8 @@ const GET_JOURNALS = gql`
     }
   }
 `;
-const CLOSE_JOURNAL = gql`
+const CLOSE_JOURNAL: TypedDocumentNode<CloseJournalData, CloseJournalVars> =
+  gql`
   mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
     updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
       affectedRows
@@ -75,7 +97,8 @@ const CLOSE_JOURNAL = gql`
     }
   }
 `;
-const INSERT_MESSAGE = gql`
+
+const INSERT_MESSAGE: TypedDocumentNode<Message, InsertMessageVars> = gql`
   mutation InsertMessage(
     $journalId: uuid
     $sender: String
@@ -85,8 +108,9 @@ const INSERT_MESSAGE = gql`
     $receiverDetail: String
     $senderDetail: String
     $type: MediumEnum
-  ) {
-    insertMessagesOne(
+  )
+{
+  insertMessagesOne(
       object: {
         content: $content
         journalId: $journalId
@@ -120,7 +144,7 @@ const INSERT_MESSAGE = gql`
   }
 `;
 
-const UPDATE_MESSAGE = gql`
+const UPDATE_MESSAGE: TypedDocumentNode<Message, UpdateMessageVars> = gql`
   mutation UpdateMessage(
     $messageId: uuid!
     $content: String
@@ -129,7 +153,7 @@ const UPDATE_MESSAGE = gql`
     $time: timestamptz
     $receiverDetail: String
     $senderDetail: String
-    $type: MediumEnum
+    $mediumId: MediumEnum
   ) {
     updateMessagesByPk(
       pkColumns: { id: $messageId }
@@ -138,7 +162,7 @@ const UPDATE_MESSAGE = gql`
         sender: $sender
         receiver: $receiver
         time: $time
-        mediumId: $type
+        mediumId: $mediumId
         senderDetail: $senderDetail
         receiverDetail: $receiverDetail
       }
@@ -164,7 +188,10 @@ const UPDATE_MESSAGE = gql`
     }
   }
 `;
-const SAVE_MESSAGE_TRIAGE = gql`
+const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
+  SaveMessageTriageData,
+  SaveMessageTriageVars
+> = gql`
   mutation SaveMessageTriage(
     $messageId: uuid!
     $priority: PriorityStatusEnum
@@ -189,7 +216,10 @@ const SAVE_MESSAGE_TRIAGE = gql`
     }
   }
 `;
-const GET_MESSAGE_FOR_TRIAGE = gql`
+const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
+  TriageMessageData,
+  TriageMessageVars
+> = gql`
   query GetMessageForTriage($messageId: uuid!) {
     messagesByPk(id: $messageId) {
       id

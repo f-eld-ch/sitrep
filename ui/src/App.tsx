@@ -4,7 +4,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router";
 import "./App.scss";
 
 import { Provider as FeatureFlagProvider } from "FeatureFlags";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";

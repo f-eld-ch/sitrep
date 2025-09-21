@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
 import React, {
@@ -12,8 +12,6 @@ import { useNavigate, useParams } from "react-router";
 import {
   Medium,
   type Message,
-  type MessageListData,
-  type MessageListVars,
   PriorityStatus,
   TriageStatus,
 } from "types";
@@ -119,13 +117,10 @@ function initState(): State {
 
 function Editor() {
   const { journalId } = useParams();
-  const { data } = useQuery<MessageListData, MessageListVars>(
-    GetJournalMessages,
-    {
-      fetchPolicy: "cache-first",
-      variables: { journalId: journalId || "" },
-    },
-  );
+  const { data } = useQuery(GetJournalMessages, {
+    fetchPolicy: "cache-first",
+    variables: { journalId: journalId || "" },
+  });
 
   const [insertMessage, { error }] = useMutation(InsertMessage, {
     onCompleted() {
@@ -209,7 +204,7 @@ function Editor() {
           receiver: action.message?.receiver,
           time: action.message?.time,
           content: action.message?.content,
-          media: action.message?.mediumId || Medium.Radio,
+          media: action.message?.medium || Medium.Radio,
           senderDetail: action.message?.senderDetail,
           receiverDetail: action.message?.receiverDetail,
           radioChannel: action.message?.senderDetail,
@@ -237,14 +232,18 @@ function Editor() {
     // exit if we don't need to save
     if (!state.saving) return;
 
+    if (!state.time === undefined) return;
+
+    if (journalId === undefined) return;
+
     if (state.messageToEdit?.id) {
       updateMessage({
         variables: {
           messageId: state.messageToEdit.id,
-          time: state.time,
+          time: state.time || new Date(),
           journalId: journalId,
           content: state.content,
-          type: state.media,
+          medium: state.media,
           sender: state.sender,
           senderDetail:
             state.media !== Medium.Radio
@@ -263,7 +262,7 @@ function Editor() {
           time: state.time || new Date(),
           journalId: journalId,
           content: state.content,
-          type: state.media,
+          medium: state.media,
           sender: state.sender,
           senderDetail:
             state.media !== Medium.Radio
@@ -290,13 +289,13 @@ function Editor() {
         senderReceiverDetails:
           uniq(
             data?.messages
-              .filter((d) => d.mediumId !== Medium.Radio)
+              .filter((d) => d.medium !== Medium.Radio)
               .flatMap((d) => [d.senderDetail, d.receiverDetail]),
           ).filter((e) => e) || [],
         channelList:
           uniq(
             data?.messages
-              .filter((d) => d.mediumId === Medium.Radio)
+              .filter((d) => d.medium === Medium.Radio)
               .map((d) => d.senderDetail),
           ).filter((e) => e) || [],
       },
@@ -394,7 +393,7 @@ function InputBox() {
       senderDetail: state.senderDetail,
       receiver: state.receiver,
       receiverDetail: state.receiverDetail,
-      mediumId: state.media,
+      medium: state.media,
       createdAt: state.messageToEdit?.createdAt || new Date(),
       updatedAt: state.messageToEdit?.updatedAt || new Date(),
       divisions: state.messageToEdit?.divisions || [],

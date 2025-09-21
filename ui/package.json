@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@apollo/client": "^3.13.9",
+    "@apollo/client": "^4.0.5",
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
     "@fortawesome/free-brands-svg-icons": "^7.0.1",
     "@fortawesome/free-regular-svg-icons": "^7.0.1",
@@ -42,6 +42,7 @@
     "react-markdown": "^10.1.0",
     "react-router": "^7.9.1",
     "react-to-print": "^3.1.1",
+    "rxjs": "^7.8.2",
     "undici": "^7.16.0",
     "usehooks-ts": "^3.1.1",
     "uuid": "^13.0.0"

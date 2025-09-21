@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
 import { faClipboard, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -11,10 +11,6 @@ import { useNavigate } from "react-router";
 import type { Division } from "types";
 import type {
   Incident,
-  InsertIncidentData,
-  InsertIncidentVars,
-  UpdateIncidentData,
-  UpdateIncidentVars,
 } from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
 import {
@@ -56,10 +52,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
-  const [insertIncident, { error }] = useMutation<
-    InsertIncidentData,
-    InsertIncidentVars
-  >(InsertIncident, {
+  const [insertIncident, { error }] = useMutation(InsertIncident, {
     onCompleted(data) {
       navigate(`../${data.insertIncidentsOne.id}/journal/view`);
     },
@@ -70,10 +63,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
     ],
   });
 
-  const [updateIncident, { error: errorUpdate }] = useMutation<
-    UpdateIncidentData,
-    UpdateIncidentVars
-  >(UpdateIncident, {
+  const [updateIncident, { error: errorUpdate }] = useMutation(UpdateIncident, {
     onCompleted() {
       navigate("../journal/view");
     },
@@ -192,13 +182,15 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                       className={tagsClass}
                     >{`${d.description} (${d.name})`}</p>
                     {d.id === "" && (
-                      <a
+                      <button
+                        type="button"
                         className="tag is-delete"
                         onClick={() =>
                           setAssignments(
                             reject(assignments, (e) => e.name === d.name),
                           )
                         }
+                        aria-label={t("removeDivision") as string}
                       />
                     )}
                   </div>

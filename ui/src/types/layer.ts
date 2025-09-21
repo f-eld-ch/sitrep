@@ -58,3 +58,15 @@ export interface DeleteFeatureVars {
   id: string | number | undefined;
   deletedAt: Date;
 }
+
+export interface DeleteFeatureResponse {
+  updateFeaturesByPk?: Feature | null;
+}
+
+export interface AddLayerData {
+  insertLayersOne?: { id: string } | null;
+}
+export interface AddLayerVars {
+  incidentId: string;
+  name: string;
+}
