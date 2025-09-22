@@ -102,7 +102,7 @@
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.2",
-    "vite": "^7.1.6",
+    "vite": "^7.1.7",
     "vite-bundle-analyzer": "^1.2.3",
     "vite-plugin-biome": "^1.0.12",
     "vite-plugin-pwa": "^1.0.3",
@@ -115,7 +115,8 @@
     "dompurify": "3.2.4",
     "jspdf": "3.0.2",
     "maplibre-gl": "5.7.3",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "vite": "^7.1.7"
   },
   "packageManager": "yarn@4.9.4"
 }
