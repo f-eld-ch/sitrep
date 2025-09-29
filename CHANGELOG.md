@@ -7,6 +7,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump react-router from 7.9.2 to 7.9.3 in /ui ([#1045](https://github.com/f-eld-ch/sitrep/issues/1045)) - ([babbe59](https://github.com/f-eld-ch/sitrep/commit/babbe595282058a8c7532b25f2430b7a5d0ebbf6))
 - *(deps)* Bump react-i18next from 15.7.3 to 16.0.0 in /ui ([#1046](https://github.com/f-eld-ch/sitrep/issues/1046)) - ([682cb50](https://github.com/f-eld-ch/sitrep/commit/682cb50cf2c02de760322bcf1914bb7b2222f1b0))
 - *(deps)* Bump @apollo/client from 4.0.5 to 4.0.6 in /ui ([#1043](https://github.com/f-eld-ch/sitrep/issues/1043)) - ([b214500](https://github.com/f-eld-ch/sitrep/commit/b21450049fa8cb1fafd8613081fb4ab0024b0a54))
 - *(deps)* Bump github/codeql-action from 3.30.3 to 3.30.4 ([#1044](https://github.com/f-eld-ch/sitrep/issues/1044)) - ([f1c6e57](https://github.com/f-eld-ch/sitrep/commit/f1c6e57b6c9cbf06e806fd4b962bd3d390a0aa95))
