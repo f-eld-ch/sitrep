@@ -40,7 +40,7 @@
     "react-i18next": "^16.0.0",
     "react-map-gl": "~8.0.4",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.9.2",
+    "react-router": "^7.9.3",
     "react-to-print": "^3.1.1",
     "rxjs": "^7.8.2",
     "undici": "^7.16.0",
