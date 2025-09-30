@@ -8,6 +8,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump @openfeature/core from 1.9.0 to 1.9.1 in /ui ([#1049](https://github.com/f-eld-ch/sitrep/issues/1049)) - ([70ee831](https://github.com/f-eld-ch/sitrep/commit/70ee8319abb66ce2e5c2b2a23adaa52548c123fc))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.44.0 to 3.45.0 ([#1052](https://github.com/f-eld-ch/sitrep/issues/1052)) - ([34e4fdf](https://github.com/f-eld-ch/sitrep/commit/34e4fdff45cbbe3fa9a90b87fa70d05265c5b748))
 - *(deps)* Bump react-router from 7.9.2 to 7.9.3 in /ui ([#1045](https://github.com/f-eld-ch/sitrep/issues/1045)) - ([babbe59](https://github.com/f-eld-ch/sitrep/commit/babbe595282058a8c7532b25f2430b7a5d0ebbf6))
 - *(deps)* Bump react-i18next from 15.7.3 to 16.0.0 in /ui ([#1046](https://github.com/f-eld-ch/sitrep/issues/1046)) - ([682cb50](https://github.com/f-eld-ch/sitrep/commit/682cb50cf2c02de760322bcf1914bb7b2222f1b0))
