@@ -30,9 +30,12 @@ var ErrUnauthorized = errors.New("unauthorized")
 // NewOIDC returns a new OIDCClient
 func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, key string) (*OIDCClient, error) {
 	var err error
+
+	s := securecookie.New([]byte(key), []byte(key))
+	s.MaxLength(4 * 4096) // 16KB
 	o := &OIDCClient{
 		logger:       slog.Default().WithGroup("oidc_client"),
-		secureCookie: securecookie.New([]byte(key), []byte(key)),
+		secureCookie: s,
 	}
 	// enable outgoing request logging
 	client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
