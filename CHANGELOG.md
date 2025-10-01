@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(oidc)* Properly handle refresh tokens ([#1060](https://github.com/f-eld-ch/sitrep/issues/1060)) - ([a1f3a1a](https://github.com/f-eld-ch/sitrep/commit/a1f3a1a933a59c9fecdd4d1db2b569a695b2b5a3))
+
 ### 🐛 Bug Fixes
 
 - *(backend)* Use otel semconv v1.37 - ([490b554](https://github.com/f-eld-ch/sitrep/commit/490b554e34ee9ba7ba38c9bdab876e59b528efcd))
@@ -158,7 +162,7 @@
 
 ## New Contributors ❤️
 
-* @step-security-bot made their first contribution in [#878](https://github.com/f-eld-ch/sitrep/pull/878)
+* @step-security-bot made their first contribution
 
 ## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
 
@@ -492,7 +496,7 @@
 
 ## New Contributors ❤️
 
-* @transifex-integration[bot] made their first contribution in [#614](https://github.com/f-eld-ch/sitrep/pull/614)
+* @transifex-integration[bot] made their first contribution
 
 ## [24.12.1](https://github.com/f-eld-ch/sitrep/compare/v24.12.0..v24.12.1) - 2024-12-04
 
@@ -655,7 +659,7 @@
 
 ## New Contributors ❤️
 
-* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
+* @sebug made their first contribution
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
