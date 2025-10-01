@@ -4,6 +4,7 @@
 
 - *(backend)* Use otel semconv v1.37 - ([490b554](https://github.com/f-eld-ch/sitrep/commit/490b554e34ee9ba7ba38c9bdab876e59b528efcd))
 - *(oidc)* Fix cookie length handling ([#1053](https://github.com/f-eld-ch/sitrep/issues/1053)) - ([96b337c](https://github.com/f-eld-ch/sitrep/commit/96b337c3572e9c648f65fd8a54c198b445e11687))
+- *(ui)* Properly show spinner when loading data initially ([#1058](https://github.com/f-eld-ch/sitrep/issues/1058)) - ([522b84e](https://github.com/f-eld-ch/sitrep/commit/522b84ef2642466c59e7cacfdcf2b7bfa48a0310))
 
 ### ⚙️  Other
 
