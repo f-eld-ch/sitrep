@@ -51,7 +51,7 @@ func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, k
 		rp.WithPKCE(cookieHandler),
 	}
 
-	scopes := []string{"openid", "profile", "email"}
+	scopes := []string{"openid", "profile", "email", "offline_access"}
 	o.rp, err = rp.NewRelyingPartyOIDC(ctx, issuer, clientID, clientSecret, redirectURI, scopes, options...)
 
 	return o, err
@@ -130,6 +130,20 @@ func (o *OIDCClient) SignOutHandler(c echo.Context) error {
 		HttpOnly: true,
 		MaxAge:   -1,
 	})
+	c.SetCookie(&http.Cookie{
+		Name:     "access_token",
+		Value:    cookie,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   -1,
+	})
+	c.SetCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    cookie,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   -1,
+	})
 	return c.Redirect(http.StatusFound, "/")
 }
 
@@ -161,9 +175,14 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 		return nil, ErrUnauthorized
 	}
 
+	if claims.GetExpiration().Before(time.Now()) {
+		o.logger.Info("id_token is expired", "expiration", claims.GetExpiration().String(), "email", claims.Email, "sub", claims.Subject, "session_id", claims.SessionID)
+		return nil, ErrUnauthorized
+	}
+
 	// Refresh the ID token if it is expiring within 15 minutes
 	if refreshToken != "" && claims.GetExpiration().Before(time.Now().Add(15*time.Minute)) {
-		o.logger.Debug("id_token is expiring soon, refreshing token", "expiration", claims.GetExpiration().String())
+		o.logger.Info("id_token is expiring soon, refreshing token", "expiration", claims.GetExpiration().String(), "email", claims.Email, "sub", claims.Subject, "session_id", claims.SessionID)
 
 		assertion := ""
 		if o.rp.Signer() != nil {
@@ -173,7 +192,7 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 			}
 		}
 
-		tokens, err := rp.RefreshTokens[oidc.IDClaims](c.Request().Context(), o.rp, refreshToken, assertion, oidc.ClientAssertionTypeJWTAssertion)
+		tokens, err := rp.RefreshTokens[*oidc.IDTokenClaims](c.Request().Context(), o.rp, refreshToken, assertion, oidc.ClientAssertionTypeJWTAssertion)
 		if err != nil {
 			o.logger.Error("failed to refresh token", "error.message", err.Error())
 			return nil, ErrUnauthorized
