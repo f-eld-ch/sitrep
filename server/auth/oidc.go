@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 
+	"github.com/zitadel/oidc/v3/pkg/client"
 	"github.com/zitadel/oidc/v3/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/v3/pkg/http"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
@@ -97,6 +98,14 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 				return
 			}
 		}
+		if tokens.RefreshToken != "" {
+			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, int((time.Until(tokens.Expiry.Add(2 * 24 * time.Hour)).Seconds())))
+			if err != nil {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
+
 		err := o.encodeTokenFrom(c, "id_token", tokens.IDToken, int(tokens.ExpiresIn))
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -142,6 +151,9 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 		return nil, ErrUnauthorized
 	}
 
+	accessToken := o.decodedTokenFrom(c, "access_token")
+	refreshToken := o.decodedTokenFrom(c, "refresh_token")
+
 	claims := &oidc.IDTokenClaims{}
 	_, err := oidc.ParseToken(idToken, claims)
 	if err != nil {
@@ -149,14 +161,66 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 		return nil, ErrUnauthorized
 	}
 
-	accessToken := o.decodedTokenFrom(c, "access_token")
+	// Refresh the ID token if it is expiring within 15 minutes
+	if refreshToken != "" && claims.GetExpiration().Before(time.Now().Add(15*time.Minute)) {
+		o.logger.Debug("id_token is expiring soon, refreshing token", "expiration", claims.GetExpiration().String())
+
+		assertion := ""
+		if o.rp.Signer() != nil {
+			assertion, err = client.SignedJWTProfileAssertion(o.rp.OAuthConfig().ClientID, []string{o.rp.Issuer(), o.rp.OAuthConfig().Endpoint.TokenURL}, time.Hour, o.rp.Signer())
+			if err != nil {
+				o.logger.Error("failed to create client assertion", "error.message", err.Error())
+			}
+		}
+
+		tokens, err := rp.RefreshTokens[oidc.IDClaims](c.Request().Context(), o.rp, refreshToken, assertion, oidc.ClientAssertionTypeJWTAssertion)
+		if err != nil {
+			o.logger.Error("failed to refresh token", "error.message", err.Error())
+			return nil, ErrUnauthorized
+		}
+		if tokens.IDToken == "" {
+			o.logger.Error("no id_token returned from refresh")
+			return nil, ErrUnauthorized
+		}
+
+		err = o.encodeTokenFrom(c, "id_token", tokens.IDToken, int(tokens.ExpiresIn))
+		if err != nil {
+			o.logger.Error("failed to encode refreshed id_token", "error.message", err.Error())
+			return nil, ErrUnauthorized
+		}
+		idToken = tokens.IDToken
+		_, err = oidc.ParseToken(idToken, claims)
+		if err != nil {
+			o.logger.Error("failed to parse id_token", "error.message", err.Error())
+			return nil, ErrUnauthorized
+		}
+
+		if tokens.AccessToken != "" {
+			err := o.encodeTokenFrom(c, "access_token", tokens.AccessToken, int(tokens.ExpiresIn))
+			if err != nil {
+				o.logger.Error("failed to encode refreshed access_token", "error.message", err.Error())
+				return nil, ErrUnauthorized
+			}
+			accessToken = tokens.AccessToken
+		}
+		if tokens.RefreshToken != "" {
+			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, int((time.Until(tokens.Expiry.Add(2 * 24 * time.Hour)).Seconds())))
+			if err != nil {
+				o.logger.Error("failed to encode refreshed refresh_token", "error.message", err.Error())
+				return nil, ErrUnauthorized
+			}
+			refreshToken = tokens.RefreshToken
+		}
+	}
 
 	return &UserInfo{
+		Name:              claims.Name,
 		User:              claims.Subject,
 		Email:             claims.Email,
 		PreferredUsername: claims.PreferredUsername,
 		IDToken:           idToken,
 		AccessToken:       accessToken,
+		RefreshToken:      refreshToken,
 		SessionID:         claims.SessionID,
 	}, nil
 }
@@ -208,6 +272,7 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		c.Set("id_token", userInfo.IDToken)
 		c.Set("access_token", userInfo.AccessToken)
+		c.Set("refresh_token", userInfo.RefreshToken)
 		c.Set("user_info", userInfo)
 
 		span := trace.SpanFromContext(c.Request().Context())
