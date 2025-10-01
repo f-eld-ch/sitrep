@@ -37,7 +37,7 @@ function List() {
 
 	if (error)
 		return <div className="notification is-danger">{error.message}</div>;
-	if (loading) return <Spinner />;
+	if (loading && !data) return <Spinner />;
 
 	return (
 		<div>

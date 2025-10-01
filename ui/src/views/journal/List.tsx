@@ -73,7 +73,7 @@ function List(props: {
     );
   }
 
-  if (loading) return <Spinner />;
+  if (loading && !data) return <Spinner />;
   const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
 
   const messages =
