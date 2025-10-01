@@ -7,6 +7,7 @@
 ### 🐛 Bug Fixes
 
 - *(backend)* Use otel semconv v1.37 - ([490b554](https://github.com/f-eld-ch/sitrep/commit/490b554e34ee9ba7ba38c9bdab876e59b528efcd))
+- *(oidc)* Use proper scopes for refresh token handling ([#1061](https://github.com/f-eld-ch/sitrep/issues/1061)) - ([5e4367f](https://github.com/f-eld-ch/sitrep/commit/5e4367fdad26d429f94eb1695ab3bcedae98fc23))
 - *(oidc)* Fix cookie length handling ([#1053](https://github.com/f-eld-ch/sitrep/issues/1053)) - ([96b337c](https://github.com/f-eld-ch/sitrep/commit/96b337c3572e9c648f65fd8a54c198b445e11687))
 - *(ui)* Properly show spinner when loading data initially ([#1058](https://github.com/f-eld-ch/sitrep/issues/1058)) - ([522b84e](https://github.com/f-eld-ch/sitrep/commit/522b84ef2642466c59e7cacfdcf2b7bfa48a0310))
 
@@ -162,7 +163,7 @@
 
 ## New Contributors ❤️
 
-* @step-security-bot made their first contribution
+* @step-security-bot made their first contribution in [#878](https://github.com/f-eld-ch/sitrep/pull/878)
 
 ## [25.5.3](https://github.com/f-eld-ch/sitrep/compare/v25.5.2..v25.5.3) - 2025-05-28
 
@@ -496,7 +497,7 @@
 
 ## New Contributors ❤️
 
-* @transifex-integration[bot] made their first contribution
+* @transifex-integration[bot] made their first contribution in [#614](https://github.com/f-eld-ch/sitrep/pull/614)
 
 ## [24.12.1](https://github.com/f-eld-ch/sitrep/compare/v24.12.0..v24.12.1) - 2024-12-04
 
@@ -659,7 +660,7 @@
 
 ## New Contributors ❤️
 
-* @sebug made their first contribution
+* @sebug made their first contribution in [#442](https://github.com/f-eld-ch/sitrep/pull/442)
 
 ## [24.8.0](https://github.com/f-eld-ch/sitrep/compare/v24.6.0..v24.8.0) - 2024-08-23
 
