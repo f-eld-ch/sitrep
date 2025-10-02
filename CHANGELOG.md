@@ -14,6 +14,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump ossf/scorecard-action from 2.4.2 to 2.4.3 ([#1063](https://github.com/f-eld-ch/sitrep/issues/1063)) - ([0c9c9da](https://github.com/f-eld-ch/sitrep/commit/0c9c9da98ce0a99a95ede623b20b52908d16c090))
 - *(deps)* Bump i18next from 25.5.2 to 25.5.3 in /ui ([#1065](https://github.com/f-eld-ch/sitrep/issues/1065)) - ([d8740c2](https://github.com/f-eld-ch/sitrep/commit/d8740c2f472f0755b775cb647f1d6890626b2abb))
 - *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1064](https://github.com/f-eld-ch/sitrep/issues/1064)) - ([a7499bf](https://github.com/f-eld-ch/sitrep/commit/a7499bfab736d9035fba1a837f1e3626ccb36cdc))
 - *(deps)* Bump maplibre-gl from 5.7.3 to 5.8.0 in /ui ([#1055](https://github.com/f-eld-ch/sitrep/issues/1055)) - ([94011c2](https://github.com/f-eld-ch/sitrep/commit/94011c22d66b348b12652dcb9ee5c54fa7d7570e))
