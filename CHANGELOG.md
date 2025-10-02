@@ -14,6 +14,7 @@
 ### ⚙️  Other
 
 - *(dependabot)* Update go dependabot configuration ([#990](https://github.com/f-eld-ch/sitrep/issues/990)) - ([203f67a](https://github.com/f-eld-ch/sitrep/commit/203f67a7a4e5e7533c9168c79d3a0b8be22c5690))
+- *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1064](https://github.com/f-eld-ch/sitrep/issues/1064)) - ([a7499bf](https://github.com/f-eld-ch/sitrep/commit/a7499bfab736d9035fba1a837f1e3626ccb36cdc))
 - *(deps)* Bump maplibre-gl from 5.7.3 to 5.8.0 in /ui ([#1055](https://github.com/f-eld-ch/sitrep/issues/1055)) - ([94011c2](https://github.com/f-eld-ch/sitrep/commit/94011c22d66b348b12652dcb9ee5c54fa7d7570e))
 - *(deps)* Bump @openfeature/web-sdk from 1.6.1 to 1.6.2 in /ui ([#1056](https://github.com/f-eld-ch/sitrep/issues/1056)) - ([327c927](https://github.com/f-eld-ch/sitrep/commit/327c9275f4790a8fe6e6f6766a1ada7ac6189990))
 - *(deps)* Bump @apollo/client from 4.0.6 to 4.0.7 in /ui ([#1057](https://github.com/f-eld-ch/sitrep/issues/1057)) - ([31eba94](https://github.com/f-eld-ch/sitrep/commit/31eba9458a1a78f5eaeaa931fc668134cca8086c))
