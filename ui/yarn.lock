@@ -4535,12 +4535,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^24.6.2":
-  version: 24.6.2
-  resolution: "@types/node@npm:24.6.2"
+"@types/node@npm:^24.7.0":
+  version: 24.7.0
+  resolution: "@types/node@npm:24.7.0"
   dependencies:
-    undici-types: "npm:~7.13.0"
-  checksum: 10/8d1e64b37abdafd3da295394235ad5357509ac0b47e6991d36b1eecacd7ad830ada60ca71b7b3598b6c8b519361fb70aab691888c378ff25e69dba5690afcc22
+    undici-types: "npm:~7.14.0"
+  checksum: 10/db0b77e9b132906cdf0350661df660c970e924093ccaa781472d61bc5c448f3d15514b15f55b4df6827254a041aad2418339fe00d45ef10687557ffc0f026d47
   languageName: node
   linkType: hard
 
@@ -11749,7 +11749,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.20"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^24.6.2"
+    "@types/node": "npm:^24.7.0"
     "@types/react": "npm:^18.3.23"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^18.3.7"
@@ -12820,10 +12820,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~7.13.0":
-  version: 7.13.0
-  resolution: "undici-types@npm:7.13.0"
-  checksum: 10/1088ad68dd57981aa6eced5b3f5d74129ac619fbe558b30cb584d6096d32b084ae30d7cdc480d622226e6ffc8d31e01ac30215816439a0d784e0fe64db873b0f
+"undici-types@npm:~7.14.0":
+  version: 7.14.0
+  resolution: "undici-types@npm:7.14.0"
+  checksum: 10/0f8709b21437697af35801e33bddbe9992e0cf1771959c41850b1946f63822b825e03ce99f44bf19e4f5c3ccc5166e0be59f541565c36ce86163dc2c5870bc62
   languageName: node
   linkType: hard
 
@@ -13270,8 +13270,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^7.1.7":
-  version: 7.1.7
-  resolution: "vite@npm:7.1.7"
+  version: 7.1.9
+  resolution: "vite@npm:7.1.9"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.5.0"
@@ -13320,7 +13320,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/824703387717e1c90fac2e263021bf8ed5cddd5ac14f8c6ee80e54f8351be579869950438accb6daeb1e238f2108fddbadf98ec3cf8b0442f1fd8a25fb0ecab3
+  checksum: 10/361b8dfea414233927761fdb63ec38c2cc4630007efc33a7a02ef9a5c033552c41b2e95f7fcc9acf427da5a3cf194d62dc5f0853bc31e940a13528d0fb180132
   languageName: node
   linkType: hard
 
