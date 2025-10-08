@@ -98,7 +98,7 @@
     "jsdom": "^27.0.0",
     "lint-staged": "^16.2.3",
     "sass": "^1.93.2",
-    "semver": "^7.7.2",
+    "semver": "^7.7.3",
     "source-map-explorer": "^2.5.3",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.3",
