@@ -9525,9 +9525,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:5.8.0":
-  version: 5.8.0
-  resolution: "maplibre-gl@npm:5.8.0"
+"maplibre-gl@npm:5.9.0":
+  version: 5.9.0
+  resolution: "maplibre-gl@npm:5.9.0"
   dependencies:
     "@mapbox/geojson-rewind": "npm:^0.5.2"
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
@@ -9551,7 +9551,7 @@ __metadata:
     quickselect: "npm:^3.0.0"
     supercluster: "npm:^8.0.1"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/18f1e1f52786c29a7d27826c7ecded2958cb1f04c7f2f7d7b9de775e4bbb38bdec45d5b0caf491302e87ea89bd400b1440711eed6dfb050fed25abd47570ba28
+  checksum: 10/251958be8ea1f88f8256c74292cd600a0eac515f2ebcc64800e6b9d715c1412de4d94263c025e171e3b058eb5bb406960152a955ccc0dca47f0b6f55ebf07e3b
   languageName: node
   linkType: hard
 
@@ -11784,7 +11784,7 @@ __metadata:
     lint-staged: "npm:^16.2.3"
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
-    maplibre-gl: "npm:5.8.0"
+    maplibre-gl: "npm:5.9.0"
     ol: "npm:^10.6.1"
     react: "npm:^18.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
