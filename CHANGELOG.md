@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.9.3 to 7.9.4 in /ui ([#1076](https://github.com/f-eld-ch/sitrep/issues/1076)) - ([0c0727f](https://github.com/f-eld-ch/sitrep/commit/0c0727f6bbd11b611423ae7d51d3de600c123c0b))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1071](https://github.com/f-eld-ch/sitrep/issues/1071)) - ([cf868da](https://github.com/f-eld-ch/sitrep/commit/cf868dade1006482d11f1bd63339dadfcad53186))
 - *(deps)* Bump react-map-gl from 8.0.4 to 8.1.0 in /ui ([#1072](https://github.com/f-eld-ch/sitrep/issues/1072)) - ([9ff86e7](https://github.com/f-eld-ch/sitrep/commit/9ff86e70ed163f5acbf97c4cc6fcc61aecc05325))
 
