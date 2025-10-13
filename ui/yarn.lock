@@ -7779,9 +7779,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^25.5.3":
-  version: 25.5.3
-  resolution: "i18next@npm:25.5.3"
+"i18next@npm:^25.6.0":
+  version: 25.6.0
+  resolution: "i18next@npm:25.6.0"
   dependencies:
     "@babel/runtime": "npm:^7.27.6"
   peerDependencies:
@@ -7789,7 +7789,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/eb7312b3261af4477b7e4d09ec1636372a79a8f81bb5ac9531bbb9aa498ca07f337f9ec2c89507f0d895ce6c0b1352a2ea4fbe47f665ab4feba3df2de79cbeab
+  checksum: 10/3eaa354f7028ff6051e4294c09bf518183c6653c019cfeed73fc4504786b3a474c3b55ed6b9832e122ba2538167b3eb85ae71fdd6423fb9ec9ebe2156b061d66
   languageName: node
   linkType: hard
 
@@ -11777,7 +11777,7 @@ __metadata:
     hat: "npm:^0.0.3"
     html-react-parser: "npm:^5.2.6"
     husky: "npm:^9.1.7"
-    i18next: "npm:^25.5.3"
+    i18next: "npm:^25.6.0"
     i18next-browser-languagedetector: "npm:^8.2.0"
     jest: "npm:^30.2.0"
     jsdom: "npm:^27.0.0"
