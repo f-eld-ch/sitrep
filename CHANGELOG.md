@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump actions/setup-node from 5.0.0 to 6.0.0 ([#1088](https://github.com/f-eld-ch/sitrep/issues/1088)) - ([94a7455](https://github.com/f-eld-ch/sitrep/commit/94a74556ef6b3db9b19fbb32b999c4c9140d3869))
 - *(deps)* Bump react-to-print from 3.1.1 to 3.2.0 in /ui ([#1086](https://github.com/f-eld-ch/sitrep/issues/1086)) - ([21ddf02](https://github.com/f-eld-ch/sitrep/commit/21ddf029ea6dbc21248ed9f5bc0756bc68e4c8a0))
 - *(deps)* Bump html-react-parser from 5.2.6 to 5.2.7 in /ui ([#1084](https://github.com/f-eld-ch/sitrep/issues/1084)) - ([dcf3f2e](https://github.com/f-eld-ch/sitrep/commit/dcf3f2ed0bc6e691d3cb72161b9965c3c29d6f28))
 - *(deps)* Bump react-i18next from 16.0.0 to 16.0.1 in /ui ([#1083](https://github.com/f-eld-ch/sitrep/issues/1083)) - ([7195501](https://github.com/f-eld-ch/sitrep/commit/71955014421eca96e78fb5b75bec0e17b5223579))
