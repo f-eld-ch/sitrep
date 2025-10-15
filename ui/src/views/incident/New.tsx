@@ -9,9 +9,7 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Division } from "types";
-import type {
-  Incident,
-} from "types/incident";
+import type { Incident } from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
 import {
   GetIncidentDetails,

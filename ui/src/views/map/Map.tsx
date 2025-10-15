@@ -28,9 +28,7 @@ import {
   useMap,
 } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
-import type {
-  Layer,
-} from "types/layer";
+import type { Layer } from "types/layer";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
@@ -205,71 +203,68 @@ function Draw() {
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
-  const [addFeature] = useMutation(AddFeatureToLayer,{
-      refetchQueries: [
-        { query: GetLayers, variables: { incidentId: incidentId } },
-      ],
-      onCompleted: (data) => {
-        if (data.insertFeaturesOne?.id) {
-          dispatch({
-            type: "SELECT_FEATURE",
-            payload: { id: data.insertFeaturesOne.id.toString() },
-          });
-        }
-      },
-      onError: (error) => {
-        console.error("Error adding feature:", error);
-      },
-      optimisticResponse: (vars) => {
-        return {
-          __typename: "Mutation",
-          insertFeaturesOne: {
-            __typename: "Feature",
-            id: vars.id,
-            geometry: { ...vars.geometry, __typename: "Geometry" },
-            properties: { ...vars.properties, __typename: "Properties" },
-            createdAt: new Date(),
-            updatedAt: null,
-            deletedAt: null,
-          },
-        };
-      },
+  const [addFeature] = useMutation(AddFeatureToLayer, {
+    refetchQueries: [
+      { query: GetLayers, variables: { incidentId: incidentId } },
+    ],
+    onCompleted: (data) => {
+      if (data.insertFeaturesOne?.id) {
+        dispatch({
+          type: "SELECT_FEATURE",
+          payload: { id: data.insertFeaturesOne.id.toString() },
+        });
+      }
     },
-  );
+    onError: (error) => {
+      console.error("Error adding feature:", error);
+    },
+    optimisticResponse: (vars) => {
+      return {
+        __typename: "Mutation",
+        insertFeaturesOne: {
+          __typename: "Feature",
+          id: vars.id,
+          geometry: { ...vars.geometry, __typename: "Geometry" },
+          properties: { ...vars.properties, __typename: "Properties" },
+          createdAt: new Date(),
+          updatedAt: null,
+          deletedAt: null,
+        },
+      };
+    },
+  });
 
   const [modifyFeature] = useMutation(ModifyFeature, {
-      refetchQueries: [
-        { query: GetLayers, variables: { incidentId: incidentId } },
-      ],
-      onError: (error) => {
-        console.error("Error adding feature:", error);
-      },
-      optimisticResponse: (vars, { IGNORE }) => {
-        if (vars.properties?.deletedAt) {
-          return IGNORE;
-        }
-        return {
-          __typename: "Mutation",
-          updateFeaturesByPk: {
-            __typename: "Feature",
-            id: vars.id,
-            geometry: { ...vars.geometry, __typename: "Geometry" },
-            properties: { ...vars.properties, __typename: "Properties" },
-            createdAt: vars.properties?.createdAt || new Date(),
-            updatedAt: vars.properties?.updatedAt || new Date(),
-            deletedAt: null,
-          },
-        };
-      },
+    refetchQueries: [
+      { query: GetLayers, variables: { incidentId: incidentId } },
+    ],
+    onError: (error) => {
+      console.error("Error adding feature:", error);
     },
-  );
+    optimisticResponse: (vars, { IGNORE }) => {
+      if (vars.properties?.deletedAt) {
+        return IGNORE;
+      }
+      return {
+        __typename: "Mutation",
+        updateFeaturesByPk: {
+          __typename: "Feature",
+          id: vars.id,
+          geometry: { ...vars.geometry, __typename: "Geometry" },
+          properties: { ...vars.properties, __typename: "Properties" },
+          createdAt: vars.properties?.createdAt || new Date(),
+          updatedAt: vars.properties?.updatedAt || new Date(),
+          deletedAt: null,
+        },
+      };
+    },
+  });
 
   const [deleteFeature] = useMutation(DeleteFeature, {
-      refetchQueries: [
-        { query: GetLayers, variables: { incidentId: incidentId } },
-      ],
-    },
-  );
+    refetchQueries: [
+      { query: GetLayers, variables: { incidentId: incidentId } },
+    ],
+  });
 
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {

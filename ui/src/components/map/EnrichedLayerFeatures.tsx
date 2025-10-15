@@ -153,9 +153,7 @@ const EnrichedFeaturesSource = (props: EnrichedFeaturesProps) => {
     return null;
   }
 
-  return (
-    <EnrichedSymbolSource {...props} />
-  );
+  return <EnrichedSymbolSource {...props} />;
 };
 
 interface EnrichedFeaturesProps {

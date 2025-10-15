@@ -1,15 +1,15 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-	AddFeatureResponse,
-	AddFeatureVars,
-	AddLayerData,
-	AddLayerVars,
-	DeleteFeatureResponse,
-	DeleteFeatureVars,
-	GetLayersData,
-	GetLayersVars,
-	ModifyFeatureResponse,
-	ModifyFeatureVars,
+  AddFeatureResponse,
+  AddFeatureVars,
+  AddLayerData,
+  AddLayerVars,
+  DeleteFeatureResponse,
+  DeleteFeatureVars,
+  GetLayersData,
+  GetLayersVars,
+  ModifyFeatureResponse,
+  ModifyFeatureVars,
 } from "types/layer";
 
 const GET_LAYERS: TypedDocumentNode<GetLayersData, GetLayersVars> = gql`
@@ -43,8 +43,8 @@ const ADD_FEATURE: TypedDocumentNode<AddFeatureResponse, AddFeatureVars> = gql`
 `;
 
 const MODIFY_FEATURE: TypedDocumentNode<
-	ModifyFeatureResponse,
-	ModifyFeatureVars
+  ModifyFeatureResponse,
+  ModifyFeatureVars
 > = gql`
   mutation UpdateFeature($id: uuid!, $geometry: jsonb, $properties: jsonb) {
     updateFeaturesByPk(pkColumns: { id: $id }, _set: { geometry: $geometry, properties: $properties }) {
@@ -59,8 +59,8 @@ const MODIFY_FEATURE: TypedDocumentNode<
 `;
 
 const DELETE_FEATURE: TypedDocumentNode<
-	DeleteFeatureResponse,
-	DeleteFeatureVars
+  DeleteFeatureResponse,
+  DeleteFeatureVars
 > = gql`
   mutation UpdateFeature($id: uuid!, $deletedAt: timestamptz) {
     updateFeaturesByPk(pkColumns: { id: $id }, _set: { deletedAt: $deletedAt }) {
@@ -83,9 +83,9 @@ const ADD_LAYER: TypedDocumentNode<AddLayerData, AddLayerVars> = gql`
 `;
 
 export {
-	ADD_LAYER as AddLayer,
-	GET_LAYERS as GetLayers,
-	ADD_FEATURE as AddFeatureToLayer,
-	MODIFY_FEATURE as ModifyFeature,
-	DELETE_FEATURE as DeleteFeature,
+  ADD_LAYER as AddLayer,
+  GET_LAYERS as GetLayers,
+  ADD_FEATURE as AddFeatureToLayer,
+  MODIFY_FEATURE as ModifyFeature,
+  DELETE_FEATURE as DeleteFeature,
 };
