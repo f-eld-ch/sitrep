@@ -11006,12 +11006,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-to-print@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "react-to-print@npm:3.1.1"
+"react-to-print@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "react-to-print@npm:3.2.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ~19
-  checksum: 10/23e5fb6f605e9650b259ea510860b0f8338b20e350023b0f16dccf4ba5b4174d3553797e1429ca6ab60c117b1443302c16aa22fad43d16ad15abe87504e24f0b
+  checksum: 10/f0c3d1b9028cbadd8ca0747e31c91262038583a97e885171f4faa8ba53966e90ee0d9a287c94673ff494429b8e7a9606e2aed45d4ebce4a2c6e07e120657ce05
   languageName: node
   linkType: hard
 
@@ -11794,7 +11794,7 @@ __metadata:
     react-map-gl: "npm:~8.1.0"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.9.4"
-    react-to-print: "npm:^3.1.1"
+    react-to-print: "npm:^3.2.0"
     rxjs: "npm:^7.8.2"
     sass: "npm:^1.93.2"
     semver: "npm:^7.7.3"
