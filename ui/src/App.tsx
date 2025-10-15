@@ -57,7 +57,7 @@ function App() {
     };
     const lang = locale(i18n.language);
     dayjs.locale(lang.toString());
-  }, [i18n.language, i18n.changeLanguage]);
+  }, [i18n.language, i18n]);
 
   return (
     <UserProvider>

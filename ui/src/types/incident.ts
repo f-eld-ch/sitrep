@@ -81,4 +81,3 @@ export type CloseIncidentMutationVariables = {
   incidentId?: string;
   closedAt?: Date | null;
 };
-

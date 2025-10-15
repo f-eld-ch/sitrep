@@ -9,12 +9,7 @@ import React, {
   useReducer,
 } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  Medium,
-  type Message,
-  PriorityStatus,
-  TriageStatus,
-} from "types";
+import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";

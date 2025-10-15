@@ -1,19 +1,19 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-	CloseIncidentMutation,
-	CloseIncidentMutationVariables,
-	IncidentDetailsData,
-	IncidentDetailsVars,
-	IncidentListData,
-	InsertIncidentData,
-	InsertIncidentVars,
-	UpdateIncidentData,
-	UpdateIncidentVars,
+  CloseIncidentMutation,
+  CloseIncidentMutationVariables,
+  IncidentDetailsData,
+  IncidentDetailsVars,
+  IncidentListData,
+  InsertIncidentData,
+  InsertIncidentVars,
+  UpdateIncidentData,
+  UpdateIncidentVars,
 } from "types/incident";
 
 const GET_INCIDENTS: TypedDocumentNode<
-	IncidentListData,
-	Record<string, never>
+  IncidentListData,
+  Record<string, never>
 > = gql`
   query FetchIncidents {
     incidents(orderBy: { createdAt: DESC }) {
@@ -31,8 +31,8 @@ const GET_INCIDENTS: TypedDocumentNode<
   }
 `;
 const GET_INCIDENT_DETAILS: TypedDocumentNode<
-	IncidentDetailsData,
-	IncidentDetailsVars
+  IncidentDetailsData,
+  IncidentDetailsVars
 > = gql`
   query GetIncidentDetail($incidentId: uuid!) {
     incidentsByPk(id: $incidentId) {
@@ -59,8 +59,8 @@ const GET_INCIDENT_DETAILS: TypedDocumentNode<
   }
 `;
 const INSERT_INCIDENT: TypedDocumentNode<
-	InsertIncidentData,
-	InsertIncidentVars
+  InsertIncidentData,
+  InsertIncidentVars
 > = gql`
   mutation InsertIncident(
     $name: String!
@@ -97,8 +97,8 @@ const INSERT_INCIDENT: TypedDocumentNode<
   }
 `;
 const UPDATE_INCIDENT: TypedDocumentNode<
-	UpdateIncidentData,
-	UpdateIncidentVars
+  UpdateIncidentData,
+  UpdateIncidentVars
 > = gql`
   mutation UpdateIncident(
     $incidentId: uuid!
@@ -133,8 +133,8 @@ const UPDATE_INCIDENT: TypedDocumentNode<
   }
 `;
 const CLOSE_INCIDENT: TypedDocumentNode<
-	CloseIncidentMutation,
-	CloseIncidentMutationVariables
+  CloseIncidentMutation,
+  CloseIncidentMutationVariables
 > = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
     updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
@@ -148,9 +148,9 @@ const CLOSE_INCIDENT: TypedDocumentNode<
 `;
 
 export {
-	CLOSE_INCIDENT as CloseIncident,
-	GET_INCIDENT_DETAILS as GetIncidentDetails,
-	GET_INCIDENTS as GetIncidents,
-	INSERT_INCIDENT as InsertIncident,
-	UPDATE_INCIDENT as UpdateIncident,
+  CLOSE_INCIDENT as CloseIncident,
+  GET_INCIDENT_DETAILS as GetIncidentDetails,
+  GET_INCIDENTS as GetIncidents,
+  INSERT_INCIDENT as InsertIncident,
+  UPDATE_INCIDENT as UpdateIncident,
 };

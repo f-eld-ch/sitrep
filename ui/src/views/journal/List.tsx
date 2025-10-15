@@ -41,10 +41,9 @@ function List(props: {
   });
 
   const { loading, error, data } = useQuery(GetJournalMessages, {
-      variables: { journalId: journalId || "" },
-      pollInterval: 10000,
-    },
-  );
+    variables: { journalId: journalId || "" },
+    pollInterval: 10000,
+  });
 
   const printButtonClass = classNames({
     "is-hidden": !showControls,
@@ -74,7 +73,8 @@ function List(props: {
   }
 
   if (loading && !data) return <Spinner />;
-  const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
+  const divisions: Division[] =
+    data?.journalsByPk?.incident?.divisions?.flat() || [];
 
   const messages =
     data?.messages

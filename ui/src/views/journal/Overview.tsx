@@ -33,10 +33,9 @@ function Overview() {
   }, []);
 
   const { loading, error, data } = useQuery(GetJournals, {
-      variables: { incidentId: incidentId || "" },
-      pollInterval: 10000,
-    },
-  );
+    variables: { incidentId: incidentId || "" },
+    pollInterval: 10000,
+  });
 
   if (error)
     return <div className="notification is-danger">{error.message}</div>;
