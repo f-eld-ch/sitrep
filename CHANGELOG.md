@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 16.1.4 to 16.1.5 in /ui ([#1099](https://github.com/f-eld-ch/sitrep/issues/1099)) - ([106154b](https://github.com/f-eld-ch/sitrep/commit/106154bd356b64c70f9274fb044ce7fbdbbe825f))
 - *(deps)* Bump react-i18next from 16.1.2 to 16.1.4 in /ui ([#1097](https://github.com/f-eld-ch/sitrep/issues/1097)) - ([c08e664](https://github.com/f-eld-ch/sitrep/commit/c08e6645374955c7557bcfc615d00139c11ecbe5))
 - *(deps)* Bump react-i18next from 16.1.0 to 16.1.2 in /ui ([#1094](https://github.com/f-eld-ch/sitrep/issues/1094)) - ([8ad9937](https://github.com/f-eld-ch/sitrep/commit/8ad99371fe4a38d30b489c1c83e6cf74325c0e95))
 - *(deps)* Bump react-i18next from 16.0.1 to 16.1.0 in /ui ([#1091](https://github.com/f-eld-ch/sitrep/issues/1091)) - ([02f7aaa](https://github.com/f-eld-ch/sitrep/commit/02f7aaa7e24933d99ec07959ee8fc07a3b5ef1a2))
