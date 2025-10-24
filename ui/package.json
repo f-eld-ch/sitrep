@@ -89,7 +89,7 @@
     "@types/semver": "^7.7.1",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-react-swc": "^4.1.0",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^4.0.2",
     "fast-check": "^4.3.0",
     "git-rev-sync": "^3.0.2",
     "globals": "^16.4.0",
