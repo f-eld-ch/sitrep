@@ -4996,15 +4996,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/pretty-format@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@vitest/pretty-format@npm:4.0.3"
-  dependencies:
-    tinyrainbow: "npm:^3.0.3"
-  checksum: 10/1b1197e53e5bcf9f77c842005ff11068f754b87286c6a7669b78c08a05bdbaa5cf4c7326c3b13347b02341b084bf97992c3fe89ea98fb77019e28fd96bc4c5b4
-  languageName: node
-  linkType: hard
-
 "@vitest/runner@npm:4.0.3":
   version: 4.0.3
   resolution: "@vitest/runner@npm:4.0.3"
@@ -5030,16 +5021,6 @@ __metadata:
   version: 4.0.3
   resolution: "@vitest/spy@npm:4.0.3"
   checksum: 10/4fc8e3aae425fdbbe96126291079f67f1e6be9545ffbaab7a31de8d6e6825b115eb3fafbf24167eab91dbbb4ed6fcd120c387116f181de1e3369e8d5fdd75f17
-  languageName: node
-  linkType: hard
-
-"@vitest/utils@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@vitest/utils@npm:4.0.3"
-  dependencies:
-    "@vitest/pretty-format": "npm:4.0.3"
-    tinyrainbow: "npm:^3.0.3"
-  checksum: 10/d4ddb293e908d43b954c5e41f351a61f719e30e9ea058e47af5b18389d74cb073ea1638ab28dbbd5b365ed31a21577bb090b8a3594292c59df18798fd292f002
   languageName: node
   linkType: hard
 
