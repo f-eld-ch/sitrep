@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump docker/metadata-action from 5.8.0 to 5.9.0 ([#1112](https://github.com/f-eld-ch/sitrep/issues/1112)) - ([91a5527](https://github.com/f-eld-ch/sitrep/commit/91a552738a094a4ffb2ab094dc4c2d04587073b7))
+- *(deps)* Bump github/codeql-action from 4.31.0 to 4.31.2 ([#1111](https://github.com/f-eld-ch/sitrep/issues/1111)) - ([672a2ff](https://github.com/f-eld-ch/sitrep/commit/672a2ff11b954289443f14263fd90e70220ec041))
 - *(deps)* Bump @mapbox/mapbox-gl-draw from 1.5.0 to 1.5.1 in /ui ([#1122](https://github.com/f-eld-ch/sitrep/issues/1122)) - ([f1316cc](https://github.com/f-eld-ch/sitrep/commit/f1316cc1fc3b45e5dd9e30b8bb9bc2c8c1aebdbe))
 - *(deps)* Bump dayjs from 1.11.18 to 1.11.19 in /ui ([#1116](https://github.com/f-eld-ch/sitrep/issues/1116)) - ([69dbc34](https://github.com/f-eld-ch/sitrep/commit/69dbc34f6a67591c1d452e245c881982158d2ce3))
 - *(deps)* Bump actions/dependency-review-action from 4.8.1 to 4.8.2 ([#1125](https://github.com/f-eld-ch/sitrep/issues/1125)) - ([55d1ed8](https://github.com/f-eld-ch/sitrep/commit/55d1ed888258d8689fac1454d71419c844734551))
