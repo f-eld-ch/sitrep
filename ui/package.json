@@ -23,7 +23,7 @@
     "@watergis/maplibre-gl-export": "~4.1.0",
     "bulma": "^1.0.4",
     "classnames": "^2.5.1",
-    "dayjs": "^1.11.18",
+    "dayjs": "^1.11.19",
     "graphql": "^16.11.0",
     "hat": "^0.0.3",
     "html-react-parser": "^5.2.7",
