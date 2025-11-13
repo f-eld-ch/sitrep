@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump html-react-parser from 5.2.7 to 5.2.8 in /ui ([#1123](https://github.com/f-eld-ch/sitrep/issues/1123)) - ([ca3645d](https://github.com/f-eld-ch/sitrep/commit/ca3645d3bc8b9472970479743a4ccc340ed7f764))
 - *(deps)* Bump @openfeature/react-sdk from 1.0.1 to 1.0.2 in /ui ([#1118](https://github.com/f-eld-ch/sitrep/issues/1118)) - ([71940e8](https://github.com/f-eld-ch/sitrep/commit/71940e8edff68bdcdae10b358806b41a0b1489ea))
 - *(deps)* Bump react-router from 7.9.4 to 7.9.5 in /ui ([#1119](https://github.com/f-eld-ch/sitrep/issues/1119)) - ([5ccb831](https://github.com/f-eld-ch/sitrep/commit/5ccb831b34ba4ef6eef9e75196f1986980da0c7c))
 - *(deps)* Bump graphql from 16.11.0 to 16.12.0 in /ui ([#1120](https://github.com/f-eld-ch/sitrep/issues/1120)) - ([48dd5d0](https://github.com/f-eld-ch/sitrep/commit/48dd5d0079b29ed3f048e7c93668db9197505682))
