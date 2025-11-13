@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/web-sdk from 1.7.0 to 1.7.1 in /ui ([#1121](https://github.com/f-eld-ch/sitrep/issues/1121)) - ([e2a7803](https://github.com/f-eld-ch/sitrep/commit/e2a780367bc00f90a5d08a2c743ba0b51edc1ea3))
 - *(deps)* Bump react-i18next from 16.1.6 to 16.2.0 in /ui ([#1110](https://github.com/f-eld-ch/sitrep/issues/1110)) - ([f9ad233](https://github.com/f-eld-ch/sitrep/commit/f9ad233d235f9cf5b1dab0f50e4d6c0003c80945))
 - *(deps)* Bump @openfeature/web-sdk from 1.6.2 to 1.7.0 in /ui ([#1100](https://github.com/f-eld-ch/sitrep/issues/1100)) - ([f04be05](https://github.com/f-eld-ch/sitrep/commit/f04be057250dec82c2f6a83248a01ce870dd695f))
 - *(deps)* Bump react-i18next from 16.1.5 to 16.1.6 in /ui ([#1102](https://github.com/f-eld-ch/sitrep/issues/1102)) - ([bb41f08](https://github.com/f-eld-ch/sitrep/commit/bb41f08806d10ed666694a1bcb4c999591fbc57f))
