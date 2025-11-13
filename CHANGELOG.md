@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.9.4 to 7.9.5 in /ui ([#1119](https://github.com/f-eld-ch/sitrep/issues/1119)) - ([5ccb831](https://github.com/f-eld-ch/sitrep/commit/5ccb831b34ba4ef6eef9e75196f1986980da0c7c))
+- *(deps)* Bump graphql from 16.11.0 to 16.12.0 in /ui ([#1120](https://github.com/f-eld-ch/sitrep/issues/1120)) - ([48dd5d0](https://github.com/f-eld-ch/sitrep/commit/48dd5d0079b29ed3f048e7c93668db9197505682))
 - *(deps)* Bump docker/metadata-action from 5.8.0 to 5.9.0 ([#1112](https://github.com/f-eld-ch/sitrep/issues/1112)) - ([91a5527](https://github.com/f-eld-ch/sitrep/commit/91a552738a094a4ffb2ab094dc4c2d04587073b7))
 - *(deps)* Bump github/codeql-action from 4.31.0 to 4.31.2 ([#1111](https://github.com/f-eld-ch/sitrep/issues/1111)) - ([672a2ff](https://github.com/f-eld-ch/sitrep/commit/672a2ff11b954289443f14263fd90e70220ec041))
 - *(deps)* Bump @mapbox/mapbox-gl-draw from 1.5.0 to 1.5.1 in /ui ([#1122](https://github.com/f-eld-ch/sitrep/issues/1122)) - ([f1316cc](https://github.com/f-eld-ch/sitrep/commit/f1316cc1fc3b45e5dd9e30b8bb9bc2c8c1aebdbe))
