@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump docker/setup-qemu-action from 3.6.0 to 3.7.0 ([#1113](https://github.com/f-eld-ch/sitrep/issues/1113)) - ([4945634](https://github.com/f-eld-ch/sitrep/commit/4945634ae268bfe1ed2fd6309b2a3eed96055c85))
 - *(deps)* Bump @openfeature/web-sdk from 1.7.0 to 1.7.1 in /ui ([#1121](https://github.com/f-eld-ch/sitrep/issues/1121)) - ([e2a7803](https://github.com/f-eld-ch/sitrep/commit/e2a780367bc00f90a5d08a2c743ba0b51edc1ea3))
 - *(deps)* Bump react-i18next from 16.1.6 to 16.2.0 in /ui ([#1110](https://github.com/f-eld-ch/sitrep/issues/1110)) - ([f9ad233](https://github.com/f-eld-ch/sitrep/commit/f9ad233d235f9cf5b1dab0f50e4d6c0003c80945))
 - *(deps)* Bump @openfeature/web-sdk from 1.6.2 to 1.7.0 in /ui ([#1100](https://github.com/f-eld-ch/sitrep/issues/1100)) - ([f04be05](https://github.com/f-eld-ch/sitrep/commit/f04be057250dec82c2f6a83248a01ce870dd695f))
