@@ -3439,13 +3439,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@openfeature/react-sdk@npm:1.0.1"
+"@openfeature/react-sdk@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@openfeature/react-sdk@npm:1.0.2"
   peerDependencies:
     "@openfeature/web-sdk": ^1.5.0
     react: ">=16.8.0"
-  checksum: 10/55d3e3785c2cd98eb956fa88cc13b1fc007b2e0260aa05395b7e6122791774c7ad4ce9f25578999c8ac70bfac6c652910fc74025f5da46b0f2c52b050f714761
+  checksum: 10/a307cc7d9e81741a569d9d5d7656e64db09ac018dca02da12432fd042922d89800d1207e6a0eee654d64bd0563a9f4f92fb48000006651c0ecf8577274b3c782
   languageName: node
   linkType: hard
 
@@ -11724,7 +11724,7 @@ __metadata:
     "@maplibre/maplibre-gl-style-spec": "npm:^24.3.1"
     "@openfeature/core": "npm:^1.9.1"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
-    "@openfeature/react-sdk": "npm:^1.0.1"
+    "@openfeature/react-sdk": "npm:^1.0.2"
     "@openfeature/web-sdk": "npm:^1.7.1"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
