@@ -2,6 +2,11 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @mapbox/mapbox-gl-draw from 1.5.0 to 1.5.1 in /ui ([#1122](https://github.com/f-eld-ch/sitrep/issues/1122)) - ([f1316cc](https://github.com/f-eld-ch/sitrep/commit/f1316cc1fc3b45e5dd9e30b8bb9bc2c8c1aebdbe))
+- *(deps)* Bump dayjs from 1.11.18 to 1.11.19 in /ui ([#1116](https://github.com/f-eld-ch/sitrep/issues/1116)) - ([69dbc34](https://github.com/f-eld-ch/sitrep/commit/69dbc34f6a67591c1d452e245c881982158d2ce3))
+- *(deps)* Bump actions/dependency-review-action from 4.8.1 to 4.8.2 ([#1125](https://github.com/f-eld-ch/sitrep/issues/1125)) - ([55d1ed8](https://github.com/f-eld-ch/sitrep/commit/55d1ed888258d8689fac1454d71419c844734551))
+- *(deps)* Bump react-i18next from 16.2.0 to 16.2.4 in /ui ([#1117](https://github.com/f-eld-ch/sitrep/issues/1117)) - ([bc2b60a](https://github.com/f-eld-ch/sitrep/commit/bc2b60aaeeb029a07e534518b51468abaa1f4ff5))
+- *(deps)* Bump @apollo/client from 4.0.7 to 4.0.9 in /ui ([#1115](https://github.com/f-eld-ch/sitrep/issues/1115)) - ([841e8af](https://github.com/f-eld-ch/sitrep/commit/841e8afcbdf19c6712e897e572c7106705a5a8ac))
 - *(deps)* Bump docker/setup-qemu-action from 3.6.0 to 3.7.0 ([#1113](https://github.com/f-eld-ch/sitrep/issues/1113)) - ([4945634](https://github.com/f-eld-ch/sitrep/commit/4945634ae268bfe1ed2fd6309b2a3eed96055c85))
 - *(deps)* Bump @openfeature/web-sdk from 1.7.0 to 1.7.1 in /ui ([#1121](https://github.com/f-eld-ch/sitrep/issues/1121)) - ([e2a7803](https://github.com/f-eld-ch/sitrep/commit/e2a780367bc00f90a5d08a2c743ba0b51edc1ea3))
 - *(deps)* Bump react-i18next from 16.1.6 to 16.2.0 in /ui ([#1110](https://github.com/f-eld-ch/sitrep/issues/1110)) - ([f9ad233](https://github.com/f-eld-ch/sitrep/commit/f9ad233d235f9cf5b1dab0f50e4d6c0003c80945))
