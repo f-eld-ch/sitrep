@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump ol from 10.6.1 to 10.7.0 in /ui ([#1130](https://github.com/f-eld-ch/sitrep/issues/1130)) - ([7c6033e](https://github.com/f-eld-ch/sitrep/commit/7c6033e059639d5957b3f82209c66b2adc4da222))
 - *(deps)* Bump i18next from 25.6.0 to 25.6.2 in /ui ([#1129](https://github.com/f-eld-ch/sitrep/issues/1129)) - ([4d364e5](https://github.com/f-eld-ch/sitrep/commit/4d364e51b3779b72352bad2bf16647dbe47d6c45))
 - *(deps)* Bump react-router from 7.9.5 to 7.9.6 in /ui ([#1128](https://github.com/f-eld-ch/sitrep/issues/1128)) - ([ddacd20](https://github.com/f-eld-ch/sitrep/commit/ddacd20dc13f857ad79977abac966f0ad93cd480))
 - *(deps)* Bump maplibre-gl from 5.9.0 to 5.12.0 in /ui ([#1131](https://github.com/f-eld-ch/sitrep/issues/1131)) - ([af7d554](https://github.com/f-eld-ch/sitrep/commit/af7d5547d981bf5d70453c6b62931291eda131db))
