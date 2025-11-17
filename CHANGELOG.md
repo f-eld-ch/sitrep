@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(journal)* Use proper medium in messagesheets ([#1136](https://github.com/f-eld-ch/sitrep/issues/1136)) - ([49eca70](https://github.com/f-eld-ch/sitrep/commit/49eca70060f41da9687271f10971717b3fedf90f))
+
 ### ⚙️  Other
 
 - *(deps)* Bump github/codeql-action from 4.31.2 to 4.31.3 ([#1133](https://github.com/f-eld-ch/sitrep/issues/1133)) - ([c117b00](https://github.com/f-eld-ch/sitrep/commit/c117b001c1fe6f3c82d192b01b2efa3c1cd96912))
