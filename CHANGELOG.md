@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github/codeql-action from 4.31.2 to 4.31.3 ([#1133](https://github.com/f-eld-ch/sitrep/issues/1133)) - ([c117b00](https://github.com/f-eld-ch/sitrep/commit/c117b001c1fe6f3c82d192b01b2efa3c1cd96912))
+- *(deps)* Bump react-i18next from 16.3.2 to 16.3.3 in /ui ([#1134](https://github.com/f-eld-ch/sitrep/issues/1134)) - ([ee10111](https://github.com/f-eld-ch/sitrep/commit/ee101118d3932ea5217583a8a6448416ad0178cd))
 - *(deps)* Bump ol from 10.6.1 to 10.7.0 in /ui ([#1130](https://github.com/f-eld-ch/sitrep/issues/1130)) - ([7c6033e](https://github.com/f-eld-ch/sitrep/commit/7c6033e059639d5957b3f82209c66b2adc4da222))
 - *(deps)* Bump i18next from 25.6.0 to 25.6.2 in /ui ([#1129](https://github.com/f-eld-ch/sitrep/issues/1129)) - ([4d364e5](https://github.com/f-eld-ch/sitrep/commit/4d364e51b3779b72352bad2bf16647dbe47d6c45))
 - *(deps)* Bump react-router from 7.9.5 to 7.9.6 in /ui ([#1128](https://github.com/f-eld-ch/sitrep/issues/1128)) - ([ddacd20](https://github.com/f-eld-ch/sitrep/commit/ddacd20dc13f857ad79977abac966f0ad93cd480))
