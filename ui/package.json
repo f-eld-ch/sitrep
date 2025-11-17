@@ -26,12 +26,12 @@
     "dayjs": "^1.11.19",
     "graphql": "^16.12.0",
     "hat": "^0.0.3",
-    "html-react-parser": "^5.2.8",
+    "html-react-parser": "^5.2.10",
     "i18next": "^25.6.2",
     "i18next-browser-languagedetector": "^8.2.0",
     "lodash": "^4.17.21",
     "mapbox-gl-style-switcher": "^1.0.11",
-    "maplibre-gl": "5.12.0",
+    "maplibre-gl": "5.13.0",
     "ol": "^10.7.0",
     "react": "^18.3.1",
     "react-autocomplete-hint": "^2.0.0",
@@ -83,7 +83,7 @@
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.10.1",
-    "@types/react": "^18.3.23",
+    "@types/react": "^18.3.26",
     "@types/react-color": "^3.0.13",
     "@types/react-dom": "^18.3.7",
     "@types/semver": "^7.7.1",
@@ -112,11 +112,12 @@
   },
   "resolutions": {
     "brace-expansion": "2.0.2",
-    "dompurify": "3.2.4",
-    "jspdf": "3.0.2",
-    "maplibre-gl": "5.12.0",
-    "sharp": "^0.33.5",
-    "vite": "^7.1.7"
+    "dompurify": "3.3.0",
+    "jspdf": "3.0.3",
+    "maplibre-gl": "5.13.0",
+    "sharp": "^0.34.5",
+    "js-yaml": "^4.1.1",
+    "vite": "^7.2.2"
   },
   "packageManager": "yarn@4.9.4"
 }
