@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(hasura)* Make sure users work on triage ([#1138](https://github.com/f-eld-ch/sitrep/issues/1138)) - ([505b508](https://github.com/f-eld-ch/sitrep/commit/505b508c04e701958fdf8b7096889b711acfdc12))
+
+
 ## [25.11.0](https://github.com/f-eld-ch/sitrep/compare/v25.10.0..v25.11.0) - 2025-11-17
 
 ### 🐛 Bug Fixes
