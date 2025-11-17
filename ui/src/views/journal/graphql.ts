@@ -39,7 +39,7 @@ const GET_MESSAGES: TypedDocumentNode<
       receiver
       senderDetail
       receiverDetail
-      mediumId
+      medium: mediumId
       time
       createdAt
       updatedAt
@@ -107,7 +107,7 @@ const INSERT_MESSAGE: TypedDocumentNode<Message, InsertMessageVars> = gql`
     $content: String
     $receiverDetail: String
     $senderDetail: String
-    $type: MediumEnum
+    $medium: MediumEnum
   )
 {
   insertMessagesOne(
@@ -117,7 +117,7 @@ const INSERT_MESSAGE: TypedDocumentNode<Message, InsertMessageVars> = gql`
         receiver: $receiver
         sender: $sender
         time: $time
-        mediumId: $type
+        mediumId: $medium
         senderDetail: $senderDetail
         receiverDetail: $receiverDetail
       }
@@ -129,7 +129,7 @@ const INSERT_MESSAGE: TypedDocumentNode<Message, InsertMessageVars> = gql`
       sender
       senderDetail
       receiverDetail
-      mediumId
+      medium: mediumId
       time
       updatedAt
       triageId
@@ -153,7 +153,7 @@ const UPDATE_MESSAGE: TypedDocumentNode<Message, UpdateMessageVars> = gql`
     $time: timestamptz
     $receiverDetail: String
     $senderDetail: String
-    $mediumId: MediumEnum
+    $medium: MediumEnum
   ) {
     updateMessagesByPk(
       pkColumns: { id: $messageId }
@@ -162,7 +162,7 @@ const UPDATE_MESSAGE: TypedDocumentNode<Message, UpdateMessageVars> = gql`
         sender: $sender
         receiver: $receiver
         time: $time
-        mediumId: $mediumId
+        mediumId: $medium
         senderDetail: $senderDetail
         receiverDetail: $receiverDetail
       }
@@ -174,7 +174,7 @@ const UPDATE_MESSAGE: TypedDocumentNode<Message, UpdateMessageVars> = gql`
       sender
       senderDetail
       receiverDetail
-      mediumId
+      medium: mediumId
       time
       updatedAt
       triageId
@@ -228,7 +228,7 @@ const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
       receiver
       senderDetail
       receiverDetail
-      mediumId
+      medium: mediumId
       time
       divisions {
         division {
