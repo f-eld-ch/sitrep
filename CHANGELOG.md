@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump @turf/center from 7.2.0 to 7.3.0 in /ui ([#1143](https://github.com/f-eld-ch/sitrep/issues/1143)) - ([3282001](https://github.com/f-eld-ch/sitrep/commit/32820010d153030c4077c69c872b6d1f92cb0429))
+- *(deps)* Bump github.com/samber/slog-multi from 1.5.0 to 1.6.0 ([#1144](https://github.com/f-eld-ch/sitrep/issues/1144)) - ([ec8c1e7](https://github.com/f-eld-ch/sitrep/commit/ec8c1e7f66ec614c74ac4202ebde645d0f302d2d))
+
+
 ## [25.11.1](https://github.com/f-eld-ch/sitrep/compare/v25.11.0..v25.11.1) - 2025-11-17
 
 ### 🐛 Bug Fixes
