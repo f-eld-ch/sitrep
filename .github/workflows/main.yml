@@ -23,7 +23,7 @@ jobs:
       id-token: write    
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - uses: flipt-io/setup-action@773b247ef3b80714f59d127abca9f3d0fd4019e4 # v0.5.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
