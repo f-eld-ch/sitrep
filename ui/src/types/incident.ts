@@ -81,3 +81,14 @@ export type CloseIncidentMutationVariables = {
   incidentId?: string;
   closedAt?: Date | null;
 };
+
+export type DeleteIncidentMutation = {
+  updateIncidents: {
+    affectedRows: number;
+    returning: { id: string; deletedAt: Date | null }[];
+  } | null;
+};
+export type DeleteIncidentMutationVariables = {
+  incidentId?: string;
+  deletedAt?: Date | null;
+};

@@ -2,6 +2,8 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
   CloseIncidentMutation,
   CloseIncidentMutationVariables,
+  DeleteIncidentMutation,
+  DeleteIncidentMutationVariables,
   IncidentDetailsData,
   IncidentDetailsVars,
   IncidentListData,
@@ -16,7 +18,7 @@ const GET_INCIDENTS: TypedDocumentNode<
   Record<string, never>
 > = gql`
   query FetchIncidents {
-    incidents(orderBy: { createdAt: DESC }) {
+    incidents(orderBy: {createdAt: DESC}, where: {deletedAt: {_isNull: true}}) {
       id
       name
       createdAt
@@ -137,11 +139,48 @@ const CLOSE_INCIDENT: TypedDocumentNode<
   CloseIncidentMutationVariables
 > = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
+    updateJournals(where: { incidentId: { _eq: $incidentId }, closedAt: { _isNull: true } }, _set: { closedAt: $closedAt }) {
+      affectedRows
+      returning {
+        id
+        closedAt
+      }
+    }
     updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
       affectedRows
       returning {
         id
         closedAt
+        journals {
+          id
+          closedAt
+        }
+      }
+    }
+  }
+`;
+
+const DELETE_INCIDENT: TypedDocumentNode<
+  DeleteIncidentMutation,
+  DeleteIncidentMutationVariables
+> = gql`
+  mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
+    updateJournals(where: { incidentId: { _eq: $incidentId }, deletedAt: { _isNull: true } }, _set: { deletedAt: $deletedAt }) {
+      affectedRows
+      returning {
+        id
+        deletedAt
+      }
+    }
+    updateIncidents(where: { id: { _eq: $incidentId }, deletedAt: {_isNull: true}, closedAt: {_isNull: false} }, _set: { deletedAt: $deletedAt }) {
+      affectedRows
+      returning {
+        id
+        deletedAt
+        journals {
+          id
+          deletedAt
+        }
       }
     }
   }
@@ -153,4 +192,5 @@ export {
   GET_INCIDENTS as GetIncidents,
   INSERT_INCIDENT as InsertIncident,
   UPDATE_INCIDENT as UpdateIncident,
+  DELETE_INCIDENT as DeleteIncident,
 };
