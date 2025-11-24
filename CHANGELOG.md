@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(ui)* Allow incidents to be deleted when closed ([#1156](https://github.com/f-eld-ch/sitrep/issues/1156)) - ([e6cbb92](https://github.com/f-eld-ch/sitrep/commit/e6cbb9287f67f8e217c558a1e82be597b6c3b278))
+
 ### ⚙️  Other
 
 - *(deps)* Bump i18next from 25.6.2 to 25.6.3 in /ui ([#1148](https://github.com/f-eld-ch/sitrep/issues/1148)) - ([2a2b2af](https://github.com/f-eld-ch/sitrep/commit/2a2b2af8dae637756804086431d4d7faa946f83e))
