@@ -81,7 +81,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/hat": "^0.0.4",
     "@types/jest": "^30.0.0",
-    "@types/lodash": "^4.17.20",
+    "@types/lodash": "^4.17.21",
     "@types/node": "^24.10.1",
     "@types/react": "^18.3.26",
     "@types/react-color": "^3.0.13",
