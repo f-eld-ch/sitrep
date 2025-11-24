@@ -187,7 +187,7 @@ export function IncidentCard(props: {
         ) : (
           <button
             type="button"
-            data-testid="edit-button"
+            data-testid="delete-button"
             className="card-footer-item is-ahref is-capitalized"
 						onClick={() => {
 							deleteIncident({
