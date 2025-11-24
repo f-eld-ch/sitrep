@@ -13,6 +13,7 @@
   "createNewTask": "create new task",
   "createdAt": "opened",
   "divisions": "divisions",
+  "delete": "delete",
   "edit": "edit",
   "editIncident": "edit incident",
   "editor": "editor",
