@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.6.2 to 25.6.3 in /ui ([#1148](https://github.com/f-eld-ch/sitrep/issues/1148)) - ([2a2b2af](https://github.com/f-eld-ch/sitrep/commit/2a2b2af8dae637756804086431d4d7faa946f83e))
+- *(deps)* Bump react-i18next from 16.3.3 to 16.3.5 in /ui ([#1151](https://github.com/f-eld-ch/sitrep/issues/1151)) - ([42bfb54](https://github.com/f-eld-ch/sitrep/commit/42bfb54afb221cf07cca83bf3a983c60448007bb))
 - *(deps)* Bump golang.org/x/crypto ([#1150](https://github.com/f-eld-ch/sitrep/issues/1150)) - ([ae70680](https://github.com/f-eld-ch/sitrep/commit/ae7068093ad7c4ac4424589e20a897784fbcc08e))
 - *(deps)* Bump @turf/helpers from 7.2.0 to 7.3.0 in /ui ([#1142](https://github.com/f-eld-ch/sitrep/issues/1142)) - ([5ac8fe3](https://github.com/f-eld-ch/sitrep/commit/5ac8fe3b946d0023f3f1d4a280c021d7e1efc8fa))
 - *(deps)* Bump @turf/bearing from 7.2.0 to 7.3.0 in /ui ([#1140](https://github.com/f-eld-ch/sitrep/issues/1140)) - ([996a7ab](https://github.com/f-eld-ch/sitrep/commit/996a7ab0714a9a39aa3212f3ef6991633d6491fa))
