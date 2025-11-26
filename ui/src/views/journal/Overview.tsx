@@ -15,10 +15,11 @@ import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { t } from "i18next";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import type { Journal } from "types";
+import { IncidentContext } from "utils";
 import { CloseJournal, GetJournals } from "./graphql";
 
 function Overview() {
@@ -118,6 +119,7 @@ function JournalCard(props: {
 }) {
   const { journal, incidentId } = props;
   const navigate = useNavigate();
+  const { dispatch } = useContext(IncidentContext);
 
   const [closeJournal] = useMutation(CloseJournal, {
     refetchQueries: [
@@ -153,7 +155,10 @@ function JournalCard(props: {
         <button
           type="button"
           className="card-footer-item is-ahref is-capitalized"
-          onClick={() => navigate(`../${journal.id}/edit`)}
+          onClick={() => {
+            navigate(`../${journal.id}/edit`);
+            dispatch({ type: "SET_JOURNAL", payload: journal });
+          }}
         >
           <span className="icon">
             <FontAwesomeIcon icon={faEdit} />
