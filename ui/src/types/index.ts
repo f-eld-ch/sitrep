@@ -1,3 +1,4 @@
+export type { IncidentContext, UserState } from "types/context";
 export type {
   CloseIncidentMutation,
   CloseIncidentMutationVariables,
@@ -22,4 +23,3 @@ export type {
   TriageMessageVars,
 } from "types/journal";
 export { Medium, PriorityStatus, TriageStatus } from "types/journal";
-export type { UserState } from "types/user";

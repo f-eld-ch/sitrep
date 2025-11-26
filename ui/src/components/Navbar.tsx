@@ -2,6 +2,7 @@ import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import {
   faBars,
   faCaretDown,
+  faCirclePlus,
   faClipboard,
   faClipboardCheck,
   faClipboardList,
@@ -13,6 +14,7 @@ import {
   faMapLocationDot,
   faMoon,
   faPen,
+  faRectangleList,
   faRightFromBracket,
   faSun,
   faTruckMedical,
@@ -25,7 +27,7 @@ import classNames from "classnames";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
-import { UserContext } from "utils";
+import { IncidentContext, UserContext } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
 import { useDate } from "utils/useDate";
 
@@ -35,7 +37,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
   const { t } = useTranslation();
 
-  const { incidentId } = useParams();
+  const { state: incidentState } = useContext(IncidentContext);
+
   const navbarMenuClass = classNames({
     "navbar-menu": true,
     "is-active": isMenuActive,
@@ -75,7 +78,11 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
             <NavLink
-              to="/"
+              to={
+                incidentState.incident
+                  ? `/incident/${incidentState.incident.id}/edit`
+                  : "/"
+              }
               className={({ isActive }) =>
                 `navbar-item${isActive ? " is-active has-text-dark" : ""}`
               }
@@ -84,7 +91,13 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
                 <span className="icon">
                   <FontAwesomeIcon icon={faExplosion} />
                 </span>
-                <span>{t("incident")}</span>
+                {incidentState.incident ? (
+                  <span>
+                    {t("incident")} {incidentState.incident.name}
+                  </span>
+                ) : (
+                  <span>{t("incident")}</span>
+                )}
               </span>
             </NavLink>
             <div className="navbar-dropdown">
@@ -94,7 +107,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
                 }
                 to="/incident/list"
               >
-                {t("overview")}
+                <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+                  <span className="icon">
+                    <FontAwesomeIcon icon={faRectangleList} />
+                  </span>
+                  <span>{t("overview")}</span>
+                </span>
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
@@ -102,16 +120,26 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({
                 }
                 to="/incident/new"
               >
-                {t("createIncident")}
+                <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+                  <span className="icon">
+                    <FontAwesomeIcon icon={faCirclePlus} />
+                  </span>
+                  <span>{t("createIncident")}</span>
+                </span>
               </NavLink>
-              {incidentId && (
+              {incidentState.incident && (
                 <NavLink
                   className={({ isActive }) =>
                     `navbar-item${isActive ? " is-active has-text-dark" : ""}`
                   }
-                  to={`/incident/${incidentId}/edit`}
+                  to={`/incident/${incidentState.incident.id}/edit`}
                 >
-                  {t("editIncident")}
+                  <span className="icon-text is-capitalized is-flex-wrap-nowrap">
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faPen} />
+                    </span>
+                    <span>{t("editIncident")}</span>
+                  </span>
                 </NavLink>
               )}
             </div>
@@ -245,12 +273,12 @@ function UserNavBar() {
 }
 
 const JournalNavBar: FunctionComponent = () => {
-  const { incidentId, journalId } = useParams();
   const { t } = useTranslation();
+  const { state: incidentState } = useContext(IncidentContext);
 
-  if (!incidentId) return;
+  if (!incidentState || !incidentState.incident) return;
 
-  if (!journalId)
+  if (!incidentState.journal) {
     return (
       <div className="navbar-item has-dropdown is-hoverable">
         <NavLink
@@ -258,7 +286,7 @@ const JournalNavBar: FunctionComponent = () => {
             `navbar-item${isActive ? " is-active has-text-dark" : ""}`
           }
           end={true}
-          to={`/incident/${incidentId}/journal/view`}
+          to={`/incident/${incidentState.incident.id}/journal/view`}
         >
           <span className="icon-text is-capitalized">
             <span className="icon">
@@ -269,6 +297,7 @@ const JournalNavBar: FunctionComponent = () => {
         </NavLink>
       </div>
     );
+  }
 
   return (
     <div className="navbar-item has-dropdown is-hoverable">
@@ -277,13 +306,16 @@ const JournalNavBar: FunctionComponent = () => {
           `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
         }
         end={true}
-        to={`/incident/${incidentId}/journal/view`}
+        to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}/edit`}
       >
         <span className="icon-text is-capitalized">
           <span className="icon">
             <FontAwesomeIcon icon={faBars} />
           </span>
-          <span>{t("journal")}</span>
+          <span>
+            {t("journal")}{" "}
+            {incidentState.journal?.id ? incidentState.journal.name : ""}
+          </span>
         </span>
       </NavLink>
       <div className="navbar-dropdown">
@@ -291,8 +323,21 @@ const JournalNavBar: FunctionComponent = () => {
           className={({ isActive }) =>
             `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
           }
+          to={`/incident/${incidentState.incident.id}/journal/view`}
+        >
+          <span className="icon-text is-capitalized">
+            <span className="icon">
+              <FontAwesomeIcon icon={faRectangleList} />
+            </span>
+            <span>{t("overview")}</span>
+          </span>
+        </NavLink>
+        <NavLink
+          className={({ isActive }) =>
+            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+          }
           end={true}
-          to={`/incident/${incidentId}/journal/${journalId}`}
+          to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
             <span className="icon">
@@ -306,7 +351,7 @@ const JournalNavBar: FunctionComponent = () => {
             `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
           }
           end={true}
-          to={`/incident/${incidentId}/journal/${journalId}/edit`}
+          to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}/edit`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
             <span className="icon">
