@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(ui)* Provide incident contextual navigation ([#1162](https://github.com/f-eld-ch/sitrep/issues/1162)) - ([6c882f9](https://github.com/f-eld-ch/sitrep/commit/6c882f962465f82d470978fc7722ea557e3a8fac))
+
+
 ## [25.11.2](https://github.com/f-eld-ch/sitrep/compare/v25.11.1..v25.11.2) - 2025-11-24
 
 ### ⛰️  Features
