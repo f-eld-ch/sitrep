@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @fortawesome/react-fontawesome ([#1168](https://github.com/f-eld-ch/sitrep/issues/1168)) - ([9339abf](https://github.com/f-eld-ch/sitrep/commit/9339abf009381bb9334e36f6069584151de3a277))
 - *(deps)* Bump the turf group in /ui with 3 updates ([#1170](https://github.com/f-eld-ch/sitrep/issues/1170)) - ([34df4ab](https://github.com/f-eld-ch/sitrep/commit/34df4abad3fecf60e17ca80fe88b77099cd16ce3))
 
 
