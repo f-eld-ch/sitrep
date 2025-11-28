@@ -18,7 +18,7 @@
     "@openfeature/web-sdk": "^1.7.1",
     "@turf/bearing": "^7.3.0",
     "@turf/center": "^7.3.0",
-    "@turf/helpers": "^7.3.0",
+    "@turf/helpers": "^7.3.1",
     "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@watergis/maplibre-gl-export": "~4.1.0",
     "bulma": "^1.0.4",
