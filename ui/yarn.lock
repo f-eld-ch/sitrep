@@ -4242,15 +4242,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/bbox@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@turf/bbox@npm:7.3.0"
+"@turf/bbox@npm:7.3.1":
+  version: 7.3.1
+  resolution: "@turf/bbox@npm:7.3.1"
   dependencies:
-    "@turf/helpers": "npm:7.3.0"
-    "@turf/meta": "npm:7.3.0"
+    "@turf/helpers": "npm:7.3.1"
+    "@turf/meta": "npm:7.3.1"
     "@types/geojson": "npm:^7946.0.10"
     tslib: "npm:^2.8.1"
-  checksum: 10/ae49c9984790a2c6a0042523ec738e0601ff7e1e694a194eb386c9628fca3043c5d0ee6d46b079fb7abb12a1dfc8fb63df419f0206cfc0d26067813d8ddeb6b6
+  checksum: 10/fb37f21196c30b6d3eb492a6bd85da605bbb58a54ae1afb2e0073b972c4a3fdf1df9efe48c07eacb4a86f298c06f9ed048a6c7a1b47707ff721b8085f3865ded
   languageName: node
   linkType: hard
 
@@ -4266,15 +4266,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/center@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@turf/center@npm:7.3.0"
+"@turf/center@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@turf/center@npm:7.3.1"
   dependencies:
-    "@turf/bbox": "npm:7.3.0"
-    "@turf/helpers": "npm:7.3.0"
+    "@turf/bbox": "npm:7.3.1"
+    "@turf/helpers": "npm:7.3.1"
     "@types/geojson": "npm:^7946.0.10"
     tslib: "npm:^2.8.1"
-  checksum: 10/92cef64a9c5d1063419e0c9e8348a5052ba5cdb8a7e4bc40e66be39b736367daaf5030ff6a212e215b999e84b9bd3d0e33cbdc26fa3e3bdc80d607e16f49816d
+  checksum: 10/ffaff02f63b557173cf463cf2760023f1a8b733f05e9cdc5f0116a7d9e94010c7792e4576635f3125bc4c0789669ffc58e5c086c69c3172b36460a25fc5d30b5
   languageName: node
   linkType: hard
 
@@ -4299,6 +4299,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/helpers@npm:7.3.1":
+  version: 7.3.1
+  resolution: "@turf/helpers@npm:7.3.1"
+  dependencies:
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.8.1"
+  checksum: 10/317bd322e2943562a18eb048615897211fc335a57f150ccab9c44c304de55d772f5d280a7878a3c9049d3f163775ead477cb6d34032c1cbc2c9136de8362f092
+  languageName: node
+  linkType: hard
+
 "@turf/helpers@npm:^7.2.0":
   version: 7.2.0
   resolution: "@turf/helpers@npm:7.2.0"
@@ -4320,13 +4330,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/meta@npm:7.3.0":
-  version: 7.3.0
-  resolution: "@turf/meta@npm:7.3.0"
+"@turf/meta@npm:7.3.1":
+  version: 7.3.1
+  resolution: "@turf/meta@npm:7.3.1"
   dependencies:
-    "@turf/helpers": "npm:7.3.0"
+    "@turf/helpers": "npm:7.3.1"
     "@types/geojson": "npm:^7946.0.10"
-  checksum: 10/b85f6ff85c9755c565fe2b23c719cb15c825a1aa349aff7503d4a7ee78b603a3261c441ec1d55e3c90c41f3207a4c1168c8ef2680b76ba6ec66d59ee0c524b7a
+  checksum: 10/b5f6392179a79c37746850808ba6cb9757369c03233ae3e6bd1add32ceae59a8ec3f86d3cdcb0dc16b30b92933c4ed6cfe7e9b3811ea5a834761f31c6dc78a9f
   languageName: node
   linkType: hard
 
@@ -11720,7 +11730,7 @@ __metadata:
     "@testing-library/react": "npm:^16.3.0"
     "@testing-library/user-event": "npm:^14.6.1"
     "@turf/bearing": "npm:^7.3.0"
-    "@turf/center": "npm:^7.3.0"
+    "@turf/center": "npm:^7.3.1"
     "@turf/helpers": "npm:^7.3.0"
     "@types/hat": "npm:^0.0.4"
     "@types/jest": "npm:^30.0.0"
