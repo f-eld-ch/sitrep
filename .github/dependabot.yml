@@ -20,6 +20,10 @@ updates:
         applies-to: version-updates
         patterns:
           - "@fortawesome*"
+      turf:
+        applies-to: version-updates
+        patterns:
+          - "@turf/*"
     labels:
       - "javascript"
       - "dependencies"
