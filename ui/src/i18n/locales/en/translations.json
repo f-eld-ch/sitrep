@@ -12,8 +12,8 @@
   "createNewRequest": "Create a new application",
   "createNewTask": "create new task",
   "createdAt": "opened",
-  "divisions": "divisions",
   "delete": "delete",
+  "divisions": "divisions",
   "edit": "edit",
   "editIncident": "edit incident",
   "editor": "editor",
@@ -21,7 +21,7 @@
     "receiver": "Email recipient",
     "sender": "Email sender"
   },
-  "emailAddress": "E-mail address",
+  "emailAddress": "Email address",
   "enter": "enter",
   "feed": "Feed",
   "filter": "Filter",
@@ -42,7 +42,7 @@
     "unlock": "Unlock symbol",
     "lock": "Lock Symbol",
     "wmsLayerMenu": {
-      "errorFetchingLayers": "Error fetching layers",
+      "errorFetchingLayers": "WMS server could not be reached or no layers found.",
       "noLayersFound": "No compatible layers found. WMS Server must support EPSG:3857 projection."
     }
   },
@@ -227,7 +227,7 @@
   },
   "phoneNumber": "phone number",
   "preview": "preview",
-  "print": "Print",
+  "print": "To press",
   "priority": {
     "HIGH": "important",
     "NORMAL": "normal"
@@ -254,19 +254,19 @@
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "wmsLayerMenu": {
-    "selectServer": "Select WMS Server",
-    "customServer": "Custom Server",
-    "enterServerUrl": "Enter WMS Server URL",
-    "fetchLayers": "Fetch Layers",
-    "selectLayer": "Select a layer"
+    "selectServer": "Select WMS server",
+    "customServer": "User-defined server",
+    "enterServerUrl": "Enter WMS server URL",
+    "fetchLayers": "Retrieve layer",
+    "selectLayer": "Select layer"
   },
   "layerControl": {
-    "layers": "Layers",
-    "addLayer": "Add Layer",
-    "layerName": "layer name",
-    "drawingLayers": "Drawing Layers",
-    "wmsLayers": "WMS Layers",
-    "addWMSLayer": "Add WMS Layer"
+    "layers": "Layer",
+    "addLayer": "Add layer",
+    "layerName": "Layer name",
+    "drawingLayers": "Drawing layer",
+    "wmsLayers": "WMS layer",
+    "addWMSLayer": "Add WMS layer"
   },
   "styleController": {
     "maps": "Maps"
