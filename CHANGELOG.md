@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump docker/metadata-action from 5.9.0 to 5.10.0 ([#1165](https://github.com/f-eld-ch/sitrep/issues/1165)) - ([f3f51fe](https://github.com/f-eld-ch/sitrep/commit/f3f51fe488138b28e67a7d9c72b1ed80c176cc82))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1168](https://github.com/f-eld-ch/sitrep/issues/1168)) - ([9339abf](https://github.com/f-eld-ch/sitrep/commit/9339abf009381bb9334e36f6069584151de3a277))
 - *(deps)* Bump the turf group in /ui with 3 updates ([#1170](https://github.com/f-eld-ch/sitrep/issues/1170)) - ([34df4ab](https://github.com/f-eld-ch/sitrep/commit/34df4abad3fecf60e17ca80fe88b77099cd16ce3))
 
