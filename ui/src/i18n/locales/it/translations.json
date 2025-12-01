@@ -243,7 +243,9 @@
   "showClosed": "mostra chiusa",
   "state": "stava in piedi",
   "styleController": {
-    "maps": "Carte"
+    "maps": "Carte",
+    "Basiskarte": "carta di base leggera",
+    "Satellit": "carta satellitare"
   },
   "tasks": "faccende in sospeso",
   "tasksOrders": "Articoli / ordini in sospeso",
