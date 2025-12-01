@@ -109,7 +109,10 @@ function StyleController() {
         />
       </p>
       {MapStyles.map((s) => (
-        <div key={s.name} className="panel-block is-size-7">
+        <div
+          key={t(`styleController.${s.name}`)}
+          className="panel-block is-size-7"
+        >
           <button
             type="button"
             className={classNames({

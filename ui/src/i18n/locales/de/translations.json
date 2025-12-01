@@ -270,5 +270,19 @@
   },
   "styleController": {
     "maps": "Karten"
+  },
+  "divisionsNames": {
+    "Karte": {
+      "name": "Karte",
+      "description": "Nachrichtenkarte"
+    },
+    "SC": {
+      "name": "SC",
+      "description": "Stabschef"
+    },
+    "CLage": {
+      "name": "Lage",
+      "description": "C Lage"
+    }
   }
 }
