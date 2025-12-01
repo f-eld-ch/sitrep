@@ -270,7 +270,9 @@
     "addWMSLayer": "Ajouter un calques WMS"
   },
   "styleController": {
-    "maps": "Cartes"
+    "maps": "Cartes",
+    "Basiskarte": "carte de base légère",
+    "Satellit": "carte satellite"
   },
   "divisionsNames": {
     "Karte": {

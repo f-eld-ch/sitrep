@@ -110,26 +110,22 @@ function StyleController() {
       </p>
       {MapStyles.map((s) => (
         <div
-          key={t(`styleController.${s.name}`)}
-          className="panel-block is-size-7"
+          key={s.name}
+          className={classNames({
+            "is-success": style.name === s.name,
+            "panel-block": true,
+            "is-size-7": true,
+          })}
         >
           <button
             type="button"
             className={classNames({
-              "is-active": style.name === s.name,
-              "panel-block-btn": true,
+              "is-capitalized": true,
+              "has-text-primary": style.name === s.name,
             })}
             onClick={() => onClick(s)}
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              margin: 0,
-              width: "100%",
-              textAlign: "left",
-            }}
           >
-            {s.name}
+            {t(`styleController.${s.name}`)}
           </button>
         </div>
       ))}

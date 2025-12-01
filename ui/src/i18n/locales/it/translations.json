@@ -270,7 +270,9 @@
     "addWMSLayer": "Aggiungere il livello WMS"
   },
   "styleController": {
-    "maps": "Mappe"
+    "maps": "Mappe",
+    "Basiskarte": "carta di base leggera",
+    "Satellit": "carta satellitare"
   },
   "divisionsNames": {
     "Karte": {
