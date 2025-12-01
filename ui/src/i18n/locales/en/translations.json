@@ -226,6 +226,7 @@
     "sender": "caller"
   },
   "phoneNumber": "phone number",
+  "phase1": "Phase 1",
   "preview": "preview",
   "print": "Print",
   "priority": {
@@ -270,5 +271,19 @@
   },
   "styleController": {
     "maps": "Maps"
+  },
+  "divisionsNames": {
+    "Karte": {
+      "name": "Map",
+      "description": "Situation Map"
+    },
+    "SC": {
+      "name": "CofS",
+      "description": "Chief of Staff"
+    },
+    "CLage": {
+      "name": "Situation",
+      "description": "Situation Desk Officer"
+    }
   }
 }
