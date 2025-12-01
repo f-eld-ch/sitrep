@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(lang)* Translate translations.json in en ([#1175](https://github.com/f-eld-ch/sitrep/issues/1175)) - ([8067566](https://github.com/f-eld-ch/sitrep/commit/8067566d7f39ad147aa707c4e5aed3ee58aeccc1))
 - *(lang)* Translate translations.json in fr ([#1174](https://github.com/f-eld-ch/sitrep/issues/1174)) - ([1fc7542](https://github.com/f-eld-ch/sitrep/commit/1fc75425806513dd03af4737c44809e99aa639f4))
 - *(lang)* Updates for project Sitrep and language fr ([#1172](https://github.com/f-eld-ch/sitrep/issues/1172)) - ([5113345](https://github.com/f-eld-ch/sitrep/commit/5113345b187d476b15081bfb32763f1b6cb33ce8))
 - *(lang)* Updates for project Sitrep and language en ([#1171](https://github.com/f-eld-ch/sitrep/issues/1171)) - ([4f6a246](https://github.com/f-eld-ch/sitrep/commit/4f6a246d858db0d25d6b64149a07a8ce70e9fe67))
