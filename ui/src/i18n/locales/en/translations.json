@@ -227,7 +227,7 @@
   },
   "phoneNumber": "phone number",
   "preview": "preview",
-  "print": "To press",
+  "print": "Print",
   "priority": {
     "HIGH": "important",
     "NORMAL": "normal"
@@ -261,11 +261,11 @@
     "selectLayer": "Select layer"
   },
   "layerControl": {
-    "layers": "Layer",
+    "layers": "Layers",
     "addLayer": "Add layer",
     "layerName": "Layer name",
     "drawingLayers": "Drawing layer",
-    "wmsLayers": "WMS layer",
+    "wmsLayers": "WMS layers",
     "addWMSLayer": "Add WMS layer"
   },
   "styleController": {
