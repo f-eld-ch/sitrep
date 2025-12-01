@@ -226,6 +226,7 @@
     "sender": "Anrufer"
   },
   "phoneNumber": "Telefonnummer",
+  "phase1": "Phase 1",
   "preview": "Vorschau",
   "print": "Drucken",
   "priority": {

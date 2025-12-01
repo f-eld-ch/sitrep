@@ -102,8 +102,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       variables: {
         name: name,
         location: location,
-        journalName: "Phase 1",
-        layerName: "Nachrichtenkarte",
+        journalName: t("phase1"),
+        layerName: t("divisionsNames.Karte.description"),
         divisions: assignments.map((d) => {
           return { name: d.name, description: d.description };
         }),
