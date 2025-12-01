@@ -226,6 +226,7 @@
     "sender": "votre interlocuteur"
   },
   "phoneNumber": "numéro de téléphone",
+  "phase1": "Phase 1",
   "preview": "aperçu",
   "print": "Pour appuyer",
   "priority": {
@@ -270,5 +271,19 @@
   },
   "styleController": {
     "maps": "Cartes"
+  },
+  "divisionsNames": {
+    "Karte": {
+      "name": "Carte",
+      "description": "Carte de situation"
+    },
+    "SC": {
+      "name": "C EM",
+      "description": "Chef d'état-major"
+    },
+    "CLage": {
+      "name": "C suivi",
+      "description": "Chef du suivi de la situation"
+    }
   }
 }
