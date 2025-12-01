@@ -12,8 +12,8 @@
   "createNewRequest": "Crea una nuova applicazione",
   "createNewTask": "crea una nuova attività",
   "createdAt": "aperto",
-  "divisions": "dipartimenti",
   "delete": "eliminare",
+  "divisions": "dipartimenti",
   "edit": "modificare",
   "editIncident": "modifica incidente",
   "editor": "editore",
@@ -194,7 +194,7 @@
     }
   },
   "medium": {
-    "EMAIL": "email",
+    "EMAIL": "e-mail",
     "OTHER": "Altro",
     "PHONE": "Telefono",
     "RADIO": "radio"
@@ -226,8 +226,9 @@
     "sender": "chiamante"
   },
   "phoneNumber": "numero di telefono",
+  "phase1": "Fase 1",
   "preview": "anteprima",
-  "print": "Stampa",
+  "print": "Pressare",
   "priority": {
     "HIGH": "importante",
     "NORMAL": "normale"
@@ -242,9 +243,6 @@
   "short": "abbreviazione",
   "showClosed": "mostra chiusa",
   "state": "stava in piedi",
-  "styleController": {
-    "maps": "Carte"
-  },
   "tasks": "faccende in sospeso",
   "tasksOrders": "Articoli / ordini in sospeso",
   "tasksRequestOrders": "Bisogni / In attesa / Richieste",
@@ -254,20 +252,38 @@
     "PENDING": "in attesa di",
     "RESET": "ripristina"
   },
+  "write": "scrivere",
+  "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",
+  "wmsLayerMenu": {
+    "selectServer": "Selezionare il server WMS",
+    "customServer": "Server personalizzato",
+    "enterServerUrl": "Inserire l'URL del server WMS",
+    "fetchLayers": "Recuperare il livello",
+    "selectLayer": "Selezionare il livello"
+  },
   "layerControl": {
     "layers": "Livelli",
     "addLayer": "Aggiungi livello",
     "layerName": "Nome del livello",
-    "drawingLayers": "Livelli di disegno",
+    "drawingLayers": "Livello di disegno",
     "wmsLayers": "Livelli WMS",
-    "addWMSLayer": "Aggiungi livello WMS"
+    "addWMSLayer": "Aggiungere il livello WMS"
   },
-  "wmsLayerMenu": {
-    "customServer": "Server personalizzato",
-    "enterServerUrl": "Inserisci l'URL del server",
-    "fetchLayers": "Recupera livelli",
-    "selectLayer": "Seleziona livello"
+  "styleController": {
+    "maps": "Mappe"
   },
-  "write": "scrivere",
-  "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento."
+  "divisionsNames": {
+    "Karte": {
+      "name": "Carta",
+      "description": "Carta informativa"
+    },
+    "SC": {
+      "name": "C SM",
+      "description": "Capo di stato maggiore"
+    },
+    "CLage": {
+      "name": "ANSIT ",
+      "description": "Capo ANSIT "
+    }
+  }
 }
