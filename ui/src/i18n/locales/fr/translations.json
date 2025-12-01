@@ -261,12 +261,12 @@
     "selectLayer": "Sélectionner une calque"
   },
   "layerControl": {
-    "layers": "Calque",
-    "addLayer": "Ajouter une calque",
+    "layers": "Calques",
+    "addLayer": "Ajouter un calque",
     "layerName": "Nom du calque",
     "drawingLayers": "Calques de dessin",
     "wmsLayers": "Calques WMS",
-    "addWMSLayer": "Ajouter une calques WMS"
+    "addWMSLayer": "Ajouter un calques WMS"
   },
   "styleController": {
     "maps": "Cartes"
