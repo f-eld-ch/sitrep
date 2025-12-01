@@ -8,6 +8,7 @@
 - *(lang)* Translate translations.json in fr ([#1174](https://github.com/f-eld-ch/sitrep/issues/1174)) - ([1fc7542](https://github.com/f-eld-ch/sitrep/commit/1fc75425806513dd03af4737c44809e99aa639f4))
 - *(lang)* Updates for project Sitrep and language fr ([#1172](https://github.com/f-eld-ch/sitrep/issues/1172)) - ([5113345](https://github.com/f-eld-ch/sitrep/commit/5113345b187d476b15081bfb32763f1b6cb33ce8))
 - *(lang)* Updates for project Sitrep and language en ([#1171](https://github.com/f-eld-ch/sitrep/issues/1171)) - ([4f6a246](https://github.com/f-eld-ch/sitrep/commit/4f6a246d858db0d25d6b64149a07a8ce70e9fe67))
+- *(ui)* Improve stylecontroller translations ([#1178](https://github.com/f-eld-ch/sitrep/issues/1178)) - ([b0b9744](https://github.com/f-eld-ch/sitrep/commit/b0b97442815961585e757742f1dcf4e26139fcd1))
 - *(ui)* Add missing translations ([#1173](https://github.com/f-eld-ch/sitrep/issues/1173)) - ([c8c2b2e](https://github.com/f-eld-ch/sitrep/commit/c8c2b2e4f3e7e72eb3f917b70191463e69f56dfe))
 
 ### ⚙️  Other
