@@ -11848,12 +11848,12 @@ __metadata:
     sass: "npm:^1.94.2"
     semver: "npm:^7.7.3"
     source-map-explorer: "npm:^2.5.3"
-    ts-jest: "npm:^29.4.5"
+    ts-jest: "npm:^29.4.6"
     typescript: "npm:^5.9.3"
     undici: "npm:^7.16.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^13.0.0"
-    vite: "npm:^7.2.4"
+    vite: "npm:^7.2.6"
     vite-bundle-analyzer: "npm:^1.2.3"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.2.0"
@@ -12629,9 +12629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.4.5":
-  version: 29.4.5
-  resolution: "ts-jest@npm:29.4.5"
+"ts-jest@npm:^29.4.6":
+  version: 29.4.6
+  resolution: "ts-jest@npm:29.4.6"
   dependencies:
     bs-logger: "npm:^0.2.6"
     fast-json-stable-stringify: "npm:^2.1.0"
@@ -12665,7 +12665,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10/48d867e0707474241b6339336cbe57d85122d6018fef957c8c095ff365e5d9428f112fe2cb11a8301343bbd32cec3ff639523d9bf9eea3a371734aa9a100f8a2
+  checksum: 10/e0ff9e13f684166d5331808b288043b8054f49a1c2970480a92ba3caec8d0ff20edd092f2a4e7a3ad8fcb9ba4d674bee10ec7ee75046d8066bbe43a7d16cf72e
   languageName: node
   linkType: hard
 
