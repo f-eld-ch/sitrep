@@ -37,10 +37,21 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   const [assignments, setAssignments] = useState<Division[]>(
     incident?.divisions || [
-      // TODO: this needs translations
-      { id: "", name: "Karte", description: "Nachrichtenkarte" },
-      { id: "", name: "Lage", description: "C Lage" },
-      { id: "", name: "SC", description: "Stabchef" },
+      {
+        id: "",
+        name: t("divisionsNames.Karte.name"),
+        description: t("divisionsNames.Karte.description"),
+      },
+      {
+        id: "",
+        name: t("divisionsNames.CLage.name"),
+        description: t("divisionsNames.CLage.description"),
+      },
+      {
+        id: "",
+        name: t("divisionsNames.SC.name"),
+        description: t("divisionsNames.SC.description"),
+      },
     ],
   );
   const [name, setName] = useState(incident?.name || "");
@@ -91,8 +102,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       variables: {
         name: name,
         location: location,
-        journalName: "Phase 1",
-        layerName: "Nachrichtenkarte",
+        journalName: t("phase1"),
+        layerName: t("divisionsNames.Karte.description"),
         divisions: assignments.map((d) => {
           return { name: d.name, description: d.description };
         }),

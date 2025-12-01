@@ -226,6 +226,7 @@
     "sender": "Anrufer"
   },
   "phoneNumber": "Telefonnummer",
+  "phase1": "Phase 1",
   "preview": "Vorschau",
   "print": "Drucken",
   "priority": {
@@ -270,5 +271,19 @@
   },
   "styleController": {
     "maps": "Karten"
+  },
+  "divisionsNames": {
+    "Karte": {
+      "name": "Karte",
+      "description": "Nachrichtenkarte"
+    },
+    "SC": {
+      "name": "SC",
+      "description": "Stabschef"
+    },
+    "CLage": {
+      "name": "Lage",
+      "description": "C Lage"
+    }
   }
 }
