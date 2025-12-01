@@ -6,20 +6,20 @@
   "close": "fermer",
   "closedAt": "fermé",
   "create": "créer",
-  "createIncident": "créer un nouvel incident",
+  "createIncident": "Créer un nouvel événement",
   "createJournal": "créer un nouveau journal",
   "createNewImmediateMeasures": "créer des nouvelles mesures immédiates",
   "createNewRequest": "Créer une nouvelle demande",
   "createNewTask": "créer une nouvelle tâche",
   "createdAt": "ouvert",
-  "divisions": "domaine",
   "delete": "supprimer",
+  "divisions": "domaine",
   "edit": "éditer",
-  "editIncident": "modifier l'incident",
+  "editIncident": "Modifier un événement",
   "editor": "éditeur",
   "email": {
     "receiver": "Destinataire du courriel",
-    "sender": "expéditeur du courriel"
+    "sender": "Expéditeur du courriel"
   },
   "emailAddress": "Adresse courriel",
   "enter": "entrer",
@@ -29,10 +29,10 @@
   "hideClosed": "masquer fermé",
   "hotline": "Éditeur de la ligne directe",
   "immediateMeasures": "mesures immédiates",
-  "incident": "incident",
-  "incidents": "incidents",
-  "journal": "journal des opérations",
-  "journalList": "présentation du journal des opérations",
+  "incident": "Événement",
+  "incidents": "Événements",
+  "journal": "Journal d'intervention",
+  "journalList": "présentation du journal d'intervention",
   "location": "emplacement",
   "logout": "déconnexion",
   "map": "image de situation",
@@ -42,8 +42,8 @@
     "unlock": "Désamarrer le signe",
     "lock": "Verrouiller le signe",
     "wmsLayerMenu": {
-      "errorFetchingLayers": "Erreur lors de la récupération des calques.",
-      "noLayersFound": "Aucun calque compatible trouvé. Le serveur WMS doit prendre en charge la projection EPSG:3857."
+      "errorFetchingLayers": "Le serveur WMS n'a pas pu être atteint ou aucune calque n'a été trouvée.",
+      "noLayersFound": "Aucune calque compatible trouvée. Le serveur WMS doit prendre en charge la projection EPSG:3857."
     }
   },
   "babs": {
@@ -146,7 +146,7 @@
       "Kontrollzentrum": "Centre de contrôle",
       "Lawine": "Avalanche",
       "Massenpanik": "Effets de panique",
-      "Materialdepot": "Dépôt matérie",
+      "Materialdepot": "Dépôt matériel",
       "Mobile Einsatzzentrale": "Centrale d’engagement mobile",
       "Obdachlose": "Sans-abri",
       "Offizier / Zugführer": "Officier",
@@ -194,9 +194,9 @@
     }
   },
   "medium": {
-    "EMAIL": "courriel",
+    "EMAIL": "Email",
     "OTHER": "Autre",
-    "PHONE": "téléphoner",
+    "PHONE": "Téléphone",
     "RADIO": "radio"
   },
   "mediumName": "la communication",
@@ -209,15 +209,15 @@
     "priority": "priorité",
     "receiver": "destinataire",
     "sender": "expéditeur",
-    "time": "temps",
+    "time": "Date / Heure",
     "triage": "statut de triage",
     "type": "communication"
   },
-  "messageFlow": "flux de rapports",
+  "messageFlow": "Liste de distribution",
   "messageSheet": "formulaire de message",
   "messageTriageTitle": "trier le message",
   "name": "nom",
-  "incidentName": "nom d'incident",
+  "incidentName": "Nom de l'événement",
   "open": "ouvert",
   "options": "options",
   "otherDetails": "détails",
@@ -227,7 +227,7 @@
   },
   "phoneNumber": "numéro de téléphone",
   "preview": "aperçu",
-  "print": "Imprimer",
+  "print": "Pour appuyer",
   "priority": {
     "HIGH": "important",
     "NORMAL": "ordinaire"
@@ -242,9 +242,6 @@
   "short": "abréviation",
   "showClosed": "Afficher fermé",
   "state": "était debout",
-  "styleController": {
-    "maps": "Cartes"
-  },
   "tasks": "affaires en cours",
   "tasksOrders": "Articles / commandes en attente",
   "tasksRequestOrders": "Besoins / En attente / Demandes",
@@ -254,20 +251,24 @@
     "PENDING": "en attente",
     "RESET": "réinitialiser"
   },
+  "write": "écrivez",
+  "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
+  "wmsLayerMenu": {
+    "selectServer": "Sélectionner le serveur WMS",
+    "customServer": "Serveur personnalisé",
+    "enterServerUrl": "Entrez l'URL du serveur WMS",
+    "fetchLayers": "Récupérer les calques",
+    "selectLayer": "Sélectionner une calque"
+  },
   "layerControl": {
     "layers": "Calques",
     "addLayer": "Ajouter un calque",
     "layerName": "Nom du calque",
     "drawingLayers": "Calques de dessin",
     "wmsLayers": "Calques WMS",
-    "addWMSLayer": "Ajouter un calque WMS"
+    "addWMSLayer": "Ajouter un calques WMS"
   },
-  "wmsLayerMenu": {
-    "customServer": "Serveur personnalisé",
-    "enterServerUrl": "Entrez l'URL du serveur",
-    "fetchLayers": "Récupérer les calques",
-    "selectLayer": "Sélectionner une calques"
-  },
-  "write": "écrivez",
-  "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh."
+  "styleController": {
+    "maps": "Cartes"
+  }
 }

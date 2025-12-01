@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(lang)* Updates for project Sitrep and language fr ([#1172](https://github.com/f-eld-ch/sitrep/issues/1172)) - ([5113345](https://github.com/f-eld-ch/sitrep/commit/5113345b187d476b15081bfb32763f1b6cb33ce8))
 - *(lang)* Updates for project Sitrep and language en ([#1171](https://github.com/f-eld-ch/sitrep/issues/1171)) - ([4f6a246](https://github.com/f-eld-ch/sitrep/commit/4f6a246d858db0d25d6b64149a07a8ce70e9fe67))
 
 ### ⚙️  Other
