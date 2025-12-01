@@ -35,7 +35,7 @@
   "journalList": "présentation du journal d'intervention",
   "location": "emplacement",
   "logout": "déconnexion",
-  "map": "image de situation",
+  "map": "Suivi dessiné",
   "mapview": {
     "rotate": "Tourner la signe",
     "layer": "calque",
@@ -199,7 +199,7 @@
     "PHONE": "Téléphone",
     "RADIO": "radio"
   },
-  "mediumName": "la communication",
+  "mediumName": "communication",
   "message": {
     "content": "contenu",
     "contentHelp": "Qu'est-ce qui a été soumis ?",
@@ -252,7 +252,7 @@
     "PENDING": "en attente",
     "RESET": "réinitialiser"
   },
-  "write": "écrivez",
+  "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "wmsLayerMenu": {
     "selectServer": "Sélectionner le serveur WMS",
