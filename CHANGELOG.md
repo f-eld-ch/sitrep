@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(lang)* Updates for project Sitrep and language en ([#1171](https://github.com/f-eld-ch/sitrep/issues/1171)) - ([4f6a246](https://github.com/f-eld-ch/sitrep/commit/4f6a246d858db0d25d6b64149a07a8ce70e9fe67))
+
 ### ⚙️  Other
 
 - *(deps)* Bump docker/metadata-action from 5.9.0 to 5.10.0 ([#1165](https://github.com/f-eld-ch/sitrep/issues/1165)) - ([f3f51fe](https://github.com/f-eld-ch/sitrep/commit/f3f51fe488138b28e67a7d9c72b1ed80c176cc82))
