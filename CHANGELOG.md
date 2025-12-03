@@ -13,6 +13,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.9.6 to 7.10.0 in /ui ([#1183](https://github.com/f-eld-ch/sitrep/issues/1183)) - ([8080b8f](https://github.com/f-eld-ch/sitrep/commit/8080b8f605fe384d0a9fa8f4946d26680173776c))
 - *(deps)* Bump actions/checkout from 6.0.0 to 6.0.1 ([#1185](https://github.com/f-eld-ch/sitrep/issues/1185)) - ([25347c2](https://github.com/f-eld-ch/sitrep/commit/25347c2214588eeb00f5531b529349ca617ce409))
 - *(deps)* Bump docker/metadata-action from 5.9.0 to 5.10.0 ([#1165](https://github.com/f-eld-ch/sitrep/issues/1165)) - ([f3f51fe](https://github.com/f-eld-ch/sitrep/commit/f3f51fe488138b28e67a7d9c72b1ed80c176cc82))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1168](https://github.com/f-eld-ch/sitrep/issues/1168)) - ([9339abf](https://github.com/f-eld-ch/sitrep/commit/9339abf009381bb9334e36f6069584151de3a277))
