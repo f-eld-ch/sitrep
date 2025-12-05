@@ -13,6 +13,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.13.0 to 5.14.0 in /ui ([#1189](https://github.com/f-eld-ch/sitrep/issues/1189)) - ([de7715a](https://github.com/f-eld-ch/sitrep/commit/de7715a79eb75230d26a2a6a490ae45e3c65113a))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.0 to 3.45.1 ([#1191](https://github.com/f-eld-ch/sitrep/issues/1191)) - ([92968ed](https://github.com/f-eld-ch/sitrep/commit/92968ed5f13fd4ec90738124c30e942bf13026de))
 - *(deps)* Bump react-router from 7.10.0 to 7.10.1 in /ui ([#1192](https://github.com/f-eld-ch/sitrep/issues/1192)) - ([bc9daa3](https://github.com/f-eld-ch/sitrep/commit/bc9daa356d21451a66229291a546d440d5df6ff5))
 - *(deps)* Bump i18next from 25.6.3 to 25.7.1 in /ui ([#1181](https://github.com/f-eld-ch/sitrep/issues/1181)) - ([3a5baf5](https://github.com/f-eld-ch/sitrep/commit/3a5baf59f7243334643073a87967e34ba1a89d21))
