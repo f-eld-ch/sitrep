@@ -13,6 +13,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.10.0 to 7.10.1 in /ui ([#1192](https://github.com/f-eld-ch/sitrep/issues/1192)) - ([bc9daa3](https://github.com/f-eld-ch/sitrep/commit/bc9daa356d21451a66229291a546d440d5df6ff5))
 - *(deps)* Bump i18next from 25.6.3 to 25.7.1 in /ui ([#1181](https://github.com/f-eld-ch/sitrep/issues/1181)) - ([3a5baf5](https://github.com/f-eld-ch/sitrep/commit/3a5baf59f7243334643073a87967e34ba1a89d21))
 - *(deps)* Bump github/codeql-action from 4.31.5 to 4.31.6 ([#1179](https://github.com/f-eld-ch/sitrep/issues/1179)) - ([1eee05a](https://github.com/f-eld-ch/sitrep/commit/1eee05a5a70163aedd7668dd27caf253029f7ce0))
 - *(deps)* Bump mdast-util-to-hast ([#1182](https://github.com/f-eld-ch/sitrep/issues/1182)) - ([4b68800](https://github.com/f-eld-ch/sitrep/commit/4b6880021a0619e537a5cf46c25daffcf11644eb))
