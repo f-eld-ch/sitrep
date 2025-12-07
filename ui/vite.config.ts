@@ -121,6 +121,19 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    port: 3000,
+    proxy: {
+      "/v1/graphql": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      "/oauth2": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+    },
+  }, 
   css: {
     preprocessorOptions: {
       scss: {},

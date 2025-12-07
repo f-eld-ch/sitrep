@@ -51,14 +51,26 @@ import {
   LayerToFeatureCollection,
 } from "./utils";
 
+// Initialize maplibregl globals once at module load to avoid repeated side-effects
+// when React Strict Mode mounts components multiple times in development.
+try {
+  // guard in case these methods are not present in some environments
+  if (typeof maplibregl?.setMaxParallelImageRequests === "function") {
+    maplibregl.setMaxParallelImageRequests(150);
+  }
+  if (typeof maplibregl?.setWorkerCount === "function") {
+    maplibregl.setWorkerCount(6);
+  }
+} catch (e) {
+  console.error("Error setting maplibregl globals:", e);
+}
+
 const modes = {
   ...MapboxDraw.modes,
 };
 
 function MapView() {
   const mapStyle = useReactiveVar(selectedStyle);
-  maplibregl.setMaxParallelImageRequests(150);
-  maplibregl.setWorkerCount(6);
 
   const mapClass = classNames({
     "is-flex-grow-1": true,
@@ -359,32 +371,49 @@ function Draw() {
           state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
         ),
       );
-      state.draw.deleteAll();
-      state.draw.set(featureCollection);
+
+      safeDrawInvoke(state.draw, (d) => {
+        d.deleteAll();
+        d.set(featureCollection);
+      });
     }
   }, [state.draw, map?.loaded, state.layers, state.activeLayer]);
 
   // this is the effect which syncs the drawings
   useEffect(() => {
     if (state.draw && map?.loaded) {
+      if (!isDrawLike(state.draw)) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "Draw control missing get/changeMode; skipping selection sync.",
+        );
+        return;
+      }
+
       if (state.selectedFeature === undefined) {
-        // No feature selected, sync to draw control
-        state.draw.changeMode("simple_select");
+        safeDrawInvoke(state.draw, (d) => {
+          d.changeMode("simple_select");
+        });
         return;
       }
 
-      // Check if the selected feature exists in the draw control
-      const selectedFeature = state.draw.get(state.selectedFeature);
-      if (!selectedFeature) {
-        // Selected feature does not (yet) exist in draw control
-        return;
-      }
-
-      // select the feature in the draw control
-      state.draw.changeMode("simple_select", {
-        featureIds: [state.selectedFeature],
+      // Check if the selected feature exists in the draw control and then select it
+      const exists = safeDrawInvoke(state.draw, (d) => {
+        if (!state.selectedFeature) {
+          return;
+        }
+        d.get(state.selectedFeature);
       });
-      return;
+      if (!exists) {
+        return;
+      }
+
+      safeDrawInvoke(state.draw, (d) => {
+        if (!state.selectedFeature) {
+          return;
+        }
+        d.changeMode("simple_select", { featureIds: [state.selectedFeature] });
+      });
     }
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
@@ -473,4 +502,44 @@ export interface FeatureEvent {
 export interface CombineFeatureEvent {
   deletedFeatures: Feature<Geometry, GeoJsonProperties>[];
   createdFeatures: Feature<Geometry, GeoJsonProperties>[];
+}
+
+// Define a typed interface for the subset of the draw API we use
+type DrawLike = {
+  deleteAll: () => void;
+  set: (fc: FeatureCollection) => void;
+  changeMode: (mode: string, opts?: { featureIds?: string[] }) => void;
+  get: (id: string) => Feature | undefined;
+  delete: (ids: string[]) => void;
+};
+
+// Runtime type guard to check if an object implements DrawLike
+function isDrawLike(obj: unknown): obj is DrawLike {
+  return (
+    obj !== null &&
+    typeof obj === "object" &&
+    typeof (obj as { deleteAll?: unknown }).deleteAll === "function" &&
+    typeof (obj as { set?: unknown }).set === "function" &&
+    typeof (obj as { changeMode?: unknown }).changeMode === "function" &&
+    typeof (obj as { get?: unknown }).get === "function"
+  );
+}
+
+// Helper to safely invoke operations on the draw instance.
+// Returns true if invocation happened, false otherwise.
+function safeDrawInvoke(draw: unknown, fn: (d: DrawLike) => void): boolean {
+  if (!isDrawLike(draw)) {
+    // eslint-disable-next-line no-console
+    console.debug("Draw control missing expected methods; skipping operation.");
+    return false;
+  }
+  try {
+    fn(draw);
+    return true;
+  } catch (e) {
+    // swallow errors coming from an invalid draw instance (e.g., transient state in Strict Mode)
+    // eslint-disable-next-line no-console
+    console.debug("Draw control operation failed:", e);
+    return false;
+  }
 }
