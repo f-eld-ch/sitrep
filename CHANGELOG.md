@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 16.3.5 to 16.4.0 in /ui ([#1194](https://github.com/f-eld-ch/sitrep/issues/1194)) - ([9eaabec](https://github.com/f-eld-ch/sitrep/commit/9eaabeca03dbe6c33be8363a583d73c95cf22122))
+
+
 ## [25.12.0](https://github.com/f-eld-ch/sitrep/compare/v25.11.3..v25.12.0) - 2025-12-05
 
 ### ⛰️  Features
