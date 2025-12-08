@@ -5,10 +5,10 @@ __metadata:
   version: 8
   cacheKey: 10
 
-"@acemir/cssom@npm:^0.9.23":
-  version: 0.9.23
-  resolution: "@acemir/cssom@npm:0.9.23"
-  checksum: 10/752294359ddf691f402bf871f347c1d5ea8532ead5e197cf60eeb7ab25bdd6f6e98fc7fad74042f2e423bb45fe7e4a049db645e01fa0781a0ed4ea2cec911047
+"@acemir/cssom@npm:^0.9.28":
+  version: 0.9.28
+  resolution: "@acemir/cssom@npm:0.9.28"
+  checksum: 10/429faa2af7bffdcf3311e984f6b8ced77bf58d936e0e9a22c2fc892a84e54d2c8cbd71ae3a979ef54241509ac7c866cb880d919e3e713e64c865a1cd4ede3a1f
   languageName: node
   linkType: hard
 
@@ -83,29 +83,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asamuzakjp/css-color@npm:^4.0.3":
-  version: 4.0.4
-  resolution: "@asamuzakjp/css-color@npm:4.0.4"
+"@asamuzakjp/css-color@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@asamuzakjp/css-color@npm:4.1.0"
   dependencies:
     "@csstools/css-calc": "npm:^2.1.4"
-    "@csstools/css-color-parser": "npm:^3.0.10"
+    "@csstools/css-color-parser": "npm:^3.1.0"
     "@csstools/css-parser-algorithms": "npm:^3.0.5"
     "@csstools/css-tokenizer": "npm:^3.0.4"
-    lru-cache: "npm:^11.1.0"
-  checksum: 10/2c991929d135067843bd768ba6fb9de231b98fdbcc0ac86aeb881fb09c4a12f3e0ae4a55170ebe7ff67ea5b7d9c83c6672f5d57d8c75805cc054ca7e7dcc13eb
+    lru-cache: "npm:^11.2.2"
+  checksum: 10/e76b57fff34b958e224662d2afb19d23bc6c95d6ea40055e23a8f7417ae79904b7741655bbe6a883c09d5ee68ebb20e9313036aed3680fe85e383e0527397566
   languageName: node
   linkType: hard
 
-"@asamuzakjp/dom-selector@npm:^6.7.4":
-  version: 6.7.4
-  resolution: "@asamuzakjp/dom-selector@npm:6.7.4"
+"@asamuzakjp/dom-selector@npm:^6.7.6":
+  version: 6.7.6
+  resolution: "@asamuzakjp/dom-selector@npm:6.7.6"
   dependencies:
     "@asamuzakjp/nwsapi": "npm:^2.3.9"
     bidi-js: "npm:^1.0.3"
     css-tree: "npm:^3.1.0"
     is-potential-custom-element-name: "npm:^1.0.1"
-    lru-cache: "npm:^11.2.2"
-  checksum: 10/dc550a4e32b956bfc820795e73bb3cae963496101a6dc1ebbd0cad409e734dadbcfbac22a44034c28ec401ee1454a379c64cc02d11eb2186e74c638482d8b2e1
+    lru-cache: "npm:^11.2.4"
+  checksum: 10/91a479f5f59a3b1b23f46407d874882c05b50e72316e57af105c88603fb1008120c46c7fe7504c5be556ea4c9a68ee10aee43433bd8d34f000b9aaf6dcae4d5c
   languageName: node
   linkType: hard
 
@@ -2340,7 +2340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/css-color-parser@npm:^3.0.10":
+"@csstools/css-color-parser@npm:^3.1.0":
   version: 3.1.0
   resolution: "@csstools/css-color-parser@npm:3.1.0"
   dependencies:
@@ -2362,7 +2362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/css-syntax-patches-for-csstree@npm:^1.0.14":
+"@csstools/css-syntax-patches-for-csstree@npm:1.0.14":
   version: 1.0.14
   resolution: "@csstools/css-syntax-patches-for-csstree@npm:1.0.14"
   peerDependencies:
@@ -6165,14 +6165,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssstyle@npm:^5.3.3":
-  version: 5.3.3
-  resolution: "cssstyle@npm:5.3.3"
+"cssstyle@npm:^5.3.4":
+  version: 5.3.4
+  resolution: "cssstyle@npm:5.3.4"
   dependencies:
-    "@asamuzakjp/css-color": "npm:^4.0.3"
-    "@csstools/css-syntax-patches-for-csstree": "npm:^1.0.14"
+    "@asamuzakjp/css-color": "npm:^4.1.0"
+    "@csstools/css-syntax-patches-for-csstree": "npm:1.0.14"
     css-tree: "npm:^3.1.0"
-  checksum: 10/8c6133761395f03d50e74ff4c05473b4835b79013efed3f4b79dc452d94a7122082887d89c3c1164bba0e8919be209b75e4f4706197c086fc9f4b50182ab03d6
+  checksum: 10/4eeb85cbaba47c2e4eb9f9a9dea9633e311f1cb706258f582fc8d099edc0b8c0deea93a6943981960d7f920ac0f3bbb5277cc4c355915406c17a95d0049a073d
   languageName: node
   linkType: hard
 
@@ -9050,13 +9050,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^27.2.0":
-  version: 27.2.0
-  resolution: "jsdom@npm:27.2.0"
+"jsdom@npm:^27.3.0":
+  version: 27.3.0
+  resolution: "jsdom@npm:27.3.0"
   dependencies:
-    "@acemir/cssom": "npm:^0.9.23"
-    "@asamuzakjp/dom-selector": "npm:^6.7.4"
-    cssstyle: "npm:^5.3.3"
+    "@acemir/cssom": "npm:^0.9.28"
+    "@asamuzakjp/dom-selector": "npm:^6.7.6"
+    cssstyle: "npm:^5.3.4"
     data-urls: "npm:^6.0.0"
     decimal.js: "npm:^10.6.0"
     html-encoding-sniffer: "npm:^4.0.0"
@@ -9079,7 +9079,7 @@ __metadata:
   peerDependenciesMeta:
     canvas:
       optional: true
-  checksum: 10/78458e0230fd18ceef1e8753ab44eadf436654540a3d1dc5068f49b87c2bd1752b8fff25c9e1f30ee406ae3e80cc3f81668f778b8220a7bf9386a0a826dee088
+  checksum: 10/c650e954df04a80e7309984450ce764ae2a840810b9575b20204194dee3c5cff42e65526519cb58b946ffe66a058b7b763bad4814b3903a9c86a2c1651b8b74b
   languageName: node
   linkType: hard
 
@@ -9362,10 +9362,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^11.1.0":
-  version: 11.2.1
-  resolution: "lru-cache@npm:11.2.1"
-  checksum: 10/cd1cc7a8d7617ede28702f80449d9c3f851bb6671d5ec37b34ca10ffb18d5aa068d798ed057e73092f25e563202d33ab6562c356b0c1ff4a6065525dbe577b1c
+"lru-cache@npm:^11.2.4":
+  version: 11.2.4
+  resolution: "lru-cache@npm:11.2.4"
+  checksum: 10/3b2da74c0b6653767f8164c38c4c4f4d7f0cc10c62bfa512663d94a830191ae6a5af742a8d88a8b30d5f9974652d3adae53931f32069139ad24fa2a18a199aca
   languageName: node
   linkType: hard
 
@@ -11580,9 +11580,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.94.2":
-  version: 1.94.2
-  resolution: "sass@npm:1.94.2"
+"sass@npm:^1.95.0":
+  version: 1.95.0
+  resolution: "sass@npm:1.95.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -11593,7 +11593,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/e60c214ea93677740c9ddfad55c77fd433255bbfdd9faba137acf1215bed5ba6ad9d83efea81feb87a89283931d01f0435227e3fff37c65c263e0ee05f885328
+  checksum: 10/27a98999e36f55b47b79a5c11fab1f9fb78411030a49e583e4853058f05253eb917f1638c8784828d47fac129d0d44bc889cf611f73a65abe40ab09b8ff7143c
   languageName: node
   linkType: hard
 
@@ -11830,7 +11830,7 @@ __metadata:
     i18next: "npm:^25.7.1"
     i18next-browser-languagedetector: "npm:^8.2.0"
     jest: "npm:^30.2.0"
-    jsdom: "npm:^27.2.0"
+    jsdom: "npm:^27.3.0"
     lint-staged: "npm:^16.2.7"
     lodash: "npm:^4.17.21"
     mapbox-gl-style-switcher: "npm:^1.0.11"
@@ -11846,7 +11846,7 @@ __metadata:
     react-router: "npm:^7.10.1"
     react-to-print: "npm:^3.2.0"
     rxjs: "npm:^7.8.2"
-    sass: "npm:^1.94.2"
+    sass: "npm:^1.95.0"
     semver: "npm:^7.7.3"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.6"
@@ -11854,8 +11854,8 @@ __metadata:
     undici: "npm:^7.16.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^13.0.0"
-    vite: "npm:^7.2.6"
-    vite-bundle-analyzer: "npm:^1.2.4"
+    vite: "npm:^7.2.7"
+    vite-bundle-analyzer: "npm:^1.3.1"
     vite-plugin-biome: "npm:^1.0.12"
     vite-plugin-pwa: "npm:^1.2.0"
     vite-plugin-svgr: "npm:^4.5.0"
@@ -13205,12 +13205,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-bundle-analyzer@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "vite-bundle-analyzer@npm:1.2.4"
+"vite-bundle-analyzer@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "vite-bundle-analyzer@npm:1.3.1"
   bin:
     analyze: dist/bin.js
-  checksum: 10/f80fa25fd8f21377021843f04aeebff19b23a356e41827373fe3a1b0d4c563dea9908ebd1bee8c610650f039d9ff527b7bb5fdcd1695c148988705d3b255e054
+  checksum: 10/b41cd3b5cb9799c2677d36fd6dc864996ae318e92f8673dccdcfe019b972b98f169d5ffaba2b0f6f2f2569adf2ba919e536bb0a0194a53b7ff58b9c353932e4b
   languageName: node
   linkType: hard
 
