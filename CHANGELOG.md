@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(ui)* Upgrade to react 19 ([#1196](https://github.com/f-eld-ch/sitrep/issues/1196)) - ([a99a1e5](https://github.com/f-eld-ch/sitrep/commit/a99a1e57eee7c4d7233e7d985f0aea1d3d521454))
+
 ### ⚙️  Other
 
 - *(deps)* Bump react-i18next from 16.3.5 to 16.4.0 in /ui ([#1194](https://github.com/f-eld-ch/sitrep/issues/1194)) - ([9eaabec](https://github.com/f-eld-ch/sitrep/commit/9eaabeca03dbe6c33be8363a583d73c95cf22122))
