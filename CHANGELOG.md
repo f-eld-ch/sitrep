@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the otel group across 1 directory with 12 updates ([#1209](https://github.com/f-eld-ch/sitrep/issues/1209)) - ([8bc19d6](https://github.com/f-eld-ch/sitrep/commit/8bc19d6b022f72450096ad6ca17aa2b31700563d))
 - *(deps)* Bump i18next from 25.7.1 to 25.7.2 in /ui ([#1198](https://github.com/f-eld-ch/sitrep/issues/1198)) - ([e1cbfe9](https://github.com/f-eld-ch/sitrep/commit/e1cbfe921d5380060c364d0debe8d973fbb386b6))
 
 
