@@ -3385,6 +3385,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maplibre/maplibre-gl-style-spec@npm:^24.4.0":
+  version: 24.4.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.4.0"
+  dependencies:
+    "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
+    "@mapbox/unitbezier": "npm:^0.0.1"
+    json-stringify-pretty-compact: "npm:^4.0.0"
+    minimist: "npm:^1.2.8"
+    quickselect: "npm:^3.0.0"
+    rw: "npm:^1.3.3"
+    tinyqueue: "npm:^3.0.0"
+  bin:
+    gl-style-format: dist/gl-style-format.mjs
+    gl-style-migrate: dist/gl-style-migrate.mjs
+    gl-style-validate: dist/gl-style-validate.mjs
+  checksum: 10/83d0866859248d73ec6968233a5e3a5a85fb641a8985d8de03ed8fcb45c6829a9a87cddd38174a689b92677b60a7700fc3c332f32a05e1b414711cd1bdcb866f
+  languageName: node
+  linkType: hard
+
 "@maplibre/mlt@npm:^1.1.2":
   version: 1.1.2
   resolution: "@maplibre/mlt@npm:1.1.2"
@@ -11580,9 +11599,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.95.0":
-  version: 1.95.0
-  resolution: "sass@npm:1.95.0"
+"sass@npm:^1.96.0":
+  version: 1.96.0
+  resolution: "sass@npm:1.96.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -11593,7 +11612,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/27a98999e36f55b47b79a5c11fab1f9fb78411030a49e583e4853058f05253eb917f1638c8784828d47fac129d0d44bc889cf611f73a65abe40ab09b8ff7143c
+  checksum: 10/be4c0030f8f973fff5ee10bc4fdf5026a63a66a06bc540c9efffb91bead7b22c13174af765196cb73d2f175dd5f4f879afd027312bf600158c7ced6c2de1c1aa
   languageName: node
   linkType: hard
 
@@ -11792,7 +11811,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.1.0"
     "@fortawesome/react-fontawesome": "npm:^3.1.1"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.3.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^24.4.0"
     "@openfeature/core": "npm:^1.9.1"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
     "@openfeature/react-sdk": "npm:^1.0.2"
@@ -11846,7 +11865,7 @@ __metadata:
     react-router: "npm:^7.10.1"
     react-to-print: "npm:^3.2.0"
     rxjs: "npm:^7.8.2"
-    sass: "npm:^1.95.0"
+    sass: "npm:^1.96.0"
     semver: "npm:^7.7.3"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.6"
@@ -11856,7 +11875,7 @@ __metadata:
     uuid: "npm:^13.0.0"
     vite: "npm:^7.2.7"
     vite-bundle-analyzer: "npm:^1.3.1"
-    vite-plugin-biome: "npm:^1.0.12"
+    vite-plugin-biome: "npm:^1.1.0"
     vite-plugin-pwa: "npm:^1.2.0"
     vite-plugin-svgr: "npm:^4.5.0"
     vite-tsconfig-paths: "npm:^5.1.4"
@@ -13214,12 +13233,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-biome@npm:^1.0.12":
-  version: 1.0.12
-  resolution: "vite-plugin-biome@npm:1.0.12"
+"vite-plugin-biome@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "vite-plugin-biome@npm:1.1.0"
   peerDependencies:
-    "@biomejs/biome": ^1.8.0
-  checksum: 10/59cb1da8f9ebb66166474a5daebe7d50700b129c5c02b2a0fb89200a11157355aa3f4fb06d49ffec322c832a3ce0e5d77e1c70703215e9becd899072df1c71dc
+    "@biomejs/biome": ">=1.8.0"
+  checksum: 10/25e2735c7b3a39f68f0791a478f0d71fc031f0ce3675a96ff0cfb3a9449adec1081dba102597146fcf18c43b00b0fe23d7fb74c4d68b815324b2a7f2faaa8f1c
   languageName: node
   linkType: hard
 
@@ -13274,8 +13293,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^7.2.2":
-  version: 7.2.6
-  resolution: "vite@npm:7.2.6"
+  version: 7.2.7
+  resolution: "vite@npm:7.2.7"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.5.0"
@@ -13324,7 +13343,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/c640ed9c91957749287af2f483f5b5024a56718ba7cf32b0e2c398772fdf7fdb9fd5f97665c41712d4e9422c14009e283d0b69ac1b64b4f91474625bebe324de
+  checksum: 10/ec7c588db66c8a3e50a24fc26422c6ef27c2e08a0ceccd200162e45be90d7d12c0a06d8ccc8c88139a657d51be5e10ddc83df9807daf6a1362c2e5ecdaf2a07e
   languageName: node
   linkType: hard
 
