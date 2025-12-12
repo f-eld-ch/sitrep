@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.0.9 to 4.0.10 in /ui ([#1212](https://github.com/f-eld-ch/sitrep/issues/1212)) - ([956d400](https://github.com/f-eld-ch/sitrep/commit/956d400e7fa50051b51737537fb99a3fc2fc04b0))
+- *(deps)* Bump react-i18next from 16.4.0 to 16.4.1 in /ui ([#1214](https://github.com/f-eld-ch/sitrep/issues/1214)) - ([d66b627](https://github.com/f-eld-ch/sitrep/commit/d66b62725642e4a29429f03f6e87ad18471c0304))
 - *(deps)* Bump the otel group across 1 directory with 12 updates ([#1209](https://github.com/f-eld-ch/sitrep/issues/1209)) - ([8bc19d6](https://github.com/f-eld-ch/sitrep/commit/8bc19d6b022f72450096ad6ca17aa2b31700563d))
 - *(deps)* Bump i18next from 25.7.1 to 25.7.2 in /ui ([#1198](https://github.com/f-eld-ch/sitrep/issues/1198)) - ([e1cbfe9](https://github.com/f-eld-ch/sitrep/commit/e1cbfe921d5380060c364d0debe8d973fbb386b6))
 
