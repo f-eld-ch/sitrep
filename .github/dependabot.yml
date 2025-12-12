@@ -24,6 +24,10 @@ updates:
         applies-to: version-updates
         patterns:
           - "@turf/*"
+      openfeature:
+        applies-to: version-updates
+        patterns:
+          - "@openfeature/*"    
     labels:
       - "javascript"
       - "dependencies"
