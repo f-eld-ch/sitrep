@@ -7,7 +7,7 @@ updates:
     target-branch: "develop"
     schedule:
       interval: "daily"
-      time: "20:00"
+      time: "18:00"
     open-pull-requests-limit: 10
     groups:
       development-dependencies:
@@ -58,7 +58,7 @@ updates:
     target-branch: "develop"
     schedule:
       interval: "daily"
-      time: "20:00"
+      time: "18:00"
     open-pull-requests-limit: 10
     groups:
       otel:
@@ -75,8 +75,10 @@ updates:
     directory: "/"
     target-branch: "develop"
     schedule:
-      interval: "daily"
-      time: "20:00"
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(deps-dev):"
+      include: "scope"
     labels:
       - "gh-actions"
       - "dependencies"
