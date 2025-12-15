@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.7.2 to 25.7.3 in /ui ([#1228](https://github.com/f-eld-ch/sitrep/issues/1228)) - ([89934f3](https://github.com/f-eld-ch/sitrep/commit/89934f38a16297654f986db52aebde7d16925f34))
 - *(deps)* Bump react-i18next from 16.4.1 to 16.5.0 in /ui ([#1220](https://github.com/f-eld-ch/sitrep/issues/1220)) - ([7af99fe](https://github.com/f-eld-ch/sitrep/commit/7af99fe28c48a1e895964f4a7eed0f50b657d987))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.13.4 to 4.14.0 ([#1217](https://github.com/f-eld-ch/sitrep/issues/1217)) - ([563214b](https://github.com/f-eld-ch/sitrep/commit/563214bb437e6dab9add10c66509e5d607bd58c3))
 - *(deps)* Bump @apollo/client from 4.0.9 to 4.0.10 in /ui ([#1212](https://github.com/f-eld-ch/sitrep/issues/1212)) - ([956d400](https://github.com/f-eld-ch/sitrep/commit/956d400e7fa50051b51737537fb99a3fc2fc04b0))
