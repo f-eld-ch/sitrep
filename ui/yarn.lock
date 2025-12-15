@@ -2592,20 +2592,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/busboy@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "@fastify/busboy@npm:2.1.1"
-  checksum: 10/2bb8a7eca8289ed14c9eb15239bc1019797454624e769b39a0b90ed204d032403adc0f8ed0d2aef8a18c772205fa7808cf5a1b91f21c7bfc7b6032150b1062c5
-  languageName: node
-  linkType: hard
-
-"@flipt-io/flipt-client-browser@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@flipt-io/flipt-client-browser@npm:0.3.1"
-  checksum: 10/172d7acd5d6d6bd2888db32161160f73c5470167b318966616faafd37efebcea9efd909b7e9c6eae333cbaf082e5101ffc4da7a657c3e362d2a6ebfb223ccb66
-  languageName: node
-  linkType: hard
-
 "@fortawesome/fontawesome-common-types@npm:7.1.0":
   version: 7.1.0
   resolution: "@fortawesome/fontawesome-common-types@npm:7.1.0"
@@ -3466,34 +3452,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/flipt-web-provider@npm:0.1.2":
-  version: 0.1.2
-  resolution: "@openfeature/flipt-web-provider@npm:0.1.2"
-  dependencies:
-    "@flipt-io/flipt-client-browser": "npm:^0.3.1"
-    undici: "npm:^5.0.0"
+"@openfeature/flipt-web-provider@npm:0.1.5":
+  version: 0.1.5
+  resolution: "@openfeature/flipt-web-provider@npm:0.1.5"
   peerDependencies:
+    "@flipt-io/flipt-client-js": ^0.0.1 || ^0.0.2
     "@openfeature/web-sdk": ^1.0.0
-  checksum: 10/bcd7cff90bea05e4e3e74de5fcf246f7649fe70a503709bfdc5363e37f5bdd5a868e70ea664ac8615b6ef276ac005f9f6f93ff9f5855e7c6ce8e8a9a7b93f9d8
+    undici: ^5.0.0
+  checksum: 10/c9ac7be0a311cac98520a22d5931188eab6d620e021c83e9bfff644d295603dfaa1380819445b8c6205c4c558e8e2052b38824915a22e3d11e36a1546b1c2d11
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@openfeature/react-sdk@npm:1.0.2"
+"@openfeature/react-sdk@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@openfeature/react-sdk@npm:1.1.0"
   peerDependencies:
     "@openfeature/web-sdk": ^1.5.0
     react: ">=16.8.0"
-  checksum: 10/a307cc7d9e81741a569d9d5d7656e64db09ac018dca02da12432fd042922d89800d1207e6a0eee654d64bd0563a9f4f92fb48000006651c0ecf8577274b3c782
+  checksum: 10/c448ca459aa6cf112d9af41004f958d4bfc3c4bd232d7552a3193d27913feb2bae752745b4f6312ec8c37f3c36c8d3f74118081bb133e0670521d282e7ef131e
   languageName: node
   linkType: hard
 
-"@openfeature/web-sdk@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "@openfeature/web-sdk@npm:1.7.1"
+"@openfeature/web-sdk@npm:^1.7.2":
+  version: 1.7.2
+  resolution: "@openfeature/web-sdk@npm:1.7.2"
   peerDependencies:
     "@openfeature/core": ^1.9.0
-  checksum: 10/358cabfddda8bf67a9bd96ce28f0f84a3218416907f8df4f2a58750ee840d164d86a1c859e8c9aa92d132fa28fcf72a0f17ceece798ff8af297d3e1c1e30cdab
+  checksum: 10/3fc966d0523ca1941b44350d4c8a42c1b74cb035265d3574a2a6b16e87fa9edfb7211ec945b937399badad5de1e771c55ba7ce04d6eb02f265fc5a37e3af9395
   languageName: node
   linkType: hard
 
@@ -11813,9 +11798,9 @@ __metadata:
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
     "@maplibre/maplibre-gl-style-spec": "npm:^24.4.0"
     "@openfeature/core": "npm:^1.9.1"
-    "@openfeature/flipt-web-provider": "npm:0.1.2"
-    "@openfeature/react-sdk": "npm:^1.0.2"
-    "@openfeature/web-sdk": "npm:^1.7.1"
+    "@openfeature/flipt-web-provider": "npm:0.1.5"
+    "@openfeature/react-sdk": "npm:^1.1.0"
+    "@openfeature/web-sdk": "npm:^1.7.2"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
     "@testing-library/react": "npm:^16.3.0"
@@ -12853,15 +12838,6 @@ __metadata:
   version: 7.16.0
   resolution: "undici-types@npm:7.16.0"
   checksum: 10/db43439f69c2d94cc29f75cbfe9de86df87061d6b0c577ebe9bb3255f49b22c50162a7d7eb413b0458b6510b8ca299ac7cff38c3a29fbd31af9f504bcf7fbc0d
-  languageName: node
-  linkType: hard
-
-"undici@npm:^5.0.0":
-  version: 5.29.0
-  resolution: "undici@npm:5.29.0"
-  dependencies:
-    "@fastify/busboy": "npm:^2.0.0"
-  checksum: 10/0ceca8924a32acdcc0cfb8dd2d368c217840970aa3f5e314fc169608474be6341c5b8e50cad7bd257dbe3b4e432bc5d0a0d000f83644b54fa11a48735ec52b93
   languageName: node
   linkType: hard
 
