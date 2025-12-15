@@ -3385,9 +3385,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^24.4.0":
-  version: 24.4.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.4.0"
+"@maplibre/maplibre-gl-style-spec@npm:^24.4.1":
+  version: 24.4.1
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.4.1"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
     "@mapbox/unitbezier": "npm:^0.0.1"
@@ -3400,7 +3400,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/83d0866859248d73ec6968233a5e3a5a85fb641a8985d8de03ed8fcb45c6829a9a87cddd38174a689b92677b60a7700fc3c332f32a05e1b414711cd1bdcb866f
+  checksum: 10/488ed06dc00fa52905dda31e0afda60a210db309ac6268c6def25586e0c49c87c7c9a2d85b08ed0be00fbb8428ffcd1b4aecebb06f0094338e87136df09dc876
   languageName: node
   linkType: hard
 
@@ -11811,7 +11811,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.1.0"
     "@fortawesome/react-fontawesome": "npm:^3.1.1"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.4.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^24.4.1"
     "@openfeature/core": "npm:^1.9.1"
     "@openfeature/flipt-web-provider": "npm:0.1.2"
     "@openfeature/react-sdk": "npm:^1.0.2"
@@ -11873,8 +11873,8 @@ __metadata:
     undici: "npm:^7.16.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^13.0.0"
-    vite: "npm:^7.2.7"
-    vite-bundle-analyzer: "npm:^1.3.1"
+    vite: "npm:^7.3.0"
+    vite-bundle-analyzer: "npm:^1.3.2"
     vite-plugin-biome: "npm:^1.1.0"
     vite-plugin-pwa: "npm:^1.2.0"
     vite-plugin-svgr: "npm:^4.5.0"
@@ -13224,12 +13224,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-bundle-analyzer@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "vite-bundle-analyzer@npm:1.3.1"
+"vite-bundle-analyzer@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "vite-bundle-analyzer@npm:1.3.2"
   bin:
     analyze: dist/bin.js
-  checksum: 10/b41cd3b5cb9799c2677d36fd6dc864996ae318e92f8673dccdcfe019b972b98f169d5ffaba2b0f6f2f2569adf2ba919e536bb0a0194a53b7ff58b9c353932e4b
+  checksum: 10/6cc6ce94ab8954581b5936500398c154e0e91391dc5c8a45ab3aa96e02c9c0b9401f92223b9b659c38dfd024b6df1caf9e4b1a92925c5e77484c4d57dc06a0a3
   languageName: node
   linkType: hard
 
