@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the openfeature group across 1 directory with 2 updates ([#1229](https://github.com/f-eld-ch/sitrep/issues/1229)) - ([853d4a1](https://github.com/f-eld-ch/sitrep/commit/853d4a194d123c97cd0b9b0e3fb6368f7ab7da6a))
 - *(deps)* Bump i18next from 25.7.2 to 25.7.3 in /ui ([#1228](https://github.com/f-eld-ch/sitrep/issues/1228)) - ([89934f3](https://github.com/f-eld-ch/sitrep/commit/89934f38a16297654f986db52aebde7d16925f34))
 - *(deps)* Bump react-i18next from 16.4.1 to 16.5.0 in /ui ([#1220](https://github.com/f-eld-ch/sitrep/issues/1220)) - ([7af99fe](https://github.com/f-eld-ch/sitrep/commit/7af99fe28c48a1e895964f4a7eed0f50b657d987))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.13.4 to 4.14.0 ([#1217](https://github.com/f-eld-ch/sitrep/issues/1217)) - ([563214b](https://github.com/f-eld-ch/sitrep/commit/563214bb437e6dab9add10c66509e5d607bd58c3))
