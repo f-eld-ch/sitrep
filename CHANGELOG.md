@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(map)* Enable coordinate search ([#1233](https://github.com/f-eld-ch/sitrep/issues/1233)) - ([627b249](https://github.com/f-eld-ch/sitrep/commit/627b249c42d986d5926904df693fdc984a1b650b))
+
 ### ⚙️  Other
 
 - *(deps)* Bump the openfeature group across 1 directory with 2 updates ([#1229](https://github.com/f-eld-ch/sitrep/issues/1229)) - ([853d4a1](https://github.com/f-eld-ch/sitrep/commit/853d4a194d123c97cd0b9b0e3fb6368f7ab7da6a))
