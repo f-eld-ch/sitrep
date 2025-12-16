@@ -4,37 +4,39 @@ import classNames from "classnames";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
 import isEmpty from "lodash/isEmpty";
+import proj4 from "proj4";
 import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
+import { coordinateFromString } from "utils/coordinates";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
 
 interface SearchResult {
-  bbox: number[];
+  bbox?: number[];
   features: SearchFeature[];
 }
 
 interface SearchFeature {
-  bbox: number[];
+  bbox?: number[];
   geometry: {
     coordinates: number[];
     type: string;
   };
-  id: number | string;
+  id?: number | string;
   properties: {
-    detail: string;
+    detail?: string;
     label: string;
-    rank: number;
-    type: string;
-    geom_quadindex: string;
+    rank?: number;
+    type?: string;
+    geom_quadindex?: string;
     lat: number;
     lon: number;
-    objectclass: string;
-    origin: string;
-    weight: number;
-    x: number;
-    y: number;
-    zoomlevel: number;
+    objectclass?: string;
+    origin?: string;
+    weight?: number;
+    x?: number;
+    y?: number;
+    zoomlevel?: number;
   };
 }
 
@@ -80,7 +82,48 @@ function SearchControl() {
         setSearchResults([]);
       });
   };
-  const debouncedSearch = debounce(search, 1000);
+
+  const executeSearch = (input: string) => {
+    try {
+      const coord = coordinateFromString(input);
+      if (coord) {
+        console.log("Flying to coordinate:", coord);
+        // reproject the coordinate to WGS84 for maplibre
+        const transformed = proj4(
+          coord.coordinateSystem.epsg,
+          "EPSG:4326",
+          coord.coordinate,
+        );
+
+        if (transformed) {
+          const searchResult: SearchResult = {
+            features: [
+              {
+                geometry: {
+                  coordinates: transformed,
+                  type: "Point",
+                },
+                properties: {
+                  label: `${coord.coordinateSystem.label} <strong>${coord.coordinate[1].toFixed(3)}, ${coord.coordinate[0].toFixed(3)}</strong>`,
+                  detail: "",
+                  lat: transformed[1],
+                  lon: transformed[0],
+                },
+              },
+            ] as SearchFeature[],
+          };
+          setSearchResults(searchResult.features);
+        }
+      } else {
+        search(input);
+      }
+    } catch (error) {
+      console.error("Error parsing coordinate:", error);
+      search(input);
+    }
+  };
+
+  const debouncedSearch = debounce(executeSearch, 1000);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -106,7 +149,7 @@ function SearchControl() {
                 value={input}
                 placeholder=""
                 onChange={onChange}
-                onKeyDown={(e) => e.key === "Enter" && search(input)}
+                onKeyDown={(e) => e.key === "Enter" && executeSearch(input)}
               />
               <span className="icon is-left">
                 <FontAwesomeIcon icon={faSearch} />
