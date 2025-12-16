@@ -12,7 +12,8 @@
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "includes": ["src/**", "!src/i18n/locales/**"]
   },
   "assist": {
     "actions": {
