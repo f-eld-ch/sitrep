@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.0.10 to 4.0.11 in /ui ([#1236](https://github.com/f-eld-ch/sitrep/issues/1236)) - ([1864308](https://github.com/f-eld-ch/sitrep/commit/18643080d4679232ba14b40645af38c075307fb7))
 - *(deps)* Bump the openfeature group across 1 directory with 2 updates ([#1229](https://github.com/f-eld-ch/sitrep/issues/1229)) - ([853d4a1](https://github.com/f-eld-ch/sitrep/commit/853d4a194d123c97cd0b9b0e3fb6368f7ab7da6a))
 - *(deps)* Bump i18next from 25.7.2 to 25.7.3 in /ui ([#1228](https://github.com/f-eld-ch/sitrep/issues/1228)) - ([89934f3](https://github.com/f-eld-ch/sitrep/commit/89934f38a16297654f986db52aebde7d16925f34))
 - *(deps)* Bump react-i18next from 16.4.1 to 16.5.0 in /ui ([#1220](https://github.com/f-eld-ch/sitrep/issues/1220)) - ([7af99fe](https://github.com/f-eld-ch/sitrep/commit/7af99fe28c48a1e895964f4a7eed0f50b657d987))
