@@ -7109,12 +7109,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-check@npm:^4.4.0":
-  version: 4.4.0
-  resolution: "fast-check@npm:4.4.0"
+"fast-check@npm:^4.5.2":
+  version: 4.5.2
+  resolution: "fast-check@npm:4.5.2"
   dependencies:
     pure-rand: "npm:^7.0.0"
-  checksum: 10/2782ba964313335b01b32ba4fd9cd435fc809bb4edb6bf778255c505880625edc92869f4f64eea20484b49c300c37f1f35711fdb9d868295ed23ae4d425209eb
+  checksum: 10/20193f70f4087641f82ca8aede1a395fb974fe170c317f589bf2614e2bb98ef16873b27091e8359c2cc79d59f9c32f042e84b1eef13053068ee94150bf08a0bb
   languageName: node
   linkType: hard
 
@@ -11769,9 +11769,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.97.0":
-  version: 1.97.0
-  resolution: "sass@npm:1.97.0"
+"sass@npm:^1.97.1":
+  version: 1.97.1
+  resolution: "sass@npm:1.97.1"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -11782,7 +11782,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10/f740cc373c0760eb7cd04989a508381123708c0c3b0bb7d3df9a20900345b24f47c36103d41ef875fa7d99c7f7960a3190a078a695701d0c749d4c29302b7d91
+  checksum: 10/c493d08f63ecd82b6db94bed16c1fffc0cccf94fc30f73f0f09fa6023a811cafb3862697d8a24264b511541474d2be5fac7ddba00ed56738d13f1837c93721b5
   languageName: node
   linkType: hard
 
@@ -12013,7 +12013,7 @@ __metadata:
     bulma: "npm:^1.0.4"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.19"
-    fast-check: "npm:^4.4.0"
+    fast-check: "npm:^4.5.2"
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^16.5.0"
     graphql: "npm:^16.12.0"
@@ -12040,7 +12040,7 @@ __metadata:
     react-router: "npm:^7.11.0"
     react-to-print: "npm:^3.2.0"
     rxjs: "npm:^7.8.2"
-    sass: "npm:^1.97.0"
+    sass: "npm:^1.97.1"
     semver: "npm:^7.7.3"
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.6"
