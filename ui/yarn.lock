@@ -1984,13 +1984,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.27.6":
-  version: 7.27.6
-  resolution: "@babel/runtime@npm:7.27.6"
-  checksum: 10/cc957a12ba3781241b83d528eb69ddeb86ca5ac43179a825e83aa81263a6b3eb88c57bed8a937cdeacfc3192e07ec24c73acdfea4507d0c0428c8e23d6322bfe
-  languageName: node
-  linkType: hard
-
 "@babel/runtime@npm:^7.28.4":
   version: 7.28.4
   resolution: "@babel/runtime@npm:7.28.4"
@@ -11141,11 +11134,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^16.5.0":
-  version: 16.5.0
-  resolution: "react-i18next@npm:16.5.0"
+"react-i18next@npm:^16.5.1":
+  version: 16.5.1
+  resolution: "react-i18next@npm:16.5.1"
   dependencies:
-    "@babel/runtime": "npm:^7.27.6"
+    "@babel/runtime": "npm:^7.28.4"
     html-parse-stringify: "npm:^3.0.1"
     use-sync-external-store: "npm:^1.6.0"
   peerDependencies:
@@ -11159,7 +11152,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/1c0cebe33dece1ebe9683acf7437b013dd9c42837c2bfd862f1304f1704d5aba40051ed0c2b5989bcf096da828eacd9ca751a234b340dac1c2bbbeb285a40bda
+  checksum: 10/c316a30f9f2b9e5078e196e8b137216a821fd61507ab37fcf9f4445616cedb6fe978d164c134db1d69e24ab5d13bb2d1166eaa018e2c862c1703b9ff75604d79
   languageName: node
   linkType: hard
 
@@ -12034,7 +12027,7 @@ __metadata:
     react-autocomplete-hint: "npm:^2.0.0"
     react-color: "npm:^2.19.3"
     react-dom: "npm:^19.2.1"
-    react-i18next: "npm:^16.5.0"
+    react-i18next: "npm:^16.5.1"
     react-map-gl: "npm:~8.1.0"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.11.0"
