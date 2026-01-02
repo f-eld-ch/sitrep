@@ -6,18 +6,18 @@ import classNames from "classnames";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./StyleController.scss";
+import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
-import type { StyleSpecification } from "maplibre-gl";
 
 export const MapStyles: MapStyle[] = [
   {
     name: "Basiskarte",
-    style: ExpandRelativeURLs(basisKarte as StyleSpecification),
+    style: ExpandRelativeURLs(basisKarte as unknown as StyleSpecification),
   },
   {
     name: "Satellit",
-    style: ExpandRelativeURLs(basisKarteImagery as StyleSpecification),
+    style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
   },
 ];
 
