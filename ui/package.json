@@ -38,7 +38,7 @@
     "maplibre-gl": "5.15.0",
     "ol": "^10.7.0",
     "proj4": "^2.20.2",
-    "react": "^19.2.1",
+    "react": "^19.2.3",
     "react-autocomplete-hint": "^2.0.0",
     "react-color": "^2.19.3",
     "react-dom": "^19.2.1",
