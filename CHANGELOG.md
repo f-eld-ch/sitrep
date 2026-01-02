@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react from 19.2.1 to 19.2.3 in /ui ([#1247](https://github.com/f-eld-ch/sitrep/issues/1247)) - ([86154ac](https://github.com/f-eld-ch/sitrep/commit/86154ac44a64c51b1a0e2bea368280c549ba7387))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.14.0 to 4.15.0 ([#1250](https://github.com/f-eld-ch/sitrep/issues/1250)) - ([bf8f58b](https://github.com/f-eld-ch/sitrep/commit/bf8f58b0739d1b1b8d7a666cb5f02e65add02e5d))
 - *(deps)* Bump maplibre-gl from 5.14.0 to 5.15.0 in /ui ([#1239](https://github.com/f-eld-ch/sitrep/issues/1239)) - ([3d67724](https://github.com/f-eld-ch/sitrep/commit/3d6772409eb3146064d51d45aaaaf441d07c66dd))
 - *(deps)* Bump react-i18next from 16.5.0 to 16.5.1 in /ui ([#1249](https://github.com/f-eld-ch/sitrep/issues/1249)) - ([376167f](https://github.com/f-eld-ch/sitrep/commit/376167fa8ddea3afb182864d0f4a6c621618bc77))
