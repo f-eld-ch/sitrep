@@ -12031,7 +12031,7 @@ __metadata:
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.6"
     typescript: "npm:^5.9.3"
-    undici: "npm:^7.16.0"
+    undici: "npm:^7.18.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^13.0.0"
     vite: "npm:^7.3.0"
@@ -13035,10 +13035,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.16.0":
-  version: 7.16.0
-  resolution: "undici@npm:7.16.0"
-  checksum: 10/2bb71672b23d3dc0f56f1b7fb6c936e4487a350db46eaafc03f2f9107f99cdf8e51ecdd32e589e2381ef47a64b6369cfb31f328b2c3ea663023aa47bc5258b9e
+"undici@npm:^7.18.0":
+  version: 7.18.0
+  resolution: "undici@npm:7.18.0"
+  checksum: 10/a9eacbb7e8fc0d47f4d49a2de8a4e903978248f12d680465682343897405600ba54d88c2840ac36ac5a91e3a8e12bfa4510ca9ded1d960f48fcd9367c3848614
   languageName: node
   linkType: hard
 
