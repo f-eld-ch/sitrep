@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.16.0 to 7.18.0 in /ui ([#1254](https://github.com/f-eld-ch/sitrep/issues/1254)) - ([85404fa](https://github.com/f-eld-ch/sitrep/commit/85404fa80f51205c88abd1cd4b61de9a6095ad7d))
 - *(deps)* Bump react from 19.2.1 to 19.2.3 in /ui ([#1247](https://github.com/f-eld-ch/sitrep/issues/1247)) - ([86154ac](https://github.com/f-eld-ch/sitrep/commit/86154ac44a64c51b1a0e2bea368280c549ba7387))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.14.0 to 4.15.0 ([#1250](https://github.com/f-eld-ch/sitrep/issues/1250)) - ([bf8f58b](https://github.com/f-eld-ch/sitrep/commit/bf8f58b0739d1b1b8d7a666cb5f02e65add02e5d))
 - *(deps)* Bump maplibre-gl from 5.14.0 to 5.15.0 in /ui ([#1239](https://github.com/f-eld-ch/sitrep/issues/1239)) - ([3d67724](https://github.com/f-eld-ch/sitrep/commit/3d6772409eb3146064d51d45aaaaf441d07c66dd))
