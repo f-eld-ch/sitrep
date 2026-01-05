@@ -7095,12 +7095,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-check@npm:^4.5.2":
-  version: 4.5.2
-  resolution: "fast-check@npm:4.5.2"
+"fast-check@npm:^4.5.3":
+  version: 4.5.3
+  resolution: "fast-check@npm:4.5.3"
   dependencies:
     pure-rand: "npm:^7.0.0"
-  checksum: 10/20193f70f4087641f82ca8aede1a395fb974fe170c317f589bf2614e2bb98ef16873b27091e8359c2cc79d59f9c32f042e84b1eef13053068ee94150bf08a0bb
+  checksum: 10/005117cc3fbaf8f5bbe153f8f989337d36b85953cefae1973ab0c51e9e259a7a0456155e742716f8609ab74c4e18ee9fb9dcd618c52a9014cd4bd3952a296188
   languageName: node
   linkType: hard
 
@@ -11999,7 +11999,7 @@ __metadata:
     bulma: "npm:^1.0.4"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.19"
-    fast-check: "npm:^4.5.2"
+    fast-check: "npm:^4.5.3"
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^17.0.0"
     graphql: "npm:^16.12.0"
