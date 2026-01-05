@@ -118,7 +118,7 @@
   "resolutions": {
     "brace-expansion": "2.0.2",
     "dompurify": "3.3.0",
-    "jspdf": "3.0.3",
+    "jspdf": "^4.0.0",
     "maplibre-gl": "5.15.0",
     "sharp": "^0.34.5",
     "js-yaml": "^4.1.1",

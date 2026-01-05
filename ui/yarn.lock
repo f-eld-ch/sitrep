@@ -1977,13 +1977,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.26.9":
-  version: 7.28.3
-  resolution: "@babel/runtime@npm:7.28.3"
-  checksum: 10/f2415e4dbface7496f6fc561d640b44be203071fb0dfb63fbe338c7d2d2047419cb054ef13d1ebb8fc11e35d2b55aa3045def4b985e8b82aea5d7e58e1133e52
-  languageName: node
-  linkType: hard
-
 "@babel/runtime@npm:^7.28.4":
   version: 7.28.4
   resolution: "@babel/runtime@npm:7.28.4"
@@ -9307,11 +9300,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:3.0.3":
-  version: 3.0.3
-  resolution: "jspdf@npm:3.0.3"
+"jspdf@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jspdf@npm:4.0.0"
   dependencies:
-    "@babel/runtime": "npm:^7.26.9"
+    "@babel/runtime": "npm:^7.28.4"
     canvg: "npm:^3.0.11"
     core-js: "npm:^3.6.0"
     dompurify: "npm:^3.2.4"
@@ -9327,7 +9320,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: 10/342e2fd93ca054c07c453f9becba7adf32d717fb704e4c870705eba8ed58ea359959a98d9eab96558f5a8f5a9118f3fdda3a5b31a0f287b831ed99b927118219
+  checksum: 10/c62d3ff32b450e184e8d535dfd71fccd38b457b1be3886839d18a8975f077f3f16b0b5fd7dd2f75416dc6a324608488cd3d5a20fb8ac7e44341adbdbbff20301
   languageName: node
   linkType: hard
 
