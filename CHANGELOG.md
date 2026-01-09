@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router ([#1263](https://github.com/f-eld-ch/sitrep/issues/1263)) - ([12b7559](https://github.com/f-eld-ch/sitrep/commit/12b7559867bb689bd4159e13ddef4c963914406d))
 - *(deps)* Bump react-router from 7.11.0 to 7.12.0 in /ui ([#1260](https://github.com/f-eld-ch/sitrep/issues/1260)) - ([f36816b](https://github.com/f-eld-ch/sitrep/commit/f36816ba417eda7d9c714938c0bb82c4ed02c5fc))
 - *(deps)* Bump github.com/samber/slog-multi from 1.6.0 to 1.7.0 ([#1258](https://github.com/f-eld-ch/sitrep/issues/1258)) - ([5439596](https://github.com/f-eld-ch/sitrep/commit/54395964693f3a4ef78fbd603753e4352fb9abf5))
 - *(deps)* Bump undici from 7.18.0 to 7.18.2 in /ui ([#1257](https://github.com/f-eld-ch/sitrep/issues/1257)) - ([b67844c](https://github.com/f-eld-ch/sitrep/commit/b67844c31b7d69ab332c9544dfe2b41bd36151fa))
