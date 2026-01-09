@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/samber/slog-multi from 1.6.0 to 1.7.0 ([#1258](https://github.com/f-eld-ch/sitrep/issues/1258)) - ([5439596](https://github.com/f-eld-ch/sitrep/commit/54395964693f3a4ef78fbd603753e4352fb9abf5))
+- *(deps)* Bump undici from 7.18.0 to 7.18.2 in /ui ([#1257](https://github.com/f-eld-ch/sitrep/issues/1257)) - ([b67844c](https://github.com/f-eld-ch/sitrep/commit/b67844c31b7d69ab332c9544dfe2b41bd36151fa))
+
+
 ## [26.1.0](https://github.com/f-eld-ch/sitrep/compare/v25.12.1..v26.1.0) - 2026-01-05
 
 ### ⛰️  Features
