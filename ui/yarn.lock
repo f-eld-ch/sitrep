@@ -2597,20 +2597,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/busboy@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "@fastify/busboy@npm:2.1.1"
-  checksum: 10/2bb8a7eca8289ed14c9eb15239bc1019797454624e769b39a0b90ed204d032403adc0f8ed0d2aef8a18c772205fa7808cf5a1b91f21c7bfc7b6032150b1062c5
-  languageName: node
-  linkType: hard
-
-"@flipt-io/flipt-client-browser@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@flipt-io/flipt-client-browser@npm:0.3.1"
-  checksum: 10/172d7acd5d6d6bd2888db32161160f73c5470167b318966616faafd37efebcea9efd909b7e9c6eae333cbaf082e5101ffc4da7a657c3e362d2a6ebfb223ccb66
-  languageName: node
-  linkType: hard
-
 "@fortawesome/fontawesome-common-types@npm:7.1.0":
   version: 7.1.0
   resolution: "@fortawesome/fontawesome-common-types@npm:7.1.0"
@@ -3452,15 +3438,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/flipt-web-provider@npm:0.1.2":
-  version: 0.1.2
-  resolution: "@openfeature/flipt-web-provider@npm:0.1.2"
-  dependencies:
-    "@flipt-io/flipt-client-browser": "npm:^0.3.1"
-    undici: "npm:^5.0.0"
+"@openfeature/flipt-web-provider@npm:0.1.6":
+  version: 0.1.6
+  resolution: "@openfeature/flipt-web-provider@npm:0.1.6"
   peerDependencies:
+    "@flipt-io/flipt-client-js": ^0.0.1 || ^0.0.2 || ^0.0.6 || ^0.2.0
     "@openfeature/web-sdk": ^1.0.0
-  checksum: 10/bcd7cff90bea05e4e3e74de5fcf246f7649fe70a503709bfdc5363e37f5bdd5a868e70ea664ac8615b6ef276ac005f9f6f93ff9f5855e7c6ce8e8a9a7b93f9d8
+  checksum: 10/fb9467d1441d0e30c00bf7a389a4dcbfb38a78a724449ca1eb3fab125daccab00af78b608a338a9bfc4737ab9bd1c0f53a773e4b3601077e01bdd8e4e56f4a48
   languageName: node
   linkType: hard
 
@@ -11962,7 +11946,7 @@ __metadata:
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
     "@maplibre/maplibre-gl-style-spec": "npm:^24.4.1"
     "@openfeature/core": "npm:^1.9.1"
-    "@openfeature/flipt-web-provider": "npm:0.1.2"
+    "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.1.0"
     "@openfeature/web-sdk": "npm:^1.7.2"
     "@testing-library/dom": "npm:^10.4.1"
@@ -13016,15 +13000,6 @@ __metadata:
   version: 7.16.0
   resolution: "undici-types@npm:7.16.0"
   checksum: 10/db43439f69c2d94cc29f75cbfe9de86df87061d6b0c577ebe9bb3255f49b22c50162a7d7eb413b0458b6510b8ca299ac7cff38c3a29fbd31af9f504bcf7fbc0d
-  languageName: node
-  linkType: hard
-
-"undici@npm:^5.0.0":
-  version: 5.29.0
-  resolution: "undici@npm:5.29.0"
-  dependencies:
-    "@fastify/busboy": "npm:^2.0.0"
-  checksum: 10/0ceca8924a32acdcc0cfb8dd2d368c217840970aa3f5e314fc169608474be6341c5b8e50cad7bd257dbe3b4e432bc5d0a0d000f83644b54fa11a48735ec52b93
   languageName: node
   linkType: hard
 
