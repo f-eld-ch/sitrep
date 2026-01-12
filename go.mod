@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/slog-multi v1.7.0
 	github.com/spf13/viper v1.21.0
-	github.com/zitadel/oidc/v3 v3.45.1
+	github.com/zitadel/oidc/v3 v3.45.3
 	go.opentelemetry.io/contrib/bridges/otelslog v0.14.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.64.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0
@@ -51,7 +51,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/zitadel/logging v0.6.2 // indirect
-	github.com/zitadel/schema v1.3.1 // indirect
+	github.com/zitadel/schema v1.3.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
@@ -59,9 +59,9 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/oauth2 v0.33.0 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
