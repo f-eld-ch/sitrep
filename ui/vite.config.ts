@@ -42,7 +42,7 @@ export default defineConfig({
             "@fortawesome/react-fontawesome",
             "lodash",
           ],
-          flipt: ["@flipt-io/flipt-client-browser"],
+          flipt: ["@flipt-io/flipt-client-js"],
         },
         assetFileNames: "assets/[name]-[hash][extname]",
         chunkFileNames: "assets/[name]-[hash].js",
