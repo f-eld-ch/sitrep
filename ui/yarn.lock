@@ -52,9 +52,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^4.0.11":
-  version: 4.0.11
-  resolution: "@apollo/client@npm:4.0.11"
+"@apollo/client@npm:^4.0.12":
+  version: 4.0.12
+  resolution: "@apollo/client@npm:4.0.12"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@wry/caches": "npm:^1.0.0"
@@ -79,7 +79,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 10/23a0ef189ff40465473c0b569dfa99cd11d3c74b2d07f9a6e2a96e5a1b4c24b836d52b08b464cb11a27c927dd8c8a034d1307cc3f40363253ceeaba81a6a6544
+  checksum: 10/2f781b81f959fd9ba1320448ad8f6542cedf87e6c97ffe18e466d1a24ef5988343e0c5605cb59bd1c5ec77844d7a8a10e37d6c28e6e8d65c1bddf601617beb89
   languageName: node
   linkType: hard
 
@@ -11988,7 +11988,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sitrep@workspace:."
   dependencies:
-    "@apollo/client": "npm:^4.0.11"
+    "@apollo/client": "npm:^4.0.12"
     "@biomejs/biome": "npm:2.3.11"
     "@fast-check/vitest": "npm:^0.2.4"
     "@flipt-io/flipt-client-js": "npm:^0.4.0"
