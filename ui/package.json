@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@apollo/client": "^4.0.11",
+    "@flipt-io/flipt-client-js": "^0.4.0",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
