@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(ui)* Use proper targetingKey for featureflag evaluation - ([b76338a](https://github.com/f-eld-ch/sitrep/commit/b76338aec6d51fd223f651125f9dfd6de2e080cd))
+
 ### ⚙️  Other
 
 - *(deps)* Downgrade to @flipt-io/flipt-client-js 0.2.0 - ([37a47e1](https://github.com/f-eld-ch/sitrep/commit/37a47e1c55ab6f1e1bb4378e4d59fcadd10899b9))
