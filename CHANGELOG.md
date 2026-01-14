@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.0.11 to 4.0.12 in /ui ([#1269](https://github.com/f-eld-ch/sitrep/issues/1269)) - ([951785f](https://github.com/f-eld-ch/sitrep/commit/951785f01ce675c4d078e532b3f70c4824d58c83))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.1 to 3.45.3 ([#1265](https://github.com/f-eld-ch/sitrep/issues/1265)) - ([939126b](https://github.com/f-eld-ch/sitrep/commit/939126b2c4b0bebf8f29cacb5da9cc79380d5332))
+- *(deps)* Bump maplibre-gl from 5.15.0 to 5.16.0 in /ui ([#1267](https://github.com/f-eld-ch/sitrep/issues/1267)) - ([f2759ec](https://github.com/f-eld-ch/sitrep/commit/f2759ece8137afd0d217d43ce0ca3e85d52612b7))
 - *(deps)* Bump @openfeature/flipt-web-provider from 0.1.2 to 0.1.6 in /ui in the openfeature group ([#1259](https://github.com/f-eld-ch/sitrep/issues/1259)) - ([9000a1e](https://github.com/f-eld-ch/sitrep/commit/9000a1ecc15aeb9284333ea08423268e6ce44591))
 - *(deps)* Bump i18next from 25.7.3 to 25.7.4 in /ui ([#1262](https://github.com/f-eld-ch/sitrep/issues/1262)) - ([4823f56](https://github.com/f-eld-ch/sitrep/commit/4823f56e35e5bbb378346c519ca5e9f6ef6e5a8b))
 - *(deps)* Bump react-router ([#1263](https://github.com/f-eld-ch/sitrep/issues/1263)) - ([12b7559](https://github.com/f-eld-ch/sitrep/commit/12b7559867bb689bd4159e13ddef4c963914406d))
