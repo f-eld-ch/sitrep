@@ -88,7 +88,7 @@
     "@types/hat": "^0.0.4",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.23",
-    "@types/node": "^24.10.2",
+    "@types/node": "^25.0.8",
     "@types/react": "^19.2.8",
     "@types/react-color": "^3.0.13",
     "@types/react-dom": "^19.2.3",
