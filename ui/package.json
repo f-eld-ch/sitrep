@@ -25,7 +25,7 @@
     "@turf/helpers": "^7.3.2",
     "@turf/line-split": "^7.3.2",
     "@types/mapbox__mapbox-gl-draw": "^1.4.9",
-    "@watergis/maplibre-gl-export": "~4.1.0",
+    "@watergis/maplibre-gl-export": "~4.1.1",
     "bulma": "^1.0.4",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.19",
