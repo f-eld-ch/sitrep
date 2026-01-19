@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the turf group in /ui with 7 updates ([#1272](https://github.com/f-eld-ch/sitrep/issues/1272)) - ([e81f649](https://github.com/f-eld-ch/sitrep/commit/e81f64906153c5c66e1c5fd0147891a637873475))
 - *(deps)* Downgrade to @flipt-io/flipt-client-js 0.2.0 - ([37a47e1](https://github.com/f-eld-ch/sitrep/commit/37a47e1c55ab6f1e1bb4378e4d59fcadd10899b9))
 - *(deps)* Bump react-i18next from 16.5.1 to 16.5.2 in /ui ([#1268](https://github.com/f-eld-ch/sitrep/issues/1268)) - ([eafa3ad](https://github.com/f-eld-ch/sitrep/commit/eafa3ad8a4ac7429df6888bf1f4a581c546d9257))
 - *(deps)* Bump @apollo/client from 4.0.11 to 4.0.12 in /ui ([#1269](https://github.com/f-eld-ch/sitrep/issues/1269)) - ([951785f](https://github.com/f-eld-ch/sitrep/commit/951785f01ce675c4d078e532b3f70c4824d58c83))
