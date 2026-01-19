@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#1280](https://github.com/f-eld-ch/sitrep/issues/1280)) - ([1e7efd3](https://github.com/f-eld-ch/sitrep/commit/1e7efd300d34c39f10572be11c0e67cfb454ac28))
 - *(deps)* Bump react-i18next from 16.5.2 to 16.5.3 in /ui ([#1273](https://github.com/f-eld-ch/sitrep/issues/1273)) - ([4e3d506](https://github.com/f-eld-ch/sitrep/commit/4e3d5068d69949eb625ab48feab3ae79c547b4d7))
 - *(deps)* Bump @apollo/client from 4.0.12 to 4.1.0 in /ui ([#1277](https://github.com/f-eld-ch/sitrep/issues/1277)) - ([ab49209](https://github.com/f-eld-ch/sitrep/commit/ab49209f38184063b84df76bdc3ffd6d5924cadd))
 - *(deps)* Bump the turf group in /ui with 7 updates ([#1272](https://github.com/f-eld-ch/sitrep/issues/1272)) - ([e81f649](https://github.com/f-eld-ch/sitrep/commit/e81f64906153c5c66e1c5fd0147891a637873475))
