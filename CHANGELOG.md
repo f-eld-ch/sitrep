@@ -6,6 +6,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.1.0 to 4.1.1 in /ui ([#1284](https://github.com/f-eld-ch/sitrep/issues/1284)) - ([9d76a06](https://github.com/f-eld-ch/sitrep/commit/9d76a06e808e09784ab8722261a92318a9e96a10))
+- *(deps)* Bump i18next from 25.7.4 to 25.8.0 in /ui ([#1285](https://github.com/f-eld-ch/sitrep/issues/1285)) - ([cadafd4](https://github.com/f-eld-ch/sitrep/commit/cadafd4a53c12ba97eb2bd39a34181476820b627))
+- *(deps)* Bump @openfeature/react-sdk in /ui in the openfeature group ([#1279](https://github.com/f-eld-ch/sitrep/issues/1279)) - ([83e84fb](https://github.com/f-eld-ch/sitrep/commit/83e84fb0b3770ee510a6c1532777f878e4f1a84e))
 - *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#1280](https://github.com/f-eld-ch/sitrep/issues/1280)) - ([1e7efd3](https://github.com/f-eld-ch/sitrep/commit/1e7efd300d34c39f10572be11c0e67cfb454ac28))
 - *(deps)* Bump react-i18next from 16.5.2 to 16.5.3 in /ui ([#1273](https://github.com/f-eld-ch/sitrep/issues/1273)) - ([4e3d506](https://github.com/f-eld-ch/sitrep/commit/4e3d5068d69949eb625ab48feab3ae79c547b4d7))
 - *(deps)* Bump @apollo/client from 4.0.12 to 4.1.0 in /ui ([#1277](https://github.com/f-eld-ch/sitrep/issues/1277)) - ([ab49209](https://github.com/f-eld-ch/sitrep/commit/ab49209f38184063b84df76bdc3ffd6d5924cadd))
