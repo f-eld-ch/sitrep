@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump lodash-es ([#1289](https://github.com/f-eld-ch/sitrep/issues/1289)) - ([020e433](https://github.com/f-eld-ch/sitrep/commit/020e4336c7d6a091f7c5a6a54870bbda00608e3e))
 - *(deps)* Bump undici from 7.18.2 to 7.19.0 in /ui ([#1288](https://github.com/f-eld-ch/sitrep/issues/1288)) - ([b19ad8f](https://github.com/f-eld-ch/sitrep/commit/b19ad8f08220321c1aaeebe4d06919ae1869faf5))
 - *(deps)* Bump @apollo/client from 4.1.1 to 4.1.2 in /ui ([#1286](https://github.com/f-eld-ch/sitrep/issues/1286)) - ([a1c81be](https://github.com/f-eld-ch/sitrep/commit/a1c81be6f5e5f6058d52515e8254440c4d79d57e))
 - *(deps)* Bump @apollo/client from 4.1.0 to 4.1.1 in /ui ([#1284](https://github.com/f-eld-ch/sitrep/issues/1284)) - ([9d76a06](https://github.com/f-eld-ch/sitrep/commit/9d76a06e808e09784ab8722261a92318a9e96a10))
