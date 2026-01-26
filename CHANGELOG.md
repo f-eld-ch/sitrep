@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.19.0 to 7.19.1 in /ui ([#1295](https://github.com/f-eld-ch/sitrep/issues/1295)) - ([9904e4d](https://github.com/f-eld-ch/sitrep/commit/9904e4df4f6adc0fdacd0bbae64d1756ca0ce0dc))
 - *(deps)* Bump html-react-parser from 5.2.11 to 5.2.12 in /ui ([#1294](https://github.com/f-eld-ch/sitrep/issues/1294)) - ([e76216f](https://github.com/f-eld-ch/sitrep/commit/e76216fad0cf3090cbb41c6ac6dea9b9fe73b1d8))
 - *(deps)* Bump react from 19.2.3 to 19.2.4 in /ui ([#1296](https://github.com/f-eld-ch/sitrep/issues/1296)) - ([3308b10](https://github.com/f-eld-ch/sitrep/commit/3308b10838424958a637308c8be118690654f3eb))
 - *(deps)* Bump lodash ([#1291](https://github.com/f-eld-ch/sitrep/issues/1291)) - ([bf79d59](https://github.com/f-eld-ch/sitrep/commit/bf79d590f74502beb93fb169d0dbef4f327d119e))
