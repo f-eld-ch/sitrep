@@ -4834,12 +4834,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.2.9":
-  version: 19.2.9
-  resolution: "@types/react@npm:19.2.9"
+"@types/react@npm:^19.2.10":
+  version: 19.2.10
+  resolution: "@types/react@npm:19.2.10"
   dependencies:
     csstype: "npm:^3.2.2"
-  checksum: 10/580a4acf91cb596edfcf280e3d94380bd5bc675fdce257787432cc77ab67440374fd17a1abde869f3bd47ec1705bf2d66e442a9e9e371603f628e34f9d5790a6
+  checksum: 10/0e34a0e42db02f4b3f4bed446128c555446c2854b833d71d597e6c8b08800dd90519a03a226ad250cccc4a0c9e51bd3f9c54cdcb79ee1219f4d5b318fb3a3813
   languageName: node
   linkType: hard
 
@@ -7573,10 +7573,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^17.1.0":
-  version: 17.1.0
-  resolution: "globals@npm:17.1.0"
-  checksum: 10/6e77442a3b80b41b11fb4f986326f0487b9872dee6852cc9373e01696787889f4648d2264a125504315a645be0dde61625200e422b5b8002c106ffbabaaf8fdc
+"globals@npm:^17.2.0":
+  version: 17.2.0
+  resolution: "globals@npm:17.2.0"
+  checksum: 10/2812d7ae9a2889da33cad5188e6fe7c2d1a615e62d8e2092fbaa76a016536c2fcd72aba25896d8c6112fa0f2d95f005f59bf1dfc81ee014fe1ba54326ce14e57
   languageName: node
   linkType: hard
 
@@ -12035,7 +12035,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.23"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
     "@types/node": "npm:^25.0.10"
-    "@types/react": "npm:^19.2.9"
+    "@types/react": "npm:^19.2.10"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^19.2.3"
     "@types/semver": "npm:^7.7.1"
@@ -12048,7 +12048,7 @@ __metadata:
     dayjs: "npm:^1.11.19"
     fast-check: "npm:^4.5.3"
     git-rev-sync: "npm:^3.0.2"
-    globals: "npm:^17.1.0"
+    globals: "npm:^17.2.0"
     graphql: "npm:^16.12.0"
     hat: "npm:^0.0.3"
     html-react-parser: "npm:^5.2.12"
