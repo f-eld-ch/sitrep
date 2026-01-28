@@ -7857,9 +7857,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^5.2.12":
-  version: 5.2.12
-  resolution: "html-react-parser@npm:5.2.12"
+"html-react-parser@npm:^5.2.14":
+  version: 5.2.14
+  resolution: "html-react-parser@npm:5.2.14"
   dependencies:
     domhandler: "npm:5.0.3"
     html-dom-parser: "npm:5.1.4"
@@ -7871,7 +7871,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/3214d2399addabf79f86c3f61b7161cd4f1bc483d7341ae66509618c40184ff20236636f2ac6a380a21b9875f91f91861020087c60f4cf7cb56b3ea57f18f0af
+  checksum: 10/992d7362f0cc8a8987c844a2f317e779215cf49b01f54400ccb750f519bb867fa9ce157be4d0c3daf21e0e217cee6b752fdca473c7a7decd70f53c995952afaf
   languageName: node
   linkType: hard
 
@@ -12051,7 +12051,7 @@ __metadata:
     globals: "npm:^17.1.0"
     graphql: "npm:^16.12.0"
     hat: "npm:^0.0.3"
-    html-react-parser: "npm:^5.2.12"
+    html-react-parser: "npm:^5.2.14"
     husky: "npm:^9.1.7"
     i18next: "npm:^25.8.0"
     i18next-browser-languagedetector: "npm:^8.2.0"
