@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the turf group in /ui with 7 updates ([#1307](https://github.com/f-eld-ch/sitrep/issues/1307)) - ([34805ca](https://github.com/f-eld-ch/sitrep/commit/34805ca92199eea0e1f9c38d310a011e8bb9d524))
 - *(deps)* Bump undici from 7.19.1 to 7.20.0 in /ui ([#1311](https://github.com/f-eld-ch/sitrep/issues/1311)) - ([2d0d1ab](https://github.com/f-eld-ch/sitrep/commit/2d0d1ab291c8a5c571ba269b6c9444394bb7bee5))
 - *(deps)* Bump github.com/samber/slog-multi from 1.7.0 to 1.7.1 ([#1315](https://github.com/f-eld-ch/sitrep/issues/1315)) - ([a2032ec](https://github.com/f-eld-ch/sitrep/commit/a2032ec1ac019ec8594499bb118eeb6212bbf561))
 - *(deps)* Bump @apollo/client from 4.1.2 to 4.1.3 in /ui ([#1310](https://github.com/f-eld-ch/sitrep/issues/1310)) - ([24a10f0](https://github.com/f-eld-ch/sitrep/commit/24a10f0762fc8de07713433de4f25bda66386930))
