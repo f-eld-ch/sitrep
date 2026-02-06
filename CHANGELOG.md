@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @isaacs/brace-expansion ([#1322](https://github.com/f-eld-ch/sitrep/issues/1322)) - ([4b329aa](https://github.com/f-eld-ch/sitrep/commit/4b329aad84de4137e2bc1fb2204dba79e424bef4))
 - *(deps)* Bump i18next from 25.8.0 to 25.8.4 in /ui ([#1324](https://github.com/f-eld-ch/sitrep/issues/1324)) - ([d2811ea](https://github.com/f-eld-ch/sitrep/commit/d2811eab4abecba155c9cd41d8a884bc5ec7f68c))
 - *(deps)* Bump react-router from 7.12.0 to 7.13.0 in /ui ([#1299](https://github.com/f-eld-ch/sitrep/issues/1299)) - ([35cd6b1](https://github.com/f-eld-ch/sitrep/commit/35cd6b1148ede980d5d2063800efb601e26663f6))
 - *(deps)* Bump undici from 7.19.0 to 7.19.1 in /ui ([#1295](https://github.com/f-eld-ch/sitrep/issues/1295)) - ([9904e4d](https://github.com/f-eld-ch/sitrep/commit/9904e4df4f6adc0fdacd0bbae64d1756ca0ce0dc))
