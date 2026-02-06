@@ -2,6 +2,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(telemetry)* Update otel semconv to 1.39.0 - ([0d9ee7c](https://github.com/f-eld-ch/sitrep/commit/0d9ee7c9ef7677c2c3fd5cb122ce4a275b6bd9d2))
 - *(ui)* Use proper targetingKey for featureflag evaluation - ([b76338a](https://github.com/f-eld-ch/sitrep/commit/b76338aec6d51fd223f651125f9dfd6de2e080cd))
 
 ### ⚙️  Other
