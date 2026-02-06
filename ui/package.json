@@ -119,10 +119,11 @@
   "resolutions": {
     "brace-expansion": "2.0.2",
     "dompurify": "3.3.0",
+    "js-yaml": "^4.1.1",
     "jspdf": "^4.1.0",
+    "lodash": "^4.17.23",
     "maplibre-gl": "5.17.0",
     "sharp": "^0.34.5",
-    "js-yaml": "^4.1.1",
     "vite": "^7.2.2"
   },
   "packageManager": "yarn@4.12.0"
