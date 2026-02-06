@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 16.5.3 to 16.5.4 in /ui ([#1305](https://github.com/f-eld-ch/sitrep/issues/1305)) - ([e1a7559](https://github.com/f-eld-ch/sitrep/commit/e1a7559cbd1e0073f6c29373146e908db61b663d))
 - *(deps)* Bump the otel group with 12 updates ([#1313](https://github.com/f-eld-ch/sitrep/issues/1313)) - ([f914fb4](https://github.com/f-eld-ch/sitrep/commit/f914fb43165e0b34c2ff2ffa92d347b2a85192cb))
 - *(deps)* Bump html-react-parser from 5.2.12 to 5.2.16 in /ui ([#1320](https://github.com/f-eld-ch/sitrep/issues/1320)) - ([9d994f2](https://github.com/f-eld-ch/sitrep/commit/9d994f20afcbc557232835668063a09e4b731247))
 - *(deps)* Bump @isaacs/brace-expansion ([#1322](https://github.com/f-eld-ch/sitrep/issues/1322)) - ([4b329aa](https://github.com/f-eld-ch/sitrep/commit/4b329aad84de4137e2bc1fb2204dba79e424bef4))
