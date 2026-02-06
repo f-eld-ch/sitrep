@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.19.1 to 7.20.0 in /ui ([#1311](https://github.com/f-eld-ch/sitrep/issues/1311)) - ([2d0d1ab](https://github.com/f-eld-ch/sitrep/commit/2d0d1ab291c8a5c571ba269b6c9444394bb7bee5))
+- *(deps)* Bump github.com/samber/slog-multi from 1.7.0 to 1.7.1 ([#1315](https://github.com/f-eld-ch/sitrep/issues/1315)) - ([a2032ec](https://github.com/f-eld-ch/sitrep/commit/a2032ec1ac019ec8594499bb118eeb6212bbf561))
 - *(deps)* Bump @apollo/client from 4.1.2 to 4.1.3 in /ui ([#1310](https://github.com/f-eld-ch/sitrep/issues/1310)) - ([24a10f0](https://github.com/f-eld-ch/sitrep/commit/24a10f0762fc8de07713433de4f25bda66386930))
 - *(deps)* Bump maplibre-gl from 5.16.0 to 5.17.0 in /ui ([#1303](https://github.com/f-eld-ch/sitrep/issues/1303)) - ([fa66e31](https://github.com/f-eld-ch/sitrep/commit/fa66e3149aa7d49357727771be9cdeac0a77808d))
 - *(deps)* Bump react-i18next from 16.5.3 to 16.5.4 in /ui ([#1305](https://github.com/f-eld-ch/sitrep/issues/1305)) - ([e1a7559](https://github.com/f-eld-ch/sitrep/commit/e1a7559cbd1e0073f6c29373146e908db61b663d))
