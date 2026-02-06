@@ -42,6 +42,7 @@
 - *(deps)* Bump react-router from 7.11.0 to 7.12.0 in /ui ([#1260](https://github.com/f-eld-ch/sitrep/issues/1260)) - ([f36816b](https://github.com/f-eld-ch/sitrep/commit/f36816ba417eda7d9c714938c0bb82c4ed02c5fc))
 - *(deps)* Bump github.com/samber/slog-multi from 1.6.0 to 1.7.0 ([#1258](https://github.com/f-eld-ch/sitrep/issues/1258)) - ([5439596](https://github.com/f-eld-ch/sitrep/commit/54395964693f3a4ef78fbd603753e4352fb9abf5))
 - *(deps)* Bump undici from 7.18.0 to 7.18.2 in /ui ([#1257](https://github.com/f-eld-ch/sitrep/issues/1257)) - ([b67844c](https://github.com/f-eld-ch/sitrep/commit/b67844c31b7d69ab332c9544dfe2b41bd36151fa))
+- *(security)* Address 4 CVEs in jsPDF with upgrade from 4.0.0 to 4.1.0 ([#1326](https://github.com/f-eld-ch/sitrep/issues/1326)) - ([2a0fabc](https://github.com/f-eld-ch/sitrep/commit/2a0fabcbfe6169d5361be54d212216cbdeae9dc1))
 
 
 ## [26.1.0](https://github.com/f-eld-ch/sitrep/compare/v25.12.1..v26.1.0) - 2026-01-05
