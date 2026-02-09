@@ -4769,12 +4769,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^25.2.1":
-  version: 25.2.1
-  resolution: "@types/node@npm:25.2.1"
+"@types/node@npm:^25.2.2":
+  version: 25.2.2
+  resolution: "@types/node@npm:25.2.2"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10/aab73de56dbb674a173a49618b9f9b4aff3ed5815c47104a8fcaa8ca0728effced8d6ed941aa342b7d1f9dfcd641513250a178f4a656067f461dd793ab422911
+  checksum: 10/a5d689d69168065da0ef2972c711b0382664fa52ad99e9988d174028444c71ecb6c5b641178c404acb6b526f27cd791341aa3998a66e71b9a9ee193d853db61e
   languageName: node
   linkType: hard
 
@@ -12060,7 +12060,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.23"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^25.2.1"
+    "@types/node": "npm:^25.2.2"
     "@types/react": "npm:^19.2.13"
     "@types/react-color": "npm:^3.0.13"
     "@types/react-dom": "npm:^19.2.3"
@@ -12109,10 +12109,10 @@ __metadata:
     uuid: "npm:^13.0.0"
     vite: "npm:^7.3.1"
     vite-bundle-analyzer: "npm:^1.3.6"
-    vite-plugin-biome: "npm:^1.1.0"
+    vite-plugin-biome: "npm:^1.1.2"
     vite-plugin-pwa: "npm:^1.2.0"
     vite-plugin-svgr: "npm:^4.5.0"
-    vite-tsconfig-paths: "npm:^6.0.5"
+    vite-tsconfig-paths: "npm:^6.1.0"
     vitest: "npm:^4.0.18"
   languageName: unknown
   linkType: soft
@@ -13466,12 +13466,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-biome@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "vite-plugin-biome@npm:1.1.0"
+"vite-plugin-biome@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "vite-plugin-biome@npm:1.1.2"
   peerDependencies:
     "@biomejs/biome": ">=1.8.0"
-  checksum: 10/25e2735c7b3a39f68f0791a478f0d71fc031f0ce3675a96ff0cfb3a9449adec1081dba102597146fcf18c43b00b0fe23d7fb74c4d68b815324b2a7f2faaa8f1c
+  checksum: 10/e11e11616734bbde97681219199b038704f4cec047a7a39c8bef74a607740f7c3ad750e464f6069765876842a2a686c01bfb6940b195fe591461a44d60211ee3
   languageName: node
   linkType: hard
 
@@ -13509,16 +13509,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-tsconfig-paths@npm:^6.0.5":
-  version: 6.0.5
-  resolution: "vite-tsconfig-paths@npm:6.0.5"
+"vite-tsconfig-paths@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "vite-tsconfig-paths@npm:6.1.0"
   dependencies:
     debug: "npm:^4.1.1"
     globrex: "npm:^0.1.2"
     tsconfck: "npm:^3.0.3"
   peerDependencies:
     vite: "*"
-  checksum: 10/1c3d38102ed34d057fc602c332bfd059bfedd0b378ee87b1a73eac89e20f6d81ee4bd9639557287e275cae2230f1d9225d2d7d83a2fa355a380cf77568f2cd31
+  checksum: 10/410104d95aca47679718ae5602d6a05c149e1a85b1777ebd670c53e7cd8c55b0f9f6d2d7740a04f33ecb73c0983e3f6897bfa4ee9d5fc5e719385f203ad27ab5
   languageName: node
   linkType: hard
 
