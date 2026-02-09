@@ -1,6 +1,6 @@
 module github.com/f-eld-ch/sitrep
 
-go 1.24.5
+go 1.24.10
 
 require (
 	github.com/google/uuid v1.6.0
@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/samber/slog-multi v1.7.1
 	github.com/spf13/viper v1.21.0
-	github.com/zitadel/oidc/v3 v3.45.3
+	github.com/zitadel/oidc/v3 v3.45.4
 	go.opentelemetry.io/contrib/bridges/otelslog v0.15.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.65.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.65.0
@@ -42,7 +42,7 @@ require (
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/samber/slog-common v0.20.0 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -50,7 +50,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/zitadel/logging v0.6.2 // indirect
+	github.com/zitadel/logging v0.7.0 // indirect
 	github.com/zitadel/schema v1.3.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.40.0 // indirect
