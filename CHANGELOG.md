@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump the turf group in /ui with 7 updates ([#1333](https://github.com/f-eld-ch/sitrep/issues/1333)) - ([9803c61](https://github.com/f-eld-ch/sitrep/commit/9803c61a2b19b3c3da7c3e66d443a74df9fe77e9))
+- *(deps)* Bump html-react-parser from 5.2.16 to 5.2.17 in /ui ([#1334](https://github.com/f-eld-ch/sitrep/issues/1334)) - ([d1022d3](https://github.com/f-eld-ch/sitrep/commit/d1022d32253b5c17cb3daa6b36323aa15d9b5875))
+
+
 ## [26.2.0](https://github.com/f-eld-ch/sitrep/compare/v26.1.0..v26.2.0) - 2026-02-06
 
 ### 🐛 Bug Fixes
