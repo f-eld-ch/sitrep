@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.3 to 3.45.4 ([#1331](https://github.com/f-eld-ch/sitrep/issues/1331)) - ([8098d28](https://github.com/f-eld-ch/sitrep/commit/8098d28b224b7626f167b9376100ab0e6ff8c503))
+- *(deps)* Bump @fortawesome/react-fontawesome ([#1328](https://github.com/f-eld-ch/sitrep/issues/1328)) - ([ad249a3](https://github.com/f-eld-ch/sitrep/commit/ad249a3a181463361a319fea8c1507b78cd72ae3))
+- *(deps)* Bump undici from 7.20.0 to 7.21.0 in /ui ([#1329](https://github.com/f-eld-ch/sitrep/issues/1329)) - ([076cf4b](https://github.com/f-eld-ch/sitrep/commit/076cf4b9d0b0485fe3198c6a7e6e31c044c72997))
 - *(deps)* Bump the turf group in /ui with 7 updates ([#1333](https://github.com/f-eld-ch/sitrep/issues/1333)) - ([9803c61](https://github.com/f-eld-ch/sitrep/commit/9803c61a2b19b3c3da7c3e66d443a74df9fe77e9))
 - *(deps)* Bump html-react-parser from 5.2.16 to 5.2.17 in /ui ([#1334](https://github.com/f-eld-ch/sitrep/issues/1334)) - ([d1022d3](https://github.com/f-eld-ch/sitrep/commit/d1022d32253b5c17cb3daa6b36323aa15d9b5875))
 
