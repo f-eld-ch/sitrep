@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1338](https://github.com/f-eld-ch/sitrep/issues/1338)) - ([7f23c14](https://github.com/f-eld-ch/sitrep/commit/7f23c1491f8314ad95bdb0d93f7a37d38cb6e39a))
 - *(deps)* Bump maplibre-gl from 5.17.0 to 5.18.0 in /ui ([#1337](https://github.com/f-eld-ch/sitrep/issues/1337)) - ([4e25e20](https://github.com/f-eld-ch/sitrep/commit/4e25e207f002d964271713615845b49eef868a43))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.3 to 3.45.4 ([#1331](https://github.com/f-eld-ch/sitrep/issues/1331)) - ([8098d28](https://github.com/f-eld-ch/sitrep/commit/8098d28b224b7626f167b9376100ab0e6ff8c503))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1328](https://github.com/f-eld-ch/sitrep/issues/1328)) - ([ad249a3](https://github.com/f-eld-ch/sitrep/commit/ad249a3a181463361a319fea8c1507b78cd72ae3))
