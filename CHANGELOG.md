@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump ol from 10.7.0 to 10.8.0 in /ui ([#1340](https://github.com/f-eld-ch/sitrep/issues/1340)) - ([6a157c2](https://github.com/f-eld-ch/sitrep/commit/6a157c2023ba0bb45ee7ef451f66de6a76f6ce00))
+- *(deps)* Bump i18next from 25.8.4 to 25.8.6 in /ui ([#1342](https://github.com/f-eld-ch/sitrep/issues/1342)) - ([61ba65b](https://github.com/f-eld-ch/sitrep/commit/61ba65be36b88f83653415b3d896e4c4e5b09b66))
 - *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1338](https://github.com/f-eld-ch/sitrep/issues/1338)) - ([7f23c14](https://github.com/f-eld-ch/sitrep/commit/7f23c1491f8314ad95bdb0d93f7a37d38cb6e39a))
 - *(deps)* Bump maplibre-gl from 5.17.0 to 5.18.0 in /ui ([#1337](https://github.com/f-eld-ch/sitrep/issues/1337)) - ([4e25e20](https://github.com/f-eld-ch/sitrep/commit/4e25e207f002d964271713615845b49eef868a43))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.3 to 3.45.4 ([#1331](https://github.com/f-eld-ch/sitrep/issues/1331)) - ([8098d28](https://github.com/f-eld-ch/sitrep/commit/8098d28b224b7626f167b9376100ab0e6ff8c503))
