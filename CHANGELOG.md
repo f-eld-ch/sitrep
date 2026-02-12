@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.17.0 to 5.18.0 in /ui ([#1337](https://github.com/f-eld-ch/sitrep/issues/1337)) - ([4e25e20](https://github.com/f-eld-ch/sitrep/commit/4e25e207f002d964271713615845b49eef868a43))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.3 to 3.45.4 ([#1331](https://github.com/f-eld-ch/sitrep/issues/1331)) - ([8098d28](https://github.com/f-eld-ch/sitrep/commit/8098d28b224b7626f167b9376100ab0e6ff8c503))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1328](https://github.com/f-eld-ch/sitrep/issues/1328)) - ([ad249a3](https://github.com/f-eld-ch/sitrep/commit/ad249a3a181463361a319fea8c1507b78cd72ae3))
 - *(deps)* Bump undici from 7.20.0 to 7.21.0 in /ui ([#1329](https://github.com/f-eld-ch/sitrep/issues/1329)) - ([076cf4b](https://github.com/f-eld-ch/sitrep/commit/076cf4b9d0b0485fe3198c6a7e6e31c044c72997))
