@@ -12149,7 +12149,7 @@ __metadata:
     source-map-explorer: "npm:^2.5.3"
     ts-jest: "npm:^29.4.6"
     typescript: "npm:^5.9.3"
-    undici: "npm:^7.21.0"
+    undici: "npm:^7.22.0"
     usehooks-ts: "npm:^3.1.1"
     uuid: "npm:^13.0.0"
     vite: "npm:^7.3.1"
@@ -13134,10 +13134,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.20.0, undici@npm:^7.21.0":
+"undici@npm:^7.20.0":
   version: 7.21.0
   resolution: "undici@npm:7.21.0"
   checksum: 10/2025ba33bd42a22267d0a7f0a9369e4901ef7b7244ed335c79fd4aaa510471d104b6826e74d055077ed57155482fb5cbf716a02f7bba4dbab402087882f40e67
+  languageName: node
+  linkType: hard
+
+"undici@npm:^7.22.0":
+  version: 7.22.0
+  resolution: "undici@npm:7.22.0"
+  checksum: 10/a7a1813ba4b74c0d46cc8dd160386202c05699ffc487c5d882cf40e6d2435c8d6faff3b8f8675d09bd1ef0386e370675c26b59b9a8c8b3f17b9f82a42236a927
   languageName: node
   linkType: hard
 
