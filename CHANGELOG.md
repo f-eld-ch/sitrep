@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#1345](https://github.com/f-eld-ch/sitrep/issues/1345)) - ([3b1e02e](https://github.com/f-eld-ch/sitrep/commit/3b1e02e1339ea3ff3c9de8b60318b6fa952db1c1))
 - *(deps)* Bump undici from 7.21.0 to 7.22.0 in /ui ([#1347](https://github.com/f-eld-ch/sitrep/issues/1347)) - ([aebd7f6](https://github.com/f-eld-ch/sitrep/commit/aebd7f6715fa03ae6884ec4d3e635a971a31c041))
 - *(deps)* Bump ol from 10.7.0 to 10.8.0 in /ui ([#1340](https://github.com/f-eld-ch/sitrep/issues/1340)) - ([6a157c2](https://github.com/f-eld-ch/sitrep/commit/6a157c2023ba0bb45ee7ef451f66de6a76f6ce00))
 - *(deps)* Bump i18next from 25.8.4 to 25.8.6 in /ui ([#1342](https://github.com/f-eld-ch/sitrep/issues/1342)) - ([61ba65b](https://github.com/f-eld-ch/sitrep/commit/61ba65be36b88f83653415b3d896e4c4e5b09b66))
