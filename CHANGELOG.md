@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici from 7.21.0 to 7.22.0 in /ui ([#1347](https://github.com/f-eld-ch/sitrep/issues/1347)) - ([aebd7f6](https://github.com/f-eld-ch/sitrep/commit/aebd7f6715fa03ae6884ec4d3e635a971a31c041))
 - *(deps)* Bump ol from 10.7.0 to 10.8.0 in /ui ([#1340](https://github.com/f-eld-ch/sitrep/issues/1340)) - ([6a157c2](https://github.com/f-eld-ch/sitrep/commit/6a157c2023ba0bb45ee7ef451f66de6a76f6ce00))
 - *(deps)* Bump i18next from 25.8.4 to 25.8.6 in /ui ([#1342](https://github.com/f-eld-ch/sitrep/issues/1342)) - ([61ba65b](https://github.com/f-eld-ch/sitrep/commit/61ba65be36b88f83653415b3d896e4c4e5b09b66))
 - *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1338](https://github.com/f-eld-ch/sitrep/issues/1338)) - ([7f23c14](https://github.com/f-eld-ch/sitrep/commit/7f23c1491f8314ad95bdb0d93f7a37d38cb6e39a))
