@@ -83,7 +83,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asamuzakjp/css-color@npm:^4.1.1":
+"@asamuzakjp/css-color@npm:^4.1.2":
   version: 4.1.2
   resolution: "@asamuzakjp/css-color@npm:4.1.2"
   dependencies:
@@ -96,16 +96,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asamuzakjp/dom-selector@npm:^6.7.6":
-  version: 6.7.6
-  resolution: "@asamuzakjp/dom-selector@npm:6.7.6"
+"@asamuzakjp/dom-selector@npm:^6.8.1":
+  version: 6.8.1
+  resolution: "@asamuzakjp/dom-selector@npm:6.8.1"
   dependencies:
     "@asamuzakjp/nwsapi": "npm:^2.3.9"
     bidi-js: "npm:^1.0.3"
     css-tree: "npm:^3.1.0"
     is-potential-custom-element-name: "npm:^1.0.1"
-    lru-cache: "npm:^11.2.4"
-  checksum: 10/91a479f5f59a3b1b23f46407d874882c05b50e72316e57af105c88603fb1008120c46c7fe7504c5be556ea4c9a68ee10aee43433bd8d34f000b9aaf6dcae4d5c
+    lru-cache: "npm:^11.2.6"
+  checksum: 10/4d1c63bf094aa35c9c60ad8d2faf45ee4f5f8d1520fbb158e2552c456f8264029932ff4464ea18ea760a89b3075b4bf70e43b2086191d256f35eff46fde3eb24
   languageName: node
   linkType: hard
 
@@ -2218,18 +2218,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@biomejs/biome@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/biome@npm:2.3.15"
+"@biomejs/biome@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/biome@npm:2.4.2"
   dependencies:
-    "@biomejs/cli-darwin-arm64": "npm:2.3.15"
-    "@biomejs/cli-darwin-x64": "npm:2.3.15"
-    "@biomejs/cli-linux-arm64": "npm:2.3.15"
-    "@biomejs/cli-linux-arm64-musl": "npm:2.3.15"
-    "@biomejs/cli-linux-x64": "npm:2.3.15"
-    "@biomejs/cli-linux-x64-musl": "npm:2.3.15"
-    "@biomejs/cli-win32-arm64": "npm:2.3.15"
-    "@biomejs/cli-win32-x64": "npm:2.3.15"
+    "@biomejs/cli-darwin-arm64": "npm:2.4.2"
+    "@biomejs/cli-darwin-x64": "npm:2.4.2"
+    "@biomejs/cli-linux-arm64": "npm:2.4.2"
+    "@biomejs/cli-linux-arm64-musl": "npm:2.4.2"
+    "@biomejs/cli-linux-x64": "npm:2.4.2"
+    "@biomejs/cli-linux-x64-musl": "npm:2.4.2"
+    "@biomejs/cli-win32-arm64": "npm:2.4.2"
+    "@biomejs/cli-win32-x64": "npm:2.4.2"
   dependenciesMeta:
     "@biomejs/cli-darwin-arm64":
       optional: true
@@ -2249,63 +2249,74 @@ __metadata:
       optional: true
   bin:
     biome: bin/biome
-  checksum: 10/0d23e94c63f03003f62df523b9a5b24c1bcbe79c7d7dbc0fe2c6471d30c3d27a3243e67b7ff9526d9ed3902291720debea390660b9dbd5b7eebc3d5c7afb1c3f
+  checksum: 10/32f1e06c85cfa5bfaa298fdebe033df9052e8e9ab0fe5219dec4859070b2941dee10f35e22a5088c4c0ad9f29580b7970906f0048dbab7885046312222612a9a
   languageName: node
   linkType: hard
 
-"@biomejs/cli-darwin-arm64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-darwin-arm64@npm:2.3.15"
+"@biomejs/cli-darwin-arm64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-darwin-arm64@npm:2.4.2"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-darwin-x64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-darwin-x64@npm:2.3.15"
+"@biomejs/cli-darwin-x64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-darwin-x64@npm:2.4.2"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-arm64-musl@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-linux-arm64-musl@npm:2.3.15"
+"@biomejs/cli-linux-arm64-musl@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-linux-arm64-musl@npm:2.4.2"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-arm64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-linux-arm64@npm:2.3.15"
+"@biomejs/cli-linux-arm64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-linux-arm64@npm:2.4.2"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-x64-musl@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-linux-x64-musl@npm:2.3.15"
+"@biomejs/cli-linux-x64-musl@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-linux-x64-musl@npm:2.4.2"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-x64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-linux-x64@npm:2.3.15"
+"@biomejs/cli-linux-x64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-linux-x64@npm:2.4.2"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@biomejs/cli-win32-arm64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-win32-arm64@npm:2.3.15"
+"@biomejs/cli-win32-arm64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-win32-arm64@npm:2.4.2"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-win32-x64@npm:2.3.15":
-  version: 2.3.15
-  resolution: "@biomejs/cli-win32-x64@npm:2.3.15"
+"@biomejs/cli-win32-x64@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@biomejs/cli-win32-x64@npm:2.4.2"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@bramus/specificity@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "@bramus/specificity@npm:2.4.2"
+  dependencies:
+    css-tree: "npm:^3.0.0"
+  bin:
+    specificity: bin/cli.js
+  checksum: 10/4255ed6ff12f7db9ec3c21acfd0da2327d30ec29deb199345810cdcad992618f40039c5483eefeb665913bffbc80b690e9f1b954fbbbfa93480c6a22f9c3a69c
   languageName: node
   linkType: hard
 
@@ -2348,10 +2359,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/css-syntax-patches-for-csstree@npm:^1.0.21":
-  version: 1.0.26
-  resolution: "@csstools/css-syntax-patches-for-csstree@npm:1.0.26"
-  checksum: 10/9b71d90044f585b897fcd270215418294e5177e128fb56e8ff05daf8bca630a480bbe6fa124aef474000a4a777d6fae762d7349eeb5e1bc13e7944ef61d362b7
+"@csstools/css-syntax-patches-for-csstree@npm:^1.0.26":
+  version: 1.0.27
+  resolution: "@csstools/css-syntax-patches-for-csstree@npm:1.0.27"
+  checksum: 10/d3f27a39c667267a1fc46925e0a0aea4cc93f7c152c400cabd03832a75f521aa39b0e15e95b10d348f496e021bb5fcb32af5dda7b69c5aa4570f048ecaf57dbd
   languageName: node
   linkType: hard
 
@@ -6302,7 +6313,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-tree@npm:^3.1.0":
+"css-tree@npm:^3.0.0, css-tree@npm:^3.1.0":
   version: 3.1.0
   resolution: "css-tree@npm:3.1.0"
   dependencies:
@@ -6326,15 +6337,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssstyle@npm:^5.3.7":
-  version: 5.3.7
-  resolution: "cssstyle@npm:5.3.7"
+"cssstyle@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "cssstyle@npm:6.0.1"
   dependencies:
-    "@asamuzakjp/css-color": "npm:^4.1.1"
-    "@csstools/css-syntax-patches-for-csstree": "npm:^1.0.21"
+    "@asamuzakjp/css-color": "npm:^4.1.2"
+    "@csstools/css-syntax-patches-for-csstree": "npm:^1.0.26"
     css-tree: "npm:^3.1.0"
-    lru-cache: "npm:^11.2.4"
-  checksum: 10/bd4469af81f068537dbbce53c4247f192e91202c19abc066b77b4ee7bbf256526bc82471198bec762ac70ea53ce17b8044aec69fd7982d2d0fd9fd7780329e2d
+    lru-cache: "npm:^11.2.5"
+  checksum: 10/d531efb96a53c85eaf9ac466371c63128412ae8c5ef716bcb06b867f08bd56d81d761ce882c2016cac87cb313c6d1204c6cde3df82c61cbe5a5168fdb149ef9b
   languageName: node
   linkType: hard
 
@@ -9255,14 +9266,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^28.0.0":
-  version: 28.0.0
-  resolution: "jsdom@npm:28.0.0"
+"jsdom@npm:^28.1.0":
+  version: 28.1.0
+  resolution: "jsdom@npm:28.1.0"
   dependencies:
     "@acemir/cssom": "npm:^0.9.31"
-    "@asamuzakjp/dom-selector": "npm:^6.7.6"
+    "@asamuzakjp/dom-selector": "npm:^6.8.1"
+    "@bramus/specificity": "npm:^2.4.2"
     "@exodus/bytes": "npm:^1.11.0"
-    cssstyle: "npm:^5.3.7"
+    cssstyle: "npm:^6.0.1"
     data-urls: "npm:^7.0.0"
     decimal.js: "npm:^10.6.0"
     html-encoding-sniffer: "npm:^6.0.0"
@@ -9273,7 +9285,7 @@ __metadata:
     saxes: "npm:^6.0.0"
     symbol-tree: "npm:^3.2.4"
     tough-cookie: "npm:^6.0.0"
-    undici: "npm:^7.20.0"
+    undici: "npm:^7.21.0"
     w3c-xmlserializer: "npm:^5.0.0"
     webidl-conversions: "npm:^8.0.1"
     whatwg-mimetype: "npm:^5.0.0"
@@ -9284,7 +9296,7 @@ __metadata:
   peerDependenciesMeta:
     canvas:
       optional: true
-  checksum: 10/c50461190982834446308bbfdfbbb829c6447b1693b1f0dd90fd717960a1d02c326cc90c9a378831d9bf8166702e57dcbf12691ddd7406c13d0a522c7b8971d9
+  checksum: 10/700ef06cf3a72998173205e49c7565926c22f51f562400ec033d426fe0a419f4209c3527735b8dd22eddef9798c905810600b89c84c3474447819fa8b37848ab
   languageName: node
   linkType: hard
 
@@ -9567,17 +9579,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^11.2.4":
-  version: 11.2.4
-  resolution: "lru-cache@npm:11.2.4"
-  checksum: 10/3b2da74c0b6653767f8164c38c4c4f4d7f0cc10c62bfa512663d94a830191ae6a5af742a8d88a8b30d5f9974652d3adae53931f32069139ad24fa2a18a199aca
-  languageName: node
-  linkType: hard
-
 "lru-cache@npm:^11.2.5":
   version: 11.2.5
   resolution: "lru-cache@npm:11.2.5"
   checksum: 10/be50f66c6e23afeaab9c7eefafa06344dd13cde7b3528809c2660c4ad70d93b9ba537366634623cbb2eb411671f526b5a4af2c602507b9258aead0fa8d713f6c
+  languageName: node
+  linkType: hard
+
+"lru-cache@npm:^11.2.6":
+  version: 11.2.6
+  resolution: "lru-cache@npm:11.2.6"
+  checksum: 10/91222bbd59f793a0a0ad57789388f06b34ac9bb1613433c1d1810457d09db5cd3ec8943227ce2e1f5d6a0a15d6f1a9f129cb2c49ae9b6b10e82d4965fddecbef
   languageName: node
   linkType: hard
 
@@ -12083,7 +12095,7 @@ __metadata:
   resolution: "sitrep@workspace:."
   dependencies:
     "@apollo/client": "npm:^4.1.4"
-    "@biomejs/biome": "npm:2.3.15"
+    "@biomejs/biome": "npm:2.4.2"
     "@fast-check/vitest": "npm:^0.2.4"
     "@flipt-io/flipt-client-js": "npm:0.2.0"
     "@fortawesome/fontawesome-svg-core": "npm:^7.2.0"
@@ -12134,7 +12146,7 @@ __metadata:
     i18next: "npm:^25.8.10"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jest: "npm:^30.2.0"
-    jsdom: "npm:^28.0.0"
+    jsdom: "npm:^28.1.0"
     lint-staged: "npm:^16.2.7"
     lodash: "npm:^4.17.23"
     mapbox-gl-style-switcher: "npm:^1.0.11"
@@ -13141,14 +13153,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.20.0":
-  version: 7.21.0
-  resolution: "undici@npm:7.21.0"
-  checksum: 10/2025ba33bd42a22267d0a7f0a9369e4901ef7b7244ed335c79fd4aaa510471d104b6826e74d055077ed57155482fb5cbf716a02f7bba4dbab402087882f40e67
-  languageName: node
-  linkType: hard
-
-"undici@npm:^7.22.0":
+"undici@npm:^7.21.0, undici@npm:^7.22.0":
   version: 7.22.0
   resolution: "undici@npm:7.22.0"
   checksum: 10/a7a1813ba4b74c0d46cc8dd160386202c05699ffc487c5d882cf40e6d2435c8d6faff3b8f8675d09bd1ef0386e370675c26b59b9a8c8b3f17b9f82a42236a927
