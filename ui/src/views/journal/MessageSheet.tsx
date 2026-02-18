@@ -18,10 +18,10 @@ import {
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
 
-function MessageSheet(
+const MessageSheet = (
   props: { message: Message | undefined; divisions: Division[] | undefined },
   ref: React.Ref<HTMLDivElement>,
-) {
+) => {
   const { t, i18n } = useTranslation();
   const { message, divisions } = props;
 
