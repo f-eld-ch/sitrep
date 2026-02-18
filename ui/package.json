@@ -122,9 +122,9 @@
     "js-yaml": "^4.1.1",
     "jspdf": "^4.1.0",
     "lodash": "^4.17.23",
-    "maplibre-gl": "5.18.0",
+    "maplibre-gl": "^5.18.0",
     "sharp": "^0.34.5",
-    "tar": "^7.5.7",
+    "tar": "^7.5.8",
     "vite": "^7.3.1"
   },
   "packageManager": "yarn@4.12.0"
