@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump i18next from 25.8.10 to 25.8.11 in /ui ([#1354](https://github.com/f-eld-ch/sitrep/issues/1354)) - ([0871218](https://github.com/f-eld-ch/sitrep/commit/0871218c4d7ac0ae1357ac30608b7ea52c8893bf))
+- *(deps)* Bump @apollo/client from 4.1.4 to 4.1.5 in /ui ([#1356](https://github.com/f-eld-ch/sitrep/issues/1356)) - ([b9ed2a9](https://github.com/f-eld-ch/sitrep/commit/b9ed2a99e7a561548e1aa0041eb97d4c66edcd2f))
+
+
 ## [26.2.1](https://github.com/f-eld-ch/sitrep/compare/v26.2.0..v26.2.1) - 2026-02-18
 
 ### ⚙️  Other
