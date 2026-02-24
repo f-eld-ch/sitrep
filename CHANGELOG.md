@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/labstack/echo/v4 from 4.15.0 to 4.15.1 ([#1361](https://github.com/f-eld-ch/sitrep/issues/1361)) - ([b75f882](https://github.com/f-eld-ch/sitrep/commit/b75f8827aeed39c46f49673a40c172cd2bb4591e))
 - *(deps)* Bump react-router from 7.13.0 to 7.13.1 in /ui ([#1364](https://github.com/f-eld-ch/sitrep/issues/1364)) - ([5efd1ae](https://github.com/f-eld-ch/sitrep/commit/5efd1aec83a002e338198d6ee5d45a4e8b21ee86))
 - *(deps)* Bump @apollo/client from 4.1.5 to 4.1.6 in /ui ([#1365](https://github.com/f-eld-ch/sitrep/issues/1365)) - ([c5fe5b9](https://github.com/f-eld-ch/sitrep/commit/c5fe5b9bdf33a53e3465748b8674cc6fdbc27886))
 - *(deps)* Bump i18next from 25.8.11 to 25.8.13 in /ui ([#1358](https://github.com/f-eld-ch/sitrep/issues/1358)) - ([50cdf62](https://github.com/f-eld-ch/sitrep/commit/50cdf626a17aa3bfce8289f0c13199a998535e31))
