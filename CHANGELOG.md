@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.13.0 to 7.13.1 in /ui ([#1364](https://github.com/f-eld-ch/sitrep/issues/1364)) - ([5efd1ae](https://github.com/f-eld-ch/sitrep/commit/5efd1aec83a002e338198d6ee5d45a4e8b21ee86))
+- *(deps)* Bump @apollo/client from 4.1.5 to 4.1.6 in /ui ([#1365](https://github.com/f-eld-ch/sitrep/issues/1365)) - ([c5fe5b9](https://github.com/f-eld-ch/sitrep/commit/c5fe5b9bdf33a53e3465748b8674cc6fdbc27886))
 - *(deps)* Bump i18next from 25.8.11 to 25.8.13 in /ui ([#1358](https://github.com/f-eld-ch/sitrep/issues/1358)) - ([50cdf62](https://github.com/f-eld-ch/sitrep/commit/50cdf626a17aa3bfce8289f0c13199a998535e31))
 - *(deps)* Bump the openfeature group in /ui with 3 updates ([#1353](https://github.com/f-eld-ch/sitrep/issues/1353)) - ([020d009](https://github.com/f-eld-ch/sitrep/commit/020d009a25ee7058d9ec024ccffd1242c72d48cb))
 - *(deps)* Bump i18next from 25.8.10 to 25.8.11 in /ui ([#1354](https://github.com/f-eld-ch/sitrep/issues/1354)) - ([0871218](https://github.com/f-eld-ch/sitrep/commit/0871218c4d7ac0ae1357ac30608b7ea52c8893bf))
