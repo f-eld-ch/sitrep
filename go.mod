@@ -5,7 +5,7 @@ go 1.24.10
 require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/securecookie v1.1.2
-	github.com/labstack/echo/v4 v4.15.0
+	github.com/labstack/echo/v4 v4.15.1
 	github.com/samber/slog-multi v1.7.1
 	github.com/spf13/viper v1.21.0
 	github.com/zitadel/oidc/v3 v3.45.4
