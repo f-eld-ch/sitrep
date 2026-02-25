@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump graphql from 16.12.0 to 16.13.0 in /ui ([#1370](https://github.com/f-eld-ch/sitrep/issues/1370)) - ([fd5edb6](https://github.com/f-eld-ch/sitrep/commit/fd5edb6dbe29d69affde89a977ba153d6864f61b))
 - *(deps)* Bump maplibre-gl from 5.18.0 to 5.19.0 in /ui ([#1363](https://github.com/f-eld-ch/sitrep/issues/1363)) - ([2785ae3](https://github.com/f-eld-ch/sitrep/commit/2785ae3fea761cdcbb5f3c968f1729ed67fa1b66))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.15.0 to 4.15.1 ([#1361](https://github.com/f-eld-ch/sitrep/issues/1361)) - ([b75f882](https://github.com/f-eld-ch/sitrep/commit/b75f8827aeed39c46f49673a40c172cd2bb4591e))
 - *(deps)* Bump react-router from 7.13.0 to 7.13.1 in /ui ([#1364](https://github.com/f-eld-ch/sitrep/issues/1364)) - ([5efd1ae](https://github.com/f-eld-ch/sitrep/commit/5efd1aec83a002e338198d6ee5d45a4e8b21ee86))
