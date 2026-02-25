@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.18.0 to 5.19.0 in /ui ([#1369](https://github.com/f-eld-ch/sitrep/issues/1369)) - ([2414ee8](https://github.com/f-eld-ch/sitrep/commit/2414ee80f32b10e19e03a7896a5e87a50858f41c))
 - *(deps)* Bump graphql from 16.12.0 to 16.13.0 in /ui ([#1370](https://github.com/f-eld-ch/sitrep/issues/1370)) - ([fd5edb6](https://github.com/f-eld-ch/sitrep/commit/fd5edb6dbe29d69affde89a977ba153d6864f61b))
 - *(deps)* Bump maplibre-gl from 5.18.0 to 5.19.0 in /ui ([#1363](https://github.com/f-eld-ch/sitrep/issues/1363)) - ([2785ae3](https://github.com/f-eld-ch/sitrep/commit/2785ae3fea761cdcbb5f3c968f1729ed67fa1b66))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.15.0 to 4.15.1 ([#1361](https://github.com/f-eld-ch/sitrep/issues/1361)) - ([b75f882](https://github.com/f-eld-ch/sitrep/commit/b75f8827aeed39c46f49673a40c172cd2bb4591e))
