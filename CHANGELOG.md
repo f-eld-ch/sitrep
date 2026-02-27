@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump rollup ([#1371](https://github.com/f-eld-ch/sitrep/issues/1371)) - ([58ef9af](https://github.com/f-eld-ch/sitrep/commit/58ef9af088cc04f0b1fa1c61da3294e306fb82e7))
+
+
 ## [26.2.2](https://github.com/f-eld-ch/sitrep/compare/v26.2.1..v26.2.2) - 2026-02-26
 
 ### ⚙️  Other
