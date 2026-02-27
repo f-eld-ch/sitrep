@@ -78,7 +78,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
     "@fast-check/vitest": "^0.2.4",
-    "@maplibre/maplibre-gl-style-spec": "^24.5.0",
+    "@maplibre/maplibre-gl-style-spec": "^24.6.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -86,7 +86,7 @@
     "@types/hat": "^0.0.4",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.24",
-    "@types/node": "^25.3.1",
+    "@types/node": "^25.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/semver": "^7.7.1",

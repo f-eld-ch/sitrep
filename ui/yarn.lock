@@ -3378,9 +3378,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^24.5.0":
-  version: 24.5.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.5.0"
+"@maplibre/maplibre-gl-style-spec@npm:^24.6.0":
+  version: 24.6.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.6.0"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
     "@mapbox/unitbezier": "npm:^0.0.1"
@@ -3393,7 +3393,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/bf898273e5d7e0aa8548699807007ca6202a1058f7ef30f07ae9dfe0ca80dd45982b3f1f4584e46077cd50bef1673c990c7b57055e6ca16cfad3a1d32356ab58
+  checksum: 10/0bd5f6cc5ebd94e921fa2f2de773086936f1443edae83edff886d8fa2be6ae401e181a499751dbab331861afe4f17cc70542499d9126c91e77ff922bd394bf47
   languageName: node
   linkType: hard
 
@@ -4758,12 +4758,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^25.3.1":
-  version: 25.3.1
-  resolution: "@types/node@npm:25.3.1"
+"@types/node@npm:^25.3.2":
+  version: 25.3.2
+  resolution: "@types/node@npm:25.3.2"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10/7f999e88e7ff3d2e2ee4efbf1de60d9375577d1ad3e1bee01455ec9d8257da2fb1f83dce4cb8fdf9c05dde9fec9e54f61fc9b1731393b53fc74f254712de9f6e
+  checksum: 10/3a7783f0a9508dd8bd3f386e44c062d0d9fe0414fa8983ab203350d1b95db24aad694a54f21b9a0f0a30691ca26c7959c9329e37fea909d35124ec99b6e7b418
   languageName: node
   linkType: hard
 
@@ -11654,7 +11654,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.2.0"
     "@fortawesome/react-fontawesome": "npm:^3.2.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.5.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^24.6.0"
     "@openfeature/core": "npm:^1.9.2"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.2.1"
@@ -11674,7 +11674,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.24"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^25.3.1"
+    "@types/node": "npm:^25.3.2"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@types/semver": "npm:^7.7.1"
