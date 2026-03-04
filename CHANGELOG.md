@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.4 to 3.45.5 ([#1377](https://github.com/f-eld-ch/sitrep/issues/1377)) - ([f5fa00a](https://github.com/f-eld-ch/sitrep/commit/f5fa00ad753047cf2f1e71e127bc2eee4625a6b7))
 - *(deps)* Bump proj4 from 2.20.2 to 2.20.3 in /ui ([#1374](https://github.com/f-eld-ch/sitrep/issues/1374)) - ([8e03b6c](https://github.com/f-eld-ch/sitrep/commit/8e03b6c945771d11e37e43a9332be06831c3a85d))
 - *(deps)* Bump the otel group across 1 directory with 12 updates ([#1383](https://github.com/f-eld-ch/sitrep/issues/1383)) - ([581116b](https://github.com/f-eld-ch/sitrep/commit/581116bceb62fb8266522a346115030cafbea183))
 - *(deps)* Bump rollup ([#1371](https://github.com/f-eld-ch/sitrep/issues/1371)) - ([58ef9af](https://github.com/f-eld-ch/sitrep/commit/58ef9af088cc04f0b1fa1c61da3294e306fb82e7))
