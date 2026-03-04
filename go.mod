@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.15.1
 	github.com/samber/slog-multi v1.7.1
 	github.com/spf13/viper v1.21.0
-	github.com/zitadel/oidc/v3 v3.45.4
+	github.com/zitadel/oidc/v3 v3.45.5
 	go.opentelemetry.io/contrib/bridges/otelslog v0.16.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.66.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.66.0
