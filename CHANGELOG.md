@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the otel group across 1 directory with 12 updates ([#1383](https://github.com/f-eld-ch/sitrep/issues/1383)) - ([581116b](https://github.com/f-eld-ch/sitrep/commit/581116bceb62fb8266522a346115030cafbea183))
 - *(deps)* Bump rollup ([#1371](https://github.com/f-eld-ch/sitrep/issues/1371)) - ([58ef9af](https://github.com/f-eld-ch/sitrep/commit/58ef9af088cc04f0b1fa1c61da3294e306fb82e7))
 
 
