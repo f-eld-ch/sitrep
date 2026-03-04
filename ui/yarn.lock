@@ -10685,13 +10685,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proj4@npm:^2.20.2":
-  version: 2.20.2
-  resolution: "proj4@npm:2.20.2"
+"proj4@npm:^2.20.3":
+  version: 2.20.3
+  resolution: "proj4@npm:2.20.3"
   dependencies:
     mgrs: "npm:1.0.0"
-    wkt-parser: "npm:^1.5.1"
-  checksum: 10/5ec437a90759852b95c4f8bda2260b4e18376874da0433fa13245cb15f3592dc0c4b095d749def787432a6cdbdd6b1ba18eeae17430faf83e79e85e7d1bd2b8c
+    wkt-parser: "npm:^1.5.3"
+  checksum: 10/9a0687613f4d4aa8ec7ea82f314766e73c941b08b7b5a03e4556312bbb31dc136cd79804cbf7683614882f45d642dc0d3b0dc509a9aff47184a278833cfbe714
   languageName: node
   linkType: hard
 
@@ -11700,7 +11700,7 @@ __metadata:
     mapbox-gl-style-switcher: "npm:^1.0.11"
     maplibre-gl: "npm:5.19.0"
     ol: "npm:^10.8.0"
-    proj4: "npm:^2.20.2"
+    proj4: "npm:^2.20.3"
     react: "npm:^19.2.4"
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.2.4"
@@ -13369,10 +13369,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wkt-parser@npm:^1.5.1":
-  version: 1.5.2
-  resolution: "wkt-parser@npm:1.5.2"
-  checksum: 10/2511aba6b86010a8c0771cd1adffc1455eb3e989701fe2622a521c3218058da89890f79853dbd0008d34c82b3334c29aaa41c97d5f7e9510a8f8e55f05ae6f42
+"wkt-parser@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "wkt-parser@npm:1.5.3"
+  checksum: 10/f9ccdbbf564d63c6658f4fee70262dbce073bb250aebd62e19b7edc329dca82c73c227f41e50a2465701f225a9cbd18e9f2013701df99091446fe6bcb7525a1f
   languageName: node
   linkType: hard
 
