@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.8.13 to 25.8.14 in /ui ([#1384](https://github.com/f-eld-ch/sitrep/issues/1384)) - ([aeccb60](https://github.com/f-eld-ch/sitrep/commit/aeccb60eeed853b8407faeba34a7068af44a1e0d))
+- *(deps)* Bump graphql from 16.13.0 to 16.13.1 in /ui ([#1385](https://github.com/f-eld-ch/sitrep/issues/1385)) - ([41532d0](https://github.com/f-eld-ch/sitrep/commit/41532d0b13054c155488473b1dea6c468afc5d8c))
+- *(deps)* Bump immutable ([#1386](https://github.com/f-eld-ch/sitrep/issues/1386)) - ([cd1c8e8](https://github.com/f-eld-ch/sitrep/commit/cd1c8e84ec4fb041deda67ed719addda6c4b20c0))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.4 to 3.45.5 ([#1377](https://github.com/f-eld-ch/sitrep/issues/1377)) - ([f5fa00a](https://github.com/f-eld-ch/sitrep/commit/f5fa00ad753047cf2f1e71e127bc2eee4625a6b7))
 - *(deps)* Bump proj4 from 2.20.2 to 2.20.3 in /ui ([#1374](https://github.com/f-eld-ch/sitrep/issues/1374)) - ([8e03b6c](https://github.com/f-eld-ch/sitrep/commit/8e03b6c945771d11e37e43a9332be06831c3a85d))
 - *(deps)* Bump the otel group across 1 directory with 12 updates ([#1383](https://github.com/f-eld-ch/sitrep/issues/1383)) - ([581116b](https://github.com/f-eld-ch/sitrep/commit/581116bceb62fb8266522a346115030cafbea183))
