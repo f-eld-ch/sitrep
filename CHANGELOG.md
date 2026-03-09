@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump proj4 from 2.20.3 to 2.20.4 in /ui ([#1390](https://github.com/f-eld-ch/sitrep/issues/1390)) - ([7332fd6](https://github.com/f-eld-ch/sitrep/commit/7332fd69d64ce3debedb441f1cfa1b2c449d377b))
+- *(deps)* Bump react-i18next from 16.5.4 to 16.5.6 in /ui ([#1388](https://github.com/f-eld-ch/sitrep/issues/1388)) - ([3aa838e](https://github.com/f-eld-ch/sitrep/commit/3aa838e683542f551f5e213784d7ee6aae9b7a8f))
 - *(deps)* Bump the otel group with 12 updates ([#1392](https://github.com/f-eld-ch/sitrep/issues/1392)) - ([47ac91f](https://github.com/f-eld-ch/sitrep/commit/47ac91ff060aaa1fafbd2f378f2e65886d4767d8))
 - *(deps)* Bump i18next from 25.8.13 to 25.8.14 in /ui ([#1384](https://github.com/f-eld-ch/sitrep/issues/1384)) - ([aeccb60](https://github.com/f-eld-ch/sitrep/commit/aeccb60eeed853b8407faeba34a7068af44a1e0d))
 - *(deps)* Bump graphql from 16.13.0 to 16.13.1 in /ui ([#1385](https://github.com/f-eld-ch/sitrep/issues/1385)) - ([41532d0](https://github.com/f-eld-ch/sitrep/commit/41532d0b13054c155488473b1dea6c468afc5d8c))
