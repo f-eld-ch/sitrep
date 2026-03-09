@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the otel group with 12 updates ([#1392](https://github.com/f-eld-ch/sitrep/issues/1392)) - ([47ac91f](https://github.com/f-eld-ch/sitrep/commit/47ac91ff060aaa1fafbd2f378f2e65886d4767d8))
 - *(deps)* Bump i18next from 25.8.13 to 25.8.14 in /ui ([#1384](https://github.com/f-eld-ch/sitrep/issues/1384)) - ([aeccb60](https://github.com/f-eld-ch/sitrep/commit/aeccb60eeed853b8407faeba34a7068af44a1e0d))
 - *(deps)* Bump graphql from 16.13.0 to 16.13.1 in /ui ([#1385](https://github.com/f-eld-ch/sitrep/issues/1385)) - ([41532d0](https://github.com/f-eld-ch/sitrep/commit/41532d0b13054c155488473b1dea6c468afc5d8c))
 - *(deps)* Bump immutable ([#1386](https://github.com/f-eld-ch/sitrep/issues/1386)) - ([cd1c8e8](https://github.com/f-eld-ch/sitrep/commit/cd1c8e84ec4fb041deda67ed719addda6c4b20c0))
