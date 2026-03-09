@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Iupdate some deps ([#1400](https://github.com/f-eld-ch/sitrep/issues/1400)) - ([1237de5](https://github.com/f-eld-ch/sitrep/commit/1237de5457eead4382ad7fbfbcf7333b5c9e0cf0))
+
 ### ⚙️  Other
 
 - *(deps)* Bump i18next from 25.8.14 to 25.8.17 in /ui ([#1391](https://github.com/f-eld-ch/sitrep/issues/1391)) - ([f587180](https://github.com/f-eld-ch/sitrep/commit/f587180dfeb646c2afab6e99383f61742f8b39c4))
