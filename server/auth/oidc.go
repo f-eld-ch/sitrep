@@ -16,7 +16,7 @@ import (
 	httphelper "github.com/zitadel/oidc/v3/pkg/http"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	semconv "go.opentelemetry.io/otel/semconv/v1.38.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -286,7 +286,7 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
 		if err != nil {
-			o.logger.Error("failed to get user info", string(semconv.ErrorMessageKey), err)
+			o.logger.Error("failed to get user info", "error.message", err.Error())
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
 		c.Set("id_token", userInfo.IDToken)
