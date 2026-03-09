@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 25.8.14 to 25.8.17 in /ui ([#1391](https://github.com/f-eld-ch/sitrep/issues/1391)) - ([f587180](https://github.com/f-eld-ch/sitrep/commit/f587180dfeb646c2afab6e99383f61742f8b39c4))
 - *(deps)* Bump proj4 from 2.20.3 to 2.20.4 in /ui ([#1390](https://github.com/f-eld-ch/sitrep/issues/1390)) - ([7332fd6](https://github.com/f-eld-ch/sitrep/commit/7332fd69d64ce3debedb441f1cfa1b2c449d377b))
 - *(deps)* Bump react-i18next from 16.5.4 to 16.5.6 in /ui ([#1388](https://github.com/f-eld-ch/sitrep/issues/1388)) - ([3aa838e](https://github.com/f-eld-ch/sitrep/commit/3aa838e683542f551f5e213784d7ee6aae9b7a8f))
 - *(deps)* Bump the otel group with 12 updates ([#1392](https://github.com/f-eld-ch/sitrep/issues/1392)) - ([47ac91f](https://github.com/f-eld-ch/sitrep/commit/47ac91ff060aaa1fafbd2f378f2e65886d4767d8))
