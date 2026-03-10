@@ -113,7 +113,7 @@
   },
   "resolutions": {
     "brace-expansion": "^4.0.1",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.3.2",
     "glob": "^13.0.6",
     "http-proxy-agent": "^7.0.2",
     "js-yaml": "^4.1.1",
