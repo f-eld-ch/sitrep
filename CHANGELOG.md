@@ -6,6 +6,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(journal)* Ensure proper sorting of messages by message time ([#1412](https://github.com/f-eld-ch/sitrep/issues/1412)) - ([5ea552c](https://github.com/f-eld-ch/sitrep/commit/5ea552c5663e1d3c193e2e384e1ed5a4042f7a67))
 - Iupdate some deps ([#1400](https://github.com/f-eld-ch/sitrep/issues/1400)) - ([1237de5](https://github.com/f-eld-ch/sitrep/commit/1237de5457eead4382ad7fbfbcf7333b5c9e0cf0))
 
 ### ⚙️  Other
