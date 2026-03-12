@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(journal)* Add human readable message number ([#1411](https://github.com/f-eld-ch/sitrep/issues/1411)) - ([e0d2a7c](https://github.com/f-eld-ch/sitrep/commit/e0d2a7c231af63620dfa41d1fdf3cae89edae821))
+
 ### 🐛 Bug Fixes
 
 - Iupdate some deps ([#1400](https://github.com/f-eld-ch/sitrep/issues/1400)) - ([1237de5](https://github.com/f-eld-ch/sitrep/commit/1237de5457eead4382ad7fbfbcf7333b5c9e0cf0))
