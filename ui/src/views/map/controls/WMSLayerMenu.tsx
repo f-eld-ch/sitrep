@@ -385,7 +385,11 @@ const WMSLayerMenu = () => {
                     <option value="" disabled>
                       {t("wmsLayerMenu.selectLayer")}
                     </option>
-                    {layers.map((layer) => <option key={layer.name} value={layer.name}>{layer.title}</option>)}
+                    {layers.map((layer) => (
+                      <option key={layer.name} value={layer.name}>
+                        {layer.title}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -414,6 +418,5 @@ const WMSLayerMenu = () => {
     </>
   );
 };
-
 
 export default WMSLayerMenu;

@@ -177,6 +177,21 @@ const MessageContainer = ({
                   </p>
                 </div>
               </div>
+              {message.number !== undefined && (
+                <div className="level-item has-text-centered is-flex-shrink-0">
+                  <div className="mb-0">
+                    <p className="heading is-size-7 has-text-weight-bold">
+                      {t("message.id")}
+                    </p>
+                    <p
+                      className="subtitle is-size-7"
+                      data-testid={`number-${message.id}`}
+                    >
+                      # {message.number}
+                    </p>
+                  </div>
+                </div>
+              )}
             </nav>
           </div>
           <div className="column is-full" style={{ wordBreak: "break-word" }}>

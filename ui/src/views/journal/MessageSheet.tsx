@@ -82,7 +82,7 @@ const MessageSheet = (
           </tr>
           <tr>
             <th>{t("message.id")}</th>
-            <td colSpan={3}>{message.id}</td>
+            <td colSpan={3}>{message.number ?? message.id}</td>
           </tr>
           <tr>
             <th>{t("message.type")}</th>
@@ -159,6 +159,6 @@ const MessageSheet = (
       </table>
     </div>
   );
-}
+};
 
 export default forwardRef(MessageSheet);
