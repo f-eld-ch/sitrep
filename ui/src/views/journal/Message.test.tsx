@@ -210,9 +210,9 @@ describe("MessageContainer", () => {
             msg.receiver,
           );
           if (msg.number !== undefined) {
-            expect(
-              screen.getByTestId(`number-${msg.id}`).textContent,
-            ).toBe(`# ${msg.number}`);
+            expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(
+              `# ${msg.number}`,
+            );
           } else {
             expect(
               screen.queryByTestId(`number-${msg.id}`),

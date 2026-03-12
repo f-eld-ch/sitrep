@@ -90,33 +90,12 @@ function List(props: {
         (message) =>
           assignmentFilter === "all" ||
           message.divisions?.find((d) => d.division.name === assignmentFilter),
+      )
+      .sort(stableOrderByCreatedAt)
+      .map((m, i) => ({ ...m, number: i + 1 }))
+      .sort(
+        (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
       ) || [];
-
-  // assign the sequence to the messages for stable sorting and ID generation
-  const stableOrderByCreatedAt = <T extends { createdAt: Date; id?: string }>(
-    msgs: T[],
-  ): T[] =>
-    msgs
-      .map((m, idx) => ({ m, idx }))
-      .sort((a, b) => {
-        const tA = new Date(a.m.createdAt);
-        const tB = new Date(b.m.createdAt);
-        if (tA !== tB) return tA.getTime() - tB.getTime();
-        if (a.m.id && b.m.id)
-          return a.m.id < b.m.id ? -1 : a.m.id > b.m.id ? 1 : 0;
-        return a.idx - b.idx;
-      })
-      .map(({ m }) => m);
-
-  const messagesWithNumber = stableOrderByCreatedAt(messages).map((m, i) => ({
-    ...m,
-    number: i + 1,
-  }));
-
-  // sort the message again with the message time stamp
-  messagesWithNumber.sort(
-    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
-  );
 
   return (
     <>
@@ -223,7 +202,7 @@ function List(props: {
       <div className="columns is-multiline is-gapless">
         {data && (
           <MemoMessages
-            messages={messagesWithNumber}
+            messages={messages}
             divisions={divisions}
             showControls={props.showControls}
             setTriageMessage={props.setTriageMessage}
@@ -234,7 +213,7 @@ function List(props: {
       <div style={{ display: "none" }}>
         <MessageTable
           ref={tableRef}
-          messages={messagesWithNumber}
+          messages={messages}
           triageFilter={triageFilter}
           priorityFilter={priorityFilter}
           assignmentFilter={assignmentFilter}
@@ -272,6 +251,17 @@ function Messages(props: {
       })}
     </>
   );
+}
+
+function stableOrderByCreatedAt<T extends { createdAt: Date; id?: string }>(
+  a: T,
+  b: T,
+): number {
+  const tA = new Date(a.createdAt);
+  const tB = new Date(b.createdAt);
+  if (tA.getTime() !== tB.getTime()) return tA.getTime() - tB.getTime();
+  if (a.id && b.id) return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  return 0;
 }
 
 export default memo(List);
