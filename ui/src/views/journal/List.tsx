@@ -90,6 +90,11 @@ function List(props: {
         (message) =>
           assignmentFilter === "all" ||
           message.divisions?.find((d) => d.division.name === assignmentFilter),
+      )
+      .sort(stableOrderByCreatedAt)
+      .map((m, i) => ({ ...m, number: i + 1 }))
+      .sort(
+        (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
       ) || [];
 
   return (
@@ -246,6 +251,17 @@ function Messages(props: {
       })}
     </>
   );
+}
+
+function stableOrderByCreatedAt<T extends { createdAt: Date; id?: string }>(
+  a: T,
+  b: T,
+): number {
+  const tA = new Date(a.createdAt);
+  const tB = new Date(b.createdAt);
+  if (tA.getTime() !== tB.getTime()) return tA.getTime() - tB.getTime();
+  if (a.id && b.id) return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  return 0;
 }
 
 export default memo(List);

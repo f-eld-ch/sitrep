@@ -17,7 +17,9 @@ export const MapStyles: MapStyle[] = [
   },
   {
     name: "Satellit",
-    style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
+    style: ExpandRelativeURLs(
+      basisKarteImagery as unknown as StyleSpecification,
+    ),
   },
 ];
 

@@ -122,6 +122,46 @@ describe("MessageContainer", () => {
     fireEvent.click(screen.getByTestId("create-task-button"));
   });
 
+  it("does not render message number when number is undefined", () => {
+    render(
+      <MessageContainer
+        id="msg1"
+        message={baseMessage}
+        divisions={divisions}
+        showControls={false}
+      />,
+    );
+    expect(screen.queryByTestId("number-msg1")).not.toBeInTheDocument();
+  });
+
+  it("renders message number when number is defined", () => {
+    render(
+      <MessageContainer
+        id="msg1"
+        message={{ ...baseMessage, number: 42 }}
+        divisions={divisions}
+        showControls={false}
+      />,
+    );
+    expect(screen.getByTestId("number-msg1").textContent).toBe("# 42");
+    expect(screen.getByText("message.id")).toBeInTheDocument();
+  });
+
+  it("renders correct message number for various values", () => {
+    for (const num of [1, 99, 1000]) {
+      const { unmount } = render(
+        <MessageContainer
+          id="msg1"
+          message={{ ...baseMessage, number: num }}
+          divisions={divisions}
+          showControls={false}
+        />,
+      );
+      expect(screen.getByTestId("number-msg1").textContent).toBe(`# ${num}`);
+      unmount();
+    }
+  });
+
   it("renders with random message data (fast-check)", () => {
     fc.assert(
       fc.property(
@@ -151,9 +191,10 @@ describe("MessageContainer", () => {
           updatedAt: fc.date(),
           deletedAt: fc.date(),
           medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
+          number: fc.option(fc.nat(), { nil: undefined }),
         }),
         (msg) => {
-          render(
+          const { unmount } = render(
             <MessageContainer
               id={msg.id}
               message={{ ...msg, divisions: [...msg.divisions] } as Message}
@@ -168,6 +209,16 @@ describe("MessageContainer", () => {
           expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(
             msg.receiver,
           );
+          if (msg.number !== undefined) {
+            expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(
+              `# ${msg.number}`,
+            );
+          } else {
+            expect(
+              screen.queryByTestId(`number-${msg.id}`),
+            ).not.toBeInTheDocument();
+          }
+          unmount();
         },
       ),
       { numRuns: 100 },
