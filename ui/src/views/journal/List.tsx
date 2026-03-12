@@ -94,7 +94,7 @@ function List(props: {
       .sort(stableOrderByCreatedAt)
       .map((m, i) => ({ ...m, number: i + 1 }))
       .sort(
-        (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+        (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
       ) || [];
 
   return (
