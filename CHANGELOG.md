@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.19.0 to 5.20.0 in /ui ([#1404](https://github.com/f-eld-ch/sitrep/issues/1404)) - ([af1327f](https://github.com/f-eld-ch/sitrep/commit/af1327f619b479434af99110cdc23705a7b3d6d8))
 - *(deps)* Bump i18next from 25.8.17 to 25.8.18 in /ui ([#1403](https://github.com/f-eld-ch/sitrep/issues/1403)) - ([c811b33](https://github.com/f-eld-ch/sitrep/commit/c811b33634aa7121d811b9e8393075478458a8d7))
 - *(deps)* Bump react-i18next from 16.5.6 to 16.5.8 in /ui ([#1405](https://github.com/f-eld-ch/sitrep/issues/1405)) - ([70cc2ed](https://github.com/f-eld-ch/sitrep/commit/70cc2eda970123229cf2b3357fdad97f4cd2cff4))
 - *(deps)* Bump go.opentelemetry.io/otel from 1.41.0 to 1.42.0 ([#1393](https://github.com/f-eld-ch/sitrep/issues/1393)) - ([2bf0df1](https://github.com/f-eld-ch/sitrep/commit/2bf0df15d57d15cd82859a07cc43502b78fabae1))
