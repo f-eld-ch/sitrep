@@ -8,6 +8,7 @@ export default mergeConfig(
       environment: "jsdom",
       setupFiles: ["./src/setupTests.ts"],
       globals: true,
+      reporters: process.env.GITHUB_ACTIONS ? ["github-actions", "default"] : ["verbose"],
     },
   }),
 );

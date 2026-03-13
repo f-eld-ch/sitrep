@@ -3,7 +3,6 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router";
 
 import "./App.scss";
 
-import { Provider as FeatureFlagProvider } from "FeatureFlags";
 import { ApolloProvider } from "@apollo/client/react";
 import { default as client } from "client";
 import { Spinner } from "components";
@@ -21,6 +20,7 @@ import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures"
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
+import { Provider as FeatureFlagProvider } from "./FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
 import de from "dayjs/locale/de";

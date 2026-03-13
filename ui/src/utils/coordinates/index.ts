@@ -46,7 +46,7 @@ import { registerProj4 } from "./register";
  */
 
 type ExtractedCoordinate = {
-  coordinateSystem: typeof LV03;
+  coordinateSystem: typeof LV03 | typeof LV95 | typeof WEBMERCATOR | typeof WGS84;
   coordinate: SingleCoordinate;
 };
 

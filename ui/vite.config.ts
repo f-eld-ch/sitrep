@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
@@ -16,24 +16,55 @@ export default defineConfig({
   build: {
     sourcemap: true,
     outDir: "build",
+    chunkSizeWarningLimit: 1500,
     rolldownOptions: {
       treeshake: true,
       tsconfig: true,
       output: {
         cleanDir: true,
         format: "esm",
-        codeSplitting: true,
+        codeSplitting: {
+          groups: [
+            {
+              name: "react",
+              test: /node_modules[\\/]react/,
+              priority: 20,
+            },
+            {
+              name: "maplibre",
+              test: /node_modules[\\/]maplibre-gl/,
+              priority: 19,
+            },
+            {
+              name: "maplibre-deps",
+              test: /node_modules[\\/](?:@watergis[\\/]maplibre-gl-export|@mapbox[\\/]mapbox-gl-draw|@turf)/,
+              priority: 18,
+            },
+            {
+              name: "apollo",
+              test: /node_modules[\\/]@apollo/,
+              priority: 18,
+            },
+            {
+              name: "utils",
+              test: /node_modules[\\/](?:@fortawesome[\\/](?:fontawesome-svg-core|free-solid-svg-icons|free-regular-svg-icons|free-brands-svg-icons|react-fontawesome)|lodash)/,
+              priority: 17,
+            },
+            {
+              name: "flipt",
+              test: /node_modules[\\/](?:@flipt-io|@openfeature)/,
+            },
+            {
+              name: "common",
+              minShareCount: 2,
+              minSize: 10000,
+              priority: 5,
+            },
+          ],
+        },
         minify: true,
         assetFileNames: "assets/[name]-[hash][extname]",
         chunkFileNames: "assets/[name]-[hash].js",
-        entryFileNames: "assets/[name]-[hash].js",
-      },
-    },
-  },
-  worker: {
-    rolldownOptions: {
-      output: {
-        format: "iife",
         entryFileNames: "assets/[name]-[hash].js",
       },
     },
@@ -42,7 +73,7 @@ export default defineConfig({
     global: "window",
   },
   plugins: [
-    react({ devTarget: "es2022" }),
+    react(),
     svgrPlugin(),
     analyzer({ analyzerMode: "static", enabled: false }),
     VitePWA({
@@ -88,6 +119,7 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       "@": "./src",
     },

@@ -1,19 +1,24 @@
 {
   "compilerOptions": {
     "paths": {
-      "*": ["./node_modules/*", "./src/*"],
-      "react": ["./node_modules/@types/react"]
+      "types": ["./src/types/index.ts"],
+      "types/*": ["./src/types/*"],
+      "utils": ["./src/utils/index.ts"],
+      "utils/*": ["./src/utils/*"],
+      "components": ["./src/components/index.tsx"],
+      "components/*": ["./src/components/*"],
+      "views/*": ["./src/views/*"],
+      "assets/*": ["./src/assets/*"],
+      "cache": ["./src/cache.tsx"],
+      "client": ["./src/client.tsx"]
     },
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
     "jsx": "react-jsx",
     /* Linting */

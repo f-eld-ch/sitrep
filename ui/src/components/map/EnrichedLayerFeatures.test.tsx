@@ -6,6 +6,12 @@ import { MapStyles } from "views/map/controls/StyleController";
 import { describe, expect, it, vi } from "vitest";
 import { EnrichedFeaturesSource } from "./EnrichedLayerFeatures";
 
+vi.mock("react-map-gl/maplibre", () => ({
+  Map: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Source: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Layer: () => null,
+}));
+
 if (!window.URL.createObjectURL) {
   window.URL.createObjectURL = vi.fn();
 }

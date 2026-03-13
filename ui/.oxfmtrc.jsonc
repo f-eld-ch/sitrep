@@ -1,5 +1,5 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["./src/i18n/locales/**"],
+  "ignorePatterns": ["./src/i18n/locales/**", "dist/**", "node_modules/**"],
   "printWidth": 100,
 }
