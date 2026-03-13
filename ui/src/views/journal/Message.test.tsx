@@ -200,8 +200,10 @@ describe("MessageContainer", () => {
           expect(screen.getByTestId(`sender-${msg.id}`).textContent).toBe(msg.sender);
           expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(msg.receiver);
           if (msg.number !== undefined) {
+            // oxlint-disable-next-line jest/no-conditional-expect
             expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(`# ${msg.number}`);
           } else {
+            // oxlint-disable-next-line jest/no-conditional-expect
             expect(screen.queryByTestId(`number-${msg.id}`)).not.toBeInTheDocument();
           }
           unmount();

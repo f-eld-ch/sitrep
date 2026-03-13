@@ -34,7 +34,7 @@ jobs:
         working-directory: ui
       
       - name: Lint ui files
-        run: yarn lint
+        run: yarn lint:github
         working-directory: ui
       
       - name: Run ui tests

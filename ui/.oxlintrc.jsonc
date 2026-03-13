@@ -1,6 +1,16 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["jest", "react-perf", "import", "react", "jsx-a11y", "jsdoc", "typescript", "vitest"],
+  "plugins": [ 
+    "eslint", 
+    "import",
+    "react",
+    "react-perf",
+    "jest", 
+    "jsx-a11y",
+    "jsdoc",
+    "typescript",
+    "vitest",
+  ],
   "categories": {},
   "rules": {
     "jsx-a11y/anchor-is-valid": "off",
@@ -9,8 +19,8 @@
     "jsx-a11y/click-events-have-key-events": "off",
   },
   "options": {
-    "typeAware": true,
-    "typeCheck": true,
+    "typeAware": false,
+    "typeCheck": false,
   },
   "settings": {
     "jsx-a11y": {

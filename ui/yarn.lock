@@ -3806,13 +3806,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hat@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "@types/hat@npm:0.0.4"
-  checksum: 10/7e926e7b198ffb2655c64bfa2f4d3deb4bb50d60fa25210f0115169e4c99afee114efe2a58941c352a546195997e943d6971c6ab58a9d075f8cc5fab8d0f8df9
-  languageName: node
-  linkType: hard
-
 "@types/istanbul-lib-coverage@npm:*, @types/istanbul-lib-coverage@npm:^2.0.1, @types/istanbul-lib-coverage@npm:^2.0.6":
   version: 2.0.6
   resolution: "@types/istanbul-lib-coverage@npm:2.0.6"
@@ -6340,13 +6333,6 @@ __metadata:
   dependencies:
     "@types/hast": "npm:^3.0.0"
   checksum: 10/8c7e9eeb8131fc18702f3a42623eb6b0b09d470347aa8badacac70e6d91f79657ab8c6b57c4c6fee3658cff405fac30e816d1cdfb3ed1fbf6045d0a4555cf4d4
-  languageName: node
-  linkType: hard
-
-"hat@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "hat@npm:0.0.3"
-  checksum: 10/3be85f476e3b2082194ff43f55794325308ec6f77a6a88476b0a6539fe49934dca96554b0b75fef6ae234cc45958bc361384dcf1593e9bb0f50b01551a5aa452
   languageName: node
   linkType: hard
 
@@ -10269,7 +10255,6 @@ __metadata:
     "@turf/distance": "npm:^7.3.4"
     "@turf/helpers": "npm:^7.3.4"
     "@turf/line-split": "npm:^7.3.4"
-    "@types/hat": "npm:^0.0.4"
     "@types/jest": "npm:^30.0.0"
     "@types/lodash": "npm:^4.17.24"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
@@ -10288,7 +10273,6 @@ __metadata:
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^17.4.0"
     graphql: "npm:^16.13.1"
-    hat: "npm:^0.0.3"
     html-react-parser: "npm:^5.2.17"
     i18next: "npm:^25.8.18"
     i18next-browser-languagedetector: "npm:^8.2.1"
