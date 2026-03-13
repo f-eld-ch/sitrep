@@ -17,10 +17,7 @@ import type {
   UpdateMessageVars,
 } from "types/journal";
 
-const GET_MESSAGES: TypedDocumentNode<
-  GetJournalMessagesData,
-  GetJournalMessagesVars
-> = gql`
+const GET_MESSAGES: TypedDocumentNode<GetJournalMessagesData, GetJournalMessagesVars> = gql`
   query GetMessages($journalId: uuid!) {
     journalsByPk(id: $journalId) {
       incident {
@@ -32,7 +29,10 @@ const GET_MESSAGES: TypedDocumentNode<
         }
       }
     }
-    messages(where: { journal: { id: { _eq: $journalId } }, deletedAt: { _isNull: true } }, orderBy: { time: DESC }) {
+    messages(
+      where: { journal: { id: { _eq: $journalId } }, deletedAt: { _isNull: true } }
+      orderBy: { time: DESC }
+    ) {
       id
       content
       sender
@@ -56,8 +56,7 @@ const GET_MESSAGES: TypedDocumentNode<
     }
   }
 `;
-const INSERT_JOURNAL: TypedDocumentNode<InsertJournalData, InsertJournalVars> =
-  gql`
+const INSERT_JOURNAL: TypedDocumentNode<InsertJournalData, InsertJournalVars> = gql`
   mutation InsertJournal($name: String!, $incidentId: uuid!) {
     insertJournalsOne(object: { incidentId: $incidentId, name: $name }) {
       id
@@ -85,8 +84,7 @@ const GET_JOURNALS: TypedDocumentNode<GetJournalsData, GetJournalsVars> = gql`
     }
   }
 `;
-const CLOSE_JOURNAL: TypedDocumentNode<CloseJournalData, CloseJournalVars> =
-  gql`
+const CLOSE_JOURNAL: TypedDocumentNode<CloseJournalData, CloseJournalVars> = gql`
   mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
     updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
       affectedRows
@@ -108,9 +106,8 @@ const INSERT_MESSAGE: TypedDocumentNode<Message, InsertMessageVars> = gql`
     $receiverDetail: String
     $senderDetail: String
     $medium: MediumEnum
-  )
-{
-  insertMessagesOne(
+  ) {
+    insertMessagesOne(
       object: {
         content: $content
         journalId: $journalId
@@ -188,10 +185,7 @@ const UPDATE_MESSAGE: TypedDocumentNode<Message, UpdateMessageVars> = gql`
     }
   }
 `;
-const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
-  SaveMessageTriageData,
-  SaveMessageTriageVars
-> = gql`
+const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<SaveMessageTriageData, SaveMessageTriageVars> = gql`
   mutation SaveMessageTriage(
     $messageId: uuid!
     $priority: PriorityStatusEnum
@@ -204,7 +198,10 @@ const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
     insertMessageDivision(objects: $messageDivisions) {
       affectedRows
     }
-    updateMessagesByPk(pkColumns: { id: $messageId }, _set: { priorityId: $priority, triageId: $triage }) {
+    updateMessagesByPk(
+      pkColumns: { id: $messageId }
+      _set: { priorityId: $priority, triageId: $triage }
+    ) {
       id
       divisions {
         division {
@@ -216,10 +213,7 @@ const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
     }
   }
 `;
-const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
-  TriageMessageData,
-  TriageMessageVars
-> = gql`
+const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<TriageMessageData, TriageMessageVars> = gql`
   query GetMessageForTriage($messageId: uuid!) {
     messagesByPk(id: $messageId) {
       id

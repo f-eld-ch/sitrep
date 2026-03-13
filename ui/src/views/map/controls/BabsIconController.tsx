@@ -1,10 +1,5 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import {
-  faArrowsRotate,
-  faHeading,
-  faLock,
-  faLockOpen,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import {
@@ -67,13 +62,9 @@ const IconController = memo((props: BabsIconControllerProps) => {
         return;
       }
 
-      const properties: GeoJsonProperties = Object.assign(
-        {},
-        selectedFeature.properties,
-        {
-          iconRotation: rotationLock ? map.getBearing() : undefined,
-        },
-      );
+      const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+        iconRotation: rotationLock ? map.getBearing() : undefined,
+      });
 
       selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
 
@@ -155,15 +146,11 @@ function IconGroupMenu(props: GroupMenuProps) {
 
   const onClickIcon = useCallback(
     (i: BabsIcon) => {
-      const properties: GeoJsonProperties = Object.assign(
-        {},
-        feature.properties,
-        {
-          icon: i.name,
-          iconType: i.name,
-          color: ColorsForIconGroup[name],
-        },
-      );
+      const properties: GeoJsonProperties = Object.assign({}, feature.properties, {
+        icon: i.name,
+        iconType: i.name,
+        color: ColorsForIconGroup[name],
+      });
       feature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [feature], action: "featureDetail" });
       setActive(!active);
@@ -173,10 +160,7 @@ function IconGroupMenu(props: GroupMenuProps) {
 
   if (active || lastIcon === undefined) {
     return (
-      <div
-        className="maplibregl-ctrl maplibregl-ctrl-group"
-        style={iconControllerFlexboxStyleRow}
-      >
+      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
         {Object.values(iconGroup).map((icon) => (
           <button
             type="button"
@@ -222,14 +206,10 @@ const LineController = memo((props: BabsIconControllerProps) => {
         return;
       }
 
-      const properties: GeoJsonProperties = Object.assign(
-        {},
-        selectedFeature.properties,
-        {
-          lineType: i.name,
-          color: i.color,
-        },
-      );
+      const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+        lineType: i.name,
+        color: i.color,
+      });
       selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [selectedFeature], action: "featureDetail" });
     },
@@ -315,14 +295,10 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   const onClickIcon = useCallback(
     (i: TypesType) => {
       if (selectedFeature !== undefined) {
-        const properties: GeoJsonProperties = Object.assign(
-          {},
-          selectedFeature.properties,
-          {
-            zoneType: i.name,
-            color: i.color,
-          },
-        );
+        const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+          zoneType: i.name,
+          color: i.color,
+        });
         selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
         onUpdate({ features: [selectedFeature], action: "featureDetail" });
       }
@@ -493,26 +469,18 @@ interface GroupMenuProps {
   name: string;
   iconGroup: BabsIconType;
   feature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: {
-    features: Feature<Geometry, GeoJsonProperties>[];
-    action: string;
-  }) => void;
+  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
 interface BabsIconControllerProps {
   selectedFeature: Feature<Geometry, GeoJsonProperties> | undefined;
-  onUpdate: (e: {
-    features: Feature<Geometry, GeoJsonProperties>[];
-    action: string;
-  }) => void;
+  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
   const layer = first(
-    state.layers
-      .filter((l) => l.layer.id === state.activeLayer)
-      .map((l) => l.layer),
+    state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer),
   );
   const { current: map } = useMap();
 
@@ -525,19 +493,14 @@ const BabsIconController = () => {
     (e: { features: Feature<Geometry, GeoJsonProperties>[] }) => {
       const updatedFeatures: Feature[] = e.features;
       // fire an map draw.update event
-      map
-        ?.getMap()
-        .fire("draw.update", { features: updatedFeatures, target: map });
+      map?.getMap().fire("draw.update", { features: updatedFeatures, target: map });
     },
     [map],
   );
 
   return (
     <>
-      <FeatureDetailControlPanel
-        selectedFeature={selectedFeature}
-        onUpdate={onUpdate}
-      />
+      <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
       <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
@@ -547,21 +510,15 @@ const BabsIconController = () => {
 
 const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const [enteredText, setEnteredText] = useState<string>(
-    selectedFeature?.properties?.name,
-  );
+  const [enteredText, setEnteredText] = useState<string>(selectedFeature?.properties?.name);
   const [active, setActive] = useState<boolean>(false);
   const { t } = useTranslation();
   const onInput = useCallback(
     (name: string) => {
       if (selectedFeature !== undefined) {
-        const properties: GeoJsonProperties = Object.assign(
-          {},
-          selectedFeature.properties,
-          {
-            name: name,
-          },
-        );
+        const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
+          name: name,
+        });
         selectedFeature.properties = omitBy(properties, isUndefined || isEmpty);
         onUpdate({ features: [selectedFeature], action: "featureDetail" });
       }
@@ -602,16 +559,9 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   if (!active) {
     return (
-      <div
-        className="maplibregl-ctrl-top-right has-text-black"
-        style={{ marginRight: "45px" }}
-      >
+      <div className="maplibregl-ctrl-top-right has-text-black" style={{ marginRight: "45px" }}>
         <div className="maplibregl-ctrl maplibregl-ctrl-group">
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setActive(!active)}
-          >
+          <button type="button" className={btnClass} onClick={() => setActive(!active)}>
             <FontAwesomeIcon icon={faHeading} size="lg" />
           </button>
         </div>

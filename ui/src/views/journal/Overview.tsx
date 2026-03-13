@@ -38,16 +38,13 @@ function Overview() {
     pollInterval: 10000,
   });
 
-  if (error)
-    return <div className="notification is-danger">{error.message}</div>;
+  if (error) return <div className="notification is-danger">{error.message}</div>;
 
   if (loading && !data) return <Spinner />;
 
   if (!data || !(data.incidents.length === 1))
     return (
-      <div className="notification is-danger">
-        Unerwarteter Fehler beim Laden des Ereignisses.
-      </div>
+      <div className="notification is-danger">Unerwarteter Fehler beim Laden des Ereignisses.</div>
     );
 
   const incident = data.incidents[0];
@@ -94,37 +91,25 @@ function Overview() {
   );
 }
 
-function JournalCards(props: {
-  journals: Journal[];
-  incidentId: string | undefined;
-}) {
+function JournalCards(props: { journals: Journal[]; incidentId: string | undefined }) {
   const { journals, incidentId } = props;
 
   return (
     <div className="container-flex">
       {journals.map((journal) => (
-        <JournalCard
-          key={journal.id}
-          journal={journal}
-          incidentId={incidentId}
-        />
+        <JournalCard key={journal.id} journal={journal} incidentId={incidentId} />
       ))}
     </div>
   );
 }
 
-function JournalCard(props: {
-  journal: Journal;
-  incidentId: string | undefined;
-}) {
+function JournalCard(props: { journal: Journal; incidentId: string | undefined }) {
   const { journal, incidentId } = props;
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
 
   const [closeJournal] = useMutation(CloseJournal, {
-    refetchQueries: [
-      { query: GetJournals, variables: { incidentId: incidentId } },
-    ],
+    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
   });
 
   const cardClass = classNames({

@@ -13,12 +13,9 @@ import type {
   UpdateIncidentVars,
 } from "types/incident";
 
-const GET_INCIDENTS: TypedDocumentNode<
-  IncidentListData,
-  Record<string, never>
-> = gql`
+const GET_INCIDENTS: TypedDocumentNode<IncidentListData, Record<string, never>> = gql`
   query FetchIncidents {
-    incidents(orderBy: {createdAt: DESC}, where: {deletedAt: {_isNull: true}}) {
+    incidents(orderBy: { createdAt: DESC }, where: { deletedAt: { _isNull: true } }) {
       id
       name
       createdAt
@@ -32,10 +29,7 @@ const GET_INCIDENTS: TypedDocumentNode<
     }
   }
 `;
-const GET_INCIDENT_DETAILS: TypedDocumentNode<
-  IncidentDetailsData,
-  IncidentDetailsVars
-> = gql`
+const GET_INCIDENT_DETAILS: TypedDocumentNode<IncidentDetailsData, IncidentDetailsVars> = gql`
   query GetIncidentDetail($incidentId: uuid!) {
     incidentsByPk(id: $incidentId) {
       id
@@ -60,10 +54,7 @@ const GET_INCIDENT_DETAILS: TypedDocumentNode<
     }
   }
 `;
-const INSERT_INCIDENT: TypedDocumentNode<
-  InsertIncidentData,
-  InsertIncidentVars
-> = gql`
+const INSERT_INCIDENT: TypedDocumentNode<InsertIncidentData, InsertIncidentVars> = gql`
   mutation InsertIncident(
     $name: String!
     $location: String
@@ -98,10 +89,7 @@ const INSERT_INCIDENT: TypedDocumentNode<
     }
   }
 `;
-const UPDATE_INCIDENT: TypedDocumentNode<
-  UpdateIncidentData,
-  UpdateIncidentVars
-> = gql`
+const UPDATE_INCIDENT: TypedDocumentNode<UpdateIncidentData, UpdateIncidentVars> = gql`
   mutation UpdateIncident(
     $incidentId: uuid!
     $name: String!
@@ -134,57 +122,66 @@ const UPDATE_INCIDENT: TypedDocumentNode<
     }
   }
 `;
-const CLOSE_INCIDENT: TypedDocumentNode<
-  CloseIncidentMutation,
-  CloseIncidentMutationVariables
-> = gql`
-  mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
-    updateJournals(where: { incidentId: { _eq: $incidentId }, closedAt: { _isNull: true } }, _set: { closedAt: $closedAt }) {
-      affectedRows
-      returning {
-        id
-        closedAt
-      }
-    }
-    updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
-      affectedRows
-      returning {
-        id
-        closedAt
-        journals {
+const CLOSE_INCIDENT: TypedDocumentNode<CloseIncidentMutation, CloseIncidentMutationVariables> =
+  gql`
+    mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
+      updateJournals(
+        where: { incidentId: { _eq: $incidentId }, closedAt: { _isNull: true } }
+        _set: { closedAt: $closedAt }
+      ) {
+        affectedRows
+        returning {
           id
           closedAt
         }
       }
-    }
-  }
-`;
-
-const DELETE_INCIDENT: TypedDocumentNode<
-  DeleteIncidentMutation,
-  DeleteIncidentMutationVariables
-> = gql`
-  mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
-    updateJournals(where: { incidentId: { _eq: $incidentId }, deletedAt: { _isNull: true } }, _set: { deletedAt: $deletedAt }) {
-      affectedRows
-      returning {
-        id
-        deletedAt
+      updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
+        affectedRows
+        returning {
+          id
+          closedAt
+          journals {
+            id
+            closedAt
+          }
+        }
       }
     }
-    updateIncidents(where: { id: { _eq: $incidentId }, deletedAt: {_isNull: true}, closedAt: {_isNull: false} }, _set: { deletedAt: $deletedAt }) {
-      affectedRows
-      returning {
-        id
-        deletedAt
-        journals {
+  `;
+
+const DELETE_INCIDENT: TypedDocumentNode<DeleteIncidentMutation, DeleteIncidentMutationVariables> =
+  gql`
+    mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
+      updateJournals(
+        where: { incidentId: { _eq: $incidentId }, deletedAt: { _isNull: true } }
+        _set: { deletedAt: $deletedAt }
+      ) {
+        affectedRows
+        returning {
           id
           deletedAt
         }
       }
+      updateIncidents(
+        where: {
+          id: { _eq: $incidentId }
+          deletedAt: { _isNull: true }
+          closedAt: { _isNull: false }
+        }
+        _set: { deletedAt: $deletedAt }
+      ) {
+        affectedRows
+        returning {
+          id
+          deletedAt
+          journals {
+            id
+            deletedAt
+          }
+        }
+      }
     }
-  }
-`;
+  `;
 
 export {
   CLOSE_INCIDENT as CloseIncident,

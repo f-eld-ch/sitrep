@@ -1,9 +1,4 @@
-import {
-  faArrowsToEye,
-  faEdit,
-  faPrint,
-  faSquareCheck,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import classNames from "classnames";
@@ -12,12 +7,7 @@ import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import { useReactToPrint } from "react-to-print";
-import {
-  type Division,
-  type Message,
-  PriorityStatus,
-  TriageStatus,
-} from "types";
+import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
 import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {
@@ -47,13 +37,10 @@ const MessageContainer = ({
 
   const colorClassNames = classNames({
     "is-danger":
-      !(
-        message.triageId === TriageStatus.Pending ||
-        message.triageId === TriageStatus.Reset
-      ) && message.priorityId === PriorityStatus.High,
+      !(message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset) &&
+      message.priorityId === PriorityStatus.High,
     "is-warning":
-      message.triageId === TriageStatus.Pending ||
-      message.triageId === TriageStatus.Reset,
+      message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset,
     "is-success": message.triageId === TriageStatus.MoreInfo,
     "is-dark": message.triageId === TriageStatus.Triaged,
   });
@@ -97,19 +84,14 @@ const MessageContainer = ({
                   </div>
                   <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
-                      <div
-                        className="column is-full"
-                        data-testid={`sender-${message.id}`}
-                      >
+                      <div className="column is-full" data-testid={`sender-${message.id}`}>
                         {message.sender}
                       </div>
                       <div
                         className="column is-full is-italic"
                         data-testid={`sender-detail-${message.id}`}
                       >
-                        {message.senderDetail
-                          ? `(${message.senderDetail})`
-                          : ""}
+                        {message.senderDetail ? `(${message.senderDetail})` : ""}
                       </div>
                     </div>
                   </div>
@@ -122,19 +104,14 @@ const MessageContainer = ({
                   </div>
                   <div className="subtitle is-size-7">
                     <div className="columns is-gapless is-multiline">
-                      <div
-                        className="column is-full"
-                        data-testid={`receiver-${message.id}`}
-                      >
+                      <div className="column is-full" data-testid={`receiver-${message.id}`}>
                         {message.receiver}
                       </div>
                       <div
                         className="column is-full is-italic"
                         data-testid={`receiver-detail-${message.id}`}
                       >
-                        {message.receiverDetail
-                          ? `(${message.receiverDetail})`
-                          : ""}
+                        {message.receiverDetail ? `(${message.receiverDetail})` : ""}
                       </div>
                     </div>
                   </div>
@@ -142,9 +119,7 @@ const MessageContainer = ({
               </div>
               <div className="level-item has-text-centered is-flex-shrink-1">
                 <div className="mb-0">
-                  <div className="heading is-size-7 has-text-weight-bold">
-                    {t("message.time")}
-                  </div>
+                  <div className="heading is-size-7 has-text-weight-bold">{t("message.time")}</div>
                   <div className="subtitle is-size-7">
                     {dayjs(message.time).locale(i18n.language).format("LLL")}
                   </div>
@@ -152,41 +127,26 @@ const MessageContainer = ({
               </div>
               <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">
-                    {t("message.priority")}
-                  </p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.priority")}</p>
                   <p className="subtitle is-size-7">
-                    {t([
-                      `priority.${message.priorityId}`,
-                      `priority.${PriorityStatus.Normal}`,
-                    ])}
+                    {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
                   </p>
                 </div>
               </div>
 
               <div className="level-item has-text-centered is-flex-shrink-0">
                 <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">
-                    {t("message.triage")}
-                  </p>
+                  <p className="heading is-size-7 has-text-weight-bold">{t("message.triage")}</p>
                   <p className="subtitle is-size-7">
-                    {t([
-                      `triage.${message.triageId}`,
-                      `triage.${TriageStatus.Pending}`,
-                    ])}
+                    {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
                   </p>
                 </div>
               </div>
               {message.number !== undefined && (
                 <div className="level-item has-text-centered is-flex-shrink-0">
                   <div className="mb-0">
-                    <p className="heading is-size-7 has-text-weight-bold">
-                      {t("message.id")}
-                    </p>
-                    <p
-                      className="subtitle is-size-7"
-                      data-testid={`number-${message.id}`}
-                    >
+                    <p className="heading is-size-7 has-text-weight-bold">{t("message.id")}</p>
+                    <p className="subtitle is-size-7" data-testid={`number-${message.id}`}>
                       # {message.number}
                     </p>
                   </div>
@@ -195,10 +155,7 @@ const MessageContainer = ({
             </nav>
           </div>
           <div className="column is-full" style={{ wordBreak: "break-word" }}>
-            <div
-              className="content is-normal has-text-left"
-              data-testid={`content-${message.id}`}
-            >
+            <div className="content is-normal has-text-left" data-testid={`content-${message.id}`}>
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           </div>
@@ -215,10 +172,7 @@ const MessageContainer = ({
           </div>
         </div>
         {showControls === true && id !== undefined && (
-          <div
-            className={tabClassNames}
-            style={{ borderBottomRightRadius: "4px" }}
-          >
+          <div className={tabClassNames} style={{ borderBottomRightRadius: "4px" }}>
             <ul>
               {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <li>
@@ -261,10 +215,7 @@ const MessageContainer = ({
               )}
               {showTasks && (
                 <li>
-                  <a
-                    className="has-text-weight-bold"
-                    data-testid="create-task-button"
-                  >
+                  <a className="has-text-weight-bold" data-testid="create-task-button">
                     <span className="icon is-small">
                       <FontAwesomeIcon icon={faSquareCheck} />
                     </span>
@@ -274,11 +225,7 @@ const MessageContainer = ({
               )}
             </ul>
             <div style={{ display: "none" }}>
-              <MessageSheet
-                ref={messageSheetRef}
-                message={message}
-                divisions={divisions}
-              />
+              <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
             </div>
           </div>
         )}

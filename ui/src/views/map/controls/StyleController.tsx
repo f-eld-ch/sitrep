@@ -17,25 +17,17 @@ export const MapStyles: MapStyle[] = [
   },
   {
     name: "Satellit",
-    style: ExpandRelativeURLs(
-      basisKarteImagery as unknown as StyleSpecification,
-    ),
+    style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
   },
 ];
 
-function ExpandRelativeURLs(
-  previousStyle: StyleSpecification,
-): StyleSpecification {
-  const convertToAbsoluteURL = (
-    url: string | undefined,
-  ): string | undefined => {
+function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecification {
+  const convertToAbsoluteURL = (url: string | undefined): string | undefined => {
     if (!url) return undefined;
     if (url.startsWith("http")) return url;
 
     const absoluteURL = new URL(url, window.location.href).toString();
-    return absoluteURL
-      .replace("%7Brange%7D", "{range}")
-      .replace("%7Bfontstack%7D", "{fontstack}");
+    return absoluteURL.replace("%7Brange%7D", "{range}").replace("%7Bfontstack%7D", "{fontstack}");
   };
 
   return {
@@ -86,11 +78,7 @@ function StyleController() {
   if (!active) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
-        <button
-          type="button"
-          className={btnClass}
-          onClick={() => setActive(!active)}
-        >
+        <button type="button" className={btnClass} onClick={() => setActive(!active)}>
           <FontAwesomeIcon icon={faMap} size="lg" />
         </button>
       </div>

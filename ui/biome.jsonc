@@ -4,23 +4,23 @@
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
-    "defaultBranch": "develop"
+    "defaultBranch": "develop",
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**"]
+    "includes": ["**"],
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "includes": ["src/**", "!src/i18n/locales/**"]
+    "includes": ["src/**", "!src/i18n/locales/**"],
   },
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "on"
-      }
-    }
+        "organizeImports": "on",
+      },
+    },
   },
   "linter": {
     "enabled": true,
@@ -28,7 +28,7 @@
       "a11y": {
         "useValidAnchor": "off",
         "useAnchorContent": "off",
-        "noStaticElementInteractions": "off"
+        "noStaticElementInteractions": "off",
       },
       "recommended": true,
       "style": {
@@ -41,13 +41,13 @@
         "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
-        "noUselessElse": "error"
-      }
-    }
+        "noUselessElse": "error",
+      },
+    },
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double"
-    }
-  }
+      "quoteStyle": "double",
+    },
+  },
 }

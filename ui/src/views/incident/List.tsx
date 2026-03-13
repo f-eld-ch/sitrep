@@ -17,22 +17,10 @@ import { t } from "i18next";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import type {
-  DeleteIncidentMutation,
-  DeleteIncidentMutationVariables,
-} from "types/incident";
+import type { DeleteIncidentMutation, DeleteIncidentMutationVariables } from "types/incident";
 import { IncidentContext } from "utils";
-import type {
-  CloseIncidentMutation,
-  CloseIncidentMutationVariables,
-  Incident,
-} from "../../types";
-import {
-  CloseIncident,
-  DeleteIncident,
-  GetIncidentDetails,
-  GetIncidents,
-} from "./graphql";
+import type { CloseIncidentMutation, CloseIncidentMutationVariables, Incident } from "../../types";
+import { CloseIncident, DeleteIncident, GetIncidentDetails, GetIncidents } from "./graphql";
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
@@ -51,8 +39,7 @@ function List() {
     refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
   });
 
-  if (error)
-    return <div className="notification is-danger">{error.message}</div>;
+  if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading && !data) return <Spinner />;
 
   return (
@@ -82,9 +69,7 @@ function List() {
       </div>
       <IncidentCards
         incidents={
-          data?.incidents.filter(
-            (incident) => !filterClosed || incident.closedAt === null,
-          ) || []
+          data?.incidents.filter((incident) => !filterClosed || incident.closedAt === null) || []
         }
         closeIncident={closeIncident}
         deleteIncident={deleteIncident}

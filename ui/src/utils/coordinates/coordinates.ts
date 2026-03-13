@@ -76,9 +76,7 @@ const REGEX_WGS_84_WITH_SECONDS_PREFIXED = new RegExp(
  * @param {String} text
  * @returns {[Number, Number] | undefined}
  */
-export function extractWGS84Coordinates(
-  text: string,
-): SingleCoordinate | undefined {
+export function extractWGS84Coordinates(text: string): SingleCoordinate | undefined {
   const regexMatch = [
     REGEX_WGS_84,
     REGEX_WGS_84_WITH_CARDINALS,
@@ -107,12 +105,8 @@ const REGEX_METRIC_COORDINATES = new RegExp(
  * @param {String} text
  * @returns {[Number, Number] | undefined}
  */
-export function extractLV95Coordinates(
-  text: string,
-): SingleCoordinate | undefined {
-  const coordinates = numericalExtractor(
-    REGEX_METRIC_COORDINATES.exec(text.trim()),
-  );
+export function extractLV95Coordinates(text: string): SingleCoordinate | undefined {
+  const coordinates = numericalExtractor(REGEX_METRIC_COORDINATES.exec(text.trim()));
   if (coordinates) {
     if (LV95.isInBounds(coordinates[0], coordinates[1])) {
       const c = [coordinates[0], coordinates[1]].map(LV95.roundCoordinateValue);
@@ -130,12 +124,8 @@ export function extractLV95Coordinates(
  * @param {String} text
  * @returns {[Number, Number] | undefined}
  */
-export function extractLV03Coordinates(
-  text: string,
-): SingleCoordinate | undefined {
-  const coordinates = numericalExtractor(
-    REGEX_METRIC_COORDINATES.exec(text.trim()),
-  );
+export function extractLV03Coordinates(text: string): SingleCoordinate | undefined {
+  const coordinates = numericalExtractor(REGEX_METRIC_COORDINATES.exec(text.trim()));
   if (coordinates) {
     if (LV03.isInBounds(coordinates[0], coordinates[1])) {
       const c = [coordinates[0], coordinates[1]].map(LV03.roundCoordinateValue);
@@ -149,27 +139,15 @@ export function extractLV03Coordinates(
   return undefined;
 }
 
-export function extractMetricMercatorCoordinates(
-  text: string,
-): SingleCoordinate | undefined {
-  const coordinates = numericalExtractor(
-    REGEX_METRIC_COORDINATES.exec(text.trim()),
-  );
+export function extractMetricMercatorCoordinates(text: string): SingleCoordinate | undefined {
+  const coordinates = numericalExtractor(REGEX_METRIC_COORDINATES.exec(text.trim()));
   if (coordinates) {
-    if (
-      LV95.getBoundsAs(WEBMERCATOR)?.isInBounds(coordinates[0], coordinates[1])
-    ) {
-      const c = [coordinates[0], coordinates[1]].map(
-        WEBMERCATOR.roundCoordinateValue,
-      );
+    if (LV95.getBoundsAs(WEBMERCATOR)?.isInBounds(coordinates[0], coordinates[1])) {
+      const c = [coordinates[0], coordinates[1]].map(WEBMERCATOR.roundCoordinateValue);
       return [c[0], c[1]];
     }
-    if (
-      LV95.getBoundsAs(WEBMERCATOR)?.isInBounds(coordinates[1], coordinates[0])
-    ) {
-      const c = [coordinates[1], coordinates[0]].map(
-        WEBMERCATOR.roundCoordinateValue,
-      );
+    if (LV95.getBoundsAs(WEBMERCATOR)?.isInBounds(coordinates[1], coordinates[0])) {
+      const c = [coordinates[1], coordinates[0]].map(WEBMERCATOR.roundCoordinateValue);
       return [c[0], c[1]];
     }
   }
@@ -185,21 +163,15 @@ export const numericalExtractor = (regexMatches: RegExpExecArray | null) => {
     return undefined;
   }
   // removing thousand separators
-  const x = Number(
-    regexMatches.groups?.coord1.replace(thousandSeparatorRegex, ""),
-  );
-  const y = Number(
-    regexMatches.groups?.coord2.replace(thousandSeparatorRegex, ""),
-  );
+  const x = Number(regexMatches.groups?.coord1.replace(thousandSeparatorRegex, ""));
+  const y = Number(regexMatches.groups?.coord2.replace(thousandSeparatorRegex, ""));
   if (Number.isNaN(x) || Number.isNaN(y)) {
     return undefined;
   }
   return [x, y];
 };
 
-const wgs84Extractor = (
-  regexMatches: RegExpExecArray,
-): SingleCoordinate | undefined => {
+const wgs84Extractor = (regexMatches: RegExpExecArray): SingleCoordinate | undefined => {
   if (!regexMatches) {
     return undefined;
   }
@@ -268,15 +240,11 @@ const wgs84Extractor = (
         break;
     }
     if (LV95.getBoundsAs(WGS84)?.isInBounds(lon, lat)) {
-      const c = [lon, lat].map((v) =>
-        WGS84.roundCoordinateValue(v),
-      ) as number[];
+      const c = [lon, lat].map((v) => WGS84.roundCoordinateValue(v)) as number[];
       return [c[0], c[1]];
     }
     if (LV95.getBoundsAs(WGS84)?.isInBounds(lat, lon)) {
-      const c = [lat, lon].map((v) =>
-        WGS84.roundCoordinateValue(v),
-      ) as number[];
+      const c = [lat, lon].map((v) => WGS84.roundCoordinateValue(v)) as number[];
       return [c[0], c[1]];
     }
   }

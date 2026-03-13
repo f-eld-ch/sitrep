@@ -89,11 +89,7 @@ function SearchControl() {
       if (coord) {
         console.log("Flying to coordinate:", coord);
         // reproject the coordinate to WGS84 for maplibre
-        const transformed = proj4(
-          coord.coordinateSystem.epsg,
-          "EPSG:4326",
-          coord.coordinate,
-        );
+        const transformed = proj4(coord.coordinateSystem.epsg, "EPSG:4326", coord.coordinate);
 
         if (transformed) {
           const searchResult: SearchResult = {
@@ -159,11 +155,7 @@ function SearchControl() {
           <div className="dropdown-menu" id={id}>
             <div className="dropdown-content">
               {searchResults?.map((result: SearchFeature) => (
-                <a
-                  onClick={() => flyTo(result)}
-                  key={result.id}
-                  className="dropdown-item"
-                >
+                <a onClick={() => flyTo(result)} key={result.id} className="dropdown-item">
                   {parse(result.properties.label)}
                 </a>
               ))}

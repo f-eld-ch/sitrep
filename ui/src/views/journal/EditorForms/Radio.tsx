@@ -1,11 +1,5 @@
 import { t } from "i18next";
-import {
-  ContentInput,
-  ReceiverInput,
-  SaveButton,
-  SenderInput,
-  TimeInput,
-} from "./Elements";
+import { ContentInput, ReceiverInput, SaveButton, SenderInput, TimeInput } from "./Elements";
 
 export function Radio() {
   return (

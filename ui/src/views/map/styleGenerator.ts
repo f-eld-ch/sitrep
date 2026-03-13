@@ -16,16 +16,12 @@ type FilterCondition = Array<string | number | boolean | FilterCondition>;
  * @param options Configuration options for style generation
  * @returns Array of layer properties for the specified mode
  */
-export function createMapStyle(
-  options: MapStyleOptions = { forDraw: true },
-): LayerProps[] {
+export function createMapStyle(options: MapStyleOptions = { forDraw: true }): LayerProps[] {
   // Property prefix changes based on mode
   const propPrefix = options.forDraw ? "user_" : "";
 
   // Generate filter conditions based on mode
-  function createFilter(
-    baseConditions: FilterCondition[],
-  ): FilterSpecification {
+  function createFilter(baseConditions: FilterCondition[]): FilterSpecification {
     // If we're not in draw mode, the filter is simpler
     if (!options.forDraw) {
       return ["all", ...baseConditions] as FilterSpecification;
@@ -33,37 +29,24 @@ export function createMapStyle(
 
     const isVertexFilter = baseConditions.some(
       (cond) =>
-        Array.isArray(cond) &&
-        cond[0] === "==" &&
-        cond[1] === "meta" &&
-        cond[2] === "vertex",
+        Array.isArray(cond) && cond[0] === "==" && cond[1] === "meta" && cond[2] === "vertex",
     );
 
     // Check if this is an icon filter (needs special handling to match original order)
     const isIconFilter = baseConditions.some(
-      (cond) =>
-        Array.isArray(cond) &&
-        cond[0] === "has" &&
-        cond[1] === `${propPrefix}icon`,
+      (cond) => Array.isArray(cond) && cond[0] === "has" && cond[1] === `${propPrefix}icon`,
     );
 
     // For vertex filters, preserve exact original order
     if (isVertexFilter) {
-      return [
-        "all",
-        ...baseConditions,
-        ["!=", "mode", "static"],
-      ] as unknown as FilterSpecification;
+      return ["all", ...baseConditions, ["!=", "mode", "static"]] as unknown as FilterSpecification;
     }
 
     // For icon filters, we need to insert meta:feature between $type and has:icon
     if (isIconFilter) {
       const typeIndex = baseConditions.findIndex(
         (cond) =>
-          Array.isArray(cond) &&
-          cond[0] === "==" &&
-          cond[1] === "$type" &&
-          cond[2] === "Point",
+          Array.isArray(cond) && cond[0] === "==" && cond[1] === "$type" && cond[2] === "Point",
       );
 
       if (typeIndex >= 0) {
@@ -94,10 +77,7 @@ export function createMapStyle(
     // Add active condition for non-vertex, non-icon filters
     if (
       !isIconFilter &&
-      !conditions.some(
-        (cond) =>
-          Array.isArray(cond) && cond[0] === "==" && cond[1] === "active",
-      )
+      !conditions.some((cond) => Array.isArray(cond) && cond[0] === "==" && cond[1] === "active")
     ) {
       // Insert active condition at the beginning
       conditions.unshift(["==", "active", "false"]);
@@ -113,9 +93,7 @@ export function createMapStyle(
           typeof cond[1] === "string" &&
           cond[1].includes("name"),
       ) &&
-      !baseConditions.some(
-        (cond) => Array.isArray(cond) && cond[0] === "==" && cond[1] === "meta",
-      )
+      !baseConditions.some((cond) => Array.isArray(cond) && cond[0] === "==" && cond[1] === "meta")
     ) {
       conditions.push(["==", "meta", "feature"]);
     }
@@ -138,11 +116,7 @@ export function createMapStyle(
         ["in", `${propPrefix}zoneType`, "Schadengebiet", "Einsatzraum"],
       ]),
       paint: {
-        "fill-outline-color": [
-          "coalesce",
-          ["get", `${propPrefix}color`],
-          "#000000",
-        ],
+        "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
         "fill-opacity": 0,
       },
     },
@@ -183,11 +157,7 @@ export function createMapStyle(
       ]),
       paint: {
         "fill-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
-        "fill-outline-color": [
-          "coalesce",
-          ["get", `${propPrefix}color`],
-          "#000000",
-        ],
+        "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
         "fill-opacity": 0.5,
       },
     },
@@ -279,15 +249,7 @@ export function createMapStyle(
           "babs:PatternLineRettungsachse",
         ],
         "line-opacity": 0.7,
-        "line-width": [
-          "interpolate",
-          ["exponential", 1],
-          ["zoom"],
-          12,
-          2,
-          19,
-          22,
-        ],
+        "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
       },
     },
     {
@@ -564,11 +526,7 @@ export function createMapStyle(
       {
         id: "gl-draw-line-active",
         type: "line",
-        filter: [
-          "all",
-          ["==", "$type", "LineString"],
-          ["==", "active", "true"],
-        ],
+        filter: ["all", ["==", "$type", "LineString"], ["==", "active", "true"]],
         layout: {
           "line-cap": "round",
           "line-join": "round",

@@ -4,12 +4,7 @@ import { distance } from "@turf/distance";
 import { type Coord, lineString, points } from "@turf/helpers";
 import { lineSplit } from "@turf/line-split";
 
-import type {
-  Feature,
-  FeatureCollection,
-  GeoJsonProperties,
-  LineString,
-} from "geojson";
+import type { Feature, FeatureCollection, GeoJsonProperties, LineString } from "geojson";
 import { sortBy } from "lodash";
 import type { SingleCoordinate } from "utils/coordinates";
 
@@ -53,13 +48,9 @@ function reassembleLineSegments(
       }
       throw new Error("Feature missing geometry");
     });
-    const closest = candidateFeatures.shift() as Feature<
-      LineString,
-      GeoJsonProperties
-    >;
+    const closest = candidateFeatures.shift() as Feature<LineString, GeoJsonProperties>;
     // biome-ignore lint/style/noParameterAssign: upstream solution
-    origin =
-      closest.geometry.coordinates[closest.geometry.coordinates.length - 1];
+    origin = closest.geometry.coordinates[closest.geometry.coordinates.length - 1];
     orderedFeatures.push(closest);
   }
   return orderedFeatures;
@@ -118,12 +109,7 @@ export default class CoordinateSystemBounds {
   }
 
   isInBounds(x: number, y: number): boolean {
-    return (
-      x >= this.lowerX &&
-      x <= this.upperX &&
-      y >= this.lowerY &&
-      y <= this.upperY
-    );
+    return x >= this.lowerX && x <= this.upperX && y >= this.lowerY && y <= this.upperY;
   }
 
   /**
@@ -140,9 +126,7 @@ export default class CoordinateSystemBounds {
    *   same coordinate system (projection) as the bounds
    * @returns {null | CoordinatesChunk[]}
    */
-  splitIfOutOfBounds(
-    coordinates: SingleCoordinate[],
-  ): CoordinatesChunk[] | null {
+  splitIfOutOfBounds(coordinates: SingleCoordinate[]): CoordinatesChunk[] | null {
     if (!Array.isArray(coordinates) || coordinates.length <= 1) {
       return null;
     }
@@ -151,19 +135,15 @@ export default class CoordinateSystemBounds {
       return null;
     }
     // checking if we require splitting
-    if (
-      coordinates.find(
-        (coordinate) => !this.isInBounds(coordinate[0], coordinate[1]),
-      )
-    ) {
+    if (coordinates.find((coordinate) => !this.isInBounds(coordinate[0], coordinate[1]))) {
       const boundsAsPolygon = bboxPolygon(this.flatten);
       const paths = lineSplit(lineString(coordinates), boundsAsPolygon);
       paths.features = reassembleLineSegments(coordinates[0], paths);
       return paths.features.map((chunk) => {
         return {
           coordinates: chunk.geometry.coordinates,
-          isWithinBounds: points(chunk.geometry.coordinates).features.every(
-            (point) => booleanPointInPolygon(point, boundsAsPolygon),
+          isWithinBounds: points(chunk.geometry.coordinates).features.every((point) =>
+            booleanPointInPolygon(point, boundsAsPolygon),
           ),
         } as CoordinatesChunk;
       });

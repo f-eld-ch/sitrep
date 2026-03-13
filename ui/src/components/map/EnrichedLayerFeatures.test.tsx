@@ -77,20 +77,14 @@ function renderWithMap(children: React.ReactNode) {
 describe("EnrichedLayerFeatures", () => {
   it("renders nothing if id is undefined", () => {
     const { container } = renderWithMap(
-      <EnrichedFeaturesSource
-        id={undefined}
-        featureCollection={baseFeatureCollection}
-      />,
+      <EnrichedFeaturesSource id={undefined} featureCollection={baseFeatureCollection} />,
     );
     expect(container.firstChild).not.toBeNull(); // Map is rendered, but no Source/Layer
   });
 
   it("renders a Source and Layer for enriched features", () => {
     const { container } = renderWithMap(
-      <EnrichedFeaturesSource
-        id="test"
-        featureCollection={baseFeatureCollection}
-      />,
+      <EnrichedFeaturesSource id="test" featureCollection={baseFeatureCollection} />,
     );
     // Should render a Source and a Layer (cannot query by type/id, but no error should occur)
     expect(container).toBeTruthy();

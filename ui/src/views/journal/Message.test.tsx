@@ -120,6 +120,7 @@ describe("MessageContainer", () => {
       />,
     );
     fireEvent.click(screen.getByTestId("create-task-button"));
+    expect(screen.getByTestId("create-task-button")).toBeInTheDocument();
   });
 
   it("does not render message number when number is undefined", () => {
@@ -167,20 +168,13 @@ describe("MessageContainer", () => {
       fc.property(
         fc.record({
           id: fc.uuid(),
-          sender: fc
-            .string({ minLength: 1 })
-            .filter((s) => s.trim().length > 0),
+          sender: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
           senderDetail: fc.string(),
-          receiver: fc
-            .string({ minLength: 1 })
-            .filter((s) => s.trim().length > 0),
+          receiver: fc.string({ minLength: 1 }).filter((s) => s.trim().length > 0),
           receiverDetail: fc.string(),
           time: fc.date(),
           content: fc.string({ minLength: 10 }),
-          priorityId: fc.constantFrom(
-            PriorityStatus.High,
-            PriorityStatus.Normal,
-          ),
+          priorityId: fc.constantFrom(PriorityStatus.High, PriorityStatus.Normal),
           triageId: fc.constantFrom(
             TriageStatus.Pending,
             TriageStatus.Triaged,
@@ -203,20 +197,12 @@ describe("MessageContainer", () => {
             />,
             { reactStrictMode: false },
           );
-          expect(screen.getByTestId(`sender-${msg.id}`).textContent).toBe(
-            msg.sender,
-          );
-          expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(
-            msg.receiver,
-          );
+          expect(screen.getByTestId(`sender-${msg.id}`).textContent).toBe(msg.sender);
+          expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(msg.receiver);
           if (msg.number !== undefined) {
-            expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(
-              `# ${msg.number}`,
-            );
+            expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(`# ${msg.number}`);
           } else {
-            expect(
-              screen.queryByTestId(`number-${msg.id}`),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByTestId(`number-${msg.id}`)).not.toBeInTheDocument();
           }
           unmount();
         },

@@ -13,8 +13,7 @@ function Editor() {
     variables: { incidentId: incidentId || "" },
   });
 
-  if (error)
-    return <div className="notification is-danger">{error.message}</div>;
+  if (error) return <div className="notification is-danger">{error.message}</div>;
 
   if (loading) return <Spinner />;
 

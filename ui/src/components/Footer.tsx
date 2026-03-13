@@ -20,9 +20,7 @@ function Footer() {
             </span>
             <span>
               <strong>
-                <p className="is-size-7 is-family-monospace has-text-current">
-                  SitRep
-                </p>
+                <p className="is-size-7 is-family-monospace has-text-current">SitRep</p>
               </strong>
             </span>
           </span>

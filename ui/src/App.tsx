@@ -9,11 +9,7 @@ import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
-import {
-  Editor as IncidentEditor,
-  List as IncidentList,
-  New as IncidentNew,
-} from "views/incident";
+import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
 import {
   Editor as JournalEditor,
   List as JournalMessageList,
@@ -56,7 +52,7 @@ function App() {
       }
     };
     const lang = locale(i18n.language);
-    dayjs.locale(lang.toString());
+    dayjs.locale(lang.name);
   }, [i18n.language, i18n]);
 
   return (
@@ -123,10 +119,7 @@ function App() {
                         path=":journalId"
                         element={
                           <Layout>
-                            <JournalMessageList
-                              showControls={false}
-                              autoScroll={true}
-                            />
+                            <JournalMessageList showControls={false} autoScroll={true} />
                           </Layout>
                         }
                       />

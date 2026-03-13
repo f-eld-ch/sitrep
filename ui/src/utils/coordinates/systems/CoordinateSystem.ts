@@ -175,30 +175,16 @@ export default abstract class CoordinateSystem {
    * @returns {CoordinateSystemBounds | null} Bounds, expressed in the coordinate system, or null
    *   if bounds are undefined or coordinate system is invalid
    */
-  getBoundsAs(
-    coordinateSystem: CoordinateSystem,
-  ): CoordinateSystemBounds | null {
+  getBoundsAs(coordinateSystem: CoordinateSystem): CoordinateSystemBounds | null {
     if (this.bounds) {
       if (coordinateSystem.epsg === this.epsg) {
         return this.bounds;
       }
-      const newBottomLeft = proj4(
-        this.epsg,
-        coordinateSystem.epsg,
-        this.bounds.bottomLeft,
-      );
-      const newTopRight = proj4(
-        this.epsg,
-        coordinateSystem.epsg,
-        this.bounds.topRight,
-      );
+      const newBottomLeft = proj4(this.epsg, coordinateSystem.epsg, this.bounds.bottomLeft);
+      const newTopRight = proj4(this.epsg, coordinateSystem.epsg, this.bounds.topRight);
       let customCenter: SingleCoordinate | undefined;
       if (this.bounds.customCenter) {
-        customCenter = proj4(
-          this.epsg,
-          coordinateSystem.epsg,
-          this.bounds.customCenter,
-        );
+        customCenter = proj4(this.epsg, coordinateSystem.epsg, this.bounds.customCenter);
       }
       return new CoordinateSystemBounds({
         lowerX: newBottomLeft[0],
@@ -255,10 +241,7 @@ export default abstract class CoordinateSystem {
    * @param center The current center of view, expressed with this coordinate system
    * @returns The resolution at the given zoom level, in the context of this coordinate system
    */
-  abstract getResolutionForZoomAndCenter(
-    zoom: number,
-    center: SingleCoordinate,
-  ): number;
+  abstract getResolutionForZoomAndCenter(zoom: number, center: SingleCoordinate): number;
 
   /**
    * Returns the zoom level to match the given resolution and center (some coordinate system must
@@ -269,10 +252,7 @@ export default abstract class CoordinateSystem {
    * @param center The current center of view, expressed in this coordinate system
    * @returns The corresponding zoom level, in the context of this coordinate system
    */
-  abstract getZoomForResolutionAndCenter(
-    resolution: number,
-    center: SingleCoordinate,
-  ): number;
+  abstract getZoomForResolutionAndCenter(resolution: number, center: SingleCoordinate): number;
 
   /**
    * Returns a rounded value of a coordinate value, in the context of this coordinate system. This
@@ -295,8 +275,7 @@ export default abstract class CoordinateSystem {
     if (!this.bounds) {
       return [];
     }
-    const zoom0PixelSizeInMeters =
-      PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES;
+    const zoom0PixelSizeInMeters = PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES;
     const resolutions: ResolutionStep[] = [];
     const latInRad = ((latitude ?? 0) * Math.PI) / 180.0;
     for (let z = 0; z < 21; ++z) {

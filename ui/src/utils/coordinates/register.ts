@@ -1,10 +1,4 @@
-import {
-  type CoordinateSystem,
-  LV03,
-  LV95,
-  WEBMERCATOR,
-  WGS84,
-} from "./systems";
+import { type CoordinateSystem, LV03, LV95, WEBMERCATOR, WGS84 } from "./systems";
 
 const registerProj4 = (
   proj4: typeof import("proj4"),
@@ -17,11 +11,7 @@ const registerProj4 = (
       try {
         proj4.defs(projection.epsg, projection.proj4transformationMatrix);
       } catch (err) {
-        console.log(
-          "Error while setting up projection in proj4",
-          projection.epsg,
-          err,
-        );
+        console.log("Error while setting up projection in proj4", projection.epsg, err);
         throw err;
       }
     });

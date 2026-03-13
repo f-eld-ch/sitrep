@@ -151,19 +151,14 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
       }));
     case "TOGGLE_LAYER_VISIBILITY":
       return state.map((s) =>
-        s.layer.id === action.payload.layerId
-          ? { ...s, isVisible: action.payload.isVisible }
-          : s,
+        s.layer.id === action.payload.layerId ? { ...s, isVisible: action.payload.isVisible } : s,
       );
     default:
       return state;
   }
 };
 
-export const selectedFeatureReducer = (
-  state: SelectedFeatureState,
-  action: LayersAction,
-) => {
+export const selectedFeatureReducer = (state: SelectedFeatureState, action: LayersAction) => {
   switch (action.type) {
     case "SELECT_FEATURE":
       return action.payload.id;
@@ -174,10 +169,7 @@ export const selectedFeatureReducer = (
   }
 };
 
-export const activeLayerReducer = (
-  state: ActiveLayerState,
-  action: LayersAction,
-) => {
+export const activeLayerReducer = (state: ActiveLayerState, action: LayersAction) => {
   switch (action.type) {
     case "SET_ACTIVE_LAYER":
       return action.payload.layerId;
@@ -204,11 +196,7 @@ export const drawReducer = (state: DrawState, action: LayersAction) => {
 export const wmsReducer = (state: WMSState, action: LayersAction) => {
   switch (action.type) {
     case "ADD_WMS_LAYER":
-      if (
-        state.activeLayers.some(
-          (layer) => layer.name === action.payload.layerName,
-        )
-      ) {
+      if (state.activeLayers.some((layer) => layer.name === action.payload.layerName)) {
         return state;
       }
       return {
@@ -246,9 +234,7 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
     case "REMOVE_WMS_LAYER":
       return {
         ...state,
-        activeLayers: state.activeLayers.filter(
-          (layer) => layer.name !== action.payload.layerName,
-        ),
+        activeLayers: state.activeLayers.filter((layer) => layer.name !== action.payload.layerName),
       };
     case "SET_WMS_SERVER":
       console.log("Setting WMS server:", action.payload.server);
@@ -273,13 +259,9 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
     case "REMOVE_WMS_SERVER":
       return {
         ...state,
-        servers: state.servers.filter(
-          (server) => server.url !== action.payload.server,
-        ),
+        servers: state.servers.filter((server) => server.url !== action.payload.server),
         availableLayers: Object.fromEntries(
-          Object.entries(state.availableLayers).filter(
-            ([key]) => key !== action.payload.server,
-          ),
+          Object.entries(state.availableLayers).filter(([key]) => key !== action.payload.server),
         ),
         currentServer: state.servers.length > 0 ? state.servers[0].url : "",
       };

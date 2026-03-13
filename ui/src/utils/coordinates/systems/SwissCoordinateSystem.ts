@@ -12,8 +12,7 @@ import { closest, round } from "./index";
  * @see https://api3.geo.admin.ch/services/sdiservices.html#gettile
  */
 export const LV95_RESOLUTIONS: number[] = [
-  650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 2.0, 1.0, 0.5, 0.25,
-  0.1,
+  650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 2.0, 1.0, 0.5, 0.25, 0.1,
 ];
 
 /**
@@ -94,8 +93,9 @@ const SWISSTOPO_ZOOM_TO_PRODUCT_SCALE: string[] = [
   "1:10'000", // max zoom: 14
 ];
 
-const swisstopoZoomLevels: number[] =
-  SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX.map((_, index) => index);
+const swisstopoZoomLevels: number[] = SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX.map(
+  (_, index) => index,
+);
 
 /**
  * This specialization will be used to represent LV95 and LV03, that use a custom zoom/resolution
@@ -110,8 +110,7 @@ const swisstopoZoomLevels: number[] =
 export default class SwissCoordinateSystem extends CustomCoordinateSystem {
   getResolutionSteps(): ResolutionStep[] {
     return SWISSTOPO_TILEGRID_RESOLUTIONS.map((resolution) => {
-      const zoom: number | undefined =
-        LV95_RESOLUTIONS.indexOf(resolution) ?? undefined;
+      const zoom: number | undefined = LV95_RESOLUTIONS.indexOf(resolution) ?? undefined;
       let label: string | undefined;
       if (zoom) {
         label = SWISSTOPO_ZOOM_TO_PRODUCT_SCALE[zoom];
@@ -142,14 +141,10 @@ export default class SwissCoordinateSystem extends CustomCoordinateSystem {
         (zoom) => zoom < standardZoomLevel,
       ).length;
     }
-    if (
-      standardZoomLevel < SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX[0]
-    ) {
+    if (standardZoomLevel < SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX[0]) {
       return 0;
     }
-    if (
-      standardZoomLevel > SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX[14]
-    ) {
+    if (standardZoomLevel > SWISSTOPO_TILEGRID_ZOOM_TO_STANDARD_ZOOM_MATRIX[14]) {
       return 14;
     }
     // if no matching zoom level was found, we return the one for the 1:25'000 map

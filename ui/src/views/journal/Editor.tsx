@@ -1,13 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useReducer,
-} from "react";
+import React, { useCallback, useContext, useEffect, useId, useReducer } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
@@ -125,9 +119,7 @@ function Editor() {
     onError() {
       dispatch({ type: "save_error" });
     },
-    refetchQueries: [
-      { query: GetJournalMessages, variables: { journalId: journalId } },
-    ],
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
   const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
@@ -138,9 +130,7 @@ function Editor() {
     onError() {
       dispatch({ type: "save_error" });
     },
-    refetchQueries: [
-      { query: GetJournalMessages, variables: { journalId: journalId } },
-    ],
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
   const editorReducer = (state: State, action: Action): State => {
@@ -227,7 +217,7 @@ function Editor() {
     // exit if we don't need to save
     if (!state.saving) return;
 
-    if (!state.time === undefined) return;
+    if (state.time === undefined) return;
 
     if (journalId === undefined) return;
 
@@ -240,15 +230,9 @@ function Editor() {
           content: state.content,
           medium: state.media,
           sender: state.sender,
-          senderDetail:
-            state.media !== Medium.Radio
-              ? state.senderDetail
-              : state.radioChannel,
+          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail:
-            state.media !== Medium.Radio
-              ? state.receiverDetail
-              : state.radioChannel,
+          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
         },
       });
     } else {
@@ -259,15 +243,9 @@ function Editor() {
           content: state.content,
           medium: state.media,
           sender: state.sender,
-          senderDetail:
-            state.media !== Medium.Radio
-              ? state.senderDetail
-              : state.radioChannel,
+          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
           receiver: state.receiver,
-          receiverDetail:
-            state.media !== Medium.Radio
-              ? state.receiverDetail
-              : state.radioChannel,
+          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
         },
       });
     }
@@ -278,9 +256,7 @@ function Editor() {
       type: "set_autofill_details",
       detail: {
         senderReceiverNames:
-          uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter(
-            (e) => e,
-          ) || [],
+          uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter((e) => e) || [],
         senderReceiverDetails:
           uniq(
             data?.messages
@@ -289,9 +265,7 @@ function Editor() {
           ).filter((e) => e) || [],
         channelList:
           uniq(
-            data?.messages
-              .filter((d) => d.medium === Medium.Radio)
-              .map((d) => d.senderDetail),
+            data?.messages.filter((d) => d.medium === Medium.Radio).map((d) => d.senderDetail),
           ).filter((e) => e) || [],
       },
     });
@@ -299,13 +273,11 @@ function Editor() {
 
   // create callbacks to have stable List renderings
   const setEditorMessage = useCallback(
-    (message: Message | undefined) =>
-      dispatch({ type: "set_edit_message", message: message }),
+    (message: Message | undefined) => dispatch({ type: "set_edit_message", message: message }),
     [],
   );
   const setTriageMessage = useCallback(
-    (message: Message | undefined) =>
-      dispatch({ type: "set_triage_message", message: message }),
+    (message: Message | undefined) => dispatch({ type: "set_triage_message", message: message }),
     [],
   );
 
@@ -315,12 +287,8 @@ function Editor() {
         <div className="columns is-tablet">
           <div className="column is-half">
             <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
-            {error && (
-              <Notification type="error">{error?.message}</Notification>
-            )}
-            {errorUpdate && (
-              <Notification type="error">{errorUpdate?.message}</Notification>
-            )}
+            {error && <Notification type="error">{error?.message}</Notification>}
+            {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
             <InputBox />
           </div>
           <div className="column is-half">
@@ -418,20 +386,11 @@ function InputBox() {
           <div className="field is-grouped is-grouped-multiline">
             <div className="control is-normal is-flex-shrink-2 is-flex-wrap-wrap">
               <div className="select is-fullwidth">
-                <select
-                  id={mediumId}
-                  value={state.media}
-                  onChange={handleMediumChange}
-                >
+                <select id={mediumId} value={state.media} onChange={handleMediumChange}>
                   {Object.values(Medium).map((medium: Medium) => (
                     <option
                       key={medium}
-                      label={
-                        t([
-                          `medium.${medium}`,
-                          `medium.${Medium.Other}`,
-                        ]) as string
-                      }
+                      label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}
                     >
                       {medium}
                     </option>
@@ -444,9 +403,7 @@ function InputBox() {
         </div>
       </div>
       {renderFormContent()}
-      {(state.content !== "" ||
-        state.sender !== "" ||
-        state.receiver !== "") && (
+      {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage

@@ -1,14 +1,11 @@
 /// <reference types="vitest" />
 
-import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
-import biomePlugin from "vite-plugin-biome";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
-import viteTsconfigPaths from "vite-tsconfig-paths";
 
 process.env.VITE_SHA_VERSION = git.long("../");
 process.env.VITE_VERSION = git.tag(false);
@@ -17,35 +14,26 @@ process.env.VITE_VERSION = git.tag(false);
 export default defineConfig({
   base: "/",
   build: {
-    outDir: "build",
     sourcemap: true,
-    minify: "esbuild",
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      treeshake: {
-        preset: "recommended",
-      },
+    outDir: "build",
+    rolldownOptions: {
+      treeshake: true,
+      tsconfig: true,
       output: {
-        minifyInternalExports: true,
-        manualChunks: {
-          maplibregl: ["maplibre-gl"],
-          maplibreDeps: [
-            "@watergis/maplibre-gl-export",
-            "@mapbox/mapbox-gl-draw",
-          ],
-          apollo: ["@apollo/client"],
-          utils: [
-            "@fortawesome/fontawesome-svg-core",
-            "@fortawesome/free-solid-svg-icons",
-            "@fortawesome/free-regular-svg-icons",
-            "@fortawesome/free-brands-svg-icons",
-            "@fortawesome/react-fontawesome",
-            "lodash",
-          ],
-          flipt: ["@flipt-io/flipt-client-js"],
-        },
+        cleanDir: true,
+        format: "esm",
+        codeSplitting: true,
+        minify: true,
         assetFileNames: "assets/[name]-[hash][extname]",
         chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+      },
+    },
+  },
+  worker: {
+    rolldownOptions: {
+      output: {
+        format: "iife",
         entryFileNames: "assets/[name]-[hash].js",
       },
     },
@@ -55,9 +43,7 @@ export default defineConfig({
   },
   plugins: [
     react({ devTarget: "es2022" }),
-    viteTsconfigPaths(),
     svgrPlugin(),
-    biomePlugin(),
     analyzer({ analyzerMode: "static", enabled: false }),
     VitePWA({
       registerType: "autoUpdate",
@@ -103,7 +89,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": "./src",
     },
   },
   server: {
@@ -137,9 +123,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        silenceDeprecations: [
-          "if-function"
-        ]
+        silenceDeprecations: ["if-function"],
       },
     },
   },

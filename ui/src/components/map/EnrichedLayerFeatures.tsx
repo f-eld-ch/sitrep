@@ -1,12 +1,7 @@
 import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
 import { type BabsIcon, Others, Schaeden } from "components/BabsIcons";
-import type {
-  Feature,
-  FeatureCollection,
-  GeoJsonProperties,
-  Geometry,
-} from "geojson";
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { Layer, Source } from "react-map-gl/maplibre";
 
 const enrichFeature = (
@@ -19,8 +14,7 @@ const enrichFeature = (
   const features: Feature<Geometry, GeoJsonProperties>[] = [];
 
   if (f.geometry.type === "LineString") {
-    const enrich: EnrichLineConfig | undefined =
-      EnrichLineStringMap[f.properties?.lineType];
+    const enrich: EnrichLineConfig | undefined = EnrichLineStringMap[f.properties?.lineType];
     if (enrich !== undefined) {
       if (enrich.iconStart) {
         const startPoint = point(f.geometry.coordinates[0]);
@@ -29,10 +23,8 @@ const enrichFeature = (
           parent: f.id,
           icon: `babs:${enrich.iconStart.name}`,
           iconRotation:
-            bearing(
-              point(f.geometry.coordinates[0]),
-              point(f.geometry.coordinates[1]),
-            ) + enrich.iconRotation,
+            bearing(point(f.geometry.coordinates[0]), point(f.geometry.coordinates[1])) +
+            enrich.iconRotation,
         };
         features.push(startPoint);
       }

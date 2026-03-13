@@ -31,20 +31,20 @@ function compareLayersByID(actual: LayerProps[], expected: LayerProps[]) {
   }
 
   // Check that there are no extra layers in the actual result
-  expect(Object.keys(actualMap).length).toEqual(
-    Object.keys(expectedMap).length,
-  );
+  expect(Object.keys(actualMap).length).toEqual(Object.keys(expectedMap).length);
 }
 
 describe("Map Style Generator", () => {
   it("should generate drawStyle with identical layer definitions", () => {
     const generatedDrawStyle = createMapStyle({ forDraw: true });
     compareLayersByID(generatedDrawStyle, drawStyle);
+    expect(generatedDrawStyle.length).toEqual(drawStyle.length);
   });
 
   it("should generate displayStyle with identical layer definitions", () => {
     const generatedDisplayStyle = createMapStyle({ forDraw: false });
     compareLayersByID(generatedDisplayStyle, displayStyle);
+    expect(generatedDisplayStyle.length).toEqual(displayStyle.length);
   });
 });
 
@@ -96,14 +96,7 @@ const drawStyle: LayerProps[] = [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "Polygon"],
-      [
-        "!in",
-        "user_zoneType",
-        "Brandzone",
-        "Zerstoerung",
-        "Schadengebiet",
-        "Einsatzraum",
-      ],
+      ["!in", "user_zoneType", "Brandzone", "Zerstoerung", "Schadengebiet", "Einsatzraum"],
       ["!=", "mode", "static"],
     ],
     paint: {
@@ -245,15 +238,7 @@ const drawStyle: LayerProps[] = [
         "babs:PatternLineRettungsachse",
       ],
       "line-opacity": 0.7,
-      "line-width": [
-        "interpolate",
-        ["exponential", 1],
-        ["zoom"],
-        12,
-        2,
-        19,
-        22,
-      ],
+      "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
     },
   },
   {
@@ -289,13 +274,7 @@ const drawStyle: LayerProps[] = [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "LineString"],
-      [
-        "in",
-        "user_lineType",
-        "begehbar",
-        "beabsichtigteVerschiebung",
-        "beabsichtigterEinsatz",
-      ],
+      ["in", "user_lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
       ["!=", "mode", "static"],
     ],
     layout: {
@@ -325,12 +304,7 @@ const drawStyle: LayerProps[] = [
   {
     id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
     type: "circle",
-    filter: [
-      "all",
-      ["==", "meta", "vertex"],
-      ["==", "$type", "Point"],
-      ["!=", "mode", "static"],
-    ],
+    filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
     paint: {
       "circle-radius": 5,
       "circle-color": "#fff",
@@ -339,12 +313,7 @@ const drawStyle: LayerProps[] = [
   {
     id: "gl-draw-polygon-and-line-vertex-inactive",
     type: "circle",
-    filter: [
-      "all",
-      ["==", "meta", "vertex"],
-      ["==", "$type", "Point"],
-      ["!=", "mode", "static"],
-    ],
+    filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
     paint: {
       "circle-radius": 3,
       "circle-color": "#fbb03b",
@@ -562,12 +531,7 @@ const drawStyle: LayerProps[] = [
   {
     id: "gl-draw-point-active",
     type: "circle",
-    filter: [
-      "all",
-      ["==", "$type", "Point"],
-      ["!=", "meta", "midpoint"],
-      ["==", "active", "true"],
-    ],
+    filter: ["all", ["==", "$type", "Point"], ["!=", "meta", "midpoint"], ["==", "active", "true"]],
     paint: {
       "circle-radius": 5,
       "circle-color": "#fbb03b",
@@ -619,14 +583,7 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "Polygon"],
-      [
-        "!in",
-        "zoneType",
-        "Brandzone",
-        "Zerstoerung",
-        "Schadengebiet",
-        "Einsatzraum",
-      ],
+      ["!in", "zoneType", "Brandzone", "Zerstoerung", "Schadengebiet", "Einsatzraum"],
     ],
     paint: {
       "fill-color": ["coalesce", ["get", "color"], "#000000"],
@@ -664,11 +621,7 @@ const displayStyle: LayerProps[] = [
   {
     id: "gl-draw-line-inactive-normalLine",
     type: "line",
-    filter: [
-      "all",
-      ["==", "$type", "LineString"],
-      ["in", "lineType", "", "normal"],
-    ],
+    filter: ["all", ["==", "$type", "LineString"], ["in", "lineType", "", "normal"]],
     layout: {
       "line-cap": "round",
       "line-join": "round",
@@ -719,15 +672,7 @@ const displayStyle: LayerProps[] = [
         "babs:PatternLineRettungsachse",
       ],
       "line-opacity": 0.7,
-      "line-width": [
-        "interpolate",
-        ["exponential", 1],
-        ["zoom"],
-        12,
-        2,
-        19,
-        22,
-      ],
+      "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
     },
   },
   {
@@ -736,13 +681,7 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      [
-        "in",
-        "lineType",
-        "schwerBegehbar",
-        "durchgeführteVerschiebung",
-        "durchgeführterEinsatz",
-      ],
+      ["in", "lineType", "schwerBegehbar", "durchgeführteVerschiebung", "durchgeführterEinsatz"],
     ],
     layout: {
       "line-cap": "round",
@@ -760,13 +699,7 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      [
-        "in",
-        "lineType",
-        "begehbar",
-        "beabsichtigteVerschiebung",
-        "beabsichtigterEinsatz",
-      ],
+      ["in", "lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
     ],
     layout: {
       "line-cap": "round",
@@ -821,12 +754,7 @@ const displayStyle: LayerProps[] = [
   {
     id: "gl-draw-point-icon-rotation",
     type: "symbol",
-    filter: [
-      "all",
-      ["==", "$type", "Point"],
-      ["has", "icon"],
-      ["has", "iconRotation"],
-    ],
+    filter: ["all", ["==", "$type", "Point"], ["has", "icon"], ["has", "iconRotation"]],
     layout: {
       "icon-image": [
         "coalesce",
@@ -898,15 +826,7 @@ const displayStyle: LayerProps[] = [
       "all",
       ["has", "name"],
       ["has", "color"],
-      [
-        "!in",
-        "icon",
-        "EingesperrteAbgeschnittene",
-        "Obdachlose",
-        "Tote",
-        "Vermisste",
-        "Verletzte",
-      ],
+      ["!in", "icon", "EingesperrteAbgeschnittene", "Obdachlose", "Tote", "Vermisste", "Verletzte"],
       ["==", "$type", "Point"],
     ],
     layout: {

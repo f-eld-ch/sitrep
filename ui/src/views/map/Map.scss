@@ -90,19 +90,23 @@
   cursor: -webkit-grab;
 }
 
-.maplibre-map.mode-simple_select.feature-feature.mouse-none .maplibre-canvas-container.maplibre-interactive {
+.maplibre-map.mode-simple_select.feature-feature.mouse-none
+  .maplibre-canvas-container.maplibre-interactive {
   cursor: default !important;
 }
 
-.maplibre-map.mode-direct_select.feature-vertex.mouse-move .maplibre-canvas-container.maplibre-interactive {
+.maplibre-map.mode-direct_select.feature-vertex.mouse-move
+  .maplibre-canvas-container.maplibre-interactive {
   cursor: move;
 }
 
-.maplibre-map.mode-direct_select.feature-midpoint.mouse-pointer .maplibre-canvas-container.maplibre-interactive {
+.maplibre-map.mode-direct_select.feature-midpoint.mouse-pointer
+  .maplibre-canvas-container.maplibre-interactive {
   cursor: cell;
 }
 
-.maplibre-map.mode-direct_select.feature-feature.mouse-move .maplibre-canvas-container.maplibre-interactive {
+.maplibre-map.mode-direct_select.feature-feature.mouse-move
+  .maplibre-canvas-container.maplibre-interactive {
   cursor: move;
 }
 

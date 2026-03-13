@@ -1,10 +1,4 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useContext } from "react";
 import { describe, expect, it } from "vitest";
 import { UserContext, UserProvider } from "./UserContext";
@@ -15,9 +9,7 @@ function TestComponent() {
     <div>
       <span data-testid="username">{state.username}</span>
       <span data-testid="email">{state.email}</span>
-      <span data-testid="isLoggedin">
-        {state.isLoggedin ? "true" : "false"}
-      </span>
+      <span data-testid="isLoggedin">{state.isLoggedin ? "true" : "false"}</span>
       <button
         type="button"
         onClick={() =>

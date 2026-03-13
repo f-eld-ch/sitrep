@@ -31,7 +31,9 @@ const GET_LAYERS: TypedDocumentNode<GetLayersData, GetLayersVars> = gql`
 
 const ADD_FEATURE: TypedDocumentNode<AddFeatureResponse, AddFeatureVars> = gql`
   mutation AddFeature($layerId: uuid!, $id: uuid!, $geometry: jsonb, $properties: jsonb) {
-    insertFeaturesOne(object: { layerId: $layerId, id: $id, geometry: $geometry, properties: $properties }) {
+    insertFeaturesOne(
+      object: { layerId: $layerId, id: $id, geometry: $geometry, properties: $properties }
+    ) {
       id
       geometry
       properties
@@ -42,12 +44,12 @@ const ADD_FEATURE: TypedDocumentNode<AddFeatureResponse, AddFeatureVars> = gql`
   }
 `;
 
-const MODIFY_FEATURE: TypedDocumentNode<
-  ModifyFeatureResponse,
-  ModifyFeatureVars
-> = gql`
+const MODIFY_FEATURE: TypedDocumentNode<ModifyFeatureResponse, ModifyFeatureVars> = gql`
   mutation UpdateFeature($id: uuid!, $geometry: jsonb, $properties: jsonb) {
-    updateFeaturesByPk(pkColumns: { id: $id }, _set: { geometry: $geometry, properties: $properties }) {
+    updateFeaturesByPk(
+      pkColumns: { id: $id }
+      _set: { geometry: $geometry, properties: $properties }
+    ) {
       id
       geometry
       properties
@@ -58,10 +60,7 @@ const MODIFY_FEATURE: TypedDocumentNode<
   }
 `;
 
-const DELETE_FEATURE: TypedDocumentNode<
-  DeleteFeatureResponse,
-  DeleteFeatureVars
-> = gql`
+const DELETE_FEATURE: TypedDocumentNode<DeleteFeatureResponse, DeleteFeatureVars> = gql`
   mutation UpdateFeature($id: uuid!, $deletedAt: timestamptz) {
     updateFeaturesByPk(pkColumns: { id: $id }, _set: { deletedAt: $deletedAt }) {
       id
@@ -76,7 +75,7 @@ const DELETE_FEATURE: TypedDocumentNode<
 
 const ADD_LAYER: TypedDocumentNode<AddLayerData, AddLayerVars> = gql`
   mutation AddLayer($incidentId: uuid!, $name: String!) {
-    insertLayersOne(object: {incidentId: $incidentId, name: $name }) {
+    insertLayersOne(object: { incidentId: $incidentId, name: $name }) {
       id
     }
   }

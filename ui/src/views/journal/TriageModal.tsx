@@ -12,11 +12,7 @@ import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message, MessageDivision } from "types/journal";
 import { NewForm as TaskNew } from "../measures/tasks";
-import {
-  GetJournalMessages,
-  GetMessageForTriage,
-  SaveMessageTriage,
-} from "./graphql";
+import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 import { default as JournalMessage } from "./Message";
 
 function Triage(props: {
@@ -28,21 +24,13 @@ function Triage(props: {
   const { t } = useTranslation();
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
-  const [loadMessage, { loading, error, data }] = useLazyQuery(
-    GetMessageForTriage,
-    {
-      fetchPolicy: "cache-and-network",
-    },
-  );
+  const [loadMessage, { loading, error, data }] = useLazyQuery(GetMessageForTriage, {
+    fetchPolicy: "cache-and-network",
+  });
 
-  const [saveMessageTriage, { error: errorSet }] = useMutation(
-    SaveMessageTriage,
-    {
-      refetchQueries: [
-        { query: GetJournalMessages, variables: { journalId: journalId } },
-      ],
-    },
-  );
+  const [saveMessageTriage, { error: errorSet }] = useMutation(SaveMessageTriage, {
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+  });
 
   const [priority, setPriority] = useState(PriorityStatus.Normal);
   const [assignments, setAssignments] = useState<Division[]>([]);
@@ -57,9 +45,8 @@ function Triage(props: {
           const message = result.data.messagesByPk;
           setAssignments(message.divisions.map((d) => d.division));
           setPriority(
-            Object.values(PriorityStatus).find(
-              (p) => p === message.priorityId,
-            ) || PriorityStatus.Normal,
+            Object.values(PriorityStatus).find((p) => p === message.priorityId) ||
+              PriorityStatus.Normal,
           );
         }
       });
@@ -111,9 +98,7 @@ function Triage(props: {
       <div className="modal-background" />
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title is-size-5">
-            {t("messageTriageTitle")}
-          </p>
+          <p className="modal-card-title is-size-5">{t("messageTriageTitle")}</p>
           <button
             type="button"
             className="delete"
@@ -122,14 +107,8 @@ function Triage(props: {
           />
         </header>
         <section className="modal-card-body">
-          {error && (
-            <div className="notification is-danger">Error: {error.message}</div>
-          )}
-          {errorSet && (
-            <div className="notification is-danger">
-              Error: {errorSet.message}
-            </div>
-          )}
+          {error && <div className="notification is-danger">Error: {error.message}</div>}
+          {errorSet && <div className="notification is-danger">Error: {errorSet.message}</div>}
           {loading ? (
             <Spinner />
           ) : (
@@ -151,51 +130,38 @@ function Triage(props: {
                     <div className="column">
                       <h3 className="title is-size-5">{t("messageFlow")}</h3>
                       <div className="field is-grouped is-grouped-multiline">
-                        {data?.messagesByPk.journal.incident.divisions.map(
-                          (d) => {
-                            const isPresent = assignments.some(
-                              (e) => e.name === d.name,
-                            );
-                            const tagsClass = classNames({
-                              tag: true,
-                              "is-primary": isPresent,
-                              "is-dark": !isPresent,
-                            });
-                            return (
-                              <div key={d.name} className="control">
-                                <div className="tags has-addons">
-                                  <div className={tagsClass}>
-                                    {d.description || d.name}
-                                  </div>
-                                  {isPresent ? (
-                                    <a
-                                      className="tag is-light is-primary"
-                                      onClick={() =>
-                                        setAssignments(
-                                          reject(
-                                            assignments,
-                                            (e) => e.id === d.id,
-                                          ),
-                                        )
-                                      }
-                                    >
-                                      <FontAwesomeIcon icon={faMinus} />
-                                    </a>
-                                  ) : (
-                                    <a
-                                      className="tag is-success is-light"
-                                      onClick={() =>
-                                        setAssignments(union(assignments, [d]))
-                                      }
-                                    >
-                                      <FontAwesomeIcon icon={faPlus} />
-                                    </a>
-                                  )}
-                                </div>
+                        {data?.messagesByPk.journal.incident.divisions.map((d) => {
+                          const isPresent = assignments.some((e) => e.name === d.name);
+                          const tagsClass = classNames({
+                            tag: true,
+                            "is-primary": isPresent,
+                            "is-dark": !isPresent,
+                          });
+                          return (
+                            <div key={d.name} className="control">
+                              <div className="tags has-addons">
+                                <div className={tagsClass}>{d.description || d.name}</div>
+                                {isPresent ? (
+                                  <a
+                                    className="tag is-light is-primary"
+                                    onClick={() =>
+                                      setAssignments(reject(assignments, (e) => e.id === d.id))
+                                    }
+                                  >
+                                    <FontAwesomeIcon icon={faMinus} />
+                                  </a>
+                                ) : (
+                                  <a
+                                    className="tag is-success is-light"
+                                    onClick={() => setAssignments(union(assignments, [d]))}
+                                  >
+                                    <FontAwesomeIcon icon={faPlus} />
+                                  </a>
+                                )}
                               </div>
-                            );
-                          },
-                        )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                     <div className="column">
@@ -211,29 +177,25 @@ function Triage(props: {
                             if (prio !== undefined) setPriority(prio);
                           }}
                         >
-                          {Object.values(PriorityStatus).map(
-                            (prio: PriorityStatus) => (
-                              <option
-                                key={prio}
-                                label={
-                                  t([
-                                    `priority.${prio}`,
-                                    `priority.${PriorityStatus.Normal}`,
-                                  ]) as string
-                                }
-                              >
-                                {prio}
-                              </option>
-                            ),
-                          )}
+                          {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
+                            <option
+                              key={prio}
+                              label={
+                                t([
+                                  `priority.${prio}`,
+                                  `priority.${PriorityStatus.Normal}`,
+                                ]) as string
+                              }
+                            >
+                              {prio}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
                     {showTasks && (
                       <div className="column">
-                        <h3 className="title is-size-5">
-                          {t("createNewTask")}
-                        </h3>
+                        <h3 className="title is-size-5">{t("createNewTask")}</h3>
                         <TaskNew />
                       </div>
                     )}
@@ -250,12 +212,7 @@ function Triage(props: {
               className="button is-rounded is-primary is-small"
               onClick={() => {
                 if (message !== undefined)
-                  handleSave(
-                    assignments,
-                    message?.id,
-                    priority,
-                    TriageStatus.Triaged,
-                  );
+                  handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
               }}
             >
               {t("saveTriage")}
@@ -265,12 +222,7 @@ function Triage(props: {
               className="button is-rounded is-small"
               onClick={() => {
                 if (message !== undefined)
-                  handleSave(
-                    assignments,
-                    message?.id,
-                    priority,
-                    TriageStatus.MoreInfo,
-                  );
+                  handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
               }}
             >
               {t("saveMoreInfo")}
