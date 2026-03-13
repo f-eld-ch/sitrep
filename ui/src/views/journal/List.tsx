@@ -65,16 +65,27 @@ function List(props: {
 
   const messages =
     data?.messages
-      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
-      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
-      .filter(
-        (message) =>
-          assignmentFilter === "all" ||
-          message.divisions?.find((d) => d.division.name === assignmentFilter),
-      )
+      // sort and apply message numbers
+      .filter((m: Message) => m.createdAt !== null)
       .sort(stableOrderByCreatedAt)
-      .map((m, i) => ({ ...m, number: i + 1 }))
-      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()) || [];
+      .map((m: Message, i: number) => ({ ...m, number: i + 1 }))
+      .sort((a: Message, b: Message) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      // apply the filters
+      .filter(
+        (message: { triageId: string }) =>
+          triageFilter === "all" || message.triageId === triageFilter,
+      )
+      .filter(
+        (message: { priorityId: string }) =>
+          priorityFilter === "all" || message.priorityId === priorityFilter,
+      )
+      .filter(
+        (message: { divisions: any[] }) =>
+          assignmentFilter === "all" ||
+          message.divisions?.find(
+            (d: { division: { name: string } }) => d.division.name === assignmentFilter,
+          ),
+      ) || [];
 
   return (
     <>
