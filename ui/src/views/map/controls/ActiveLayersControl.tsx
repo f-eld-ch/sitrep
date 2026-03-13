@@ -31,9 +31,7 @@ const ActiveLayersControl: React.FC = () => {
     if (layerName.trim() === "" || !incidentId) return;
     addLayer({
       variables: { incidentId, name: layerName },
-      refetchQueries: [
-        { query: GetLayers, variables: { incidentId: incidentId } },
-      ],
+      refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
       onError: (error) => {
         console.error("Error adding feature:", error);
       },

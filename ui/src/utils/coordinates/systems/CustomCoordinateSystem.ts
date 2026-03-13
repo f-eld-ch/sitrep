@@ -1,7 +1,5 @@
 import type { SingleCoordinate } from "utils/coordinates";
-import CoordinateSystem, {
-  type CoordinateSystemProps,
-} from "./CoordinateSystem";
+import CoordinateSystem, { type CoordinateSystemProps } from "./CoordinateSystem";
 import type CoordinateSystemBounds from "./CoordinateSystemBounds";
 
 export interface CustomCoordinateSystemProps extends CoordinateSystemProps {
@@ -22,7 +20,7 @@ export interface CustomCoordinateSystemProps extends CoordinateSystemProps {
  * @see https://wiki.openstreetmap.org/wiki/Zoom_levels
  */
 export default abstract class CustomCoordinateSystem extends CoordinateSystem {
-  public declare readonly bounds: CoordinateSystemBounds;
+  declare public readonly bounds: CoordinateSystemBounds;
 
   protected constructor(args: CustomCoordinateSystemProps) {
     super(args);
@@ -54,7 +52,5 @@ export default abstract class CustomCoordinateSystem extends CoordinateSystem {
    * @param standardZoomLevel A standard zoom level
    * @returns A zoom level in this custom coordinate system
    */
-  abstract transformStandardZoomLevelToCustom(
-    standardZoomLevel: number,
-  ): number;
+  abstract transformStandardZoomLevelToCustom(standardZoomLevel: number): number;
 }

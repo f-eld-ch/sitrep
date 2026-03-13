@@ -3,17 +3,12 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router";
 
 import "./App.scss";
 
-import { Provider as FeatureFlagProvider } from "FeatureFlags";
 import { ApolloProvider } from "@apollo/client/react";
 import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
-import {
-  Editor as IncidentEditor,
-  List as IncidentList,
-  New as IncidentNew,
-} from "views/incident";
+import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
 import {
   Editor as JournalEditor,
   List as JournalMessageList,
@@ -25,6 +20,7 @@ import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures"
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
+import { Provider as FeatureFlagProvider } from "./FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
 import de from "dayjs/locale/de";
@@ -56,7 +52,7 @@ function App() {
       }
     };
     const lang = locale(i18n.language);
-    dayjs.locale(lang.toString());
+    dayjs.locale(lang.name);
   }, [i18n.language, i18n]);
 
   return (
@@ -123,10 +119,7 @@ function App() {
                         path=":journalId"
                         element={
                           <Layout>
-                            <JournalMessageList
-                              showControls={false}
-                              autoScroll={true}
-                            />
+                            <JournalMessageList showControls={false} autoScroll={true} />
                           </Layout>
                         }
                       />

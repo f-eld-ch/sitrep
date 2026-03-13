@@ -4,15 +4,8 @@ import { useMutation, useQuery, useReactiveVar } from "@apollo/client/react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
 import classNames from "classnames";
-import EnrichedLayerFeatures, {
-  EnrichedSymbolSource,
-} from "components/map/EnrichedLayerFeatures";
-import type {
-  Feature,
-  FeatureCollection,
-  GeoJsonProperties,
-  Geometry,
-} from "geojson";
+import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual } from "lodash";
 import maplibregl from "maplibre-gl";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -37,19 +30,10 @@ import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { StyleController, selectedStyle } from "./controls/StyleController";
-import {
-  AddFeatureToLayer,
-  DeleteFeature,
-  GetLayers,
-  ModifyFeature,
-} from "./graphql";
+import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from "./graphql";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { createMapStyle } from "./styleGenerator";
-import {
-  CleanFeature,
-  FilterActiveFeatures,
-  LayerToFeatureCollection,
-} from "./utils";
+import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
 
 // Initialize maplibregl globals once at module load to avoid repeated side-effects
 // when React Strict Mode mounts components multiple times in development.
@@ -168,11 +152,7 @@ function ActiveLayer() {
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = LayerToFeatureCollection(
-    first(
-      state.layers
-        .filter((l) => l.layer.id === state.activeLayer)
-        .map((l) => l.layer),
-    ),
+    first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
   );
 
   useEffect(() => {
@@ -216,9 +196,7 @@ function Draw() {
   const { current: map } = useMap();
 
   const [addFeature] = useMutation(AddFeatureToLayer, {
-    refetchQueries: [
-      { query: GetLayers, variables: { incidentId: incidentId } },
-    ],
+    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
     onCompleted: (data) => {
       if (data.insertFeaturesOne?.id) {
         dispatch({
@@ -247,9 +225,7 @@ function Draw() {
   });
 
   const [modifyFeature] = useMutation(ModifyFeature, {
-    refetchQueries: [
-      { query: GetLayers, variables: { incidentId: incidentId } },
-    ],
+    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
     onError: (error) => {
       console.error("Error adding feature:", error);
     },
@@ -273,9 +249,7 @@ function Draw() {
   });
 
   const [deleteFeature] = useMutation(DeleteFeature, {
-    refetchQueries: [
-      { query: GetLayers, variables: { incidentId: incidentId } },
-    ],
+    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
   });
 
   const onSelectionChange = useCallback(
@@ -367,9 +341,7 @@ function Draw() {
   useEffect(() => {
     if (state.draw && map?.loaded) {
       const featureCollection: FeatureCollection = FilterActiveFeatures(
-        LayerToFeatureCollection(
-          state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
-        ),
+        LayerToFeatureCollection(state.layers.find((l) => l.layer.id === state.activeLayer)?.layer),
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -384,9 +356,7 @@ function Draw() {
     if (state.draw && map?.loaded) {
       if (!isDrawLike(state.draw)) {
         // eslint-disable-next-line no-console
-        console.warn(
-          "Draw control missing get/changeMode; skipping selection sync.",
-        );
+        console.warn("Draw control missing get/changeMode; skipping selection sync.");
         return;
       }
 
@@ -464,10 +434,7 @@ function InactiveLayers(props: { layers: Layer[] }) {
     </>
   );
 }
-function InactiveLayer(props: {
-  featureCollection: FeatureCollection;
-  id: string;
-}) {
+function InactiveLayer(props: { featureCollection: FeatureCollection; id: string }) {
   const { featureCollection, id } = props;
 
   return (

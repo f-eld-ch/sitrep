@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [ 
+    "eslint", 
+    "import",
+    "react",
+    "react-perf",
+    "jest", 
+    "jsx-a11y",
+    "jsdoc",
+    "typescript",
+    "vitest",
+  ],
+  "categories": {},
+  "rules": {
+    "jsx-a11y/anchor-is-valid": "off",
+    "jsx-a11y/use-anchor-content": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+  },
+  "options": {
+    "typeAware": false,
+    "typeCheck": false,
+  },
+  "settings": {
+    "jsx-a11y": {
+      "components": {},
+      "attributes": {},
+    },
+    "typescript": {
+      "project": "./tsconfig.json",
+    },
+    "react": {
+      "version": "19.2.4",
+    },
+    "jsdoc": {
+      "ignorePrivate": false,
+      "ignoreInternal": false,
+      "ignoreReplacesDocs": true,
+      "overrideReplacesDocs": true,
+      "augmentsExtendsReplacesDocs": false,
+      "implementsReplacesDocs": false,
+      "exemptDestructuredRootsFromChecks": false,
+      "tagNamePreference": {},
+    },
+    "vitest": {
+      "typecheck": false,
+    },
+  },
+  "env": {
+    "builtin": true,
+  },
+  "globals": {},
+  "ignorePatterns": ["./src/i18n/locales/**", "dist/**", "node_modules/**", "*.config.js"],
+}

@@ -1,14 +1,8 @@
 import type CoordinateSystem from "./CoordinateSystem";
-import {
-  STANDARD_ZOOM_LEVEL_1_25000_MAP,
-  SWISS_ZOOM_LEVEL_1_25000_MAP,
-} from "./CoordinateSystem";
+import { STANDARD_ZOOM_LEVEL_1_25000_MAP, SWISS_ZOOM_LEVEL_1_25000_MAP } from "./CoordinateSystem";
 import LV03CoordinateSystem from "./LV03CoordinateSystem";
 import LV95CoordinateSystem from "./LV95CoordinateSystem";
-import {
-  LV95_RESOLUTIONS,
-  SWISSTOPO_TILEGRID_RESOLUTIONS,
-} from "./SwissCoordinateSystem";
+import { LV95_RESOLUTIONS, SWISSTOPO_TILEGRID_RESOLUTIONS } from "./SwissCoordinateSystem";
 import WebMercatorCoordinateSystem from "./WebMercatorCoordinateSystem";
 import WGS84CoordinateSystem from "./WGS84CoordinateSystem";
 
@@ -26,9 +20,7 @@ export const round = (value: number, decimals = 0): number => {
 export const closest = (value: number, fromList: number[]): number => {
   if (Array.isArray(fromList) && fromList.length > 2) {
     const difference = fromList.map((listValue) => Math.abs(value - listValue));
-    const smallestDifference = difference.reduce((diff1, diff2) =>
-      diff1 > diff2 ? diff2 : diff1,
-    );
+    const smallestDifference = difference.reduce((diff1, diff2) => (diff1 > diff2 ? diff2 : diff1));
     return fromList[difference.indexOf(smallestDifference)];
   }
   return value;
@@ -47,15 +39,9 @@ const isNumber = (value: any): boolean => {
 export const LV95: LV95CoordinateSystem = new LV95CoordinateSystem();
 export const LV03: LV03CoordinateSystem = new LV03CoordinateSystem();
 export const WGS84: WGS84CoordinateSystem = new WGS84CoordinateSystem();
-export const WEBMERCATOR: WebMercatorCoordinateSystem =
-  new WebMercatorCoordinateSystem();
+export const WEBMERCATOR: WebMercatorCoordinateSystem = new WebMercatorCoordinateSystem();
 
-export const allCoordinateSystems: CoordinateSystem[] = [
-  LV95,
-  LV03,
-  WGS84,
-  WEBMERCATOR,
-];
+export const allCoordinateSystems: CoordinateSystem[] = [LV95, LV03, WGS84, WEBMERCATOR];
 const crs = {
   LV95,
   LV03,

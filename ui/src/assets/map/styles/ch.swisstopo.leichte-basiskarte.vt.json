@@ -68,7 +68,10 @@
           "rgb(252, 252, 252)"
         ],
         "fill-opacity": {
-          "stops": [[1, 0.5], [8, 1]]
+          "stops": [
+            [1, 0.5],
+            [8, 1]
+          ]
         }
       },
       "filter": ["all", ["<", "luminosity", 0]]
@@ -84,21 +87,9 @@
       },
       "paint": {
         "fill-color": "rgba(255, 217, 5, 1)",
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          6,
-          0.005,
-          11,
-          0.01
-        ]
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.005, 11, 0.01]
       },
-      "filter": [
-        "all",
-        [">", "luminosity", 0],
-        ["!in", "mask", "rock", "ice", "scree"]
-      ]
+      "filter": ["all", [">", "luminosity", 0], ["!in", "mask", "rock", "ice", "scree"]]
     },
     {
       "id": "scree_z17",
@@ -110,17 +101,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          9,
-          0,
-          11,
-          0.2,
-          14,
-          0.25
-        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0, 11, 0.2, 14, 0.25],
         "fill-pattern": [
           "match",
           ["get", "weight"],
@@ -147,17 +128,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          9,
-          0,
-          11,
-          0.2,
-          14,
-          0.25
-        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0, 11, 0.2, 14, 0.25],
         "fill-pattern": [
           "match",
           ["get", "weight"],
@@ -184,17 +155,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          11,
-          0,
-          12,
-          0.2,
-          14,
-          0.25
-        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 12, 0.2, 14, 0.25],
         "fill-pattern": [
           "match",
           ["get", "weight"],
@@ -221,17 +182,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          11,
-          0,
-          12,
-          0.2,
-          14,
-          0.25
-        ],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 12, 0.2, 14, 0.25],
         "fill-pattern": [
           "match",
           ["get", "weight"],
@@ -272,19 +223,9 @@
           ["exponential", 1],
           ["zoom"],
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           13,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           14,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 1, 0],
           14.5,
@@ -292,12 +233,7 @@
             "case",
             ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
             1.5,
-            [
-              "case",
-              ["==", ["%", ["to-number", ["get", "ele"]], 20], 0],
-              0.75,
-              0
-            ]
+            ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
           ],
           15,
           [
@@ -409,26 +345,8 @@
       "paint": {
         "line-blur": 0.5,
         "line-color": "rgb(186, 199, 172)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          6,
-          0,
-          11,
-          0.25,
-          16,
-          0.75
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          12,
-          0,
-          14,
-          1
-        ]
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 6, 0, 11, 0.25, 16, 0.75],
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 0, 14, 1]
       },
       "filter": [
         "all",
@@ -453,15 +371,7 @@
       "source-layer": "landcover_pt",
       "minzoom": 14,
       "layout": {
-        "icon-size": [
-          "interpolate",
-          ["exponential", 1.6],
-          ["zoom"],
-          14,
-          0.2,
-          18,
-          1
-        ],
+        "icon-size": ["interpolate", ["exponential", 1.6], ["zoom"], 14, 0.2, 18, 1],
         "text-font": [],
         "icon-image": "dot_green",
         "visibility": "visible",
@@ -472,7 +382,10 @@
       },
       "paint": {
         "icon-opacity": {
-          "stops": [[14, 0.4], [18, 0.6]]
+          "stops": [
+            [14, 0.4],
+            [18, 0.6]
+          ]
         }
       }
     },
@@ -500,10 +413,7 @@
         ],
         "fill-opacity": ["match", ["get", "class"], ["pitch"], 1, 0.3]
       },
-      "filter": [
-        "all",
-        ["in", "class", "landfill", "cemetery", "quarry", "zoo", "pitch"]
-      ]
+      "filter": ["all", ["in", "class", "landfill", "cemetery", "quarry", "zoo", "pitch"]]
     },
     {
       "id": "landuse_outline",
@@ -521,17 +431,12 @@
           "rgb(130, 130, 130)",
           "rgba(186, 199, 172, 1)"
         ],
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          11,
-          0.25,
-          16,
-          0.75
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 11, 0.25, 16, 0.75],
         "line-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         }
       },
       "filter": ["all", ["in", "class", "cemetery", "zoo", "pitch"]]
@@ -619,7 +524,10 @@
         ],
         "line-offset": 0,
         "line-opacity": {
-          "stops": [[13, 0.25], [16, 0.35]]
+          "stops": [
+            [13, 0.25],
+            [16, 0.35]
+          ]
         },
         "line-dasharray": {
           "stops": [
@@ -777,24 +685,8 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": [
-          "match",
-          ["get", "class"],
-          1,
-          "rgba(32, 32, 32, 1)",
-          "hsl(203, 60%, 46%)"
-        ],
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          9,
-          0,
-          11,
-          0.2,
-          14,
-          0.25
-        ],
+        "fill-color": ["match", ["get", "class"], 1, "rgba(32, 32, 32, 1)", "hsl(203, 60%, 46%)"],
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 9, 0, 11, 0.2, 14, 0.25],
         "fill-antialias": false
       }
     },
@@ -815,19 +707,9 @@
           ["exponential", 1],
           ["zoom"],
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           13,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           14,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 1, 0],
           14.5,
@@ -835,12 +717,7 @@
             "case",
             ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
             1.5,
-            [
-              "case",
-              ["==", ["%", ["to-number", ["get", "ele"]], 20], 0],
-              0.75,
-              0
-            ]
+            ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
           ],
           16,
           [
@@ -881,17 +758,7 @@
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": 550,
         "symbol-z-order": "auto",
         "text-max-angle": 40,
@@ -912,12 +779,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -944,17 +806,7 @@
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": 550,
         "symbol-z-order": "auto",
         "text-max-angle": 40,
@@ -975,12 +827,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -1007,17 +854,7 @@
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": 550,
         "symbol-z-order": "auto",
         "text-max-angle": 40,
@@ -1038,12 +875,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -1066,31 +898,16 @@
       "minzoom": 14.0,
       "layout": {
         "text-font": ["B612 Italic"],
-        "text-size": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          14,
-          10.5,
-          16,
-          14
-        ],
+        "text-size": ["interpolate", ["exponential", 2], ["zoom"], 14, 10.5, 16, 14],
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": {
-          "stops": [[14, 250], [16, 450]]
+          "stops": [
+            [14, 250],
+            [16, 450]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-angle": 35,
@@ -1111,12 +928,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -1138,31 +950,16 @@
       "minzoom": 14.0,
       "layout": {
         "text-font": ["B612 Italic"],
-        "text-size": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          14,
-          10.5,
-          16,
-          14
-        ],
+        "text-size": ["interpolate", ["exponential", 2], ["zoom"], 14, 10.5, 16, 14],
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": {
-          "stops": [[14, 250], [16, 450]]
+          "stops": [
+            [14, 250],
+            [16, 450]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-angle": 35,
@@ -1183,12 +980,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -1210,31 +1002,16 @@
       "minzoom": 14.0,
       "layout": {
         "text-font": ["B612 Italic"],
-        "text-size": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          14,
-          10.5,
-          16,
-          14
-        ],
+        "text-size": ["interpolate", ["exponential", 2], ["zoom"], 14, 10.5, 16, 14],
         "text-field": "{ele} ",
         "visibility": "visible",
         "text-justify": "center",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          14,
-          0,
-          15,
-          12,
-          16,
-          80
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 12, 16, 80],
         "symbol-spacing": {
-          "stops": [[14, 250], [16, 450]]
+          "stops": [
+            [14, 250],
+            [16, 450]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-angle": 35,
@@ -1255,12 +1032,7 @@
           ["zoom"],
           0,
           12,
-          [
-            "case",
-            ["==", ["%", ["to-number", ["get", "ele"]], 100], 0],
-            0.75,
-            0
-          ],
+          ["case", ["==", ["%", ["to-number", ["get", "ele"]], 100], 0], 0.75, 0],
           16,
           ["case", ["==", ["%", ["to-number", ["get", "ele"]], 20], 0], 0.75, 0]
         ],
@@ -1286,17 +1058,7 @@
         "line-blur": 0.5,
         "line-color": "rgba(133, 189, 224, 1)",
         "line-width": 0.5,
-        "line-opacity": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          0,
-          0,
-          8,
-          1,
-          14,
-          0
-        ]
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 0, 0, 8, 1, 14, 0]
       },
       "filter": ["all", ["!=", "class", "ocean"]]
     },
@@ -1310,17 +1072,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          13,
-          0,
-          13.1,
-          0.6,
-          17,
-          1
-        ],
+        "fill-opacity": ["interpolate", ["exponential", 2], ["zoom"], 13, 0, 13.1, 0.6, 17, 1],
         "fill-pattern": "vinyard_green"
       },
       "filter": ["all", ["==", "subclass", "vineyard"]]
@@ -1336,17 +1088,7 @@
       },
       "paint": {
         "fill-color": "#000000",
-        "fill-opacity": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          13,
-          0,
-          13.2,
-          0.4,
-          17,
-          1
-        ],
+        "fill-opacity": ["interpolate", ["exponential", 2], ["zoom"], 13, 0, 13.2, 0.4, 17, 1],
         "fill-pattern": "wetland_blue",
         "fill-antialias": true
       },
@@ -1362,17 +1104,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "fill-opacity": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          13,
-          0,
-          13.2,
-          0.8,
-          17,
-          1
-        ],
+        "fill-opacity": ["interpolate", ["exponential", 2], ["zoom"], 13, 0, 13.2, 0.8, 17, 1],
         "fill-pattern": "orchard_green"
       },
       "filter": ["all", ["==", "subclass", "orchard"]]
@@ -1388,30 +1120,8 @@
       },
       "paint": {
         "line-color": "rgba(171, 197, 159, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          9,
-          1.5,
-          15,
-          8,
-          18,
-          12
-        ],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          7,
-          0,
-          8,
-          1,
-          13,
-          1,
-          14,
-          0.6
-        ]
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 9, 1.5, 15, 8, 18, 12],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 7, 0, 8, 1, 13, 1, 14, 0.6]
       },
       "filter": ["all", ["in", "class", "national_park"]]
     },
@@ -1429,7 +1139,10 @@
       "paint": {
         "line-blur": 1,
         "line-color": {
-          "stops": [[6, "hsl(300, 55%, 80%)"], [9, "hsl(315, 40%, 85%)"]]
+          "stops": [
+            [6, "hsl(300, 55%, 80%)"],
+            [9, "hsl(315, 40%, 85%)"]
+          ]
         },
         "line-width": [
           "interpolate",
@@ -1445,7 +1158,10 @@
           ["match", ["get", "admin_level"], 2, 16, 10]
         ],
         "line-opacity": {
-          "stops": [[13, 1], [14, 0.7]]
+          "stops": [
+            [13, 1],
+            [14, 0.7]
+          ]
         },
         "line-dasharray": [1.5, 2.5]
       },
@@ -1471,7 +1187,10 @@
       "paint": {
         "line-blur": 1,
         "line-color": {
-          "stops": [[6, "hsl(300, 55%, 80%)"], [9, "hsl(315, 40%, 85%)"]]
+          "stops": [
+            [6, "hsl(300, 55%, 80%)"],
+            [9, "hsl(315, 40%, 85%)"]
+          ]
         },
         "line-width": [
           "interpolate",
@@ -1487,7 +1206,10 @@
           ["match", ["get", "admin_level"], 2, 16, 10]
         ],
         "line-opacity": {
-          "stops": [[13, 1], [14, 0.8]]
+          "stops": [
+            [13, 1],
+            [14, 0.8]
+          ]
         }
       },
       "filter": [
@@ -1569,13 +1291,7 @@
               ["match", ["get", "service"], ["yard", "siding"], 0, 0.75],
               0.5
             ],
-            [
-              "match",
-              ["get", "subclass"],
-              ["cable_car", "funicular"],
-              0.75,
-              0.5
-            ]
+            ["match", ["get", "subclass"], ["cable_car", "funicular"], 0.75, 0.5]
           ],
           14,
           [
@@ -1609,13 +1325,7 @@
           8,
           0,
           9,
-          [
-            "match",
-            ["get", "is_route"],
-            99,
-            ["match", ["get", "class"], ["rail"], 0.8, 0],
-            0
-          ],
+          ["match", ["get", "is_route"], 99, ["match", ["get", "class"], ["rail"], 0.8, 0], 0],
           13,
           [
             "match",
@@ -1675,13 +1385,7 @@
           ["linear"],
           ["zoom"],
           8,
-          [
-            "match",
-            ["get", "is_route"],
-            [5, 10, 99],
-            1,
-            ["match", ["get", "ramp"], 1, 1, 0]
-          ],
+          ["match", ["get", "is_route"], [5, 10, 99], 1, ["match", ["get", "ramp"], 1, 1, 0]],
           10,
           [
             "match",
@@ -1740,13 +1444,7 @@
           ["match", ["get", "class"], ["motorway", "trunk"], 5, 2.5]
         ],
         "line-offset": 0,
-        "line-opacity": [
-          "step",
-          ["zoom"],
-          ["match", ["get", "oneway"], 2, 0, 1],
-          12,
-          1
-        ],
+        "line-opacity": ["step", ["zoom"], ["match", ["get", "oneway"], 2, 0, 1], 12, 1],
         "line-dasharray": {
           "stops": [
             [13, [3, 1.875]],
@@ -1800,18 +1498,13 @@
       "paint": {
         "line-blur": 0.4,
         "line-color": "rgba(140, 140, 140, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          15,
-          1.1,
-          20,
-          3
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 15, 1.1, 20, 3],
         "line-offset": 0,
         "line-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         },
         "line-dasharray": {
           "stops": [
@@ -1843,10 +1536,16 @@
         "line-blur": 0.4,
         "line-color": "hsl(220, 10%, 67%)",
         "line-width": {
-          "stops": [[15, 1], [18, 4]]
+          "stops": [
+            [15, 1],
+            [18, 4]
+          ]
         },
         "line-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         }
       },
       "filter": ["all", ["==", "class", "lock"]]
@@ -1866,13 +1565,7 @@
           ["exponential", 1],
           ["zoom"],
           13,
-          [
-            "match",
-            ["get", "class"],
-            "weir",
-            "hsl(220, 10%, 82%)",
-            "hsl(220, 10%, 86%)"
-          ],
+          ["match", ["get", "class"], "weir", "hsl(220, 10%, 82%)", "hsl(220, 10%, 86%)"],
           17,
           [
             "match",
@@ -1916,7 +1609,11 @@
         "line-color": "rgb(190, 190, 190)",
         "line-width": {
           "base": 1.5,
-          "stops": [[13, 3], [15, 4], [17, 5]]
+          "stops": [
+            [13, 3],
+            [15, 4],
+            [17, 5]
+          ]
         },
         "line-opacity": 1
       },
@@ -1970,22 +1667,23 @@
       },
       "paint": {
         "line-blur": {
-          "stops": [[15, 0.1], [20, 0.4]]
+          "stops": [
+            [15, 0.1],
+            [20, 0.4]
+          ]
         },
         "line-color": {
-          "stops": [[15, "rgba(20, 20, 20, 1)"], [18, "rgba(90, 90, 90, 1)"]]
+          "stops": [
+            [15, "rgba(20, 20, 20, 1)"],
+            [18, "rgba(90, 90, 90, 1)"]
+          ]
         },
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          15,
-          1.1,
-          20,
-          3
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 15, 1.1, 20, 3],
         "line-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         },
         "line-dasharray": {
           "stops": [
@@ -2021,17 +1719,7 @@
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 15, 0.1, 20, 0.4],
         "line-color": "rgba(115, 115, 115, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          13,
-          0.5,
-          15,
-          1.1,
-          20,
-          3
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 13, 0.5, 15, 1.1, 20, 3],
         "line-opacity": [
           "interpolate",
           ["linear"],
@@ -2098,7 +1786,11 @@
           "rgb(130, 130, 130)"
         ],
         "line-width": {
-          "stops": [[13, 0], [16, 2], [18, 3]]
+          "stops": [
+            [13, 0],
+            [16, 2],
+            [18, 3]
+          ]
         },
         "line-opacity": ["match", ["get", "class"], "weir", 0.2, 1]
       },
@@ -2154,13 +1846,7 @@
             "rgb(80, 80, 80)"
           ],
           15,
-          [
-            "match",
-            ["get", "class"],
-            ["motorway", "trunk"],
-            "rgb(139, 107, 63)",
-            "rgb(90, 90, 90)"
-          ]
+          ["match", ["get", "class"], ["motorway", "trunk"], "rgb(139, 107, 63)", "rgb(90, 90, 90)"]
         ],
         "line-width": [
           "interpolate",
@@ -2276,14 +1962,7 @@
             [
               "match",
               ["get", "class"],
-              [
-                "motorway",
-                "trunk",
-                "primary",
-                "secondary",
-                "tertiary",
-                "minor"
-              ],
+              ["motorway", "trunk", "primary", "secondary", "tertiary", "minor"],
               ["match", ["get", "ramp"], 1, 2.75, 0.75],
               ["track", "path", "footway"],
               0.5,
@@ -2540,7 +2219,10 @@
       "paint": {
         "fill-color": "rgba(255, 255, 255, 1)",
         "fill-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         }
       },
       "filter": ["all", ["in", "class", "parking"]]
@@ -2555,17 +2237,12 @@
       },
       "paint": {
         "line-color": "rgba(130, 130, 130, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          11,
-          0.25,
-          16,
-          0.75
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 11, 0.25, 16, 0.75],
         "line-opacity": {
-          "stops": [[14, 0], [15, 1]]
+          "stops": [
+            [14, 0],
+            [15, 1]
+          ]
         }
       },
       "filter": ["all", ["in", "class", "parking"]]
@@ -2583,7 +2260,10 @@
       },
       "paint": {
         "line-blur": {
-          "stops": [[8, 0.4], [14, 0.1]]
+          "stops": [
+            [8, 0.4],
+            [14, 0.1]
+          ]
         },
         "line-color": [
           "interpolate",
@@ -2813,12 +2493,7 @@
               5.5,
               ["tertiary", "tertiary_construction"],
               4.5,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               3.5,
               ["rail", "rail_construction"],
               5,
@@ -2855,12 +2530,7 @@
               9,
               ["tertiary", "tertiary_construction"],
               8,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               7,
               ["rail", "rail_construction"],
               9.5,
@@ -2897,12 +2567,7 @@
               112,
               ["tertiary", "tertiary_construction"],
               107,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               97,
               ["rail", "rail_construction"],
               120,
@@ -2980,19 +2645,7 @@
           "rgb(224,234,221)",
           "rgb(255, 255, 255)"
         ],
-        "line-width": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          11,
-          0,
-          12,
-          2,
-          15,
-          10,
-          20,
-          150
-        ],
+        "line-width": ["interpolate", ["exponential", 2], ["zoom"], 11, 0, 12, 2, 15, 10, 20, 150],
         "line-opacity": 1
       },
       "filter": ["all", ["==", "$type", "LineString"]]
@@ -3036,7 +2689,11 @@
         "line-blur": 0.4,
         "line-color": "rgba(105, 187, 218, 1)",
         "line-width": {
-          "stops": [[8, 0.4], [14, 1], [18, 2]]
+          "stops": [
+            [8, 0.4],
+            [14, 1],
+            [18, 2]
+          ]
         },
         "line-opacity": [
           "interpolate",
@@ -3076,10 +2733,17 @@
         "line-blur": 0.4,
         "line-color": "rgba(105, 187, 218, 1)",
         "line-width": {
-          "stops": [[8, 0.4], [14, 1], [18, 2]]
+          "stops": [
+            [8, 0.4],
+            [14, 1],
+            [18, 2]
+          ]
         },
         "line-opacity": {
-          "stops": [[12, 0], [13, 1]]
+          "stops": [
+            [12, 0],
+            [13, 1]
+          ]
         },
         "line-dasharray": {
           "stops": [
@@ -3149,13 +2813,7 @@
           ["linear"],
           ["zoom"],
           9,
-          [
-            "match",
-            ["get", "is_route"],
-            99,
-            ["match", ["get", "subclass"], "rail", 0.75, 0],
-            0
-          ],
+          ["match", ["get", "is_route"], 99, ["match", ["get", "subclass"], "rail", 0.75, 0], 0],
           10,
           [
             "match",
@@ -3187,13 +2845,7 @@
               "transit",
               1,
               ["rail"],
-              [
-                "match",
-                ["get", "subclass"],
-                ["rail", "narrow_gauge", "rack_rail"],
-                2,
-                1
-              ],
+              ["match", ["get", "subclass"], ["rail", "narrow_gauge", "rack_rail"], 2, 1],
               0
             ],
             ["match", ["get", "subclass"], ["cable_car", "funicular"], 1, 0]
@@ -3235,11 +2887,7 @@
           1
         ]
       },
-      "filter": [
-        "all",
-        ["in", "class", "rail", "transit"],
-        ["!in", "brunnel", "bridge", "tunnel"]
-      ]
+      "filter": ["all", ["in", "class", "rail", "transit"], ["!in", "brunnel", "bridge", "tunnel"]]
     },
     {
       "id": "sinkhole",
@@ -3279,7 +2927,10 @@
         "icon-color": "#000000",
         "text-color": "#000000",
         "icon-opacity": {
-          "stops": [[14, 0], [15, 0.6]]
+          "stops": [
+            [14, 0],
+            [15, 0.6]
+          ]
         },
         "text-opacity": 1,
         "text-halo-blur": 1,
@@ -3309,10 +2960,16 @@
       },
       "paint": {
         "fill-color": {
-          "stops": [[13, "hsl(220, 10%, 82%)"], [17, "hsl(220, 10%, 75%)"]]
+          "stops": [
+            [13, "hsl(220, 10%, 82%)"],
+            [17, "hsl(220, 10%, 75%)"]
+          ]
         },
         "fill-opacity": {
-          "stops": [[13, 0], [13.5, 1]]
+          "stops": [
+            [13, 0],
+            [13.5, 1]
+          ]
         }
       }
     },
@@ -3344,17 +3001,7 @@
       "paint": {
         "line-color": "hsl(220, 10%, 67%)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 15, 0.2, 18, 1.2],
-        "line-opacity": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          15,
-          0,
-          16,
-          0.5,
-          19,
-          1
-        ]
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 15, 0, 16, 0.5, 19, 1]
       }
     },
     {
@@ -3455,13 +3102,7 @@
             "rgb(80, 80, 80)"
           ],
           15,
-          [
-            "match",
-            ["get", "class"],
-            ["motorway", "trunk"],
-            "rgb(139, 107, 63)",
-            "rgb(90, 90, 90)"
-          ]
+          ["match", ["get", "class"], ["motorway", "trunk"], "rgb(139, 107, 63)", "rgb(90, 90, 90)"]
         ],
         "line-width": [
           "interpolate",
@@ -3577,14 +3218,7 @@
             [
               "match",
               ["get", "class"],
-              [
-                "motorway",
-                "trunk",
-                "primary",
-                "secondary",
-                "tertiary",
-                "minor"
-              ],
+              ["motorway", "trunk", "primary", "secondary", "tertiary", "minor"],
               ["match", ["get", "ramp"], 1, 2.75, 0.75],
               ["track", "path", "footway"],
               0.5,
@@ -3832,7 +3466,10 @@
       },
       "paint": {
         "line-blur": {
-          "stops": [[8, 0.4], [14, 0.1]]
+          "stops": [
+            [8, 0.4],
+            [14, 0.1]
+          ]
         },
         "line-color": [
           "interpolate",
@@ -3845,13 +3482,7 @@
             ["motorway", "trunk"],
             "rgb(255,230,160)",
             ["rail", "path", "track", "footway"],
-            [
-              "match",
-              ["get", "subclass"],
-              "funicular",
-              "rgba(243,243,246,0)",
-              "rgb(243,243,246)"
-            ],
+            ["match", ["get", "subclass"], "funicular", "rgba(243,243,246,0)", "rgb(243,243,246)"],
             "rgb(255,255,255)",
             "rgb(243,243,246)",
             "rgb(255,255,255)"
@@ -3863,13 +3494,7 @@
             ["motorway", "trunk"],
             "rgb(255, 224, 138)",
             ["rail", "path", "track", "footway"],
-            [
-              "match",
-              ["get", "subclass"],
-              "funicular",
-              "rgba(243,243,246,0)",
-              "rgb(243,243,246)"
-            ],
+            ["match", ["get", "subclass"], "funicular", "rgba(243,243,246,0)", "rgb(243,243,246)"],
             "rgb(255,255,255)"
           ]
         ],
@@ -4080,12 +3705,7 @@
               5.5,
               ["tertiary", "tertiary_construction"],
               4.5,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               3.5,
               ["rail", "rail_construction"],
               5,
@@ -4122,12 +3742,7 @@
               9,
               ["tertiary", "tertiary_construction"],
               8,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               7,
               ["rail", "rail_construction"],
               9.5,
@@ -4164,12 +3779,7 @@
               112,
               ["tertiary", "tertiary_construction"],
               107,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               97,
               ["rail", "rail_construction"],
               120,
@@ -4225,7 +3835,10 @@
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 14, 3, 15, 0.4],
         "line-color": {
-          "stops": [[9, "rgba(80, 80, 80, 1)"], [15, "rgba(90, 90, 90, 1)"]]
+          "stops": [
+            [9, "rgba(80, 80, 80, 1)"],
+            [15, "rgba(90, 90, 90, 1)"]
+          ]
         },
         "line-width": [
           "interpolate",
@@ -4288,17 +3901,7 @@
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 15, 0.1, 20, 0.4],
         "line-color": "rgba(115, 115, 115, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          13,
-          0.5,
-          15,
-          1.1,
-          20,
-          3
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 13, 0.5, 15, 1.1, 20, 3],
         "line-opacity": [
           "interpolate",
           ["linear"],
@@ -4388,20 +3991,17 @@
           0.4
         ],
         "line-color": {
-          "stops": [[7, "rgba(206, 132, 132, 1)"], [15, "rgba(85, 53, 53, 1)"]]
+          "stops": [
+            [7, "rgba(206, 132, 132, 1)"],
+            [15, "rgba(85, 53, 53, 1)"]
+          ]
         },
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
           9,
-          [
-            "match",
-            ["get", "is_route"],
-            99,
-            ["match", ["get", "subclass"], "rail", 0.75, 0],
-            0
-          ],
+          ["match", ["get", "is_route"], 99, ["match", ["get", "subclass"], "rail", 0.75, 0], 0],
           10,
           [
             "match",
@@ -4531,13 +4131,7 @@
             "rgb(80, 80, 80)"
           ],
           15,
-          [
-            "match",
-            ["get", "class"],
-            ["motorway", "trunk"],
-            "rgb(139, 107, 63)",
-            "rgb(90, 90, 90)"
-          ]
+          ["match", ["get", "class"], ["motorway", "trunk"], "rgb(139, 107, 63)", "rgb(90, 90, 90)"]
         ],
         "line-width": [
           "interpolate",
@@ -4653,14 +4247,7 @@
             [
               "match",
               ["get", "class"],
-              [
-                "motorway",
-                "trunk",
-                "primary",
-                "secondary",
-                "tertiary",
-                "minor"
-              ],
+              ["motorway", "trunk", "primary", "secondary", "tertiary", "minor"],
               ["match", ["get", "ramp"], 1, 2.75, 0.75],
               ["track", "path", "footway"],
               0.5,
@@ -4908,7 +4495,10 @@
       },
       "paint": {
         "line-blur": {
-          "stops": [[8, 0.4], [14, 0.1]]
+          "stops": [
+            [8, 0.4],
+            [14, 0.1]
+          ]
         },
         "line-color": [
           "interpolate",
@@ -4921,13 +4511,7 @@
             ["motorway", "trunk"],
             "rgb(255,230,160)",
             ["rail", "path", "track", "footway"],
-            [
-              "match",
-              ["get", "subclass"],
-              "funicular",
-              "rgba(243,243,246,0)",
-              "rgb(243,243,246)"
-            ],
+            ["match", ["get", "subclass"], "funicular", "rgba(243,243,246,0)", "rgb(243,243,246)"],
             "rgb(255,255,255)",
             "rgb(243,243,246)",
             "rgb(255,255,255)"
@@ -4939,13 +4523,7 @@
             ["motorway", "trunk"],
             "rgb(255, 224, 138)",
             ["rail", "path", "track", "footway"],
-            [
-              "match",
-              ["get", "subclass"],
-              "funicular",
-              "rgba(243,243,246,0)",
-              "rgb(243,243,246)"
-            ],
+            ["match", ["get", "subclass"], "funicular", "rgba(243,243,246,0)", "rgb(243,243,246)"],
             "rgb(255,255,255)"
           ]
         ],
@@ -5156,12 +4734,7 @@
               5.5,
               ["tertiary", "tertiary_construction"],
               4.5,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               3.5,
               ["rail", "rail_construction"],
               5,
@@ -5198,12 +4771,7 @@
               9,
               ["tertiary", "tertiary_construction"],
               8,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               7,
               ["rail", "rail_construction"],
               9.5,
@@ -5240,12 +4808,7 @@
               112,
               ["tertiary", "tertiary_construction"],
               107,
-              [
-                "minor",
-                "minor_construction",
-                "service",
-                "service_construction"
-              ],
+              ["minor", "minor_construction", "service", "service_construction"],
               97,
               ["rail", "rail_construction"],
               120,
@@ -5301,7 +4864,10 @@
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 14, 3, 15, 0.4],
         "line-color": {
-          "stops": [[9, "rgba(80, 80, 80, 1)"], [15, "rgba(90, 90, 90, 1)"]]
+          "stops": [
+            [9, "rgba(80, 80, 80, 1)"],
+            [15, "rgba(90, 90, 90, 1)"]
+          ]
         },
         "line-width": [
           "interpolate",
@@ -5364,17 +4930,7 @@
       "paint": {
         "line-blur": ["interpolate", ["linear"], ["zoom"], 15, 0.1, 20, 0.4],
         "line-color": "rgba(115, 115, 115, 1)",
-        "line-width": [
-          "interpolate",
-          ["exponential", 1.5],
-          ["zoom"],
-          13,
-          0.5,
-          15,
-          1.1,
-          20,
-          3
-        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 13, 0.5, 15, 1.1, 20, 3],
         "line-opacity": [
           "interpolate",
           ["linear"],
@@ -5464,20 +5020,17 @@
           0.4
         ],
         "line-color": {
-          "stops": [[7, "rgba(255, 50, 50, 1)"], [15, "rgba(255, 80, 80, 1)"]]
+          "stops": [
+            [7, "rgba(255, 50, 50, 1)"],
+            [15, "rgba(255, 80, 80, 1)"]
+          ]
         },
         "line-width": [
           "interpolate",
           ["linear"],
           ["zoom"],
           9,
-          [
-            "match",
-            ["get", "is_route"],
-            99,
-            ["match", ["get", "subclass"], "rail", 0.75, 0],
-            0
-          ],
+          ["match", ["get", "is_route"], 99, ["match", ["get", "subclass"], "rail", 0.75, 0], 0],
           10,
           [
             "match",
@@ -5690,11 +5243,7 @@
         "text-halo-color": "rgba(242, 242, 242, 0.6)",
         "text-halo-width": 2
       },
-      "filter": [
-        "all",
-        ["==", "$type", "LineString"],
-        ["!=", "intermittent", 1]
-      ]
+      "filter": ["all", ["==", "$type", "LineString"], ["!=", "intermittent", 1]]
     },
     {
       "id": "aerialway",
@@ -5733,13 +5282,7 @@
           13,
           ["match", ["get", "class"], ["cable_car", "gondola"], 1, 0],
           14,
-          [
-            "match",
-            ["get", "class"],
-            ["cable_car", "gondola", "chair_lift"],
-            1,
-            0
-          ]
+          ["match", ["get", "class"], ["cable_car", "gondola", "chair_lift"], 1, 0]
         ]
       },
       "filter": ["all", ["in", "class", "cable_car", "gondola", "chair_lift"]]
@@ -5766,15 +5309,7 @@
         "text-anchor": "center",
         "text-offset": [0, 0],
         "text-padding": 2,
-        "symbol-spacing": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          15,
-          200,
-          18,
-          400
-        ],
+        "symbol-spacing": ["interpolate", ["linear"], ["zoom"], 15, 200, 18, 400],
         "symbol-z-order": "auto",
         "text-max-angle": 40,
         "text-transform": "none",
@@ -5802,15 +5337,7 @@
         "text-halo-color": [
           "match",
           ["get", "class"],
-          [
-            "rail",
-            "transit",
-            "cable_car",
-            "gondola",
-            "chair_lift",
-            "motorway",
-            "trunk"
-          ],
+          ["rail", "transit", "cable_car", "gondola", "chair_lift", "motorway", "trunk"],
           "rgba(255, 255, 255, 0.6)",
           "rgba(255, 255, 255, 0.8)"
         ],
@@ -5908,7 +5435,10 @@
         "text-field": "{name:latin}",
         "visibility": "visible",
         "symbol-spacing": {
-          "stops": [[12, 250], [14, 550]]
+          "stops": [
+            [12, 250],
+            [14, 550]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-width": 99999,
@@ -5941,7 +5471,10 @@
         "text-field": "{name:latin}",
         "visibility": "visible",
         "symbol-spacing": {
-          "stops": [[12, 250], [14, 550]]
+          "stops": [
+            [12, 250],
+            [14, 550]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-width": 99999,
@@ -5950,7 +5483,10 @@
         "symbol-avoid-edges": true,
         "text-allow-overlap": false,
         "text-letter-spacing": {
-          "stops": [[10, 0.15], [12, 0.3]]
+          "stops": [
+            [10, 0.15],
+            [12, 0.3]
+          ]
         },
         "text-pitch-alignment": "map",
         "text-ignore-placement": false,
@@ -5962,11 +5498,7 @@
         "text-halo-color": "rgba(242, 242, 242, 0.6)",
         "text-halo-width": 1
       },
-      "filter": [
-        "all",
-        ["==", "$type", "LineString"],
-        ["in", "subclass", "glacier"]
-      ]
+      "filter": ["all", ["==", "$type", "LineString"], ["in", "subclass", "glacier"]]
     },
     {
       "id": "peaks_other",
@@ -6056,13 +5588,7 @@
         "text-halo-color": "rgba(242, 242, 242, 0.6)",
         "text-halo-width": ["interpolate", ["linear"], ["zoom"], 12, 1.5, 18, 3]
       },
-      "filter": [
-        "match",
-        ["get", "class"],
-        ["rocky_knoll", "saddle"],
-        true,
-        false
-      ]
+      "filter": ["match", ["get", "class"], ["rocky_knoll", "saddle"], true, false]
     },
     {
       "id": "peaks_rank5",
@@ -6667,29 +6193,13 @@
           16,
           ["case", ["<=", 50, ["get", "population"]], 20, 18]
         ],
-        "icon-image": [
-          "step",
-          ["zoom"],
-          "circle_dark_grey_4",
-          12,
-          "circle_dark_grey_6"
-        ],
+        "icon-image": ["step", ["zoom"], "circle_dark_grey_4", 12, "circle_dark_grey_6"],
         "text-field": ["get", "name:latin"],
         "visibility": "visible",
         "text-anchor": ["literal", "bottom-left"],
         "text-offset": ["literal", [0.3, 0.2]],
         "text-justify": "auto",
-        "text-padding": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          2,
-          13,
-          2,
-          14,
-          0
-        ],
+        "text-padding": ["interpolate", ["linear"], ["zoom"], 10, 2, 13, 2, 14, 0],
         "icon-optional": false,
         "symbol-z-order": ["literal", "auto"],
         "text-max-width": 10,
@@ -6744,19 +6254,7 @@
       "maxzoom": 22.0,
       "layout": {
         "text-font": ["B612 Regular"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          1,
-          11,
-          7,
-          14,
-          11,
-          16,
-          18,
-          24
-        ],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 1, 11, 7, 14, 11, 16, 18, 24],
         "text-field": "{name:latin}",
         "visibility": "visible",
         "text-max-width": 10,
@@ -6770,11 +6268,7 @@
         "text-halo-color": "rgba(255, 255, 255, 0.8)",
         "text-halo-width": 1
       },
-      "filter": [
-        "all",
-        ["in", "class", "country"],
-        ["in", "iso_a2", "DE", "IT"]
-      ]
+      "filter": ["all", ["in", "class", "country"], ["in", "iso_a2", "DE", "IT"]]
     },
     {
       "id": "place_village",
@@ -7114,12 +6608,7 @@
           ["zoom"],
           0,
           6,
-          [
-            "case",
-            [">", 10, ["get", "rank"]],
-            1,
-            ["match", ["get", "capital"], [2, 4], 1, 0]
-          ],
+          ["case", [">", 10, ["get", "rank"]], 1, ["match", ["get", "capital"], [2, 4], 1, 0]],
           8,
           1,
           12,
@@ -7130,12 +6619,7 @@
           ["zoom"],
           0,
           6,
-          [
-            "case",
-            [">", 10, ["get", "rank"]],
-            1,
-            ["match", ["get", "capital"], [2, 4], 1, 0]
-          ],
+          ["case", [">", 10, ["get", "rank"]], 1, ["match", ["get", "capital"], [2, 4], 1, 0]],
           8,
           1
         ],
@@ -7264,19 +6748,7 @@
             0.05
           ],
           16,
-          [
-            "match",
-            ["get", "size"],
-            [10, 9, 8],
-            0.7,
-            [7, 6],
-            0.5,
-            [5, 4, 3],
-            0.3,
-            [2],
-            0.2,
-            0.1
-          ]
+          ["match", ["get", "size"], [10, 9, 8], 0.7, [7, 6], 0.5, [5, 4, 3], 0.3, [2], 0.2, 0.1]
         ],
         "text-pitch-alignment": "map",
         "text-ignore-placement": false,
@@ -7313,15 +6785,7 @@
       "minzoom": 8.0,
       "layout": {
         "text-font": ["B612 Regular"],
-        "text-size": [
-          "interpolate",
-          ["cubic-bezier", 0.5, 0.1, 0.7, 1],
-          ["zoom"],
-          8,
-          14,
-          16,
-          28
-        ],
+        "text-size": ["interpolate", ["cubic-bezier", 0.5, 0.1, 0.7, 1], ["zoom"], 8, 14, 16, 28],
         "text-field": "{name:latin}",
         "visibility": "visible",
         "text-padding": ["interpolate", ["linear"], ["zoom"], 10, 2, 14, 10],
@@ -7333,11 +6797,7 @@
         "text-halo-color": "rgba(255, 255, 255, 0.8)",
         "text-halo-width": 1
       },
-      "filter": [
-        "all",
-        ["in", "class", "national_park"],
-        ["==", "$type", "Point"]
-      ]
+      "filter": ["all", ["in", "class", "national_park"], ["==", "$type", "Point"]]
     },
     {
       "id": "area_name_massif_label",
@@ -7351,7 +6811,10 @@
         "text-field": "{name:latin}",
         "visibility": "visible",
         "symbol-spacing": {
-          "stops": [[12, 250], [14, 550]]
+          "stops": [
+            [12, 250],
+            [14, 550]
+          ]
         },
         "symbol-z-order": "auto",
         "text-max-width": 99999,

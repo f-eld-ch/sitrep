@@ -9,11 +9,7 @@ import {
 } from "react";
 import { useParams } from "react-router";
 
-import type {
-  Incident,
-  IncidentContext as IncidentContextState,
-  Journal,
-} from "types";
+import type { Incident, IncidentContext as IncidentContextState, Journal } from "types";
 import { GetIncidentDetails } from "views/incident/graphql";
 
 // Define the initial state
@@ -62,9 +58,7 @@ const IncidentContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(incidentReducer, initialState);
 
   return (
-    <IncidentContext.Provider value={{ state, dispatch }}>
-      {children}
-    </IncidentContext.Provider>
+    <IncidentContext.Provider value={{ state, dispatch }}>{children}</IncidentContext.Provider>
   );
 };
 
@@ -94,9 +88,7 @@ const IncidentContextSetter = () => {
     }
 
     if (journalId) {
-      const journal = data?.incidentsByPk.journals.find(
-        (j: Journal) => j.id === journalId,
-      );
+      const journal = data?.incidentsByPk.journals.find((j: Journal) => j.id === journalId);
       if (journal) {
         if (state.journal?.id !== journal.id) {
           dispatch({ type: "SET_JOURNAL", payload: journal });

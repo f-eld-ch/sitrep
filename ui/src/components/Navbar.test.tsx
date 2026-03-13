@@ -45,9 +45,7 @@ describe("Navbar Component", () => {
   describe("Rendering", () => {
     it("renders the Navbar component", () => {
       render(
-        <UserContext.Provider
-          value={{ state: userState, dispatch: mockDispatch }}
-        >
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
             <Routes>
               <Route path="/" element={<Navbar />} />
@@ -70,9 +68,7 @@ describe("Navbar Component", () => {
   describe("Interactions", () => {
     it("toggles the menu when the burger button is clicked", () => {
       render(
-        <UserContext.Provider
-          value={{ state: userState, dispatch: mockDispatch }}
-        >
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
             <Routes>
               <Route path="/" element={<Navbar />} />
@@ -93,9 +89,7 @@ describe("Navbar Component", () => {
   describe("User Context", () => {
     it("displays user email when logged in", () => {
       render(
-        <UserContext.Provider
-          value={{ state: userState, dispatch: mockDispatch }}
-        >
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
             <Routes>
               <Route path="/" element={<Navbar />} />
@@ -116,9 +110,7 @@ describe("Navbar Component", () => {
       };
 
       render(
-        <UserContext.Provider
-          value={{ state: loggedOutState, dispatch: mockDispatch }}
-        >
+        <UserContext.Provider value={{ state: loggedOutState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
             <Routes>
               <Route path="/" element={<Navbar />} />
@@ -135,9 +127,7 @@ describe("Navbar Component", () => {
   describe("Dark Mode", () => {
     it("toggles dark mode when the button is clicked", () => {
       render(
-        <UserContext.Provider
-          value={{ state: userState, dispatch: mockDispatch }}
-        >
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
             <Routes>
               <Route path="/" element={<Navbar />} />

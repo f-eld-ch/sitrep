@@ -110,31 +110,23 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
 const wmsLocalStorageKey = "wmsLayersState";
 
 const LayersProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, dispatch] = useReducer(
-    mainReducer,
-    initialState,
-    (initialState) => {
-      // get the WMS state from localStorage if it exists
-      try {
-        const wms = localStorage.getItem(wmsLocalStorageKey);
-        return wms ? { ...initialState, wms: JSON.parse(wms) } : initialState;
-      } catch (error) {
-        console.error("Failed to parse WMS state from localStorage:", error);
-        return initialState;
-      }
-    },
-  );
+  const [state, dispatch] = useReducer(mainReducer, initialState, (initialState) => {
+    // get the WMS state from localStorage if it exists
+    try {
+      const wms = localStorage.getItem(wmsLocalStorageKey);
+      return wms ? { ...initialState, wms: JSON.parse(wms) } : initialState;
+    } catch (error) {
+      console.error("Failed to parse WMS state from localStorage:", error);
+      return initialState;
+    }
+  });
 
   // store the WMS state in localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(wmsLocalStorageKey, JSON.stringify(state.wms));
   }, [state.wms]);
 
-  return (
-    <LayerContext.Provider value={{ state, dispatch }}>
-      {children}
-    </LayerContext.Provider>
-  );
+  return <LayerContext.Provider value={{ state, dispatch }}>{children}</LayerContext.Provider>;
 };
 
 export { LayerContext, LayersProvider };

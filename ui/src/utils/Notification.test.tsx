@@ -19,9 +19,7 @@ describe("Notification", () => {
       </Notification>,
     );
     expect(screen.getByText("Success!")).toBeInTheDocument();
-    expect(screen.getByText("Success!").parentElement).toHaveClass(
-      "is-success",
-    );
+    expect(screen.getByText("Success!").parentElement).toHaveClass("is-success");
   });
 
   it("renders correct class for info type", () => {

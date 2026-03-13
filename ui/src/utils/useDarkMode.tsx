@@ -21,11 +21,7 @@ interface DarkModeReturn {
 export function useDarkMode(
   options: DarkModeOptions = { initializeWithValue: true },
 ): DarkModeReturn {
-  const {
-    defaultValue,
-    localStorageKey = LOCAL_STORAGE_KEY,
-    initializeWithValue = true,
-  } = options;
+  const { defaultValue, localStorageKey = LOCAL_STORAGE_KEY, initializeWithValue = true } = options;
 
   const isDarkOS = useMediaQuery(COLOR_SCHEME_QUERY, {
     initializeWithValue,

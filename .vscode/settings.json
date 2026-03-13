@@ -1,20 +1,26 @@
 {
+  "oxc.fmt.configPath": "./ui/.oxfmtrc.json",
+  "oxc.typeAware": false,
+
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "prettier.printWidth": 70,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+      "source.fixAll.oxc": "always",
     },
-    "eslint.validate": [
-        "javascript"
-    ],
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.oxc": "always",
     },
-    "i18n-ally.localesPaths": [
-        "src/i18n",
-        "src/i18n/locales"
-    ],
-    "i18n-ally.keystyle": "nested",
-    "i18n-ally.sourceLanguage": "de"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.oxc": "always",
+    },
+  },
 }

@@ -1,9 +1,4 @@
-import type {
-  Feature,
-  FeatureCollection,
-  GeoJsonProperties,
-  Geometry,
-} from "geojson";
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { omit } from "lodash";
 import type { Feature as GraphQlFeature, Layer } from "types/layer";
 
@@ -32,9 +27,7 @@ const LayersToLayerMap = (layers: Layer[], activeLayerId: string): LayerMap => {
   return layerMap;
 };
 
-const LayerToFeatureCollection = (
-  layer: Layer | undefined,
-): FeatureCollection => {
+const LayerToFeatureCollection = (layer: Layer | undefined): FeatureCollection => {
   const fc: FeatureCollection = { features: [], type: "FeatureCollection" };
 
   const features = layer?.features || [];
@@ -43,9 +36,7 @@ const LayerToFeatureCollection = (
     if (f === undefined) {
       continue;
     }
-    fc.features.push(
-      ConvertFeatureToGeoJsonFeature(f, f.id ? f.id.toString() : ""),
-    );
+    fc.features.push(ConvertFeatureToGeoJsonFeature(f, f.id ? f.id.toString() : ""));
   }
 
   return fc;
@@ -84,12 +75,7 @@ function CleanFeature(f: Feature) {
     type: "Feature",
     id: f.id,
     geometry: f.geometry,
-    properties: omit(f.properties, [
-      "createdAt",
-      "updatedAt",
-      "deletedAt",
-      "layerId",
-    ]),
+    properties: omit(f.properties, ["createdAt", "updatedAt", "deletedAt", "layerId"]),
   };
 
   return feature;

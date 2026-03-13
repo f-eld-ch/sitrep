@@ -11,12 +11,7 @@ import { useNavigate } from "react-router";
 import type { Division } from "types";
 import type { Incident } from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
-import {
-  GetIncidentDetails,
-  GetIncidents,
-  InsertIncident,
-  UpdateIncident,
-} from "./graphql";
+import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
 
 function New() {
   const { t } = useTranslation();
@@ -118,9 +113,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   return (
     <>
       {error && <div className="notification is-danger">{error?.message}</div>}
-      {errorUpdate && (
-        <div className="notification is-danger">{errorUpdate?.message}</div>
-      )}
+      {errorUpdate && <div className="notification is-danger">{errorUpdate?.message}</div>}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label htmlFor={nameID} className="label is-capitalized">
@@ -187,17 +180,13 @@ function IncidentForm(props: { incident: Incident | undefined }) {
               return (
                 <div key={d.name} className="control">
                   <div className="tags has-addons">
-                    <p
-                      className={tagsClass}
-                    >{`${d.description} (${d.name})`}</p>
+                    <p className={tagsClass}>{`${d.description} (${d.name})`}</p>
                     {d.id === "" && (
                       <button
                         type="button"
                         className="tag is-delete"
                         onClick={() =>
-                          setAssignments(
-                            reject(assignments, (e) => e.name === d.name),
-                          )
+                          setAssignments(reject(assignments, (e) => e.name === d.name))
                         }
                         aria-label={t("removeDivision") as string}
                       />

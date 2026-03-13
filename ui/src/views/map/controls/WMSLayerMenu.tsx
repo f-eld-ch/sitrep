@@ -22,9 +22,7 @@ import {
 const NO_LAYERS_FOUND_ERROR = new Error("wmsLayerMenu.noLayersFound");
 const FETCH_LAYERS_ERROR = new Error("wmsLayerMenu.errorFetchingLayers");
 
-type WMSLayerMenuError =
-  | typeof NO_LAYERS_FOUND_ERROR
-  | typeof FETCH_LAYERS_ERROR;
+type WMSLayerMenuError = typeof NO_LAYERS_FOUND_ERROR;
 
 interface Layer {
   legendURL: string | undefined;
@@ -57,10 +55,7 @@ interface WMSCapabilitiesLayer {
   legendURL?: string;
 }
 
-const extractLayers = (
-  layer: WMSCapabilitiesLayer,
-  server: string,
-): Layer[] => {
+const extractLayers = (layer: WMSCapabilitiesLayer, server: string): Layer[] => {
   let layers: Layer[] = [];
   const legendURL = layer.Style?.[0]?.LegendURL?.[0]?.OnlineResource;
   layers.push({
@@ -120,10 +115,7 @@ const WMSLayerMenu = () => {
   };
 
   useEffect(() => {
-    if (
-      state.wms.currentServer &&
-      !state.wms.availableLayers[state.wms.currentServer]
-    ) {
+    if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
       setIsLoading(true);
       setError(null);
       fetch(
@@ -133,10 +125,7 @@ const WMSLayerMenu = () => {
         .then((data) => {
           const parser = new WMSCapabilities();
           const result = parser.read(data);
-          const allLayers = extractLayers(
-            result.Capability.Layer,
-            state.wms.currentServer,
-          );
+          const allLayers = extractLayers(result.Capability.Layer, state.wms.currentServer);
           const layers = allLayers
             .filter((layer: Layer) => {
               const hasEPSG3857 =
@@ -193,12 +182,7 @@ const WMSLayerMenu = () => {
       );
       setLayers(layers);
     }
-  }, [
-    state.wms.currentServer,
-    state.wms.availableLayers,
-    i18n.language,
-    dispatch,
-  ]);
+  }, [state.wms.currentServer, state.wms.availableLayers, i18n.language, dispatch]);
 
   const handleLayerSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const layerName = event.target.value;
@@ -228,9 +212,7 @@ const WMSLayerMenu = () => {
     setCustomServer("");
   };
 
-  const handleCustomServerChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleCustomServerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCustomServer(event.target.value);
   };
 
@@ -282,9 +264,7 @@ const WMSLayerMenu = () => {
             <button
               className="mr-2 is-align-self-center"
               type="button"
-              onClick={() =>
-                handleVisibilityToggle(layer.name, !layer.isVisible)
-              }
+              onClick={() => handleVisibilityToggle(layer.name, !layer.isVisible)}
             >
               <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
             </button>
@@ -296,10 +276,7 @@ const WMSLayerMenu = () => {
               step="0.1"
               value={layer.opacity}
               onChange={(e) =>
-                handleWMSOpacityChange(
-                  layer.name,
-                  Number.parseFloat(e.target.value),
-                )
+                handleWMSOpacityChange(layer.name, Number.parseFloat(e.target.value))
               }
             />
             <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
@@ -308,11 +285,7 @@ const WMSLayerMenu = () => {
           </div>
           {expandedLayer === layer.name && (
             <div className="is-align-content-center">
-              <img
-                src={layer.legendURL}
-                alt={`${layer.title}`}
-                style={{ width: "100%" }}
-              />
+              <img src={layer.legendURL} alt={`${layer.title}`} style={{ width: "100%" }} />
             </div>
           )}
         </div>
@@ -406,10 +379,8 @@ const WMSLayerMenu = () => {
                   className="delete is-align-self-flex-end"
                   onClick={() => setError(null)}
                 />
-                {error === NO_LAYERS_FOUND_ERROR &&
-                  t("mapview.wmsLayerMenu.noLayersFound")}
-                {error === FETCH_LAYERS_ERROR &&
-                  t("mapview.wmsLayerMenu.errorFetchingLayers")}
+                {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
+                {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
               </div>
             </div>
           </div>

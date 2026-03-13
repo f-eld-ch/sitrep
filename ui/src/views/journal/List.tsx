@@ -1,10 +1,5 @@
 import { useQuery } from "@apollo/client/react";
-import {
-  faArrowsToEye,
-  faBell,
-  faPrint,
-  faUserGroup,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faBell, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
@@ -12,12 +7,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
-import {
-  type Division,
-  type Message,
-  PriorityStatus,
-  TriageStatus,
-} from "types";
+import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
 import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -64,28 +54,19 @@ function List(props: {
   if (error) {
     return (
       <div className="notification is-danger is-light">
-        <div className="block has-text-weight-semibold">
-          Ups, da ging was schief:
-        </div>
+        <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
         <div className="block">{error.message}</div>
       </div>
     );
   }
 
   if (loading && !data) return <Spinner />;
-  const divisions: Division[] =
-    data?.journalsByPk?.incident?.divisions?.flat() || [];
+  const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
 
   const messages =
     data?.messages
-      .filter(
-        (message) =>
-          triageFilter === "all" || message.triageId === triageFilter,
-      )
-      .filter(
-        (message) =>
-          priorityFilter === "all" || message.priorityId === priorityFilter,
-      )
+      .filter((message) => triageFilter === "all" || message.triageId === triageFilter)
+      .filter((message) => priorityFilter === "all" || message.priorityId === priorityFilter)
       .filter(
         (message) =>
           assignmentFilter === "all" ||
@@ -93,9 +74,7 @@ function List(props: {
       )
       .sort(stableOrderByCreatedAt)
       .map((m, i) => ({ ...m, number: i + 1 }))
-      .sort(
-        (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
-      ) || [];
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()) || [];
 
   return (
     <>
@@ -116,12 +95,7 @@ function List(props: {
                   {Object.values(TriageStatus).map((status: TriageStatus) => (
                     <option
                       key={status}
-                      label={
-                        t([
-                          `triage.${status}`,
-                          `triage.${TriageStatus.Pending}`,
-                        ]) as string
-                      }
+                      label={t([`triage.${status}`, `triage.${TriageStatus.Pending}`]) as string}
                     >
                       {status}
                     </option>
@@ -147,12 +121,7 @@ function List(props: {
                   {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
                     <option
                       key={prio}
-                      label={
-                        t([
-                          `priority.${prio}`,
-                          `priority.${PriorityStatus.Normal}`,
-                        ]) as string
-                      }
+                      label={t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string}
                     >
                       {prio}
                     </option>
@@ -253,10 +222,7 @@ function Messages(props: {
   );
 }
 
-function stableOrderByCreatedAt<T extends { createdAt: Date; id?: string }>(
-  a: T,
-  b: T,
-): number {
+function stableOrderByCreatedAt<T extends { createdAt: Date; id?: string }>(a: T, b: T): number {
   const tA = new Date(a.createdAt);
   const tB = new Date(b.createdAt);
   if (tA.getTime() !== tB.getTime()) return tA.getTime() - tB.getTime();

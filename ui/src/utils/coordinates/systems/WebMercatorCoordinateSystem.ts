@@ -37,18 +37,13 @@ export default class WebMercatorCoordinateSystem extends StandardCoordinateSyste
    *
    *          resolution = 156543.03 meters / pixel * cos(latitude) / (2 ^ zoom level)
    */
-  getResolutionForZoomAndCenter(
-    zoom: number,
-    center: SingleCoordinate,
-  ): number {
+  getResolutionForZoomAndCenter(zoom: number, center: SingleCoordinate): number {
     const centerInRad = proj4(this.epsg, WGS84.epsg, center).map(
       (coordinate) => (coordinate * Math.PI) / 180.0,
     );
     return round(
       Math.abs(
-        (PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES *
-          Math.cos(centerInRad[1])) /
-          2 ** zoom,
+        (PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES * Math.cos(centerInRad[1])) / 2 ** zoom,
       ),
       2,
     );
@@ -70,18 +65,13 @@ export default class WebMercatorCoordinateSystem extends StandardCoordinateSyste
    *   account the deformation of the WebMercator projection (that is greater the further north we
    *   are)
    */
-  getZoomForResolutionAndCenter(
-    resolution: number,
-    center: SingleCoordinate,
-  ): number {
+  getZoomForResolutionAndCenter(resolution: number, center: SingleCoordinate): number {
     const centerInRad = proj4(this.epsg, WGS84.epsg, center).map(
       (coordinate) => (coordinate * Math.PI) / 180.0,
     );
     return Math.abs(
       Math.log2(
-        resolution /
-          PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES /
-          Math.cos(centerInRad[1]),
+        resolution / PIXEL_LENGTH_IN_KM_AT_ZOOM_ZERO_WITH_256PX_TILES / Math.cos(centerInRad[1]),
       ),
     );
   }

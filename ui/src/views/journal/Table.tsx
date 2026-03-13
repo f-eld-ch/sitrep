@@ -24,16 +24,10 @@ const MessageTable = (
   };
 
   const isFiltered =
-    assignmentFilter !== "all" ||
-    triageFilter !== "all" ||
-    priorityFilter !== "all";
+    assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all";
 
   return (
-    <div
-      ref={ref}
-      className="is-clearfix is-block"
-      style={{ overflow: "visible" }}
-    >
+    <div ref={ref} className="is-clearfix is-block" style={{ overflow: "visible" }}>
       <h3 className="title is-3">
         {t("journal")}
         {isFiltered && ` (${t("filtered")})`}
@@ -47,10 +41,7 @@ const MessageTable = (
         priorityFilter={priorityFilter}
         triageFilter={triageFilter}
       />
-      <table
-        className="table is-fullwidth is-narrow"
-        style={{ pageBreakInside: "auto" }}
-      >
+      <table className="table is-fullwidth is-narrow" style={{ pageBreakInside: "auto" }}>
         <thead>
           <tr>
             <th className="is-capitalized">{t("message.time")}</th>
@@ -97,11 +88,7 @@ function FilterState(props: {
   const { assignmentFilter, priorityFilter, triageFilter } = props;
   const { t } = useTranslation();
 
-  if (
-    assignmentFilter === "all" &&
-    triageFilter === "all" &&
-    priorityFilter === "all"
-  ) {
+  if (assignmentFilter === "all" && triageFilter === "all" && priorityFilter === "all") {
     return null;
   }
 

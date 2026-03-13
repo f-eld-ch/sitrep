@@ -157,10 +157,7 @@ describe("IncidentCards", () => {
   it("renders multiple IncidentCard components", () => {
     render(
       <IncidentCards
-        incidents={[
-          baseIncident,
-          { ...baseIncident, id: "2", name: "Another Incident" },
-        ]}
+        incidents={[baseIncident, { ...baseIncident, id: "2", name: "Another Incident" }]}
         closeIncident={mockCloseIncident}
         deleteIncident={mockDeleteIncident}
       />,

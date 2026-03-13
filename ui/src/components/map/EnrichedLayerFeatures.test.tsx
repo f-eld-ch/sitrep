@@ -6,6 +6,12 @@ import { MapStyles } from "views/map/controls/StyleController";
 import { describe, expect, it, vi } from "vitest";
 import { EnrichedFeaturesSource } from "./EnrichedLayerFeatures";
 
+vi.mock("react-map-gl/maplibre", () => ({
+  Map: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Source: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Layer: () => null,
+}));
+
 if (!window.URL.createObjectURL) {
   window.URL.createObjectURL = vi.fn();
 }
@@ -77,20 +83,14 @@ function renderWithMap(children: React.ReactNode) {
 describe("EnrichedLayerFeatures", () => {
   it("renders nothing if id is undefined", () => {
     const { container } = renderWithMap(
-      <EnrichedFeaturesSource
-        id={undefined}
-        featureCollection={baseFeatureCollection}
-      />,
+      <EnrichedFeaturesSource id={undefined} featureCollection={baseFeatureCollection} />,
     );
     expect(container.firstChild).not.toBeNull(); // Map is rendered, but no Source/Layer
   });
 
   it("renders a Source and Layer for enriched features", () => {
     const { container } = renderWithMap(
-      <EnrichedFeaturesSource
-        id="test"
-        featureCollection={baseFeatureCollection}
-      />,
+      <EnrichedFeaturesSource id="test" featureCollection={baseFeatureCollection} />,
     );
     // Should render a Source and a Layer (cannot query by type/id, but no error should occur)
     expect(container).toBeTruthy();

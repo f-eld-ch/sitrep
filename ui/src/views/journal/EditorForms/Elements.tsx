@@ -1,8 +1,4 @@
-import {
-  faCircleArrowLeft,
-  faCircleArrowRight,
-  faClock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { t } from "i18next";
@@ -220,9 +216,7 @@ const SaveButton = () => {
           e.preventDefault();
           dispatch({ type: "save" });
         }}
-        disabled={
-          state.content === "" || state.sender === "" || state.receiver === ""
-        }
+        disabled={state.content === "" || state.sender === "" || state.receiver === ""}
       >
         {t("save")}
       </button>
