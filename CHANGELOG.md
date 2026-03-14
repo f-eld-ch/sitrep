@@ -12,6 +12,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.1 in /ui ([#1415](https://github.com/f-eld-ch/sitrep/issues/1415)) - ([860e2c9](https://github.com/f-eld-ch/sitrep/commit/860e2c9b3e89a8a0b1178924a72416722cc7ae2d))
 - *(deps)* Bump maplibre-gl from 5.19.0 to 5.20.0 in /ui ([#1410](https://github.com/f-eld-ch/sitrep/issues/1410)) - ([b52d0ef](https://github.com/f-eld-ch/sitrep/commit/b52d0ef1602dbdab271d72d36229aa1add62f3b3))
 - *(deps)* Bump dayjs from 1.11.19 to 1.11.20 in /ui ([#1409](https://github.com/f-eld-ch/sitrep/issues/1409)) - ([930a9db](https://github.com/f-eld-ch/sitrep/commit/930a9db7d2c8d5a3a1dcdf9e619abc5cf2a508b2))
 - *(deps)* Bump maplibre-gl from 5.19.0 to 5.20.0 in /ui ([#1404](https://github.com/f-eld-ch/sitrep/issues/1404)) - ([af1327f](https://github.com/f-eld-ch/sitrep/commit/af1327f619b479434af99110cdc23705a7b3d6d8))
