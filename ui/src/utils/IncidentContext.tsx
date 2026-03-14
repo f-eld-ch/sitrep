@@ -10,6 +10,7 @@ import {
 import { useParams } from "react-router";
 
 import type { Incident, IncidentContext as IncidentContextState, Journal } from "types";
+import type { IncidentDetailsData, IncidentDetailsVars } from "types/incident";
 import { GetIncidentDetails } from "views/incident/graphql";
 
 // Define the initial state
@@ -66,7 +67,7 @@ const IncidentContextSetter = () => {
   const { incidentId, journalId } = useParams();
   const { state, dispatch } = useContext(IncidentContext);
 
-  const { loading, data } = useQuery(GetIncidentDetails, {
+  const { loading, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
     fetchPolicy: "cache-first",
   });

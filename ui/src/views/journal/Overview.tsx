@@ -19,6 +19,12 @@ import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import type { Journal } from "types";
+import type {
+  CloseJournalData,
+  CloseJournalVars,
+  GetJournalsData,
+  GetJournalsVars,
+} from "types/journal";
 import { IncidentContext } from "utils";
 import { CloseJournal, GetJournals } from "./graphql";
 
@@ -33,7 +39,7 @@ function Overview() {
     dayjs.extend(relativeTime);
   }, []);
 
-  const { loading, error, data } = useQuery(GetJournals, {
+  const { loading, error, data } = useQuery<GetJournalsData, GetJournalsVars>(GetJournals, {
     variables: { incidentId: incidentId || "" },
     pollInterval: 10000,
   });
@@ -108,7 +114,7 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
 
-  const [closeJournal] = useMutation(CloseJournal, {
+  const [closeJournal] = useMutation<CloseJournalData, CloseJournalVars>(CloseJournal, {
     refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
   });
 

@@ -3,7 +3,9 @@ import { t } from "i18next";
 import uniq from "lodash/uniq";
 import React, { useCallback, useContext, useEffect, useId, useReducer } from "react";
 import { useNavigate, useParams } from "react-router";
+import type { GetJournalMessagesData, GetJournalMessagesVars } from "types";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import type { InsertMessageVars, UpdateMessageVars } from "types/journal";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { Email, Phone, Radio } from "./EditorForms";
@@ -106,12 +108,12 @@ function initState(): State {
 
 function Editor() {
   const { journalId } = useParams();
-  const { data } = useQuery(GetJournalMessages, {
+  const { data } = useQuery<GetJournalMessagesData, GetJournalMessagesVars>(GetJournalMessages, {
     fetchPolicy: "cache-first",
     variables: { journalId: journalId || "" },
   });
 
-  const [insertMessage, { error }] = useMutation(InsertMessage, {
+  const [insertMessage, { error }] = useMutation<Message, InsertMessageVars>(InsertMessage, {
     onCompleted() {
       // reset the form values
       dispatch({ type: "clear" });
@@ -122,16 +124,19 @@ function Editor() {
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 
-  const [updateMessage, { error: errorUpdate }] = useMutation(UpdateMessage, {
-    onCompleted() {
-      // reset the form values
-      dispatch({ type: "clear" });
+  const [updateMessage, { error: errorUpdate }] = useMutation<Message, UpdateMessageVars>(
+    UpdateMessage,
+    {
+      onCompleted() {
+        // reset the form values
+        dispatch({ type: "clear" });
+      },
+      onError() {
+        dispatch({ type: "save_error" });
+      },
+      refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
     },
-    onError() {
-      dispatch({ type: "save_error" });
-    },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
-  });
+  );
 
   const editorReducer = (state: State, action: Action): State => {
     switch (action.type) {

@@ -9,7 +9,13 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Division } from "types";
-import type { Incident } from "types/incident";
+import type {
+  Incident,
+  InsertIncidentData,
+  InsertIncidentVars,
+  UpdateIncidentData,
+  UpdateIncidentVars,
+} from "types/incident";
 import { GetMessageForTriage } from "views/journal/graphql";
 import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
 
@@ -56,18 +62,24 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
-  const [insertIncident, { error }] = useMutation(InsertIncident, {
-    onCompleted(data) {
-      navigate(`../${data.insertIncidentsOne.id}/journal/view`);
+  const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(
+    InsertIncident,
+    {
+      onCompleted(data) {
+        navigate(`../${data.insertIncidentsOne.id}/journal/view`);
+      },
+      refetchQueries: [
+        { query: GetIncidents },
+        { query: GetIncidentDetails },
+        { query: GetMessageForTriage },
+      ],
     },
-    refetchQueries: [
-      { query: GetIncidents },
-      { query: GetIncidentDetails },
-      { query: GetMessageForTriage },
-    ],
-  });
+  );
 
-  const [updateIncident, { error: errorUpdate }] = useMutation(UpdateIncident, {
+  const [updateIncident, { error: errorUpdate }] = useMutation<
+    UpdateIncidentData,
+    UpdateIncidentVars
+  >(UpdateIncident, {
     onCompleted() {
       navigate("../journal/view");
     },

@@ -11,6 +11,8 @@ export type {
 export type {
   Division,
   DivisionList,
+  GetJournalMessagesData,
+  GetJournalMessagesVars,
   Journal,
   JournalListData,
   JournalListVars,

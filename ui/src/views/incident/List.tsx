@@ -17,9 +17,15 @@ import { t } from "i18next";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import type { DeleteIncidentMutation, DeleteIncidentMutationVariables } from "types/incident";
+import type {
+  CloseIncidentMutation,
+  CloseIncidentMutationVariables,
+  DeleteIncidentMutation,
+  DeleteIncidentMutationVariables,
+  IncidentListData,
+} from "types/incident";
 import { IncidentContext } from "utils";
-import type { CloseIncidentMutation, CloseIncidentMutationVariables, Incident } from "../../types";
+import type { Incident } from "../../types";
 import { CloseIncident, DeleteIncident, GetIncidentDetails, GetIncidents } from "./graphql";
 
 function List() {
@@ -28,16 +34,22 @@ function List() {
 
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery(GetIncidents, {
+  const { loading, error, data } = useQuery<IncidentListData, Record<string, never>>(GetIncidents, {
     pollInterval: 10000,
   });
-  const [closeIncident] = useMutation(CloseIncident, {
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-  });
+  const [closeIncident] = useMutation<CloseIncidentMutation, CloseIncidentMutationVariables>(
+    CloseIncident,
+    {
+      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
+    },
+  );
 
-  const [deleteIncident] = useMutation(DeleteIncident, {
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-  });
+  const [deleteIncident] = useMutation<DeleteIncidentMutation, DeleteIncidentMutationVariables>(
+    DeleteIncident,
+    {
+      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
+    },
+  );
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
   if (loading && !data) return <Spinner />;
