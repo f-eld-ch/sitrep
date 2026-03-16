@@ -3,6 +3,7 @@
 ### ⛰️  Features
 
 - *(journal)* Add human readable message number ([#1411](https://github.com/f-eld-ch/sitrep/issues/1411)) - ([e0d2a7c](https://github.com/f-eld-ch/sitrep/commit/e0d2a7c231af63620dfa41d1fdf3cae89edae821))
+- *(ui)* Improve service worker app update prompt ([#1417](https://github.com/f-eld-ch/sitrep/issues/1417)) - ([33c4436](https://github.com/f-eld-ch/sitrep/commit/33c44369382c4ac2af0c00281f1979e6a902d8c4))
 
 ### 🐛 Bug Fixes
 
