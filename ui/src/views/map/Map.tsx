@@ -21,7 +21,17 @@ import {
   useMap,
 } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
-import type { Layer } from "types/layer";
+import type {
+  AddFeatureResponse,
+  AddFeatureVars,
+  DeleteFeatureResponse,
+  DeleteFeatureVars,
+  GetLayersData,
+  GetLayersVars,
+  Layer,
+  ModifyFeatureResponse,
+  ModifyFeatureVars,
+} from "types/layer";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
@@ -129,7 +139,7 @@ function LayerFetcher() {
   const { incidentId } = useParams();
   const { state, dispatch } = useContext(LayerContext);
 
-  const { data, loading } = useQuery(GetLayers, {
+  const { data, loading } = useQuery<GetLayersData, GetLayersVars>(GetLayers, {
     variables: { incidentId: incidentId || "" },
     pollInterval: 2000,
     fetchPolicy: "cache-and-network",
@@ -195,7 +205,7 @@ function Draw() {
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
-  const [addFeature] = useMutation(AddFeatureToLayer, {
+  const [addFeature] = useMutation<AddFeatureResponse, AddFeatureVars>(AddFeatureToLayer, {
     refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
     onCompleted: (data) => {
       if (data.insertFeaturesOne?.id) {
@@ -224,7 +234,7 @@ function Draw() {
     },
   });
 
-  const [modifyFeature] = useMutation(ModifyFeature, {
+  const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(ModifyFeature, {
     refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
     onError: (error) => {
       console.error("Error adding feature:", error);
@@ -248,7 +258,7 @@ function Draw() {
     },
   });
 
-  const [deleteFeature] = useMutation(DeleteFeature, {
+  const [deleteFeature] = useMutation<DeleteFeatureResponse, DeleteFeatureVars>(DeleteFeature, {
     refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
   });
 

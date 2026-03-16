@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import type { InsertJournalData, InsertJournalVars } from "types/journal";
 import { GetIncidentDetails } from "views/incident/graphql";
 import { GetJournals, InsertJournal } from "./graphql";
 
@@ -26,16 +27,19 @@ function NewForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [insertJournal, { error }] = useMutation(InsertJournal, {
-    onCompleted() {
-      // reset the form values
-      navigate(`../${incidentId}/edit`);
+  const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(
+    InsertJournal,
+    {
+      onCompleted() {
+        // reset the form values
+        navigate(`../${incidentId}/edit`);
+      },
+      refetchQueries: [
+        { query: GetJournals, variables: { incidentId: incidentId } },
+        { query: GetIncidentDetails },
+      ],
     },
-    refetchQueries: [
-      { query: GetJournals, variables: { incidentId: incidentId } },
-      { query: GetIncidentDetails },
-    ],
-  });
+  );
 
   const handleSave = () => {
     if (incidentId && name) {

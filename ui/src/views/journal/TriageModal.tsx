@@ -10,7 +10,14 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
-import type { Message, MessageDivision } from "types/journal";
+import type {
+  Message,
+  MessageDivision,
+  SaveMessageTriageData,
+  SaveMessageTriageVars,
+  TriageMessageData,
+  TriageMessageVars,
+} from "types/journal";
 import { NewForm as TaskNew } from "../measures/tasks";
 import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 import { default as JournalMessage } from "./Message";
@@ -24,11 +31,17 @@ function Triage(props: {
   const { t } = useTranslation();
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
-  const [loadMessage, { loading, error, data }] = useLazyQuery(GetMessageForTriage, {
+  const [loadMessage, { loading, error, data }] = useLazyQuery<
+    TriageMessageData,
+    TriageMessageVars
+  >(GetMessageForTriage, {
     fetchPolicy: "cache-and-network",
   });
 
-  const [saveMessageTriage, { error: errorSet }] = useMutation(SaveMessageTriage, {
+  const [saveMessageTriage, { error: errorSet }] = useMutation<
+    SaveMessageTriageData,
+    SaveMessageTriageVars
+  >(SaveMessageTriage, {
     refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
   });
 

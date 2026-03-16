@@ -12,6 +12,7 @@ import type React from "react";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import type { AddLayerData, AddLayerVars } from "types/layer";
 import { AddLayer, GetLayers } from "../graphql";
 import { LayerContext } from "../LayerContext";
 
@@ -19,7 +20,7 @@ const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
   const [showAddLayer, setShowAddLayer] = useState<boolean>(false);
   const [layerName, setLayerName] = useState<string>("");
-  const [addLayer] = useMutation(AddLayer);
+  const [addLayer] = useMutation<AddLayerData, AddLayerVars>(AddLayer);
   const { incidentId } = useParams();
   const { t } = useTranslation();
 

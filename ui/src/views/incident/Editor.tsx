@@ -2,6 +2,7 @@ import { useQuery } from "@apollo/client/react";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import type { IncidentDetailsData, IncidentDetailsVars } from "types/incident";
 import { GetIncidentDetails } from "./graphql";
 import { IncidentForm } from "./New";
 
@@ -9,9 +10,12 @@ function Editor() {
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery(GetIncidentDetails, {
-    variables: { incidentId: incidentId || "" },
-  });
+  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(
+    GetIncidentDetails,
+    {
+      variables: { incidentId: incidentId || "" },
+    },
+  );
 
   if (error) return <div className="notification is-danger">{error.message}</div>;
 

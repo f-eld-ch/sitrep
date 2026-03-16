@@ -7,7 +7,14 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
-import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
+import {
+  type Division,
+  type GetJournalMessagesData,
+  type GetJournalMessagesVars,
+  type Message,
+  PriorityStatus,
+  TriageStatus,
+} from "types";
 import { GetJournalMessages } from "./graphql";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -30,10 +37,13 @@ function List(props: {
     pageStyle: "@page { size: A4 landscape;}",
   });
 
-  const { loading, error, data } = useQuery(GetJournalMessages, {
-    variables: { journalId: journalId || "" },
-    pollInterval: 10000,
-  });
+  const { loading, error, data } = useQuery<GetJournalMessagesData, GetJournalMessagesVars>(
+    GetJournalMessages,
+    {
+      variables: { journalId: journalId || "" },
+      pollInterval: 10000,
+    },
+  );
 
   const printButtonClass = classNames({
     "is-hidden": !showControls,

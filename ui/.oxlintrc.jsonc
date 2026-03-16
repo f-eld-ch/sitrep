@@ -1,11 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [ 
-    "eslint", 
+  "plugins": [
+    "eslint",
     "import",
     "react",
     "react-perf",
-    "jest", 
+    "jest",
     "jsx-a11y",
     "jsdoc",
     "typescript",
