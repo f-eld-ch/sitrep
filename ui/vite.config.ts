@@ -7,8 +7,8 @@ import { analyzer } from "vite-bundle-analyzer";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 
-process.env.VITE_SHA_VERSION = git.long("../");
-process.env.VITE_VERSION = git.tag(false);
+const buildSha = git.long("../") || "dev";
+const buildVersion = git.tag(false) || "dev";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -71,6 +71,9 @@ export default defineConfig({
   },
   define: {
     global: "window",
+    // Inject VITE_VERSION and VITE_SHA_VERSION at build time so import.meta.env is reliable
+    "import.meta.env.VITE_SHA_VERSION": JSON.stringify(buildSha),
+    "import.meta.env.VITE_VERSION": JSON.stringify(buildVersion),
   },
   plugins: [
     react(),
