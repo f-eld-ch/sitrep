@@ -77,10 +77,13 @@ export default defineConfig({
     svgrPlugin(),
     analyzer({ analyzerMode: "static", enabled: false }),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       strategies: "generateSW",
       injectRegister: "auto",
       workbox: {
+        // ensure the SW stays in `waiting` so clients can decide when to apply
+        skipWaiting: false,
+        clientsClaim: false,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf,json}"],
         navigateFallbackDenylist: [/^\/oauth2/, /^\/api/],
         maximumFileSizeToCacheInBytes: 3145728, // 3MB
