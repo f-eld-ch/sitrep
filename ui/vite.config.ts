@@ -7,8 +7,8 @@ import { analyzer } from "vite-bundle-analyzer";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 
-const buildSha = git.long("../") || "dev";
-const buildVersion = git.tag(false) || "dev";
+const buildSha = process.env.VITE_SHA_VERSION || git.long("../") || "dev";
+const buildVersion = process.env.VITE_VERSION || git.tag(false) || "dev";
 
 // https://vitejs.dev/config/
 export default defineConfig({
