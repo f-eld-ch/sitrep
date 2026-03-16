@@ -254,6 +254,10 @@
   },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
+  "viewChangelog": "Voir le journal des modifications",
+  "reloadNow": "Recharger maintenant",
+  "applyNextVisit": "Appliquer lors de la prochaine visite",
+  "later": "Plus tard",
   "wmsLayerMenu": {
     "selectServer": "Sélectionner le serveur WMS",
     "customServer": "Serveur personnalisé",

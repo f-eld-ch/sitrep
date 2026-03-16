@@ -4,7 +4,7 @@ import type React from "react";
 import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
-import { UserContext } from "utils";
+import { ReloadPrompt, UserContext } from "utils";
 import { IncidentContextSetter } from "utils/IncidentContext";
 import { Login } from "./Login";
 
@@ -28,6 +28,7 @@ export const Layout = (props: LayoutProps) => {
     <>
       <IncidentContextSetter />
       <Navbar />
+      <ReloadPrompt />
       <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
         <div className="column">
           <section className="section">{props.children}</section>

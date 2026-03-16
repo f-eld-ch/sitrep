@@ -254,6 +254,10 @@
   },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
+  "viewChangelog": "Changelog anzeigen",
+  "reloadNow": "Jetzt neu laden",
+  "applyNextVisit": "Beim nächsten Besuch anwenden",
+  "later": "Später",
   "wmsLayerMenu": {
     "selectServer": "WMS-Server auswählen",
     "customServer": "Benutzerdefinierter Server",

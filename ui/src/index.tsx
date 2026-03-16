@@ -1,7 +1,6 @@
 import proj4 from "proj4";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { ReloadPrompt } from "utils";
 import { registerProj4 } from "utils/coordinates/register";
 import App from "./App";
 
@@ -17,6 +16,5 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <App />
-    <ReloadPrompt />
   </React.StrictMode>,
 );
