@@ -1,6 +1,6 @@
 {
   "name": "sitrep",
-  "version": "26.2.2",
+  "version": "26.3.0",
   "private": true,
   "type": "module",
   "scripts": {
