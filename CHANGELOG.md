@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1426](https://github.com/f-eld-ch/sitrep/issues/1426)) - ([eb6027d](https://github.com/f-eld-ch/sitrep/commit/eb6027dfe76e2d42d7e58b102a759fbefb375ee5))
+
+
 ## [26.3.0](https://github.com/f-eld-ch/sitrep/compare/v26.2.2..v26.3.0) - 2026-03-16
 
 ### ⛰️  Features
