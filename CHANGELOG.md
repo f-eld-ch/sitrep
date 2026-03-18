@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1427](https://github.com/f-eld-ch/sitrep/issues/1427)) - ([5795ce1](https://github.com/f-eld-ch/sitrep/commit/5795ce104069873387d455cd979995a98521d12e))
 - *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1426](https://github.com/f-eld-ch/sitrep/issues/1426)) - ([eb6027d](https://github.com/f-eld-ch/sitrep/commit/eb6027dfe76e2d42d7e58b102a759fbefb375ee5))
 
 
