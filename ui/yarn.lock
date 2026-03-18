@@ -2081,12 +2081,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/geojson-vt@npm:^6.0.1":
-  version: 6.0.2
-  resolution: "@maplibre/geojson-vt@npm:6.0.2"
+"@maplibre/geojson-vt@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "@maplibre/geojson-vt@npm:6.0.3"
   dependencies:
     kdbush: "npm:^4.0.2"
-  checksum: 10/53e3e1d4deec743ce6bca3acccd9a7adbe289f883c93b370c2fd9ac841dd36542c057c4cf0b995940302d2557fac3a6077d61c92c6fcad4e1d178e389161bd0b
+  checksum: 10/810d7b565b48fdbb04ac9cc9a3d39834b6d9a65b1f6eeface71461f0d203783b0b6b54bf7cc7049b69bf2ad6d3bbff5249b2e696b85a827b89aa7f2007ba919a
   languageName: node
   linkType: hard
 
@@ -7890,8 +7890,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^5.18.0":
-  version: 5.20.0
-  resolution: "maplibre-gl@npm:5.20.0"
+  version: 5.20.2
+  resolution: "maplibre-gl@npm:5.20.2"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
     "@mapbox/point-geometry": "npm:^1.1.0"
@@ -7899,7 +7899,7 @@ __metadata:
     "@mapbox/unitbezier": "npm:^0.0.1"
     "@mapbox/vector-tile": "npm:^2.0.4"
     "@mapbox/whoots-js": "npm:^3.1.0"
-    "@maplibre/geojson-vt": "npm:^6.0.1"
+    "@maplibre/geojson-vt": "npm:^6.0.3"
     "@maplibre/maplibre-gl-style-spec": "npm:^24.7.0"
     "@maplibre/mlt": "npm:^1.1.7"
     "@maplibre/vt-pbf": "npm:^4.3.0"
@@ -7912,7 +7912,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/da5e25bf3a3427468fa87f310470008340b884375b6e03f14a57ecc185e03e3b4b54968556a44c9db4a2bec569df25b5d32581bb48824d3b4779c3a1e568b7d1
+  checksum: 10/3dc758b8ab28e02c068a62a4fb684cf0fa0140a8509dcefc178635a4320984ce40c6ffa433133a565baed44d665d76d4b2a71cf7a5dfd407bd94c3e2843967a8
   languageName: node
   linkType: hard
 
