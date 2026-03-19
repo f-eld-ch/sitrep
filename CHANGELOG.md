@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(lang)* Translate translations.json in fr ([#1430](https://github.com/f-eld-ch/sitrep/issues/1430)) - ([4712535](https://github.com/f-eld-ch/sitrep/commit/471253513e16c25c6f0e1dc9f453a50ddac41c0c))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1427](https://github.com/f-eld-ch/sitrep/issues/1427)) - ([5795ce1](https://github.com/f-eld-ch/sitrep/commit/5795ce104069873387d455cd979995a98521d12e))
