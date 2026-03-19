@@ -254,9 +254,9 @@
   },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
-  "viewChangelog": "View changelog",
+  "viewChangelog": "Show changelog",
   "reloadNow": "Reload now",
-  "applyNextVisit": "Apply on next visit",
+  "applyNextVisit": "Use on your next visit",
   "later": "Later",
   "wmsLayerMenu": {
     "selectServer": "Select WMS server",
