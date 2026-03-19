@@ -254,7 +254,7 @@
   },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
-  "viewChangelog": "Voir le journal des modifications",
+  "viewChangelog": "Afficher le journal des modifications",
   "reloadNow": "Recharger maintenant",
   "applyNextVisit": "Appliquer lors de la prochaine visite",
   "later": "Plus tard",
@@ -275,8 +275,8 @@
   },
   "styleController": {
     "maps": "Cartes",
-    "Basiskarte": "carte de base légère",
-    "Satellit": "carte satellite"
+    "Basiskarte": "Carte de base légère",
+    "Satellit": "Carte satellite"
   },
   "divisionsNames": {
     "Karte": {
