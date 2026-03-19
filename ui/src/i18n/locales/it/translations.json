@@ -254,9 +254,9 @@
   },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",
-  "viewChangelog": "Visualizza il changelog",
-  "reloadNow": "Ricarica ora",
-  "applyNextVisit": "Applica alla prossima visita",
+  "viewChangelog": "Mostra il log delle modifiche",
+  "reloadNow": "Aggiorna ora",
+  "applyNextVisit": "Da utilizzare alla prossima visita",
   "later": "Più tardi",
   "wmsLayerMenu": {
     "selectServer": "Selezionare il server WMS",
@@ -275,8 +275,8 @@
   },
   "styleController": {
     "maps": "Mappe",
-    "Basiskarte": "carta di base leggera",
-    "Satellit": "carta satellitare"
+    "Basiskarte": "Mappa di base leggera",
+    "Satellit": "Mappa satellitare"
   },
   "divisionsNames": {
     "Karte": {
