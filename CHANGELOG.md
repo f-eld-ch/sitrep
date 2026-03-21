@@ -8,6 +8,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.20.2 to 5.21.0 in /ui ([#1435](https://github.com/f-eld-ch/sitrep/issues/1435)) - ([f836e4d](https://github.com/f-eld-ch/sitrep/commit/f836e4d65fa5cb0a2d2f74e1927810a2337c3e72))
+- *(deps)* Bump i18next from 25.8.18 to 25.8.20 in /ui ([#1433](https://github.com/f-eld-ch/sitrep/issues/1433)) - ([af5c0c3](https://github.com/f-eld-ch/sitrep/commit/af5c0c30a57e246dc5d1d0037d5aec5eb40990c2))
+- *(deps)* Bump @fortawesome/react-fontawesome ([#1434](https://github.com/f-eld-ch/sitrep/issues/1434)) - ([fa27f75](https://github.com/f-eld-ch/sitrep/commit/fa27f753a5fd3903f8d6fa7c8c8db9793373e582))
 - *(deps)* Bump google.golang.org/grpc ([#1428](https://github.com/f-eld-ch/sitrep/issues/1428)) - ([08c5246](https://github.com/f-eld-ch/sitrep/commit/08c5246d42fee2f74c946a1864c6f2e4deb51337))
 - *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1427](https://github.com/f-eld-ch/sitrep/issues/1427)) - ([5795ce1](https://github.com/f-eld-ch/sitrep/commit/5795ce104069873387d455cd979995a98521d12e))
 - *(deps)* Bump maplibre-gl from 5.20.0 to 5.20.2 in /ui ([#1426](https://github.com/f-eld-ch/sitrep/issues/1426)) - ([eb6027d](https://github.com/f-eld-ch/sitrep/commit/eb6027dfe76e2d42d7e58b102a759fbefb375ee5))
