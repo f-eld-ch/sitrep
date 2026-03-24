@@ -2385,44 +2385,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-arm64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.17.1"
+"@oxlint-tsgolint/darwin-arm64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/darwin-arm64@npm:0.17.2"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/darwin-x64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.17.1"
+"@oxlint-tsgolint/darwin-x64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/darwin-x64@npm:0.17.2"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-arm64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.17.1"
+"@oxlint-tsgolint/linux-arm64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/linux-arm64@npm:0.17.2"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/linux-x64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/linux-x64@npm:0.17.1"
+"@oxlint-tsgolint/linux-x64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/linux-x64@npm:0.17.2"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-arm64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.17.1"
+"@oxlint-tsgolint/win32-arm64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/win32-arm64@npm:0.17.2"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxlint-tsgolint/win32-x64@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@oxlint-tsgolint/win32-x64@npm:0.17.1"
+"@oxlint-tsgolint/win32-x64@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@oxlint-tsgolint/win32-x64@npm:0.17.2"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -7445,9 +7445,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jspdf@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "jspdf@npm:4.2.0"
+"jspdf@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "jspdf@npm:4.2.1"
   dependencies:
     "@babel/runtime": "npm:^7.28.6"
     canvg: "npm:^3.0.11"
@@ -7465,7 +7465,7 @@ __metadata:
       optional: true
     html2canvas:
       optional: true
-  checksum: 10/2c31dfce3ea6d7f839d551bb152bb24a26d6bd2093f7b2b3dd1227438446dbca22edb239ad2899328defaa24860f94a7582ed782d26dace136f6462d8101c0ce
+  checksum: 10/594dd7c1f34a3d9c48e555be2a8e664b5875c2709e1e83490a0fe20d953b35d96193ecbeaba4aa751020d2b63c8c8a82bb91c73660a775d6f8b2bef4f9ca11b0
   languageName: node
   linkType: hard
 
@@ -8760,16 +8760,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tsgolint@npm:^0.17.1":
-  version: 0.17.1
-  resolution: "oxlint-tsgolint@npm:0.17.1"
+"oxlint-tsgolint@npm:^0.17.2":
+  version: 0.17.2
+  resolution: "oxlint-tsgolint@npm:0.17.2"
   dependencies:
-    "@oxlint-tsgolint/darwin-arm64": "npm:0.17.1"
-    "@oxlint-tsgolint/darwin-x64": "npm:0.17.1"
-    "@oxlint-tsgolint/linux-arm64": "npm:0.17.1"
-    "@oxlint-tsgolint/linux-x64": "npm:0.17.1"
-    "@oxlint-tsgolint/win32-arm64": "npm:0.17.1"
-    "@oxlint-tsgolint/win32-x64": "npm:0.17.1"
+    "@oxlint-tsgolint/darwin-arm64": "npm:0.17.2"
+    "@oxlint-tsgolint/darwin-x64": "npm:0.17.2"
+    "@oxlint-tsgolint/linux-arm64": "npm:0.17.2"
+    "@oxlint-tsgolint/linux-x64": "npm:0.17.2"
+    "@oxlint-tsgolint/win32-arm64": "npm:0.17.2"
+    "@oxlint-tsgolint/win32-x64": "npm:0.17.2"
   dependenciesMeta:
     "@oxlint-tsgolint/darwin-arm64":
       optional: true
@@ -8785,7 +8785,7 @@ __metadata:
       optional: true
   bin:
     tsgolint: bin/tsgolint.js
-  checksum: 10/f014a82a340532b1e6b53510b0f6590f0aa2cbe1bb95695372ef738547c6c0fa68c5327df3ae79b5b8403b66e6ce8fe4ef928dfcd0c80351e3cc424d4e1c7f30
+  checksum: 10/b8ea76bf429d46eda14a84c2c0eeedf78350848aac48bc77a61a73c94677aeb45383a6b32df4dec073964de54821ea4f51f3d597931a28ebf97ed514b8bc0860
   languageName: node
   linkType: hard
 
@@ -10124,7 +10124,7 @@ __metadata:
     ol: "npm:^10.8.0"
     oxfmt: "npm:^0.41.0"
     oxlint: "npm:^1.56.0"
-    oxlint-tsgolint: "npm:^0.17.1"
+    oxlint-tsgolint: "npm:^0.17.2"
     proj4: "npm:^2.20.4"
     react: "npm:^19.2.4"
     react-autocomplete-hint: "npm:^2.0.0"
