@@ -68,11 +68,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       onCompleted(data) {
         navigate(`../${data.insertIncidentsOne.id}/journal/view`);
       },
-      refetchQueries: [
-        { query: GetIncidents },
-        { query: GetIncidentDetails },
-        { query: GetMessageForTriage },
-      ],
+      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
     },
   );
 
