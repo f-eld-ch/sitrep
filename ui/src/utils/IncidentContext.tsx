@@ -70,6 +70,7 @@ const IncidentContextSetter = () => {
   const { loading, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(GetIncidentDetails, {
     variables: { incidentId: incidentId || "" },
     fetchPolicy: "cache-first",
+    skip: incidentId === undefined,
   });
 
   useEffect(() => {
