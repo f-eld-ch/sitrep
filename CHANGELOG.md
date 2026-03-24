@@ -6,6 +6,10 @@
 - *(lang)* Translate translations.json in en ([#1429](https://github.com/f-eld-ch/sitrep/issues/1429)) - ([79589d5](https://github.com/f-eld-ch/sitrep/commit/79589d5d4015741d302bbd5e21e027a05dfc609c))
 - *(lang)* Translate translations.json in fr ([#1430](https://github.com/f-eld-ch/sitrep/issues/1430)) - ([4712535](https://github.com/f-eld-ch/sitrep/commit/471253513e16c25c6f0e1dc9f453a50ddac41c0c))
 
+### 🐛 Bug Fixes
+
+- *(ui)* Prevent errors from graphql unset variables ([#1445](https://github.com/f-eld-ch/sitrep/issues/1445)) - ([8c0174b](https://github.com/f-eld-ch/sitrep/commit/8c0174b8ad61d8756fe1ea609fad65fe0e9ff459))
+
 ### ⚙️  Other
 
 - *(deps)* Bump i18next from 25.9.0 to 25.10.5 in /ui ([#1441](https://github.com/f-eld-ch/sitrep/issues/1441)) - ([64a2f50](https://github.com/f-eld-ch/sitrep/commit/64a2f50c9995733c062321efadeeef22e7a86ac2))
