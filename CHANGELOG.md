@@ -8,6 +8,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(editor)* Properly set time to now if not specified otherwise ([#1447](https://github.com/f-eld-ch/sitrep/issues/1447)) - ([737a6a6](https://github.com/f-eld-ch/sitrep/commit/737a6a634d58e25e0a7512537dd86eb0126aea36))
 - *(ui)* Upgrade jspdf to v4.2.1 ([#1446](https://github.com/f-eld-ch/sitrep/issues/1446)) - ([a8f971e](https://github.com/f-eld-ch/sitrep/commit/a8f971e439acadbe2de9139fe257aa29d7ea84ec))
 - *(ui)* Prevent errors from graphql unset variables ([#1445](https://github.com/f-eld-ch/sitrep/issues/1445)) - ([8c0174b](https://github.com/f-eld-ch/sitrep/commit/8c0174b8ad61d8756fe1ea609fad65fe0e9ff459))
 
