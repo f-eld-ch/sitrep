@@ -139,8 +139,12 @@ function Editor() {
   );
 
   const editorReducer = (state: State, action: Action): State => {
+    console.log(action);
     switch (action.type) {
       case "save": {
+        if (state.time === undefined) {
+          return Object.assign({}, state, { time: new Date(), saving: true });
+        }
         return Object.assign({}, state, { saving: true });
       }
       case "save_error": {
