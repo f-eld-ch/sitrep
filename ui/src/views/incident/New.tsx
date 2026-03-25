@@ -16,7 +16,6 @@ import type {
   UpdateIncidentData,
   UpdateIncidentVars,
 } from "types/incident";
-import { GetMessageForTriage } from "views/journal/graphql";
 import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
 
 function New() {

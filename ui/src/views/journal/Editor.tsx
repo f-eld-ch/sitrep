@@ -139,7 +139,6 @@ function Editor() {
   );
 
   const editorReducer = (state: State, action: Action): State => {
-    console.log(action);
     switch (action.type) {
       case "save": {
         if (state.time === undefined) {
