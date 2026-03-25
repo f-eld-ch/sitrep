@@ -1,3 +1,12 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 16.6.2 to 16.6.6 in /ui ([#1450](https://github.com/f-eld-ch/sitrep/issues/1450)) - ([6a52259](https://github.com/f-eld-ch/sitrep/commit/6a52259ffadb36cc8a329a6257f5204285112c16))
+- *(deps)* Bump i18next from 25.10.5 to 25.10.9 in /ui ([#1451](https://github.com/f-eld-ch/sitrep/issues/1451)) - ([6a58735](https://github.com/f-eld-ch/sitrep/commit/6a58735e51de2acd01874dba7cde8ec82805470b))
+- *(deps)* Bump graphql from 16.13.1 to 16.13.2 in /ui ([#1449](https://github.com/f-eld-ch/sitrep/issues/1449)) - ([fb3c0bc](https://github.com/f-eld-ch/sitrep/commit/fb3c0bc2a9eb3e6d915d98e8cc025071074fb5e8))
+
+
 ## [26.3.1](https://github.com/f-eld-ch/sitrep/compare/v26.3.0..v26.3.1) - 2026-03-24
 
 ### ⛰️  Features
