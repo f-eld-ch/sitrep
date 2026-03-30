@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#1460](https://github.com/f-eld-ch/sitrep/issues/1460)) - ([3e59037](https://github.com/f-eld-ch/sitrep/commit/3e590377e0e33fe5e00c00526e27e5db950987c5))
 - *(deps)* Bump maplibre-gl from 5.21.0 to 5.21.1 in /ui ([#1455](https://github.com/f-eld-ch/sitrep/issues/1455)) - ([47caa71](https://github.com/f-eld-ch/sitrep/commit/47caa71eb5e8af6e6cbc24eabe79205d6bb9f043))
 - *(deps)* Bump picomatch ([#1456](https://github.com/f-eld-ch/sitrep/issues/1456)) - ([a167c07](https://github.com/f-eld-ch/sitrep/commit/a167c07a1e8e4501ae8080fc0779088f68f742a9))
 - *(deps)* Bump i18next from 25.10.9 to 25.10.10 in /ui ([#1457](https://github.com/f-eld-ch/sitrep/issues/1457)) - ([1a05245](https://github.com/f-eld-ch/sitrep/commit/1a052454a80b04c1df8c5fa459736b84d4f836a3))
