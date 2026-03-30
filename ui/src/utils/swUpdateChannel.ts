@@ -13,14 +13,14 @@ export function createSWChannel(onMessage: (msg: SWMessage) => void) {
   try {
     bc = new BroadcastChannel(CHANNEL);
     bc.onmessage = (ev) => onMessage(ev.data as SWMessage);
-  } catch (e) {
+  } catch {
     // BroadcastChannel not available; fallback to storage events
     const storageHandler = (ev: StorageEvent) => {
       if (ev.key !== CHANNEL || !ev.newValue) return;
       try {
         const msg = JSON.parse(ev.newValue) as SWMessage;
         onMessage(msg);
-      } catch (err) {
+      } catch {
         // ignore
       }
     };
@@ -32,7 +32,7 @@ export function createSWChannel(onMessage: (msg: SWMessage) => void) {
           localStorage.setItem(CHANNEL, JSON.stringify(msg));
           // also clear to allow future same messages
           setTimeout(() => localStorage.removeItem(CHANNEL), 500);
-        } catch (e) {
+        } catch {
           // ignore
         }
       },

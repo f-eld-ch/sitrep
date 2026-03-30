@@ -78,8 +78,6 @@ export function ReloadPrompt() {
   // that an update is available via `window.dispatchEvent(new Event('sw-update-available'))`.
   useEffect(() => {
     const handler = () => {
-      // eslint-disable-next-line no-console
-      console.log("window event: sw-update-available received");
       try {
         setNeedRefresh(true);
         setOfflineReady(true);
@@ -94,7 +92,7 @@ export function ReloadPrompt() {
           }
         }
       } catch (e) {
-        // ignore errors from listeners
+        console.log("Error handling sw-update-available event:", e);
       }
     };
 
@@ -179,7 +177,7 @@ export function ReloadPrompt() {
           return;
         }
       } catch (e) {
-        // ignore
+        console.log("SW poll failed:", e);
       }
       polls += 1;
       if (polls >= maxPolls) clearInterval(pollId);
@@ -188,9 +186,9 @@ export function ReloadPrompt() {
     return () => {
       mounted = false;
       try {
-        clearInterval();
+        clearInterval(pollId);
       } catch (e) {
-        // ignore
+        console.log("Error clearing SW poll interval:", e);
       }
     };
   }, [setNeedRefresh, setOfflineReady]);
@@ -221,23 +219,16 @@ export function ReloadPrompt() {
       setDismissUntil(until);
       channelRef.current?.post({ type: "dismiss", tabId, until });
     } else {
-      // default dismiss: apply the update on next visit (do not force reload now)
-      try {
-        channelRef.current?.post({ type: "apply-later", tabId });
-        updateServiceWorker(false);
-      } catch (e) {
-        // ignore
-      }
+      channelRef.current?.post({ type: "apply-later", tabId });
+      updateServiceWorker(false).catch((e) => {
+        console.log("Error applying SW update for later:", e);
+      });
     }
   };
 
   const handleReloadNow = () => {
     channelRef.current?.post({ type: "apply-now", tabId });
     updateServiceWorker(true);
-  };
-
-  const handleApplyNextVisit = () => {
-    // deprecated: removed "Apply next visit" option
   };
 
   const handleLater = (hours = 1) => {
