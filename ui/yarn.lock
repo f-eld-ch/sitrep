@@ -7890,8 +7890,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^5.18.0":
-  version: 5.21.0
-  resolution: "maplibre-gl@npm:5.21.0"
+  version: 5.21.1
+  resolution: "maplibre-gl@npm:5.21.1"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
     "@mapbox/point-geometry": "npm:^1.1.0"
@@ -7912,7 +7912,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/11656453b299f7e134d772e80a6621c5eff91e56cae8033a0719712ce09f2ec8054ec5eaf1923487a26d74bdde94d207a1327e23cadf4c8e8ce5a6f5b68bca23
+  checksum: 10/8ff172ee5348c51b047820a5f51aa9aa58207379ecfba10c0da291f35feaecae8559fb41e8d62ed8605cc2a10d11287c2092ade8aec27fd1d22f8539e973599d
   languageName: node
   linkType: hard
 
