@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 17.0.1 to 17.0.2 in /ui ([#1470](https://github.com/f-eld-ch/sitrep/issues/1470)) - ([c209337](https://github.com/f-eld-ch/sitrep/commit/c2093370232791731fbf64d186b0bdb245526efa))
+- *(deps)* Bump i18next from 26.0.2 to 26.0.3 in /ui ([#1471](https://github.com/f-eld-ch/sitrep/issues/1471)) - ([7d31359](https://github.com/f-eld-ch/sitrep/commit/7d31359345d0bf2f4c9507ec28a9c0e30824d299))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.5 to 3.45.6 ([#1468](https://github.com/f-eld-ch/sitrep/issues/1468)) - ([b8b5d81](https://github.com/f-eld-ch/sitrep/commit/b8b5d810201f299d443864208aa98d8c3fcfe209))
 - *(deps)* Bump react-i18next from 16.6.6 to 17.0.1 in /ui ([#1464](https://github.com/f-eld-ch/sitrep/issues/1464)) - ([690c6b5](https://github.com/f-eld-ch/sitrep/commit/690c6b59b79d0f64436aeab2a2f3f3e92745acb5))
 - *(deps)* Bump i18next from 25.10.10 to 26.0.2 in /ui ([#1462](https://github.com/f-eld-ch/sitrep/issues/1462)) - ([7fe2a99](https://github.com/f-eld-ch/sitrep/commit/7fe2a992f49471390ffbb272e434f9016d1de157))
