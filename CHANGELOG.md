@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 16.6.6 to 17.0.1 in /ui ([#1464](https://github.com/f-eld-ch/sitrep/issues/1464)) - ([690c6b5](https://github.com/f-eld-ch/sitrep/commit/690c6b59b79d0f64436aeab2a2f3f3e92745acb5))
 - *(deps)* Bump i18next from 25.10.10 to 26.0.2 in /ui ([#1462](https://github.com/f-eld-ch/sitrep/issues/1462)) - ([7fe2a99](https://github.com/f-eld-ch/sitrep/commit/7fe2a992f49471390ffbb272e434f9016d1de157))
 - *(deps)* Bump maplibre-gl from 5.21.0 to 5.21.1 in /ui ([#1465](https://github.com/f-eld-ch/sitrep/issues/1465)) - ([ac83b47](https://github.com/f-eld-ch/sitrep/commit/ac83b47a036bc60d28c6c72a65a3fb2d317e5abd))
 - *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#1460](https://github.com/f-eld-ch/sitrep/issues/1460)) - ([3e59037](https://github.com/f-eld-ch/sitrep/commit/3e590377e0e33fe5e00c00526e27e5db950987c5))
