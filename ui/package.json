@@ -88,12 +88,12 @@
     "jest": "^30.3.0",
     "jsdom": "^29.0.1",
     "lint-staged": "^16.4.0",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0",
-    "oxlint-tsgolint": "^0.18.1",
+    "oxfmt": "^0.43.0",
+    "oxlint": "^1.58.0",
+    "oxlint-tsgolint": "^0.19.0",
     "sass": "^1.98.0",
     "semver": "^7.7.4",
-    "ts-jest": "^29.4.6",
+    "ts-jest": "^29.4.9",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
     "vite-bundle-analyzer": "^1.3.6",
@@ -103,20 +103,23 @@
     "vitest": "^4.1.2"
   },
   "resolutions": {
-    "brace-expansion": "^4.0.1",
+    "brace-expansion": "^5.0.5",
     "dompurify": "^3.3.2",
     "glob": "^13.0.6",
+    "handlebars": "^4.7.9",
     "http-proxy-agent": "^7.0.2",
     "js-yaml": "^4.1.1",
     "jspdf": "^4.2.1",
     "lodash": "^4.17.23",
     "maplibre-gl": "^5.18.0",
     "minimatch": "^10.2.4",
+    "picomatch": "^4.0.4",
     "rollup": "^4.59.0",
-    "serialize-javascript": "^7.0.4",
+    "serialize-javascript": "^7.0.5",
     "sharp": "^0.34.5",
     "tar": "^7.5.11",
-    "vite": "^8.0.0"
+    "vite": "^8.0.0",
+    "yaml": "^2.8.3"
   },
   "browserslist": {
     "production": [
