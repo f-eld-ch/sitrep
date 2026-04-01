@@ -14,9 +14,9 @@
   "categories": {},
   "rules": {
     "jsx-a11y/anchor-is-valid": "off",
-    "jsx-a11y/use-anchor-content": "off",
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/click-events-have-key-events": "off",
+    "eslint-plugin-vitest/require-mock-type-parameters": "off",
   },
   "options": {
     "typeAware": false,
