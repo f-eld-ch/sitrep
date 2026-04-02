@@ -2134,6 +2134,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maplibre/maplibre-gl-style-spec@npm:^24.8.0":
+  version: 24.8.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.8.0"
+  dependencies:
+    "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
+    "@mapbox/unitbezier": "npm:^0.0.1"
+    json-stringify-pretty-compact: "npm:^4.0.0"
+    minimist: "npm:^1.2.8"
+    quickselect: "npm:^3.0.0"
+    rw: "npm:^1.3.3"
+    tinyqueue: "npm:^3.0.0"
+  bin:
+    gl-style-format: dist/gl-style-format.mjs
+    gl-style-migrate: dist/gl-style-migrate.mjs
+    gl-style-validate: dist/gl-style-validate.mjs
+  checksum: 10/85983ed9d31cb4ca7fb51dbf346e5a3aed4250f221fbe8a402c22d48df3247f4d4261b13c7bf960af73fde27a09f84bfb209004b7482af8e9d94b2175b36ae07
+  languageName: node
+  linkType: hard
+
 "@maplibre/mlt@npm:^1.1.8":
   version: 1.1.8
   resolution: "@maplibre/mlt@npm:1.1.8"
@@ -2908,7 +2927,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^5.0.1, @rollup/pluginutils@npm:^5.2.0":
+"@rollup/pluginutils@npm:^5.0.1, @rollup/pluginutils@npm:^5.3.0":
   version: 5.3.0
   resolution: "@rollup/pluginutils@npm:5.3.0"
   dependencies:
@@ -10064,7 +10083,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.2.0"
     "@fortawesome/react-fontawesome": "npm:^3.3.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.7.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^24.8.0"
     "@openfeature/core": "npm:^1.9.2"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.2.1"
@@ -10130,7 +10149,7 @@ __metadata:
     vite: "npm:^8.0.3"
     vite-bundle-analyzer: "npm:^1.3.6"
     vite-plugin-pwa: "npm:^1.2.0"
-    vite-plugin-svgr: "npm:^5.0.0"
+    vite-plugin-svgr: "npm:^5.2.0"
     vite-tsconfig-paths: "npm:^6.1.1"
     vitest: "npm:^4.1.2"
   languageName: unknown
@@ -11389,16 +11408,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-svgr@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "vite-plugin-svgr@npm:5.0.0"
+"vite-plugin-svgr@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "vite-plugin-svgr@npm:5.2.0"
   dependencies:
-    "@rollup/pluginutils": "npm:^5.2.0"
+    "@rollup/pluginutils": "npm:^5.3.0"
     "@svgr/core": "npm:^8.1.0"
     "@svgr/plugin-jsx": "npm:^8.1.0"
   peerDependencies:
     vite: ">=3.0.0"
-  checksum: 10/03fe4897d068be234fdf16f1f28652d116749af06384fa222d9fe3004853e630c303a929910bd44d7f1ab6ae623c1a8f1885619b15e6816afcf9406dbf72a1cf
+  checksum: 10/5fdaa33a4cc756030f36571bf24816f4c3ff298278045449accb6aa1f206f1ac42cf61ce7daedf89905607b16d0fde01ad0f1efad399671de1433371e027be45
   languageName: node
   linkType: hard
 
