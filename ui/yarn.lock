@@ -5234,30 +5234,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dom-serializer@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "dom-serializer@npm:2.0.0"
+"dom-serializer@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "dom-serializer@npm:3.0.0"
   dependencies:
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.2"
-    entities: "npm:^4.2.0"
-  checksum: 10/e3bf9027a64450bca0a72297ecdc1e3abb7a2912268a9f3f5d33a2e29c1e2c3502c6e9f860fc6625940bfe0cfb57a44953262b9e94df76872fdfb8151097eeb3
+    domelementtype: "npm:^3.0.0"
+    domhandler: "npm:^6.0.0"
+    entities: "npm:^8.0.0"
+  checksum: 10/41d0210d1665d3010f9bff98ba3a7faac24537546c98bffbceb0dab0372d031abed05983c734eaf2ed4c83fbd39a5ed27924c95f01de166b30bb2dc2a9ea5819
   languageName: node
   linkType: hard
 
-"domelementtype@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "domelementtype@npm:2.3.0"
-  checksum: 10/ee837a318ff702622f383409d1f5b25dd1024b692ef64d3096ff702e26339f8e345820f29a68bcdcea8cfee3531776b3382651232fbeae95612d6f0a75efb4f6
+"domelementtype@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "domelementtype@npm:3.0.0"
+  checksum: 10/6b5120222f7e8b3491ad2f00036a1a14965bccab91014bfa54fa7789081b71f88141bf3b5b264c75ca4916b08e16ac1233a4f3b38067acb3fca9a7b21327cec1
   languageName: node
   linkType: hard
 
-"domhandler@npm:5.0.3, domhandler@npm:^5.0.2, domhandler@npm:^5.0.3":
-  version: 5.0.3
-  resolution: "domhandler@npm:5.0.3"
+"domhandler@npm:6.0.1, domhandler@npm:^6.0.0":
+  version: 6.0.1
+  resolution: "domhandler@npm:6.0.1"
   dependencies:
-    domelementtype: "npm:^2.3.0"
-  checksum: 10/809b805a50a9c6884a29f38aec0a4e1b4537f40e1c861950ed47d10b049febe6b79ab72adaeeebb3cc8fc1cd33f34e97048a72a9265103426d93efafa78d3e96
+    domelementtype: "npm:^3.0.0"
+  checksum: 10/370e7c121cf3223a5aa21ce03666189eebac8d5b16af83efc221a93ed4f6c7b9f2cf2cc92ef7d50cbbd05787e1fbad42ec3c4717f6eb578667280443b94ffe10
   languageName: node
   linkType: hard
 
@@ -5273,14 +5273,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"domutils@npm:^3.2.2":
-  version: 3.2.2
-  resolution: "domutils@npm:3.2.2"
+"domutils@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "domutils@npm:4.0.2"
   dependencies:
-    dom-serializer: "npm:^2.0.0"
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.3"
-  checksum: 10/2e08842151aa406f50fe5e6d494f4ec73c2373199fa00d1f77b56ec604e566b7f226312ae35ab8160bb7f27a27c7285d574c8044779053e499282ca9198be210
+    dom-serializer: "npm:^3.0.0"
+    domelementtype: "npm:^3.0.0"
+    domhandler: "npm:^6.0.0"
+  checksum: 10/cb1e270d046225654c4333b45e87a316ecad2721113e92d3f8842795d93418bb0269bee024aad4793b494361e93b7b5e62b773926a89e46748db49df42acb38b
   languageName: node
   linkType: hard
 
@@ -5358,7 +5358,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^4.2.0, entities@npm:^4.4.0":
+"entities@npm:^4.4.0":
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
   checksum: 10/ede2a35c9bce1aeccd055a1b445d41c75a14a2bb1cd22e242f20cf04d236cdcd7f9c859eb83f76885327bfae0c25bf03303665ee1ce3d47c5927b98b0e3e3d48
@@ -5372,10 +5372,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "entities@npm:7.0.1"
-  checksum: 10/3c0c58d869c45148463e96d21dee2d1b801bd3fe4cf47aa470cd26dfe81d59e9e0a9be92ae083fa02fa441283c883a471486e94538dcfb8544428aa80a55271b
+"entities@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "entities@npm:8.0.0"
+  checksum: 10/d6e2ba75e444fb101ee2fbb07c839e687306c8a509426b75186619c19196f97c1db9932ca083f823c03e4a20e7407b654aa34de8cbb7770468e20fb2d4573a0e
   languageName: node
   linkType: hard
 
@@ -6178,13 +6178,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-dom-parser@npm:5.1.8":
-  version: 5.1.8
-  resolution: "html-dom-parser@npm:5.1.8"
+"html-dom-parser@npm:7.0.0":
+  version: 7.0.0
+  resolution: "html-dom-parser@npm:7.0.0"
   dependencies:
-    domhandler: "npm:5.0.3"
-    htmlparser2: "npm:10.1.0"
-  checksum: 10/579deb63bd0981912983121971f687c952d7b2bf5c43dada2fe8eeb85f51f388ed084ffb6452afd136cd9db3ccbd1c9a6b3200d39c522acfecd50ee7f0c8ad25
+    domhandler: "npm:6.0.1"
+    htmlparser2: "npm:12.0.0"
+  checksum: 10/de90298079b75b3a120918eea53c3fa77157700cf47120acfea4346823c23ebe2db755b20d352a807b408ab337eb96b8c8d8fdc56a44bd260bbcd77f4bd1ad40
   languageName: node
   linkType: hard
 
@@ -6213,12 +6213,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^5.2.17":
-  version: 5.2.17
-  resolution: "html-react-parser@npm:5.2.17"
+"html-react-parser@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "html-react-parser@npm:6.0.0"
   dependencies:
-    domhandler: "npm:5.0.3"
-    html-dom-parser: "npm:5.1.8"
+    domhandler: "npm:6.0.1"
+    html-dom-parser: "npm:7.0.0"
     react-property: "npm:2.0.2"
     style-to-js: "npm:1.1.21"
   peerDependencies:
@@ -6227,7 +6227,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/74ec0bc5945a90fd154c84830ff1caaa6c686c1c0c82330a1e3cda18b15c8f9b177d2c564d1d3cf566b586c34ce78e2006692aeda3300b0ba30c5234cb7b07c8
+  checksum: 10/f52690df148a5e873fa3d09c39ecf4b8ca39e2ab4df8f268642e17317f4795d0b91672eca3dcfcf8dc4914942b12db8c5e70215e2a8eec3f5a741f58c3e14ce4
   languageName: node
   linkType: hard
 
@@ -6248,15 +6248,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"htmlparser2@npm:10.1.0":
-  version: 10.1.0
-  resolution: "htmlparser2@npm:10.1.0"
+"htmlparser2@npm:12.0.0":
+  version: 12.0.0
+  resolution: "htmlparser2@npm:12.0.0"
   dependencies:
-    domelementtype: "npm:^2.3.0"
-    domhandler: "npm:^5.0.3"
-    domutils: "npm:^3.2.2"
-    entities: "npm:^7.0.1"
-  checksum: 10/660fb094a53fb77a3c771db969778b58af0e8a572a1bdc8e5952a4241e4b04e0a6063b16f6422e22c821441081c8de339e3f06ddda362ac2a42c8767d5e5ad53
+    domelementtype: "npm:^3.0.0"
+    domhandler: "npm:^6.0.0"
+    domutils: "npm:^4.0.2"
+    entities: "npm:^8.0.0"
+  checksum: 10/f5b29381f960fedd09e5b46cbb249d0506fb75bc46c572d6367de684da2adec8382cb9548ea1fcec2e84d0881f76a840397cfae732b7a2edac05f4280a1efc31
   languageName: node
   linkType: hard
 
@@ -10098,7 +10098,7 @@ __metadata:
     git-rev-sync: "npm:^3.0.2"
     globals: "npm:^17.4.0"
     graphql: "npm:^16.13.2"
-    html-react-parser: "npm:^5.2.17"
+    html-react-parser: "npm:^6.0.0"
     i18next: "npm:^26.0.3"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jest: "npm:^30.3.0"
