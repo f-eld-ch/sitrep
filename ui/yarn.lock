@@ -2115,25 +2115,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^24.7.0":
-  version: 24.7.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.7.0"
-  dependencies:
-    "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
-    "@mapbox/unitbezier": "npm:^0.0.1"
-    json-stringify-pretty-compact: "npm:^4.0.0"
-    minimist: "npm:^1.2.8"
-    quickselect: "npm:^3.0.0"
-    rw: "npm:^1.3.3"
-    tinyqueue: "npm:^3.0.0"
-  bin:
-    gl-style-format: dist/gl-style-format.mjs
-    gl-style-migrate: dist/gl-style-migrate.mjs
-    gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/abf5d619d4fa091757304ffe52b81eabbd4300f143c32c4a1fc37b34a767e485758afddf58a9dc0b5fde64c42b3da8b9c3a6e6bd835b6bd93fb5f790c7ec266f
-  languageName: node
-  linkType: hard
-
 "@maplibre/maplibre-gl-style-spec@npm:^24.8.1":
   version: 24.8.1
   resolution: "@maplibre/maplibre-gl-style-spec@npm:24.8.1"
@@ -7918,8 +7899,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^5.18.0":
-  version: 5.21.1
-  resolution: "maplibre-gl@npm:5.21.1"
+  version: 5.22.0
+  resolution: "maplibre-gl@npm:5.22.0"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.2"
     "@mapbox/point-geometry": "npm:^1.1.0"
@@ -7928,7 +7909,7 @@ __metadata:
     "@mapbox/vector-tile": "npm:^2.0.4"
     "@mapbox/whoots-js": "npm:^3.1.0"
     "@maplibre/geojson-vt": "npm:^6.0.4"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.7.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^24.8.1"
     "@maplibre/mlt": "npm:^1.1.8"
     "@maplibre/vt-pbf": "npm:^4.3.0"
     "@types/geojson": "npm:^7946.0.16"
@@ -7940,7 +7921,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/8ff172ee5348c51b047820a5f51aa9aa58207379ecfba10c0da291f35feaecae8559fb41e8d62ed8605cc2a10d11287c2092ade8aec27fd1d22f8539e973599d
+  checksum: 10/95b963105cb10afcd41e5d4251e6cac4e44bb12b0de8b250c11a1148845d7a0273a51695959f19044a95fa0a9b3b6530db6c8242acc974f4fe78efdd4f4186b0
   languageName: node
   linkType: hard
 
