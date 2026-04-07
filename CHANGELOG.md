@@ -6,6 +6,13 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump proj4 from 2.20.4 to 2.20.8 in /ui ([#1485](https://github.com/f-eld-ch/sitrep/issues/1485)) - ([88cb749](https://github.com/f-eld-ch/sitrep/commit/88cb74960656ca23c0c7d5776828f67ca1a1d661))
+- *(deps)* Bump react-router from 7.13.2 to 7.14.0 in /ui ([#1478](https://github.com/f-eld-ch/sitrep/issues/1478)) - ([6b39286](https://github.com/f-eld-ch/sitrep/commit/6b3928674bd4d5a8ea195c20139c4c0b607a54ca))
+- *(deps)* Bump github.com/go-jose/go-jose/v4 ([#1476](https://github.com/f-eld-ch/sitrep/issues/1476)) - ([a05a8c7](https://github.com/f-eld-ch/sitrep/commit/a05a8c78eb13205b1b2c51887ced25ffba3ec1be))
+- *(deps)* Bump lodash from 4.17.23 to 4.18.1 in /ui ([#1473](https://github.com/f-eld-ch/sitrep/issues/1473)) - ([5c50723](https://github.com/f-eld-ch/sitrep/commit/5c50723ea7fce8019a375c1c256091b7f86055e8))
+- *(deps)* Bump maplibre-gl from 5.21.1 to 5.22.0 in /ui ([#1481](https://github.com/f-eld-ch/sitrep/issues/1481)) - ([13457c2](https://github.com/f-eld-ch/sitrep/commit/13457c26017917569b79ed48c2290958972645a0))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.45.6 to 3.46.0 ([#1474](https://github.com/f-eld-ch/sitrep/issues/1474)) - ([1655b0a](https://github.com/f-eld-ch/sitrep/commit/1655b0ae76d263bb558a0920fc556f0eb2ad7cb6))
+- *(deps)* Bump html-react-parser from 5.2.17 to 6.0.0 in /ui ([#1482](https://github.com/f-eld-ch/sitrep/issues/1482)) - ([f656303](https://github.com/f-eld-ch/sitrep/commit/f656303314cde3c60033d797be19d9b564f0bcc5))
 - *(deps)* Bump the otel group with 8 updates ([#1479](https://github.com/f-eld-ch/sitrep/issues/1479)) - ([55f3f6a](https://github.com/f-eld-ch/sitrep/commit/55f3f6a1b7f93fc565b6fbd1337878fc03f69a92))
 - *(deps)* Bump react-i18next from 17.0.1 to 17.0.2 in /ui ([#1470](https://github.com/f-eld-ch/sitrep/issues/1470)) - ([c209337](https://github.com/f-eld-ch/sitrep/commit/c2093370232791731fbf64d186b0bdb245526efa))
 - *(deps)* Bump i18next from 26.0.2 to 26.0.3 in /ui ([#1471](https://github.com/f-eld-ch/sitrep/issues/1471)) - ([7d31359](https://github.com/f-eld-ch/sitrep/commit/7d31359345d0bf2f4c9507ec28a9c0e30824d299))
