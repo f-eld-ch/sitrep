@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the otel group with 4 updates ([#1491](https://github.com/f-eld-ch/sitrep/issues/1491)) - ([509ef5c](https://github.com/f-eld-ch/sitrep/commit/509ef5c4d85d580f881204b0f715687c17572885))
 - *(deps)* Bump proj4 from 2.20.4 to 2.20.8 in /ui ([#1485](https://github.com/f-eld-ch/sitrep/issues/1485)) - ([88cb749](https://github.com/f-eld-ch/sitrep/commit/88cb74960656ca23c0c7d5776828f67ca1a1d661))
 - *(deps)* Bump react-router from 7.13.2 to 7.14.0 in /ui ([#1478](https://github.com/f-eld-ch/sitrep/issues/1478)) - ([6b39286](https://github.com/f-eld-ch/sitrep/commit/6b3928674bd4d5a8ea195c20139c4c0b607a54ca))
 - *(deps)* Bump github.com/go-jose/go-jose/v4 ([#1476](https://github.com/f-eld-ch/sitrep/issues/1476)) - ([a05a8c7](https://github.com/f-eld-ch/sitrep/commit/a05a8c78eb13205b1b2c51887ced25ffba3ec1be))
