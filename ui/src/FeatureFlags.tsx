@@ -22,7 +22,7 @@ const Provider = (props: PropsWithChildren) => {
   // sync the evaulation context here, so far only depends on domain and UserContext state
   useEffect(() => {
     const context = {
-      targettingKey: userState.email,
+      targetingKey: userState.email,
       domain: document.location.host.split(":")[0],
       email: userState.email,
     };
