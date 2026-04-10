@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.46.0 to 3.47.1 ([#1498](https://github.com/f-eld-ch/sitrep/issues/1498)) - ([bc845b8](https://github.com/f-eld-ch/sitrep/commit/bc845b8e6dd67242da7e996273e240d00b89a82c))
 - *(deps)* Bump maplibre-gl from 5.21.1 to 5.22.0 in /ui ([#1493](https://github.com/f-eld-ch/sitrep/issues/1493)) - ([cd76374](https://github.com/f-eld-ch/sitrep/commit/cd76374d7a8e93dde594c3757221977f0a0ae846))
 - *(deps)* Bump the otel group with 4 updates ([#1491](https://github.com/f-eld-ch/sitrep/issues/1491)) - ([509ef5c](https://github.com/f-eld-ch/sitrep/commit/509ef5c4d85d580f881204b0f715687c17572885))
 - *(deps)* Bump proj4 from 2.20.4 to 2.20.8 in /ui ([#1485](https://github.com/f-eld-ch/sitrep/issues/1485)) - ([88cb749](https://github.com/f-eld-ch/sitrep/commit/88cb74960656ca23c0c7d5776828f67ca1a1d661))
