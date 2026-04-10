@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.2.0 to 0.4.1 in /ui ([#1461](https://github.com/f-eld-ch/sitrep/issues/1461)) - ([a026504](https://github.com/f-eld-ch/sitrep/commit/a0265045e28db9373ddf8d1f46068d5dc3e717c4))
 - *(deps)* Bump i18next from 26.0.3 to 26.0.4 in /ui ([#1497](https://github.com/f-eld-ch/sitrep/issues/1497)) - ([0efb436](https://github.com/f-eld-ch/sitrep/commit/0efb436851eac13e5d43d72edcdd1e473c91c201))
 - *(deps)* Bump the react group in /ui with 2 updates ([#1503](https://github.com/f-eld-ch/sitrep/issues/1503)) - ([09803b7](https://github.com/f-eld-ch/sitrep/commit/09803b730e9d4bd5b4482fbd4a474bf53bc7af3f))
 - *(deps)* Bump @apollo/client from 4.1.6 to 4.1.7 in /ui ([#1495](https://github.com/f-eld-ch/sitrep/issues/1495)) - ([30ebda1](https://github.com/f-eld-ch/sitrep/commit/30ebda1b971af0bd5fbcc36503f4db079fb7841b))
