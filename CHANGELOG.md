@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump html-react-parser from 6.0.0 to 6.0.1 in /ui ([#1496](https://github.com/f-eld-ch/sitrep/issues/1496)) - ([75c2d26](https://github.com/f-eld-ch/sitrep/commit/75c2d2649257d817236e5e37730d6a39d03351ec))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.46.0 to 3.47.1 ([#1498](https://github.com/f-eld-ch/sitrep/issues/1498)) - ([bc845b8](https://github.com/f-eld-ch/sitrep/commit/bc845b8e6dd67242da7e996273e240d00b89a82c))
 - *(deps)* Bump maplibre-gl from 5.21.1 to 5.22.0 in /ui ([#1493](https://github.com/f-eld-ch/sitrep/issues/1493)) - ([cd76374](https://github.com/f-eld-ch/sitrep/commit/cd76374d7a8e93dde594c3757221977f0a0ae846))
 - *(deps)* Bump the otel group with 4 updates ([#1491](https://github.com/f-eld-ch/sitrep/issues/1491)) - ([509ef5c](https://github.com/f-eld-ch/sitrep/commit/509ef5c4d85d580f881204b0f715687c17572885))
