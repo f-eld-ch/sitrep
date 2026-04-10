@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the react group in /ui with 2 updates ([#1503](https://github.com/f-eld-ch/sitrep/issues/1503)) - ([09803b7](https://github.com/f-eld-ch/sitrep/commit/09803b730e9d4bd5b4482fbd4a474bf53bc7af3f))
 - *(deps)* Bump @apollo/client from 4.1.6 to 4.1.7 in /ui ([#1495](https://github.com/f-eld-ch/sitrep/issues/1495)) - ([30ebda1](https://github.com/f-eld-ch/sitrep/commit/30ebda1b971af0bd5fbcc36503f4db079fb7841b))
 - *(deps)* Bump html-react-parser from 6.0.0 to 6.0.1 in /ui ([#1496](https://github.com/f-eld-ch/sitrep/issues/1496)) - ([75c2d26](https://github.com/f-eld-ch/sitrep/commit/75c2d2649257d817236e5e37730d6a39d03351ec))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.46.0 to 3.47.1 ([#1498](https://github.com/f-eld-ch/sitrep/issues/1498)) - ([bc845b8](https://github.com/f-eld-ch/sitrep/commit/bc845b8e6dd67242da7e996273e240d00b89a82c))
