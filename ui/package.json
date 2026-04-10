@@ -54,7 +54,7 @@
     "maplibre-gl": "5.22.0",
     "ol": "^10.8.0",
     "proj4": "^2.20.8",
-    "react": "^19.2.4",
+    "react": "^19.2.5",
     "react-autocomplete-hint": "^2.0.0",
     "react-dom": "^19.2.4",
     "react-i18next": "^17.0.2",
