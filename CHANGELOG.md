@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.1 to 3.47.2 ([#1504](https://github.com/f-eld-ch/sitrep/issues/1504)) - ([b6c6ffd](https://github.com/f-eld-ch/sitrep/commit/b6c6ffddb35eb088ca757fe1dcdd6d90cbed964f))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.2.0 to 0.4.1 in /ui ([#1461](https://github.com/f-eld-ch/sitrep/issues/1461)) - ([a026504](https://github.com/f-eld-ch/sitrep/commit/a0265045e28db9373ddf8d1f46068d5dc3e717c4))
 - *(deps)* Bump i18next from 26.0.3 to 26.0.4 in /ui ([#1497](https://github.com/f-eld-ch/sitrep/issues/1497)) - ([0efb436](https://github.com/f-eld-ch/sitrep/commit/0efb436851eac13e5d43d72edcdd1e473c91c201))
 - *(deps)* Bump the react group in /ui with 2 updates ([#1503](https://github.com/f-eld-ch/sitrep/issues/1503)) - ([09803b7](https://github.com/f-eld-ch/sitrep/commit/09803b730e9d4bd5b4482fbd4a474bf53bc7af3f))
