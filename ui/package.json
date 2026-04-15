@@ -58,7 +58,7 @@
     "react-autocomplete-hint": "^2.0.0",
     "react-dom": "^19.2.5",
     "react-i18next": "^17.0.2",
-    "react-map-gl": "~8.1.0",
+    "react-map-gl": "~8.1.1",
     "react-markdown": "^10.1.0",
     "react-router": "^7.14.0",
     "react-to-print": "^3.3.0",
