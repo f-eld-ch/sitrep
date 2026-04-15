@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.0.4 to 26.0.5 in /ui ([#1515](https://github.com/f-eld-ch/sitrep/issues/1515)) - ([5724536](https://github.com/f-eld-ch/sitrep/commit/5724536f45b51d2948ae237f6ddb63479756fffb))
+- *(deps)* Bump react-i18next from 17.0.2 to 17.0.3 in /ui ([#1512](https://github.com/f-eld-ch/sitrep/issues/1512)) - ([38b85a1](https://github.com/f-eld-ch/sitrep/commit/38b85a1ad907b69894ba0b99c0c54ec21440612e))
+- *(deps)* Bump react-router from 7.14.0 to 7.14.1 in /ui ([#1511](https://github.com/f-eld-ch/sitrep/issues/1511)) - ([e46d7cd](https://github.com/f-eld-ch/sitrep/commit/e46d7cdd82fada4b92997380ebfb1c945d5195ea))
 - *(deps)* Bump maplibre-gl from 5.22.0 to 5.23.0 in /ui ([#1507](https://github.com/f-eld-ch/sitrep/issues/1507)) - ([925a413](https://github.com/f-eld-ch/sitrep/commit/925a413639553c44d0ef2bcf1fc8b7d34b7495eb))
 - *(deps)* Bump react-map-gl from 8.1.0 to 8.1.1 in /ui ([#1506](https://github.com/f-eld-ch/sitrep/issues/1506)) - ([8eab23e](https://github.com/f-eld-ch/sitrep/commit/8eab23ec23c03cda41b252ba267ddbda3b24860a))
 
