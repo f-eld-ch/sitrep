@@ -1,3 +1,11 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 5.22.0 to 5.23.0 in /ui ([#1507](https://github.com/f-eld-ch/sitrep/issues/1507)) - ([925a413](https://github.com/f-eld-ch/sitrep/commit/925a413639553c44d0ef2bcf1fc8b7d34b7495eb))
+- *(deps)* Bump react-map-gl from 8.1.0 to 8.1.1 in /ui ([#1506](https://github.com/f-eld-ch/sitrep/issues/1506)) - ([8eab23e](https://github.com/f-eld-ch/sitrep/commit/8eab23ec23c03cda41b252ba267ddbda3b24860a))
+
+
 ## [26.4.0](https://github.com/f-eld-ch/sitrep/compare/v26.3.1..v26.4.0) - 2026-04-13
 
 ### 🐛 Bug Fixes
