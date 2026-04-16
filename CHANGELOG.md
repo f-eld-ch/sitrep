@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump ol from 10.8.0 to 10.9.0 in /ui ([#1516](https://github.com/f-eld-ch/sitrep/issues/1516)) - ([8ccc4d8](https://github.com/f-eld-ch/sitrep/commit/8ccc4d85aa5522dd1e378fbef72d16049a50c58c))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.2 to 3.47.3 ([#1514](https://github.com/f-eld-ch/sitrep/issues/1514)) - ([8a706e4](https://github.com/f-eld-ch/sitrep/commit/8a706e488f463f49af79e08d1a7dd7ad1544a48a))
 - *(deps)* Bump i18next from 26.0.4 to 26.0.5 in /ui ([#1515](https://github.com/f-eld-ch/sitrep/issues/1515)) - ([5724536](https://github.com/f-eld-ch/sitrep/commit/5724536f45b51d2948ae237f6ddb63479756fffb))
 - *(deps)* Bump react-i18next from 17.0.2 to 17.0.3 in /ui ([#1512](https://github.com/f-eld-ch/sitrep/issues/1512)) - ([38b85a1](https://github.com/f-eld-ch/sitrep/commit/38b85a1ad907b69894ba0b99c0c54ec21440612e))
