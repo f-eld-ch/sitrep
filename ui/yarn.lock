@@ -3344,13 +3344,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/geojson@npm:^0":
-  version: 0.0.32
-  resolution: "@types/geojson@npm:0.0.32"
-  checksum: 10/d91cd163c69e04c4bf8377059849d85d0be2cbaaea611f68c9f90a7b2cdff17900f48aaf8272a9ab87d82502a64fcc0380bccca77dc08b8632e744199b085e24
-  languageName: node
-  linkType: hard
-
 "@types/hast@npm:^3.0.0":
   version: 3.0.4
   resolution: "@types/hast@npm:3.0.4"
@@ -8532,7 +8525,7 @@ __metadata:
     "@turf/distance": "npm:^7.3.4"
     "@turf/helpers": "npm:^7.3.4"
     "@turf/line-split": "npm:^7.3.4"
-    "@types/geojson": "npm:^0"
+    "@types/geojson": "npm:^7946.0.16"
     "@types/lodash": "npm:^4.17.24"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
     "@types/node": "npm:^25.6.0"
