@@ -5066,13 +5066,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"geojson@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "geojson@npm:0.5.0"
-  checksum: 10/7f821b9871d6095e2dcca3d7725e61f13dcf206ce83a1fc5ef746803ce49a5fd3d2d8e716c19dbf6d9ecd4153f4e09b4921a01e87c83ddcefa9e8579ecfe9264
-  languageName: node
-  linkType: hard
-
 "geotiff@npm:^3.0.5 || ^3.1.0-beta.0":
   version: 3.1.0-beta.0
   resolution: "geotiff@npm:3.1.0-beta.0"
@@ -8525,7 +8518,6 @@ __metadata:
     "@turf/distance": "npm:^7.3.4"
     "@turf/helpers": "npm:^7.3.4"
     "@turf/line-split": "npm:^7.3.4"
-    "@types/geojson": "npm:^7946.0.16"
     "@types/lodash": "npm:^4.17.24"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
     "@types/node": "npm:^25.6.0"
@@ -8538,7 +8530,6 @@ __metadata:
     bulma: "npm:^1.0.4"
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.20"
-    geojson: "npm:^0.5.0"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^16.13.2"
     html-react-parser: "npm:^6.0.1"
