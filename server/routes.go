@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/f-eld-ch/sitrep/ui"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+
+	"github.com/f-eld-ch/sitrep/ui"
 )
 
 // Routes registers all HTTP routes and handlers on the server's router.

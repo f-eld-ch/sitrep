@@ -23,4 +23,31 @@
       "source.fixAll.oxc": "always",
     },
   },
+
+  // Go Settings
+  "go.useLanguageServer": true,
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+  "--path-mode=abs",
+  "--fast-only"
+  ],
+  "go.formatTool": "custom",
+  "go.alternateTools": {
+      "customFormatter": "golangci-lint"
+  },
+  "go.formatFlags": [
+      "fmt",
+      "--stdin"
+  ],
+  "[go]": {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "always"
+      },
+  },
+
+  "gopls": {
+    "formatting.gofumpt": false,
+    "formatting.local": "github.com/f-eld-ch/sitrep",
+  },
 }

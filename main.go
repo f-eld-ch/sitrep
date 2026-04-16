@@ -8,9 +8,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/spf13/viper"
+
 	"github.com/f-eld-ch/sitrep/server"
 	"github.com/f-eld-ch/sitrep/server/auth"
-	"github.com/spf13/viper"
 )
 
 // Version is the version of the application, set at build time.

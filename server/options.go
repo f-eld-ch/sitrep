@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/f-eld-ch/sitrep/server/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
+	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
 // Option defines a functional option for Server.
