@@ -3,6 +3,8 @@
 ### ⚙️  Other
 
 - *(backend)* Improve linter and formater settings for backend - ([db1bfeb](https://github.com/f-eld-ch/sitrep/commit/db1bfeba273feabceb26ab7faec54e935defcca6))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.3 to 3.47.4 ([#1520](https://github.com/f-eld-ch/sitrep/issues/1520)) - ([c5a28f8](https://github.com/f-eld-ch/sitrep/commit/c5a28f817151b6dec9ade3e498f46f44e69cccc9))
+- *(deps)* Bump react-i18next from 17.0.3 to 17.0.4 in /ui ([#1522](https://github.com/f-eld-ch/sitrep/issues/1522)) - ([ad79d31](https://github.com/f-eld-ch/sitrep/commit/ad79d31f663a6292109750212ab3e0d5ddb949f0))
 - *(deps)* Bump protocol-buffers-schema ([#1519](https://github.com/f-eld-ch/sitrep/issues/1519)) - ([b510c24](https://github.com/f-eld-ch/sitrep/commit/b510c24acedf3a16a0def3606f0966445afa6826))
 - *(deps)* Upgrade all npm and go dependencies ([#1517](https://github.com/f-eld-ch/sitrep/issues/1517)) - ([437b6e3](https://github.com/f-eld-ch/sitrep/commit/437b6e3ef4588627ddc5ec7623719d41d665388d))
 - *(deps)* Bump ol from 10.8.0 to 10.9.0 in /ui ([#1516](https://github.com/f-eld-ch/sitrep/issues/1516)) - ([8ccc4d8](https://github.com/f-eld-ch/sitrep/commit/8ccc4d85aa5522dd1e378fbef72d16049a50c58c))
