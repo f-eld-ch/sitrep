@@ -3,6 +3,7 @@
 ### ⚙️  Other
 
 - *(backend)* Improve linter and formater settings for backend - ([db1bfeb](https://github.com/f-eld-ch/sitrep/commit/db1bfeba273feabceb26ab7faec54e935defcca6))
+- *(deps)* Bump protocol-buffers-schema ([#1519](https://github.com/f-eld-ch/sitrep/issues/1519)) - ([b510c24](https://github.com/f-eld-ch/sitrep/commit/b510c24acedf3a16a0def3606f0966445afa6826))
 - *(deps)* Upgrade all npm and go dependencies ([#1517](https://github.com/f-eld-ch/sitrep/issues/1517)) - ([437b6e3](https://github.com/f-eld-ch/sitrep/commit/437b6e3ef4588627ddc5ec7623719d41d665388d))
 - *(deps)* Bump ol from 10.8.0 to 10.9.0 in /ui ([#1516](https://github.com/f-eld-ch/sitrep/issues/1516)) - ([8ccc4d8](https://github.com/f-eld-ch/sitrep/commit/8ccc4d85aa5522dd1e378fbef72d16049a50c58c))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.2 to 3.47.3 ([#1514](https://github.com/f-eld-ch/sitrep/issues/1514)) - ([8a706e4](https://github.com/f-eld-ch/sitrep/commit/8a706e488f463f49af79e08d1a7dd7ad1544a48a))
