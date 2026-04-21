@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.0.5 to 26.0.6 in /ui ([#1527](https://github.com/f-eld-ch/sitrep/issues/1527)) - ([aefe192](https://github.com/f-eld-ch/sitrep/commit/aefe192b851a2df857fe48dd60e46fe2988cde7f))
+- *(deps)* Bump the turf group in /ui with 7 updates ([#1526](https://github.com/f-eld-ch/sitrep/issues/1526)) - ([8cbe67b](https://github.com/f-eld-ch/sitrep/commit/8cbe67b3274b088e9a5a0550e441ea026615f9a7))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.4 to 3.47.5 ([#1523](https://github.com/f-eld-ch/sitrep/issues/1523)) - ([ba9a2de](https://github.com/f-eld-ch/sitrep/commit/ba9a2de49ab9e91a746546e14b55460e7532145f))
 
 
