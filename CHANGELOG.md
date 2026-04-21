@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump uuid from 13.0.0 to 14.0.0 in /ui ([#1528](https://github.com/f-eld-ch/sitrep/issues/1528)) - ([515a672](https://github.com/f-eld-ch/sitrep/commit/515a672da51d3f2c81820e92c3f4288bbd74d573))
 - *(deps)* Bump @fortawesome/react-fontawesome ([#1525](https://github.com/f-eld-ch/sitrep/issues/1525)) - ([a28580d](https://github.com/f-eld-ch/sitrep/commit/a28580d5cb4884586f6cf17637096ebe52477f3a))
 - *(deps)* Bump i18next from 26.0.5 to 26.0.6 in /ui ([#1527](https://github.com/f-eld-ch/sitrep/issues/1527)) - ([aefe192](https://github.com/f-eld-ch/sitrep/commit/aefe192b851a2df857fe48dd60e46fe2988cde7f))
 - *(deps)* Bump the turf group in /ui with 7 updates ([#1526](https://github.com/f-eld-ch/sitrep/issues/1526)) - ([8cbe67b](https://github.com/f-eld-ch/sitrep/commit/8cbe67b3274b088e9a5a0550e441ea026615f9a7))
