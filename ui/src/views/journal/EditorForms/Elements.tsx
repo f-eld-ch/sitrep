@@ -5,7 +5,7 @@ import { t } from "i18next";
 import { useId } from "react";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
-import { useEditorContext } from "../Editor";
+import { ReactEditor, useEditorContext } from "../Editor";
 
 const SenderInput = () => {
   const { state, dispatch } = useEditorContext();
@@ -70,21 +70,9 @@ const ReceiverInput = () => {
 };
 
 const ContentInput = () => {
-  const { state, dispatch } = useEditorContext();
-  const id = useId();
   return (
     <div className="control">
-      <textarea
-        id={id}
-        className="textarea"
-        placeholder={t("message.contentHelp") as string}
-        rows={10}
-        value={state.content}
-        onChange={(e) => {
-          e.preventDefault();
-          dispatch({ type: "set_content", content: e.target.value });
-        }}
-      />
+      <ReactEditor />
     </div>
   );
 };

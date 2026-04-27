@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import classNames from "classnames";
 import dayjs from "dayjs";
-import { memo, useRef } from "react";
+import React, { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import ReactMarkdown from "react-markdown";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
+import { ReactPreview } from "./Editor";
 import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {
@@ -156,7 +156,7 @@ const MessageContainer = ({
           </div>
           <div className="column is-full" style={{ wordBreak: "break-word" }}>
             <div className="content is-normal has-text-left" data-testid={`content-${message.id}`}>
-              <ReactMarkdown>{message.content}</ReactMarkdown>
+              <ReactPreview content={message.content} />
             </div>
           </div>
           <div className={assigmentsClassNames}>

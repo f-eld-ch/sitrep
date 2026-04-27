@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
-import ReactMarkdown from "react-markdown";
 import type { Message } from "types";
+import { ReactPreview } from "./Editor";
 
 const MessageTable = (
   props: {
@@ -69,7 +69,7 @@ const MessageTable = (
                   className="content is-normal has-text-left"
                   style={{ pageBreakInside: "avoid" }}
                 >
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                  <ReactPreview content={message.content} />
                 </div>
               </td>
             </tr>
