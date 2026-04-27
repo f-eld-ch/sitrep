@@ -37,7 +37,7 @@ Login is possible with your Github account or sign-up for a new account.
 
 ## Backed by F-ELD
 
-SitRep is open-source software developed and stewarded by [F-ELD](https://f-eld.ch). [F-ELD](https://f-eld.ch) is a Swiss Non-Profit association. It's main purpose is to develop, improve SitRep and educate command staffs around Switzerland how to best leverage digital tools for Civil Protection purposes. 
+SitRep is open-source software developed and stewarded by [F-ELD](https://f-eld.ch) - is a Swiss Non-Profit association. Their main purpose is to develop, improve SitRep and educate command staffs around Switzerland how to best leverage digital tools for Civil Protection purposes. 
 
 ### SitRep As A Service
 
