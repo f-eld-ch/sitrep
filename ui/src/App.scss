@@ -1,11 +1,9 @@
-$orange: hsl(18, 89%, 62%);
-$orange-lighter: hsl(18, 89%, 42%);
+$orange: hsl(18, 90%, 57%);
 
 $yellow: #ecb341;
 $red: #d60000;
 $blue: #0030cc;
-$darkBlue: #48d15a;
-$navbar-height: 2.25rem;
+$navbar-height: 0.75rem;
 
 $grey-darker: hsl(221, 14%, 21%);
 $grey-dark: hsl(221, 14%, 29%);
@@ -23,7 +21,7 @@ $tablet: 769px;
   $warning: $yellow,
   $danger: $red,
   $info: $blue,
-  $link: $orange-lighter,
+  $link: $orange,
   $weight-light: 100,
   $weight-normal: 300,
   $weight-medium: 500,
@@ -63,7 +61,8 @@ $tablet: 769px;
   $modal-content-width: 80rem
 );
 @use "bulma/sass/components/navbar" with (
-  $navbar-height: $navbar-height
+  $navbar-height: $navbar-height,
+  $navbar-tab-active-background-color: $yellow
 );
 @forward "bulma/sass/components/tabs";
 
