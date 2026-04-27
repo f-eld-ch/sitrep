@@ -8559,7 +8559,7 @@ __metadata:
     jsdom: "npm:^29.0.2"
     lodash: "npm:^4.18.1"
     mapbox-gl-style-switcher: "npm:^1.0.11"
-    maplibre-gl: "npm:5.23.0"
+    maplibre-gl: "npm:5.24.0"
     ol: "npm:^10.9.0"
     oxfmt: "npm:^0.46.0"
     oxlint: "npm:^1.61.0"
