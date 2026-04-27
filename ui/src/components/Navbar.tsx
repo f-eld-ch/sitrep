@@ -52,7 +52,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           to="/"
           className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
         >
-          <figure className="image is-32x32">
+          <figure className="image is-24x24">
             <img src={logo} alt="Logo" />
           </figure>
         </NavLink>
