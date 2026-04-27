@@ -25,9 +25,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^4.1.7":
-  version: 4.1.7
-  resolution: "@apollo/client@npm:4.1.7"
+"@apollo/client@npm:^4.1.9":
+  version: 4.1.9
+  resolution: "@apollo/client@npm:4.1.9"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@wry/caches": "npm:^1.0.0"
@@ -52,7 +52,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 10/eb2861c2bb9bb00b9c6b25fd6f0defafeada325552f01943755b52642ba536f85f0b6037a4b51ba81be8084122aee5544831877ee0f8e10417117269fac36755
+  checksum: 10/d4e787d33787f974a474ac4a6ce0543e6ba8233f560cf216bdc5251166c860e8d5dcbe18fb3aba561bceaa640e58f3a258396416938b846c3fe74d1cb0b344e0
   languageName: node
   linkType: hard
 
@@ -8515,7 +8515,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sitrep@workspace:."
   dependencies:
-    "@apollo/client": "npm:^4.1.7"
+    "@apollo/client": "npm:^4.1.9"
     "@fast-check/vitest": "npm:^0.4.0"
     "@flipt-io/flipt-client-js": "npm:0.4.1"
     "@fortawesome/fontawesome-svg-core": "npm:^7.2.0"
