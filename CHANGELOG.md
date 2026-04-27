@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.14.1 to 7.14.2 in /ui ([#1532](https://github.com/f-eld-ch/sitrep/issues/1532)) - ([b5f39f3](https://github.com/f-eld-ch/sitrep/commit/b5f39f38e54d382786b21515ba2ba1268f25bcba))
 - *(deps)* Bump @apollo/client from 4.1.7 to 4.1.9 in /ui ([#1539](https://github.com/f-eld-ch/sitrep/issues/1539)) - ([af54950](https://github.com/f-eld-ch/sitrep/commit/af5495038e6586f16764729a0908d4fa36079403))
 - *(deps)* Bump maplibre-gl from 5.23.0 to 5.24.0 in /ui ([#1536](https://github.com/f-eld-ch/sitrep/issues/1536)) - ([e94cfdd](https://github.com/f-eld-ch/sitrep/commit/e94cfddf39126e0f94556d1c6df4f7b2f0f08b1a))
 - *(deps)* Bump the openfeature group in /ui with 3 updates ([#1533](https://github.com/f-eld-ch/sitrep/issues/1533)) - ([b996bf0](https://github.com/f-eld-ch/sitrep/commit/b996bf001405fde2f771e97f979766d7490a724e))
