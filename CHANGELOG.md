@@ -4,6 +4,10 @@
 
 - *(journal)* Add easy Markdown Editor to Journal Editor ([#1541](https://github.com/f-eld-ch/sitrep/issues/1541)) - ([2c64353](https://github.com/f-eld-ch/sitrep/commit/2c643534320cb8abfa8354ee243d56974a81f794))
 
+### 🐛 Bug Fixes
+
+- *(ui)* Make default orange link color lighter ([#1542](https://github.com/f-eld-ch/sitrep/issues/1542)) - ([f35150a](https://github.com/f-eld-ch/sitrep/commit/f35150a12c8d6a3a7628d96139b5dc4fdbf0305f))
+
 ### ⚙️  Other
 
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.4.1 to 0.4.2 in /ui ([#1537](https://github.com/f-eld-ch/sitrep/issues/1537)) - ([a731ebc](https://github.com/f-eld-ch/sitrep/commit/a731ebc7a8ae3ccff6e99c0e5259c070cb813334))
