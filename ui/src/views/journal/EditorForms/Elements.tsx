@@ -6,6 +6,8 @@ import { useId } from "react";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useEditorContext } from "../Editor";
+import MDEditor from "@uiw/react-md-editor";
+import rehypeSanitize from "rehype-sanitize";
 
 const SenderInput = () => {
   const { state, dispatch } = useEditorContext();
@@ -72,17 +74,19 @@ const ReceiverInput = () => {
 const ContentInput = () => {
   const { state, dispatch } = useEditorContext();
   const id = useId();
+
   return (
     <div className="control">
-      <textarea
+      <MDEditor
         id={id}
-        className="textarea"
-        placeholder={t("message.contentHelp") as string}
-        rows={10}
         value={state.content}
-        onChange={(e) => {
-          e.preventDefault();
-          dispatch({ type: "set_content", content: e.target.value });
+        minHeight={800}
+        onChange={(value) => {
+          dispatch({ type: "set_content", content: value });
+        }}
+        preview="edit"
+        previewOptions={{
+          rehypePlugins: [[rehypeSanitize]],
         }}
       />
     </div>
