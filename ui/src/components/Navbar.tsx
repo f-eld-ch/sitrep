@@ -160,9 +160,11 @@ function DarkModeSwitcher() {
       if (isDarkMode) {
         element?.classList.add("theme-dark");
         element?.classList.remove("theme-light");
+        document.documentElement.setAttribute("data-color-mode", "dark");
       } else {
         element?.classList.remove("theme-dark");
         element?.classList.add("theme-light");
+        document.documentElement.setAttribute("data-color-mode", "light");
       }
     },
     [isDarkMode], // Only re-call effect when value changes

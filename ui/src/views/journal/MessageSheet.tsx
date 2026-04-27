@@ -4,11 +4,9 @@ import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { forwardRef } from "react";
-
 import { useTranslation } from "react-i18next";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import rehypeSanitize from "rehype-sanitize";
 import { type Division, Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import { ReactPreview } from "./Editor";
 
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);
@@ -95,11 +93,7 @@ const MessageSheet = (
             <th>{t("message.content")}</th>
             <td colSpan={4} style={cellStyle}>
               <div className="content">
-                <MarkdownPreview
-                  source={message.content}
-                  rehypePlugins={[rehypeSanitize]}
-                  style={{ background: "transparent" }}
-                />
+                <ReactPreview content={message.content} />
               </div>
             </td>
           </tr>

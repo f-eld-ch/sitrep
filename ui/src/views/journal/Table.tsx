@@ -1,9 +1,8 @@
 import dayjs from "dayjs";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import rehypeSanitize from "rehype-sanitize";
 import type { Message } from "types";
+import { ReactPreview } from "./Editor";
 
 const MessageTable = (
   props: {
@@ -70,11 +69,7 @@ const MessageTable = (
                   className="content is-normal has-text-left"
                   style={{ pageBreakInside: "avoid" }}
                 >
-                  <MarkdownPreview
-                    source={message.content}
-                    rehypePlugins={[rehypeSanitize]}
-                    style={{ background: "transparent" }}
-                  />
+                  <ReactPreview content={message.content} />
                 </div>
               </td>
             </tr>

@@ -5,9 +5,7 @@ import { t } from "i18next";
 import { useId } from "react";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
-import { useEditorContext } from "../Editor";
-import MDEditor from "@uiw/react-md-editor";
-import rehypeSanitize from "rehype-sanitize";
+import { ReactEditor, useEditorContext } from "../Editor";
 
 const SenderInput = () => {
   const { state, dispatch } = useEditorContext();
@@ -72,23 +70,9 @@ const ReceiverInput = () => {
 };
 
 const ContentInput = () => {
-  const { state, dispatch } = useEditorContext();
-  const id = useId();
-
   return (
     <div className="control">
-      <MDEditor
-        id={id}
-        value={state.content}
-        minHeight={800}
-        onChange={(value) => {
-          dispatch({ type: "set_content", content: value });
-        }}
-        preview="edit"
-        previewOptions={{
-          rehypePlugins: [[rehypeSanitize]],
-        }}
-      />
+      <ReactEditor />
     </div>
   );
 };

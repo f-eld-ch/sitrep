@@ -1,8 +1,11 @@
 import { useMutation, useQuery } from "@apollo/client/react";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import MDEditor from "@uiw/react-md-editor";
 import { t } from "i18next";
 import uniq from "lodash/uniq";
 import React, { useCallback, useContext, useEffect, useId, useReducer } from "react";
 import { useNavigate, useParams } from "react-router";
+import rehypeSanitize from "rehype-sanitize";
 import type { GetJournalMessagesData, GetJournalMessagesVars } from "types";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import type { InsertMessageVars, UpdateMessageVars } from "types/journal";
@@ -434,3 +437,26 @@ export function useEditorContext(): { state: State; dispatch: Dispatch } {
 }
 
 export default Editor;
+
+export function ReactEditor() {
+  const { state, dispatch } = useEditorContext();
+  return (
+    <MDEditor
+      value={state.content}
+      onChange={(value) => {
+        dispatch({ type: "set_content", content: value ? value : "" });
+      }}
+      preview="edit"
+      previewOptions={{
+        prefixCls: "content",
+        rehypePlugins: [[rehypeSanitize]],
+      }}
+    />
+  );
+}
+
+export function ReactPreview(props: { content: string }) {
+  return (
+    <MarkdownPreview source={props.content} prefixCls="content" rehypePlugins={[rehypeSanitize]} />
+  );
+}
