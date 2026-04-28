@@ -8,6 +8,10 @@
 
 - *(ui)* Make default orange link color lighter ([#1542](https://github.com/f-eld-ch/sitrep/issues/1542)) - ([f35150a](https://github.com/f-eld-ch/sitrep/commit/f35150a12c8d6a3a7628d96139b5dc4fdbf0305f))
 
+### 📚 Documentation
+
+- Update Readme and Developer guides ([#1543](https://github.com/f-eld-ch/sitrep/issues/1543)) - ([5355193](https://github.com/f-eld-ch/sitrep/commit/5355193084e8634c278fdc9d66ee30767dfaa749))
+
 ### ⚙️  Other
 
 - *(deps)* Bump react-i18next from 17.0.4 to 17.0.6 in /ui ([#1545](https://github.com/f-eld-ch/sitrep/issues/1545)) - ([8cdc6f4](https://github.com/f-eld-ch/sitrep/commit/8cdc6f4ed1249bbc68d0c065f78cab48ba5b8b5a))
