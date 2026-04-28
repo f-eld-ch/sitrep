@@ -10,6 +10,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 17.0.4 to 17.0.6 in /ui ([#1545](https://github.com/f-eld-ch/sitrep/issues/1545)) - ([8cdc6f4](https://github.com/f-eld-ch/sitrep/commit/8cdc6f4ed1249bbc68d0c065f78cab48ba5b8b5a))
+- *(deps)* Bump maplibre-gl from 5.23.0 to 5.24.0 in /ui ([#1546](https://github.com/f-eld-ch/sitrep/issues/1546)) - ([805f0e5](https://github.com/f-eld-ch/sitrep/commit/805f0e5595f8aa57a8a60d2326486fbbec519237))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.4.1 to 0.4.2 in /ui ([#1537](https://github.com/f-eld-ch/sitrep/issues/1537)) - ([a731ebc](https://github.com/f-eld-ch/sitrep/commit/a731ebc7a8ae3ccff6e99c0e5259c070cb813334))
 - *(deps)* Bump i18next from 26.0.6 to 26.0.8 in /ui ([#1535](https://github.com/f-eld-ch/sitrep/issues/1535)) - ([b9f5815](https://github.com/f-eld-ch/sitrep/commit/b9f5815c8ba40e75526fdad0adb37502ddcb2f69))
 - *(deps)* Bump react-router from 7.14.1 to 7.14.2 in /ui ([#1532](https://github.com/f-eld-ch/sitrep/issues/1532)) - ([b5f39f3](https://github.com/f-eld-ch/sitrep/commit/b5f39f38e54d382786b21515ba2ba1268f25bcba))
