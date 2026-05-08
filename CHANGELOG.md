@@ -2,6 +2,10 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 17.0.6 to 17.0.7 in /ui ([#1562](https://github.com/f-eld-ch/sitrep/issues/1562)) - ([86b068f](https://github.com/f-eld-ch/sitrep/commit/86b068f89c7817cc16cc19fac38f1b76ebb97bae))
+- *(deps)* Bump ip-address ([#1561](https://github.com/f-eld-ch/sitrep/issues/1561)) - ([1f23ec3](https://github.com/f-eld-ch/sitrep/commit/1f23ec371aaca7d3d1568ceec3bfbf4f47984b02))
+- *(deps)* Bump react-router from 7.14.2 to 7.15.0 in /ui ([#1555](https://github.com/f-eld-ch/sitrep/issues/1555)) - ([0c8ebc1](https://github.com/f-eld-ch/sitrep/commit/0c8ebc1de61bb5ab5f0b03f6fdcf30809a8dd6d3))
+- *(deps)* Bump i18next from 26.0.8 to 26.0.10 in /ui ([#1563](https://github.com/f-eld-ch/sitrep/issues/1563)) - ([e06c517](https://github.com/f-eld-ch/sitrep/commit/e06c51719d03cb6f5156034c1c66d368a1437903))
 - *(deps)* Bump the react group in /ui with 2 updates ([#1557](https://github.com/f-eld-ch/sitrep/issues/1557)) - ([daca928](https://github.com/f-eld-ch/sitrep/commit/daca92801e28ff40395a269725ec545c1ad0df38))
 - *(deps)* Bump graphql from 16.13.2 to 16.14.0 in /ui ([#1560](https://github.com/f-eld-ch/sitrep/issues/1560)) - ([1352e95](https://github.com/f-eld-ch/sitrep/commit/1352e95c53fb477ee5916d5a3c5f5c1361db7331))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.15.1 to 4.15.2 ([#1552](https://github.com/f-eld-ch/sitrep/issues/1552)) - ([1b803b2](https://github.com/f-eld-ch/sitrep/commit/1b803b240b3b99d2b9548a319da1dd8b004b816e))
