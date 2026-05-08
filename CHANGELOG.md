@@ -1,3 +1,12 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump the react group in /ui with 2 updates ([#1557](https://github.com/f-eld-ch/sitrep/issues/1557)) - ([daca928](https://github.com/f-eld-ch/sitrep/commit/daca92801e28ff40395a269725ec545c1ad0df38))
+- *(deps)* Bump graphql from 16.13.2 to 16.14.0 in /ui ([#1560](https://github.com/f-eld-ch/sitrep/issues/1560)) - ([1352e95](https://github.com/f-eld-ch/sitrep/commit/1352e95c53fb477ee5916d5a3c5f5c1361db7331))
+- *(deps)* Bump github.com/labstack/echo/v4 from 4.15.1 to 4.15.2 ([#1552](https://github.com/f-eld-ch/sitrep/issues/1552)) - ([1b803b2](https://github.com/f-eld-ch/sitrep/commit/1b803b240b3b99d2b9548a319da1dd8b004b816e))
+
+
 ## [26.4.2](https://github.com/f-eld-ch/sitrep/compare/v26.4.1..v26.4.2) - 2026-04-28
 
 ### ⛰️  Features
