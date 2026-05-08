@@ -3592,12 +3592,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^25.6.1":
-  version: 25.6.1
-  resolution: "@types/node@npm:25.6.1"
+"@types/node@npm:^25.6.2":
+  version: 25.6.2
+  resolution: "@types/node@npm:25.6.2"
   dependencies:
     undici-types: "npm:~7.19.0"
-  checksum: 10/d58e46b92920c746ac801a00b4c95329d2ec320487b583f3cb2220d1dacaeba15741f9e04dc964e21200ffed86cfb9a762c39aba2a43ef92cf6e6586907405c3
+  checksum: 10/a8afba633f651c80ba3c77d711f1b9bde9cd85ba79f5031af18aa9f0f872e9348cc9e1048fd1b0092cb903f028a4ce505a11dac1205e6efff8b0224de3612028
   languageName: node
   linkType: hard
 
@@ -9460,7 +9460,7 @@ __metadata:
     "@turf/line-split": "npm:^7.3.5"
     "@types/lodash": "npm:^4.17.24"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
-    "@types/node": "npm:^25.6.1"
+    "@types/node": "npm:^25.6.2"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@uiw/react-md-editor": "npm:^4.1.0"
