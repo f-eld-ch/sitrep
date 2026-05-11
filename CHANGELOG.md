@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump fast-uri ([#1566](https://github.com/f-eld-ch/sitrep/issues/1566)) - ([570d097](https://github.com/f-eld-ch/sitrep/commit/570d0976167e84b8d08d95aafd722ff61a957c65))
 - *(deps)* Bump html-react-parser from 6.0.1 to 6.1.0 in /ui ([#1558](https://github.com/f-eld-ch/sitrep/issues/1558)) - ([2a7e87a](https://github.com/f-eld-ch/sitrep/commit/2a7e87a0b2bc224fa95ec0e19fec0d6a7e5b1c85))
 - *(deps)* Bump react-i18next from 17.0.6 to 17.0.7 in /ui ([#1562](https://github.com/f-eld-ch/sitrep/issues/1562)) - ([86b068f](https://github.com/f-eld-ch/sitrep/commit/86b068f89c7817cc16cc19fac38f1b76ebb97bae))
 - *(deps)* Bump ip-address ([#1561](https://github.com/f-eld-ch/sitrep/issues/1561)) - ([1f23ec3](https://github.com/f-eld-ch/sitrep/commit/1f23ec371aaca7d3d1568ceec3bfbf4f47984b02))
