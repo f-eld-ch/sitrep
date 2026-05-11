@@ -74,7 +74,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/lodash": "^4.17.24",
     "@types/mapbox__mapbox-gl-draw": "^1.4.9",
-    "@types/node": "^25.6.1",
+    "@types/node": "^25.6.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vite-pwa/assets-generator": "^1.0.2",
