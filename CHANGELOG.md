@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.1.0 to 26.2.0 in /ui ([#1575](https://github.com/f-eld-ch/sitrep/issues/1575)) - ([4d5218c](https://github.com/f-eld-ch/sitrep/commit/4d5218c9b17a3805f8d40c7d03d46fbcdd999f52))
+- *(deps)* Bump react-i18next from 17.0.7 to 17.0.8 in /ui ([#1574](https://github.com/f-eld-ch/sitrep/issues/1574)) - ([ce4874b](https://github.com/f-eld-ch/sitrep/commit/ce4874b739c44f39a65527cc9b4e41753fdfab36))
 - *(deps)* Bump react-router from 7.15.0 to 7.15.1 in /ui ([#1572](https://github.com/f-eld-ch/sitrep/issues/1572)) - ([74a303f](https://github.com/f-eld-ch/sitrep/commit/74a303f7843d5fe0a573f353b0d8406214367d4f))
 - *(deps)* Bump i18next from 26.0.10 to 26.1.0 in /ui ([#1569](https://github.com/f-eld-ch/sitrep/issues/1569)) - ([821c7b2](https://github.com/f-eld-ch/sitrep/commit/821c7b2f01d698fc2c3feca66d12910747ed556f))
 - *(deps)* Bump @babel/plugin-transform-modules-systemjs ([#1567](https://github.com/f-eld-ch/sitrep/issues/1567)) - ([3ff3631](https://github.com/f-eld-ch/sitrep/commit/3ff36316f048b5d14ddb36f3a402c12bf0fcf56e))
