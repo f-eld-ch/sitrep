@@ -5827,9 +5827,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "html-react-parser@npm:6.1.0"
+"html-react-parser@npm:^6.1.1":
+  version: 6.1.1
+  resolution: "html-react-parser@npm:6.1.1"
   dependencies:
     domhandler: "npm:6.0.1"
     html-dom-parser: "npm:7.1.0"
@@ -5841,7 +5841,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/7db0ef055c91622fe5dc34456de687811ab4d239c46fedd987e9d968cfa90ac2bb508887dc8756cc662580113473bb4d79dccbccc25f8f3c19f450aad4fa47b3
+  checksum: 10/b94d7fe0fb5b3e6666cd5c7bc8212699cd9b785793909a51121800186fd058f4afc1c965440462e49dc47b1365b03213214e28e774a948b410b88e74b8713f04
   languageName: node
   linkType: hard
 
@@ -9471,7 +9471,7 @@ __metadata:
     dayjs: "npm:^1.11.20"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^16.14.0"
-    html-react-parser: "npm:^6.1.0"
+    html-react-parser: "npm:^6.1.1"
     i18next: "npm:^26.2.0"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^29.1.1"
