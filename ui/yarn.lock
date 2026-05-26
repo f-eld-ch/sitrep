@@ -5827,21 +5827,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "html-react-parser@npm:6.1.0"
+"html-react-parser@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "html-react-parser@npm:6.1.2"
   dependencies:
     domhandler: "npm:6.0.1"
     html-dom-parser: "npm:7.1.0"
     react-property: "npm:2.0.2"
-    style-to-js: "npm:1.1.21"
+    style-to-js: "npm:2.0.0"
   peerDependencies:
     "@types/react": 0.14 || 15 || 16 || 17 || 18 || 19
     react: 0.14 || 15 || 16 || 17 || 18 || 19
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/7db0ef055c91622fe5dc34456de687811ab4d239c46fedd987e9d968cfa90ac2bb508887dc8756cc662580113473bb4d79dccbccc25f8f3c19f450aad4fa47b3
+  checksum: 10/80a11db5aae36f1d2d7c9e4845fff2ceb4451323c164593f206c03fb6f2feb301b995284fc84c06ef818e621aaca062a20105d741f290a8c8b9162d2c86fde59
   languageName: node
   linkType: hard
 
@@ -9471,7 +9471,7 @@ __metadata:
     dayjs: "npm:^1.11.20"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^16.14.0"
-    html-react-parser: "npm:^6.1.0"
+    html-react-parser: "npm:^6.1.2"
     i18next: "npm:^26.2.0"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^29.1.1"
@@ -9769,7 +9769,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-to-js@npm:1.1.21, style-to-js@npm:^1.0.0":
+"style-to-js@npm:2.0.0":
+  version: 2.0.0
+  resolution: "style-to-js@npm:2.0.0"
+  dependencies:
+    style-to-object: "npm:1.0.14"
+  checksum: 10/4f8e48cf9257a3017825c76d2a216df0912fa51f87abe989b5ba64d8a66e9a82a9900b86f32b4e412c0a5e98d014fe4f7a384ab3bcaf1d9fa61cc879b4cf5cff
+  languageName: node
+  linkType: hard
+
+"style-to-js@npm:^1.0.0":
   version: 1.1.21
   resolution: "style-to-js@npm:1.1.21"
   dependencies:
