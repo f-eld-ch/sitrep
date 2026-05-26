@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.1.9 to 4.2.0 in /ui ([#1583](https://github.com/f-eld-ch/sitrep/issues/1583)) - ([36b0b7f](https://github.com/f-eld-ch/sitrep/commit/36b0b7f9b4cbc5b334432a07a2954ba003e40ffe))
+- *(deps)* Bump @uiw/react-md-editor from 4.1.0 to 4.1.1 in /ui ([#1584](https://github.com/f-eld-ch/sitrep/issues/1584)) - ([14d84c1](https://github.com/f-eld-ch/sitrep/commit/14d84c1750fd1cc0f6f7792990919e46ebf98c0b))
+- *(deps)* Bump html-react-parser from 6.1.0 to 6.1.2 in /ui ([#1586](https://github.com/f-eld-ch/sitrep/issues/1586)) - ([f7c8218](https://github.com/f-eld-ch/sitrep/commit/f7c82181a6876753274d18e2ed6bde953c3299b4))
 - *(deps)* Bump i18next from 26.1.0 to 26.2.0 in /ui ([#1575](https://github.com/f-eld-ch/sitrep/issues/1575)) - ([4d5218c](https://github.com/f-eld-ch/sitrep/commit/4d5218c9b17a3805f8d40c7d03d46fbcdd999f52))
 - *(deps)* Bump react-i18next from 17.0.7 to 17.0.8 in /ui ([#1574](https://github.com/f-eld-ch/sitrep/issues/1574)) - ([ce4874b](https://github.com/f-eld-ch/sitrep/commit/ce4874b739c44f39a65527cc9b4e41753fdfab36))
 - *(deps)* Bump react-router from 7.15.0 to 7.15.1 in /ui ([#1572](https://github.com/f-eld-ch/sitrep/issues/1572)) - ([74a303f](https://github.com/f-eld-ch/sitrep/commit/74a303f7843d5fe0a573f353b0d8406214367d4f))
