@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.2.0 to 26.3.0 in /ui ([#1595](https://github.com/f-eld-ch/sitrep/issues/1595)) - ([965187e](https://github.com/f-eld-ch/sitrep/commit/965187ea30dd77b20614bfeef673f806529d8854))
+- *(deps)* Bump dayjs from 1.11.20 to 1.11.21 in /ui ([#1596](https://github.com/f-eld-ch/sitrep/issues/1596)) - ([52d433c](https://github.com/f-eld-ch/sitrep/commit/52d433c10fed748525f902b1f871b3985fb9aa1f))
 - *(deps)* Bump go.opentelemetry.io/otel from 1.43.0 to 1.44.0 ([#1598](https://github.com/f-eld-ch/sitrep/issues/1598)) - ([193bd66](https://github.com/f-eld-ch/sitrep/commit/193bd664d2d1f96c38573b8ff0d9ccb109f827ff))
 - *(deps)* Bump @apollo/client from 4.1.9 to 4.2.0 in /ui ([#1583](https://github.com/f-eld-ch/sitrep/issues/1583)) - ([36b0b7f](https://github.com/f-eld-ch/sitrep/commit/36b0b7f9b4cbc5b334432a07a2954ba003e40ffe))
 - *(deps)* Bump @uiw/react-md-editor from 4.1.0 to 4.1.1 in /ui ([#1584](https://github.com/f-eld-ch/sitrep/issues/1584)) - ([14d84c1](https://github.com/f-eld-ch/sitrep/commit/14d84c1750fd1cc0f6f7792990919e46ebf98c0b))
