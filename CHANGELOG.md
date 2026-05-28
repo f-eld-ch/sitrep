@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump go.opentelemetry.io/otel from 1.43.0 to 1.44.0 ([#1598](https://github.com/f-eld-ch/sitrep/issues/1598)) - ([193bd66](https://github.com/f-eld-ch/sitrep/commit/193bd664d2d1f96c38573b8ff0d9ccb109f827ff))
 - *(deps)* Bump @apollo/client from 4.1.9 to 4.2.0 in /ui ([#1583](https://github.com/f-eld-ch/sitrep/issues/1583)) - ([36b0b7f](https://github.com/f-eld-ch/sitrep/commit/36b0b7f9b4cbc5b334432a07a2954ba003e40ffe))
 - *(deps)* Bump @uiw/react-md-editor from 4.1.0 to 4.1.1 in /ui ([#1584](https://github.com/f-eld-ch/sitrep/issues/1584)) - ([14d84c1](https://github.com/f-eld-ch/sitrep/commit/14d84c1750fd1cc0f6f7792990919e46ebf98c0b))
 - *(deps)* Bump html-react-parser from 6.1.0 to 6.1.2 in /ui ([#1586](https://github.com/f-eld-ch/sitrep/issues/1586)) - ([f7c8218](https://github.com/f-eld-ch/sitrep/commit/f7c82181a6876753274d18e2ed6bde953c3299b4))
