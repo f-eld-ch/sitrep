@@ -8257,13 +8257,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proj4@npm:^2.20.8":
-  version: 2.20.8
-  resolution: "proj4@npm:2.20.8"
+"proj4@npm:^2.20.9":
+  version: 2.20.9
+  resolution: "proj4@npm:2.20.9"
   dependencies:
     mgrs: "npm:1.0.0"
     wkt-parser: "npm:^1.5.5"
-  checksum: 10/c400b06df43274335005e1d214706050d71e95c5561458c8e0d15f94dc2015e35a1bcba095aa4b4f4d94841b4188953fbb74a7d0646f613d33edc9a84a582134
+  peerDependencies:
+    geotiff: "*"
+  peerDependenciesMeta:
+    geotiff:
+      optional: true
+  checksum: 10/d1bc9acd843d65d1bca7ef1b92de9902fa0786ddb6b600088c1807812f55d034458d00e772f1342a1739c6c881622c840f406d1fb00d67c4ea84185efa30c2e3
   languageName: node
   linkType: hard
 
@@ -9488,7 +9493,7 @@ __metadata:
     oxfmt: "npm:^0.52.0"
     oxlint: "npm:^1.67.0"
     oxlint-tsgolint: "npm:^0.23.0"
-    proj4: "npm:^2.20.8"
+    proj4: "npm:^2.20.9"
     react: "npm:^19.2.6"
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.2.6"

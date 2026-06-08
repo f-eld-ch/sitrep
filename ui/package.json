@@ -53,7 +53,7 @@
     "mapbox-gl-style-switcher": "^1.0.11",
     "maplibre-gl": "5.24.0",
     "ol": "^10.9.0",
-    "proj4": "^2.20.8",
+    "proj4": "^2.20.9",
     "react": "^19.2.6",
     "react-autocomplete-hint": "^2.0.0",
     "react-dom": "^19.2.6",
