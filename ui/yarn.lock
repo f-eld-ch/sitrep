@@ -2166,10 +2166,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/core@npm:^1.10.0":
-  version: 1.10.0
-  resolution: "@openfeature/core@npm:1.10.0"
-  checksum: 10/62e0289b9e9e86fcc56e6ee972ffb2e0de9511e58fdc6d01f4f9c2dc312b4c43a95ad266984f63b89f7faacfc5ece214e484c308edbd491be0053a94f60bd6b7
+"@openfeature/core@npm:^1.11.0":
+  version: 1.11.0
+  resolution: "@openfeature/core@npm:1.11.0"
+  checksum: 10/d1c28b8e461b8ea8008f731c5cca8cb0a7717fbce388e51c6f2b2aeb5ea69eb8dc41a2a99a01d84d043f3879f4805c18a7db0d93dd57f049d5a39d4ff3b7071a
   languageName: node
   linkType: hard
 
@@ -2183,22 +2183,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@openfeature/react-sdk@npm:1.3.0"
+"@openfeature/react-sdk@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@openfeature/react-sdk@npm:1.4.0"
   peerDependencies:
-    "@openfeature/web-sdk": ^1.8.0
+    "@openfeature/web-sdk": ^1.9.0
     react: ">=16.8.0"
-  checksum: 10/9beae4c8142adb6e505818e4bec8cf0a8679d98355d542ea2d7aac2739fb540fff90cfe91b8d6825485c680bb827818a371b65ee4efa1ee0e762f70ef3e14136
+  checksum: 10/1c04e8dde77f2f824833dd0593fc3225e36a48a94e26b098b1269238710616f715b9b2cebbab244481ebf03c2386608102bf58f6d6f6673c767f49d927cf8ac2
   languageName: node
   linkType: hard
 
-"@openfeature/web-sdk@npm:^1.8.0":
-  version: 1.8.0
-  resolution: "@openfeature/web-sdk@npm:1.8.0"
+"@openfeature/web-sdk@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@openfeature/web-sdk@npm:1.9.0"
   peerDependencies:
-    "@openfeature/core": ^1.10.0
-  checksum: 10/fc69cf51fc37a18aeef816d9d4d10594f59b5476f2b74216b7cc7604b109c3ac732b99607f0c6ecac4ec7ec66d179020e239d06511d92eb304fe1f90131edc98
+    "@openfeature/core": ^1.11.0
+  checksum: 10/44c98436ee31fcaf08f9655bec374f4e0dc471224c3a2d873ffcff33f060af786710cab74bbb5dc3af734e64c1078658c1ce687bb22d750a1785a5fe809fc8b3
   languageName: node
   linkType: hard
 
@@ -9448,10 +9448,10 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^3.3.1"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
     "@maplibre/maplibre-gl-style-spec": "npm:^24.8.5"
-    "@openfeature/core": "npm:^1.10.0"
+    "@openfeature/core": "npm:^1.11.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
-    "@openfeature/react-sdk": "npm:^1.3.0"
-    "@openfeature/web-sdk": "npm:^1.8.0"
+    "@openfeature/react-sdk": "npm:^1.4.0"
+    "@openfeature/web-sdk": "npm:^1.9.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
     "@testing-library/react": "npm:^16.3.2"
