@@ -5934,13 +5934,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-dom-parser@npm:7.1.0":
-  version: 7.1.0
-  resolution: "html-dom-parser@npm:7.1.0"
+"html-dom-parser@npm:8.0.0":
+  version: 8.0.0
+  resolution: "html-dom-parser@npm:8.0.0"
   dependencies:
     domhandler: "npm:6.0.1"
     htmlparser2: "npm:12.0.0"
-  checksum: 10/2e023b0e6a31f5504c1195e00abea952cc2bb9c222ca78c4905fdabc6295f343fc38e498f0dfdafd0348b32b51886357b45627cdaf03c0bf2506717af6d0874e
+  checksum: 10/317c51f0c1d0539689492670d32291ab98c0321b6ebbd552ee6c8d6813280db94402f18132d066acb119d025320e0221e24f300286f28df2f41065e806e73661
   languageName: node
   linkType: hard
 
@@ -5969,12 +5969,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^6.1.2":
-  version: 6.1.2
-  resolution: "html-react-parser@npm:6.1.2"
+"html-react-parser@npm:^6.1.3":
+  version: 6.1.3
+  resolution: "html-react-parser@npm:6.1.3"
   dependencies:
     domhandler: "npm:6.0.1"
-    html-dom-parser: "npm:7.1.0"
+    html-dom-parser: "npm:8.0.0"
     react-property: "npm:2.0.2"
     style-to-js: "npm:2.0.0"
   peerDependencies:
@@ -5983,7 +5983,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/80a11db5aae36f1d2d7c9e4845fff2ceb4451323c164593f206c03fb6f2feb301b995284fc84c06ef818e621aaca062a20105d741f290a8c8b9162d2c86fde59
+  checksum: 10/0e0a6eff46f40a527eacb87b91082e942eebaa3de4d91464b947775c6704fb7854819d956977440b0c3bab813ef638f1324a12338ad270c88b9f8130c949a085
   languageName: node
   linkType: hard
 
@@ -9624,7 +9624,7 @@ __metadata:
     dayjs: "npm:^1.11.21"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^17.0.1"
-    html-react-parser: "npm:^6.1.2"
+    html-react-parser: "npm:^6.1.3"
     i18next: "npm:^26.3.1"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^29.1.1"
