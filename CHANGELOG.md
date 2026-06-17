@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 4 updates ([#1627](https://github.com/f-eld-ch/sitrep/issues/1627)) - ([e510b8e](https://github.com/f-eld-ch/sitrep/commit/e510b8e4fc152cc38cd885103bc127247b7e0f56))
+- *(deps)* Bump i18next from 26.3.0 to 26.3.1 in /ui ([#1610](https://github.com/f-eld-ch/sitrep/issues/1610)) - ([ed34a0e](https://github.com/f-eld-ch/sitrep/commit/ed34a0e2ab444ecfdd6da628d045b05f23ed2eeb))
 - *(deps)* Bump the react group across 1 directory with 2 updates ([#1602](https://github.com/f-eld-ch/sitrep/issues/1602)) - ([f0d28ed](https://github.com/f-eld-ch/sitrep/commit/f0d28edb6e3a89ac6685b8844a9312c8b2c58b7e))
 - *(deps)* Bump react-router from 7.16.0 to 7.18.0 in /ui ([#1625](https://github.com/f-eld-ch/sitrep/issues/1625)) - ([43fdb8c](https://github.com/f-eld-ch/sitrep/commit/43fdb8cd97729cbc78b8992a86fdb5e268276367))
 - *(deps)* Bump graphql from 16.14.0 to 17.0.1 in /ui ([#1621](https://github.com/f-eld-ch/sitrep/issues/1621)) - ([123e526](https://github.com/f-eld-ch/sitrep/commit/123e5266c86795ca668bad292c5dab523e37cbdf))
