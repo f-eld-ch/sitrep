@@ -5512,10 +5512,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:^16.14.0":
-  version: 16.14.0
-  resolution: "graphql@npm:16.14.0"
-  checksum: 10/019bed00a1d62c90d38bd8971f827af9be479bd1935ac990b62edce8dbe5d9e1d93cae72e986199fdeb7108ee83e3f73c7492989ec08fcaf446b6bd79d533741
+"graphql@npm:^17.0.1":
+  version: 17.0.1
+  resolution: "graphql@npm:17.0.1"
+  checksum: 10/f59d39448ec380e0378958cf834905e12e86cbcbe06bc6739a3d903b575f30a87cffee98bd838c40d2546253278e3faf0c4ec848817cda17f663185c511a80ae
   languageName: node
   linkType: hard
 
@@ -9481,7 +9481,7 @@ __metadata:
     classnames: "npm:^2.5.1"
     dayjs: "npm:^1.11.21"
     git-rev-sync: "npm:^3.0.2"
-    graphql: "npm:^16.14.0"
+    graphql: "npm:^17.0.1"
     html-react-parser: "npm:^6.1.2"
     i18next: "npm:^26.3.0"
     i18next-browser-languagedetector: "npm:^8.2.1"
