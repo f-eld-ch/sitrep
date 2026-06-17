@@ -6,6 +6,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 7.16.0 to 7.18.0 in /ui ([#1625](https://github.com/f-eld-ch/sitrep/issues/1625)) - ([43fdb8c](https://github.com/f-eld-ch/sitrep/commit/43fdb8cd97729cbc78b8992a86fdb5e268276367))
+- *(deps)* Bump graphql from 16.14.0 to 17.0.1 in /ui ([#1621](https://github.com/f-eld-ch/sitrep/issues/1621)) - ([123e526](https://github.com/f-eld-ch/sitrep/commit/123e5266c86795ca668bad292c5dab523e37cbdf))
+- *(deps)* Bump the openfeature group in /ui with 3 updates ([#1618](https://github.com/f-eld-ch/sitrep/issues/1618)) - ([6bbcc3e](https://github.com/f-eld-ch/sitrep/commit/6bbcc3e004f197d855abca739e5d2cf4ccb47641))
 - *(deps)* Bump proj4 from 2.20.8 to 2.20.9 in /ui ([#1613](https://github.com/f-eld-ch/sitrep/issues/1613)) - ([bab77cd](https://github.com/f-eld-ch/sitrep/commit/bab77cdf09282a0eb246c9e9b24e64bb2dca5b97))
 - *(deps)* Bump github.com/labstack/echo/v4 from 4.15.2 to 4.15.4 ([#1624](https://github.com/f-eld-ch/sitrep/issues/1624)) - ([a977de0](https://github.com/f-eld-ch/sitrep/commit/a977de0cd55fae482b0cfa3769cc428936067d98))
 - *(deps)* Bump @apollo/client from 4.2.0 to 4.2.3 in /ui ([#1617](https://github.com/f-eld-ch/sitrep/issues/1617)) - ([9b3a6e6](https://github.com/f-eld-ch/sitrep/commit/9b3a6e65a7a51ceb65f3e849a521131f223174d5))
