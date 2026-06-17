@@ -8,7 +8,7 @@ import (
 	"time"
 
 	httphelper "github.com/zitadel/oidc/v3/pkg/http"
-	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
