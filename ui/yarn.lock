@@ -2152,6 +2152,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mapbox/unitbezier@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@mapbox/unitbezier@npm:1.0.0"
+  checksum: 10/41371f6edf0c643da0867453c18e1f7070d4c342339817495075bbb841d5283589a1b5492da6f2eb617803e0d6efc2e5354080b302b0eb84b13b3dcd64991230
+  languageName: node
+  linkType: hard
+
 "@mapbox/vector-tile@npm:^1.3.1":
   version: 1.3.1
   resolution: "@mapbox/vector-tile@npm:1.3.1"
@@ -2232,12 +2239,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^24.8.5":
-  version: 24.8.5
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:24.8.5"
+"@maplibre/maplibre-gl-style-spec@npm:^25.0.0":
+  version: 25.0.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:25.0.0"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:~2.0.2"
-    "@mapbox/unitbezier": "npm:^0.0.1"
+    "@mapbox/unitbezier": "npm:^1.0.0"
     json-stringify-pretty-compact: "npm:^4.0.0"
     minimist: "npm:^1.2.8"
     quickselect: "npm:^3.0.0"
@@ -2246,7 +2253,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/a88cd1f9631dc1724ad24205745ed2b38737c437f7bbe7c95f9659dd0c4f3b088ea48c0639fb7a1488491db81a1f35b8896338a6633a3feae5bb146d846c1862
+  checksum: 10/418878d41e01658f62493ffa7bc8c9ee8ee8f81ccf4de084cbe29bd1644ccf679c640ea12c6fbd6c7f2ae4ed409a574578f363f2b3b7d40e0160d99ec575a233
   languageName: node
   linkType: hard
 
@@ -9594,7 +9601,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.2.0"
     "@fortawesome/react-fontawesome": "npm:^3.3.1"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^24.8.5"
+    "@maplibre/maplibre-gl-style-spec": "npm:^25.0.0"
     "@openfeature/core": "npm:^1.11.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.0"
