@@ -6,6 +6,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump proj4 from 2.20.8 to 2.20.9 in /ui ([#1613](https://github.com/f-eld-ch/sitrep/issues/1613)) - ([bab77cd](https://github.com/f-eld-ch/sitrep/commit/bab77cdf09282a0eb246c9e9b24e64bb2dca5b97))
+- *(deps)* Bump github.com/labstack/echo/v4 from 4.15.2 to 4.15.4 ([#1624](https://github.com/f-eld-ch/sitrep/issues/1624)) - ([a977de0](https://github.com/f-eld-ch/sitrep/commit/a977de0cd55fae482b0cfa3769cc428936067d98))
+- *(deps)* Bump @apollo/client from 4.2.0 to 4.2.3 in /ui ([#1617](https://github.com/f-eld-ch/sitrep/issues/1617)) - ([9b3a6e6](https://github.com/f-eld-ch/sitrep/commit/9b3a6e65a7a51ceb65f3e849a521131f223174d5))
 - *(deps)* Bump react-router from 7.15.1 to 7.16.0 in /ui ([#1600](https://github.com/f-eld-ch/sitrep/issues/1600)) - ([2fd5880](https://github.com/f-eld-ch/sitrep/commit/2fd5880dcd90a0f4358cf2df81f2965f1ccffd7c))
 - *(deps)* Bump the otel group across 1 directory with 11 updates ([#1599](https://github.com/f-eld-ch/sitrep/issues/1599)) - ([3423e2a](https://github.com/f-eld-ch/sitrep/commit/3423e2a580762140dd93598aeccf9155099effe7))
 - *(deps)* Bump brace-expansion from 5.0.5 to 5.0.6 in /ui in the npm_and_yarn group across 1 directory ([#1576](https://github.com/f-eld-ch/sitrep/issues/1576)) - ([4ac5da3](https://github.com/f-eld-ch/sitrep/commit/4ac5da3c7c6c55a3cf94f9e5c5e04b427ea0b6fb))
