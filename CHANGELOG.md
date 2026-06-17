@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(otel)* Upgrade to semconv v1.41.0 - ([fc0f142](https://github.com/f-eld-ch/sitrep/commit/fc0f142b8bcfa2d160ab967fff4056ad962c84d6))
+
 ### ⚙️  Other
 
 - *(deps)* Bump react-router from 7.15.1 to 7.16.0 in /ui ([#1600](https://github.com/f-eld-ch/sitrep/issues/1600)) - ([2fd5880](https://github.com/f-eld-ch/sitrep/commit/2fd5880dcd90a0f4358cf2df81f2965f1ccffd7c))
