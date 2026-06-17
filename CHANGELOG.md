@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the react group across 1 directory with 2 updates ([#1602](https://github.com/f-eld-ch/sitrep/issues/1602)) - ([f0d28ed](https://github.com/f-eld-ch/sitrep/commit/f0d28edb6e3a89ac6685b8844a9312c8b2c58b7e))
 - *(deps)* Bump react-router from 7.16.0 to 7.18.0 in /ui ([#1625](https://github.com/f-eld-ch/sitrep/issues/1625)) - ([43fdb8c](https://github.com/f-eld-ch/sitrep/commit/43fdb8cd97729cbc78b8992a86fdb5e268276367))
 - *(deps)* Bump graphql from 16.14.0 to 17.0.1 in /ui ([#1621](https://github.com/f-eld-ch/sitrep/issues/1621)) - ([123e526](https://github.com/f-eld-ch/sitrep/commit/123e5266c86795ca668bad292c5dab523e37cbdf))
 - *(deps)* Bump the openfeature group in /ui with 3 updates ([#1618](https://github.com/f-eld-ch/sitrep/issues/1618)) - ([6bbcc3e](https://github.com/f-eld-ch/sitrep/commit/6bbcc3e004f197d855abca739e5d2cf4ccb47641))
