@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @openfeature/react-sdk ([#1631](https://github.com/f-eld-ch/sitrep/issues/1631)) - ([9d4e76a](https://github.com/f-eld-ch/sitrep/commit/9d4e76a6717055a2893ea1a8ed1f914a2380159c))
+- *(deps)* Bump react-router from 7.18.0 to 8.0.1 in /ui ([#1632](https://github.com/f-eld-ch/sitrep/issues/1632)) - ([ddaccb0](https://github.com/f-eld-ch/sitrep/commit/ddaccb0e2386f8af1e5fd01fb560da9bbb3fe059))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.4.2 to 0.5.0 in /ui ([#1630](https://github.com/f-eld-ch/sitrep/issues/1630)) - ([4add0f6](https://github.com/f-eld-ch/sitrep/commit/4add0f666729e4fa89008df12697c5e257ceb1f2))
 - *(deps)* Bump html-react-parser from 6.1.2 to 6.1.3 in /ui ([#1605](https://github.com/f-eld-ch/sitrep/issues/1605)) - ([a5feb87](https://github.com/f-eld-ch/sitrep/commit/a5feb879dabe34825e37bbe9525913461d157c2f))
 - *(deps)* Bump undici ([#1634](https://github.com/f-eld-ch/sitrep/issues/1634)) - ([4718380](https://github.com/f-eld-ch/sitrep/commit/4718380d5455ec0cebc878b42028674c05e4cb53))
