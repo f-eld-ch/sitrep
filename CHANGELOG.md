@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump dompurify from 3.4.10 to 3.4.11 in /ui in the npm_and_yarn group across 1 directory ([#1635](https://github.com/f-eld-ch/sitrep/issues/1635)) - ([8f35dce](https://github.com/f-eld-ch/sitrep/commit/8f35dce67648242943b3cf24bb4907e8229e5ca6))
 - *(deps)* Bump @openfeature/react-sdk ([#1631](https://github.com/f-eld-ch/sitrep/issues/1631)) - ([9d4e76a](https://github.com/f-eld-ch/sitrep/commit/9d4e76a6717055a2893ea1a8ed1f914a2380159c))
 - *(deps)* Bump react-router from 7.18.0 to 8.0.1 in /ui ([#1632](https://github.com/f-eld-ch/sitrep/issues/1632)) - ([ddaccb0](https://github.com/f-eld-ch/sitrep/commit/ddaccb0e2386f8af1e5fd01fb560da9bbb3fe059))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.4.2 to 0.5.0 in /ui ([#1630](https://github.com/f-eld-ch/sitrep/issues/1630)) - ([4add0f6](https://github.com/f-eld-ch/sitrep/commit/4add0f666729e4fa89008df12697c5e257ceb1f2))
