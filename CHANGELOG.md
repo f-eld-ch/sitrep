@@ -6,6 +6,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump undici ([#1634](https://github.com/f-eld-ch/sitrep/issues/1634)) - ([4718380](https://github.com/f-eld-ch/sitrep/commit/4718380d5455ec0cebc878b42028674c05e4cb53))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 4 updates ([#1627](https://github.com/f-eld-ch/sitrep/issues/1627)) - ([e510b8e](https://github.com/f-eld-ch/sitrep/commit/e510b8e4fc152cc38cd885103bc127247b7e0f56))
 - *(deps)* Bump i18next from 26.3.0 to 26.3.1 in /ui ([#1610](https://github.com/f-eld-ch/sitrep/issues/1610)) - ([ed34a0e](https://github.com/f-eld-ch/sitrep/commit/ed34a0e2ab444ecfdd6da628d045b05f23ed2eeb))
 - *(deps)* Bump the react group across 1 directory with 2 updates ([#1602](https://github.com/f-eld-ch/sitrep/issues/1602)) - ([f0d28ed](https://github.com/f-eld-ch/sitrep/commit/f0d28edb6e3a89ac6685b8844a9312c8b2c58b7e))
