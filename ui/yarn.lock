@@ -2332,13 +2332,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/react-sdk@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "@openfeature/react-sdk@npm:1.4.0"
+"@openfeature/react-sdk@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@openfeature/react-sdk@npm:1.4.1"
   peerDependencies:
     "@openfeature/web-sdk": ^1.9.0
     react: ">=16.8.0"
-  checksum: 10/1c04e8dde77f2f824833dd0593fc3225e36a48a94e26b098b1269238710616f715b9b2cebbab244481ebf03c2386608102bf58f6d6f6673c767f49d927cf8ac2
+  checksum: 10/a08519a15026aab095efac4ccd277f2b5adc2e8338b88a27fd0740546296ab7e50efef05a2a565c0a8607bcc09a2c1b456c5a8a9713ed9ca43946e835201676e
   languageName: node
   linkType: hard
 
@@ -9604,7 +9604,7 @@ __metadata:
     "@maplibre/maplibre-gl-style-spec": "npm:^25.0.0"
     "@openfeature/core": "npm:^1.11.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
-    "@openfeature/react-sdk": "npm:^1.4.0"
+    "@openfeature/react-sdk": "npm:^1.4.1"
     "@openfeature/web-sdk": "npm:^1.9.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
