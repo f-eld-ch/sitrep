@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.4.2 to 0.5.0 in /ui ([#1630](https://github.com/f-eld-ch/sitrep/issues/1630)) - ([4add0f6](https://github.com/f-eld-ch/sitrep/commit/4add0f666729e4fa89008df12697c5e257ceb1f2))
+- *(deps)* Bump html-react-parser from 6.1.2 to 6.1.3 in /ui ([#1605](https://github.com/f-eld-ch/sitrep/issues/1605)) - ([a5feb87](https://github.com/f-eld-ch/sitrep/commit/a5feb879dabe34825e37bbe9525913461d157c2f))
 - *(deps)* Bump undici ([#1634](https://github.com/f-eld-ch/sitrep/issues/1634)) - ([4718380](https://github.com/f-eld-ch/sitrep/commit/4718380d5455ec0cebc878b42028674c05e4cb53))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 4 updates ([#1627](https://github.com/f-eld-ch/sitrep/issues/1627)) - ([e510b8e](https://github.com/f-eld-ch/sitrep/commit/e510b8e4fc152cc38cd885103bc127247b7e0f56))
 - *(deps)* Bump i18next from 26.3.0 to 26.3.1 in /ui ([#1610](https://github.com/f-eld-ch/sitrep/issues/1610)) - ([ed34a0e](https://github.com/f-eld-ch/sitrep/commit/ed34a0e2ab444ecfdd6da628d045b05f23ed2eeb))
