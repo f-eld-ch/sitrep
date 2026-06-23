@@ -37,7 +37,6 @@ vi.mock("../utils/useDarkMode", () => ({
 }));
 
 const userState = {
-  isLoggedIn: true,
   isLoggedin: true,
   email: "test@example.com",
   username: "testuser",
@@ -138,7 +137,6 @@ describe("Navbar Component", () => {
 
     it("does not display user email when not logged in", () => {
       const loggedOutState = {
-        isLoggedIn: false,
         isLoggedin: false,
         email: "",
         username: "",

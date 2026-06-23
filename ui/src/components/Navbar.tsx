@@ -236,7 +236,7 @@ function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
 
-  if (!(userState.isLoggedIn ?? userState.isLoggedin)) return;
+  if (!userState.isLoggedin) return;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable is-left ml-3">
