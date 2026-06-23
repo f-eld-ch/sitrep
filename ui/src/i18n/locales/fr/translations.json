@@ -32,6 +32,7 @@
   "incident": "Événement",
   "incidents": "Événements",
   "journal": "Journal d'intervention",
+  "journalFeed": "Flux du journal d'intervention",
   "journalList": "présentation du journal d'intervention",
   "location": "emplacement",
   "logout": "déconnexion",
