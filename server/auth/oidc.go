@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -28,11 +30,26 @@ type OIDCClient struct {
 
 var ErrUnauthorized = errors.New("unauthorized")
 
+var refreshTokenCookieMaxAge = int((48 * time.Hour).Seconds())
+
+func deriveSecureCookieKeys(key string) ([]byte, []byte) {
+	deriveKey := func(master []byte, purpose string) []byte {
+		mac := hmac.New(sha256.New, master)
+		_, _ = mac.Write([]byte(purpose))
+		return mac.Sum(nil)
+	}
+
+	hashKey := deriveKey([]byte(key), "securecookie-hash")
+	blockKey := deriveKey([]byte(key), "securecookie-block")
+	return hashKey, blockKey
+}
+
 // NewOIDC returns a new OIDCClient
 func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, key string) (*OIDCClient, error) {
 	var err error
 
-	s := securecookie.New([]byte(key), []byte(key))
+	hashKey, blockKey := deriveSecureCookieKeys(key)
+	s := securecookie.New(hashKey, blockKey)
 	s.MaxLength(4 * 4096) // 16KB
 	o := &OIDCClient{
 		logger:       slog.Default().WithGroup("oidc_client"),
@@ -41,7 +58,7 @@ func NewOIDC(ctx context.Context, issuer, clientID, clientSecret, redirectURI, k
 	// enable outgoing request logging
 	client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 
-	cookieHandler := httphelper.NewCookieHandler([]byte(key), []byte(key), httphelper.WithSameSite(http.SameSiteDefaultMode))
+	cookieHandler := httphelper.NewCookieHandler(hashKey, blockKey, httphelper.WithSameSite(http.SameSiteLaxMode))
 	options := []rp.Option{
 		rp.WithCookieHandler(cookieHandler),
 		rp.WithVerifierOpts(rp.WithIssuedAtOffset(5 * time.Second)),
@@ -99,7 +116,7 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 			}
 		}
 		if tokens.RefreshToken != "" {
-			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, int((time.Until(tokens.Expiry.Add(2 * 24 * time.Hour)).Seconds())))
+			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, refreshTokenCookieMaxAge)
 			if err != nil {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
@@ -223,7 +240,7 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 			accessToken = tokens.AccessToken
 		}
 		if tokens.RefreshToken != "" {
-			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, int((time.Until(tokens.Expiry.Add(2 * 24 * time.Hour)).Seconds())))
+			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, refreshTokenCookieMaxAge)
 			if err != nil {
 				o.logger.Error("failed to encode refreshed refresh_token", "error.message", err.Error())
 				return nil, ErrUnauthorized
@@ -250,11 +267,11 @@ func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string 
 		return ""
 	}
 
-	// Decode the ID token cookie
+	// Decode the cookie value
 	decodedCookie := ""
 	err = o.secureCookie.Decode(cookiename, cookie.Value, &decodedCookie)
 	if err != nil {
-		o.logger.Error("failed to decode id_token cookie", "error", err)
+		o.logger.Error("failed to decode cookie", "cookie_name", cookiename, "error", err)
 		return ""
 	}
 
