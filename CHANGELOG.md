@@ -1,3 +1,13 @@
+## [unreleased]
+
+### 📚 Documentation
+
+- Align OAUTH2_PROXY naming and fix GettingStarted typos ([#1643](https://github.com/f-eld-ch/sitrep/issues/1643)) - ([364a07e](https://github.com/f-eld-ch/sitrep/commit/364a07ebc298a2e58368582daca4fed577f10759))
+
+## New Contributors ❤️
+
+* @Copilot made their first contribution in [#1643](https://github.com/f-eld-ch/sitrep/pull/1643)
+
 ## [26.6.0](https://github.com/f-eld-ch/sitrep/compare/v26.4.2..v26.6.0) - 2026-06-22
 
 ### ⛰️  Features
