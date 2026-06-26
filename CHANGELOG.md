@@ -1,12 +1,20 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(ui)* Improve Navbar accessibility semantics and journal i18n labeling ([#1640](https://github.com/f-eld-ch/sitrep/issues/1640)) - ([c8a3848](https://github.com/f-eld-ch/sitrep/commit/c8a3848909b7d5ff7355bb46d0ff6d82e2a69b6b))
+
+### 🐛 Bug Fixes
+
+- *(backend)* Harden OIDC cookie cryptography and correct refresh-token cookie TTL handling ([#1642](https://github.com/f-eld-ch/sitrep/issues/1642)) - ([751adb0](https://github.com/f-eld-ch/sitrep/commit/751adb038860dde647d7c1bfd135271a1178d6b2))
+
 ### 📚 Documentation
 
 - Align OAUTH2_PROXY naming and fix GettingStarted typos ([#1643](https://github.com/f-eld-ch/sitrep/issues/1643)) - ([364a07e](https://github.com/f-eld-ch/sitrep/commit/364a07ebc298a2e58368582daca4fed577f10759))
 
 ## New Contributors ❤️
 
-* @Copilot made their first contribution in [#1643](https://github.com/f-eld-ch/sitrep/pull/1643)
+* @Copilot made their first contribution in [#1640](https://github.com/f-eld-ch/sitrep/pull/1640)
 
 ## [26.6.0](https://github.com/f-eld-ch/sitrep/compare/v26.4.2..v26.6.0) - 2026-06-22
 
