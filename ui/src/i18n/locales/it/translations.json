@@ -32,6 +32,7 @@
   "incident": "incidente",
   "incidents": "incidenti",
   "journal": "diario delle operazioni",
+  "journalFeed": "feed del diario delle operazioni",
   "journalList": "panoramica del diario delle operazioni",
   "location": "posizione",
   "logout": "disconnessione",

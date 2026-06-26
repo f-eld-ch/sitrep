@@ -61,6 +61,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           className="navbar-burger burger"
           data-target="navbarBasic"
           aria-label="Toggle menu"
+          aria-expanded={isMenuActive}
+          aria-controls="navbarBasic"
           onClick={(e) => {
             e.preventDefault();
             setIsMenuActive(!isMenuActive);
@@ -70,7 +72,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         </button>
       </div>
 
-      <div className={navbarMenuClass} data-testid="navbar-menu">
+      <div id="navbarBasic" className={navbarMenuClass} data-testid="navbar-menu">
         <div className="navbar-start">
           <div className="navbar-item has-dropdown is-hoverable">
             <NavLink
@@ -305,7 +307,7 @@ const JournalNavBar: FunctionComponent = () => {
             <FontAwesomeIcon icon={faBars} />
           </span>
           <span>
-            {t("journal")} {incidentState.journal?.id ? incidentState.journal.name : ""}
+            {t("journal")} {incidentState.journal.name}
           </span>
         </span>
       </NavLink>
@@ -334,7 +336,7 @@ const JournalNavBar: FunctionComponent = () => {
             <span className="icon">
               <FontAwesomeIcon icon={faFeed} />
             </span>
-            <span>{t("journal")}-Feed</span>
+            <span>{t("journalFeed")}</span>
           </span>
         </NavLink>
         <NavLink

@@ -32,6 +32,7 @@
   "incident": "incidents",
   "incidents": "incidents",
   "journal": "operation journal",
+  "journalFeed": "operation journal feed",
   "journalList": "operation journal overview",
   "location": "location",
   "logout": "logout",
