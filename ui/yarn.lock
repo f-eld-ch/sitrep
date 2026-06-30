@@ -8611,9 +8611,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^8.0.1":
-  version: 8.0.1
-  resolution: "react-router@npm:8.0.1"
+"react-router@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "react-router@npm:8.1.0"
   dependencies:
     cookie-es: "npm:^3.1.1"
   peerDependencies:
@@ -8622,7 +8622,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/1dbeccf7d351b5e1e9950179990d903727ebe152439044e46548776b765bc04bc0139a5064eb7f8720f928136c2cb43aa9175e961e475f797e5bfd6ff03612fa
+  checksum: 10/17382c4f19e6f1f458afe8f0017cce6d9a0ada6fd4b19ed25e97daa128fb362b20d40e5e9f09e483a22521649fe1b199f5bdffb809915095b0fa95504b973d9a
   languageName: node
   linkType: hard
 
@@ -9649,7 +9649,7 @@ __metadata:
     react-dom: "npm:^19.2.7"
     react-i18next: "npm:^17.0.8"
     react-map-gl: "npm:~8.1.1"
-    react-router: "npm:^8.0.1"
+    react-router: "npm:^8.1.0"
     react-to-print: "npm:^3.3.0"
     rehype-sanitize: "npm:^6.0.0"
     rxjs: "npm:^7.8.2"
