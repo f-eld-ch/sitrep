@@ -5992,21 +5992,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:^6.1.3":
-  version: 6.1.3
-  resolution: "html-react-parser@npm:6.1.3"
+"html-react-parser@npm:^6.1.4":
+  version: 6.1.4
+  resolution: "html-react-parser@npm:6.1.4"
   dependencies:
     domhandler: "npm:6.0.1"
     html-dom-parser: "npm:8.0.0"
     react-property: "npm:2.0.2"
-    style-to-js: "npm:2.0.0"
+    style-to-js: "npm:2.0.1"
   peerDependencies:
     "@types/react": 0.14 || 15 || 16 || 17 || 18 || 19
     react: 0.14 || 15 || 16 || 17 || 18 || 19
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/0e0a6eff46f40a527eacb87b91082e942eebaa3de4d91464b947775c6704fb7854819d956977440b0c3bab813ef638f1324a12338ad270c88b9f8130c949a085
+  checksum: 10/503ad8a2efc35a00c55ceb27e9622b57ca99d139dd05ed5cb7ebe3d1a4856bc9845ace7d2e54df3204d57d219a704b7452d3b5ccf2328547db36ca027bbacdd9
   languageName: node
   linkType: hard
 
@@ -9639,7 +9639,7 @@ __metadata:
     dayjs: "npm:^1.11.21"
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^17.0.2"
-    html-react-parser: "npm:^6.1.3"
+    html-react-parser: "npm:^6.1.4"
     i18next: "npm:^26.3.4"
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^29.1.1"
@@ -9937,12 +9937,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-to-js@npm:2.0.0":
-  version: 2.0.0
-  resolution: "style-to-js@npm:2.0.0"
+"style-to-js@npm:2.0.1":
+  version: 2.0.1
+  resolution: "style-to-js@npm:2.0.1"
   dependencies:
-    style-to-object: "npm:1.0.14"
-  checksum: 10/4f8e48cf9257a3017825c76d2a216df0912fa51f87abe989b5ba64d8a66e9a82a9900b86f32b4e412c0a5e98d014fe4f7a384ab3bcaf1d9fa61cc879b4cf5cff
+    style-to-object: "npm:2.0.0"
+  checksum: 10/8f254c32e090797e155757a9fedecfa40addd95cb6c98050c8501895564e8d9f7641d48af5e57b0f10d72f1112afcb77449d0e83323a88ed9adbd3fcd56461ef
   languageName: node
   linkType: hard
 
@@ -9961,6 +9961,15 @@ __metadata:
   dependencies:
     inline-style-parser: "npm:0.2.7"
   checksum: 10/06b86a5cf435dafac908d19082842983f9052d8cf3682915b1bd9251e3fe9b8065dbd2aef060dc5dfa0fa2ee24d717b587a5205f571513a10f30e3947f9d28ff
+  languageName: node
+  linkType: hard
+
+"style-to-object@npm:2.0.0":
+  version: 2.0.0
+  resolution: "style-to-object@npm:2.0.0"
+  dependencies:
+    inline-style-parser: "npm:0.2.7"
+  checksum: 10/b33a8a9b8ef7ab7897fa619f53f7db2b26d2b17c47120303549e23bc3e7c375d7db6f9109cb4dea87537849a21dcf5e151506bcbfd87796f611c6b15da755c61
   languageName: node
   linkType: hard
 
