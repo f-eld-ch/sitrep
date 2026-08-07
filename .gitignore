@@ -36,3 +36,6 @@ coverage
 
 # nyc test coverage
 .nyc_output
+
+# Vitest coverage reports
+ui/coverage/
