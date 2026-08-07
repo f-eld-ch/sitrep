@@ -8,6 +8,7 @@
 
 - *(backend)* Harden OIDC cookie cryptography and correct refresh-token cookie TTL handling ([#1642](https://github.com/f-eld-ch/sitrep/issues/1642)) - ([751adb0](https://github.com/f-eld-ch/sitrep/commit/751adb038860dde647d7c1bfd135271a1178d6b2))
 - *(journal)* Improve sender and receiver detail line breaks in journal table - ([46fc4b9](https://github.com/f-eld-ch/sitrep/commit/46fc4b901308fd13015137973e37d1f633d7b64b))
+- *(map)* Display correct curors on Map ([#1698](https://github.com/f-eld-ch/sitrep/issues/1698)) - ([705668f](https://github.com/f-eld-ch/sitrep/commit/705668f2939328a4d455cfbd9d65609dce17caec))
 - *(map)* Align proper top-margin for Map view ([#1693](https://github.com/f-eld-ch/sitrep/issues/1693)) - ([8a771a3](https://github.com/f-eld-ch/sitrep/commit/8a771a32759df1d6cd8aa1e174e54669b094b99d))
 
 ### 📚 Documentation
