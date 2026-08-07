@@ -53,7 +53,7 @@ jobs:
 
       - name: Convert Go coverage to Cobertura
         run: |
-          go install github.com/boumenot/gocover-cobertura@latest
+          go install github.com/boumenot/gocover-cobertura@4afa1205ab3b54ae098dd4724c1657aad10f7484
           gocover-cobertura < go-coverage.out > go-cobertura.xml
 
       - name: Upload Go coverage artifact
