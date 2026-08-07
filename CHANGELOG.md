@@ -14,6 +14,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 7 updates ([#1691](https://github.com/f-eld-ch/sitrep/issues/1691)) - ([060d395](https://github.com/f-eld-ch/sitrep/commit/060d39593ab6102dc6c03892caffffa5e8ef2302))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.1.0 in /ui ([#1683](https://github.com/f-eld-ch/sitrep/issues/1683)) - ([dde84d6](https://github.com/f-eld-ch/sitrep/commit/dde84d6fa1ce7449e7a906a10ae1610c1ef2ec85))
 - *(deps)* Bump html-react-parser from 6.1.3 to 6.1.5 in /ui ([#1679](https://github.com/f-eld-ch/sitrep/issues/1679)) - ([4f2825a](https://github.com/f-eld-ch/sitrep/commit/4f2825a33a1ca8a2c8068540c88454ad7bcae644))
 - *(deps)* Bump the fontawesome group across 1 directory with 5 updates ([#1678](https://github.com/f-eld-ch/sitrep/issues/1678)) - ([99111b7](https://github.com/f-eld-ch/sitrep/commit/99111b7c4b654051ecb3dce28fb259df55d593d8))
