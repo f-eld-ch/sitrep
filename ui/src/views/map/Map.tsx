@@ -70,7 +70,7 @@ function MapView() {
     "is-flex-grow-1": true,
     "is-align-items-stretch": true,
     "is-align-self-strech": true,
-    "mt-3": true,
+    "mt-5": true,
     "theme-light": true,
   });
 
