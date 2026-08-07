@@ -14,6 +14,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump google.golang.org/grpc ([#1692](https://github.com/f-eld-ch/sitrep/issues/1692)) - ([e712139](https://github.com/f-eld-ch/sitrep/commit/e712139ea56193cd06192c0487b5e78b5b4b1840))
 - *(deps)* Bump the react group across 1 directory with 2 updates ([#1681](https://github.com/f-eld-ch/sitrep/issues/1681)) - ([72aa997](https://github.com/f-eld-ch/sitrep/commit/72aa997605df022d2ed8014661c59a190ea4c96f))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 7 updates ([#1691](https://github.com/f-eld-ch/sitrep/issues/1691)) - ([060d395](https://github.com/f-eld-ch/sitrep/commit/060d39593ab6102dc6c03892caffffa5e8ef2302))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.1.0 in /ui ([#1683](https://github.com/f-eld-ch/sitrep/issues/1683)) - ([dde84d6](https://github.com/f-eld-ch/sitrep/commit/dde84d6fa1ce7449e7a906a10ae1610c1ef2ec85))
