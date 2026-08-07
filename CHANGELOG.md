@@ -37,8 +37,8 @@
 
 ## New Contributors ❤️
 
+* @Copilot made their first contribution in [#1695](https://github.com/f-eld-ch/sitrep/pull/1695)
 * @code-coverage-agent[bot] made their first contribution in [#1690](https://github.com/f-eld-ch/sitrep/pull/1690)
-* @Copilot made their first contribution in [#1640](https://github.com/f-eld-ch/sitrep/pull/1640)
 
 ## [26.6.0](https://github.com/f-eld-ch/sitrep/compare/v26.4.2..v26.6.0) - 2026-06-22
 
