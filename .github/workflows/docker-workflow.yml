@@ -38,7 +38,18 @@ jobs:
         run: go mod download
 
       - name: Go Test
-        run: go test ./...
+        run: go test -coverprofile=go-coverage.out ./...
+
+      - name: Convert Go coverage to Cobertura
+        run: |
+          go install github.com/boumenot/gocover-cobertura@latest
+          gocover-cobertura < go-coverage.out > go-cobertura.xml
+
+      - name: Upload Go coverage artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report-go
+          path: go-cobertura.xml
 
       - name: Docker meta
         id: meta

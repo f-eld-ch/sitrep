@@ -9,6 +9,11 @@ export default mergeConfig(
       setupFiles: ["./src/setupTests.ts"],
       globals: true,
       reporters: process.env.GITHUB_ACTIONS ? ["github-actions", "default"] : ["verbose"],
+      coverage: {
+        provider: "v8",
+        reporter: ["cobertura"],
+        reportsDirectory: "./coverage",
+      },
     },
   }),
 );

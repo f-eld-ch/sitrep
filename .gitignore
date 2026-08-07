@@ -36,3 +36,10 @@ coverage
 
 # nyc test coverage
 .nyc_output
+
+# Go coverage profiles
+coverage.out
+go-cobertura.xml
+
+# Vitest coverage reports
+ui/coverage/
