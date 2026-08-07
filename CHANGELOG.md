@@ -14,6 +14,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the fontawesome group across 1 directory with 5 updates ([#1678](https://github.com/f-eld-ch/sitrep/issues/1678)) - ([99111b7](https://github.com/f-eld-ch/sitrep/commit/99111b7c4b654051ecb3dce28fb259df55d593d8))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.5 to 3.48.1 ([#1688](https://github.com/f-eld-ch/sitrep/issues/1688)) - ([68259aa](https://github.com/f-eld-ch/sitrep/commit/68259aaf1e7adc10836b89c354e0512d3fe3e414))
 - *(deps)* Bump react-i18next from 17.0.8 to 17.0.10 in /ui ([#1677](https://github.com/f-eld-ch/sitrep/issues/1677)) - ([472c6d8](https://github.com/f-eld-ch/sitrep/commit/472c6d8d5757fda21bed7c3d182e9d67628b21c8))
 - *(deps)* Bump react-router from 8.1.0 to 8.3.0 in /ui ([#1684](https://github.com/f-eld-ch/sitrep/issues/1684)) - ([380838e](https://github.com/f-eld-ch/sitrep/commit/380838eb9181b782cfdcc91e38a3a949c7150a3d))
