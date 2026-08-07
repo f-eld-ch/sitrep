@@ -14,6 +14,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1687](https://github.com/f-eld-ch/sitrep/issues/1687)) - ([49a6632](https://github.com/f-eld-ch/sitrep/commit/49a66324976dd64257cb350bd21760d40f29cfa0))
 - *(deps)* Bump graphql from 17.0.1 to 17.0.2 in /ui ([#1656](https://github.com/f-eld-ch/sitrep/issues/1656)) - ([6b37533](https://github.com/f-eld-ch/sitrep/commit/6b37533bc007b1135f746fa0e69b89996b79361d))
 - *(deps)* Bump react-router from 8.0.1 to 8.1.0 in /ui ([#1651](https://github.com/f-eld-ch/sitrep/issues/1651)) - ([62c0d18](https://github.com/f-eld-ch/sitrep/commit/62c0d18d27aca0f156d1dd8a1b06fbc985ffbf99))
 - *(deps)* Bump @apollo/client from 4.2.3 to 4.2.5 in /ui ([#1654](https://github.com/f-eld-ch/sitrep/issues/1654)) - ([51b52fa](https://github.com/f-eld-ch/sitrep/commit/51b52fa9f3452ffc2622e7736f4cc313a1d0fd41))
