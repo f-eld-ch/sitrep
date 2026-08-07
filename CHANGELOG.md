@@ -14,6 +14,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the react group across 1 directory with 2 updates ([#1681](https://github.com/f-eld-ch/sitrep/issues/1681)) - ([72aa997](https://github.com/f-eld-ch/sitrep/commit/72aa997605df022d2ed8014661c59a190ea4c96f))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 7 updates ([#1691](https://github.com/f-eld-ch/sitrep/issues/1691)) - ([060d395](https://github.com/f-eld-ch/sitrep/commit/060d39593ab6102dc6c03892caffffa5e8ef2302))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.1.0 in /ui ([#1683](https://github.com/f-eld-ch/sitrep/issues/1683)) - ([dde84d6](https://github.com/f-eld-ch/sitrep/commit/dde84d6fa1ce7449e7a906a10ae1610c1ef2ec85))
 - *(deps)* Bump html-react-parser from 6.1.3 to 6.1.5 in /ui ([#1679](https://github.com/f-eld-ch/sitrep/issues/1679)) - ([4f2825a](https://github.com/f-eld-ch/sitrep/commit/4f2825a33a1ca8a2c8068540c88454ad7bcae644))
@@ -29,9 +30,11 @@
 - *(deps)* Bump @apollo/client from 4.2.3 to 4.2.5 in /ui ([#1654](https://github.com/f-eld-ch/sitrep/issues/1654)) - ([51b52fa](https://github.com/f-eld-ch/sitrep/commit/51b52fa9f3452ffc2622e7736f4cc313a1d0fd41))
 - *(deps)* Bump i18next from 26.3.1 to 26.3.4 in /ui ([#1650](https://github.com/f-eld-ch/sitrep/issues/1650)) - ([55d0f07](https://github.com/f-eld-ch/sitrep/commit/55d0f076fa4451c6bb821c2c8be1101067cffc08))
 - *(deps)* Bump the fontawesome group in /ui with 4 updates ([#1645](https://github.com/f-eld-ch/sitrep/issues/1645)) - ([d5f71ba](https://github.com/f-eld-ch/sitrep/commit/d5f71ba0e3b94cd8615bc07a0d29ad2c9efd566e))
+- Add TypeScript and Go code coverage reporting via Vitest + Cobertura ([#1690](https://github.com/f-eld-ch/sitrep/issues/1690)) - ([100128e](https://github.com/f-eld-ch/sitrep/commit/100128ebec6612c295b3c2d8b21dbb39cb8a5ee5))
 
 ## New Contributors ❤️
 
+* @code-coverage-agent[bot] made their first contribution in [#1690](https://github.com/f-eld-ch/sitrep/pull/1690)
 * @Copilot made their first contribution in [#1640](https://github.com/f-eld-ch/sitrep/pull/1640)
 
 ## [26.6.0](https://github.com/f-eld-ch/sitrep/compare/v26.4.2..v26.6.0) - 2026-06-22
