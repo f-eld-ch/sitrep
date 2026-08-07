@@ -88,3 +88,21 @@ jobs:
           file: cobertura-coverage.xml
           language: TypeScript
           label: code-coverage-agent
+
+  upload-coverage-go:
+    needs: docker-build
+    if: ${{ !cancelled() && needs.docker-build.result == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write
+    steps:
+      - name: Download Go coverage artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-report-go
+      - uses: actions/upload-code-coverage@v1
+        with:
+          file: go-cobertura.xml
+          language: Go
+          label: code-coverage-agent
