@@ -41,7 +41,7 @@
     "@turf/helpers": "^7.3.5",
     "@turf/line-split": "^7.3.5",
     "@uiw/react-md-editor": "^4.1.1",
-    "@watergis/maplibre-gl-export": "~4.1.2",
+    "@watergis/maplibre-gl-export": "~5.0.0",
     "bulma": "^1.0.4",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.21",
