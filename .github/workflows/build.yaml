@@ -11,3 +11,20 @@ jobs:
     uses: ./.github/workflows/ui-workflow.yml
     with:
       build: false
+  upload-coverage-typescript:
+    needs: ui-tests
+    if: ${{ !cancelled() && needs.ui-tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-report-typescript
+      - uses: actions/upload-code-coverage@v1
+        with:
+          file: cobertura-coverage.xml
+          language: TypeScript
+          label: code-coverage-agent
