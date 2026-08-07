@@ -7,6 +7,7 @@
 ### 🐛 Bug Fixes
 
 - *(backend)* Harden OIDC cookie cryptography and correct refresh-token cookie TTL handling ([#1642](https://github.com/f-eld-ch/sitrep/issues/1642)) - ([751adb0](https://github.com/f-eld-ch/sitrep/commit/751adb038860dde647d7c1bfd135271a1178d6b2))
+- *(map)* Align proper top-margin for Map view ([#1693](https://github.com/f-eld-ch/sitrep/issues/1693)) - ([8a771a3](https://github.com/f-eld-ch/sitrep/commit/8a771a32759df1d6cd8aa1e174e54669b094b99d))
 
 ### 📚 Documentation
 
@@ -14,6 +15,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump uuid from 14.0.0 to 14.0.1 in /ui ([#1637](https://github.com/f-eld-ch/sitrep/issues/1637)) - ([3028541](https://github.com/f-eld-ch/sitrep/commit/3028541986da1ce31c7704c92d2a9e8d849af517))
 - *(deps)* Bump google.golang.org/grpc ([#1692](https://github.com/f-eld-ch/sitrep/issues/1692)) - ([e712139](https://github.com/f-eld-ch/sitrep/commit/e712139ea56193cd06192c0487b5e78b5b4b1840))
 - *(deps)* Bump the react group across 1 directory with 2 updates ([#1681](https://github.com/f-eld-ch/sitrep/issues/1681)) - ([72aa997](https://github.com/f-eld-ch/sitrep/commit/72aa997605df022d2ed8014661c59a190ea4c96f))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 7 updates ([#1691](https://github.com/f-eld-ch/sitrep/issues/1691)) - ([060d395](https://github.com/f-eld-ch/sitrep/commit/060d39593ab6102dc6c03892caffffa5e8ef2302))
