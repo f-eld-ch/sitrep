@@ -55,14 +55,26 @@ const MessageTable = (
             <tr key={message.id}>
               <td>{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
               <td style={cellStyle}>
-                {message.senderDetail
-                  ? `${message.sender}\n(${message.senderDetail})`
-                  : message.sender}
+                {message.senderDetail ? (
+                  <>
+                    {message.sender}
+                    <br />
+                    ({message.senderDetail})
+                  </>
+                ) : (
+                  message.sender
+                )}
               </td>
               <td style={cellStyle}>
-                {message.receiverDetail
-                  ? `${message.receiver}\n(${message.receiverDetail})`
-                  : message.receiver}
+                {message.receiverDetail ? (
+                  <>
+                    {message.receiver}
+                    <br />
+                    ({message.receiverDetail})
+                  </>
+                ) : (
+                  message.receiver
+                )}
               </td>
               <td style={cellStyle}>
                 <div
