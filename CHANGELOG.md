@@ -14,6 +14,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.47.5 to 3.48.1 ([#1688](https://github.com/f-eld-ch/sitrep/issues/1688)) - ([68259aa](https://github.com/f-eld-ch/sitrep/commit/68259aaf1e7adc10836b89c354e0512d3fe3e414))
+- *(deps)* Bump react-i18next from 17.0.8 to 17.0.10 in /ui ([#1677](https://github.com/f-eld-ch/sitrep/issues/1677)) - ([472c6d8](https://github.com/f-eld-ch/sitrep/commit/472c6d8d5757fda21bed7c3d182e9d67628b21c8))
+- *(deps)* Bump react-router from 8.1.0 to 8.3.0 in /ui ([#1684](https://github.com/f-eld-ch/sitrep/issues/1684)) - ([380838e](https://github.com/f-eld-ch/sitrep/commit/380838eb9181b782cfdcc91e38a3a949c7150a3d))
 - *(deps)* Bump i18next from 26.3.4 to 26.3.6 in /ui ([#1667](https://github.com/f-eld-ch/sitrep/issues/1667)) - ([faa4e54](https://github.com/f-eld-ch/sitrep/commit/faa4e5415cf5bf22d5630396531c188d696c53f2))
 - *(deps)* Bump @apollo/client from 4.2.5 to 4.2.7 in /ui ([#1675](https://github.com/f-eld-ch/sitrep/issues/1675)) - ([ba8dc59](https://github.com/f-eld-ch/sitrep/commit/ba8dc5918e73b15c74931829a50740e57cd278f6))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1687](https://github.com/f-eld-ch/sitrep/issues/1687)) - ([49a6632](https://github.com/f-eld-ch/sitrep/commit/49a66324976dd64257cb350bd21760d40f29cfa0))
