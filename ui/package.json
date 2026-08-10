@@ -52,7 +52,7 @@
     "lodash": "^4.18.1",
     "mapbox-gl-style-switcher": "^1.0.11",
     "maplibre-gl": "6.1.0",
-    "ol": "^10.9.0",
+    "ol": "^10.10.0",
     "proj4": "^2.21.0",
     "react": "^19.2.8",
     "react-autocomplete-hint": "^2.0.0",
