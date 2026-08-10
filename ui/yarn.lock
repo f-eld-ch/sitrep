@@ -2134,10 +2134,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/core@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "@openfeature/core@npm:1.11.0"
-  checksum: 10/d1c28b8e461b8ea8008f731c5cca8cb0a7717fbce388e51c6f2b2aeb5ea69eb8dc41a2a99a01d84d043f3879f4805c18a7db0d93dd57f049d5a39d4ff3b7071a
+"@openfeature/core@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "@openfeature/core@npm:1.12.0"
+  checksum: 10/d95bd67bf86397e358738914268f50a1bd45b6fc8648c8f197bddc9d968c6eb03bf9bd5f98e89f0b39a8f89f8043ed17c1d3a73e239b41f87773ccbbee38f4c4
   languageName: node
   linkType: hard
 
@@ -2161,12 +2161,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openfeature/web-sdk@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "@openfeature/web-sdk@npm:1.9.0"
+"@openfeature/web-sdk@npm:^1.10.0":
+  version: 1.10.0
+  resolution: "@openfeature/web-sdk@npm:1.10.0"
   peerDependencies:
-    "@openfeature/core": ^1.11.0
-  checksum: 10/44c98436ee31fcaf08f9655bec374f4e0dc471224c3a2d873ffcff33f060af786710cab74bbb5dc3af734e64c1078658c1ce687bb22d750a1785a5fe809fc8b3
+    "@openfeature/core": ^1.12.0
+  checksum: 10/a9dcfaa93c3093580526db4ee24ffbb3ff81a2c2bf52827d8e64a0e673e5faae5dda9ca31f58801739a7d0b92d5cc5d76111bbc2fc00621e4e002cd964a3dc09
   languageName: node
   linkType: hard
 
@@ -9291,10 +9291,10 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^3.5.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
     "@maplibre/maplibre-gl-style-spec": "npm:^25.0.1"
-    "@openfeature/core": "npm:^1.11.0"
+    "@openfeature/core": "npm:^1.12.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.1"
-    "@openfeature/web-sdk": "npm:^1.9.0"
+    "@openfeature/web-sdk": "npm:^1.10.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
     "@testing-library/react": "npm:^16.3.2"
