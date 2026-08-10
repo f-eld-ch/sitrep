@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Update nanoid to v6 ([#1724](https://github.com/f-eld-ch/sitrep/issues/1724)) - ([bfe73d0](https://github.com/f-eld-ch/sitrep/commit/bfe73d0837a6975e384b6fa0359be197ae489481))
 - *(deps)* Bump the otel dependencies to v1.45.0 ([#1715](https://github.com/f-eld-ch/sitrep/issues/1715)) - ([8f2ce8c](https://github.com/f-eld-ch/sitrep/commit/8f2ce8cc21259cc9afbc9dd3d15e0b5e8223ee96))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.48.1 to 3.49.1 ([#1711](https://github.com/f-eld-ch/sitrep/issues/1711)) - ([ed14ed0](https://github.com/f-eld-ch/sitrep/commit/ed14ed01fef77df6963888686ab1b38008057856))
 - *(deps)* Bump @apollo/client from 4.2.9 to 4.2.10 in /ui ([#1723](https://github.com/f-eld-ch/sitrep/issues/1723)) - ([5f29aff](https://github.com/f-eld-ch/sitrep/commit/5f29aff68a9c6924c233656d6e52188217ecdf33))
