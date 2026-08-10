@@ -2,6 +2,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.48.1 to 3.49.1 ([#1711](https://github.com/f-eld-ch/sitrep/issues/1711)) - ([ed14ed0](https://github.com/f-eld-ch/sitrep/commit/ed14ed01fef77df6963888686ab1b38008057856))
+- *(deps)* Bump @apollo/client from 4.2.9 to 4.2.10 in /ui ([#1723](https://github.com/f-eld-ch/sitrep/issues/1723)) - ([5f29aff](https://github.com/f-eld-ch/sitrep/commit/5f29aff68a9c6924c233656d6e52188217ecdf33))
+- *(deps)* Bump react-i18next from 17.0.10 to 17.0.11 in /ui ([#1722](https://github.com/f-eld-ch/sitrep/issues/1722)) - ([aca203e](https://github.com/f-eld-ch/sitrep/commit/aca203e4e220d856a7bd0d44de62e1162b6dee1f))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.2.0 in /ui ([#1719](https://github.com/f-eld-ch/sitrep/issues/1719)) - ([bebf9f5](https://github.com/f-eld-ch/sitrep/commit/bebf9f519e8515d06c0e03e5aa30fcb14c17774e))
 - *(deps)* Bump the turf group across 1 directory with 7 updates ([#1702](https://github.com/f-eld-ch/sitrep/issues/1702)) - ([2ec477a](https://github.com/f-eld-ch/sitrep/commit/2ec477aaffc098d5829cb2d00cc44cba748a9ca1))
 - *(deps)* Bump ol from 10.9.0 to 10.10.0 in /ui ([#1708](https://github.com/f-eld-ch/sitrep/issues/1708)) - ([82ef85a](https://github.com/f-eld-ch/sitrep/commit/82ef85a60da0de1aa3977aa804eea48618c42c4d))
