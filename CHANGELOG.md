@@ -1,3 +1,13 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump the openfeature group in /ui with 2 updates ([#1703](https://github.com/f-eld-ch/sitrep/issues/1703)) - ([b81a7f4](https://github.com/f-eld-ch/sitrep/commit/b81a7f4bb8da88fc0983209dae0d121a16bdcd5d))
+- *(deps)* Bump @apollo/client from 4.2.7 to 4.2.9 in /ui ([#1705](https://github.com/f-eld-ch/sitrep/issues/1705)) - ([532ad41](https://github.com/f-eld-ch/sitrep/commit/532ad41de59ab4713b64ba348d03a30b87540821))
+- *(deps)* Bump proj4 from 2.20.9 to 2.21.0 in /ui ([#1707](https://github.com/f-eld-ch/sitrep/issues/1707)) - ([8889201](https://github.com/f-eld-ch/sitrep/commit/8889201e1917504072f058a95c0b11f3c24dcf81))
+- *(deps)* Bump react-map-gl from 8.1.1 to 8.1.2 in /ui ([#1706](https://github.com/f-eld-ch/sitrep/issues/1706)) - ([4754093](https://github.com/f-eld-ch/sitrep/commit/4754093be1f70a9c221f24078c3a5db2aa689e62))
+
+
 ## [26.8.0](https://github.com/f-eld-ch/sitrep/compare/v26.6.0..v26.8.0) - 2026-08-07
 
 ### ⛰️  Features
