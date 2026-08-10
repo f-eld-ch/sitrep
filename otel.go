@@ -8,7 +8,7 @@ import (
 	"time"
 
 	slogmulti "github.com/samber/slog-multi"
-	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -40,7 +40,6 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	// setup resources
 	res, err := resource.New(
 		context.Background(),
-		resource.WithSchemaURL(semconv.SchemaURL),
 		resource.WithFromEnv(),      // Discover and provide attributes from OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME environment variables.
 		resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
 		resource.WithProcess(),      // Discover and provide process information.
