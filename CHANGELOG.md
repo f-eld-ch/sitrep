@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.24.0 to 6.2.0 in /ui ([#1719](https://github.com/f-eld-ch/sitrep/issues/1719)) - ([bebf9f5](https://github.com/f-eld-ch/sitrep/commit/bebf9f519e8515d06c0e03e5aa30fcb14c17774e))
 - *(deps)* Bump the turf group across 1 directory with 7 updates ([#1702](https://github.com/f-eld-ch/sitrep/issues/1702)) - ([2ec477a](https://github.com/f-eld-ch/sitrep/commit/2ec477aaffc098d5829cb2d00cc44cba748a9ca1))
 - *(deps)* Bump ol from 10.9.0 to 10.10.0 in /ui ([#1708](https://github.com/f-eld-ch/sitrep/issues/1708)) - ([82ef85a](https://github.com/f-eld-ch/sitrep/commit/82ef85a60da0de1aa3977aa804eea48618c42c4d))
 - *(deps)* Bump the openfeature group in /ui with 2 updates ([#1703](https://github.com/f-eld-ch/sitrep/issues/1703)) - ([b81a7f4](https://github.com/f-eld-ch/sitrep/commit/b81a7f4bb8da88fc0983209dae0d121a16bdcd5d))
