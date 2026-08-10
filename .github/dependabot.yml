@@ -68,8 +68,8 @@ updates:
     groups:
       otel:
         patterns:
+          - go.opentelemetry.io/otel
           - go.opentelemetry.io/otel/*
-          - go.opentelemetry.io/otel/log/*
           - go.opentelemetry.io/contrib/*
     labels:
       - "golang"
