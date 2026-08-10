@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the otel dependencies to v1.45.0 ([#1715](https://github.com/f-eld-ch/sitrep/issues/1715)) - ([8f2ce8c](https://github.com/f-eld-ch/sitrep/commit/8f2ce8cc21259cc9afbc9dd3d15e0b5e8223ee96))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.48.1 to 3.49.1 ([#1711](https://github.com/f-eld-ch/sitrep/issues/1711)) - ([ed14ed0](https://github.com/f-eld-ch/sitrep/commit/ed14ed01fef77df6963888686ab1b38008057856))
 - *(deps)* Bump @apollo/client from 4.2.9 to 4.2.10 in /ui ([#1723](https://github.com/f-eld-ch/sitrep/issues/1723)) - ([5f29aff](https://github.com/f-eld-ch/sitrep/commit/5f29aff68a9c6924c233656d6e52188217ecdf33))
 - *(deps)* Bump react-i18next from 17.0.10 to 17.0.11 in /ui ([#1722](https://github.com/f-eld-ch/sitrep/issues/1722)) - ([aca203e](https://github.com/f-eld-ch/sitrep/commit/aca203e4e220d856a7bd0d44de62e1162b6dee1f))
