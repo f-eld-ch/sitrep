@@ -1894,7 +1894,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/jsonlint-lines-primitives@npm:~2.0.3":
+"@mapbox/jsonlint-lines-primitives@npm:^2.0.3":
   version: 2.0.3
   resolution: "@mapbox/jsonlint-lines-primitives@npm:2.0.3"
   checksum: 10/99404df11b1840153c910154c238f62ba0ea7cfab6aa7ed3bad1e522d31b746bfad78b23e6ee4887196acec76759f1863b5cb4f5e2d95d0dc2a8ea73091c78f6
@@ -2067,11 +2067,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^25.0.1":
-  version: 25.0.1
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:25.0.1"
+"@maplibre/maplibre-gl-style-spec@npm:^26.2.1":
+  version: 26.2.1
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.2.1"
   dependencies:
-    "@mapbox/jsonlint-lines-primitives": "npm:~2.0.3"
+    "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
     "@mapbox/unitbezier": "npm:^1.0.0"
     json-stringify-pretty-compact: "npm:^4.0.0"
     minimist: "npm:^1.2.8"
@@ -2081,7 +2081,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/931f29e0570e1a5f17f02ed95e1c7ad71a06fb30f4a6202be2feac9805e0f93a95319cf89093b2624529ec5562a6e5ab9d1fcb96738ec558961cdac9ab1e709c
+  checksum: 10/c8b3e3d7af63b3ff8e303d559a7ff5f59a7d9c1ab02b0d87a1efbdd4cf3bbf39bfbeddae9c0499c0b91c3e49f6787a9b691f6a35f597e66f310241239fb7b957
   languageName: node
   linkType: hard
 
@@ -9299,7 +9299,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^7.3.1"
     "@fortawesome/react-fontawesome": "npm:^3.5.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^25.0.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.2.1"
     "@openfeature/core": "npm:^1.12.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.1"
