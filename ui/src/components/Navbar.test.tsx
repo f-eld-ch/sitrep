@@ -104,10 +104,7 @@ describe("Navbar Component", () => {
           >
             <MemoryRouter initialEntries={["/incident/incident-id/journal/journal-id"]}>
               <Routes>
-                <Route
-                  path="/incident/:incidentId/journal/:journalId"
-                  element={<Navbar />}
-                />
+                <Route path="/incident/:incidentId/journal/:journalId" element={<Navbar />} />
               </Routes>
             </MemoryRouter>
           </IncidentContext.Provider>
