@@ -86,7 +86,7 @@
     "oxlint": "^1.78.0",
     "oxlint-tsgolint": "^7.0.2001",
     "sass": "^1.102.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vite-bundle-analyzer": "^1.3.9",
     "vite-plugin-pwa": "^1.3.0",
