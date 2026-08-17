@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 5.24.0 to 6.3.0 in /ui ([#1730](https://github.com/f-eld-ch/sitrep/issues/1730)) - ([96f44d5](https://github.com/f-eld-ch/sitrep/commit/96f44d57a31e510bc58579baa521f55604358e89))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.1 to 3.49.2 ([#1725](https://github.com/f-eld-ch/sitrep/issues/1725)) - ([1abd3a3](https://github.com/f-eld-ch/sitrep/commit/1abd3a39f7ec0d8083f00c0a65498de7856f45ac))
 - *(deps)* Update nanoid to v6 ([#1724](https://github.com/f-eld-ch/sitrep/issues/1724)) - ([bfe73d0](https://github.com/f-eld-ch/sitrep/commit/bfe73d0837a6975e384b6fa0359be197ae489481))
 - *(deps)* Bump the otel dependencies to v1.45.0 ([#1715](https://github.com/f-eld-ch/sitrep/issues/1715)) - ([8f2ce8c](https://github.com/f-eld-ch/sitrep/commit/8f2ce8cc21259cc9afbc9dd3d15e0b5e8223ee96))
