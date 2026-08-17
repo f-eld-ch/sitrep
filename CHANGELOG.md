@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(map)* Upgrade maplibre-gl to v6 for better performance ([#1732](https://github.com/f-eld-ch/sitrep/issues/1732)) - ([e5b6705](https://github.com/f-eld-ch/sitrep/commit/e5b6705a1c4a24045dcdc0453d4a97feacc186d7))
+
 ### ⚙️  Other
 
 - *(deps)* Bump @apollo/client from 4.2.10 to 4.2.11 in /ui ([#1731](https://github.com/f-eld-ch/sitrep/issues/1731)) - ([39f7b77](https://github.com/f-eld-ch/sitrep/commit/39f7b770b7e42ef83f605f387a942820f419b3a6))
