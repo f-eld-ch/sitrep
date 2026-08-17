@@ -7,7 +7,10 @@ import classNames from "classnames";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual } from "lodash";
-import maplibregl from "maplibre-gl";
+import * as maplibre from "maplibre-gl";
+import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
 import { useCallback, useContext, useEffect, useState } from "react";
 import {
   AttributionControl,
@@ -49,12 +52,13 @@ import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./
 // when React Strict Mode mounts components multiple times in development.
 try {
   // guard in case these methods are not present in some environments
-  if (typeof maplibregl?.setMaxParallelImageRequests === "function") {
-    maplibregl.setMaxParallelImageRequests(150);
+  if (typeof setMaxParallelImageRequests === "function") {
+    setMaxParallelImageRequests(150);
   }
-  if (typeof maplibregl?.setWorkerCount === "function") {
-    maplibregl.setWorkerCount(6);
+  if (typeof setWorkerCount === "function") {
+    setWorkerCount(6);
   }
+  setWorkerUrl(workerUrl);
 } catch (e) {
   console.error("Error setting maplibregl globals:", e);
 }
@@ -77,7 +81,7 @@ function MapView() {
   return (
     <div className={mapClass} data-theme="light">
       <MapClass
-        mapLib={maplibregl}
+        mapLib={maplibre}
         initialViewState={{
           latitude: 46.87148,
           longitude: 8.62994,

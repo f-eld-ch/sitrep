@@ -58,8 +58,7 @@ const MessageTable = (
                 {message.senderDetail ? (
                   <>
                     {message.sender}
-                    <br />
-                    ({message.senderDetail})
+                    <br />({message.senderDetail})
                   </>
                 ) : (
                   message.sender
@@ -69,8 +68,7 @@ const MessageTable = (
                 {message.receiverDetail ? (
                   <>
                     {message.receiver}
-                    <br />
-                    ({message.receiverDetail})
+                    <br />({message.receiverDetail})
                   </>
                 ) : (
                   message.receiver
