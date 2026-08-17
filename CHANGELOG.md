@@ -2,6 +2,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.2.10 to 4.2.11 in /ui ([#1731](https://github.com/f-eld-ch/sitrep/issues/1731)) - ([39f7b77](https://github.com/f-eld-ch/sitrep/commit/39f7b770b7e42ef83f605f387a942820f419b3a6))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.3.0 in /ui ([#1730](https://github.com/f-eld-ch/sitrep/issues/1730)) - ([96f44d5](https://github.com/f-eld-ch/sitrep/commit/96f44d57a31e510bc58579baa521f55604358e89))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.1 to 3.49.2 ([#1725](https://github.com/f-eld-ch/sitrep/issues/1725)) - ([1abd3a3](https://github.com/f-eld-ch/sitrep/commit/1abd3a39f7ec0d8083f00c0a65498de7856f45ac))
 - *(deps)* Update nanoid to v6 ([#1724](https://github.com/f-eld-ch/sitrep/issues/1724)) - ([bfe73d0](https://github.com/f-eld-ch/sitrep/commit/bfe73d0837a6975e384b6fa0359be197ae489481))
