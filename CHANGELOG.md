@@ -6,6 +6,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump html-react-parser from 6.1.5 to 6.1.7 in /ui ([#1734](https://github.com/f-eld-ch/sitrep/issues/1734)) - ([da6855a](https://github.com/f-eld-ch/sitrep/commit/da6855a6346a1541662a564aa4b8a482b714c025))
+- *(deps)* Bump @apollo/client from 4.2.11 to 4.2.12 in /ui ([#1735](https://github.com/f-eld-ch/sitrep/issues/1735)) - ([c1ff12b](https://github.com/f-eld-ch/sitrep/commit/c1ff12b3bd7ab43e87d2c608d9e120312161da12))
 - *(deps)* Bump @apollo/client from 4.2.10 to 4.2.11 in /ui ([#1731](https://github.com/f-eld-ch/sitrep/issues/1731)) - ([39f7b77](https://github.com/f-eld-ch/sitrep/commit/39f7b770b7e42ef83f605f387a942820f419b3a6))
 - *(deps)* Bump maplibre-gl from 5.24.0 to 6.3.0 in /ui ([#1730](https://github.com/f-eld-ch/sitrep/issues/1730)) - ([96f44d5](https://github.com/f-eld-ch/sitrep/commit/96f44d57a31e510bc58579baa521f55604358e89))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.1 to 3.49.2 ([#1725](https://github.com/f-eld-ch/sitrep/issues/1725)) - ([1abd3a3](https://github.com/f-eld-ch/sitrep/commit/1abd3a39f7ec0d8083f00c0a65498de7856f45ac))
