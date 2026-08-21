@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 
+import { babsSprites } from "@f-eld-ch/babs-sprites/vite";
 import react from "@vitejs/plugin-react";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
@@ -55,6 +56,14 @@ export default defineConfig({
               test: /node_modules[\\/](?:@flipt-io|@openfeature)/,
             },
             {
+              // The icon catalogue is large and changes on its own cadence; keeping it in
+              // its own chunk stops it inflating `common` and keeps it cacheable across
+              // unrelated app deploys.
+              name: "babs-icons",
+              test: /node_modules[\\/]@f-eld-ch/,
+              priority: 17,
+            },
+            {
               name: "common",
               minShareCount: 2,
               minSize: 10000,
@@ -78,6 +87,10 @@ export default defineConfig({
   plugins: [
     react(),
     svgrPlugin(),
+    // Serves the BABS sprite atlases from node_modules in dev, and emits them at build
+    // with exact unhashed filenames. Defaults to "map/sprites", which is where the
+    // existing basemap/imagery sheets already live, so those are unaffected.
+    babsSprites(),
     analyzer({ analyzerMode: "static", enabled: false }),
     VitePWA({
       registerType: "prompt",
@@ -88,6 +101,11 @@ export default defineConfig({
         skipWaiting: false,
         clientsClaim: false,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,pbf,json}"],
+        // The BABS atlases vary by UI language, so precaching them would pin whichever
+        // language happened to be built and serve it stale after a switch. Deliberately
+        // scoped to `babs-*` rather than all of map/sprites: basemap/imagery are
+        // language-invariant and are precached today for offline use.
+        globIgnores: ["map/sprites/babs-*"],
         navigateFallbackDenylist: [/^\/oauth2/, /^\/api/],
         maximumFileSizeToCacheInBytes: 3145728, // 3MB
       },

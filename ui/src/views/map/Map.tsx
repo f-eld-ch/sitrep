@@ -1,5 +1,6 @@
 import "./control-panel.css";
 import "./Map.scss";
+import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import { useMutation, useQuery, useReactiveVar } from "@apollo/client/react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
@@ -11,7 +12,8 @@ import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AttributionControl,
   FullscreenControl,
@@ -67,8 +69,42 @@ const modes = {
   ...MapboxDraw.modes,
 };
 
+/**
+ * Keeps the map's BABS sprite in step with the UI language.
+ *
+ * Swaps the sprite in place via `addSprite`/`removeSprite` rather than calling
+ * `map.setStyle()`, which would tear down every layer and drop the features currently
+ * drawn. Renders nothing.
+ */
+function BabsSpriteLanguage() {
+  const { current: map } = useMap();
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language;
+
+  useEffect(() => {
+    if (!map) return;
+    // maplibre-gl's Map structurally satisfies the helper's MapLike contract
+    // (getSprite/addSprite/removeSprite/once), so no cast is needed.
+    void setBabsSpriteLang(map.getMap(), lang);
+  }, [map, lang]);
+
+  return null;
+}
+
 function MapView() {
   const mapStyle = useReactiveVar(selectedStyle);
+  const { i18n } = useTranslation();
+
+  // Resolved once per basemap style, NOT per language: producing a new style object
+  // makes react-map-gl call setStyle, which rebuilds every layer. Language changes are
+  // handled imperatively by <BabsSpriteLanguage /> instead. The ref keeps the language
+  // current without making it a dependency.
+  const langRef = useRef(i18n.resolvedLanguage ?? i18n.language);
+  langRef.current = i18n.resolvedLanguage ?? i18n.language;
+  const styleWithBabsSprite = useMemo(
+    () => withBabsSprite(mapStyle.style, langRef.current),
+    [mapStyle.style],
+  );
 
   const mapClass = classNames({
     "is-flex-grow-1": true,
@@ -91,11 +127,12 @@ function MapView() {
         attributionControl={false}
         minZoom={9}
         maxZoom={19}
-        mapStyle={mapStyle.style}
+        mapStyle={styleWithBabsSprite}
         scrollZoom={true}
         reuseMaps={false}
         RTLTextPlugin={undefined}
       >
+        <BabsSpriteLanguage />
         <SearchControl />
         <AttributionControl position="bottom-left" compact={true} />
         {/* All Map Controls */}

@@ -7130,10 +7130,6 @@
     {
       "id": "default",
       "url": "/map/sprites/basemap"
-    },
-    {
-      "id": "babs",
-      "url": "/map/sprites/babs"
     }
   ],
   "bearing": 0.0,
