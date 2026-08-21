@@ -8,6 +8,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(ci)* Ignore go-coverage.out, which no rule matched ([#1747](https://github.com/f-eld-ch/sitrep/issues/1747)) - ([18968eb](https://github.com/f-eld-ch/sitrep/commit/18968ebffdb567207978a2413e4120e88c1f2f0c))
 - *(ci)* Upload coverage only where it can actually attach ([#1745](https://github.com/f-eld-ch/sitrep/issues/1745)) - ([0429392](https://github.com/f-eld-ch/sitrep/commit/042939291fdc5ba133259c9791eae8eddda600bc))
 - *(map)* Match casualty icons by alias in the label filters ([#1743](https://github.com/f-eld-ch/sitrep/issues/1743)) - ([17dd478](https://github.com/f-eld-ch/sitrep/commit/17dd478aba11116c6a1c84d490ac191bcae0c5fb))
 - *(ui)* Show the new version's changelog in the update prompt ([#1746](https://github.com/f-eld-ch/sitrep/issues/1746)) - ([a90eb03](https://github.com/f-eld-ch/sitrep/commit/a90eb03c6757ae9019cb49ded0fe9089e8b0db47))
