@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 
 import { babsSprites } from "@f-eld-ch/babs-sprites/vite";
+import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
@@ -9,7 +10,32 @@ import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 
 const buildSha = process.env.VITE_SHA_VERSION || git.long("../") || "dev";
-const buildVersion = process.env.VITE_VERSION || git.tag(false) || "dev";
+
+/**
+ * `git describe` output, e.g. `v26.8.0` on a tag or `v26.8.0-64-g136b9bf0` past one.
+ *
+ * The same command the Ko Build step runs, deliberately: the backend serves its version on
+ * /version and the update prompt shows it, so any difference in scheme would have the app
+ * displaying two different version strings at once.
+ *
+ * git-rev-sync has no equivalent — its `tag()` passes --abbrev=0 (nearest tag, no count)
+ * and its `count()` is total commits, not commits since the tag — so this shells out.
+ * Falls back to the nearest tag when git or the tags are unavailable, e.g. a build from a
+ * shallow clone or an exported tree.
+ */
+function describeVersion(): string {
+  try {
+    return execSync("git describe --tags --always", {
+      cwd: "..",
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
+
+const buildVersion = process.env.VITE_VERSION || describeVersion() || git.tag(false) || "dev";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -184,6 +210,13 @@ export default defineConfig({
         target: "http://localhost:4180",
         changeOrigin: true,
       },
+      // Served by the Go backend, and read by the update prompt to name the version it is
+      // offering. Proxied so `yarn start` behaves like production instead of silently
+      // exercising the fallback path.
+      "/version": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
     },
   },
   preview: {
@@ -194,6 +227,13 @@ export default defineConfig({
         changeOrigin: true,
       },
       "/oauth2": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      // Served by the Go backend, and read by the update prompt to name the version it is
+      // offering. Proxied so `yarn start` behaves like production instead of silently
+      // exercising the fallback path.
+      "/version": {
         target: "http://localhost:4180",
         changeOrigin: true,
       },

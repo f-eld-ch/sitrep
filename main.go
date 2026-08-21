@@ -14,9 +14,11 @@ import (
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
-// Version is the version of the application, set at build time.
+// Build identity, set at link time via -ldflags (see .ko.yaml). The defaults apply to
+// local `go build` and `go run`, so an unset value is visibly "dev" rather than empty.
 var (
 	version = "dev"
+	sha     = "dev"
 )
 
 func init() {
@@ -89,6 +91,7 @@ func main() {
 	// needs to go last to make use of correct enforcers
 	opts = append(opts,
 		server.WithApiV2(),
+		server.WithVersion(version, sha),
 		server.WithApiV1Proxy(viper.GetString("hasura_backend")),
 	)
 

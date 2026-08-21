@@ -22,6 +22,8 @@ type Server struct {
 	isShuttingDown atomic.Bool
 	port           uint
 	address        string
+	version        string
+	sha            string
 	auth.Enforcer
 	router *echo.Echo
 	*http.Server

@@ -1,0 +1,24 @@
+# ko build configuration.
+#
+# Exists to stamp the build identity into the binary. `main.go` declares
+#
+#   var version = "dev"
+#   var sha     = "dev"
+#
+# and without -ldflags those defaults ship to production — which is why every trace and
+# metric reported service.version="dev" (see otel.go, semconv.ServiceVersion) and why the
+# UI update prompt could not name the version it was offering.
+#
+# ko matches a builds entry by joining `dir` and `main` against the requested import path.
+# The workflow runs `ko build --bare .`, so `main: .` is the entry that applies.
+builds:
+  - id: sitrep
+    main: .
+    ldflags:
+      # `git describe` output, supplied by the workflow — the same string the UI bakes in,
+      # so the backend and the frontend never report different versions. The Ko Build step
+      # fails fast if it is empty, since an empty version is worse than "dev".
+      - -X main.version={{.Env.SITREP_VERSION}}
+      # Taken from ko's own git context rather than the workflow, so a local `ko build`
+      # stamps correctly too and there is one less thing to plumb.
+      - -X main.sha={{.Git.FullCommit}}
