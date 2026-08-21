@@ -133,10 +133,6 @@
     {
       "id": "default",
       "url": "/map/sprites/imagery"
-    },
-    {
-      "id": "babs",
-      "url": "/map/sprites/babs"
     }
   ],
   "glyphs": "/map/fonts/{fontstack}/{range}.pbf",

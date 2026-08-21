@@ -18,10 +18,35 @@ function layersToMap(layers: LayerProps[]): Record<string, LayerProps> {
 }
 
 /**
+ * Sentinel standing in for the generated `icon-image` expression.
+ *
+ * That expression is a ~630-pair `match` built from the whole BABS catalogue plus the
+ * legacy name table, so inlining it here would add ~13 KB of generated data per
+ * occurrence and would have to be regenerated on every catalogue bump — noise that
+ * obscures the structural assertions this fixture exists to make.
+ *
+ * Its *contents* are covered far better by `styleImageResolution.test.ts`, which proves
+ * every identifier the app can persist resolves to an image that exists in the sprite.
+ * This file keeps the complementary job: pinning the style's shape. The sentinel still
+ * asserts that `icon-image` is present, on the expected layer, and nowhere else.
+ */
+const GENERATED_ICON_IMAGE = "<generated icon-image expression>";
+
+/** Replaces the generated icon-image expression with the sentinel, non-destructively. */
+function redactIconImage(layer: LayerProps): LayerProps {
+  const withLayout = layer as LayerProps & { layout?: Record<string, unknown> };
+  if (!withLayout.layout || withLayout.layout["icon-image"] === undefined) return layer;
+  return {
+    ...layer,
+    layout: { ...withLayout.layout, "icon-image": GENERATED_ICON_IMAGE },
+  } as LayerProps;
+}
+
+/**
  * Compares two layer styles by ID regardless of array order
  */
 function compareLayersByID(actual: LayerProps[], expected: LayerProps[]) {
-  const actualMap = layersToMap(actual);
+  const actualMap = layersToMap(actual.map(redactIconImage));
   const expectedMap = layersToMap(expected);
 
   // Check that all expected layers exist in actual layers
@@ -81,10 +106,10 @@ const drawStyle: LayerProps[] = [
         "match",
         ["get", "user_zoneType"],
         "Brandzone",
-        "babs:PatternBrandzone",
+        "babs:1110-pattern",
         "Zerstoerung",
-        "babs:PatternZerstoert",
-        "babs:PatternBrandzone",
+        "babs:1112-pattern",
+        "babs:1110-pattern",
       ],
       "fill-opacity": 1,
     },
@@ -224,18 +249,18 @@ const drawStyle: LayerProps[] = [
         "match",
         ["get", "user_lineType"],
         "unpassierbar",
-        "babs:PatternLineUnpassierbar",
+        "babs:1203-pattern",
         "beabsichtigteErkundung",
-        "babs:PatternLineBeabsichtigteErkundung",
+        "babs:6103a-pattern",
         "durchgeführteErkundung",
-        "babs:PatternLineErkundung",
+        "babs:6103b-pattern",
         "Rutschgebiet",
-        "babs:PatternLineRutschgebiet",
+        "babs:1113-pattern",
         "RutschgebietGespiegelt",
-        "babs:PatternLineRutschgebietGespiegelt",
-        "babs:PatternLineUnpassierbar",
+        "babs:1113-pattern-b",
         "rettungsAchse",
-        "babs:PatternLineRettungsachse",
+        "babs:6106-pattern",
+        "babs:1203-pattern",
       ],
       "line-opacity": 0.7,
       "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
@@ -254,6 +279,7 @@ const drawStyle: LayerProps[] = [
         "schwerBegehbar",
         "durchgeführteVerschiebung",
         "durchgeführterEinsatz",
+        "brandUebergriffErfolgt",
       ],
       ["!=", "mode", "static"],
     ],
@@ -274,7 +300,14 @@ const drawStyle: LayerProps[] = [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "LineString"],
-      ["in", "user_lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
+      [
+        "in",
+        "user_lineType",
+        "begehbar",
+        "beabsichtigteVerschiebung",
+        "beabsichtigterEinsatz",
+        "brandUebergriffGefahr",
+      ],
       ["!=", "mode", "static"],
     ],
     layout: {
@@ -330,15 +363,10 @@ const drawStyle: LayerProps[] = [
       ["!has", "user_iconRotation"],
     ],
     layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "user_icon"]],
-        ["get", "user_icon"],
-        "default_marker",
-      ],
+      "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -352,14 +380,9 @@ const drawStyle: LayerProps[] = [
       ["has", "user_iconRotation"],
     ],
     layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "user_icon"]],
-        ["get", "user_icon"],
-        "default_marker",
-      ],
+      "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "user_iconRotation"], 0],
@@ -569,10 +592,10 @@ const displayStyle: LayerProps[] = [
         "match",
         ["get", "zoneType"],
         "Brandzone",
-        "babs:PatternBrandzone",
+        "babs:1110-pattern",
         "Zerstoerung",
-        "babs:PatternZerstoert",
-        "babs:PatternBrandzone",
+        "babs:1112-pattern",
+        "babs:1110-pattern",
       ],
       "fill-opacity": 1,
     },
@@ -658,18 +681,18 @@ const displayStyle: LayerProps[] = [
         "match",
         ["get", "lineType"],
         "unpassierbar",
-        "babs:PatternLineUnpassierbar",
+        "babs:1203-pattern",
         "beabsichtigteErkundung",
-        "babs:PatternLineBeabsichtigteErkundung",
+        "babs:6103a-pattern",
         "durchgeführteErkundung",
-        "babs:PatternLineErkundung",
+        "babs:6103b-pattern",
         "Rutschgebiet",
-        "babs:PatternLineRutschgebiet",
+        "babs:1113-pattern",
         "RutschgebietGespiegelt",
-        "babs:PatternLineRutschgebietGespiegelt",
-        "babs:PatternLineUnpassierbar",
+        "babs:1113-pattern-b",
         "rettungsAchse",
-        "babs:PatternLineRettungsachse",
+        "babs:6106-pattern",
+        "babs:1203-pattern",
       ],
       "line-opacity": 0.7,
       "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
@@ -681,7 +704,14 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      ["in", "lineType", "schwerBegehbar", "durchgeführteVerschiebung", "durchgeführterEinsatz"],
+      [
+        "in",
+        "lineType",
+        "schwerBegehbar",
+        "durchgeführteVerschiebung",
+        "durchgeführterEinsatz",
+        "brandUebergriffErfolgt",
+      ],
     ],
     layout: {
       "line-cap": "round",
@@ -699,7 +729,14 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      ["in", "lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
+      [
+        "in",
+        "lineType",
+        "begehbar",
+        "beabsichtigteVerschiebung",
+        "beabsichtigterEinsatz",
+        "brandUebergriffGefahr",
+      ],
     ],
     layout: {
       "line-cap": "round",
@@ -740,15 +777,10 @@ const displayStyle: LayerProps[] = [
       ["!has", "iconRotation"],
     ],
     layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "icon"]],
-        ["get", "icon"],
-        "default_marker",
-      ],
+      "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -756,14 +788,9 @@ const displayStyle: LayerProps[] = [
     type: "symbol",
     filter: ["all", ["==", "$type", "Point"], ["has", "icon"], ["has", "iconRotation"]],
     layout: {
-      "icon-image": [
-        "coalesce",
-        ["concat", "babs:", ["get", "icon"]],
-        ["get", "icon"],
-        "default_marker",
-      ],
+      "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],

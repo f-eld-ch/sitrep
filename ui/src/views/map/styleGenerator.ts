@@ -1,3 +1,5 @@
+import { markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
+import { babsImage, legacyIconMatchExpression } from "components/babs/iconResolver";
 import type { FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 
@@ -133,10 +135,10 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "match",
           ["get", `${propPrefix}zoneType`],
           "Brandzone",
-          "babs:PatternBrandzone",
+          babsImage(patternSpriteKey("1110")),
           "Zerstoerung",
-          "babs:PatternZerstoert",
-          "babs:PatternBrandzone",
+          babsImage(patternSpriteKey("1112")),
+          babsImage(patternSpriteKey("1110")),
         ],
         "fill-opacity": 1,
       },
@@ -235,18 +237,20 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "match",
           ["get", `${propPrefix}lineType`],
           "unpassierbar",
-          "babs:PatternLineUnpassierbar",
+          babsImage(patternSpriteKey("1203")),
           "beabsichtigteErkundung",
-          "babs:PatternLineBeabsichtigteErkundung",
+          babsImage(patternSpriteKey("6103a")),
           "durchgeführteErkundung",
-          "babs:PatternLineErkundung",
+          babsImage(patternSpriteKey("6103b")),
           "Rutschgebiet",
-          "babs:PatternLineRutschgebiet",
+          babsImage(patternSpriteKey("1113")),
+          // Retired line type: no longer offered in the picker, since mirroring is done
+          // by reversing the linestring. Retained so pre-existing features still render.
           "RutschgebietGespiegelt",
-          "babs:PatternLineRutschgebietGespiegelt",
-          "babs:PatternLineUnpassierbar",
+          babsImage(patternSpriteKey("1113", "b")),
           "rettungsAchse",
-          "babs:PatternLineRettungsachse",
+          babsImage(patternSpriteKey("6106")),
+          babsImage(patternSpriteKey("1203")),
         ],
         "line-opacity": 0.7,
         "line-width": ["interpolate", ["exponential", 1], ["zoom"], 12, 2, 19, 22],
@@ -263,6 +267,8 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "schwerBegehbar",
           "durchgeführteVerschiebung",
           "durchgeführterEinsatz",
+          // Same solid stroke as durchgeführteVerschiebung, in the feature's red.
+          "brandUebergriffErfolgt",
         ],
       ]),
       layout: {
@@ -286,6 +292,9 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "begehbar",
           "beabsichtigteVerschiebung",
           "beabsichtigterEinsatz",
+          // Same dashed stroke as beabsichtigteVerschiebung; red comes from the feature's
+          // own `color`, set by the line type.
+          "brandUebergriffGefahr",
         ],
       ]),
       layout: {
@@ -335,13 +344,15 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       layout: {
         "icon-image": [
           "coalesce",
-          ["concat", "babs:", ["get", `${propPrefix}icon`]],
-          ["get", `${propPrefix}icon`],
-          "default_marker",
+          // ["image", …] is what makes the fallback reachable: it resolves to null when
+          // the key is absent from the sprite, whereas the previous ["concat", …] always
+          // returned a non-null string, so no later branch was ever evaluated.
+          ["image", legacyIconMatchExpression(propPrefix)],
+          ["image", babsImage(markerSpriteKey("chevron-blue"))],
         ],
         "icon-pitch-alignment": "viewport",
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       },
     },
     {
@@ -355,12 +366,14 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       layout: {
         "icon-image": [
           "coalesce",
-          ["concat", "babs:", ["get", `${propPrefix}icon`]],
-          ["get", `${propPrefix}icon`],
-          "default_marker",
+          // ["image", …] is what makes the fallback reachable: it resolves to null when
+          // the key is absent from the sprite, whereas the previous ["concat", …] always
+          // returned a non-null string, so no later branch was ever evaluated.
+          ["image", legacyIconMatchExpression(propPrefix)],
+          ["image", babsImage(markerSpriteKey("chevron-blue"))],
         ],
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
         "icon-rotation-alignment": "map",
         "icon-pitch-alignment": "map",
         "icon-rotate": ["coalesce", ["get", `${propPrefix}iconRotation`], 0],

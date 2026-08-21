@@ -1,6 +1,7 @@
 import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
-import { type BabsIcon, Others, Schaeden } from "components/BabsIcons";
+import { markerSpriteKey } from "@f-eld-ch/babs-core";
+import { babsImage } from "components/babs/iconResolver";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { Layer, Source } from "react-map-gl/maplibre";
 
@@ -21,7 +22,8 @@ const enrichFeature = (
         startPoint.id = `${f.id}:start`;
         startPoint.properties = {
           parent: f.id,
-          icon: `babs:${enrich.iconStart.name}`,
+          // Already a fully-namespaced sprite id; do not prefix again.
+          icon: enrich.iconStart,
           iconRotation:
             bearing(point(f.geometry.coordinates[0]), point(f.geometry.coordinates[1])) +
             enrich.iconRotation,
@@ -34,7 +36,7 @@ const enrichFeature = (
         endPoint.id = `${f.id}:end`;
         endPoint.properties = {
           parent: f.id,
-          icon: `babs:${enrich.iconEnd.name}`,
+          icon: enrich.iconEnd,
           iconRotation:
             bearing(
               f.geometry.coordinates.slice(-1)[0],
@@ -50,62 +52,73 @@ const enrichFeature = (
 };
 
 interface EnrichLineConfig {
-  iconStart?: BabsIcon;
-  iconEnd?: BabsIcon;
+  /**
+   * Fully-namespaced sprite image id, e.g. `babs:1101` or `babs:marker-chevron-blue`.
+   *
+   * Unlike `properties.icon` on real features — which stores a readable alias and is
+   * resolved by the `match` expression in styleGenerator — these caps live on synthetic
+   * features that are rebuilt on every render and never persisted. So there is no
+   * data-compatibility concern and the sprite key can be used directly.
+   */
+  iconStart?: string;
+  iconEnd?: string;
   iconRotation: number;
 }
 
-const EnrichLineStringMap: Record<string, EnrichLineConfig> = {
-  begehbar: {
-    iconStart: Schaeden.Beschaedigung,
-    iconEnd: Schaeden.Beschaedigung,
-    iconRotation: 90,
-  },
-  schwerBegehbar: {
-    iconStart: Schaeden.Teilzerstoerung,
-    iconEnd: Schaeden.Teilzerstoerung,
-    iconRotation: 90,
-  },
-  unpassierbar: {
-    iconStart: Schaeden.Totalzerstoerung,
-    iconEnd: Schaeden.Totalzerstoerung,
-    iconRotation: 90,
-  },
-  beabsichtigteErkundung: {
-    iconStart: undefined,
-    iconEnd: Others.Verschiebung,
-    iconRotation: 90,
-  },
-  durchgeführteErkundung: {
-    iconStart: undefined,
-    iconEnd: Others.Verschiebung,
-    iconRotation: 90,
-  },
-  beabsichtigteVerschiebung: {
-    iconStart: undefined,
-    iconEnd: Others.Verschiebung,
-    iconRotation: 90,
-  },
-  rettungsAchse: {
-    iconStart: undefined,
-    iconEnd: Others.Verschiebung,
-    iconRotation: 90,
-  },
-  durchgeführteVerschiebung: {
-    iconStart: undefined,
-    iconEnd: Others.Verschiebung,
-    iconRotation: 90,
-  },
-  beabsichtigterEinsatz: {
-    iconStart: undefined,
-    iconEnd: Others.Einsatz,
-    iconRotation: 90,
-  },
-  durchgeführterEinsatz: {
-    iconStart: undefined,
-    iconEnd: Others.Einsatz,
-    iconRotation: 90,
-  },
+/**
+ * Direction arrowheads, from the catalogue's purpose-built markers. These previously
+ * borrowed the `Others.Einsatz` / `Others.Verschiebung` glyphs from the bundled registry.
+ *
+ * The colour matches the stroke the line type is drawn in (see `LineTypes`), and the
+ * single/double distinction is meaningful: *Einsatz* is a double chevron, *Verschiebung*
+ * and reconnaissance a single one.
+ */
+const ARROW = {
+  movement: babsImage(markerSpriteKey("chevron-blue")),
+  deployment: babsImage(markerSpriteKey("double-chevron-blue")),
+  fireSpread: babsImage(markerSpriteKey("chevron-red")),
+} as const;
+
+/** End-of-line arrowhead only — start is left bare so the line reads directionally. */
+const directional = (arrow: string = ARROW.movement): EnrichLineConfig => ({
+  iconStart: undefined,
+  iconEnd: arrow,
+  iconRotation: 90,
+});
+
+/**
+ * Damage severity marked at both ends of the affected road segment. These are semantic
+ * symbols rather than arrowheads, so they stay catalogue icons rather than becoming
+ * chevrons: 1101 Beschädigung, 1102 Teilzerstörung, 1103 Totalzerstörung.
+ */
+const damageExtent = (id: "1101" | "1102" | "1103"): EnrichLineConfig => ({
+  iconStart: babsImage(id),
+  iconEnd: babsImage(id),
+  iconRotation: 90,
+});
+
+/**
+ * Which line types get start/end caps, and which sprite image each cap uses.
+ * Exported so `styleImageResolution.test.ts` can assert every cap actually exists in the
+ * sprite atlas — these ids bypass the `match` expression, so nothing else would catch a
+ * typo or an unprefixed key here.
+ */
+export const EnrichLineStringMap: Record<string, EnrichLineConfig> = {
+  begehbar: damageExtent("1101"),
+  schwerBegehbar: damageExtent("1102"),
+  unpassierbar: damageExtent("1103"),
+  beabsichtigteErkundung: directional(),
+  durchgeführteErkundung: directional(),
+  beabsichtigteVerschiebung: directional(),
+  rettungsAchse: directional(),
+  durchgeführteVerschiebung: directional(),
+  // Einsatz takes the double chevron; it previously reused the single one, which made it
+  // indistinguishable from Verschiebung on the map.
+  beabsichtigterEinsatz: directional(ARROW.deployment),
+  durchgeführterEinsatz: directional(ARROW.deployment),
+  // Fire spread: the movement line styles in red, so a red chevron to match the stroke.
+  brandUebergriffGefahr: directional(ARROW.fireSpread),
+  brandUebergriffErfolgt: directional(ARROW.fireSpread),
 };
 
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
@@ -128,7 +141,11 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
         id={`${id}-enriched-points`}
         type="symbol"
         layout={{
-          "icon-image": ["coalesce", ["get", "icon"], "default_marker"],
+          // ["image", …] is required for coalesce to fall through: a bare ["get", …]
+          // yields a non-null string even when the sprite has no such image, so the
+          // fallback was unreachable and an unknown cap rendered blank. The previous
+          // fallback, "default_marker", existed in no atlas either.
+          "icon-image": ["coalesce", ["image", ["get", "icon"]], ["image", ARROW.movement]],
           "icon-allow-overlap": true,
           "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
           "icon-rotation-alignment": "map",

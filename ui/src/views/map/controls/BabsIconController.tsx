@@ -1,15 +1,41 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import {
-  type BabsIcon,
-  type BabsIconType,
-  IconGroups,
-  LineTypesEinsatz,
-  LineTypesSchaeden,
-  ZonePatterns,
-} from "components/BabsIcons";
+  faArrowsRotate,
+  faChevronLeft,
+  faHeading,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  type BabsCategory,
+  type BabsIconId,
+  type BabsIconMeta,
+  getGroup,
+  getIcon,
+  listCategories,
+  listIcons,
+} from "@f-eld-ch/babs-core";
+import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
+import classNames from "classnames";
+import { aliasFor } from "components/babs/iconResolver";
+import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
+import {
+  byColor,
+  ColorForCategory,
+  LineTypes,
+  type SelectableType,
+  ZoneTypes,
+} from "components/babs/lineAndZoneTypes";
+import {
+  CATEGORY_DRILL_DOWN,
+  CATEGORY_ICON,
+  type DrillDownEntry,
+  PICKER_GAP,
+  PICKER_ICON_CLASS,
+  PICKER_ICON_SIZE,
+} from "components/babs/pickerConfig";
+import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
@@ -22,6 +48,7 @@ import "./BabsIconController.scss";
 const iconControllerFlexboxStyleRow = {
   display: "flex",
   flexFlow: "row wrap",
+  gap: `${PICKER_GAP}px`,
   flexGrow: 2,
   flexShrink: 4,
   flexBasis: 0,
@@ -32,6 +59,7 @@ const iconControllerFlexboxStyleRow = {
 const iconControllerFlexboxStyleColumn = {
   display: "flex",
   flexFlow: "column wrap",
+  gap: `${PICKER_GAP}px`,
   flexGrow: 2,
   flexShrink: 4,
   flexBasis: 0,
@@ -96,11 +124,10 @@ const IconController = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
-      {Object.keys(IconGroups).map((group) => (
-        <IconGroupMenu
-          key={group}
-          name={group}
-          iconGroup={IconGroups[group]}
+      {CATEGORIES.map((category) => (
+        <IconCategoryMenu
+          key={category.number}
+          category={category}
           onUpdate={onUpdate}
           feature={selectedFeature}
         />
@@ -137,43 +164,134 @@ const IconController = memo((props: BabsIconControllerProps) => {
   );
 });
 
-function IconGroupMenu(props: GroupMenuProps) {
-  const { iconGroup, onUpdate, feature, name } = props;
-  const { t } = useTranslation();
+/**
+ * Categories offered by the picker, resolved once. Replaces the hand-maintained
+ * `IconGroups`, so a catalogue addition appears without touching this repo — minus the
+ * categories the picker does not own (see EXCLUDED_CATEGORIES).
+ */
+const CATEGORIES: readonly BabsCategory[] = listCategories().filter((category) =>
+  isPickableCategory(category.number),
+);
 
-  const lastIcon = Object.values(iconGroup).pop();
-  const [active, setActive] = useState<boolean>(false);
+/** Whether an icon should be offered in the picker at all. */
+const pickable = (meta: BabsIconMeta): boolean => isPickableIcon(meta.id);
+
+/**
+ * One collapsible category of icons.
+ *
+ * Collapsed it shows the category's configured icon. Expanded it lists the category's
+ * icons — except for categories with a `CATEGORY_DRILL_DOWN` entry, which show a set of
+ * selector icons first (for Formationen, the partner symbols) and only then that
+ * selection's group.
+ */
+function IconCategoryMenu(props: CategoryMenuProps) {
+  const { category, onUpdate, feature } = props;
+  // lang/label come from BabsIconProvider, so they are already BABS-resolved ("en" -> de).
+  const { lang, label: iconLabel } = useBabsLang();
+  const catalogueReady = useBabsIcons();
+  const [expanded, setExpanded] = useState(false);
+  const [openEntry, setOpenEntry] = useState<DrillDownEntry | null>(null);
+
+  const drillDown = CATEGORY_DRILL_DOWN[category.number];
+
+  /**
+   * With a selection open, that group's icons led by the selector itself — so the plain
+   * partner symbol stays placeable rather than being consumed as navigation. Otherwise
+   * the whole category.
+   */
+  const icons = (() => {
+    if (!openEntry) return listIcons({ category: category.number }).filter(pickable);
+    const group = listIcons({ group: openEntry.group }).filter(pickable);
+    const selector = getIcon(openEntry.selector);
+    const alreadyInGroup = group.some((meta) => meta.id === selector.id);
+    return alreadyInGroup || !pickable(selector) ? group : [selector, ...group];
+  })();
+
+  const collapse = useCallback(() => {
+    setExpanded(false);
+    setOpenEntry(null);
+  }, []);
 
   const onClickIcon = useCallback(
-    (i: BabsIcon) => {
+    (id: BabsIconId) => {
       const properties: GeoJsonProperties = Object.assign({}, feature.properties, {
-        icon: i.name,
-        iconType: i.name,
-        color: ColorsForIconGroup[name],
+        // The readable alias, not the numeric id: keeps persisted data greppable, and the
+        // style's match expression resolves it to a sprite key at render time. `iconType`
+        // used to be written here as an exact duplicate of `icon` and was read nowhere,
+        // so it is no longer set.
+        icon: aliasFor(id),
+        color: ColorForCategory[category.number],
       });
       feature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [feature], action: "featureDetail" });
-      setActive(!active);
+      collapse();
     },
-    [feature, name, onUpdate, active],
+    [feature, category.number, onUpdate, collapse],
   );
 
-  if (active || lastIcon === undefined) {
+  // Hold off until the catalogue is registered, so the grid does not flash placeholders.
+  if (!catalogueReady) {
+    return null;
+  }
+
+  const categoryLabel = category.labels[lang];
+
+  // First level of a drill-down category: the selector icons (for Formationen, 47xx).
+  if (expanded && drillDown && openEntry === null) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
-        {Object.values(iconGroup).map((icon) => (
-          <button
-            type="button"
-            key={icon.name}
-            title={t(`babs.icons.${icon.description}`)}
-            onClick={() => onClickIcon(icon)}
-          >
-            <img src={icon.src} alt={t(`babs.icons.${icon.description}`)} />
-          </button>
-        ))}
+        <BackButton title={categoryLabel} onClick={collapse} />
+        {drillDown.map((entry) => {
+          // The group's name, not the selector icon's: "Polizei" reads better than "P".
+          const label = getGroup(entry.group).labels[lang];
+          return (
+            <button
+              type="button"
+              key={entry.selector}
+              title={label}
+              aria-label={label}
+              onClick={() => setOpenEntry(entry)}
+            >
+              <BabsIcon
+                icon={entry.selector}
+                size={PICKER_ICON_SIZE}
+                title={label}
+                fallback={null}
+                className={PICKER_ICON_CLASS}
+              />
+            </button>
+          );
+        })}
       </div>
     );
   }
+
+  if (expanded) {
+    return (
+      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
+        {/* Back to the group list for a drill-down category, otherwise straight to collapsed. */}
+        <BackButton
+          title={categoryLabel}
+          onClick={drillDown ? () => setOpenEntry(null) : collapse}
+        />
+        {icons.map((meta) => {
+          const label = iconLabel(meta.id);
+          return (
+            <button type="button" key={meta.id} title={label} onClick={() => onClickIcon(meta.id)}>
+              <BabsIcon
+                icon={meta.id}
+                size={PICKER_ICON_SIZE}
+                title={label}
+                fallback={null}
+                className={PICKER_ICON_CLASS}
+              />
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div
       className="maplibregl-ctrl maplibregl-ctrl-group"
@@ -181,27 +299,46 @@ function IconGroupMenu(props: GroupMenuProps) {
     >
       <button
         type="button"
-        key={lastIcon.name}
-        title={t(`babs.groups.${name}`)}
-        onClick={() => setActive(!active)}
+        title={categoryLabel}
+        aria-label={categoryLabel}
+        onClick={() => setExpanded(true)}
       >
-        <img
-          src={lastIcon.src}
-          title={t(`babs.groups.${name}`)}
-          alt={t(`babs.groups.${name}`)}
-          aria-label={t(`babs.groups.${name}`)}
+        <BabsIcon
+          icon={CATEGORY_ICON[category.number]}
+          size={PICKER_ICON_SIZE}
+          title={categoryLabel}
+          fallback={null}
+          className={PICKER_ICON_CLASS}
         />
       </button>
     </div>
   );
 }
 
+/**
+ * Leaves the current picker level.
+ *
+ * Without it an expanded category is a dead end: the only way back used to be to place an
+ * icon, which matters more now that a drill-down category has two levels to unwind.
+ */
+function BackButton({ title, onClick }: { title: string; onClick: () => void }) {
+  const { t } = useTranslation();
+  const label = t("mapview.back");
+  return (
+    <button type="button" title={`${label} — ${title}`} aria-label={label} onClick={onClick}>
+      <FontAwesomeIcon icon={faChevronLeft} className={PICKER_ICON_CLASS} />
+    </button>
+  );
+}
+
 const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
   const { t } = useTranslation();
+  const { label: iconLabel } = useBabsLang();
+  const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
-    (i: TypesType) => {
+    (i: SelectableType) => {
       if (selectedFeature === undefined) {
         return;
       }
@@ -241,7 +378,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
     return;
   }
 
-  if (selectedFeature.geometry.type !== "LineString") {
+  if (selectedFeature.geometry.type !== "LineString" || !catalogueReady) {
     return;
   }
 
@@ -251,14 +388,20 @@ const LineController = memo((props: BabsIconControllerProps) => {
         className="maplibregl-ctrl maplibregl-ctrl-group"
         style={iconControllerFlexboxStyleColumn}
       >
-        {Object.values(LineTypes).map((l) => (
+        {byColor(LineTypes).map((l) => (
           <button
             type="button"
             key={l.name}
-            title={t(`babs.lines.${l.description}`)}
+            title={iconLabel(l.thumbnail)}
             onClick={() => onClickIcon(l)}
           >
-            <img src={l.icon.src} alt={t(`babs.lines.${l.description}`)} />
+            <BabsIcon
+              icon={l.thumbnail}
+              size={PICKER_ICON_SIZE}
+              title={iconLabel(l.thumbnail)}
+              fallback={null}
+              className={PICKER_ICON_CLASS}
+            />
           </button>
         ))}
       </div>
@@ -290,10 +433,12 @@ const LineController = memo((props: BabsIconControllerProps) => {
 
 const ZoneController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const { t } = useTranslation();
+  // Zone names come from the catalogue; nothing here needs a repo translation.
+  const { label: iconLabel } = useBabsLang();
+  const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
-    (i: TypesType) => {
+    (i: SelectableType) => {
       if (selectedFeature !== undefined) {
         const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
           zoneType: i.name,
@@ -311,8 +456,9 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   }
 
   if (
-    selectedFeature.geometry.type !== "Polygon" &&
-    selectedFeature.geometry.type !== "MultiPolygon"
+    (selectedFeature.geometry.type !== "Polygon" &&
+      selectedFeature.geometry.type !== "MultiPolygon") ||
+    !catalogueReady
   ) {
     return;
   }
@@ -327,10 +473,16 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
           <button
             type="button"
             key={l.name}
-            title={t(`babs.zones.${l.description}`)}
+            title={iconLabel(l.thumbnail)}
             onClick={() => onClickIcon(l)}
           >
-            <img src={l.icon.src} alt={t(`babs.zones.${l.description}`)} />
+            <BabsIcon
+              icon={l.thumbnail}
+              size={PICKER_ICON_SIZE}
+              title={iconLabel(l.thumbnail)}
+              fallback={null}
+              className={PICKER_ICON_CLASS}
+            />
           </button>
         ))}
       </div>
@@ -338,136 +490,14 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   );
 });
 
-type SelectableTypes = Record<string, TypesType>;
+/**
+ * `SelectableTypes`, `Colors`, `ZoneTypes`, `LineTypes` and the per-group colour table
+ * now live in components/babs/lineAndZoneTypes.ts, keyed on catalogue ids and category
+ * numbers rather than on this repo's German group names.
+ */
 
-interface TypesType {
-  name: string;
-  description: string;
-  icon: BabsIcon;
-  color: string;
-}
-
-const Colors = {
-  Red: "#ff0000",
-  Blue: "#0000ff",
-  Black: "#000000",
-  Orange: "#F38D11",
-};
-
-type ColorsForIconGroupType = Record<string, string>;
-
-const ColorsForIconGroup: ColorsForIconGroupType = {
-  Schäden: Colors.Red,
-  Schadenauswirkungen: Colors.Red,
-  "Einrichtungen Im Einsatzraum": Colors.Blue,
-  "Zivile Führungsstandorte": Colors.Blue,
-  "Zivile Mittel": Colors.Blue,
-  Fahrzeuge: Colors.Blue,
-  "Bildhafte Signaturen (Gesellschaft)": Colors.Red,
-  "Bildhafte Signaturen (Natur)": Colors.Red,
-  "Bildhafte Signaturen (Technisch)": Colors.Red,
-  Gefahren: Colors.Red,
-};
-
-const ZoneTypes: SelectableTypes = {
-  Einsatzraum: {
-    name: "Einsatzraum",
-    description: "Einsatzraum",
-    icon: ZonePatterns.Einsatzraum,
-    color: Colors.Blue,
-  },
-  Schadengebiet: {
-    name: "Schadengebiet",
-    description: "Schadengebiet",
-    icon: ZonePatterns.Schadengebiet,
-    color: Colors.Red,
-  },
-  Brandzone: {
-    name: "Brandzone",
-    description: "Brandzone",
-    icon: ZonePatterns.PatternBrandzone,
-    color: Colors.Red,
-  },
-  Zerstoerung: {
-    name: "Zerstoerung",
-    description: "Zerstörte, unpassierbare Zone",
-    icon: ZonePatterns.PatternZerstoert,
-    color: Colors.Red,
-  },
-};
-
-const LineTypes: SelectableTypes = {
-  Rutschgebiet: {
-    name: "Rutschgebiet",
-    description: "Rutschgebiet",
-    icon: LineTypesSchaeden.Rutschgebiet,
-    color: Colors.Red,
-  },
-  begehbar: {
-    name: "begehbar",
-    description: "Strasse erschwert befahrbar / begehbar",
-    icon: LineTypesSchaeden.Strerschwertbefahrbarbegehbar,
-    color: Colors.Red, // fixme
-  },
-  schwerBegehbar: {
-    name: "schwerBegehbar",
-    description: "Strasse nicht befahrbar / schwer Begehbar",
-    icon: LineTypesSchaeden.Strnichtbefahrbarschwerbegehbar,
-    color: Colors.Red, // fixme
-  },
-  unpassierbar: {
-    name: "unpassierbar",
-    description: "Strasse unpassierbar / gesperrt",
-    icon: LineTypesSchaeden.Strunpassierbargesperrt,
-    color: Colors.Red,
-  },
-  beabsichtigteErkundung: {
-    name: "beabsichtigteErkundung",
-    description: "Beabsichtigte Erkundung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigteErkundung,
-  },
-  durchgeführteErkundung: {
-    name: "durchgeführteErkundung",
-    description: "Durchgeführte Erkundung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrteErkundung, // fixme
-  },
-  beabsichtigteVerschiebung: {
-    name: "beabsichtigteVerschiebung",
-    description: "Beabsichtigte Verschiebung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigteVerschiebung, // fixme
-  },
-  durchgeführteVerschiebung: {
-    name: "durchgeführteVerschiebung",
-    description: "Durchgeführte Verschiebung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrteVerschiebung, // fixme
-  },
-  beabsichtigterEinsatz: {
-    name: "beabsichtigterEinsatz",
-    description: "Beabsichtigter Einsatz",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigterEinsatz, // fixme
-  },
-  durchgeführterEinsatz: {
-    name: "durchgeführterEinsatz",
-    description: "Durchgeführter Einsatz",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrterEinsatz, // fixme
-  },
-  rettungsAchse: {
-    name: "rettungsAchse",
-    description: "Rettungs Achse",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.RettungsAchse,
-  },
-};
-
-interface GroupMenuProps {
-  name: string;
-  iconGroup: BabsIconType;
+interface CategoryMenuProps {
+  category: BabsCategory;
   feature: Feature<Geometry, GeoJsonProperties>;
   onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
@@ -479,6 +509,7 @@ interface BabsIconControllerProps {
 
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
+  const { i18n } = useTranslation();
   const layer = first(
     state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer),
   );
@@ -501,9 +532,20 @@ const BabsIconController = () => {
   return (
     <>
       <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      {/*
+       * Supplies the resolved language to <BabsIcon>, which is what selects the
+       * language-specific artwork (51 of the 257 icons have it) and backs
+       * useBabsLang().label.
+       *
+       * Scoped here rather than app-wide: these three controllers are the only consumers
+       * in the codebase. It is context only — no artwork is loaded by mounting it; the
+       * catalogue is imported lazily by useBabsIcons when a picker first renders.
+       */}
+      <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+        <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      </BabsIconProvider>
     </>
   );
 };
