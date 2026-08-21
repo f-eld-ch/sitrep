@@ -22,7 +22,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      
+        with:
+          # `git describe` below needs the tags and enough history to count commits since
+          # the last one. The default shallow fetch has neither, and --always would quietly
+          # degrade to a bare SHA rather than failing.
+          fetch-depth: 0
+
       - name: Download UI build artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -93,16 +98,19 @@ jobs:
           done
           echo "labels=$labels" >> $GITHUB_OUTPUT
       - name: Ko Build
-        env:
-          # Consumed by .ko.yaml as -X main.version. Was already set here but had nothing
-          # reading it until .ko.yaml existed.
-          Version: ${{ steps.meta.outputs.version }}
         run: |
-          # An empty version would stamp `-X main.version=` and ship a binary reporting no
-          # version at all — worse than the "dev" default, and invisible until someone
-          # reads a trace. Fail here instead.
-          if [ -z "$Version" ]; then
-            echo "::error::docker/metadata-action produced an empty version; refusing to build an unversioned image"
+          # Deliberately `git describe` rather than the image tag from metadata-action.
+          # That yields the literal "develop" on the default branch, "stable" on main and
+          # "pr-N" on pull requests — only tagged releases got a real version, and most
+          # deploys are not tagged. This anchors every build to the last release and counts
+          # from it (v26.8.0-64-g136b9bf0), and is byte-identical to what the UI bakes in,
+          # so the two never disagree. The image tags themselves are unaffected: they come
+          # from image_tags_labels below.
+          SITREP_VERSION="$(git describe --tags --always)"
+          if [ -z "$SITREP_VERSION" ]; then
+            echo "::error::git describe produced an empty version; refusing to build an unversioned image"
             exit 1
           fi
+          echo "Stamping version: $SITREP_VERSION"
+          export SITREP_VERSION
           ko build --bare . --tags ${{ steps.image_tags_labels.outputs.tags }} ${{ steps.image_tags_labels.outputs.labels }}

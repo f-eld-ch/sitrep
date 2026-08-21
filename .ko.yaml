@@ -15,10 +15,10 @@ builds:
   - id: sitrep
     main: .
     ldflags:
-      # Matches the published image tag, so the running version and the container tag
-      # agree. Supplied by the workflow from docker/metadata-action; the Ko Build step
+      # `git describe` output, supplied by the workflow — the same string the UI bakes in,
+      # so the backend and the frontend never report different versions. The Ko Build step
       # fails fast if it is empty, since an empty version is worse than "dev".
-      - -X main.version={{.Env.Version}}
+      - -X main.version={{.Env.SITREP_VERSION}}
       # Taken from ko's own git context rather than the workflow, so a local `ko build`
       # stamps correctly too and there is one less thing to plumb.
       - -X main.sha={{.Git.FullCommit}}
