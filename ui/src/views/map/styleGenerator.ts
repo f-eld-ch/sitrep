@@ -1,6 +1,7 @@
-import { markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
+import { type BabsIconId, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
 import { babsImage, legacyIconMatchExpression } from "components/babs/iconResolver";
-import type { FilterSpecification } from "maplibre-gl";
+import { ZoneTypes } from "components/babs/lineAndZoneTypes";
+import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 
 /**
@@ -12,6 +13,41 @@ export interface MapStyleOptions {
 }
 
 type FilterCondition = Array<string | number | boolean | FilterCondition>;
+
+/**
+ * Zone types with a flat fill colour, and those with a symbol drawn inside the polygon.
+ *
+ * Derived from `ZoneTypes` rather than listed here, so adding a zone type cannot silently
+ * miss a layer — `lineAndZoneTypes.test.ts` asserts every zone type is drawn by something.
+ */
+const FLAT_FILL_ZONES = Object.values(ZoneTypes).filter((zone) => zone.fill !== undefined);
+const ICON_ZONES = Object.values(ZoneTypes).filter((zone) => zone.zoneIcon !== undefined);
+
+/**
+ * Zone types whose fill is handled by a dedicated layer — pattern-filled, outline-only, or
+ * flat-filled — and which must therefore be excluded from the generic fill layer.
+ */
+const SPECIALLY_FILLED_ZONE_NAMES = [
+  "Brandzone",
+  "Zerstoerung",
+  "Schadengebiet",
+  "Einsatzraum",
+  ...FLAT_FILL_ZONES.map((zone) => zone.name),
+];
+
+/**
+ * Builds a `match` expression keyed on a feature property.
+ *
+ * Spreading the pairs loses the tuple shape TypeScript needs to check `match` arity, so
+ * the cast lives here rather than at each call site. Arity is still verified for real by
+ * `styleImageResolution.test.ts`, which compiles every expression against the style spec.
+ */
+const matchOnProperty = (
+  property: string,
+  pairs: readonly (readonly [string, string])[],
+  fallback: string,
+): ExpressionSpecification =>
+  ["match", ["get", property], ...pairs.flat(), fallback] as unknown as ExpressionSpecification;
 
 /**
  * Creates map layer styles for either drawing or display mode
@@ -144,23 +180,67 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       },
     },
     {
+      // Zones drawn with a flat wash rather than a tiling pattern. Separate from
+      // gl-draw-polygon-fill-inactive because the fill colour is a property of the zone
+      // type, not the feature's own stroke colour.
+      id: "gl-draw-polygon-flat-fill",
+      type: "fill",
+      filter: createFilter([
+        ["==", "$type", "Polygon"],
+        ["has", `${propPrefix}zoneType`],
+        ["in", `${propPrefix}zoneType`, ...FLAT_FILL_ZONES.map((zone) => zone.name)],
+      ]),
+      paint: {
+        "fill-color": matchOnProperty(
+          `${propPrefix}zoneType`,
+          FLAT_FILL_ZONES.map((zone) => [zone.name, zone.fill as string] as const),
+          FLAT_FILL_ZONES[0].fill as string,
+        ),
+        "fill-opacity": 0.5,
+      },
+    },
+    {
       id: "gl-draw-polygon-fill-inactive",
       type: "fill",
       filter: createFilter([
         ["==", "$type", "Polygon"],
-        [
-          "!in",
-          `${propPrefix}zoneType`,
-          "Brandzone",
-          "Zerstoerung",
-          "Schadengebiet",
-          "Einsatzraum",
-        ],
+        // Every zone type with its own fill treatment above, so a zone is never filled
+        // twice. Derived from ZoneTypes so a new zone cannot be missed here.
+        ["!in", `${propPrefix}zoneType`, ...SPECIALLY_FILLED_ZONE_NAMES],
       ]),
       paint: {
         "fill-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
         "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
         "fill-opacity": 0.5,
+      },
+    },
+    {
+      /**
+       * The zone's own symbol, drawn inside the polygon.
+       *
+       * A symbol layer anchors a polygon feature at its pole of inaccessibility — the
+       * interior point furthest from any edge — so the symbol stays inside concave zones
+       * where a centroid would drift outside. One symbol per ring group, so a multipart
+       * zone gets one per part.
+       */
+      id: "gl-draw-polygon-zone-icon",
+      type: "symbol",
+      filter: createFilter([
+        ["==", "$type", "Polygon"],
+        ["has", `${propPrefix}zoneType`],
+        ["in", `${propPrefix}zoneType`, ...ICON_ZONES.map((zone) => zone.name)],
+      ]),
+      layout: {
+        "icon-image": matchOnProperty(
+          `${propPrefix}zoneType`,
+          ICON_ZONES.map((zone) => [zone.name, babsImage(zone.zoneIcon as BabsIconId)] as const),
+          "",
+        ),
+        "icon-allow-overlap": true,
+        // 1.5x the point-icon scale: a zone symbol labels an area rather than marking a
+        // position, so it needs to read at the zoom the whole area is viewed at — but 2x
+        // was overbearing.
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
       },
     },
     {
@@ -246,8 +326,13 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           babsImage(patternSpriteKey("1113")),
           // Retired line type: no longer offered in the picker, since mirroring is done
           // by reversing the linestring. Retained so pre-existing features still render.
+          //
+          // It now draws the same tile as Rutschgebiet: the catalogue dropped the mirrored
+          // variant in 0.4.0 (no icon reports hasPatternB and 1113-pattern-b is gone from
+          // the atlas), which is the same conclusion reached here — a mirrored tile is
+          // redundant when reversing the geometry achieves it.
           "RutschgebietGespiegelt",
-          babsImage(patternSpriteKey("1113", "b")),
+          babsImage(patternSpriteKey("1113")),
           "rettungsAchse",
           babsImage(patternSpriteKey("6106")),
           babsImage(patternSpriteKey("1203")),

@@ -61,6 +61,46 @@ interface FoundExpression {
   layerId: string;
   property: ImageProperty;
   expression: unknown;
+  /**
+   * Feature property the expression branches on, without the mode prefix.
+   *
+   * Derived rather than assumed: `icon-image` is not always keyed on `icon`. The zone
+   * symbol layer draws an icon but selects it by `zoneType`, so driving every icon layer
+   * with an `icon` value would report it as broken when it is working correctly.
+   */
+  keyedOn: string;
+}
+
+/**
+ * Reads the labels a `match` expression branches on.
+ *
+ * `["match", input, label, output, …, fallback]` — labels sit at even indices from 2.
+ * Driving each layer with its own labels rather than a hand-kept list means a new zone or
+ * line type is covered automatically, and no layer is asserted against values it was never
+ * meant to handle.
+ */
+function matchLabels(expression: unknown): string[] {
+  if (!Array.isArray(expression) || expression[0] !== "match") return [];
+  const labels: string[] = [];
+  for (let i = 2; i < expression.length - 1; i += 2) {
+    const label: unknown = expression[i];
+    if (typeof label === "string") labels.push(label);
+  }
+  return labels;
+}
+
+/** Finds the feature property an expression reads, e.g. `["get", "user_zoneType"]`. */
+function keyOf(expression: unknown): string {
+  const stack: unknown[] = [expression];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!Array.isArray(node)) continue;
+    if (node[0] === "get" && typeof node[1] === "string") {
+      return node[1].replace(/^user_/, "");
+    }
+    stack.push(...node);
+  }
+  return "";
 }
 
 /** Collects every image-valued expression across both style modes. */
@@ -80,6 +120,7 @@ function collectImageExpressions(): FoundExpression[] {
             layerId: `${layer.id}${forDraw ? " (draw)" : " (display)"}`,
             property,
             expression: container[property],
+            keyedOn: keyOf(container[property]),
           });
         }
       }
@@ -170,8 +211,12 @@ const resolvesToRealImage = (
  * compile cache actually hit and keeps the whole suite well inside the default timeout.
  */
 const ALL_EXPRESSIONS = collectImageExpressions();
-const ICON_LAYERS = () => ALL_EXPRESSIONS.filter((f) => f.property === "icon-image");
-const PATTERN_LAYERS = () => ALL_EXPRESSIONS.filter((f) => f.property !== "icon-image");
+/** Layers that select an image by the feature's `icon` property. */
+const ICON_LAYERS = () =>
+  ALL_EXPRESSIONS.filter((f) => f.property === "icon-image" && f.keyedOn === "icon");
+/** Layers that select an image by `zoneType` or `lineType` — patterns, and zone symbols. */
+const PATTERN_LAYERS = () =>
+  ALL_EXPRESSIONS.filter((f) => f.keyedOn === "zoneType" || f.keyedOn === "lineType");
 
 /** Strips the mode suffix and derives the property prefix the layer expects. */
 const propsFor = (found: FoundExpression, key: string, value: string) =>
@@ -240,47 +285,50 @@ describe("style image resolution", () => {
       expect(wrong).toEqual([]);
     });
 
-    it("resolves every zone and line type used by the pattern layers", () => {
-      // Driven off the values the pattern expressions actually branch on, including the
-      // retired `RutschgebietGespiegelt`, which must keep working for legacy features.
-      const zoneTypes = ["Brandzone", "Zerstoerung"];
-      const lineTypes = [
-        "unpassierbar",
-        "beabsichtigteErkundung",
-        "durchgeführteErkundung",
-        "Rutschgebiet",
-        "RutschgebietGespiegelt",
-        "rettungsAchse",
-      ];
+    it("resolves every zone and line type its own expression branches on", () => {
+      // Driven by each layer's own match labels rather than a hand-kept list, so a new
+      // zone or line type is covered automatically and no layer is asserted against
+      // values it was never meant to handle.
       const unresolved: string[] = [];
       for (const found of PATTERN_LAYERS()) {
-        const [key, values] =
-          found.property === "fill-pattern"
-            ? (["zoneType", zoneTypes] as const)
-            : (["lineType", lineTypes] as const);
-        for (const value of values) {
-          if (
-            !resolvesToRealImage(found, propsFor(found, key, value), availableImages, availableSet)
-          ) {
-            unresolved.push(`${found.layerId}: ${key}=${value}`);
+        for (const value of matchLabels(found.expression)) {
+          const props = propsFor(found, found.keyedOn, value);
+          if (!resolvesToRealImage(found, props, availableImages, availableSet)) {
+            unresolved.push(`${found.layerId}: ${found.keyedOn}=${value}`);
           }
         }
       }
       expect(unresolved).toEqual([]);
     });
 
-    it("falls back to a real pattern for an unknown zone or line type", () => {
-      const wrong = PATTERN_LAYERS()
-        .filter((found) => {
-          const key = found.property === "fill-pattern" ? "zoneType" : "lineType";
-          return !resolvesToRealImage(
-            found,
-            propsFor(found, key, "someFutureType"),
-            availableImages,
-            availableSet,
-          );
-        })
+    it("covers the retired RutschgebietGespiegelt, so legacy features still render", () => {
+      // No longer offered in the picker, but pre-existing features carry it.
+      const lineLayers = PATTERN_LAYERS().filter((f) => f.property === "line-pattern");
+      expect(lineLayers.length).toBeGreaterThan(0);
+      const unresolved = lineLayers
+        .filter(
+          (found) =>
+            !resolvesToRealImage(
+              found,
+              propsFor(found, "lineType", "RutschgebietGespiegelt"),
+              availableImages,
+              availableSet,
+            ),
+        )
         .map((found) => found.layerId);
+      expect(unresolved).toEqual([]);
+    });
+
+    it("gives pattern layers a real fallback, and zone symbols none", () => {
+      // A pattern must always draw something or the area reads as unstyled. A zone symbol
+      // must not: most zones have no symbol, and inventing one would be wrong.
+      const wrong: string[] = [];
+      for (const found of PATTERN_LAYERS()) {
+        const props = propsFor(found, found.keyedOn, "someFutureType");
+        const resolved = resolvesToRealImage(found, props, availableImages, availableSet);
+        const shouldFallBack = found.property !== "icon-image";
+        if (resolved !== shouldFallBack) wrong.push(`${found.layerId} (${found.property})`);
+      }
       expect(wrong).toEqual([]);
     });
   });

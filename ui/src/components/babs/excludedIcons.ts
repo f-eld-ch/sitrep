@@ -37,6 +37,16 @@ export const EXCLUDED_BABS_ICON_IDS: ReadonlySet<BabsIconId> = new Set<BabsIconI
   "1114", // Schadengebiet - Schadenraum
   "1115", // Überschwemmtes Gebiet
   "5126", // Absperrung Einsatzraum
+  // Group 14 contaminated areas: each plain symbol is drawn inside its zone by the zone
+  // layer, and each Beispiel variant is that zone's picker thumbnail.
+  "1401", // Biologisch verseuchtes Gebiet
+  "1401b",
+  "1402", // Chemievergiftete Zone flüssig - sesshaft
+  "1402b",
+  "1403", // Chemievergiftetes Gebiet gasförmig - flüchtig
+  "1403b",
+  "1404", // Radioaktives Gebiet
+  "1404b",
 
   // Line symbology — drawn via the line controller as a `lineType`.
   "1113", // Rutschgebiet
