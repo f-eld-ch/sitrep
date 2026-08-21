@@ -30,6 +30,7 @@ import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
 import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
 import { useDarkMode } from "utils/useDarkMode";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { useDate } from "utils/useDate";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
@@ -257,6 +258,7 @@ function UserNavBar() {
           </span>
         </div>
         <DarkModeSwitcher />
+        <LanguageSwitcher />
         <hr className="navbar-divider" />
         <a className="navbar-item" href="/oauth2/sign_out">
           <span className="icon-text is-flex-wrap-nowrap is-capitalized">

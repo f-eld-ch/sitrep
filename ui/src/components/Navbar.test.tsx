@@ -7,10 +7,17 @@ import Navbar from "./Navbar";
 
 const mockDispatch = vi.fn();
 
-// Mock the useTranslation hook
+// Mock the useTranslation hook. LanguageSwitcher reads i18n off the same hook, so the
+// mock has to supply it or every render of the navbar throws.
+const mockChangeLanguage = vi.fn();
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: {
+      resolvedLanguage: "de",
+      language: "de",
+      changeLanguage: mockChangeLanguage,
+    },
   }),
 }));
 
