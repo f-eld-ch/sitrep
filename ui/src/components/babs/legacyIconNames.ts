@@ -140,6 +140,7 @@ export const LEGACY_ICON_IDS = {
   Biounfall: "8212", // Biounfall
   Chemieunfall: "8213", // Chemieunfall
   Oelverschmutzung: "8214", // Oelverschmutzung
+  Flugzeugabsturz: "8333", // Flugzeugabsturz — added upstream in 0.4.0
   Infrastrukturschaden: "8215", // Infrastrukturschaden
   Gebaeudeeinsturz: "8219", // Gebaeudeeinsturz
   Pluenderung: "8301", // Pluenderung
@@ -169,17 +170,7 @@ export type LegacyIconName = keyof typeof LEGACY_ICON_IDS;
  *   (Verschiebung) and 6102a/b (Einsatz), which are the beabsichtigt/durchgeführt
  *   line types already covered by `lineType`.
  *
- * `Flugzeugabsturz`
- *   Pickable in the old registry, and the only one of the 106 pickable names with no
- *   target in the 0.3.3 catalogue — group 82 (Technisch bedingte Lagen) covers car
- *   (8204), rail (8205) and ship (8216) but not air.
- *
- *   TODO(babs 0.3.5): add `Flugzeugabsturz: "8333"` once the dependency is bumped.
- *   The id cannot be written yet: `8333` is not in `BabsIconId` in 0.3.3 (83xx ends at
- *   8332), so `satisfies` would fail the build. `legacyIconNames.test.ts` asserts this
- *   automatically — it fails the moment `isBabsIconId("8333")` starts returning true,
- *   so the bump cannot land without completing the mapping.
- *
- *   Until then a legacy feature carrying this name renders the chevron fallback. The
- *   stored string is untouched, so nothing is lost and the fix is a one-line change.
+ * `Flugzeugabsturz` was the last unmapped name and is now resolved: the catalogue gained
+ * id 8333 in 0.4.0, so the mapping above closes the final gap. Nothing pickable is
+ * unmapped any more.
  */

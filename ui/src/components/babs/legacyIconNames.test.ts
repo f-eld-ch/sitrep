@@ -8,7 +8,7 @@ import { LEGACY_ICON_IDS } from "./legacyIconNames";
  * Names that existed in the pre-migration registry but are deliberately unmapped.
  * See the block comment in legacyIconNames.ts for the reasoning behind each.
  */
-const INTENTIONALLY_UNMAPPED = ["Einsatz", "Verschiebung", "Flugzeugabsturz"] as const;
+const INTENTIONALLY_UNMAPPED = ["Einsatz", "Verschiebung"] as const;
 
 describe("LEGACY_ICON_IDS", () => {
   it("maps every legacy name to an id that exists in the catalogue", () => {
@@ -28,28 +28,17 @@ describe("LEGACY_ICON_IDS", () => {
   });
 
   describe("Flugzeugabsturz", () => {
-    it("is mapped as soon as the catalogue gains id 8333", () => {
-      // Self-activating reminder. `8333` does not exist in 0.3.3, so this passes today.
-      // The moment the dependency is bumped to a version that ships it, this fails until
-      // `Flugzeugabsturz: "8333"` is added — the bump cannot silently skip the mapping.
-      //
-      // Phrased as a list so the assertion is unconditional and the failure names itself.
-      // Widened to string[]: Object.values() infers the union of the ids actually
-      // present, which is narrower than BabsIconId and would reject the lookup.
+    it("is mapped, now that the catalogue ships id 8333", () => {
+      // This started life as a self-activating reminder: 8333 did not exist in 0.3.3, so
+      // the assertion below was a no-op that would begin failing the moment the catalogue
+      // gained the id. That happened in 0.4.0 and the mapping was added, so it is now a
+      // plain regression guard.
       const mappedIds: readonly string[] = Object.values(LEGACY_ICON_IDS);
       const availableButUnmapped = ["8333"].filter(
         (id) => isBabsIconId(id) && !mappedIds.includes(id),
       );
       expect(availableButUnmapped).toEqual([]);
-    });
-
-    it("still has 8333 as the next free id, so the TODO stays valid", () => {
-      // Guards the guard: if 83xx grows past 8333 without 8333 itself appearing, the
-      // assumption recorded in legacyIconNames.ts is wrong and needs revisiting.
-      const beyond8333 = listIcons()
-        .filter((m) => m.id.startsWith("83") && m.id > "8333")
-        .map((m) => m.id);
-      expect(beyond8333).toEqual([]);
+      expect(getIcon("8333").labels.de).toBe("Flugzeugabsturz");
     });
   });
 

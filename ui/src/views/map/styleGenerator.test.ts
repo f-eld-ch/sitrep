@@ -1,5 +1,6 @@
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
+import { Colors } from "components/babs/lineAndZoneTypes";
 import { createMapStyle } from "./styleGenerator";
 
 /**
@@ -115,13 +116,84 @@ const drawStyle: LayerProps[] = [
     },
   },
   {
+    id: "gl-draw-polygon-flat-fill",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Polygon"],
+      ["has", "user_zoneType"],
+      [
+        "in",
+        "user_zoneType",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "fill-color": [
+        "match",
+        ["get", "user_zoneType"],
+        "BiologischVerseucht",
+        Colors.LightGray,
+        "ChemieVerseuchtFluessig",
+        Colors.LightGray,
+        "ChemieVerseuchtGasfoermig",
+        Colors.LightGray,
+        "Radioaktiv",
+        Colors.LightGray,
+        Colors.LightGray,
+      ],
+      "fill-opacity": 0.5,
+    },
+  },
+  {
+    id: "gl-draw-polygon-zone-icon",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Polygon"],
+      ["has", "user_zoneType"],
+      [
+        "in",
+        "user_zoneType",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
+      ["!=", "mode", "static"],
+    ],
+    layout: {
+      "icon-image": GENERATED_ICON_IMAGE,
+      "icon-allow-overlap": true,
+      // 1.5x the point-icon scale: a zone symbol labels an area, not a position.
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
+    },
+  },
+  {
     id: "gl-draw-polygon-fill-inactive",
     type: "fill",
     filter: [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "Polygon"],
-      ["!in", "user_zoneType", "Brandzone", "Zerstoerung", "Schadengebiet", "Einsatzraum"],
+      [
+        "!in",
+        "user_zoneType",
+        "Brandzone",
+        "Zerstoerung",
+        "Schadengebiet",
+        "Einsatzraum",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
       ["!=", "mode", "static"],
     ],
     paint: {
@@ -257,7 +329,7 @@ const drawStyle: LayerProps[] = [
         "Rutschgebiet",
         "babs:1113-pattern",
         "RutschgebietGespiegelt",
-        "babs:1113-pattern-b",
+        "babs:1113-pattern",
         "rettungsAchse",
         "babs:6106-pattern",
         "babs:1203-pattern",
@@ -601,12 +673,79 @@ const displayStyle: LayerProps[] = [
     },
   },
   {
+    id: "gl-draw-polygon-flat-fill",
+    type: "fill",
+    filter: [
+      "all",
+      ["==", "$type", "Polygon"],
+      ["has", "zoneType"],
+      [
+        "in",
+        "zoneType",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
+    ],
+    paint: {
+      "fill-color": [
+        "match",
+        ["get", "zoneType"],
+        "BiologischVerseucht",
+        Colors.LightGray,
+        "ChemieVerseuchtFluessig",
+        Colors.LightGray,
+        "ChemieVerseuchtGasfoermig",
+        Colors.LightGray,
+        "Radioaktiv",
+        Colors.LightGray,
+        Colors.LightGray,
+      ],
+      "fill-opacity": 0.5,
+    },
+  },
+  {
+    id: "gl-draw-polygon-zone-icon",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "Polygon"],
+      ["has", "zoneType"],
+      [
+        "in",
+        "zoneType",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
+    ],
+    layout: {
+      "icon-image": GENERATED_ICON_IMAGE,
+      "icon-allow-overlap": true,
+      // 1.5x the point-icon scale: a zone symbol labels an area, not a position.
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
+    },
+  },
+  {
     id: "gl-draw-polygon-fill-inactive",
     type: "fill",
     filter: [
       "all",
       ["==", "$type", "Polygon"],
-      ["!in", "zoneType", "Brandzone", "Zerstoerung", "Schadengebiet", "Einsatzraum"],
+      [
+        "!in",
+        "zoneType",
+        "Brandzone",
+        "Zerstoerung",
+        "Schadengebiet",
+        "Einsatzraum",
+        "BiologischVerseucht",
+        "ChemieVerseuchtFluessig",
+        "ChemieVerseuchtGasfoermig",
+        "Radioaktiv",
+      ],
     ],
     paint: {
       "fill-color": ["coalesce", ["get", "color"], "#000000"],
@@ -689,7 +828,7 @@ const displayStyle: LayerProps[] = [
         "Rutschgebiet",
         "babs:1113-pattern",
         "RutschgebietGespiegelt",
-        "babs:1113-pattern-b",
+        "babs:1113-pattern",
         "rettungsAchse",
         "babs:6106-pattern",
         "babs:1203-pattern",

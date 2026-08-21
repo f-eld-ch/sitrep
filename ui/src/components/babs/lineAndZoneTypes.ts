@@ -16,6 +16,8 @@ export const Colors = {
   Blue: "#0000ff",
   Black: "#000000",
   Orange: "#F38D11",
+  /** Fill wash for contaminated-area zones, which are outlined in black. */
+  LightGray: "#535353aa",
 } as const;
 
 export interface SelectableType {
@@ -29,7 +31,24 @@ export interface SelectableType {
    * and cannot drift from the symbol they describe.
    */
   thumbnail: BabsIconId;
+  /** Stroke colour, and the value persisted as `properties.color`. */
   color: string;
+  /**
+   * Flat fill colour for a zone, as an alternative to a tiling `fill-pattern`.
+   *
+   * Zones without either are drawn outline-only (Schadengebiet, Einsatzraum).
+   */
+  fill?: string;
+  /**
+   * Symbol drawn inside the polygon, at MapLibre's interior anchor for the ring — the
+   * pole of inaccessibility, so it stays inside concave shapes rather than drifting out
+   * as a centroid would.
+   *
+   * Note this is a different icon from `thumbnail`: the picker button shows the
+   * catalogue's *Beispiel* variant, which depicts the symbol in the context of a zone and
+   * so reads better as a button, while the map draws the plain symbol.
+   */
+  zoneIcon?: BabsIconId;
 }
 
 export type SelectableTypes = Record<string, SelectableType>;
@@ -54,6 +73,43 @@ export const ZoneTypes: SelectableTypes = {
     name: "Zerstoerung",
     thumbnail: "1112", // Zerstörte Zone einer Ortschaft — renders 1112-pattern
     color: Colors.Red,
+  },
+  /**
+   * Contaminated-area zones (group 14): black outline, light grey wash, and the hazard
+   * symbol drawn inside the polygon rather than tiled across it.
+   *
+   * `thumbnail` and `zoneIcon` are the same symbol here: the catalogue's *Beispiel*
+   * variants (1401b-1404b) depict the symbol already sitting inside an area, which
+   * duplicates what the zone itself draws, so the plain symbol reads better on the button.
+   * They stay excluded from the icon picker along with every other Beispiel.
+   */
+  BiologischVerseucht: {
+    name: "BiologischVerseucht",
+    thumbnail: "1401", // Biologisch verseuchtes Gebiet
+    zoneIcon: "1401", // Biologisch verseuchtes Gebiet
+    fill: Colors.LightGray,
+    color: Colors.Black,
+  },
+  ChemieVerseuchtFluessig: {
+    name: "ChemieVerseuchtFluessig",
+    thumbnail: "1402", // Chemievergiftete Zone flüssig - sesshaft
+    zoneIcon: "1402", // Chemievergiftete Zone flüssig - sesshaft
+    fill: Colors.LightGray,
+    color: Colors.Black,
+  },
+  ChemieVerseuchtGasfoermig: {
+    name: "ChemieVerseuchtGasfoermig",
+    thumbnail: "1403", // Chemievergiftetes Gebiet gasförmig - flüchtig
+    zoneIcon: "1403", // Chemievergiftetes Gebiet gasförmig - flüchtig
+    fill: Colors.LightGray,
+    color: Colors.Black,
+  },
+  Radioaktiv: {
+    name: "Radioaktiv",
+    thumbnail: "1404", // Radioaktives Gebiet
+    zoneIcon: "1404", // Radioaktives Gebiet
+    fill: Colors.LightGray,
+    color: Colors.Black,
   },
 };
 
