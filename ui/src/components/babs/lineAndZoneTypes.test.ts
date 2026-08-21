@@ -1,4 +1,4 @@
-import { getLabel, isBabsIconId } from "@f-eld-ch/babs-core";
+import { getIcon, getLabel, isBabsIconId } from "@f-eld-ch/babs-core";
 import { describe, expect, it } from "vitest";
 import { EnrichLineStringMap } from "components/map/EnrichedLayerFeatures";
 import { createMapStyle } from "views/map/styleGenerator";
@@ -152,6 +152,44 @@ describe("ZoneTypes", () => {
     const styled = styledValues("zoneType");
     const undrawn = Object.keys(ZoneTypes).filter((name) => !styled.has(name));
     expect(undrawn).toEqual([]);
+  });
+
+  it("declares at most one interior treatment per zone", () => {
+    // pattern / fill / outlineOnly each route the zone to a different fill layer, so two
+    // of them would fill it twice. The style derives its filters from these fields, which
+    // is what makes a contradiction here a rendering bug rather than dead config.
+    const conflicting = Object.values(ZoneTypes)
+      .map((zone) => ({
+        name: zone.name,
+        treatments: [
+          zone.pattern !== undefined && "pattern",
+          zone.fill !== undefined && "fill",
+          zone.outlineOnly === true && "outlineOnly",
+        ].filter(Boolean),
+      }))
+      .filter((zone) => zone.treatments.length > 1);
+    expect(conflicting).toEqual([]);
+  });
+
+  it("names a real pattern-capable icon wherever a pattern is declared", () => {
+    const invalid = Object.values(ZoneTypes)
+      .filter((zone) => zone.pattern !== undefined)
+      .filter((zone) => !getIcon(zone.pattern as never).hasPattern)
+      .map((zone) => `${zone.name} -> ${zone.pattern}`);
+    expect(invalid).toEqual([]);
+  });
+
+  it("gives every zone an interior treatment, so none falls through by accident", () => {
+    // A zone with none of the three lands in the generic fill layer and is washed in the
+    // feature's own colour. That is a legitimate choice, but it should be deliberate — this
+    // asserts the current set is fully specified, and will flag a new zone that forgot.
+    const untreated = Object.values(ZoneTypes)
+      .filter(
+        (zone) =>
+          zone.pattern === undefined && zone.fill === undefined && zone.outlineOnly !== true,
+      )
+      .map((zone) => zone.name);
+    expect(untreated).toEqual([]);
   });
 });
 

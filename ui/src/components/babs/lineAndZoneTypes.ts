@@ -34,11 +34,18 @@ export interface SelectableType {
   /** Stroke colour, and the value persisted as `properties.color`. */
   color: string;
   /**
-   * Flat fill colour for a zone, as an alternative to a tiling `fill-pattern`.
+   * How the zone's interior is drawn. At most one of these may be set.
    *
-   * Zones without either are drawn outline-only (Schadengebiet, Einsatzraum).
+   * A zone with none of them falls through to the generic polygon fill, which washes it
+   * in the feature's own colour — so the treatment is always explicit here rather than
+   * implied by absence.
    */
+  /** Tiling pattern, taken from this icon's pattern tile via `patternSpriteKey`. */
+  pattern?: BabsIconId;
+  /** Flat fill colour. */
   fill?: string;
+  /** No interior fill at all: outline only. */
+  outlineOnly?: boolean;
   /**
    * Symbol drawn inside the polygon, at MapLibre's interior anchor for the ring — the
    * pole of inaccessibility, so it stays inside concave shapes rather than drifting out
@@ -56,22 +63,26 @@ export type SelectableTypes = Record<string, SelectableType>;
 export const ZoneTypes: SelectableTypes = {
   Einsatzraum: {
     name: "Einsatzraum",
-    thumbnail: "5126", // Absperrung Einsatzraum — outline only, no fill pattern
+    thumbnail: "5126", // Absperrung Einsatzraum
+    outlineOnly: true,
     color: Colors.Blue,
   },
   Schadengebiet: {
     name: "Schadengebiet",
-    thumbnail: "1114", // Schadengebiet - Schadenraum — outline only, no fill pattern
+    thumbnail: "1114", // Schadengebiet - Schadenraum
+    outlineOnly: true,
     color: Colors.Red,
   },
   Brandzone: {
     name: "Brandzone",
-    thumbnail: "1110", // Brandzone Flächenbrand — renders 1110-pattern
+    thumbnail: "1110", // Brandzone Flächenbrand
+    pattern: "1110", // renders 1110-pattern
     color: Colors.Red,
   },
   Zerstoerung: {
     name: "Zerstoerung",
-    thumbnail: "1112", // Zerstörte Zone einer Ortschaft — renders 1112-pattern
+    thumbnail: "1112", // Zerstörte Zone einer Ortschaft
+    pattern: "1112", // renders 1112-pattern
     color: Colors.Red,
   },
   /**
