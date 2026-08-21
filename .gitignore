@@ -39,7 +39,15 @@ coverage
 
 # Go coverage profiles
 coverage.out
+# The name the workflows actually pass to -coverprofile; the entry above never matched it.
+# Left untracked it makes the working tree dirty, which breaks any build step that inspects
+# git state — ko refuses to build a dirty tree rather than stamp a commit that does not
+# describe what was built.
+go-coverage.out
 go-cobertura.xml
 
 # Vitest coverage reports
 ui/coverage/
+
+# TypeScript incremental build state, emitted for composite projects (tsconfig.node.json)
+*.tsbuildinfo
