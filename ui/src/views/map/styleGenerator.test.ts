@@ -279,6 +279,7 @@ const drawStyle: LayerProps[] = [
         "schwerBegehbar",
         "durchgeführteVerschiebung",
         "durchgeführterEinsatz",
+        "brandUebergriffErfolgt",
       ],
       ["!=", "mode", "static"],
     ],
@@ -299,7 +300,14 @@ const drawStyle: LayerProps[] = [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "LineString"],
-      ["in", "user_lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
+      [
+        "in",
+        "user_lineType",
+        "begehbar",
+        "beabsichtigteVerschiebung",
+        "beabsichtigterEinsatz",
+        "brandUebergriffGefahr",
+      ],
       ["!=", "mode", "static"],
     ],
     layout: {
@@ -696,7 +704,14 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      ["in", "lineType", "schwerBegehbar", "durchgeführteVerschiebung", "durchgeführterEinsatz"],
+      [
+        "in",
+        "lineType",
+        "schwerBegehbar",
+        "durchgeführteVerschiebung",
+        "durchgeführterEinsatz",
+        "brandUebergriffErfolgt",
+      ],
     ],
     layout: {
       "line-cap": "round",
@@ -714,7 +729,14 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "LineString"],
-      ["in", "lineType", "begehbar", "beabsichtigteVerschiebung", "beabsichtigterEinsatz"],
+      [
+        "in",
+        "lineType",
+        "begehbar",
+        "beabsichtigteVerschiebung",
+        "beabsichtigterEinsatz",
+        "brandUebergriffGefahr",
+      ],
     ],
     layout: {
       "line-cap": "round",

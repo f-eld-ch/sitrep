@@ -259,7 +259,9 @@ describe("style image resolution", () => {
             ? (["zoneType", zoneTypes] as const)
             : (["lineType", lineTypes] as const);
         for (const value of values) {
-          if (!resolvesToRealImage(found, propsFor(found, key, value), availableImages, availableSet)) {
+          if (
+            !resolvesToRealImage(found, propsFor(found, key, value), availableImages, availableSet)
+          ) {
             unresolved.push(`${found.layerId}: ${key}=${value}`);
           }
         }
@@ -283,24 +285,24 @@ describe("style image resolution", () => {
     });
   });
 
-  describe.each(Object.entries(ATLASES))("enriched line caps against the %s atlas", (
-    _lang,
-    atlas,
-  ) => {
-    it("uses only sprite images that exist", () => {
-      // These caps are written straight onto synthetic features and read by a bare
-      // ["get", "icon"], bypassing the match expression — so an unprefixed or mistyped
-      // key here would be invisible to every other test in this file.
-      const available = new Set(availableImagesFor(atlas));
-      const missing = Object.entries(EnrichLineStringMap).flatMap(([lineType, config]) =>
-        [config.iconStart, config.iconEnd]
-          .filter((icon): icon is string => icon !== undefined)
-          .filter((icon) => !available.has(icon))
-          .map((icon) => `${lineType}: ${icon}`),
-      );
-      expect(missing).toEqual([]);
-    });
-  });
+  describe.each(Object.entries(ATLASES))(
+    "enriched line caps against the %s atlas",
+    (_lang, atlas) => {
+      it("uses only sprite images that exist", () => {
+        // These caps are written straight onto synthetic features and read by a bare
+        // ["get", "icon"], bypassing the match expression — so an unprefixed or mistyped
+        // key here would be invisible to every other test in this file.
+        const available = new Set(availableImagesFor(atlas));
+        const missing = Object.entries(EnrichLineStringMap).flatMap(([lineType, config]) =>
+          [config.iconStart, config.iconEnd]
+            .filter((icon): icon is string => icon !== undefined)
+            .filter((icon) => !available.has(icon))
+            .map((icon) => `${lineType}: ${icon}`),
+        );
+        expect(missing).toEqual([]);
+      });
+    },
+  );
 
   it("defines a cap for every line type that should have one", () => {
     // Guards against a cap silently disappearing during a refactor.

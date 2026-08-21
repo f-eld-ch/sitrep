@@ -1,23 +1,40 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsRotate,
+  faChevronLeft,
+  faHeading,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   type BabsCategory,
   type BabsIconId,
   type BabsIconMeta,
+  getGroup,
+  getIcon,
   listCategories,
   listIcons,
 } from "@f-eld-ch/babs-core";
 import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
 import classNames from "classnames";
 import { aliasFor } from "components/babs/iconResolver";
-import { isPickableIcon } from "components/babs/excludedIcons";
+import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
 import {
+  byColor,
   ColorForCategory,
   LineTypes,
   type SelectableType,
   ZoneTypes,
 } from "components/babs/lineAndZoneTypes";
+import {
+  CATEGORY_DRILL_DOWN,
+  CATEGORY_ICON,
+  type DrillDownEntry,
+  PICKER_GAP,
+  PICKER_ICON_CLASS,
+  PICKER_ICON_SIZE,
+} from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
@@ -31,6 +48,7 @@ import "./BabsIconController.scss";
 const iconControllerFlexboxStyleRow = {
   display: "flex",
   flexFlow: "row wrap",
+  gap: `${PICKER_GAP}px`,
   flexGrow: 2,
   flexShrink: 4,
   flexBasis: 0,
@@ -41,6 +59,7 @@ const iconControllerFlexboxStyleRow = {
 const iconControllerFlexboxStyleColumn = {
   display: "flex",
   flexFlow: "column wrap",
+  gap: `${PICKER_GAP}px`,
   flexGrow: 2,
   flexShrink: 4,
   flexBasis: 0,
@@ -147,26 +166,51 @@ const IconController = memo((props: BabsIconControllerProps) => {
 
 /**
  * Categories offered by the picker, resolved once. Replaces the hand-maintained
- * `IconGroups`, so a catalogue addition appears without touching this repo.
+ * `IconGroups`, so a catalogue addition appears without touching this repo — minus the
+ * categories the picker does not own (see EXCLUDED_CATEGORIES).
  */
-const CATEGORIES: readonly BabsCategory[] = listCategories();
+const CATEGORIES: readonly BabsCategory[] = listCategories().filter((category) =>
+  isPickableCategory(category.number),
+);
 
-/** Icons offered for a category, minus the configured exclusions. */
-const pickableIconsFor = (category: BabsCategory): readonly BabsIconMeta[] =>
-  listIcons({ category: category.number }).filter((meta) => isPickableIcon(meta.id));
+/** Whether an icon should be offered in the picker at all. */
+const pickable = (meta: BabsIconMeta): boolean => isPickableIcon(meta.id);
 
 /**
- * One collapsible category of icons. Collapsed it shows a representative icon; expanded
- * it shows the whole category.
+ * One collapsible category of icons.
+ *
+ * Collapsed it shows the category's configured icon. Expanded it lists the category's
+ * icons — except for categories with a `CATEGORY_DRILL_DOWN` entry, which show a set of
+ * selector icons first (for Formationen, the partner symbols) and only then that
+ * selection's group.
  */
 function IconCategoryMenu(props: CategoryMenuProps) {
   const { category, onUpdate, feature } = props;
   // lang/label come from BabsIconProvider, so they are already BABS-resolved ("en" -> de).
   const { lang, label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
-  const icons = pickableIconsFor(category);
-  const representative = icons.at(-1);
-  const [active, setActive] = useState<boolean>(false);
+  const [expanded, setExpanded] = useState(false);
+  const [openEntry, setOpenEntry] = useState<DrillDownEntry | null>(null);
+
+  const drillDown = CATEGORY_DRILL_DOWN[category.number];
+
+  /**
+   * With a selection open, that group's icons led by the selector itself — so the plain
+   * partner symbol stays placeable rather than being consumed as navigation. Otherwise
+   * the whole category.
+   */
+  const icons = (() => {
+    if (!openEntry) return listIcons({ category: category.number }).filter(pickable);
+    const group = listIcons({ group: openEntry.group }).filter(pickable);
+    const selector = getIcon(openEntry.selector);
+    const alreadyInGroup = group.some((meta) => meta.id === selector.id);
+    return alreadyInGroup || !pickable(selector) ? group : [selector, ...group];
+  })();
+
+  const collapse = useCallback(() => {
+    setExpanded(false);
+    setOpenEntry(null);
+  }, []);
 
   const onClickIcon = useCallback(
     (id: BabsIconId) => {
@@ -180,24 +224,41 @@ function IconCategoryMenu(props: CategoryMenuProps) {
       });
       feature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [feature], action: "featureDetail" });
-      setActive(false);
+      collapse();
     },
-    [feature, category.number, onUpdate],
+    [feature, category.number, onUpdate, collapse],
   );
 
   // Hold off until the catalogue is registered, so the grid does not flash placeholders.
-  if (!catalogueReady || representative === undefined) {
+  if (!catalogueReady) {
     return null;
   }
 
-  if (active) {
+  const categoryLabel = category.labels[lang];
+
+  // First level of a drill-down category: the selector icons (for Formationen, 47xx).
+  if (expanded && drillDown && openEntry === null) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
-        {icons.map((meta) => {
-          const label = iconLabel(meta.id);
+        <BackButton title={categoryLabel} onClick={collapse} />
+        {drillDown.map((entry) => {
+          // The group's name, not the selector icon's: "Polizei" reads better than "P".
+          const label = getGroup(entry.group).labels[lang];
           return (
-            <button type="button" key={meta.id} title={label} onClick={() => onClickIcon(meta.id)}>
-              <BabsIcon icon={meta.id} size={meta.displaySize} title={label} fallback={null} />
+            <button
+              type="button"
+              key={entry.selector}
+              title={label}
+              aria-label={label}
+              onClick={() => setOpenEntry(entry)}
+            >
+              <BabsIcon
+                icon={entry.selector}
+                size={PICKER_ICON_SIZE}
+                title={label}
+                fallback={null}
+                className={PICKER_ICON_CLASS}
+              />
             </button>
           );
         })}
@@ -205,7 +266,32 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     );
   }
 
-  const categoryLabel = category.labels[lang];
+  if (expanded) {
+    return (
+      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
+        {/* Back to the group list for a drill-down category, otherwise straight to collapsed. */}
+        <BackButton
+          title={categoryLabel}
+          onClick={drillDown ? () => setOpenEntry(null) : collapse}
+        />
+        {icons.map((meta) => {
+          const label = iconLabel(meta.id);
+          return (
+            <button type="button" key={meta.id} title={label} onClick={() => onClickIcon(meta.id)}>
+              <BabsIcon
+                icon={meta.id}
+                size={PICKER_ICON_SIZE}
+                title={label}
+                fallback={null}
+                className={PICKER_ICON_CLASS}
+              />
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div
       className="maplibregl-ctrl maplibregl-ctrl-group"
@@ -215,22 +301,40 @@ function IconCategoryMenu(props: CategoryMenuProps) {
         type="button"
         title={categoryLabel}
         aria-label={categoryLabel}
-        onClick={() => setActive(true)}
+        onClick={() => setExpanded(true)}
       >
         <BabsIcon
-          icon={representative.id}
-          size={representative.displaySize}
+          icon={CATEGORY_ICON[category.number]}
+          size={PICKER_ICON_SIZE}
           title={categoryLabel}
           fallback={null}
+          className={PICKER_ICON_CLASS}
         />
       </button>
     </div>
   );
 }
 
+/**
+ * Leaves the current picker level.
+ *
+ * Without it an expanded category is a dead end: the only way back used to be to place an
+ * icon, which matters more now that a drill-down category has two levels to unwind.
+ */
+function BackButton({ title, onClick }: { title: string; onClick: () => void }) {
+  const { t } = useTranslation();
+  const label = t("mapview.back");
+  return (
+    <button type="button" title={`${label} — ${title}`} aria-label={label} onClick={onClick}>
+      <FontAwesomeIcon icon={faChevronLeft} className={PICKER_ICON_CLASS} />
+    </button>
+  );
+}
+
 const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
   const { t } = useTranslation();
+  const { label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
@@ -284,18 +388,19 @@ const LineController = memo((props: BabsIconControllerProps) => {
         className="maplibregl-ctrl maplibregl-ctrl-group"
         style={iconControllerFlexboxStyleColumn}
       >
-        {Object.values(LineTypes).map((l) => (
+        {byColor(LineTypes).map((l) => (
           <button
             type="button"
             key={l.name}
-            title={t(`babs.lines.${l.description}`)}
+            title={iconLabel(l.thumbnail)}
             onClick={() => onClickIcon(l)}
           >
             <BabsIcon
               icon={l.thumbnail}
-              size={32}
-              title={t(`babs.lines.${l.description}`)}
+              size={PICKER_ICON_SIZE}
+              title={iconLabel(l.thumbnail)}
               fallback={null}
+              className={PICKER_ICON_CLASS}
             />
           </button>
         ))}
@@ -328,7 +433,8 @@ const LineController = memo((props: BabsIconControllerProps) => {
 
 const ZoneController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const { t } = useTranslation();
+  // Zone names come from the catalogue; nothing here needs a repo translation.
+  const { label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
@@ -367,14 +473,15 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
           <button
             type="button"
             key={l.name}
-            title={t(`babs.zones.${l.description}`)}
+            title={iconLabel(l.thumbnail)}
             onClick={() => onClickIcon(l)}
           >
             <BabsIcon
               icon={l.thumbnail}
-              size={32}
-              title={t(`babs.zones.${l.description}`)}
+              size={PICKER_ICON_SIZE}
+              title={iconLabel(l.thumbnail)}
               fallback={null}
+              className={PICKER_ICON_CLASS}
             />
           </button>
         ))}

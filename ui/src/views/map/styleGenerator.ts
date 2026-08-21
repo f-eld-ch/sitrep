@@ -267,6 +267,8 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "schwerBegehbar",
           "durchgeführteVerschiebung",
           "durchgeführterEinsatz",
+          // Same solid stroke as durchgeführteVerschiebung, in the feature's red.
+          "brandUebergriffErfolgt",
         ],
       ]),
       layout: {
@@ -290,6 +292,9 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "begehbar",
           "beabsichtigteVerschiebung",
           "beabsichtigterEinsatz",
+          // Same dashed stroke as beabsichtigteVerschiebung; red comes from the feature's
+          // own `color`, set by the line type.
+          "brandUebergriffGefahr",
         ],
       ]),
       layout: {

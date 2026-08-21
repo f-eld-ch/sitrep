@@ -45,28 +45,8 @@
     "wmsLayerMenu": {
       "errorFetchingLayers": "WMS Server konnte nicht erreicht werden oder keine Layer gefunden.",
       "noLayersFound": "Keine kompatiblen Layers gefunden. WMS Server muss EPSG:3857 Projektion unterstützen."
-    }
-  },
-  "babs": {
-    "zones": {
-      "Einsatzraum": "Einsatzraum",
-      "Schadengebiet": "Schadengebiet",
-      "Brandzone": "Brandzone",
-      "Zerstörte, unpassierbare Zone": "Zerstörte, unpassierbare Zone"
     },
-    "lines": {
-      "Rutschgebiet": "Rutschgebiet",
-      "Strasse erschwert befahrbar / begehbar": "Strasse erschwert befahrbar / begehbar",
-      "Strasse nicht befahrbar / schwer Begehbar": "Strasse nicht befahrbar / schwer begehbar",
-      "Strasse unpassierbar / gesperrt": "Strasse unpassierbar / gesperrt",
-      "Beabsichtigte Erkundung": "Beabsichtigte Erkundung",
-      "Durchgeführte Erkundung": "Durchgeführte Erkundung",
-      "Beabsichtigte Verschiebung": "Beabsichtigte Verschiebung",
-      "Durchgeführte Verschiebung": "Durchgeführte Verschiebung",
-      "Beabsichtigter Einsatz": "Beabsichtigter Einsatz",
-      "Durchgeführter Einsatz": "Durchgeführter Einsatz",
-      "Rettungs Achse": "Rettungs-Achse"
-    }
+    "back": "Zurück"
   },
   "medium": {
     "EMAIL": "Email",

@@ -66,16 +66,23 @@ interface EnrichLineConfig {
 }
 
 /**
- * Direction arrowhead for movement/action lines. Previously borrowed the `Others.Einsatz`
- * / `Others.Verschiebung` glyphs; now uses the catalogue's purpose-built marker. Blue
- * matches the colour these line types are drawn in (see `LineTypes` colours).
+ * Direction arrowheads, from the catalogue's purpose-built markers. These previously
+ * borrowed the `Others.Einsatz` / `Others.Verschiebung` glyphs from the bundled registry.
+ *
+ * The colour matches the stroke the line type is drawn in (see `LineTypes`), and the
+ * single/double distinction is meaningful: *Einsatz* is a double chevron, *Verschiebung*
+ * and reconnaissance a single one.
  */
-const DIRECTION_ARROW = babsImage(markerSpriteKey("chevron-blue"));
+const ARROW = {
+  movement: babsImage(markerSpriteKey("chevron-blue")),
+  deployment: babsImage(markerSpriteKey("double-chevron-blue")),
+  fireSpread: babsImage(markerSpriteKey("chevron-red")),
+} as const;
 
 /** End-of-line arrowhead only — start is left bare so the line reads directionally. */
-const directional = (): EnrichLineConfig => ({
+const directional = (arrow: string = ARROW.movement): EnrichLineConfig => ({
   iconStart: undefined,
-  iconEnd: DIRECTION_ARROW,
+  iconEnd: arrow,
   iconRotation: 90,
 });
 
@@ -105,8 +112,13 @@ export const EnrichLineStringMap: Record<string, EnrichLineConfig> = {
   beabsichtigteVerschiebung: directional(),
   rettungsAchse: directional(),
   durchgeführteVerschiebung: directional(),
-  beabsichtigterEinsatz: directional(),
-  durchgeführterEinsatz: directional(),
+  // Einsatz takes the double chevron; it previously reused the single one, which made it
+  // indistinguishable from Verschiebung on the map.
+  beabsichtigterEinsatz: directional(ARROW.deployment),
+  durchgeführterEinsatz: directional(ARROW.deployment),
+  // Fire spread: the movement line styles in red, so a red chevron to match the stroke.
+  brandUebergriffGefahr: directional(ARROW.fireSpread),
+  brandUebergriffErfolgt: directional(ARROW.fireSpread),
 };
 
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
@@ -133,7 +145,7 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
           // yields a non-null string even when the sprite has no such image, so the
           // fallback was unreachable and an unknown cap rendered blank. The previous
           // fallback, "default_marker", existed in no atlas either.
-          "icon-image": ["coalesce", ["image", ["get", "icon"]], ["image", DIRECTION_ARROW]],
+          "icon-image": ["coalesce", ["image", ["get", "icon"]], ["image", ARROW.movement]],
           "icon-allow-overlap": true,
           "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
           "icon-rotation-alignment": "map",

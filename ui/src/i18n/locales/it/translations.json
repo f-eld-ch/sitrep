@@ -45,28 +45,8 @@
     "wmsLayerMenu": {
       "errorFetchingLayers": "Impossibile raggiungere il server WMS o non sono stati trovati livelli.",
       "noLayersFound": "Nessun livello compatibile trovato. Il server WMS deve supportare la proiezione EPSG:3857."
-    }
-  },
-  "babs": {
-    "zones": {
-      "Einsatzraum": " Zona d’intervento",
-      "Schadengebiet": "Zona sinistrata",
-      "Brandzone": "Zona toccata dall’incendio / fuoco di superficie",
-      "Zerstörte, unpassierbare Zone": "Zona sinistrata impraticabile"
     },
-    "lines": {
-      "Rutschgebiet": "Zona colpita da frana o valanga",
-      "Strasse erschwert befahrbar / begehbar": "Strada percorribile con difficoltà per i veicoli e i pedoni",
-      "Strasse nicht befahrbar / schwer Begehbar": "Strada non percorribile per i veicoli / accesso pedonale difficoltoso",
-      "Strasse unpassierbar / gesperrt": "Strada impraticabile / sbarrata",
-      "Beabsichtigte Erkundung": "Ricognizione pianificata",
-      "Durchgeführte Erkundung": "Ricognizione eseguita",
-      "Beabsichtigte Verschiebung": "Spostamento pianificato",
-      "Durchgeführte Verschiebung": "Spostamento eseguito",
-      "Beabsichtigter Einsatz": "Intervento pianificato",
-      "Durchgeführter Einsatz": "Intervento eseguito",
-      "Rettungs Achse": "Asse d’intervento di salvataggio"
-    }
+    "back": "Indietro"
   },
   "medium": {
     "EMAIL": "e-mail",

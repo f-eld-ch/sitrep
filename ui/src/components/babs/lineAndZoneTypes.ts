@@ -21,9 +21,13 @@ export const Colors = {
 export interface SelectableType {
   /** Persisted verbatim as `properties.lineType` / `properties.zoneType`. */
   name: string;
-  /** Translation key suffix under `babs.lines.*` / `babs.zones.*`. */
-  description: string;
-  /** Catalogue icon used for the picker button. */
+  /**
+   * Catalogue icon for the picker button — and the source of the label.
+   *
+   * The name shown to the user comes from `getLabel(thumbnail, lang)` rather than from a
+   * `babs.lines.*` / `babs.zones.*` key in this repo, so de/fr/it come from the catalogue
+   * and cannot drift from the symbol they describe.
+   */
   thumbnail: BabsIconId;
   color: string;
 }
@@ -33,108 +37,123 @@ export type SelectableTypes = Record<string, SelectableType>;
 export const ZoneTypes: SelectableTypes = {
   Einsatzraum: {
     name: "Einsatzraum",
-    description: "Einsatzraum",
     thumbnail: "5126", // Absperrung Einsatzraum — outline only, no fill pattern
     color: Colors.Blue,
   },
   Schadengebiet: {
     name: "Schadengebiet",
-    description: "Schadengebiet",
     thumbnail: "1114", // Schadengebiet - Schadenraum — outline only, no fill pattern
     color: Colors.Red,
   },
   Brandzone: {
     name: "Brandzone",
-    description: "Brandzone",
     thumbnail: "1110", // Brandzone Flächenbrand — renders 1110-pattern
     color: Colors.Red,
   },
   Zerstoerung: {
     name: "Zerstoerung",
-    description: "Zerstörte, unpassierbare Zone",
     thumbnail: "1112", // Zerstörte Zone einer Ortschaft — renders 1112-pattern
     color: Colors.Red,
   },
 };
 
 export const LineTypes: SelectableTypes = {
+  brandUebergriffGefahr: {
+    name: "brandUebergriffGefahr",
+    thumbnail: "1111a",
+    color: Colors.Red,
+  },
+  brandUebergriffErfolgt: {
+    name: "brandUebergriffErfolgt",
+    thumbnail: "1111b",
+    color: Colors.Red,
+  },
   Rutschgebiet: {
     name: "Rutschgebiet",
-    description: "Rutschgebiet",
     thumbnail: "1113",
     color: Colors.Red,
   },
   begehbar: {
     name: "begehbar",
-    description: "Strasse erschwert befahrbar / begehbar",
     thumbnail: "1201",
     color: Colors.Red,
   },
   schwerBegehbar: {
     name: "schwerBegehbar",
-    description: "Strasse nicht befahrbar / schwer Begehbar",
     thumbnail: "1202",
     color: Colors.Red,
   },
   unpassierbar: {
     name: "unpassierbar",
-    description: "Strasse unpassierbar / gesperrt",
     thumbnail: "1203",
     color: Colors.Red,
   },
   beabsichtigteErkundung: {
     name: "beabsichtigteErkundung",
-    description: "Beabsichtigte Erkundung",
     thumbnail: "6103a",
     color: Colors.Blue,
   },
   durchgeführteErkundung: {
     name: "durchgeführteErkundung",
-    description: "Durchgeführte Erkundung",
     thumbnail: "6103b",
     color: Colors.Blue,
   },
   beabsichtigteVerschiebung: {
     name: "beabsichtigteVerschiebung",
-    description: "Beabsichtigte Verschiebung",
     thumbnail: "6101a",
     color: Colors.Blue,
   },
   durchgeführteVerschiebung: {
     name: "durchgeführteVerschiebung",
-    description: "Durchgeführte Verschiebung",
     thumbnail: "6101b",
     color: Colors.Blue,
   },
   beabsichtigterEinsatz: {
     name: "beabsichtigterEinsatz",
-    description: "Beabsichtigter Einsatz",
     thumbnail: "6102a",
     color: Colors.Blue,
   },
   durchgeführterEinsatz: {
     name: "durchgeführterEinsatz",
-    description: "Durchgeführter Einsatz",
     thumbnail: "6102b",
     color: Colors.Blue,
   },
   rettungsAchse: {
     name: "rettungsAchse",
-    description: "Rettungs Achse",
     thumbnail: "6106",
     color: Colors.Blue,
   },
 };
 
 /**
- * `RutschgebietGespiegelt` is deliberately absent.
+ * Order colours appear in the pickers.
  *
- * It was never offered in the picker, and mirroring is a geometry operation: the reverse
- * button in `BabsIconController` reverses the linestring, which flips the tangent and so
- * mirrors an asymmetric `line-pattern` (and flips arrowhead direction for the movement
- * types). `styleGenerator` still maps the value so pre-existing features render, but no
- * new feature can acquire it.
+ * Follows BABS convention, which is also how the tables above are written: red for
+ * damage, hazards and effects, then blue for own forces, means and movements. A colour
+ * that is not listed sorts last rather than first, so adding one cannot silently jump the
+ * queue.
  */
+const COLOR_ORDER: readonly string[] = [Colors.Red, Colors.Blue, Colors.Orange, Colors.Black];
+
+const colorRank = (color: string): number => {
+  const index = COLOR_ORDER.indexOf(color);
+  return index === -1 ? COLOR_ORDER.length : index;
+};
+
+/**
+ * Groups selectable types by colour for display.
+ *
+ * The tables above happen to be written in colour order today, but that is a property of
+ * how they were typed rather than something enforced: a type belongs next to its
+ * semantic siblings, which is not necessarily next to types of the same colour. Sorting at
+ * the point of display means a new entry can be declared wherever it reads best without
+ * leaving a stray colour mid-run in the picker.
+ *
+ * `sort` is stable, so declaration order survives within a colour — which is what keeps
+ * pairs like beabsichtigt/durchgeführt adjacent.
+ */
+export const byColor = (types: SelectableTypes): readonly SelectableType[] =>
+  Object.values(types).sort((a, b) => colorRank(a.color) - colorRank(b.color));
 
 /**
  * Feature colour by catalogue category, replacing the old per-group table that was keyed

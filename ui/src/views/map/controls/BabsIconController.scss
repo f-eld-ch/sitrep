@@ -5,6 +5,36 @@
   }
 }
 
+/**
+ * Padding and centring for picker buttons, selected by the glyph they contain rather than
+ * by the button itself.
+ *
+ * This stylesheet is global, so styling `.maplibregl-ctrl-group button` directly also
+ * matches MapLibre's own zoom, compass and fullscreen controls. Those centre a
+ * background-image inside the button, so adding padding there knocks their glyphs
+ * off-centre. Keying off `.babs-picker-icon` means the rule applies exactly where a BABS
+ * glyph is rendered and nowhere else.
+ *
+ * If `:has()` is unavailable the icons simply sit on the text baseline as before — the
+ * picker still works, it is only less tidy.
+ */
+.maplibregl-ctrl-group button:has(.babs-picker-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // Keep the button at 35px once the padding is added. Sized to suit
+  // PICKER_ICON_SIZE (28px) in pickerConfig.ts: 28 + 2*3 = 34, just inside the button.
+  // Raising the icon size means lowering this to match.
+  box-sizing: border-box;
+  padding: 3px;
+}
+
+// An inline SVG otherwise sits on the text baseline, leaving descender space beneath it
+// and reading as vertically off-centre.
+.babs-picker-icon {
+  display: block;
+}
+
 .control-panel {
   min-height: 10%;
   min-width: 20%;

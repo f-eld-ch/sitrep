@@ -45,28 +45,8 @@
     "wmsLayerMenu": {
       "errorFetchingLayers": "Le serveur WMS n'a pas pu être atteint ou aucune calque n'a été trouvée.",
       "noLayersFound": "Aucune calque compatible trouvée. Le serveur WMS doit prendre en charge la projection EPSG:3857."
-    }
-  },
-  "babs": {
-    "zones": {
-      "Einsatzraum": "Zone d'intervention",
-      "Schadengebiet": "Zone sinistrée",
-      "Brandzone": "Zone en feu",
-      "Zerstörte, unpassierbare Zone": "Zone sinistrée"
     },
-    "lines": {
-      "Rutschgebiet": "Glissement de terrain",
-      "Strasse erschwert befahrbar / begehbar": "Route difficilement praticable pour les vhc / possible pour les piétons",
-      "Strasse nicht befahrbar / schwer Begehbar": "Route impraticable pour les vhc et difficile pour les piétons",
-      "Strasse unpassierbar / gesperrt": "Route impraticable / barrée",
-      "Beabsichtigte Erkundung": "Exploration / Reconnaissances prévues",
-      "Durchgeführte Erkundung": "Exploration / Reconnaissances exécutées",
-      "Beabsichtigte Verschiebung": "Mouvements prévus",
-      "Durchgeführte Verschiebung": "Mouvements exécutés",
-      "Beabsichtigter Einsatz": "Engagements prévus",
-      "Durchgeführter Einsatz": "Engagements exécutés",
-      "Rettungs Achse": "Axe d’engagement pour le sauvetage"
-    }
+    "back": "Retour"
   },
   "medium": {
     "EMAIL": "Email",

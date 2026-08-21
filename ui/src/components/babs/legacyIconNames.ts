@@ -15,7 +15,6 @@ import type { BabsIconId } from "@f-eld-ch/babs-core";
  * without cross-referencing the package. `[hand]` marks a non-mechanical decision.
  */
 export const LEGACY_ICON_IDS = {
-
   // ─── Category 1: Auswirkungen ───
   Beschaedigung: "1101", // Beschaedigung
   Teilzerstoerung: "1102", // Teilzerstoerung
