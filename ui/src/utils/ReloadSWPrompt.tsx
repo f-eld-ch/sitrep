@@ -2,19 +2,17 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 import { t } from "i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createSWChannel, now } from "./swUpdateChannel";
+import {
+  CURRENT_SHA,
+  CURRENT_VERSION,
+  changelogUrl,
+  type DeployedVersion,
+  fetchDeployedVersion,
+} from "./version";
 
 const intervalMS = 60 * 60 * 1000;
 const PROMPT_LOCK_KEY = "sw-prompt-last";
 const PROMPT_LOCK_TTL = 60 * 1000; // 60s
-
-function getVersion() {
-  return import.meta.env.VITE_VERSION || "unknown";
-}
-
-function getChangelogUrl() {
-  const sha = import.meta.env.VITE_SHA_VERSION || "main";
-  return `https://github.com/RedGecko/sitrep/blob/${sha}/CHANGELOG.md`;
-}
 
 export function ReloadPrompt() {
   const {
@@ -44,10 +42,26 @@ export function ReloadPrompt() {
     },
   });
 
+  // The build the server is now serving, which is the update being offered. Null until
+  // fetched, or when the lookup failed — see the fallback where it is rendered.
+  const [deployed, setDeployed] = useState<DeployedVersion | null>(null);
   const [visible, setVisible] = useState(false);
   const [dismissUntil, setDismissUntil] = useState<number | null>(null);
   const tabId = useMemo(() => `${Math.random().toString(36).slice(2, 9)}`, []);
   const channelRef = useRef<{ post: (msg: any) => void; close: () => void } | null>(null);
+
+  useEffect(() => {
+    // Keyed on needRefresh so this costs a request only when an update exists, rather than
+    // on every page load. The running bundle cannot know the new version itself.
+    if (!needRefresh) return;
+    let active = true;
+    void fetchDeployedVersion().then((info) => {
+      if (active) setDeployed(info);
+    });
+    return () => {
+      active = false;
+    };
+  }, [needRefresh]);
 
   useEffect(() => {
     channelRef.current = createSWChannel((msg) => {
@@ -84,7 +98,7 @@ export function ReloadPrompt() {
 
         const last = Number(localStorage.getItem(PROMPT_LOCK_KEY) || "0");
         if (now() - last > PROMPT_LOCK_TTL) {
-          channelRef.current?.post({ type: "update-available", version: getVersion(), tabId });
+          channelRef.current?.post({ type: "update-available", version: CURRENT_VERSION, tabId });
           localStorage.setItem(PROMPT_LOCK_KEY, String(now()));
           if (!dismissUntil || now() > dismissUntil) {
             // show the prompt in this tab
@@ -202,7 +216,7 @@ export function ReloadPrompt() {
       }
 
       // announce update and show prompt in this tab
-      channelRef.current?.post({ type: "update-available", version: getVersion(), tabId });
+      channelRef.current?.post({ type: "update-available", version: CURRENT_VERSION, tabId });
       localStorage.setItem(PROMPT_LOCK_KEY, String(now()));
       if (!dismissUntil || now() > dismissUntil) setVisible(true);
     } else {
@@ -255,10 +269,16 @@ export function ReloadPrompt() {
               <div>
                 <strong>{t("updateNotification")}</strong>
                 <div className="mt-2">
-                  <a href={getChangelogUrl()} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {t("viewChangelog")}
                   </a>
-                  <span className="ml-3 has-text-weight-semibold">{getVersion()}</span>
+                  <span className="ml-3 has-text-weight-semibold">
+                    {deployed?.version ?? CURRENT_VERSION}
+                  </span>
                 </div>
               </div>
               <div className="buttons pt-2">

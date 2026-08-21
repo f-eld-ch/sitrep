@@ -28,6 +28,7 @@ import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
+import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
 import { useDarkMode } from "utils/useDarkMode";
 import { useDate } from "utils/useDate";
 
@@ -220,11 +221,13 @@ function VersionNavBar() {
         </span>
         <span>
           <a
-            href={`https://github.com/RedGecko/sitrep/blob/${import.meta.env.VITE_SHA_VERSION}/CHANGELOG.md`}
+            /* Deliberately the running build, not the deployed one: this element labels
+               the version the user is currently on. */
+            href={changelogUrl(CURRENT_SHA)}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {import.meta.env.VITE_VERSION}
+            {CURRENT_VERSION}
           </a>
         </span>
       </span>

@@ -184,6 +184,13 @@ export default defineConfig({
         target: "http://localhost:4180",
         changeOrigin: true,
       },
+      // Served by the Go backend, and read by the update prompt to name the version it is
+      // offering. Proxied so `yarn start` behaves like production instead of silently
+      // exercising the fallback path.
+      "/version": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
     },
   },
   preview: {
@@ -194,6 +201,13 @@ export default defineConfig({
         changeOrigin: true,
       },
       "/oauth2": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      // Served by the Go backend, and read by the update prompt to name the version it is
+      // offering. Proxied so `yarn start` behaves like production instead of silently
+      // exercising the fallback path.
+      "/version": {
         target: "http://localhost:4180",
         changeOrigin: true,
       },
