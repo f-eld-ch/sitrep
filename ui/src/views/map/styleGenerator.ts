@@ -24,20 +24,25 @@ type FilterCondition = Array<string | number | boolean | FilterCondition>;
  * Derived from `ZoneTypes` rather than listed here, so adding a zone type cannot silently
  * miss a layer — `lineAndZoneTypes.test.ts` asserts every zone type is drawn by something.
  */
-const FLAT_FILL_ZONES = Object.values(ZoneTypes).filter((zone) => zone.fill !== undefined);
-const ICON_ZONES = Object.values(ZoneTypes).filter((zone) => zone.zoneIcon !== undefined);
+const ZONES = Object.values(ZoneTypes);
+const PATTERN_ZONES = ZONES.filter((zone) => zone.pattern !== undefined);
+const FLAT_FILL_ZONES = ZONES.filter((zone) => zone.fill !== undefined);
+const OUTLINE_ONLY_ZONES = ZONES.filter((zone) => zone.outlineOnly);
+const ICON_ZONES = ZONES.filter((zone) => zone.zoneIcon !== undefined);
 
 /**
- * Zone types whose fill is handled by a dedicated layer — pattern-filled, outline-only, or
- * flat-filled — and which must therefore be excluded from the generic fill layer.
+ * Zone types whose interior is handled by a dedicated layer — pattern-filled,
+ * flat-filled, or outline-only — and which must therefore be excluded from the generic
+ * fill layer, or they would be filled twice.
+ *
+ * Derived from ZoneTypes rather than listed, so a zone declaring an interior treatment
+ * cannot be left out of the exclusion by omission.
  */
 const SPECIALLY_FILLED_ZONE_NAMES = [
-  "Brandzone",
-  "Zerstoerung",
-  "Schadengebiet",
-  "Einsatzraum",
-  ...FLAT_FILL_ZONES.map((zone) => zone.name),
-];
+  ...PATTERN_ZONES,
+  ...FLAT_FILL_ZONES,
+  ...OUTLINE_ONLY_ZONES,
+].map((zone) => zone.name);
 
 /**
  * Casualty-count icons, whose labels are placed differently from every other icon.
@@ -176,7 +181,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["==", "$type", "Polygon"],
         ["has", `${propPrefix}zoneType`],
-        ["in", `${propPrefix}zoneType`, "Schadengebiet", "Einsatzraum"],
+        ["in", `${propPrefix}zoneType`, ...OUTLINE_ONLY_ZONES.map((zone) => zone.name)],
       ]),
       paint: {
         "fill-outline-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
@@ -189,18 +194,16 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["==", "$type", "Polygon"],
         ["has", `${propPrefix}zoneType`],
-        ["in", `${propPrefix}zoneType`, "Brandzone", "Zerstoerung"],
+        ["in", `${propPrefix}zoneType`, ...PATTERN_ZONES.map((zone) => zone.name)],
       ]),
       paint: {
-        "fill-pattern": [
-          "match",
-          ["get", `${propPrefix}zoneType`],
-          "Brandzone",
-          babsImage(patternSpriteKey("1110")),
-          "Zerstoerung",
-          babsImage(patternSpriteKey("1112")),
-          babsImage(patternSpriteKey("1110")),
-        ],
+        "fill-pattern": matchOnProperty(
+          `${propPrefix}zoneType`,
+          PATTERN_ZONES.map(
+            (zone) => [zone.name, babsImage(patternSpriteKey(zone.pattern as BabsIconId))] as const,
+          ),
+          babsImage(patternSpriteKey(PATTERN_ZONES[0].pattern as BabsIconId)),
+        ),
         "fill-opacity": 1,
       },
     },
