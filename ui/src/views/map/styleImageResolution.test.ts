@@ -11,6 +11,7 @@ import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { babsImage } from "components/babs/iconResolver";
 import { LEGACY_ICON_IDS } from "components/babs/legacyIconNames";
+import { EnrichLineStringMap } from "components/map/EnrichedLayerFeatures";
 import basemap from "../../../public/map/sprites/basemap.json";
 import { createMapStyle } from "./styleGenerator";
 
@@ -280,6 +281,33 @@ describe("style image resolution", () => {
         .map((found) => found.layerId);
       expect(wrong).toEqual([]);
     });
+  });
+
+  describe.each(Object.entries(ATLASES))("enriched line caps against the %s atlas", (
+    _lang,
+    atlas,
+  ) => {
+    it("uses only sprite images that exist", () => {
+      // These caps are written straight onto synthetic features and read by a bare
+      // ["get", "icon"], bypassing the match expression — so an unprefixed or mistyped
+      // key here would be invisible to every other test in this file.
+      const available = new Set(availableImagesFor(atlas));
+      const missing = Object.entries(EnrichLineStringMap).flatMap(([lineType, config]) =>
+        [config.iconStart, config.iconEnd]
+          .filter((icon): icon is string => icon !== undefined)
+          .filter((icon) => !available.has(icon))
+          .map((icon) => `${lineType}: ${icon}`),
+      );
+      expect(missing).toEqual([]);
+    });
+  });
+
+  it("defines a cap for every line type that should have one", () => {
+    // Guards against a cap silently disappearing during a refactor.
+    const withCaps = Object.entries(EnrichLineStringMap).filter(
+      ([, c]) => c.iconStart !== undefined || c.iconEnd !== undefined,
+    );
+    expect(withCaps).toHaveLength(Object.keys(EnrichLineStringMap).length);
   });
 
   it("references no image literal that is missing from the atlas", () => {
