@@ -56,11 +56,24 @@ export default defineConfig({
               test: /node_modules[\\/](?:@flipt-io|@openfeature)/,
             },
             {
-              // The icon catalogue is large and changes on its own cadence; keeping it in
-              // its own chunk stops it inflating `common` and keeps it cacheable across
-              // unrelated app deploys.
+              // The inline-SVG icon definitions, reached only through the dynamic import
+              // in useBabsIcons. MUST stay in a chunk of its own: grouping it with the
+              // eagerly-imported babs-core/babs-sprites below drags several MB of SVG
+              // into the initial load, because a chunk is only as lazy as its most
+              // eagerly-referenced module. The stable name also lets the service worker
+              // exclude it from precaching (see workbox.globIgnores).
+              // Matches ONLY the icon definitions (dist/all.js and dist/icons/*), not
+              // babs-react's 4 kB main entry, which is imported eagerly for BabsIcon and
+              // registerBabsIcons. Including the entry here merges the eager and lazy
+              // graphs and makes the whole chunk eager again.
+              name: "babs-catalogue",
+              test: /node_modules[\\/]@f-eld-ch[\\/]babs-react[\\/]dist[\\/](?:all\.js|icons\.js|icons[\\/])/,
+              priority: 18,
+            },
+            {
+              // Small, eagerly imported: catalogue metadata and the sprite helpers.
               name: "babs-icons",
-              test: /node_modules[\\/]@f-eld-ch/,
+              test: /node_modules[\\/]@f-eld-ch[\\/]babs-(?:core|sprites)/,
               priority: 17,
             },
             {
@@ -105,7 +118,13 @@ export default defineConfig({
         // language happened to be built and serve it stale after a switch. Deliberately
         // scoped to `babs-*` rather than all of map/sprites: basemap/imagery are
         // language-invariant and are precached today for offline use.
-        globIgnores: ["map/sprites/babs-*"],
+        globIgnores: [
+          "map/sprites/babs-*",
+          // The icon catalogue is several MB of inline SVG, fetched on demand when the
+          // picker first opens. Precaching it would put that cost on every install, and
+          // it exceeds maximumFileSizeToCacheInBytes anyway, which fails the build.
+          "assets/babs-catalogue-*.js",
+        ],
         navigateFallbackDenylist: [/^\/oauth2/, /^\/api/],
         maximumFileSizeToCacheInBytes: 3145728, // 3MB
       },

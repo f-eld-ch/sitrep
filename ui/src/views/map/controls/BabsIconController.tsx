@@ -5,12 +5,11 @@ import {
   type BabsCategory,
   type BabsIconId,
   type BabsIconMeta,
-  getLabel,
   listCategories,
   listIcons,
 } from "@f-eld-ch/babs-core";
+import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
 import classNames from "classnames";
-import { BabsSpriteIcon } from "components/babs/BabsSpriteIcon";
 import { aliasFor } from "components/babs/iconResolver";
 import { isPickableIcon } from "components/babs/excludedIcons";
 import {
@@ -19,6 +18,7 @@ import {
   type SelectableType,
   ZoneTypes,
 } from "components/babs/lineAndZoneTypes";
+import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
@@ -161,8 +161,9 @@ const pickableIconsFor = (category: BabsCategory): readonly BabsIconMeta[] =>
  */
 function IconCategoryMenu(props: CategoryMenuProps) {
   const { category, onUpdate, feature } = props;
-  const { i18n } = useTranslation();
-  const lang = i18n.resolvedLanguage ?? i18n.language;
+  // lang/label come from BabsIconProvider, so they are already BABS-resolved ("en" -> de).
+  const { lang, label: iconLabel } = useBabsLang();
+  const catalogueReady = useBabsIcons();
   const icons = pickableIconsFor(category);
   const representative = icons.at(-1);
   const [active, setActive] = useState<boolean>(false);
@@ -184,7 +185,8 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     [feature, category.number, onUpdate],
   );
 
-  if (representative === undefined) {
+  // Hold off until the catalogue is registered, so the grid does not flash placeholders.
+  if (!catalogueReady || representative === undefined) {
     return null;
   }
 
@@ -192,10 +194,10 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
         {icons.map((meta) => {
-          const label = getLabel(meta.id, lang);
+          const label = iconLabel(meta.id);
           return (
             <button type="button" key={meta.id} title={label} onClick={() => onClickIcon(meta.id)}>
-              <BabsSpriteIcon spriteKey={meta.id} title={label} lang={lang} />
+              <BabsIcon icon={meta.id} size={meta.displaySize} title={label} fallback={null} />
             </button>
           );
         })}
@@ -203,7 +205,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     );
   }
 
-  const categoryLabel = category.labels[lang as keyof typeof category.labels] ?? category.labels.de;
+  const categoryLabel = category.labels[lang];
   return (
     <div
       className="maplibregl-ctrl maplibregl-ctrl-group"
@@ -215,7 +217,12 @@ function IconCategoryMenu(props: CategoryMenuProps) {
         aria-label={categoryLabel}
         onClick={() => setActive(true)}
       >
-        <BabsSpriteIcon spriteKey={representative.id} title={categoryLabel} lang={lang} />
+        <BabsIcon
+          icon={representative.id}
+          size={representative.displaySize}
+          title={categoryLabel}
+          fallback={null}
+        />
       </button>
     </div>
   );
@@ -224,6 +231,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
 const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
   const { t } = useTranslation();
+  const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
     (i: SelectableType) => {
@@ -266,7 +274,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
     return;
   }
 
-  if (selectedFeature.geometry.type !== "LineString") {
+  if (selectedFeature.geometry.type !== "LineString" || !catalogueReady) {
     return;
   }
 
@@ -283,7 +291,12 @@ const LineController = memo((props: BabsIconControllerProps) => {
             title={t(`babs.lines.${l.description}`)}
             onClick={() => onClickIcon(l)}
           >
-            <BabsSpriteIcon spriteKey={l.thumbnail} title={t(`babs.lines.${l.description}`)} />
+            <BabsIcon
+              icon={l.thumbnail}
+              size={32}
+              title={t(`babs.lines.${l.description}`)}
+              fallback={null}
+            />
           </button>
         ))}
       </div>
@@ -316,6 +329,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
 const ZoneController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
   const { t } = useTranslation();
+  const catalogueReady = useBabsIcons();
 
   const onClickIcon = useCallback(
     (i: SelectableType) => {
@@ -336,8 +350,9 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   }
 
   if (
-    selectedFeature.geometry.type !== "Polygon" &&
-    selectedFeature.geometry.type !== "MultiPolygon"
+    (selectedFeature.geometry.type !== "Polygon" &&
+      selectedFeature.geometry.type !== "MultiPolygon") ||
+    !catalogueReady
   ) {
     return;
   }
@@ -355,7 +370,12 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
             title={t(`babs.zones.${l.description}`)}
             onClick={() => onClickIcon(l)}
           >
-            <BabsSpriteIcon spriteKey={l.thumbnail} title={t(`babs.zones.${l.description}`)} />
+            <BabsIcon
+              icon={l.thumbnail}
+              size={32}
+              title={t(`babs.zones.${l.description}`)}
+              fallback={null}
+            />
           </button>
         ))}
       </div>
@@ -382,6 +402,7 @@ interface BabsIconControllerProps {
 
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
+  const { i18n } = useTranslation();
   const layer = first(
     state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer),
   );
@@ -404,9 +425,20 @@ const BabsIconController = () => {
   return (
     <>
       <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
-      <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      {/*
+       * Supplies the resolved language to <BabsIcon>, which is what selects the
+       * language-specific artwork (51 of the 257 icons have it) and backs
+       * useBabsLang().label.
+       *
+       * Scoped here rather than app-wide: these three controllers are the only consumers
+       * in the codebase. It is context only — no artwork is loaded by mounting it; the
+       * catalogue is imported lazily by useBabsIcons when a picker first renders.
+       */}
+      <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+        <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      </BabsIconProvider>
     </>
   );
 };
