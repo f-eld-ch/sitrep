@@ -59,6 +59,26 @@ for (const meta of ICONS) {
 }
 
 /**
+ * Every identifier that can denote one of the given icons — alias, bare id, and any legacy
+ * German name mapping to it.
+ *
+ * For use in style *filters*, which compare `properties.icon` literally and so cannot rely
+ * on the `match` expression that resolves `icon-image`. A filter listing only the legacy
+ * names silently stops matching as soon as features start storing aliases, which is how
+ * the casualty-count text layers came to miss every newly placed feature.
+ */
+export function iconIdentifiers(ids: readonly BabsIconId[]): string[] {
+  const identifiers = new Set<string>();
+  for (const id of ids) {
+    identifiers.add(id);
+    const meta = ICONS.find((m) => m.id === id);
+    if (meta) identifiers.add(meta.alias);
+    for (const legacyName of legacyNamesById.get(id) ?? []) identifiers.add(legacyName);
+  }
+  return [...identifiers];
+}
+
+/**
  * Resolves any identifier this application has ever persisted into a catalogue id.
  *
  * Accepts, in order of precedence: a bare catalogue id (`"1101"`), an alias
