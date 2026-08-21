@@ -1,5 +1,9 @@
 import { type BabsIconId, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
-import { babsImage, legacyIconMatchExpression } from "components/babs/iconResolver";
+import {
+  babsImage,
+  iconIdentifiers,
+  legacyIconMatchExpression,
+} from "components/babs/iconResolver";
 import { ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
@@ -34,6 +38,27 @@ const SPECIALLY_FILLED_ZONE_NAMES = [
   "Einsatzraum",
   ...FLAT_FILL_ZONES.map((zone) => zone.name),
 ];
+
+/**
+ * Casualty-count icons, whose labels are placed differently from every other icon.
+ *
+ * Listed by catalogue id and expanded to every identifier that can denote them — alias,
+ * id, legacy German name — because these are style *filters* comparing `properties.icon`
+ * literally, with no `match` expression to resolve aliases for them. Before this, the
+ * filters held only the legacy names, so a newly placed casualty icon got the generic
+ * label instead of its own placement.
+ */
+const CASUALTIES_CENTRED = iconIdentifiers([
+  "1304", // Eingesperrte (legacy EingesperrteAbgeschnittene)
+  "1303", // Obdachlose
+]);
+const CASUALTIES_RIGHT = iconIdentifiers([
+  "1305", // Tote
+  "1302", // Vermisste
+  "1301", // Verletzte
+]);
+/** Both groups: the icons the generic name label must skip. */
+const CASUALTIES_ALL = [...CASUALTIES_CENTRED, ...CASUALTIES_RIGHT];
 
 /**
  * Builds a `match` expression keyed on a feature property.
@@ -473,7 +498,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["==", "$type", "Point"],
         ["has", `${propPrefix}name`],
         ["has", `${propPrefix}icon`],
-        ["in", `${propPrefix}icon`, "EingesperrteAbgeschnittene", "Obdachlose"],
+        ["in", `${propPrefix}icon`, ...CASUALTIES_CENTRED],
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
@@ -496,7 +521,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["==", "$type", "Point"],
         ["has", `${propPrefix}name`],
         ["has", `${propPrefix}icon`],
-        ["in", `${propPrefix}icon`, "Tote", "Vermisste", "Verletzte"],
+        ["in", `${propPrefix}icon`, ...CASUALTIES_RIGHT],
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
@@ -517,15 +542,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["has", `${propPrefix}name`],
         ["has", `${propPrefix}color`],
-        [
-          "!in",
-          `${propPrefix}icon`,
-          "EingesperrteAbgeschnittene",
-          "Obdachlose",
-          "Tote",
-          "Vermisste",
-          "Verletzte",
-        ],
+        ["!in", `${propPrefix}icon`, ...CASUALTIES_ALL],
         ["==", "$type", "Point"],
       ]),
       layout: {

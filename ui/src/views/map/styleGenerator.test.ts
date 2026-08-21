@@ -1,5 +1,6 @@
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
+import { iconIdentifiers } from "components/babs/iconResolver";
 import { Colors } from "components/babs/lineAndZoneTypes";
 import { createMapStyle } from "./styleGenerator";
 
@@ -32,6 +33,18 @@ function layersToMap(layers: LayerProps[]): Record<string, LayerProps> {
  * asserts that `icon-image` is present, on the expected layer, and nowhere else.
  */
 const GENERATED_ICON_IMAGE = "<generated icon-image expression>";
+
+/**
+ * Casualty icons, expanded to every identifier that can denote them.
+ *
+ * Referenced rather than inlined for the same reason as GENERATED_ICON_IMAGE: the list is
+ * derived from the catalogue and the legacy mapping, so writing 15 strings out six times
+ * here would only pin today's catalogue. What these filters actually *do* is verified
+ * behaviourally in casualtyLabels.test.ts, which drives real features through them.
+ */
+const CASUALTIES_CENTRED = iconIdentifiers(["1304", "1303"]);
+const CASUALTIES_RIGHT = iconIdentifiers(["1305", "1302", "1301"]);
+const CASUALTIES_ALL = [...CASUALTIES_CENTRED, ...CASUALTIES_RIGHT];
 
 /** Replaces the generated icon-image expression with the sentinel, non-destructively. */
 function redactIconImage(layer: LayerProps): LayerProps {
@@ -469,7 +482,7 @@ const drawStyle: LayerProps[] = [
       ["==", "meta", "feature"],
       ["has", "user_name"],
       ["has", "user_icon"],
-      ["in", "user_icon", "EingesperrteAbgeschnittene", "Obdachlose"],
+      ["in", "user_icon", ...CASUALTIES_CENTRED],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "user_name"], ""],
@@ -494,7 +507,7 @@ const drawStyle: LayerProps[] = [
       ["==", "meta", "feature"],
       ["has", "user_name"],
       ["has", "user_icon"],
-      ["in", "user_icon", "Tote", "Vermisste", "Verletzte"],
+      ["in", "user_icon", ...CASUALTIES_RIGHT],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "user_name"], ""],
@@ -517,15 +530,7 @@ const drawStyle: LayerProps[] = [
       ["==", "active", "false"],
       ["has", "user_name"],
       ["has", "user_color"],
-      [
-        "!in",
-        "user_icon",
-        "EingesperrteAbgeschnittene",
-        "Obdachlose",
-        "Tote",
-        "Vermisste",
-        "Verletzte",
-      ],
+      ["!in", "user_icon", ...CASUALTIES_ALL],
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
@@ -945,7 +950,7 @@ const displayStyle: LayerProps[] = [
 
       ["has", "name"],
       ["has", "icon"],
-      ["in", "icon", "EingesperrteAbgeschnittene", "Obdachlose"],
+      ["in", "icon", ...CASUALTIES_CENTRED],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
@@ -970,7 +975,7 @@ const displayStyle: LayerProps[] = [
       ["==", "$type", "Point"],
       ["has", "name"],
       ["has", "icon"],
-      ["in", "icon", "Tote", "Vermisste", "Verletzte"],
+      ["in", "icon", ...CASUALTIES_RIGHT],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
@@ -992,7 +997,7 @@ const displayStyle: LayerProps[] = [
       "all",
       ["has", "name"],
       ["has", "color"],
-      ["!in", "icon", "EingesperrteAbgeschnittene", "Obdachlose", "Tote", "Vermisste", "Verletzte"],
+      ["!in", "icon", ...CASUALTIES_ALL],
       ["==", "$type", "Point"],
     ],
     layout: {
