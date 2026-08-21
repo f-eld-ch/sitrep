@@ -20,6 +20,10 @@ func (s *Server) RegisterRoutes() {
 	s.router.GET("/ping", s.health)
 	s.router.GET("/ready", s.ready)
 
+	// Build identity. Unauthenticated like the health endpoints: it exposes nothing the
+	// served asset filenames do not already reveal.
+	s.router.GET("/version", s.buildInfo)
+
 	// OIDC handlers
 	oidc := s.router.Group("/oauth2")
 	oidc.GET("/sign_in", s.Enforcer.SignInHandler)

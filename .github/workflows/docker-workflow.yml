@@ -94,6 +94,15 @@ jobs:
           echo "labels=$labels" >> $GITHUB_OUTPUT
       - name: Ko Build
         env:
+          # Consumed by .ko.yaml as -X main.version. Was already set here but had nothing
+          # reading it until .ko.yaml existed.
           Version: ${{ steps.meta.outputs.version }}
-        run: >
+        run: |
+          # An empty version would stamp `-X main.version=` and ship a binary reporting no
+          # version at all — worse than the "dev" default, and invisible until someone
+          # reads a trace. Fail here instead.
+          if [ -z "$Version" ]; then
+            echo "::error::docker/metadata-action produced an empty version; refusing to build an unversioned image"
+            exit 1
+          fi
           ko build --bare . --tags ${{ steps.image_tags_labels.outputs.tags }} ${{ steps.image_tags_labels.outputs.labels }}

@@ -11,6 +11,19 @@ import (
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
+// WithVersion records the build identity so it can be served to clients.
+//
+// The UI is embedded in this binary (see ui.Assets), so these values describe the frontend
+// being served as much as the backend, which is what lets the update prompt name the
+// version it is offering.
+func WithVersion(version, sha string) Option {
+	return func(s *Server) error {
+		s.version = version
+		s.sha = sha
+		return nil
+	}
+}
+
 // Option defines a functional option for Server.
 type Option func(*Server) error
 
