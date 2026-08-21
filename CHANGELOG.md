@@ -6,6 +6,10 @@
 - *(map)* Support language-dependent map icons for situation map ([#1739](https://github.com/f-eld-ch/sitrep/issues/1739)) - ([8928cc0](https://github.com/f-eld-ch/sitrep/commit/8928cc09ac5059e19263c9d8f1f14d835a33d737))
 - *(map)* Upgrade maplibre-gl to v6 for better performance ([#1732](https://github.com/f-eld-ch/sitrep/issues/1732)) - ([e5b6705](https://github.com/f-eld-ch/sitrep/commit/e5b6705a1c4a24045dcdc0453d4a97feacc186d7))
 
+### 🐛 Bug Fixes
+
+- *(map)* Match casualty icons by alias in the label filters ([#1743](https://github.com/f-eld-ch/sitrep/issues/1743)) - ([17dd478](https://github.com/f-eld-ch/sitrep/commit/17dd478aba11116c6a1c84d490ac191bcae0c5fb))
+
 ### ⚙️  Other
 
 - *(deps)* Bump dayjs from 1.11.21 to 1.11.23 in /ui ([#1738](https://github.com/f-eld-ch/sitrep/issues/1738)) - ([526b117](https://github.com/f-eld-ch/sitrep/commit/526b1175da2a68482a0cdbf661655cac2363be91))
