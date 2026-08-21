@@ -1,4 +1,14 @@
 name: Automated Tests and Linting
+
+# Tests and linting only — deliberately no coverage upload.
+#
+# upload-code-coverage can only attach a report to a pull request or the default branch.
+# This workflow runs on push to every branch except main/develop, so before a PR exists
+# there is nothing to attach to and the upload fails with
+#   HTTP 400: Only default branch is allowed if no pull_request_number is provided
+# (which is why re-running after opening the PR used to fix it). Once a PR does exist,
+# main.yml runs on the pull_request event — which fires on every push to the head branch —
+# and uploads both reports with a proper PR number, so uploading here only duplicated it.
 permissions: read-all
 on:
   push:
@@ -11,24 +21,6 @@ jobs:
     uses: ./.github/workflows/ui-workflow.yml
     with:
       build: false
-  upload-coverage-typescript:
-    needs: ui-tests
-    if: ${{ !cancelled() && needs.ui-tests.result == 'success' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      code-quality: write
-    steps:
-      - name: Download coverage artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: coverage-report-typescript
-      - uses: actions/upload-code-coverage@d8e329117199404bba6fc81efe8093dc7c015e34 # v1.4.2
-        with:
-          file: cobertura-coverage.xml
-          language: TypeScript
-          label: code-coverage-agent
-
   go-tests:
     runs-on: ubuntu-latest
     name: "Go Tests"
@@ -61,21 +53,3 @@ jobs:
         with:
           name: coverage-report-go
           path: go-cobertura.xml
-
-  upload-coverage-go:
-    needs: go-tests
-    if: ${{ !cancelled() && needs.go-tests.result == 'success' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      code-quality: write
-    steps:
-      - name: Download Go coverage artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: coverage-report-go
-      - uses: actions/upload-code-coverage@d8e329117199404bba6fc81efe8093dc7c015e34 # v1.4.2
-        with:
-          file: go-cobertura.xml
-          language: Go
-          label: code-coverage-agent
