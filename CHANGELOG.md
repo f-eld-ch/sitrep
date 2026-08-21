@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Add contaminated-area zone types ([#1740](https://github.com/f-eld-ch/sitrep/issues/1740)) - ([6d53129](https://github.com/f-eld-ch/sitrep/commit/6d531290ff431689bccc0c43c716dca3fbc82e80))
 - *(map)* Support language-dependent map icons for situation map ([#1739](https://github.com/f-eld-ch/sitrep/issues/1739)) - ([8928cc0](https://github.com/f-eld-ch/sitrep/commit/8928cc09ac5059e19263c9d8f1f14d835a33d737))
 - *(map)* Upgrade maplibre-gl to v6 for better performance ([#1732](https://github.com/f-eld-ch/sitrep/issues/1732)) - ([e5b6705](https://github.com/f-eld-ch/sitrep/commit/e5b6705a1c4a24045dcdc0453d4a97feacc186d7))
 
