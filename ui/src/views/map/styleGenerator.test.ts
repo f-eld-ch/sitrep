@@ -358,7 +358,7 @@ const drawStyle: LayerProps[] = [
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -374,7 +374,7 @@ const drawStyle: LayerProps[] = [
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "user_iconRotation"], 0],
@@ -758,7 +758,7 @@ const displayStyle: LayerProps[] = [
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -768,7 +768,7 @@ const displayStyle: LayerProps[] = [
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],

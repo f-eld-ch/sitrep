@@ -47,6 +47,7 @@ import SearchControl from "./controls/Searchbox";
 import { StyleController, selectedStyle } from "./controls/StyleController";
 import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from "./graphql";
 import { LayerContext, LayersProvider } from "./LayerContext";
+import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import { createMapStyle } from "./styleGenerator";
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
 
@@ -85,7 +86,7 @@ function BabsSpriteLanguage() {
     if (!map) return;
     // maplibre-gl's Map structurally satisfies the helper's MapLike contract
     // (getSprite/addSprite/removeSprite/once), so no cast is needed.
-    void setBabsSpriteLang(map.getMap(), lang);
+    void setBabsSpriteLang(map.getMap(), lang, BABS_SPRITE_BASE);
   }, [map, lang]);
 
   return null;
@@ -102,7 +103,7 @@ function MapView() {
   const langRef = useRef(i18n.resolvedLanguage ?? i18n.language);
   langRef.current = i18n.resolvedLanguage ?? i18n.language;
   const styleWithBabsSprite = useMemo(
-    () => withBabsSprite(mapStyle.style, langRef.current),
+    () => withBabsSprite(mapStyle.style, langRef.current, BABS_SPRITE_BASE),
     [mapStyle.style],
   );
 

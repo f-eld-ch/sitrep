@@ -347,7 +347,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ],
         "icon-pitch-alignment": "viewport",
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       },
     },
     {
@@ -368,7 +368,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           ["image", babsImage(markerSpriteKey("chevron-blue"))],
         ],
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
         "icon-rotation-alignment": "map",
         "icon-pitch-alignment": "map",
         "icon-rotate": ["coalesce", ["get", `${propPrefix}iconRotation`], 0],

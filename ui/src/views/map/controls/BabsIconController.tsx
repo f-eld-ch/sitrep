@@ -1,15 +1,24 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
 import { faArrowsRotate, faHeading, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import {
-  type BabsIcon,
-  type BabsIconType,
-  IconGroups,
-  LineTypesEinsatz,
-  LineTypesSchaeden,
-  ZonePatterns,
-} from "components/BabsIcons";
+  type BabsCategory,
+  type BabsIconId,
+  type BabsIconMeta,
+  getLabel,
+  listCategories,
+  listIcons,
+} from "@f-eld-ch/babs-core";
+import classNames from "classnames";
+import { BabsSpriteIcon } from "components/babs/BabsSpriteIcon";
+import { aliasFor } from "components/babs/iconResolver";
+import { isPickableIcon } from "components/babs/excludedIcons";
+import {
+  ColorForCategory,
+  LineTypes,
+  type SelectableType,
+  ZoneTypes,
+} from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
@@ -96,11 +105,10 @@ const IconController = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className="maplibregl-ctrl-top-right" style={iconControllerStyle}>
-      {Object.keys(IconGroups).map((group) => (
-        <IconGroupMenu
-          key={group}
-          name={group}
-          iconGroup={IconGroups[group]}
+      {CATEGORIES.map((category) => (
+        <IconCategoryMenu
+          key={category.number}
+          category={category}
           onUpdate={onUpdate}
           feature={selectedFeature}
         />
@@ -137,43 +145,65 @@ const IconController = memo((props: BabsIconControllerProps) => {
   );
 });
 
-function IconGroupMenu(props: GroupMenuProps) {
-  const { iconGroup, onUpdate, feature, name } = props;
-  const { t } = useTranslation();
+/**
+ * Categories offered by the picker, resolved once. Replaces the hand-maintained
+ * `IconGroups`, so a catalogue addition appears without touching this repo.
+ */
+const CATEGORIES: readonly BabsCategory[] = listCategories();
 
-  const lastIcon = Object.values(iconGroup).pop();
+/** Icons offered for a category, minus the configured exclusions. */
+const pickableIconsFor = (category: BabsCategory): readonly BabsIconMeta[] =>
+  listIcons({ category: category.number }).filter((meta) => isPickableIcon(meta.id));
+
+/**
+ * One collapsible category of icons. Collapsed it shows a representative icon; expanded
+ * it shows the whole category.
+ */
+function IconCategoryMenu(props: CategoryMenuProps) {
+  const { category, onUpdate, feature } = props;
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language;
+  const icons = pickableIconsFor(category);
+  const representative = icons.at(-1);
   const [active, setActive] = useState<boolean>(false);
 
   const onClickIcon = useCallback(
-    (i: BabsIcon) => {
+    (id: BabsIconId) => {
       const properties: GeoJsonProperties = Object.assign({}, feature.properties, {
-        icon: i.name,
-        iconType: i.name,
-        color: ColorsForIconGroup[name],
+        // The readable alias, not the numeric id: keeps persisted data greppable, and the
+        // style's match expression resolves it to a sprite key at render time. `iconType`
+        // used to be written here as an exact duplicate of `icon` and was read nowhere,
+        // so it is no longer set.
+        icon: aliasFor(id),
+        color: ColorForCategory[category.number],
       });
       feature.properties = omitBy(properties, isUndefined || isEmpty);
       onUpdate({ features: [feature], action: "featureDetail" });
-      setActive(!active);
+      setActive(false);
     },
-    [feature, name, onUpdate, active],
+    [feature, category.number, onUpdate],
   );
 
-  if (active || lastIcon === undefined) {
+  if (representative === undefined) {
+    return null;
+  }
+
+  if (active) {
     return (
       <div className="maplibregl-ctrl maplibregl-ctrl-group" style={iconControllerFlexboxStyleRow}>
-        {Object.values(iconGroup).map((icon) => (
-          <button
-            type="button"
-            key={icon.name}
-            title={t(`babs.icons.${icon.description}`)}
-            onClick={() => onClickIcon(icon)}
-          >
-            <img src={icon.src} alt={t(`babs.icons.${icon.description}`)} />
-          </button>
-        ))}
+        {icons.map((meta) => {
+          const label = getLabel(meta.id, lang);
+          return (
+            <button type="button" key={meta.id} title={label} onClick={() => onClickIcon(meta.id)}>
+              <BabsSpriteIcon spriteKey={meta.id} title={label} lang={lang} />
+            </button>
+          );
+        })}
       </div>
     );
   }
+
+  const categoryLabel = category.labels[lang as keyof typeof category.labels] ?? category.labels.de;
   return (
     <div
       className="maplibregl-ctrl maplibregl-ctrl-group"
@@ -181,16 +211,11 @@ function IconGroupMenu(props: GroupMenuProps) {
     >
       <button
         type="button"
-        key={lastIcon.name}
-        title={t(`babs.groups.${name}`)}
-        onClick={() => setActive(!active)}
+        title={categoryLabel}
+        aria-label={categoryLabel}
+        onClick={() => setActive(true)}
       >
-        <img
-          src={lastIcon.src}
-          title={t(`babs.groups.${name}`)}
-          alt={t(`babs.groups.${name}`)}
-          aria-label={t(`babs.groups.${name}`)}
-        />
+        <BabsSpriteIcon spriteKey={representative.id} title={categoryLabel} lang={lang} />
       </button>
     </div>
   );
@@ -201,7 +226,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
   const { t } = useTranslation();
 
   const onClickIcon = useCallback(
-    (i: TypesType) => {
+    (i: SelectableType) => {
       if (selectedFeature === undefined) {
         return;
       }
@@ -258,7 +283,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
             title={t(`babs.lines.${l.description}`)}
             onClick={() => onClickIcon(l)}
           >
-            <img src={l.icon.src} alt={t(`babs.lines.${l.description}`)} />
+            <BabsSpriteIcon spriteKey={l.thumbnail} title={t(`babs.lines.${l.description}`)} />
           </button>
         ))}
       </div>
@@ -293,7 +318,7 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   const { t } = useTranslation();
 
   const onClickIcon = useCallback(
-    (i: TypesType) => {
+    (i: SelectableType) => {
       if (selectedFeature !== undefined) {
         const properties: GeoJsonProperties = Object.assign({}, selectedFeature.properties, {
           zoneType: i.name,
@@ -330,7 +355,7 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
             title={t(`babs.zones.${l.description}`)}
             onClick={() => onClickIcon(l)}
           >
-            <img src={l.icon.src} alt={t(`babs.zones.${l.description}`)} />
+            <BabsSpriteIcon spriteKey={l.thumbnail} title={t(`babs.zones.${l.description}`)} />
           </button>
         ))}
       </div>
@@ -338,136 +363,14 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   );
 });
 
-type SelectableTypes = Record<string, TypesType>;
+/**
+ * `SelectableTypes`, `Colors`, `ZoneTypes`, `LineTypes` and the per-group colour table
+ * now live in components/babs/lineAndZoneTypes.ts, keyed on catalogue ids and category
+ * numbers rather than on this repo's German group names.
+ */
 
-interface TypesType {
-  name: string;
-  description: string;
-  icon: BabsIcon;
-  color: string;
-}
-
-const Colors = {
-  Red: "#ff0000",
-  Blue: "#0000ff",
-  Black: "#000000",
-  Orange: "#F38D11",
-};
-
-type ColorsForIconGroupType = Record<string, string>;
-
-const ColorsForIconGroup: ColorsForIconGroupType = {
-  Schäden: Colors.Red,
-  Schadenauswirkungen: Colors.Red,
-  "Einrichtungen Im Einsatzraum": Colors.Blue,
-  "Zivile Führungsstandorte": Colors.Blue,
-  "Zivile Mittel": Colors.Blue,
-  Fahrzeuge: Colors.Blue,
-  "Bildhafte Signaturen (Gesellschaft)": Colors.Red,
-  "Bildhafte Signaturen (Natur)": Colors.Red,
-  "Bildhafte Signaturen (Technisch)": Colors.Red,
-  Gefahren: Colors.Red,
-};
-
-const ZoneTypes: SelectableTypes = {
-  Einsatzraum: {
-    name: "Einsatzraum",
-    description: "Einsatzraum",
-    icon: ZonePatterns.Einsatzraum,
-    color: Colors.Blue,
-  },
-  Schadengebiet: {
-    name: "Schadengebiet",
-    description: "Schadengebiet",
-    icon: ZonePatterns.Schadengebiet,
-    color: Colors.Red,
-  },
-  Brandzone: {
-    name: "Brandzone",
-    description: "Brandzone",
-    icon: ZonePatterns.PatternBrandzone,
-    color: Colors.Red,
-  },
-  Zerstoerung: {
-    name: "Zerstoerung",
-    description: "Zerstörte, unpassierbare Zone",
-    icon: ZonePatterns.PatternZerstoert,
-    color: Colors.Red,
-  },
-};
-
-const LineTypes: SelectableTypes = {
-  Rutschgebiet: {
-    name: "Rutschgebiet",
-    description: "Rutschgebiet",
-    icon: LineTypesSchaeden.Rutschgebiet,
-    color: Colors.Red,
-  },
-  begehbar: {
-    name: "begehbar",
-    description: "Strasse erschwert befahrbar / begehbar",
-    icon: LineTypesSchaeden.Strerschwertbefahrbarbegehbar,
-    color: Colors.Red, // fixme
-  },
-  schwerBegehbar: {
-    name: "schwerBegehbar",
-    description: "Strasse nicht befahrbar / schwer Begehbar",
-    icon: LineTypesSchaeden.Strnichtbefahrbarschwerbegehbar,
-    color: Colors.Red, // fixme
-  },
-  unpassierbar: {
-    name: "unpassierbar",
-    description: "Strasse unpassierbar / gesperrt",
-    icon: LineTypesSchaeden.Strunpassierbargesperrt,
-    color: Colors.Red,
-  },
-  beabsichtigteErkundung: {
-    name: "beabsichtigteErkundung",
-    description: "Beabsichtigte Erkundung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigteErkundung,
-  },
-  durchgeführteErkundung: {
-    name: "durchgeführteErkundung",
-    description: "Durchgeführte Erkundung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrteErkundung, // fixme
-  },
-  beabsichtigteVerschiebung: {
-    name: "beabsichtigteVerschiebung",
-    description: "Beabsichtigte Verschiebung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigteVerschiebung, // fixme
-  },
-  durchgeführteVerschiebung: {
-    name: "durchgeführteVerschiebung",
-    description: "Durchgeführte Verschiebung",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrteVerschiebung, // fixme
-  },
-  beabsichtigterEinsatz: {
-    name: "beabsichtigterEinsatz",
-    description: "Beabsichtigter Einsatz",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.BeabsichtigterEinsatz, // fixme
-  },
-  durchgeführterEinsatz: {
-    name: "durchgeführterEinsatz",
-    description: "Durchgeführter Einsatz",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.DurchgefuehrterEinsatz, // fixme
-  },
-  rettungsAchse: {
-    name: "rettungsAchse",
-    description: "Rettungs Achse",
-    color: Colors.Blue,
-    icon: LineTypesEinsatz.RettungsAchse,
-  },
-};
-
-interface GroupMenuProps {
-  name: string;
-  iconGroup: BabsIconType;
+interface CategoryMenuProps {
+  category: BabsCategory;
   feature: Feature<Geometry, GeoJsonProperties>;
   onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }

@@ -1,5 +1,7 @@
-import { isBabsIconId, listIcons } from "@f-eld-ch/babs-core";
+import { getIcon, isBabsIconId, listIcons } from "@f-eld-ch/babs-core";
 import { describe, expect, it } from "vitest";
+import { aliasFor, resolveIconId } from "./iconResolver";
+import { LEGACY_ATLAS_ICON_KEYS } from "./legacyAtlasKeys";
 import { LEGACY_ICON_IDS } from "./legacyIconNames";
 
 /**
@@ -54,6 +56,52 @@ describe("LEGACY_ICON_IDS", () => {
   it("documents every unmapped legacy name rather than dropping it silently", () => {
     for (const name of INTENTIONALLY_UNMAPPED) {
       expect(Object.hasOwn(LEGACY_ICON_IDS, name)).toBe(false);
+    }
+  });
+
+  it("covers every icon key from the deleted sprite atlas", () => {
+    // The guard against orphaning persisted data: any of these could be sitting in a
+    // features.properties.icon right now. Anything genuinely unmappable must be listed in
+    // INTENTIONALLY_UNMAPPED with a documented reason, never just omitted.
+    const unaccounted = LEGACY_ATLAS_ICON_KEYS.filter(
+      (key) =>
+        resolveIconId(key) === undefined &&
+        !INTENTIONALLY_UNMAPPED.includes(key as (typeof INTENTIONALLY_UNMAPPED)[number]),
+    );
+    expect(unaccounted).toEqual([]);
+  });
+});
+
+describe("resolveIconId", () => {
+  it("round-trips legacy name -> id -> alias -> id", () => {
+    const broken = Object.keys(LEGACY_ICON_IDS).filter((legacyName) => {
+      const id = resolveIconId(legacyName);
+      if (!id) return true;
+      return resolveIconId(aliasFor(id)) !== id;
+    });
+    expect(broken).toEqual([]);
+  });
+
+  it("accepts a bare id, an alias and an export name for every catalogue icon", () => {
+    const broken = listIcons().flatMap((meta) =>
+      [meta.id, meta.alias, meta.export]
+        .filter((identifier) => resolveIconId(identifier) !== meta.id)
+        .map((identifier) => `${meta.id}: ${identifier}`),
+    );
+    expect(broken).toEqual([]);
+  });
+
+  it("returns undefined for unknown and empty input", () => {
+    expect(resolveIconId("definitelyNotAnIcon")).toBeUndefined();
+    expect(resolveIconId("")).toBeUndefined();
+    expect(resolveIconId(undefined)).toBeUndefined();
+  });
+
+  it("resolves each legacy name to an id whose category matches its mapping", () => {
+    // Cheap sanity check that the table's values are real catalogue members rather than
+    // plausible-looking strings: getIcon throws on an unknown id.
+    for (const id of Object.values(LEGACY_ICON_IDS)) {
+      expect(getIcon(id).id).toBe(id);
     }
   });
 });

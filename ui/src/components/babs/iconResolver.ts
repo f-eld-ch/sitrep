@@ -9,6 +9,20 @@ import { LEGACY_ICON_IDS, type LegacyIconName } from "./legacyIconNames";
 export const BABS_SPRITE_ID = "babs";
 
 /**
+ * Root-absolute path the sprite atlases are served from.
+ *
+ * Must be passed explicitly to every `@f-eld-ch/babs-sprites` helper. Their default is
+ * the *relative* `"map/sprites"`, which is resolved against `document.baseURI` — and this
+ * app has no `<base>` tag, so on a route like `/incident/:id/map` that yields
+ * `/incident/:id/map/sprites/...` and 404s. The leading slash pins it to the site root,
+ * matching how the basemap and imagery sprites are already referenced in the style JSONs.
+ *
+ * Safe because the Vite `base` is `/`. A sub-path deployment would need a `<base>` tag
+ * and the relative form instead.
+ */
+export const BABS_SPRITE_BASE = "/map/sprites";
+
+/**
  * Namespaces a raw atlas key for use in a style expression.
  *
  * MapLibre registers multi-sprite images as `<spriteId>:<key>` for every sprite except
