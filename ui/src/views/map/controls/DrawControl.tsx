@@ -1,6 +1,7 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import { useContext, useEffect, useMemo, useRef } from "react";
 import { type ControlPosition, useControl } from "react-map-gl/maplibre";
+import { type DrawEvent, type DrawEventListener, bindDrawEvents } from "../drawEvents";
 import { LayerContext } from "../LayerContext";
 import type { CombineFeatureEvent, FeatureEvent } from "../Map";
 
@@ -12,33 +13,6 @@ type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
   onCombine: (e: CombineFeatureEvent) => void;
   onSelectionChange: (e: FeatureEvent) => void;
   activeLayer: string;
-};
-
-/**
- * `draw.*` events are emitted by mapbox-gl-draw, so they are absent from MapLibre's
- * `MapEventType`. Casting in one place keeps the rest of the file honest instead of
- * scattering `@ts-expect-error` over every bind.
- */
-type DrawEvent =
-  | "draw.create"
-  | "draw.update"
-  | "draw.delete"
-  | "draw.combine"
-  | "draw.uncombine"
-  | "draw.selectionchange";
-
-interface DrawEventTarget {
-  on: (event: string, listener: (e: never) => void) => unknown;
-  off: (event: string, listener: (e: never) => void) => unknown;
-}
-
-const bindDrawEvents = (
-  map: unknown,
-  mode: "on" | "off",
-  listeners: ReadonlyArray<[DrawEvent, (e: never) => void]>,
-) => {
-  const target = map as DrawEventTarget;
-  for (const [event, listener] of listeners) target[mode](event, listener);
 };
 
 function DrawControl(props: DrawControlProps) {
@@ -62,7 +36,7 @@ function DrawControl(props: DrawControlProps) {
   });
   latest.current = { activeLayer, onCreate, onDelete, onUpdate, onSelectionChange, onCombine };
 
-  const listeners = useMemo<ReadonlyArray<[DrawEvent, (e: never) => void]>>(
+  const listeners = useMemo<ReadonlyArray<[DrawEvent, DrawEventListener]>>(
     () => [
       ["draw.create", (e: never) => latest.current.onCreate(e, latest.current.activeLayer)],
       ["draw.update", (e: never) => latest.current.onUpdate(e)],

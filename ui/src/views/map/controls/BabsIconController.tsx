@@ -41,6 +41,7 @@ import { first, isEmpty, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
+import { fireDrawEvent } from "../drawEvents";
 import { LayerContext } from "../LayerContext";
 import { LayerToFeatureCollection } from "../utils";
 import "./BabsIconController.scss";
@@ -469,7 +470,7 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
         className="maplibregl-ctrl maplibregl-ctrl-group"
         style={iconControllerFlexboxStyleColumn}
       >
-        {Object.values(ZoneTypes).map((l) => (
+        {byColor(ZoneTypes).map((l) => (
           <button
             type="button"
             key={l.name}
@@ -523,8 +524,9 @@ const BabsIconController = () => {
   const onUpdate = useCallback(
     (e: { features: Feature<Geometry, GeoJsonProperties>[] }) => {
       const updatedFeatures: Feature[] = e.features;
-      // fire an map draw.update event
-      map?.getMap().fire("draw.update", { features: updatedFeatures, target: map });
+      // Route the edit back through the draw control's own update path, so feature
+      // changes made here persist by exactly the same mechanism as direct edits.
+      fireDrawEvent(map?.getMap(), "draw.update", { features: updatedFeatures, target: map });
     },
     [map],
   );
