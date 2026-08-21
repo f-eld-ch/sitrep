@@ -32,6 +32,10 @@ jobs:
       - name: Install packages
         run: yarn install --immutable
         working-directory: ui
+        env:
+          # Required to resolve the private @f-eld-ch scope from GitHub Packages
+          # (see npmScopes in ui/.yarnrc.yml). The job already grants packages: read.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Lint ui files
         run: yarn lint:github
