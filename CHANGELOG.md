@@ -12,6 +12,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1742](https://github.com/f-eld-ch/sitrep/issues/1742)) - ([b1d9555](https://github.com/f-eld-ch/sitrep/commit/b1d955549d9f6a739f554a84adec90fc79f97c3c))
 - *(deps)* Bump dayjs from 1.11.21 to 1.11.23 in /ui ([#1738](https://github.com/f-eld-ch/sitrep/issues/1738)) - ([526b117](https://github.com/f-eld-ch/sitrep/commit/526b1175da2a68482a0cdbf661655cac2363be91))
 - *(deps)* Bump html-react-parser from 6.1.5 to 6.1.7 in /ui ([#1734](https://github.com/f-eld-ch/sitrep/issues/1734)) - ([da6855a](https://github.com/f-eld-ch/sitrep/commit/da6855a6346a1541662a564aa4b8a482b714c025))
 - *(deps)* Bump @apollo/client from 4.2.11 to 4.2.12 in /ui ([#1735](https://github.com/f-eld-ch/sitrep/issues/1735)) - ([c1ff12b](https://github.com/f-eld-ch/sitrep/commit/c1ff12b3bd7ab43e87d2c608d9e120312161da12))
