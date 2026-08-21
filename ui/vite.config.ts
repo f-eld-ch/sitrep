@@ -92,7 +92,11 @@ export default defineConfig({
     },
   },
   define: {
-    global: "window",
+    // `globalThis`, not `window`: this define is injected into Vite's dev client, which
+    // also runs inside web workers. maplibre spawns six of them (setWorkerCount(6)), and
+    // each threw an uncaught "window is not defined" on startup. In the main thread
+    // globalThis *is* window, so nothing changes there.
+    global: "globalThis",
     // Inject VITE_VERSION and VITE_SHA_VERSION at build time so import.meta.env is reliable
     "import.meta.env.VITE_SHA_VERSION": JSON.stringify(buildSha),
     "import.meta.env.VITE_VERSION": JSON.stringify(buildVersion),
