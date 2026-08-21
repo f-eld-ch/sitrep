@@ -10,6 +10,10 @@
 
 - *(map)* Match casualty icons by alias in the label filters ([#1743](https://github.com/f-eld-ch/sitrep/issues/1743)) - ([17dd478](https://github.com/f-eld-ch/sitrep/commit/17dd478aba11116c6a1c84d490ac191bcae0c5fb))
 
+### 🚜 Refactor
+
+- *(map)* Derive the zone fill filters from ZoneTypes ([#1744](https://github.com/f-eld-ch/sitrep/issues/1744)) - ([1ab9772](https://github.com/f-eld-ch/sitrep/commit/1ab9772eb3c1b66935c312db2cbaa639eac34e06))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1742](https://github.com/f-eld-ch/sitrep/issues/1742)) - ([b1d9555](https://github.com/f-eld-ch/sitrep/commit/b1d955549d9f6a739f554a84adec90fc79f97c3c))
