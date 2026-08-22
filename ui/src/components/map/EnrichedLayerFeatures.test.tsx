@@ -102,7 +102,7 @@ describe("EnrichedLayerFeatures", () => {
     expect(container).toBeTruthy();
   });
 
-  it("filters out deleted features and the selected feature", () => {
+  it("filters out deleted features but keeps the selected one", () => {
     const { container } = renderWithMap(
       <EnrichedFeaturesSource
         id="test"
@@ -111,6 +111,13 @@ describe("EnrichedLayerFeatures", () => {
       />,
     );
     expect(container).toBeTruthy();
+  });
+
+  it("still enriches a feature while it is selected", () => {
+    // The indicator used to vanish for exactly as long as you were editing the geometry that
+    // determines it, which is when it is most useful to see.
+    const [selected] = baseFeatureCollection.features;
+    expect(enrichFeature(selected).length).toBeGreaterThan(0);
   });
 
   it("handles empty featureCollection", () => {
@@ -281,8 +288,11 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
     [8.1, 47.0],
     [8.0, 47.0],
   ];
-  /** Middle of the eastern edge — the last segment drawn, so where the arrow springs from. */
-  const LAST_EDGE_MIDPOINT: Position = [8.1, 47.025];
+  /**
+   * Middle of the southern edge. That edge closes the ring — last vertex back to the first —
+   * which is the one the arrow springs from.
+   */
+  const CLOSING_EDGE_MIDPOINT: Position = [8.05, 47.0];
 
   const flooded = (coordinates: Position[][], color?: string): Feature<Polygon> => ({
     type: "Feature",
@@ -293,10 +303,10 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
 
   const parts = (coordinates: Position[][], color?: string) => {
     const enriched = enrichFeature(flooded(coordinates, color));
+    const lines = enriched.filter((f) => f.geometry.type === "LineString");
     return {
-      shaft: enriched.find((f) => f.geometry.type === "LineString") as
-        | Feature<LineString>
-        | undefined,
+      shaft: lines.find((f) => !String(f.id).endsWith("-edge")) as Feature<LineString> | undefined,
+      edge: lines.find((f) => String(f.id).endsWith("-edge")) as Feature<LineString> | undefined,
       head: enriched.find((f) => f.geometry.type === "Point") as Feature<Point> | undefined,
     };
   };
@@ -304,34 +314,33 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
   const shaftOf = (coordinates: Position[][]) =>
     (parts(coordinates).shaft as Feature<LineString>).geometry.coordinates;
 
-  it("springs from the middle of the last segment, not the closing repeat", () => {
-    // The ring ends with a copy of its first position; reading that as the last segment
-    // would put every arrow on the southern edge regardless of where drawing stopped.
+  it("springs from the middle of the closing edge", () => {
+    // Not from a vertex, and not from the duplicated closing position the ring ends with.
     const [tail] = shaftOf([square]);
-    expect(tail[0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
-    expect(tail[1]).toBeCloseTo(LAST_EDGE_MIDPOINT[1], 4);
+    expect(tail[0]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[0], 4);
+    expect(tail[1]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[1], 4);
   });
 
   it("touches the outline, unlike the slide arrow which is held clear of its line", () => {
-    // The tail sits exactly on the eastern edge, at longitude 8.1.
+    // The tail sits exactly on the southern edge, at latitude 47.0.
     const [tail] = shaftOf([square]);
-    expect(tail[0]).toBeCloseTo(8.1, 5);
+    expect(tail[1]).toBeCloseTo(47.0, 4);
   });
 
-  it("leaves the last segment at a right angle, pointing out of the zone", () => {
-    // The last segment runs due south down the eastern edge, so the outward normal is east.
+  it("leaves the closing edge at a right angle, pointing out of the zone", () => {
+    // The closing edge is the southern one, so the outward normal is due south.
     const [tail, tip] = shaftOf([square]);
-    expect(bearing(tail, tip)).toBeCloseTo(90, 1);
-    expect(tip[0]).toBeGreaterThan(8.1);
+    expect(Math.abs(bearing(tail, tip))).toBeCloseTo(180, 1);
+    expect(tip[1]).toBeLessThan(47.0);
   });
 
   it("takes the outward normal whichever way the ring is wound", () => {
-    // Same square traced counter-clockwise, which makes the northern edge the last one
-    // drawn. Outward is then north — a winding-blind rule would send it south, into the zone.
+    // Traced counter-clockwise the closing edge becomes the western one, so outward flips to
+    // west. A winding-blind rule would send it east, into the zone.
     const [tail, tip] = shaftOf([[...square].reverse()]);
-    expect(tail[1]).toBeCloseTo(47.05, 4);
-    expect(bearing(tail, tip)).toBeCloseTo(0, 1);
-    expect(tip[1]).toBeGreaterThan(47.05);
+    expect(tail[0]).toBeCloseTo(8.0, 4);
+    expect(bearing(tail, tip)).toBeCloseTo(-90, 1);
+    expect(tip[0]).toBeLessThan(8.0);
   });
 
   it("aims the chevron down the shaft", () => {
@@ -344,7 +353,8 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
   });
 
   it("moves with the vertex drawing stopped on", () => {
-    // Same square, traced from the north-west corner so it ends on the south-west one.
+    // Same square, traced from the north-west corner so it ends on the south-west one. The
+    // closing edge is then the western one, and the arrow follows it there.
     const shifted: Position[] = [
       [8.0, 47.05],
       [8.1, 47.05],
@@ -352,10 +362,10 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
       [8.0, 47.0],
       [8.0, 47.05],
     ];
-    // Ends on the south-west corner, so the last segment is the southern edge.
-    const [tail] = shaftOf([shifted]);
-    expect(tail[0]).toBeCloseTo(8.05, 4);
-    expect(tail[1]).toBeCloseTo(47.0, 4);
+    const [tail, tip] = shaftOf([shifted]);
+    expect(tail[0]).toBeCloseTo(8.0, 4);
+    expect(tail[1]).toBeCloseTo(47.025, 4);
+    expect(tip[0]).toBeLessThan(8.0);
   });
 
   it("reads the outer ring only, ignoring holes", () => {
@@ -368,8 +378,19 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
     ];
     const enriched = enrichFeature(flooded([square, hole]));
     // One shaft and one head — an arrow off the hole would point into the zone.
-    expect(enriched).toHaveLength(2);
-    expect(shaftOf([square, hole])[0][0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
+    // Emphasised edge, shaft and head — an arrow off the hole would double that.
+    expect(enriched).toHaveLength(3);
+    expect(shaftOf([square, hole])[0][1]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[1], 4);
+  });
+
+  it("redraws the closing edge heavier, so the arrow's edge is visible while editing", () => {
+    const { edge } = parts([square]);
+    // Spans the closing edge exactly: south-east corner back to the south-west one.
+    expect(edge?.geometry.coordinates).toEqual([
+      [8.1, 47.0],
+      [8.0, 47.0],
+    ]);
+    expect(edge?.properties?.width).toBeGreaterThan(2);
   });
 
   it("gives a multipart zone one arrow per part, with distinct ids", () => {
@@ -381,8 +402,10 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
       properties: { zoneType: "UeberschwemmtesGebiet", deletedAt: null },
     } as Feature<MultiPolygon>);
     expect(enriched.map((f) => f.id)).toEqual([
+      "zone-1:flow-0-edge",
       "zone-1:flow-0",
       "zone-1:flow-0-tip",
+      "zone-1:flow-1-edge",
       "zone-1:flow-1",
       "zone-1:flow-1-tip",
     ]);
@@ -395,15 +418,15 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
       [8.1, 47.0],
       [8.0, 47.0],
     ];
-    // Last segment runs from the apex down to the south-east corner.
+    // Closing edge runs from the south-east corner back to the south-west one.
     const [tail] = shaftOf([triangle]);
-    expect(tail[0]).toBeCloseTo(8.075, 3);
-    expect(tail[1]).toBeCloseTo(47.025, 3);
+    expect(tail[0]).toBeCloseTo(8.05, 3);
+    expect(tail[1]).toBeCloseTo(47.0, 3);
   });
 
-  it("ignores a repeated final vertex rather than aiming due north", () => {
-    // `bearing(p, p)` is 0, not NaN, so a duplicate would silently point the arrow north —
-    // a plausible-looking wrong answer rather than a visible failure.
+  it("is unmoved by a repeated vertex", () => {
+    // `bearing(p, p)` is 0 rather than NaN, so a duplicate that reached the bearing would
+    // silently aim the arrow north — a plausible-looking wrong answer, not a visible failure.
     const duplicated: Position[] = [
       [8.0, 47.0],
       [8.0, 47.05],
@@ -413,8 +436,9 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
       [8.0, 47.0],
     ];
     const [tail, tip] = shaftOf([duplicated]);
-    expect(tail[0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
-    expect(bearing(tail, tip)).toBeCloseTo(90, 1);
+    expect(tail[0]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[0], 4);
+    expect(tail[1]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[1], 4);
+    expect(Math.abs(bearing(tail, tip))).toBeCloseTo(180, 1);
   });
 
   it("emits nothing when the ring encloses nothing", () => {

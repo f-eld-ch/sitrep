@@ -10,6 +10,7 @@ import { markerSpriteKey } from "@f-eld-ch/babs-core";
 import { babsImage } from "components/babs/iconResolver";
 import { Colors } from "components/babs/lineAndZoneTypes";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry, Position } from "geojson";
+import { useMemo } from "react";
 import { Layer, Source } from "react-map-gl/maplibre";
 
 /** Shaft length as a fraction of the parent line's length. */
@@ -76,6 +77,16 @@ const FLOW_ARROW_MIN_KM = 0.01;
 const FLOW_ARROW_MAX_KM = 0.17;
 /** Below this a ring is a stray click, with no extent to scale an arrow against. */
 const FLOW_MIN_EXTENT_KM = 1e-6;
+/**
+ * Stroke width for the stretch of outline the arrow springs from, against the 2px every
+ * other line is drawn at.
+ *
+ * This is the thickened-outline half of the catalogue's 1115, and it doubles as the answer
+ * to "which edge is the arrow attached to" while the zone is being edited — mapbox-gl-draw
+ * tags vertices with a `coord_path` whose last index depends on the vertex count, so the
+ * closing edge's endpoints cannot be picked out by a style filter.
+ */
+const FLOW_EDGE_WIDTH = 4;
 /**
  * As `SLIDE_SELF_CROSSING_RATIO`, but load-bearing rather than defensive: the flow arrow's
  * anchor *is* a ring vertex, so the ray leaves through the boundary by construction and
@@ -246,13 +257,17 @@ const ringWinding = (ring: Position[]): number => {
 };
 
 /**
- * The flow-direction arrow: a straight shaft springing from the last vertex of the outer
- * ring, leaving it at a right angle to the last segment drawn, tipped with a chevron.
+ * The flow-direction arrow: a straight shaft springing from the middle of the outer ring's
+ * closing edge, leaving it at a right angle, tipped with a chevron.
  *
- * Direction comes from where the user stopped drawing — an input they already control — so
- * nothing extra has to be persisted. Unlike the slide arrow the tail sits *on* the boundary:
- * a polygon stroke is 2px, so there is no pattern band to clear, and springing from the
- * outline is what makes the arrow read as belonging to it.
+ * The closing edge — last vertex back to the first — is the one the user never clicks: it
+ * appears when the ring closes. That makes it the easiest to predict while drawing and the
+ * easiest to aim afterwards, since moving either of its two endpoints swings the arrow.
+ * Nothing extra has to be persisted as a result.
+ *
+ * Unlike the slide arrow the tail sits *on* the boundary: a polygon stroke is 2px, so there
+ * is no pattern band to clear, and springing from the outline is what makes the arrow read
+ * as belonging to it.
  */
 const buildFlowArrow = (
   parentId: Feature["id"],
@@ -269,31 +284,22 @@ const buildFlowArrow = (
     return [];
   }
 
-  const anchor = open[open.length - 1];
-  // Walk back past any repeated vertex: `bearing` between two identical positions is 0, not
-  // NaN, so without this every such arrow would quietly point due north instead of failing.
-  let prior = open.length - 2;
-  while (prior >= 0 && samePosition(open[prior], anchor)) {
-    prior -= 1;
-  }
-  if (prior < 0) {
-    return [];
-  }
+  // The closing edge, running from the last vertex back to the first. `openRing` guarantees
+  // those two differ, so the edge always has a direction.
+  const from = open[open.length - 1];
+  const to = open[0];
+  const alongClosingEdge = bearing(point(from), point(to));
 
-  // At a right angle to the last segment, on whichever side lies outside the ring. Taken
-  // from the winding rather than probed with a containment test, which would be ambiguous
-  // here: the anchor is a corner, so a point offset from it can fall either side depending
-  // on how sharp the corner is.
-  const alongLastSegment = bearing(point(open[prior]), point(anchor));
-  const flowBearing = alongLastSegment + (ringWinding(open) > 0 ? 90 : -90);
+  // At a right angle to that edge, on whichever side lies outside the ring. The side comes
+  // from the winding rather than from a containment probe: only the sign of the signed area
+  // is needed, which is exact, where a probe offset from the boundary can land either side.
+  const flowBearing = alongClosingEdge + (ringWinding(open) > 0 ? 90 : -90);
 
-  // Springs from the middle of the last segment rather than from its end vertex. A corner is
-  // shared by two edges, so an arrow planted there reads as belonging to neither; the middle
-  // of an edge is unambiguous, and the perpendicular genuinely separates inside from out.
-  const segment = distance(point(open[prior]), point(anchor), { units: "kilometers" });
-  const base = destination(point(open[prior]), segment / 2, alongLastSegment, {
-    units: "kilometers",
-  });
+  // Springs from the middle of the edge rather than from a vertex. A corner is shared by two
+  // edges, so an arrow planted there reads as belonging to neither, and the perpendicular at
+  // a corner does not cleanly separate inside from out.
+  const segment = distance(point(from), point(to), { units: "kilometers" });
+  const base = destination(point(from), segment / 2, alongClosingEdge, { units: "kilometers" });
   const tail = base.geometry.coordinates;
 
   // Measured against the *closed* ring: the segment from the last vertex back to the first
@@ -324,16 +330,26 @@ const buildFlowArrow = (
   const span = crossings.length > 0 ? Math.min(nominal, ...crossings) : nominal;
 
   const tip = destination(base, span, flowBearing, { units: "kilometers" });
+  const color = featureColor ?? config.color;
 
-  return arrowFeatures(
-    parentId,
-    kind,
-    tail,
-    tip.geometry.coordinates,
-    flowBearing,
-    config.icon,
-    featureColor ?? config.color,
-  );
+  // The closing edge itself, redrawn heavier. Emitted before the shaft so the shaft paints
+  // over the join rather than being cut by it.
+  const edge = lineString([from, to]);
+  edge.id = `${parentId}:${kind}-edge`;
+  edge.properties = { parent: parentId, color, width: FLOW_EDGE_WIDTH };
+
+  return [
+    edge,
+    ...arrowFeatures(
+      parentId,
+      kind,
+      tail,
+      tip.geometry.coordinates,
+      flowBearing,
+      config.icon,
+      color,
+    ),
+  ];
 };
 
 const enrichFeature = (
@@ -573,12 +589,21 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
     type: "FeatureCollection",
     features: [],
   };
-  enrichedFC.features = Object.assign(
-    [],
-    featureCollection.features
-      .filter((f) => f.properties?.deletedAt === null)
-      .filter((f) => f.id !== props.selectedFeature)
-      .flatMap((f) => enrichFeature(f)),
+  // The selected feature is enriched too. It used to be skipped, which meant the indicator
+  // vanished for exactly as long as you were editing the geometry that determines it — and
+  // the flow arrow is aimed by dragging vertices, so that is when seeing it matters most.
+  // These are synthetic features in their own source, so they do not collide with the
+  // active-state styling mapbox-gl-draw puts on the feature itself.
+  //
+  // Memoised because on the active layer this now runs against a collection that changes on
+  // every animation frame of a vertex drag (see `useLiveDrawGeometry` in Map.tsx), rather
+  // than once per save.
+  enrichedFC.features = useMemo(
+    () =>
+      featureCollection.features
+        .filter((f) => f.properties?.deletedAt === null)
+        .flatMap((f) => enrichFeature(f)),
+    [featureCollection],
   );
 
   return (
@@ -601,7 +626,9 @@ const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {
         paint={{
           "line-color": ["coalesce", ["get", "color"], "#000000"],
           "line-opacity": 0.7,
-          "line-width": 2,
+          // Data-driven so the emphasised stretch of outline can share this layer with the
+          // arrow shafts instead of needing one of its own.
+          "line-width": ["coalesce", ["get", "width"], 2],
         }}
       />
       <Layer
