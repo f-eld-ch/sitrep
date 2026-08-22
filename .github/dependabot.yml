@@ -1,4 +1,11 @@
 version: 2
+registries:
+  npm-github-feld-ch:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    scope: "@f-eld-ch"
+    token: ${{secrets.GH_PACKAGES_TOKEN}}
+
 updates:
   # Enable version updates for npm
   - package-ecosystem: "npm"
