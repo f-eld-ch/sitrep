@@ -20,7 +20,7 @@ updates:
     open-pull-requests-limit: 10
     cooldown:
       exclude:
-        - dependency-name: "@f-eld-ch/*"
+        - "@f-eld-ch/*"
     groups:
       development-dependencies:
         dependency-type: "development"
