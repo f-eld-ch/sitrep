@@ -55,6 +55,8 @@ export const EXCLUDED_BABS_ICON_IDS: ReadonlySet<BabsIconId> = new Set<BabsIconI
   "1203", // Str unpassierbar - gesperrt
   "1111a", // Brandübergriffsgefahr - Signatur
   "1111b", // Brandübergriff erfolgt - Signatur
+  "1116a", // Trümmerbereich - Signatur
+  "1116b", // Trümmerbereich - Beispiel, the line controller's thumbnail
 
   // Catalogue illustrations: a "Beispiel" shows how a "Signatur" is used on a map, so it
   // is documentation rather than a symbol to place.
@@ -65,8 +67,6 @@ export const EXCLUDED_BABS_ICON_IDS: ReadonlySet<BabsIconId> = new Set<BabsIconI
   "1107b", // Brand mehrerer Gebäude - Beispiel
   "1108", // Brandübergriffsgefahr - Beispiel
   "1109", // Brandübergriff erfolgt - Beispiel
-  "1116a", // Trümmerbereich - Signatur
-  "1116b", // Trümmerbereich - Beispiel
   "2109b", // Gefahrentafel mit UN-Nummer
 ]);
 

@@ -11,7 +11,7 @@ import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { babsImage } from "components/babs/iconResolver";
 import { LEGACY_ICON_IDS } from "components/babs/legacyIconNames";
-import { EnrichLineStringMap } from "components/map/EnrichedLayerFeatures";
+import { EnrichLineStringMap, EnrichPolygonMap } from "components/map/EnrichedLayerFeatures";
 import basemap from "../../../public/map/sprites/basemap.json";
 import { createMapStyle } from "./styleGenerator";
 
@@ -353,6 +353,32 @@ describe("style image resolution", () => {
       });
     },
   );
+
+  describe.each(Object.entries(ATLASES))(
+    "enriched polygon arrows against the %s atlas",
+    (_lang, atlas) => {
+      it("uses only sprite images that exist", () => {
+        // Same hole as the line caps: written straight onto synthetic features and read by a
+        // bare ["get", "icon"], so the catch-all style sweep below cannot see them either —
+        // an EnrichPolygonMap sprite never reaches the generated style at all.
+        const available = new Set(availableImagesFor(atlas));
+        const missing = Object.entries(EnrichPolygonMap).flatMap(([zoneType, config]) =>
+          [config.flowArrow?.icon]
+            .filter((icon): icon is string => icon !== undefined)
+            .filter((icon) => !available.has(icon))
+            .map((icon) => `${zoneType}: ${icon}`),
+        );
+        expect(missing).toEqual([]);
+      });
+    },
+  );
+
+  it("gives every zone type in the polygon map some indicator", () => {
+    const withIndicator = Object.entries(EnrichPolygonMap).filter(
+      ([, c]) => c.flowArrow !== undefined,
+    );
+    expect(withIndicator).toHaveLength(Object.keys(EnrichPolygonMap).length);
+  });
 
   it("gives every line type in the map some indicator", () => {
     // Guards against a cap or arrow silently disappearing during a refactor. Rutschgebiet

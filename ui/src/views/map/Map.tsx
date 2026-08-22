@@ -7,7 +7,7 @@ import bbox from "@turf/bbox";
 import classNames from "classnames";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
-import { first, isEqual } from "lodash";
+import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
@@ -199,13 +199,101 @@ function LayerFetcher() {
   return null;
 }
 
+/**
+ * How often the live geometry is re-read while a vertex is being dragged. Comfortably below
+ * a frame budget, and still fast enough that the indicator reads as following the cursor.
+ */
+const LIVE_GEOMETRY_INTERVAL_MS = 80;
+
+/**
+ * The selected feature's geometry as mapbox-gl-draw currently holds it, rather than as it
+ * was last persisted — or `undefined` when nothing is selected.
+ *
+ * `direct_select` only fires `draw.update` on mouse-up, and the geometry then round-trips
+ * through a mutation and Apollo before it comes back down, so anything driven off the stored
+ * collection lags a vertex drag by a whole gesture. `draw.render` fires every frame while
+ * dragging, which is what makes a live indicator possible.
+ *
+ * Throttled rather than debounced: a debounce would hold the indicator still for the whole
+ * drag and only place it once the pointer stopped, which is the opposite of the point. The
+ * trailing edge still fires, so the final position is exact when a gesture ends between
+ * ticks. The geometry is also compared before it is stored, because `draw.render` fires on
+ * pans and zooms too — without that guard every map movement would rebuild the enriched
+ * source for nothing.
+ */
+function useLiveDrawGeometry(
+  map: ReturnType<typeof useMap>["current"],
+  draw: unknown,
+  selectedFeature: string | number | undefined,
+): Geometry | undefined {
+  // Tagged with the id it was read from, so geometry left over from a previously selected
+  // feature can never be applied to the next one. That also means the effect never has to
+  // clear the state synchronously on deselect.
+  const [live, setLive] = useState<{ id: string; geometry: Geometry } | undefined>(undefined);
+
+  useEffect(() => {
+    if (map === undefined || !isDrawLike(draw) || selectedFeature === undefined) {
+      return;
+    }
+
+    const id = String(selectedFeature);
+
+    const read = () => {
+      try {
+        const current = draw.get(id);
+        if (current === undefined) {
+          return;
+        }
+        setLive((previous) =>
+          previous?.id === id && isEqual(previous.geometry, current.geometry)
+            ? previous
+            : { id, geometry: current.geometry },
+        );
+      } catch {
+        // The draw instance can be mid-teardown; the next tick will re-read.
+      }
+    };
+
+    const onRender = throttle(read, LIVE_GEOMETRY_INTERVAL_MS, { leading: true, trailing: true });
+    map.on("draw.render", onRender);
+    return () => {
+      map.off("draw.render", onRender);
+      onRender.cancel();
+    };
+  }, [map, draw, selectedFeature]);
+
+  return selectedFeature !== undefined && live?.id === String(selectedFeature)
+    ? live.geometry
+    : undefined;
+}
+
 function ActiveLayer() {
   const [initialized, setInitalized] = useState(false);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
-  const featureCollection = LayerToFeatureCollection(
-    first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+  const featureCollection = useMemo(
+    () =>
+      LayerToFeatureCollection(
+        first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+      ),
+    [state.layers, state.activeLayer],
   );
+
+  // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
+  // arrow and the slide arrow track a vertex as it is dragged rather than jumping once the
+  // drag ends.
+  const liveGeometry = useLiveDrawGeometry(map, state.draw, state.selectedFeature);
+  const liveCollection = useMemo(() => {
+    if (liveGeometry === undefined || state.selectedFeature === undefined) {
+      return featureCollection;
+    }
+    return {
+      ...featureCollection,
+      features: featureCollection.features.map((f) =>
+        f.id === state.selectedFeature ? { ...f, geometry: liveGeometry } : f,
+      ),
+    };
+  }, [featureCollection, liveGeometry, state.selectedFeature]);
 
   useEffect(() => {
     const fc = FilterActiveFeatures(featureCollection);
@@ -233,11 +321,7 @@ function ActiveLayer() {
   return (
     <>
       <Draw />
-      <EnrichedLayerFeatures
-        id={state.activeLayer}
-        featureCollection={featureCollection}
-        selectedFeature={state.selectedFeature}
-      />
+      <EnrichedLayerFeatures id={state.activeLayer} featureCollection={liveCollection} />
     </>
   );
 }
