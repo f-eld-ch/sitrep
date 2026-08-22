@@ -44,7 +44,7 @@
     "@turf/distance": "^7.4.0",
     "@turf/helpers": "^7.4.0",
     "@turf/line-split": "^7.4.0",
-    "@uiw/react-md-editor": "^4.1.1",
+    "@uiw/react-md-editor": "^4.1.2",
     "@watergis/maplibre-gl-export": "~4.1.2",
     "bulma": "^1.0.4",
     "classnames": "^2.5.1",
