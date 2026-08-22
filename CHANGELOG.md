@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Add Trümmerbereich line type and Überschwemmtes Gebiet zone ([#1759](https://github.com/f-eld-ch/sitrep/issues/1759)) - ([8835b7a](https://github.com/f-eld-ch/sitrep/commit/8835b7aae44c634c13392786a2976b42f83662b2))
 - *(map)* Add slide-direction arrow for Rutschgebiet ([#1758](https://github.com/f-eld-ch/sitrep/issues/1758)) - ([2c69cd6](https://github.com/f-eld-ch/sitrep/commit/2c69cd6ee8e0ec7c0d645b2627dfd6ff708758b0))
 - *(map)* Add contaminated-area zone types ([#1740](https://github.com/f-eld-ch/sitrep/issues/1740)) - ([6d53129](https://github.com/f-eld-ch/sitrep/commit/6d531290ff431689bccc0c43c716dca3fbc82e80))
 - *(map)* Support language-dependent map icons for situation map ([#1739](https://github.com/f-eld-ch/sitrep/issues/1739)) - ([8928cc0](https://github.com/f-eld-ch/sitrep/commit/8928cc09ac5059e19263c9d8f1f14d835a33d737))
