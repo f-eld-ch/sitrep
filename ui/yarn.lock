@@ -9518,7 +9518,7 @@ __metadata:
     sass: "npm:^1.102.0"
     typescript: "npm:^7.0.2"
     usehooks-ts: "npm:^3.1.1"
-    uuid: "npm:^14.0.1"
+    uuid: "npm:^14.0.2"
     vite: "npm:^8.2.1"
     vite-bundle-analyzer: "npm:^1.3.9"
     vite-plugin-pwa: "npm:^1.3.0"
@@ -10559,12 +10559,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^14.0.1":
-  version: 14.0.1
-  resolution: "uuid@npm:14.0.1"
+"uuid@npm:^14.0.2":
+  version: 14.0.2
+  resolution: "uuid@npm:14.0.2"
   bin:
     uuid: dist-node/bin/uuid
-  checksum: 10/0f978fd5b0269d7acb615342aeb131f0b8d85eeb8ec34f2915d906baa3befcc14a079a430d0f8116aec6fd20c850cbfab65d1b3d1643fa81ed373c0cf9574f18
+  checksum: 10/e8263a76ad7b2d1f246df5a48a5bdf30d886eedbb1d3d74c75356d02b2966f5fffd7790b85afdb3682e4e732d13fca7974626419814f45de6847f78ce03c745e
   languageName: node
   linkType: hard
 
