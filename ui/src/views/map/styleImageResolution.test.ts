@@ -342,7 +342,9 @@ describe("style image resolution", () => {
         // key here would be invisible to every other test in this file.
         const available = new Set(availableImagesFor(atlas));
         const missing = Object.entries(EnrichLineStringMap).flatMap(([lineType, config]) =>
-          [config.iconStart, config.iconEnd]
+          // The slide arrow's head is written onto a synthetic feature the same way, so it
+          // needs the same guard as the caps.
+          [config.iconStart, config.iconEnd, config.slideArrow?.icon]
             .filter((icon): icon is string => icon !== undefined)
             .filter((icon) => !available.has(icon))
             .map((icon) => `${lineType}: ${icon}`),
@@ -352,12 +354,13 @@ describe("style image resolution", () => {
     },
   );
 
-  it("defines a cap for every line type that should have one", () => {
-    // Guards against a cap silently disappearing during a refactor.
-    const withCaps = Object.entries(EnrichLineStringMap).filter(
-      ([, c]) => c.iconStart !== undefined || c.iconEnd !== undefined,
+  it("gives every line type in the map some indicator", () => {
+    // Guards against a cap or arrow silently disappearing during a refactor. Rutschgebiet
+    // carries a slideArrow instead of a cap, which is why this is not a cap-only check.
+    const withIndicator = Object.entries(EnrichLineStringMap).filter(
+      ([, c]) => c.iconStart !== undefined || c.iconEnd !== undefined || c.slideArrow !== undefined,
     );
-    expect(withCaps).toHaveLength(Object.keys(EnrichLineStringMap).length);
+    expect(withIndicator).toHaveLength(Object.keys(EnrichLineStringMap).length);
   });
 
   it("references no image literal that is missing from the atlas", () => {
