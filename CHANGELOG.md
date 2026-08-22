@@ -20,6 +20,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump uuid from 14.0.1 to 14.0.2 in /ui ([#1751](https://github.com/f-eld-ch/sitrep/issues/1751)) - ([ba74683](https://github.com/f-eld-ch/sitrep/commit/ba7468314d2e65549d057c72dbc185d19ac48a61))
 - *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1750](https://github.com/f-eld-ch/sitrep/issues/1750)) - ([ab3607e](https://github.com/f-eld-ch/sitrep/commit/ab3607e62d74dbba4ce389b9df9eda5d44a2fd5c))
 - *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1742](https://github.com/f-eld-ch/sitrep/issues/1742)) - ([b1d9555](https://github.com/f-eld-ch/sitrep/commit/b1d955549d9f6a739f554a84adec90fc79f97c3c))
 - *(deps)* Bump dayjs from 1.11.21 to 1.11.23 in /ui ([#1738](https://github.com/f-eld-ch/sitrep/issues/1738)) - ([526b117](https://github.com/f-eld-ch/sitrep/commit/526b1175da2a68482a0cdbf661655cac2363be91))
