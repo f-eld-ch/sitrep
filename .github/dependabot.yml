@@ -11,6 +11,8 @@ updates:
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
     directory: "/ui"
+    registries:
+      - npm-github-feld-ch
     target-branch: "develop"
     schedule:
       interval: "daily"
@@ -35,6 +37,10 @@ updates:
         applies-to: version-updates
         patterns:
           - "@openfeature/*"
+      feld-ch:
+        applies-to: version-updates
+        patterns:
+          - "@f-eld-ch/*"
       react:
         applies-to: version-updates
         patterns:
