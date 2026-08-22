@@ -5,8 +5,12 @@ import { Map as MapLibre } from "react-map-gl/maplibre";
 import { MapStyles } from "views/map/controls/StyleController";
 import { describe, expect, it, vi } from "vitest";
 import bearing from "@turf/bearing";
-import type { Feature, LineString, Point, Position } from "geojson";
-import { enrichFeature, EnrichedFeaturesSource } from "./EnrichedLayerFeatures";
+import type { Feature, LineString, MultiPolygon, Point, Polygon, Position } from "geojson";
+import {
+  enrichFeature,
+  EnrichedFeaturesSource,
+  EnrichLineStringMap,
+} from "./EnrichedLayerFeatures";
 
 vi.mock("react-map-gl/maplibre", () => ({
   Map: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
@@ -233,6 +237,20 @@ describe("Rutschgebiet slide arrow", () => {
     ).toEqual([]);
   });
 
+  it("leaves Trümmerbereich uncapped, so it draws as a plain solid line", () => {
+    // 1116 has no pattern tile and the symbol is a plain boundary, so "no arrowhead" is
+    // expressed by absence from the enrichment map rather than by a config flag.
+    expect(EnrichLineStringMap.Truemmerbereich).toBeUndefined();
+    expect(
+      enrichFeature({
+        type: "Feature",
+        id: "debris-1",
+        geometry: { type: "LineString", coordinates: uShape },
+        properties: { lineType: "Truemmerbereich", deletedAt: null },
+      }),
+    ).toEqual([]);
+  });
+
   it("leaves cap-only line types without a shaft", () => {
     const enriched = enrichFeature({
       type: "Feature",
@@ -242,5 +260,190 @@ describe("Rutschgebiet slide arrow", () => {
     });
     expect(enriched).toHaveLength(2);
     expect(enriched.every((f) => f.geometry.type === "Point")).toBe(true);
+  });
+});
+
+/**
+ * The flow arrow is the polygon counterpart of the slide arrow, and the first enrichment
+ * keyed on `zoneType` rather than `lineType`. Its anchor is derived from draw order, which
+ * nothing else in the app depends on, so these tests are the only thing pinning it.
+ */
+describe("Überschwemmtes Gebiet flow arrow", () => {
+  /**
+   * A square traced clockwise from the south-west corner, with the closing repeat
+   * mapbox-gl-draw adds. The last drawn vertex is the south-east corner and the last
+   * segment runs due south down the eastern edge, so the outward normal is due east.
+   */
+  const square: Position[] = [
+    [8.0, 47.0],
+    [8.0, 47.05],
+    [8.1, 47.05],
+    [8.1, 47.0],
+    [8.0, 47.0],
+  ];
+  /** Middle of the eastern edge — the last segment drawn, so where the arrow springs from. */
+  const LAST_EDGE_MIDPOINT: Position = [8.1, 47.025];
+
+  const flooded = (coordinates: Position[][], color?: string): Feature<Polygon> => ({
+    type: "Feature",
+    id: "zone-1",
+    geometry: { type: "Polygon", coordinates },
+    properties: { zoneType: "UeberschwemmtesGebiet", deletedAt: null, ...(color ? { color } : {}) },
+  });
+
+  const parts = (coordinates: Position[][], color?: string) => {
+    const enriched = enrichFeature(flooded(coordinates, color));
+    return {
+      shaft: enriched.find((f) => f.geometry.type === "LineString") as
+        | Feature<LineString>
+        | undefined,
+      head: enriched.find((f) => f.geometry.type === "Point") as Feature<Point> | undefined,
+    };
+  };
+
+  const shaftOf = (coordinates: Position[][]) =>
+    (parts(coordinates).shaft as Feature<LineString>).geometry.coordinates;
+
+  it("springs from the middle of the last segment, not the closing repeat", () => {
+    // The ring ends with a copy of its first position; reading that as the last segment
+    // would put every arrow on the southern edge regardless of where drawing stopped.
+    const [tail] = shaftOf([square]);
+    expect(tail[0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
+    expect(tail[1]).toBeCloseTo(LAST_EDGE_MIDPOINT[1], 4);
+  });
+
+  it("touches the outline, unlike the slide arrow which is held clear of its line", () => {
+    // The tail sits exactly on the eastern edge, at longitude 8.1.
+    const [tail] = shaftOf([square]);
+    expect(tail[0]).toBeCloseTo(8.1, 5);
+  });
+
+  it("leaves the last segment at a right angle, pointing out of the zone", () => {
+    // The last segment runs due south down the eastern edge, so the outward normal is east.
+    const [tail, tip] = shaftOf([square]);
+    expect(bearing(tail, tip)).toBeCloseTo(90, 1);
+    expect(tip[0]).toBeGreaterThan(8.1);
+  });
+
+  it("takes the outward normal whichever way the ring is wound", () => {
+    // Same square traced counter-clockwise, which makes the northern edge the last one
+    // drawn. Outward is then north — a winding-blind rule would send it south, into the zone.
+    const [tail, tip] = shaftOf([[...square].reverse()]);
+    expect(tail[1]).toBeCloseTo(47.05, 4);
+    expect(bearing(tail, tip)).toBeCloseTo(0, 1);
+    expect(tip[1]).toBeGreaterThan(47.05);
+  });
+
+  it("aims the chevron down the shaft", () => {
+    const { shaft, head } = parts([square]);
+    const [tail, tip] = (shaft as Feature<LineString>).geometry.coordinates;
+    const rotation = head?.properties?.iconRotation as number;
+    const aimed = (((rotation + 90) % 360) + 360) % 360;
+    const wanted = ((bearing(tail, tip) % 360) + 360) % 360;
+    expect(aimed).toBeCloseTo(wanted, 1);
+  });
+
+  it("moves with the vertex drawing stopped on", () => {
+    // Same square, traced from the north-west corner so it ends on the south-west one.
+    const shifted: Position[] = [
+      [8.0, 47.05],
+      [8.1, 47.05],
+      [8.1, 47.0],
+      [8.0, 47.0],
+      [8.0, 47.05],
+    ];
+    // Ends on the south-west corner, so the last segment is the southern edge.
+    const [tail] = shaftOf([shifted]);
+    expect(tail[0]).toBeCloseTo(8.05, 4);
+    expect(tail[1]).toBeCloseTo(47.0, 4);
+  });
+
+  it("reads the outer ring only, ignoring holes", () => {
+    const hole: Position[] = [
+      [8.02, 47.01],
+      [8.02, 47.02],
+      [8.03, 47.02],
+      [8.03, 47.01],
+      [8.02, 47.01],
+    ];
+    const enriched = enrichFeature(flooded([square, hole]));
+    // One shaft and one head — an arrow off the hole would point into the zone.
+    expect(enriched).toHaveLength(2);
+    expect(shaftOf([square, hole])[0][0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
+  });
+
+  it("gives a multipart zone one arrow per part, with distinct ids", () => {
+    const second = square.map(([lon, lat]) => [lon + 1, lat] as Position);
+    const enriched = enrichFeature({
+      type: "Feature",
+      id: "zone-1",
+      geometry: { type: "MultiPolygon", coordinates: [[square], [second]] },
+      properties: { zoneType: "UeberschwemmtesGebiet", deletedAt: null },
+    } as Feature<MultiPolygon>);
+    expect(enriched.map((f) => f.id)).toEqual([
+      "zone-1:flow-0",
+      "zone-1:flow-0-tip",
+      "zone-1:flow-1",
+      "zone-1:flow-1-tip",
+    ]);
+  });
+
+  it("handles a triangle", () => {
+    const triangle: Position[] = [
+      [8.0, 47.0],
+      [8.05, 47.05],
+      [8.1, 47.0],
+      [8.0, 47.0],
+    ];
+    // Last segment runs from the apex down to the south-east corner.
+    const [tail] = shaftOf([triangle]);
+    expect(tail[0]).toBeCloseTo(8.075, 3);
+    expect(tail[1]).toBeCloseTo(47.025, 3);
+  });
+
+  it("ignores a repeated final vertex rather than aiming due north", () => {
+    // `bearing(p, p)` is 0, not NaN, so a duplicate would silently point the arrow north —
+    // a plausible-looking wrong answer rather than a visible failure.
+    const duplicated: Position[] = [
+      [8.0, 47.0],
+      [8.0, 47.05],
+      [8.1, 47.05],
+      [8.1, 47.0],
+      [8.1, 47.0],
+      [8.0, 47.0],
+    ];
+    const [tail, tip] = shaftOf([duplicated]);
+    expect(tail[0]).toBeCloseTo(LAST_EDGE_MIDPOINT[0], 4);
+    expect(bearing(tail, tip)).toBeCloseTo(90, 1);
+  });
+
+  it("emits nothing when the ring encloses nothing", () => {
+    expect(
+      enrichFeature(
+        flooded([
+          [
+            [8.0, 47.0],
+            [8.0, 47.0],
+            [8.0, 47.0],
+          ],
+        ]),
+      ),
+    ).toEqual([]);
+  });
+
+  it("carries the feature's own colour", () => {
+    const { shaft, head } = parts([square], "#123456");
+    expect(shaft?.properties?.color).toBe("#123456");
+    expect(head?.properties?.icon).toContain("chevron-red");
+  });
+
+  it("leaves other zone types alone, so the registry gates it rather than the geometry", () => {
+    const enriched = enrichFeature({
+      type: "Feature",
+      id: "zone-2",
+      geometry: { type: "Polygon", coordinates: [square] },
+      properties: { zoneType: "Schadengebiet", deletedAt: null },
+    });
+    expect(enriched).toEqual([]);
   });
 });

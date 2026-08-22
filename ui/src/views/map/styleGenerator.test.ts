@@ -96,7 +96,7 @@ const drawStyle: LayerProps[] = [
       ["==", "active", "false"],
       ["==", "$type", "Polygon"],
       ["has", "user_zoneType"],
-      ["in", "user_zoneType", "Einsatzraum", "Schadengebiet"],
+      ["in", "user_zoneType", "Einsatzraum", "Schadengebiet", "UeberschwemmtesGebiet"],
       ["!=", "mode", "static"],
     ],
     paint: {
@@ -206,6 +206,7 @@ const drawStyle: LayerProps[] = [
         "Radioaktiv",
         "Einsatzraum",
         "Schadengebiet",
+        "UeberschwemmtesGebiet",
       ],
       ["!=", "mode", "static"],
     ],
@@ -365,6 +366,7 @@ const drawStyle: LayerProps[] = [
         "durchgeführteVerschiebung",
         "durchgeführterEinsatz",
         "brandUebergriffErfolgt",
+        "Truemmerbereich",
       ],
       ["!=", "mode", "static"],
     ],
@@ -648,7 +650,7 @@ const displayStyle: LayerProps[] = [
       "all",
       ["==", "$type", "Polygon"],
       ["has", "zoneType"],
-      ["in", "zoneType", "Einsatzraum", "Schadengebiet"],
+      ["in", "zoneType", "Einsatzraum", "Schadengebiet", "UeberschwemmtesGebiet"],
     ],
     paint: {
       "fill-outline-color": ["coalesce", ["get", "color"], "#000000"],
@@ -750,6 +752,7 @@ const displayStyle: LayerProps[] = [
         "Radioaktiv",
         "Einsatzraum",
         "Schadengebiet",
+        "UeberschwemmtesGebiet",
       ],
     ],
     paint: {
@@ -855,6 +858,7 @@ const displayStyle: LayerProps[] = [
         "durchgeführteVerschiebung",
         "durchgeführterEinsatz",
         "brandUebergriffErfolgt",
+        "Truemmerbereich",
       ],
     ],
     layout: {

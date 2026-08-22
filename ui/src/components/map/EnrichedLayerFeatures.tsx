@@ -1,4 +1,5 @@
 import along from "@turf/along";
+import bbox from "@turf/bbox";
 import bearing from "@turf/bearing";
 import destination from "@turf/destination";
 import distance from "@turf/distance";
@@ -58,6 +59,73 @@ const SLIDE_MIN_LINE_KM = 1e-6;
  * to that metre, which is the common case rendered invisible.
  */
 const SLIDE_SELF_CROSSING_RATIO = 0.1;
+/**
+ * Flow-arrow shaft length, as a fraction of the outer ring's bounding-box diagonal.
+ *
+ * Deliberately not the perimeter, which would be the obvious analogue of the slide arrow's
+ * `total`: perimeter grows with how finely the boundary was digitised, so a flood zone
+ * traced along a river with two hundred vertices would get an arrow several times the size
+ * of the zone it annotates. The diagonal tracks how large the zone actually looks.
+ */
+const FLOW_ARROW_LENGTH_RATIO = 0.12;
+/**
+ * Clamps on that fraction. Tighter than the slide arrow's: this one is a mark against one
+ * edge of an area rather than a span across a line, so it reads better short.
+ */
+const FLOW_ARROW_MIN_KM = 0.01;
+const FLOW_ARROW_MAX_KM = 0.17;
+/** Below this a ring is a stray click, with no extent to scale an arrow against. */
+const FLOW_MIN_EXTENT_KM = 1e-6;
+/**
+ * As `SLIDE_SELF_CROSSING_RATIO`, but load-bearing rather than defensive: the flow arrow's
+ * anchor *is* a ring vertex, so the ray leaves through the boundary by construction and
+ * would otherwise be truncated to nothing.
+ */
+const FLOW_SELF_CROSSING_RATIO = 0.1;
+/**
+ * Two positions this close are the same vertex. Rings close by repeating their first
+ * position, and finishing a polygon on top of an existing vertex leaves duplicates — both
+ * make the tangent bearing meaningless. 1e-9° is well under a millimetre.
+ */
+const VERTEX_EPSILON_DEG = 1e-9;
+
+/**
+ * The two features every generated arrow is made of: a shaft the enriched line layer
+ * strokes, and a chevron the enriched symbol layer places at its tip.
+ *
+ * Shared because the *contract* is shared — the `:kind` / `:kind-tip` id suffixes, `parent`,
+ * and above all the rotation convention below — not because the geometry is. Each builder
+ * still works out its own anchor, bearing and length; this only writes the result down.
+ */
+const arrowFeatures = (
+  parentId: Feature["id"],
+  /** Distinguishes this arrow's synthetic ids from any other the parent carries. */
+  kind: string,
+  tail: Position,
+  tip: Position,
+  /** Direction of travel, tail towards tip. */
+  aim: number,
+  icon: string,
+  color: string,
+): Feature<Geometry, GeoJsonProperties>[] => {
+  const shaft = lineString([tail, tip]);
+  shaft.id = `${parentId}:${kind}`;
+  shaft.properties = { parent: parentId, color };
+
+  const head = point(tip);
+  head.id = `${parentId}:${kind}-tip`;
+  head.properties = {
+    parent: parentId,
+    icon,
+    // Minus, not plus: the chevron artwork points east and `icon-rotate` is measured
+    // clockwise from north. The end caps reach the same place via `+ offset` only because
+    // they feed in a *reversed* bearing; this one is already a direction of travel, so
+    // adding would aim the head back up its own shaft.
+    iconRotation: aim - CHEVRON_BEARING_OFFSET,
+  };
+
+  return [shaft, head];
+};
 
 /**
  * The slide-direction arrow: a straight shaft leaving the boundary's midpoint at a right
@@ -130,23 +198,142 @@ const buildSlideArrow = (
   // Down the shaft, from the far end back to the boundary — the reverse of `slideBearing`.
   const aim = slideBearing + 180;
 
-  const shaft = lineString([tail.geometry.coordinates, tip.geometry.coordinates]);
-  shaft.id = `${parentId}:slide`;
-  shaft.properties = { parent: parentId, color: featureColor ?? config.color };
+  return arrowFeatures(
+    parentId,
+    "slide",
+    tail.geometry.coordinates,
+    tip.geometry.coordinates,
+    aim,
+    config.icon,
+    featureColor ?? config.color,
+  );
+};
 
-  const head = point(tip.geometry.coordinates);
-  head.id = `${parentId}:slide-tip`;
-  head.properties = {
-    parent: parentId,
-    icon: config.icon,
-    // Minus, not plus: the chevron artwork points east and `icon-rotate` is measured
-    // clockwise from north. The end caps reach the same place via `+ offset` only because
-    // they feed in a *reversed* bearing; this one is already a direction of travel, so
-    // adding would aim the head back up its own shaft.
-    iconRotation: aim - CHEVRON_BEARING_OFFSET,
-  };
+const samePosition = (a: Position, b: Position): boolean =>
+  Math.abs(a[0] - b[0]) < VERTEX_EPSILON_DEG && Math.abs(a[1] - b[1]) < VERTEX_EPSILON_DEG;
 
-  return [shaft, head];
+/**
+ * The ring with its closing repeat removed, so the last entry is the last vertex the user
+ * actually placed rather than a copy of the first.
+ *
+ * Pops in a loop rather than dropping a single position: finishing a polygon on top of the
+ * first vertex can leave more than one copy, and an import may repeat it too.
+ */
+const openRing = (ring: Position[]): Position[] => {
+  const open = ring.slice();
+  while (open.length > 1 && samePosition(open[open.length - 1], open[0])) {
+    open.pop();
+  }
+  return open;
+};
+
+/**
+ * Twice the signed area of a ring, by the shoelace formula. Positive means the ring is
+ * wound counter-clockwise, negative clockwise.
+ *
+ * Only the sign is used, so working in raw degrees is fine — no projection needed. This is
+ * what tells the arrow which perpendicular points out of the zone rather than into it: on a
+ * counter-clockwise ring the interior lies to the left of travel, so outward is the right.
+ */
+const ringWinding = (ring: Position[]): number => {
+  let doubleArea = 0;
+  for (let i = 0; i < ring.length; i += 1) {
+    const [x1, y1] = ring[i];
+    const [x2, y2] = ring[(i + 1) % ring.length];
+    doubleArea += x1 * y2 - x2 * y1;
+  }
+  return doubleArea;
+};
+
+/**
+ * The flow-direction arrow: a straight shaft springing from the last vertex of the outer
+ * ring, leaving it at a right angle to the last segment drawn, tipped with a chevron.
+ *
+ * Direction comes from where the user stopped drawing — an input they already control — so
+ * nothing extra has to be persisted. Unlike the slide arrow the tail sits *on* the boundary:
+ * a polygon stroke is 2px, so there is no pattern band to clear, and springing from the
+ * outline is what makes the arrow read as belonging to it.
+ */
+const buildFlowArrow = (
+  parentId: Feature["id"],
+  kind: string,
+  ring: Position[],
+  config: FlowArrowConfig,
+  /** The feature's own stroke colour, so a recoloured zone keeps its arrow in step. */
+  featureColor: string | undefined,
+): Feature<Geometry, GeoJsonProperties>[] => {
+  const open = openRing(ring);
+  // Fewer than three distinct vertices enclose nothing, so there is no inside for the arrow
+  // to point out of.
+  if (open.length < 3) {
+    return [];
+  }
+
+  const anchor = open[open.length - 1];
+  // Walk back past any repeated vertex: `bearing` between two identical positions is 0, not
+  // NaN, so without this every such arrow would quietly point due north instead of failing.
+  let prior = open.length - 2;
+  while (prior >= 0 && samePosition(open[prior], anchor)) {
+    prior -= 1;
+  }
+  if (prior < 0) {
+    return [];
+  }
+
+  // At a right angle to the last segment, on whichever side lies outside the ring. Taken
+  // from the winding rather than probed with a containment test, which would be ambiguous
+  // here: the anchor is a corner, so a point offset from it can fall either side depending
+  // on how sharp the corner is.
+  const alongLastSegment = bearing(point(open[prior]), point(anchor));
+  const flowBearing = alongLastSegment + (ringWinding(open) > 0 ? 90 : -90);
+
+  // Springs from the middle of the last segment rather than from its end vertex. A corner is
+  // shared by two edges, so an arrow planted there reads as belonging to neither; the middle
+  // of an edge is unambiguous, and the perpendicular genuinely separates inside from out.
+  const segment = distance(point(open[prior]), point(anchor), { units: "kilometers" });
+  const base = destination(point(open[prior]), segment / 2, alongLastSegment, {
+    units: "kilometers",
+  });
+  const tail = base.geometry.coordinates;
+
+  // Measured against the *closed* ring: the segment from the last vertex back to the first
+  // is real boundary, and on a convex zone it is the one the arrow is likeliest to meet.
+  const boundary = lineString([...open, open[0]]);
+  const [minX, minY, maxX, maxY] = bbox(boundary);
+  const extent = distance(point([minX, minY]), point([maxX, maxY]), { units: "kilometers" });
+  // Negated so a NaN extent is rejected too.
+  if (!(extent > FLOW_MIN_EXTENT_KM)) {
+    return [];
+  }
+
+  // Never longer than the zone it annotates, so a hand-drawn stub gets a stub.
+  const nominal = Math.min(
+    Math.max(extent * config.lengthRatio, Math.min(FLOW_ARROW_MIN_KM, extent)),
+    FLOW_ARROW_MAX_KM,
+  );
+
+  // The outward normal is not guaranteed to stay outside — on a concave ring it can re-enter.
+  // The bearing is honoured either way, since it follows from the boundary the user drew, but
+  // the ray stops at the first crossing so a wrong-way arrow stays a local mark rather than
+  // spearing the whole zone.
+  const reach = destination(base, nominal, flowBearing, { units: "kilometers" });
+  const crossings = lineIntersect(lineString([tail, reach.geometry.coordinates]), boundary)
+    .features.map((crossing) => distance(base, crossing, { units: "kilometers" }))
+    // The tail sits on the boundary, so the ray leaves through it; ignore that crossing.
+    .filter((km) => km > nominal * FLOW_SELF_CROSSING_RATIO);
+  const span = crossings.length > 0 ? Math.min(nominal, ...crossings) : nominal;
+
+  const tip = destination(base, span, flowBearing, { units: "kilometers" });
+
+  return arrowFeatures(
+    parentId,
+    kind,
+    tail,
+    tip.geometry.coordinates,
+    flowBearing,
+    config.icon,
+    featureColor ?? config.color,
+  );
 };
 
 const enrichFeature = (
@@ -200,6 +387,34 @@ const enrichFeature = (
     }
   }
 
+  if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
+    const flowArrow = EnrichPolygonMap[f.properties?.zoneType]?.flowArrow;
+    if (flowArrow !== undefined) {
+      // Outer rings only. A hole is interior detail, and an arrow springing off one would
+      // point into the zone rather than out of it.
+      const outerRings: Position[][] =
+        f.geometry.type === "Polygon"
+          ? [f.geometry.coordinates[0]]
+          : f.geometry.coordinates.map((part) => part[0]);
+
+      outerRings.forEach((ring, index) => {
+        if (ring === undefined) {
+          return;
+        }
+        features.push(
+          // A multipart zone gets one arrow per part, so the synthetic ids must stay distinct.
+          ...buildFlowArrow(
+            f.id,
+            outerRings.length > 1 ? `flow-${index}` : "flow",
+            ring,
+            flowArrow,
+            f.properties?.color,
+          ),
+        );
+      });
+    }
+  }
+
   return features;
 };
 
@@ -214,6 +429,26 @@ interface SlideArrowConfig {
   color: string;
   /** Shaft length as a fraction of the parent line's length. */
   lengthRatio: number;
+}
+
+/**
+ * A flow-direction arrow generated from a polygon's own outline.
+ *
+ * The polygon counterpart of `SlideArrowConfig`. Same fields, but `lengthRatio` is read
+ * against a different measure — the ring's bounding-box diagonal rather than a line's
+ * length — so they stay separate types rather than one whose ratio means two things.
+ */
+interface FlowArrowConfig {
+  /** Fully-namespaced chevron sprite for the arrow head. */
+  icon: string;
+  /** Shaft stroke colour, read back off `properties.color` by the enriched line layer. */
+  color: string;
+  /** Shaft length as a fraction of the outer ring's bounding-box diagonal. */
+  lengthRatio: number;
+}
+
+interface EnrichPolygonConfig {
+  flowArrow?: FlowArrowConfig;
 }
 
 interface EnrichLineConfig {
@@ -311,6 +546,25 @@ export const EnrichLineStringMap: Record<string, EnrichLineConfig> = {
   // The only entry whose indicator is not a cap: the catalogue draws Rutschgebiet with a
   // slide arrow across the boundary rather than a symbol at either end.
   Rutschgebiet: slideDirection(),
+};
+
+/**
+ * Which zone types get an indicator built from their geometry.
+ *
+ * Exported for the same reason as `EnrichLineStringMap`: these sprite ids are written
+ * straight onto synthetic features and read by a bare `["get", "icon"]`, bypassing the
+ * `match` expression, so only `styleImageResolution.test.ts` would catch a typo here.
+ */
+export const EnrichPolygonMap: Record<string, EnrichPolygonConfig> = {
+  // 1115 is a flooded area *with a flow direction* — the arrow is part of the catalogue
+  // symbol rather than decoration, which is why it is generated rather than left to the user.
+  UeberschwemmtesGebiet: {
+    flowArrow: {
+      icon: ARROW.fireSpread,
+      color: Colors.Red,
+      lengthRatio: FLOW_ARROW_LENGTH_RATIO,
+    },
+  },
 };
 
 const EnrichedSymbolSource = (props: EnrichedFeaturesProps) => {

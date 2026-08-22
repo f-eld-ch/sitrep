@@ -73,6 +73,20 @@ export const ZoneTypes: SelectableTypes = {
     outlineOnly: true,
     color: Colors.Red,
   },
+  /**
+   * Flooded area: the same red outline as Schadengebiet, plus a flow-direction arrow
+   * generated from the ring's last segment (see `EnrichPolygonMap`).
+   *
+   * The arrow is part of the symbol rather than decoration — the catalogue names it, 1115
+   * being "Zone inondée *avec direction du flux*" — which is why it is generated instead of
+   * left to the user, exactly as 1113 "avec direction" is for Rutschgebiet.
+   */
+  UeberschwemmtesGebiet: {
+    name: "UeberschwemmtesGebiet",
+    thumbnail: "1115", // Überschwemmtes Gebiet
+    outlineOnly: true,
+    color: Colors.Red,
+  },
   Brandzone: {
     name: "Brandzone",
     thumbnail: "1110", // Brandzone Flächenbrand
@@ -138,6 +152,15 @@ export const LineTypes: SelectableTypes = {
   Rutschgebiet: {
     name: "Rutschgebiet",
     thumbnail: "1113",
+    color: Colors.Red,
+  },
+  /**
+   * Debris field. A plain solid boundary: 1116 ships no pattern tile in the catalogue, and
+   * the symbol is an outline rather than a hatch, so it takes no cap and no arrowhead.
+   */
+  Truemmerbereich: {
+    name: "Truemmerbereich",
+    thumbnail: "1116b",
     color: Colors.Red,
   },
   begehbar: {

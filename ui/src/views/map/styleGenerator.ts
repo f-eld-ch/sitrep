@@ -382,6 +382,8 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
           "durchgeführterEinsatz",
           // Same solid stroke as durchgeführteVerschiebung, in the feature's red.
           "brandUebergriffErfolgt",
+          // Debris field: 1116 has no pattern tile, so the catalogue's plain red boundary.
+          "Truemmerbereich",
         ],
       ]),
       layout: {
