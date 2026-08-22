@@ -51,10 +51,10 @@ const SLIDE_SELF_CROSSING_RATIO = 0.1;
  * The slide-direction arrow: a straight shaft leaving the boundary's midpoint at a right
  * angle, tipped with a chevron.
  *
- * It sits on the side the pattern's teeth do not occupy (see `SLIDE_ARROW_SIDE`) and points
- * *back at* the boundary: the slide runs onto the line, so the head is the end nearest it.
- * Neither end touches — a shaft flush with the line vanishes into a pattern band drawn up to
- * 22px wide.
+ * It stands off the same side of the line as the pattern's teeth (see `SLIDE_ARROW_SIDE`) and
+ * points *back at* the boundary: the slide runs onto the line, so the head is the end nearest
+ * it. Neither end touches — a shaft flush with the line vanishes into a pattern band drawn up
+ * to 22px wide.
  */
 export const buildSlideArrow = (
   parentId: Feature["id"],
@@ -80,8 +80,8 @@ export const buildSlideArrow = (
   const before = along(line, Math.max(half - total * SLIDE_BEARING_SPAN, 0), KM);
   const after = along(line, Math.min(half + total * SLIDE_BEARING_SPAN, total), KM);
 
-  // Away from the boundary, on the side the teeth do not occupy. The arrow is then built
-  // back along this bearing, so it approaches the line rather than springing off it.
+  // Points away from the line, on the teeth's side of it. The shaft is then laid out back
+  // along this bearing, so the arrow approaches the line rather than springing off it.
   const slideBearing = bearing(before, after) + SLIDE_ARROW_SIDE * 90;
 
   const nominal = clampArrowLength(total, config, SLIDE_ARROW_MIN_KM, SLIDE_ARROW_MAX_KM);
