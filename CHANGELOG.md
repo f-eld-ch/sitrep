@@ -20,6 +20,11 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @uiw/react-md-editor from 4.1.1 to 4.1.2 in /ui ([#1754](https://github.com/f-eld-ch/sitrep/issues/1754)) - ([f2afc33](https://github.com/f-eld-ch/sitrep/commit/f2afc33c093f4dbee50ae7213cf697bf246d087c))
+- *(deps)* Bump maplibre-gl from 6.4.0 to 6.5.0 in /ui ([#1757](https://github.com/f-eld-ch/sitrep/issues/1757)) - ([293fc69](https://github.com/f-eld-ch/sitrep/commit/293fc69f66aa5a7ca474afef1a834d6fb6a01065))
+- *(deps)* Bump i18next from 26.3.6 to 26.4.0 in /ui ([#1756](https://github.com/f-eld-ch/sitrep/issues/1756)) - ([dd6f733](https://github.com/f-eld-ch/sitrep/commit/dd6f733fc801599c4d27b8b3e230c9cebf78f810))
+- *(deps)* Bump react-i18next from 17.0.11 to 17.0.12 in /ui ([#1755](https://github.com/f-eld-ch/sitrep/issues/1755)) - ([8dbb183](https://github.com/f-eld-ch/sitrep/commit/8dbb183a936afe43e59ad4371efeebcd9aaf71c4))
+- *(deps)* Bump the f-eld-ch group in /ui with 4 updates ([#1753](https://github.com/f-eld-ch/sitrep/issues/1753)) - ([b547c3e](https://github.com/f-eld-ch/sitrep/commit/b547c3e56fa90f9fcbbb8f0b274f7a2d2c2310f3))
 - *(deps)* Bump uuid from 14.0.1 to 14.0.2 in /ui ([#1751](https://github.com/f-eld-ch/sitrep/issues/1751)) - ([ba74683](https://github.com/f-eld-ch/sitrep/commit/ba7468314d2e65549d057c72dbc185d19ac48a61))
 - *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1750](https://github.com/f-eld-ch/sitrep/issues/1750)) - ([ab3607e](https://github.com/f-eld-ch/sitrep/commit/ab3607e62d74dbba4ce389b9df9eda5d44a2fd5c))
 - *(deps)* Bump maplibre-gl from 6.4.0 to 6.4.1 in /ui ([#1742](https://github.com/f-eld-ch/sitrep/issues/1742)) - ([b1d9555](https://github.com/f-eld-ch/sitrep/commit/b1d955549d9f6a739f554a84adec90fc79f97c3c))
