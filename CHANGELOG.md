@@ -20,6 +20,10 @@
 
 - *(map)* Derive the zone fill filters from ZoneTypes ([#1744](https://github.com/f-eld-ch/sitrep/issues/1744)) - ([1ab9772](https://github.com/f-eld-ch/sitrep/commit/1ab9772eb3c1b66935c312db2cbaa639eac34e06))
 
+### 📚 Documentation
+
+- *(map)* Correct the slide arrow's side in two stale comments ([#1760](https://github.com/f-eld-ch/sitrep/issues/1760)) - ([86e998c](https://github.com/f-eld-ch/sitrep/commit/86e998cdeb2dffb53bbaf7cb371315cc45bf656b))
+
 ### ⚙️  Other
 
 - *(deps)* Bump @uiw/react-md-editor from 4.1.1 to 4.1.2 in /ui ([#1754](https://github.com/f-eld-ch/sitrep/issues/1754)) - ([f2afc33](https://github.com/f-eld-ch/sitrep/commit/f2afc33c093f4dbee50ae7213cf697bf246d087c))
