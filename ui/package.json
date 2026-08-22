@@ -61,7 +61,7 @@
     "react": "^19.2.8",
     "react-autocomplete-hint": "^2.0.0",
     "react-dom": "^19.2.8",
-    "react-i18next": "^17.0.11",
+    "react-i18next": "^17.0.12",
     "react-map-gl": "~8.1.2",
     "react-router": "^8.3.0",
     "react-to-print": "^3.3.0",
