@@ -102,13 +102,9 @@ describe("EnrichedLayerFeatures", () => {
     expect(container).toBeTruthy();
   });
 
-  it("filters out deleted features but keeps the selected one", () => {
+  it("filters out deleted features", () => {
     const { container } = renderWithMap(
-      <EnrichedFeaturesSource
-        id="test"
-        featureCollection={baseFeatureCollection}
-        selectedFeature="line-1"
-      />,
+      <EnrichedFeaturesSource id="test" featureCollection={baseFeatureCollection} />,
     );
     expect(container).toBeTruthy();
   });
