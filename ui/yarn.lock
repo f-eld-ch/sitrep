@@ -3229,6 +3229,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@turf/along@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "@turf/along@npm:7.4.0"
+  dependencies:
+    "@turf/bearing": "npm:7.4.0"
+    "@turf/destination": "npm:7.4.0"
+    "@turf/distance": "npm:7.4.0"
+    "@turf/helpers": "npm:7.4.0"
+    "@turf/invariant": "npm:7.4.0"
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.8.1"
+  checksum: 10/7358a8146ddfe8870a9bc92e33a08d077fb1385f5f3d1f8e8185c8f2f153b7ef8f5a1d3a44f72da29916a66187c589658c73aec102d09618629489feeb0e25bb
+  languageName: node
+  linkType: hard
+
 "@turf/bbox-polygon@npm:^7.4.0":
   version: 7.4.0
   resolution: "@turf/bbox-polygon@npm:7.4.0"
@@ -3252,7 +3267,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/bearing@npm:^7.4.0":
+"@turf/bearing@npm:7.4.0, @turf/bearing@npm:^7.4.0":
   version: 7.4.0
   resolution: "@turf/bearing@npm:7.4.0"
   dependencies:
@@ -3285,6 +3300,18 @@ __metadata:
     "@types/geojson": "npm:^7946.0.10"
     tslib: "npm:^2.8.1"
   checksum: 10/7ad9d7ff643ac2c24619320f684e1fcad91edb55fdd3f4a664e9b89ab4e320d9a191987f86410a416d79f24f603f903a92fb764728333240090cbc7e3054bbfd
+  languageName: node
+  linkType: hard
+
+"@turf/destination@npm:7.4.0, @turf/destination@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "@turf/destination@npm:7.4.0"
+  dependencies:
+    "@turf/helpers": "npm:7.4.0"
+    "@turf/invariant": "npm:7.4.0"
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.8.1"
+  checksum: 10/aa6c630e40f2eebca96cd9cf623337c3941c7ca24127e60a70f95d70fd4f25a029664832ffcec4a83186a112c5d5b9653526ff8757b4acd86dc97140ddfc4e24
   languageName: node
   linkType: hard
 
@@ -3345,7 +3372,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turf/line-intersect@npm:7.4.0":
+"@turf/length@npm:^7.4.0":
+  version: 7.4.0
+  resolution: "@turf/length@npm:7.4.0"
+  dependencies:
+    "@turf/distance": "npm:7.4.0"
+    "@turf/helpers": "npm:7.4.0"
+    "@turf/meta": "npm:7.4.0"
+    "@types/geojson": "npm:^7946.0.10"
+    tslib: "npm:^2.8.1"
+  checksum: 10/664bb549b87ea3e738b7b50938a63388126ea9e632b231fd1f178c2af5270ede129e37be94b8bdec5c488ffe08b5db13473b79415363a4cd28ca2bb774579194
+  languageName: node
+  linkType: hard
+
+"@turf/line-intersect@npm:7.4.0, @turf/line-intersect@npm:^7.4.0":
   version: 7.4.0
   resolution: "@turf/line-intersect@npm:7.4.0"
   dependencies:
@@ -9479,12 +9519,16 @@ __metadata:
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^7.0.1"
     "@testing-library/react": "npm:^16.3.2"
+    "@turf/along": "npm:^7.4.0"
     "@turf/bbox": "npm:^7.4.0"
     "@turf/bbox-polygon": "npm:^7.4.0"
     "@turf/bearing": "npm:^7.4.0"
     "@turf/boolean-point-in-polygon": "npm:^7.4.0"
+    "@turf/destination": "npm:^7.4.0"
     "@turf/distance": "npm:^7.4.0"
     "@turf/helpers": "npm:^7.4.0"
+    "@turf/length": "npm:^7.4.0"
+    "@turf/line-intersect": "npm:^7.4.0"
     "@turf/line-split": "npm:^7.4.0"
     "@types/lodash": "npm:^4.17.25"
     "@types/mapbox__mapbox-gl-draw": "npm:^1.4.9"
