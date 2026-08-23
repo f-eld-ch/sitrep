@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Stretch BABS icons around their labels with icon-text-fit ([#1761](https://github.com/f-eld-ch/sitrep/issues/1761)) - ([b1f20aa](https://github.com/f-eld-ch/sitrep/commit/b1f20aa334ff35bb7f5e06ab70a7838f0fd6b787))
 - *(map)* Add Trümmerbereich line type and Überschwemmtes Gebiet zone ([#1759](https://github.com/f-eld-ch/sitrep/issues/1759)) - ([8835b7a](https://github.com/f-eld-ch/sitrep/commit/8835b7aae44c634c13392786a2976b42f83662b2))
 - *(map)* Add slide-direction arrow for Rutschgebiet ([#1758](https://github.com/f-eld-ch/sitrep/issues/1758)) - ([2c69cd6](https://github.com/f-eld-ch/sitrep/commit/2c69cd6ee8e0ec7c0d645b2627dfd6ff708758b0))
 - *(map)* Add contaminated-area zone types ([#1740](https://github.com/f-eld-ch/sitrep/issues/1740)) - ([6d53129](https://github.com/f-eld-ch/sitrep/commit/6d531290ff431689bccc0c43c716dca3fbc82e80))
