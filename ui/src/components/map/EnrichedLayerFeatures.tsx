@@ -72,7 +72,9 @@ const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) 
           // unreachable and an unknown cap rendered blank.
           "icon-image": ["coalesce", ["image", ["get", "icon"]], ["image", ARROW.movement]],
           "icon-allow-overlap": true,
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 17, 1.4],
+          // Divided by 1.5 alongside the point markers when babs-sprites 0.4.2 grew the 1x
+          // cell from 32px to 48px, so arrowheads stayed proportional to the icons they cap.
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.067, 17, 0.933],
           "icon-rotation-alignment": "map",
           "icon-pitch-alignment": "map",
           "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],

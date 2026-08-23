@@ -206,6 +206,12 @@ function LayerFetcher() {
 const LIVE_GEOMETRY_INTERVAL_MS = 80;
 
 /**
+ * Fired by mapbox-gl-draw on every one of its renders, including mid-drag — unlike
+ * `draw.update`, which `direct_select` only fires on mouse-up.
+ */
+const DRAW_RENDER_EVENT = "draw.render";
+
+/**
  * The selected feature's geometry as mapbox-gl-draw currently holds it, rather than as it
  * was last persisted — or `undefined` when nothing is selected.
  *
@@ -255,9 +261,17 @@ function useLiveDrawGeometry(
     };
 
     const onRender = throttle(read, LIVE_GEOMETRY_INTERVAL_MS, { leading: true, trailing: true });
-    map.on("draw.render", onRender);
+    // mapbox-gl-draw fires its events *through* the map, but they are not part of MapLibre's
+    // own event map, so `on`/`off` do not accept the name. Narrowed to just the two methods
+    // rather than casting the map to `any`, so a typo in either is still caught.
+    const drawEvents = map as unknown as {
+      on: (type: string, listener: () => void) => void;
+      off: (type: string, listener: () => void) => void;
+    };
+
+    drawEvents.on(DRAW_RENDER_EVENT, onRender);
     return () => {
-      map.off("draw.render", onRender);
+      drawEvents.off(DRAW_RENDER_EVENT, onRender);
       onRender.cancel();
     };
   }, [map, draw, selectedFeature]);

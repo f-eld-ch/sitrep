@@ -53,17 +53,147 @@ const SPECIALLY_FILLED_ZONE_NAMES = [
  * filters held only the legacy names, so a newly placed casualty icon got the generic
  * label instead of its own placement.
  */
-const CASUALTIES_CENTRED = iconIdentifiers([
-  "1304", // Eingesperrte (legacy EingesperrteAbgeschnittene)
-  "1303", // Obdachlose
-]);
 const CASUALTIES_RIGHT = iconIdentifiers([
   "1305", // Tote
   "1302", // Vermisste
   "1301", // Verletzte
 ]);
-/** Both groups: the icons the generic name label must skip. */
-const CASUALTIES_ALL = [...CASUALTIES_CENTRED, ...CASUALTIES_RIGHT];
+
+/**
+ * Icons drawn stretched around their label, using the `content` / `stretchX` / `stretchY`
+ * metadata their sprite carries.
+ *
+ * A subset of `corrections/text-fit.json` in `@f-eld-ch/babs-icons`: 1301 has the metadata
+ * too, but its count belongs beside the symbol like the other casualty figures, so it stays
+ * on the right-placement layer. An id listed here whose sprite lacks the metadata would
+ * silently render unstretched instead.
+ *
+ * Split into two families because they cannot share a layer: a casualty count is a round
+ * badge wanting a red label, a hazard plate a wide strip wanting a black one, and both
+ * `icon-text-fit-padding` and `text-color`'s default differ as a result.
+ */
+const TEXT_FIT_CASUALTIES: BabsIconId[] = [
+  "1303", // Obdachlose
+  "1304", // Eingesperrte
+];
+const TEXT_FIT_PLATES: BabsIconId[] = [
+  "2109a", // Gefahrentafel ohne UN-Nummer
+  // 2109b is deliberately absent. It is the catalogue's *Beispiel* — an illustration of the
+  // plate in use rather than a symbol to place — so it carries no content or stretch
+  // metadata and cannot be fitted. Listing it anyway would draw it at `icon-size: 1`, a full
+  // 48px cell, while every other marker is on the zoom ramp. It is excluded from the picker
+  // for the same reason, so only legacy features can still carry it, and those fall through
+  // to the ordinary icon layer.
+];
+/** Exported so `styleImageResolution.test.ts` can assert the sprites can actually be fitted. */
+export const TEXT_FIT_IDS: BabsIconId[] = [...TEXT_FIT_CASUALTIES, ...TEXT_FIT_PLATES];
+const TEXT_FIT_ICONS = iconIdentifiers(TEXT_FIT_IDS);
+const TEXT_FIT_CASUALTY_ICONS = iconIdentifiers(TEXT_FIT_CASUALTIES);
+const TEXT_FIT_PLATE_ICONS = iconIdentifiers(TEXT_FIT_PLATES);
+
+/**
+ * Space added around the label before the frame is stretched to hold it, as
+ * `[top, right, bottom, left]`.
+ *
+ * Ramped with zoom, in step with the family's `text-size`, because the padding is *not*
+ * scaled by the font: `fitIconToText` subtracts it from text extents that have already been
+ * multiplied by `fontScale`, so a fixed value is a different fraction of the label at every
+ * zoom. Flat padding tuned to look right mid-ramp went slack at the top of it.
+ *
+ * Three stops rather than two: the ramp climbs to z14, then tapers off. Holding the
+ * padding-to-glyph ratio constant all the way up reads as too airy once the glyphs are large,
+ * so the frame is allowed to hug the label more closely as it zooms in. Both this and
+ * `text-size` clamp at z17, so everything from there to z22 is identical.
+ *
+ * Values stay modest throughout because the sprite's `content` rectangle already *is* the
+ * intended text area — the artwork's border lives outside it, in the fixed margins the
+ * stretch never touches.
+ *
+ * One ramp per family: `icon-text-fit-padding` is data-constant, so a round count badge and
+ * a wide hazard plate cannot share one — but it does accept a zoom expression.
+ */
+const TEXT_FIT_CASUALTY_PADDING: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  ["literal", [1.25, 2.5, 1.25, 2.5]],
+  14,
+  ["literal", [2.5, 6, 2.5, 6]],
+  17,
+  ["literal", [3.2, 8, 3.2, 8]],
+];
+const TEXT_FIT_PLATE_PADDING: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  ["literal", [0.7, 2.5, 0.7, 2.5]],
+  14,
+  ["literal", [1.3, 5.5, 1.3, 5.5]],
+  17,
+  ["literal", [1.6, 7, 1.6, 7]],
+];
+
+/**
+ * Label ramps for the two families.
+ *
+ * A count badge is nothing but its number, so the label can fill it. A hazard plate's UN
+ * number shares the symbol with the plate graphic above it and sits in a strip only a
+ * quarter of the cell tall, so an equally large label forces the stretch to inflate the
+ * whole plate to accommodate it.
+ */
+const TEXT_FIT_CASUALTY_TEXT_SIZE: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  4,
+  17,
+  22,
+];
+const TEXT_FIT_PLATE_TEXT_SIZE: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  3,
+  17,
+  14,
+];
+
+/** The icons the generic name label must skip, because another layer already labels them. */
+const SPECIALLY_LABELLED = [...CASUALTIES_RIGHT, ...TEXT_FIT_ICONS];
+
+/**
+ * On-screen scale of a point marker.
+ *
+ * Tied to the sprite's 1x cell size, which `@f-eld-ch/babs-sprites` 0.4.2 raised from 32px
+ * to 48px: the stops were divided by that same 1.5 so markers kept the size they had
+ * before the bump rather than growing by half.
+ */
+const ICON_SIZE: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  0.2,
+  20,
+  1.667,
+];
+
+/**
+ * `icon-image` for a point feature: the catalogue `match`, falling back to a chevron.
+ *
+ * `["image", …]` is what makes the fallback reachable: it resolves to null when the key is
+ * absent from the sprite, whereas the previous `["concat", …]` always returned a non-null
+ * string, so no later branch was ever evaluated.
+ */
+const pointIconImage = (propPrefix: string): ExpressionSpecification => [
+  "coalesce",
+  ["image", legacyIconMatchExpression(propPrefix)],
+  ["image", babsImage(markerSpriteKey("chevron-blue"))],
+];
 
 /**
  * Builds a `match` expression keyed on a feature property.
@@ -172,6 +302,63 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     return ["all", ...conditions] as FilterSpecification;
   }
 
+  /**
+   * A layer drawing one family of icons stretched around its own label.
+   *
+   * Text-fit needs layers of its own because `icon-text-fit` is data-constant — it cannot be
+   * switched on per feature from `gl-draw-point-icon`. Features whose icon has no stretch
+   * metadata, or which carry no label to stretch around, stay on that layer.
+   *
+   * One layer *per family* for the same reason: `icon-text-fit-padding` is data-constant too,
+   * and the families want different values. `icon-size` stays constant here — the frame is
+   * sized by the label through the stretch, so scaling the symbol as well would only inflate
+   * the artwork and the padding along with it.
+   */
+  const textFitLayer = (
+    id: string,
+    icons: string[],
+    padding: ExpressionSpecification,
+    textSize: ExpressionSpecification,
+    defaultTextColor: string,
+  ): LayerProps => ({
+    id,
+    type: "symbol",
+    filter: createFilter([
+      ["==", "$type", "Point"],
+      ["has", `${propPrefix}icon`],
+      ["has", `${propPrefix}name`],
+      ["!has", `${propPrefix}iconRotation`],
+      ["in", `${propPrefix}icon`, ...icons],
+    ]),
+    layout: {
+      "icon-image": pointIconImage(propPrefix),
+      "icon-text-fit": "both",
+      "icon-text-fit-padding": padding,
+      "icon-pitch-alignment": "viewport",
+      "icon-allow-overlap": true,
+      // Not the marker ramp. Once `icon-text-fit` is on, the quad is the fitted box — already
+      // in the label's own units — so `icon-size` stops meaning "how big is the sprite" and
+      // starts meaning "how much bigger than the label is the frame". The ramp's 0.2 at z12
+      // therefore drew the frame at a fifth of the text it is supposed to contain, shrinking
+      // it out of sight; it only looked right around z17, where the ramp passes 1.
+      "icon-size": 1,
+      "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "center",
+      // Both are needed, and they do different jobs. `text-ignore-placement` only stops this
+      // label blocking *other* symbols; `text-allow-overlap` is what stops it being dropped
+      // when something else got there first. Without the latter the whole symbol disappears,
+      // not just the count: `icon-optional` defaults to false, so a suppressed label takes
+      // its icon down with it — and a casualty figure must never be hidden by a collision.
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+      "text-size": textSize,
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", `${propPrefix}color`], defaultTextColor],
+    },
+  });
+
   // Start with styles common to both modes, organized by type
   const styles: LayerProps[] = [
     // === POLYGON STYLES ===
@@ -268,7 +455,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         // 1.5x the point-icon scale: a zone symbol labels an area rather than marking a
         // position, so it needs to read at the zoom the whole area is viewed at — but 2x
         // was overbearing.
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
       },
     },
     {
@@ -455,21 +642,31 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["==", "$type", "Point"],
         ["has", `${propPrefix}icon`],
         ["!has", `${propPrefix}iconRotation`],
+        // Whatever `gl-draw-point-icon-text-fit` takes, this layer must leave alone, or the
+        // icon is drawn twice: once at a fixed size and once stretched around the label.
+        ["any", ["!in", `${propPrefix}icon`, ...TEXT_FIT_ICONS], ["!has", `${propPrefix}name`]],
       ]),
       layout: {
-        "icon-image": [
-          "coalesce",
-          // ["image", …] is what makes the fallback reachable: it resolves to null when
-          // the key is absent from the sprite, whereas the previous ["concat", …] always
-          // returned a non-null string, so no later branch was ever evaluated.
-          ["image", legacyIconMatchExpression(propPrefix)],
-          ["image", babsImage(markerSpriteKey("chevron-blue"))],
-        ],
+        "icon-image": pointIconImage(propPrefix),
         "icon-pitch-alignment": "viewport",
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+        "icon-size": ICON_SIZE,
       },
     },
+    textFitLayer(
+      "gl-draw-point-icon-text-fit-casualty",
+      TEXT_FIT_CASUALTY_ICONS,
+      TEXT_FIT_CASUALTY_PADDING,
+      TEXT_FIT_CASUALTY_TEXT_SIZE,
+      "#ff0000",
+    ),
+    textFitLayer(
+      "gl-draw-point-icon-text-fit-plate",
+      TEXT_FIT_PLATE_ICONS,
+      TEXT_FIT_PLATE_PADDING,
+      TEXT_FIT_PLATE_TEXT_SIZE,
+      "#000000",
+    ),
     {
       id: "gl-draw-point-icon-rotation",
       type: "symbol",
@@ -479,16 +676,9 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["has", `${propPrefix}iconRotation`],
       ]),
       layout: {
-        "icon-image": [
-          "coalesce",
-          // ["image", …] is what makes the fallback reachable: it resolves to null when
-          // the key is absent from the sprite, whereas the previous ["concat", …] always
-          // returned a non-null string, so no later branch was ever evaluated.
-          ["image", legacyIconMatchExpression(propPrefix)],
-          ["image", babsImage(markerSpriteKey("chevron-blue"))],
-        ],
+        "icon-image": pointIconImage(propPrefix),
         "icon-allow-overlap": true,
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+        "icon-size": ICON_SIZE,
         "icon-rotation-alignment": "map",
         "icon-pitch-alignment": "map",
         "icon-rotate": ["coalesce", ["get", `${propPrefix}iconRotation`], 0],
@@ -496,29 +686,6 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     },
 
     // === TEXT STYLES ===
-    {
-      id: "gl-draw-text-special-placement-points-center",
-      type: "symbol",
-      filter: createFilter([
-        ["==", "$type", "Point"],
-        ["has", `${propPrefix}name`],
-        ["has", `${propPrefix}icon`],
-        ["in", `${propPrefix}icon`, ...CASUALTIES_CENTRED],
-      ]),
-      layout: {
-        "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
-        "text-font": ["B612 Bold"],
-        "text-anchor": "center",
-        "text-offset": [0, 0],
-        "icon-text-fit": "both",
-        "icon-text-fit-padding": [20, 20, 20, 20],
-        "text-ignore-placement": true,
-        "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
-      },
-      paint: {
-        "text-color": "#ff0000",
-      },
-    },
     {
       id: "gl-draw-text-special-placement-points-right",
       type: "symbol",
@@ -547,16 +714,16 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["has", `${propPrefix}name`],
         ["has", `${propPrefix}color`],
-        ["!in", `${propPrefix}icon`, ...CASUALTIES_ALL],
+        ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
         ["==", "$type", "Point"],
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
-        "text-font": ["B612 Bold"],
+        "text-font": ["B612"],
         "text-anchor": "center",
         "text-offset": [0, 2],
         "text-ignore-placement": true,
-        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 16],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
       },
       paint: {
         "text-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],

@@ -35,16 +35,70 @@ function layersToMap(layers: LayerProps[]): Record<string, LayerProps> {
 const GENERATED_ICON_IMAGE = "<generated icon-image expression>";
 
 /**
- * Casualty icons, expanded to every identifier that can denote them.
+ * Casualty and text-fit icons, expanded to every identifier that can denote them.
  *
  * Referenced rather than inlined for the same reason as GENERATED_ICON_IMAGE: the list is
  * derived from the catalogue and the legacy mapping, so writing 15 strings out six times
  * here would only pin today's catalogue. What these filters actually *do* is verified
  * behaviourally in casualtyLabels.test.ts, which drives real features through them.
  */
-const CASUALTIES_CENTRED = iconIdentifiers(["1304", "1303"]);
 const CASUALTIES_RIGHT = iconIdentifiers(["1305", "1302", "1301"]);
-const CASUALTIES_ALL = [...CASUALTIES_CENTRED, ...CASUALTIES_RIGHT];
+const TEXT_FIT_CASUALTY_ICONS = iconIdentifiers(["1303", "1304"]);
+const TEXT_FIT_PLATE_ICONS = iconIdentifiers(["2109a"]);
+/** Both families, in the order the source builds them — `gl-draw-point-icon` excludes all. */
+const TEXT_FIT_ICONS = iconIdentifiers(["1303", "1304", "2109a"]);
+const SPECIALLY_LABELLED = [...CASUALTIES_RIGHT, ...TEXT_FIT_ICONS];
+
+/**
+ * The expected shape of a text-fit layer.
+ *
+ * There is one per icon family, differing only in the values passed here — everything else is
+ * spelled out so the structure stays pinned. `icon-size` is deliberately the same plain zoom
+ * ramp every other point layer uses: the frame is sized by its label through the stretch, so
+ * scaling the symbol by label length as well would inflate the artwork and the padding along
+ * with it.
+ */
+const expectedTextFitLayer = (
+  prefix: string,
+  id: string,
+  icons: string[],
+  padding: unknown,
+  textSize: unknown,
+  defaultTextColor: string,
+  // Cast for the same reason the layers below are contextually typed by `drawStyle`: an
+  // object literal returned from a function loses that context, and spelling out every
+  // MapLibre expression type here would bury the structure this fixture exists to show.
+): LayerProps =>
+  ({
+    id,
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "Point"],
+      ...(prefix === "user_" ? [["==", "meta", "feature"]] : []),
+      ["has", `${prefix}icon`],
+      ["has", `${prefix}name`],
+      ["!has", `${prefix}iconRotation`],
+      ["in", `${prefix}icon`, ...icons],
+    ],
+    layout: {
+      "icon-image": GENERATED_ICON_IMAGE,
+      "icon-text-fit": "both",
+      "icon-text-fit-padding": padding,
+      "icon-pitch-alignment": "viewport",
+      "icon-allow-overlap": true,
+      "icon-size": 1,
+      "text-field": ["coalesce", ["get", `${prefix}name`], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "center",
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+      "text-size": textSize,
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", `${prefix}color`], defaultTextColor],
+    },
+  }) as unknown as LayerProps;
 
 /** Replaces the generated icon-image expression with the sentinel, non-destructively. */
 function redactIconImage(layer: LayerProps): LayerProps {
@@ -185,7 +239,7 @@ const drawStyle: LayerProps[] = [
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
       // 1.5x the point-icon scale: a zone symbol labels an area, not a position.
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -448,14 +502,51 @@ const drawStyle: LayerProps[] = [
       ["==", "meta", "feature"],
       ["has", "user_icon"],
       ["!has", "user_iconRotation"],
+      ["any", ["!in", "user_icon", ...TEXT_FIT_ICONS], ["!has", "user_name"]],
     ],
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.2, 20, 1.667],
     },
   },
+  expectedTextFitLayer(
+    "user_",
+    "gl-draw-point-icon-text-fit-casualty",
+    TEXT_FIT_CASUALTY_ICONS,
+    [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      12,
+      ["literal", [1.25, 2.5, 1.25, 2.5]],
+      14,
+      ["literal", [2.5, 6, 2.5, 6]],
+      17,
+      ["literal", [3.2, 8, 3.2, 8]],
+    ],
+    ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
+    "#ff0000",
+  ),
+  expectedTextFitLayer(
+    "user_",
+    "gl-draw-point-icon-text-fit-plate",
+    TEXT_FIT_PLATE_ICONS,
+    [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      12,
+      ["literal", [0.7, 2.5, 0.7, 2.5]],
+      14,
+      ["literal", [1.3, 5.5, 1.3, 5.5]],
+      17,
+      ["literal", [1.6, 7, 1.6, 7]],
+    ],
+    ["interpolate", ["linear"], ["zoom"], 12, 3, 17, 14],
+    "#000000",
+  ),
   {
     id: "gl-draw-point-icon-rotation",
     type: "symbol",
@@ -469,35 +560,10 @@ const drawStyle: LayerProps[] = [
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.2, 20, 1.667],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "user_iconRotation"], 0],
-    },
-  },
-  {
-    id: "gl-draw-text-special-placement-points-center",
-    type: "symbol",
-    filter: [
-      "all",
-      ["==", "$type", "Point"],
-      ["==", "meta", "feature"],
-      ["has", "user_name"],
-      ["has", "user_icon"],
-      ["in", "user_icon", ...CASUALTIES_CENTRED],
-    ],
-    layout: {
-      "text-field": ["coalesce", ["get", "user_name"], ""],
-      "text-font": ["B612 Bold"],
-      "text-anchor": "center",
-      "text-offset": [0, 0],
-      "icon-text-fit": "both",
-      "icon-text-fit-padding": [20, 20, 20, 20],
-      "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
-    },
-    paint: {
-      "text-color": "#ff0000",
     },
   },
   {
@@ -532,18 +598,18 @@ const drawStyle: LayerProps[] = [
       ["==", "active", "false"],
       ["has", "user_name"],
       ["has", "user_color"],
-      ["!in", "user_icon", ...CASUALTIES_ALL],
+      ["!in", "user_icon", ...SPECIALLY_LABELLED],
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "user_name"], ""],
-      "text-font": ["B612 Bold"],
+      "text-font": ["B612"],
       "text-anchor": "center",
       "text-offset": [0, 2],
       "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 16],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
       "text-color": ["coalesce", ["get", "user_color"], "#000000"],
@@ -732,7 +798,7 @@ const displayStyle: LayerProps[] = [
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
       // 1.5x the point-icon scale: a zone symbol labels an area, not a position.
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.45, 20, 3.75],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
     },
   },
   {
@@ -920,17 +986,53 @@ const displayStyle: LayerProps[] = [
     filter: [
       "all",
       ["==", "$type", "Point"],
-
       ["has", "icon"],
       ["!has", "iconRotation"],
+      ["any", ["!in", "icon", ...TEXT_FIT_ICONS], ["!has", "name"]],
     ],
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-pitch-alignment": "viewport",
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.2, 20, 1.667],
     },
   },
+  expectedTextFitLayer(
+    "",
+    "gl-draw-point-icon-text-fit-casualty",
+    TEXT_FIT_CASUALTY_ICONS,
+    [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      12,
+      ["literal", [1.25, 2.5, 1.25, 2.5]],
+      14,
+      ["literal", [2.5, 6, 2.5, 6]],
+      17,
+      ["literal", [3.2, 8, 3.2, 8]],
+    ],
+    ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
+    "#ff0000",
+  ),
+  expectedTextFitLayer(
+    "",
+    "gl-draw-point-icon-text-fit-plate",
+    TEXT_FIT_PLATE_ICONS,
+    [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      12,
+      ["literal", [0.7, 2.5, 0.7, 2.5]],
+      14,
+      ["literal", [1.3, 5.5, 1.3, 5.5]],
+      17,
+      ["literal", [1.6, 7, 1.6, 7]],
+    ],
+    ["interpolate", ["linear"], ["zoom"], 12, 3, 17, 14],
+    "#000000",
+  ),
   {
     id: "gl-draw-point-icon-rotation",
     type: "symbol",
@@ -938,36 +1040,10 @@ const displayStyle: LayerProps[] = [
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
       "icon-allow-overlap": true,
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.3, 20, 2.5],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 12, 0.2, 20, 1.667],
       "icon-rotation-alignment": "map",
       "icon-pitch-alignment": "map",
       "icon-rotate": ["coalesce", ["get", "iconRotation"], 0],
-    },
-  },
-  {
-    id: "gl-draw-text-special-placement-points-center",
-    type: "symbol",
-    filter: [
-      "all",
-
-      ["==", "$type", "Point"],
-
-      ["has", "name"],
-      ["has", "icon"],
-      ["in", "icon", ...CASUALTIES_CENTRED],
-    ],
-    layout: {
-      "text-field": ["coalesce", ["get", "name"], ""],
-      "text-font": ["B612 Bold"],
-      "text-anchor": "center",
-      "text-offset": [0, 0],
-      "icon-text-fit": "both",
-      "icon-text-fit-padding": [20, 20, 20, 20],
-      "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 17, 22],
-    },
-    paint: {
-      "text-color": "#ff0000",
     },
   },
   {
@@ -1001,16 +1077,16 @@ const displayStyle: LayerProps[] = [
       "all",
       ["has", "name"],
       ["has", "color"],
-      ["!in", "icon", ...CASUALTIES_ALL],
+      ["!in", "icon", ...SPECIALLY_LABELLED],
       ["==", "$type", "Point"],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
-      "text-font": ["B612 Bold"],
+      "text-font": ["B612"],
       "text-anchor": "center",
       "text-offset": [0, 2],
       "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 16],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#000000"],
