@@ -255,7 +255,7 @@ export const byColor = (types: SelectableTypes): readonly SelectableType[] =>
  */
 export const ColorForCategory: Record<BabsCategoryNumber, string> = {
   "1": Colors.Red, // Auswirkungen
-  "2": Colors.Red, // Gefahren
+  "2": Colors.Orange, // Gefahren
   "3": Colors.Blue, // Zivile Führungsstandorte
   "4": Colors.Blue, // Formationen
   "5": Colors.Blue, // Einrichtungen im Einsatzraum

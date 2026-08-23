@@ -32,10 +32,10 @@ export function useBabsIcons(): boolean {
   const [loaded, setLoaded] = useState(ready);
 
   useEffect(() => {
-    if (ready) {
-      setLoaded(true);
-      return;
-    }
+    // No early return for the already-loaded case: `loadCatalogue` hands back the memoised
+    // promise, so an already-resolved catalogue simply settles on the next microtask. The
+    // initial state above already covers the render before that, and routing every path
+    // through the promise keeps the effect to a single shape.
     let active = true;
     void loadCatalogue().then(() => {
       if (active) setLoaded(true);

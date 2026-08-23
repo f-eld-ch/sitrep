@@ -96,14 +96,17 @@ function MapView() {
   const mapStyle = useReactiveVar(selectedStyle);
   const { i18n } = useTranslation();
 
-  // Resolved once per basemap style, NOT per language: producing a new style object
-  // makes react-map-gl call setStyle, which rebuilds every layer. Language changes are
-  // handled imperatively by <BabsSpriteLanguage /> instead. The ref keeps the language
-  // current without making it a dependency.
-  const langRef = useRef(i18n.resolvedLanguage ?? i18n.language);
-  langRef.current = i18n.resolvedLanguage ?? i18n.language;
+  // Resolved once per basemap style, NOT per language: producing a new style object makes
+  // react-map-gl call setStyle, which rebuilds every layer. Language changes are handled
+  // imperatively by <BabsSpriteLanguage /> instead.
+  //
+  // The language is read inside the memo rather than listed as a dependency, which is what
+  // keeps it out of the recompute while still picking up the current value whenever the
+  // basemap does change. This used to be done with a ref written during render — same
+  // effect, but writing a ref while rendering is not safe under concurrent rendering.
   const styleWithBabsSprite = useMemo(
-    () => withBabsSprite(mapStyle.style, langRef.current, BABS_SPRITE_BASE),
+    () => withBabsSprite(mapStyle.style, i18n.resolvedLanguage ?? i18n.language, BABS_SPRITE_BASE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- language is deliberately excluded
     [mapStyle.style],
   );
 
@@ -206,6 +209,12 @@ function LayerFetcher() {
 const LIVE_GEOMETRY_INTERVAL_MS = 80;
 
 /**
+ * Fired by mapbox-gl-draw on every one of its renders, including mid-drag — unlike
+ * `draw.update`, which `direct_select` only fires on mouse-up.
+ */
+const DRAW_RENDER_EVENT = "draw.render";
+
+/**
  * The selected feature's geometry as mapbox-gl-draw currently holds it, rather than as it
  * was last persisted — or `undefined` when nothing is selected.
  *
@@ -255,9 +264,17 @@ function useLiveDrawGeometry(
     };
 
     const onRender = throttle(read, LIVE_GEOMETRY_INTERVAL_MS, { leading: true, trailing: true });
-    map.on("draw.render", onRender);
+    // mapbox-gl-draw fires its events *through* the map, but they are not part of MapLibre's
+    // own event map, so `on`/`off` do not accept the name. Narrowed to just the two methods
+    // rather than casting the map to `any`, so a typo in either is still caught.
+    const drawEvents = map as unknown as {
+      on: (type: string, listener: () => void) => void;
+      off: (type: string, listener: () => void) => void;
+    };
+
+    drawEvents.on(DRAW_RENDER_EVENT, onRender);
     return () => {
-      map.off("draw.render", onRender);
+      drawEvents.off(DRAW_RENDER_EVENT, onRender);
       onRender.cancel();
     };
   }, [map, draw, selectedFeature]);
@@ -268,7 +285,9 @@ function useLiveDrawGeometry(
 }
 
 function ActiveLayer() {
-  const [initialized, setInitalized] = useState(false);
+  // A ref, not state: this only latches the one-off viewport fit and is never read
+  // during render, so making it state would force a pointless extra render.
+  const initialized = useRef(false);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = useMemo(
@@ -297,7 +316,7 @@ function ActiveLayer() {
 
   useEffect(() => {
     const fc = FilterActiveFeatures(featureCollection);
-    if (initialized || !map?.loaded) {
+    if (initialized.current || !map?.loaded) {
       return;
     }
     // only run this for the initialization as we don't want to continously
@@ -314,9 +333,9 @@ function ActiveLayer() {
           padding: { top: 30, bottom: 30, left: 30, right: 30 },
         },
       );
-      setInitalized(true);
+      initialized.current = true;
     }
-  }, [featureCollection, map, initialized]);
+  }, [featureCollection, map]);
 
   return (
     <>

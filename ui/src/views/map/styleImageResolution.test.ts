@@ -13,7 +13,7 @@ import { babsImage } from "components/babs/iconResolver";
 import { LEGACY_ICON_IDS } from "components/babs/legacyIconNames";
 import { EnrichLineStringMap, EnrichPolygonMap } from "components/map/EnrichedLayerFeatures";
 import basemap from "../../../public/map/sprites/basemap.json";
-import { createMapStyle } from "./styleGenerator";
+import { createMapStyle, TEXT_FIT_IDS } from "./styleGenerator";
 
 /**
  * Guards the property that actually matters: **every image our styles can request
@@ -372,6 +372,30 @@ describe("style image resolution", () => {
       });
     },
   );
+
+  describe.each(Object.entries(ATLASES))("text-fit sprites in the %s atlas", (_lang, atlas) => {
+    it("carry the content and stretch metadata the layer relies on", () => {
+      // `icon-text-fit` is inert without all three: MapLibre skips the stretch path and draws
+      // the cell at its natural size, which on these layers means a full 48px icon against
+      // every other marker's zoom ramp. Nothing else notices — the sprite key still resolves,
+      // so the image-existence sweeps above stay green.
+      //
+      // This is the check that says an id belongs on a text-fit layer at all. 2109b, the
+      // catalogue's illustration of the plate rather than the plate itself, correctly has no
+      // metadata, which is precisely why it is not listed.
+      const sprites = atlas as Record<string, Record<string, unknown> | undefined>;
+      const incomplete = TEXT_FIT_IDS.filter((id) => {
+        const sprite = sprites[id];
+        return (
+          sprite === undefined ||
+          sprite.content === undefined ||
+          sprite.stretchX === undefined ||
+          sprite.stretchY === undefined
+        );
+      });
+      expect(incomplete).toEqual([]);
+    });
+  });
 
   it("gives every zone type in the polygon map some indicator", () => {
     const withIndicator = Object.entries(EnrichPolygonMap).filter(
