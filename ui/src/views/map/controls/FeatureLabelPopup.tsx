@@ -4,11 +4,13 @@ import { getIcon } from "@f-eld-ch/babs-core";
 import bbox from "@turf/bbox";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField } from "components/babs/labelSchema";
+import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isUndefined, omitBy } from "lodash";
-import { useId, useState } from "react";
+import { useCallback, useContext, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Popup, useMap } from "react-map-gl/maplibre";
+import { LayerContext } from "../LayerContext";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 
@@ -51,6 +53,7 @@ function anchorFor(feature: Feature<Geometry, GeoJsonProperties>): [number, numb
 export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPopupProps) {
   const { t, i18n } = useTranslation();
   const { current: map } = useMap();
+  const { dispatch } = useContext(LayerContext);
   const baseId = useId();
 
   const iconValue = selectedFeature.properties?.icon as string | undefined;
@@ -58,11 +61,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const resolvedIconId = resolveIconId(iconValue);
   const fields = fieldsFor(category, resolvedIconId);
 
-  const initialValues = Object.fromEntries(
-    fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]),
-  );
-  const [values, setValues] = useState<Record<string, string>>(initialValues);
+  const valuesFromFeature = () =>
+    Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]));
 
+  const [values, setValues] = useState<Record<string, string>>(valuesFromFeature);
   const [rotationLock, setRotationLock] = useState<boolean>(
     !isUndefined(selectedFeature?.properties?.iconRotation),
   );
@@ -70,18 +72,26 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
   if (selectedFeature !== syncedFeature) {
     setSyncedFeature(selectedFeature);
-    setValues(Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""])));
+    setValues(valuesFromFeature());
     setRotationLock(!isUndefined(selectedFeature?.properties?.iconRotation));
   }
 
-  const commit = (overrides?: Record<string, string>) => {
-    const merged = { ...values, ...overrides };
+  const close = useCallback(() => {
+    dispatch({ type: "DESELECT_FEATURE", payload: null });
+  }, [dispatch]);
+
+  const commit = useCallback(() => {
     const properties: GeoJsonProperties = omitBy(
-      { ...selectedFeature.properties, ...merged },
+      { ...selectedFeature.properties, ...values },
       isEmptyValue,
     );
     onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
-  };
+  }, [onUpdate, selectedFeature, values]);
+
+  const saveAndClose = useCallback(() => {
+    commit();
+    close();
+  }, [commit, close]);
 
   const onRotateClick = (lock: boolean) => {
     if (!map) return;
@@ -97,18 +107,41 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
   };
 
-  /** Returns the display label for a field. The "name" field (the only slot for most icons)
-   * shows the catalogue's own localized icon name rather than the generic "Name" translation. */
+  const lang = i18n.resolvedLanguage ?? i18n.language;
+
+  const popupTitle = (): string => {
+    const geoType = selectedFeature.geometry.type;
+    if (geoType === "Point") {
+      return iconLabel(iconValue, lang) ?? "";
+    }
+    if (geoType === "Polygon") {
+      const zoneType = selectedFeature.properties?.zoneType as string | undefined;
+      const zone = zoneType ? ZoneTypes[zoneType] : undefined;
+      return (zone?.thumbnail ? iconLabel(zone.thumbnail, lang) : undefined) ?? zoneType ?? "";
+    }
+    if (geoType === "LineString") {
+      const lineType = selectedFeature.properties?.lineType as string | undefined;
+      const line = lineType ? LineTypes[lineType] : undefined;
+      return (line?.thumbnail ? iconLabel(line.thumbnail, lang) : undefined) ?? lineType ?? "";
+    }
+    return "";
+  };
+
+  const title = popupTitle();
+
+  /**
+   * For single-field layouts the icon name is already in the popup title, so the input
+   * label shows the descriptive placeholder text instead of repeating it.
+   * For multi-field layouts (Formation, Fahrzeuge) the specific position labels are shown.
+   */
   const fieldLabel = (field: LabelField): string => {
-    if (field.key === "name" && fields.length === 1) {
-      const name = iconLabel(selectedFeature.properties?.icon, i18n.resolvedLanguage ?? i18n.language);
-      if (name) return name;
+    if (fields.length === 1) {
+      return field.placeholderKey ? t(field.placeholderKey) : t(field.labelKey);
     }
     return t(field.labelKey);
   };
 
-  const fieldPlaceholder = (field: LabelField): string =>
-    field.placeholderKey ? t(field.placeholderKey) : fieldLabel(field);
+  const fieldPlaceholder = (field: LabelField): string => fieldLabel(field);
 
   const [lng, lat] = anchorFor(selectedFeature);
   const isPoint = selectedFeature.geometry.type === "Point";
@@ -117,6 +150,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     <Popup
       longitude={lng}
       latitude={lat}
+      closeButton={false}
       closeOnClick={false}
       closeOnMove={false}
       maxWidth="none"
@@ -125,14 +159,17 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       offset={30}
       className="feature-label-popup"
     >
-      <div className="box p-3" style={{ minWidth: "200px" }}>
+      <div className="p-3" style={{ minWidth: "220px" }}>
+        {title && (
+          <p className="title is-6 mb-3">{title}</p>
+        )}
         {fields.map((field) => {
           const inputId = `${baseId}-${field.key}`;
           const label = fieldLabel(field);
           const placeholder = fieldPlaceholder(field);
           return (
-            <div key={field.key} className="field">
-              <label className="label is-small" htmlFor={inputId}>
+            <div key={field.key} className="field mb-2">
+              <label className="label is-small mb-1" htmlFor={inputId}>
                 {label}
               </label>
               <div className="control">
@@ -143,11 +180,9 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                   placeholder={placeholder}
                   value={values[field.key] ?? ""}
                   onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  onBlur={() => commit()}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.currentTarget.blur();
-                    }
+                    if (e.key === "Enter") saveAndClose();
+                    if (e.key === "Escape") close();
                   }}
                 />
               </div>
@@ -155,15 +190,15 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           );
         })}
         {isPoint && (
-          <div className="field">
+          <div className="field mb-2">
             <div className="control">
               <button
                 type="button"
-                className="button is-small is-fullwidth"
+                className="button is-small is-fullwidth is-light"
                 title={rotationLock ? t("mapview.unlock") : t("mapview.lock")}
                 onClick={() => onRotateClick(!rotationLock)}
               >
-                <span className="icon">
+                <span className="icon is-small">
                   <FontAwesomeIcon icon={rotationLock ? faLock : faLockOpen} />
                 </span>
                 <span>{rotationLock ? t("mapview.unlock") : t("mapview.lock")}</span>
@@ -171,6 +206,24 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             </div>
           </div>
         )}
+        <div className="field">
+          <div className="buttons is-justify-content-space-between mb-0">
+            <button
+              type="button"
+              className="button is-primary is-small"
+              onClick={saveAndClose}
+            >
+              {t("save")}
+            </button>
+            <button
+              type="button"
+              className="button is-small"
+              onClick={close}
+            >
+              {t("close")}
+            </button>
+          </div>
+        </div>
       </div>
     </Popup>
   );
