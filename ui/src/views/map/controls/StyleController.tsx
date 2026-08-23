@@ -96,6 +96,7 @@ function StyleController() {
           type="button"
           className="delete is-align-self-flex-end"
           onClick={() => setActive(!active)}
+          aria-label={t("close")}
         />
       </p>
       {MapStyles.map((s) => (

@@ -96,14 +96,17 @@ function MapView() {
   const mapStyle = useReactiveVar(selectedStyle);
   const { i18n } = useTranslation();
 
-  // Resolved once per basemap style, NOT per language: producing a new style object
-  // makes react-map-gl call setStyle, which rebuilds every layer. Language changes are
-  // handled imperatively by <BabsSpriteLanguage /> instead. The ref keeps the language
-  // current without making it a dependency.
-  const langRef = useRef(i18n.resolvedLanguage ?? i18n.language);
-  langRef.current = i18n.resolvedLanguage ?? i18n.language;
+  // Resolved once per basemap style, NOT per language: producing a new style object makes
+  // react-map-gl call setStyle, which rebuilds every layer. Language changes are handled
+  // imperatively by <BabsSpriteLanguage /> instead.
+  //
+  // The language is read inside the memo rather than listed as a dependency, which is what
+  // keeps it out of the recompute while still picking up the current value whenever the
+  // basemap does change. This used to be done with a ref written during render — same
+  // effect, but writing a ref while rendering is not safe under concurrent rendering.
   const styleWithBabsSprite = useMemo(
-    () => withBabsSprite(mapStyle.style, langRef.current, BABS_SPRITE_BASE),
+    () => withBabsSprite(mapStyle.style, i18n.resolvedLanguage ?? i18n.language, BABS_SPRITE_BASE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- language is deliberately excluded
     [mapStyle.style],
   );
 
@@ -282,7 +285,9 @@ function useLiveDrawGeometry(
 }
 
 function ActiveLayer() {
-  const [initialized, setInitalized] = useState(false);
+  // A ref, not state: this only latches the one-off viewport fit and is never read
+  // during render, so making it state would force a pointless extra render.
+  const initialized = useRef(false);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
   const featureCollection = useMemo(
@@ -311,7 +316,7 @@ function ActiveLayer() {
 
   useEffect(() => {
     const fc = FilterActiveFeatures(featureCollection);
-    if (initialized || !map?.loaded) {
+    if (initialized.current || !map?.loaded) {
       return;
     }
     // only run this for the initialization as we don't want to continously
@@ -328,9 +333,9 @@ function ActiveLayer() {
           padding: { top: 30, bottom: 30, left: 30, right: 30 },
         },
       );
-      setInitalized(true);
+      initialized.current = true;
     }
-  }, [featureCollection, map, initialized]);
+  }, [featureCollection, map]);
 
   return (
     <>

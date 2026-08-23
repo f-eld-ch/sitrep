@@ -116,8 +116,13 @@ const WMSLayerMenu = () => {
 
   useEffect(() => {
     if (state.wms.currentServer && !state.wms.availableLayers[state.wms.currentServer]) {
+      /* oxlint-disable react/set-state-in-effect -- Neither is derived state: this is the
+         spinner going up and the previous error clearing as a network request starts, which
+         is the case effects exist for. Both must be set before the fetch, so there is no
+         later point to move them to. */
       setIsLoading(true);
       setError(null);
+      /* oxlint-enable react/set-state-in-effect */
       fetch(
         `${state.wms.currentServer}?&SERVICE=WMS&VERSION=1.3.0&request=getCapabilities&parameterlang=${i18n.language}`,
       )
@@ -378,6 +383,7 @@ const WMSLayerMenu = () => {
                   type="button"
                   className="delete is-align-self-flex-end"
                   onClick={() => setError(null)}
+                  aria-label={t("close")}
                 />
                 {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
                 {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}

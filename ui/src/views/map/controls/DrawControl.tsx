@@ -34,7 +34,12 @@ function DrawControl(props: DrawControlProps) {
     onSelectionChange,
     onCombine,
   });
-  latest.current = { activeLayer, onCreate, onDelete, onUpdate, onSelectionChange, onCombine };
+  // Refreshed in an effect rather than assigned during render: writing a ref while rendering
+  // is not safe under concurrent rendering. No dependency array, so it runs after every
+  // commit — and the listeners only read it when a map event fires, which is always later.
+  useEffect(() => {
+    latest.current = { activeLayer, onCreate, onDelete, onUpdate, onSelectionChange, onCombine };
+  });
 
   const listeners = useMemo<ReadonlyArray<[DrawEvent, DrawEventListener]>>(
     () => [
