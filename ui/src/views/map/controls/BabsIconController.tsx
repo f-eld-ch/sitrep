@@ -1,9 +1,5 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import {
-  faArrowsRotate,
-  faChevronLeft,
-  faHeading,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   type BabsCategory,
@@ -270,7 +266,6 @@ function BackButton({ title, onClick }: { title: string; onClick: () => void }) 
 
 const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const { t } = useTranslation();
   const { label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
 
@@ -288,27 +283,6 @@ const LineController = memo((props: BabsIconControllerProps) => {
     },
     [onUpdate, selectedFeature],
   );
-
-  const onRotateClick = useCallback(() => {
-    if (selectedFeature === undefined) {
-      return;
-    }
-
-    // reverse the coordinates
-    if (selectedFeature.geometry.type === "LineString") {
-      const feature = {
-        type: selectedFeature.type,
-        id: selectedFeature.id,
-        properties: selectedFeature.properties,
-        geometry: {
-          type: selectedFeature.geometry.type,
-          coordinates: [...selectedFeature.geometry.coordinates],
-        },
-      };
-      feature.geometry.coordinates.reverse();
-      onUpdate({ features: [feature], action: "featureDetail" });
-    }
-  }, [onUpdate, selectedFeature]);
 
   if (selectedFeature === undefined) {
     return;
@@ -340,28 +314,6 @@ const LineController = memo((props: BabsIconControllerProps) => {
             />
           </button>
         ))}
-      </div>
-      <div
-        className="maplibregl-ctrl maplibregl-ctrl-group"
-        style={{
-          display: "flex",
-          flexFlow: "column wrap",
-          flexGrow: 2,
-          flexShrink: 4,
-          flexBasis: 0,
-          justifyContent: "flex-end",
-          alignSelf: "baseline",
-          marginTop: "5px",
-        }}
-      >
-        <button
-          type="button"
-          className="maplibregl-ctrl-icon has-text-dark"
-          title={t("mapview.rotate")}
-          onClick={() => onRotateClick()}
-        >
-          <FontAwesomeIcon icon={faArrowsRotate} size="lg" />
-        </button>
       </div>
     </div>
   );
@@ -442,6 +394,15 @@ interface BabsIconControllerProps {
   onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
+/** Returns true only when the feature already has its type property set. */
+function hasTypeSelected(feature: Feature<Geometry, GeoJsonProperties>): boolean {
+  const props = feature.properties;
+  if (feature.geometry.type === "Point") return Boolean(props?.icon);
+  if (feature.geometry.type === "LineString") return Boolean(props?.lineType);
+  if (feature.geometry.type === "Polygon") return Boolean(props?.zoneType);
+  return false;
+}
+
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
   const { i18n } = useTranslation();
@@ -467,7 +428,7 @@ const BabsIconController = () => {
 
   return (
     <>
-      {selectedFeature !== undefined && (
+      {selectedFeature !== undefined && hasTypeSelected(selectedFeature) && (
         <FeatureLabelPopup selectedFeature={selectedFeature} onUpdate={onUpdate} />
       )}
       {/*

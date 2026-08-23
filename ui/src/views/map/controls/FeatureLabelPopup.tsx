@@ -1,4 +1,4 @@
-import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getIcon } from "@f-eld-ch/babs-core";
 import bbox from "@turf/bbox";
@@ -7,7 +7,7 @@ import { fieldsFor, type LabelField } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isUndefined, omitBy } from "lodash";
-import { useCallback, useContext, useId, useState } from "react";
+import { useCallback, useContext, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Popup, useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
@@ -29,7 +29,7 @@ function iconLabel(iconValue: string | undefined, language: string): string | un
   try {
     const meta = getIcon(id);
     const lang = BABS_LANG_MAP[language] ?? "de";
-    return meta.labels[lang] ?? meta.labels["de"];
+    return (meta.labels as Record<string, string>)[lang] ?? meta.labels["de"];
   } catch {
     return undefined;
   }
@@ -40,14 +40,25 @@ interface FeatureLabelPopupProps {
   onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
-/** Returns [longitude, latitude] for the popup anchor based on geometry type. */
-function anchorFor(feature: Feature<Geometry, GeoJsonProperties>): [number, number] {
+interface PopupAnchor {
+  lngLat: [number, number];
+  anchor: "bottom" | "left";
+}
+
+/**
+ * Returns position and anchor direction for the popup.
+ *
+ * Points: tip points at the symbol from below (popup appears above).
+ * Lines/Polygons: tip points left at the mid-right edge of the bounding box,
+ * popup body extends to the right — stays clear of the feature and never clips the top.
+ */
+function popupAnchorFor(feature: Feature<Geometry, GeoJsonProperties>): PopupAnchor {
   if (feature.geometry.type === "Point") {
     const [lng, lat] = feature.geometry.coordinates as [number, number];
-    return [lng, lat];
+    return { lngLat: [lng, lat], anchor: "bottom" };
   }
-  const [minLng, minLat, maxLng, maxLat] = bbox(feature);
-  return [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
+  const [, minLat, maxLng, maxLat] = bbox(feature);
+  return { lngLat: [maxLng, (minLat + maxLat) / 2], anchor: "left" };
 }
 
 export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPopupProps) {
@@ -92,6 +103,17 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     commit();
     close();
   }, [commit, close]);
+
+  const onReverseDirection = useCallback(() => {
+    if (selectedFeature.geometry.type !== "LineString") return;
+    const coords = [...selectedFeature.geometry.coordinates];
+    coords.reverse();
+    const reversed: Feature<Geometry, GeoJsonProperties> = {
+      ...selectedFeature,
+      geometry: { ...selectedFeature.geometry, coordinates: coords },
+    };
+    onUpdate({ features: [reversed], action: "featureDetail" });
+  }, [onUpdate, selectedFeature]);
 
   const onRotateClick = (lock: boolean) => {
     if (!map) return;
@@ -143,8 +165,36 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
 
   const fieldPlaceholder = (field: LabelField): string => fieldLabel(field);
 
-  const [lng, lat] = anchorFor(selectedFeature);
+  const { lngLat: [lng, lat], anchor } = popupAnchorFor(selectedFeature);
   const isPoint = selectedFeature.geometry.type === "Point";
+  const isLine = selectedFeature.geometry.type === "LineString";
+
+  useEffect(() => {
+    if (!map) return;
+    if (isPoint) {
+      // Popup appears above the point (anchor="bottom") — extra top padding.
+      const pointPadding = { top: 300, right: 160, bottom: 60, left: 160 };
+      if (!map.getBounds().contains([lng, lat])) {
+        map.easeTo({ center: [lng, lat], padding: pointPadding });
+      }
+    } else {
+      // Popup appears to the right of the mid-right bbox edge (anchor="left").
+      const areaPadding = { top: 60, right: 340, bottom: 60, left: 60 };
+      const POPUP_WIDTH = 320; // px — approximate popup body width
+      const [minLng, minLat, maxLng, maxLat] = bbox(selectedFeature);
+      const mapBounds = map.getBounds();
+      const featureVisible =
+        mapBounds.contains([minLng, minLat]) && mapBounds.contains([maxLng, maxLat]);
+      // Project the popup anchor and check there is room for the popup body
+      const anchorPx = map.project([lng, lat]);
+      const hasPopupRoom = anchorPx.x + POPUP_WIDTH <= map.getContainer().clientWidth;
+      if (!featureVisible || !hasPopupRoom) {
+        map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: areaPadding });
+      }
+    }
+  // selectedFeature.id gates re-runs so property edits don't re-pan
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, isPoint, lng, lat, selectedFeature.id]);
 
   return (
     <Popup
@@ -155,14 +205,21 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       closeOnMove={false}
       maxWidth="none"
       focusAfterOpen
-      anchor="bottom"
+      anchor={anchor}
       offset={30}
       className="feature-label-popup"
     >
       <div className="p-3" style={{ minWidth: "220px" }}>
-        {title && (
-          <p className="title is-6 mb-3">{title}</p>
-        )}
+        <div className="is-flex is-justify-content-space-between is-align-items-center mb-3">
+          {title ? <p className="title is-6 mb-0">{title}</p> : <span />}
+          <button
+            type="button"
+            className="delete is-small"
+            style={{ flexShrink: 0, marginLeft: "0.5rem" }}
+            aria-label={t("close")}
+            onClick={close}
+          />
+        </div>
         {fields.map((field) => {
           const inputId = `${baseId}-${field.key}`;
           const label = fieldLabel(field);
@@ -206,21 +263,30 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             </div>
           </div>
         )}
+        {isLine && (
+          <div className="field mb-2">
+            <div className="control">
+              <button
+                type="button"
+                className="button is-small is-fullwidth is-light"
+                onClick={onReverseDirection}
+              >
+                <span className="icon is-small">
+                  <FontAwesomeIcon icon={faArrowsRotate} />
+                </span>
+                <span>{t("mapview.rotate")}</span>
+              </button>
+            </div>
+          </div>
+        )}
         <div className="field">
-          <div className="buttons is-justify-content-space-between mb-0">
+          <div className="control">
             <button
               type="button"
-              className="button is-primary is-small"
+              className="button is-primary is-small is-fullwidth"
               onClick={saveAndClose}
             >
               {t("save")}
-            </button>
-            <button
-              type="button"
-              className="button is-small"
-              onClick={close}
-            >
-              {t("close")}
             </button>
           </div>
         </div>

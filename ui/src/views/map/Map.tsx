@@ -501,9 +501,14 @@ function Draw() {
       safeDrawInvoke(state.draw, (d) => {
         d.deleteAll();
         d.set(featureCollection);
+        // Restore draw-mode selection after the layer reset so the feature stays
+        // visually selected (handles visible) when a property update triggers a redraw.
+        if (state.selectedFeature && d.get(state.selectedFeature)) {
+          d.changeMode("simple_select", { featureIds: [state.selectedFeature] });
+        }
       });
     }
-  }, [state.draw, map?.loaded, state.layers, state.activeLayer]);
+  }, [state.draw, map?.loaded, state.layers, state.activeLayer, state.selectedFeature]);
 
   // this is the effect which syncs the drawings
   useEffect(() => {
