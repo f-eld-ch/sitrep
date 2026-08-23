@@ -591,6 +591,54 @@ const drawStyle: LayerProps[] = [
     },
   },
   {
+    id: "gl-draw-text-name-point-left",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Point"],
+      ["has", "user_nameLeft"],
+      ["!in", "user_icon", ...SPECIALLY_LABELLED],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+    ],
+    layout: {
+      "text-field": ["coalesce", ["get", "user_nameLeft"], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "right",
+      "text-offset": [-2, 0],
+      "text-ignore-placement": true,
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "user_color"], "#000000"],
+    },
+  },
+  {
+    id: "gl-draw-text-name-point-right",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "Point"],
+      ["has", "user_nameRight"],
+      ["!in", "user_icon", ...SPECIALLY_LABELLED],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+    ],
+    layout: {
+      "text-field": ["coalesce", ["get", "user_nameRight"], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "left",
+      "text-offset": [2, 0],
+      "text-ignore-placement": true,
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "user_color"], "#000000"],
+    },
+  },
+  {
     id: "gl-draw-text-name-point",
     type: "symbol",
     filter: [
@@ -605,9 +653,9 @@ const drawStyle: LayerProps[] = [
     ],
     layout: {
       "text-field": ["coalesce", ["get", "user_name"], ""],
-      "text-font": ["B612"],
+      "text-font": ["B612 Bold"],
       "text-anchor": "center",
-      "text-offset": [0, 2],
+      "text-offset": [0, 2.5],
       "text-ignore-placement": true,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
@@ -1071,6 +1119,48 @@ const displayStyle: LayerProps[] = [
     },
   },
   {
+    id: "gl-draw-text-name-point-left",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "Point"],
+      ["has", "nameLeft"],
+      ["!in", "icon", ...SPECIALLY_LABELLED],
+    ],
+    layout: {
+      "text-field": ["coalesce", ["get", "nameLeft"], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "right",
+      "text-offset": [-2, 0],
+      "text-ignore-placement": true,
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "color"], "#000000"],
+    },
+  },
+  {
+    id: "gl-draw-text-name-point-right",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "Point"],
+      ["has", "nameRight"],
+      ["!in", "icon", ...SPECIALLY_LABELLED],
+    ],
+    layout: {
+      "text-field": ["coalesce", ["get", "nameRight"], ""],
+      "text-font": ["B612 Bold"],
+      "text-anchor": "left",
+      "text-offset": [2, 0],
+      "text-ignore-placement": true,
+      "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "color"], "#000000"],
+    },
+  },
+  {
     id: "gl-draw-text-name-point",
     type: "symbol",
     filter: [
@@ -1082,9 +1172,9 @@ const displayStyle: LayerProps[] = [
     ],
     layout: {
       "text-field": ["coalesce", ["get", "name"], ""],
-      "text-font": ["B612"],
+      "text-font": ["B612 Bold"],
       "text-anchor": "center",
-      "text-offset": [0, 2],
+      "text-offset": [0, 2.5],
       "text-ignore-placement": true,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },

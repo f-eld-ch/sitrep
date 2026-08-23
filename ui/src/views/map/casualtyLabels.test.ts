@@ -24,8 +24,10 @@ const TEXT_FIT_CASUALTY = "gl-draw-point-icon-text-fit-casualty";
 const TEXT_FIT_PLATE = "gl-draw-point-icon-text-fit-plate";
 const RIGHT = "gl-draw-text-special-placement-points-right";
 const GENERIC = "gl-draw-text-name-point";
+const LEFT_SLOT = "gl-draw-text-name-point-left";
+const RIGHT_SLOT = "gl-draw-text-name-point-right";
 
-const LABEL_LAYERS = [TEXT_FIT_CASUALTY, TEXT_FIT_PLATE, RIGHT, GENERIC];
+const LABEL_LAYERS = [TEXT_FIT_CASUALTY, TEXT_FIT_PLATE, RIGHT, GENERIC, LEFT_SLOT, RIGHT_SLOT];
 
 /**
  * id → the layer that should place its label.

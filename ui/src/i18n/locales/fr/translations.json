@@ -46,7 +46,14 @@
       "errorFetchingLayers": "Le serveur WMS n'a pas pu être atteint ou aucune calque n'a été trouvée.",
       "noLayersFound": "Aucune calque compatible trouvée. Le serveur WMS doit prendre en charge la projection EPSG:3857."
     },
-    "back": "Retour"
+    "back": "Retour",
+    "labels": {
+      "kennzeichnung": "Désignation",
+      "ortsbezeichnung": "Lieu",
+      "zusatzangaben": "Informations complémentaires",
+      "beschreibung": "Description / Détails",
+      "anzahlPersonen": "Nombre de personnes"
+    }
   },
   "medium": {
     "EMAIL": "Email",

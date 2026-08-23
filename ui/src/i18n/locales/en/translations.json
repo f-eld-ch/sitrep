@@ -46,7 +46,14 @@
       "errorFetchingLayers": "WMS server could not be reached or no layers found.",
       "noLayersFound": "No compatible layers found. WMS Server must support EPSG:3857 projection."
     },
-    "back": "Back"
+    "back": "Back",
+    "labels": {
+      "kennzeichnung": "Designation",
+      "ortsbezeichnung": "Location",
+      "zusatzangaben": "Additional Info",
+      "beschreibung": "Description / Details",
+      "anzahlPersonen": "Number of Persons"
+    }
   },
   "medium": {
     "EMAIL": "email",

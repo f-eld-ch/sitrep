@@ -709,6 +709,46 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       },
     },
     {
+      id: "gl-draw-text-name-point-left",
+      type: "symbol",
+      filter: createFilter([
+        ["==", "$type", "Point"],
+        ["has", `${propPrefix}nameLeft`],
+        ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
+      ]),
+      layout: {
+        "text-field": ["coalesce", ["get", `${propPrefix}nameLeft`], ""],
+        "text-font": ["B612 Bold"],
+        "text-anchor": "right",
+        "text-offset": [-2, 0],
+        "text-ignore-placement": true,
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+      },
+      paint: {
+        "text-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
+      },
+    },
+    {
+      id: "gl-draw-text-name-point-right",
+      type: "symbol",
+      filter: createFilter([
+        ["==", "$type", "Point"],
+        ["has", `${propPrefix}nameRight`],
+        ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
+      ]),
+      layout: {
+        "text-field": ["coalesce", ["get", `${propPrefix}nameRight`], ""],
+        "text-font": ["B612 Bold"],
+        "text-anchor": "left",
+        "text-offset": [2, 0],
+        "text-ignore-placement": true,
+        "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
+      },
+      paint: {
+        "text-color": ["coalesce", ["get", `${propPrefix}color`], "#000000"],
+      },
+    },
+    {
       id: "gl-draw-text-name-point",
       type: "symbol",
       filter: createFilter([
@@ -719,9 +759,9 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
-        "text-font": ["B612"],
+        "text-font": ["B612 Bold"],
         "text-anchor": "center",
-        "text-offset": [0, 2],
+        "text-offset": [0, 2.5],
         "text-ignore-placement": true,
         "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
       },

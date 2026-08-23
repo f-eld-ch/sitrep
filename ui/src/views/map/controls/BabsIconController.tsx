@@ -1,11 +1,5 @@
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import {
-  faArrowsRotate,
-  faChevronLeft,
-  faHeading,
-  faLock,
-  faLockOpen,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   type BabsCategory,
@@ -37,8 +31,11 @@ import {
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { first, isEmpty, isUndefined, omitBy } from "lodash";
+import { FeatureLabelPopup } from "./FeatureLabelPopup";
+import { first, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useState } from "react";
+
+const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
@@ -75,53 +72,12 @@ const iconControllerStyle = {
 
 const IconController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const { current: map } = useMap();
-  const [rotationLock, setRotationLock] = useState<boolean>(
-    !isUndefined(selectedFeature?.properties?.iconRotation),
-  );
-  const { t } = useTranslation();
-
-  const onRotateClick = useCallback(
-    (rotationLock: boolean) => {
-      if (selectedFeature === undefined) {
-        return;
-      }
-
-      if (map === undefined) {
-        return;
-      }
-
-      const properties: GeoJsonProperties = omitBy(
-        {
-          ...selectedFeature.properties,
-          iconRotation: rotationLock ? map.getBearing() : undefined,
-        },
-        isUndefined || isEmpty,
-      );
-
-      onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
-    },
-    [onUpdate, selectedFeature, map],
-  );
-
-  // Adjusted during render rather than in an effect: this only re-derives local state from a
-  // prop, so an effect would render once with the stale value and then again with the right
-  // one. Comparing the feature by reference keeps the exact trigger the effect had.
-  const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
-  if (selectedFeature !== syncedFeature) {
-    setSyncedFeature(selectedFeature);
-    setRotationLock(selectedFeature?.properties?.iconRotation !== undefined);
-  }
 
   if (selectedFeature === undefined) {
     return;
   }
 
   if (selectedFeature.geometry.type !== "Point") {
-    return;
-  }
-
-  if (map === undefined) {
     return;
   }
 
@@ -135,34 +91,6 @@ const IconController = memo((props: BabsIconControllerProps) => {
           feature={selectedFeature}
         />
       ))}
-      <div
-        className="maplibregl-ctrl maplibregl-ctrl-group"
-        style={{
-          display: "flex",
-          flexFlow: "column wrap",
-          flexGrow: 2,
-          flexShrink: 4,
-          flexBasis: 0,
-          justifyContent: "flex-end",
-          alignSelf: "baseline",
-          marginTop: "5px",
-        }}
-      >
-        <button
-          type="button"
-          className="maplibregl-ctrl-icon"
-          title={rotationLock ? t("mapview.unlock") : t("mapview.unlock")}
-          onClick={() => {
-            onRotateClick(!rotationLock);
-          }}
-        >
-          {rotationLock ? (
-            <FontAwesomeIcon icon={faLock} size="lg" />
-          ) : (
-            <FontAwesomeIcon icon={faLockOpen} size="lg" />
-          )}
-        </button>
-      </div>
     </div>
   );
 });
@@ -226,7 +154,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
         color: ColorForCategory[category.number],
       });
       onUpdate({
-        features: [{ ...feature, properties: omitBy(properties, isUndefined || isEmpty) }],
+        features: [{ ...feature, properties: omitBy(properties, isEmptyValue) }],
         action: "featureDetail",
       });
       collapse();
@@ -338,7 +266,6 @@ function BackButton({ title, onClick }: { title: string; onClick: () => void }) 
 
 const LineController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
-  const { t } = useTranslation();
   const { label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
 
@@ -350,33 +277,12 @@ const LineController = memo((props: BabsIconControllerProps) => {
 
       const properties: GeoJsonProperties = omitBy(
         { ...selectedFeature.properties, lineType: i.name, color: i.color },
-        isUndefined || isEmpty,
+        isEmptyValue,
       );
       onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
     },
     [onUpdate, selectedFeature],
   );
-
-  const onRotateClick = useCallback(() => {
-    if (selectedFeature === undefined) {
-      return;
-    }
-
-    // reverse the coordinates
-    if (selectedFeature.geometry.type === "LineString") {
-      const feature = {
-        type: selectedFeature.type,
-        id: selectedFeature.id,
-        properties: selectedFeature.properties,
-        geometry: {
-          type: selectedFeature.geometry.type,
-          coordinates: [...selectedFeature.geometry.coordinates],
-        },
-      };
-      feature.geometry.coordinates.reverse();
-      onUpdate({ features: [feature], action: "featureDetail" });
-    }
-  }, [onUpdate, selectedFeature]);
 
   if (selectedFeature === undefined) {
     return;
@@ -409,28 +315,6 @@ const LineController = memo((props: BabsIconControllerProps) => {
           </button>
         ))}
       </div>
-      <div
-        className="maplibregl-ctrl maplibregl-ctrl-group"
-        style={{
-          display: "flex",
-          flexFlow: "column wrap",
-          flexGrow: 2,
-          flexShrink: 4,
-          flexBasis: 0,
-          justifyContent: "flex-end",
-          alignSelf: "baseline",
-          marginTop: "5px",
-        }}
-      >
-        <button
-          type="button"
-          className="maplibregl-ctrl-icon has-text-dark"
-          title={t("mapview.rotate")}
-          onClick={() => onRotateClick()}
-        >
-          <FontAwesomeIcon icon={faArrowsRotate} size="lg" />
-        </button>
-      </div>
     </div>
   );
 });
@@ -446,7 +330,7 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
       if (selectedFeature !== undefined) {
         const properties: GeoJsonProperties = omitBy(
           { ...selectedFeature.properties, zoneType: i.name, color: i.color },
-          isUndefined || isEmpty,
+          isEmptyValue,
         );
         onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
       }
@@ -510,6 +394,15 @@ interface BabsIconControllerProps {
   onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
 }
 
+/** Returns true only when the feature already has its type property set. */
+function hasTypeSelected(feature: Feature<Geometry, GeoJsonProperties>): boolean {
+  const props = feature.properties;
+  if (feature.geometry.type === "Point") return Boolean(props?.icon);
+  if (feature.geometry.type === "LineString") return Boolean(props?.lineType);
+  if (feature.geometry.type === "Polygon") return Boolean(props?.zoneType);
+  return false;
+}
+
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
   const { i18n } = useTranslation();
@@ -535,7 +428,9 @@ const BabsIconController = () => {
 
   return (
     <>
-      <FeatureDetailControlPanel selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      {selectedFeature !== undefined && hasTypeSelected(selectedFeature) && (
+        <FeatureLabelPopup selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      )}
       {/*
        * Supplies the resolved language to <BabsIcon>, which is what selects the
        * language-specific artwork (51 of the 257 icons have it) and backs
@@ -564,7 +459,7 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
       if (selectedFeature !== undefined) {
         const properties: GeoJsonProperties = omitBy(
           { ...selectedFeature.properties, name },
-          isUndefined || isEmpty,
+          isEmptyValue,
         );
         onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
       }

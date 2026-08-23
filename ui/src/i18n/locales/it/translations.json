@@ -46,7 +46,14 @@
       "errorFetchingLayers": "Impossibile raggiungere il server WMS o non sono stati trovati livelli.",
       "noLayersFound": "Nessun livello compatibile trovato. Il server WMS deve supportare la proiezione EPSG:3857."
     },
-    "back": "Indietro"
+    "back": "Indietro",
+    "labels": {
+      "kennzeichnung": "Designazione",
+      "ortsbezeichnung": "Luogo",
+      "zusatzangaben": "Informazioni aggiuntive",
+      "beschreibung": "Descrizione / Dettagli",
+      "anzahlPersonen": "Numero di persone"
+    }
   },
   "medium": {
     "EMAIL": "e-mail",
