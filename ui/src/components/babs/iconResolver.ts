@@ -1,4 +1,4 @@
-import { type BabsIconId, isBabsIconId, listIcons } from "@f-eld-ch/babs-core";
+import { type BabsCategoryNumber, type BabsIconId, getIcon, isBabsIconId, listIcons } from "@f-eld-ch/babs-core";
 import type { ExpressionSpecification } from "maplibre-gl";
 import { LEGACY_ICON_IDS, type LegacyIconName } from "./legacyIconNames";
 
@@ -91,6 +91,15 @@ export function resolveIconId(value: string | undefined): BabsIconId | undefined
   if (isBabsIconId(value)) return value;
   return idByName.get(value) ?? LEGACY_ICON_IDS[value as LegacyIconName];
 }
+
+/**
+ * Returns the catalogue category number for any stored icon identifier.
+ * Accepts alias, bare id, or legacy name. Returns `undefined` for unrecognised values.
+ */
+export const categoryOf = (value: string | undefined): BabsCategoryNumber | undefined => {
+  const id = resolveIconId(value);
+  return id === undefined ? undefined : getIcon(id).category;
+};
 
 /** The readable, persistable identifier for an icon. This is what new features store. */
 export const aliasFor = (id: BabsIconId): string => {

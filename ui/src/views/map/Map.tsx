@@ -466,9 +466,8 @@ function Draw() {
           },
         });
       }
-      dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, modifyFeature],
+    [modifyFeature],
   );
 
   const onDelete = useCallback(
