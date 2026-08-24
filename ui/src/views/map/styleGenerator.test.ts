@@ -517,11 +517,7 @@ const drawStyle: LayerProps[] = [
       ["!has", "user_iconRotation"],
       [
         "any",
-        [
-          "all",
-          ["!in", "user_icon", ...TEXT_FIT_ICONS],
-          ["!in", "user_icon", ...UN_SIGN_ICONS],
-        ],
+        ["all", ["!in", "user_icon", ...TEXT_FIT_ICONS], ["!in", "user_icon", ...UN_SIGN_ICONS]],
         ["!has", "user_name"],
       ],
     ],
@@ -1061,11 +1057,7 @@ const displayStyle: LayerProps[] = [
       ["!has", "iconRotation"],
       [
         "any",
-        [
-          "all",
-          ["!in", "icon", ...TEXT_FIT_ICONS],
-          ["!in", "icon", ...UN_SIGN_ICONS],
-        ],
+        ["all", ["!in", "icon", ...TEXT_FIT_ICONS], ["!in", "icon", ...UN_SIGN_ICONS]],
         ["!has", "name"],
       ],
     ],

@@ -306,9 +306,13 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                     type="text"
                     inputMode={isUnNumber ? "numeric" : undefined}
                     maxLength={isUnNumber ? 4 : undefined}
-                    placeholder={isUnNumber ? t("mapview.labels.stoffnummerPlaceholder") : undefined}
+                    placeholder={
+                      isUnNumber ? t("mapview.labels.stoffnummerPlaceholder") : undefined
+                    }
                     value={values[field.key] ?? ""}
-                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onChange={(e) =>
+                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
                     onKeyDown={(e) => {
                       if (e.key === "Enter") saveAndClose();
                       if (e.key === "Escape") close();

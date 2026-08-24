@@ -1,9 +1,4 @@
-import {
-  type BabsIconId,
-  listIcons,
-  markerSpriteKey,
-  patternSpriteKey,
-} from "@f-eld-ch/babs-core";
+import { type BabsIconId, listIcons, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import {
   babsImage,
