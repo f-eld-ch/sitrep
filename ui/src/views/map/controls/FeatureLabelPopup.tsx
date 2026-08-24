@@ -10,7 +10,7 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isUndefined, omitBy } from "lodash";
 import { useCallback, useContext, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Popup, useMap } from "react-map-gl/maplibre";
+import { type MapRef, Popup, useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
@@ -62,11 +62,40 @@ interface PopupAnchor {
  * Lines/Polygons: tip points left at the mid-right edge of the bounding box,
  * popup body extends to the right — stays clear of the feature and never clips the top.
  */
-function popupAnchorFor(feature: Feature<Geometry, GeoJsonProperties>): PopupAnchor {
+function popupAnchorFor(feature: Feature<Geometry, GeoJsonProperties>, map?: MapRef): PopupAnchor {
   if (feature.geometry.type === "Point") {
     const [lng, lat] = feature.geometry.coordinates as [number, number];
     return { lngLat: [lng, lat], anchor: "bottom" };
   }
+
+  if (map) {
+    const coordinates = "coordinates" in feature.geometry ? feature.geometry.coordinates : [];
+    const points: [number, number][] = [];
+    const collectPoints = (value: unknown): void => {
+      if (
+        Array.isArray(value) &&
+        value.length >= 2 &&
+        typeof value[0] === "number" &&
+        typeof value[1] === "number"
+      ) {
+        points.push(value as [number, number]);
+        return;
+      }
+      if (Array.isArray(value)) value.forEach(collectPoints);
+    };
+    collectPoints(coordinates);
+
+    if (points.length > 0) {
+      const projected = points.map((point) => map.project(point));
+      const rightmostIndex = projected.reduce(
+        (index, point, candidateIndex) => (point.x > projected[index].x ? candidateIndex : index),
+        0,
+      );
+      const anchor = points[rightmostIndex];
+      return { lngLat: anchor, anchor: "left" };
+    }
+  }
+
   const [, minLat, maxLng, maxLat] = bbox(feature);
   return { lngLat: [maxLng, (minLat + maxLat) / 2], anchor: "left" };
 }
@@ -255,7 +284,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const {
     lngLat: [lng, lat],
     anchor,
-  } = popupAnchorFor(selectedFeature);
+  } = popupAnchorFor(selectedFeature, map ?? undefined);
   const isPoint = selectedFeature.geometry.type === "Point";
   const isLine = selectedFeature.geometry.type === "LineString";
   const isDirectionalLine =
@@ -297,9 +326,28 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       const areaPadding = { top: 60, right: 340, bottom: 60, left: 60 };
       const POPUP_WIDTH = 320; // px — approximate popup body width
       const [minLng, minLat, maxLng, maxLat] = bbox(selectedFeature);
-      const mapBounds = map.getBounds();
-      const featureVisible =
-        mapBounds.contains([minLng, minLat]) && mapBounds.contains([maxLng, maxLat]);
+      const featurePoints: [number, number][] = [];
+      const collectPoints = (value: unknown): void => {
+        if (
+          Array.isArray(value) &&
+          value.length >= 2 &&
+          typeof value[0] === "number" &&
+          typeof value[1] === "number"
+        ) {
+          featurePoints.push(value as [number, number]);
+          return;
+        }
+        if (Array.isArray(value)) value.forEach(collectPoints);
+      };
+      if ("coordinates" in selectedFeature.geometry) {
+        collectPoints(selectedFeature.geometry.coordinates);
+      }
+      const projectedFeature = featurePoints.map((point) => map.project(point));
+      const mapWidth = map.getContainer().clientWidth;
+      const mapHeight = map.getContainer().clientHeight;
+      const featureVisible = projectedFeature.some(
+        (point) => point.x >= 0 && point.x <= mapWidth && point.y >= 0 && point.y <= mapHeight,
+      );
       // Project the popup anchor and check there is room for the popup body
       const anchorPx = map.project([lng, lat]);
       const hasPopupRoom = anchorPx.x + POPUP_WIDTH <= map.getContainer().clientWidth;
@@ -309,7 +357,11 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             [minLng, minLat],
             [maxLng, maxLat],
           ],
-          { padding: areaPadding },
+          {
+            padding: areaPadding,
+            bearing: map.getBearing(),
+            pitch: map.getPitch(),
+          },
         );
       }
     }
