@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(map)* Add UN hazard plate popup editor ([#1765](https://github.com/f-eld-ch/sitrep/issues/1765)) - ([778c494](https://github.com/f-eld-ch/sitrep/commit/778c494cccf49dc36e05f5ed0b53c9a501c2ff13))
 - *(map)* Icon-aware label editing with anchored popup ([#1762](https://github.com/f-eld-ch/sitrep/issues/1762)) - ([ce47c5f](https://github.com/f-eld-ch/sitrep/commit/ce47c5f1800f49cdb894efabd24cc431da103a1b))
 
 ### 🐛 Bug Fixes
