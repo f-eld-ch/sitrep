@@ -1,6 +1,8 @@
+import { listIcons } from "@f-eld-ch/babs-core";
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { iconIdentifiers } from "components/babs/iconResolver";
+import { ANNOTATED_CATEGORIES } from "components/babs/labelSchema";
 import { Colors } from "components/babs/lineAndZoneTypes";
 import { createMapStyle } from "./styleGenerator";
 
@@ -48,6 +50,11 @@ const TEXT_FIT_PLATE_ICONS = iconIdentifiers(["2109a"]);
 /** Both families, in the order the source builds them — `gl-draw-point-icon` excludes all. */
 const TEXT_FIT_ICONS = iconIdentifiers(["1303", "1304", "2109a"]);
 const SPECIALLY_LABELLED = [...CASUALTIES_RIGHT, ...TEXT_FIT_ICONS];
+
+/** Every identifier of an icon that annotates left and right — Formationen and Fahrzeuge. */
+const ANNOTATED_ICONS = iconIdentifiers(
+  ANNOTATED_CATEGORIES.flatMap((category) => listIcons({ category }).map((meta) => meta.id)),
+);
 
 /**
  * The expected shape of a text-fit layer.
@@ -598,7 +605,7 @@ const drawStyle: LayerProps[] = [
       ["==", "active", "false"],
       ["==", "$type", "Point"],
       ["has", "user_nameLeft"],
-      ["!in", "user_icon", ...SPECIALLY_LABELLED],
+      ["in", "user_icon", ...ANNOTATED_ICONS],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
     ],
@@ -622,7 +629,7 @@ const drawStyle: LayerProps[] = [
       ["==", "active", "false"],
       ["==", "$type", "Point"],
       ["has", "user_nameRight"],
-      ["!in", "user_icon", ...SPECIALLY_LABELLED],
+      ["in", "user_icon", ...ANNOTATED_ICONS],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
     ],
@@ -1125,7 +1132,7 @@ const displayStyle: LayerProps[] = [
       "all",
       ["==", "$type", "Point"],
       ["has", "nameLeft"],
-      ["!in", "icon", ...SPECIALLY_LABELLED],
+      ["in", "icon", ...ANNOTATED_ICONS],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "nameLeft"], ""],
@@ -1146,7 +1153,7 @@ const displayStyle: LayerProps[] = [
       "all",
       ["==", "$type", "Point"],
       ["has", "nameRight"],
-      ["!in", "icon", ...SPECIALLY_LABELLED],
+      ["in", "icon", ...ANNOTATED_ICONS],
     ],
     layout: {
       "text-field": ["coalesce", ["get", "nameRight"], ""],

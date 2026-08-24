@@ -14,6 +14,7 @@ import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
 import classNames from "classnames";
 import { aliasFor } from "components/babs/iconResolver";
 import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
+import { unsupportedLabelKeys } from "components/babs/labelSchema";
 import {
   byColor,
   ColorForCategory,
@@ -152,6 +153,11 @@ function IconCategoryMenu(props: CategoryMenuProps) {
         // so it is no longer set.
         icon: aliasFor(id),
         color: ColorForCategory[category.number],
+        // Undefined so `omitBy` strips them: the new icon may annotate in fewer positions
+        // than the old one, and a leftover label would keep being drawn.
+        ...Object.fromEntries(
+          unsupportedLabelKeys(category.number, id).map((key) => [key, undefined]),
+        ),
       });
       onUpdate({
         features: [{ ...feature, properties: omitBy(properties, isEmptyValue) }],

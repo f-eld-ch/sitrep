@@ -43,6 +43,12 @@ const BY_CATEGORY: Partial<Record<BabsCategoryNumber, readonly LabelField[]>> = 
   "7": ANNOTATED_FIELDS, // Fahrzeuge
 };
 
+/** Categories whose icons carry a left and a right label as well as the one below. */
+export const ANNOTATED_CATEGORIES = Object.keys(BY_CATEGORY) as BabsCategoryNumber[];
+
+/** Every position a label can occupy. */
+const LABEL_KEYS: readonly LabelField["key"][] = ["nameLeft", "name", "nameRight"];
+
 export const fieldsFor = (
   category: BabsCategoryNumber | undefined,
   iconId?: BabsIconId,
@@ -50,4 +56,19 @@ export const fieldsFor = (
   if (category && BY_CATEGORY[category]) return BY_CATEGORY[category];
   if (iconId && CASUALTY_ICON_IDS.has(iconId)) return CASUALTY_FIELDS;
   return DEFAULT_FIELDS;
+};
+
+/**
+ * Label positions the given icon's layout has no field for.
+ *
+ * Changing a feature's icon leaves its old labels behind: the popup simply stops offering
+ * the fields, so a Formation's `nameLeft`/`nameRight` survive a switch to an icon that has
+ * neither. Callers clear these alongside the icon.
+ */
+export const unsupportedLabelKeys = (
+  category: BabsCategoryNumber | undefined,
+  iconId?: BabsIconId,
+): LabelField["key"][] => {
+  const supported = new Set(fieldsFor(category, iconId).map((field) => field.key));
+  return LABEL_KEYS.filter((key) => !supported.has(key));
 };
