@@ -9,6 +9,7 @@
 ### 🐛 Bug Fixes
 
 - *(ci)* Run actions on Node 24 and clear lint warnings ([#1767](https://github.com/f-eld-ch/sitrep/issues/1767)) - ([8e87340](https://github.com/f-eld-ch/sitrep/commit/8e8734085c5bf295b8b9c3f438a32276395a9b75))
+- *(map)* Preserve rotated popup positioning ([#1770](https://github.com/f-eld-ch/sitrep/issues/1770)) - ([144d6ce](https://github.com/f-eld-ch/sitrep/commit/144d6ce6135defeece448cc5d44d6716efc456d3))
 - *(map)* Keep feature popups fully visible ([#1768](https://github.com/f-eld-ch/sitrep/issues/1768)) - ([15a5107](https://github.com/f-eld-ch/sitrep/commit/15a510764653be4dd1570c76e189ebfe27f23216))
 - *(map)* Initialize popup label helper before use ([#1766](https://github.com/f-eld-ch/sitrep/issues/1766)) - ([d8feb2c](https://github.com/f-eld-ch/sitrep/commit/d8feb2c39c905395acf0c11206cd88558afb2174))
 - *(map)* Stop drawing left/right labels after an icon change ([#1763](https://github.com/f-eld-ch/sitrep/issues/1763)) - ([e24836b](https://github.com/f-eld-ch/sitrep/commit/e24836b625293c010a83678b59196acb76146c22))
