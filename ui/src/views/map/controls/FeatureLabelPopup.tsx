@@ -1,10 +1,10 @@
 import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { faArrowsRotate, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import bbox from "@turf/bbox";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
-import { fieldsFor, type LabelField } from "components/babs/labelSchema";
+import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isUndefined, omitBy } from "lodash";
@@ -82,6 +82,9 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const resolvedIconId = resolveIconId(iconValue);
   const isUnSign = resolvedIconId === UN_SIGN_ICON || iconValue?.startsWith("un:");
   const fields = fieldsFor(category, resolvedIconId);
+  const canRotate =
+    selectedFeature.geometry.type === "Point" &&
+    rotationAllowed(category, resolvedIconId, iconValue);
 
   const valuesFromFeature = () =>
     isUnSign
@@ -93,15 +96,17 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       : Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]));
 
   const [values, setValues] = useState<Record<string, string>>(valuesFromFeature);
-  const [rotationLock, setRotationLock] = useState<boolean>(
-    !isUndefined(selectedFeature?.properties?.iconRotation),
+  const [rotation, setRotation] = useState<number>(selectedFeature?.properties?.iconRotation ?? 0);
+  const [rotationFixed, setRotationFixed] = useState<boolean>(
+    canRotate && !isUndefined(selectedFeature?.properties?.iconRotation),
   );
 
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
   if (selectedFeature !== syncedFeature) {
     setSyncedFeature(selectedFeature);
     setValues(valuesFromFeature());
-    setRotationLock(!isUndefined(selectedFeature?.properties?.iconRotation));
+    setRotation(selectedFeature?.properties?.iconRotation ?? 0);
+    setRotationFixed(canRotate && !isUndefined(selectedFeature?.properties?.iconRotation));
   }
 
   const close = useCallback(() => {
@@ -118,15 +123,20 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
             nameLeft: undefined,
             nameRight: undefined,
+            iconRotation: canRotate ? selectedFeature.properties?.iconRotation : undefined,
           }
-        : { ...selectedFeature.properties, ...values },
+        : {
+            ...selectedFeature.properties,
+            ...values,
+            iconRotation: canRotate ? selectedFeature.properties?.iconRotation : undefined,
+          },
       isEmptyValue,
     );
     onUpdate({
       features: [{ ...selectedFeature, properties }],
       action: "featureDetail",
     });
-  }, [isUnSign, onUpdate, selectedFeature, values]);
+  }, [canRotate, isUnSign, onUpdate, selectedFeature, values]);
 
   const saveAndClose = useCallback(() => {
     commit();
@@ -144,9 +154,8 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     onUpdate({ features: [reversed], action: "featureDetail" });
   }, [onUpdate, selectedFeature]);
 
-  const onRotateClick = (lock: boolean) => {
-    if (!map) return;
-    setRotationLock(lock);
+  const onRotationChange = (value: number) => {
+    setRotation(value);
     const properties: GeoJsonProperties = omitBy(
       isUnSign
         ? {
@@ -156,13 +165,36 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
             nameLeft: undefined,
             nameRight: undefined,
-            iconRotation: lock ? map.getBearing() : undefined,
+            iconRotation: value,
           }
         : {
             ...selectedFeature.properties,
             ...values,
-            iconRotation: lock ? map.getBearing() : undefined,
+            iconRotation: value,
           },
+      isEmptyValue,
+    );
+    onUpdate({
+      features: [{ ...selectedFeature, properties }],
+      action: "featureDetail",
+    });
+  };
+
+  const onRotationFix = () => {
+    if (!map) return;
+    setRotationFixed(true);
+    onRotationChange(map.getBearing());
+  };
+
+  const onRotationUnlock = () => {
+    setRotationFixed(false);
+    setRotation(0);
+    const properties: GeoJsonProperties = omitBy(
+      {
+        ...selectedFeature.properties,
+        ...values,
+        iconRotation: undefined,
+      },
       isEmptyValue,
     );
     onUpdate({
@@ -226,6 +258,8 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   } = popupAnchorFor(selectedFeature);
   const isPoint = selectedFeature.geometry.type === "Point";
   const isLine = selectedFeature.geometry.type === "LineString";
+  const isDirectionalLine =
+    isLine && LineTypes[selectedFeature.properties?.lineType as string]?.directional === true;
 
   useEffect(() => {
     if (!map) return;
@@ -256,9 +290,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
         );
       }
     }
-    // selectedFeature.id gates re-runs so property edits don't re-pan
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, isPoint, lng, lat, selectedFeature.id]);
+  }, [map, isPoint, lng, lat, selectedFeature]);
 
   return (
     <Popup
@@ -341,24 +373,57 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             </div>
           );
         })}
-        {isPoint && (
+        {canRotate && (
           <div className="field mb-2">
-            <div className="control">
-              <button
-                type="button"
-                className="button is-small is-fullwidth is-light"
-                title={rotationLock ? t("mapview.unlock") : t("mapview.lock")}
-                onClick={() => onRotateClick(!rotationLock)}
-              >
-                <span className="icon is-small">
-                  <FontAwesomeIcon icon={rotationLock ? faLock : faLockOpen} />
-                </span>
-                <span>{rotationLock ? t("mapview.unlock") : t("mapview.lock")}</span>
-              </button>
-            </div>
+            {rotationFixed ? (
+              <>
+                <label className="label is-small mb-1" htmlFor={`${baseId}-rotation`}>
+                  <span className="icon is-small mr-1">
+                    <FontAwesomeIcon icon={faArrowsRotate} />
+                  </span>
+                  {t("mapview.rotation")} <span className="has-text-grey">({rotation}°)</span>
+                </label>
+                <div className="control">
+                  <input
+                    id={`${baseId}-rotation`}
+                    className="slider is-fullwidth"
+                    type="range"
+                    min="0"
+                    max="360"
+                    step="1"
+                    value={rotation}
+                    aria-label={t("mapview.rotation")}
+                    onChange={(e) => onRotationChange(Number(e.target.value))}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="button is-small is-fullwidth is-light mt-2"
+                  onClick={onRotationUnlock}
+                >
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faLock} />
+                  </span>
+                  <span>{t("mapview.unlock")}</span>
+                </button>
+              </>
+            ) : (
+              <div className="control">
+                <button
+                  type="button"
+                  className="button is-small is-fullwidth is-light"
+                  onClick={onRotationFix}
+                >
+                  <span className="icon is-small">
+                    <FontAwesomeIcon icon={faLock} />
+                  </span>
+                  <span>{t("mapview.lock")}</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
-        {isLine && (
+        {isDirectionalLine && (
           <div className="field mb-2">
             <div className="control">
               <button

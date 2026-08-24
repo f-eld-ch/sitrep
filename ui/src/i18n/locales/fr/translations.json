@@ -39,6 +39,7 @@
   "map": "Suivi dessiné",
   "mapview": {
     "rotate": "Tourner la signe",
+    "rotation": "Rotation",
     "layer": "calque",
     "unlock": "Désamarrer le signe",
     "lock": "Verrouiller le signe",

@@ -39,6 +39,7 @@
   "map": "situation map",
   "mapview": {
     "rotate": "Turn direction",
+    "rotation": "Rotation",
     "layer": "Layer",
     "unlock": "Unlock symbol",
     "lock": "Lock Symbol",

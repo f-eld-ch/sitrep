@@ -1,17 +1,17 @@
 import "./control-panel.css";
 import "./Map.scss";
-import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import { useMutation, useQuery, useReactiveVar } from "@apollo/client/react";
+import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
 import classNames from "classnames";
+import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,7 +47,6 @@ import SearchControl from "./controls/Searchbox";
 import { StyleController, selectedStyle } from "./controls/StyleController";
 import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from "./graphql";
 import { LayerContext, LayersProvider } from "./LayerContext";
-import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import { createMapStyle } from "./styleGenerator";
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
 
@@ -111,7 +110,7 @@ function MapView() {
         unSigns: true,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- language is deliberately excluded
-    [mapStyle.style],
+    [mapStyle.style, i18n.resolvedLanguage, i18n.language],
   );
 
   const mapClass = classNames({
@@ -267,7 +266,10 @@ function useLiveDrawGeometry(
       }
     };
 
-    const onRender = throttle(read, LIVE_GEOMETRY_INTERVAL_MS, { leading: true, trailing: true });
+    const onRender = throttle(read, LIVE_GEOMETRY_INTERVAL_MS, {
+      leading: true,
+      trailing: true,
+    });
     // mapbox-gl-draw fires its events *through* the map, but they are not part of MapLibre's
     // own event map, so `on`/`off` do not accept the name. Narrowed to just the two methods
     // rather than casting the map to `any`, so a typo in either is still caught.
@@ -508,7 +510,9 @@ function Draw() {
         // Restore draw-mode selection after the layer reset so the feature stays
         // visually selected (handles visible) when a property update triggers a redraw.
         if (state.selectedFeature && d.get(state.selectedFeature)) {
-          d.changeMode("simple_select", { featureIds: [state.selectedFeature] });
+          d.changeMode("simple_select", {
+            featureIds: [state.selectedFeature],
+          });
         }
       });
     }

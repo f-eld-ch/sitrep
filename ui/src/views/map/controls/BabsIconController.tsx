@@ -1,6 +1,3 @@
-import { faFileText } from "@fortawesome/free-regular-svg-icons";
-import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   type BabsCategory,
   type BabsIconId,
@@ -11,10 +8,13 @@ import {
   listIcons,
 } from "@f-eld-ch/babs-core";
 import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
+import { faFileText } from "@fortawesome/free-regular-svg-icons";
+import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { aliasFor } from "components/babs/iconResolver";
 import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
-import { unsupportedLabelKeys } from "components/babs/labelSchema";
+import { aliasFor } from "components/babs/iconResolver";
+import { rotationAllowed, unsupportedLabelKeys } from "components/babs/labelSchema";
 import {
   byColor,
   ColorForCategory,
@@ -32,11 +32,12 @@ import {
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { FeatureLabelPopup } from "./FeatureLabelPopup";
 import { first, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useState } from "react";
+import { FeatureLabelPopup } from "./FeatureLabelPopup";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
+
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
@@ -153,6 +154,9 @@ function IconCategoryMenu(props: CategoryMenuProps) {
         // so it is no longer set.
         icon: aliasFor(id),
         color: ColorForCategory[category.number],
+        iconRotation: rotationAllowed(category.number, id)
+          ? feature.properties?.iconRotation
+          : undefined,
         // Undefined so `omitBy` strips them: the new icon may annotate in fewer positions
         // than the old one, and a leftover label would keep being drawn.
         ...Object.fromEntries(
@@ -285,7 +289,10 @@ const LineController = memo((props: BabsIconControllerProps) => {
         { ...selectedFeature.properties, lineType: i.name, color: i.color },
         isEmptyValue,
       );
-      onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+      onUpdate({
+        features: [{ ...selectedFeature, properties }],
+        action: "featureDetail",
+      });
     },
     [onUpdate, selectedFeature],
   );
@@ -338,7 +345,10 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
           { ...selectedFeature.properties, zoneType: i.name, color: i.color },
           isEmptyValue,
         );
-        onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+        onUpdate({
+          features: [{ ...selectedFeature, properties }],
+          action: "featureDetail",
+        });
       }
     },
     [onUpdate, selectedFeature],
@@ -427,7 +437,10 @@ const BabsIconController = () => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
       // changes made here persist by exactly the same mechanism as direct edits.
-      fireDrawEvent(map?.getMap(), "draw.update", { features: updatedFeatures, target: map });
+      fireDrawEvent(map?.getMap(), "draw.update", {
+        features: updatedFeatures,
+        target: map,
+      });
     },
     [map],
   );
@@ -467,7 +480,10 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
           { ...selectedFeature.properties, name },
           isEmptyValue,
         );
-        onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+        onUpdate({
+          features: [{ ...selectedFeature, properties }],
+          action: "featureDetail",
+        });
       }
 
       setEnteredText("");

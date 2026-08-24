@@ -33,6 +33,8 @@ export interface SelectableType {
   thumbnail: BabsIconId;
   /** Stroke colour, and the value persisted as `properties.color`. */
   color: string;
+  /** Whether reversing the line changes its meaning. */
+  directional?: boolean;
   /**
    * How the zone's interior is drawn. At most one of these may be set.
    *
@@ -143,16 +145,19 @@ export const LineTypes: SelectableTypes = {
     name: "brandUebergriffGefahr",
     thumbnail: "1111a",
     color: Colors.Red,
+    directional: true,
   },
   brandUebergriffErfolgt: {
     name: "brandUebergriffErfolgt",
     thumbnail: "1111b",
     color: Colors.Red,
+    directional: true,
   },
   Rutschgebiet: {
     name: "Rutschgebiet",
     thumbnail: "1113",
     color: Colors.Red,
+    directional: true,
   },
   /**
    * Debris field. A plain solid boundary: 1116 ships no pattern tile in the catalogue, and
@@ -182,36 +187,43 @@ export const LineTypes: SelectableTypes = {
     name: "beabsichtigteErkundung",
     thumbnail: "6103a",
     color: Colors.Blue,
+    directional: true,
   },
   durchgeführteErkundung: {
     name: "durchgeführteErkundung",
     thumbnail: "6103b",
     color: Colors.Blue,
+    directional: true,
   },
   beabsichtigteVerschiebung: {
     name: "beabsichtigteVerschiebung",
     thumbnail: "6101a",
     color: Colors.Blue,
+    directional: true,
   },
   durchgeführteVerschiebung: {
     name: "durchgeführteVerschiebung",
     thumbnail: "6101b",
     color: Colors.Blue,
+    directional: true,
   },
   beabsichtigterEinsatz: {
     name: "beabsichtigterEinsatz",
     thumbnail: "6102a",
     color: Colors.Blue,
+    directional: true,
   },
   durchgeführterEinsatz: {
     name: "durchgeführterEinsatz",
     thumbnail: "6102b",
     color: Colors.Blue,
+    directional: true,
   },
   rettungsAchse: {
     name: "rettungsAchse",
     thumbnail: "6106",
     color: Colors.Blue,
+    directional: true,
   },
 };
 
