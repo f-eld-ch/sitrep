@@ -52,7 +52,12 @@
       "ortsbezeichnung": "Ortsbezeichnung",
       "zusatzangaben": "Zusatzangaben",
       "beschreibung": "Beschreibung / Details",
-      "anzahlPersonen": "Anzahl Personen"
+      "anzahlPersonen": "Anzahl Personen",
+      "kemler": "Gefahrennummer",
+      "kemlerPlaceholder": "Gefahrennummer auswählen",
+      "stoffnummer": "Stoffnummer",
+      "stoffnummerPlaceholder": "4-stellige UN-Nummer",
+      "stoffbezeichnung": "Stoffbezeichnung"
     }
   },
   "medium": {

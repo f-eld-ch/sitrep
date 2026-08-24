@@ -1,5 +1,6 @@
 import { faArrowsRotate, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import { getIcon } from "@f-eld-ch/babs-core";
 import bbox from "@turf/bbox";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
@@ -13,6 +14,15 @@ import { Popup, useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
+const UN_SIGN_ICON = "2109a";
+const UN_SIGN_TITLE = "2109b";
+const UN_SIGN_FIELDS = {
+  kemler: "kemler",
+  unNumber: "unNumber",
+  substance: "stoffbezeichnung",
+} as const;
+
+const unSignIcon = (kemler: string): string => (kemler ? `un:${kemler}` : UN_SIGN_ICON);
 
 /** MapLibre uses a fixed set of BCP 47 subtags for BABS language resolution. */
 const BABS_LANG_MAP: Record<string, string> = {
@@ -70,10 +80,17 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const iconValue = selectedFeature.properties?.icon as string | undefined;
   const category = categoryOf(iconValue);
   const resolvedIconId = resolveIconId(iconValue);
+  const isUnSign = resolvedIconId === UN_SIGN_ICON || iconValue?.startsWith("un:");
   const fields = fieldsFor(category, resolvedIconId);
 
   const valuesFromFeature = () =>
-    Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]));
+    isUnSign
+      ? {
+          [UN_SIGN_FIELDS.kemler]: iconValue?.startsWith("un:") ? iconValue.slice(3) : "",
+          [UN_SIGN_FIELDS.unNumber]: selectedFeature.properties?.name ?? "",
+          [UN_SIGN_FIELDS.substance]: selectedFeature.properties?.stoffbezeichnung ?? "",
+        }
+      : Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]));
 
   const [values, setValues] = useState<Record<string, string>>(valuesFromFeature);
   const [rotationLock, setRotationLock] = useState<boolean>(
@@ -93,11 +110,20 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
 
   const commit = useCallback(() => {
     const properties: GeoJsonProperties = omitBy(
-      { ...selectedFeature.properties, ...values },
+      isUnSign
+        ? {
+            ...selectedFeature.properties,
+            icon: unSignIcon(values[UN_SIGN_FIELDS.kemler]),
+            name: values[UN_SIGN_FIELDS.unNumber],
+            stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
+            nameLeft: undefined,
+            nameRight: undefined,
+          }
+        : { ...selectedFeature.properties, ...values },
       isEmptyValue,
     );
     onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
-  }, [onUpdate, selectedFeature, values]);
+  }, [isUnSign, onUpdate, selectedFeature, values]);
 
   const saveAndClose = useCallback(() => {
     commit();
@@ -119,11 +145,21 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     if (!map) return;
     setRotationLock(lock);
     const properties: GeoJsonProperties = omitBy(
-      {
-        ...selectedFeature.properties,
-        ...values,
-        iconRotation: lock ? map.getBearing() : undefined,
-      },
+      isUnSign
+        ? {
+            ...selectedFeature.properties,
+            icon: unSignIcon(values[UN_SIGN_FIELDS.kemler]),
+            name: values[UN_SIGN_FIELDS.unNumber],
+            stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
+            nameLeft: undefined,
+            nameRight: undefined,
+            iconRotation: lock ? map.getBearing() : undefined,
+          }
+        : {
+            ...selectedFeature.properties,
+            ...values,
+            iconRotation: lock ? map.getBearing() : undefined,
+          },
       isEmptyValue,
     );
     onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
@@ -134,6 +170,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   const popupTitle = (): string => {
     const geoType = selectedFeature.geometry.type;
     if (geoType === "Point") {
+      if (isUnSign) return iconLabel(UN_SIGN_TITLE, lang) ?? "";
       return iconLabel(iconValue, lang) ?? "";
     }
     if (geoType === "Polygon") {
@@ -151,6 +188,14 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
 
   const title = popupTitle();
 
+  const popupFields = isUnSign
+    ? [
+        { key: UN_SIGN_FIELDS.kemler, label: t("mapview.labels.kemler") },
+        { key: UN_SIGN_FIELDS.unNumber, label: t("mapview.labels.stoffnummer") },
+        { key: UN_SIGN_FIELDS.substance, label: t("mapview.labels.stoffbezeichnung") },
+      ]
+    : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
+
   /**
    * For single-field layouts the icon name is already in the popup title, so the input
    * label shows the descriptive placeholder text instead of repeating it.
@@ -163,9 +208,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     return t(field.labelKey);
   };
 
-  const fieldPlaceholder = (field: LabelField): string => fieldLabel(field);
-
-  const { lngLat: [lng, lat], anchor } = popupAnchorFor(selectedFeature);
+  const {
+    lngLat: [lng, lat],
+    anchor,
+  } = popupAnchorFor(selectedFeature);
   const isPoint = selectedFeature.geometry.type === "Point";
   const isLine = selectedFeature.geometry.type === "LineString";
 
@@ -189,11 +235,17 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       const anchorPx = map.project([lng, lat]);
       const hasPopupRoom = anchorPx.x + POPUP_WIDTH <= map.getContainer().clientWidth;
       if (!featureVisible || !hasPopupRoom) {
-        map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: areaPadding });
+        map.fitBounds(
+          [
+            [minLng, minLat],
+            [maxLng, maxLat],
+          ],
+          { padding: areaPadding },
+        );
       }
     }
-  // selectedFeature.id gates re-runs so property edits don't re-pan
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // selectedFeature.id gates re-runs so property edits don't re-pan
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, isPoint, lng, lat, selectedFeature.id]);
 
   return (
@@ -220,28 +272,49 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             onClick={close}
           />
         </div>
-        {fields.map((field) => {
+        {popupFields.map((field) => {
           const inputId = `${baseId}-${field.key}`;
-          const label = fieldLabel(field);
-          const placeholder = fieldPlaceholder(field);
+          const isKemler = field.key === UN_SIGN_FIELDS.kemler;
+          const isUnNumber = field.key === UN_SIGN_FIELDS.unNumber;
           return (
             <div key={field.key} className="field mb-2">
               <label className="label is-small mb-1" htmlFor={inputId}>
-                {label}
+                {field.label}
               </label>
               <div className="control">
-                <input
-                  id={inputId}
-                  className="input is-small"
-                  type="text"
-                  placeholder={placeholder}
-                  value={values[field.key] ?? ""}
-                  onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveAndClose();
-                    if (e.key === "Escape") close();
-                  }}
-                />
+                {isKemler ? (
+                  <div className="select is-small is-fullwidth">
+                    <select
+                      id={inputId}
+                      value={values[field.key] ?? ""}
+                      onChange={(e) =>
+                        setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      }
+                    >
+                      <option value="">{t("mapview.labels.kemlerPlaceholder")}</option>
+                      {KEMLER_CODES.map((code) => (
+                        <option key={code} value={code}>
+                          {code}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <input
+                    id={inputId}
+                    className="input is-small"
+                    type="text"
+                    inputMode={isUnNumber ? "numeric" : undefined}
+                    maxLength={isUnNumber ? 4 : undefined}
+                    placeholder={isUnNumber ? t("mapview.labels.stoffnummerPlaceholder") : undefined}
+                    value={values[field.key] ?? ""}
+                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveAndClose();
+                      if (e.key === "Escape") close();
+                    }}
+                  />
+                )}
               </div>
             </div>
           );

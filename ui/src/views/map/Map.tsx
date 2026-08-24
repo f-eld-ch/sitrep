@@ -105,7 +105,11 @@ function MapView() {
   // basemap does change. This used to be done with a ref written during render — same
   // effect, but writing a ref while rendering is not safe under concurrent rendering.
   const styleWithBabsSprite = useMemo(
-    () => withBabsSprite(mapStyle.style, i18n.resolvedLanguage ?? i18n.language, BABS_SPRITE_BASE),
+    () =>
+      withBabsSprite(mapStyle.style, i18n.resolvedLanguage ?? i18n.language, {
+        base: BABS_SPRITE_BASE,
+        unSigns: true,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- language is deliberately excluded
     [mapStyle.style],
   );

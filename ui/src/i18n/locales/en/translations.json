@@ -52,7 +52,12 @@
       "ortsbezeichnung": "Location",
       "zusatzangaben": "Additional Info",
       "beschreibung": "Description / Details",
-      "anzahlPersonen": "Number of Persons"
+      "anzahlPersonen": "Number of Persons",
+      "kemler": "Kemler number",
+      "kemlerPlaceholder": "Select Kemler number",
+      "stoffnummer": "UN substance number",
+      "stoffnummerPlaceholder": "4-digit UN number",
+      "stoffbezeichnung": "Substance name"
     }
   },
   "medium": {

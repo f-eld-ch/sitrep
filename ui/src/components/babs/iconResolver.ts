@@ -1,4 +1,10 @@
-import { type BabsCategoryNumber, type BabsIconId, getIcon, isBabsIconId, listIcons } from "@f-eld-ch/babs-core";
+import {
+  type BabsCategoryNumber,
+  type BabsIconId,
+  getIcon,
+  isBabsIconId,
+  listIcons,
+} from "@f-eld-ch/babs-core";
 import type { ExpressionSpecification } from "maplibre-gl";
 import { LEGACY_ICON_IDS, type LegacyIconName } from "./legacyIconNames";
 
