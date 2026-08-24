@@ -10,6 +10,7 @@ function Footer() {
       <div className="content has-text-centered is-flex-desktop is-flex-wrap-nowrap is-align-content-space-around is-flex-direction-row	is-align-items-center is-justify-content-center">
         <a
           className="has-text-current"
+          aria-label="SitRep on GitHub"
           href="https://github.com/f-eld-ch/sitrep"
           target="_blank"
           rel="noopener noreferrer"

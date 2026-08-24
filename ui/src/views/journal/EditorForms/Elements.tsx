@@ -5,6 +5,7 @@ import { t } from "i18next";
 import { useId } from "react";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
+import { useDate } from "utils/useDate";
 import { ReactEditor, useEditorContext } from "../Editor";
 
 const SenderInput = () => {
@@ -80,6 +81,7 @@ const ContentInput = () => {
 const TimeInput = () => {
   const { state, dispatch } = useEditorContext();
   const id = useId();
+  const { now } = useDate();
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <input
@@ -87,7 +89,7 @@ const TimeInput = () => {
         className="input"
         value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
         type="datetime-local"
-        placeholder={dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
+        placeholder={dayjs(now).format("DD.MM.YYYY HH:mm")}
         onChange={(e) => {
           e.preventDefault();
           dispatch({ type: "set_time", time: dayjs(e.target.value).toDate() });

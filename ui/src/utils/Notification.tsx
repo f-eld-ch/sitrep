@@ -33,7 +33,12 @@ function Notification({
   if (!visible) return null;
   return (
     <div className={notificationClass}>
-      <button type="button" className="delete" onClick={() => setVisible(false)} />
+      <button
+        type="button"
+        className="delete"
+        aria-label="Dismiss notification"
+        onClick={() => setVisible(false)}
+      />
       {children}
     </div>
   );

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { useEventCallback, useEventListener } from "usehooks-ts";
 
 declare global {
@@ -138,11 +138,13 @@ export function useLocalStorage<T>(
     }
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const value = readValue();
-    setValue(value);
+    // Synchronize state when the storage key or deserializer changes.
+    /* oxlint-disable react/set-state-in-effect -- Synchronize when the storage key changes. */
     setStoredValue(value);
-  }, [readValue, setValue]);
+    /* oxlint-enable react/set-state-in-effect */
+  }, [readValue]);
 
   const handleStorageChange = useCallback(
     (event: StorageEvent | CustomEvent) => {

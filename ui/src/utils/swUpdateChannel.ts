@@ -7,7 +7,7 @@ export type SWMessage =
 const CHANNEL = "sitrep-sw-update";
 
 export function createSWChannel(onMessage: (msg: SWMessage) => void) {
-  if (typeof window === "undefined") return { post: (_: SWMessage) => {}, close: () => {} };
+  if (typeof window === "undefined") return { post: () => {}, close: () => {} };
 
   let bc: BroadcastChannel | null = null;
   try {

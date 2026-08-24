@@ -28,10 +28,10 @@ import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
-import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
 import { useDarkMode } from "utils/useDarkMode";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { useDate } from "utils/useDate";
+import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
   const [isMenuActive, setIsMenuActive] = useState<boolean>(isActive);
@@ -176,7 +176,11 @@ function DarkModeSwitcher() {
 
   return (
     <div className="navbar-item">
-      <button type="button" onClick={toggle}>
+      <button
+        type="button"
+        aria-label={isDarkMode ? "Switch to light mode (Dark)" : "Switch to dark mode (Light)"}
+        onClick={toggle}
+      >
         <span className="icon-text is-flex-wrap-nowrap">
           <span className="icon">
             <FontAwesomeIcon icon={isDarkMode ? faMoon : faSun} />
@@ -260,7 +264,7 @@ function UserNavBar() {
         <DarkModeSwitcher />
         <LanguageSwitcher />
         <hr className="navbar-divider" />
-        <a className="navbar-item" href="/oauth2/sign_out">
+        <a className="navbar-item" href="/oauth2/sign_out" aria-label={t("logout")}>
           <span className="icon-text is-flex-wrap-nowrap is-capitalized">
             <span className="icon">
               <FontAwesomeIcon icon={faRightFromBracket} />
