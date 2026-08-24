@@ -230,11 +230,34 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
   useEffect(() => {
     if (!map) return;
     if (isPoint) {
-      // Popup appears above the point (anchor="bottom") — extra top padding.
-      const pointPadding = { top: 300, right: 160, bottom: 60, left: 160 };
-      if (!map.getBounds().contains([lng, lat])) {
-        map.easeTo({ center: [lng, lat], padding: pointPadding });
-      }
+      // The point can be inside the viewport while its popup still clips at an edge.
+      // Measure the rendered popup and pan only as far as needed, without changing zoom.
+      const frame = requestAnimationFrame(() => {
+        const mapRect = map.getContainer().getBoundingClientRect();
+        const popup = map.getContainer().querySelector<HTMLElement>(".feature-label-popup");
+        if (!popup) return;
+
+        const popupRect = popup.getBoundingClientRect();
+        const edgePadding = 16;
+        let offsetX = 0;
+        let offsetY = 0;
+        if (popupRect.left < mapRect.left + edgePadding) {
+          offsetX = mapRect.left + edgePadding - popupRect.left;
+        } else if (popupRect.right > mapRect.right - edgePadding) {
+          offsetX = mapRect.right - edgePadding - popupRect.right;
+        }
+        if (popupRect.top < mapRect.top + edgePadding) {
+          offsetY = mapRect.top + edgePadding - popupRect.top;
+        } else if (popupRect.bottom > mapRect.bottom - edgePadding) {
+          offsetY = mapRect.bottom - edgePadding - popupRect.bottom;
+        }
+
+        if (offsetX !== 0 || offsetY !== 0) {
+          // panBy moves map content opposite to the correction needed for the popup.
+          map.panBy([-offsetX, -offsetY], { duration: 300 });
+        }
+      });
+      return () => cancelAnimationFrame(frame);
     } else {
       // Popup appears to the right of the mid-right bbox edge (anchor="left").
       const areaPadding = { top: 60, right: 340, bottom: 60, left: 60 };
@@ -256,9 +279,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
         );
       }
     }
-    // selectedFeature.id gates re-runs so property edits don't re-pan
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, isPoint, lng, lat, selectedFeature.id]);
+  }, [map, isPoint, lng, lat, selectedFeature]);
 
   return (
     <Popup
