@@ -2,12 +2,14 @@
 
 ### ⛰️  Features
 
+- *(map)* Refine rotation and line direction controls ([#1769](https://github.com/f-eld-ch/sitrep/issues/1769)) - ([bb87ffc](https://github.com/f-eld-ch/sitrep/commit/bb87ffc3bb04aeaedcf92ba64bf50100533f4e55))
 - *(map)* Add UN hazard plate popup editor ([#1765](https://github.com/f-eld-ch/sitrep/issues/1765)) - ([778c494](https://github.com/f-eld-ch/sitrep/commit/778c494cccf49dc36e05f5ed0b53c9a501c2ff13))
 - *(map)* Icon-aware label editing with anchored popup ([#1762](https://github.com/f-eld-ch/sitrep/issues/1762)) - ([ce47c5f](https://github.com/f-eld-ch/sitrep/commit/ce47c5f1800f49cdb894efabd24cc431da103a1b))
 
 ### 🐛 Bug Fixes
 
 - *(ci)* Run actions on Node 24 and clear lint warnings ([#1767](https://github.com/f-eld-ch/sitrep/issues/1767)) - ([8e87340](https://github.com/f-eld-ch/sitrep/commit/8e8734085c5bf295b8b9c3f438a32276395a9b75))
+- *(map)* Keep feature popups fully visible ([#1768](https://github.com/f-eld-ch/sitrep/issues/1768)) - ([15a5107](https://github.com/f-eld-ch/sitrep/commit/15a510764653be4dd1570c76e189ebfe27f23216))
 - *(map)* Initialize popup label helper before use ([#1766](https://github.com/f-eld-ch/sitrep/issues/1766)) - ([d8feb2c](https://github.com/f-eld-ch/sitrep/commit/d8feb2c39c905395acf0c11206cd88558afb2174))
 - *(map)* Stop drawing left/right labels after an icon change ([#1763](https://github.com/f-eld-ch/sitrep/issues/1763)) - ([e24836b](https://github.com/f-eld-ch/sitrep/commit/e24836b625293c010a83678b59196acb76146c22))
 
