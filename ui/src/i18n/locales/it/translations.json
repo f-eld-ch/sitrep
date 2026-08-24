@@ -52,7 +52,12 @@
       "ortsbezeichnung": "Luogo",
       "zusatzangaben": "Informazioni aggiuntive",
       "beschreibung": "Descrizione / Dettagli",
-      "anzahlPersonen": "Numero di persone"
+      "anzahlPersonen": "Numero di persone",
+      "kemler": "Numero di pericolo",
+      "kemlerPlaceholder": "Seleziona il numero di pericolo",
+      "stoffnummer": "Numero della sostanza ONU",
+      "stoffnummerPlaceholder": "Numero ONU a 4 cifre",
+      "stoffbezeichnung": "Nome della sostanza"
     }
   },
   "medium": {

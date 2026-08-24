@@ -1,4 +1,5 @@
 import { type BabsIconId, listIcons, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
+import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import {
   babsImage,
   iconIdentifiers,
@@ -91,6 +92,7 @@ export const TEXT_FIT_IDS: BabsIconId[] = [...TEXT_FIT_CASUALTIES, ...TEXT_FIT_P
 const TEXT_FIT_ICONS = iconIdentifiers(TEXT_FIT_IDS);
 const TEXT_FIT_CASUALTY_ICONS = iconIdentifiers(TEXT_FIT_CASUALTIES);
 const TEXT_FIT_PLATE_ICONS = iconIdentifiers(TEXT_FIT_PLATES);
+const UN_SIGN_ICONS = KEMLER_CODES.map((code) => `un:${code}`);
 
 /**
  * Space added around the label before the frame is stretched to hold it, as
@@ -203,6 +205,7 @@ const ICON_SIZE: ExpressionSpecification = [
  */
 const pointIconImage = (propPrefix: string): ExpressionSpecification => [
   "coalesce",
+  ["image", ["get", `${propPrefix}icon`]],
   ["image", legacyIconMatchExpression(propPrefix)],
   ["image", babsImage(markerSpriteKey("chevron-blue"))],
 ];
@@ -332,6 +335,8 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     padding: ExpressionSpecification,
     textSize: ExpressionSpecification,
     defaultTextColor: string,
+    includeUnSigns = false,
+    textOffset: [number, number] = [0, 0],
   ): LayerProps => ({
     id,
     type: "symbol",
@@ -340,7 +345,13 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       ["has", `${propPrefix}icon`],
       ["has", `${propPrefix}name`],
       ["!has", `${propPrefix}iconRotation`],
-      ["in", `${propPrefix}icon`, ...icons],
+      includeUnSigns
+        ? [
+            "any",
+            ["in", `${propPrefix}icon`, ...icons],
+            ["in", `${propPrefix}icon`, ...UN_SIGN_ICONS],
+          ]
+        : ["in", `${propPrefix}icon`, ...icons],
     ]),
     layout: {
       "icon-image": pointIconImage(propPrefix),
@@ -357,6 +368,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       "text-field": ["coalesce", ["get", `${propPrefix}name`], ""],
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
+      "text-offset": textOffset,
       // Both are needed, and they do different jobs. `text-ignore-placement` only stops this
       // label blocking *other* symbols; `text-allow-overlap` is what stops it being dropped
       // when something else got there first. Without the latter the whole symbol disappears,
@@ -656,7 +668,15 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["!has", `${propPrefix}iconRotation`],
         // Whatever `gl-draw-point-icon-text-fit` takes, this layer must leave alone, or the
         // icon is drawn twice: once at a fixed size and once stretched around the label.
-        ["any", ["!in", `${propPrefix}icon`, ...TEXT_FIT_ICONS], ["!has", `${propPrefix}name`]],
+        [
+          "any",
+          [
+            "all",
+            ["!in", `${propPrefix}icon`, ...TEXT_FIT_ICONS],
+            ["!in", `${propPrefix}icon`, ...UN_SIGN_ICONS],
+          ],
+          ["!has", `${propPrefix}name`],
+        ],
       ]),
       layout: {
         "icon-image": pointIconImage(propPrefix),
@@ -678,6 +698,8 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       TEXT_FIT_PLATE_PADDING,
       TEXT_FIT_PLATE_TEXT_SIZE,
       "#000000",
+      true,
+      [0, -0.15],
     ),
     {
       id: "gl-draw-point-icon-rotation",
@@ -767,6 +789,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         ["has", `${propPrefix}name`],
         ["has", `${propPrefix}color`],
         ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
+        ["!in", `${propPrefix}icon`, ...UN_SIGN_ICONS],
         ["==", "$type", "Point"],
       ]),
       layout: {

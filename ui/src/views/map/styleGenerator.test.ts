@@ -1,4 +1,5 @@
 import { listIcons } from "@f-eld-ch/babs-core";
+import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { iconIdentifiers } from "components/babs/iconResolver";
@@ -50,6 +51,7 @@ const TEXT_FIT_PLATE_ICONS = iconIdentifiers(["2109a"]);
 /** Both families, in the order the source builds them — `gl-draw-point-icon` excludes all. */
 const TEXT_FIT_ICONS = iconIdentifiers(["1303", "1304", "2109a"]);
 const SPECIALLY_LABELLED = [...CASUALTIES_RIGHT, ...TEXT_FIT_ICONS];
+const UN_SIGN_ICONS = KEMLER_CODES.map((code) => `un:${code}`);
 
 /** Every identifier of an icon that annotates left and right — Formationen and Fahrzeuge. */
 const ANNOTATED_ICONS = iconIdentifiers(
@@ -72,6 +74,7 @@ const expectedTextFitLayer = (
   padding: unknown,
   textSize: unknown,
   defaultTextColor: string,
+  textOffset: [number, number] = [0, 0],
   // Cast for the same reason the layers below are contextually typed by `drawStyle`: an
   // object literal returned from a function loses that context, and spelling out every
   // MapLibre expression type here would bury the structure this fixture exists to show.
@@ -86,7 +89,9 @@ const expectedTextFitLayer = (
       ["has", `${prefix}icon`],
       ["has", `${prefix}name`],
       ["!has", `${prefix}iconRotation`],
-      ["in", `${prefix}icon`, ...icons],
+      ...(id.endsWith("plate")
+        ? [["any", ["in", `${prefix}icon`, ...icons], ["in", `${prefix}icon`, ...UN_SIGN_ICONS]]]
+        : [["in", `${prefix}icon`, ...icons]]),
     ],
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
@@ -98,6 +103,7 @@ const expectedTextFitLayer = (
       "text-field": ["coalesce", ["get", `${prefix}name`], ""],
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
+      "text-offset": textOffset,
       "text-allow-overlap": true,
       "text-ignore-placement": true,
       "text-size": textSize,
@@ -509,7 +515,11 @@ const drawStyle: LayerProps[] = [
       ["==", "meta", "feature"],
       ["has", "user_icon"],
       ["!has", "user_iconRotation"],
-      ["any", ["!in", "user_icon", ...TEXT_FIT_ICONS], ["!has", "user_name"]],
+      [
+        "any",
+        ["all", ["!in", "user_icon", ...TEXT_FIT_ICONS], ["!in", "user_icon", ...UN_SIGN_ICONS]],
+        ["!has", "user_name"],
+      ],
     ],
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
@@ -553,6 +563,7 @@ const drawStyle: LayerProps[] = [
     ],
     ["interpolate", ["linear"], ["zoom"], 12, 3, 17, 14],
     "#000000",
+    [0, -0.15],
   ),
   {
     id: "gl-draw-point-icon-rotation",
@@ -654,6 +665,7 @@ const drawStyle: LayerProps[] = [
       ["has", "user_name"],
       ["has", "user_color"],
       ["!in", "user_icon", ...SPECIALLY_LABELLED],
+      ["!in", "user_icon", ...UN_SIGN_ICONS],
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
@@ -1043,7 +1055,11 @@ const displayStyle: LayerProps[] = [
       ["==", "$type", "Point"],
       ["has", "icon"],
       ["!has", "iconRotation"],
-      ["any", ["!in", "icon", ...TEXT_FIT_ICONS], ["!has", "name"]],
+      [
+        "any",
+        ["all", ["!in", "icon", ...TEXT_FIT_ICONS], ["!in", "icon", ...UN_SIGN_ICONS]],
+        ["!has", "name"],
+      ],
     ],
     layout: {
       "icon-image": GENERATED_ICON_IMAGE,
@@ -1087,6 +1103,7 @@ const displayStyle: LayerProps[] = [
     ],
     ["interpolate", ["linear"], ["zoom"], 12, 3, 17, 14],
     "#000000",
+    [0, -0.15],
   ),
   {
     id: "gl-draw-point-icon-rotation",
@@ -1175,6 +1192,7 @@ const displayStyle: LayerProps[] = [
       ["has", "name"],
       ["has", "color"],
       ["!in", "icon", ...SPECIALLY_LABELLED],
+      ["!in", "icon", ...UN_SIGN_ICONS],
       ["==", "$type", "Point"],
     ],
     layout: {
