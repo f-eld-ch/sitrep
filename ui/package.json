@@ -59,7 +59,7 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "lodash": "^4.18.1",
     "mapbox-gl-style-switcher": "^1.0.11",
-    "maplibre-gl": "6.5.0",
+    "maplibre-gl": "6.6.0",
     "ol": "^10.10.0",
     "proj4": "^2.21.0",
     "react": "^19.2.8",
