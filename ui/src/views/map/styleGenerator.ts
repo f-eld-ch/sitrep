@@ -1,9 +1,10 @@
-import { type BabsIconId, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
+import { type BabsIconId, listIcons, markerSpriteKey, patternSpriteKey } from "@f-eld-ch/babs-core";
 import {
   babsImage,
   iconIdentifiers,
   legacyIconMatchExpression,
 } from "components/babs/iconResolver";
+import { ANNOTATED_CATEGORIES } from "components/babs/labelSchema";
 import { ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
@@ -164,6 +165,17 @@ const TEXT_FIT_PLATE_TEXT_SIZE: ExpressionSpecification = [
 
 /** The icons the generic name label must skip, because another layer already labels them. */
 const SPECIALLY_LABELLED = [...CASUALTIES_RIGHT, ...TEXT_FIT_ICONS];
+
+/**
+ * Every identifier denoting an icon whose layout has a left and a right label.
+ *
+ * The two layers select on this rather than on the mere presence of `nameLeft` /
+ * `nameRight`, because a feature keeps those values when its icon changes: a Formation
+ * relabelled as a damage sign went on showing all three labels.
+ */
+const ANNOTATED_ICONS = iconIdentifiers(
+  ANNOTATED_CATEGORIES.flatMap((category) => listIcons({ category }).map((meta) => meta.id)),
+);
 
 /**
  * On-screen scale of a point marker.
@@ -714,7 +726,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["==", "$type", "Point"],
         ["has", `${propPrefix}nameLeft`],
-        ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
+        ["in", `${propPrefix}icon`, ...ANNOTATED_ICONS],
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}nameLeft`], ""],
@@ -734,7 +746,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       filter: createFilter([
         ["==", "$type", "Point"],
         ["has", `${propPrefix}nameRight`],
-        ["!in", `${propPrefix}icon`, ...SPECIALLY_LABELLED],
+        ["in", `${propPrefix}icon`, ...ANNOTATED_ICONS],
       ]),
       layout: {
         "text-field": ["coalesce", ["get", `${propPrefix}nameRight`], ""],
