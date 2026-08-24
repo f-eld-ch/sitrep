@@ -24,6 +24,21 @@ const CASUALTY_ICON_IDS = new Set<BabsIconId>([
   "1305", // Tote
 ]);
 
+const CASUALTY_ICON_VALUES = new Set([
+  ...CASUALTY_ICON_IDS,
+  "babsVerletzte",
+  "babsVermisste",
+  "babsObdachlose",
+  "babsEingesperrte",
+  "babsTote",
+  "Verletzte",
+  "Vermisste",
+  "Obdachlose",
+  "Eingesperrte",
+  "Tote",
+  "EingesperrteAbgeschnittene",
+]);
+
 const CASUALTY_FIELDS: readonly LabelField[] = [
   { key: "name", labelKey: "name", placeholderKey: "mapview.labels.anzahlPersonen" },
 ];
@@ -57,6 +72,17 @@ export const fieldsFor = (
   if (iconId && CASUALTY_ICON_IDS.has(iconId)) return CASUALTY_FIELDS;
   return DEFAULT_FIELDS;
 };
+
+/** Icons whose symbols already carry their own fixed label placement. */
+export const rotationAllowed = (
+  category: BabsCategoryNumber | undefined,
+  iconId?: BabsIconId,
+  iconValue?: string,
+): boolean =>
+  category !== "4" &&
+  category !== "7" &&
+  !(iconId && CASUALTY_ICON_IDS.has(iconId)) &&
+  !(iconValue && (iconValue.startsWith("un:") || CASUALTY_ICON_VALUES.has(iconValue)));
 
 /**
  * Label positions the given icon's layout has no field for.

@@ -39,6 +39,7 @@
   "map": "Lagebild",
   "mapview": {
     "rotate": "Richtung drehen",
+    "rotation": "Drehung",
     "layer": "Layer",
     "unlock": "Fixierte Signatur lösen",
     "lock": "Signatur fixieren",

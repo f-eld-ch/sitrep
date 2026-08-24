@@ -39,6 +39,7 @@
   "map": "immagine della situazione",
   "mapview": {
     "rotate": "Direzione di rotazione",
+    "rotation": "Rotazione",
     "layer": "Livello",
     "unlock": "Rilasciare l'allineamento",
     "lock": "Fissare l'allineamento",
