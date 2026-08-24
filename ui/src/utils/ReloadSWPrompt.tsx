@@ -1,7 +1,7 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { t } from "i18next";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createSWChannel, now } from "./swUpdateChannel";
+import { useEffect, useId, useRef, useState } from "react";
+import { createSWChannel, now, type SWMessage } from "./swUpdateChannel";
 import {
   CURRENT_SHA,
   CURRENT_VERSION,
@@ -45,10 +45,9 @@ export function ReloadPrompt() {
   // The build the server is now serving, which is the update being offered. Null until
   // fetched, or when the lookup failed — see the fallback where it is rendered.
   const [deployed, setDeployed] = useState<DeployedVersion | null>(null);
-  const [visible, setVisible] = useState(false);
   const [dismissUntil, setDismissUntil] = useState<number | null>(null);
-  const tabId = useMemo(() => `${Math.random().toString(36).slice(2, 9)}`, []);
-  const channelRef = useRef<{ post: (msg: any) => void; close: () => void } | null>(null);
+  const tabId = useId();
+  const channelRef = useRef<{ post: (msg: SWMessage) => void; close: () => void } | null>(null);
 
   useEffect(() => {
     // Keyed on needRefresh so this costs a request only when an update exists, rather than
@@ -70,9 +69,6 @@ export function ReloadPrompt() {
         // another tab announced update; try to show unless recently shown
         const last = Number(localStorage.getItem(PROMPT_LOCK_KEY) || "0");
         if (now() - last > PROMPT_LOCK_TTL) {
-          // allow showing in this tab
-          // set visible only if needRefresh/online conditions are met
-          if (needRefresh) setVisible(true);
         }
       } else if (msg.type === "apply-now") {
         // another tab requested apply-now: trigger update immediately
@@ -86,7 +82,7 @@ export function ReloadPrompt() {
     });
 
     return () => channelRef.current?.close();
-  }, [needRefresh, updateServiceWorker]);
+  }, [updateServiceWorker]);
 
   // Allow external triggers (e.g. tests or other scripts) to notify this tab
   // that an update is available via `window.dispatchEvent(new Event('sw-update-available'))`.
@@ -101,8 +97,6 @@ export function ReloadPrompt() {
           channelRef.current?.post({ type: "update-available", version: CURRENT_VERSION, tabId });
           localStorage.setItem(PROMPT_LOCK_KEY, String(now()));
           if (!dismissUntil || now() > dismissUntil) {
-            // show the prompt in this tab
-            setVisible(true);
           }
         }
       } catch (e) {
@@ -207,25 +201,9 @@ export function ReloadPrompt() {
     };
   }, [setNeedRefresh, setOfflineReady]);
 
-  useEffect(() => {
-    if (needRefresh) {
-      const last = Number(localStorage.getItem(PROMPT_LOCK_KEY) || "0");
-      if (now() - last < PROMPT_LOCK_TTL) {
-        // another tab likely showed prompt recently; don't show here
-        return;
-      }
-
-      // announce update and show prompt in this tab
-      channelRef.current?.post({ type: "update-available", version: CURRENT_VERSION, tabId });
-      localStorage.setItem(PROMPT_LOCK_KEY, String(now()));
-      if (!dismissUntil || now() > dismissUntil) setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  }, [needRefresh, dismissUntil, tabId]);
+  const visible = needRefresh && (!dismissUntil || now() > dismissUntil);
 
   const close = (until?: number) => {
-    setVisible(false);
     setNeedRefresh(false);
     setOfflineReady(false);
     if (until) {
@@ -264,7 +242,12 @@ export function ReloadPrompt() {
       {visible && offlineReady && (
         <div className="container is-fluid pt-4">
           <div className="notification is-light is-success mt-2">
-            <button type="button" className="delete" onClick={() => handleLater(4)} />
+            <button
+              type="button"
+              className="delete"
+              aria-label={t("close")}
+              onClick={() => handleLater(4)}
+            />
             <div>
               <div>
                 <strong>{t("updateNotification")}</strong>

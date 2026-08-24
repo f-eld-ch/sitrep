@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types";
+import { useDate } from "utils/useDate";
 import { ReactPreview } from "./Editor";
 
 const MessageTable = (
@@ -15,6 +16,7 @@ const MessageTable = (
 ) => {
   const { t } = useTranslation();
   const { assignmentFilter, priorityFilter, triageFilter } = props;
+  const { now } = useDate();
 
   const cellStyle = {
     wordWrap: "break-word" as const,
@@ -34,7 +36,7 @@ const MessageTable = (
       </h3>
 
       <h5 className="subtitle is-7 mt-4">
-        {t("state")}: {dayjs(Date.now()).format("DD.MM.YYYY HH:mm")}
+        {t("state")}: {dayjs(now).format("DD.MM.YYYY HH:mm")}
       </h5>
       <FilterState
         assignmentFilter={assignmentFilter}

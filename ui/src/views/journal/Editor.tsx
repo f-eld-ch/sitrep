@@ -384,6 +384,7 @@ function InputBox() {
       <button
         type="button"
         className="delete is-pulled-right is-small mb-2"
+        aria-label={t("close")}
         onClick={() => navigate(`/incident/${incidentId}/journal/${journalId}`)}
       />
 
