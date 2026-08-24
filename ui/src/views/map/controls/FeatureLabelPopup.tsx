@@ -1,7 +1,7 @@
+import { getIcon } from "@f-eld-ch/babs-core";
+import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import { faArrowsRotate, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { getIcon } from "@f-eld-ch/babs-core";
 import bbox from "@turf/bbox";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField } from "components/babs/labelSchema";
@@ -122,7 +122,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
         : { ...selectedFeature.properties, ...values },
       isEmptyValue,
     );
-    onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+    onUpdate({
+      features: [{ ...selectedFeature, properties }],
+      action: "featureDetail",
+    });
   }, [isUnSign, onUpdate, selectedFeature, values]);
 
   const saveAndClose = useCallback(() => {
@@ -162,7 +165,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           },
       isEmptyValue,
     );
-    onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
+    onUpdate({
+      features: [{ ...selectedFeature, properties }],
+      action: "featureDetail",
+    });
   };
 
   const lang = i18n.resolvedLanguage ?? i18n.language;
@@ -188,14 +194,6 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
 
   const title = popupTitle();
 
-  const popupFields = isUnSign
-    ? [
-        { key: UN_SIGN_FIELDS.kemler, label: t("mapview.labels.kemler") },
-        { key: UN_SIGN_FIELDS.unNumber, label: t("mapview.labels.stoffnummer") },
-        { key: UN_SIGN_FIELDS.substance, label: t("mapview.labels.stoffbezeichnung") },
-      ]
-    : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
-
   /**
    * For single-field layouts the icon name is already in the popup title, so the input
    * label shows the descriptive placeholder text instead of repeating it.
@@ -207,6 +205,20 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     }
     return t(field.labelKey);
   };
+
+  const popupFields = isUnSign
+    ? [
+        { key: UN_SIGN_FIELDS.kemler, label: t("mapview.labels.kemler") },
+        {
+          key: UN_SIGN_FIELDS.unNumber,
+          label: t("mapview.labels.stoffnummer"),
+        },
+        {
+          key: UN_SIGN_FIELDS.substance,
+          label: t("mapview.labels.stoffbezeichnung"),
+        },
+      ]
+    : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
 
   const {
     lngLat: [lng, lat],
@@ -288,7 +300,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                       id={inputId}
                       value={values[field.key] ?? ""}
                       onChange={(e) =>
-                        setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                        setValues((prev) => ({
+                          ...prev,
+                          [field.key]: e.target.value,
+                        }))
                       }
                     >
                       <option value="">{t("mapview.labels.kemlerPlaceholder")}</option>
@@ -311,7 +326,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                     }
                     value={values[field.key] ?? ""}
                     onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      setValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
                     }
                     onKeyDown={(e) => {
                       if (e.key === "Enter") saveAndClose();
