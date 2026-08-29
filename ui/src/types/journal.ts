@@ -10,7 +10,6 @@ export enum TriageStatus {
 export enum PriorityStatus {
   Normal = "NORMAL",
   High = "HIGH",
-  Critical = "CRITICAL",
 }
 
 export enum Medium {

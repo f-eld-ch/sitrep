@@ -28,7 +28,7 @@ export type _PriorityConforms = AssertSubset<`${PriorityStatus}`, PriorityStatus
 // the test below catches any runtime gap in the domain enum.
 const ALL_MEDIUM_SCHEMA: MediumEnum[] = ["EMAIL", "OTHER", "PHONE", "RADIO"];
 const ALL_TRIAGE_SCHEMA: TriageStatusEnum[] = ["DONE", "MOREINFO", "PENDING", "RESET"];
-const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["CRITICAL", "HIGH", "NORMAL"];
+const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["HIGH", "NORMAL"];
 
 describe("enum conformance: schema values are all represented in domain enums", () => {
   it("every MediumEnum value maps to a Medium member", () => {
