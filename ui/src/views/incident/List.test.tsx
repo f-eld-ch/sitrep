@@ -3,18 +3,15 @@ import { vi } from "vitest";
 import type { Incident } from "../../types";
 import { IncidentCard, IncidentCards } from "./List";
 
-// Mock useNavigate
 const mockNavigate = vi.fn();
 vi.mock("react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock useTranslation
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-// Mock dayjs
 vi.mock("dayjs", () => {
   const actual = vi.importActual("dayjs");
   return {
@@ -38,6 +35,7 @@ describe("IncidentCard", () => {
     layers: [],
   };
   const mockCloseIncident = vi.fn();
+  const mockReopenIncident = vi.fn();
   const mockDeleteIncident = vi.fn();
 
   it("renders incident name and location", () => {
@@ -45,6 +43,7 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={baseIncident}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -57,6 +56,7 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={{ ...baseIncident, closedAt: null }}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -70,17 +70,20 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={{ ...baseIncident, closedAt: new Date() }}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
     expect(screen.getByTestId("open-button")).toBeInTheDocument();
     expect(screen.queryByTestId("close-button")).not.toBeInTheDocument();
   });
+
   it("renders delete button when incident is closed", () => {
     render(
       <IncidentCard
         incident={{ ...baseIncident, closedAt: new Date() }}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -93,6 +96,7 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={baseIncident}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -105,6 +109,7 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={baseIncident}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -117,6 +122,7 @@ describe("IncidentCard", () => {
       <IncidentCard
         incident={{ ...baseIncident, closedAt: null }}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
@@ -124,17 +130,18 @@ describe("IncidentCard", () => {
     expect(mockCloseIncident).toHaveBeenCalled();
   });
 
-  it("calls closeIncident when open button is clicked", () => {
+  it("calls reopenIncident when open button is clicked", () => {
     render(
       <IncidentCard
         incident={{ ...baseIncident, closedAt: new Date() }}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
     const openButton = screen.getByTestId("open-button");
     fireEvent.click(openButton);
-    expect(mockCloseIncident).toHaveBeenCalled();
+    expect(mockReopenIncident).toHaveBeenCalled();
   });
 });
 
@@ -152,6 +159,7 @@ describe("IncidentCards", () => {
     layers: [],
   };
   const mockCloseIncident = vi.fn();
+  const mockReopenIncident = vi.fn();
   const mockDeleteIncident = vi.fn();
 
   it("renders multiple IncidentCard components", () => {
@@ -159,12 +167,12 @@ describe("IncidentCards", () => {
       <IncidentCards
         incidents={[baseIncident, { ...baseIncident, id: "2", name: "Another Incident" }]}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
     expect(screen.getByText("Test Incident")).toBeInTheDocument();
     expect(screen.getByText("Another Incident")).toBeInTheDocument();
-    // Assert the number of IncidentCard children by counting a unique test id
     expect(screen.getAllByTestId("edit-button")).toHaveLength(2);
   });
 
@@ -173,19 +181,14 @@ describe("IncidentCards", () => {
       <IncidentCards
         incidents={[
           baseIncident,
-          {
-            ...baseIncident,
-            id: "2",
-            name: "Another Incident",
-            deletedAt: new Date(),
-          },
+          { ...baseIncident, id: "2", name: "Another Incident", deletedAt: new Date() },
         ]}
         closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
         deleteIncident={mockDeleteIncident}
       />,
     );
     expect(screen.getByText("Test Incident")).toBeInTheDocument();
-    // Assert the number of IncidentCard children by counting a unique test id
     expect(screen.getAllByTestId("edit-button")).toHaveLength(1);
   });
 });

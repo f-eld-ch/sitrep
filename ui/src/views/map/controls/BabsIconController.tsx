@@ -42,7 +42,7 @@ import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
 import { LayerContext } from "../LayerContext";
-import { LayerToFeatureCollection } from "../utils";
+import { layerToFeatureCollection } from "api";
 import "./BabsIconController.scss";
 
 const iconControllerFlexboxStyleRow = {
@@ -427,7 +427,7 @@ const BabsIconController = () => {
   );
   const { current: map } = useMap();
 
-  const featureCollection = LayerToFeatureCollection(layer);
+  const featureCollection = layerToFeatureCollection(layer);
   const selectedFeature = first(
     featureCollection.features.filter((f) => f.id === state.selectedFeature),
   );

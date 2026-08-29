@@ -1,0 +1,256 @@
+# SitRep API schema — source of truth for both the Go/gqlgen backend (gqlgen.yml)
+# and the TypeScript client (ui/codegen.ts).
+#
+# Design decisions:
+# - ID everywhere; no uuid/timestamptz/jsonb Hasura scalars.
+# - DateTime is RFC 3339 UTC on the wire; the UI mapper converts to Date.
+# - Geometry and JSONObject are opaque scalars (passed straight to maplibre/turf).
+# - No deletedAt: soft-delete is a storage detail; deleted rows are invisible to the API.
+# - closedAt is kept (closing is a domain event the UI renders); closeIncident() takes
+#   no client timestamp — the server stamps it to avoid skewed client clocks in audit logs.
+# - Flat divisions: [Division!]! on Message — the message_division join table is invisible.
+# - triage/priority instead of triageId/priorityId (they were never IDs).
+# - Mutations are intent-named (closeIncident, not updateIncident with closedAt).
+# - Errors use GraphQL errors with extensions.code, not result unions.
+
+# ─── Scalars ─────────────────────────────────────────────────────────────────
+
+"""RFC 3339 UTC timestamp; maps to Date in TypeScript via the mapper."""
+scalar DateTime
+
+"""GeoJSON geometry object; passed opaquely to maplibre-gl / turf."""
+scalar Geometry
+
+"""Arbitrary JSON properties bag; passed opaquely to maplibre-gl / turf."""
+scalar JSONObject
+
+# ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Medium {
+  RADIO
+  PHONE
+  EMAIL
+  OTHER
+}
+
+enum TriageStatus {
+  PENDING
+  DONE
+  MOREINFO
+  RESET
+}
+
+enum PriorityStatus {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+# ─── Domain types ─────────────────────────────────────────────────────────────
+
+type Location {
+  id: ID!
+  name: String!
+  coordinates: JSONObject
+}
+
+type Division {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type Message {
+  id: ID!
+  """Sequential number assigned by the server, ordered by message time."""
+  number: Int!
+  sender: String!
+  senderDetail: String!
+  receiver: String!
+  receiverDetail: String!
+  content: String!
+  medium: Medium!
+  time: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  triage: TriageStatus!
+  priority: PriorityStatus!
+  """Divisions this message has been assigned to (flat — no join-table wrapper)."""
+  divisions: [Division!]!
+}
+
+type Journal {
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  closedAt: DateTime
+  isClosed: Boolean!
+  messages: [Message!]!
+}
+
+type Incident {
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  closedAt: DateTime
+  isClosed: Boolean!
+  location: Location
+  divisions: [Division!]!
+  journals: [Journal!]!
+}
+
+type Feature {
+  id: ID!
+  geometry: Geometry
+  properties: JSONObject
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Layer {
+  id: ID!
+  name: String!
+  features: [Feature!]!
+}
+
+# ─── Queries ──────────────────────────────────────────────────────────────────
+
+type Query {
+  """All non-deleted incidents, newest first."""
+  incidents: [Incident!]!
+
+  """Single incident by ID; null if not found or deleted."""
+  incident(id: ID!): Incident
+
+  """All journals for an incident, oldest first."""
+  journalsForIncident(incidentId: ID!): [Journal!]!
+
+  """Single journal with its messages."""
+  journal(id: ID!): Journal
+
+  """Single message by ID; used by the triage modal."""
+  message(id: ID!): Message
+
+  """All layers for an incident (polled by the map view)."""
+  layersForIncident(incidentId: ID!): [Layer!]!
+}
+
+# ─── Mutation inputs ──────────────────────────────────────────────────────────
+
+input DivisionInput {
+  name: String!
+  description: String!
+}
+
+input CreateIncidentInput {
+  name: String!
+  """Location display name; server creates the Location row."""
+  location: String
+  divisions: [DivisionInput!]!
+  """Name for the default journal created alongside the incident."""
+  journalName: String
+  """Name for the default map layer created alongside the incident."""
+  layerName: String
+}
+
+input UpdateIncidentInput {
+  name: String!
+  location: String!
+  divisions: [DivisionInput!]!
+}
+
+input CreateMessageInput {
+  journalId: ID!
+  sender: String!
+  receiver: String!
+  senderDetail: String!
+  receiverDetail: String!
+  content: String!
+  medium: Medium!
+  """Defaults to the server's current time when omitted."""
+  time: DateTime
+}
+
+input UpdateMessageInput {
+  sender: String
+  receiver: String
+  senderDetail: String
+  receiverDetail: String
+  content: String
+  medium: Medium
+  time: DateTime
+}
+
+input TriageMessageInput {
+  triage: TriageStatus!
+  priority: PriorityStatus!
+  """IDs of divisions to assign to this message (replaces current set)."""
+  divisionIds: [ID!]!
+}
+
+# ─── Mutations ────────────────────────────────────────────────────────────────
+
+type Mutation {
+  # ── Incidents ───────────────────────────────────────────────────────────────
+
+  """Create an incident with a default journal and map layer."""
+  createIncident(input: CreateIncidentInput!): Incident!
+
+  """Update incident name, location, and divisions."""
+  updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!
+
+  """
+  Close an incident and all its open journals.
+  The server sets closedAt; no client timestamp accepted (avoids skewed clocks
+  in emergency-services audit logs).
+  """
+  closeIncident(id: ID!): Incident!
+
+  """Reopen a closed incident."""
+  reopenIncident(id: ID!): Incident!
+
+  """
+  Delete a closed, non-deleted incident and cascade to its journals.
+  Raises INCIDENT_NOT_CLOSED if the incident is still open.
+  Raises NOT_FOUND if the incident does not exist or is already deleted.
+  """
+  deleteIncident(id: ID!): ID!
+
+  # ── Journals ────────────────────────────────────────────────────────────────
+
+  createJournal(incidentId: ID!, name: String!): Journal!
+
+  """
+  Close a journal.
+  The server sets closedAt; no client timestamp accepted.
+  """
+  closeJournal(id: ID!): Journal!
+
+  # ── Messages ────────────────────────────────────────────────────────────────
+
+  createMessage(input: CreateMessageInput!): Message!
+  updateMessage(id: ID!, input: UpdateMessageInput!): Message!
+
+  """
+  Atomically set triage status, priority, and division assignments for a message.
+  Replaces the full division set in a single transaction.
+  """
+  triageMessage(id: ID!, input: TriageMessageInput!): Message!
+
+  # ── Map / Layers ─────────────────────────────────────────────────────────────
+
+  createLayer(incidentId: ID!, name: String!): Layer!
+
+  """
+  Add a GeoJSON feature to a layer.
+  id is client-generated (UUID) so optimistic updates can reference it immediately.
+  """
+  addFeature(layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+
+  updateFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+
+  """Permanently remove a feature from a layer."""
+  deleteFeature(id: ID!): ID!
+}

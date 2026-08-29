@@ -11,62 +11,11 @@ export interface Layer {
   deletedAt: Date;
 }
 
-export interface AddLayersVars {
-  incidentId: string;
-  name: string;
-}
-
 export interface Feature {
-  id: string | number | undefined;
+  id: string;
   geometry: Geometry;
   properties: GeoJsonProperties;
   createdAt: Date;
   updatedAt: Date | null;
   deletedAt: Date | null;
-}
-
-export interface GetLayersData {
-  layers: Layer[];
-}
-
-export interface GetLayersVars {
-  incidentId: string;
-}
-
-export interface AddFeatureVars {
-  layerId: string;
-  geometry: Geometry;
-  properties: GeoJsonProperties;
-  id: string | number | undefined;
-}
-
-export interface AddFeatureResponse {
-  insertFeaturesOne: Feature | undefined;
-}
-
-export interface ModifyFeatureVars {
-  id: string | number | undefined;
-  geometry: Geometry;
-  properties: GeoJsonProperties;
-}
-
-export interface ModifyFeatureResponse {
-  updateFeaturesByPk: Feature | undefined;
-}
-
-export interface DeleteFeatureVars {
-  id: string | number | undefined;
-  deletedAt: Date;
-}
-
-export interface DeleteFeatureResponse {
-  updateFeaturesByPk?: Feature | null;
-}
-
-export interface AddLayerData {
-  insertLayersOne?: { id: string } | null;
-}
-export interface AddLayerVars {
-  incidentId: string;
-  name: string;
 }

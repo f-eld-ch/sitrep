@@ -1,4 +1,3 @@
-import { useQuery } from "@apollo/client/react";
 import { faArrowsToEye, faBell, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -7,15 +6,8 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
-import {
-  type Division,
-  type GetJournalMessagesData,
-  type GetJournalMessagesVars,
-  type Message,
-  PriorityStatus,
-  TriageStatus,
-} from "types";
-import { GetJournalMessages } from "./graphql";
+import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
+import { useJournalMessages } from "api";
 import { buildMessageList } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -38,13 +30,7 @@ function List(props: {
     pageStyle: "@page { size: A4 landscape;}",
   });
 
-  const { loading, error, data } = useQuery<GetJournalMessagesData, GetJournalMessagesVars>(
-    GetJournalMessages,
-    {
-      variables: { journalId: journalId || "" },
-      pollInterval: 10000,
-    },
-  );
+  const result = useJournalMessages(journalId ?? "");
 
   const printButtonClass = classNames({
     "is-hidden": !showControls,
@@ -52,7 +38,7 @@ function List(props: {
     "is-narrow": true,
   });
 
-  // on new messages scale to top
+  // on new messages scroll to top
   useEffect(() => {
     if (autoScroll) {
       window.scroll({
@@ -62,25 +48,24 @@ function List(props: {
     }
   }, [autoScroll]);
 
-  if (error) {
+  if (result.status === "error") {
     return (
       <div className="notification is-danger is-light">
         <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
-        <div className="block">{error.message}</div>
+        <div className="block">{result.error.message}</div>
       </div>
     );
   }
 
-  if (loading && !data) return <Spinner />;
-  const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
+  if (result.status === "loading") return <Spinner />;
 
-  const messages = data?.messages
-    ? buildMessageList(data.messages, {
-        triage: triageFilter,
-        priority: priorityFilter,
-        assignment: assignmentFilter,
-      })
-    : [];
+  const divisions: Division[] = result.data.incidentDivisions;
+
+  const messages = buildMessageList(result.data.messages, {
+    triage: triageFilter,
+    priority: priorityFilter,
+    assignment: assignmentFilter,
+  });
 
   return (
     <>
@@ -175,15 +160,13 @@ function List(props: {
         </div>
       </div>
       <div className="columns is-multiline is-gapless">
-        {data && (
-          <MemoMessages
-            messages={messages}
-            divisions={divisions}
-            showControls={props.showControls}
-            setTriageMessage={props.setTriageMessage}
-            setEditorMessage={props.setEditorMessage}
-          />
-        )}
+        <MemoMessages
+          messages={messages}
+          divisions={divisions}
+          showControls={props.showControls}
+          setTriageMessage={props.setTriageMessage}
+          setEditorMessage={props.setEditorMessage}
+        />
       </div>
       <div style={{ display: "none" }}>
         <MessageTable

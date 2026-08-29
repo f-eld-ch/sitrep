@@ -1,25 +1,17 @@
-import { makeVar } from "@apollo/client";
-import { useReactiveVar } from "@apollo/client/react";
 import { faMap } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { useCallback, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./StyleController.scss";
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 
-export const MapStyles: MapStyle[] = [
-  {
-    name: "Basiskarte",
-    style: ExpandRelativeURLs(basisKarte as unknown as StyleSpecification),
-  },
-  {
-    name: "Satellit",
-    style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
-  },
-];
+interface MapStyle {
+  name: string;
+  style: StyleSpecification;
+}
 
 function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecification {
   const convertToAbsoluteURL = (url: string | undefined): string | undefined => {
@@ -51,29 +43,56 @@ function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecificati
   };
 }
 
-export const selectedStyle = makeVar<MapStyle>(MapStyles[0]);
-export const activeLayer = makeVar<string>("");
+export const MapStyles: MapStyle[] = [
+  {
+    name: "Basiskarte",
+    style: ExpandRelativeURLs(basisKarte as unknown as StyleSpecification),
+  },
+  {
+    name: "Satellit",
+    style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
+  },
+];
 
-interface MapStyle {
-  name: string;
-  style: StyleSpecification;
+interface MapStyleContextValue {
+  selectedStyle: MapStyle;
+  setSelectedStyle: (s: MapStyle) => void;
+}
+
+const MapStyleContext = createContext<MapStyleContextValue>({
+  selectedStyle: MapStyles[0],
+  setSelectedStyle: () => {},
+});
+
+export function MapStyleProvider({ children }: { children: React.ReactNode }) {
+  const [selectedStyle, setSelectedStyle] = useState<MapStyle>(MapStyles[0]);
+  return (
+    <MapStyleContext.Provider value={{ selectedStyle, setSelectedStyle }}>
+      {children}
+    </MapStyleContext.Provider>
+  );
+}
+
+export function useMapStyle(): MapStyleContextValue {
+  return useContext(MapStyleContext);
 }
 
 function StyleController() {
   const [active, setActive] = useState<boolean>(false);
-
-  const style = useReactiveVar(selectedStyle);
-
+  const { selectedStyle: style, setSelectedStyle } = useMapStyle();
   const { t } = useTranslation();
 
   const btnClass = classNames({
     "maplibregl-ctrl-icon": true,
   });
 
-  const onClick = useCallback((u: MapStyle) => {
-    setActive(false);
-    selectedStyle(u);
-  }, []);
+  const onClick = useCallback(
+    (u: MapStyle) => {
+      setActive(false);
+      setSelectedStyle(u);
+    },
+    [setSelectedStyle],
+  );
 
   if (!active) {
     return (

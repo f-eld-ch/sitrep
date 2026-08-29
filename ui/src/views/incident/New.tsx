@@ -1,4 +1,3 @@
-import { useMutation } from "@apollo/client/react";
 import { faClipboard, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
@@ -9,14 +8,8 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Division } from "types";
-import type {
-  Incident,
-  InsertIncidentData,
-  InsertIncidentVars,
-  UpdateIncidentData,
-  UpdateIncidentVars,
-} from "types/incident";
-import { GetIncidentDetails, GetIncidents, InsertIncident, UpdateIncident } from "./graphql";
+import type { Incident } from "types/incident";
+import { useCreateIncident, useUpdateIncident } from "api";
 
 function New() {
   const { t } = useTranslation();
@@ -56,61 +49,45 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   );
   const [name, setName] = useState(incident?.name || "");
   const [location, setLocation] = useState(incident?.location.name || "");
-
   const [assignmentName, setAssignmentName] = useState("");
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
-  const [insertIncident, { error }] = useMutation<InsertIncidentData, InsertIncidentVars>(
-    InsertIncident,
-    {
-      onCompleted(data) {
-        navigate(`../${data.insertIncidentsOne.id}/journal/view`);
-      },
-      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-    },
-  );
+  const [createIncident, createState] = useCreateIncident();
+  const [updateIncident, updateState] = useUpdateIncident();
 
-  const [updateIncident, { error: errorUpdate }] = useMutation<
-    UpdateIncidentData,
-    UpdateIncidentVars
-  >(UpdateIncident, {
-    onCompleted() {
-      navigate("../journal/view");
-    },
-    refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-  });
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (incident) {
-      updateIncident({
-        variables: {
-          name: name,
+      try {
+        await updateIncident({
           incidentId: incident.id,
-          location: location,
+          name,
+          location,
           locationId: incident.location.id,
-          divisions: assignments.map((d) => {
-            return {
-              name: d.name,
-              description: d.description,
-              incidentId: incident.id,
-            };
-          }),
-        },
-      });
-      return;
+          divisions: assignments.map((d) => ({
+            name: d.name,
+            description: d.description,
+            incidentId: incident.id,
+          })),
+        });
+        navigate("../journal/view");
+      } catch {
+        // updateState.error renders the notification
+      }
+    } else {
+      try {
+        const { incidentId } = await createIncident({
+          name,
+          location,
+          journalName: t("phase1"),
+          layerName: t("divisionsNames.Karte.description"),
+          divisions: assignments.map((d) => ({ name: d.name, description: d.description })),
+        });
+        navigate(`../${incidentId}/journal/view`);
+      } catch {
+        // createState.error renders the notification
+      }
     }
-    insertIncident({
-      variables: {
-        name: name,
-        location: location,
-        journalName: t("phase1"),
-        layerName: t("divisionsNames.Karte.description"),
-        divisions: assignments.map((d) => {
-          return { name: d.name, description: d.description };
-        }),
-      },
-    });
   };
 
   const nameID = useId();
@@ -119,8 +96,12 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   return (
     <>
-      {error && <div className="notification is-danger">{error?.message}</div>}
-      {errorUpdate && <div className="notification is-danger">{errorUpdate?.message}</div>}
+      {createState.error && (
+        <div className="notification is-danger">{createState.error.message}</div>
+      )}
+      {updateState.error && (
+        <div className="notification is-danger">{updateState.error.message}</div>
+      )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label htmlFor={nameID} className="label is-capitalized">
@@ -239,17 +220,10 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="button is-primary is-small is-justified is-rounded is-capitalized"
                 onClick={(e) => {
                   e.preventDefault();
-
                   setAssignments(
                     unionBy(
                       assignments,
-                      [
-                        {
-                          id: "",
-                          name: assignmentName,
-                          description: assignmentDescription,
-                        },
-                      ],
+                      [{ id: "", name: assignmentName, description: assignmentDescription }],
                       iteratee("name"),
                     ),
                   );
@@ -269,7 +243,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           <button
             type="submit"
             className="button is-primary is-rounded is-capitalized"
-            onClick={handleSave}
+            onClick={() => void handleSave()}
           >
             {t("save")}
           </button>

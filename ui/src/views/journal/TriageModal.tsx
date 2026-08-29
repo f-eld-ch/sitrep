@@ -1,4 +1,3 @@
-import { useLazyQuery, useMutation } from "@apollo/client/react";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
@@ -6,20 +5,13 @@ import classNames from "classnames";
 import { Spinner } from "components";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
-import type {
-  Message,
-  MessageDivision,
-  SaveMessageTriageData,
-  SaveMessageTriageVars,
-  TriageMessageData,
-  TriageMessageVars,
-} from "types/journal";
+import type { Message } from "types/journal";
+import { type MessageForTriageData, useMessageForTriage, useTriageMessage } from "api";
 import { NewForm as TaskNew } from "../measures/tasks";
-import { GetJournalMessages, GetMessageForTriage, SaveMessageTriage } from "./graphql";
 import { default as JournalMessage } from "./Message";
 
 function Triage(props: {
@@ -27,87 +19,22 @@ function Triage(props: {
   setMessage: (message: Message | undefined) => void;
 }) {
   const { message, setMessage } = props;
-  const { journalId } = useParams();
   const { t } = useTranslation();
-  const showTasks = useBooleanFlagValue("show-tasks", false);
-
-  const [loadMessage, { loading, error, data }] = useLazyQuery<
-    TriageMessageData,
-    TriageMessageVars
-  >(GetMessageForTriage, {
-    fetchPolicy: "cache-and-network",
-  });
-
-  const [saveMessageTriage, { error: errorSet }] = useMutation<
-    SaveMessageTriageData,
-    SaveMessageTriageVars
-  >(SaveMessageTriage, {
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
-  });
-
-  const [priority, setPriority] = useState(PriorityStatus.Normal);
-  const [assignments, setAssignments] = useState<Division[]>([]);
-
-  useEffect(() => {
-    if (props.message !== undefined) {
-      const data = loadMessage({
-        variables: { messageId: props.message.id },
-      });
-      data.then((result) => {
-        if (result.data?.messagesByPk) {
-          const message = result.data.messagesByPk;
-          setAssignments(message.divisions.map((d) => d.division));
-          setPriority(
-            Object.values(PriorityStatus).find((p) => p === message.priorityId) ||
-              PriorityStatus.Normal,
-          );
-        }
-      });
-    }
-  }, [loadMessage, props.message]);
-
-  const handleSave = (
-    assignments: Division[],
-    messageId: string,
-    prio: PriorityStatus,
-    triage: TriageStatus,
-  ) => {
-    if (message === undefined) return;
-
-    saveMessageTriage({
-      variables: {
-        priority: prio,
-        triage: triage,
-        messageId: messageId,
-        messageDivisions: assignments.map<MessageDivision>((d) =>
-          Object.assign(
-            {},
-            {
-              divisionId: d.id,
-              messageId: messageId,
-            },
-          ),
-        ),
-      },
-      onCompleted() {
-        setMessage(undefined);
-      },
-    });
-  };
+  const result = useMessageForTriage(message?.id);
 
   if (!message) return null;
 
-  const modalClassNames = classNames({
-    modal: true,
-    "is-active": message,
-    "has-text-black": true,
-    "has-text-weight-normal": true,
-    "is-size-6": true,
-    "is-dark": true,
-  });
-
   return (
-    <div className={modalClassNames}>
+    <div
+      className={classNames({
+        modal: true,
+        "is-active": true,
+        "has-text-black": true,
+        "has-text-weight-normal": true,
+        "is-size-6": true,
+        "is-dark": true,
+      })}
+    >
       <div className="modal-background" />
       <div className="modal-card">
         <header className="modal-card-head">
@@ -119,131 +46,172 @@ function Triage(props: {
             onClick={() => setMessage(undefined)}
           />
         </header>
-        <section className="modal-card-body">
-          {error && <div className="notification is-danger">Error: {error.message}</div>}
-          {errorSet && <div className="notification is-danger">Error: {errorSet.message}</div>}
-          {loading ? (
+        {result.status === "loading" && (
+          <section className="modal-card-body">
             <Spinner />
-          ) : (
-            <>
-              <div className="container mb-5">
-                <JournalMessage
-                  showControls={false}
-                  key={message.id}
-                  id={message.id}
-                  message={message}
-                  divisions={assignments}
-                  setEditorMessage={undefined}
-                  setTriageMessage={undefined}
-                />
-              </div>
-              <div className="container">
-                <div className="block">
-                  <div className="columns">
-                    <div className="column">
-                      <h3 className="title is-size-5">{t("messageFlow")}</h3>
-                      <div className="field is-grouped is-grouped-multiline">
-                        {data?.messagesByPk.journal.incident.divisions.map((d) => {
-                          const isPresent = assignments.some((e) => e.name === d.name);
-                          const tagsClass = classNames({
-                            tag: true,
-                            "is-primary": isPresent,
-                            "is-dark": !isPresent,
-                          });
-                          return (
-                            <div key={d.name} className="control">
-                              <div className="tags has-addons">
-                                <div className={tagsClass}>{d.description || d.name}</div>
-                                {isPresent ? (
-                                  <a
-                                    className="tag is-light is-primary"
-                                    onClick={() =>
-                                      setAssignments(reject(assignments, (e) => e.id === d.id))
-                                    }
-                                  >
-                                    <FontAwesomeIcon icon={faMinus} />
-                                  </a>
-                                ) : (
-                                  <a
-                                    className="tag is-success is-light"
-                                    onClick={() => setAssignments(union(assignments, [d]))}
-                                  >
-                                    <FontAwesomeIcon icon={faPlus} />
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div className="column">
-                      <h3 className="title is-size-5">{t("assignPriority")}</h3>
-                      <div className="select is-rounded is-small">
-                        <select
-                          defaultValue={message.priorityId}
-                          onChange={(e) => {
-                            e.preventDefault();
-                            const prio = Object.values(PriorityStatus).find(
-                              (p) => p === e.target.value,
-                            );
-                            if (prio !== undefined) setPriority(prio);
-                          }}
-                        >
-                          {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
-                            <option
-                              key={prio}
-                              label={
-                                t([
-                                  `priority.${prio}`,
-                                  `priority.${PriorityStatus.Normal}`,
-                                ]) as string
-                              }
-                            >
-                              {prio}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    {showTasks && (
-                      <div className="column">
-                        <h3 className="title is-size-5">{t("createNewTask")}</h3>
-                        <TaskNew />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </section>
-        <footer className="modal-card-foot">
-          <div className="buttons are-normal">
-            <button
-              type="submit"
-              className="button is-rounded is-primary is-small"
-              onClick={() => {
-                if (message !== undefined)
-                  handleSave(assignments, message?.id, priority, TriageStatus.Triaged);
-              }}
-            >
-              {t("saveTriage")}
-            </button>
-            <button
-              type="submit"
-              className="button is-rounded is-small"
-              onClick={() => {
-                if (message !== undefined)
-                  handleSave(assignments, message?.id, priority, TriageStatus.MoreInfo);
-              }}
-            >
-              {t("saveMoreInfo")}
-            </button>
-          </div>
-        </footer>
+          </section>
+        )}
+        {result.status === "error" && (
+          <section className="modal-card-body">
+            <div className="notification is-danger">Error: {result.error.message}</div>
+          </section>
+        )}
+        {result.status === "ready" && (
+          <TriageForm
+            key={message.id}
+            message={message}
+            data={result.data}
+            setMessage={setMessage}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+function TriageForm(props: {
+  message: Message;
+  data: MessageForTriageData;
+  setMessage: (message: Message | undefined) => void;
+}) {
+  const { message, data, setMessage } = props;
+  const { journalId } = useParams();
+  const { t } = useTranslation();
+  const showTasks = useBooleanFlagValue("show-tasks", false);
+
+  const [triageMessage, triageState] = useTriageMessage();
+  const [priority, setPriority] = useState<PriorityStatus>(data.message.priorityId);
+  const [assignments, setAssignments] = useState<Division[]>(
+    data.message.divisions.map((d) => d.division),
+  );
+
+  const handleSave = async (triage: TriageStatus) => {
+    if (!journalId) return;
+    try {
+      await triageMessage({
+        journalId,
+        messageId: message.id,
+        priority,
+        triage,
+        divisionIds: assignments.map((d) => d.id),
+      });
+      setMessage(undefined);
+    } catch {
+      // triageState.error is set; modal stays open so user can retry
+    }
+  };
+
+  return (
+    <>
+      <section className="modal-card-body">
+        {triageState.error && (
+          <div className="notification is-danger">Error: {triageState.error.message}</div>
+        )}
+        <div className="container mb-5">
+          <JournalMessage
+            showControls={false}
+            id={message.id}
+            message={message}
+            divisions={assignments}
+            setEditorMessage={undefined}
+            setTriageMessage={undefined}
+          />
+        </div>
+        <div className="container">
+          <div className="block">
+            <div className="columns">
+              <div className="column">
+                <h3 className="title is-size-5">{t("messageFlow")}</h3>
+                <div className="field is-grouped is-grouped-multiline">
+                  {data.incidentDivisions.map((d) => {
+                    const isPresent = assignments.some((e) => e.name === d.name);
+                    const tagsClass = classNames({
+                      tag: true,
+                      "is-primary": isPresent,
+                      "is-dark": !isPresent,
+                    });
+                    return (
+                      <div key={d.name} className="control">
+                        <div className="tags has-addons">
+                          <div className={tagsClass}>{d.description || d.name}</div>
+                          {isPresent ? (
+                            <a
+                              className="tag is-light is-primary"
+                              onClick={() =>
+                                setAssignments(reject(assignments, (e) => e.id === d.id))
+                              }
+                            >
+                              <FontAwesomeIcon icon={faMinus} />
+                            </a>
+                          ) : (
+                            <a
+                              className="tag is-success is-light"
+                              onClick={() => setAssignments(union(assignments, [d]))}
+                            >
+                              <FontAwesomeIcon icon={faPlus} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="column">
+                <h3 className="title is-size-5">{t("assignPriority")}</h3>
+                <div className="select is-rounded is-small">
+                  <select
+                    defaultValue={message.priorityId}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      const prio = Object.values(PriorityStatus).find((p) => p === e.target.value);
+                      if (prio !== undefined) setPriority(prio);
+                    }}
+                  >
+                    {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
+                      <option
+                        key={prio}
+                        label={
+                          t([`priority.${prio}`, `priority.${PriorityStatus.Normal}`]) as string
+                        }
+                      >
+                        {prio}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {showTasks && (
+                <div className="column">
+                  <h3 className="title is-size-5">{t("createNewTask")}</h3>
+                  <TaskNew />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer className="modal-card-foot">
+        <div className="buttons are-normal">
+          <button
+            type="submit"
+            className="button is-rounded is-primary is-small"
+            disabled={triageState.loading}
+            onClick={() => handleSave(TriageStatus.Triaged)}
+          >
+            {t("saveTriage")}
+          </button>
+          <button
+            type="submit"
+            className="button is-rounded is-small"
+            disabled={triageState.loading}
+            onClick={() => handleSave(TriageStatus.MoreInfo)}
+          >
+            {t("saveMoreInfo")}
+          </button>
+        </div>
+      </footer>
+    </>
   );
 }
 

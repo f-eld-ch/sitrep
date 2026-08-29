@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "@apollo/client/react";
 import {
   faChartSimple,
   faEdit,
@@ -18,14 +17,8 @@ import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import type { Journal } from "types";
-import type {
-  CloseJournalData,
-  CloseJournalVars,
-  GetJournalsData,
-  GetJournalsVars,
-} from "types/journal";
 import { IncidentContext } from "utils";
-import { CloseJournal, GetJournals } from "./graphql";
+import { useCloseJournal, useJournals, useReopenJournal } from "api";
 
 function Overview() {
   const { incidentId } = useParams();
@@ -38,27 +31,21 @@ function Overview() {
     dayjs.extend(relativeTime);
   }, []);
 
-  const { loading, error, data } = useQuery<GetJournalsData, GetJournalsVars>(GetJournals, {
-    variables: { incidentId: incidentId || "" },
-    pollInterval: 10000,
-  });
+  const result = useJournals(incidentId);
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
+  if (result.status === "error") {
+    return <div className="notification is-danger">{result.error.message}</div>;
+  }
 
-  if (loading && !data) return <Spinner />;
+  if (result.status === "loading") return <Spinner />;
 
-  if (!data || !(data.incidents.length === 1))
-    return (
-      <div className="notification is-danger">Unerwarteter Fehler beim Laden des Ereignisses.</div>
-    );
-
-  const incident = data.incidents[0];
+  const { incidentName, journals } = result.data;
 
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("journalList")}</h3>
       <h3 className="subtitle is-capitalized">
-        {t("incident")}: {incident.name}
+        {t("incident")}: {incidentName}
       </h3>
 
       <div className="buttons">
@@ -85,11 +72,7 @@ function Overview() {
       </div>
 
       <JournalCards
-        journals={
-          data.incidents[0].journals.filter(
-            (journal) => !filterClosed || journal.closedAt === null,
-          ) || []
-        }
+        journals={journals.filter((j) => !filterClosed || j.closedAt === null)}
         incidentId={incidentId}
       />
     </div>
@@ -114,15 +97,15 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
 
-  const [closeJournal] = useMutation<CloseJournalData, CloseJournalVars>(CloseJournal, {
-    refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],
-  });
+  const [closeJournal] = useCloseJournal();
+  const [reopenJournal] = useReopenJournal();
 
   const cardClass = classNames({
     card: true,
     "mb-3": true,
     "has-background-primary-light": journal.closedAt,
   });
+
   return (
     <div className={cardClass}>
       <div className="card-content">
@@ -170,14 +153,9 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
           <button
             type="button"
             className="card-footer-item is-ahref is-capitalized"
-            onClick={() => {
-              closeJournal({
-                variables: {
-                  journalId: journal.id,
-                  closedAt: new Date(),
-                },
-              });
-            }}
+            onClick={() =>
+              void closeJournal({ journalId: journal.id, incidentId: incidentId ?? "" })
+            }
           >
             <span className="icon">
               <FontAwesomeIcon icon={faFolderClosed} />
@@ -188,14 +166,9 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
           <button
             type="button"
             className="card-footer-item is-ahref is-capitalized is-success"
-            onClick={() => {
-              closeJournal({
-                variables: {
-                  journalId: journal.id,
-                  closedAt: undefined,
-                },
-              });
-            }}
+            onClick={() =>
+              void reopenJournal({ journalId: journal.id, incidentId: incidentId ?? "" })
+            }
           >
             <span className="icon">
               <FontAwesomeIcon icon={faFolderOpen} />

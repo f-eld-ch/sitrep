@@ -40,7 +40,19 @@ jobs:
       - name: Lint ui files
         run: yarn lint:github
         working-directory: ui
-      
+
+      - name: Typecheck ui
+        run: yarn typecheck
+        working-directory: ui
+
+      - name: Validate generated types match Hasura schema
+        run: yarn codegen:check
+        working-directory: ui
+
+      - name: Validate UI documents against future API schema
+        run: yarn codegen:next:check
+        working-directory: ui
+
       - name: Run ui tests
         run: yarn test --coverage --run
         working-directory: ui

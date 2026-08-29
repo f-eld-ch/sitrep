@@ -1,0 +1,3533 @@
+schema {
+  query: query_root
+  mutation: mutation_root
+  subscription: subscription_root
+}
+
+"""whether this query should be cached (Hasura Cloud only)"""
+directive @cached(
+  """refresh the cache entry"""
+  refresh: Boolean! = false
+
+  """measured in seconds"""
+  ttl: Int! = 60
+) on QUERY
+
+"""ordering argument of a cursor"""
+enum CursorOrdering {
+  """ascending ordering of the cursor"""
+  ASC
+
+  """descending ordering of the cursor"""
+  DESC
+}
+
+"""Division for tagging"""
+type Divisions {
+  description: String
+  id: uuid!
+
+  """An object relationship"""
+  incident: Incidents
+
+  """An array relationship"""
+  message_divisions(
+    """distinct select on columns"""
+    distinctOn: [MessageDivisionSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessageDivisionOrderBy!]
+
+    """filter the rows returned"""
+    where: MessageDivisionBoolExp
+  ): [MessageDivision!]!
+  name: String!
+}
+
+"""
+order by aggregate values of table "divisions"
+"""
+input DivisionsAggregateOrderBy {
+  count: OrderBy
+  max: DivisionsMaxOrderBy
+  min: DivisionsMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "divisions"
+"""
+input DivisionsArrRelInsertInput {
+  data: [DivisionsInsertInput!]!
+
+  """upsert condition"""
+  onConflict: DivisionsOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "divisions". All fields are combined with a logical 'AND'.
+"""
+input DivisionsBoolExp {
+  _and: [DivisionsBoolExp!]
+  _not: DivisionsBoolExp
+  _or: [DivisionsBoolExp!]
+  description: StringComparisonExp
+  id: UuidComparisonExp
+  incident: IncidentsBoolExp
+  message_divisions: MessageDivisionBoolExp
+  name: StringComparisonExp
+}
+
+"""
+unique or primary key constraints on table "divisions"
+"""
+enum DivisionsConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  divisions_id_key
+
+  """
+  unique or primary key constraint on columns "incident_id", "name"
+  """
+  divisions_name_incident_id_key
+
+  """
+  unique or primary key constraint on columns "id"
+  """
+  divisions_pkey
+}
+
+"""
+input type for inserting data into table "divisions"
+"""
+input DivisionsInsertInput {
+  description: String
+  incident: IncidentsObjRelInsertInput
+  incidentId: uuid
+  message_divisions: MessageDivisionArrRelInsertInput
+  name: String
+}
+
+"""
+order by max() on columns of table "divisions"
+"""
+input DivisionsMaxOrderBy {
+  description: OrderBy
+  id: OrderBy
+  name: OrderBy
+}
+
+"""
+order by min() on columns of table "divisions"
+"""
+input DivisionsMinOrderBy {
+  description: OrderBy
+  id: OrderBy
+  name: OrderBy
+}
+
+"""
+response of any mutation on the table "divisions"
+"""
+type DivisionsMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Divisions!]!
+}
+
+"""
+input type for inserting object relation for remote table "divisions"
+"""
+input DivisionsObjRelInsertInput {
+  data: DivisionsInsertInput!
+
+  """upsert condition"""
+  onConflict: DivisionsOnConflict
+}
+
+"""
+on_conflict condition type for table "divisions"
+"""
+input DivisionsOnConflict {
+  constraint: DivisionsConstraint!
+  updateColumns: [DivisionsUpdateColumn!]! = []
+  where: DivisionsBoolExp
+}
+
+"""Ordering options when selecting data from "divisions"."""
+input DivisionsOrderBy {
+  description: OrderBy
+  id: OrderBy
+  incident: IncidentsOrderBy
+  message_divisionsAggregate: MessageDivisionAggregateOrderBy
+  name: OrderBy
+}
+
+"""primary key columns input for table: divisions"""
+input DivisionsPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "divisions"
+"""
+enum DivisionsSelectColumn {
+  """column name"""
+  description
+
+  """column name"""
+  id
+
+  """column name"""
+  name
+}
+
+"""
+input type for updating data in table "divisions"
+"""
+input DivisionsSetInput {
+  description: String
+  name: String
+}
+
+"""
+Streaming cursor of the table "divisions"
+"""
+input DivisionsStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: DivisionsStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input DivisionsStreamCursorValueInput {
+  description: String
+  id: uuid
+  name: String
+}
+
+"""
+update columns of table "divisions"
+"""
+enum DivisionsUpdateColumn {
+  """column name"""
+  description
+
+  """column name"""
+  name
+}
+
+input DivisionsUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: DivisionsSetInput
+
+  """filter the rows which have to be updated"""
+  where: DivisionsBoolExp!
+}
+
+"""Features for Layers"""
+type Features {
+  createdAt: timestamptz!
+  deletedAt: timestamptz
+  geometry(
+    """JSON select path"""
+    path: String
+  ): jsonb!
+  id: uuid!
+
+  """An object relationship"""
+  layer: Layers!
+  layerId: uuid!
+  properties(
+    """JSON select path"""
+    path: String
+  ): jsonb!
+  updatedAt: timestamptz
+}
+
+"""
+order by aggregate values of table "features"
+"""
+input FeaturesAggregateOrderBy {
+  count: OrderBy
+  max: FeaturesMaxOrderBy
+  min: FeaturesMinOrderBy
+}
+
+"""append existing jsonb value of filtered columns with new jsonb value"""
+input FeaturesAppendInput {
+  geometry: jsonb
+  properties: jsonb
+}
+
+"""
+input type for inserting array relation for remote table "features"
+"""
+input FeaturesArrRelInsertInput {
+  data: [FeaturesInsertInput!]!
+
+  """upsert condition"""
+  onConflict: FeaturesOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "features". All fields are combined with a logical 'AND'.
+"""
+input FeaturesBoolExp {
+  _and: [FeaturesBoolExp!]
+  _not: FeaturesBoolExp
+  _or: [FeaturesBoolExp!]
+  createdAt: TimestamptzComparisonExp
+  deletedAt: TimestamptzComparisonExp
+  geometry: JsonbComparisonExp
+  id: UuidComparisonExp
+  layer: LayersBoolExp
+  layerId: UuidComparisonExp
+  properties: JsonbComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "features"
+"""
+enum FeaturesConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  features_pkey
+}
+
+"""
+delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+"""
+input FeaturesDeleteAtPathInput {
+  geometry: [String!]
+  properties: [String!]
+}
+
+"""
+delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+"""
+input FeaturesDeleteElemInput {
+  geometry: Int
+  properties: Int
+}
+
+"""
+delete key/value pair or string element. key/value pairs are matched based on their key value
+"""
+input FeaturesDeleteKeyInput {
+  geometry: String
+  properties: String
+}
+
+"""
+input type for inserting data into table "features"
+"""
+input FeaturesInsertInput {
+  createdAt: timestamptz
+  geometry: jsonb
+  id: uuid
+  layer: LayersObjRelInsertInput
+  layerId: uuid
+  properties: jsonb
+}
+
+"""
+order by max() on columns of table "features"
+"""
+input FeaturesMaxOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  layerId: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+order by min() on columns of table "features"
+"""
+input FeaturesMinOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  layerId: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+response of any mutation on the table "features"
+"""
+type FeaturesMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Features!]!
+}
+
+"""
+on_conflict condition type for table "features"
+"""
+input FeaturesOnConflict {
+  constraint: FeaturesConstraint!
+  updateColumns: [FeaturesUpdateColumn!]! = []
+  where: FeaturesBoolExp
+}
+
+"""Ordering options when selecting data from "features"."""
+input FeaturesOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  geometry: OrderBy
+  id: OrderBy
+  layer: LayersOrderBy
+  layerId: OrderBy
+  properties: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: features"""
+input FeaturesPkColumnsInput {
+  id: uuid!
+}
+
+"""prepend existing jsonb value of filtered columns with new jsonb value"""
+input FeaturesPrependInput {
+  geometry: jsonb
+  properties: jsonb
+}
+
+"""
+select columns of table "features"
+"""
+enum FeaturesSelectColumn {
+  """column name"""
+  createdAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  geometry
+
+  """column name"""
+  id
+
+  """column name"""
+  layerId
+
+  """column name"""
+  properties
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "features"
+"""
+input FeaturesSetInput {
+  deletedAt: timestamptz
+  geometry: jsonb
+  properties: jsonb
+  updatedAt: timestamptz
+}
+
+"""
+Streaming cursor of the table "features"
+"""
+input FeaturesStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: FeaturesStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input FeaturesStreamCursorValueInput {
+  createdAt: timestamptz
+  deletedAt: timestamptz
+  geometry: jsonb
+  id: uuid
+  layerId: uuid
+  properties: jsonb
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "features"
+"""
+enum FeaturesUpdateColumn {
+  """column name"""
+  deletedAt
+
+  """column name"""
+  geometry
+
+  """column name"""
+  properties
+
+  """column name"""
+  updatedAt
+}
+
+input FeaturesUpdates {
+  """append existing jsonb value of filtered columns with new jsonb value"""
+  _append: FeaturesAppendInput
+
+  """
+  delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  """
+  _deleteAtPath: FeaturesDeleteAtPathInput
+
+  """
+  delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  """
+  _deleteElem: FeaturesDeleteElemInput
+
+  """
+  delete key/value pair or string element. key/value pairs are matched based on their key value
+  """
+  _deleteKey: FeaturesDeleteKeyInput
+
+  """prepend existing jsonb value of filtered columns with new jsonb value"""
+  _prepend: FeaturesPrependInput
+
+  """sets the columns of the filtered rows to the given values"""
+  _set: FeaturesSetInput
+
+  """filter the rows which have to be updated"""
+  where: FeaturesBoolExp!
+}
+
+"""
+columns and relationships of "incidents"
+"""
+type Incidents {
+  closedAt: timestamptz
+  createdAt: timestamptz!
+  deletedAt: timestamptz
+
+  """An array relationship"""
+  divisions(
+    """distinct select on columns"""
+    distinctOn: [DivisionsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [DivisionsOrderBy!]
+
+    """filter the rows returned"""
+    where: DivisionsBoolExp
+  ): [Divisions!]!
+  id: uuid!
+
+  """An array relationship"""
+  journals(
+    """distinct select on columns"""
+    distinctOn: [JournalsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [JournalsOrderBy!]
+
+    """filter the rows returned"""
+    where: JournalsBoolExp
+  ): [Journals!]!
+
+  """An array relationship"""
+  layers(
+    """distinct select on columns"""
+    distinctOn: [LayersSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [LayersOrderBy!]
+
+    """filter the rows returned"""
+    where: LayersBoolExp
+  ): [Layers!]!
+
+  """An object relationship"""
+  location: Locations!
+  locationId: uuid!
+  name: String!
+  updatedAt: timestamptz!
+}
+
+"""
+order by aggregate values of table "incidents"
+"""
+input IncidentsAggregateOrderBy {
+  count: OrderBy
+  max: IncidentsMaxOrderBy
+  min: IncidentsMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "incidents"
+"""
+input IncidentsArrRelInsertInput {
+  data: [IncidentsInsertInput!]!
+
+  """upsert condition"""
+  onConflict: IncidentsOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "incidents". All fields are combined with a logical 'AND'.
+"""
+input IncidentsBoolExp {
+  _and: [IncidentsBoolExp!]
+  _not: IncidentsBoolExp
+  _or: [IncidentsBoolExp!]
+  closedAt: TimestamptzComparisonExp
+  createdAt: TimestamptzComparisonExp
+  deletedAt: TimestamptzComparisonExp
+  divisions: DivisionsBoolExp
+  id: UuidComparisonExp
+  journals: JournalsBoolExp
+  layers: LayersBoolExp
+  location: LocationsBoolExp
+  locationId: UuidComparisonExp
+  name: StringComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "incidents"
+"""
+enum IncidentsConstraint {
+  """
+  unique or primary key constraint on columns "location_id"
+  """
+  incidents_location_key
+
+  """
+  unique or primary key constraint on columns "id"
+  """
+  incidents_pkey
+}
+
+"""
+input type for inserting data into table "incidents"
+"""
+input IncidentsInsertInput {
+  divisions: DivisionsArrRelInsertInput
+  journals: JournalsArrRelInsertInput
+  layers: LayersArrRelInsertInput
+  location: LocationsObjRelInsertInput
+  locationId: uuid
+  name: String
+}
+
+"""
+order by max() on columns of table "incidents"
+"""
+input IncidentsMaxOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  locationId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+order by min() on columns of table "incidents"
+"""
+input IncidentsMinOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  locationId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+response of any mutation on the table "incidents"
+"""
+type IncidentsMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Incidents!]!
+}
+
+"""
+input type for inserting object relation for remote table "incidents"
+"""
+input IncidentsObjRelInsertInput {
+  data: IncidentsInsertInput!
+
+  """upsert condition"""
+  onConflict: IncidentsOnConflict
+}
+
+"""
+on_conflict condition type for table "incidents"
+"""
+input IncidentsOnConflict {
+  constraint: IncidentsConstraint!
+  updateColumns: [IncidentsUpdateColumn!]! = []
+  where: IncidentsBoolExp
+}
+
+"""Ordering options when selecting data from "incidents"."""
+input IncidentsOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  divisionsAggregate: DivisionsAggregateOrderBy
+  id: OrderBy
+  journalsAggregate: JournalsAggregateOrderBy
+  layersAggregate: LayersAggregateOrderBy
+  location: LocationsOrderBy
+  locationId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: incidents"""
+input IncidentsPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "incidents"
+"""
+enum IncidentsSelectColumn {
+  """column name"""
+  closedAt
+
+  """column name"""
+  createdAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  id
+
+  """column name"""
+  locationId
+
+  """column name"""
+  name
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "incidents"
+"""
+input IncidentsSetInput {
+  closedAt: timestamptz
+  deletedAt: timestamptz
+  locationId: uuid
+  name: String
+}
+
+"""
+Streaming cursor of the table "incidents"
+"""
+input IncidentsStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: IncidentsStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input IncidentsStreamCursorValueInput {
+  closedAt: timestamptz
+  createdAt: timestamptz
+  deletedAt: timestamptz
+  id: uuid
+  locationId: uuid
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "incidents"
+"""
+enum IncidentsUpdateColumn {
+  """column name"""
+  closedAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  locationId
+
+  """column name"""
+  name
+}
+
+input IncidentsUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: IncidentsSetInput
+
+  """filter the rows which have to be updated"""
+  where: IncidentsBoolExp!
+}
+
+"""Journals"""
+type Journals {
+  closedAt: timestamptz
+  createdAt: timestamptz!
+  deletedAt: timestamptz
+  id: uuid!
+
+  """An object relationship"""
+  incident: Incidents!
+  incidentId: uuid!
+
+  """An array relationship"""
+  messages(
+    """distinct select on columns"""
+    distinctOn: [MessagesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessagesOrderBy!]
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+  name: String!
+  updatedAt: timestamptz!
+}
+
+"""
+order by aggregate values of table "journals"
+"""
+input JournalsAggregateOrderBy {
+  count: OrderBy
+  max: JournalsMaxOrderBy
+  min: JournalsMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "journals"
+"""
+input JournalsArrRelInsertInput {
+  data: [JournalsInsertInput!]!
+
+  """upsert condition"""
+  onConflict: JournalsOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "journals". All fields are combined with a logical 'AND'.
+"""
+input JournalsBoolExp {
+  _and: [JournalsBoolExp!]
+  _not: JournalsBoolExp
+  _or: [JournalsBoolExp!]
+  closedAt: TimestamptzComparisonExp
+  createdAt: TimestamptzComparisonExp
+  deletedAt: TimestamptzComparisonExp
+  id: UuidComparisonExp
+  incident: IncidentsBoolExp
+  incidentId: UuidComparisonExp
+  messages: MessagesBoolExp
+  name: StringComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "journals"
+"""
+enum JournalsConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  journals_pkey
+}
+
+"""
+input type for inserting data into table "journals"
+"""
+input JournalsInsertInput {
+  incident: IncidentsObjRelInsertInput
+  incidentId: uuid
+  messages: MessagesArrRelInsertInput
+  name: String
+}
+
+"""
+order by max() on columns of table "journals"
+"""
+input JournalsMaxOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  incidentId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+order by min() on columns of table "journals"
+"""
+input JournalsMinOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  incidentId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+response of any mutation on the table "journals"
+"""
+type JournalsMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Journals!]!
+}
+
+"""
+input type for inserting object relation for remote table "journals"
+"""
+input JournalsObjRelInsertInput {
+  data: JournalsInsertInput!
+
+  """upsert condition"""
+  onConflict: JournalsOnConflict
+}
+
+"""
+on_conflict condition type for table "journals"
+"""
+input JournalsOnConflict {
+  constraint: JournalsConstraint!
+  updateColumns: [JournalsUpdateColumn!]! = []
+  where: JournalsBoolExp
+}
+
+"""Ordering options when selecting data from "journals"."""
+input JournalsOrderBy {
+  closedAt: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  incident: IncidentsOrderBy
+  incidentId: OrderBy
+  messagesAggregate: MessagesAggregateOrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: journals"""
+input JournalsPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "journals"
+"""
+enum JournalsSelectColumn {
+  """column name"""
+  closedAt
+
+  """column name"""
+  createdAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  id
+
+  """column name"""
+  incidentId
+
+  """column name"""
+  name
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "journals"
+"""
+input JournalsSetInput {
+  closedAt: timestamptz
+  deletedAt: timestamptz
+  name: String
+}
+
+"""
+Streaming cursor of the table "journals"
+"""
+input JournalsStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: JournalsStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input JournalsStreamCursorValueInput {
+  closedAt: timestamptz
+  createdAt: timestamptz
+  deletedAt: timestamptz
+  id: uuid
+  incidentId: uuid
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "journals"
+"""
+enum JournalsUpdateColumn {
+  """column name"""
+  closedAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  name
+}
+
+input JournalsUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: JournalsSetInput
+
+  """filter the rows which have to be updated"""
+  where: JournalsBoolExp!
+}
+
+input JsonbCastExp {
+  String: StringComparisonExp
+}
+
+"""
+Boolean expression to compare columns of type "jsonb". All fields are combined with logical 'AND'.
+"""
+input JsonbComparisonExp {
+  _cast: JsonbCastExp
+
+  """is the column contained in the given json value"""
+  _containedIn: jsonb
+
+  """does the column contain the given json value at the top level"""
+  _contains: jsonb
+  _eq: jsonb
+  _gt: jsonb
+  _gte: jsonb
+
+  """does the string exist as a top-level key in the column"""
+  _hasKey: String
+
+  """do all of these strings exist as top-level keys in the column"""
+  _hasKeysAll: [String!]
+
+  """do any of these strings exist as top-level keys in the column"""
+  _hasKeysAny: [String!]
+  _in: [jsonb!]
+  _isNull: Boolean
+  _lt: jsonb
+  _lte: jsonb
+  _neq: jsonb
+  _nin: [jsonb!]
+}
+
+"""Layers for Maps"""
+type Layers {
+  createdAt: timestamptz!
+  deletedAt: timestamptz
+
+  """An array relationship"""
+  features(
+    """distinct select on columns"""
+    distinctOn: [FeaturesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [FeaturesOrderBy!]
+
+    """filter the rows returned"""
+    where: FeaturesBoolExp
+  ): [Features!]!
+  id: uuid!
+
+  """An object relationship"""
+  incident: Incidents!
+  incidentId: uuid!
+  name: String!
+  updatedAt: timestamptz
+}
+
+"""
+order by aggregate values of table "layers"
+"""
+input LayersAggregateOrderBy {
+  count: OrderBy
+  max: LayersMaxOrderBy
+  min: LayersMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "layers"
+"""
+input LayersArrRelInsertInput {
+  data: [LayersInsertInput!]!
+
+  """upsert condition"""
+  onConflict: LayersOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "layers". All fields are combined with a logical 'AND'.
+"""
+input LayersBoolExp {
+  _and: [LayersBoolExp!]
+  _not: LayersBoolExp
+  _or: [LayersBoolExp!]
+  createdAt: TimestamptzComparisonExp
+  deletedAt: TimestamptzComparisonExp
+  features: FeaturesBoolExp
+  id: UuidComparisonExp
+  incident: IncidentsBoolExp
+  incidentId: UuidComparisonExp
+  name: StringComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "layers"
+"""
+enum LayersConstraint {
+  """
+  unique or primary key constraint on columns "incident_id", "name"
+  """
+  layers_incident_id_name_key
+
+  """
+  unique or primary key constraint on columns "id"
+  """
+  layers_pkey
+}
+
+"""
+input type for inserting data into table "layers"
+"""
+input LayersInsertInput {
+  createdAt: timestamptz
+  features: FeaturesArrRelInsertInput
+  id: uuid
+  incident: IncidentsObjRelInsertInput
+  incidentId: uuid
+  name: String
+}
+
+"""
+order by max() on columns of table "layers"
+"""
+input LayersMaxOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  incidentId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+order by min() on columns of table "layers"
+"""
+input LayersMinOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  incidentId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+response of any mutation on the table "layers"
+"""
+type LayersMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Layers!]!
+}
+
+"""
+input type for inserting object relation for remote table "layers"
+"""
+input LayersObjRelInsertInput {
+  data: LayersInsertInput!
+
+  """upsert condition"""
+  onConflict: LayersOnConflict
+}
+
+"""
+on_conflict condition type for table "layers"
+"""
+input LayersOnConflict {
+  constraint: LayersConstraint!
+  updateColumns: [LayersUpdateColumn!]! = []
+  where: LayersBoolExp
+}
+
+"""Ordering options when selecting data from "layers"."""
+input LayersOrderBy {
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  featuresAggregate: FeaturesAggregateOrderBy
+  id: OrderBy
+  incident: IncidentsOrderBy
+  incidentId: OrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: layers"""
+input LayersPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "layers"
+"""
+enum LayersSelectColumn {
+  """column name"""
+  createdAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  id
+
+  """column name"""
+  incidentId
+
+  """column name"""
+  name
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "layers"
+"""
+input LayersSetInput {
+  deletedAt: timestamptz
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+Streaming cursor of the table "layers"
+"""
+input LayersStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: LayersStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input LayersStreamCursorValueInput {
+  createdAt: timestamptz
+  deletedAt: timestamptz
+  id: uuid
+  incidentId: uuid
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "layers"
+"""
+enum LayersUpdateColumn {
+  """column name"""
+  deletedAt
+
+  """column name"""
+  name
+
+  """column name"""
+  updatedAt
+}
+
+input LayersUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: LayersSetInput
+
+  """filter the rows which have to be updated"""
+  where: LayersBoolExp!
+}
+
+"""Locations of incidents or messages"""
+type Locations {
+  coordinates: point
+  createdAt: timestamptz
+  id: uuid!
+
+  """An array relationship"""
+  incident(
+    """distinct select on columns"""
+    distinctOn: [IncidentsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [IncidentsOrderBy!]
+
+    """filter the rows returned"""
+    where: IncidentsBoolExp
+  ): [Incidents!]!
+
+  """An object relationship"""
+  incidentById: Incidents
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+Boolean expression to filter rows from the table "locations". All fields are combined with a logical 'AND'.
+"""
+input LocationsBoolExp {
+  _and: [LocationsBoolExp!]
+  _not: LocationsBoolExp
+  _or: [LocationsBoolExp!]
+  coordinates: PointComparisonExp
+  createdAt: TimestamptzComparisonExp
+  id: UuidComparisonExp
+  incident: IncidentsBoolExp
+  incidentById: IncidentsBoolExp
+  name: StringComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "locations"
+"""
+enum LocationsConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  locations_pkey
+}
+
+"""
+input type for inserting data into table "locations"
+"""
+input LocationsInsertInput {
+  coordinates: point
+  incident: IncidentsArrRelInsertInput
+  incidentById: IncidentsObjRelInsertInput
+  name: String
+}
+
+"""
+response of any mutation on the table "locations"
+"""
+type LocationsMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Locations!]!
+}
+
+"""
+input type for inserting object relation for remote table "locations"
+"""
+input LocationsObjRelInsertInput {
+  data: LocationsInsertInput!
+
+  """upsert condition"""
+  onConflict: LocationsOnConflict
+}
+
+"""
+on_conflict condition type for table "locations"
+"""
+input LocationsOnConflict {
+  constraint: LocationsConstraint!
+  updateColumns: [LocationsUpdateColumn!]! = []
+  where: LocationsBoolExp
+}
+
+"""Ordering options when selecting data from "locations"."""
+input LocationsOrderBy {
+  coordinates: OrderBy
+  createdAt: OrderBy
+  id: OrderBy
+  incidentAggregate: IncidentsAggregateOrderBy
+  incidentById: IncidentsOrderBy
+  name: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: locations"""
+input LocationsPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "locations"
+"""
+enum LocationsSelectColumn {
+  """column name"""
+  coordinates
+
+  """column name"""
+  createdAt
+
+  """column name"""
+  id
+
+  """column name"""
+  name
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "locations"
+"""
+input LocationsSetInput {
+  coordinates: point
+  name: String
+}
+
+"""
+Streaming cursor of the table "locations"
+"""
+input LocationsStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: LocationsStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input LocationsStreamCursorValueInput {
+  coordinates: point
+  createdAt: timestamptz
+  id: uuid
+  name: String
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "locations"
+"""
+enum LocationsUpdateColumn {
+  """column name"""
+  coordinates
+
+  """column name"""
+  name
+}
+
+input LocationsUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: LocationsSetInput
+
+  """filter the rows which have to be updated"""
+  where: LocationsBoolExp!
+}
+
+"""Communication Medium Enum Table"""
+type Medium {
+  description: String!
+  name: String!
+}
+
+"""
+Boolean expression to filter rows from the table "medium". All fields are combined with a logical 'AND'.
+"""
+input MediumBoolExp {
+  _and: [MediumBoolExp!]
+  _not: MediumBoolExp
+  _or: [MediumBoolExp!]
+  description: StringComparisonExp
+  name: StringComparisonExp
+}
+
+enum MediumEnum {
+  """email message"""
+  EMAIL
+
+  """Other"""
+  OTHER
+
+  """phone call"""
+  PHONE
+
+  """Radio Communication"""
+  RADIO
+}
+
+"""
+Boolean expression to compare columns of type "MediumEnum". All fields are combined with logical 'AND'.
+"""
+input MediumEnumComparisonExp {
+  _eq: MediumEnum
+  _in: [MediumEnum!]
+  _isNull: Boolean
+  _neq: MediumEnum
+  _nin: [MediumEnum!]
+}
+
+"""Ordering options when selecting data from "medium"."""
+input MediumOrderBy {
+  description: OrderBy
+  name: OrderBy
+}
+
+"""
+select columns of table "medium"
+"""
+enum MediumSelectColumn {
+  """column name"""
+  description
+
+  """column name"""
+  name
+}
+
+"""
+Streaming cursor of the table "medium"
+"""
+input MediumStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: MediumStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input MediumStreamCursorValueInput {
+  description: String
+  name: String
+}
+
+"""Bridge Table for division tagging messages"""
+type MessageDivision {
+  """An object relationship"""
+  division: Divisions!
+  divisionId: uuid!
+  id: uuid!
+
+  """An object relationship"""
+  message: Messages!
+  messageId: uuid!
+}
+
+"""
+order by aggregate values of table "message_division"
+"""
+input MessageDivisionAggregateOrderBy {
+  count: OrderBy
+  max: MessageDivisionMaxOrderBy
+  min: MessageDivisionMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "message_division"
+"""
+input MessageDivisionArrRelInsertInput {
+  data: [MessageDivisionInsertInput!]!
+
+  """upsert condition"""
+  onConflict: MessageDivisionOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "message_division". All fields are combined with a logical 'AND'.
+"""
+input MessageDivisionBoolExp {
+  _and: [MessageDivisionBoolExp!]
+  _not: MessageDivisionBoolExp
+  _or: [MessageDivisionBoolExp!]
+  division: DivisionsBoolExp
+  divisionId: UuidComparisonExp
+  id: UuidComparisonExp
+  message: MessagesBoolExp
+  messageId: UuidComparisonExp
+}
+
+"""
+unique or primary key constraints on table "message_division"
+"""
+enum MessageDivisionConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  message_devision_pkey
+
+  """
+  unique or primary key constraint on columns "division_id", "message_id"
+  """
+  message_division_message_id_division_id_key
+}
+
+"""
+input type for inserting data into table "message_division"
+"""
+input MessageDivisionInsertInput {
+  division: DivisionsObjRelInsertInput
+  divisionId: uuid
+  message: MessagesObjRelInsertInput
+  messageId: uuid
+}
+
+"""
+order by max() on columns of table "message_division"
+"""
+input MessageDivisionMaxOrderBy {
+  divisionId: OrderBy
+  id: OrderBy
+  messageId: OrderBy
+}
+
+"""
+order by min() on columns of table "message_division"
+"""
+input MessageDivisionMinOrderBy {
+  divisionId: OrderBy
+  id: OrderBy
+  messageId: OrderBy
+}
+
+"""
+response of any mutation on the table "message_division"
+"""
+type MessageDivisionMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [MessageDivision!]!
+}
+
+"""
+on_conflict condition type for table "message_division"
+"""
+input MessageDivisionOnConflict {
+  constraint: MessageDivisionConstraint!
+  updateColumns: [MessageDivisionUpdateColumn!]! = []
+  where: MessageDivisionBoolExp
+}
+
+"""Ordering options when selecting data from "message_division"."""
+input MessageDivisionOrderBy {
+  division: DivisionsOrderBy
+  divisionId: OrderBy
+  id: OrderBy
+  message: MessagesOrderBy
+  messageId: OrderBy
+}
+
+"""
+select columns of table "message_division"
+"""
+enum MessageDivisionSelectColumn {
+  """column name"""
+  divisionId
+
+  """column name"""
+  id
+
+  """column name"""
+  messageId
+}
+
+"""
+Streaming cursor of the table "message_division"
+"""
+input MessageDivisionStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: MessageDivisionStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input MessageDivisionStreamCursorValueInput {
+  divisionId: uuid
+  id: uuid
+  messageId: uuid
+}
+
+"""
+placeholder for update columns of table "message_division" (current role has no relevant permissions)
+"""
+enum MessageDivisionUpdateColumn {
+  """placeholder (do not use)"""
+  _PLACEHOLDER
+}
+
+"""Messages Table"""
+type Messages {
+  """An object relationship"""
+  author: Users
+  content: String!
+  createdAt: timestamptz!
+  deletedAt: timestamptz
+
+  """An array relationship"""
+  divisions(
+    """distinct select on columns"""
+    distinctOn: [MessageDivisionSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessageDivisionOrderBy!]
+
+    """filter the rows returned"""
+    where: MessageDivisionBoolExp
+  ): [MessageDivision!]!
+  id: uuid!
+
+  """An object relationship"""
+  journal: Journals
+
+  """An object relationship"""
+  medium: Medium
+  mediumId: MediumEnum
+
+  """An object relationship"""
+  priority: PriorityStatus
+  priorityId: PriorityStatusEnum
+  receiver: String!
+  receiverDetail: String
+  sender: String!
+  senderDetail: String
+  time: timestamptz!
+
+  """An object relationship"""
+  triage: TriageStatus!
+  triageId: TriageStatusEnum!
+  updatedAt: timestamptz!
+}
+
+"""
+order by aggregate values of table "messages"
+"""
+input MessagesAggregateOrderBy {
+  count: OrderBy
+  max: MessagesMaxOrderBy
+  min: MessagesMinOrderBy
+}
+
+"""
+input type for inserting array relation for remote table "messages"
+"""
+input MessagesArrRelInsertInput {
+  data: [MessagesInsertInput!]!
+
+  """upsert condition"""
+  onConflict: MessagesOnConflict
+}
+
+"""
+Boolean expression to filter rows from the table "messages". All fields are combined with a logical 'AND'.
+"""
+input MessagesBoolExp {
+  _and: [MessagesBoolExp!]
+  _not: MessagesBoolExp
+  _or: [MessagesBoolExp!]
+  author: UsersBoolExp
+  content: StringComparisonExp
+  createdAt: TimestamptzComparisonExp
+  deletedAt: TimestamptzComparisonExp
+  divisions: MessageDivisionBoolExp
+  id: UuidComparisonExp
+  journal: JournalsBoolExp
+  medium: MediumBoolExp
+  mediumId: MediumEnumComparisonExp
+  priority: PriorityStatusBoolExp
+  priorityId: PriorityStatusEnumComparisonExp
+  receiver: StringComparisonExp
+  receiverDetail: StringComparisonExp
+  sender: StringComparisonExp
+  senderDetail: StringComparisonExp
+  time: TimestamptzComparisonExp
+  triage: TriageStatusBoolExp
+  triageId: TriageStatusEnumComparisonExp
+  updatedAt: TimestamptzComparisonExp
+}
+
+"""
+unique or primary key constraints on table "messages"
+"""
+enum MessagesConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  messages_pkey
+}
+
+"""
+input type for inserting data into table "messages"
+"""
+input MessagesInsertInput {
+  content: String
+  divisions: MessageDivisionArrRelInsertInput
+  journal: JournalsObjRelInsertInput
+  journalId: uuid
+  mediumId: MediumEnum
+  receiver: String
+  receiverDetail: String
+  sender: String
+  senderDetail: String
+  time: timestamptz
+}
+
+"""
+order by max() on columns of table "messages"
+"""
+input MessagesMaxOrderBy {
+  content: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  receiver: OrderBy
+  receiverDetail: OrderBy
+  sender: OrderBy
+  senderDetail: OrderBy
+  time: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+order by min() on columns of table "messages"
+"""
+input MessagesMinOrderBy {
+  content: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  id: OrderBy
+  receiver: OrderBy
+  receiverDetail: OrderBy
+  sender: OrderBy
+  senderDetail: OrderBy
+  time: OrderBy
+  updatedAt: OrderBy
+}
+
+"""
+response of any mutation on the table "messages"
+"""
+type MessagesMutationResponse {
+  """number of rows affected by the mutation"""
+  affectedRows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Messages!]!
+}
+
+"""
+input type for inserting object relation for remote table "messages"
+"""
+input MessagesObjRelInsertInput {
+  data: MessagesInsertInput!
+
+  """upsert condition"""
+  onConflict: MessagesOnConflict
+}
+
+"""
+on_conflict condition type for table "messages"
+"""
+input MessagesOnConflict {
+  constraint: MessagesConstraint!
+  updateColumns: [MessagesUpdateColumn!]! = []
+  where: MessagesBoolExp
+}
+
+"""Ordering options when selecting data from "messages"."""
+input MessagesOrderBy {
+  author: UsersOrderBy
+  content: OrderBy
+  createdAt: OrderBy
+  deletedAt: OrderBy
+  divisionsAggregate: MessageDivisionAggregateOrderBy
+  id: OrderBy
+  journal: JournalsOrderBy
+  medium: MediumOrderBy
+  mediumId: OrderBy
+  priority: PriorityStatusOrderBy
+  priorityId: OrderBy
+  receiver: OrderBy
+  receiverDetail: OrderBy
+  sender: OrderBy
+  senderDetail: OrderBy
+  time: OrderBy
+  triage: TriageStatusOrderBy
+  triageId: OrderBy
+  updatedAt: OrderBy
+}
+
+"""primary key columns input for table: messages"""
+input MessagesPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "messages"
+"""
+enum MessagesSelectColumn {
+  """column name"""
+  content
+
+  """column name"""
+  createdAt
+
+  """column name"""
+  deletedAt
+
+  """column name"""
+  id
+
+  """column name"""
+  mediumId
+
+  """column name"""
+  priorityId
+
+  """column name"""
+  receiver
+
+  """column name"""
+  receiverDetail
+
+  """column name"""
+  sender
+
+  """column name"""
+  senderDetail
+
+  """column name"""
+  time
+
+  """column name"""
+  triageId
+
+  """column name"""
+  updatedAt
+}
+
+"""
+input type for updating data in table "messages"
+"""
+input MessagesSetInput {
+  content: String
+  mediumId: MediumEnum
+  priorityId: PriorityStatusEnum
+  receiver: String
+  receiverDetail: String
+  sender: String
+  senderDetail: String
+  time: timestamptz
+  triageId: TriageStatusEnum
+}
+
+"""
+Streaming cursor of the table "messages"
+"""
+input MessagesStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: MessagesStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input MessagesStreamCursorValueInput {
+  content: String
+  createdAt: timestamptz
+  deletedAt: timestamptz
+  id: uuid
+  mediumId: MediumEnum
+  priorityId: PriorityStatusEnum
+  receiver: String
+  receiverDetail: String
+  sender: String
+  senderDetail: String
+  time: timestamptz
+  triageId: TriageStatusEnum
+  updatedAt: timestamptz
+}
+
+"""
+update columns of table "messages"
+"""
+enum MessagesUpdateColumn {
+  """column name"""
+  content
+
+  """column name"""
+  mediumId
+
+  """column name"""
+  priorityId
+
+  """column name"""
+  receiver
+
+  """column name"""
+  receiverDetail
+
+  """column name"""
+  sender
+
+  """column name"""
+  senderDetail
+
+  """column name"""
+  time
+
+  """column name"""
+  triageId
+}
+
+input MessagesUpdates {
+  """sets the columns of the filtered rows to the given values"""
+  _set: MessagesSetInput
+
+  """filter the rows which have to be updated"""
+  where: MessagesBoolExp!
+}
+
+"""column ordering options"""
+enum OrderBy {
+  """in ascending order, nulls last"""
+  ASC
+
+  """in ascending order, nulls first"""
+  ASC_NULLS_FIRST
+
+  """in ascending order, nulls last"""
+  ASC_NULLS_LAST
+
+  """in descending order, nulls first"""
+  DESC
+
+  """in descending order, nulls first"""
+  DESC_NULLS_FIRST
+
+  """in descending order, nulls last"""
+  DESC_NULLS_LAST
+}
+
+"""
+Boolean expression to compare columns of type "point". All fields are combined with logical 'AND'.
+"""
+input PointComparisonExp {
+  _eq: point
+  _gt: point
+  _gte: point
+  _in: [point!]
+  _isNull: Boolean
+  _lt: point
+  _lte: point
+  _neq: point
+  _nin: [point!]
+}
+
+"""Message Priority Status"""
+type PriorityStatus {
+  description: String!
+  name: String!
+}
+
+"""
+Boolean expression to filter rows from the table "priority_status". All fields are combined with a logical 'AND'.
+"""
+input PriorityStatusBoolExp {
+  _and: [PriorityStatusBoolExp!]
+  _not: PriorityStatusBoolExp
+  _or: [PriorityStatusBoolExp!]
+  description: StringComparisonExp
+  name: StringComparisonExp
+}
+
+enum PriorityStatusEnum {
+  """Critical"""
+  CRITICAL
+
+  """High"""
+  HIGH
+
+  """Normal"""
+  NORMAL
+}
+
+"""
+Boolean expression to compare columns of type "PriorityStatusEnum". All fields are combined with logical 'AND'.
+"""
+input PriorityStatusEnumComparisonExp {
+  _eq: PriorityStatusEnum
+  _in: [PriorityStatusEnum!]
+  _isNull: Boolean
+  _neq: PriorityStatusEnum
+  _nin: [PriorityStatusEnum!]
+}
+
+"""Ordering options when selecting data from "priority_status"."""
+input PriorityStatusOrderBy {
+  description: OrderBy
+  name: OrderBy
+}
+
+"""
+select columns of table "priority_status"
+"""
+enum PriorityStatusSelectColumn {
+  """column name"""
+  description
+
+  """column name"""
+  name
+}
+
+"""
+Streaming cursor of the table "priority_status"
+"""
+input PriorityStatusStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: PriorityStatusStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input PriorityStatusStreamCursorValueInput {
+  description: String
+  name: String
+}
+
+"""
+Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
+"""
+input StringComparisonExp {
+  _eq: String
+  _gt: String
+  _gte: String
+
+  """does the column match the given case-insensitive pattern"""
+  _ilike: String
+  _in: [String!]
+
+  """
+  does the column match the given POSIX regular expression, case insensitive
+  """
+  _iregex: String
+  _isNull: Boolean
+
+  """does the column match the given pattern"""
+  _like: String
+  _lt: String
+  _lte: String
+  _neq: String
+
+  """does the column NOT match the given case-insensitive pattern"""
+  _nilike: String
+  _nin: [String!]
+
+  """
+  does the column NOT match the given POSIX regular expression, case insensitive
+  """
+  _niregex: String
+
+  """does the column NOT match the given pattern"""
+  _nlike: String
+
+  """
+  does the column NOT match the given POSIX regular expression, case sensitive
+  """
+  _nregex: String
+
+  """does the column NOT match the given SQL regular expression"""
+  _nsimilar: String
+
+  """
+  does the column match the given POSIX regular expression, case sensitive
+  """
+  _regex: String
+
+  """does the column match the given SQL regular expression"""
+  _similar: String
+}
+
+"""
+Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'.
+"""
+input TimestamptzComparisonExp {
+  _eq: timestamptz
+  _gt: timestamptz
+  _gte: timestamptz
+  _in: [timestamptz!]
+  _isNull: Boolean
+  _lt: timestamptz
+  _lte: timestamptz
+  _neq: timestamptz
+  _nin: [timestamptz!]
+}
+
+"""Triage Status Enum Table"""
+type TriageStatus {
+  description: String!
+
+  """An array relationship"""
+  messages(
+    """distinct select on columns"""
+    distinctOn: [MessagesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessagesOrderBy!]
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+  name: String!
+}
+
+"""
+Boolean expression to filter rows from the table "triage_status". All fields are combined with a logical 'AND'.
+"""
+input TriageStatusBoolExp {
+  _and: [TriageStatusBoolExp!]
+  _not: TriageStatusBoolExp
+  _or: [TriageStatusBoolExp!]
+  description: StringComparisonExp
+  messages: MessagesBoolExp
+  name: StringComparisonExp
+}
+
+enum TriageStatusEnum {
+  """Triage is done"""
+  DONE
+
+  """Needs more information"""
+  MOREINFO
+
+  """Triage is pending"""
+  PENDING
+
+  """Triage is reset and needs to be redone"""
+  RESET
+}
+
+"""
+Boolean expression to compare columns of type "TriageStatusEnum". All fields are combined with logical 'AND'.
+"""
+input TriageStatusEnumComparisonExp {
+  _eq: TriageStatusEnum
+  _in: [TriageStatusEnum!]
+  _isNull: Boolean
+  _neq: TriageStatusEnum
+  _nin: [TriageStatusEnum!]
+}
+
+"""Ordering options when selecting data from "triage_status"."""
+input TriageStatusOrderBy {
+  description: OrderBy
+  messagesAggregate: MessagesAggregateOrderBy
+  name: OrderBy
+}
+
+"""
+select columns of table "triage_status"
+"""
+enum TriageStatusSelectColumn {
+  """column name"""
+  description
+
+  """column name"""
+  name
+}
+
+"""
+Streaming cursor of the table "triage_status"
+"""
+input TriageStatusStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: TriageStatusStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input TriageStatusStreamCursorValueInput {
+  description: String
+  name: String
+}
+
+"""Users Table"""
+type Users {
+  email: String!
+  id: uuid!
+
+  """An array relationship"""
+  messages(
+    """distinct select on columns"""
+    distinctOn: [MessagesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessagesOrderBy!]
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+  sub: String!
+}
+
+"""
+Boolean expression to filter rows from the table "users". All fields are combined with a logical 'AND'.
+"""
+input UsersBoolExp {
+  _and: [UsersBoolExp!]
+  _not: UsersBoolExp
+  _or: [UsersBoolExp!]
+  email: StringComparisonExp
+  id: UuidComparisonExp
+  messages: MessagesBoolExp
+  sub: StringComparisonExp
+}
+
+"""Ordering options when selecting data from "users"."""
+input UsersOrderBy {
+  email: OrderBy
+  id: OrderBy
+  messagesAggregate: MessagesAggregateOrderBy
+  sub: OrderBy
+}
+
+"""
+select columns of table "users"
+"""
+enum UsersSelectColumn {
+  """column name"""
+  email
+
+  """column name"""
+  id
+
+  """column name"""
+  sub
+}
+
+"""
+Streaming cursor of the table "users"
+"""
+input UsersStreamCursorInput {
+  """Stream column input with initial value"""
+  initialValue: UsersStreamCursorValueInput!
+
+  """cursor ordering"""
+  ordering: CursorOrdering
+}
+
+"""Initial value of the column from where the streaming should start"""
+input UsersStreamCursorValueInput {
+  email: String
+  id: uuid
+  sub: String
+}
+
+"""
+Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'.
+"""
+input UuidComparisonExp {
+  _eq: uuid
+  _gt: uuid
+  _gte: uuid
+  _in: [uuid!]
+  _isNull: Boolean
+  _lt: uuid
+  _lte: uuid
+  _neq: uuid
+  _nin: [uuid!]
+}
+
+scalar jsonb
+
+"""mutation root"""
+type mutation_root {
+  deleteMessageDivision(
+    """filter the rows which have to be deleted"""
+    where: MessageDivisionBoolExp!
+  ): MessageDivisionMutationResponse
+  deleteMessageDivisionByPk(id: uuid!): MessageDivision
+
+  """
+  insert data into the table: "divisions"
+  """
+  insertDivisions(
+    """the rows to be inserted"""
+    objects: [DivisionsInsertInput!]!
+
+    """upsert condition"""
+    onConflict: DivisionsOnConflict
+  ): DivisionsMutationResponse
+
+  """
+  insert a single row into the table: "divisions"
+  """
+  insertDivisionsOne(
+    """the row to be inserted"""
+    object: DivisionsInsertInput!
+
+    """upsert condition"""
+    onConflict: DivisionsOnConflict
+  ): Divisions
+
+  """
+  insert data into the table: "features"
+  """
+  insertFeatures(
+    """the rows to be inserted"""
+    objects: [FeaturesInsertInput!]!
+
+    """upsert condition"""
+    onConflict: FeaturesOnConflict
+  ): FeaturesMutationResponse
+
+  """
+  insert a single row into the table: "features"
+  """
+  insertFeaturesOne(
+    """the row to be inserted"""
+    object: FeaturesInsertInput!
+
+    """upsert condition"""
+    onConflict: FeaturesOnConflict
+  ): Features
+
+  """
+  insert data into the table: "incidents"
+  """
+  insertIncidents(
+    """the rows to be inserted"""
+    objects: [IncidentsInsertInput!]!
+
+    """upsert condition"""
+    onConflict: IncidentsOnConflict
+  ): IncidentsMutationResponse
+
+  """
+  insert a single row into the table: "incidents"
+  """
+  insertIncidentsOne(
+    """the row to be inserted"""
+    object: IncidentsInsertInput!
+
+    """upsert condition"""
+    onConflict: IncidentsOnConflict
+  ): Incidents
+
+  """
+  insert data into the table: "journals"
+  """
+  insertJournals(
+    """the rows to be inserted"""
+    objects: [JournalsInsertInput!]!
+
+    """upsert condition"""
+    onConflict: JournalsOnConflict
+  ): JournalsMutationResponse
+
+  """
+  insert a single row into the table: "journals"
+  """
+  insertJournalsOne(
+    """the row to be inserted"""
+    object: JournalsInsertInput!
+
+    """upsert condition"""
+    onConflict: JournalsOnConflict
+  ): Journals
+
+  """
+  insert data into the table: "layers"
+  """
+  insertLayers(
+    """the rows to be inserted"""
+    objects: [LayersInsertInput!]!
+
+    """upsert condition"""
+    onConflict: LayersOnConflict
+  ): LayersMutationResponse
+
+  """
+  insert a single row into the table: "layers"
+  """
+  insertLayersOne(
+    """the row to be inserted"""
+    object: LayersInsertInput!
+
+    """upsert condition"""
+    onConflict: LayersOnConflict
+  ): Layers
+
+  """
+  insert data into the table: "locations"
+  """
+  insertLocations(
+    """the rows to be inserted"""
+    objects: [LocationsInsertInput!]!
+
+    """upsert condition"""
+    onConflict: LocationsOnConflict
+  ): LocationsMutationResponse
+
+  """
+  insert a single row into the table: "locations"
+  """
+  insertLocationsOne(
+    """the row to be inserted"""
+    object: LocationsInsertInput!
+
+    """upsert condition"""
+    onConflict: LocationsOnConflict
+  ): Locations
+  insertMessageDivision(
+    """the rows to be inserted"""
+    objects: [MessageDivisionInsertInput!]!
+
+    """upsert condition"""
+    onConflict: MessageDivisionOnConflict
+  ): MessageDivisionMutationResponse
+
+  """
+  insert a single row into the table: "message_division"
+  """
+  insertMessageDivisionOne(
+    """the row to be inserted"""
+    object: MessageDivisionInsertInput!
+
+    """upsert condition"""
+    onConflict: MessageDivisionOnConflict
+  ): MessageDivision
+
+  """
+  insert data into the table: "messages"
+  """
+  insertMessages(
+    """the rows to be inserted"""
+    objects: [MessagesInsertInput!]!
+
+    """upsert condition"""
+    onConflict: MessagesOnConflict
+  ): MessagesMutationResponse
+
+  """
+  insert a single row into the table: "messages"
+  """
+  insertMessagesOne(
+    """the row to be inserted"""
+    object: MessagesInsertInput!
+
+    """upsert condition"""
+    onConflict: MessagesOnConflict
+  ): Messages
+
+  """
+  update data of the table: "divisions"
+  """
+  updateDivisions(
+    """sets the columns of the filtered rows to the given values"""
+    _set: DivisionsSetInput
+
+    """filter the rows which have to be updated"""
+    where: DivisionsBoolExp!
+  ): DivisionsMutationResponse
+
+  """
+  update single row of the table: "divisions"
+  """
+  updateDivisionsByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: DivisionsSetInput
+    pkColumns: DivisionsPkColumnsInput!
+  ): Divisions
+
+  """
+  update multiples rows of table: "divisions"
+  """
+  updateDivisionsMany(
+    """updates to execute, in order"""
+    updates: [DivisionsUpdates!]!
+  ): [DivisionsMutationResponse]
+
+  """
+  update data of the table: "features"
+  """
+  updateFeatures(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: FeaturesAppendInput
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _deleteAtPath: FeaturesDeleteAtPathInput
+
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _deleteElem: FeaturesDeleteElemInput
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _deleteKey: FeaturesDeleteKeyInput
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: FeaturesPrependInput
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: FeaturesSetInput
+
+    """filter the rows which have to be updated"""
+    where: FeaturesBoolExp!
+  ): FeaturesMutationResponse
+
+  """
+  update single row of the table: "features"
+  """
+  updateFeaturesByPk(
+    """append existing jsonb value of filtered columns with new jsonb value"""
+    _append: FeaturesAppendInput
+
+    """
+    delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+    """
+    _deleteAtPath: FeaturesDeleteAtPathInput
+
+    """
+    delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+    """
+    _deleteElem: FeaturesDeleteElemInput
+
+    """
+    delete key/value pair or string element. key/value pairs are matched based on their key value
+    """
+    _deleteKey: FeaturesDeleteKeyInput
+
+    """prepend existing jsonb value of filtered columns with new jsonb value"""
+    _prepend: FeaturesPrependInput
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: FeaturesSetInput
+    pkColumns: FeaturesPkColumnsInput!
+  ): Features
+
+  """
+  update multiples rows of table: "features"
+  """
+  updateFeaturesMany(
+    """updates to execute, in order"""
+    updates: [FeaturesUpdates!]!
+  ): [FeaturesMutationResponse]
+
+  """
+  update data of the table: "incidents"
+  """
+  updateIncidents(
+    """sets the columns of the filtered rows to the given values"""
+    _set: IncidentsSetInput
+
+    """filter the rows which have to be updated"""
+    where: IncidentsBoolExp!
+  ): IncidentsMutationResponse
+
+  """
+  update single row of the table: "incidents"
+  """
+  updateIncidentsByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: IncidentsSetInput
+    pkColumns: IncidentsPkColumnsInput!
+  ): Incidents
+
+  """
+  update multiples rows of table: "incidents"
+  """
+  updateIncidentsMany(
+    """updates to execute, in order"""
+    updates: [IncidentsUpdates!]!
+  ): [IncidentsMutationResponse]
+
+  """
+  update data of the table: "journals"
+  """
+  updateJournals(
+    """sets the columns of the filtered rows to the given values"""
+    _set: JournalsSetInput
+
+    """filter the rows which have to be updated"""
+    where: JournalsBoolExp!
+  ): JournalsMutationResponse
+
+  """
+  update single row of the table: "journals"
+  """
+  updateJournalsByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: JournalsSetInput
+    pkColumns: JournalsPkColumnsInput!
+  ): Journals
+
+  """
+  update multiples rows of table: "journals"
+  """
+  updateJournalsMany(
+    """updates to execute, in order"""
+    updates: [JournalsUpdates!]!
+  ): [JournalsMutationResponse]
+
+  """
+  update data of the table: "layers"
+  """
+  updateLayers(
+    """sets the columns of the filtered rows to the given values"""
+    _set: LayersSetInput
+
+    """filter the rows which have to be updated"""
+    where: LayersBoolExp!
+  ): LayersMutationResponse
+
+  """
+  update single row of the table: "layers"
+  """
+  updateLayersByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: LayersSetInput
+    pkColumns: LayersPkColumnsInput!
+  ): Layers
+
+  """
+  update multiples rows of table: "layers"
+  """
+  updateLayersMany(
+    """updates to execute, in order"""
+    updates: [LayersUpdates!]!
+  ): [LayersMutationResponse]
+
+  """
+  update data of the table: "locations"
+  """
+  updateLocations(
+    """sets the columns of the filtered rows to the given values"""
+    _set: LocationsSetInput
+
+    """filter the rows which have to be updated"""
+    where: LocationsBoolExp!
+  ): LocationsMutationResponse
+
+  """
+  update single row of the table: "locations"
+  """
+  updateLocationsByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: LocationsSetInput
+    pkColumns: LocationsPkColumnsInput!
+  ): Locations
+
+  """
+  update multiples rows of table: "locations"
+  """
+  updateLocationsMany(
+    """updates to execute, in order"""
+    updates: [LocationsUpdates!]!
+  ): [LocationsMutationResponse]
+
+  """
+  update data of the table: "messages"
+  """
+  updateMessages(
+    """sets the columns of the filtered rows to the given values"""
+    _set: MessagesSetInput
+
+    """filter the rows which have to be updated"""
+    where: MessagesBoolExp!
+  ): MessagesMutationResponse
+
+  """
+  update single row of the table: "messages"
+  """
+  updateMessagesByPk(
+    """sets the columns of the filtered rows to the given values"""
+    _set: MessagesSetInput
+    pkColumns: MessagesPkColumnsInput!
+  ): Messages
+
+  """
+  update multiples rows of table: "messages"
+  """
+  updateMessagesMany(
+    """updates to execute, in order"""
+    updates: [MessagesUpdates!]!
+  ): [MessagesMutationResponse]
+}
+
+scalar point
+
+type query_root {
+  """An array relationship"""
+  divisions(
+    """distinct select on columns"""
+    distinctOn: [DivisionsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [DivisionsOrderBy!]
+
+    """filter the rows returned"""
+    where: DivisionsBoolExp
+  ): [Divisions!]!
+  divisionsByPk(id: uuid!): Divisions
+
+  """An array relationship"""
+  features(
+    """distinct select on columns"""
+    distinctOn: [FeaturesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [FeaturesOrderBy!]
+
+    """filter the rows returned"""
+    where: FeaturesBoolExp
+  ): [Features!]!
+
+  """fetch data from the table: "features" using primary key columns"""
+  featuresByPk(id: uuid!): Features
+
+  """
+  fetch data from the table: "incidents"
+  """
+  incidents(
+    """distinct select on columns"""
+    distinctOn: [IncidentsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [IncidentsOrderBy!]
+
+    """filter the rows returned"""
+    where: IncidentsBoolExp
+  ): [Incidents!]!
+
+  """fetch data from the table: "incidents" using primary key columns"""
+  incidentsByPk(id: uuid!): Incidents
+
+  """An array relationship"""
+  journals(
+    """distinct select on columns"""
+    distinctOn: [JournalsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [JournalsOrderBy!]
+
+    """filter the rows returned"""
+    where: JournalsBoolExp
+  ): [Journals!]!
+
+  """fetch data from the table: "journals" using primary key columns"""
+  journalsByPk(id: uuid!): Journals
+
+  """An array relationship"""
+  layers(
+    """distinct select on columns"""
+    distinctOn: [LayersSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [LayersOrderBy!]
+
+    """filter the rows returned"""
+    where: LayersBoolExp
+  ): [Layers!]!
+
+  """fetch data from the table: "layers" using primary key columns"""
+  layersByPk(id: uuid!): Layers
+
+  """
+  fetch data from the table: "locations"
+  """
+  locations(
+    """distinct select on columns"""
+    distinctOn: [LocationsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [LocationsOrderBy!]
+
+    """filter the rows returned"""
+    where: LocationsBoolExp
+  ): [Locations!]!
+
+  """fetch data from the table: "locations" using primary key columns"""
+  locationsByPk(id: uuid!): Locations
+
+  """
+  fetch data from the table: "medium"
+  """
+  medium(
+    """distinct select on columns"""
+    distinctOn: [MediumSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MediumOrderBy!]
+
+    """filter the rows returned"""
+    where: MediumBoolExp
+  ): [Medium!]!
+
+  """fetch data from the table: "medium" using primary key columns"""
+  mediumByPk(name: String!): Medium
+  messageDivision(
+    """distinct select on columns"""
+    distinctOn: [MessageDivisionSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessageDivisionOrderBy!]
+
+    """filter the rows returned"""
+    where: MessageDivisionBoolExp
+  ): [MessageDivision!]!
+  messageDivisionByPk(id: uuid!): MessageDivision
+
+  """An array relationship"""
+  messages(
+    """distinct select on columns"""
+    distinctOn: [MessagesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessagesOrderBy!]
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+
+  """fetch data from the table: "messages" using primary key columns"""
+  messagesByPk(id: uuid!): Messages
+  priorityStatus(
+    """distinct select on columns"""
+    distinctOn: [PriorityStatusSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [PriorityStatusOrderBy!]
+
+    """filter the rows returned"""
+    where: PriorityStatusBoolExp
+  ): [PriorityStatus!]!
+  priorityStatusByPk(name: String!): PriorityStatus
+  triageStatus(
+    """distinct select on columns"""
+    distinctOn: [TriageStatusSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [TriageStatusOrderBy!]
+
+    """filter the rows returned"""
+    where: TriageStatusBoolExp
+  ): [TriageStatus!]!
+  triageStatusByPk(name: String!): TriageStatus
+
+  """
+  fetch data from the table: "users"
+  """
+  users(
+    """distinct select on columns"""
+    distinctOn: [UsersSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [UsersOrderBy!]
+
+    """filter the rows returned"""
+    where: UsersBoolExp
+  ): [Users!]!
+
+  """fetch data from the table: "users" using primary key columns"""
+  usersByPk(id: uuid!): Users
+}
+
+type subscription_root {
+  """An array relationship"""
+  divisions(
+    """distinct select on columns"""
+    distinctOn: [DivisionsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [DivisionsOrderBy!]
+
+    """filter the rows returned"""
+    where: DivisionsBoolExp
+  ): [Divisions!]!
+  divisionsByPk(id: uuid!): Divisions
+
+  """
+  fetch data from the table in a streaming manner: "divisions"
+  """
+  divisionsStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [DivisionsStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: DivisionsBoolExp
+  ): [Divisions!]!
+
+  """An array relationship"""
+  features(
+    """distinct select on columns"""
+    distinctOn: [FeaturesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [FeaturesOrderBy!]
+
+    """filter the rows returned"""
+    where: FeaturesBoolExp
+  ): [Features!]!
+
+  """fetch data from the table: "features" using primary key columns"""
+  featuresByPk(id: uuid!): Features
+
+  """
+  fetch data from the table in a streaming manner: "features"
+  """
+  featuresStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [FeaturesStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: FeaturesBoolExp
+  ): [Features!]!
+
+  """
+  fetch data from the table: "incidents"
+  """
+  incidents(
+    """distinct select on columns"""
+    distinctOn: [IncidentsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [IncidentsOrderBy!]
+
+    """filter the rows returned"""
+    where: IncidentsBoolExp
+  ): [Incidents!]!
+
+  """fetch data from the table: "incidents" using primary key columns"""
+  incidentsByPk(id: uuid!): Incidents
+
+  """
+  fetch data from the table in a streaming manner: "incidents"
+  """
+  incidentsStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [IncidentsStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: IncidentsBoolExp
+  ): [Incidents!]!
+
+  """An array relationship"""
+  journals(
+    """distinct select on columns"""
+    distinctOn: [JournalsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [JournalsOrderBy!]
+
+    """filter the rows returned"""
+    where: JournalsBoolExp
+  ): [Journals!]!
+
+  """fetch data from the table: "journals" using primary key columns"""
+  journalsByPk(id: uuid!): Journals
+
+  """
+  fetch data from the table in a streaming manner: "journals"
+  """
+  journalsStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [JournalsStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: JournalsBoolExp
+  ): [Journals!]!
+
+  """An array relationship"""
+  layers(
+    """distinct select on columns"""
+    distinctOn: [LayersSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [LayersOrderBy!]
+
+    """filter the rows returned"""
+    where: LayersBoolExp
+  ): [Layers!]!
+
+  """fetch data from the table: "layers" using primary key columns"""
+  layersByPk(id: uuid!): Layers
+
+  """
+  fetch data from the table in a streaming manner: "layers"
+  """
+  layersStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [LayersStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: LayersBoolExp
+  ): [Layers!]!
+
+  """
+  fetch data from the table: "locations"
+  """
+  locations(
+    """distinct select on columns"""
+    distinctOn: [LocationsSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [LocationsOrderBy!]
+
+    """filter the rows returned"""
+    where: LocationsBoolExp
+  ): [Locations!]!
+
+  """fetch data from the table: "locations" using primary key columns"""
+  locationsByPk(id: uuid!): Locations
+
+  """
+  fetch data from the table in a streaming manner: "locations"
+  """
+  locationsStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [LocationsStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: LocationsBoolExp
+  ): [Locations!]!
+
+  """
+  fetch data from the table: "medium"
+  """
+  medium(
+    """distinct select on columns"""
+    distinctOn: [MediumSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MediumOrderBy!]
+
+    """filter the rows returned"""
+    where: MediumBoolExp
+  ): [Medium!]!
+
+  """fetch data from the table: "medium" using primary key columns"""
+  mediumByPk(name: String!): Medium
+
+  """
+  fetch data from the table in a streaming manner: "medium"
+  """
+  mediumStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [MediumStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: MediumBoolExp
+  ): [Medium!]!
+  messageDivision(
+    """distinct select on columns"""
+    distinctOn: [MessageDivisionSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessageDivisionOrderBy!]
+
+    """filter the rows returned"""
+    where: MessageDivisionBoolExp
+  ): [MessageDivision!]!
+  messageDivisionByPk(id: uuid!): MessageDivision
+
+  """
+  fetch data from the table in a streaming manner: "message_division"
+  """
+  messageDivisionStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [MessageDivisionStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: MessageDivisionBoolExp
+  ): [MessageDivision!]!
+
+  """An array relationship"""
+  messages(
+    """distinct select on columns"""
+    distinctOn: [MessagesSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [MessagesOrderBy!]
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+
+  """fetch data from the table: "messages" using primary key columns"""
+  messagesByPk(id: uuid!): Messages
+
+  """
+  fetch data from the table in a streaming manner: "messages"
+  """
+  messagesStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [MessagesStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: MessagesBoolExp
+  ): [Messages!]!
+  priorityStatus(
+    """distinct select on columns"""
+    distinctOn: [PriorityStatusSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [PriorityStatusOrderBy!]
+
+    """filter the rows returned"""
+    where: PriorityStatusBoolExp
+  ): [PriorityStatus!]!
+  priorityStatusByPk(name: String!): PriorityStatus
+
+  """
+  fetch data from the table in a streaming manner: "priority_status"
+  """
+  priorityStatusStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [PriorityStatusStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: PriorityStatusBoolExp
+  ): [PriorityStatus!]!
+  triageStatus(
+    """distinct select on columns"""
+    distinctOn: [TriageStatusSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [TriageStatusOrderBy!]
+
+    """filter the rows returned"""
+    where: TriageStatusBoolExp
+  ): [TriageStatus!]!
+  triageStatusByPk(name: String!): TriageStatus
+
+  """
+  fetch data from the table in a streaming manner: "triage_status"
+  """
+  triageStatusStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [TriageStatusStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: TriageStatusBoolExp
+  ): [TriageStatus!]!
+
+  """
+  fetch data from the table: "users"
+  """
+  users(
+    """distinct select on columns"""
+    distinctOn: [UsersSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [UsersOrderBy!]
+
+    """filter the rows returned"""
+    where: UsersBoolExp
+  ): [Users!]!
+
+  """fetch data from the table: "users" using primary key columns"""
+  usersByPk(id: uuid!): Users
+
+  """
+  fetch data from the table in a streaming manner: "users"
+  """
+  usersStream(
+    """maximum number of rows returned in a single batch"""
+    batchSize: Int!
+
+    """cursor to stream the results returned by the query"""
+    cursor: [UsersStreamCursorInput]!
+
+    """filter the rows returned"""
+    where: UsersBoolExp
+  ): [Users!]!
+}
+
+scalar timestamptz
+
+scalar uuid

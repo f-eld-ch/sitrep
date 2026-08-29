@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
+import type { CreateMessageArgs } from "api";
 import { Medium, type Message } from "types";
-import type { InsertMessageVars } from "types/journal";
 
 export interface EditorState {
   sender: string;
@@ -101,7 +101,7 @@ export function buildMessageVars(
   state: EditorState,
   journalId: string,
   now: Date,
-): InsertMessageVars {
+): CreateMessageArgs {
   const time = state.time ?? now;
   const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
   const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;

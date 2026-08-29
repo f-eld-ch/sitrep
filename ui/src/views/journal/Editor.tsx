@@ -1,15 +1,12 @@
-import { useMutation, useQuery } from "@apollo/client/react";
 import { useTranslation } from "react-i18next";
 import uniq from "lodash/uniq";
 import React, { useCallback, useId, useMemo, useReducer, useRef } from "react";
 import { useBlocker, useNavigate, useParams } from "react-router";
-import type { GetJournalMessagesData, GetJournalMessagesVars } from "types";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
-import type { UpdateMessageVars } from "types/journal";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
+import { useCreateMessage, useJournalMessages, useUpdateMessage } from "api";
 import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
-import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
@@ -32,13 +29,12 @@ export { ReactEditor, ReactPreview } from "./Markdown";
 function Editor() {
   const { t } = useTranslation();
   const { journalId } = useParams();
-  const { data } = useQuery<GetJournalMessagesData, GetJournalMessagesVars>(GetJournalMessages, {
-    fetchPolicy: "cache-first",
-    variables: { journalId: journalId || "" },
-  });
+
+  const messagesResult = useJournalMessages(journalId ?? "");
+  const [createMessage, createState] = useCreateMessage();
+  const [updateMessage, updateState] = useUpdateMessage();
 
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
-
   const savingRef = useRef(false);
 
   const isDirty =
@@ -53,88 +49,67 @@ function Editor() {
 
   const blocker = useBlocker(isDirty);
 
-  const [insertMessage, { error, loading: insertLoading }] = useMutation(InsertMessage, {
-    onCompleted() {
-      savingRef.current = false;
-      if (blocker.state === "blocked") blocker.reset();
-      dispatch({ type: "clear" });
-    },
-    onError() {
-      savingRef.current = false;
-    },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId } }],
-  });
-
-  const [updateMessage, { error: errorUpdate, loading: updateLoading }] = useMutation<
-    Message,
-    UpdateMessageVars
-  >(UpdateMessage, {
-    onCompleted() {
-      savingRef.current = false;
-      if (blocker.state === "blocked") blocker.reset();
-      dispatch({ type: "clear" });
-    },
-    onError() {
-      savingRef.current = false;
-    },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId } }],
-  });
+  const messages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
 
   const autocompleteDetails = useMemo<AutofillDetail>(
     () => ({
-      senderReceiverNames: uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter(
+      senderReceiverNames: uniq(messages.flatMap((d) => [d.sender, d.receiver])).filter(
         isNonEmptyString,
       ),
       senderReceiverDetails: uniq(
-        data?.messages
+        messages
           .filter((d) => d.medium !== Medium.Radio)
           .flatMap((d) => [d.senderDetail, d.receiverDetail]),
       ).filter(isNonEmptyString),
       channelList: uniq(
-        data?.messages.filter((d) => d.medium === Medium.Radio).map((d) => d.senderDetail),
+        messages.filter((d) => d.medium === Medium.Radio).map((d) => d.senderDetail),
       ).filter(isNonEmptyString),
     }),
-    [data],
+    [messages],
   );
 
-  const saving = insertLoading || updateLoading;
+  const saving = createState.loading || updateState.loading;
+  const saveError = createState.error ?? updateState.error;
 
-  const handleSave = useCallback(() => {
-    if (journalId === undefined) return;
+  const handleSave = useCallback(async () => {
+    if (!journalId) return;
     if (savingRef.current) return;
     savingRef.current = true;
     const time = state.time ?? new Date();
     const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
     const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
-    if (state.messageToEdit?.id) {
-      updateMessage({
-        variables: {
+    try {
+      if (state.messageToEdit?.id) {
+        await updateMessage({
+          journalId,
           messageId: state.messageToEdit.id,
           time,
-          journalId,
           content: state.content,
           medium: state.media,
           sender: state.sender,
           senderDetail,
           receiver: state.receiver,
           receiverDetail,
-        },
-      });
-    } else {
-      insertMessage({
-        variables: {
+        });
+      } else {
+        await createMessage({
+          journalId,
           time,
-          journalId,
           content: state.content,
           medium: state.media,
           sender: state.sender,
           senderDetail,
           receiver: state.receiver,
           receiverDetail,
-        },
-      });
+        });
+      }
+      savingRef.current = false;
+      if (blocker.state === "blocked") blocker.reset();
+      dispatch({ type: "clear" });
+    } catch {
+      savingRef.current = false;
     }
-  }, [state, insertMessage, updateMessage, journalId]);
+  }, [state, createMessage, updateMessage, journalId, blocker]);
 
   const setEditorMessage = useCallback((message: Message | undefined) => {
     if (message) {
@@ -180,8 +155,7 @@ function Editor() {
                 </button>
               </div>
             )}
-            {error && <Notification type="error">{error?.message}</Notification>}
-            {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
+            {saveError && <Notification type="error">{saveError.message}</Notification>}
             <InputBox />
           </div>
           <div className="column is-half">

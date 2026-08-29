@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "paths": {
+      "gql": ["./src/gql/graphql.ts"],
       "types": ["./src/types/index.ts"],
       "types/*": ["./src/types/*"],
       "utils": ["./src/utils/index.ts"],
@@ -9,8 +11,10 @@
       "components/*": ["./src/components/*"],
       "views/*": ["./src/views/*"],
       "assets/*": ["./src/assets/*"],
-      "cache": ["./src/cache.tsx"],
-      "client": ["./src/client.tsx"]
+      "cache": ["./src/api/cache.ts"],
+      "client": ["./src/api/client.ts"],
+      "api": ["./src/api/index.ts"],
+      "api/*": ["./src/api/*"]
     },
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -28,6 +32,7 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["./src/"],
+  "exclude": ["./src/gql/"],
   "references": [
     {
       "path": "./tsconfig.node.json"
