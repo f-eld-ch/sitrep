@@ -1,12 +1,9 @@
-import { useMutation } from "@apollo/client/react";
 import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import type { InsertJournalData, InsertJournalVars } from "types/journal";
-import { afterIncidentWrite } from "api";
-import { GetJournals, InsertJournal } from "./graphql";
+import { useCreateJournal } from "api";
 
 function New() {
   const { t } = useTranslation();
@@ -27,28 +24,23 @@ function NewForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [insertJournal, { error }] = useMutation<InsertJournalData, InsertJournalVars>(
-    InsertJournal,
-    {
-      onCompleted() {
-        navigate(`../${incidentId}/edit`);
-      },
-      refetchQueries: [
-        { query: GetJournals, variables: { incidentId } },
-        ...afterIncidentWrite(incidentId),
-      ],
-    },
-  );
+  const [createJournal, createState] = useCreateJournal();
 
-  const handleSave = () => {
-    if (incidentId && name) {
-      insertJournal({ variables: { name, incidentId } });
+  const handleSave = async () => {
+    if (!incidentId || !name) return;
+    try {
+      await createJournal({ name, incidentId });
+      navigate(`../${incidentId}/edit`);
+    } catch {
+      // createState.error renders the notification
     }
   };
 
   return (
     <>
-      {error && <div className="notification is-danger">{error?.message}</div>}
+      {createState.error && (
+        <div className="notification is-danger">{createState.error.message}</div>
+      )}
       <div className="field">
         <p className="control has-icons-left has-icons-right">
           <input
@@ -71,7 +63,7 @@ function NewForm() {
           <button
             type="button"
             className="button is-primary is-rounded is-capitalized"
-            onClick={handleSave}
+            onClick={() => void handleSave()}
           >
             {t("create")}
           </button>
