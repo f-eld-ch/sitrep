@@ -40,7 +40,7 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
       },
       refetchQueries: afterIncidentWrite(),
     });
-    const incidentId = result.data?.insertIncidentsOne.id;
+    const incidentId = result.data?.insertIncidentsOne?.id;
     if (!incidentId)
       throw Object.assign(new Error("Create incident failed"), { code: "UNKNOWN" as const });
     return { incidentId };

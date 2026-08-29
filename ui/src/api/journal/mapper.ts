@@ -1,6 +1,8 @@
 import type { Incident, Journal } from "types";
 import { toDate, toOptionalDate } from "../common/mapper";
-import type { WireJournal } from "./wire";
+import type { GetJournalsQuery } from "gql";
+
+type WireJournal = GetJournalsQuery["incidents"][0]["journals"][0];
 
 export function toJournal(w: WireJournal): Journal {
   return {

@@ -1,38 +1,40 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-  CloseIncidentVars,
-  DeleteIncidentVars,
-  GetIncidentDetailsVars,
-  InsertIncidentVars,
-  UpdateIncidentVars,
-  WireCloseIncidentResult,
-  WireDeleteIncidentResult,
-  WireGetIncidentDetailsResult,
-  WireGetIncidentsResult,
-  WireInsertIncidentResult,
-  WireUpdateIncidentResult,
-} from "./wire";
+  CloseIncidentMutation,
+  CloseIncidentMutationVariables,
+  DeleteIncidentMutation,
+  DeleteIncidentMutationVariables,
+  FetchIncidentsQuery,
+  FetchIncidentsQueryVariables,
+  GetIncidentDetailQuery,
+  GetIncidentDetailQueryVariables,
+  InsertIncidentMutation,
+  InsertIncidentMutationVariables,
+  UpdateIncidentMutation,
+  UpdateIncidentMutationVariables,
+} from "gql";
 
-export const GET_INCIDENTS: TypedDocumentNode<WireGetIncidentsResult, Record<string, never>> = gql`
-  query FetchIncidents {
-    incidents(orderBy: { createdAt: DESC }, where: { deletedAt: { _isNull: true } }) {
-      id
-      name
-      createdAt
-      updatedAt
-      deletedAt
-      closedAt
-      location {
+export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncidentsQueryVariables> =
+  gql`
+    query FetchIncidents {
+      incidents(orderBy: { createdAt: DESC }, where: { deletedAt: { _isNull: true } }) {
+        id
         name
-        coordinates
+        createdAt
+        updatedAt
+        deletedAt
+        closedAt
+        location {
+          name
+          coordinates
+        }
       }
     }
-  }
-`;
+  `;
 
 export const GET_INCIDENT_DETAILS: TypedDocumentNode<
-  WireGetIncidentDetailsResult,
-  GetIncidentDetailsVars
+  GetIncidentDetailQuery,
+  GetIncidentDetailQueryVariables
 > = gql`
   query GetIncidentDetail($incidentId: uuid!) {
     incidentsByPk(id: $incidentId) {
@@ -59,7 +61,10 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
   }
 `;
 
-export const INSERT_INCIDENT: TypedDocumentNode<WireInsertIncidentResult, InsertIncidentVars> = gql`
+export const INSERT_INCIDENT: TypedDocumentNode<
+  InsertIncidentMutation,
+  InsertIncidentMutationVariables
+> = gql`
   mutation InsertIncident(
     $name: String!
     $location: String
@@ -95,7 +100,10 @@ export const INSERT_INCIDENT: TypedDocumentNode<WireInsertIncidentResult, Insert
   }
 `;
 
-export const UPDATE_INCIDENT: TypedDocumentNode<WireUpdateIncidentResult, UpdateIncidentVars> = gql`
+export const UPDATE_INCIDENT: TypedDocumentNode<
+  UpdateIncidentMutation,
+  UpdateIncidentMutationVariables
+> = gql`
   mutation UpdateIncident(
     $incidentId: uuid!
     $name: String!
@@ -129,7 +137,10 @@ export const UPDATE_INCIDENT: TypedDocumentNode<WireUpdateIncidentResult, Update
   }
 `;
 
-export const CLOSE_INCIDENT: TypedDocumentNode<WireCloseIncidentResult, CloseIncidentVars> = gql`
+export const CLOSE_INCIDENT: TypedDocumentNode<
+  CloseIncidentMutation,
+  CloseIncidentMutationVariables
+> = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
     updateJournals(
       where: { incident: { id: { _eq: $incidentId } }, closedAt: { _isNull: true } }
@@ -151,7 +162,10 @@ export const CLOSE_INCIDENT: TypedDocumentNode<WireCloseIncidentResult, CloseInc
   }
 `;
 
-export const DELETE_INCIDENT: TypedDocumentNode<WireDeleteIncidentResult, DeleteIncidentVars> = gql`
+export const DELETE_INCIDENT: TypedDocumentNode<
+  DeleteIncidentMutation,
+  DeleteIncidentMutationVariables
+> = gql`
   mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
     updateJournals(
       where: { incident: { id: { _eq: $incidentId } }, deletedAt: { _isNull: true } }

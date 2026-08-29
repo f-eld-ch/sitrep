@@ -1,21 +1,16 @@
 import type { Division, Incident, Journal, Location } from "types";
 import { toDate, toOptionalDate } from "../common/mapper";
-import type {
-  WireIncidentDetails,
-  WireIncidentSummary,
-  WireLocation,
-  WireLocationNoId,
-} from "./wire";
+import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql";
 
-function toLocationNoId(w: WireLocationNoId): Location {
-  return { id: "", name: w.name, coordinates: w.coordinates };
+function toLocationNoId(w: FetchIncidentsQuery["incidents"][0]["location"]): Location {
+  return { id: "", name: w.name ?? "", coordinates: w.coordinates ?? "" };
 }
 
-function toLocation(w: WireLocation): Location {
-  return { id: w.id, name: w.name, coordinates: w.coordinates };
+function toLocation(w: NonNullable<GetIncidentDetailQuery["incidentsByPk"]>["location"]): Location {
+  return { id: w.id, name: w.name ?? "", coordinates: w.coordinates ?? "" };
 }
 
-export function toIncidentSummary(w: WireIncidentSummary): Incident {
+export function toIncidentSummary(w: FetchIncidentsQuery["incidents"][0]): Incident {
   return {
     id: w.id,
     name: w.name,
@@ -30,7 +25,9 @@ export function toIncidentSummary(w: WireIncidentSummary): Incident {
   };
 }
 
-export function toIncidentDetails(w: WireIncidentDetails): Incident {
+export function toIncidentDetails(
+  w: NonNullable<GetIncidentDetailQuery["incidentsByPk"]>,
+): Incident {
   return {
     id: w.id,
     name: w.name,
@@ -42,7 +39,7 @@ export function toIncidentDetails(w: WireIncidentDetails): Incident {
     divisions: w.divisions.map((d): Division => ({
       id: d.id,
       name: d.name,
-      description: d.description,
+      description: d.description ?? "",
     })),
     // GET_INCIDENT_DETAILS only fetches id+name for journals; the Journal type has
     // more required date fields that are unused in this context (navigation only).

@@ -1,7 +1,6 @@
 import { useMutation } from "@apollo/client/react";
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import type { CommandHook, CommandState } from "../result";
-import type { InsertMessageVars, SaveMessageTriageVars, UpdateMessageVars } from "./documents";
 import { INSERT_MESSAGE, SAVE_MESSAGE_TRIAGE, UPDATE_MESSAGE } from "./documents";
 import { afterMessageWrite } from "./invalidate";
 
@@ -39,18 +38,17 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs> {
   };
 
   const createMessage = async (args: CreateMessageArgs): Promise<void> => {
-    const vars: InsertMessageVars = {
-      journalId: args.journalId,
-      sender: args.sender,
-      receiver: args.receiver,
-      senderDetail: args.senderDetail,
-      receiverDetail: args.receiverDetail,
-      content: args.content,
-      medium: args.medium,
-      time: args.time,
-    };
     await mutate({
-      variables: vars,
+      variables: {
+        journalId: args.journalId,
+        sender: args.sender,
+        receiver: args.receiver,
+        senderDetail: args.senderDetail,
+        receiverDetail: args.receiverDetail,
+        content: args.content,
+        medium: args.medium,
+        time: args.time,
+      },
       refetchQueries: afterMessageWrite(args.journalId),
     });
   };
@@ -69,18 +67,17 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
   };
 
   const updateMessage = async (args: UpdateMessageArgs): Promise<void> => {
-    const vars: UpdateMessageVars = {
-      messageId: args.messageId,
-      sender: args.sender,
-      receiver: args.receiver,
-      senderDetail: args.senderDetail,
-      receiverDetail: args.receiverDetail,
-      content: args.content,
-      medium: args.medium,
-      time: args.time,
-    };
     await mutate({
-      variables: vars,
+      variables: {
+        messageId: args.messageId,
+        sender: args.sender,
+        receiver: args.receiver,
+        senderDetail: args.senderDetail,
+        receiverDetail: args.receiverDetail,
+        content: args.content,
+        medium: args.medium,
+        time: args.time,
+      },
       refetchQueries: afterMessageWrite(args.journalId),
     });
   };
@@ -103,17 +100,16 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
     // triageMessage mutation once the Go backend lands. This relies on Hasura's
     // multi-root transactionality: if insertMessageDivision fails after
     // deleteMessageDivision commits, the message loses all division assignments.
-    const vars: SaveMessageTriageVars = {
-      messageId: args.messageId,
-      priority: args.priority,
-      triage: args.triage,
-      messageDivisions: args.divisionIds.map((divisionId) => ({
-        messageId: args.messageId,
-        divisionId,
-      })),
-    };
     await mutate({
-      variables: vars,
+      variables: {
+        messageId: args.messageId,
+        priority: args.priority,
+        triage: args.triage,
+        messageDivisions: args.divisionIds.map((divisionId) => ({
+          messageId: args.messageId,
+          divisionId,
+        })),
+      },
       refetchQueries: afterMessageWrite(args.journalId),
     });
   };

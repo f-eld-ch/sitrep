@@ -1,7 +1,10 @@
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
 import { toDivision, toMessage } from "./mapper";
-import type { WireDivision, WireMessage } from "./wire";
+import type { GetMessagesQuery } from "gql";
+
+type WireMessage = GetMessagesQuery["messages"][0];
+type WireDivision = WireMessage["divisions"][0]["division"];
 
 const WIRE_DIVISION: WireDivision = {
   id: "div-1",
@@ -68,17 +71,26 @@ describe("toMessage", () => {
   });
 
   it("falls back to Medium.Radio for unknown medium", () => {
-    const result = toMessage({ ...WIRE_MESSAGE, medium: "CARRIER_PIGEON" });
+    const result = toMessage({
+      ...WIRE_MESSAGE,
+      medium: "CARRIER_PIGEON" as WireMessage["medium"],
+    });
     expect(result.medium).toBe(Medium.Radio);
   });
 
   it("falls back to TriageStatus.Pending for unknown triageId", () => {
-    const result = toMessage({ ...WIRE_MESSAGE, triageId: "UNKNOWN_STATUS" });
+    const result = toMessage({
+      ...WIRE_MESSAGE,
+      triageId: "UNKNOWN_STATUS" as WireMessage["triageId"],
+    });
     expect(result.triageId).toBe(TriageStatus.Pending);
   });
 
   it("falls back to PriorityStatus.Normal for unknown priorityId", () => {
-    const result = toMessage({ ...WIRE_MESSAGE, priorityId: "TOP_SECRET" });
+    const result = toMessage({
+      ...WIRE_MESSAGE,
+      priorityId: "TOP_SECRET" as WireMessage["priorityId"],
+    });
     expect(result.priorityId).toBe(PriorityStatus.Normal);
   });
 

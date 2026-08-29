@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { toJournal } from "./mapper";
-import type { WireJournal } from "./wire";
+import type { GetJournalsQuery } from "gql";
 
-const WIRE_JOURNAL: WireJournal = {
+const WIRE_JOURNAL: GetJournalsQuery["incidents"][0]["journals"][0] = {
   id: "j-1",
   name: "Alpha Log",
   createdAt: "2024-03-15T08:00:00Z",

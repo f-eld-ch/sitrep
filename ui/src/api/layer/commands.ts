@@ -59,8 +59,8 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
       variables: {
         layerId: args.layerId,
         id: args.id,
-        geometry: args.geometry,
-        properties: args.properties,
+        geometry: args.geometry as Record<string, unknown>,
+        properties: args.properties as Record<string, unknown>,
       },
       refetchQueries: afterLayerWrite(args.incidentId),
     });
@@ -84,7 +84,11 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
 
   const modifyFeature = async (args: ModifyFeatureArgs): Promise<void> => {
     await mutate({
-      variables: { id: args.id, geometry: args.geometry, properties: args.properties },
+      variables: {
+        id: args.id,
+        geometry: args.geometry as Record<string, unknown>,
+        properties: args.properties as Record<string, unknown>,
+      },
       refetchQueries: afterLayerWrite(args.incidentId),
     });
   };

@@ -6,15 +6,18 @@ import type {
 } from "geojson";
 import type { Feature, Layer } from "types/layer";
 import { toDate, toOptionalDate } from "../common/mapper";
-import type { WireFeature, WireLayer } from "./wire";
+import type { GetLayersQuery } from "gql";
+
+type WireFeature = GetLayersQuery["layers"][0]["features"][0];
+type WireLayer = GetLayersQuery["layers"][0];
 
 function toFeature(w: WireFeature): Feature {
   return {
     id: w.id,
-    // geometry and properties are opaque jsonb blobs — typed as unknown on the wire,
-    // cast here so the rest of the app can treat them as structured GeoJSON.
-    geometry: w.geometry as Feature["geometry"],
-    properties: w.properties as Feature["properties"],
+    // geometry and properties are opaque jsonb blobs — typed as Record<string, unknown>
+    // on the wire, cast here so the rest of the app can treat them as structured GeoJSON.
+    geometry: w.geometry as unknown as Feature["geometry"],
+    properties: w.properties as unknown as Feature["properties"],
     createdAt: toDate(w.createdAt),
     updatedAt: toOptionalDate(w.updatedAt) as Date,
     deletedAt: toOptionalDate(w.deletedAt) as Date,

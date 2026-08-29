@@ -1,42 +1,18 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-  WireGetMessageForTriageResult,
-  WireGetMessagesResult,
-  WireInsertMessageResult,
-  WireSaveMessageTriageResult,
-  WireUpdateMessageResult,
-} from "./wire";
+  GetMessageForTriageQuery,
+  GetMessageForTriageQueryVariables,
+  GetMessagesQuery,
+  GetMessagesQueryVariables,
+  InsertMessageMutation,
+  InsertMessageMutationVariables,
+  SaveMessageTriageMutation,
+  SaveMessageTriageMutationVariables,
+  UpdateMessageMutation,
+  UpdateMessageMutationVariables,
+} from "gql";
 
-export interface InsertMessageVars {
-  journalId: string;
-  sender: string;
-  receiver: string;
-  time: Date;
-  content: string;
-  receiverDetail: string;
-  senderDetail: string;
-  medium: string;
-}
-
-export interface UpdateMessageVars {
-  messageId: string;
-  content: string;
-  sender: string;
-  receiver: string;
-  time: Date;
-  receiverDetail: string;
-  senderDetail: string;
-  medium: string;
-}
-
-export interface SaveMessageTriageVars {
-  messageId: string;
-  messageDivisions: Array<{ messageId: string; divisionId: string }>;
-  priority: string;
-  triage: string;
-}
-
-const GET_MESSAGES: TypedDocumentNode<WireGetMessagesResult, { journalId: string }> = gql`
+const GET_MESSAGES: TypedDocumentNode<GetMessagesQuery, GetMessagesQueryVariables> = gql`
   query GetMessages($journalId: uuid!) {
     journalsByPk(id: $journalId) {
       incident {
@@ -77,8 +53,8 @@ const GET_MESSAGES: TypedDocumentNode<WireGetMessagesResult, { journalId: string
 `;
 
 const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
-  WireGetMessageForTriageResult,
-  { messageId: string }
+  GetMessageForTriageQuery,
+  GetMessageForTriageQueryVariables
 > = gql`
   query GetMessageForTriage($messageId: uuid!) {
     messagesByPk(id: $messageId) {
@@ -115,125 +91,129 @@ const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
   }
 `;
 
-const INSERT_MESSAGE: TypedDocumentNode<WireInsertMessageResult, InsertMessageVars> = gql`
-  mutation InsertMessage(
-    $journalId: uuid
-    $sender: String
-    $receiver: String
-    $time: timestamptz
-    $content: String
-    $receiverDetail: String
-    $senderDetail: String
-    $medium: MediumEnum
-  ) {
-    insertMessagesOne(
-      object: {
-        content: $content
-        journalId: $journalId
-        receiver: $receiver
-        sender: $sender
-        time: $time
-        mediumId: $medium
-        senderDetail: $senderDetail
-        receiverDetail: $receiverDetail
-      }
-    ) {
-      id
-      createdAt
-      content
-      receiver
-      sender
-      senderDetail
-      receiverDetail
-      medium: mediumId
-      time
-      updatedAt
-      triageId
-      priorityId
-      divisions {
-        division {
-          name
-        }
-      }
-      deletedAt
-    }
-  }
-`;
-
-const UPDATE_MESSAGE: TypedDocumentNode<WireUpdateMessageResult, UpdateMessageVars> = gql`
-  mutation UpdateMessage(
-    $messageId: uuid!
-    $content: String
-    $sender: String
-    $receiver: String
-    $time: timestamptz
-    $receiverDetail: String
-    $senderDetail: String
-    $medium: MediumEnum
-  ) {
-    updateMessagesByPk(
-      pkColumns: { id: $messageId }
-      _set: {
-        content: $content
-        sender: $sender
-        receiver: $receiver
-        time: $time
-        mediumId: $medium
-        senderDetail: $senderDetail
-        receiverDetail: $receiverDetail
-      }
-    ) {
-      id
-      createdAt
-      content
-      receiver
-      sender
-      senderDetail
-      receiverDetail
-      medium: mediumId
-      time
-      updatedAt
-      triageId
-      priorityId
-      divisions {
-        division {
-          name
-        }
-      }
-      deletedAt
-    }
-  }
-`;
-
-const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<WireSaveMessageTriageResult, SaveMessageTriageVars> =
+const INSERT_MESSAGE: TypedDocumentNode<InsertMessageMutation, InsertMessageMutationVariables> =
   gql`
-    mutation SaveMessageTriage(
-      $messageId: uuid!
-      $priority: PriorityStatusEnum
-      $triage: TriageStatusEnum
-      $messageDivisions: [MessageDivisionInsertInput!]!
+    mutation InsertMessage(
+      $journalId: uuid
+      $sender: String
+      $receiver: String
+      $time: timestamptz
+      $content: String
+      $receiverDetail: String
+      $senderDetail: String
+      $medium: MediumEnum
     ) {
-      deleteMessageDivision(where: { messageId: { _eq: $messageId } }) {
-        affectedRows
-      }
-      insertMessageDivision(objects: $messageDivisions) {
-        affectedRows
-      }
-      updateMessagesByPk(
-        pkColumns: { id: $messageId }
-        _set: { priorityId: $priority, triageId: $triage }
+      insertMessagesOne(
+        object: {
+          content: $content
+          journalId: $journalId
+          receiver: $receiver
+          sender: $sender
+          time: $time
+          mediumId: $medium
+          senderDetail: $senderDetail
+          receiverDetail: $receiverDetail
+        }
       ) {
         id
+        createdAt
+        content
+        receiver
+        sender
+        senderDetail
+        receiverDetail
+        medium: mediumId
+        time
+        updatedAt
+        triageId
+        priorityId
         divisions {
           division {
             name
           }
         }
-        triageId
-        priorityId
+        deletedAt
       }
     }
   `;
+
+const UPDATE_MESSAGE: TypedDocumentNode<UpdateMessageMutation, UpdateMessageMutationVariables> =
+  gql`
+    mutation UpdateMessage(
+      $messageId: uuid!
+      $content: String
+      $sender: String
+      $receiver: String
+      $time: timestamptz
+      $receiverDetail: String
+      $senderDetail: String
+      $medium: MediumEnum
+    ) {
+      updateMessagesByPk(
+        pkColumns: { id: $messageId }
+        _set: {
+          content: $content
+          sender: $sender
+          receiver: $receiver
+          time: $time
+          mediumId: $medium
+          senderDetail: $senderDetail
+          receiverDetail: $receiverDetail
+        }
+      ) {
+        id
+        createdAt
+        content
+        receiver
+        sender
+        senderDetail
+        receiverDetail
+        medium: mediumId
+        time
+        updatedAt
+        triageId
+        priorityId
+        divisions {
+          division {
+            name
+          }
+        }
+        deletedAt
+      }
+    }
+  `;
+
+const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
+  SaveMessageTriageMutation,
+  SaveMessageTriageMutationVariables
+> = gql`
+  mutation SaveMessageTriage(
+    $messageId: uuid!
+    $priority: PriorityStatusEnum
+    $triage: TriageStatusEnum
+    $messageDivisions: [MessageDivisionInsertInput!]!
+  ) {
+    deleteMessageDivision(where: { messageId: { _eq: $messageId } }) {
+      affectedRows
+    }
+    insertMessageDivision(objects: $messageDivisions) {
+      affectedRows
+    }
+    updateMessagesByPk(
+      pkColumns: { id: $messageId }
+      _set: { priorityId: $priority, triageId: $triage }
+    ) {
+      id
+      divisions {
+        division {
+          name
+        }
+      }
+      triageId
+      priorityId
+    }
+  }
+`;
 
 export {
   GET_MESSAGE_FOR_TRIAGE,

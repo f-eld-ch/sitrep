@@ -1,7 +1,11 @@
 import { Medium, PriorityStatus, TriageStatus, type Message } from "types";
 import type { Division } from "types";
 import { toDate, toEnum, toOptionalDate } from "../common/mapper";
-import type { WireDivision, WireMessage } from "./wire";
+import type { GetMessagesQuery } from "gql";
+
+type WireMessageDivision = GetMessagesQuery["messages"][0]["divisions"][0];
+type WireDivision = WireMessageDivision["division"];
+type WireMessage = GetMessagesQuery["messages"][0];
 
 const ALL_MEDIA = Object.values(Medium) as string[];
 const ALL_TRIAGE = Object.values(TriageStatus) as string[];
@@ -11,7 +15,7 @@ export function toDivision(w: WireDivision): Division {
   return {
     id: w.id,
     name: w.name,
-    description: w.description,
+    description: w.description ?? "",
   };
 }
 
@@ -21,9 +25,9 @@ export function toMessage(w: WireMessage): Message {
     number: undefined,
     content: w.content,
     sender: w.sender,
-    senderDetail: w.senderDetail,
+    senderDetail: w.senderDetail ?? "",
     receiver: w.receiver,
-    receiverDetail: w.receiverDetail,
+    receiverDetail: w.receiverDetail ?? "",
     medium: toEnum(ALL_MEDIA, w.medium, Medium.Radio) as Medium,
     time: toDate(w.time),
     createdAt: toDate(w.createdAt),

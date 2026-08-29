@@ -2,6 +2,7 @@
   "compilerOptions": {
     "types": ["vitest/globals"],
     "paths": {
+      "gql": ["./src/gql/graphql.ts"],
       "types": ["./src/types/index.ts"],
       "types/*": ["./src/types/*"],
       "utils": ["./src/utils/index.ts"],

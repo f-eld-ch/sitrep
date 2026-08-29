@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { toIncidentDetails, toIncidentSummary } from "./mapper";
-import type { WireIncidentDetails, WireIncidentSummary } from "./wire";
+import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql";
 
-const WIRE_SUMMARY: WireIncidentSummary = {
+const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
   id: "inc-1",
   name: "Forest Fire Alpha",
   createdAt: "2024-03-15T08:00:00Z",
-  updatedAt: null,
+  updatedAt: "2024-03-15T09:00:00Z",
   deletedAt: null,
   closedAt: null,
   location: { name: "Sector 7", coordinates: "47.1,8.5" },
 };
 
-const WIRE_DETAILS: WireIncidentDetails = {
+const WIRE_DETAILS: NonNullable<GetIncidentDetailQuery["incidentsByPk"]> = {
   id: "inc-1",
   name: "Forest Fire Alpha",
   createdAt: "2024-03-15T08:00:00Z",
@@ -32,7 +32,7 @@ describe("toIncidentSummary", () => {
 
   it("maps null optional dates to null", () => {
     const result = toIncidentSummary(WIRE_SUMMARY);
-    expect(result.updatedAt).toBeNull();
+    // updatedAt is always non-null from Hasura (schema-level NOT NULL)
     expect(result.deletedAt).toBeNull();
     expect(result.closedAt).toBeNull();
   });

@@ -93,7 +93,7 @@ export function useMessageForTriage(
     status: "ready",
     data: {
       message: toMessage(wireMessage),
-      incidentDivisions: wireMessage.journal.incident.divisions.map(toDivision) ?? [],
+      incidentDivisions: wireMessage.journal?.incident.divisions.map(toDivision) ?? [],
     },
     error: undefined,
     isRefreshing: loading,

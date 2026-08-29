@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { toLayer } from "./mapper";
-import type { WireFeature, WireLayer } from "./wire";
+import type { GetLayersQuery } from "gql";
+
+type WireFeature = GetLayersQuery["layers"][0]["features"][0];
+type WireLayer = GetLayersQuery["layers"][0];
 
 const WIRE_FEATURE_ACTIVE: WireFeature = {
   id: "feat-1",

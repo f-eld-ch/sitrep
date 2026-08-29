@@ -1,14 +1,14 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-  CloseJournalVars,
-  GetJournalsVars,
-  InsertJournalVars,
-  WireCloseJournalResult,
-  WireGetJournalsResult,
-  WireInsertJournalResult,
-} from "./wire";
+  CloseJournalMutation,
+  CloseJournalMutationVariables,
+  GetJournalsQuery,
+  GetJournalsQueryVariables,
+  InsertJournalMutation,
+  InsertJournalMutationVariables,
+} from "gql";
 
-export const GET_JOURNALS: TypedDocumentNode<WireGetJournalsResult, GetJournalsVars> = gql`
+export const GET_JOURNALS: TypedDocumentNode<GetJournalsQuery, GetJournalsQueryVariables> = gql`
   query GetJournals($incidentId: uuid) {
     incidents(where: { id: { _eq: $incidentId } }) {
       id
@@ -25,7 +25,10 @@ export const GET_JOURNALS: TypedDocumentNode<WireGetJournalsResult, GetJournalsV
   }
 `;
 
-export const INSERT_JOURNAL: TypedDocumentNode<WireInsertJournalResult, InsertJournalVars> = gql`
+export const INSERT_JOURNAL: TypedDocumentNode<
+  InsertJournalMutation,
+  InsertJournalMutationVariables
+> = gql`
   mutation InsertJournal($name: String!, $incidentId: uuid!) {
     insertJournalsOne(object: { incidentId: $incidentId, name: $name }) {
       id
@@ -38,14 +41,15 @@ export const INSERT_JOURNAL: TypedDocumentNode<WireInsertJournalResult, InsertJo
   }
 `;
 
-export const CLOSE_JOURNAL: TypedDocumentNode<WireCloseJournalResult, CloseJournalVars> = gql`
-  mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
-    updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
-      affectedRows
-      returning {
-        id
-        closedAt
+export const CLOSE_JOURNAL: TypedDocumentNode<CloseJournalMutation, CloseJournalMutationVariables> =
+  gql`
+    mutation CloseJournal($journalId: uuid, $closedAt: timestamptz) {
+      updateJournals(where: { id: { _eq: $journalId } }, _set: { closedAt: $closedAt }) {
+        affectedRows
+        returning {
+          id
+          closedAt
+        }
       }
     }
-  }
-`;
+  `;
