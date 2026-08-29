@@ -13,7 +13,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
 import dayjs from "dayjs";
-import { t } from "i18next";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -133,6 +132,7 @@ export function IncidentCard(props: {
   const { incident, closeIncident, deleteIncident } = props;
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
+  const { t } = useTranslation();
 
   const cardClass = classNames({
     card: true,

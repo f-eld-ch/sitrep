@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
 
 import "./App.scss";
 
@@ -31,6 +31,123 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 
 const MapView = lazy(() => import("views/map"));
 
+const router = createBrowserRouter([
+  {
+    path: "/incident",
+    children: [
+      {
+        path: "list",
+        element: (
+          <Layout>
+            <IncidentList />
+          </Layout>
+        ),
+      },
+      {
+        path: "new",
+        element: (
+          <Layout>
+            <IncidentNew />
+          </Layout>
+        ),
+      },
+      {
+        path: ":incidentId",
+        children: [
+          {
+            path: "edit",
+            element: (
+              <Layout>
+                <IncidentEditor />
+              </Layout>
+            ),
+          },
+          {
+            path: "journal",
+            children: [
+              {
+                path: "view",
+                element: (
+                  <Layout>
+                    <JournalOverview />
+                  </Layout>
+                ),
+              },
+              {
+                path: "new",
+                element: (
+                  <Layout>
+                    <JournalNew />
+                  </Layout>
+                ),
+              },
+              {
+                path: ":journalId/edit",
+                element: (
+                  <Layout>
+                    <JournalEditor />
+                  </Layout>
+                ),
+              },
+              {
+                path: ":journalId",
+                element: (
+                  <Layout>
+                    <JournalMessageList showControls={false} autoScroll={true} />
+                  </Layout>
+                ),
+              },
+            ],
+          },
+          {
+            path: "resources",
+            element: (
+              <Layout>
+                <ResourcesList />
+              </Layout>
+            ),
+          },
+          {
+            path: "map",
+            element: (
+              <LayoutMarginLess>
+                <Suspense fallback={<Spinner />}>
+                  <MapView />
+                </Suspense>
+              </LayoutMarginLess>
+            ),
+          },
+          {
+            path: "tasks",
+            element: (
+              <Layout>
+                <TaskList />
+              </Layout>
+            ),
+          },
+          {
+            path: "requests",
+            element: (
+              <Layout>
+                <RequestList />
+              </Layout>
+            ),
+          },
+          {
+            path: "soma",
+            element: (
+              <Layout>
+                <ImmediateMeasuresList />
+              </Layout>
+            ),
+          },
+        ],
+      },
+    ],
+  },
+  { path: "/", element: <Navigate to="/incident/list" /> },
+]);
+
 function App() {
   const { i18n } = useTranslation();
   dayjs.extend(LocalizedFormat);
@@ -60,118 +177,7 @@ function App() {
       <ApolloProvider client={client}>
         <FeatureFlagProvider>
           <IncidentContextProvider>
-            <Router>
-              <Routes>
-                <Route path="/incident">
-                  <Route
-                    path="list"
-                    element={
-                      <Layout>
-                        <IncidentList />
-                      </Layout>
-                    }
-                  />
-                  <Route
-                    path="new"
-                    element={
-                      <Layout>
-                        <IncidentNew />
-                      </Layout>
-                    }
-                  />
-
-                  <Route path=":incidentId">
-                    <Route
-                      path="edit"
-                      element={
-                        <Layout>
-                          <IncidentEditor />
-                        </Layout>
-                      }
-                    />
-
-                    <Route path="journal">
-                      <Route
-                        path="view"
-                        element={
-                          <Layout>
-                            <JournalOverview />
-                          </Layout>
-                        }
-                      />
-                      <Route
-                        path="new"
-                        element={
-                          <Layout>
-                            <JournalNew />
-                          </Layout>
-                        }
-                      />
-                      <Route
-                        path=":journalId/edit"
-                        element={
-                          <Layout>
-                            <JournalEditor />
-                          </Layout>
-                        }
-                      />
-                      <Route
-                        path=":journalId"
-                        element={
-                          <Layout>
-                            <JournalMessageList showControls={false} autoScroll={true} />
-                          </Layout>
-                        }
-                      />
-                    </Route>
-
-                    <Route
-                      path="resources"
-                      element={
-                        <Layout>
-                          <ResourcesList />
-                        </Layout>
-                      }
-                    />
-                    <Route
-                      path="map"
-                      element={
-                        <LayoutMarginLess>
-                          <Suspense fallback={<Spinner />}>
-                            <MapView />
-                          </Suspense>
-                        </LayoutMarginLess>
-                      }
-                    />
-                    <Route
-                      path="tasks"
-                      element={
-                        <Layout>
-                          <TaskList />
-                        </Layout>
-                      }
-                    />
-                    <Route
-                      path="requests"
-                      element={
-                        <Layout>
-                          <RequestList />
-                        </Layout>
-                      }
-                    />
-                    <Route
-                      path="soma"
-                      element={
-                        <Layout>
-                          <ImmediateMeasuresList />
-                        </Layout>
-                      }
-                    />
-                  </Route>
-                </Route>
-                <Route path="/" element={<Navigate to="/incident/list" />} />
-              </Routes>
-            </Router>
+            <RouterProvider router={router} />
           </IncidentContextProvider>
         </FeatureFlagProvider>
       </ApolloProvider>

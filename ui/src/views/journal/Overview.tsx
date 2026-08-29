@@ -14,7 +14,6 @@ import { Spinner } from "components";
 import dayjs from "dayjs";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { t } from "i18next";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -113,6 +112,7 @@ function JournalCard(props: { journal: Journal; incidentId: string | undefined }
   const { journal, incidentId } = props;
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
+  const { t } = useTranslation();
 
   const [closeJournal] = useMutation<CloseJournalData, CloseJournalVars>(CloseJournal, {
     refetchQueries: [{ query: GetJournals, variables: { incidentId: incidentId } }],

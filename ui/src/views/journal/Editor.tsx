@@ -1,303 +1,185 @@
 import { useMutation, useQuery } from "@apollo/client/react";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import MDEditor from "@uiw/react-md-editor";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 import uniq from "lodash/uniq";
-import React, { useCallback, useContext, useEffect, useId, useReducer } from "react";
-import { useNavigate, useParams } from "react-router";
-import rehypeSanitize from "rehype-sanitize";
+import React, { useCallback, useId, useMemo, useReducer, useRef } from "react";
+import { useBlocker, useNavigate, useParams } from "react-router";
 import type { GetJournalMessagesData, GetJournalMessagesVars } from "types";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
-import type { InsertMessageVars, UpdateMessageVars } from "types/journal";
+import type { UpdateMessageVars } from "types/journal";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
-import { Email, Phone, Radio } from "./EditorForms";
-import { RadioChannelDetailInput } from "./EditorForms/Elements";
-import { Other } from "./EditorForms/Other";
+import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { GetJournalMessages, InsertMessage, UpdateMessage } from "./graphql";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
+import {
+  type AutofillDetail,
+  EditorContext,
+  type EditorContextValue,
+  type MediaDetail,
+  editorReducer,
+  initEditorState,
+  isNonEmptyString,
+  useEditorContext,
+} from "./editorState";
 
-interface State {
-  sender: string;
-  senderDetail: string;
-  receiver: string;
-  receiverDetail: string;
-  content: string;
-  time: Date | undefined;
-  messageToEdit: Message | undefined;
-  messageToTriage: Message | undefined;
-  media: Medium;
-  saving: boolean;
-  radioChannel: string;
-  autocompleteDetails: AutofillDetail;
-}
-
-type MediaDetail = PhoneDetail | EmailDetail | RadioDetail | OtherDetail;
-export interface PhoneDetail {
-  type: Medium.Phone;
-  sender?: string;
-  receiver?: string;
-}
-
-export interface EmailDetail {
-  type: Medium.Email;
-  sender?: string;
-  receiver?: string;
-}
-
-export interface OtherDetail {
-  type: Medium.Other;
-  sender?: string;
-  receiver?: string;
-}
-
-export interface RadioDetail {
-  type: Medium.Radio;
-  channel?: string;
-}
-
-interface AutofillDetail {
-  senderReceiverNames: string[];
-  channelList: string[];
-  senderReceiverDetails: string[];
-}
-
-type Action =
-  | { type: "clear" }
-  | { type: "set_edit_message"; message: Message | undefined }
-  | { type: "set_triage_message"; message: Message | undefined }
-  | { type: "set_sender"; sender: string }
-  | { type: "set_receiver"; receiver: string }
-  | { type: "set_content"; content: string }
-  | { type: "set_time"; time: Date | undefined }
-  | { type: "save" }
-  | { type: "save_error" }
-  | { type: "set_media_detail"; detail: MediaDetail }
-  | { type: "set_autofill_details"; detail: AutofillDetail };
-type Dispatch = (action: Action) => void;
-
-export const EditorContext = React.createContext<{
-  state: State;
-  dispatch: Dispatch;
-}>({
-  state: initState(),
-  dispatch: (action: Action) => {
-    console.log(action);
-  },
-});
-
-function initState(): State {
-  return {
-    messageToTriage: undefined,
-    messageToEdit: undefined,
-    sender: "",
-    receiver: "",
-    receiverDetail: "",
-    senderDetail: "",
-    time: undefined,
-    content: "",
-    media: Medium.Radio,
-    saving: false,
-    radioChannel: "",
-    autocompleteDetails: {
-      senderReceiverDetails: [],
-      senderReceiverNames: [],
-      channelList: [],
-    },
-  };
-}
+// re-export types that Elements.tsx / sub-forms depend on via this path
+export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail } from "./editorState";
+export { useEditorContext } from "./editorState";
+export { ReactEditor, ReactPreview } from "./Markdown";
 
 function Editor() {
+  const { t } = useTranslation();
   const { journalId } = useParams();
   const { data } = useQuery<GetJournalMessagesData, GetJournalMessagesVars>(GetJournalMessages, {
     fetchPolicy: "cache-first",
     variables: { journalId: journalId || "" },
   });
 
-  const [insertMessage, { error }] = useMutation<Message, InsertMessageVars>(InsertMessage, {
+  const [state, dispatch] = useReducer(editorReducer, initEditorState());
+
+  const savingRef = useRef(false);
+
+  const isDirty =
+    state.content !== "" ||
+    state.sender !== "" ||
+    state.receiver !== "" ||
+    state.radioChannel !== "" ||
+    state.senderDetail !== "" ||
+    state.receiverDetail !== "" ||
+    state.time !== undefined ||
+    state.messageToEdit !== undefined;
+
+  const blocker = useBlocker(isDirty);
+
+  const [insertMessage, { error, loading: insertLoading }] = useMutation(InsertMessage, {
     onCompleted() {
-      // reset the form values
+      savingRef.current = false;
+      if (blocker.state === "blocked") blocker.reset();
       dispatch({ type: "clear" });
     },
     onError() {
-      dispatch({ type: "save_error" });
+      savingRef.current = false;
     },
-    refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId } }],
   });
 
-  const [updateMessage, { error: errorUpdate }] = useMutation<Message, UpdateMessageVars>(
-    UpdateMessage,
-    {
-      onCompleted() {
-        // reset the form values
-        dispatch({ type: "clear" });
-      },
-      onError() {
-        dispatch({ type: "save_error" });
-      },
-      refetchQueries: [{ query: GetJournalMessages, variables: { journalId: journalId } }],
+  const [updateMessage, { error: errorUpdate, loading: updateLoading }] = useMutation<
+    Message,
+    UpdateMessageVars
+  >(UpdateMessage, {
+    onCompleted() {
+      savingRef.current = false;
+      if (blocker.state === "blocked") blocker.reset();
+      dispatch({ type: "clear" });
     },
+    onError() {
+      savingRef.current = false;
+    },
+    refetchQueries: [{ query: GetJournalMessages, variables: { journalId } }],
+  });
+
+  const autocompleteDetails = useMemo<AutofillDetail>(
+    () => ({
+      senderReceiverNames: uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter(
+        isNonEmptyString,
+      ),
+      senderReceiverDetails: uniq(
+        data?.messages
+          .filter((d) => d.medium !== Medium.Radio)
+          .flatMap((d) => [d.senderDetail, d.receiverDetail]),
+      ).filter(isNonEmptyString),
+      channelList: uniq(
+        data?.messages.filter((d) => d.medium === Medium.Radio).map((d) => d.senderDetail),
+      ).filter(isNonEmptyString),
+    }),
+    [data],
   );
 
-  const editorReducer = (state: State, action: Action): State => {
-    switch (action.type) {
-      case "save": {
-        if (state.time === undefined) {
-          return Object.assign({}, state, { time: new Date(), saving: true });
-        }
-        return Object.assign({}, state, { saving: true });
-      }
-      case "save_error": {
-        return Object.assign({}, state, { saving: false });
-      }
-      case "set_sender": {
-        return Object.assign({}, state, { sender: action.sender });
-      }
-      case "set_receiver": {
-        return Object.assign({}, state, { receiver: action.receiver });
-      }
-      case "set_content": {
-        return Object.assign({}, state, { content: action.content });
-      }
-      case "set_time": {
-        return Object.assign({}, state, { time: action.time });
-      }
-      case "set_media_detail": {
-        const details = {
-          sender: state.senderDetail,
-          receiver: state.receiverDetail,
-          ...action.detail,
-        };
+  const saving = insertLoading || updateLoading;
 
-        switch (details.type) {
-          case Medium.Radio:
-            return {
-              ...state,
-              media: details.type,
-              radioChannel: details.channel || "",
-            };
-          default:
-            return {
-              ...state,
-              media: details.type,
-              senderDetail: details.sender,
-              receiverDetail: details.receiver,
-            };
-        }
-      }
-      case "clear": {
-        // keep autocompleteDetails
-        return Object.assign({}, initState(), {
-          autocompleteDetails: state.autocompleteDetails,
-        });
-      }
-      case "set_edit_message": {
-        return Object.assign({}, state, {
-          messageToEdit: action.message,
-          sender: action.message?.sender,
-          receiver: action.message?.receiver,
-          time: action.message?.time,
-          content: action.message?.content,
-          media: action.message?.medium || Medium.Radio,
-          senderDetail: action.message?.senderDetail,
-          receiverDetail: action.message?.receiverDetail,
-          radioChannel: action.message?.senderDetail,
-        });
-      }
-      case "set_triage_message": {
-        return Object.assign({}, state, {
-          messageToTriage: action.message,
-        });
-      }
-      case "set_autofill_details": {
-        return Object.assign({}, state, {
-          autocompleteDetails: action.detail,
-        });
-      }
-      default: {
-        throw new Error(`Unhandled action type: ${action}`);
-      }
-    }
-  };
-
-  const [state, dispatch] = useReducer(editorReducer, initState());
-
-  useEffect(() => {
-    // exit if we don't need to save
-    if (!state.saving) return;
-
-    if (state.time === undefined) return;
-
+  const handleSave = useCallback(() => {
     if (journalId === undefined) return;
-
+    if (savingRef.current) return;
+    savingRef.current = true;
+    const time = state.time ?? new Date();
+    const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
+    const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
     if (state.messageToEdit?.id) {
       updateMessage({
         variables: {
           messageId: state.messageToEdit.id,
-          time: state.time || new Date(),
-          journalId: journalId,
+          time,
+          journalId,
           content: state.content,
           medium: state.media,
           sender: state.sender,
-          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
+          senderDetail,
           receiver: state.receiver,
-          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
+          receiverDetail,
         },
       });
     } else {
       insertMessage({
         variables: {
-          time: state.time || new Date(),
-          journalId: journalId,
+          time,
+          journalId,
           content: state.content,
           medium: state.media,
           sender: state.sender,
-          senderDetail: state.media !== Medium.Radio ? state.senderDetail : state.radioChannel,
+          senderDetail,
           receiver: state.receiver,
-          receiverDetail: state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel,
+          receiverDetail,
         },
       });
     }
   }, [state, insertMessage, updateMessage, journalId]);
 
-  useEffect(() => {
-    dispatch({
-      type: "set_autofill_details",
-      detail: {
-        senderReceiverNames:
-          uniq(data?.messages.flatMap((d) => [d.sender, d.receiver])).filter((e) => e) || [],
-        senderReceiverDetails:
-          uniq(
-            data?.messages
-              .filter((d) => d.medium !== Medium.Radio)
-              .flatMap((d) => [d.senderDetail, d.receiverDetail]),
-          ).filter((e) => e) || [],
-        channelList:
-          uniq(
-            data?.messages.filter((d) => d.medium === Medium.Radio).map((d) => d.senderDetail),
-          ).filter((e) => e) || [],
-      },
-    });
-  }, [data]);
+  const setEditorMessage = useCallback((message: Message | undefined) => {
+    if (message) {
+      dispatch({ type: "set_edit_message", message });
+    } else {
+      dispatch({ type: "clear" });
+    }
+  }, []);
 
-  // create callbacks to have stable List renderings
-  const setEditorMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_edit_message", message: message }),
-    [],
-  );
   const setTriageMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_triage_message", message: message }),
+    (message: Message | undefined) => dispatch({ type: "set_triage_message", message }),
     [],
   );
+
+  const contextValue: EditorContextValue = {
+    state,
+    dispatch,
+    onSave: handleSave,
+    saving,
+    autocompleteDetails,
+  };
 
   return (
-    <EditorContext.Provider value={{ state, dispatch }}>
+    <EditorContext.Provider value={contextValue}>
       <div>
         <div className="columns is-tablet">
           <div className="column is-half">
             <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
+            {blocker.state === "blocked" && (
+              <div className="notification is-danger is-light">
+                <button
+                  className="delete is-pulled-right is-small mb-2"
+                  aria-label={t("cancel") as string}
+                  onClick={() => blocker.reset()}
+                />
+                <p className="mb-2">{t("unsavedChanges")}</p>
+                <button
+                  type="button"
+                  className="button is-primary"
+                  onClick={() => blocker.proceed()}
+                >
+                  {t("discard")}
+                </button>
+              </div>
+            )}
             {error && <Notification type="error">{error?.message}</Notification>}
             {errorUpdate && <Notification type="error">{errorUpdate?.message}</Notification>}
             <InputBox />
@@ -312,7 +194,7 @@ function Editor() {
           <TriageModal
             message={state.messageToTriage}
             setMessage={(message: Message | undefined) =>
-              dispatch({ type: "set_triage_message", message: message })
+              dispatch({ type: "set_triage_message", message })
             }
           />
         </div>
@@ -322,29 +204,13 @@ function Editor() {
 }
 
 function InputBox() {
+  const { t } = useTranslation();
   const { incidentId, journalId } = useParams();
-  const { state, dispatch } = useEditorContext();
+  const { state, dispatch, onSave } = useEditorContext();
 
-  // debounce the content to prevent costly markdown renderings
   const messageContentDebounced: string = useDebounce(state.content, 250);
 
-  const renderFormContent = () => {
-    if (state.media === Medium.Radio) {
-      return <Radio />;
-    }
-    if (state.media === Medium.Phone) {
-      return <Phone />;
-    }
-    if (state.media === Medium.Email) {
-      return <Email />;
-    }
-    if (state.media === Medium.Other) {
-      return <Other />;
-    }
-  };
-
   const handleMediumChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.preventDefault();
     const selectMedium = e.target.value;
     if (
       selectMedium === Medium.Radio ||
@@ -352,31 +218,28 @@ function InputBox() {
       selectMedium === Medium.Phone ||
       selectMedium === Medium.Other
     ) {
-      dispatch({ type: "set_media_detail", detail: { type: selectMedium } });
+      dispatch({ type: "set_media_detail", detail: { type: selectMedium } as MediaDetail });
     }
   };
 
   const navigate = useNavigate();
 
-  const message: Message = Object.assign(
-    {},
-    {
-      id: state.messageToEdit?.id || "",
-      content: messageContentDebounced,
-      sender: state.sender,
-      senderDetail: state.senderDetail,
-      receiver: state.receiver,
-      receiverDetail: state.receiverDetail,
-      medium: state.media,
-      createdAt: state.messageToEdit?.createdAt || new Date(),
-      updatedAt: state.messageToEdit?.updatedAt || new Date(),
-      divisions: state.messageToEdit?.divisions || [],
-      deletedAt: state.messageToEdit?.deletedAt || new Date(),
-      time: state.time || new Date(),
-      priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
-      triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
-    },
-  );
+  const message: Message = {
+    id: state.messageToEdit?.id || "",
+    content: messageContentDebounced,
+    sender: state.sender,
+    senderDetail: state.senderDetail,
+    receiver: state.receiver,
+    receiverDetail: state.receiverDetail,
+    medium: state.media,
+    createdAt: state.messageToEdit?.createdAt || new Date(),
+    updatedAt: state.messageToEdit?.updatedAt || new Date(),
+    divisions: state.messageToEdit?.divisions || [],
+    deletedAt: state.messageToEdit?.deletedAt || new Date(),
+    time: state.time || new Date(),
+    priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
+    triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
+  };
 
   const mediumId = useId();
   return (
@@ -390,7 +253,7 @@ function InputBox() {
 
       <div className="mt-5 field is-horizontal">
         <div className="field-label is-normal is-flex-shrink-0">
-          <label htmlFor="medium" className="label is-capitalized">
+          <label htmlFor={mediumId} className="label is-capitalized">
             {t("mediumName")}
           </label>
         </div>
@@ -414,7 +277,15 @@ function InputBox() {
           </div>
         </div>
       </div>
-      {renderFormContent()}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSave();
+        }}
+        noValidate
+      >
+        <MediumForm medium={state.media} />
+      </form>
       {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
@@ -432,32 +303,4 @@ function InputBox() {
   );
 }
 
-export function useEditorContext(): { state: State; dispatch: Dispatch } {
-  const context = useContext(EditorContext);
-  return context;
-}
-
 export default Editor;
-
-export function ReactEditor() {
-  const { state, dispatch } = useEditorContext();
-  return (
-    <MDEditor
-      value={state.content}
-      onChange={(value) => {
-        dispatch({ type: "set_content", content: value ? value : "" });
-      }}
-      preview="edit"
-      previewOptions={{
-        prefixCls: "content",
-        rehypePlugins: [[rehypeSanitize]],
-      }}
-    />
-  );
-}
-
-export function ReactPreview(props: { content: string }) {
-  return (
-    <MarkdownPreview source={props.content} prefixCls="content" rehypePlugins={[rehypeSanitize]} />
-  );
-}

@@ -13,6 +13,8 @@
   "createNewTask": "create new task",
   "createdAt": "opened",
   "delete": "delete",
+  "discard": "Discard changes",
+  "unsavedChanges": "You have unsaved changes. Discard and leave?",
   "divisions": "divisions",
   "edit": "edit",
   "editIncident": "edit incident",

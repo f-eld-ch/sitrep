@@ -6,7 +6,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { type Division, Medium, type Message, PriorityStatus, TriageStatus } from "types";
-import { ReactPreview } from "./Editor";
+import { ReactPreview } from "./Markdown";
 
 dayjs.extend(LocalizedFormat);
 dayjs.extend(relativeTime);

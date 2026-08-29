@@ -1,21 +1,24 @@
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import { t } from "i18next";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useDate } from "utils/useDate";
-import { ReactEditor, useEditorContext } from "../Editor";
+import { ReactEditor } from "../Markdown";
+import { canSave, useEditorContext } from "../editorState";
 
-const SenderInput = () => {
-  const { state, dispatch } = useEditorContext();
+type NonRadioMedium = Exclude<Medium, Medium.Radio>;
 
-  const id = useId();
+const SenderInput = ({ id }: { id: string }) => {
+  const { t } = useTranslation();
+  const { state, dispatch, autocompleteDetails } = useEditorContext();
+
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <Hint
-        options={state.autocompleteDetails.senderReceiverNames}
+        options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
         allowEnterFill={true}
       >
@@ -27,7 +30,6 @@ const SenderInput = () => {
           autoComplete="on"
           placeholder={t("name") as string}
           onChange={(e) => {
-            e.preventDefault();
             dispatch({ type: "set_sender", sender: e.target.value });
           }}
         />
@@ -39,14 +41,14 @@ const SenderInput = () => {
   );
 };
 
-const ReceiverInput = () => {
-  const { state, dispatch } = useEditorContext();
-  const id = useId();
+const ReceiverInput = ({ id }: { id: string }) => {
+  const { t } = useTranslation();
+  const { state, dispatch, autocompleteDetails } = useEditorContext();
 
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <Hint
-        options={state.autocompleteDetails.senderReceiverNames}
+        options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
         allowEnterFill={true}
       >
@@ -58,7 +60,6 @@ const ReceiverInput = () => {
           autoComplete="on"
           placeholder={t("name") as string}
           onChange={(e) => {
-            e.preventDefault();
             dispatch({ type: "set_receiver", receiver: e.target.value });
           }}
         />
@@ -70,29 +71,29 @@ const ReceiverInput = () => {
   );
 };
 
-const ContentInput = () => {
+const ContentInput = ({ id }: { id: string }) => {
   return (
     <div className="control">
-      <ReactEditor />
+      <ReactEditor id={id} />
     </div>
   );
 };
 
-const TimeInput = () => {
+const TimeInput = ({ id }: { id: string }) => {
   const { state, dispatch } = useEditorContext();
-  const id = useId();
   const { now } = useDate();
   return (
     <div className="control is-expanded has-icons-left is-flex-shrink-1">
       <input
         id={id}
         className="input"
-        value={dayjs(state.time).format("YYYY-MM-DDTHH:mm")}
+        value={dayjs(state.time ?? now).format("YYYY-MM-DDTHH:mm")}
         type="datetime-local"
-        placeholder={dayjs(now).format("DD.MM.YYYY HH:mm")}
         onChange={(e) => {
-          e.preventDefault();
-          dispatch({ type: "set_time", time: dayjs(e.target.value).toDate() });
+          dispatch({
+            type: "set_time",
+            time: e.target.value ? dayjs(e.target.value).toDate() : undefined,
+          });
         }}
       />
       <span className="icon is-small is-left">
@@ -102,64 +103,70 @@ const TimeInput = () => {
   );
 };
 
-const SenderDetailInput = (props: { placeholder: string }) => {
-  const { state, dispatch } = useEditorContext();
+const SenderDetailInput = ({
+  placeholder,
+  medium,
+}: {
+  placeholder: string;
+  medium: NonRadioMedium;
+}) => {
+  const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
     <div className="control is-expanded is-flex-shrink-3">
       <Hint
-        options={state.autocompleteDetails.senderReceiverDetails}
+        options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}
         allowEnterFill={true}
       >
         <input
           id={id}
+          aria-label={placeholder}
           className="input"
           value={state.senderDetail}
           type="text"
           onChange={(e) => {
-            e.preventDefault();
             dispatch({
               type: "set_media_detail",
-              detail: Object.assign({}, state.media, {
-                type: state.media,
-                sender: e.target.value,
-              }),
+              detail: { type: medium, sender: e.target.value },
             });
           }}
-          placeholder={props.placeholder}
+          placeholder={placeholder}
         />
       </Hint>
     </div>
   );
 };
 
-const ReceiverDetailInput = (props: { placeholder: string }) => {
-  const { state, dispatch } = useEditorContext();
+const ReceiverDetailInput = ({
+  placeholder,
+  medium,
+}: {
+  placeholder: string;
+  medium: NonRadioMedium;
+}) => {
+  const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
     <div className="control is-expanded is-flex-shrink-3">
       <Hint
-        options={state.autocompleteDetails.senderReceiverDetails}
+        options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}
         allowEnterFill={true}
       >
         <input
           id={id}
+          aria-label={placeholder}
           className="input"
           value={state.receiverDetail}
           type="text"
           onChange={(e) => {
-            e.preventDefault();
             dispatch({
               type: "set_media_detail",
-              detail: Object.assign({}, state.media, {
-                type: state.media,
-                receiver: e.target.value,
-              }),
+              detail: { type: medium, receiver: e.target.value },
             });
           }}
-          placeholder={props.placeholder}
+          placeholder={placeholder}
         />
       </Hint>
     </div>
@@ -167,22 +174,19 @@ const ReceiverDetailInput = (props: { placeholder: string }) => {
 };
 
 const RadioChannelDetailInput = () => {
-  const { state, dispatch } = useEditorContext();
+  const { t } = useTranslation();
+  const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
     <div className="control is-narrow is-flex-shrink-4">
-      <Hint
-        options={state.autocompleteDetails.channelList}
-        allowTabFill={true}
-        allowEnterFill={true}
-      >
+      <Hint options={autocompleteDetails.channelList} allowTabFill={true} allowEnterFill={true}>
         <input
           id={id}
+          aria-label={t("radioChannel") as string}
           className="input"
           value={state.radioChannel || ""}
           type="text"
           onChange={(e) => {
-            e.preventDefault();
             dispatch({
               type: "set_media_detail",
               detail: { type: Medium.Radio, channel: e.target.value },
@@ -196,23 +200,21 @@ const RadioChannelDetailInput = () => {
 };
 
 const SaveButton = () => {
-  const { state, dispatch } = useEditorContext();
+  const { t } = useTranslation();
+  const { state, saving } = useEditorContext();
   return (
     <div className="control">
       <button
         type="submit"
         className="button is-primary is-rounded is-capitalized"
-        onClick={(e) => {
-          e.preventDefault();
-          dispatch({ type: "save" });
-        }}
-        disabled={state.content === "" || state.sender === "" || state.receiver === ""}
+        disabled={!canSave(state) || saving}
       >
         {t("save")}
       </button>
     </div>
   );
 };
+
 export {
   SenderInput,
   SenderDetailInput,

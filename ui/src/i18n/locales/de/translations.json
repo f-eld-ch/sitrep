@@ -13,6 +13,8 @@
   "createNewTask": "Pendenz erfassen",
   "createdAt": "Eröffnet",
   "delete": "löschen",
+  "discard": "Änderungen verwerfen",
+  "unsavedChanges": "Sie haben ungespeicherte Änderungen. Verwerfen und verlassen?",
   "divisions": "Fachbereiche",
   "edit": "bearbeiten",
   "editIncident": "Ereignis bearbeiten",

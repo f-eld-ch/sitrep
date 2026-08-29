@@ -13,6 +13,8 @@
   "createNewTask": "crea una nuova attività",
   "createdAt": "aperto",
   "delete": "eliminare",
+  "discard": "Scarta le modifiche",
+  "unsavedChanges": "Hai modifiche non salvate. Scartare e uscire?",
   "divisions": "dipartimenti",
   "edit": "modificare",
   "editIncident": "modifica incidente",
