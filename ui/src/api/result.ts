@@ -10,8 +10,20 @@ import type { ApiError } from "./errors";
  * isRefreshing distinguishes a background poll from the initial spinner.
  */
 export type QueryResult<T> =
-  | { status: "loading"; data: undefined; error: undefined; isRefreshing: false; refresh: () => void }
-  | { status: "error"; data: T | undefined; error: ApiError; isRefreshing: boolean; refresh: () => void }
+  | {
+      status: "loading";
+      data: undefined;
+      error: undefined;
+      isRefreshing: false;
+      refresh: () => void;
+    }
+  | {
+      status: "error";
+      data: T | undefined;
+      error: ApiError;
+      isRefreshing: boolean;
+      refresh: () => void;
+    }
   | { status: "ready"; data: T; error: undefined; isRefreshing: boolean; refresh: () => void };
 
 export interface CommandState {

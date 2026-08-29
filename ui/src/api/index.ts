@@ -7,7 +7,12 @@ export { isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
 // Incident aggregate
-export type { CreateIncidentArgs, IncidentDetailsData, IncidentsData, UpdateIncidentArgs } from "./incident";
+export type {
+  CreateIncidentArgs,
+  IncidentDetailsData,
+  IncidentsData,
+  UpdateIncidentArgs,
+} from "./incident";
 export {
   afterIncidentWrite,
   useCloseIncident,
@@ -21,12 +26,46 @@ export {
 
 // Journal aggregate
 export type { CreateJournalArgs, JournalsData } from "./journal";
-export { afterJournalWrite, useCloseJournal, useCreateJournal, useJournals, useReopenJournal } from "./journal";
+export {
+  afterJournalWrite,
+  useCloseJournal,
+  useCreateJournal,
+  useJournals,
+  useReopenJournal,
+} from "./journal";
 
 // Message aggregate
-export type { CreateMessageArgs, JournalMessagesData, MessageForTriageData, TriageMessageArgs, UpdateMessageArgs } from "./message";
-export { useCreateMessage, useJournalMessages, useMessageForTriage, useTriageMessage, useUpdateMessage } from "./message";
+export type {
+  CreateMessageArgs,
+  JournalMessagesData,
+  MessageForTriageData,
+  TriageMessageArgs,
+  UpdateMessageArgs,
+} from "./message";
+export {
+  useCreateMessage,
+  useJournalMessages,
+  useMessageForTriage,
+  useTriageMessage,
+  useUpdateMessage,
+} from "./message";
 
 // Layer aggregate
-export type { AddFeatureArgs, AddLayerArgs, DeleteFeatureArgs, LayersData, ModifyFeatureArgs } from "./layer";
-export { afterLayerWrite, useAddFeature, useAddLayer, useDeleteFeature, useLayersForIncident, useModifyFeature } from "./layer";
+export type {
+  AddFeatureArgs,
+  AddLayerArgs,
+  DeleteFeatureArgs,
+  LayersData,
+  ModifyFeatureArgs,
+} from "./layer";
+export {
+  afterLayerWrite,
+  cleanFeature,
+  convertFeatureToGeoJsonFeature,
+  layerToFeatureCollection,
+  useAddFeature,
+  useAddLayer,
+  useDeleteFeature,
+  useLayersForIncident,
+  useModifyFeature,
+} from "./layer";

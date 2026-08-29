@@ -24,7 +24,9 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const createIncident = async (args: CreateIncidentArgs): Promise<{ incidentId: string }> => {
@@ -39,7 +41,8 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
       refetchQueries: afterIncidentWrite(),
     });
     const incidentId = result.data?.insertIncidentsOne.id;
-    if (!incidentId) throw Object.assign(new Error("Create incident failed"), { code: "UNKNOWN" as const });
+    if (!incidentId)
+      throw Object.assign(new Error("Create incident failed"), { code: "UNKNOWN" as const });
     return { incidentId };
   };
 
@@ -51,7 +54,9 @@ export function useUpdateIncident(): CommandHook<UpdateIncidentArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const updateIncident = async (args: UpdateIncidentArgs): Promise<void> => {
@@ -75,7 +80,9 @@ export function useCloseIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const closeIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
@@ -95,7 +102,9 @@ export function useReopenIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const reopenIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
@@ -113,7 +122,9 @@ export function useDeleteIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const deleteIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {

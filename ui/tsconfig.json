@@ -10,8 +10,8 @@
       "components/*": ["./src/components/*"],
       "views/*": ["./src/views/*"],
       "assets/*": ["./src/assets/*"],
-      "cache": ["./src/cache.tsx"],
-      "client": ["./src/client.tsx"],
+      "cache": ["./src/api/cache.ts"],
+      "client": ["./src/api/client.ts"],
       "api": ["./src/api/index.ts"],
       "api/*": ["./src/api/*"]
     },

@@ -38,29 +38,6 @@ export interface Message {
   priorityId: PriorityStatus;
 }
 
-export interface InsertMessageVars {
-  journalId: string;
-  sender: string;
-  receiver: string;
-  time: Date;
-  content: string;
-  receiverDetail: string;
-  senderDetail: string;
-  medium: Medium;
-}
-
-export interface UpdateMessageVars {
-  messageId: string;
-  journalId: string;
-  time: Date;
-  content: string;
-  sender: string;
-  receiver: string;
-  receiverDetail: string;
-  senderDetail: string;
-  medium: Medium;
-}
-
 export interface Triage {
   name: TriageStatus;
   description: string;
@@ -81,15 +58,6 @@ export interface Division {
   description: string;
 }
 
-export interface MessageListData {
-  journalsByPk: Journal;
-  messages: Message[];
-}
-
-export interface MessageListVars {
-  journalId: string;
-}
-
 export interface Journal {
   id: string;
   name: string;
@@ -98,94 +66,4 @@ export interface Journal {
   updatedAt: Date;
   closedAt: Date;
   deletedAt: Date;
-}
-
-export interface JournalListData {
-  incidents: Incident[];
-  id: string;
-  name: string;
-  journals: Journal[];
-}
-
-export interface JournalListVars {
-  incidentId: string;
-}
-
-interface TriageMessage extends Message {
-  journal: {
-    incident: {
-      divisions: Division[];
-    };
-  };
-}
-
-export interface TriageMessageData {
-  messagesByPk: TriageMessage;
-}
-
-export interface TriageMessageVars {
-  messageId: string | undefined;
-}
-
-export interface MessageDivision {
-  messageId: string;
-  divisionId: string;
-}
-
-export interface SaveMessageTriageVars {
-  messageId: string;
-  messageDivisions: MessageDivision[];
-  priority: PriorityStatus;
-  triage: TriageStatus;
-}
-
-export interface SaveMessageTriageData {
-  delete_message_division: {
-    affectedRows: number;
-  };
-  insertMessageDivision: {
-    affectedRows: number;
-  };
-  updateMessagesByPk: Message;
-}
-
-export interface GetJournalMessagesData {
-  journalsByPk: {
-    incident: {
-      id: string;
-      divisions: Division[] | null;
-    } | null;
-  } | null;
-  messages: Message[];
-}
-
-export interface GetJournalMessagesVars {
-  journalId: string;
-}
-
-export interface InsertJournalData {
-  insertJournalsOne: Journal;
-}
-
-export interface InsertJournalVars {
-  name: string;
-  incidentId: string;
-}
-
-export interface GetJournalsData {
-  incidents: Incident[];
-}
-export interface GetJournalsVars {
-  incidentId?: string | null;
-}
-
-export interface CloseJournalData {
-  updateJournals: {
-    affectedRows: number;
-    returning: { id: string; closedAt: Date | null }[];
-  } | null;
-}
-export interface CloseJournalVars {
-  journalId?: string | null;
-  closedAt?: Date | null;
 }

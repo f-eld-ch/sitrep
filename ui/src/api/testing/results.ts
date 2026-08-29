@@ -6,7 +6,13 @@ export function readyResult<T>(data: T): QueryResult<T> {
 }
 
 export function loadingResult<T>(): QueryResult<T> {
-  return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh: () => {} };
+  return {
+    status: "loading",
+    data: undefined,
+    error: undefined,
+    isRefreshing: false,
+    refresh: () => {},
+  };
 }
 
 export function errorResult<T>(error: ApiError, data?: T): QueryResult<T> {

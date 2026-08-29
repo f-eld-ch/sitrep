@@ -14,7 +14,10 @@ async function setupMutation(affectedRows: number) {
     vi.fn().mockResolvedValue({
       data: {
         updateJournals: { affectedRows: 0, returning: [] },
-        updateIncidents: { affectedRows, returning: affectedRows > 0 ? [{ id: "inc-1", deletedAt: "2024-01-01" }] : [] },
+        updateIncidents: {
+          affectedRows,
+          returning: affectedRows > 0 ? [{ id: "inc-1", deletedAt: "2024-01-01" }] : [],
+        },
       },
     }),
     { loading: false, error: undefined, reset: vi.fn(), called: false } as never,

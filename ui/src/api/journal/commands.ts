@@ -14,7 +14,9 @@ export function useCreateJournal(): CommandHook<CreateJournalArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const createJournal = async (args: CreateJournalArgs): Promise<void> => {
@@ -35,7 +37,9 @@ export function useCloseJournal(): CommandHook<{ journalId: string; incidentId: 
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const closeJournal = async ({
@@ -59,7 +63,9 @@ export function useReopenJournal(): CommandHook<{ journalId: string; incidentId:
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const reopenJournal = async ({

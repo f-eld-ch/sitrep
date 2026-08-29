@@ -33,7 +33,9 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const createMessage = async (args: CreateMessageArgs): Promise<void> => {
@@ -61,7 +63,9 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const updateMessage = async (args: UpdateMessageArgs): Promise<void> => {
@@ -89,7 +93,9 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const triageMessage = async (args: TriageMessageArgs): Promise<void> => {

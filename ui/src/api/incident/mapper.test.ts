@@ -77,7 +77,11 @@ describe("toIncidentDetails", () => {
   it("maps divisions array", () => {
     const result = toIncidentDetails(WIRE_DETAILS);
     expect(result.divisions).toHaveLength(1);
-    expect(result.divisions[0]).toEqual({ id: "div-1", name: "Alpha", description: "Alpha division" });
+    expect(result.divisions[0]).toEqual({
+      id: "div-1",
+      name: "Alpha",
+      description: "Alpha division",
+    });
   });
 
   it("maps journals to id+name stubs (other fields not fetched)", () => {

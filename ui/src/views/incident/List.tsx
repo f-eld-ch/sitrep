@@ -17,12 +17,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { IncidentContext } from "utils";
 import type { Incident } from "../../types";
-import {
-  useCloseIncident,
-  useDeleteIncident,
-  useIncidents,
-  useReopenIncident,
-} from "api";
+import { useCloseIncident, useDeleteIncident, useIncidents, useReopenIncident } from "api";
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
@@ -44,9 +39,7 @@ function List() {
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
-      {mutationError && (
-        <div className="notification is-danger">{mutationError.message}</div>
-      )}
+      {mutationError && <div className="notification is-danger">{mutationError.message}</div>}
       <div className="buttons">
         <button
           type="button"
@@ -70,11 +63,9 @@ function List() {
         </button>
       </div>
       <IncidentCards
-        incidents={
-          result.data.incidents.filter(
-            (incident) => !filterClosed || incident.closedAt === null,
-          )
-        }
+        incidents={result.data.incidents.filter(
+          (incident) => !filterClosed || incident.closedAt === null,
+        )}
         closeIncident={(id) => closeIncident({ incidentId: id })}
         reopenIncident={(id) => reopenIncident({ incidentId: id })}
         deleteIncident={(id) => deleteIncident({ incidentId: id })}

@@ -1,7 +1,23 @@
 import { useMutation } from "@apollo/client/react";
+import type { Feature, GeoJsonProperties, Geometry } from "geojson";
+import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
 import { ADD_FEATURE, ADD_LAYER, DELETE_FEATURE, MODIFY_FEATURE } from "./documents";
 import { afterLayerWrite } from "./invalidate";
+
+export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
+  return {
+    type: "Feature",
+    id: f.id,
+    geometry: f.geometry,
+    properties: omit(f.properties as Record<string, unknown>, [
+      "createdAt",
+      "updatedAt",
+      "deletedAt",
+      "layerId",
+    ]) as GeoJsonProperties,
+  };
+}
 
 export interface AddFeatureArgs {
   layerId: string;
@@ -33,7 +49,9 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const addFeature = async (args: AddFeatureArgs): Promise<{ featureId: string }> => {
@@ -59,7 +77,9 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const modifyFeature = async (args: ModifyFeatureArgs): Promise<void> => {
@@ -77,7 +97,9 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const deleteFeature = async (args: DeleteFeatureArgs): Promise<void> => {
@@ -95,7 +117,9 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const }) : undefined,
+    error: error
+      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
+      : undefined,
   };
 
   const addLayer = async (args: AddLayerArgs): Promise<{ layerId: string }> => {

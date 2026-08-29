@@ -23,7 +23,8 @@
     "codegen": "graphql-codegen --config codegen.ts",
     "codegen:check": "graphql-codegen --config codegen.ts --check",
     "codegen:next": "graphql-codegen --config codegen.next.ts",
-    "codegen:next:check": "graphql-codegen --config codegen.next.ts --check"
+    "codegen:next:check": "graphql-codegen --config codegen.next.ts --check",
+    "codegen:schema": "graphql-codegen --config codegen.schema.ts"
   },
   "dependencies": {
     "@apollo/client": "^4.2.12",
@@ -83,6 +84,7 @@
     "@fast-check/vitest": "^0.4.1",
     "@graphql-codegen/cli": "^7.3.1",
     "@graphql-codegen/client-preset": "^6.1.3",
+    "@graphql-codegen/schema-ast": "^6.1.0",
     "@maplibre/maplibre-gl-style-spec": "^26.3.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
@@ -109,6 +111,7 @@
     "vitest": "^4.1.11"
   },
   "resolutions": {
+    "@maplibre/maplibre-gl-style-spec": "^26.3.0",
     "brace-expansion": "^5.0.9",
     "dompurify": "^3.4.13",
     "glob": "^13.0.6",
@@ -117,7 +120,6 @@
     "js-yaml": "^4.3.1",
     "jspdf": "^4.2.1",
     "lodash": "^4.18.1",
-    "@maplibre/maplibre-gl-style-spec": "^26.3.0",
     "maplibre-gl": "^6.3.0",
     "minimatch": "^10.2.5",
     "nanoid": "^6.0.1",

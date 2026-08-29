@@ -13,10 +13,7 @@ vi.mock("react-router", () => ({
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 vi.mock("dayjs", () => ({
   __esModule: true,
-  default: Object.assign(
-    () => ({ format: () => "formatted-date" }),
-    { extend: vi.fn() },
-  ),
+  default: Object.assign(() => ({ format: () => "formatted-date" }), { extend: vi.fn() }),
 }));
 vi.mock("dayjs/plugin/localizedFormat", () => ({ default: {} }));
 vi.mock("dayjs/plugin/relativeTime", () => ({ default: {} }));

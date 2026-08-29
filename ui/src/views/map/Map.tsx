@@ -26,7 +26,14 @@ import {
 } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
 import type { Layer } from "types/layer";
-import { useAddFeature, useDeleteFeature, useLayersForIncident, useModifyFeature } from "api";
+import {
+  cleanFeature,
+  layerToFeatureCollection,
+  useAddFeature,
+  useDeleteFeature,
+  useLayersForIncident,
+  useModifyFeature,
+} from "api";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
@@ -37,7 +44,6 @@ import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { createMapStyle } from "./styleGenerator";
-import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
 
 // Initialize maplibregl globals once at module load to avoid repeated side-effects
 // when React Strict Mode mounts components multiple times in development.
@@ -284,7 +290,7 @@ function ActiveLayer() {
   const { state } = useContext(LayerContext);
   const featureCollection = useMemo(
     () =>
-      LayerToFeatureCollection(
+      layerToFeatureCollection(
         first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
       ),
     [state.layers, state.activeLayer],
@@ -307,14 +313,13 @@ function ActiveLayer() {
   }, [featureCollection, liveGeometry, state.selectedFeature]);
 
   useEffect(() => {
-    const fc = FilterActiveFeatures(featureCollection);
     if (initialized.current || !map?.loaded) {
       return;
     }
     // only run this for the initialization as we don't want to continously
     // change the map viewport on new features
-    if (map !== undefined && fc.features.length > 0) {
-      const bboxArray = bbox(fc);
+    if (map !== undefined && featureCollection.features.length > 0) {
+      const bboxArray = bbox(featureCollection);
       map.fitBounds(
         [
           [bboxArray[0], bboxArray[1]],
@@ -370,7 +375,7 @@ function Draw() {
 
       const createdFeatures: Feature[] = e.features;
       for (const f of createdFeatures) {
-        const feature = CleanFeature(f);
+        const feature = cleanFeature(f);
 
         if (!validateUUID(f.id)) {
           feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
@@ -398,7 +403,7 @@ function Draw() {
     (e: FeatureEvent) => {
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
-        const feature = CleanFeature(f);
+        const feature = cleanFeature(f);
         void modifyFeature({
           id: String(feature.id ?? ""),
           geometry: feature.geometry,
@@ -414,7 +419,7 @@ function Draw() {
     (e: FeatureEvent) => {
       const deletedFeatures: Feature[] = e.features;
       for (const f of deletedFeatures) {
-        const feature = CleanFeature(f);
+        const feature = cleanFeature(f);
         void deleteFeature({ id: String(feature.id ?? ""), incidentId: incidentId ?? "" });
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
@@ -434,8 +439,8 @@ function Draw() {
   // this is the effect which syncs the drawings
   useEffect(() => {
     if (state.draw && map?.loaded) {
-      const featureCollection: FeatureCollection = FilterActiveFeatures(
-        LayerToFeatureCollection(state.layers.find((l) => l.layer.id === state.activeLayer)?.layer),
+      const featureCollection: FeatureCollection = layerToFeatureCollection(
+        state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -526,11 +531,7 @@ function InactiveLayers(props: { layers: Layer[] }) {
   return (
     <>
       {layers.map((l) => (
-        <InactiveLayer
-          key={l.id}
-          id={l.id}
-          featureCollection={FilterActiveFeatures(LayerToFeatureCollection(l))}
-        />
+        <InactiveLayer key={l.id} id={l.id} featureCollection={layerToFeatureCollection(l)} />
       ))}
     </>
   );

@@ -17,10 +17,7 @@ export function useLayersForIncident(incidentId: string | undefined): QueryResul
     fetchPolicy: "cache-and-network",
   });
 
-  const layers = useMemo(
-    () => (data ? data.layers.map(toLayer) : undefined),
-    [data],
-  );
+  const layers = useMemo(() => (data ? data.layers.map(toLayer) : undefined), [data]);
 
   const refresh = () => void refetch();
 

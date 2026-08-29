@@ -132,7 +132,7 @@ export const UPDATE_INCIDENT: TypedDocumentNode<WireUpdateIncidentResult, Update
 export const CLOSE_INCIDENT: TypedDocumentNode<WireCloseIncidentResult, CloseIncidentVars> = gql`
   mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
     updateJournals(
-      where: { incidentId: { _eq: $incidentId }, closedAt: { _isNull: true } }
+      where: { incident: { id: { _eq: $incidentId } }, closedAt: { _isNull: true } }
       _set: { closedAt: $closedAt }
     ) {
       affectedRows
@@ -154,7 +154,7 @@ export const CLOSE_INCIDENT: TypedDocumentNode<WireCloseIncidentResult, CloseInc
 export const DELETE_INCIDENT: TypedDocumentNode<WireDeleteIncidentResult, DeleteIncidentVars> = gql`
   mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
     updateJournals(
-      where: { incidentId: { _eq: $incidentId }, deletedAt: { _isNull: true } }
+      where: { incident: { id: { _eq: $incidentId } }, deletedAt: { _isNull: true } }
       _set: { deletedAt: $deletedAt }
     ) {
       affectedRows
