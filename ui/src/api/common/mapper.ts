@@ -1,10 +1,9 @@
 /**
  * Low-level mapper utilities shared by all aggregate mappers.
  *
- * The Hasura GraphQL engine returns Date-typed fields as ISO 8601 strings
- * despite the TypeScript types claiming Date. These helpers centralise the
- * conversion so the defect is fixed in one place when the real DateTime
- * scalar lands.
+ * Timestamps arrive over the wire as ISO 8601 strings; the domain types use real
+ * `Date` objects. Codegen types `timestamptz` output as `string` so the compiler
+ * enforces that, and these helpers are the single place the conversion happens.
  */
 
 export function toDate(value: string | Date | null | undefined): Date {

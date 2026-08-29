@@ -50,9 +50,10 @@ describe("toMessage", () => {
     expect(result.updatedAt).toBeInstanceOf(Date);
   });
 
-  it("maps deletedAt null to epoch (domain type lie — Date not Date|null)", () => {
+  it("maps a null deletedAt to the epoch", () => {
     const result = toMessage({ ...WIRE_MESSAGE, deletedAt: null });
-    // The domain type says Date but the value is logically absent; toOptionalDate ?? new Date(0)
+    // Message.deletedAt is typed Date, not Date | null, so an absent value cannot be
+    // represented directly and is collapsed to the epoch as a not-deleted sentinel.
     expect(result.deletedAt).toEqual(new Date(0));
   });
 
