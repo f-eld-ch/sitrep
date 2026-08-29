@@ -14,47 +14,66 @@ import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
 import type { MediumEnum, PriorityStatusEnum, TriageStatusEnum } from "gql";
 
-// --- Direction 1: domain → schema (compile-time) ---
-// If a domain enum member's value is not a valid schema union member, TypeScript errors here.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type AssertSubset<_T extends U, U> = true;
-export type _MediumConforms = AssertSubset<`${Medium}`, MediumEnum>;
-export type _TriageConforms = AssertSubset<`${TriageStatus}`, TriageStatusEnum>;
-export type _PriorityConforms = AssertSubset<`${PriorityStatus}`, PriorityStatusEnum>;
-
 // --- Direction 2: schema → domain (runtime) ---
 // Keep these arrays in sync with the generated union types above.
 // If a new value is added to the DB enum, the type of this array becomes a type error AND
 // the test below catches any runtime gap in the domain enum.
 const ALL_MEDIUM_SCHEMA: MediumEnum[] = ["EMAIL", "OTHER", "PHONE", "RADIO"];
 const ALL_TRIAGE_SCHEMA: TriageStatusEnum[] = ["DONE", "MOREINFO", "PENDING", "RESET"];
-const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["HIGH", "NORMAL"];
+const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["CRITICAL", "HIGH", "NORMAL"];
+
+/**
+ * Schema values the UI deliberately does not expose.
+ *
+ * CRITICAL exists in the priority_status DB enum but has never been used in the triage
+ * module, so it is absent from the PriorityStatus domain enum and from all four locale
+ * files. Listing it here keeps the schema→domain check honest: a NEW schema value still
+ * fails the test, while this known omission is explicit rather than silently dropped.
+ *
+ * If CRITICAL is ever adopted: add it to PriorityStatus, add priority.CRITICAL to
+ * de/en/fr/it translations, and delete it from this list.
+ */
+const INTENTIONALLY_UNEXPOSED: string[] = ["CRITICAL"];
 
 describe("enum conformance: schema values are all represented in domain enums", () => {
+  // Direction 1 (domain → schema). These assignments compile only if every domain enum value
+  // is a member of the corresponding schema union, so a renamed or dropped schema value is a
+  // type error rather than a runtime surprise.
+  it("every domain enum value is a valid schema value", () => {
+    const media: MediumEnum[] = Object.values(Medium);
+    const triage: TriageStatusEnum[] = Object.values(TriageStatus);
+    const priority: PriorityStatusEnum[] = Object.values(PriorityStatus);
+
+    expect(media).not.toHaveLength(0);
+    expect(triage).not.toHaveLength(0);
+    expect(priority).not.toHaveLength(0);
+  });
+
+  // Each of these reports the offending values directly, so a failure names what is missing
+  // rather than just which assertion tripped.
   it("every MediumEnum value maps to a Medium member", () => {
-    const domain = new Set(Object.values(Medium));
-    for (const v of ALL_MEDIUM_SCHEMA) {
-      expect(domain, `MediumEnum "${v}" is missing from the Medium domain enum`).toContain(v);
-    }
+    const domain = new Set<string>(Object.values(Medium));
+    const missingFromDomain = ALL_MEDIUM_SCHEMA.filter((v) => !domain.has(v));
+    expect(missingFromDomain).toEqual([]);
   });
 
   it("every TriageStatusEnum value maps to a TriageStatus member", () => {
-    const domain = new Set(Object.values(TriageStatus));
-    for (const v of ALL_TRIAGE_SCHEMA) {
-      expect(
-        domain,
-        `TriageStatusEnum "${v}" is missing from the TriageStatus domain enum`,
-      ).toContain(v);
-    }
+    const domain = new Set<string>(Object.values(TriageStatus));
+    const missingFromDomain = ALL_TRIAGE_SCHEMA.filter((v) => !domain.has(v));
+    expect(missingFromDomain).toEqual([]);
   });
 
-  it("every PriorityStatusEnum value maps to a PriorityStatus member", () => {
-    const domain = new Set(Object.values(PriorityStatus));
-    for (const v of ALL_PRIORITY_SCHEMA) {
-      expect(
-        domain,
-        `PriorityStatusEnum "${v}" is missing from the PriorityStatus domain enum`,
-      ).toContain(v);
-    }
+  it("every exposed PriorityStatusEnum value maps to a PriorityStatus member", () => {
+    const domain = new Set<string>(Object.values(PriorityStatus));
+    const missingFromDomain = ALL_PRIORITY_SCHEMA.filter(
+      (v) => !INTENTIONALLY_UNEXPOSED.includes(v) && !domain.has(v),
+    );
+    expect(missingFromDomain).toEqual([]);
+  });
+
+  it("does not expose intentionally-unexposed schema values", () => {
+    const domain = new Set<string>(Object.values(PriorityStatus));
+    const leaked = INTENTIONALLY_UNEXPOSED.filter((v) => domain.has(v));
+    expect(leaked).toEqual([]);
   });
 });

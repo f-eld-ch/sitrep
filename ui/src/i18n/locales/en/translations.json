@@ -100,7 +100,6 @@
   "preview": "preview",
   "print": "Print",
   "priority": {
-    "CRITICAL": "critical",
     "HIGH": "important",
     "NORMAL": "normal"
   },

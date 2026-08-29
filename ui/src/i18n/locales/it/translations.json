@@ -100,7 +100,6 @@
   "preview": "anteprima",
   "print": "Stampa",
   "priority": {
-    "CRITICAL": "critico",
     "HIGH": "importante",
     "NORMAL": "normale"
   },
