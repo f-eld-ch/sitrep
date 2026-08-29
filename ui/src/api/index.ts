@@ -5,3 +5,7 @@
 export type { ApiError, ApiErrorCode } from "./errors";
 export { isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
+
+// Message aggregate
+export type { CreateMessageArgs, JournalMessagesData, MessageForTriageData, TriageMessageArgs, UpdateMessageArgs } from "./message";
+export { useCreateMessage, useJournalMessages, useMessageForTriage, useTriageMessage, useUpdateMessage } from "./message";
