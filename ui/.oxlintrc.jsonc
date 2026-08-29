@@ -17,7 +17,28 @@
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "eslint-plugin-vitest/require-mock-type-parameters": "off",
+    // @apollo/client may only be imported inside src/api/ (the anti-corruption layer).
+    // Components and views must import hooks and types from the "api" path alias instead.
+    // Violations: src/views/{incident,journal,map}/**  src/utils/IncidentContext.tsx
+    // Allowlist shrinks with each aggregate migrated; never grows.
+    "no-restricted-imports": ["warn", {
+      "name": "@apollo/client",
+      "message": "Import Apollo hooks/types from the 'api' path alias (src/api/). Direct @apollo/client imports are only allowed inside src/api/.",
+    }, {
+      "name": "@apollo/client/react",
+      "message": "Import Apollo hooks/types from the 'api' path alias (src/api/). Direct @apollo/client imports are only allowed inside src/api/.",
+    }],
   },
+  "overrides": [
+    {
+      // The anti-corruption layer is the only place @apollo/client may be used.
+      // client.tsx and cache.tsx will move here once all aggregates are migrated.
+      "files": ["src/api/**", "src/client.tsx", "src/cache.tsx"],
+      "rules": {
+        "no-restricted-imports": "off",
+      },
+    },
+  ],
   "options": {
     "typeAware": false,
     "typeCheck": false,
