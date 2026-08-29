@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "paths": {
       "types": ["./src/types/index.ts"],
       "types/*": ["./src/types/*"],
@@ -10,7 +11,9 @@
       "views/*": ["./src/views/*"],
       "assets/*": ["./src/assets/*"],
       "cache": ["./src/cache.tsx"],
-      "client": ["./src/client.tsx"]
+      "client": ["./src/client.tsx"],
+      "api": ["./src/api/index.ts"],
+      "api/*": ["./src/api/*"]
     },
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],

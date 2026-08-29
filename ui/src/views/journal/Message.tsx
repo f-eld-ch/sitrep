@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import classNames from "classnames";
 import dayjs from "dayjs";
-import React, { memo, useRef } from "react";
+import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";

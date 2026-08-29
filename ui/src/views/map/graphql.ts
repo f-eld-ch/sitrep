@@ -61,7 +61,7 @@ const MODIFY_FEATURE: TypedDocumentNode<ModifyFeatureResponse, ModifyFeatureVars
 `;
 
 const DELETE_FEATURE: TypedDocumentNode<DeleteFeatureResponse, DeleteFeatureVars> = gql`
-  mutation UpdateFeature($id: uuid!, $deletedAt: timestamptz) {
+  mutation DeleteFeature($id: uuid!, $deletedAt: timestamptz) {
     updateFeaturesByPk(pkColumns: { id: $id }, _set: { deletedAt: $deletedAt }) {
       id
       geometry

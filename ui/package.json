@@ -18,7 +18,8 @@
     "generate-pwa-assets": "pwa-assets-generator",
     "gl-style-migrate": "gl-style-migrate",
     "gl-style-format": "gl-style-format",
-    "gl-style-validate": "gl-style-validate"
+    "gl-style-validate": "gl-style-validate",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@apollo/client": "^4.2.12",
@@ -110,6 +111,7 @@
     "js-yaml": "^4.3.1",
     "jspdf": "^4.2.1",
     "lodash": "^4.18.1",
+    "@maplibre/maplibre-gl-style-spec": "^26.3.0",
     "maplibre-gl": "^6.3.0",
     "minimatch": "^10.2.5",
     "nanoid": "^6.0.1",
