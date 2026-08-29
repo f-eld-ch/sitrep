@@ -26,3 +26,7 @@ export { afterJournalWrite, useCloseJournal, useCreateJournal, useJournals, useR
 // Message aggregate
 export type { CreateMessageArgs, JournalMessagesData, MessageForTriageData, TriageMessageArgs, UpdateMessageArgs } from "./message";
 export { useCreateMessage, useJournalMessages, useMessageForTriage, useTriageMessage, useUpdateMessage } from "./message";
+
+// Layer aggregate
+export type { AddFeatureArgs, AddLayerArgs, DeleteFeatureArgs, LayersData, ModifyFeatureArgs } from "./layer";
+export { afterLayerWrite, useAddFeature, useAddLayer, useDeleteFeature, useLayersForIncident, useModifyFeature } from "./layer";

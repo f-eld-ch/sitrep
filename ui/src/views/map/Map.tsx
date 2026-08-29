@@ -1,6 +1,5 @@
 import "./control-panel.css";
 import "./Map.scss";
-import { useMutation, useQuery, useReactiveVar } from "@apollo/client/react";
 import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
@@ -26,17 +25,8 @@ import {
   useMap,
 } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
-import type {
-  AddFeatureResponse,
-  AddFeatureVars,
-  DeleteFeatureResponse,
-  DeleteFeatureVars,
-  GetLayersData,
-  GetLayersVars,
-  Layer,
-  ModifyFeatureResponse,
-  ModifyFeatureVars,
-} from "types/layer";
+import type { Layer } from "types/layer";
+import { useAddFeature, useDeleteFeature, useLayersForIncident, useModifyFeature } from "api";
 import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
@@ -44,8 +34,7 @@ import DrawControl from "./controls/DrawControl";
 import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
-import { StyleController, selectedStyle } from "./controls/StyleController";
-import { AddFeatureToLayer, DeleteFeature, GetLayers, ModifyFeature } from "./graphql";
+import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { createMapStyle } from "./styleGenerator";
 import { CleanFeature, FilterActiveFeatures, LayerToFeatureCollection } from "./utils";
@@ -92,7 +81,7 @@ function BabsSpriteLanguage() {
 }
 
 function MapView() {
-  const mapStyle = useReactiveVar(selectedStyle);
+  const { selectedStyle: mapStyle } = useMapStyle();
   const { i18n } = useTranslation();
 
   // Resolved once per basemap style, NOT per language: producing a new style object makes
@@ -187,20 +176,17 @@ function LayerFetcher() {
   const { incidentId } = useParams();
   const { state, dispatch } = useContext(LayerContext);
 
-  const { data, loading } = useQuery<GetLayersData, GetLayersVars>(GetLayers, {
-    variables: { incidentId: incidentId || "" },
-    pollInterval: 2000,
-    fetchPolicy: "cache-and-network",
-  });
+  const result = useLayersForIncident(incidentId);
 
   useEffect(() => {
-    if (!loading && data) {
-      const stateLayers = state.layers.map((l) => l.layer);
-      if (!isEqual(data.layers, stateLayers)) {
-        dispatch({ type: "SET_LAYERS", payload: { layers: data.layers } });
-      }
+    if (result.status !== "ready") return;
+    const stateLayers = state.layers.map((l) => l.layer);
+    // result.data reference is stable when Apollo cache is unchanged (useMemo keyed on data),
+    // so isEqual only passes when content actually changed.
+    if (!isEqual(result.data.layers, stateLayers)) {
+      dispatch({ type: "SET_LAYERS", payload: { layers: result.data.layers } });
     }
-  }, [data, dispatch, loading, state.layers]);
+  }, [result, dispatch, state.layers]);
 
   return null;
 }
@@ -356,62 +342,9 @@ function Draw() {
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
-  const [addFeature] = useMutation<AddFeatureResponse, AddFeatureVars>(AddFeatureToLayer, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-    onCompleted: (data) => {
-      if (data.insertFeaturesOne?.id) {
-        dispatch({
-          type: "SELECT_FEATURE",
-          payload: { id: data.insertFeaturesOne.id.toString() },
-        });
-      }
-    },
-    onError: (error) => {
-      console.error("Error adding feature:", error);
-    },
-    optimisticResponse: (vars) => {
-      return {
-        __typename: "Mutation",
-        insertFeaturesOne: {
-          __typename: "Feature",
-          id: vars.id,
-          geometry: { ...vars.geometry, __typename: "Geometry" },
-          properties: { ...vars.properties, __typename: "Properties" },
-          createdAt: new Date(),
-          updatedAt: null,
-          deletedAt: null,
-        },
-      };
-    },
-  });
-
-  const [modifyFeature] = useMutation<ModifyFeatureResponse, ModifyFeatureVars>(ModifyFeature, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-    onError: (error) => {
-      console.error("Error adding feature:", error);
-    },
-    optimisticResponse: (vars, { IGNORE }) => {
-      if (vars.properties?.deletedAt) {
-        return IGNORE;
-      }
-      return {
-        __typename: "Mutation",
-        updateFeaturesByPk: {
-          __typename: "Feature",
-          id: vars.id,
-          geometry: { ...vars.geometry, __typename: "Geometry" },
-          properties: { ...vars.properties, __typename: "Properties" },
-          createdAt: vars.properties?.createdAt || new Date(),
-          updatedAt: vars.properties?.updatedAt || new Date(),
-          deletedAt: null,
-        },
-      };
-    },
-  });
-
-  const [deleteFeature] = useMutation<DeleteFeatureResponse, DeleteFeatureVars>(DeleteFeature, {
-    refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-  });
+  const [addFeature] = useAddFeature();
+  const [modifyFeature] = useModifyFeature();
+  const [deleteFeature] = useDeleteFeature();
 
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {
@@ -443,20 +376,22 @@ function Draw() {
           feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
         }
 
-        addFeature({
-          variables: {
-            layerId: layer || "",
-            geometry: feature.geometry,
-            id: feature.id,
-            properties: feature.properties,
-          },
+        void addFeature({
+          layerId: layer,
+          geometry: feature.geometry,
+          id: String(feature.id ?? ""),
+          properties: feature.properties,
+          incidentId: incidentId ?? "",
+        }).then(({ featureId }) => {
+          dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
         });
+
         if (f.id !== undefined) {
           state.draw?.delete([f.id.toString()]);
         }
       }
     },
-    [addFeature, state.draw],
+    [addFeature, dispatch, incidentId, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -464,16 +399,15 @@ function Draw() {
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = CleanFeature(f);
-        modifyFeature({
-          variables: {
-            id: feature.id,
-            geometry: feature.geometry,
-            properties: feature.properties,
-          },
+        void modifyFeature({
+          id: String(feature.id ?? ""),
+          geometry: feature.geometry,
+          properties: feature.properties,
+          incidentId: incidentId ?? "",
         });
       }
     },
-    [modifyFeature],
+    [incidentId, modifyFeature],
   );
 
   const onDelete = useCallback(
@@ -481,11 +415,11 @@ function Draw() {
       const deletedFeatures: Feature[] = e.features;
       for (const f of deletedFeatures) {
         const feature = CleanFeature(f);
-        deleteFeature({ variables: { id: feature.id, deletedAt: new Date() } });
+        void deleteFeature({ id: String(feature.id ?? ""), incidentId: incidentId ?? "" });
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, deleteFeature],
+    [dispatch, deleteFeature, incidentId],
   );
 
   const onCombine = useCallback(
@@ -618,12 +552,14 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
 
 function MapWithProvder() {
   return (
-    <MapProvider>
-      <LayersProvider>
-        <MapView />
-        <LayerFetcher />
-      </LayersProvider>
-    </MapProvider>
+    <MapStyleProvider>
+      <MapProvider>
+        <LayersProvider>
+          <MapView />
+          <LayerFetcher />
+        </LayersProvider>
+      </MapProvider>
+    </MapStyleProvider>
   );
 }
 

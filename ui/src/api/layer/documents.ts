@@ -1,18 +1,18 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
-  AddFeatureResponse,
   AddFeatureVars,
-  AddLayerData,
   AddLayerVars,
-  DeleteFeatureResponse,
   DeleteFeatureVars,
-  GetLayersData,
   GetLayersVars,
-  ModifyFeatureResponse,
   ModifyFeatureVars,
-} from "types/layer";
+  WireAddFeatureResult,
+  WireAddLayerResult,
+  WireDeleteFeatureResult,
+  WireGetLayersResult,
+  WireModifyFeatureResult,
+} from "./wire";
 
-const GET_LAYERS: TypedDocumentNode<GetLayersData, GetLayersVars> = gql`
+export const GET_LAYERS: TypedDocumentNode<WireGetLayersResult, GetLayersVars> = gql`
   query GetLayers($incidentId: uuid!) {
     layers(where: { incidentId: { _eq: $incidentId } }) {
       id
@@ -29,7 +29,7 @@ const GET_LAYERS: TypedDocumentNode<GetLayersData, GetLayersVars> = gql`
   }
 `;
 
-const ADD_FEATURE: TypedDocumentNode<AddFeatureResponse, AddFeatureVars> = gql`
+export const ADD_FEATURE: TypedDocumentNode<WireAddFeatureResult, AddFeatureVars> = gql`
   mutation AddFeature($layerId: uuid!, $id: uuid!, $geometry: jsonb, $properties: jsonb) {
     insertFeaturesOne(
       object: { layerId: $layerId, id: $id, geometry: $geometry, properties: $properties }
@@ -44,7 +44,7 @@ const ADD_FEATURE: TypedDocumentNode<AddFeatureResponse, AddFeatureVars> = gql`
   }
 `;
 
-const MODIFY_FEATURE: TypedDocumentNode<ModifyFeatureResponse, ModifyFeatureVars> = gql`
+export const MODIFY_FEATURE: TypedDocumentNode<WireModifyFeatureResult, ModifyFeatureVars> = gql`
   mutation UpdateFeature($id: uuid!, $geometry: jsonb, $properties: jsonb) {
     updateFeaturesByPk(
       pkColumns: { id: $id }
@@ -60,7 +60,7 @@ const MODIFY_FEATURE: TypedDocumentNode<ModifyFeatureResponse, ModifyFeatureVars
   }
 `;
 
-const DELETE_FEATURE: TypedDocumentNode<DeleteFeatureResponse, DeleteFeatureVars> = gql`
+export const DELETE_FEATURE: TypedDocumentNode<WireDeleteFeatureResult, DeleteFeatureVars> = gql`
   mutation DeleteFeature($id: uuid!, $deletedAt: timestamptz) {
     updateFeaturesByPk(pkColumns: { id: $id }, _set: { deletedAt: $deletedAt }) {
       id
@@ -73,18 +73,10 @@ const DELETE_FEATURE: TypedDocumentNode<DeleteFeatureResponse, DeleteFeatureVars
   }
 `;
 
-const ADD_LAYER: TypedDocumentNode<AddLayerData, AddLayerVars> = gql`
+export const ADD_LAYER: TypedDocumentNode<WireAddLayerResult, AddLayerVars> = gql`
   mutation AddLayer($incidentId: uuid!, $name: String!) {
     insertLayersOne(object: { incidentId: $incidentId, name: $name }) {
       id
     }
   }
 `;
-
-export {
-  ADD_LAYER as AddLayer,
-  GET_LAYERS as GetLayers,
-  ADD_FEATURE as AddFeatureToLayer,
-  MODIFY_FEATURE as ModifyFeature,
-  DELETE_FEATURE as DeleteFeature,
-};

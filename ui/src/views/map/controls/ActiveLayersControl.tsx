@@ -1,4 +1,3 @@
-import { useMutation } from "@apollo/client/react";
 import {
   faDrawPolygon,
   faEdit,
@@ -12,15 +11,14 @@ import type React from "react";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import type { AddLayerData, AddLayerVars } from "types/layer";
-import { AddLayer, GetLayers } from "../graphql";
+import { useAddLayer } from "api";
 import { LayerContext } from "../LayerContext";
 
 const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
   const [showAddLayer, setShowAddLayer] = useState<boolean>(false);
   const [layerName, setLayerName] = useState<string>("");
-  const [addLayer] = useMutation<AddLayerData, AddLayerVars>(AddLayer);
+  const [addLayer] = useAddLayer();
   const { incidentId } = useParams();
   const { t } = useTranslation();
 
@@ -28,15 +26,9 @@ const ActiveLayersControl: React.FC = () => {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
   };
 
-  const handleAddLayer = (layerName: string) => {
-    if (layerName.trim() === "" || !incidentId) return;
-    addLayer({
-      variables: { incidentId, name: layerName },
-      refetchQueries: [{ query: GetLayers, variables: { incidentId: incidentId } }],
-      onError: (error) => {
-        console.error("Error adding feature:", error);
-      },
-    });
+  const handleAddLayer = (name: string) => {
+    if (name.trim() === "" || !incidentId) return;
+    void addLayer({ incidentId, name });
     setLayerName("");
     setShowAddLayer(false);
   };
