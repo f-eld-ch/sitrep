@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(api)* Decouple the UI from Hasura behind an anti-corruption layer ([#1782](https://github.com/f-eld-ch/sitrep/issues/1782)) - ([cf699bf](https://github.com/f-eld-ch/sitrep/commit/cf699bf3adc0fda6ee0c6e68769fc614a0b14707))
 - *(journal)* Refactor editor forms, fix dead labels and save semantics ([#1781](https://github.com/f-eld-ch/sitrep/issues/1781)) - ([1d4250c](https://github.com/f-eld-ch/sitrep/commit/1d4250c3bc89f168e646d4d67192fe824769f819))
 
 ### ⚙️  Other
