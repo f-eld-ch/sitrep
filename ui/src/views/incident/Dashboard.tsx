@@ -1,9 +1,7 @@
-import { useQuery } from "@apollo/client/react";
 import { Spinner } from "components";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import type { IncidentDetailsData, IncidentDetailsVars } from "types/incident";
-import { GetIncidentDetails } from "./graphql";
+import { useIncidentDetails } from "api";
 
 function MapFrame() {
   const [seconds, setSeconds] = useState(0);
@@ -27,22 +25,18 @@ function MapFrame() {
 
 function Dashboard() {
   const { incidentId } = useParams();
+  const result = useIncidentDetails(incidentId);
 
-  const { loading, error, data } = useQuery<IncidentDetailsData, IncidentDetailsVars>(
-    GetIncidentDetails,
-    {
-      variables: { incidentId: incidentId || "" },
-    },
-  );
+  if (result.status === "error") {
+    return <div className="notification is-danger">{result.error.message}</div>;
+  }
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
-
-  if (loading && !data) return <Spinner />;
+  if (result.status === "loading") return <Spinner />;
 
   return (
     <div>
       <div className="container is-fluid has-text-centered mb-4">
-        <h1 className="title is-1 ">{data?.incidentsByPk.name}</h1>
+        <h1 className="title is-1 ">{result.data.incident.name}</h1>
       </div>
       <div className="tile is-ancestor">
         <div className="tile is-3 is-vertical is-parent">

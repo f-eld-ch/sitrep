@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import type { InsertJournalData, InsertJournalVars } from "types/journal";
-import { GetIncidentDetails } from "views/incident/graphql";
+import { afterIncidentWrite } from "api";
 import { GetJournals, InsertJournal } from "./graphql";
 
 function New() {
@@ -31,31 +31,24 @@ function NewForm() {
     InsertJournal,
     {
       onCompleted() {
-        // reset the form values
         navigate(`../${incidentId}/edit`);
       },
       refetchQueries: [
-        { query: GetJournals, variables: { incidentId: incidentId } },
-        { query: GetIncidentDetails },
+        { query: GetJournals, variables: { incidentId } },
+        ...afterIncidentWrite(incidentId),
       ],
     },
   );
 
   const handleSave = () => {
     if (incidentId && name) {
-      insertJournal({
-        variables: {
-          name: name,
-          incidentId: incidentId,
-        },
-      });
+      insertJournal({ variables: { name, incidentId } });
     }
   };
 
   return (
     <>
       {error && <div className="notification is-danger">{error?.message}</div>}
-
       <div className="field">
         <p className="control has-icons-left has-icons-right">
           <input

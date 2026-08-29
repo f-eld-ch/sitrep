@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "@apollo/client/react";
 import {
   faArrowRightFromBracket,
   faEdit,
@@ -16,46 +15,38 @@ import dayjs from "dayjs";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import type {
-  CloseIncidentMutation,
-  CloseIncidentMutationVariables,
-  DeleteIncidentMutation,
-  DeleteIncidentMutationVariables,
-  IncidentListData,
-} from "types/incident";
 import { IncidentContext } from "utils";
 import type { Incident } from "../../types";
-import { CloseIncident, DeleteIncident, GetIncidentDetails, GetIncidents } from "./graphql";
+import {
+  useCloseIncident,
+  useDeleteIncident,
+  useIncidents,
+  useReopenIncident,
+} from "api";
 
 function List() {
   const [filterClosed, setFilterClosed] = useState(true);
   const navigate = useNavigate();
-
   const { t } = useTranslation();
 
-  const { loading, error, data } = useQuery<IncidentListData, Record<string, never>>(GetIncidents, {
-    pollInterval: 10000,
-  });
-  const [closeIncident] = useMutation<CloseIncidentMutation, CloseIncidentMutationVariables>(
-    CloseIncident,
-    {
-      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-    },
-  );
+  const result = useIncidents();
+  const [closeIncident, closeState] = useCloseIncident();
+  const [reopenIncident] = useReopenIncident();
+  const [deleteIncident, deleteState] = useDeleteIncident();
 
-  const [deleteIncident] = useMutation<DeleteIncidentMutation, DeleteIncidentMutationVariables>(
-    DeleteIncident,
-    {
-      refetchQueries: [{ query: GetIncidents }, { query: GetIncidentDetails }],
-    },
-  );
+  const mutationError = closeState.error ?? deleteState.error;
 
-  if (error) return <div className="notification is-danger">{error.message}</div>;
-  if (loading && !data) return <Spinner />;
+  if (result.status === "error") {
+    return <div className="notification is-danger">{result.error.message}</div>;
+  }
+  if (result.status === "loading") return <Spinner />;
 
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
+      {mutationError && (
+        <div className="notification is-danger">{mutationError.message}</div>
+      )}
       <div className="buttons">
         <button
           type="button"
@@ -80,10 +71,13 @@ function List() {
       </div>
       <IncidentCards
         incidents={
-          data?.incidents.filter((incident) => !filterClosed || incident.closedAt === null) || []
+          result.data.incidents.filter(
+            (incident) => !filterClosed || incident.closedAt === null,
+          )
         }
-        closeIncident={closeIncident}
-        deleteIncident={deleteIncident}
+        closeIncident={(id) => closeIncident({ incidentId: id })}
+        reopenIncident={(id) => reopenIncident({ incidentId: id })}
+        deleteIncident={(id) => deleteIncident({ incidentId: id })}
       />
     </div>
   );
@@ -91,16 +85,11 @@ function List() {
 
 export function IncidentCards(props: {
   incidents: Incident[];
-  closeIncident: useMutation.MutationFunction<
-    CloseIncidentMutation,
-    CloseIncidentMutationVariables
-  >;
-  deleteIncident: useMutation.MutationFunction<
-    DeleteIncidentMutation,
-    DeleteIncidentMutationVariables
-  >;
+  closeIncident: (incidentId: string) => Promise<void>;
+  reopenIncident: (incidentId: string) => Promise<void>;
+  deleteIncident: (incidentId: string) => Promise<void>;
 }) {
-  const { incidents, closeIncident, deleteIncident } = props;
+  const { incidents, closeIncident, reopenIncident, deleteIncident } = props;
 
   return (
     <div className="container-flex">
@@ -111,6 +100,7 @@ export function IncidentCards(props: {
             key={incident.id}
             incident={incident}
             closeIncident={closeIncident}
+            reopenIncident={reopenIncident}
             deleteIncident={deleteIncident}
           />
         ))}
@@ -120,16 +110,11 @@ export function IncidentCards(props: {
 
 export function IncidentCard(props: {
   incident: Incident;
-  closeIncident: useMutation.MutationFunction<
-    CloseIncidentMutation,
-    CloseIncidentMutationVariables
-  >;
-  deleteIncident: useMutation.MutationFunction<
-    DeleteIncidentMutation,
-    DeleteIncidentMutationVariables
-  >;
+  closeIncident: (incidentId: string) => Promise<void>;
+  reopenIncident: (incidentId: string) => Promise<void>;
+  deleteIncident: (incidentId: string) => Promise<void>;
 }) {
-  const { incident, closeIncident, deleteIncident } = props;
+  const { incident, closeIncident, reopenIncident, deleteIncident } = props;
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
@@ -195,14 +180,7 @@ export function IncidentCard(props: {
             type="button"
             data-testid="delete-button"
             className="card-footer-item is-ahref is-capitalized"
-            onClick={() => {
-              deleteIncident({
-                variables: {
-                  incidentId: incident.id,
-                  deletedAt: new Date(),
-                },
-              });
-            }}
+            onClick={() => void deleteIncident(incident.id)}
           >
             <span className="icon">
               <FontAwesomeIcon icon={faTrash} />
@@ -215,14 +193,7 @@ export function IncidentCard(props: {
             type="button"
             data-testid="close-button"
             className="card-footer-item is-ahref is-capitalized is-danger"
-            onClick={() => {
-              closeIncident({
-                variables: {
-                  incidentId: incident.id,
-                  closedAt: new Date(),
-                },
-              });
-            }}
+            onClick={() => void closeIncident(incident.id)}
           >
             <span className="icon">
               <FontAwesomeIcon icon={faFolderClosed} />
@@ -234,11 +205,7 @@ export function IncidentCard(props: {
             type="button"
             className="card-footer-item is-ahref is-capitalized is-success"
             data-testid="open-button"
-            onClick={() => {
-              closeIncident({
-                variables: { incidentId: incident.id, closedAt: null },
-              });
-            }}
+            onClick={() => void reopenIncident(incident.id)}
           >
             <span className="icon">
               <FontAwesomeIcon icon={faFolderOpen} />
