@@ -13,6 +13,8 @@
   "createNewTask": "créer une nouvelle tâche",
   "createdAt": "ouvert",
   "delete": "supprimer",
+  "discard": "Ignorer les modifications",
+  "unsavedChanges": "Vous avez des modifications non enregistrées. Ignorer et quitter?",
   "divisions": "domaine",
   "edit": "éditer",
   "editIncident": "Modifier un événement",

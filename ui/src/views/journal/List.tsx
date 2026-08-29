@@ -16,6 +16,7 @@ import {
   TriageStatus,
 } from "types";
 import { GetJournalMessages } from "./graphql";
+import { buildMessageList } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
 
@@ -73,29 +74,13 @@ function List(props: {
   if (loading && !data) return <Spinner />;
   const divisions: Division[] = data?.journalsByPk?.incident?.divisions?.flat() || [];
 
-  const messages =
-    data?.messages
-      // sort and apply message numbers
-      .filter((m: Message) => m.createdAt !== null)
-      .sort(stableOrderByCreatedAt)
-      .map((m: Message, i: number) => ({ ...m, number: i + 1 }))
-      .sort((a: Message, b: Message) => new Date(b.time).getTime() - new Date(a.time).getTime())
-      // apply the filters
-      .filter(
-        (message: { triageId: string }) =>
-          triageFilter === "all" || message.triageId === triageFilter,
-      )
-      .filter(
-        (message: { priorityId: string }) =>
-          priorityFilter === "all" || message.priorityId === priorityFilter,
-      )
-      .filter(
-        (message: { divisions: any[] }) =>
-          assignmentFilter === "all" ||
-          message.divisions?.find(
-            (d: { division: { name: string } }) => d.division.name === assignmentFilter,
-          ),
-      ) || [];
+  const messages = data?.messages
+    ? buildMessageList(data.messages, {
+        triage: triageFilter,
+        priority: priorityFilter,
+        assignment: assignmentFilter,
+      })
+    : [];
 
   return (
     <>
@@ -241,14 +226,6 @@ function Messages(props: {
       })}
     </>
   );
-}
-
-function stableOrderByCreatedAt<T extends { createdAt: Date; id?: string }>(a: T, b: T): number {
-  const tA = new Date(a.createdAt);
-  const tB = new Date(b.createdAt);
-  if (tA.getTime() !== tB.getTime()) return tA.getTime() - tB.getTime();
-  if (a.id && b.id) return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-  return 0;
 }
 
 export default memo(List);

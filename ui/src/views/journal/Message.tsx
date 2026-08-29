@@ -7,7 +7,7 @@ import React, { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
-import { ReactPreview } from "./Editor";
+import { ReactPreview } from "./Markdown";
 import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {

@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types";
 import { useDate } from "utils/useDate";
-import { ReactPreview } from "./Editor";
+import { ReactPreview } from "./Markdown";
 
 const MessageTable = (
   props: {
