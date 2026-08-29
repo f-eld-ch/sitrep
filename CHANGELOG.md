@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(journal)* Refactor editor forms, fix dead labels and save semantics ([#1781](https://github.com/f-eld-ch/sitrep/issues/1781)) - ([1d4250c](https://github.com/f-eld-ch/sitrep/commit/1d4250c3bc89f168e646d4d67192fe824769f819))
+
 ### ⚙️  Other
 
 - *(deps)* Bump maplibre-gl from 6.4.1 to 6.6.0 in /ui ([#1772](https://github.com/f-eld-ch/sitrep/issues/1772)) - ([0bcec20](https://github.com/f-eld-ch/sitrep/commit/0bcec20f4bf505fbd80eb6da0c34a60d70f98b0c))
