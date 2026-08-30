@@ -3058,12 +3058,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/mlt@npm:^1.1.12":
-  version: 1.1.12
-  resolution: "@maplibre/mlt@npm:1.1.12"
+"@maplibre/mlt@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@maplibre/mlt@npm:1.2.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
-  checksum: 10/85b298b845a3b622faf6200042efb1069d46e8fc5ecea7a35de584d695089f26582f91b1a36d72cfa97a820a9190456e660186732345c37fc29af2e905c75627
+  checksum: 10/9bc3d30f78dc2090ac80634e08848bf454daed888fcbcace7e1c1c9b8d1db6c5421376f681dffe90bb4274488753775f36e76a1568ba724e64a0ca59207c04c4
   languageName: node
   linkType: hard
 
@@ -8540,16 +8540,16 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^6.3.0":
-  version: 6.4.1
-  resolution: "maplibre-gl@npm:6.4.1"
+  version: 6.6.0
+  resolution: "maplibre-gl@npm:6.6.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
     "@maplibre/geojson-vt": "npm:^6.1.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.2.1"
-    "@maplibre/mlt": "npm:^1.1.12"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.3.0"
+    "@maplibre/mlt": "npm:^1.2.0"
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
     earcut: "npm:^3.2.3"
@@ -8560,7 +8560,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/b017bc48f19265d5e49866685d61446b45e1da32844cfb190b7265aa77ddf3647c52ea9760a3ec60ea8d0faab5469b215eceb79c6b02bb982c0514f3c1420e88
+  checksum: 10/4515d4257be0e5efdc8610cc413eefcf9651dac2d561cfe5f8d571373975fb0a39b11b416f19aa4af83370795f84af32fc466977e093bcac505ab86ee0b8ccb0
   languageName: node
   linkType: hard
 
