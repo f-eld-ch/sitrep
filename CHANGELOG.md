@@ -7,6 +7,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 8.3.0 to 8.3.1 in /ui ([#1779](https://github.com/f-eld-ch/sitrep/issues/1779)) - ([40b4842](https://github.com/f-eld-ch/sitrep/commit/40b4842ab449f5fb7a433be1758cd2a97b3c5659))
 - *(deps)* Bump maplibre-gl from 6.4.1 to 6.6.0 in /ui ([#1772](https://github.com/f-eld-ch/sitrep/issues/1772)) - ([0bcec20](https://github.com/f-eld-ch/sitrep/commit/0bcec20f4bf505fbd80eb6da0c34a60d70f98b0c))
 
 
