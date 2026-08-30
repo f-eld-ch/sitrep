@@ -7,6 +7,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.4.1 to 6.6.0 in /ui ([#1776](https://github.com/f-eld-ch/sitrep/issues/1776)) - ([dbe0b6e](https://github.com/f-eld-ch/sitrep/commit/dbe0b6e8b008058c5ea22940249a00d3743ef8b7))
+- *(deps)* Bump the otel group with 9 updates ([#1778](https://github.com/f-eld-ch/sitrep/issues/1778)) - ([5f392b1](https://github.com/f-eld-ch/sitrep/commit/5f392b172b3707a6f7b7a7276a68f3debd4c1add))
 - *(deps)* Bump the f-eld-ch group in /ui with 4 updates ([#1775](https://github.com/f-eld-ch/sitrep/issues/1775)) - ([ecaa3f1](https://github.com/f-eld-ch/sitrep/commit/ecaa3f1535d10cee2b4fa7900693c61852a75f90))
 - *(deps)* Bump react-router from 8.3.0 to 8.3.1 in /ui ([#1779](https://github.com/f-eld-ch/sitrep/issues/1779)) - ([40b4842](https://github.com/f-eld-ch/sitrep/commit/40b4842ab449f5fb7a433be1758cd2a97b3c5659))
 - *(deps)* Bump maplibre-gl from 6.4.1 to 6.6.0 in /ui ([#1772](https://github.com/f-eld-ch/sitrep/issues/1772)) - ([0bcec20](https://github.com/f-eld-ch/sitrep/commit/0bcec20f4bf505fbd80eb6da0c34a60d70f98b0c))
