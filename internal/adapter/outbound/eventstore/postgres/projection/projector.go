@@ -11,6 +11,7 @@ package projection
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -35,6 +36,9 @@ type Handler interface {
 	Handles(streamType, eventType string) bool
 	// Apply writes the event to the read model. Must be idempotent.
 	Apply(ctx context.Context, e eventsourcing.Event) error
+	// Reset truncates all read-model tables owned by this handler.
+	// Called automatically when Version() changes between restarts.
+	Reset(ctx context.Context) error
 }
 
 const batchSize = 100
@@ -82,7 +86,9 @@ func (p *Projector) Run(ctx context.Context) error {
 	first := true
 	for {
 		if err := p.catchUp(ctx); err != nil {
-			p.log.Error("projector catch-up failed", "error", err)
+			if !errors.Is(err, context.Canceled) {
+				p.log.Error("projector catch-up failed", "error", err)
+			}
 		}
 		if first {
 			p.log.Info("projector ready — initial catch-up complete")
@@ -232,9 +238,16 @@ func (p *Projector) initCheckpoints(ctx context.Context) error {
 }
 
 func (p *Projector) resetProjection(ctx context.Context, h Handler) error {
-	// Each handler implements a Truncate method or we call a table truncation via
-	// the handler's known table name. For now update the checkpoint to zero.
-	_, err := p.pool.Exec(ctx,
+	if err := h.Reset(ctx); err != nil {
+		return fmt.Errorf("reset projection %s: %w", h.Name(), err)
+	}
+	_, err := p.pool.Exec(ctx, `
+		DELETE FROM eventsourcing.projection_dead_letter WHERE projection = $1`,
+		h.Name())
+	if err != nil {
+		return fmt.Errorf("clear dead letters %s: %w", h.Name(), err)
+	}
+	_, err = p.pool.Exec(ctx,
 		`UPDATE eventsourcing.projection_checkpoint
 		 SET version = $1, cursor = NULL
 		 WHERE name = $2`,

@@ -6,6 +6,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -90,10 +91,18 @@ func (s *IncidentService) CreateIncident(
 		return nil
 	})
 	if err != nil {
+		logIfUnexpected(ctx, "CreateIncident", err, "name", name)
 		return inbound.CreateIncidentResult{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return inbound.CreateIncidentResult{IncidentID: incID, LayerIDs: layerIDs}, nil
+	return inbound.CreateIncidentResult{
+		IncidentID: incID,
+		LayerIDs:   layerIDs,
+		Name:       name,
+		Location:   location,
+		Divisions:  divisions,
+		CreatedAt:  at,
+	}, nil
 }
 
 // UpdateIncident renames and/or changes the location and divisions.
@@ -104,8 +113,9 @@ func (s *IncidentService) UpdateIncident(
 	location *incident.LocationData,
 	divisions []incident.DivisionData,
 	actor identity.Actor,
-) error {
+) (inbound.IncidentState, error) {
 	at := s.clock.Now()
+	var state inbound.IncidentState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
@@ -132,25 +142,29 @@ func (s *IncidentService) UpdateIncident(
 				return err
 			}
 		}
-		_, err = s.repo.Save(ctx, inc)
-		return err
+		if _, err = s.repo.Save(ctx, inc); err != nil {
+			return err
+		}
+		state = incidentToState(inc, at)
+		return nil
 	})
 	if err != nil {
-		return err
+		logIfUnexpected(ctx, "UpdateIncident", err, "id", id)
+		return inbound.IncidentState{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return nil
+	return state, nil
 }
 
 // CloseIncident closes the incident.
-func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error {
+func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
 	return s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
 }
 
 // ReopenIncident reopens a closed incident.
-func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error {
+func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
 	return s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
@@ -158,12 +172,15 @@ func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.Incident
 
 // DeleteIncident deletes a closed incident.
 func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error {
-	return s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
+	return err
 }
 
-func (s *IncidentService) writeIncident(ctx context.Context, id shared.IncidentID, fn func(*incident.Incident) error) error {
+func (s *IncidentService) writeIncident(ctx context.Context, id shared.IncidentID, fn func(*incident.Incident) error) (inbound.IncidentState, error) {
+	at := s.clock.Now()
+	var state inbound.IncidentState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
@@ -172,14 +189,18 @@ func (s *IncidentService) writeIncident(ctx context.Context, id shared.IncidentI
 		if err := fn(inc); err != nil {
 			return err
 		}
-		_, err = s.repo.Save(ctx, inc)
-		return err
+		if _, err = s.repo.Save(ctx, inc); err != nil {
+			return err
+		}
+		state = incidentToState(inc, at)
+		return nil
 	})
 	if err != nil {
-		return err
+		logIfUnexpected(ctx, "writeIncident", err, "id", id)
+		return inbound.IncidentState{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return nil
+	return state, nil
 }
 
 // LoadIncident returns the incident aggregate (for queries that need aggregate state).
@@ -189,4 +210,28 @@ func (s *IncidentService) LoadIncident(ctx context.Context, id shared.IncidentID
 		return nil, shared.ErrNotFound
 	}
 	return s.repo.Load(ctx, shared.IncidentID(idVal))
+}
+
+// incidentToState builds an IncidentState DTO from the aggregate after a write,
+// using updatedAt as the mutation timestamp (the aggregate does not track this separately).
+func incidentToState(inc *incident.Incident, updatedAt time.Time) inbound.IncidentState {
+	state := inbound.IncidentState{
+		ID:        shared.IncidentID(inc.Root().ID()),
+		Name:      inc.Name(),
+		CreatedAt: inc.CreatedAt(),
+		UpdatedAt: updatedAt,
+		IsClosed:  inc.IsClosed(),
+		ClosedAt:  inc.ClosedAt(),
+	}
+	if l := inc.Location(); l != nil {
+		state.Location = &incident.LocationData{Name: l.Name, Coordinates: l.Coordinates}
+	}
+	for _, d := range inc.Divisions() {
+		state.Divisions = append(state.Divisions, incident.DivisionData{
+			ID:          d.ID,
+			Name:        d.Name,
+			Description: d.Description,
+		})
+	}
+	return state
 }

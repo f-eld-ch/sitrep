@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
@@ -43,9 +45,10 @@ func (s *MessageService) RecordMessage(
 	content, sender, senderDetail, receiver, receiverDetail string,
 	medium shared.Medium,
 	actor identity.Actor,
-) (shared.MessageID, error) {
+) (inbound.MessageState, error) {
 	msgID := shared.MessageID(s.ids.New())
 	at := s.clock.Now()
+	var state inbound.MessageState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		// Cross-aggregate precondition: incident must be open. Load from aggregate,
@@ -69,14 +72,18 @@ func (s *MessageService) RecordMessage(
 			medium, at, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
-		_, err = s.repo.Save(ctx, msg)
-		return err
+		if _, err = s.repo.Save(ctx, msg); err != nil {
+			return err
+		}
+		state = messageToState(msg, at, at)
+		return nil
 	})
 	if err != nil {
-		return shared.MessageID{}, err
+		logIfUnexpected(ctx, "RecordMessage", err, "incidentId", incidentID)
+		return inbound.MessageState{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return msgID, nil
+	return state, nil
 }
 
 // CorrectMessage applies a sparse correction to an existing message.
@@ -86,8 +93,9 @@ func (s *MessageService) CorrectMessage(
 	content, sender, senderDetail, receiver, receiverDetail *string,
 	medium *shared.Medium,
 	actor identity.Actor,
-) error {
+) (inbound.MessageState, error) {
 	at := s.clock.Now()
+	var state inbound.MessageState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		msg, err := s.repo.Load(ctx, id)
 		if err != nil {
@@ -97,14 +105,19 @@ func (s *MessageService) CorrectMessage(
 			medium, nil, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
-		_, err = s.repo.Save(ctx, msg)
-		return err
+		if _, err = s.repo.Save(ctx, msg); err != nil {
+			return err
+		}
+		// createdAt unknown from aggregate; use at as a safe approximation for updatedAt
+		state = messageToState(msg, at, at)
+		return nil
 	})
 	if err != nil {
-		return err
+		logIfUnexpected(ctx, "CorrectMessage", err, "id", id)
+		return inbound.MessageState{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return nil
+	return state, nil
 }
 
 // TriageMessage updates triage state and divisions atomically.
@@ -115,8 +128,9 @@ func (s *MessageService) TriageMessage(
 	priority shared.PriorityStatus,
 	divisionIDs []shared.DivisionID,
 	actor identity.Actor,
-) error {
+) (inbound.MessageState, error) {
 	at := s.clock.Now()
+	var state inbound.MessageState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		msg, err := s.repo.Load(ctx, id)
 		if err != nil {
@@ -125,14 +139,18 @@ func (s *MessageService) TriageMessage(
 		if err := msg.Triage(triage, priority, divisionIDs, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
-		_, err = s.repo.Save(ctx, msg)
-		return err
+		if _, err = s.repo.Save(ctx, msg); err != nil {
+			return err
+		}
+		state = messageToState(msg, at, at)
+		return nil
 	})
 	if err != nil {
-		return err
+		logIfUnexpected(ctx, "TriageMessage", err, "id", id)
+		return inbound.MessageState{}, err
 	}
 	_ = s.notifier.Notify(ctx)
-	return nil
+	return state, nil
 }
 
 // DeleteMessage soft-deletes a message.
@@ -150,8 +168,31 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		return err
 	})
 	if err != nil {
+		logIfUnexpected(ctx, "DeleteMessage", err, "id", id)
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
 	return nil
+}
+
+// messageToState builds a MessageState DTO from the aggregate after a write.
+// createdAt and updatedAt come from the service clock (the aggregate does not track them).
+func messageToState(msg *message.Message, createdAt, updatedAt time.Time) inbound.MessageState {
+	return inbound.MessageState{
+		ID:             shared.MessageID(msg.Root().ID()),
+		IncidentID:     msg.IncidentID(),
+		Number:         msg.Number(),
+		Content:        msg.Content(),
+		Sender:         msg.Sender(),
+		SenderDetail:   msg.SenderDetail(),
+		Receiver:       msg.Receiver(),
+		ReceiverDetail: msg.ReceiverDetail(),
+		Medium:         msg.Medium(),
+		Time:           msg.Time(),
+		CreatedAt:      createdAt,
+		UpdatedAt:      updatedAt,
+		Triage:         msg.TriageStatus(),
+		Priority:       msg.PriorityStatus(),
+		DivisionIDs:    msg.DivisionIDs(),
+	}
 }

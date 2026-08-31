@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import type { Incident } from "types";
 import type { QueryResult } from "../result";
-import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents";
+import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents.next";
 import { toIncidentDetails, toIncidentSummary } from "./mapper";
 
 export interface IncidentsData {
@@ -67,7 +67,7 @@ export function useIncidentDetails(
     };
   }
 
-  const wireIncident = data?.incidentsByPk;
+  const wireIncident = data?.incident;
   if (!wireIncident) {
     return {
       status: "error",

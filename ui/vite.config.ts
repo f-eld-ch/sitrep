@@ -206,6 +206,11 @@ export default defineConfig({
         target: "http://localhost:4180",
         changeOrigin: true,
       },
+      // New gqlgen-based Go backend endpoint
+      "/api/v2/graphql": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
       "/oauth2": {
         target: "http://localhost:4180",
         changeOrigin: true,
@@ -223,6 +228,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/v1/graphql": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      // New gqlgen-based Go backend endpoint
+      "/api/v2/graphql": {
         target: "http://localhost:4180",
         changeOrigin: true,
       },

@@ -231,11 +231,11 @@ type Mutation {
   """
   addFeature(incidentId: ID!, layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
 
-  """Update only the geometry of a feature (e.g. after dragging)."""
-  moveFeature(id: ID!, geometry: Geometry!): Feature!
-
-  """Update only the style properties of a feature."""
-  restyleFeature(id: ID!, properties: JSONObject!): Feature!
+  """
+  Update geometry and/or properties of a feature in a single operation.
+  Supplying both in one call avoids the optimistic concurrency conflict from two parallel saves.
+  """
+  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
 
   """Permanently remove a feature."""
   deleteFeature(id: ID!): ID!

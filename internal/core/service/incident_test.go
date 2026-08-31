@@ -75,13 +75,15 @@ func TestIncidentService_CloseAndReopen(t *testing.T) {
 		require.NoError(t, err)
 		id := result.IncidentID
 
-		require.NoError(t, svc.CloseIncident(ctx(), id, testActor))
+		_, err = svc.CloseIncident(ctx(), id, testActor)
+		require.NoError(t, err)
 
 		inc, err := svc.LoadIncident(ctx(), id)
 		require.NoError(t, err)
 		assert.False(t, inc.IsOpen())
 
-		require.NoError(t, svc.ReopenIncident(ctx(), id, testActor))
+		_, err = svc.ReopenIncident(ctx(), id, testActor)
+		require.NoError(t, err)
 
 		inc, err = svc.LoadIncident(ctx(), id)
 		require.NoError(t, err)
@@ -94,9 +96,10 @@ func TestIncidentService_CloseAndReopen(t *testing.T) {
 		svc := factory.IncidentService(incidents, layers)
 
 		result, _ := svc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-		require.NoError(t, svc.CloseIncident(ctx(), result.IncidentID, testActor))
+		_, err := svc.CloseIncident(ctx(), result.IncidentID, testActor)
+		require.NoError(t, err)
 
-		err := svc.CloseIncident(ctx(), result.IncidentID, testActor)
+		_, err = svc.CloseIncident(ctx(), result.IncidentID, testActor)
 		assert.ErrorIs(t, err, shared.ErrAlreadyClosed)
 	})
 
@@ -107,7 +110,7 @@ func TestIncidentService_CloseAndReopen(t *testing.T) {
 
 		result, _ := svc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
 
-		err := svc.ReopenIncident(ctx(), result.IncidentID, testActor)
+		_, err := svc.ReopenIncident(ctx(), result.IncidentID, testActor)
 		assert.ErrorIs(t, err, shared.ErrAlreadyOpen)
 	})
 }
@@ -131,7 +134,8 @@ func TestIncidentService_Delete(t *testing.T) {
 
 		result, _ := svc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
 		id := result.IncidentID
-		require.NoError(t, svc.CloseIncident(ctx(), id, testActor))
+		_, err := svc.CloseIncident(ctx(), id, testActor)
+		require.NoError(t, err)
 		require.NoError(t, svc.DeleteIncident(ctx(), id, testActor))
 
 		inc, err := svc.LoadIncident(ctx(), id)
@@ -160,7 +164,8 @@ func TestIncidentService_UpdateDivisions(t *testing.T) {
 
 	newName := "Führungsstab"
 	divs := []incident.DivisionData{{Name: newName, Description: "HQ"}}
-	require.NoError(t, svc.UpdateIncident(ctx(), id, nil, nil, divs, testActor))
+	_, err = svc.UpdateIncident(ctx(), id, nil, nil, divs, testActor)
+	require.NoError(t, err)
 
 	inc, err := svc.LoadIncident(ctx(), id)
 	require.NoError(t, err)

@@ -19,17 +19,17 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		res, err := incidentSvc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
 		require.NoError(t, err)
 
-		id1, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		s1, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"Pegel steigt", "Beobachter Nord", "Brücke", "Führungsstab", "", shared.MediumRadio, testActor)
 		require.NoError(t, err)
-		assert.NotEqual(t, id1, shared.MessageID{})
+		assert.NotEqual(t, s1.ID, shared.MessageID{})
 
-		id2, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		s2, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"Lage stabil", "Beobachter Süd", "", "Führungsstab", "", shared.MediumPhone, testActor)
 		require.NoError(t, err)
 
 		// IDs must differ
-		assert.NotEqual(t, id1, id2)
+		assert.NotEqual(t, s1.ID, s2.ID)
 	})
 
 	t.Run("recording on closed incident is refused", func(t *testing.T) {
@@ -39,7 +39,8 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		messageSvc := factory.MessageService(messages, incidents)
 
 		res, _ := incidentSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-		require.NoError(t, incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor))
+		_, closeErr := incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
+		require.NoError(t, closeErr)
 
 		_, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"nach Abschluss", "Sender", "", "Empfänger", "", shared.MediumRadio, testActor)
@@ -65,12 +66,13 @@ func TestMessageService_CorrectMessage(t *testing.T) {
 	messageSvc := factory.MessageService(messages, incidents)
 
 	res, _ := incidentSvc.CreateIncident(ctx(), "Übung", nil, nil, nil, testActor)
-	msgID, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 		"Original", "Alpha", "", "Beta", "", shared.MediumRadio, testActor)
 	require.NoError(t, err)
 
 	newContent := "Korrigiert"
-	require.NoError(t, messageSvc.CorrectMessage(ctx(), msgID, &newContent, nil, nil, nil, nil, nil, testActor))
+	_, err = messageSvc.CorrectMessage(ctx(), ms.ID, &newContent, nil, nil, nil, nil, nil, testActor)
+	require.NoError(t, err)
 }
 
 func TestMessageService_TriageMessage(t *testing.T) {
@@ -80,12 +82,12 @@ func TestMessageService_TriageMessage(t *testing.T) {
 	messageSvc := factory.MessageService(messages, incidents)
 
 	res, _ := incidentSvc.CreateIncident(ctx(), "Lagebesprechung", nil, nil, nil, testActor)
-	msgID, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 		"Status Update", "Koordinator", "", "Führung", "", shared.MediumPhone, testActor)
 	require.NoError(t, err)
 
-	require.NoError(t, messageSvc.TriageMessage(ctx(), msgID,
-		shared.TriageDone, shared.PriorityHigh, nil, testActor))
+	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
+	require.NoError(t, err)
 }
 
 func TestMessageService_DeleteMessage(t *testing.T) {
@@ -96,10 +98,10 @@ func TestMessageService_DeleteMessage(t *testing.T) {
 		messageSvc := factory.MessageService(messages, incidents)
 
 		res, _ := incidentSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-		msgID, _ := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		ms, _ := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"Zu löschen", "X", "", "Y", "", shared.MediumRadio, testActor)
 
-		require.NoError(t, messageSvc.DeleteMessage(ctx(), msgID, testActor))
+		require.NoError(t, messageSvc.DeleteMessage(ctx(), ms.ID, testActor))
 	})
 
 	t.Run("deleting unknown message returns not-found", func(t *testing.T) {

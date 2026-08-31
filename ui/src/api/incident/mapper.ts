@@ -1,33 +1,37 @@
-import type { Division, Incident, Journal, Location } from "types";
+import type { Division, Incident, Location } from "types";
 import { toDate, toOptionalDate } from "../common/mapper";
-import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql";
+import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql/next";
 
-function toLocationNoId(w: FetchIncidentsQuery["incidents"][0]["location"]): Location {
-  return { id: "", name: w.name ?? "", coordinates: w.coordinates ?? "" };
+type WireIncidentSummary = FetchIncidentsQuery["incidents"][0];
+type WireIncidentDetail = NonNullable<GetIncidentDetailQuery["incident"]>;
+
+function toLocation(
+  w: WireIncidentSummary["location"] | WireIncidentDetail["location"],
+): Location {
+  if (!w) return { id: "", name: "", coordinates: "" };
+  return {
+    id: "",
+    name: w.name,
+    coordinates: w.coordinates ? JSON.stringify(w.coordinates) : "",
+  };
 }
 
-function toLocation(w: NonNullable<GetIncidentDetailQuery["incidentsByPk"]>["location"]): Location {
-  return { id: w.id, name: w.name ?? "", coordinates: w.coordinates ?? "" };
-}
-
-export function toIncidentSummary(w: FetchIncidentsQuery["incidents"][0]): Incident {
+export function toIncidentSummary(w: WireIncidentSummary): Incident {
   return {
     id: w.id,
     name: w.name,
     createdAt: toDate(w.createdAt),
     updatedAt: toOptionalDate(w.updatedAt),
-    deletedAt: toOptionalDate(w.deletedAt),
+    deletedAt: null,
     closedAt: toOptionalDate(w.closedAt),
-    location: toLocationNoId(w.location),
+    location: toLocation(w.location),
     divisions: [],
     journals: [],
     layers: [],
   };
 }
 
-export function toIncidentDetails(
-  w: NonNullable<GetIncidentDetailQuery["incidentsByPk"]>,
-): Incident {
+export function toIncidentDetails(w: WireIncidentDetail): Incident {
   return {
     id: w.id,
     name: w.name,
@@ -39,11 +43,9 @@ export function toIncidentDetails(
     divisions: w.divisions.map((d): Division => ({
       id: d.id,
       name: d.name,
-      description: d.description ?? "",
+      description: d.description,
     })),
-    // GET_INCIDENT_DETAILS only fetches id+name for journals; the Journal type has
-    // more required date fields that are unused in this context (navigation only).
-    journals: w.journals.map((j) => ({ id: j.id, name: j.name }) as Journal),
+    journals: [],
     layers: [],
   };
 }

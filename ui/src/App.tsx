@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
+import { Navigate, RouterProvider, createBrowserRouter, useParams } from "react-router";
 
 import "./App.scss";
 
@@ -9,12 +9,7 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
-import {
-  Editor as JournalEditor,
-  List as JournalMessageList,
-  New as JournalNew,
-  Overview as JournalOverview,
-} from "views/journal";
+import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
@@ -30,6 +25,12 @@ import it from "dayjs/locale/it";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 
 const MapView = lazy(() => import("views/map"));
+
+// Redirects old /journal/:journalId[/…] URLs — journalId is dropped, incidentId preserved.
+function JournalIdRedirect({ to }: { to: string }) {
+  const { incidentId } = useParams<{ incidentId: string }>();
+  return <Navigate to={`/incident/${incidentId}/journal/${to}`} replace />;
+}
 
 const router = createBrowserRouter([
   {
@@ -66,23 +67,7 @@ const router = createBrowserRouter([
             path: "journal",
             children: [
               {
-                path: "view",
-                element: (
-                  <Layout>
-                    <JournalOverview />
-                  </Layout>
-                ),
-              },
-              {
-                path: "new",
-                element: (
-                  <Layout>
-                    <JournalNew />
-                  </Layout>
-                ),
-              },
-              {
-                path: ":journalId/edit",
+                path: "edit",
                 element: (
                   <Layout>
                     <JournalEditor />
@@ -90,13 +75,19 @@ const router = createBrowserRouter([
                 ),
               },
               {
-                path: ":journalId",
+                path: "messages",
                 element: (
                   <Layout>
                     <JournalMessageList showControls={false} autoScroll={true} />
                   </Layout>
                 ),
               },
+              // Redirects for legacy routes
+              { path: "view", element: <Navigate to="messages" replace /> },
+              { path: "new", element: <Navigate to="edit" replace /> },
+              { path: ":journalId", element: <JournalIdRedirect to="messages" /> },
+              { path: ":journalId/edit", element: <JournalIdRedirect to="edit" /> },
+              { path: ":journalId/messages", element: <JournalIdRedirect to="messages" /> },
             ],
           },
           {

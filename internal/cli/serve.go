@@ -46,12 +46,12 @@ func runServe(cmd *cobra.Command, _ []string) error {
 
 	shutdown, err := setupOpenTelemetry(ctx)
 	if err != nil {
-		slog.Error("failed to configure OpenTelemetry", "error", err)
+		slog.ErrorContext(ctx, "failed to configure OpenTelemetry", "error", err)
 		return err
 	}
 	defer func() {
 		if err := shutdown(ctx); err != nil {
-			slog.Error("failed to shutdown OpenTelemetry", "error", err)
+			slog.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", err)
 		}
 	}()
 
@@ -60,7 +60,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer pool.Close()
+	// Pool is closed explicitly after the projector stops (see shutdown sequence below).
 
 	// ── Eventstore infrastructure ─────────────────────────────────────────────
 	store := pgstore.NewEventStore(pool)
@@ -88,10 +88,13 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	queries := readmodel.NewQueries(pool)
 
 	// ── Projector ─────────────────────────────────────────────────────────────
+	projCtx, cancelProj := context.WithCancel(ctx)
+	projDone := make(chan struct{})
 	proj := buildProjector(pool, store, notifier)
 	go func() {
-		if err := proj.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
-			slog.Error("projector stopped unexpectedly", "error", err)
+		defer close(projDone)
+		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
+			slog.ErrorContext(projCtx, "projector stopped unexpectedly", "error", err)
 		}
 	}()
 
@@ -110,12 +113,12 @@ func runServe(cmd *cobra.Command, _ []string) error {
 
 		oidcClient, err := auth.NewOIDC(ctx, issuer, clientID, clientSecret, redirectURI, key)
 		if err != nil {
-			slog.Error("failed to create OIDC client", "error", err)
+			slog.ErrorContext(ctx, "failed to create OIDC client", "error", err)
 			return err
 		}
 		opts = append(opts, server.WithOidc(oidcClient))
 	} else {
-		slog.Warn("OIDC client not configured, using local enforcer")
+		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")
 	}
 
 	opts = append(opts,
@@ -127,10 +130,19 @@ func runServe(cmd *cobra.Command, _ []string) error {
 
 	srv := server.NewServer(opts...)
 	if err := srv.ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("failed to start server", "error", err)
+		slog.ErrorContext(ctx, "failed to start server", "error", err)
+		cancelProj()
+		<-projDone
+		pool.Close()
 		return err
 	}
-	slog.Info("server stopped")
+
+	// Graceful shutdown: stop projector before closing the pool so in-flight
+	// catch-up iterations can finish cleanly without "closed pool" errors.
+	cancelProj()
+	<-projDone
+	pool.Close()
+	slog.InfoContext(ctx, "server stopped")
 	return nil
 }
 

@@ -283,24 +283,7 @@ const JournalNavBar: FunctionComponent = () => {
 
   if (!incidentState || !incidentState.incident) return;
 
-  if (!incidentState.journal) {
-    return (
-      <div className="navbar-item has-dropdown is-hoverable">
-        <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
-          end={true}
-          to={`/incident/${incidentState.incident.id}/journal/view`}
-        >
-          <span className="icon-text is-capitalized">
-            <span className="icon">
-              <FontAwesomeIcon icon={faBars} />
-            </span>
-            <span>{t("journal")}</span>
-          </span>
-        </NavLink>
-      </div>
-    );
-  }
+  const incidentId = incidentState.incident.id;
 
   return (
     <div className="navbar-item has-dropdown is-hoverable">
@@ -308,16 +291,13 @@ const JournalNavBar: FunctionComponent = () => {
         className={({ isActive }) =>
           `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
         }
-        end={true}
-        to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}/edit`}
+        to={`/incident/${incidentId}/journal/messages`}
       >
         <span className="icon-text is-capitalized">
           <span className="icon">
             <FontAwesomeIcon icon={faBars} />
           </span>
-          <span>
-            {t("journal")} {incidentState.journal.name}
-          </span>
+          <span>{t("journal")}</span>
         </span>
       </NavLink>
       <div className="navbar-dropdown">
@@ -325,21 +305,7 @@ const JournalNavBar: FunctionComponent = () => {
           className={({ isActive }) =>
             `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
           }
-          to={`/incident/${incidentState.incident.id}/journal/view`}
-        >
-          <span className="icon-text is-capitalized">
-            <span className="icon">
-              <FontAwesomeIcon icon={faRectangleList} />
-            </span>
-            <span>{t("overview")}</span>
-          </span>
-        </NavLink>
-        <NavLink
-          className={({ isActive }) =>
-            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
-          }
-          end={true}
-          to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}`}
+          to={`/incident/${incidentId}/journal/messages`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
             <span className="icon">
@@ -352,8 +318,7 @@ const JournalNavBar: FunctionComponent = () => {
           className={({ isActive }) =>
             `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
           }
-          end={true}
-          to={`/incident/${incidentState.incident.id}/journal/${incidentState.journal.id}/edit`}
+          to={`/incident/${incidentId}/journal/edit`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
             <span className="icon">

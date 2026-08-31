@@ -5,6 +5,7 @@ package inbound
 
 import (
 	"context"
+	"time"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -16,6 +17,43 @@ import (
 type CreateIncidentResult struct {
 	IncidentID shared.IncidentID
 	LayerIDs   []shared.LayerID
+	Name       string
+	Location   *incident.LocationData
+	Divisions  []incident.DivisionData
+	CreatedAt  time.Time
+}
+
+// IncidentState is returned from incident mutation services so resolvers can
+// build responses from aggregate state without a projection read.
+type IncidentState struct {
+	ID        shared.IncidentID
+	Name      string
+	Location  *incident.LocationData
+	Divisions []incident.DivisionData
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	IsClosed  bool
+	ClosedAt  *time.Time
+}
+
+// MessageState is returned from message mutation services so resolvers can
+// build responses from aggregate state without a projection read.
+type MessageState struct {
+	ID             shared.MessageID
+	IncidentID     shared.IncidentID
+	Number         int
+	Content        string
+	Sender         string
+	SenderDetail   string
+	Receiver       string
+	ReceiverDetail string
+	Medium         shared.Medium
+	Time           time.Time
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Triage         shared.TriageStatus
+	Priority       shared.PriorityStatus
+	DivisionIDs    []shared.DivisionID
 }
 
 // IncidentService is the driving port for incident lifecycle commands.
@@ -36,10 +74,10 @@ type IncidentService interface {
 		location *incident.LocationData,
 		divisions []incident.DivisionData,
 		actor identity.Actor,
-	) error
+	) (IncidentState, error)
 
-	CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error
-	ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error
+	CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (IncidentState, error)
+	ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (IncidentState, error)
 	DeleteIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error
 	LoadIncident(ctx context.Context, id shared.IncidentID) (*incident.Incident, error)
 }
@@ -52,7 +90,7 @@ type MessageService interface {
 		content, sender, senderDetail, receiver, receiverDetail string,
 		medium shared.Medium,
 		actor identity.Actor,
-	) (shared.MessageID, error)
+	) (MessageState, error)
 
 	CorrectMessage(
 		ctx context.Context,
@@ -60,7 +98,7 @@ type MessageService interface {
 		content, sender, senderDetail, receiver, receiverDetail *string,
 		medium *shared.Medium,
 		actor identity.Actor,
-	) error
+	) (MessageState, error)
 
 	TriageMessage(
 		ctx context.Context,
@@ -69,7 +107,7 @@ type MessageService interface {
 		priority shared.PriorityStatus,
 		divisionIDs []shared.DivisionID,
 		actor identity.Actor,
-	) error
+	) (MessageState, error)
 
 	DeleteMessage(ctx context.Context, id shared.MessageID, actor identity.Actor) error
 }
@@ -92,7 +130,8 @@ type FeatureService interface {
 		actor identity.Actor,
 	) error
 
-	MoveFeature(ctx context.Context, id shared.FeatureID, geometry map[string]any, actor identity.Actor) error
-	RestyleFeature(ctx context.Context, id shared.FeatureID, properties map[string]any, actor identity.Actor) error
+	// ModifyFeature updates geometry and/or properties in a single aggregate load,
+	// avoiding the optimistic concurrency conflict that would occur from two parallel saves.
+	ModifyFeature(ctx context.Context, id shared.FeatureID, geometry, properties map[string]any, actor identity.Actor) error
 	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
 }

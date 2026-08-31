@@ -1,13 +1,18 @@
 import { useMutation } from "@apollo/client/react";
 import type { CommandHook, CommandState } from "../result";
-import { CLOSE_INCIDENT, DELETE_INCIDENT, INSERT_INCIDENT, UPDATE_INCIDENT } from "./documents";
-import { afterIncidentWrite } from "./invalidate";
+import {
+  CLOSE_INCIDENT,
+  CREATE_INCIDENT,
+  DELETE_INCIDENT,
+  GET_INCIDENTS,
+  REOPEN_INCIDENT,
+  UPDATE_INCIDENT,
+} from "./documents.next";
 
 export interface CreateIncidentArgs {
   name: string;
   location: string;
   divisions: { name: string; description: string }[];
-  journalName: string;
   layerName: string;
 }
 
@@ -15,12 +20,11 @@ export interface UpdateIncidentArgs {
   incidentId: string;
   name: string;
   location: string;
-  locationId: string;
-  divisions: { name: string; description: string; incidentId: string }[];
+  divisions: { name: string; description: string }[];
 }
 
 export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentId: string }> {
-  const [mutate, { loading, error }] = useMutation(INSERT_INCIDENT);
+  const [mutate, { loading, error }] = useMutation(CREATE_INCIDENT);
 
   const state: CommandState = {
     loading,
@@ -33,14 +37,34 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
     const result = await mutate({
       variables: {
         name: args.name,
-        location: args.location,
+        location: args.location || undefined,
         divisions: args.divisions,
-        journalName: args.journalName,
-        layerName: args.layerName,
+        layers: [{ name: args.layerName }],
       },
-      refetchQueries: afterIncidentWrite(),
+      update(cache, { data }) {
+        if (!data?.createIncident) return;
+        const newIncident = data.createIncident;
+        const cached = cache.readQuery({ query: GET_INCIDENTS });
+        if (!cached) return;
+        cache.writeQuery({
+          query: GET_INCIDENTS,
+          data: {
+            incidents: [
+              ...cached.incidents,
+              {
+                ...newIncident,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                closedAt: null,
+                isClosed: false,
+                location: null,
+              },
+            ],
+          },
+        });
+      },
     });
-    const incidentId = result.data?.insertIncidentsOne?.id;
+    const incidentId = result.data?.createIncident?.id;
     if (!incidentId)
       throw Object.assign(new Error("Create incident failed"), { code: "UNKNOWN" as const });
     return { incidentId };
@@ -62,13 +86,12 @@ export function useUpdateIncident(): CommandHook<UpdateIncidentArgs> {
   const updateIncident = async (args: UpdateIncidentArgs): Promise<void> => {
     await mutate({
       variables: {
-        incidentId: args.incidentId,
+        id: args.incidentId,
         name: args.name,
-        location: args.location,
-        locationId: args.locationId,
+        location: args.location || undefined,
         divisions: args.divisions,
       },
-      refetchQueries: afterIncidentWrite(args.incidentId),
+      // Apollo normalizes Incident:${id} — list and detail queries update automatically.
     });
   };
 
@@ -86,11 +109,9 @@ export function useCloseIncident(): CommandHook<{ incidentId: string }> {
   };
 
   const closeIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
-    // TODO(gqlgen): replace the updateJournals root with a single closeIncident mutation.
-    // Today this relies on Hasura multi-root transactionality to cascade the close to journals.
     await mutate({
-      variables: { incidentId, closedAt: new Date() },
-      refetchQueries: afterIncidentWrite(incidentId),
+      variables: { id: incidentId },
+      // Apollo normalizes Incident:${id} — isClosed/closedAt update automatically.
     });
   };
 
@@ -98,7 +119,7 @@ export function useCloseIncident(): CommandHook<{ incidentId: string }> {
 }
 
 export function useReopenIncident(): CommandHook<{ incidentId: string }> {
-  const [mutate, { loading, error }] = useMutation(CLOSE_INCIDENT);
+  const [mutate, { loading, error }] = useMutation(REOPEN_INCIDENT);
 
   const state: CommandState = {
     loading,
@@ -109,8 +130,8 @@ export function useReopenIncident(): CommandHook<{ incidentId: string }> {
 
   const reopenIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
     await mutate({
-      variables: { incidentId, closedAt: null },
-      refetchQueries: afterIncidentWrite(incidentId),
+      variables: { id: incidentId },
+      // Apollo normalizes Incident:${id} — isClosed/closedAt update automatically.
     });
   };
 
@@ -128,19 +149,13 @@ export function useDeleteIncident(): CommandHook<{ incidentId: string }> {
   };
 
   const deleteIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
-    const result = await mutate({
-      variables: { incidentId, deletedAt: new Date() },
-      refetchQueries: afterIncidentWrite(incidentId),
+    await mutate({
+      variables: { id: incidentId },
+      update(cache) {
+        cache.evict({ id: cache.identify({ __typename: "Incident", id: incidentId }) });
+        cache.gc();
+      },
     });
-    // Hasura's where-clause encodes "must be closed and not yet deleted" — affectedRows:0 means
-    // the precondition failed. NOTE: this conflates "not closed", "already deleted", and "not
-    // found". The Go server will distinguish them and provide better errors.
-    const affected = result.data?.updateIncidents?.affectedRows ?? 0;
-    if (affected === 0) {
-      throw Object.assign(new Error("Incident cannot be deleted: must be closed first"), {
-        code: "INCIDENT_NOT_DELETABLE" as const,
-      });
-    }
   };
 
   return [deleteIncident, state];

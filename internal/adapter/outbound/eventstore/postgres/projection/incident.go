@@ -27,6 +27,10 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 
 func (h *IncidentHandler) Name() string { return "rm_incident" }
 func (h *IncidentHandler) Version() int { return 1 }
+func (h *IncidentHandler) Reset(ctx context.Context) error {
+	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident CASCADE`)
+	return err
+}
 func (h *IncidentHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
@@ -139,7 +143,11 @@ func NewIncidentDivisionHandler(pool *pgxpool.Pool) *IncidentDivisionHandler {
 }
 
 func (h *IncidentDivisionHandler) Name() string { return "rm_incident_division" }
-func (h *IncidentDivisionHandler) Version() int { return 1 }
+func (h *IncidentDivisionHandler) Version() int { return 2 }
+func (h *IncidentDivisionHandler) Reset(ctx context.Context) error {
+	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident_division`)
+	return err
+}
 func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
@@ -185,9 +193,11 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 
 	case "DivisionAdded":
 		type divisionAdded struct {
-			ID          string `json:"id"`
-			Name        string `json:"name"`
-			Description string `json:"description"`
+			Division struct {
+				ID          string `json:"id"`
+				Name        string `json:"name"`
+				Description string `json:"description"`
+			} `json:"division"`
 		}
 		var d divisionAdded
 		if err := remarshal(e.Data, &d); err != nil {
@@ -197,7 +207,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 			INSERT INTO rm_incident_division (id, incident_id, name, description, removed_at)
 			VALUES ($1, $2, $3, $4, NULL)
 			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
-			d.ID, incidentID, d.Name, d.Description)
+			d.Division.ID, incidentID, d.Division.Name, d.Division.Description)
 
 	case "DivisionRenamed":
 		type divisionRenamed struct {

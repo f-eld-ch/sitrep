@@ -1,10 +1,10 @@
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
 import { toDivision, toMessage } from "./mapper";
-import type { GetMessagesQuery } from "gql";
+import type { GetIncidentMessagesQuery } from "gql/next";
 
-type WireMessage = GetMessagesQuery["messages"][0];
-type WireDivision = WireMessage["divisions"][0]["division"];
+type WireMessage = NonNullable<GetIncidentMessagesQuery["incident"]>["messages"][0];
+type WireDivision = WireMessage["divisions"][0];
 
 const WIRE_DIVISION: WireDivision = {
   id: "div-1",
@@ -14,6 +14,7 @@ const WIRE_DIVISION: WireDivision = {
 
 const WIRE_MESSAGE: WireMessage = {
   id: "msg-1",
+  number: 1,
   content: "Test content",
   sender: "Station Alpha",
   senderDetail: "Rm 4",
@@ -23,10 +24,9 @@ const WIRE_MESSAGE: WireMessage = {
   time: "2024-03-15T09:00:00Z",
   createdAt: "2024-03-15T09:00:00Z",
   updatedAt: "2024-03-15T09:05:00Z",
-  deletedAt: null,
-  divisions: [{ division: WIRE_DIVISION }],
-  triageId: "PENDING",
-  priorityId: "NORMAL",
+  triage: "PENDING",
+  priority: "NORMAL",
+  divisions: [WIRE_DIVISION],
 };
 
 describe("toDivision", () => {
@@ -36,7 +36,7 @@ describe("toDivision", () => {
   });
 
   it("does not include __typename or extra fields", () => {
-    const wireWithExtra = { ...WIRE_DIVISION, __typename: "Division", extra: "noise" };
+    const wireWithExtra = { ...WIRE_DIVISION, __typename: "Division" as const, extra: "noise" };
     const result = toDivision(wireWithExtra);
     expect(Object.keys(result)).toEqual(["id", "name", "description"]);
   });
@@ -50,20 +50,13 @@ describe("toMessage", () => {
     expect(result.updatedAt).toBeInstanceOf(Date);
   });
 
-  it("maps a null deletedAt to the epoch", () => {
-    const result = toMessage({ ...WIRE_MESSAGE, deletedAt: null });
-    // Message.deletedAt is typed Date, not Date | null, so an absent value cannot be
-    // represented directly and is collapsed to the epoch as a not-deleted sentinel.
+  it("sets deletedAt to epoch (not in new schema; server hides deleted messages)", () => {
+    const result = toMessage(WIRE_MESSAGE);
+    // Message.deletedAt is typed Date in the domain type; use epoch as a sentinel.
     expect(result.deletedAt).toEqual(new Date(0));
   });
 
-  it("parses deletedAt when present", () => {
-    const result = toMessage({ ...WIRE_MESSAGE, deletedAt: "2024-03-16T00:00:00Z" });
-    expect(result.deletedAt).toBeInstanceOf(Date);
-    expect(result.deletedAt).not.toEqual(new Date(0));
-  });
-
-  it("unwraps the message_division join-table envelope", () => {
+  it("wraps flat divisions into the DivisionList envelope the views expect", () => {
     const result = toMessage(WIRE_MESSAGE);
     expect(result.divisions).toHaveLength(1);
     expect(result.divisions[0]).toEqual({
@@ -79,18 +72,28 @@ describe("toMessage", () => {
     expect(result.medium).toBe(Medium.Radio);
   });
 
-  it("falls back to TriageStatus.Pending for unknown triageId", () => {
+  it("maps triage field to triageId on the domain type", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, triage: "PENDING" });
+    expect(result.triageId).toBe(TriageStatus.Pending);
+  });
+
+  it("falls back to TriageStatus.Pending for unknown triage", () => {
     const result = toMessage({
       ...WIRE_MESSAGE,
-      triageId: "UNKNOWN_STATUS" as WireMessage["triageId"],
+      triage: "UNKNOWN_STATUS" as WireMessage["triage"],
     });
     expect(result.triageId).toBe(TriageStatus.Pending);
   });
 
-  it("falls back to PriorityStatus.Normal for unknown priorityId", () => {
+  it("maps priority field to priorityId on the domain type", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, priority: "NORMAL" });
+    expect(result.priorityId).toBe(PriorityStatus.Normal);
+  });
+
+  it("falls back to PriorityStatus.Normal for unknown priority", () => {
     const result = toMessage({
       ...WIRE_MESSAGE,
-      priorityId: "TOP_SECRET" as WireMessage["priorityId"],
+      priority: "TOP_SECRET" as WireMessage["priority"],
     });
     expect(result.priorityId).toBe(PriorityStatus.Normal);
   });
@@ -99,21 +102,21 @@ describe("toMessage", () => {
     const result = toMessage({
       ...WIRE_MESSAGE,
       medium: "EMAIL",
-      triageId: "DONE",
-      priorityId: "HIGH",
+      triage: "DONE",
+      priority: "HIGH",
     });
     expect(result.medium).toBe(Medium.Email);
     expect(result.triageId).toBe(TriageStatus.Triaged);
     expect(result.priorityId).toBe(PriorityStatus.High);
   });
 
-  it("sets number to undefined (view-computed from list position)", () => {
+  it("exposes the server-assigned message number", () => {
     const result = toMessage(WIRE_MESSAGE);
-    expect(result.number).toBeUndefined();
+    expect(result.number).toBe(1);
   });
 
   it("does not include __typename in the result", () => {
-    const wireWithTypename = { ...WIRE_MESSAGE, __typename: "Messages" };
+    const wireWithTypename = { ...WIRE_MESSAGE, __typename: "Message" as const };
     const result = toMessage(wireWithTypename);
     expect(Object.keys(result)).not.toContain("__typename");
   });

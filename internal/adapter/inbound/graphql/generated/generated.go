@@ -101,9 +101,8 @@ type ComplexityRoot struct {
 		DeleteFeature  func(childComplexity int, id string) int
 		DeleteIncident func(childComplexity int, id string) int
 		DeleteMessage  func(childComplexity int, id string) int
-		MoveFeature    func(childComplexity int, id string, geometry scalar.JSONMap) int
+		ModifyFeature  func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
 		ReopenIncident func(childComplexity int, id string) int
-		RestyleFeature func(childComplexity int, id string, properties scalar.JSONMap) int
 		TriageMessage  func(childComplexity int, id string, input model.TriageMessageInput) int
 		UpdateIncident func(childComplexity int, id string, input model.UpdateIncidentInput) int
 		UpdateMessage  func(childComplexity int, id string, input model.UpdateMessageInput) int
@@ -136,8 +135,7 @@ type MutationResolver interface {
 	DeleteMessage(ctx context.Context, id string) (string, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
 	AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
-	MoveFeature(ctx context.Context, id string, geometry scalar.JSONMap) (*model.Feature, error)
-	RestyleFeature(ctx context.Context, id string, properties scalar.JSONMap) (*model.Feature, error)
+	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
 	DeleteFeature(ctx context.Context, id string) (string, error)
 }
 type QueryResolver interface {
@@ -469,17 +467,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteMessage(childComplexity, args["id"].(string)), true
-	case "Mutation.moveFeature":
-		if e.ComplexityRoot.Mutation.MoveFeature == nil {
+	case "Mutation.modifyFeature":
+		if e.ComplexityRoot.Mutation.ModifyFeature == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_moveFeature_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_modifyFeature_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.MoveFeature(childComplexity, args["id"].(string), args["geometry"].(scalar.JSONMap)), true
+		return e.ComplexityRoot.Mutation.ModifyFeature(childComplexity, args["id"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap)), true
 	case "Mutation.reopenIncident":
 		if e.ComplexityRoot.Mutation.ReopenIncident == nil {
 			break
@@ -491,17 +489,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ReopenIncident(childComplexity, args["id"].(string)), true
-	case "Mutation.restyleFeature":
-		if e.ComplexityRoot.Mutation.RestyleFeature == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_restyleFeature_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.RestyleFeature(childComplexity, args["id"].(string), args["properties"].(scalar.JSONMap)), true
 	case "Mutation.triageMessage":
 		if e.ComplexityRoot.Mutation.TriageMessage == nil {
 			break
@@ -900,11 +887,11 @@ type Mutation {
   """
   addFeature(incidentId: ID!, layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
 
-  """Update only the geometry of a feature (e.g. after dragging)."""
-  moveFeature(id: ID!, geometry: Geometry!): Feature!
-
-  """Update only the style properties of a feature."""
-  restyleFeature(id: ID!, properties: JSONObject!): Feature!
+  """
+  Update geometry and/or properties of a feature in a single operation.
+  Supplying both in one call avoids the optimistic concurrency conflict from two parallel saves.
+  """
+  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
 
   """Permanently remove a feature."""
   deleteFeature(id: ID!): ID!
@@ -1291,7 +1278,7 @@ func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Contex
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_moveFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Mutation_modifyFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -1304,12 +1291,20 @@ func (ec *executionContext) field_Mutation_moveFeature_args(ctx context.Context,
 	args["id"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "geometry",
 		func(ctx context.Context, v any) (scalar.JSONMap, error) {
-			return ec.unmarshalNGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, v)
+			return ec.unmarshalOGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
 	args["geometry"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "properties",
+		func(ctx context.Context, v any) (scalar.JSONMap, error) {
+			return ec.unmarshalOJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["properties"] = arg2
 	return args, nil
 }
 
@@ -1324,28 +1319,6 @@ func (ec *executionContext) field_Mutation_reopenIncident_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_restyleFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "properties",
-		func(ctx context.Context, v any) (scalar.JSONMap, error) {
-			return ec.unmarshalNJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["properties"] = arg1
 	return args, nil
 }
 
@@ -2865,17 +2838,17 @@ func (ec *executionContext) fieldContext_Mutation_addFeature(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_moveFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_modifyFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_moveFeature(ctx, field)
+			return ec.fieldContext_Mutation_modifyFeature(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().MoveFeature(ctx, fc.Args["id"].(string), fc.Args["geometry"].(scalar.JSONMap))
+			return ec.Resolvers.Mutation().ModifyFeature(ctx, fc.Args["id"].(string), fc.Args["geometry"].(scalar.JSONMap), fc.Args["properties"].(scalar.JSONMap))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Feature) graphql.Marshaler {
@@ -2885,7 +2858,7 @@ func (ec *executionContext) _Mutation_moveFeature(ctx context.Context, field gra
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Mutation_moveFeature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_modifyFeature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2902,51 +2875,7 @@ func (ec *executionContext) fieldContext_Mutation_moveFeature(ctx context.Contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_moveFeature_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_restyleFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_restyleFeature(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RestyleFeature(ctx, fc.Args["id"].(string), fc.Args["properties"].(scalar.JSONMap))
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Feature) graphql.Marshaler {
-			return ec.marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeature(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Mutation_restyleFeature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Feature(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_restyleFeature_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_modifyFeature_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5164,16 +5093,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "moveFeature":
+		case "modifyFeature":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_moveFeature(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "restyleFeature":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_restyleFeature(ctx, field)
+				return ec._Mutation_modifyFeature(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5858,28 +5780,6 @@ func (ec *executionContext) marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsit
 	return ec._Feature(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx context.Context, v any) (scalar.JSONMap, error) {
-	res, err := scalar.UnmarshalJSONMap(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx context.Context, sel ast.SelectionSet, v scalar.JSONMap) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	_ = sel
-	res := scalar.MarshalJSONMap(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5963,28 +5863,6 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	_ = sel
 	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx context.Context, v any) (scalar.JSONMap, error) {
-	res, err := scalar.UnmarshalJSONMap(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx context.Context, sel ast.SelectionSet, v scalar.JSONMap) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	_ = sel
-	res := scalar.MarshalJSONMap(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")

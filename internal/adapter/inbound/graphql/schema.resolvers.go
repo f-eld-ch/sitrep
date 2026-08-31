@@ -70,12 +70,7 @@ func (r *mutationResolver) CreateIncident(ctx context.Context, input model.Creat
 	if err != nil {
 		return nil, err
 	}
-
-	inc, err := r.Queries.GetIncident(ctx, uuid.UUID(result.IncidentID))
-	if err != nil {
-		return nil, err
-	}
-	return incidentRMToModel(inc), nil
+	return incidentResultToModel(result), nil
 }
 
 // UpdateIncident is the resolver for the updateIncident field.
@@ -102,15 +97,11 @@ func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input 
 		}
 	}
 
-	if err := r.Incidents.UpdateIncident(ctx, shared.IncidentID(incID), input.Name, loc, divisions, actor); err != nil {
-		return nil, err
-	}
-
-	inc, err := r.Queries.GetIncident(ctx, incID)
+	state, err := r.Incidents.UpdateIncident(ctx, shared.IncidentID(incID), input.Name, loc, divisions, actor)
 	if err != nil {
 		return nil, err
 	}
-	return incidentRMToModel(inc), nil
+	return incidentStateToModel(state), nil
 }
 
 // CloseIncident is the resolver for the closeIncident field.
@@ -123,14 +114,11 @@ func (r *mutationResolver) CloseIncident(ctx context.Context, id string) (*model
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Incidents.CloseIncident(ctx, shared.IncidentID(incID), actor); err != nil {
-		return nil, err
-	}
-	inc, err := r.Queries.GetIncident(ctx, incID)
+	state, err := r.Incidents.CloseIncident(ctx, shared.IncidentID(incID), actor)
 	if err != nil {
 		return nil, err
 	}
-	return incidentRMToModel(inc), nil
+	return incidentStateToModel(state), nil
 }
 
 // ReopenIncident is the resolver for the reopenIncident field.
@@ -143,14 +131,11 @@ func (r *mutationResolver) ReopenIncident(ctx context.Context, id string) (*mode
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Incidents.ReopenIncident(ctx, shared.IncidentID(incID), actor); err != nil {
-		return nil, err
-	}
-	inc, err := r.Queries.GetIncident(ctx, incID)
+	state, err := r.Incidents.ReopenIncident(ctx, shared.IncidentID(incID), actor)
 	if err != nil {
 		return nil, err
 	}
-	return incidentRMToModel(inc), nil
+	return incidentStateToModel(state), nil
 }
 
 // DeleteIncident is the resolver for the deleteIncident field.
@@ -184,7 +169,7 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 		return nil, fmt.Errorf("%w: %v", shared.ErrInvalidInput, err)
 	}
 
-	msgID, err := r.Messages.RecordMessage(ctx,
+	state, err := r.Messages.RecordMessage(ctx,
 		shared.IncidentID(incID),
 		input.Content, input.Sender, input.SenderDetail,
 		input.Receiver, input.ReceiverDetail,
@@ -192,13 +177,7 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 	if err != nil {
 		return nil, err
 	}
-
-	msg, err := r.Queries.GetMessage(ctx, uuid.UUID(msgID))
-	if err != nil {
-		return nil, err
-	}
-	// Messages have no divisions yet after creation.
-	return messageRMToModel(msg, nil), nil
+	return messageStateToModel(state), nil
 }
 
 // UpdateMessage is the resolver for the updateMessage field.
@@ -221,14 +200,14 @@ func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input m
 		medium = &m
 	}
 
-	if err := r.Messages.CorrectMessage(ctx, shared.MessageID(msgID),
+	state, err := r.Messages.CorrectMessage(ctx, shared.MessageID(msgID),
 		input.Content, input.Sender, input.SenderDetail,
 		input.Receiver, input.ReceiverDetail,
-		medium, actor); err != nil {
+		medium, actor)
+	if err != nil {
 		return nil, err
 	}
-
-	return r.loadMessage(ctx, msgID)
+	return messageStateToModel(state), nil
 }
 
 // TriageMessage is the resolver for the triageMessage field.
@@ -259,10 +238,25 @@ func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input m
 		divisionIDs[i] = shared.DivisionID(u)
 	}
 
-	if err := r.Messages.TriageMessage(ctx, shared.MessageID(msgID), triage, priority, divisionIDs, actor); err != nil {
+	state, err := r.Messages.TriageMessage(ctx, shared.MessageID(msgID), triage, priority, divisionIDs, actor)
+	if err != nil {
 		return nil, err
 	}
-	return r.loadMessage(ctx, msgID)
+	msg := messageStateToModel(state)
+	// Divisions on a message are incident-level references (stable, no projection race).
+	// Look them up so the mutation response contains full name/description data.
+	if len(state.DivisionIDs) > 0 {
+		inc, lookupErr := r.Queries.GetIncident(ctx, uuid.UUID(state.IncidentID))
+		if lookupErr == nil {
+			divIndex := divisionsByID(inc.Divisions)
+			for _, divID := range state.DivisionIDs {
+				if d, ok := divIndex[uuid.UUID(divID)]; ok {
+					msg.Divisions = append(msg.Divisions, divisionRMToModel(d))
+				}
+			}
+		}
+	}
+	return msg, nil
 }
 
 // DeleteMessage is the resolver for the deleteMessage field.
@@ -329,8 +323,8 @@ func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, la
 	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
 }
 
-// MoveFeature is the resolver for the moveFeature field.
-func (r *mutationResolver) MoveFeature(ctx context.Context, id string, geometry scalar.JSONMap) (*model.Feature, error) {
+// ModifyFeature is the resolver for the modifyFeature field.
+func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -339,26 +333,10 @@ func (r *mutationResolver) MoveFeature(ctx context.Context, id string, geometry 
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Features.MoveFeature(ctx, shared.FeatureID(featureID), geometry, actor); err != nil {
+	if err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor); err != nil {
 		return nil, err
 	}
-	return &model.Feature{ID: id, Geometry: geometry}, nil
-}
-
-// RestyleFeature is the resolver for the restyleFeature field.
-func (r *mutationResolver) RestyleFeature(ctx context.Context, id string, properties scalar.JSONMap) (*model.Feature, error) {
-	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
-		return nil, err
-	}
-	featureID, err := parseUUID(id)
-	if err != nil {
-		return nil, err
-	}
-	if err := r.Features.RestyleFeature(ctx, shared.FeatureID(featureID), properties, actor); err != nil {
-		return nil, err
-	}
-	return &model.Feature{ID: id, Properties: properties}, nil
+	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
 }
 
 // DeleteFeature is the resolver for the deleteFeature field.
@@ -447,3 +425,4 @@ type (
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )
+

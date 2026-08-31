@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 
@@ -94,7 +96,11 @@ func WithApiV1Proxy(upstream string) Option {
 	}
 }
 
-const complexityBudget = 1000
+// complexityBudget caps the total cost of a single GraphQL operation.
+// Budget reasoning: a realistic dashboard query fetches ~10 incidents with their
+// messages (10 × messageCost=50 + field costs ≈ 1000) plus layers and features.
+// Budget set to 5000 to allow that with headroom.
+const complexityBudget = 5000
 
 // disableIntrospection is a gqlgen extension that sets DisableIntrospection on
 // every operation context, preventing schema reflection by clients.
@@ -123,13 +129,27 @@ func WithApiV2(
 			Features:  features,
 			Queries:   queries,
 		}}
-		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity * 100 }
-		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity * 100 }
+		// Flat cost per list-resolver call to penalise N+1 patterns
+		// (e.g. fetching messages for every incident in a list query)
+		// without rejecting normal single-incident or single-layer queries.
+		const messageCost = 50
+		const featureCost = 20
+		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity + messageCost }
+		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
 
 		srv := handler.New(generated.NewExecutableSchema(cfg))
 		srv.AddTransport(transport.POST{})
 		srv.Use(extension.FixedComplexityLimit(complexityBudget))
-		srv.SetErrorPresenter(presentDomainError)
+		srv.SetErrorPresenter(logAndPresentError)
+		srv.SetRecoverFunc(func(ctx context.Context, p any) error {
+			opCtx := graphql.GetOperationContext(ctx)
+			slog.ErrorContext(ctx, "resolver panic",
+				"operation", opCtx.OperationName,
+				"query", opCtx.RawQuery,
+				"panic", fmt.Sprintf("%v", p),
+			)
+			return fmt.Errorf("internal server error")
+		})
 		if !enableIntrospection {
 			srv.Use(disableIntrospection{})
 		}
@@ -148,7 +168,27 @@ func WithApiV2(
 	}
 }
 
-func presentDomainError(_ context.Context, e error) *gqlerror.Error {
+func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
+	opCtx := graphql.GetOperationContext(ctx)
+	fieldCtx := graphql.GetPathContext(ctx)
+
+	// gqlgen wraps resolver errors as *gqlerror.Error with query position info,
+	// making e.Error() noisy ("input:2:3: NOT_FOUND"). Use the clean message instead.
+	errMsg := e.Error()
+	var gqlErr *gqlerror.Error
+	if errors.As(e, &gqlErr) {
+		errMsg = gqlErr.Message
+	}
+
+	attrs := []any{
+		"operation", opCtx.OperationName,
+		"error", errMsg,
+		"variables", opCtx.Variables,
+	}
+	if fieldCtx != nil {
+		attrs = append(attrs, "path", fieldCtx.Path())
+	}
+
 	var code string
 	switch {
 	case errors.Is(e, shared.ErrNotFound):
@@ -170,10 +210,13 @@ func presentDomainError(_ context.Context, e error) *gqlerror.Error {
 	case errors.Is(e, shared.ErrConflict):
 		code = "CONFLICT"
 	default:
+		slog.ErrorContext(ctx, "resolver error", attrs...)
 		return &gqlerror.Error{
 			Message:    "internal server error",
 			Extensions: map[string]any{"code": "INTERNAL_ERROR"},
 		}
 	}
+
+	slog.WarnContext(ctx, "resolver domain error", append(attrs, "code", code)...)
 	return &gqlerror.Error{Message: e.Error(), Extensions: map[string]any{"code": code}}
 }

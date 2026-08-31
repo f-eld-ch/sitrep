@@ -236,8 +236,8 @@ describe("buildMessageVars", () => {
     expect(vars.receiverDetail).toBe("555-2222");
   });
 
-  it("includes journalId from argument", () => {
-    const vars = buildMessageVars(initEditorState(), "my-journal", now);
-    expect(vars.journalId).toBe("my-journal");
+  it("includes incidentId from argument", () => {
+    const vars = buildMessageVars(initEditorState(), "my-incident", now);
+    expect(vars.incidentId).toBe("my-incident");
   });
 });

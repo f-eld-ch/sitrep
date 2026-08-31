@@ -91,7 +91,7 @@ func runMigrateUp(cmd *cobra.Command, _ []string) error {
 	}
 	results, err := p.Up(cmd.Context())
 	for _, r := range results {
-		slog.Info("migration applied", "version", r.Source.Version, "type", r.Source.Type, "duration", r.Duration)
+		slog.InfoContext(cmd.Context(), "migration applied", "version", r.Source.Version, "type", r.Source.Type, "duration", r.Duration)
 	}
 	return err
 }
@@ -110,7 +110,7 @@ func runMigrateDown(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	slog.Info("migration rolled back", "version", result.Source.Version)
+	slog.InfoContext(cmd.Context(), "migration rolled back", "version", result.Source.Version)
 	return nil
 }
 
@@ -147,15 +147,15 @@ func runMigratePreflight(cmd *cobra.Command, _ []string) error {
 
 	warnings, err := migrations.RunPreflight(cmd.Context(), db)
 	for _, w := range warnings {
-		slog.Warn("preflight", "finding", w)
+		slog.WarnContext(cmd.Context(), "preflight", "finding", w)
 	}
 	if err != nil {
 		return fmt.Errorf("preflight failed: %w", err)
 	}
 	if len(warnings) == 0 {
-		slog.Info("preflight: all checks passed — data is ready to import")
+		slog.InfoContext(cmd.Context(), "preflight: all checks passed — data is ready to import")
 	} else {
-		slog.Info("preflight: checks passed with warnings", "count", len(warnings))
+		slog.InfoContext(cmd.Context(), "preflight: checks passed with warnings", "count", len(warnings))
 	}
 	return nil
 }

@@ -25,6 +25,10 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 
 func (h *MessageHandler) Name() string { return "rm_message" }
 func (h *MessageHandler) Version() int { return 1 }
+func (h *MessageHandler) Reset(ctx context.Context) error {
+	_, err := h.pool.Exec(ctx, `TRUNCATE rm_message`)
+	return err
+}
 func (h *MessageHandler) Handles(st, t string) bool {
 	if st != "Message" {
 		return false

@@ -63,11 +63,9 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           incidentId: incident.id,
           name,
           location,
-          locationId: incident.location.id,
           divisions: assignments.map((d) => ({
             name: d.name,
             description: d.description,
-            incidentId: incident.id,
           })),
         });
         navigate("../journal/view");
@@ -79,7 +77,6 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         const { incidentId } = await createIncident({
           name,
           location,
-          journalName: t("phase1"),
           layerName: t("divisionsNames.Karte.description"),
           divisions: assignments.map((d) => ({ name: d.name, description: d.description })),
         });

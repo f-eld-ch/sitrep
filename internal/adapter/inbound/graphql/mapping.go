@@ -10,12 +10,88 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Incident mapping
 // ──────────────────────────────────────────────────────────────────────────────
+
+// incidentResultToModel builds an Incident response directly from a CreateIncidentResult,
+// avoiding a read-your-writes race with the projector.
+func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
+	inc := &model.Incident{
+		ID:        r.IncidentID.String(),
+		Name:      r.Name,
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.CreatedAt,
+		IsClosed:  false,
+	}
+	if r.Location != nil {
+		inc.Location = &model.Location{Name: r.Location.Name}
+	}
+	for _, d := range r.Divisions {
+		inc.Divisions = append(inc.Divisions, &model.Division{
+			ID:          d.ID.String(),
+			Name:        d.Name,
+			Description: d.Description,
+		})
+	}
+	if inc.Divisions == nil {
+		inc.Divisions = []*model.Division{}
+	}
+	return inc
+}
+
+// incidentStateToModel builds an Incident response from an IncidentState DTO
+// returned by a service command — no projection read required.
+func incidentStateToModel(s inbound.IncidentState) *model.Incident {
+	inc := &model.Incident{
+		ID:        s.ID.String(),
+		Name:      s.Name,
+		CreatedAt: s.CreatedAt,
+		UpdatedAt: s.UpdatedAt,
+		IsClosed:  s.IsClosed,
+		ClosedAt:  s.ClosedAt,
+	}
+	if s.Location != nil {
+		inc.Location = &model.Location{Name: s.Location.Name}
+	}
+	for _, d := range s.Divisions {
+		inc.Divisions = append(inc.Divisions, &model.Division{
+			ID:          d.ID.String(),
+			Name:        d.Name,
+			Description: d.Description,
+		})
+	}
+	if inc.Divisions == nil {
+		inc.Divisions = []*model.Division{}
+	}
+	return inc
+}
+
+// messageStateToModel builds a Message response from a MessageState DTO
+// returned by a service command — no projection read required.
+func messageStateToModel(s inbound.MessageState) *model.Message {
+	msg := &model.Message{
+		ID:             s.ID.String(),
+		Number:         s.Number,
+		Content:        s.Content,
+		Sender:         s.Sender,
+		SenderDetail:   s.SenderDetail,
+		Receiver:       s.Receiver,
+		ReceiverDetail: s.ReceiverDetail,
+		Medium:         mapMedium(string(s.Medium)),
+		Time:           s.Time,
+		CreatedAt:      s.CreatedAt,
+		UpdatedAt:      s.UpdatedAt,
+		Triage:         mapTriageStatus(string(s.Triage)),
+		Priority:       mapPriorityStatus(string(s.Priority)),
+		Divisions:      []*model.Division{},
+	}
+	return msg
+}
 
 func incidentRMToModel(r *outbound.IncidentRM) *model.Incident {
 	inc := &model.Incident{

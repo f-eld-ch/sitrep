@@ -52,27 +52,28 @@ func (s *FeatureService) PlaceFeature(
 	return nil
 }
 
-// MoveFeature updates the geometry of a feature.
-func (s *FeatureService) MoveFeature(
+// ModifyFeature updates geometry and/or properties in a single transaction.
+// Applying both in one aggregate load prevents the optimistic concurrency conflict
+// that would occur if Move and Restyle were saved as two separate operations.
+func (s *FeatureService) ModifyFeature(
 	ctx context.Context,
 	id shared.FeatureID,
-	geometry map[string]any,
+	geometry, properties map[string]any,
 	actor identity.Actor,
 ) error {
 	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
-		return f.Move(geometry, actor.Sub, s.clock.Now())
-	})
-}
-
-// RestyleFeature updates the properties of a feature.
-func (s *FeatureService) RestyleFeature(
-	ctx context.Context,
-	id shared.FeatureID,
-	properties map[string]any,
-	actor identity.Actor,
-) error {
-	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
-		return f.Restyle(properties, actor.Sub, s.clock.Now())
+		at := s.clock.Now()
+		if geometry != nil {
+			if err := f.Move(geometry, actor.Sub, at); err != nil {
+				return err
+			}
+		}
+		if properties != nil {
+			if err := f.Restyle(properties, actor.Sub, at); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 

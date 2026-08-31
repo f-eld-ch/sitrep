@@ -20,7 +20,8 @@ function Triage(props: {
 }) {
   const { message, setMessage } = props;
   const { t } = useTranslation();
-  const result = useMessageForTriage(message?.id);
+  const { incidentId } = useParams();
+  const result = useMessageForTriage(message?.id, incidentId);
 
   if (!message) return null;
 
@@ -75,7 +76,7 @@ function TriageForm(props: {
   setMessage: (message: Message | undefined) => void;
 }) {
   const { message, data, setMessage } = props;
-  const { journalId } = useParams();
+  const { incidentId } = useParams();
   const { t } = useTranslation();
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
@@ -86,10 +87,10 @@ function TriageForm(props: {
   );
 
   const handleSave = async (triage: TriageStatus) => {
-    if (!journalId) return;
+    if (!incidentId) return;
     try {
       await triageMessage({
-        journalId,
+        incidentId,
         messageId: message.id,
         priority,
         triage,

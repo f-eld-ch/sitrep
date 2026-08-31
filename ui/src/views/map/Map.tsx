@@ -568,6 +568,8 @@ export { MapWithProvder as Map };
 
 export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
+  /** "featureDetail" = property-only change; absent or other = geometry change */
+  action?: string;
 }
 
 export interface CombineFeatureEvent {

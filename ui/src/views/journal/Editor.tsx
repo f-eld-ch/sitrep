@@ -5,7 +5,7 @@ import { useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
-import { useCreateMessage, useJournalMessages, useUpdateMessage } from "api";
+import { useCreateMessage, useIncidentMessages, useUpdateMessage } from "api";
 import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
@@ -28,9 +28,9 @@ export { ReactEditor, ReactPreview } from "./Markdown";
 
 function Editor() {
   const { t } = useTranslation();
-  const { journalId } = useParams();
+  const { incidentId } = useParams();
 
-  const messagesResult = useJournalMessages(journalId ?? "");
+  const messagesResult = useIncidentMessages(incidentId ?? "");
   const [createMessage, createState] = useCreateMessage();
   const [updateMessage, updateState] = useUpdateMessage();
 
@@ -72,7 +72,7 @@ function Editor() {
   const saveError = createState.error ?? updateState.error;
 
   const handleSave = useCallback(async () => {
-    if (!journalId) return;
+    if (!incidentId) return;
     if (savingRef.current) return;
     savingRef.current = true;
     const time = state.time ?? new Date();
@@ -81,7 +81,7 @@ function Editor() {
     try {
       if (state.messageToEdit?.id) {
         await updateMessage({
-          journalId,
+          incidentId,
           messageId: state.messageToEdit.id,
           time,
           content: state.content,
@@ -93,7 +93,7 @@ function Editor() {
         });
       } else {
         await createMessage({
-          journalId,
+          incidentId,
           time,
           content: state.content,
           medium: state.media,
@@ -109,7 +109,7 @@ function Editor() {
     } catch {
       savingRef.current = false;
     }
-  }, [state, createMessage, updateMessage, journalId, blocker]);
+  }, [state, createMessage, updateMessage, incidentId, blocker]);
 
   const setEditorMessage = useCallback((message: Message | undefined) => {
     if (message) {
@@ -179,7 +179,7 @@ function Editor() {
 
 function InputBox() {
   const { t } = useTranslation();
-  const { incidentId, journalId } = useParams();
+  const { incidentId } = useParams();
   const { state, dispatch, onSave } = useEditorContext();
 
   const messageContentDebounced: string = useDebounce(state.content, 250);
@@ -222,7 +222,7 @@ function InputBox() {
         type="button"
         className="delete is-pulled-right is-small mb-2"
         aria-label={t("close")}
-        onClick={() => navigate(`/incident/${incidentId}/journal/${journalId}`)}
+        onClick={() => navigate(`/incident/${incidentId}/journal/messages`)}
       />
 
       <div className="mt-5 field is-horizontal">

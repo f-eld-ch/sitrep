@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { Layer } from "types/layer";
 import type { QueryResult } from "../result";
-import { GET_LAYERS } from "./documents";
+import { GET_LAYERS } from "./documents.next";
 import { toLayer } from "./mapper";
 
 export interface LayersData {
@@ -17,7 +17,10 @@ export function useLayersForIncident(incidentId: string | undefined): QueryResul
     fetchPolicy: "cache-and-network",
   });
 
-  const layers = useMemo(() => (data ? data.layers.map(toLayer) : undefined), [data]);
+  const layers = useMemo(
+    () => (data ? data.layersForIncident.map(toLayer) : undefined),
+    [data],
+  );
 
   const refresh = () => void refetch();
 

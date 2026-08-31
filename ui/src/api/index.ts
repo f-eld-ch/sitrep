@@ -24,7 +24,8 @@ export {
   useUpdateIncident,
 } from "./incident";
 
-// Journal aggregate
+// Journal aggregate (legacy — journals are gone in the v2 API; stubs remain for
+// compatibility while journal views are migrated to incident-level operations)
 export type { CreateJournalArgs, JournalsData } from "./journal";
 export {
   afterJournalWrite,
@@ -37,6 +38,7 @@ export {
 // Message aggregate
 export type {
   CreateMessageArgs,
+  IncidentMessagesData,
   JournalMessagesData,
   MessageForTriageData,
   TriageMessageArgs,
@@ -44,6 +46,7 @@ export type {
 } from "./message";
 export {
   useCreateMessage,
+  useIncidentMessages,
   useJournalMessages,
   useMessageForTriage,
   useTriageMessage,

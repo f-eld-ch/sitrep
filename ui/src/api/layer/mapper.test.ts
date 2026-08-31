@@ -1,32 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { toLayer } from "./mapper";
-import type { GetLayersQuery } from "gql";
+import type { GetLayersForIncidentQuery } from "gql/next";
 
-type WireFeature = GetLayersQuery["layers"][0]["features"][0];
-type WireLayer = GetLayersQuery["layers"][0];
+type WireFeature = GetLayersForIncidentQuery["layersForIncident"][0]["features"][0];
+type WireLayer = GetLayersForIncidentQuery["layersForIncident"][0];
 
-const WIRE_FEATURE_ACTIVE: WireFeature = {
+const WIRE_FEATURE_1: WireFeature = {
   id: "feat-1",
   geometry: { type: "Point", coordinates: [8.5, 47.1] },
   properties: { color: "red" },
-  createdAt: "2024-03-15T08:00:00Z",
-  updatedAt: null,
-  deletedAt: null,
 };
 
-const WIRE_FEATURE_DELETED: WireFeature = {
+const WIRE_FEATURE_2: WireFeature = {
   id: "feat-2",
   geometry: { type: "Point", coordinates: [8.6, 47.2] },
   properties: {},
-  createdAt: "2024-03-14T10:00:00Z",
-  updatedAt: "2024-03-15T11:00:00Z",
-  deletedAt: "2024-03-15T12:00:00Z",
 };
 
 const WIRE_LAYER: WireLayer = {
   id: "layer-1",
   name: "Alpha Layer",
-  features: [WIRE_FEATURE_ACTIVE, WIRE_FEATURE_DELETED],
+  revision: 1,
+  features: [WIRE_FEATURE_1, WIRE_FEATURE_2],
 };
 
 describe("toLayer", () => {
@@ -36,28 +31,28 @@ describe("toLayer", () => {
     expect(result.name).toBe("Alpha Layer");
   });
 
-  it("filters out soft-deleted features", () => {
+  it("includes all features (server handles soft-delete in new schema)", () => {
     const result = toLayer(WIRE_LAYER);
-    expect(result.features).toHaveLength(1);
+    expect(result.features).toHaveLength(2);
     expect(result.features[0].id).toBe("feat-1");
+    expect(result.features[1].id).toBe("feat-2");
   });
 
   it("keeps all features when none are deleted", () => {
-    const layer = { ...WIRE_LAYER, features: [WIRE_FEATURE_ACTIVE] };
+    const layer = { ...WIRE_LAYER, features: [WIRE_FEATURE_1] };
     const result = toLayer(layer);
     expect(result.features).toHaveLength(1);
   });
 
-  it("returns empty features for a layer with only deleted features", () => {
-    const layer = { ...WIRE_LAYER, features: [WIRE_FEATURE_DELETED] };
+  it("returns empty features for a layer with no features", () => {
+    const layer = { ...WIRE_LAYER, features: [] };
     const result = toLayer(layer);
     expect(result.features).toHaveLength(0);
   });
 
-  it("parses feature createdAt to a Date instance", () => {
+  it("provides default createdAt for features (not in new schema)", () => {
     const result = toLayer(WIRE_LAYER);
     expect(result.features[0].createdAt).toBeInstanceOf(Date);
-    expect(result.features[0].createdAt.toISOString()).toBe("2024-03-15T08:00:00.000Z");
   });
 
   it("passes geometry and properties through as-is", () => {
@@ -69,8 +64,8 @@ describe("toLayer", () => {
   it("does not include __typename in feature or layer", () => {
     const wireWithTypename = {
       ...WIRE_LAYER,
-      __typename: "Layers",
-      features: [{ ...WIRE_FEATURE_ACTIVE, __typename: "Features" }],
+      __typename: "Layer" as const,
+      features: [{ ...WIRE_FEATURE_1, __typename: "Feature" as const }],
     };
     const result = toLayer(wireWithTypename);
     expect(Object.keys(result)).not.toContain("__typename");
