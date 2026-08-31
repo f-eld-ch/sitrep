@@ -17,8 +17,8 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	pgstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
-	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/postgres/readmodel"
-	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/postgres/user"
+	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
+	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/server"
@@ -87,7 +87,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	messageSvc := svcFactory.MessageService(messages, incidents)
 	layerSvc := svcFactory.LayerService(layers)
 	featureSvc := svcFactory.FeatureService(features)
-	queries := readmodel.NewQueries(pool)
+	queries := pgqueries.NewQueries(pool)
 
 	// ── Projector ─────────────────────────────────────────────────────────────
 	projCtx, cancelProj := context.WithCancel(ctx)

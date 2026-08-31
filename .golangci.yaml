@@ -46,9 +46,11 @@ linters:
             - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
               desc: "services must not import adapters directly"
         # Inbound adapters (GraphQL, CLI) must not reach into outbound adapters directly.
+        # Test files are excluded: they act as composition roots and must wire both sides.
         inbound-no-outbound:
           files:
             - "**/internal/adapter/inbound/**/*.go"
+            - "!**/*_test.go"
           deny:
             - pkg: "github.com/jackc/pgx"
               desc: "inbound adapters must not import pgx — use outbound port interfaces"

@@ -1,7 +1,7 @@
-// Package readmodel implements the outbound.Queries port against the Postgres
+// Package postgres implements the outbound.Queries port against the Postgres
 // projection tables (rm_incident, rm_incident_division, rm_message, rm_layer_features).
 // These are plain SQL reads — no event store, no aggregates.
-package readmodel
+package postgres
 
 import (
 	"context"

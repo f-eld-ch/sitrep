@@ -1,7 +1,7 @@
-// Package user implements the outbound.UserRepository port against the
+// Package postgres implements the outbound.UserRepository port against the
 // public.users table. Users are not event-sourced — the table is a plain
 // upsert target keyed on the OIDC subject claim.
-package user
+package postgres
 
 import (
 	"context"
