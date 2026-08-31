@@ -142,6 +142,16 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		if o.users != nil && info != nil {
+			go func() {
+				ctx := context.WithoutCancel(r.Context())
+				if err := o.users.Upsert(ctx, info.Subject, info.Email, info.Name); err != nil {
+					o.logger.ErrorContext(ctx, "failed to upsert user on login", "sub", info.Subject, "error", err)
+				}
+			}()
+		}
+
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
@@ -343,14 +353,6 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		ctx := identity.WithActor(c.Request().Context(), actor)
 		c.SetRequest(c.Request().WithContext(ctx))
-
-		if o.users != nil {
-			go func() {
-				if err := o.users.Upsert(context.WithoutCancel(ctx), actor.Sub, actor.Email, actor.Name); err != nil {
-					o.logger.ErrorContext(ctx, "failed to upsert user", "sub", actor.Sub, "error", err)
-				}
-			}()
-		}
 
 		span := trace.SpanFromContext(c.Request().Context())
 		span.SetAttributes(
