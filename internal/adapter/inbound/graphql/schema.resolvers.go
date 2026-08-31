@@ -173,7 +173,7 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 		shared.IncidentID(incID),
 		input.Content, input.Sender, input.SenderDetail,
 		input.Receiver, input.ReceiverDetail,
-		medium, actor)
+		medium, input.Time, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input m
 	state, err := r.Messages.CorrectMessage(ctx, shared.MessageID(msgID),
 		input.Content, input.Sender, input.SenderDetail,
 		input.Receiver, input.ReceiverDetail,
-		medium, actor)
+		medium, input.Time, actor)
 	if err != nil {
 		return nil, err
 	}

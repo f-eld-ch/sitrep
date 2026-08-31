@@ -44,10 +44,14 @@ func (s *MessageService) RecordMessage(
 	incidentID shared.IncidentID,
 	content, sender, senderDetail, receiver, receiverDetail string,
 	medium shared.Medium,
+	msgTime *time.Time,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
 	msgID := shared.MessageID(s.ids.New())
 	at := s.clock.Now()
+	if msgTime == nil {
+		msgTime = &at
+	}
 	var state inbound.MessageState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -69,7 +73,7 @@ func (s *MessageService) RecordMessage(
 		msg := message.New(msgID)
 		if err := msg.Record(incidentID, number,
 			content, sender, senderDetail, receiver, receiverDetail,
-			medium, at, actor.Sub, at, actor.Sub); err != nil {
+			medium, *msgTime, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
 		if _, err = s.repo.Save(ctx, msg); err != nil {
@@ -92,6 +96,7 @@ func (s *MessageService) CorrectMessage(
 	id shared.MessageID,
 	content, sender, senderDetail, receiver, receiverDetail *string,
 	medium *shared.Medium,
+	msgTime *time.Time,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
 	at := s.clock.Now()
@@ -102,7 +107,7 @@ func (s *MessageService) CorrectMessage(
 			return err
 		}
 		if err := msg.Correct(content, sender, senderDetail, receiver, receiverDetail,
-			medium, nil, actor.Sub, at, actor.Sub); err != nil {
+			medium, msgTime, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
 		if _, err = s.repo.Save(ctx, msg); err != nil {

@@ -89,6 +89,7 @@ type MessageService interface {
 		incidentID shared.IncidentID,
 		content, sender, senderDetail, receiver, receiverDetail string,
 		medium shared.Medium,
+		msgTime *time.Time,
 		actor identity.Actor,
 	) (MessageState, error)
 
@@ -97,6 +98,7 @@ type MessageService interface {
 		id shared.MessageID,
 		content, sender, senderDetail, receiver, receiverDetail *string,
 		medium *shared.Medium,
+		msgTime *time.Time,
 		actor identity.Actor,
 	) (MessageState, error)
 

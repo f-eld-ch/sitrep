@@ -20,12 +20,12 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		require.NoError(t, err)
 
 		s1, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-			"Pegel steigt", "Beobachter Nord", "Brücke", "Führungsstab", "", shared.MediumRadio, testActor)
+			"Pegel steigt", "Beobachter Nord", "Brücke", "Führungsstab", "", shared.MediumRadio, nil, testActor)
 		require.NoError(t, err)
 		assert.NotEqual(t, s1.ID, shared.MessageID{})
 
 		s2, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-			"Lage stabil", "Beobachter Süd", "", "Führungsstab", "", shared.MediumPhone, testActor)
+			"Lage stabil", "Beobachter Süd", "", "Führungsstab", "", shared.MediumPhone, nil, testActor)
 		require.NoError(t, err)
 
 		// IDs must differ
@@ -43,7 +43,7 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		require.NoError(t, closeErr)
 
 		_, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-			"nach Abschluss", "Sender", "", "Empfänger", "", shared.MediumRadio, testActor)
+			"nach Abschluss", "Sender", "", "Empfänger", "", shared.MediumRadio, nil, testActor)
 		assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	})
 
@@ -54,7 +54,7 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		messageSvc := factory.MessageService(messages, incidents)
 
 		_, err := messageSvc.RecordMessage(ctx(), shared.IncidentID(newID()),
-			"msg", "A", "", "B", "", shared.MediumRadio, testActor)
+			"msg", "A", "", "B", "", shared.MediumRadio, nil, testActor)
 		assert.ErrorIs(t, err, shared.ErrNotFound)
 	})
 }
@@ -67,11 +67,11 @@ func TestMessageService_CorrectMessage(t *testing.T) {
 
 	res, _ := incidentSvc.CreateIncident(ctx(), "Übung", nil, nil, nil, testActor)
 	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-		"Original", "Alpha", "", "Beta", "", shared.MediumRadio, testActor)
+		"Original", "Alpha", "", "Beta", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)
 
 	newContent := "Korrigiert"
-	_, err = messageSvc.CorrectMessage(ctx(), ms.ID, &newContent, nil, nil, nil, nil, nil, testActor)
+	_, err = messageSvc.CorrectMessage(ctx(), ms.ID, &newContent, nil, nil, nil, nil, nil, nil, testActor)
 	require.NoError(t, err)
 }
 
@@ -83,7 +83,7 @@ func TestMessageService_TriageMessage(t *testing.T) {
 
 	res, _ := incidentSvc.CreateIncident(ctx(), "Lagebesprechung", nil, nil, nil, testActor)
 	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-		"Status Update", "Koordinator", "", "Führung", "", shared.MediumPhone, testActor)
+		"Status Update", "Koordinator", "", "Führung", "", shared.MediumPhone, nil, testActor)
 	require.NoError(t, err)
 
 	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
@@ -99,7 +99,7 @@ func TestMessageService_DeleteMessage(t *testing.T) {
 
 		res, _ := incidentSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
 		ms, _ := messageSvc.RecordMessage(ctx(), res.IncidentID,
-			"Zu löschen", "X", "", "Y", "", shared.MediumRadio, testActor)
+			"Zu löschen", "X", "", "Y", "", shared.MediumRadio, nil, testActor)
 
 		require.NoError(t, messageSvc.DeleteMessage(ctx(), ms.ID, testActor))
 	})
@@ -124,12 +124,12 @@ func TestMessageService_CounterIsPerIncident(t *testing.T) {
 	res1, _ := incidentSvc.CreateIncident(ctx(), "Incident A", nil, nil, nil, testActor)
 	res2, _ := incidentSvc.CreateIncident(ctx(), "Incident B", nil, nil, nil, testActor)
 
-	_, err := messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg1", "A", "", "B", "", shared.MediumRadio, testActor)
+	_, err := messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg1", "A", "", "B", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)
-	_, err = messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg2", "A", "", "B", "", shared.MediumRadio, testActor)
+	_, err = messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg2", "A", "", "B", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)
 
 	// Incident B's counter starts at 1 independently.
-	_, err = messageSvc.RecordMessage(ctx(), res2.IncidentID, "msg1-b", "C", "", "D", "", shared.MediumRadio, testActor)
+	_, err = messageSvc.RecordMessage(ctx(), res2.IncidentID, "msg1-b", "C", "", "D", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)
 }
