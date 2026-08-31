@@ -32,7 +32,7 @@
     "@f-eld-ch/babs-core": "^0.6.0",
     "@f-eld-ch/babs-react": "^0.6.0",
     "@f-eld-ch/babs-sprites": "^0.6.0",
-    "@flipt-io/flipt-client-js": "0.5.0",
+    "@flipt-io/flipt-client-js": "0.5.1",
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
     "@fortawesome/free-brands-svg-icons": "^7.3.1",
     "@fortawesome/free-regular-svg-icons": "^7.3.1",
