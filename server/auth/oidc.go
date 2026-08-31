@@ -21,24 +21,19 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
-
-// UserRepository is the subset of outbound.UserRepository used by the auth middleware.
-// Declared here to keep the auth package free of adapter imports.
-type UserRepository interface {
-	Upsert(ctx context.Context, sub, email, name string) error
-}
 
 type OIDCClient struct {
 	rp           rp.RelyingParty
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
-	users        UserRepository
+	users        outbound.UserRepository
 }
 
 // WithUserRepository attaches a UserRepository so profiles are upserted on login.
-func (o *OIDCClient) WithUserRepository(repo UserRepository) {
+func (o *OIDCClient) WithUserRepository(repo outbound.UserRepository) {
 	o.users = repo
 }
 

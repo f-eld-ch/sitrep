@@ -18,6 +18,7 @@ import (
 	pgstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/postgres/readmodel"
+	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/postgres/user"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/server"
@@ -120,7 +121,7 @@ func runServe(cmd *cobra.Command, _ []string) error {
 			pool.Close()
 			return err
 		}
-		oidcClient.WithUserRepository(readmodel.NewUserRepository(pool))
+		oidcClient.WithUserRepository(pguser.NewRepository(pool))
 		opts = append(opts, server.WithOidc(oidcClient))
 	} else {
 		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")
