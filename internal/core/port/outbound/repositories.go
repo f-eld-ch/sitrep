@@ -39,3 +39,9 @@ type FeatureRepository interface {
 type MessageCounter interface {
 	Next(ctx context.Context, incidentID shared.IncidentID) (int, error)
 }
+
+// UserRepository persists authenticated user profiles.
+// Users are not event-sourced — the table is a plain upsert target keyed on sub.
+type UserRepository interface {
+	Upsert(ctx context.Context, sub, email, name string) error
+}

@@ -24,20 +24,22 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
-// UserUpserter persists an authenticated user's profile on login.
-// Called asynchronously from RequireLogin — errors are logged, not propagated.
-type UserUpserter func(ctx context.Context, sub, email, name string) error
+// UserRepository is the subset of outbound.UserRepository used by the auth middleware.
+// Declared here to keep the auth package free of adapter imports.
+type UserRepository interface {
+	Upsert(ctx context.Context, sub, email, name string) error
+}
 
 type OIDCClient struct {
 	rp           rp.RelyingParty
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
-	upsertUser   UserUpserter
+	users        UserRepository
 }
 
-// WithUserUpserter attaches a UserUpserter to the client.
-func (o *OIDCClient) WithUserUpserter(fn UserUpserter) {
-	o.upsertUser = fn
+// WithUserRepository attaches a UserRepository so profiles are upserted on login.
+func (o *OIDCClient) WithUserRepository(repo UserRepository) {
+	o.users = repo
 }
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -342,9 +344,9 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx := identity.WithActor(c.Request().Context(), actor)
 		c.SetRequest(c.Request().WithContext(ctx))
 
-		if o.upsertUser != nil {
+		if o.users != nil {
 			go func() {
-				if err := o.upsertUser(context.WithoutCancel(ctx), actor.Sub, actor.Email, actor.Name); err != nil {
+				if err := o.users.Upsert(context.WithoutCancel(ctx), actor.Sub, actor.Email, actor.Name); err != nil {
 					o.logger.ErrorContext(ctx, "failed to upsert user", "sub", actor.Sub, "error", err)
 				}
 			}()
