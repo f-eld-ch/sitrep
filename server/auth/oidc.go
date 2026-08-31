@@ -139,6 +139,7 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 		}
 
 		if o.users != nil && info != nil {
+			slog.InfoContext(r.Context(), "successful OIDC login of user", slog.String("name", info.Name), slog.String("email", info.Email), slog.String("sub", info.Subject))
 			if err := o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name); err != nil {
 				o.logger.ErrorContext(r.Context(), "failed to upsert user on login", "sub", info.Subject, "error", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
