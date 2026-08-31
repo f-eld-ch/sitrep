@@ -106,7 +106,7 @@ const complexityBudget = 5000
 // every operation context, preventing schema reflection by clients.
 type disableIntrospection struct{}
 
-func (disableIntrospection) ExtensionName() string { return "DisableIntrospection" }
+func (disableIntrospection) ExtensionName() string                   { return "DisableIntrospection" }
 func (disableIntrospection) Validate(graphql.ExecutableSchema) error { return nil }
 func (disableIntrospection) MutateOperationContext(_ context.Context, opCtx *graphql.OperationContext) *gqlerror.Error {
 	opCtx.DisableIntrospection = true

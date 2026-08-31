@@ -31,6 +31,7 @@ func (h *IncidentHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident CASCADE`)
 	return err
 }
+
 func (h *IncidentHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
@@ -148,6 +149,7 @@ func (h *IncidentDivisionHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident_division`)
 	return err
 }
+
 func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false

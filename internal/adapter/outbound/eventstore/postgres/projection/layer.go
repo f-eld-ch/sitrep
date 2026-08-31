@@ -31,6 +31,7 @@ func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE rm_layer_features`)
 	return err
 }
+
 func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 	switch st {
 	case "Layer":
