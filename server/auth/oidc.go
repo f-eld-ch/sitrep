@@ -20,6 +20,8 @@ import (
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 type OIDCClient struct {
@@ -298,7 +300,7 @@ func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, e
 	return nil
 }
 
-// Middleware: require valid ID token
+// Middleware: require valid ID token with JWKS signature verification.
 func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
@@ -306,10 +308,29 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 			o.logger.Error("failed to get user info", "error.message", err.Error())
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
+
+		// Verify the ID token signature against the issuer's JWKS. This is the
+		// check that Hasura used to perform (HASURA_GRAPHQL_JWT_SECRET with jwk_url);
+		// removing Hasura means we must do it ourselves.
+		if _, err := rp.VerifyIDToken[*oidc.IDTokenClaims](c.Request().Context(), userInfo.IDToken, o.rp.IDTokenVerifier()); err != nil {
+			o.logger.Error("ID token signature verification failed", "error", err)
+			return c.JSON(http.StatusUnauthorized, "Unauthorized")
+		}
+
 		c.Set("id_token", userInfo.IDToken)
 		c.Set("access_token", userInfo.AccessToken)
 		c.Set("refresh_token", userInfo.RefreshToken)
 		c.Set("user_info", userInfo)
+
+		// Bridge identity into context.Context so gqlgen resolvers (which receive
+		// context.Context, not echo.Context) can access the authenticated actor.
+		actor := identity.Actor{
+			Sub:   userInfo.User,
+			Email: userInfo.Email,
+			Name:  userInfo.Name,
+		}
+		ctx := identity.WithActor(c.Request().Context(), actor)
+		c.SetRequest(c.Request().WithContext(ctx))
 
 		span := trace.SpanFromContext(c.Request().Context())
 		span.SetAttributes(

@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"context"
@@ -25,7 +25,6 @@ import (
 )
 
 func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) error, err error) {
-	// setup the otel providers
 	var shutdownFuncs []func(context.Context) error
 
 	shutdown = func(ctx context.Context) error {
@@ -37,29 +36,26 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 		return err
 	}
 
-	// setup resources
 	res, err := resource.New(
 		context.Background(),
-		resource.WithFromEnv(),      // Discover and provide attributes from OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME environment variables.
-		resource.WithTelemetrySDK(), // Discover and provide information about the OpenTelemetry SDK used.
-		resource.WithProcess(),      // Discover and provide process information.
-		resource.WithOS(),           // Discover and provide OS information.
-		resource.WithContainer(),    // Discover and provide container information.
-		resource.WithHost(),         // Discover and provide host information.
+		resource.WithFromEnv(),
+		resource.WithTelemetrySDK(),
+		resource.WithProcess(),
+		resource.WithOS(),
+		resource.WithContainer(),
+		resource.WithHost(),
 		resource.WithAttributes(
 			semconv.ServiceName("sitrep"),
-			semconv.ServiceVersion(version),
+			semconv.ServiceVersion(Version),
 		),
 	)
 	if err != nil {
 		return shutdown, err
 	}
 
-	// Set up propagator.
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
 
-	// Set up trace provider.
 	tracerProvider, err := newTracerProvider(ctx, res)
 	if err != nil {
 		return shutdown, err
@@ -67,7 +63,6 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 
-	// Set up meter provider.
 	meterProvider, err := newMeterProvider(ctx, res)
 	if err != nil {
 		return shutdown, err
@@ -75,7 +70,6 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
 	otel.SetMeterProvider(meterProvider)
 
-	// Set up logger provider.
 	loggerProvider, err := newLoggerProvider(ctx, res)
 	if err != nil {
 		return shutdown, err
@@ -83,7 +77,6 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	shutdownFuncs = append(shutdownFuncs, loggerProvider.Shutdown)
 	global.SetLoggerProvider(loggerProvider)
 
-	// set up runtime exporter
 	err = runtime.Start(
 		runtime.WithMinimumReadMemStatsInterval(5*time.Second),
 		runtime.WithMeterProvider(meterProvider),
@@ -107,14 +100,10 @@ func newTracerProvider(ctx context.Context, res *resource.Resource) (*trace.Trac
 	if err != nil {
 		return nil, err
 	}
-
-	tracerProvider := trace.NewTracerProvider(
+	return trace.NewTracerProvider(
 		trace.WithResource(res),
-		trace.WithBatcher(
-			traceExporter,
-		),
-	)
-	return tracerProvider, nil
+		trace.WithBatcher(traceExporter),
+	), nil
 }
 
 func newMeterProvider(ctx context.Context, res *resource.Resource) (*metric.MeterProvider, error) {
@@ -122,16 +111,10 @@ func newMeterProvider(ctx context.Context, res *resource.Resource) (*metric.Mete
 	if err != nil {
 		return nil, err
 	}
-
-	meterProvider := metric.NewMeterProvider(
+	return metric.NewMeterProvider(
 		metric.WithResource(res),
-		metric.WithReader(
-			metric.NewPeriodicReader(
-				metricExporter,
-			),
-		),
-	)
-	return meterProvider, nil
+		metric.WithReader(metric.NewPeriodicReader(metricExporter)),
+	), nil
 }
 
 func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.LoggerProvider, error) {
@@ -142,9 +125,7 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.Logger
 
 	loggerProvider := log.NewLoggerProvider(
 		log.WithResource(res),
-		log.WithProcessor(
-			log.NewBatchProcessor(logExporter),
-		),
+		log.WithProcessor(log.NewBatchProcessor(logExporter)),
 	)
 
 	logger := slog.New(

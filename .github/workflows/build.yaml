@@ -26,6 +26,22 @@ jobs:
     name: "Go Tests"
     permissions:
       contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: sitrep
+          POSTGRES_PASSWORD: sitrep
+          POSTGRES_DB: sitrep_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgres://sitrep:sitrep@localhost:5432/sitrep_test?sslmode=disable
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
