@@ -69,14 +69,14 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		s.logger.Info("shutting down server")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err := s.Server.Shutdown(ctx)
+		err := s.Shutdown(ctx)
 		if err != nil {
 			s.logger.Error("failed to shutdown server", "error", err)
 		}
 	}()
 
 	//  signal and shutdown the server gracefully
-	s.Server.RegisterOnShutdown(func() {
+	s.RegisterOnShutdown(func() {
 		s.isShuttingDown.Store(true)
 	})
 

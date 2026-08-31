@@ -227,11 +227,7 @@ func incidentToState(inc *incident.Incident, updatedAt time.Time) inbound.Incide
 		state.Location = &incident.LocationData{Name: l.Name, Coordinates: l.Coordinates}
 	}
 	for _, d := range inc.Divisions() {
-		state.Divisions = append(state.Divisions, incident.DivisionData{
-			ID:          d.ID,
-			Name:        d.Name,
-			Description: d.Description,
-		})
+		state.Divisions = append(state.Divisions, incident.DivisionData(d))
 	}
 	return state
 }

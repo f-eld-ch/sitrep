@@ -26,10 +26,10 @@ func (s *Server) RegisterRoutes() {
 
 	// OIDC handlers
 	oidc := s.router.Group("/oauth2")
-	oidc.GET("/sign_in", s.Enforcer.SignInHandler)
-	oidc.GET("/callback", s.Enforcer.CallbackHandler)
-	oidc.GET("/sign_out", s.Enforcer.SignOutHandler)
-	oidc.GET("/userinfo", s.Enforcer.UserInfoHandler)
+	oidc.GET("/sign_in", s.SignInHandler)
+	oidc.GET("/callback", s.CallbackHandler)
+	oidc.GET("/sign_out", s.SignOutHandler)
+	oidc.GET("/userinfo", s.UserInfoHandler)
 }
 
 func (s *Server) RegisterMiddlewares() {

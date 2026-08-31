@@ -69,7 +69,7 @@ func WithApiV1Proxy(upstream string) Option {
 	return func(s *Server) error {
 		// Protect API routes
 		apiv1 := s.router.Group("/v1/graphql")
-		apiv1.Use(s.Enforcer.RequireLogin)
+		apiv1.Use(s.RequireLogin)
 		hasura, _ := url.Parse(upstream)
 
 		client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
@@ -154,7 +154,7 @@ func WithApiV2(
 			srv.Use(disableIntrospection{})
 		}
 
-		apiv2 := s.router.Group("/api/v2", s.Enforcer.RequireLogin)
+		apiv2 := s.router.Group("/api/v2", s.RequireLogin)
 		apiv2.POST("/graphql", echo.WrapHandler(srv))
 		if enableIntrospection {
 			apiv2.GET("/graphql/play", echo.WrapHandler(

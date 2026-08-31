@@ -3,7 +3,6 @@ package graphql
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -314,20 +313,4 @@ func divisionsByID(divs []*outbound.DivisionRM) map[uuid.UUID]*outbound.Division
 		m[d.ID] = d
 	}
 	return m
-}
-
-// ptrString is a convenience for optional string pointer fields.
-func ptrString(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
-// nowIfNil returns t if non-nil, or the current UTC time otherwise.
-func nowIfNil(t *time.Time) time.Time {
-	if t != nil {
-		return *t
-	}
-	return time.Now().UTC()
 }

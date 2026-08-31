@@ -114,6 +114,9 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		oidcClient, err := auth.NewOIDC(ctx, issuer, clientID, clientSecret, redirectURI, key)
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to create OIDC client", "error", err)
+			cancelProj()
+			<-projDone
+			pool.Close()
 			return err
 		}
 		opts = append(opts, server.WithOidc(oidcClient))

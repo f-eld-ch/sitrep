@@ -84,7 +84,7 @@ func runMigrateUp(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func runMigrateDown(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func runMigrateStatus(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
@@ -133,7 +133,7 @@ func runMigrateStatus(cmd *cobra.Command, _ []string) error {
 		if s.State == goose.StateApplied {
 			state = "applied"
 		}
-		fmt.Fprintf(os.Stdout, "%5d  %-8s  %s\n", s.Source.Version, state, s.Source.Path)
+		_, _ = fmt.Fprintf(os.Stdout, "%5d  %-8s  %s\n", s.Source.Version, state, s.Source.Path)
 	}
 	return nil
 }
@@ -143,7 +143,7 @@ func runMigratePreflight(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	warnings, err := migrations.RunPreflight(cmd.Context(), db)
 	for _, w := range warnings {

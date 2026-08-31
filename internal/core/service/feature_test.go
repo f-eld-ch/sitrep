@@ -36,13 +36,13 @@ func TestFeatureService_PlaceMoveRestyle(t *testing.T) {
 
 	t.Run("move feature", func(t *testing.T) {
 		newGeom := map[string]any{"type": "Point", "coordinates": []any{8.5418, 47.3770}}
-		err := featureSvc.MoveFeature(ctx(), featureID, newGeom, testActor)
+		err := featureSvc.ModifyFeature(ctx(), featureID, newGeom, nil, testActor)
 		require.NoError(t, err)
 	})
 
 	t.Run("restyle feature", func(t *testing.T) {
 		newProps := map[string]any{"icon": "police-car"}
-		err := featureSvc.RestyleFeature(ctx(), featureID, newProps, testActor)
+		err := featureSvc.ModifyFeature(ctx(), featureID, nil, newProps, testActor)
 		require.NoError(t, err)
 	})
 
@@ -61,11 +61,11 @@ func TestFeatureService_RemoveUnknown(t *testing.T) {
 	assert.ErrorIs(t, err, shared.ErrNotFound)
 }
 
-func TestFeatureService_MoveUnknown(t *testing.T) {
+func TestFeatureService_ModifyUnknown(t *testing.T) {
 	factory, store := testStack(t)
 	_, _, _, features := repos(store)
 	featureSvc := factory.FeatureService(features)
 
-	err := featureSvc.MoveFeature(ctx(), shared.FeatureID(newID()), testGeometry, testActor)
+	err := featureSvc.ModifyFeature(ctx(), shared.FeatureID(newID()), testGeometry, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)
 }

@@ -283,8 +283,8 @@ func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string 
 func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, expiresIn int) error {
 	encodedToken, err := o.secureCookie.Encode(cookiename, value)
 	if err != nil {
-		o.logger.Error("Failed to encode id token", "error", err)
-		return errors.New("Failed to encode id token")
+		o.logger.Error("failed to encode id token", "error", err)
+		return errors.New("failed to encode id token")
 	}
 
 	c.SetCookie(&http.Cookie{

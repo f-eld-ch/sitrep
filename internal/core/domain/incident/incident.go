@@ -244,7 +244,7 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 			i.location = &Location{Name: d.Location.Name, Coordinates: d.Location.Coordinates}
 		}
 		for _, div := range d.Divisions {
-			i.divisions[div.ID] = Division{ID: div.ID, Name: div.Name, Description: div.Description}
+			i.divisions[div.ID] = Division(div)
 		}
 		if d.ClosedAt != nil {
 			i.closedAt = d.ClosedAt
