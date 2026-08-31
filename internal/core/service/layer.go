@@ -3,6 +3,11 @@ package service
 import (
 	"context"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -16,6 +21,7 @@ type LayerService struct {
 	clock    outbound.Clock
 	ids      outbound.IDs
 	notifier outbound.EventNotifier
+	tracer   trace.Tracer
 }
 
 func NewLayerService(
@@ -25,7 +31,10 @@ func NewLayerService(
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *LayerService {
-	return &LayerService{tx: tx, repo: repo, clock: clock, ids: ids, notifier: notifier}
+	return &LayerService{
+		tx: tx, repo: repo, clock: clock, ids: ids, notifier: notifier,
+		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+	}
 }
 
 // CreateLayer creates a new layer for an incident.
@@ -35,6 +44,13 @@ func (s *LayerService) CreateLayer(
 	name string,
 	actor identity.Actor,
 ) (shared.LayerID, error) {
+	ctx, span := s.tracer.Start(ctx, "LayerService.CreateLayer",
+		trace.WithAttributes(
+			attribute.String("incident.id", incidentID.String()),
+			attribute.String("layer.name", name),
+		))
+	defer span.End()
+
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -46,14 +62,21 @@ func (s *LayerService) CreateLayer(
 		return err
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return shared.LayerID{}, err
 	}
+	span.SetAttributes(attribute.String("layer.id", layerID.String()))
 	_ = s.notifier.Notify(ctx)
 	return layerID, nil
 }
 
 // RenameLayer renames an existing layer.
 func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name string, actor identity.Actor) error {
+	ctx, span := s.tracer.Start(ctx, "LayerService.RenameLayer",
+		trace.WithAttributes(attribute.String("layer.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
@@ -67,6 +90,8 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 		return err
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
@@ -75,6 +100,10 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 
 // RemoveLayer removes a layer and should cascade feature removal at the service level.
 func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor identity.Actor) error {
+	ctx, span := s.tracer.Start(ctx, "LayerService.RemoveLayer",
+		trace.WithAttributes(attribute.String("layer.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
@@ -88,6 +117,8 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 		return err
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	_ = s.notifier.Notify(ctx)

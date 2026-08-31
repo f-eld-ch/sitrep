@@ -4,6 +4,11 @@ import (
 	"context"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -20,6 +25,7 @@ type MessageService struct {
 	clock     outbound.Clock
 	ids       outbound.IDs
 	notifier  outbound.EventNotifier
+	tracer    trace.Tracer
 }
 
 func NewMessageService(
@@ -34,6 +40,7 @@ func NewMessageService(
 	return &MessageService{
 		tx: tx, repo: repo, incidents: incidents,
 		counter: counter, clock: clock, ids: ids, notifier: notifier,
+		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
 
@@ -47,6 +54,10 @@ func (s *MessageService) RecordMessage(
 	msgTime *time.Time,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
+	ctx, span := s.tracer.Start(ctx, "MessageService.RecordMessage",
+		trace.WithAttributes(attribute.String("incident.id", incidentID.String())))
+	defer span.End()
+
 	msgID := shared.MessageID(s.ids.New())
 	at := s.clock.Now()
 	if msgTime == nil {
@@ -83,9 +94,12 @@ func (s *MessageService) RecordMessage(
 		return nil
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "RecordMessage", err, "incidentId", incidentID)
 		return inbound.MessageState{}, err
 	}
+	span.SetAttributes(attribute.String("message.id", msgID.String()))
 	_ = s.notifier.Notify(ctx)
 	return state, nil
 }
@@ -99,6 +113,10 @@ func (s *MessageService) CorrectMessage(
 	msgTime *time.Time,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
+	ctx, span := s.tracer.Start(ctx, "MessageService.CorrectMessage",
+		trace.WithAttributes(attribute.String("message.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	var state inbound.MessageState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -118,6 +136,8 @@ func (s *MessageService) CorrectMessage(
 		return nil
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "CorrectMessage", err, "id", id)
 		return inbound.MessageState{}, err
 	}
@@ -134,6 +154,10 @@ func (s *MessageService) TriageMessage(
 	divisionIDs []shared.DivisionID,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
+	ctx, span := s.tracer.Start(ctx, "MessageService.TriageMessage",
+		trace.WithAttributes(attribute.String("message.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	var state inbound.MessageState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -151,6 +175,8 @@ func (s *MessageService) TriageMessage(
 		return nil
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "TriageMessage", err, "id", id)
 		return inbound.MessageState{}, err
 	}
@@ -160,6 +186,10 @@ func (s *MessageService) TriageMessage(
 
 // DeleteMessage soft-deletes a message.
 func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID, actor identity.Actor) error {
+	ctx, span := s.tracer.Start(ctx, "MessageService.DeleteMessage",
+		trace.WithAttributes(attribute.String("message.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		msg, err := s.repo.Load(ctx, id)
@@ -173,6 +203,8 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		return err
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "DeleteMessage", err, "id", id)
 		return err
 	}

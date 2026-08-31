@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
+	"github.com/ravilushqa/otelgqlgen"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
 	graph "github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql"
@@ -62,7 +63,6 @@ func WithOidc(oidcClient *auth.OIDCClient) Option {
 	}
 }
 
-
 // complexityBudget caps the total cost of a single GraphQL operation.
 // Budget reasoning: a realistic dashboard query fetches ~10 incidents with their
 // messages (10 × messageCost=50 + field costs ≈ 1000) plus layers and features.
@@ -106,6 +106,7 @@ func WithApiV2(
 
 		srv := handler.New(generated.NewExecutableSchema(cfg))
 		srv.AddTransport(transport.POST{})
+		srv.Use(otelgqlgen.Middleware())
 		srv.Use(extension.FixedComplexityLimit(complexityBudget))
 		srv.SetErrorPresenter(logAndPresentError)
 		srv.SetRecoverFunc(func(ctx context.Context, p any) error {

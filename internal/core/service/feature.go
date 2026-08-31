@@ -3,6 +3,11 @@ package service
 import (
 	"context"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -16,6 +21,7 @@ type FeatureService struct {
 	repo     outbound.FeatureRepository
 	clock    outbound.Clock
 	notifier outbound.EventNotifier
+	tracer   trace.Tracer
 }
 
 func NewFeatureService(
@@ -24,7 +30,10 @@ func NewFeatureService(
 	clock outbound.Clock,
 	notifier outbound.EventNotifier,
 ) *FeatureService {
-	return &FeatureService{tx: tx, repo: repo, clock: clock, notifier: notifier}
+	return &FeatureService{
+		tx: tx, repo: repo, clock: clock, notifier: notifier,
+		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+	}
 }
 
 // PlaceFeature places a new feature. The id comes from the client.
@@ -36,6 +45,14 @@ func (s *FeatureService) PlaceFeature(
 	geometry, properties map[string]any,
 	actor identity.Actor,
 ) error {
+	ctx, span := s.tracer.Start(ctx, "FeatureService.PlaceFeature",
+		trace.WithAttributes(
+			attribute.String("feature.id", id.String()),
+			attribute.String("incident.id", incidentID.String()),
+			attribute.String("layer.id", layerID.String()),
+		))
+	defer span.End()
+
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		f := feature.New(id)
@@ -46,6 +63,8 @@ func (s *FeatureService) PlaceFeature(
 		return err
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
@@ -61,7 +80,11 @@ func (s *FeatureService) ModifyFeature(
 	geometry, properties map[string]any,
 	actor identity.Actor,
 ) error {
-	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
+	ctx, span := s.tracer.Start(ctx, "FeatureService.ModifyFeature",
+		trace.WithAttributes(attribute.String("feature.id", id.String())))
+	defer span.End()
+
+	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		at := s.clock.Now()
 		if geometry != nil {
 			if err := f.Move(geometry, actor.Sub, at); err != nil {
@@ -75,13 +98,27 @@ func (s *FeatureService) ModifyFeature(
 		}
 		return nil
 	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 // RemoveFeature removes a feature.
 func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error {
-	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
+	ctx, span := s.tracer.Start(ctx, "FeatureService.RemoveFeature",
+		trace.WithAttributes(attribute.String("feature.id", id.String())))
+	defer span.End()
+
+	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		return f.Remove(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, fn func(*feature.Feature) error) error {

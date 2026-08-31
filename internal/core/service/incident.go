@@ -9,6 +9,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
@@ -26,6 +30,7 @@ type IncidentService struct {
 	clock    outbound.Clock
 	ids      outbound.IDs
 	notifier outbound.EventNotifier
+	tracer   trace.Tracer
 }
 
 func NewIncidentService(
@@ -36,7 +41,10 @@ func NewIncidentService(
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *IncidentService {
-	return &IncidentService{tx: tx, repo: repo, layers: layers, clock: clock, ids: ids, notifier: notifier}
+	return &IncidentService{
+		tx: tx, repo: repo, layers: layers, clock: clock, ids: ids, notifier: notifier,
+		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+	}
 }
 
 // CreateIncident opens a new incident, creates its divisions, and creates the
@@ -49,6 +57,10 @@ func (s *IncidentService) CreateIncident(
 	layerNames []string,
 	actor identity.Actor,
 ) (inbound.CreateIncidentResult, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.CreateIncident",
+		trace.WithAttributes(attribute.String("incident.name", name)))
+	defer span.End()
+
 	if len(layerNames) == 0 {
 		layerNames = []string{"Lage"}
 	}
@@ -91,9 +103,12 @@ func (s *IncidentService) CreateIncident(
 		return nil
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "CreateIncident", err, "name", name)
 		return inbound.CreateIncidentResult{}, err
 	}
+	span.SetAttributes(attribute.String("incident.id", incID.String()))
 	_ = s.notifier.Notify(ctx)
 	return inbound.CreateIncidentResult{
 		IncidentID: incID,
@@ -114,6 +129,10 @@ func (s *IncidentService) UpdateIncident(
 	divisions []incident.DivisionData,
 	actor identity.Actor,
 ) (inbound.IncidentState, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.UpdateIncident",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+
 	at := s.clock.Now()
 	var state inbound.IncidentState
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -149,6 +168,8 @@ func (s *IncidentService) UpdateIncident(
 		return nil
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "UpdateIncident", err, "id", id)
 		return inbound.IncidentState{}, err
 	}
@@ -158,23 +179,46 @@ func (s *IncidentService) UpdateIncident(
 
 // CloseIncident closes the incident.
 func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
-	return s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.CloseIncident",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return state, err
 }
 
 // ReopenIncident reopens a closed incident.
 func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
-	return s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.ReopenIncident",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return state, err
 }
 
 // DeleteIncident deletes a closed incident.
 func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.DeleteIncident",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
 	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
 	return err
 }
 
