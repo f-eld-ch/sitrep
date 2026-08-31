@@ -1,22 +1,33 @@
 package cli
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
+	pgstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/postgres/readmodel"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/server"
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
 // Version and Sha are set by main.go via SetBuildInfo before Execute() is called.
-var Version = "dev"
-var Sha = "dev"
+var (
+	Version = "dev"
+	Sha     = "dev"
+)
 
 // SetBuildInfo injects the link-time build identity before Execute() is called.
 func SetBuildInfo(version, sha string) {
@@ -44,6 +55,47 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		}
 	}()
 
+	// ── Database ──────────────────────────────────────────────────────────────
+	pool, err := buildPool(ctx)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+
+	// ── Eventstore infrastructure ─────────────────────────────────────────────
+	store := pgstore.NewEventStore(pool)
+	tx := pgstore.NewTransactor(pool)
+	notifier := pgstore.NewNotifier(pool, "events")
+
+	// ── Generic event-sourced repositories ───────────────────────────────────
+	incidents := eventstore.NewIncidentRepository(store)
+	messages := eventstore.NewMessageRepository(store)
+	layers := eventstore.NewLayerRepository(store)
+	features := eventstore.NewFeatureRepository(store)
+
+	// ── Application services ──────────────────────────────────────────────────
+	svcFactory := service.NewFactory(
+		service.WithTransactor(tx),
+		service.WithClock(pgstore.WallClock{}),
+		service.WithIDs(pgstore.UUIDGen{}),
+		service.WithNotifier(notifier),
+		service.WithMessageCounter(pgstore.NewMessageCounter()),
+	)
+	incidentSvc := svcFactory.IncidentService(incidents, layers)
+	messageSvc := svcFactory.MessageService(messages, incidents)
+	layerSvc := svcFactory.LayerService(layers)
+	featureSvc := svcFactory.FeatureService(features)
+	queries := readmodel.NewQueries(pool)
+
+	// ── Projector ─────────────────────────────────────────────────────────────
+	proj := buildProjector(pool, store, notifier)
+	go func() {
+		if err := proj.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			slog.Error("projector stopped unexpectedly", "error", err)
+		}
+	}()
+
+	// ── HTTP server ───────────────────────────────────────────────────────────
 	opts := []server.Option{
 		server.WithPort(viper.GetUint("server_port")),
 	}
@@ -67,19 +119,48 @@ func runServe(cmd *cobra.Command, _ []string) error {
 	}
 
 	opts = append(opts,
-		server.WithApiV2(),
+		server.WithApiV2(incidentSvc, messageSvc, layerSvc, featureSvc, queries,
+			viper.GetBool("graphql_introspection")),
 		server.WithVersion(Version, Sha),
 		server.WithApiV1Proxy(viper.GetString("hasura_backend")),
 	)
 
 	srv := server.NewServer(opts...)
-	err = srv.ListenAndServe(ctx)
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := srv.ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("failed to start server", "error", err)
 		return err
 	}
 	slog.Info("server stopped")
 	return nil
+}
+
+func buildPool(ctx context.Context) (*pgxpool.Pool, error) {
+	dsn := viper.GetString("database_url")
+	if dsn == "" {
+		return nil, errors.New("DATABASE_URL is required")
+	}
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("invalid DATABASE_URL: %w", err)
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open database pool: %w", err)
+	}
+	if err := pool.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("database ping failed: %w", err)
+	}
+	return pool, nil
+}
+
+func buildProjector(pool *pgxpool.Pool, store outbound.EventStore, notifier outbound.EventNotifier) *projection.Projector {
+	handlers := []projection.Handler{
+		projection.NewIncidentHandler(pool),
+		projection.NewIncidentDivisionHandler(pool),
+		projection.NewMessageHandler(pool),
+		projection.NewLayerFeaturesHandler(pool),
+	}
+	return projection.NewProjector(pool, store, notifier, handlers)
 }
 
 func deriveCookieKey(input string) string {

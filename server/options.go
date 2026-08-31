@@ -1,13 +1,26 @@
 package server
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"net/url"
 
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	graph "github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql"
+	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
 
@@ -81,13 +94,86 @@ func WithApiV1Proxy(upstream string) Option {
 	}
 }
 
-func WithApiV2() Option {
+const complexityBudget = 1000
+
+// disableIntrospection is a gqlgen extension that sets DisableIntrospection on
+// every operation context, preventing schema reflection by clients.
+type disableIntrospection struct{}
+
+func (disableIntrospection) ExtensionName() string { return "DisableIntrospection" }
+func (disableIntrospection) Validate(graphql.ExecutableSchema) error { return nil }
+func (disableIntrospection) MutateOperationContext(_ context.Context, opCtx *graphql.OperationContext) *gqlerror.Error {
+	opCtx.DisableIntrospection = true
+	return nil
+}
+
+func WithApiV2(
+	incidents inbound.IncidentService,
+	messages inbound.MessageService,
+	layers inbound.LayerService,
+	features inbound.FeatureService,
+	queries outbound.Queries,
+	enableIntrospection bool,
+) Option {
 	return func(s *Server) error {
-		// Protect API routes
+		cfg := generated.Config{Resolvers: &graph.Resolver{
+			Incidents: incidents,
+			Messages:  messages,
+			Layers:    layers,
+			Features:  features,
+			Queries:   queries,
+		}}
+		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity * 100 }
+		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity * 100 }
+
+		srv := handler.New(generated.NewExecutableSchema(cfg))
+		srv.AddTransport(transport.POST{})
+		srv.Use(extension.FixedComplexityLimit(complexityBudget))
+		srv.SetErrorPresenter(presentDomainError)
+		if !enableIntrospection {
+			srv.Use(disableIntrospection{})
+		}
+
 		apiv2 := s.router.Group("/api/v2", s.Enforcer.RequireLogin)
+		apiv2.POST("/graphql", echo.WrapHandler(srv))
+		if enableIntrospection {
+			apiv2.GET("/graphql/play", echo.WrapHandler(
+				playground.Handler("SitRep GraphQL", "/api/v2/graphql"),
+			))
+		}
 		apiv2.GET("/health", func(c echo.Context) error {
 			return c.String(http.StatusOK, "OK")
 		})
 		return nil
 	}
+}
+
+func presentDomainError(_ context.Context, e error) *gqlerror.Error {
+	var code string
+	switch {
+	case errors.Is(e, shared.ErrNotFound):
+		code = "NOT_FOUND"
+	case errors.Is(e, shared.ErrIncidentNotOpen):
+		code = "INCIDENT_NOT_OPEN"
+	case errors.Is(e, shared.ErrIncidentNotClosed):
+		code = "INCIDENT_NOT_CLOSED"
+	case errors.Is(e, shared.ErrIncidentDeleted):
+		code = "INCIDENT_DELETED"
+	case errors.Is(e, shared.ErrAlreadyClosed):
+		code = "ALREADY_CLOSED"
+	case errors.Is(e, shared.ErrAlreadyOpen):
+		code = "ALREADY_OPEN"
+	case errors.Is(e, shared.ErrForbidden):
+		code = "FORBIDDEN"
+	case errors.Is(e, shared.ErrInvalidInput):
+		code = "INVALID_INPUT"
+	case errors.Is(e, shared.ErrConflict):
+		code = "CONFLICT"
+	default:
+		return &gqlerror.Error{
+			Message:    "internal server error",
+			Extensions: map[string]any{"code": "INTERNAL_ERROR"},
+		}
+	}
+	return &gqlerror.Error{Message: e.Error(), Extensions: map[string]any{"code": code}}
 }

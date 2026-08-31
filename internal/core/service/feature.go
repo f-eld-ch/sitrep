@@ -1,0 +1,103 @@
+package service
+
+import (
+	"context"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
+)
+
+// FeatureService handles write-side operations for the Feature aggregate.
+// The UI generates the feature UUID client-side for optimistic updates.
+type FeatureService struct {
+	tx       outbound.Transactor
+	repo     outbound.FeatureRepository
+	clock    outbound.Clock
+	notifier outbound.EventNotifier
+}
+
+func NewFeatureService(
+	tx outbound.Transactor,
+	repo outbound.FeatureRepository,
+	clock outbound.Clock,
+	notifier outbound.EventNotifier,
+) *FeatureService {
+	return &FeatureService{tx: tx, repo: repo, clock: clock, notifier: notifier}
+}
+
+// PlaceFeature places a new feature. The id comes from the client.
+func (s *FeatureService) PlaceFeature(
+	ctx context.Context,
+	id shared.FeatureID,
+	incidentID shared.IncidentID,
+	layerID shared.LayerID,
+	geometry, properties map[string]any,
+	actor identity.Actor,
+) error {
+	at := s.clock.Now()
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		f := feature.New(id)
+		if err := f.Place(incidentID, layerID, geometry, properties, actor.Sub, at); err != nil {
+			return err
+		}
+		_, err := s.repo.Save(ctx, f)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+	_ = s.notifier.Notify(ctx)
+	return nil
+}
+
+// MoveFeature updates the geometry of a feature.
+func (s *FeatureService) MoveFeature(
+	ctx context.Context,
+	id shared.FeatureID,
+	geometry map[string]any,
+	actor identity.Actor,
+) error {
+	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
+		return f.Move(geometry, actor.Sub, s.clock.Now())
+	})
+}
+
+// RestyleFeature updates the properties of a feature.
+func (s *FeatureService) RestyleFeature(
+	ctx context.Context,
+	id shared.FeatureID,
+	properties map[string]any,
+	actor identity.Actor,
+) error {
+	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
+		return f.Restyle(properties, actor.Sub, s.clock.Now())
+	})
+}
+
+// RemoveFeature removes a feature.
+func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error {
+	return s.writeFeature(ctx, id, func(f *feature.Feature) error {
+		return f.Remove(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
+	})
+}
+
+func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, fn func(*feature.Feature) error) error {
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		f, err := s.repo.Load(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := fn(f); err != nil {
+			return err
+		}
+		_, err = s.repo.Save(ctx, f)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+	_ = s.notifier.Notify(ctx)
+	return nil
+}
