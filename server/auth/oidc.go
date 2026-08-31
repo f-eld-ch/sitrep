@@ -144,12 +144,11 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 		}
 
 		if o.users != nil && info != nil {
-			go func() {
-				ctx := context.WithoutCancel(r.Context())
-				if err := o.users.Upsert(ctx, info.Subject, info.Email, info.Name); err != nil {
-					o.logger.ErrorContext(ctx, "failed to upsert user on login", "sub", info.Subject, "error", err)
-				}
-			}()
+			if err := o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name); err != nil {
+				o.logger.ErrorContext(r.Context(), "failed to upsert user on login", "sub", info.Subject, "error", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
