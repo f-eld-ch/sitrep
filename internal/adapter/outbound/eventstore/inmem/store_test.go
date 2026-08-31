@@ -16,8 +16,10 @@ import (
 
 // ── Minimal aggregate for store tests ────────────────────────────────────────
 
-type WidgetCreated struct{ Name string }
-type WidgetRenamed struct{ Name string }
+type (
+	WidgetCreated struct{ Name string }
+	WidgetRenamed struct{ Name string }
+)
 
 type widget struct {
 	root eventsourcing.Root

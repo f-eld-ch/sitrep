@@ -253,9 +253,12 @@ func TestProjector_MessagesSegregatedByIncident(t *testing.T) {
 	res1, _ := incSvc.CreateIncident(ctx(), "I1", nil, nil, nil, testActor)
 	res2, _ := incSvc.CreateIncident(ctx(), "I2", nil, nil, nil, testActor)
 
-	msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg A", "S", "", "R", "", shared.MediumRadio, nil, testActor)
-	msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg B", "S", "", "R", "", shared.MediumPhone, nil, testActor)
-	msgSvc.RecordMessage(ctx(), res2.IncidentID, "Msg C", "S", "", "R", "", shared.MediumRadio, nil, testActor)
+	_, err := msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg A", "S", "", "R", "", shared.MediumRadio, nil, testActor)
+	require.NoError(t, err)
+	_, err = msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg B", "S", "", "R", "", shared.MediumPhone, nil, testActor)
+	require.NoError(t, err)
+	_, err = msgSvc.RecordMessage(ctx(), res2.IncidentID, "Msg C", "S", "", "R", "", shared.MediumRadio, nil, testActor)
+	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	assert.Len(t, s.messages.ForIncident(uuid.UUID(res1.IncidentID)), 2)
@@ -284,7 +287,8 @@ func TestProjector_Reset_RebuildsFromLog(t *testing.T) {
 func TestProjector_DoubleCatchUp_IsIdempotent(t *testing.T) {
 	s := newStack(t)
 
-	s.incidentSvc().CreateIncident(ctx(), "Idempotent", nil, nil, nil, testActor)
+	_, err := s.incidentSvc().CreateIncident(ctx(), "Idempotent", nil, nil, nil, testActor)
+	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 	require.NoError(t, s.proj.CatchUp(ctx()), "second CatchUp must not duplicate rows or error")
 	assert.Len(t, s.incidents.All(), 1)

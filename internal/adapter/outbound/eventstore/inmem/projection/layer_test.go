@@ -18,10 +18,10 @@ import (
 
 // layerStack wires the full inmem stack including the LayerFeaturesHandler.
 type layerStack struct {
-	factory  *service.Factory
-	store    *inmem.EventStore
-	proj     *projection.Projector
-	layers   *projection.LayerFeaturesHandler
+	factory *service.Factory
+	store   *inmem.EventStore
+	proj    *projection.Projector
+	layers  *projection.LayerFeaturesHandler
 }
 
 func newLayerStack(t *testing.T) *layerStack {
