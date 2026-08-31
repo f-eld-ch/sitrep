@@ -31,8 +31,8 @@ type Handler interface {
 	// Version is bumped whenever the handler's schema or logic changes,
 	// triggering a full rebuild on next startup.
 	Version() int
-	// Handles returns true if the handler is interested in this event type.
-	Handles(eventType string) bool
+	// Handles returns true if the handler is interested in this stream/event type pair.
+	Handles(streamType, eventType string) bool
 	// Apply writes the event to the read model. Must be idempotent.
 	Apply(ctx context.Context, e eventsourcing.Event) error
 }
@@ -66,6 +66,12 @@ func NewProjector(
 // Run starts the projection loop. It blocks until ctx is cancelled.
 // On startup it checks each handler's version and rebuilds stale projections.
 func (p *Projector) Run(ctx context.Context) error {
+	names := make([]string, len(p.handlers))
+	for i, h := range p.handlers {
+		names[i] = h.Name()
+	}
+	p.log.Info("projector starting", "handlers", names)
+
 	if err := p.initCheckpoints(ctx); err != nil {
 		return fmt.Errorf("projector: init checkpoints: %w", err)
 	}
@@ -73,13 +79,19 @@ func (p *Projector) Run(ctx context.Context) error {
 	pollTicker := time.NewTicker(500 * time.Millisecond)
 	defer pollTicker.Stop()
 
+	first := true
 	for {
 		if err := p.catchUp(ctx); err != nil {
 			p.log.Error("projector catch-up failed", "error", err)
 		}
+		if first {
+			p.log.Info("projector ready — initial catch-up complete")
+			first = false
+		}
 
 		select {
 		case <-ctx.Done():
+			p.log.Info("projector stopped")
 			return ctx.Err()
 		case <-pollTicker.C:
 		// notifier.Wait blocks until a NOTIFY arrives or ctx is cancelled
@@ -93,11 +105,13 @@ func (p *Projector) Run(ctx context.Context) error {
 
 // catchUp reads all new events from each handler's checkpoint and applies them.
 func (p *Projector) catchUp(ctx context.Context) error {
+	var totalApplied int
 	for _, h := range p.handlers {
 		cursor, err := p.loadCheckpoint(ctx, h.Name())
 		if err != nil {
 			return err
 		}
+		var handlerApplied int
 		for {
 			events, next, err := p.store.Read(ctx, cursor, batchSize)
 			if err != nil {
@@ -107,7 +121,7 @@ func (p *Projector) catchUp(ctx context.Context) error {
 				break
 			}
 			for _, e := range events {
-				if !h.Handles(e.EventType) {
+				if !h.Handles(e.StreamType, e.EventType) {
 					continue
 				}
 				if err := p.applyWithDeadLetter(ctx, h, e); err != nil {
@@ -116,6 +130,8 @@ func (p *Projector) catchUp(ctx context.Context) error {
 					if parkErr := p.parkDeadLetter(ctx, h.Name(), next, e, err); parkErr != nil {
 						p.log.Error("failed to park dead letter", "error", parkErr)
 					}
+				} else {
+					handlerApplied++
 				}
 			}
 			if err := p.saveCheckpoint(ctx, h.Name(), next); err != nil {
@@ -126,6 +142,13 @@ func (p *Projector) catchUp(ctx context.Context) error {
 				break
 			}
 		}
+		if handlerApplied > 0 {
+			p.log.Info("projection caught up", "handler", h.Name(), "applied", handlerApplied)
+		}
+		totalApplied += handlerApplied
+	}
+	if totalApplied > 0 {
+		p.log.Info("catch-up complete", "total_applied", totalApplied)
 	}
 	return nil
 }

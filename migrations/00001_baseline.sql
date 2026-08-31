@@ -2,6 +2,8 @@
 -- Squashed baseline from 22 Hasura migrations (1658847649526 → 1763382566880).
 -- This is the schema as-of the eventsourcing branch start.
 -- Legacy tables are kept as rollback artifacts during the cutover window.
+-- All DDL is idempotent (IF NOT EXISTS / OR REPLACE) so this migration is safe
+-- to apply against an existing Hasura database that already has the schema.
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Extensions
@@ -11,6 +13,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Shared timestamp triggers
 -- ──────────────────────────────────────────────────────────────────────────────
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION public.set_current_timestamp_updated_at() RETURNS trigger
     LANGUAGE plpgsql AS $$
 BEGIN
@@ -18,11 +21,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+-- +goose StatementEnd
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Enum / lookup tables (values are schema state, not data)
 -- ──────────────────────────────────────────────────────────────────────────────
-CREATE TABLE public.triage_status (
+CREATE TABLE IF NOT EXISTS public.triage_status (
     name        text NOT NULL,
     description text NOT NULL,
     CONSTRAINT triage_status_enum_pkey PRIMARY KEY (name)
@@ -31,9 +35,10 @@ INSERT INTO public.triage_status (name, description) VALUES
     ('pending',  'Triage is pending'),
     ('done',     'Triage is done'),
     ('reset',    'Triage is reset and needs to be redone'),
-    ('moreinfo', 'Needs more information');
+    ('moreinfo', 'Needs more information')
+ON CONFLICT DO NOTHING;
 
-CREATE TABLE public.priority_status (
+CREATE TABLE IF NOT EXISTS public.priority_status (
     name        text NOT NULL,
     description text NOT NULL,
     CONSTRAINT priority_status_pkey PRIMARY KEY (name)
@@ -41,9 +46,10 @@ CREATE TABLE public.priority_status (
 INSERT INTO public.priority_status (name, description) VALUES
     ('normal',   'Normal'),
     ('high',     'High'),
-    ('critical', 'Critical');
+    ('critical', 'Critical')
+ON CONFLICT DO NOTHING;
 
-CREATE TABLE public.medium (
+CREATE TABLE IF NOT EXISTS public.medium (
     name        text NOT NULL,
     description text NOT NULL,
     CONSTRAINT medium_pkey PRIMARY KEY (name),
@@ -54,12 +60,13 @@ INSERT INTO public.medium (name, description) VALUES
     ('radio', 'Radio Communication'),
     ('phone', 'phone call'),
     ('email', 'email message'),
-    ('other', 'Other');
+    ('other', 'Other')
+ON CONFLICT DO NOTHING;
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Core legacy tables
 -- ──────────────────────────────────────────────────────────────────────────────
-CREATE TABLE public.users (
+CREATE TABLE IF NOT EXISTS public.users (
     id         uuid        NOT NULL DEFAULT gen_random_uuid(),
     sub        text        NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
@@ -72,6 +79,7 @@ CREATE TABLE public.users (
 );
 COMMENT ON TABLE public.users IS 'Users Table';
 
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION public.insert_user_for_messages() RETURNS trigger
     LANGUAGE plpgsql AS $$
 DECLARE
@@ -87,8 +95,9 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+-- +goose StatementEnd
 
-CREATE TABLE public.locations (
+CREATE TABLE IF NOT EXISTS public.locations (
     id          uuid        NOT NULL DEFAULT gen_random_uuid(),
     name        text,
     coordinates point,
@@ -98,7 +107,7 @@ CREATE TABLE public.locations (
 );
 COMMENT ON TABLE public.locations IS 'Locations of incidents or messages';
 
-CREATE TABLE public.incidents (
+CREATE TABLE IF NOT EXISTS public.incidents (
     id          uuid        NOT NULL DEFAULT gen_random_uuid(),
     created_at  timestamptz NOT NULL DEFAULT now(),
     updated_at  timestamptz NOT NULL DEFAULT now(),
@@ -112,13 +121,13 @@ CREATE TABLE public.incidents (
         REFERENCES public.locations (id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TRIGGER set_public_incidents_updated_at
+CREATE OR REPLACE TRIGGER set_public_incidents_updated_at
     BEFORE UPDATE ON public.incidents
     FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 COMMENT ON TRIGGER set_public_incidents_updated_at ON public.incidents
     IS 'trigger to set value of column "updated_at" to current timestamp on row update';
 
-CREATE TABLE public.divisions (
+CREATE TABLE IF NOT EXISTS public.divisions (
     id          uuid NOT NULL DEFAULT gen_random_uuid(),
     name        text NOT NULL,
     description text,
@@ -131,7 +140,7 @@ CREATE TABLE public.divisions (
 );
 COMMENT ON TABLE public.divisions IS 'Division for tagging';
 
-CREATE TABLE public.journals (
+CREATE TABLE IF NOT EXISTS public.journals (
     id          uuid        NOT NULL DEFAULT gen_random_uuid(),
     created_at  timestamptz NOT NULL DEFAULT now(),
     updated_at  timestamptz NOT NULL DEFAULT now(),
@@ -145,11 +154,11 @@ CREATE TABLE public.journals (
 );
 COMMENT ON TABLE public.journals IS 'Journals';
 
-CREATE TRIGGER set_public_journals_updated_at
+CREATE OR REPLACE TRIGGER set_public_journals_updated_at
     BEFORE UPDATE ON public.journals
     FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 
-CREATE TABLE public.messages (
+CREATE TABLE IF NOT EXISTS public.messages (
     id              uuid        NOT NULL DEFAULT gen_random_uuid(),
     created_at      timestamptz NOT NULL DEFAULT now(),
     updated_at      timestamptz NOT NULL DEFAULT now(),
@@ -179,7 +188,7 @@ CREATE TABLE public.messages (
 );
 COMMENT ON TABLE public.messages IS 'Messages Table';
 
-CREATE TRIGGER set_public_messages_updated_at
+CREATE OR REPLACE TRIGGER set_public_messages_updated_at
     BEFORE UPDATE ON public.messages
     FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 
@@ -187,7 +196,7 @@ CREATE OR REPLACE TRIGGER trigger_insert_user
     BEFORE INSERT OR UPDATE ON messages
     FOR EACH ROW EXECUTE PROCEDURE public.insert_user_for_messages();
 
-CREATE TABLE public.message_division (
+CREATE TABLE IF NOT EXISTS public.message_division (
     id          uuid NOT NULL DEFAULT gen_random_uuid(),
     message_id  uuid NOT NULL,
     division_id uuid NOT NULL,
@@ -200,7 +209,7 @@ CREATE TABLE public.message_division (
 );
 COMMENT ON TABLE public.message_division IS 'Bridge Table for division tagging messages';
 
-CREATE TABLE public.layers (
+CREATE TABLE IF NOT EXISTS public.layers (
     id          uuid        NOT NULL DEFAULT gen_random_uuid(),
     incident_id uuid        NOT NULL,
     name        text        NOT NULL,
@@ -215,11 +224,11 @@ CREATE TABLE public.layers (
 );
 COMMENT ON TABLE public.layers IS 'Layers for Maps';
 
-CREATE TRIGGER set_public_layers_updated_at
+CREATE OR REPLACE TRIGGER set_public_layers_updated_at
     BEFORE UPDATE ON public.layers
     FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 
-CREATE TABLE public.features (
+CREATE TABLE IF NOT EXISTS public.features (
     id         uuid        NOT NULL DEFAULT gen_random_uuid(),
     geometry   jsonb       NOT NULL,
     properties jsonb       NOT NULL,
@@ -234,79 +243,13 @@ CREATE TABLE public.features (
 );
 COMMENT ON TABLE public.features IS 'Features for Layers';
 
-CREATE TRIGGER set_public_features_updated_at
+CREATE OR REPLACE TRIGGER set_public_features_updated_at
     BEFORE UPDATE ON public.features
     FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
 
 -- ──────────────────────────────────────────────────────────────────────────────
--- Event store (Phase 1 — created here so the schema is complete from migration 1)
--- ──────────────────────────────────────────────────────────────────────────────
-CREATE SCHEMA IF NOT EXISTS eventsourcing;
-
-CREATE TABLE eventsourcing.events (
-    stream_type text        NOT NULL,
-    stream_id   uuid        NOT NULL,
-    version     int         NOT NULL,
-    event_type  text        NOT NULL,
-    data        jsonb       NOT NULL,
-    metadata    jsonb       NOT NULL,
-    occurred_at timestamptz NOT NULL,
-    recorded_at timestamptz NOT NULL DEFAULT now(),
-    xid         xid8        NOT NULL DEFAULT pg_current_xact_id(),
-    seq         bigserial,
-    PRIMARY KEY (stream_type, stream_id, version)
-);
-CREATE INDEX ON eventsourcing.events (xid, seq);
-
--- ──────────────────────────────────────────────────────────────────────────────
--- Projection support tables
--- ──────────────────────────────────────────────────────────────────────────────
-CREATE TABLE eventsourcing.projection_checkpoint (
-    name    text  NOT NULL,
-    version int   NOT NULL DEFAULT 1,
-    cursor  bytea,
-    PRIMARY KEY (name)
-);
-
-CREATE TABLE eventsourcing.projection_dead_letter (
-    projection  text        NOT NULL,
-    cursor      bytea       NOT NULL,
-    stream_type text        NOT NULL,
-    stream_id   uuid        NOT NULL,
-    version     int         NOT NULL,
-    error       text        NOT NULL,
-    attempts    int         NOT NULL,
-    parked_at   timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (projection, stream_type, stream_id, version)
-);
-
--- Aggregate index: maps every stream to its owning incident, so retention can
--- find and purge all streams belonging to an incident without scanning the log.
-CREATE TABLE eventsourcing.aggregate_index (
-    stream_type text NOT NULL,
-    stream_id   uuid NOT NULL,
-    incident_id uuid NOT NULL,
-    PRIMARY KEY (stream_type, stream_id)
-);
-CREATE INDEX ON eventsourcing.aggregate_index (incident_id);
-
--- Per-incident message counter for gapless, immutable message numbers.
-CREATE TABLE eventsourcing.incident_counters (
-    incident_id uuid NOT NULL,
-    next_number int  NOT NULL DEFAULT 1,
-    PRIMARY KEY (incident_id)
-);
-
--- ──────────────────────────────────────────────────────────────────────────────
 -- +goose Down
 -- ──────────────────────────────────────────────────────────────────────────────
-DROP TABLE IF EXISTS eventsourcing.incident_counters;
-DROP TABLE IF EXISTS eventsourcing.aggregate_index;
-DROP TABLE IF EXISTS eventsourcing.projection_dead_letter;
-DROP TABLE IF EXISTS eventsourcing.projection_checkpoint;
-DROP TABLE IF EXISTS eventsourcing.events;
-DROP SCHEMA IF EXISTS eventsourcing;
-
 DROP TABLE IF EXISTS public.features;
 DROP TABLE IF EXISTS public.layers;
 DROP TABLE IF EXISTS public.message_division;

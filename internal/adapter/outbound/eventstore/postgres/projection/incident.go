@@ -27,7 +27,10 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 
 func (h *IncidentHandler) Name() string { return "rm_incident" }
 func (h *IncidentHandler) Version() int { return 1 }
-func (h *IncidentHandler) Handles(t string) bool {
+func (h *IncidentHandler) Handles(st, t string) bool {
+	if st != "Incident" {
+		return false
+	}
 	switch t {
 	case "Opened", "Renamed", "LocationChanged", "Closed", "Reopened", "Deleted", "Imported":
 		return true
@@ -64,15 +67,14 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		type imported struct {
 			Name      string          `json:"name"`
 			Location  json.RawMessage `json:"location"`
-			Closed    bool            `json:"isClosed"`
-			Deleted   bool            `json:"isDeleted"`
-			CreatedAt *string         `json:"createdAt"`
 			ClosedAt  *string         `json:"closedAt"`
+			DeletedAt *string         `json:"deletedAt"`
 		}
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+		// occurred_at == original created_at (set that way by the import migration).
 		return exec(db, ctx, `
 			INSERT INTO rm_incident
 			  (id, name, location, is_closed, is_deleted, closed_at, created_at, updated_at)
@@ -81,7 +83,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			  SET name = EXCLUDED.name, location = EXCLUDED.location,
 			      is_closed = EXCLUDED.is_closed, is_deleted = EXCLUDED.is_deleted,
 			      closed_at = EXCLUDED.closed_at, updated_at = EXCLUDED.updated_at`,
-			id, d.Name, nullableJSON(d.Location), d.Closed, d.Deleted,
+			id, d.Name, nullableJSON(d.Location), d.ClosedAt != nil, d.DeletedAt != nil,
 			d.ClosedAt, e.OccurredAt)
 
 	case "Renamed":
@@ -138,7 +140,10 @@ func NewIncidentDivisionHandler(pool *pgxpool.Pool) *IncidentDivisionHandler {
 
 func (h *IncidentDivisionHandler) Name() string { return "rm_incident_division" }
 func (h *IncidentDivisionHandler) Version() int { return 1 }
-func (h *IncidentDivisionHandler) Handles(t string) bool {
+func (h *IncidentDivisionHandler) Handles(st, t string) bool {
+	if st != "Incident" {
+		return false
+	}
 	switch t {
 	case "Opened", "DivisionAdded", "DivisionRenamed", "DivisionRemoved", "Imported":
 		return true

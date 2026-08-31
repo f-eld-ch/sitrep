@@ -27,11 +27,18 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 
 func (h *LayerFeaturesHandler) Name() string { return "rm_layer_features" }
 func (h *LayerFeaturesHandler) Version() int { return 1 }
-func (h *LayerFeaturesHandler) Handles(t string) bool {
-	switch t {
-	case "Created", "Renamed", "Removed", "Imported",
-		"Placed", "Moved", "Restyled":
-		return true
+func (h *LayerFeaturesHandler) Handles(st, t string) bool {
+	switch st {
+	case "Layer":
+		switch t {
+		case "Created", "Renamed", "Removed", "Imported":
+			return true
+		}
+	case "Feature":
+		switch t {
+		case "Placed", "Moved", "Restyled", "Imported", "Removed":
+			return true
+		}
 	}
 	return false
 }

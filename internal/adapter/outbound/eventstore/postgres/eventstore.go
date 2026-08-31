@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -98,13 +99,13 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 			return nil, fmt.Errorf("eventstore.Append marshal meta: %w", err)
 		}
 
-		var xid uint64
+		var xid pgtype.Uint64
 		var seq int64
 		err = tx.QueryRow(ctx, `
 			INSERT INTO eventsourcing.events
 			  (stream_type, stream_id, version, event_type, data, metadata, occurred_at)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			RETURNING xid::bigint, seq`,
+			RETURNING xid, seq`,
 			e.StreamType, e.StreamID, e.Version, e.EventType, data, meta, e.OccurredAt.UTC(),
 		).Scan(&xid, &seq)
 		if err != nil {
@@ -114,7 +115,7 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 			}
 			return nil, fmt.Errorf("eventstore.Append insert: %w", err)
 		}
-		lastCursor = encodeCursor(xid, seq)
+		lastCursor = encodeCursor(xid.Uint64, seq)
 	}
 
 	a.Root().ClearPending()
@@ -126,13 +127,13 @@ func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int)
 
 	rows, err := s.pool.Query(ctx, `
 		SELECT stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at,
-		       xid::bigint, seq
+		       xid, seq
 		  FROM eventsourcing.events
-		 WHERE (xid::bigint, seq) > ($1, $2)
+		 WHERE (xid, seq) > ($1, $2)
 		   AND xid < pg_snapshot_xmin(pg_current_snapshot())
 		 ORDER BY xid, seq
 		 LIMIT $3`,
-		afterXID, afterSeq, limit)
+		pgtype.Uint64{Uint64: afterXID, Valid: true}, afterSeq, limit)
 	if err != nil {
 		return nil, nil, fmt.Errorf("eventstore.Read: %w", err)
 	}
@@ -143,7 +144,7 @@ func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int)
 	for rows.Next() {
 		var e eventsourcing.Event
 		var rawData, rawMeta []byte
-		var xid uint64
+		var xid pgtype.Uint64
 		var seq int64
 		if err := rows.Scan(
 			&e.StreamType, &e.StreamID, &e.Version, &e.EventType,
@@ -158,7 +159,7 @@ func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int)
 			_ = json.Unmarshal(rawMeta, &e.Metadata)
 		}
 		events = append(events, e)
-		cursor = encodeCursor(xid, seq)
+		cursor = encodeCursor(xid.Uint64, seq)
 	}
 	if rows.Err() != nil {
 		return nil, nil, rows.Err()

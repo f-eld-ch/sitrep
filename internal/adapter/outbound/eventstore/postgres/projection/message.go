@@ -3,7 +3,9 @@ package projection
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -23,7 +25,10 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 
 func (h *MessageHandler) Name() string { return "rm_message" }
 func (h *MessageHandler) Version() int { return 1 }
-func (h *MessageHandler) Handles(t string) bool {
+func (h *MessageHandler) Handles(st, t string) bool {
+	if st != "Message" {
+		return false
+	}
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported":
 		return true
@@ -41,16 +46,16 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 	switch e.EventType {
 	case "Recorded":
 		type recorded struct {
-			IncidentID     string `json:"incidentId"`
-			Number         int    `json:"number"`
-			Content        string `json:"content"`
-			Sender         string `json:"sender"`
-			SenderDetail   string `json:"senderDetail"`
-			Receiver       string `json:"receiver"`
-			ReceiverDetail string `json:"receiverDetail"`
-			Medium         string `json:"medium"`
-			Time           string `json:"time"`
-			AuthorSub      string `json:"authorSub"`
+			IncidentID     string    `json:"incidentId"`
+			Number         int       `json:"number"`
+			Content        string    `json:"content"`
+			Sender         string    `json:"sender"`
+			SenderDetail   string    `json:"senderDetail"`
+			Receiver       string    `json:"receiver"`
+			ReceiverDetail string    `json:"receiverDetail"`
+			Medium         string    `json:"medium"`
+			Time           time.Time `json:"time"`
+			AuthorSub      string    `json:"authorSub"`
 		}
 		var d recorded
 		if err := remarshal(e.Data, &d); err != nil {
@@ -67,24 +72,27 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 	case "Imported":
 		type imported struct {
-			IncidentID     string   `json:"incidentId"`
-			Number         int      `json:"number"`
-			Content        string   `json:"content"`
-			Sender         string   `json:"sender"`
-			SenderDetail   string   `json:"senderDetail"`
-			Receiver       string   `json:"receiver"`
-			ReceiverDetail string   `json:"receiverDetail"`
-			Medium         string   `json:"medium"`
-			Time           string   `json:"time"`
-			Triage         string   `json:"triage"`
-			Priority       string   `json:"priority"`
-			DivisionIDs    []string `json:"divisionIds"`
-			AuthorSub      *string  `json:"authorSub"`
-			LastEditorSub  *string  `json:"lastEditorSub"`
+			IncidentID     string      `json:"incidentId"`
+			Number         int         `json:"number"`
+			Content        string      `json:"content"`
+			Sender         string      `json:"sender"`
+			SenderDetail   string      `json:"senderDetail"`
+			Receiver       string      `json:"receiver"`
+			ReceiverDetail string      `json:"receiverDetail"`
+			Medium         string      `json:"medium"`
+			Time           time.Time   `json:"time"`
+			Triage         string      `json:"triage"`
+			Priority       string      `json:"priority"`
+			DivisionIDs    []uuid.UUID `json:"divisionIds"`
+			AuthorSub      *string     `json:"authorSub"`
+			LastEditorSub  *string     `json:"lastEditorSub"`
 		}
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
+		}
+		if d.DivisionIDs == nil {
+			d.DivisionIDs = []uuid.UUID{}
 		}
 		return exec(db, ctx, `
 			INSERT INTO rm_message
@@ -132,10 +140,10 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 	case "Triaged":
 		type triaged struct {
-			Triage      string   `json:"triage"`
-			Priority    string   `json:"priority"`
-			DivisionIDs []string `json:"divisionIds"`
-			TriagedBy   string   `json:"triagedBy"`
+			Triage      string      `json:"triage"`
+			Priority    string      `json:"priority"`
+			DivisionIDs []uuid.UUID `json:"divisionIds"`
+			TriagedBy   string      `json:"triagedBy"`
 		}
 		var d triaged
 		if err := remarshal(e.Data, &d); err != nil {

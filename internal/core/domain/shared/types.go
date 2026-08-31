@@ -27,6 +27,18 @@ func (id LayerID) String() string    { return uuid.UUID(id).String() }
 func (id FeatureID) String() string  { return uuid.UUID(id).String() }
 func (id DivisionID) String() string { return uuid.UUID(id).String() }
 
+func (id IncidentID) MarshalText() ([]byte, error)  { return uuid.UUID(id).MarshalText() }
+func (id MessageID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
+func (id LayerID) MarshalText() ([]byte, error)     { return uuid.UUID(id).MarshalText() }
+func (id FeatureID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
+func (id DivisionID) MarshalText() ([]byte, error)  { return uuid.UUID(id).MarshalText() }
+
+func (id *IncidentID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *MessageID) UnmarshalText(b []byte) error  { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *LayerID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *FeatureID) UnmarshalText(b []byte) error  { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *DivisionID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
+
 func ParseIncidentID(s string) (IncidentID, error) {
 	id, err := uuid.Parse(s)
 	return IncidentID(id), err

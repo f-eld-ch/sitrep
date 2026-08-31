@@ -1,6 +1,10 @@
 package layer
 
-import "github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+import (
+	"time"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+)
 
 type Created struct {
 	IncidentID shared.IncidentID `json:"incidentId"`
@@ -18,5 +22,5 @@ type Removed struct {
 type Imported struct {
 	IncidentID shared.IncidentID `json:"incidentId"`
 	Name       string            `json:"name"`
-	DeletedAt  *interface{}      `json:"deletedAt,omitempty"`
+	DeletedAt  *time.Time        `json:"deletedAt,omitempty"`
 }

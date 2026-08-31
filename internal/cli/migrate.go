@@ -74,7 +74,7 @@ func gooseProvider(db *sql.DB) (*goose.Provider, error) {
 		goose.DialectPostgres,
 		db,
 		migrations.FS,
-		goose.WithVerbose(true),
+		goose.WithGoMigrations(migrations.GoMigrations()...),
 		goose.WithVerbose(true),
 	)
 }
@@ -144,9 +144,18 @@ func runMigratePreflight(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	defer db.Close()
-	// The real preflight checks will be defined in the importer Go migration;
-	// this runs a read-only validation pass without applying anything.
-	slog.Info("migrate preflight: import checks to be implemented with the importer migration")
-	_ = db
+
+	warnings, err := migrations.RunPreflight(cmd.Context(), db)
+	for _, w := range warnings {
+		slog.Warn("preflight", "finding", w)
+	}
+	if err != nil {
+		return fmt.Errorf("preflight failed: %w", err)
+	}
+	if len(warnings) == 0 {
+		slog.Info("preflight: all checks passed — data is ready to import")
+	} else {
+		slog.Info("preflight: checks passed with warnings", "count", len(warnings))
+	}
 	return nil
 }
