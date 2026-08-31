@@ -120,6 +120,15 @@ func runServe(cmd *cobra.Command, _ []string) error {
 			pool.Close()
 			return err
 		}
+		oidcClient.WithUserUpserter(func(ctx context.Context, sub, email, name string) error {
+			_, err := pool.Exec(ctx,
+				`INSERT INTO users (sub, email, name)
+				 VALUES ($1, $2, $3)
+				 ON CONFLICT ON CONSTRAINT users_name_key
+				 DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()`,
+				sub, email, name)
+			return err
+		})
 		opts = append(opts, server.WithOidc(oidcClient))
 	} else {
 		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")

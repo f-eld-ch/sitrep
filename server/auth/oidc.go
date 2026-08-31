@@ -24,10 +24,20 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
+// UserUpserter persists an authenticated user's profile on login.
+// Called asynchronously from RequireLogin — errors are logged, not propagated.
+type UserUpserter func(ctx context.Context, sub, email, name string) error
+
 type OIDCClient struct {
 	rp           rp.RelyingParty
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
+	upsertUser   UserUpserter
+}
+
+// WithUserUpserter attaches a UserUpserter to the client.
+func (o *OIDCClient) WithUserUpserter(fn UserUpserter) {
+	o.upsertUser = fn
 }
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -331,6 +341,14 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		ctx := identity.WithActor(c.Request().Context(), actor)
 		c.SetRequest(c.Request().WithContext(ctx))
+
+		if o.upsertUser != nil {
+			go func() {
+				if err := o.upsertUser(context.WithoutCancel(ctx), actor.Sub, actor.Email, actor.Name); err != nil {
+					o.logger.ErrorContext(ctx, "failed to upsert user", "sub", actor.Sub, "error", err)
+				}
+			}()
+		}
 
 		span := trace.SpanFromContext(c.Request().Context())
 		span.SetAttributes(
