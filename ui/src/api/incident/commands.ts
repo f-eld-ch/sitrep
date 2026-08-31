@@ -7,7 +7,7 @@ import {
   GET_INCIDENTS,
   REOPEN_INCIDENT,
   UPDATE_INCIDENT,
-} from "./documents.next";
+} from "./documents";
 
 export interface CreateIncidentArgs {
   name: string;

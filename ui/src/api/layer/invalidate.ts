@@ -1,4 +1,4 @@
-import { GET_LAYERS } from "./documents.next";
+import { GET_LAYERS } from "./documents";
 
 type AfterLayerWriteEntry = { query: typeof GET_LAYERS; variables: { incidentId: string } };
 

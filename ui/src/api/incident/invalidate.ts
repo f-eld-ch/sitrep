@@ -1,4 +1,4 @@
-import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents.next";
+import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents";
 
 type AfterIncidentWriteEntry =
   | { query: typeof GET_INCIDENTS }

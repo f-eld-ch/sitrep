@@ -47,10 +47,9 @@ describe("toIncidentSummary", () => {
     expect(result.location.name).toBe("Sector 7");
   });
 
-  it("initialises divisions, journals and layers as empty arrays", () => {
+  it("initialises divisions and layers as empty arrays", () => {
     const result = toIncidentSummary(WIRE_SUMMARY);
     expect(result.divisions).toEqual([]);
-    expect(result.journals).toEqual([]);
     expect(result.layers).toEqual([]);
   });
 
@@ -82,11 +81,6 @@ describe("toIncidentDetails", () => {
       name: "Alpha",
       description: "Alpha division",
     });
-  });
-
-  it("returns empty journals array (journals removed from new schema)", () => {
-    const result = toIncidentDetails(WIRE_DETAILS);
-    expect(result.journals).toEqual([]);
   });
 
   it("sets deletedAt to null (not in new schema)", () => {

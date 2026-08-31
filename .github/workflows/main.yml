@@ -47,19 +47,6 @@ jobs:
     with:
       build: true
   
-  # Run hasura build in parallel with UI build as it doesn't depend on UI artifacts
-  hasura-build:
-    name: "Build and Push Hasura Image"
-    permissions:
-      actions: write
-      contents: read
-      packages: write
-      id-token: write
-    uses: ./.github/workflows/hasura-workflow.yml
-    with:
-      push: ${{ github.event_name != 'pull_request' }}
-    secrets: inherit
-  
   docker-build:
     name: "Build and Push Sitrep Image"
     needs: ui-build  # Only depends on UI, not on hasura

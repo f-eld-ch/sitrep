@@ -1,7 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
-import type { Incident, Journal } from "types";
-import { IncidentContext, UserContext } from "utils";
+import { UserContext } from "utils";
 import { vi } from "vitest";
 import Navbar from "./Navbar";
 
@@ -97,30 +96,6 @@ describe("Navbar Component", () => {
       expect(navbarMenu).toHaveClass("is-active");
     });
 
-    it("renders translated journal feed label", () => {
-      render(
-        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
-          <IncidentContext.Provider
-            value={{
-              state: {
-                incident: { id: "incident-id", name: "Incident Name" } as Incident,
-                journal: { id: "journal-id", name: "Journal Name" } as Journal,
-              },
-              dispatch: mockDispatch,
-            }}
-          >
-            <MemoryRouter initialEntries={["/incident/incident-id/journal/journal-id"]}>
-              <Routes>
-                <Route path="/incident/:incidentId/journal/:journalId" element={<Navbar />} />
-              </Routes>
-            </MemoryRouter>
-          </IncidentContext.Provider>
-        </UserContext.Provider>,
-      );
-
-      expect(screen.getByText("journalFeed")).toBeInTheDocument();
-      expect(screen.getByText(/journal Journal Name/)).toBeInTheDocument();
-    });
   });
 
   describe("User Context", () => {

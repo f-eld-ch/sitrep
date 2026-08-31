@@ -36,7 +36,6 @@ const baseIncident: Incident = {
   deletedAt: null,
   closedAt: null,
   divisions: [],
-  journals: [],
   layers: [],
 };
 

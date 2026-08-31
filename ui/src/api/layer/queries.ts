@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { Layer } from "types/layer";
 import type { QueryResult } from "../result";
-import { GET_LAYERS } from "./documents.next";
+import { GET_LAYERS } from "./documents";
 import { toLayer } from "./mapper";
 
 export interface LayersData {

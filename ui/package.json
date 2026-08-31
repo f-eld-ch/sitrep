@@ -22,8 +22,6 @@
     "typecheck": "tsc --noEmit",
     "codegen": "graphql-codegen --config codegen.ts",
     "codegen:check": "graphql-codegen --config codegen.ts --check",
-    "codegen:next": "graphql-codegen --config codegen.next.ts",
-    "codegen:next:check": "graphql-codegen --config codegen.next.ts --check",
     "codegen:schema": "graphql-codegen --config codegen.schema.ts"
   },
   "dependencies": {

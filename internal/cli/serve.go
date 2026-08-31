@@ -128,7 +128,6 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		server.WithApiV2(incidentSvc, messageSvc, layerSvc, featureSvc, queries,
 			viper.GetBool("graphql_introspection")),
 		server.WithVersion(Version, Sha),
-		server.WithApiV1Proxy(viper.GetString("hasura_backend")),
 	)
 
 	srv := server.NewServer(opts...)

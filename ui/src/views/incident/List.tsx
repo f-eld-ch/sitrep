@@ -146,7 +146,6 @@ export function IncidentCard(props: {
           onClick={() => {
             navigate(`../${props.incident.id}/journal/edit`);
             dispatch({ type: "SET_INCIDENT", payload: props.incident });
-            dispatch({ type: "SET_JOURNAL", payload: null });
           }}
         >
           <span className="icon">

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -14,9 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	graph "github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
@@ -65,36 +62,6 @@ func WithOidc(oidcClient *auth.OIDCClient) Option {
 	}
 }
 
-func WithApiV1Proxy(upstream string) Option {
-	return func(s *Server) error {
-		// Protect API routes
-		apiv1 := s.router.Group("/v1/graphql")
-		apiv1.Use(s.RequireLogin)
-		hasura, _ := url.Parse(upstream)
-
-		client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
-		apiv1.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-			// add the id token to the request to hasura
-			return func(c echo.Context) error {
-				idToken, ok := c.Get("id_token").(string)
-				if !ok || idToken == "" {
-					return echo.NewHTTPError(http.StatusUnauthorized, "missing id_token")
-				}
-				c.Request().Header.Set("Authorization", "Bearer "+idToken)
-				return next(c)
-			}
-		})
-
-		apiv1.Use(middleware.ProxyWithConfig(
-			middleware.ProxyConfig{
-				Transport: client.Transport,
-				Balancer:  middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{{URL: hasura}}),
-			},
-		))
-
-		return nil
-	}
-}
 
 // complexityBudget caps the total cost of a single GraphQL operation.
 // Budget reasoning: a realistic dashboard query fetches ~10 incidents with their

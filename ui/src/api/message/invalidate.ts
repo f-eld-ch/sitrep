@@ -1,4 +1,4 @@
-import { GET_INCIDENT_MESSAGES } from "./documents.next";
+import { GET_INCIDENT_MESSAGES } from "./documents";
 
 /**
  * Refetch queries to run after any message write for a given incident.

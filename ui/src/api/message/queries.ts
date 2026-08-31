@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client/react";
 import type { Division, Message } from "types";
 import type { QueryResult } from "../result";
 import { toDivision, toMessage } from "./mapper";
-import { GET_INCIDENT_MESSAGES, GET_MESSAGE_FOR_TRIAGE } from "./documents.next";
+import { GET_INCIDENT_MESSAGES, GET_MESSAGE_FOR_TRIAGE } from "./documents";
 
 export interface IncidentMessagesData {
   messages: Message[];

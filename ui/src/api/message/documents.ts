@@ -1,22 +1,45 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
+  CreateMessageMutation,
+  CreateMessageMutationVariables,
+  GetIncidentMessagesQuery,
+  GetIncidentMessagesQueryVariables,
   GetMessageForTriageQuery,
   GetMessageForTriageQueryVariables,
-  GetMessagesQuery,
-  GetMessagesQueryVariables,
-  InsertMessageMutation,
-  InsertMessageMutationVariables,
-  SaveMessageTriageMutation,
-  SaveMessageTriageMutationVariables,
+  TriageMessageMutation,
+  TriageMessageMutationVariables,
   UpdateMessageMutation,
   UpdateMessageMutationVariables,
-} from "gql";
+} from "gql/next";
 
-const GET_MESSAGES: TypedDocumentNode<GetMessagesQuery, GetMessagesQueryVariables> = gql`
-  query GetMessages($journalId: uuid!) {
-    journalsByPk(id: $journalId) {
-      incident {
+// ── Queries ───────────────────────────────────────────────────────────────────
+
+export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
+  GetIncidentMessagesQuery,
+  GetIncidentMessagesQueryVariables
+> = gql`
+  query GetIncidentMessages($incidentId: ID!) {
+    incident(id: $incidentId) {
+      id
+      divisions {
         id
+        name
+        description
+      }
+      messages {
+        id
+        number
+        sender
+        receiver
+        senderDetail
+        receiverDetail
+        content
+        medium
+        time
+        createdAt
+        updatedAt
+        triage
+        priority
         divisions {
           id
           name
@@ -24,201 +47,164 @@ const GET_MESSAGES: TypedDocumentNode<GetMessagesQuery, GetMessagesQueryVariable
         }
       }
     }
-    messages(
-      where: { journal: { id: { _eq: $journalId } }, deletedAt: { _isNull: true } }
-      orderBy: { time: DESC }
-    ) {
-      id
-      content
-      sender
-      receiver
-      senderDetail
-      receiverDetail
-      medium: mediumId
-      time
-      createdAt
-      updatedAt
-      deletedAt
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
-      triageId
-      priorityId
-    }
   }
 `;
 
-const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
+export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
   GetMessageForTriageQuery,
   GetMessageForTriageQueryVariables
 > = gql`
-  query GetMessageForTriage($messageId: uuid!) {
-    messagesByPk(id: $messageId) {
+  query GetMessageForTriage($messageId: ID!, $incidentId: ID!) {
+    message(id: $messageId) {
       id
-      content
+      number
       sender
       receiver
       senderDetail
       receiverDetail
-      medium: mediumId
+      content
+      medium
       time
-      divisions {
-        division {
-          id
-          name
-          description
-        }
-      }
       createdAt
       updatedAt
-      deletedAt
-      triageId
-      priorityId
-      journal {
-        incident {
-          divisions {
-            id
-            name
-            description
-          }
-        }
+      triage
+      priority
+      divisions {
+        id
+        name
+        description
+      }
+    }
+    incident(id: $incidentId) {
+      divisions {
+        id
+        name
+        description
       }
     }
   }
 `;
 
-const INSERT_MESSAGE: TypedDocumentNode<InsertMessageMutation, InsertMessageMutationVariables> =
-  gql`
-    mutation InsertMessage(
-      $journalId: uuid
-      $sender: String
-      $receiver: String
-      $time: timestamptz
-      $content: String
-      $receiverDetail: String
-      $senderDetail: String
-      $medium: MediumEnum
-    ) {
-      insertMessagesOne(
-        object: {
-          content: $content
-          journalId: $journalId
-          receiver: $receiver
-          sender: $sender
-          time: $time
-          mediumId: $medium
-          senderDetail: $senderDetail
-          receiverDetail: $receiverDetail
-        }
-      ) {
-        id
-        createdAt
-        content
-        receiver
-        sender
-        senderDetail
-        receiverDetail
-        medium: mediumId
-        time
-        updatedAt
-        triageId
-        priorityId
-        divisions {
-          division {
-            name
-          }
-        }
-        deletedAt
-      }
-    }
-  `;
+// ── Mutations ─────────────────────────────────────────────────────────────────
 
-const UPDATE_MESSAGE: TypedDocumentNode<UpdateMessageMutation, UpdateMessageMutationVariables> =
-  gql`
-    mutation UpdateMessage(
-      $messageId: uuid!
-      $content: String
-      $sender: String
-      $receiver: String
-      $time: timestamptz
-      $receiverDetail: String
-      $senderDetail: String
-      $medium: MediumEnum
-    ) {
-      updateMessagesByPk(
-        pkColumns: { id: $messageId }
-        _set: {
-          content: $content
-          sender: $sender
-          receiver: $receiver
-          time: $time
-          mediumId: $medium
-          senderDetail: $senderDetail
-          receiverDetail: $receiverDetail
-        }
-      ) {
-        id
-        createdAt
-        content
-        receiver
-        sender
-        senderDetail
-        receiverDetail
-        medium: mediumId
-        time
-        updatedAt
-        triageId
-        priorityId
-        divisions {
-          division {
-            name
-          }
-        }
-        deletedAt
-      }
-    }
-  `;
-
-const SAVE_MESSAGE_TRIAGE: TypedDocumentNode<
-  SaveMessageTriageMutation,
-  SaveMessageTriageMutationVariables
+export const CREATE_MESSAGE: TypedDocumentNode<
+  CreateMessageMutation,
+  CreateMessageMutationVariables
 > = gql`
-  mutation SaveMessageTriage(
-    $messageId: uuid!
-    $priority: PriorityStatusEnum
-    $triage: TriageStatusEnum
-    $messageDivisions: [MessageDivisionInsertInput!]!
+  mutation CreateMessage(
+    $incidentId: ID!
+    $sender: String!
+    $receiver: String!
+    $senderDetail: String!
+    $receiverDetail: String!
+    $content: String!
+    $medium: Medium!
+    $time: DateTime
   ) {
-    deleteMessageDivision(where: { messageId: { _eq: $messageId } }) {
-      affectedRows
-    }
-    insertMessageDivision(objects: $messageDivisions) {
-      affectedRows
-    }
-    updateMessagesByPk(
-      pkColumns: { id: $messageId }
-      _set: { priorityId: $priority, triageId: $triage }
+    createMessage(
+      input: {
+        incidentId: $incidentId
+        sender: $sender
+        receiver: $receiver
+        senderDetail: $senderDetail
+        receiverDetail: $receiverDetail
+        content: $content
+        medium: $medium
+        time: $time
+      }
     ) {
       id
+      number
+      sender
+      receiver
+      senderDetail
+      receiverDetail
+      content
+      medium
+      time
+      createdAt
+      updatedAt
+      triage
+      priority
       divisions {
-        division {
-          name
-        }
+        id
+        name
+        description
       }
-      triageId
-      priorityId
     }
   }
 `;
 
-export {
-  GET_MESSAGE_FOR_TRIAGE,
-  GET_MESSAGES,
-  INSERT_MESSAGE,
-  SAVE_MESSAGE_TRIAGE,
-  UPDATE_MESSAGE,
-};
+export const UPDATE_MESSAGE: TypedDocumentNode<
+  UpdateMessageMutation,
+  UpdateMessageMutationVariables
+> = gql`
+  mutation UpdateMessage(
+    $id: ID!
+    $sender: String
+    $receiver: String
+    $senderDetail: String
+    $receiverDetail: String
+    $content: String
+    $medium: Medium
+    $time: DateTime
+  ) {
+    updateMessage(
+      id: $id
+      input: {
+        sender: $sender
+        receiver: $receiver
+        senderDetail: $senderDetail
+        receiverDetail: $receiverDetail
+        content: $content
+        medium: $medium
+        time: $time
+      }
+    ) {
+      id
+      number
+      sender
+      receiver
+      senderDetail
+      receiverDetail
+      content
+      medium
+      time
+      createdAt
+      updatedAt
+      triage
+      priority
+      divisions {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+export const TRIAGE_MESSAGE: TypedDocumentNode<
+  TriageMessageMutation,
+  TriageMessageMutationVariables
+> = gql`
+  mutation TriageMessage(
+    $id: ID!
+    $triage: TriageStatus!
+    $priority: PriorityStatus!
+    $divisionIds: [ID!]!
+  ) {
+    triageMessage(
+      id: $id
+      input: { triage: $triage, priority: $priority, divisionIds: $divisionIds }
+    ) {
+      id
+      triage
+      priority
+      divisions {
+        id
+        name
+        description
+      }
+    }
+  }
+`;

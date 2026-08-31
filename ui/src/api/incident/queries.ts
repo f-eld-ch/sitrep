@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import type { Incident } from "types";
 import type { QueryResult } from "../result";
-import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents.next";
+import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents";
 import { toIncidentDetails, toIncidentSummary } from "./mapper";
 
 export interface IncidentsData {

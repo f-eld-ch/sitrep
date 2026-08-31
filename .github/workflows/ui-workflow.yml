@@ -45,12 +45,8 @@ jobs:
         run: yarn typecheck
         working-directory: ui
 
-      - name: Validate generated types match Hasura schema
+      - name: Validate generated types match API schema
         run: yarn codegen:check
-        working-directory: ui
-
-      - name: Validate UI documents against future API schema
-        run: yarn codegen:next:check
         working-directory: ui
 
       - name: Run ui tests

@@ -26,7 +26,6 @@ export function toIncidentSummary(w: WireIncidentSummary): Incident {
     closedAt: toOptionalDate(w.closedAt),
     location: toLocation(w.location),
     divisions: [],
-    journals: [],
     layers: [],
   };
 }
@@ -45,7 +44,6 @@ export function toIncidentDetails(w: WireIncidentDetail): Incident {
       name: d.name,
       description: d.description,
     })),
-    journals: [],
     layers: [],
   };
 }

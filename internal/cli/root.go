@@ -28,17 +28,14 @@ func init() {
 		_ = viper.BindEnv("oidc_client_secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET")
 		_ = viper.BindEnv("oidc_redirect_url", "OIDC_REDIRECT_URL", "OAUTH2_PROXY_REDIRECT_URL")
 		_ = viper.BindEnv("cookie_key", "COOKIE_KEY", "OAUTH2_PROXY_COOKIE_SECRET", "OIDC_COOKIE_KEY")
-		_ = viper.BindEnv("hasura_backend", "HASURA_BACKEND")
 		_ = viper.BindEnv("server_port", "SERVER_PORT")
 		_ = viper.BindEnv("database_url", "DATABASE_URL")
-		viper.SetDefault("hasura_backend", "http://localhost:8080")
 		viper.SetDefault("server_port", 4180)
 	})
 
 	// Persistent flags — visible on every subcommand.
 	pf := rootCmd.PersistentFlags()
 	pf.Uint("port", 4180, "Server port")
-	pf.String("hasura-backend", "http://localhost:8080", "Hasura backend URL")
 	pf.String("oidc-client-id", "", "OIDC client ID")
 	pf.String("oidc-issuer", "", "OIDC issuer URL")
 	pf.String("oidc-client-secret", "", "OIDC client secret")
@@ -48,7 +45,6 @@ func init() {
 
 	// Bind to the same viper keys the existing BindEnv aliases already cover.
 	_ = viper.BindPFlag("server_port", pf.Lookup("port"))
-	_ = viper.BindPFlag("hasura_backend", pf.Lookup("hasura-backend"))
 	_ = viper.BindPFlag("oidc_client_id", pf.Lookup("oidc-client-id"))
 	_ = viper.BindPFlag("oidc_issuer", pf.Lookup("oidc-issuer"))
 	_ = viper.BindPFlag("oidc_client_secret", pf.Lookup("oidc-client-secret"))

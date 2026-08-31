@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client/react";
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import type { CommandHook, CommandState } from "../result";
-import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents.next";
+import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
 
 export interface CreateMessageArgs {
   incidentId: string;

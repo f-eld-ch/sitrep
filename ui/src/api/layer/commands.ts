@@ -8,7 +8,7 @@ import {
   DELETE_FEATURE,
   GET_LAYERS,
   MODIFY_FEATURE,
-} from "./documents.next";
+} from "./documents";
 
 export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
   return {
