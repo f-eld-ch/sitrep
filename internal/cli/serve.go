@@ -34,6 +34,7 @@ var serveCmd = &cobra.Command{
 
 func runServe(cmd *cobra.Command, _ []string) error {
 	ctx := cmd.Context()
+	slog.InfoContext(ctx, "starting sitrep", "version", Version, "sha", Sha)
 
 	shutdown, err := setupOpenTelemetry(ctx)
 	if err != nil {
