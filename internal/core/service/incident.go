@@ -150,7 +150,7 @@ func (s *IncidentService) UpdateIncident(
 			}
 		}
 		if location != nil {
-			if err := inc.ChangeLocation(*location, actor.Sub, at); err != nil {
+			if err := inc.ChangeLocation(location, actor.Sub, at); err != nil {
 				return err
 			}
 		}

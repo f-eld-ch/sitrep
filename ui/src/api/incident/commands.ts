@@ -85,7 +85,7 @@ export function useUpdateIncident(): CommandHook<UpdateIncidentArgs> {
       variables: {
         id: args.incidentId,
         name: args.name,
-        location: args.location || undefined,
+        location: args.location ?? undefined,
         divisions: args.divisions,
       },
       // Apollo normalizes Incident:${id} — list and detail queries update automatically.

@@ -36,8 +36,9 @@ type Renamed struct {
 	Name string `json:"name"`
 }
 
+// LocationChanged carries the new location. A nil Location clears the field.
 type LocationChanged struct {
-	Location LocationData `json:"location"`
+	Location *LocationData `json:"location,omitempty"`
 }
 
 // DivisionAdded fires for each new division in a set-replacement.

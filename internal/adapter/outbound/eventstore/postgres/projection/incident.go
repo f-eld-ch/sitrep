@@ -29,7 +29,7 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 func (h *IncidentHandler) Name() string { return "rm_incident" }
 func (h *IncidentHandler) Version() int { return 1 }
 func (h *IncidentHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident CASCADE`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident`)
 	return err
 }
 

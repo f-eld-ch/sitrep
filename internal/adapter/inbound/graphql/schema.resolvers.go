@@ -85,8 +85,12 @@ func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input 
 	}
 
 	var loc *incident.LocationData
-	if input.Location != nil && *input.Location != "" {
-		loc = &incident.LocationData{Name: *input.Location}
+	if input.Location != nil {
+		if *input.Location != "" {
+			loc = &incident.LocationData{Name: *input.Location}
+		} else {
+			loc = &incident.LocationData{} // empty = clear location
+		}
 	}
 
 	var divisions []incident.DivisionData

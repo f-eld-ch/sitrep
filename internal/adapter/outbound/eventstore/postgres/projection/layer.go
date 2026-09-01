@@ -136,6 +136,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+		// Only update when the stored geometry differs — makes replay idempotent.
 		err := exec(tx, ctx, `
 			UPDATE rm_layer_features
 			SET geojson = jsonb_set(
@@ -148,7 +149,10 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			      $2::jsonb
 			    ),
 			    revision = revision + 1
-			WHERE geojson @> jsonb_build_object('features', jsonb_build_array(jsonb_build_object('id', $1::text)))`,
+			WHERE geojson @> jsonb_build_object('features', jsonb_build_array(jsonb_build_object('id', $1::text)))
+			  AND (SELECT (f->>'id' = $1::text AND f->'geometry' != $2::jsonb)
+			       FROM jsonb_array_elements(geojson->'features') AS f
+			       WHERE f->>'id' = $1::text LIMIT 1)`,
 			id.String(), d.Geometry)
 		return err
 
@@ -160,6 +164,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+		// Only update when the stored properties differ — makes replay idempotent.
 		err := exec(tx, ctx, `
 			UPDATE rm_layer_features
 			SET geojson = jsonb_set(
@@ -172,7 +177,10 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			      $2::jsonb
 			    ),
 			    revision = revision + 1
-			WHERE geojson @> jsonb_build_object('features', jsonb_build_array(jsonb_build_object('id', $1::text)))`,
+			WHERE geojson @> jsonb_build_object('features', jsonb_build_array(jsonb_build_object('id', $1::text)))
+			  AND (SELECT (f->>'id' = $1::text AND f->'properties' != $2::jsonb)
+			       FROM jsonb_array_elements(geojson->'features') AS f
+			       WHERE f->>'id' = $1::text LIMIT 1)`,
 			id.String(), d.Properties)
 		return err
 

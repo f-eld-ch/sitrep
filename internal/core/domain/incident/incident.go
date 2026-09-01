@@ -125,11 +125,17 @@ func (i *Incident) Rename(name, actor string, at time.Time) error {
 }
 
 // ChangeLocation updates the incident's location.
-func (i *Incident) ChangeLocation(loc LocationData, actor string, at time.Time) error {
+// Pass nil or a zero-value LocationData to clear the location.
+func (i *Incident) ChangeLocation(loc *LocationData, actor string, at time.Time) error {
 	if err := i.requireOpen(); err != nil {
 		return err
 	}
-	eventsourcing.TrackChange(i, LocationChanged{Location: loc}, at, baseMeta(actor))
+	// Zero-value pointer is treated the same as nil (clear).
+	var payload *LocationData
+	if loc != nil && (loc.Name != "" || loc.Coordinates != nil) {
+		payload = loc
+	}
+	eventsourcing.TrackChange(i, LocationChanged{Location: payload}, at, baseMeta(actor))
 	return nil
 }
 
@@ -218,7 +224,11 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 	case Renamed:
 		i.name = d.Name
 	case LocationChanged:
-		i.location = &Location{Name: d.Location.Name, Coordinates: d.Location.Coordinates}
+		if d.Location != nil {
+			i.location = &Location{Name: d.Location.Name, Coordinates: d.Location.Coordinates}
+		} else {
+			i.location = nil
+		}
 	case DivisionAdded:
 		i.divisions[d.Division.ID] = Division{
 			ID:          d.Division.ID,

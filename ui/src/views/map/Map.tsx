@@ -402,13 +402,14 @@ function Draw() {
 
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
+      const isPropertyOnly = e.action === "featureDetail";
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
         void modifyFeature({
           id: String(feature.id ?? ""),
-          geometry: feature.geometry,
-          properties: feature.properties,
+          geometry: isPropertyOnly ? undefined : feature.geometry,
+          properties: isPropertyOnly ? feature.properties : undefined,
           incidentId: incidentId ?? "",
         });
       }

@@ -35,8 +35,8 @@ export interface AddFeatureArgs {
 
 export interface ModifyFeatureArgs {
   id: string;
-  geometry: unknown;
-  properties: unknown;
+  geometry?: unknown;
+  properties?: unknown;
   incidentId: string;
 }
 

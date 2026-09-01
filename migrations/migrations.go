@@ -13,10 +13,10 @@ var FS embed.FS
 // GoMigrations returns the set of Go migrations to pass to goose.WithGoMigrations.
 // Each entry must have a version that does not clash with any SQL migration file.
 func GoMigrations() []*goose.Migration {
-	return []*goose.Migration{
-		goose.NewGoMigration(4,
-			&goose.GoFunc{RunTx: upImportLegacyData},
-			&goose.GoFunc{RunTx: downImportLegacyData},
-		),
-	}
+	m := goose.NewGoMigration(4,
+		&goose.GoFunc{RunTx: upImportLegacyData},
+		&goose.GoFunc{RunTx: downImportLegacyData},
+	)
+	m.Source = "00004_import.go"
+	return []*goose.Migration{m}
 }
