@@ -132,6 +132,8 @@ input LayerInput {
 }
 
 input DivisionInput {
+  """Omit for new divisions; supply the existing ID to preserve assignments."""
+  id: ID
   name: String!
   description: String!
 }

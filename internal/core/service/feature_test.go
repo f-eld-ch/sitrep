@@ -18,8 +18,8 @@ func TestFeatureService_PlaceMoveRestyle(t *testing.T) {
 	factory, store := testStack(t)
 	incidents, _, layers, features := repos(store)
 	incidentSvc := factory.IncidentService(incidents, layers)
-	layerSvc := factory.LayerService(layers)
-	featureSvc := factory.FeatureService(features)
+	layerSvc := factory.LayerService(layers, incidents)
+	featureSvc := factory.FeatureService(features, incidents, layers)
 
 	res, err := incidentSvc.CreateIncident(ctx(), "Lagebild", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
@@ -54,8 +54,8 @@ func TestFeatureService_PlaceMoveRestyle(t *testing.T) {
 
 func TestFeatureService_RemoveUnknown(t *testing.T) {
 	factory, store := testStack(t)
-	_, _, _, features := repos(store)
-	featureSvc := factory.FeatureService(features)
+	incidents, _, layers, features := repos(store)
+	featureSvc := factory.FeatureService(features, incidents, layers)
 
 	err := featureSvc.RemoveFeature(ctx(), shared.FeatureID(newID()), testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)
@@ -63,8 +63,8 @@ func TestFeatureService_RemoveUnknown(t *testing.T) {
 
 func TestFeatureService_ModifyUnknown(t *testing.T) {
 	factory, store := testStack(t)
-	_, _, _, features := repos(store)
-	featureSvc := factory.FeatureService(features)
+	incidents, _, layers, features := repos(store)
+	featureSvc := factory.FeatureService(features, incidents, layers)
 
 	err := featureSvc.ModifyFeature(ctx(), shared.FeatureID(newID()), testGeometry, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)

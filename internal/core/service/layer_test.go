@@ -13,7 +13,7 @@ func TestLayerService_CreateAndRename(t *testing.T) {
 	factory, store := testStack(t)
 	incidents, _, layers, _ := repos(store)
 	incidentSvc := factory.IncidentService(incidents, layers)
-	layerSvc := factory.LayerService(layers)
+	layerSvc := factory.LayerService(layers, incidents)
 
 	res, err := incidentSvc.CreateIncident(ctx(), "Lagebild", nil, nil, nil, testActor)
 	require.NoError(t, err)
@@ -30,7 +30,7 @@ func TestLayerService_Remove(t *testing.T) {
 		factory, store := testStack(t)
 		incidents, _, layers, _ := repos(store)
 		incidentSvc := factory.IncidentService(incidents, layers)
-		layerSvc := factory.LayerService(layers)
+		layerSvc := factory.LayerService(layers, incidents)
 
 		res, _ := incidentSvc.CreateIncident(ctx(), "Lagebild", nil, nil, nil, testActor)
 		layerID, err := layerSvc.CreateLayer(ctx(), res.IncidentID, "Temporär", testActor)
@@ -41,8 +41,8 @@ func TestLayerService_Remove(t *testing.T) {
 
 	t.Run("remove unknown layer returns not-found", func(t *testing.T) {
 		factory, store := testStack(t)
-		_, _, layers, _ := repos(store)
-		layerSvc := factory.LayerService(layers)
+		incidents, _, layers, _ := repos(store)
+		layerSvc := factory.LayerService(layers, incidents)
 
 		err := layerSvc.RemoveLayer(ctx(), shared.LayerID(newID()), testActor)
 		assert.ErrorIs(t, err, shared.ErrNotFound)

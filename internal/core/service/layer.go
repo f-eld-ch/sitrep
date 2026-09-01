@@ -17,23 +17,25 @@ import (
 
 // LayerService handles write-side operations for the Layer aggregate.
 type LayerService struct {
-	tx       outbound.Transactor
-	repo     outbound.LayerRepository
-	clock    outbound.Clock
-	ids      outbound.IDs
-	notifier outbound.EventNotifier
-	tracer   trace.Tracer
+	tx        outbound.Transactor
+	repo      outbound.LayerRepository
+	incidents outbound.IncidentRepository
+	clock     outbound.Clock
+	ids       outbound.IDs
+	notifier  outbound.EventNotifier
+	tracer    trace.Tracer
 }
 
 func NewLayerService(
 	tx outbound.Transactor,
 	repo outbound.LayerRepository,
+	incidents outbound.IncidentRepository,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *LayerService {
 	return &LayerService{
-		tx: tx, repo: repo, clock: clock, ids: ids, notifier: notifier,
+		tx: tx, repo: repo, incidents: incidents, clock: clock, ids: ids, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -56,11 +58,18 @@ func (s *LayerService) CreateLayer(
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		inc, err := s.incidents.Load(ctx, incidentID)
+		if err != nil {
+			return err
+		}
+		if !inc.IsOpen() {
+			return shared.ErrIncidentNotOpen
+		}
 		l := layer.New(layerID)
 		if err := l.Create(incidentID, name, actor.Sub, at); err != nil {
 			return err
 		}
-		_, err := s.repo.Save(ctx, l)
+		_, err = s.repo.Save(ctx, l)
 		return err
 	})
 	if err != nil {

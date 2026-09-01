@@ -15,7 +15,7 @@ var _ outbound.MessageCounter = (*MessageCounter)(nil)
 
 // MessageCounter uses a Postgres advisory-locked counter row so that message
 // numbers are gapless and monotonic per incident even under concurrent writers.
-// It must run within a TransaPostgreSQLctor.WithinTx transaction — TxFromCtx returns an
+// It must run within a Transactor.WithinTx transaction — TxFromCtx returns an
 // error if called outside one.
 type MessageCounter struct{}
 

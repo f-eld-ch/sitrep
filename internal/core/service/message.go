@@ -92,7 +92,7 @@ func (s *MessageService) RecordMessage(
 		if _, err = s.repo.Save(ctx, msg); err != nil {
 			return err
 		}
-		state = messageToState(msg, at, at)
+		state = messageToState(msg, at)
 		return nil
 	})
 	if err != nil {
@@ -134,8 +134,7 @@ func (s *MessageService) CorrectMessage(
 		if _, err = s.repo.Save(ctx, msg); err != nil {
 			return err
 		}
-		// createdAt unknown from aggregate; use at as a safe approximation for updatedAt
-		state = messageToState(msg, at, at)
+		state = messageToState(msg, at)
 		return nil
 	})
 	if err != nil {
@@ -169,13 +168,24 @@ func (s *MessageService) TriageMessage(
 		if err != nil {
 			return err
 		}
+		if len(divisionIDs) > 0 {
+			inc, err := s.incidents.Load(ctx, msg.IncidentID())
+			if err != nil {
+				return err
+			}
+			for _, divID := range divisionIDs {
+				if _, ok := inc.Division(divID); !ok {
+					return shared.ValidationError{Field: "divisionId", Message: "division does not belong to this incident"}
+				}
+			}
+		}
 		if err := msg.Triage(triage, priority, divisionIDs, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
 		if _, err = s.repo.Save(ctx, msg); err != nil {
 			return err
 		}
-		state = messageToState(msg, at, at)
+		state = messageToState(msg, at)
 		return nil
 	})
 	if err != nil {
@@ -218,8 +228,12 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 }
 
 // messageToState builds a MessageState DTO from the aggregate after a write.
-// createdAt and updatedAt come from the service clock (the aggregate does not track them).
-func messageToState(msg *message.Message, createdAt, updatedAt time.Time) inbound.MessageState {
+// updatedAt comes from the service clock; createdAt is read from the aggregate.
+func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageState {
+	createdAt := msg.CreatedAt()
+	if createdAt.IsZero() {
+		createdAt = updatedAt
+	}
 	return inbound.MessageState{
 		ID:             shared.MessageID(msg.Root().ID()),
 		IncidentID:     msg.IncidentID(),

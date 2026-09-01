@@ -115,15 +115,17 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		}
 		featureJSON := fmt.Sprintf(`{"type":"Feature","id":%q,"geometry":%s,"properties":%s}`,
 			id, d.Geometry, d.Properties)
+		// Remove any existing entry with this feature ID first (idempotent replay).
 		err := exec(tx, ctx, `
 			UPDATE rm_layer_features
 			SET geojson = jsonb_set(
 			      geojson, '{features}',
-			      (geojson->'features') || $1::jsonb
+			      (SELECT jsonb_agg(f) FROM jsonb_array_elements(geojson->'features') AS f
+			       WHERE f->>'id' != $1::text) || $2::jsonb
 			    ),
 			    revision = revision + 1
-			WHERE id = $2`,
-			featureJSON, d.LayerID)
+			WHERE id = $3`,
+			id.String(), featureJSON, d.LayerID)
 		return err
 
 	case "Moved":

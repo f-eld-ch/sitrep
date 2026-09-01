@@ -40,8 +40,10 @@ type Division struct {
 }
 
 type DivisionInput struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	// Omit for new divisions; supply the existing ID to preserve assignments.
+	ID          *string `json:"id,omitempty"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
 }
 
 type Feature struct {

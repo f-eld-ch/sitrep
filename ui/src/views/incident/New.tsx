@@ -64,6 +64,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           name,
           location,
           divisions: assignments.map((d) => ({
+            id: d.id || undefined,
             name: d.name,
             description: d.description,
           })),

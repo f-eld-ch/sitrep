@@ -277,8 +277,9 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 
 	case "DivisionRenamed":
 		var d struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
+			ID          string  `json:"id"`
+			Name        string  `json:"name"`
+			Description *string `json:"description,omitempty"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -289,6 +290,9 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 		}
 		if row := h.rows[id]; row != nil {
 			row.Name = d.Name
+			if d.Description != nil {
+				row.Description = *d.Description
+			}
 		}
 
 	case "DivisionRemoved":

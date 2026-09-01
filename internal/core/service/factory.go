@@ -57,11 +57,11 @@ func (f *Factory) MessageService(repo outbound.MessageRepository, incidents outb
 }
 
 // LayerService creates a ready-to-use LayerService.
-func (f *Factory) LayerService(repo outbound.LayerRepository) *LayerService {
-	return NewLayerService(f.tx, repo, f.clock, f.ids, f.notifier)
+func (f *Factory) LayerService(repo outbound.LayerRepository, incidents outbound.IncidentRepository) *LayerService {
+	return NewLayerService(f.tx, repo, incidents, f.clock, f.ids, f.notifier)
 }
 
 // FeatureService creates a ready-to-use FeatureService.
-func (f *Factory) FeatureService(repo outbound.FeatureRepository) *FeatureService {
-	return NewFeatureService(f.tx, repo, f.clock, f.notifier)
+func (f *Factory) FeatureService(repo outbound.FeatureRepository, incidents outbound.IncidentRepository, layers outbound.LayerRepository) *FeatureService {
+	return NewFeatureService(f.tx, repo, incidents, layers, f.clock, f.notifier)
 }

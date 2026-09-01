@@ -152,13 +152,13 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 		}
 	}
 
-	// Add or rename divisions.
+	// Add or update divisions.
 	for _, d := range desired {
 		existing, exists := i.divisions[d.ID]
 		if !exists {
 			eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
-		} else if existing.Name != d.Name {
-			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name}, at, meta)
+		} else if existing.Name != d.Name || existing.Description != d.Description {
+			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
 		}
 	}
 	return nil
@@ -226,6 +226,9 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 	case DivisionRenamed:
 		if div, ok := i.divisions[d.ID]; ok {
 			div.Name = d.Name
+			if d.Description != nil {
+				div.Description = *d.Description
+			}
 			i.divisions[d.ID] = div
 		}
 	case DivisionRemoved:

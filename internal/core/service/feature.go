@@ -18,21 +18,25 @@ import (
 // FeatureService handles write-side operations for the Feature aggregate.
 // The UI generates the feature UUID client-side for optimistic updates.
 type FeatureService struct {
-	tx       outbound.Transactor
-	repo     outbound.FeatureRepository
-	clock    outbound.Clock
-	notifier outbound.EventNotifier
-	tracer   trace.Tracer
+	tx        outbound.Transactor
+	repo      outbound.FeatureRepository
+	incidents outbound.IncidentRepository
+	layers    outbound.LayerRepository
+	clock     outbound.Clock
+	notifier  outbound.EventNotifier
+	tracer    trace.Tracer
 }
 
 func NewFeatureService(
 	tx outbound.Transactor,
 	repo outbound.FeatureRepository,
+	incidents outbound.IncidentRepository,
+	layers outbound.LayerRepository,
 	clock outbound.Clock,
 	notifier outbound.EventNotifier,
 ) *FeatureService {
 	return &FeatureService{
-		tx: tx, repo: repo, clock: clock, notifier: notifier,
+		tx: tx, repo: repo, incidents: incidents, layers: layers, clock: clock, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -57,11 +61,25 @@ func (s *FeatureService) PlaceFeature(
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		inc, err := s.incidents.Load(ctx, incidentID)
+		if err != nil {
+			return err
+		}
+		if !inc.IsOpen() {
+			return shared.ErrIncidentNotOpen
+		}
+		l, err := s.layers.Load(ctx, layerID)
+		if err != nil {
+			return err
+		}
+		if l.IncidentID() != incidentID {
+			return shared.ValidationError{Field: "layerId", Message: "layer does not belong to this incident"}
+		}
 		f := feature.New(id)
 		if err := f.Place(incidentID, layerID, geometry, properties, actor.Sub, at); err != nil {
 			return err
 		}
-		_, err := s.repo.Save(ctx, f)
+		_, err = s.repo.Save(ctx, f)
 		return err
 	})
 	if err != nil {

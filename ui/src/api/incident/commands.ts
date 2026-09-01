@@ -21,7 +21,7 @@ export interface UpdateIncidentArgs {
   incidentId: string;
   name: string;
   location: string;
-  divisions: { name: string; description: string }[];
+  divisions: { id?: string; name: string; description: string }[];
 }
 
 export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentId: string }> {

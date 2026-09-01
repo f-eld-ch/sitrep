@@ -27,6 +27,7 @@ type Message struct {
 	receiverDetail string
 	medium         shared.Medium
 	time           time.Time
+	createdAt      time.Time
 	triage         shared.TriageStatus
 	priority       shared.PriorityStatus
 	divisionIDs    []shared.DivisionID
@@ -58,6 +59,7 @@ func (m *Message) Receiver() string                      { return m.receiver }
 func (m *Message) ReceiverDetail() string                { return m.receiverDetail }
 func (m *Message) Medium() shared.Medium                 { return m.medium }
 func (m *Message) Time() time.Time                       { return m.time }
+func (m *Message) CreatedAt() time.Time                  { return m.createdAt }
 func (m *Message) TriageStatus() shared.TriageStatus     { return m.triage }
 func (m *Message) PriorityStatus() shared.PriorityStatus { return m.priority }
 func (m *Message) DivisionIDs() []shared.DivisionID      { return m.divisionIDs }
@@ -177,6 +179,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.receiverDetail = d.ReceiverDetail
 		m.medium = d.Medium
 		m.time = d.Time
+		m.createdAt = e.OccurredAt
 		m.authorSub = &d.AuthorSub
 	case Corrected:
 		if d.Content != nil {
@@ -218,6 +221,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.receiverDetail = d.ReceiverDetail
 		m.medium = d.Medium
 		m.time = d.Time
+		m.createdAt = d.RecordedAt
 		m.triage = d.Triage
 		m.priority = d.Priority
 		m.divisionIDs = d.DivisionIDs

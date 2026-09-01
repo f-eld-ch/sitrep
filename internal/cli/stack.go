@@ -102,8 +102,8 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 	return &stack{
 		IncidentSvc: factory.IncidentService(repos, layers),
 		MessageSvc:  factory.MessageService(messages, repos),
-		LayerSvc:    factory.LayerService(layers),
-		FeatureSvc:  factory.FeatureService(features),
+		LayerSvc:    factory.LayerService(layers, repos),
+		FeatureSvc:  factory.FeatureService(features, repos, layers),
 		Queries:     pgqueries.NewQueries(pool),
 		UserRepo:    pguser.NewRepository(pool),
 		Teardown: func() {
@@ -156,8 +156,8 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	return &stack{
 		IncidentSvc: factory.IncidentService(repos, layers),
 		MessageSvc:  factory.MessageService(messages, repos),
-		LayerSvc:    factory.LayerService(layers),
-		FeatureSvc:  factory.FeatureService(features),
+		LayerSvc:    factory.LayerService(layers, repos),
+		FeatureSvc:  factory.FeatureService(features, repos, layers),
 		Queries:     inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
 		UserRepo:    nil,
 		Teardown: func() {

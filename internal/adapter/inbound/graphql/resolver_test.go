@@ -48,8 +48,8 @@ func newTestStack(t *testing.T) *testStack {
 
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
 	messageSvc := factory.MessageService(msgRepo, incRepo)
-	layerSvc := factory.LayerService(layerRepo)
-	featureSvc := factory.FeatureService(featureRepo)
+	layerSvc := factory.LayerService(layerRepo, incRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
 
 	incHandler := projection.NewIncidentHandler()
 	divHandler := projection.NewIncidentDivisionHandler()

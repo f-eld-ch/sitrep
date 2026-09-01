@@ -52,11 +52,15 @@ func (s *layerStack) incidentSvc() inbound.IncidentService {
 }
 
 func (s *layerStack) layerSvc() inbound.LayerService {
-	return s.factory.LayerService(eventstore.NewLayerRepository(s.store))
+	return s.factory.LayerService(eventstore.NewLayerRepository(s.store), eventstore.NewIncidentRepository(s.store))
 }
 
 func (s *layerStack) featureSvc() inbound.FeatureService {
-	return s.factory.FeatureService(eventstore.NewFeatureRepository(s.store))
+	return s.factory.FeatureService(
+		eventstore.NewFeatureRepository(s.store),
+		eventstore.NewIncidentRepository(s.store),
+		eventstore.NewLayerRepository(s.store),
+	)
 }
 
 // ── Layer events ──────────────────────────────────────────────────────────────

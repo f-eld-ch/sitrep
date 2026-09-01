@@ -45,10 +45,12 @@ type DivisionAdded struct {
 	Division DivisionData `json:"division"`
 }
 
-// DivisionRenamed fires when an existing division is renamed.
+// DivisionRenamed fires when an existing division's name or description changes.
+// Description is a pointer for backward-compatible event replay (old events lack it).
 type DivisionRenamed struct {
-	ID   shared.DivisionID `json:"id"`
-	Name string            `json:"name"`
+	ID          shared.DivisionID `json:"id"`
+	Name        string            `json:"name"`
+	Description *string           `json:"description,omitempty"`
 }
 
 // DivisionRemoved fires when a division is removed in a set-replacement.

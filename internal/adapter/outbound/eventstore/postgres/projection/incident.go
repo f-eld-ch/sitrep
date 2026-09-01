@@ -213,12 +213,17 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 
 	case "DivisionRenamed":
 		type divisionRenamed struct {
-			ID   string `json:"id"`
-			Name string `json:"name"`
+			ID          string  `json:"id"`
+			Name        string  `json:"name"`
+			Description *string `json:"description,omitempty"`
 		}
 		var d divisionRenamed
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
+		}
+		if d.Description != nil {
+			return exec(db, ctx, `UPDATE rm_incident_division SET name = $1, description = $2 WHERE id = $3`,
+				d.Name, *d.Description, d.ID)
 		}
 		return exec(db, ctx, `UPDATE rm_incident_division SET name = $1 WHERE id = $2`, d.Name, d.ID)
 
