@@ -94,10 +94,10 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   return (
     <>
       {createState.error && (
-        <div className="notification is-danger">{createState.error.message}</div>
+        <div className="notification is-danger">{t(`errors.${createState.error.code}`)}</div>
       )}
       {updateState.error && (
-        <div className="notification is-danger">{updateState.error.message}</div>
+        <div className="notification is-danger">{t(`errors.${updateState.error.code}`)}</div>
       )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">

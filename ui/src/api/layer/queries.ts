@@ -1,6 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { Layer } from "types/layer";
+import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_LAYERS } from "./documents";
 import { toLayer } from "./mapper";
@@ -31,7 +32,7 @@ export function useLayersForIncident(incidentId: string | undefined): QueryResul
     return {
       status: "error",
       data: layers ? { layers } : undefined,
-      error: Object.assign(new Error(error.message), { code: "UNKNOWN" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: loading,
       refresh,
     };

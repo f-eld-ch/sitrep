@@ -161,5 +161,19 @@
       "name": "C suivi",
       "description": "Chef du suivi de la situation"
     }
+  },
+  "errors": {
+    "NOT_FOUND": "L'élément demandé est introuvable.",
+    "FORBIDDEN": "Vous n'avez pas la permission d'effectuer cette action.",
+    "INCIDENT_NOT_OPEN": "L'incident n'est pas ouvert.",
+    "INCIDENT_NOT_CLOSED": "L'incident doit être fermé avant d'effectuer cette action.",
+    "INCIDENT_DELETED": "L'incident a déjà été supprimé.",
+    "ALREADY_CLOSED": "L'élément est déjà fermé.",
+    "ALREADY_OPEN": "L'élément est déjà ouvert.",
+    "INVALID_INPUT": "La saisie fournie est invalide.",
+    "CONFLICT": "La demande n'a pas pu être complétée en raison d'un conflit.",
+    "INTERNAL_ERROR": "Une erreur interne s'est produite. Veuillez réessayer.",
+    "NETWORK_ERROR": "Impossible de contacter le serveur. Veuillez vérifier votre connexion réseau.",
+    "UNKNOWN": "Une erreur inattendue s'est produite."
   }
 }

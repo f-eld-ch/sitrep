@@ -54,7 +54,7 @@ function Triage(props: {
         )}
         {result.status === "error" && (
           <section className="modal-card-body">
-            <div className="notification is-danger">Error: {result.error.message}</div>
+            <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>
           </section>
         )}
         {result.status === "ready" && (
@@ -106,7 +106,7 @@ function TriageForm(props: {
     <>
       <section className="modal-card-body">
         {triageState.error && (
-          <div className="notification is-danger">Error: {triageState.error.message}</div>
+          <div className="notification is-danger">{t(`errors.${triageState.error.code}`)}</div>
         )}
         <div className="container mb-5">
           <JournalMessage

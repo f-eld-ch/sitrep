@@ -1,5 +1,6 @@
 import { useMutation } from "@apollo/client/react";
 import { Medium, PriorityStatus, TriageStatus } from "types";
+import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
 
@@ -31,9 +32,7 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const createMessage = async (args: CreateMessageArgs): Promise<void> => {
@@ -77,9 +76,7 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const updateMessage = async (args: UpdateMessageArgs): Promise<void> => {
@@ -107,9 +104,7 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const triageMessage = async (args: TriageMessageArgs): Promise<void> => {

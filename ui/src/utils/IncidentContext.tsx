@@ -12,9 +12,10 @@ import { useIncidentDetails } from "api";
 
 const initialState: IncidentContextState = {
   incident: null,
+  loadedForId: null,
 };
 
-type IncidentAction = { type: "SET_INCIDENT"; payload: Incident | null };
+type IncidentAction = { type: "SET_INCIDENT"; payload: Incident | null; forId: string | null };
 
 const incidentReducer = (
   state: IncidentContextState,
@@ -22,7 +23,7 @@ const incidentReducer = (
 ): IncidentContextState => {
   switch (action.type) {
     case "SET_INCIDENT":
-      return { ...state, incident: action.payload };
+      return { incident: action.payload, loadedForId: action.forId };
     default:
       return state;
   }
@@ -50,17 +51,17 @@ const IncidentContextSetter = () => {
 
   useEffect(() => {
     if (!incidentId) {
-      if (state.incident !== null) {
-        dispatch({ type: "SET_INCIDENT", payload: null });
-      }
+      dispatch({ type: "SET_INCIDENT", payload: null, forId: null });
       return;
     }
 
-    if (result.status !== "ready") return;
-
-    const { incident } = result.data;
-    if (state.incident?.id !== incident.id) {
-      dispatch({ type: "SET_INCIDENT", payload: incident });
+    if (result.status === "ready") {
+      const { incident } = result.data;
+      if (state.incident?.id !== incident.id) {
+        dispatch({ type: "SET_INCIDENT", payload: incident, forId: incidentId });
+      }
+    } else if (result.status === "error") {
+      dispatch({ type: "SET_INCIDENT", payload: null, forId: incidentId });
     }
   }, [incidentId, result.status, result.data, state.incident, dispatch]);
 

@@ -24,7 +24,7 @@ import {
   Source,
   useMap,
 } from "react-map-gl/maplibre";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import type { Layer } from "types/layer";
 import {
   cleanFeature,
@@ -43,6 +43,7 @@ import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { LayerContext, LayersProvider } from "./LayerContext";
+import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
 
 // Initialize maplibregl globals once at module load to avoid repeated side-effects
@@ -552,6 +553,13 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
 }
 
 function MapWithProvder() {
+  const { incidentId } = useParams();
+  const { state: { incident, loadedForId } } = useContext(IncidentContext);
+
+  if (loadedForId === incidentId && incident === null) {
+    return <Navigate to="/incident/list" replace />;
+  }
+
   return (
     <MapStyleProvider>
       <MapProvider>

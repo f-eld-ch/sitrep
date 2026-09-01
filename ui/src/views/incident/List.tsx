@@ -32,14 +32,14 @@ function List() {
   const mutationError = closeState.error ?? deleteState.error;
 
   if (result.status === "error") {
-    return <div className="notification is-danger">{result.error.message}</div>;
+    return <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>;
   }
   if (result.status === "loading") return <Spinner />;
 
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
-      {mutationError && <div className="notification is-danger">{mutationError.message}</div>}
+      {mutationError && <div className="notification is-danger">{t(`errors.${mutationError.code}`)}</div>}
       <div className="buttons">
         <button
           type="button"

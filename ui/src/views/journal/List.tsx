@@ -51,8 +51,7 @@ function List(props: {
   if (result.status === "error") {
     return (
       <div className="notification is-danger is-light">
-        <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
-        <div className="block">{result.error.message}</div>
+        <div className="block">{t(`errors.${result.error.code}`)}</div>
       </div>
     );
   }

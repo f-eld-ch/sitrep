@@ -161,5 +161,19 @@
       "name": "Situation",
       "description": "Situation Desk Officer"
     }
+  },
+  "errors": {
+    "NOT_FOUND": "The requested item could not be found.",
+    "FORBIDDEN": "You do not have permission to perform this action.",
+    "INCIDENT_NOT_OPEN": "The incident is not open.",
+    "INCIDENT_NOT_CLOSED": "The incident must be closed before this action can be performed.",
+    "INCIDENT_DELETED": "The incident has already been deleted.",
+    "ALREADY_CLOSED": "The item is already closed.",
+    "ALREADY_OPEN": "The item is already open.",
+    "INVALID_INPUT": "The provided input is invalid.",
+    "CONFLICT": "The request could not be completed due to a conflict.",
+    "INTERNAL_ERROR": "An internal error occurred. Please try again.",
+    "NETWORK_ERROR": "Could not reach the server. Please check your network connection.",
+    "UNKNOWN": "An unexpected error occurred."
   }
 }

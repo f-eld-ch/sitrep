@@ -7,4 +7,5 @@ export interface UserState {
 
 export interface IncidentContext {
   incident: Incident | null;
+  loadedForId: string | null;
 }

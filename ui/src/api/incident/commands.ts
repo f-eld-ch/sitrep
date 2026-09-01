@@ -1,4 +1,5 @@
 import { useMutation } from "@apollo/client/react";
+import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
   CLOSE_INCIDENT,
@@ -28,9 +29,7 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const createIncident = async (args: CreateIncidentArgs): Promise<{ incidentId: string }> => {
@@ -78,9 +77,7 @@ export function useUpdateIncident(): CommandHook<UpdateIncidentArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const updateIncident = async (args: UpdateIncidentArgs): Promise<void> => {
@@ -103,9 +100,7 @@ export function useCloseIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const closeIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
@@ -123,9 +118,7 @@ export function useReopenIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const reopenIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {
@@ -143,9 +136,7 @@ export function useDeleteIncident(): CommandHook<{ incidentId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const deleteIncident = async ({ incidentId }: { incidentId: string }): Promise<void> => {

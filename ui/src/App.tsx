@@ -9,7 +9,7 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
-import { Editor as JournalEditor, List as JournalMessageList, New as JournalNew } from "views/journal";
+import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
@@ -119,8 +119,7 @@ const router = createBrowserRouter([
                     <JournalMessageList showControls={false} autoScroll={true} />
                   </Layout>
                 ),
-              },
-              { path: "new", element: <JournalNew /> },
+              }
             ],
           },
         ],

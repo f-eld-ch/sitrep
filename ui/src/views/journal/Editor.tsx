@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
 import uniq from "lodash/uniq";
-import React, { useCallback, useId, useMemo, useReducer, useRef } from "react";
-import { useBlocker, useNavigate, useParams } from "react-router";
+import React, { useCallback, useContext, useId, useMemo, useReducer, useRef } from "react";
+import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { useCreateMessage, useIncidentMessages, useUpdateMessage } from "api";
+import { IncidentContext } from "utils";
 import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
@@ -29,11 +30,10 @@ export { ReactEditor, ReactPreview } from "./Markdown";
 function Editor() {
   const { t } = useTranslation();
   const { incidentId } = useParams();
-
+  const { state: { incident, loadedForId } } = useContext(IncidentContext);
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const [createMessage, createState] = useCreateMessage();
   const [updateMessage, updateState] = useUpdateMessage();
-
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
   const savingRef = useRef(false);
 
@@ -123,6 +123,10 @@ function Editor() {
     (message: Message | undefined) => dispatch({ type: "set_triage_message", message }),
     [],
   );
+
+  if (loadedForId === incidentId && incident === null) {
+    return <Navigate to="/incident/list" replace />;
+  }
 
   const contextValue: EditorContextValue = {
     state,

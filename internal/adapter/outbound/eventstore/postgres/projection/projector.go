@@ -54,10 +54,10 @@ type Projector struct {
 	handlers []Handler
 	log      *slog.Logger
 	// metrics
-	eventsApplied  metric.Int64Counter
-	catchupDur     metric.Float64Histogram
-	handlerErrors  metric.Int64Counter
-	deadLetters    metric.Int64Counter
+	eventsApplied metric.Int64Counter
+	catchupDur    metric.Float64Histogram
+	handlerErrors metric.Int64Counter
+	deadLetters   metric.Int64Counter
 }
 
 func NewProjector(

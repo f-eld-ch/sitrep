@@ -161,5 +161,19 @@
       "name": "ANSIT ",
       "description": "Capo ANSIT "
     }
+  },
+  "errors": {
+    "NOT_FOUND": "L'elemento richiesto non è stato trovato.",
+    "FORBIDDEN": "Non si dispone dell'autorizzazione per eseguire questa azione.",
+    "INCIDENT_NOT_OPEN": "L'incidente non è aperto.",
+    "INCIDENT_NOT_CLOSED": "L'incidente deve essere chiuso prima di eseguire questa azione.",
+    "INCIDENT_DELETED": "L'incidente è già stato eliminato.",
+    "ALREADY_CLOSED": "L'elemento è già chiuso.",
+    "ALREADY_OPEN": "L'elemento è già aperto.",
+    "INVALID_INPUT": "L'input fornito non è valido.",
+    "CONFLICT": "La richiesta non può essere completata a causa di un conflitto.",
+    "INTERNAL_ERROR": "Si è verificato un errore interno. Riprovare.",
+    "NETWORK_ERROR": "Impossibile contattare il server. Controllare la connessione di rete.",
+    "UNKNOWN": "Si è verificato un errore imprevisto."
   }
 }

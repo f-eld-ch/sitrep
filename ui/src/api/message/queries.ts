@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import type { Division, Message } from "types";
+import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { toDivision, toMessage } from "./mapper";
 import { GET_INCIDENT_MESSAGES, GET_MESSAGE_FOR_TRIAGE } from "./documents";
@@ -34,7 +35,7 @@ export function useIncidentMessages(incidentId: string): QueryResult<IncidentMes
             incidentDivisions: data.incident.divisions.map(toDivision),
           }
         : undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };
@@ -82,7 +83,7 @@ export function useMessageForTriage(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };

@@ -1,5 +1,6 @@
 import { useMutation } from "@apollo/client/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
+import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
 import {
@@ -54,9 +55,7 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const addFeature = async (args: AddFeatureArgs): Promise<{ featureId: string }> => {
@@ -102,9 +101,7 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const modifyFeature = async (args: ModifyFeatureArgs): Promise<void> => {
@@ -128,9 +125,7 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const deleteFeature = async (args: DeleteFeatureArgs): Promise<void> => {
@@ -166,9 +161,7 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const addLayer = async (args: AddLayerArgs): Promise<{ layerId: string }> => {

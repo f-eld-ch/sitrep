@@ -11,7 +11,7 @@ function Editor() {
   const result = useIncidentDetails(incidentId);
 
   if (result.status === "error") {
-    return <div className="notification is-danger">{result.error.message}</div>;
+    return <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>;
   }
 
   if (result.status === "loading") return <Spinner />;
