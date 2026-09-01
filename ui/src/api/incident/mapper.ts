@@ -5,9 +5,7 @@ import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql/next";
 type WireIncidentSummary = FetchIncidentsQuery["incidents"][0];
 type WireIncidentDetail = NonNullable<GetIncidentDetailQuery["incident"]>;
 
-function toLocation(
-  w: WireIncidentSummary["location"] | WireIncidentDetail["location"],
-): Location {
+function toLocation(w: WireIncidentSummary["location"] | WireIncidentDetail["location"]): Location {
   if (!w) return { id: "", name: "", coordinates: "" };
   return {
     id: "",

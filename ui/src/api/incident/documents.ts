@@ -18,25 +18,23 @@ import type {
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-export const GET_INCIDENTS: TypedDocumentNode<
-  FetchIncidentsQuery,
-  FetchIncidentsQueryVariables
-> = gql`
-  query FetchIncidents {
-    incidents {
-      id
-      name
-      createdAt
-      updatedAt
-      closedAt
-      isClosed
-      location {
+export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncidentsQueryVariables> =
+  gql`
+    query FetchIncidents {
+      incidents {
+        id
         name
-        coordinates
+        createdAt
+        updatedAt
+        closedAt
+        isClosed
+        location {
+          name
+          coordinates
+        }
       }
     }
-  }
-`;
+  `;
 
 export const GET_INCIDENT_DETAILS: TypedDocumentNode<
   GetIncidentDetailQuery,
@@ -93,7 +91,12 @@ export const UPDATE_INCIDENT: TypedDocumentNode<
   UpdateIncidentMutation,
   UpdateIncidentMutationVariables
 > = gql`
-  mutation UpdateIncident($id: ID!, $name: String, $location: String, $divisions: [DivisionInput!]) {
+  mutation UpdateIncident(
+    $id: ID!
+    $name: String
+    $location: String
+    $divisions: [DivisionInput!]
+  ) {
     updateIncident(id: $id, input: { name: $name, location: $location, divisions: $divisions }) {
       id
       name

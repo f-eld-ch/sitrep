@@ -555,7 +555,9 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
 
 function MapWithProvder() {
   const { incidentId } = useParams();
-  const { state: { incident, loadedForId } } = useContext(IncidentContext);
+  const {
+    state: { incident, loadedForId },
+  } = useContext(IncidentContext);
 
   if (loadedForId === incidentId && incident === null) {
     return <Navigate to="/incident/list" replace />;

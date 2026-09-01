@@ -26,9 +26,9 @@ func New(id shared.LayerID) *Layer {
 	return l
 }
 
-func (l *Layer) Root() *eventsourcing.Root      { return &l.root }
-func (l *Layer) AggregateType() string          { return "Layer" }
-func (l *Layer) OwnerIncidentID() uuid.UUID     { return uuid.UUID(l.incidentID) }
+func (l *Layer) Root() *eventsourcing.Root  { return &l.root }
+func (l *Layer) AggregateType() string      { return "Layer" }
+func (l *Layer) OwnerIncidentID() uuid.UUID { return uuid.UUID(l.incidentID) }
 
 func (l *Layer) IncidentID() shared.IncidentID { return l.incidentID }
 func (l *Layer) Name() string                  { return l.name }

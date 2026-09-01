@@ -119,7 +119,7 @@ const router = createBrowserRouter([
                     <JournalMessageList showControls={false} autoScroll={true} />
                   </Layout>
                 ),
-              }
+              },
             ],
           },
         ],

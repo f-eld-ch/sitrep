@@ -95,7 +95,6 @@ describe("Navbar Component", () => {
       expect(navbarMenu).toHaveAttribute("id", "navbarBasic");
       expect(navbarMenu).toHaveClass("is-active");
     });
-
   });
 
   describe("User Context", () => {

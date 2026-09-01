@@ -32,12 +32,12 @@ yarn start            # opens http://localhost:3000
 
 Port map:
 
-| Port   | Service                                     |
-| ------ | ------------------------------------------- |
-| 3000   | Vite dev server (this app)                  |
-| 4180   | Go server — GraphQL API + OIDC + static UI  |
-| 5432   | Postgres                                    |
-| 5556/7 | Dex (OIDC provider)                         |
+| Port   | Service                                    |
+| ------ | ------------------------------------------ |
+| 3000   | Vite dev server (this app)                 |
+| 4180   | Go server — GraphQL API + OIDC + static UI |
+| 5432   | Postgres                                   |
+| 5556/7 | Dex (OIDC provider)                        |
 
 The dev server proxies `/api/v2/graphql`, `/oauth2`, and `/version` to `localhost:4180`
 ([vite.config.ts:200](vite.config.ts#L200)). Requests go through the **Go server**, not directly to

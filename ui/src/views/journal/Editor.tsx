@@ -30,7 +30,9 @@ export { ReactEditor, ReactPreview } from "./Markdown";
 function Editor() {
   const { t } = useTranslation();
   const { incidentId } = useParams();
-  const { state: { incident, loadedForId } } = useContext(IncidentContext);
+  const {
+    state: { incident, loadedForId },
+  } = useContext(IncidentContext);
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const [createMessage, createState] = useCreateMessage();
   const [updateMessage, updateState] = useUpdateMessage();

@@ -34,10 +34,7 @@ export const GET_LAYERS: TypedDocumentNode<
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
-export const ADD_FEATURE: TypedDocumentNode<
-  AddFeatureMutation,
-  AddFeatureMutationVariables
-> = gql`
+export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutationVariables> = gql`
   mutation AddFeature(
     $incidentId: ID!
     $layerId: ID!
@@ -81,14 +78,12 @@ export const DELETE_FEATURE: TypedDocumentNode<
   }
 `;
 
-export const CREATE_LAYER: TypedDocumentNode<
-  CreateLayerMutation,
-  CreateLayerMutationVariables
-> = gql`
-  mutation CreateLayer($incidentId: ID!, $name: String!) {
-    createLayer(incidentId: $incidentId, name: $name) {
-      id
-      name
+export const CREATE_LAYER: TypedDocumentNode<CreateLayerMutation, CreateLayerMutationVariables> =
+  gql`
+    mutation CreateLayer($incidentId: ID!, $name: String!) {
+      createLayer(incidentId: $incidentId, name: $name) {
+        id
+        name
+      }
     }
-  }
-`;
+  `;

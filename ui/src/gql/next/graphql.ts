@@ -6,6 +6,8 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type DivisionInput = {
   description: string;
+  /** Omit for new divisions; supply the existing ID to preserve assignments. */
+  id?: string | number | null | undefined;
   name: string;
 };
 

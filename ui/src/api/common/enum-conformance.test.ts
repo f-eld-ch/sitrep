@@ -12,7 +12,11 @@
  */
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
-import type { Medium as MediumEnum, PriorityStatus as PriorityStatusEnum, TriageStatus as TriageStatusEnum } from "gql/next";
+import type {
+  Medium as MediumEnum,
+  PriorityStatus as PriorityStatusEnum,
+  TriageStatus as TriageStatusEnum,
+} from "gql/next";
 
 // --- Direction 2: schema → domain (runtime) ---
 // Keep these arrays in sync with the generated union types above.

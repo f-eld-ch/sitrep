@@ -54,4 +54,3 @@ export interface Division {
   name: string;
   description: string;
 }
-

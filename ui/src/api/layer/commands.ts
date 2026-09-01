@@ -3,13 +3,7 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
-import {
-  ADD_FEATURE,
-  CREATE_LAYER,
-  DELETE_FEATURE,
-  GET_LAYERS,
-  MODIFY_FEATURE,
-} from "./documents";
+import { ADD_FEATURE, CREATE_LAYER, DELETE_FEATURE, GET_LAYERS, MODIFY_FEATURE } from "./documents";
 
 export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
   return {

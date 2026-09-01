@@ -39,7 +39,9 @@ function List() {
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
-      {mutationError && <div className="notification is-danger">{t(`errors.${mutationError.code}`)}</div>}
+      {mutationError && (
+        <div className="notification is-danger">{t(`errors.${mutationError.code}`)}</div>
+      )}
       <div className="buttons">
         <button
           type="button"
@@ -145,7 +147,7 @@ export function IncidentCard(props: {
           className="card-footer-item is-ahref is-capitalized"
           onClick={() => {
             navigate(`../${props.incident.id}/journal/edit`);
-            dispatch({ type: "SET_INCIDENT", payload: props.incident });
+            dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
           }}
         >
           <span className="icon">
