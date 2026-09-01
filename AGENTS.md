@@ -207,6 +207,160 @@ Actor string and timestamp always come last, in that order. The aggregate never 
 
 ---
 
+## Logging
+
+The application uses the standard library `log/slog` throughout. The default logger is configured
+at startup by `internal/cli/log.go` and replaced with the OTel fan-out logger when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set (`internal/cli/otel.go`). You never initialise a logger
+yourself — use the package-level functions.
+
+### Always pass context
+
+Use the `Context` variants so that trace/span IDs are attached to every log line automatically:
+
+```go
+// correct — span IDs flow through
+slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "actor", actor.Sub)
+slog.InfoContext(ctx, "migration applied", "version", r.Source.Version)
+slog.WarnContext(ctx, "preflight finding", "finding", w)
+slog.ErrorContext(ctx, "service error", "operation", op, "error", err)
+
+// wrong — never use the context-free variants inside request paths
+slog.Debug("creating layer", ...)
+slog.Info("migration applied", ...)
+```
+
+### Scoped loggers for long-lived components
+
+Background components (projectors, servers) use a scoped logger stored on the struct so every
+log line carries the component name without repeating it at every call site:
+
+```go
+type Projector struct {
+    log *slog.Logger
+    ...
+}
+
+func NewProjector(...) *Projector {
+    return &Projector{
+        log: slog.Default().WithGroup("projector"),
+        ...
+    }
+}
+
+// usage inside the struct — still passes ctx for trace correlation
+p.log.Info("projection caught up", "handler", h.Name(), "applied", n)
+```
+
+### Log levels
+
+| Level   | When to use                                                             |
+| ------- | ----------------------------------------------------------------------- |
+| `Debug` | Per-operation entry points in services — args and actor sub             |
+| `Info`  | Lifecycle events: server start, migration applied, projector ready      |
+| `Warn`  | Degraded but recoverable: missing config, preflight warnings            |
+| `Error` | Unexpected infrastructure failures only — see `logIfUnexpected` below   |
+
+### Domain errors are not logged at the service layer
+
+`internal/core/service/assertions.go` defines `logIfUnexpected`, which suppresses logging for all
+expected domain sentinels (`ErrNotFound`, `ErrIncidentNotOpen`, `ErrAlreadyClosed`, …). Those
+errors are normal business outcomes and are handled at the resolver boundary. Only call
+`logIfUnexpected` (or log at `Error`) for infrastructure failures that indicate something is
+genuinely broken.
+
+---
+
+## OpenTelemetry instrumentation
+
+All three signals (traces, metrics, logs) are exported via OTLP gRPC when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set. Without it, the SDK is skipped and the application runs
+with no-op providers — no code changes needed for local development.
+
+### Traces — service methods
+
+Every application service method opens a span and defers its end. The tracer is obtained once at
+construction time via `otel.Tracer`:
+
+```go
+type LayerService struct {
+    tracer trace.Tracer
+    ...
+}
+
+func NewLayerService(...) *LayerService {
+    return &LayerService{tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"), ...}
+}
+
+func (s *LayerService) CreateLayer(ctx context.Context, ...) (shared.LayerID, error) {
+    ctx, span := s.tracer.Start(ctx, "LayerService.CreateLayer",
+        trace.WithAttributes(
+            attribute.String("incident.id", incidentID.String()),
+            attribute.String("layer.name", name),
+        ))
+    defer span.End()
+
+    // ... do work ...
+
+    if err != nil {
+        span.RecordError(err)
+        span.SetStatus(codes.Error, err.Error())
+        return shared.LayerID{}, err
+    }
+    // Set output attributes after success
+    span.SetAttributes(attribute.String("layer.id", layerID.String()))
+    return layerID, nil
+}
+```
+
+Rules:
+- Pass `ctx` from `tracer.Start` into all downstream calls — this propagates the span context.
+- Set **input** attributes at span start, **output** attributes (e.g. generated IDs) on success.
+- Call `span.RecordError` + `span.SetStatus(codes.Error, …)` on every error return.
+- Use the tracer name `"github.com/f-eld-ch/sitrep/service"` for all application services.
+
+Automatic instrumentation (no changes needed):
+- HTTP layer: `otelecho` middleware
+- GraphQL: `otelgqlgen` middleware
+- SQL: `otelpgx` tracer on the pool
+
+When you add a new service method, follow the pattern above. When you add a new adapter that
+performs I/O (HTTP call, SQL query), check whether an OTel contrib library already instruments it
+before adding manual spans.
+
+### Metrics — projector
+
+The Postgres projector exposes four counters/histograms registered via `otel.Meter`:
+
+| Metric name                  | Type      | Attributes                        |
+| ---------------------------- | --------- | --------------------------------- |
+| `projector.events.applied`   | counter   | `handler`                         |
+| `projector.catchup.duration` | histogram | —                                 |
+| `projector.errors`           | counter   | `handler`, `type` (checkpoint/read/apply) |
+| `projector.dead_letters`     | counter   | `handler`                         |
+
+When adding metrics elsewhere, obtain a meter with a package-scoped name:
+
+```go
+meter := otel.Meter("sitrep/projector")   // or "sitrep/service", "sitrep/eventstore"
+counter, _ := meter.Int64Counter("my.metric",
+    metric.WithDescription("What it counts"),
+    metric.WithUnit("{event}"),
+)
+```
+
+Ignore the error from `meter.Int64Counter` — the OTel SDK returns a valid no-op instrument on
+error; swallowing it is intentional and consistent with the rest of the codebase.
+
+### Logs — OTel bridge
+
+When OTel is configured, `internal/cli/otel.go` replaces the default `slog` handler with a
+multi-handler that fans out to both stdout (text) and the OTLP log bridge (`otelslog`). The bridge
+filters at `Info` and above — `Debug` lines go only to stdout. This is automatic; no code change
+is needed to emit log records to the collector.
+
+---
+
 ## GraphQL — regenerating after schema changes
 
 Edit `api/schema.graphql`, then regenerate:
