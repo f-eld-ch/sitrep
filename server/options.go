@@ -140,7 +140,6 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	attrs := []any{
 		"operation", opCtx.OperationName,
 		"error", errMsg,
-		"variables", opCtx.Variables,
 	}
 	if fieldCtx != nil {
 		attrs = append(attrs, "path", fieldCtx.Path())
