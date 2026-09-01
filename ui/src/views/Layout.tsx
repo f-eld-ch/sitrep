@@ -22,9 +22,9 @@ export const Layout = (props: LayoutProps) => {
     i18n.changeLanguage(lang || undefined);
   }, [lang, i18n]);
 
-  if (!userState.isLoggedin) return <Login />;
-
   useIncidentSync();
+
+  if (!userState.isLoggedin) return <Login />;
 
   return (
     <>
@@ -52,9 +52,9 @@ export const LayoutMarginLess = (props: LayoutProps) => {
     i18n.changeLanguage(lang || undefined);
   }, [lang, i18n]);
 
-  if (!userState.isLoggedin) return <Login />;
-
   useIncidentSync();
+
+  if (!userState.isLoggedin) return <Login />;
 
   return (
     <>
