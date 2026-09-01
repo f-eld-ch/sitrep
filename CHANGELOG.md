@@ -8,6 +8,10 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-i18next from 17.0.12 to 17.0.13 in /ui ([#1791](https://github.com/f-eld-ch/sitrep/issues/1791)) - ([9ce1f45](https://github.com/f-eld-ch/sitrep/commit/9ce1f452001f6530a9bcde54b7fec9a6040a65cc))
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.5.0 to 0.5.1 in /ui ([#1785](https://github.com/f-eld-ch/sitrep/issues/1785)) - ([39d3e49](https://github.com/f-eld-ch/sitrep/commit/39d3e497e5d219a0635fc1634fe59a879c8b21c5))
+- *(deps)* Bump proj4 from 2.21.0 to 2.22.0 in /ui ([#1786](https://github.com/f-eld-ch/sitrep/issues/1786)) - ([268b39e](https://github.com/f-eld-ch/sitrep/commit/268b39ebe6eb1f5365bed5b5386588e372d1d999))
+- *(deps)* Bump i18next from 26.4.0 to 26.4.1 in /ui ([#1792](https://github.com/f-eld-ch/sitrep/issues/1792)) - ([844db69](https://github.com/f-eld-ch/sitrep/commit/844db6964957670bab106473c7d8623c7b691e12))
 - *(deps)* Bump maplibre-gl from 6.4.1 to 6.6.0 in /ui ([#1776](https://github.com/f-eld-ch/sitrep/issues/1776)) - ([dbe0b6e](https://github.com/f-eld-ch/sitrep/commit/dbe0b6e8b008058c5ea22940249a00d3743ef8b7))
 - *(deps)* Bump the otel group with 9 updates ([#1778](https://github.com/f-eld-ch/sitrep/issues/1778)) - ([5f392b1](https://github.com/f-eld-ch/sitrep/commit/5f392b172b3707a6f7b7a7276a68f3debd4c1add))
 - *(deps)* Bump the f-eld-ch group in /ui with 4 updates ([#1775](https://github.com/f-eld-ch/sitrep/issues/1775)) - ([ecaa3f1](https://github.com/f-eld-ch/sitrep/commit/ecaa3f1535d10cee2b4fa7900693c61852a75f90))
