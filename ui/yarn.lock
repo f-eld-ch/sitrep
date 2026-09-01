@@ -1628,12 +1628,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flipt-io/flipt-client-js@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@flipt-io/flipt-client-js@npm:0.5.0"
+"@flipt-io/flipt-client-js@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@flipt-io/flipt-client-js@npm:0.5.1"
   dependencies:
     node-fetch: "npm:^3.3.0"
-  checksum: 10/b673f0258eb2fce96506a6d958ee3be2be98054ab3af4e5386dadf515f7c9b3138211feb81f1ef2c5653fc97710b400b69cc01b0ef1797deb6afa59f0ab9f910
+  checksum: 10/65e9bf1dcb1382459d147110e0057ebf236d59daa5ef492509bfa0de0dac185efbda668741d21f2f4fc55919036e54bab31021dea811f74dbbd7bd27fbe8afd6
   languageName: node
   linkType: hard
 
@@ -11147,7 +11147,7 @@ __metadata:
     "@f-eld-ch/babs-react": "npm:^0.6.0"
     "@f-eld-ch/babs-sprites": "npm:^0.6.0"
     "@fast-check/vitest": "npm:^0.4.1"
-    "@flipt-io/flipt-client-js": "npm:0.5.0"
+    "@flipt-io/flipt-client-js": "npm:0.5.1"
     "@fortawesome/fontawesome-svg-core": "npm:^7.3.1"
     "@fortawesome/free-brands-svg-icons": "npm:^7.3.1"
     "@fortawesome/free-regular-svg-icons": "npm:^7.3.1"
