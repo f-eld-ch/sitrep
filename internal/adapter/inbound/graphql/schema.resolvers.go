@@ -220,19 +220,8 @@ func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input m
 	if err != nil {
 		return nil, err
 	}
-	msg := messageStateToModel(state)
-	if len(state.DivisionIDs) > 0 {
-		inc, lookupErr := r.Queries.GetIncident(ctx, uuid.UUID(state.IncidentID))
-		if lookupErr == nil {
-			divIndex := divisionsByID(inc.Divisions)
-			for _, divID := range state.DivisionIDs {
-				if d, ok := divIndex[uuid.UUID(divID)]; ok {
-					msg.Divisions = append(msg.Divisions, divisionRMToModel(d))
-				}
-			}
-		}
-	}
-	return msg, nil
+	// UPDATE_MESSAGE does not request divisions; Apollo retains the cached value.
+	return messageStateToModel(state), nil
 }
 
 // TriageMessage is the resolver for the triageMessage field.

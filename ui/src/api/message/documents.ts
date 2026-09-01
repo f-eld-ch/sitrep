@@ -174,11 +174,6 @@ export const UPDATE_MESSAGE: TypedDocumentNode<
       updatedAt
       triage
       priority
-      divisions {
-        id
-        name
-        description
-      }
     }
   }
 `;
