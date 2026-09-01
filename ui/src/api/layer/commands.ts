@@ -29,8 +29,14 @@ export interface AddFeatureArgs {
 
 export interface ModifyFeatureArgs {
   id: string;
+  /** Sparse: omit to leave unchanged server-side. */
   geometry?: unknown;
+  /** Sparse: omit to leave unchanged server-side. */
   properties?: unknown;
+  /** Full current geometry — used for the optimistic cache write. */
+  currentGeometry: unknown;
+  /** Full current properties — used for the optimistic cache write. */
+  currentProperties: unknown;
   incidentId: string;
 }
 
@@ -106,7 +112,11 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
         properties: args.properties as Record<string, unknown>,
       },
       optimisticResponse: {
-        modifyFeature: { id: args.id, geometry: args.geometry, properties: args.properties },
+        modifyFeature: {
+          id: args.id,
+          geometry: args.currentGeometry,
+          properties: args.currentProperties,
+        },
       } as never,
     });
   };

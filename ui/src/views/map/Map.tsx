@@ -410,6 +410,8 @@ function Draw() {
           id: String(feature.id ?? ""),
           geometry: isPropertyOnly ? undefined : feature.geometry,
           properties: isPropertyOnly ? feature.properties : undefined,
+          currentGeometry: feature.geometry,
+          currentProperties: feature.properties,
           incidentId: incidentId ?? "",
         });
       }
