@@ -69,17 +69,6 @@ func WithOidc(oidcClient *auth.OIDCClient) Option {
 // Budget set to 5000 to allow that with headroom.
 const complexityBudget = 5000
 
-// disableIntrospection is a gqlgen extension that sets DisableIntrospection on
-// every operation context, preventing schema reflection by clients.
-type disableIntrospection struct{}
-
-func (disableIntrospection) ExtensionName() string                   { return "DisableIntrospection" }
-func (disableIntrospection) Validate(graphql.ExecutableSchema) error { return nil }
-func (disableIntrospection) MutateOperationContext(_ context.Context, opCtx *graphql.OperationContext) *gqlerror.Error {
-	opCtx.DisableIntrospection = true
-	return nil
-}
-
 func WithApiV2(
 	incidents inbound.IncidentService,
 	messages inbound.MessageService,
@@ -103,11 +92,14 @@ func WithApiV2(
 		const featureCost = 20
 		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity + messageCost }
 		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
-
 		srv := handler.New(generated.NewExecutableSchema(cfg))
 		srv.AddTransport(transport.POST{})
 		srv.Use(otelgqlgen.Middleware())
 		srv.Use(extension.FixedComplexityLimit(complexityBudget))
+		if enableIntrospection {
+			slog.Warn("GraphQL introspection enabled; this is not recommended in production")
+			srv.Use(extension.Introspection{})
+		}
 		srv.SetErrorPresenter(logAndPresentError)
 		srv.SetRecoverFunc(func(ctx context.Context, p any) error {
 			opCtx := graphql.GetOperationContext(ctx)
@@ -118,9 +110,6 @@ func WithApiV2(
 			)
 			return fmt.Errorf("internal server error")
 		})
-		if !enableIntrospection {
-			srv.Use(disableIntrospection{})
-		}
 
 		apiv2 := s.router.Group("/api/v2", s.RequireLogin)
 		apiv2.POST("/graphql", echo.WrapHandler(srv))
@@ -155,6 +144,12 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	}
 	if fieldCtx != nil {
 		attrs = append(attrs, "path", fieldCtx.Path())
+	}
+
+	// gqlgen emits this when DisableIntrospection is set; it is not a server error.
+	var gqlErrCheck *gqlerror.Error
+	if errors.As(e, &gqlErrCheck) && gqlErrCheck.Message == "introspection disabled" {
+		return gqlErrCheck
 	}
 
 	var code string

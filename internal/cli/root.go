@@ -53,9 +53,11 @@ func init() {
 	pf.String("oidc-redirect-url", "", "OIDC redirect URL")
 	pf.String("cookie-key", "", "Cookie signing key")
 	pf.String("database-url", "", "PostgreSQL connection string (DSN or URL)")
+	pf.Bool("graphql-introspection", false, "Enable GraphQL introspection and playground (dev only)")
 
 	// Bind to the same viper keys the existing BindEnv aliases already cover.
 	_ = viper.BindEnv("log_level", "LOG_LEVEL")
+	_ = viper.BindEnv("graphql_introspection", "GRAPHQL_INTROSPECTION")
 	_ = viper.BindPFlag("log_level", pf.Lookup("log-level"))
 	_ = viper.BindPFlag("server_port", pf.Lookup("port"))
 	_ = viper.BindPFlag("oidc_client_id", pf.Lookup("oidc-client-id"))
@@ -64,6 +66,7 @@ func init() {
 	_ = viper.BindPFlag("oidc_redirect_url", pf.Lookup("oidc-redirect-url"))
 	_ = viper.BindPFlag("cookie_key", pf.Lookup("cookie-key"))
 	_ = viper.BindPFlag("database_url", pf.Lookup("database-url"))
+	_ = viper.BindPFlag("graphql_introspection", pf.Lookup("graphql-introspection"))
 
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(migrateCmd)
