@@ -135,13 +135,20 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.Logger
 		log.WithProcessor(log.NewBatchProcessor(logExporter)),
 	)
 
+	// Debug logs go to stdout only — never to the OTLP exporter.
+	minInfo := slogmulti.NewEnabledInlineMiddleware(func(_ context.Context, level slog.Level, next func(context.Context, slog.Level) bool) bool {
+		return level >= slog.LevelInfo && next(context.Background(), level)
+	})
+	otlpHandler := slogmulti.Pipe(minInfo).Handler(
+		otelslog.NewHandler("github.com/f-eld-ch/sitrep",
+			otelslog.WithLoggerProvider(loggerProvider),
+			otelslog.WithSource(true),
+		),
+	)
 	logger := slog.New(
 		slogmulti.Fanout(
-			slog.NewTextHandler(os.Stdout, nil),
-			otelslog.NewHandler("github.com/f-eld-ch/sitrep",
-				otelslog.WithLoggerProvider(loggerProvider),
-				otelslog.WithSource(true),
-			),
+			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}),
+			otlpHandler,
 		),
 	)
 	slog.SetDefault(logger)

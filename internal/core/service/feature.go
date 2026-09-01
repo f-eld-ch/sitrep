@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -52,6 +53,7 @@ func (s *FeatureService) PlaceFeature(
 			attribute.String("layer.id", layerID.String()),
 		))
 	defer span.End()
+	slog.DebugContext(ctx, "placing feature", "feature_id", id, "layer_id", layerID, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -83,6 +85,7 @@ func (s *FeatureService) ModifyFeature(
 	ctx, span := s.tracer.Start(ctx, "FeatureService.ModifyFeature",
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "modifying feature", "feature_id", id, "actor", actor.Sub)
 
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		at := s.clock.Now()
@@ -110,6 +113,7 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 	ctx, span := s.tracer.Start(ctx, "FeatureService.RemoveFeature",
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "removing feature", "feature_id", id, "actor", actor.Sub)
 
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		return f.Remove(shared.DeleteReasonManual, actor.Sub, s.clock.Now())

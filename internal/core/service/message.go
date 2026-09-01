@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -57,6 +58,7 @@ func (s *MessageService) RecordMessage(
 	ctx, span := s.tracer.Start(ctx, "MessageService.RecordMessage",
 		trace.WithAttributes(attribute.String("incident.id", incidentID.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "recording message", "incident_id", incidentID, "actor", actor.Sub)
 
 	msgID := shared.MessageID(s.ids.New())
 	at := s.clock.Now()
@@ -116,6 +118,7 @@ func (s *MessageService) CorrectMessage(
 	ctx, span := s.tracer.Start(ctx, "MessageService.CorrectMessage",
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "correcting message", "message_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	var state inbound.MessageState
@@ -157,6 +160,7 @@ func (s *MessageService) TriageMessage(
 	ctx, span := s.tracer.Start(ctx, "MessageService.TriageMessage",
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "triaging message", "message_id", id, "triage", triage, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	var state inbound.MessageState
@@ -189,6 +193,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 	ctx, span := s.tracer.Start(ctx, "MessageService.DeleteMessage",
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "deleting message", "message_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {

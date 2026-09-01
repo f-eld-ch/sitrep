@@ -6,6 +6,7 @@ package inmem
 
 import (
 	"context"
+	"log/slog"
 	"sort"
 
 	"github.com/google/uuid"
@@ -46,7 +47,8 @@ func NewQueries(
 // Incidents
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (q *Queries) ListIncidents(_ context.Context) ([]*outbound.IncidentRM, error) {
+func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "listing incidents")
 	rows := q.incidents.All()
 	out := make([]*outbound.IncidentRM, 0, len(rows))
 	for _, row := range rows {
@@ -58,10 +60,12 @@ func (q *Queries) ListIncidents(_ context.Context) ([]*outbound.IncidentRM, erro
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].CreatedAt.After(out[j].CreatedAt)
 	})
+	slog.DebugContext(ctx, "listed incidents", "count", len(out))
 	return out, nil
 }
 
-func (q *Queries) GetIncident(_ context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
+func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "getting incident", "id", id)
 	row := q.incidents.Get(id)
 	if row == nil || row.IsDeleted {
 		return nil, shared.ErrNotFound
@@ -93,7 +97,8 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 // Messages
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (q *Queries) ListMessages(_ context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
+func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
 	rows := q.messages.ForIncident(incidentID)
 	out := make([]*outbound.MessageRM, 0, len(rows))
 	for _, row := range rows {
@@ -108,7 +113,8 @@ func (q *Queries) ListMessages(_ context.Context, incidentID uuid.UUID) ([]*outb
 	return out, nil
 }
 
-func (q *Queries) GetMessage(_ context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
+func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "getting message", "id", id)
 	row := q.messages.Get(id)
 	if row == nil || row.Deleted {
 		return nil, shared.ErrNotFound
@@ -140,7 +146,8 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 // Layers
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (q *Queries) ListLayers(_ context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
+func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
+	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
 	rows := q.layers.ForIncident(incidentID)
 	out := make([]*outbound.LayerRM, 0, len(rows))
 	for _, row := range rows {

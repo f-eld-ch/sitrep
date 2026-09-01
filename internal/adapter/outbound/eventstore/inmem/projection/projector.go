@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
@@ -22,6 +23,7 @@ const batchSize = 100
 // immediately as errors so tests see the exact problem without extra ceremony.
 type Projector struct {
 	store    outbound.EventStore
+	notifier outbound.EventNotifier
 	handlers []Handler
 	cursors  map[string]outbound.Cursor
 	log      *slog.Logger
@@ -38,6 +40,13 @@ func NewProjector(store outbound.EventStore, handlers []Handler) *Projector {
 		cursors:  cursors,
 		log:      slog.Default().WithGroup("inmem-projector"),
 	}
+}
+
+// WithNotifier enables the notification-driven catch-up loop in Run.
+// Without a notifier, Run does a single catch-up then waits for cancellation.
+func (p *Projector) WithNotifier(n outbound.EventNotifier) *Projector {
+	p.notifier = n
+	return p
 }
 
 // CatchUp reads all events appended since each handler's last cursor and applies
@@ -84,14 +93,37 @@ func (p *Projector) Reset(ctx context.Context) error {
 	return p.CatchUp(ctx)
 }
 
-// Run does an initial CatchUp and then blocks until ctx is cancelled.
-// It satisfies outbound.Projector so the in-memory stack can be used wherever
-// the real projector is expected.
+// Run does an initial CatchUp then drives a notification-driven loop if a
+// notifier was attached via WithNotifier. Without a notifier it blocks until
+// ctx is cancelled — suitable for tests that drive projections manually via
+// CatchUp.
 func (p *Projector) Run(ctx context.Context) error {
 	if err := p.CatchUp(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		p.log.ErrorContext(ctx, "inmem projector initial catch-up failed", "error", err)
 		return err
 	}
-	<-ctx.Done()
-	return ctx.Err()
+
+	if p.notifier == nil {
+		<-ctx.Done()
+		return ctx.Err()
+	}
+
+	pollTicker := time.NewTicker(500 * time.Millisecond)
+	defer pollTicker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-pollTicker.C:
+		default:
+			waitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			_ = p.notifier.Wait(waitCtx)
+			cancel()
+		}
+
+		if err := p.CatchUp(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			p.log.ErrorContext(ctx, "inmem projector catch-up failed", "error", err)
+		}
+	}
 }

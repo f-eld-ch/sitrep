@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"log/slog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -24,6 +26,13 @@ func init() {
 		viper.AutomaticEnv()
 		_ = viper.ReadInConfig()
 
+		var level slog.Level
+		if err := level.UnmarshalText([]byte(viper.GetString("log_level"))); err != nil {
+			level = slog.LevelInfo
+		}
+		logLevel.Set(level)
+		initLogger()
+
 		_ = viper.BindEnv("oidc_client_id", "OIDC_CLIENT_ID", "OAUTH2_PROXY_CLIENT_ID")
 		_ = viper.BindEnv("oidc_issuer", "OIDC_ISSUER", "OAUTH2_PROXY_OIDC_ISSUER_URL")
 		_ = viper.BindEnv("oidc_client_secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET")
@@ -36,6 +45,7 @@ func init() {
 
 	// Persistent flags — visible on every subcommand.
 	pf := rootCmd.PersistentFlags()
+	pf.String("log-level", "info", "Log level (debug, info, warn, error)")
 	pf.Uint("port", 4180, "Server port")
 	pf.String("oidc-client-id", "", "OIDC client ID")
 	pf.String("oidc-issuer", "", "OIDC issuer URL")
@@ -45,6 +55,8 @@ func init() {
 	pf.String("database-url", "", "PostgreSQL connection string (DSN or URL)")
 
 	// Bind to the same viper keys the existing BindEnv aliases already cover.
+	_ = viper.BindEnv("log_level", "LOG_LEVEL")
+	_ = viper.BindPFlag("log_level", pf.Lookup("log-level"))
 	_ = viper.BindPFlag("server_port", pf.Lookup("port"))
 	_ = viper.BindPFlag("oidc_client_id", pf.Lookup("oidc-client-id"))
 	_ = viper.BindPFlag("oidc_issuer", pf.Lookup("oidc-issuer"))

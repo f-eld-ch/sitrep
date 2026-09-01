@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 type LocalEnforcer struct {
@@ -22,7 +24,13 @@ func NewLocalEnforcer() *LocalEnforcer {
 
 func (l *LocalEnforcer) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		// no auth
+		actor := identity.Actor{
+			Sub:   l.UserInfo.User,
+			Email: l.UserInfo.Email,
+			Name:  l.UserInfo.PreferredUsername,
+		}
+		ctx := identity.WithActor(c.Request().Context(), actor)
+		c.SetRequest(c.Request().WithContext(ctx))
 		return next(c)
 	}
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -50,6 +51,7 @@ func (s *LayerService) CreateLayer(
 			attribute.String("layer.name", name),
 		))
 	defer span.End()
+	slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "name", name, "actor", actor.Sub)
 
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
@@ -76,6 +78,7 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 	ctx, span := s.tracer.Start(ctx, "LayerService.RenameLayer",
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "renaming layer", "layer_id", id, "name", name, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -103,6 +106,7 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 	ctx, span := s.tracer.Start(ctx, "LayerService.RemoveLayer",
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "removing layer", "layer_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {

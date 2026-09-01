@@ -17,6 +17,9 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -50,6 +53,11 @@ type Projector struct {
 	notifier outbound.EventNotifier
 	handlers []Handler
 	log      *slog.Logger
+	// metrics
+	eventsApplied  metric.Int64Counter
+	catchupDur     metric.Float64Histogram
+	handlerErrors  metric.Int64Counter
+	deadLetters    metric.Int64Counter
 }
 
 func NewProjector(
@@ -58,12 +66,36 @@ func NewProjector(
 	notifier outbound.EventNotifier,
 	handlers []Handler,
 ) *Projector {
+	meter := otel.Meter("sitrep/projector")
+
+	eventsApplied, _ := meter.Int64Counter("projector.events.applied",
+		metric.WithDescription("Number of events successfully applied by each projection handler"),
+		metric.WithUnit("{event}"),
+	)
+	catchupDur, _ := meter.Float64Histogram("projector.catchup.duration",
+		metric.WithDescription("Duration of each catch-up pass"),
+		metric.WithUnit("s"),
+		metric.WithExplicitBucketBoundaries(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5),
+	)
+	handlerErrors, _ := meter.Int64Counter("projector.errors",
+		metric.WithDescription("Number of errors encountered during event application"),
+		metric.WithUnit("{error}"),
+	)
+	deadLetters, _ := meter.Int64Counter("projector.dead_letters",
+		metric.WithDescription("Number of events parked to the dead-letter table"),
+		metric.WithUnit("{event}"),
+	)
+
 	return &Projector{
-		pool:     pool,
-		store:    store,
-		notifier: notifier,
-		handlers: handlers,
-		log:      slog.Default().WithGroup("projector"),
+		pool:          pool,
+		store:         store,
+		notifier:      notifier,
+		handlers:      handlers,
+		log:           slog.Default().WithGroup("projector"),
+		eventsApplied: eventsApplied,
+		catchupDur:    catchupDur,
+		handlerErrors: handlerErrors,
+		deadLetters:   deadLetters,
 	}
 }
 
@@ -111,16 +143,20 @@ func (p *Projector) Run(ctx context.Context) error {
 
 // catchUp reads all new events from each handler's checkpoint and applies them.
 func (p *Projector) catchUp(ctx context.Context) error {
+	start := time.Now()
 	var totalApplied int
 	for _, h := range p.handlers {
+		handlerAttr := attribute.String("handler", h.Name())
 		cursor, err := p.loadCheckpoint(ctx, h.Name())
 		if err != nil {
+			p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "checkpoint")))
 			return err
 		}
 		var handlerApplied int
 		for {
 			events, next, err := p.store.Read(ctx, cursor, batchSize)
 			if err != nil {
+				p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "read")))
 				return fmt.Errorf("projector read for %s: %w", h.Name(), err)
 			}
 			if len(events) == 0 {
@@ -132,15 +168,20 @@ func (p *Projector) catchUp(ctx context.Context) error {
 				}
 				if err := p.applyWithDeadLetter(ctx, h, e); err != nil {
 					p.log.Error("handler failed after retries", "handler", h.Name(), "error", err)
+					p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "apply")))
 					// park the event and continue — the projection is now known-incomplete
 					if parkErr := p.parkDeadLetter(ctx, h.Name(), next, e, err); parkErr != nil {
 						p.log.Error("failed to park dead letter", "error", parkErr)
+					} else {
+						p.deadLetters.Add(ctx, 1, metric.WithAttributes(handlerAttr))
 					}
 				} else {
 					handlerApplied++
+					p.eventsApplied.Add(ctx, 1, metric.WithAttributes(handlerAttr))
 				}
 			}
 			if err := p.saveCheckpoint(ctx, h.Name(), next); err != nil {
+				p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "checkpoint")))
 				return err
 			}
 			cursor = next
@@ -156,6 +197,7 @@ func (p *Projector) catchUp(ctx context.Context) error {
 	if totalApplied > 0 {
 		p.log.Info("catch-up complete", "total_applied", totalApplied)
 	}
+	p.catchupDur.Record(ctx, time.Since(start).Seconds())
 	return nil
 }
 

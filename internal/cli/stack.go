@@ -14,6 +14,7 @@ import (
 	inprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	pgstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres"
 	pgprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/projection"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
 	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
@@ -41,7 +42,7 @@ type stack struct {
 func buildStack(ctx context.Context) (*stack, error) {
 	dsn := viper.GetString("database_url")
 	if dsn == "" {
-		slog.WarnContext(ctx, "DATABASE_URL not set, using in-memory stores (data will not persist)")
+		slog.WarnContext(ctx, "No database_url set, using in-memory stores (data will not persist)")
 		return buildInmemStack(ctx)
 	}
 	return buildPostgresStack(ctx, dsn)
@@ -87,7 +88,7 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 		pgprojection.NewMessageHandler(pool),
 		pgprojection.NewLayerFeaturesHandler(pool),
 	}
-	proj := pgprojection.NewProjector(pool, store, notifier, handlers)
+	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers), "postgres")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
 	projDone := make(chan struct{})
@@ -108,6 +109,7 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 		Teardown: func() {
 			cancelProj()
 			<-projDone
+			proj.Unregister()
 			pool.Close()
 		},
 	}, nil
@@ -138,9 +140,9 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
 
-	proj := inprojection.NewProjector(store, []inprojection.Handler{
+	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
 		incHandler, divHandler, msgHandler, layerHandler,
-	})
+	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
 	projDone := make(chan struct{})
@@ -161,6 +163,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		Teardown: func() {
 			cancelProj()
 			<-projDone
+			proj.Unregister()
 		},
 	}, nil
 }

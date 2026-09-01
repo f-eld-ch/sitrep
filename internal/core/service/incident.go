@@ -6,6 +6,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -60,6 +61,7 @@ func (s *IncidentService) CreateIncident(
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CreateIncident",
 		trace.WithAttributes(attribute.String("incident.name", name)))
 	defer span.End()
+	slog.DebugContext(ctx, "creating incident", "name", name, "actor", actor.Sub)
 
 	if len(layerNames) == 0 {
 		layerNames = []string{"Lage"}
@@ -109,6 +111,7 @@ func (s *IncidentService) CreateIncident(
 		return inbound.CreateIncidentResult{}, err
 	}
 	span.SetAttributes(attribute.String("incident.id", incID.String()))
+	slog.DebugContext(ctx, "incident created", "incident_id", incID, "layers", len(layerIDs))
 	_ = s.notifier.Notify(ctx)
 	return inbound.CreateIncidentResult{
 		IncidentID: incID,
@@ -132,6 +135,7 @@ func (s *IncidentService) UpdateIncident(
 	ctx, span := s.tracer.Start(ctx, "IncidentService.UpdateIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "updating incident", "incident_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
 	var state inbound.IncidentState
@@ -182,6 +186,7 @@ func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentI
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CloseIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "closing incident", "incident_id", id, "actor", actor.Sub)
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
@@ -197,6 +202,7 @@ func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.Incident
 	ctx, span := s.tracer.Start(ctx, "IncidentService.ReopenIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "reopening incident", "incident_id", id, "actor", actor.Sub)
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
@@ -212,6 +218,7 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 	ctx, span := s.tracer.Start(ctx, "IncidentService.DeleteIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+	slog.DebugContext(ctx, "deleting incident", "incident_id", id, "actor", actor.Sub)
 	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})

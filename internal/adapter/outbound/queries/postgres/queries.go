@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,6 +36,7 @@ func NewQueries(pool *pgxpool.Pool) *Queries {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "listing incidents")
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
@@ -60,10 +62,12 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	if err := q.loadDivisions(ctx, out); err != nil {
 		return nil, err
 	}
+	slog.DebugContext(ctx, "listed incidents", "count", len(out))
 	return out, nil
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "getting incident", "id", id)
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
@@ -178,6 +182,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
@@ -193,6 +198,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 }
 
 func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "getting message", "id", id)
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
@@ -268,6 +274,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
+	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, incident_id, name, geojson, revision
 		FROM rm_layer_features
