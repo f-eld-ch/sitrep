@@ -2,28 +2,32 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
   CloseIncidentMutation,
   CloseIncidentMutationVariables,
+  CreateIncidentMutation,
+  CreateIncidentMutationVariables,
   DeleteIncidentMutation,
   DeleteIncidentMutationVariables,
   FetchIncidentsQuery,
   FetchIncidentsQueryVariables,
   GetIncidentDetailQuery,
   GetIncidentDetailQueryVariables,
-  InsertIncidentMutation,
-  InsertIncidentMutationVariables,
+  ReopenIncidentMutation,
+  ReopenIncidentMutationVariables,
   UpdateIncidentMutation,
   UpdateIncidentMutationVariables,
-} from "gql";
+} from "gql/next";
+
+// ── Queries ───────────────────────────────────────────────────────────────────
 
 export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncidentsQueryVariables> =
   gql`
     query FetchIncidents {
-      incidents(orderBy: { createdAt: DESC }, where: { deletedAt: { _isNull: true } }) {
+      incidents {
         id
         name
         createdAt
         updatedAt
-        deletedAt
         closedAt
+        isClosed
         location {
           name
           coordinates
@@ -36,15 +40,15 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
   GetIncidentDetailQuery,
   GetIncidentDetailQueryVariables
 > = gql`
-  query GetIncidentDetail($incidentId: uuid!) {
-    incidentsByPk(id: $incidentId) {
+  query GetIncidentDetail($incidentId: ID!) {
+    incident(id: $incidentId) {
       id
       name
       createdAt
-      closedAt
       updatedAt
+      closedAt
+      isClosed
       location {
-        id
         name
         coordinates
       }
@@ -53,48 +57,31 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
         name
         description
       }
-      journals {
-        id
-        name
-      }
     }
   }
 `;
 
-export const INSERT_INCIDENT: TypedDocumentNode<
-  InsertIncidentMutation,
-  InsertIncidentMutationVariables
+// ── Mutations ─────────────────────────────────────────────────────────────────
+
+export const CREATE_INCIDENT: TypedDocumentNode<
+  CreateIncidentMutation,
+  CreateIncidentMutationVariables
 > = gql`
-  mutation InsertIncident(
+  mutation CreateIncident(
     $name: String!
     $location: String
-    $divisions: [DivisionsInsertInput!]!
-    $journalName: String
-    $layerName: String
+    $divisions: [DivisionInput!]!
+    $layers: [LayerInput!]!
   ) {
-    insertIncidentsOne(
-      object: {
-        name: $name
-        location: { data: { name: $location } }
-        journals: { data: { name: $journalName } }
-        layers: { data: { name: $layerName } }
-        divisions: { data: $divisions }
-      }
+    createIncident(
+      input: { name: $name, location: $location, divisions: $divisions, layers: $layers }
     ) {
       id
       name
-      journals {
-        id
-        name
-      }
       divisions {
-        name
         id
+        name
         description
-      }
-      layers {
-        name
-        id
       }
     }
   }
@@ -105,32 +92,21 @@ export const UPDATE_INCIDENT: TypedDocumentNode<
   UpdateIncidentMutationVariables
 > = gql`
   mutation UpdateIncident(
-    $incidentId: uuid!
-    $name: String!
-    $location: String!
-    $locationId: uuid!
-    $divisions: [DivisionsInsertInput!]!
+    $id: ID!
+    $name: String
+    $location: String
+    $divisions: [DivisionInput!]
   ) {
-    updateLocationsByPk(pkColumns: { id: $locationId }, _set: { name: $location }) {
+    updateIncident(id: $id, input: { name: $name, location: $location, divisions: $divisions }) {
       id
       name
-    }
-    insertDivisions(
-      objects: $divisions
-      onConflict: { constraint: divisions_name_incident_id_key, updateColumns: [description, name] }
-    ) {
-      affectedRows
-    }
-    updateIncidentsByPk(pkColumns: { id: $incidentId }, _set: { name: $name }) {
-      id
-      name
-      journals {
-        id
+      location {
         name
+        coordinates
       }
       divisions {
-        name
         id
+        name
         description
       }
     }
@@ -141,23 +117,24 @@ export const CLOSE_INCIDENT: TypedDocumentNode<
   CloseIncidentMutation,
   CloseIncidentMutationVariables
 > = gql`
-  mutation CloseIncident($incidentId: uuid, $closedAt: timestamptz) {
-    updateJournals(
-      where: { incident: { id: { _eq: $incidentId } }, closedAt: { _isNull: true } }
-      _set: { closedAt: $closedAt }
-    ) {
-      affectedRows
-      returning {
-        id
-        closedAt
-      }
+  mutation CloseIncident($id: ID!) {
+    closeIncident(id: $id) {
+      id
+      closedAt
+      isClosed
     }
-    updateIncidents(where: { id: { _eq: $incidentId } }, _set: { closedAt: $closedAt }) {
-      affectedRows
-      returning {
-        id
-        closedAt
-      }
+  }
+`;
+
+export const REOPEN_INCIDENT: TypedDocumentNode<
+  ReopenIncidentMutation,
+  ReopenIncidentMutationVariables
+> = gql`
+  mutation ReopenIncident($id: ID!) {
+    reopenIncident(id: $id) {
+      id
+      closedAt
+      isClosed
     }
   }
 `;
@@ -166,30 +143,7 @@ export const DELETE_INCIDENT: TypedDocumentNode<
   DeleteIncidentMutation,
   DeleteIncidentMutationVariables
 > = gql`
-  mutation DeleteIncident($incidentId: uuid, $deletedAt: timestamptz) {
-    updateJournals(
-      where: { incident: { id: { _eq: $incidentId } }, deletedAt: { _isNull: true } }
-      _set: { deletedAt: $deletedAt }
-    ) {
-      affectedRows
-      returning {
-        id
-        deletedAt
-      }
-    }
-    updateIncidents(
-      where: {
-        id: { _eq: $incidentId }
-        deletedAt: { _isNull: true }
-        closedAt: { _isNull: false }
-      }
-      _set: { deletedAt: $deletedAt }
-    ) {
-      affectedRows
-      returning {
-        id
-        deletedAt
-      }
-    }
+  mutation DeleteIncident($id: ID!) {
+    deleteIncident(id: $id)
   }
 `;

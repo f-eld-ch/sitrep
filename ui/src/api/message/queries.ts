@@ -1,36 +1,41 @@
 import { useQuery } from "@apollo/client/react";
 import type { Division, Message } from "types";
+import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { toDivision, toMessage } from "./mapper";
-import { GET_MESSAGE_FOR_TRIAGE, GET_MESSAGES } from "./documents";
+import { GET_INCIDENT_MESSAGES, GET_MESSAGE_FOR_TRIAGE } from "./documents";
 
-export interface JournalMessagesData {
+export interface IncidentMessagesData {
   messages: Message[];
   incidentDivisions: Division[];
 }
 
-export function useJournalMessages(journalId: string): QueryResult<JournalMessagesData> {
-  const { loading, error, data, refetch } = useQuery(GET_MESSAGES, {
-    variables: { journalId },
+/** @deprecated use useIncidentMessages */
+export type JournalMessagesData = IncidentMessagesData;
+
+export function useIncidentMessages(incidentId: string): QueryResult<IncidentMessagesData> {
+  const { loading, error, data, refetch } = useQuery(GET_INCIDENT_MESSAGES, {
+    variables: { incidentId },
+    skip: !incidentId,
     pollInterval: 10000,
   });
 
   const refresh = () => void refetch();
 
-  if (loading && !data) {
+  if (!incidentId || (loading && !data)) {
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
   }
 
   if (error) {
     return {
       status: "error",
-      data: data
+      data: data?.incident
         ? {
-            messages: data.messages.map(toMessage),
-            incidentDivisions: data.journalsByPk?.incident?.divisions?.map(toDivision) ?? [],
+            messages: (data.incident.messages ?? []).map(toMessage),
+            incidentDivisions: data.incident.divisions.map(toDivision),
           }
         : undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };
@@ -39,13 +44,18 @@ export function useJournalMessages(journalId: string): QueryResult<JournalMessag
   return {
     status: "ready",
     data: {
-      messages: (data?.messages ?? []).map(toMessage),
-      incidentDivisions: data?.journalsByPk?.incident?.divisions?.map(toDivision) ?? [],
+      messages: (data?.incident?.messages ?? []).map(toMessage),
+      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
     },
     error: undefined,
     isRefreshing: loading,
     refresh,
   };
+}
+
+/** @deprecated use useIncidentMessages */
+export function useJournalMessages(incidentId: string): QueryResult<IncidentMessagesData> {
+  return useIncidentMessages(incidentId);
 }
 
 export interface MessageForTriageData {
@@ -55,9 +65,10 @@ export interface MessageForTriageData {
 
 export function useMessageForTriage(
   messageId: string | undefined,
+  incidentId?: string,
 ): QueryResult<MessageForTriageData> {
   const { loading, error, data, refetch } = useQuery(GET_MESSAGE_FOR_TRIAGE, {
-    variables: { messageId: messageId ?? "" },
+    variables: { messageId: messageId ?? "", incidentId: incidentId ?? "" },
     skip: !messageId,
     fetchPolicy: "cache-and-network",
   });
@@ -72,13 +83,13 @@ export function useMessageForTriage(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };
   }
 
-  const wireMessage = data?.messagesByPk;
+  const wireMessage = data?.message;
   if (!wireMessage) {
     return {
       status: "error",
@@ -93,7 +104,7 @@ export function useMessageForTriage(
     status: "ready",
     data: {
       message: toMessage(wireMessage),
-      incidentDivisions: wireMessage.journal?.incident.divisions.map(toDivision) ?? [],
+      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
     },
     error: undefined,
     isRefreshing: loading,

@@ -5,22 +5,23 @@ import type {
   Geometry,
 } from "geojson";
 import type { Feature, Layer } from "types/layer";
-import { toDate, toOptionalDate } from "../common/mapper";
-import type { GetLayersQuery } from "gql";
+import type { GetLayersForIncidentQuery } from "gql/next";
 
-type WireFeature = GetLayersQuery["layers"][0]["features"][0];
-type WireLayer = GetLayersQuery["layers"][0];
+type WireFeature = GetLayersForIncidentQuery["layersForIncident"][0]["features"][0];
+type WireLayer = GetLayersForIncidentQuery["layersForIncident"][0];
 
 function toFeature(w: WireFeature): Feature {
   return {
     id: w.id,
-    // geometry and properties are opaque jsonb blobs — typed as Record<string, unknown>
-    // on the wire, cast here so the rest of the app can treat them as structured GeoJSON.
+    // geometry and properties are opaque scalars — cast here so the rest of the
+    // app can treat them as structured GeoJSON.
     geometry: w.geometry as unknown as Feature["geometry"],
     properties: w.properties as unknown as Feature["properties"],
-    createdAt: toDate(w.createdAt),
-    updatedAt: toOptionalDate(w.updatedAt) as Date,
-    deletedAt: toOptionalDate(w.deletedAt) as Date,
+    // createdAt/updatedAt/deletedAt are not exposed by the new schema; use
+    // safe defaults so the domain type remains satisfied.
+    createdAt: new Date(0),
+    updatedAt: null,
+    deletedAt: null,
   };
 }
 
@@ -28,9 +29,8 @@ export function toLayer(w: WireLayer): Layer {
   return {
     id: w.id,
     name: w.name,
-    // Fold soft-delete filter here: the app never sees deleted features.
-    features: w.features.filter((f) => f.deletedAt === null).map(toFeature),
-    // These fields are not fetched by GET_LAYERS; they are never accessed in the map view.
+    // Server already hides deleted features — no client-side filter needed.
+    features: w.features.map(toFeature),
     incident: {} as Layer["incident"],
     createdAt: new Date(0),
     updatedAt: new Date(0),

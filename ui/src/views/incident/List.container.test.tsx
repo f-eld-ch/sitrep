@@ -36,7 +36,6 @@ const baseIncident: Incident = {
   deletedAt: null,
   closedAt: null,
   divisions: [],
-  journals: [],
   layers: [],
 };
 
@@ -61,7 +60,7 @@ describe("List (container)", () => {
     const err = Object.assign(new Error("Network error"), { code: "UNKNOWN" as const });
     vi.mocked(useIncidents).mockReturnValue(errorResult(err));
     renderList();
-    expect(screen.getByText("Network error")).toBeInTheDocument();
+    expect(screen.getByText("errors.UNKNOWN")).toBeInTheDocument();
   });
 
   it("renders incident cards when data is ready", async () => {

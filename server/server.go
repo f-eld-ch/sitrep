@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
@@ -69,14 +69,14 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		s.logger.Info("shutting down server")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err := s.Server.Shutdown(ctx)
+		err := s.Shutdown(ctx)
 		if err != nil {
 			s.logger.Error("failed to shutdown server", "error", err)
 		}
 	}()
 
 	//  signal and shutdown the server gracefully
-	s.Server.RegisterOnShutdown(func() {
+	s.RegisterOnShutdown(func() {
 		s.isShuttingDown.Store(true)
 	})
 
@@ -85,23 +85,27 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 }
 
 func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		c.Response().Before(func() {
+	return func(c *echo.Context) error {
+		resp, err := echo.UnwrapResponse(c.Response())
+		if err != nil {
+			return next(c)
+		}
+		resp.Before(func() {
 			path := c.Request().URL.Path
-			if c.Response().Status == http.StatusOK {
+			if resp.Status == http.StatusOK {
 				if strings.HasPrefix(path, "/assets/") {
-					c.Response().Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+					resp.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 					return
 				}
 				// map is not immutable, so we set a shorter cache time
 				if strings.HasPrefix(path, "/map/") {
-					c.Response().Header().Set("Cache-Control", "public, max-age=604800")
+					resp.Header().Set("Cache-Control", "public, max-age=604800")
 					return
 				}
 			}
 
 			// for everything else set no-cache
-			c.Response().Header().Set("Cache-Control", "no-store")
+			resp.Header().Set("Cache-Control", "no-store")
 		})
 
 		return next(c)

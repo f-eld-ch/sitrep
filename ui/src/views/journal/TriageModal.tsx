@@ -20,7 +20,8 @@ function Triage(props: {
 }) {
   const { message, setMessage } = props;
   const { t } = useTranslation();
-  const result = useMessageForTriage(message?.id);
+  const { incidentId } = useParams();
+  const result = useMessageForTriage(message?.id, incidentId);
 
   if (!message) return null;
 
@@ -53,7 +54,7 @@ function Triage(props: {
         )}
         {result.status === "error" && (
           <section className="modal-card-body">
-            <div className="notification is-danger">Error: {result.error.message}</div>
+            <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>
           </section>
         )}
         {result.status === "ready" && (
@@ -75,7 +76,7 @@ function TriageForm(props: {
   setMessage: (message: Message | undefined) => void;
 }) {
   const { message, data, setMessage } = props;
-  const { journalId } = useParams();
+  const { incidentId } = useParams();
   const { t } = useTranslation();
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
@@ -86,10 +87,10 @@ function TriageForm(props: {
   );
 
   const handleSave = async (triage: TriageStatus) => {
-    if (!journalId) return;
+    if (!incidentId) return;
     try {
       await triageMessage({
-        journalId,
+        incidentId,
         messageId: message.id,
         priority,
         triage,
@@ -105,7 +106,7 @@ function TriageForm(props: {
     <>
       <section className="modal-card-body">
         {triageState.error && (
-          <div className="notification is-danger">Error: {triageState.error.message}</div>
+          <div className="notification is-danger">{t(`errors.${triageState.error.code}`)}</div>
         )}
         <div className="container mb-5">
           <JournalMessage

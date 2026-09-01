@@ -2,63 +2,69 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
   AddFeatureMutation,
   AddFeatureMutationVariables,
-  AddLayerMutation,
-  AddLayerMutationVariables,
+  CreateLayerMutation,
+  CreateLayerMutationVariables,
   DeleteFeatureMutation,
   DeleteFeatureMutationVariables,
-  GetLayersQuery,
-  GetLayersQueryVariables,
-  UpdateFeatureMutation,
-  UpdateFeatureMutationVariables,
-} from "gql";
+  GetLayersForIncidentQuery,
+  GetLayersForIncidentQueryVariables,
+  ModifyFeatureMutation,
+  ModifyFeatureMutationVariables,
+} from "gql/next";
 
-export const GET_LAYERS: TypedDocumentNode<GetLayersQuery, GetLayersQueryVariables> = gql`
-  query GetLayers($incidentId: uuid!) {
-    layers(where: { incidentId: { _eq: $incidentId } }) {
+// ── Queries ───────────────────────────────────────────────────────────────────
+
+export const GET_LAYERS: TypedDocumentNode<
+  GetLayersForIncidentQuery,
+  GetLayersForIncidentQueryVariables
+> = gql`
+  query GetLayersForIncident($incidentId: ID!) {
+    layersForIncident(incidentId: $incidentId) {
       id
       name
+      revision
       features {
         id
         geometry
         properties
-        createdAt
-        updatedAt
-        deletedAt
       }
     }
   }
 `;
 
+// ── Mutations ─────────────────────────────────────────────────────────────────
+
 export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutationVariables> = gql`
-  mutation AddFeature($layerId: uuid!, $id: uuid!, $geometry: jsonb, $properties: jsonb) {
-    insertFeaturesOne(
-      object: { layerId: $layerId, id: $id, geometry: $geometry, properties: $properties }
+  mutation AddFeature(
+    $incidentId: ID!
+    $layerId: ID!
+    $id: ID!
+    $geometry: Geometry
+    $properties: JSONObject
+  ) {
+    addFeature(
+      incidentId: $incidentId
+      layerId: $layerId
+      id: $id
+      geometry: $geometry
+      properties: $properties
     ) {
       id
       geometry
       properties
-      createdAt
-      updatedAt
-      deletedAt
     }
   }
 `;
 
 export const MODIFY_FEATURE: TypedDocumentNode<
-  UpdateFeatureMutation,
-  UpdateFeatureMutationVariables
+  ModifyFeatureMutation,
+  ModifyFeatureMutationVariables
 > = gql`
-  mutation UpdateFeature($id: uuid!, $geometry: jsonb, $properties: jsonb) {
-    updateFeaturesByPk(
-      pkColumns: { id: $id }
-      _set: { geometry: $geometry, properties: $properties }
-    ) {
+  mutation ModifyFeature($id: ID!, $geometry: Geometry, $properties: JSONObject) {
+    modifyFeature(id: $id, geometry: $geometry, properties: $properties) {
       id
       geometry
       properties
-      createdAt
-      updatedAt
-      deletedAt
     }
   }
 `;
@@ -67,22 +73,17 @@ export const DELETE_FEATURE: TypedDocumentNode<
   DeleteFeatureMutation,
   DeleteFeatureMutationVariables
 > = gql`
-  mutation DeleteFeature($id: uuid!, $deletedAt: timestamptz) {
-    updateFeaturesByPk(pkColumns: { id: $id }, _set: { deletedAt: $deletedAt }) {
-      id
-      geometry
-      properties
-      createdAt
-      updatedAt
-      deletedAt
-    }
+  mutation DeleteFeature($id: ID!) {
+    deleteFeature(id: $id)
   }
 `;
 
-export const ADD_LAYER: TypedDocumentNode<AddLayerMutation, AddLayerMutationVariables> = gql`
-  mutation AddLayer($incidentId: uuid!, $name: String!) {
-    insertLayersOne(object: { incidentId: $incidentId, name: $name }) {
-      id
+export const CREATE_LAYER: TypedDocumentNode<CreateLayerMutation, CreateLayerMutationVariables> =
+  gql`
+    mutation CreateLayer($incidentId: ID!, $name: String!) {
+      createLayer(incidentId: $incidentId, name: $name) {
+        id
+        name
+      }
     }
-  }
-`;
+  `;

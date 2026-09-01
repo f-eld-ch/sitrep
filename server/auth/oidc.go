@@ -14,18 +14,27 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/zitadel/oidc/v3/pkg/client"
 	"github.com/zitadel/oidc/v3/pkg/client/rp"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 type OIDCClient struct {
 	rp           rp.RelyingParty
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
+	users        outbound.UserRepository
+}
+
+// WithUserRepository attaches a UserRepository so profiles are upserted on login.
+func (o *OIDCClient) WithUserRepository(repo outbound.UserRepository) {
+	o.users = repo
 }
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -84,7 +93,7 @@ func state() string {
 }
 
 // SignInHandler initiates the authentication /oauth2/sign_in
-func (o *OIDCClient) SignInHandler(c echo.Context) error {
+func (o *OIDCClient) SignInHandler(c *echo.Context) error {
 	_, err := o.userInfoFrom(c)
 	// if already logged in redirect to main
 	if err == nil {
@@ -95,12 +104,12 @@ func (o *OIDCClient) SignInHandler(c echo.Context) error {
 }
 
 // CallbackHandler handles the auth callback from route /oauth2/callback
-func (o *OIDCClient) CallbackHandler(c echo.Context) error {
+func (o *OIDCClient) CallbackHandler(c *echo.Context) error {
 	return echo.WrapHandler(rp.CodeExchangeHandler(rp.UserinfoCallback(o.marshalUserinfo(c)), o.rp))(c)
 }
 
 // marshalUserinfo handles the user info response and writes it to the HTTP response.
-func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	return func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 		if tokens == nil || tokens.IDToken == "" {
 			o.logger.Warn("No ID token found in callback")
@@ -128,16 +137,26 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		if o.users != nil && info != nil {
+			slog.InfoContext(r.Context(), "successful OIDC login of user", slog.String("name", info.Name), slog.String("email", info.Email), slog.String("sub", info.Subject))
+			if err := o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name); err != nil {
+				o.logger.ErrorContext(r.Context(), "failed to upsert user on login", "sub", info.Subject, "error", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
+
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
 // SignOutHandler handles the signout /oauth2/sign_out
-func (o *OIDCClient) SignOutHandler(c echo.Context) error {
+func (o *OIDCClient) SignOutHandler(c *echo.Context) error {
 	cookie, err := o.secureCookie.Encode("id_token", "")
 	if err != nil {
 		o.logger.Error("Failed to encode id token", "error", err)
-		http.Error(c.Response().Writer, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(c.Response(), "Internal Server Error", http.StatusInternalServerError)
 		return nil
 	}
 	c.SetCookie(&http.Cookie{
@@ -165,7 +184,7 @@ func (o *OIDCClient) SignOutHandler(c echo.Context) error {
 }
 
 // UserInfoHandler retrieves user information from the ID token and returns it as JSON.
-func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
+func (o *OIDCClient) UserInfoHandler(c *echo.Context) error {
 	userInfo, err := o.userInfoFrom(c)
 	if err != nil {
 		if !errors.Is(err, ErrUnauthorized) {
@@ -176,7 +195,7 @@ func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, userInfo)
 }
 
-func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
+func (o *OIDCClient) userInfoFrom(c *echo.Context) (*UserInfo, error) {
 	idToken := o.decodedTokenFrom(c, "id_token")
 	if idToken == "" {
 		return nil, ErrUnauthorized
@@ -261,7 +280,7 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 	}, nil
 }
 
-func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string {
+func (o *OIDCClient) decodedTokenFrom(c *echo.Context, cookiename string) string {
 	cookie, err := c.Cookie(cookiename)
 	if err != nil || cookie.Value == "" {
 		return ""
@@ -278,11 +297,11 @@ func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string 
 	return decodedCookie
 }
 
-func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, expiresIn int) error {
+func (o *OIDCClient) encodeTokenFrom(c *echo.Context, cookiename, value string, expiresIn int) error {
 	encodedToken, err := o.secureCookie.Encode(cookiename, value)
 	if err != nil {
-		o.logger.Error("Failed to encode id token", "error", err)
-		return errors.New("Failed to encode id token")
+		o.logger.Error("failed to encode id token", "error", err)
+		return errors.New("failed to encode id token")
 	}
 
 	c.SetCookie(&http.Cookie{
@@ -298,18 +317,37 @@ func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, e
 	return nil
 }
 
-// Middleware: require valid ID token
+// Middleware: require valid ID token with JWKS signature verification.
 func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
 		if err != nil {
 			o.logger.Error("failed to get user info", "error.message", err.Error())
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
+
+		// Verify the ID token signature against the issuer's JWKS. This is the
+		// check that Hasura used to perform (HASURA_GRAPHQL_JWT_SECRET with jwk_url);
+		// removing Hasura means we must do it ourselves.
+		if _, err := rp.VerifyIDToken[*oidc.IDTokenClaims](c.Request().Context(), userInfo.IDToken, o.rp.IDTokenVerifier()); err != nil {
+			o.logger.Error("ID token signature verification failed", "error", err)
+			return c.JSON(http.StatusUnauthorized, "Unauthorized")
+		}
+
 		c.Set("id_token", userInfo.IDToken)
 		c.Set("access_token", userInfo.AccessToken)
 		c.Set("refresh_token", userInfo.RefreshToken)
 		c.Set("user_info", userInfo)
+
+		// Bridge identity into context.Context so gqlgen resolvers (which receive
+		// context.Context, not echo.Context) can access the authenticated actor.
+		actor := identity.Actor{
+			Sub:   userInfo.User,
+			Email: userInfo.Email,
+			Name:  userInfo.Name,
+		}
+		ctx := identity.WithActor(c.Request().Context(), actor)
+		c.SetRequest(c.Request().WithContext(ctx))
 
 		span := trace.SpanFromContext(c.Request().Context())
 		span.SetAttributes(

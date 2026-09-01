@@ -1,4 +1,4 @@
-import type { Division, Journal } from "./journal";
+import type { Division } from "./journal";
 import type { Layer } from "./layer";
 
 export interface Location {
@@ -16,6 +16,5 @@ export interface Incident {
   closedAt: Date | null;
   location: Location;
   divisions: Division[];
-  journals: Journal[];
   layers: Layer[];
 }

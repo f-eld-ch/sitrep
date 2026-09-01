@@ -2,43 +2,43 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useDeleteIncident } from "./commands";
 
-// Mock useMutation at the module level — this is a unit test of the hook's business logic,
-// not an integration test of the Apollo stack.
 vi.mock("@apollo/client/react", () => ({
   useMutation: vi.fn(),
 }));
 
-async function setupMutation(affectedRows: number) {
+async function setupMutation(resolvedValue: unknown) {
   const { useMutation } = await import("@apollo/client/react");
   vi.mocked(useMutation).mockReturnValue([
-    vi.fn().mockResolvedValue({
-      data: {
-        updateJournals: { affectedRows: 0, returning: [] },
-        updateIncidents: {
-          affectedRows,
-          returning: affectedRows > 0 ? [{ id: "inc-1", deletedAt: "2024-01-01" }] : [],
-        },
-      },
-    }),
+    vi.fn().mockResolvedValue(resolvedValue),
+    { loading: false, error: undefined, reset: vi.fn(), called: false } as never,
+  ]);
+}
+
+async function setupMutationRejected(rejection: unknown) {
+  const { useMutation } = await import("@apollo/client/react");
+  vi.mocked(useMutation).mockReturnValue([
+    vi.fn().mockRejectedValue(rejection),
     { loading: false, error: undefined, reset: vi.fn(), called: false } as never,
   ]);
 }
 
 describe("useDeleteIncident", () => {
-  it("resolves successfully when affectedRows > 0", async () => {
-    await setupMutation(1);
+  it("resolves successfully when mutation succeeds", async () => {
+    await setupMutation({ data: { deleteIncident: "inc-1" } });
     const { result } = renderHook(() => useDeleteIncident());
     const [deleteIncident] = result.current;
     await expect(deleteIncident({ incidentId: "inc-1" })).resolves.toBeUndefined();
   });
 
-  it("throws INCIDENT_NOT_DELETABLE when affectedRows is 0", async () => {
-    await setupMutation(0);
+  it("throws when the mutation rejects (e.g. incident not closed)", async () => {
+    const gqlError = Object.assign(new Error("incident must be closed before deletion"), {
+      graphQLErrors: [{ extensions: { code: "INCIDENT_NOT_CLOSED" } }],
+    });
+    await setupMutationRejected(gqlError);
     const { result } = renderHook(() => useDeleteIncident());
     const [deleteIncident] = result.current;
-    await expect(deleteIncident({ incidentId: "inc-1" })).rejects.toMatchObject({
-      code: "INCIDENT_NOT_DELETABLE",
-      message: expect.stringContaining("must be closed"),
-    });
+    await expect(deleteIncident({ incidentId: "inc-1" })).rejects.toThrow(
+      "incident must be closed before deletion",
+    );
   });
 });

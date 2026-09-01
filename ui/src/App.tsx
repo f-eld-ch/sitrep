@@ -9,12 +9,7 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
-import {
-  Editor as JournalEditor,
-  List as JournalMessageList,
-  New as JournalNew,
-  Overview as JournalOverview,
-} from "views/journal";
+import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
@@ -63,43 +58,6 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "journal",
-            children: [
-              {
-                path: "view",
-                element: (
-                  <Layout>
-                    <JournalOverview />
-                  </Layout>
-                ),
-              },
-              {
-                path: "new",
-                element: (
-                  <Layout>
-                    <JournalNew />
-                  </Layout>
-                ),
-              },
-              {
-                path: ":journalId/edit",
-                element: (
-                  <Layout>
-                    <JournalEditor />
-                  </Layout>
-                ),
-              },
-              {
-                path: ":journalId",
-                element: (
-                  <Layout>
-                    <JournalMessageList showControls={false} autoScroll={true} />
-                  </Layout>
-                ),
-              },
-            ],
-          },
-          {
             path: "resources",
             element: (
               <Layout>
@@ -140,6 +98,29 @@ const router = createBrowserRouter([
                 <ImmediateMeasuresList />
               </Layout>
             ),
+          },
+          {
+            path: "journal",
+            children: [
+              { index: true, element: <Navigate to="edit" replace /> },
+              { path: "view", element: <Navigate to="../edit" replace /> },
+              {
+                path: "edit",
+                element: (
+                  <Layout>
+                    <JournalEditor />
+                  </Layout>
+                ),
+              },
+              {
+                path: "messages",
+                element: (
+                  <Layout>
+                    <JournalMessageList showControls={false} autoScroll={true} />
+                  </Layout>
+                ),
+              },
+            ],
           },
         ],
       },

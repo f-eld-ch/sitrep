@@ -1,30 +1,5 @@
 name: sitrep
 services:
-  graphql-engine:
-    depends_on:
-      postgres:
-        condition: service_started
-      dex:
-        condition: service_started
-    environment:
-      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
-      HASURA_GRAPHQL_DEV_MODE: "true"
-      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
-      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
-      HASURA_GRAPHQL_JWT_SECRET: '{"jwk_url": "http://dex:5556/dex/keys" ,"header":{"type":"Authorization"},"claims_map":{"x-hasura-user-id":{"path":"$.sub"},"x-hasura-email":{"path":"$.email"},"x-hasura-allowed-roles":["viewer","editor"],"x-hasura-default-role":"editor"}}'
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
-      PG_DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-    build:
-      dockerfile: Dockerfile.hasura
-    networks:
-      default: null
-    ports:
-      - mode: ingress
-        target: 8080
-        published: "8080"
-        protocol: tcp
-    restart: always
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -45,8 +20,8 @@ services:
   dex:
     image: docker.io/dexidp/dex:latest
     environment:
-      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
-      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
       DEX_CONNECTORS_ENABLE_MOCK: "true"
       DEX_CONNECTORS_ENABLE_DEMO_USER: "true"
       DEX_ISSUER: http://localhost:5556/dex

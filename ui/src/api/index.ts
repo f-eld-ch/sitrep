@@ -24,19 +24,10 @@ export {
   useUpdateIncident,
 } from "./incident";
 
-// Journal aggregate
-export type { CreateJournalArgs, JournalsData } from "./journal";
-export {
-  afterJournalWrite,
-  useCloseJournal,
-  useCreateJournal,
-  useJournals,
-  useReopenJournal,
-} from "./journal";
-
 // Message aggregate
 export type {
   CreateMessageArgs,
+  IncidentMessagesData,
   JournalMessagesData,
   MessageForTriageData,
   TriageMessageArgs,
@@ -44,6 +35,7 @@ export type {
 } from "./message";
 export {
   useCreateMessage,
+  useIncidentMessages,
   useJournalMessages,
   useMessageForTriage,
   useTriageMessage,

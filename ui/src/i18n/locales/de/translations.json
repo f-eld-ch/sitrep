@@ -161,5 +161,19 @@
       "name": "Lage",
       "description": "C Lage"
     }
+  },
+  "errors": {
+    "NOT_FOUND": "Der angeforderte Eintrag wurde nicht gefunden.",
+    "FORBIDDEN": "Sie haben keine Berechtigung für diese Aktion.",
+    "INCIDENT_NOT_OPEN": "Das Ereignis ist nicht offen.",
+    "INCIDENT_NOT_CLOSED": "Das Ereignis muss zuerst geschlossen werden.",
+    "INCIDENT_DELETED": "Das Ereignis wurde bereits gelöscht.",
+    "ALREADY_CLOSED": "Der Eintrag ist bereits geschlossen.",
+    "ALREADY_OPEN": "Der Eintrag ist bereits offen.",
+    "INVALID_INPUT": "Die Eingabe ist ungültig.",
+    "CONFLICT": "Die Anfrage kann aufgrund eines Konflikts nicht ausgeführt werden.",
+    "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "NETWORK_ERROR": "Keine Verbindung zum Server. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "UNKNOWN": "Ein unbekannter Fehler ist aufgetreten."
   }
 }

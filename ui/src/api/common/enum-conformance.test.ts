@@ -12,7 +12,11 @@
  */
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
-import type { MediumEnum, PriorityStatusEnum, TriageStatusEnum } from "gql";
+import type {
+  Medium as MediumEnum,
+  PriorityStatus as PriorityStatusEnum,
+  TriageStatus as TriageStatusEnum,
+} from "gql/next";
 
 // --- Direction 2: schema → domain (runtime) ---
 // Keep these arrays in sync with the generated union types above.
@@ -20,20 +24,14 @@ import type { MediumEnum, PriorityStatusEnum, TriageStatusEnum } from "gql";
 // the test below catches any runtime gap in the domain enum.
 const ALL_MEDIUM_SCHEMA: MediumEnum[] = ["EMAIL", "OTHER", "PHONE", "RADIO"];
 const ALL_TRIAGE_SCHEMA: TriageStatusEnum[] = ["DONE", "MOREINFO", "PENDING", "RESET"];
-const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["CRITICAL", "HIGH", "NORMAL"];
+const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["HIGH", "NORMAL"];
 
 /**
  * Schema values the UI deliberately does not expose.
  *
- * CRITICAL exists in the priority_status DB enum but has never been used in the triage
- * module, so it is absent from the PriorityStatus domain enum and from all four locale
- * files. Listing it here keeps the schema→domain check honest: a NEW schema value still
- * fails the test, while this known omission is explicit rather than silently dropped.
- *
- * If CRITICAL is ever adopted: add it to PriorityStatus, add priority.CRITICAL to
- * de/en/fr/it translations, and delete it from this list.
+ * Empty: all PriorityStatus values in the gqlgen schema are exposed by the domain enum.
  */
-const INTENTIONALLY_UNEXPOSED: string[] = ["CRITICAL"];
+const INTENTIONALLY_UNEXPOSED: string[] = [];
 
 describe("enum conformance: schema values are all represented in domain enums", () => {
   // Direction 1 (domain → schema). These assignments compile only if every domain enum value

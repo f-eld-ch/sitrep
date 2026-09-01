@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import type { Incident } from "types";
+import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_INCIDENT_DETAILS, GET_INCIDENTS } from "./documents";
 import { toIncidentDetails, toIncidentSummary } from "./mapper";
@@ -27,7 +28,7 @@ export function useIncidents(): QueryResult<IncidentsData> {
     return {
       status: "error",
       data: data ? { incidents: data.incidents.map(toIncidentSummary) } : undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };
@@ -61,13 +62,13 @@ export function useIncidentDetails(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error(error.message), { code: "NETWORK_ERROR" as const }),
+      error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
     };
   }
 
-  const wireIncident = data?.incidentsByPk;
+  const wireIncident = data?.incident;
   if (!wireIncident) {
     return {
       status: "error",

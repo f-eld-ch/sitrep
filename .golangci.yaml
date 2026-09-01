@@ -1,6 +1,72 @@
 version: "2"
 linters:
   default: standard
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        # The domain centre must be pure: no infrastructure imports.
+        domain-pure:
+          files:
+            - "**/internal/core/domain/**/*.go"
+          deny:
+            - pkg: "github.com/jackc/pgx"
+              desc: "domain must not import pgx — use ports"
+            - pkg: "github.com/labstack/echo"
+              desc: "domain must not import echo — use ports"
+            - pkg: "github.com/99designs/gqlgen"
+              desc: "domain must not import gqlgen — use ports"
+            - pkg: "go.opentelemetry.io/otel"
+              desc: "domain must not import otel directly — instrument at service/adapter layer"
+            - pkg: "github.com/pressly/goose"
+              desc: "domain must not import goose"
+            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
+              desc: "domain must not import adapters"
+        # Ports may only depend on domain and stdlib/uuid.
+        ports-clean:
+          files:
+            - "**/internal/core/port/**/*.go"
+          deny:
+            - pkg: "github.com/jackc/pgx"
+              desc: "ports must not import pgx"
+            - pkg: "github.com/labstack/echo"
+              desc: "ports must not import echo"
+            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
+              desc: "ports must not import adapters"
+        # Application services may not import adapters directly.
+        services-no-adapters:
+          files:
+            - "**/internal/core/service/**/*.go"
+          deny:
+            - pkg: "github.com/jackc/pgx"
+              desc: "services must not import pgx — depend on port interfaces"
+            - pkg: "github.com/labstack/echo"
+              desc: "services must not import echo"
+            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
+              desc: "services must not import adapters directly"
+        # Inbound adapters (GraphQL, CLI) must not reach into outbound adapters directly.
+        # Test files are excluded: they act as composition roots and must wire both sides.
+        inbound-no-outbound:
+          files:
+            - "**/internal/adapter/inbound/**/*.go"
+            - "!**/*_test.go"
+          deny:
+            - pkg: "github.com/jackc/pgx"
+              desc: "inbound adapters must not import pgx — use outbound port interfaces"
+            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter/outbound"
+              desc: "inbound adapters must not import outbound adapters directly"
+        # Migrations may import domain event types but not ports or adapters.
+        migrations-scope:
+          files:
+            - "**/migrations/**/*.go"
+          deny:
+            - pkg: "github.com/f-eld-ch/sitrep/internal/core/port"
+              desc: "migrations must not import ports"
+            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
+              desc: "migrations must not import adapters"
+            - pkg: "github.com/labstack/echo"
+              desc: "migrations must not import echo"
 
 formatters:
   enable:
@@ -11,23 +77,14 @@ formatters:
   settings:
     gci:
       sections:
-        - standard # Standard section: captures all standard packages.
-        - blank # Blank section: contains all blank imports. This section is not present unless explicitly enabled.
-        - dot # Dot section: contains all dot imports. This section is not present unless explicitly enabled.
-        - alias # Alias section: contains all alias imports. This section is not present unless explicitly enabled.
-        - default # Default section: contains all imports that could not be matched to another section type.
-        - prefix(github.com/f-eld-ch) # Custom section: groups all imports with the specified Prefix.
-        - localmodule # Local module section: contains all local packages. This section is not present unless explicitly enabled.
-      # Checks that no inline comments are present.
-      # Default: false
+        - standard
+        - blank
+        - dot
+        - alias
+        - default
+        - prefix(github.com/f-eld-ch)
+        - localmodule
       no-inline-comments: true
-      # Checks that no prefix comments (comment lines above an import) are present.
-      # Default: false
       no-prefix-comments: true
-      # Enable custom order of sections.
-      # If `true`, make the section order the same as the order of `sections`.
-      # Default: false
       custom-order: true
-      # Drops lexical ordering for custom sections.
-      # Default: false
       no-lex-order: true

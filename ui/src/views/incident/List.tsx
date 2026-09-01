@@ -32,14 +32,16 @@ function List() {
   const mutationError = closeState.error ?? deleteState.error;
 
   if (result.status === "error") {
-    return <div className="notification is-danger">{result.error.message}</div>;
+    return <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>;
   }
   if (result.status === "loading") return <Spinner />;
 
   return (
     <div>
       <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
-      {mutationError && <div className="notification is-danger">{mutationError.message}</div>}
+      {mutationError && (
+        <div className="notification is-danger">{t(`errors.${mutationError.code}`)}</div>
+      )}
       <div className="buttons">
         <button
           type="button"
@@ -144,9 +146,8 @@ export function IncidentCard(props: {
           data-testid="enter-button"
           className="card-footer-item is-ahref is-capitalized"
           onClick={() => {
-            navigate(`../${props.incident.id}/journal/view`);
-            dispatch({ type: "SET_INCIDENT", payload: props.incident });
-            dispatch({ type: "SET_JOURNAL", payload: null });
+            navigate(`../${props.incident.id}/journal/edit`);
+            dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
           }}
         >
           <span className="icon">

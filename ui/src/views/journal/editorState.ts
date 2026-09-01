@@ -99,7 +99,7 @@ export function canSave(state: EditorState): boolean {
 
 export function buildMessageVars(
   state: EditorState,
-  journalId: string,
+  incidentId: string,
   now: Date,
 ): CreateMessageArgs {
   const time = state.time ?? now;
@@ -107,7 +107,7 @@ export function buildMessageVars(
   const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
   return {
     time,
-    journalId,
+    incidentId,
     content: state.content,
     medium: state.media,
     sender: state.sender,

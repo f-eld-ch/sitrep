@@ -63,11 +63,10 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           incidentId: incident.id,
           name,
           location,
-          locationId: incident.location.id,
           divisions: assignments.map((d) => ({
+            id: d.id || undefined,
             name: d.name,
             description: d.description,
-            incidentId: incident.id,
           })),
         });
         navigate("../journal/view");
@@ -79,7 +78,6 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         const { incidentId } = await createIncident({
           name,
           location,
-          journalName: t("phase1"),
           layerName: t("divisionsNames.Karte.description"),
           divisions: assignments.map((d) => ({ name: d.name, description: d.description })),
         });
@@ -97,10 +95,10 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   return (
     <>
       {createState.error && (
-        <div className="notification is-danger">{createState.error.message}</div>
+        <div className="notification is-danger">{t(`errors.${createState.error.code}`)}</div>
       )}
       {updateState.error && (
-        <div className="notification is-danger">{updateState.error.message}</div>
+        <div className="notification is-danger">{t(`errors.${updateState.error.code}`)}</div>
       )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">

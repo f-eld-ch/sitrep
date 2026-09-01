@@ -1,5 +1,3 @@
-import type { Incident } from "./incident";
-
 export enum TriageStatus {
   Pending = "PENDING",
   Triaged = "DONE",
@@ -55,14 +53,4 @@ export interface Division {
   id: string;
   name: string;
   description: string;
-}
-
-export interface Journal {
-  id: string;
-  name: string;
-  incident: Incident;
-  createdAt: Date;
-  updatedAt: Date;
-  closedAt: Date;
-  deletedAt: Date;
 }

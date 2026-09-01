@@ -7,17 +7,15 @@ import {
   useReducer,
 } from "react";
 import { useParams } from "react-router";
-import type { Incident, IncidentContext as IncidentContextState, Journal } from "types";
+import type { Incident, IncidentContext as IncidentContextState } from "types";
 import { useIncidentDetails } from "api";
 
 const initialState: IncidentContextState = {
   incident: null,
-  journal: null,
+  loadedForId: null,
 };
 
-type IncidentAction =
-  | { type: "SET_INCIDENT"; payload: Incident | null }
-  | { type: "SET_JOURNAL"; payload: Journal | null };
+type IncidentAction = { type: "SET_INCIDENT"; payload: Incident | null; forId: string | null };
 
 const incidentReducer = (
   state: IncidentContextState,
@@ -25,9 +23,7 @@ const incidentReducer = (
 ): IncidentContextState => {
   switch (action.type) {
     case "SET_INCIDENT":
-      return { ...state, incident: action.payload };
-    case "SET_JOURNAL":
-      return { ...state, journal: action.payload };
+      return { incident: action.payload, loadedForId: action.forId };
     default:
       return state;
   }
@@ -48,35 +44,41 @@ const IncidentContextProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const IncidentContextSetter = () => {
-  const { incidentId, journalId } = useParams();
+/**
+ * Syncs the active incident from the Apollo query into IncidentContext.
+ * Call this once per layout that has an :incidentId URL param.
+ * Lives here (not in a null-render component) so it reads like a plain hook call.
+ *
+ * useEffect is intentional: we are bridging an async Apollo query into a shared
+ * context whose Provider sits outside the Router (above RouterProvider in App.tsx).
+ * This is the correct React pattern for syncing external data into context.
+ */
+export function useIncidentSync() {
+  const { incidentId } = useParams();
   const { state, dispatch } = useContext(IncidentContext);
   const result = useIncidentDetails(incidentId);
 
   useEffect(() => {
     if (!incidentId) {
-      if (state.incident !== null) {
-        dispatch({ type: "SET_INCIDENT", payload: null });
-        dispatch({ type: "SET_JOURNAL", payload: null });
-      }
+      dispatch({ type: "SET_INCIDENT", payload: null, forId: null });
       return;
     }
 
-    if (result.status !== "ready") return;
-
-    const { incident } = result.data;
-    if (state.incident?.id !== incident.id) {
-      dispatch({ type: "SET_INCIDENT", payload: incident });
-    }
-
-    if (journalId) {
-      const journal = incident.journals.find((j) => j.id === journalId);
-      if (journal && state.journal?.id !== journal.id) {
-        dispatch({ type: "SET_JOURNAL", payload: journal });
+    if (result.status === "ready") {
+      const { incident } = result.data;
+      if (state.incident?.id !== incident.id) {
+        dispatch({ type: "SET_INCIDENT", payload: incident, forId: incidentId });
       }
+    } else if (result.status === "error" && result.error.code === "NOT_FOUND") {
+      // Only clear on definitive absence — transient failures retain current state.
+      dispatch({ type: "SET_INCIDENT", payload: null, forId: incidentId });
     }
-  }, [incidentId, journalId, result.status, result.data, state.incident, state.journal, dispatch]);
+  }, [incidentId, result.status, result.data, result.error, state.incident, dispatch]);
+}
 
+/** @deprecated Use useIncidentSync() directly in the layout component instead. */
+const IncidentContextSetter = () => {
+  useIncidentSync();
   return null;
 };
 

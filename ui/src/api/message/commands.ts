@@ -1,11 +1,11 @@
 import { useMutation } from "@apollo/client/react";
 import { Medium, PriorityStatus, TriageStatus } from "types";
+import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
-import { INSERT_MESSAGE, SAVE_MESSAGE_TRIAGE, UPDATE_MESSAGE } from "./documents";
-import { afterMessageWrite } from "./invalidate";
+import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
 
 export interface CreateMessageArgs {
-  journalId: string;
+  incidentId: string;
   sender: string;
   receiver: string;
   senderDetail: string;
@@ -20,7 +20,7 @@ export interface UpdateMessageArgs extends CreateMessageArgs {
 }
 
 export interface TriageMessageArgs {
-  journalId: string;
+  incidentId: string;
   messageId: string;
   priority: PriorityStatus;
   triage: TriageStatus;
@@ -28,28 +28,43 @@ export interface TriageMessageArgs {
 }
 
 export function useCreateMessage(): CommandHook<CreateMessageArgs> {
-  const [mutate, { loading, error }] = useMutation(INSERT_MESSAGE);
+  const [mutate, { loading, error }] = useMutation(CREATE_MESSAGE);
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const createMessage = async (args: CreateMessageArgs): Promise<void> => {
     await mutate({
       variables: {
-        journalId: args.journalId,
+        incidentId: args.incidentId,
         sender: args.sender,
         receiver: args.receiver,
         senderDetail: args.senderDetail,
         receiverDetail: args.receiverDetail,
         content: args.content,
         medium: args.medium,
-        time: args.time,
+        time: args.time.toISOString(),
       },
-      refetchQueries: afterMessageWrite(args.journalId),
+      update(cache, { data }) {
+        if (!data?.createMessage) return;
+        const cached = cache.readQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached?.incident) return;
+        cache.writeQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+          data: {
+            incident: {
+              ...cached.incident,
+              messages: [...cached.incident.messages, data.createMessage],
+            },
+          },
+        });
+      },
     });
   };
 
@@ -61,24 +76,23 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const updateMessage = async (args: UpdateMessageArgs): Promise<void> => {
     await mutate({
       variables: {
-        messageId: args.messageId,
+        id: args.messageId,
         sender: args.sender,
         receiver: args.receiver,
         senderDetail: args.senderDetail,
         receiverDetail: args.receiverDetail,
         content: args.content,
         medium: args.medium,
-        time: args.time,
+        time: args.time.toISOString(),
       },
-      refetchQueries: afterMessageWrite(args.journalId),
+      // Apollo normalizes by id — the cached message is updated immediately
+      // from the mutation response without a projection read.
     });
   };
 
@@ -86,31 +100,48 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
 }
 
 export function useTriageMessage(): CommandHook<TriageMessageArgs> {
-  const [mutate, { loading, error }] = useMutation(SAVE_MESSAGE_TRIAGE);
+  const [mutate, { loading, error }] = useMutation(TRIAGE_MESSAGE);
 
   const state: CommandState = {
     loading,
-    error: error
-      ? Object.assign(new Error(error.message), { code: "UNKNOWN" as const })
-      : undefined,
+    error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
   const triageMessage = async (args: TriageMessageArgs): Promise<void> => {
-    // TODO(gqlgen): replace the delete-then-reinsert with a single atomic
-    // triageMessage mutation once the Go backend lands. This relies on Hasura's
-    // multi-root transactionality: if insertMessageDivision fails after
-    // deleteMessageDivision commits, the message loses all division assignments.
     await mutate({
       variables: {
-        messageId: args.messageId,
+        id: args.messageId,
         priority: args.priority,
         triage: args.triage,
-        messageDivisions: args.divisionIds.map((divisionId) => ({
-          messageId: args.messageId,
-          divisionId,
-        })),
+        divisionIds: args.divisionIds,
       },
-      refetchQueries: afterMessageWrite(args.journalId),
+      update(cache, { data }) {
+        if (!data?.triageMessage) return;
+        const updated = data.triageMessage;
+        const cached = cache.readQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached?.incident) return;
+        // Server returns full division objects; fall back to resolving from the
+        // incident's cached divisions if the server response is empty (shouldn't happen).
+        const divisions =
+          updated.divisions.length > 0
+            ? updated.divisions
+            : cached.incident.divisions.filter((d) => args.divisionIds.includes(d.id));
+        cache.writeQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+          data: {
+            incident: {
+              ...cached.incident,
+              messages: cached.incident.messages.map((m) =>
+                m.id === updated.id ? { ...m, ...updated, divisions } : m,
+              ),
+            },
+          },
+        });
+      },
     });
   };
 

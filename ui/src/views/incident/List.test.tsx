@@ -31,7 +31,6 @@ describe("IncidentCard", () => {
     deletedAt: null,
     closedAt: null,
     divisions: [],
-    journals: [],
     layers: [],
   };
   const mockCloseIncident = vi.fn();
@@ -155,7 +154,6 @@ describe("IncidentCards", () => {
     deletedAt: null,
     closedAt: null,
     divisions: [],
-    journals: [],
     layers: [],
   };
   const mockCloseIncident = vi.fn();

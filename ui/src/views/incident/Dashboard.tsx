@@ -1,5 +1,6 @@
 import { Spinner } from "components";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useIncidentDetails } from "api";
 
@@ -25,10 +26,11 @@ function MapFrame() {
 
 function Dashboard() {
   const { incidentId } = useParams();
+  const { t } = useTranslation();
   const result = useIncidentDetails(incidentId);
 
   if (result.status === "error") {
-    return <div className="notification is-danger">{result.error.message}</div>;
+    return <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>;
   }
 
   if (result.status === "loading") return <Spinner />;

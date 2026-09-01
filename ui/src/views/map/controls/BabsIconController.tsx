@@ -433,12 +433,13 @@ const BabsIconController = () => {
   );
 
   const onUpdate = useCallback(
-    (e: { features: Feature<Geometry, GeoJsonProperties>[] }) => {
+    (e: { features: Feature<Geometry, GeoJsonProperties>[]; action?: string }) => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
       // changes made here persist by exactly the same mechanism as direct edits.
       fireDrawEvent(map?.getMap(), "draw.update", {
         features: updatedFeatures,
+        action: e.action,
         target: map,
       });
     },

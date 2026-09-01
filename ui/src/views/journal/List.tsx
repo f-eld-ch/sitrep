@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
-import { useJournalMessages } from "api";
+import { useIncidentMessages } from "api";
 import { buildMessageList } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -19,7 +19,7 @@ function List(props: {
   setTriageMessage?: (message: Message | undefined) => void;
 }) {
   const { t } = useTranslation();
-  const { journalId } = useParams();
+  const { incidentId } = useParams();
   const [triageFilter, setTriageFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignmentFilter, setAssignmentFilter] = useState("all");
@@ -30,7 +30,7 @@ function List(props: {
     pageStyle: "@page { size: A4 landscape;}",
   });
 
-  const result = useJournalMessages(journalId ?? "");
+  const result = useIncidentMessages(incidentId ?? "");
 
   const printButtonClass = classNames({
     "is-hidden": !showControls,
@@ -51,8 +51,7 @@ function List(props: {
   if (result.status === "error") {
     return (
       <div className="notification is-danger is-light">
-        <div className="block has-text-weight-semibold">Ups, da ging was schief:</div>
-        <div className="block">{result.error.message}</div>
+        <div className="block">{t(`errors.${result.error.code}`)}</div>
       </div>
     );
   }
