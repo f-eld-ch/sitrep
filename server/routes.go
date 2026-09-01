@@ -40,11 +40,10 @@ func (s *Server) RegisterMiddlewares() {
 
 	// CORS MiddleWare
 	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions},
-		AllowHeaders:     []string{"Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{http.MethodGet, http.MethodPost, http.MethodOptions},
+		AllowHeaders:  []string{"Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
 	}))
 	s.router.Use(cacheControlMiddleWare)
 
