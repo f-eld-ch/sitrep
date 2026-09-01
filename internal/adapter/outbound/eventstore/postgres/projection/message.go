@@ -91,6 +91,8 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			DivisionIDs    []uuid.UUID `json:"divisionIds"`
 			AuthorSub      *string     `json:"authorSub"`
 			LastEditorSub  *string     `json:"lastEditorSub"`
+			RecordedAt     time.Time   `json:"recordedAt"`
+			LastUpdatedAt  time.Time   `json:"lastUpdatedAt"`
 		}
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
@@ -99,19 +101,27 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
 		}
+		createdAt := d.RecordedAt
+		if createdAt.IsZero() {
+			createdAt = e.OccurredAt
+		}
+		updatedAt := d.LastUpdatedAt
+		if updatedAt.IsZero() {
+			updatedAt = createdAt
+		}
 		return exec(db, ctx, `
 			INSERT INTO rm_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
 			   medium, msg_time, triage, priority, division_ids, author_sub, last_editor_sub,
 			   created_at, updated_at)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$16)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
 			ON CONFLICT (id) DO UPDATE
 			  SET content = EXCLUDED.content, triage = EXCLUDED.triage,
 			      priority = EXCLUDED.priority, division_ids = EXCLUDED.division_ids,
 			      updated_at = EXCLUDED.updated_at`,
 			id, d.IncidentID, d.Number, d.Content, d.Sender, d.SenderDetail,
 			d.Receiver, d.ReceiverDetail, d.Medium, d.Time, d.Triage, d.Priority,
-			d.DivisionIDs, d.AuthorSub, d.LastEditorSub, e.OccurredAt)
+			d.DivisionIDs, d.AuthorSub, d.LastEditorSub, createdAt, updatedAt)
 
 	case "Corrected":
 		type corrected struct {

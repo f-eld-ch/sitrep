@@ -50,6 +50,14 @@ type Aggregate interface {
 	Transition(Event) error // total: must not fail on a valid event
 }
 
+// Owned is an optional interface for aggregates that belong to an incident.
+// When implemented, the event store can populate the aggregate_index table so
+// that incident-scoped retention and purge operations can find all related streams.
+// Incident aggregates return their own ID; all others return their incident's ID.
+type Owned interface {
+	OwnerIncidentID() uuid.UUID
+}
+
 // Register binds event data types to an aggregate so the store can decode them.
 // Pass zero-value examples of each event struct the aggregate handles:
 //

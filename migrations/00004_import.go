@@ -112,6 +112,7 @@ type incidentRow struct {
 	id        uuid.UUID
 	name      string
 	createdAt time.Time
+	updatedAt time.Time
 	closedAt  *time.Time
 	deletedAt *time.Time
 	locName   *string
@@ -126,7 +127,7 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	rows, err := tx.QueryContext(ctx, `
-		SELECT i.id, i.name, i.created_at, i.closed_at, i.deleted_at,
+		SELECT i.id, i.name, i.created_at, i.updated_at, i.closed_at, i.deleted_at,
 		       l.name AS loc_name,
 		       l.coordinates[0] AS lon, l.coordinates[1] AS lat,
 		       l.id AS loc_id
@@ -142,7 +143,7 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 	var incidents []incidentRow
 	for rows.Next() {
 		var r incidentRow
-		if err := rows.Scan(&r.id, &r.name, &r.createdAt, &r.closedAt, &r.deletedAt,
+		if err := rows.Scan(&r.id, &r.name, &r.createdAt, &r.updatedAt, &r.closedAt, &r.deletedAt,
 			&r.locName, &r.lon, &r.lat, &r.locID); err != nil {
 			_ = rows.Close()
 			return err
@@ -171,6 +172,7 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 			Location:         loc,
 			Divisions:        divsByIncident[r.id],
 			CreatedAt:        r.createdAt,
+			UpdatedAt:        &r.updatedAt,
 			ClosedAt:         r.closedAt,
 			DeletedAt:        r.deletedAt,
 			LegacyLocationID: r.locID,
@@ -500,11 +502,13 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	for incID, maxNum := range maxNumberByIncident {
+		// Next() increments-then-returns, so seed maxNum (not maxNum+1).
+		// The first post-migration message will be maxNum+1.
 		if _, err := tx.ExecContext(ctx, `
 			INSERT INTO eventsourcing.incident_counters (incident_id, next_number)
 			VALUES ($1, $2)
 			ON CONFLICT (incident_id) DO UPDATE SET next_number = EXCLUDED.next_number`,
-			incID, maxNum+1); err != nil {
+			incID, maxNum); err != nil {
 			return fmt.Errorf("incident_counters %s: %w", incID, err)
 		}
 	}

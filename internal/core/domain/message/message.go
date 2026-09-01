@@ -43,8 +43,9 @@ func New(id shared.MessageID) *Message {
 	return m
 }
 
-func (m *Message) Root() *eventsourcing.Root { return &m.root }
-func (m *Message) AggregateType() string     { return "Message" }
+func (m *Message) Root() *eventsourcing.Root    { return &m.root }
+func (m *Message) AggregateType() string        { return "Message" }
+func (m *Message) OwnerIncidentID() uuid.UUID   { return uuid.UUID(m.incidentID) }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Queries

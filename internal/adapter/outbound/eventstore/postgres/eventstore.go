@@ -116,6 +116,18 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 			return nil, fmt.Errorf("eventstore.Append insert: %w", err)
 		}
 		lastCursor = encodeCursor(xid.Uint64, seq)
+
+		if e.Version == 1 {
+			if owned, ok := a.(eventsourcing.Owned); ok {
+				_, err = tx.Exec(ctx, `
+					INSERT INTO eventsourcing.aggregate_index (stream_type, stream_id, incident_id)
+					VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+					e.StreamType, e.StreamID, owned.OwnerIncidentID())
+				if err != nil {
+					return nil, fmt.Errorf("eventstore.Append index: %w", err)
+				}
+			}
+		}
 	}
 
 	a.Root().ClearPending()

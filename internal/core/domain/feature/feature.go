@@ -31,8 +31,9 @@ func New(id shared.FeatureID) *Feature {
 	return f
 }
 
-func (f *Feature) Root() *eventsourcing.Root { return &f.root }
-func (f *Feature) AggregateType() string     { return "Feature" }
+func (f *Feature) Root() *eventsourcing.Root    { return &f.root }
+func (f *Feature) AggregateType() string        { return "Feature" }
+func (f *Feature) OwnerIncidentID() uuid.UUID   { return uuid.UUID(f.incidentID) }
 
 func (f *Feature) IncidentID() shared.IncidentID { return f.incidentID }
 func (f *Feature) LayerID() shared.LayerID       { return f.layerID }

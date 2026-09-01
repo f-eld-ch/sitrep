@@ -76,8 +76,11 @@ type Imported struct {
 	Location  *LocationData  `json:"location,omitempty"`
 	Divisions []DivisionData `json:"divisions"`
 	CreatedAt time.Time      `json:"createdAt"`
-	ClosedAt  *time.Time     `json:"closedAt,omitempty"`
-	DeletedAt *time.Time     `json:"deletedAt,omitempty"`
+	// UpdatedAt carries the last-modified time from the legacy incidents table.
+	// Pointer for backward-compat: old events without it fall back to CreatedAt.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	ClosedAt  *time.Time `json:"closedAt,omitempty"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 	// LegacyLocationID preserved for the pre-flight diff.
 	LegacyLocationID *uuid.UUID `json:"legacyLocationId,omitempty"`
 }

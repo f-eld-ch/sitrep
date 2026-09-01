@@ -65,6 +65,8 @@ func (i *Incident) AggregateType() string { return "Incident" }
 // Queries (read-only accessors used by service return values)
 // ──────────────────────────────────────────────────────────────────────────────
 
+func (i *Incident) OwnerIncidentID() uuid.UUID { return i.root.ID() }
+
 func (i *Incident) Name() string         { return i.name }
 func (i *Incident) Location() *Location  { return i.location }
 func (i *Incident) CreatedAt() time.Time { return i.createdAt }

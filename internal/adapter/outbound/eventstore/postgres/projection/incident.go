@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -74,22 +75,29 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			Location  json.RawMessage `json:"location"`
 			ClosedAt  *string         `json:"closedAt"`
 			DeletedAt *string         `json:"deletedAt"`
+			UpdatedAt *time.Time      `json:"updatedAt,omitempty"`
 		}
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
 		// occurred_at == original created_at (set that way by the import migration).
+		// UpdatedAt carries the real last-modified time; fall back to createdAt if absent
+		// (old events written before this field was added).
+		updatedAt := e.OccurredAt
+		if d.UpdatedAt != nil {
+			updatedAt = *d.UpdatedAt
+		}
 		return exec(db, ctx, `
 			INSERT INTO rm_incident
 			  (id, name, location, is_closed, is_deleted, closed_at, created_at, updated_at)
-			VALUES ($1, $2, $3, $4, $5, $6::timestamptz, $7, $7)
+			VALUES ($1, $2, $3, $4, $5, $6::timestamptz, $7, $8)
 			ON CONFLICT (id) DO UPDATE
 			  SET name = EXCLUDED.name, location = EXCLUDED.location,
 			      is_closed = EXCLUDED.is_closed, is_deleted = EXCLUDED.is_deleted,
 			      closed_at = EXCLUDED.closed_at, updated_at = EXCLUDED.updated_at`,
 			id, d.Name, nullableJSON(d.Location), d.ClosedAt != nil, d.DeletedAt != nil,
-			d.ClosedAt, e.OccurredAt)
+			d.ClosedAt, e.OccurredAt, updatedAt)
 
 	case "Renamed":
 		type renamed struct {
