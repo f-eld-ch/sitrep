@@ -5,6 +5,7 @@ package outbound
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -86,11 +87,32 @@ type EventNotifier interface {
 	Wait(ctx context.Context) error
 }
 
+// ErrLockHeld is returned by ProjectorLock.Acquire when another instance
+// already holds the lock. Callers should idle and retry, not treat it as a
+// failure.
+var ErrLockHeld = errors.New("projector lock held by another instance")
+
 // ProjectorLock provides a singleton lock so only one projector instance runs
 // per projection at a time. Extra replicas acquire no lock and idle.
-// On Postgres this is pg_advisory_lock; on SQLite it is a sync.Mutex.
+// On Postgres this is a session-level pg_try_advisory_lock; on SQLite/in-memory
+// it is a sync.Mutex.
+//
+// Acquire is non-blocking: it returns ErrLockHeld when another instance holds
+// the lock. release is nil on any error and must only be called after a nil
+// error; it is idempotent.
 type ProjectorLock interface {
 	Acquire(ctx context.Context, projection string) (release func(), err error)
+}
+
+// LockLivenessChecker is an optional ProjectorLock extension for backends whose
+// lock can be silently lost — a Postgres session-level advisory lock disappears
+// if the underlying connection drops. A leader that implements this interface
+// checks liveness after each catch-up cycle and steps down on failure, instead
+// of running as a split-brain leader.
+type LockLivenessChecker interface {
+	// CheckHeld verifies the lock returned by the last successful Acquire is
+	// still held by this instance.
+	CheckHeld(ctx context.Context) error
 }
 
 // Projector reads the global event stream and applies handlers to read models.

@@ -56,6 +56,12 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 		return nil, err
 	}
 	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
+	// The projector leader holds one connection for the advisory lock for its
+	// entire lifetime; Notifier.Wait needs one every ~2s. The pgx default of
+	// max(4, NumCPU) is too small under concurrent load, so we enforce a floor.
+	if cfg.MaxConns < 8 {
+		cfg.MaxConns = 8
+	}
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, err
@@ -88,7 +94,9 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 		pgprojection.NewMessageHandler(pool),
 		pgprojection.NewLayerFeaturesHandler(pool),
 	}
-	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers), "postgres")
+	projLock := pgstore.NewProjectorLock(pool)
+	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers,
+		pgprojection.WithLock(projLock)), "postgres")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
 	projDone := make(chan struct{})

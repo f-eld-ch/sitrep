@@ -25,6 +25,57 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
+// DefaultLockName is the stable advisory-lock key used by NewProjector. It
+// covers all handlers in a single projector instance.
+//
+// STABILITY CONTRACT: changing this value causes two replica builds to use
+// different lock names and both win the election simultaneously. It is pinned
+// by TestDefaultLockName in the test suite.
+const DefaultLockName = "postgres-projector"
+
+const (
+	defaultStandbyInterval        = 5 * time.Second
+	maxConsecutiveCatchUpFailures = 5
+)
+
+// errProjectionAhead is returned by initCheckpoints when a stored handler
+// version is newer than the current build, indicating this replica is running
+// older code during a rolling deploy. The caller should yield the lock.
+var errProjectionAhead = errors.New("stored projection version is ahead of this build")
+
+// errCatchUpStuck is returned by lead when catch-up fails consecutively more
+// than maxConsecutiveCatchUpFailures times, so the leader releases and a
+// standby can try.
+var errCatchUpStuck = errors.New("projector: too many consecutive catch-up failures")
+
+// Option configures a Projector.
+type Option func(*Projector)
+
+// WithLock sets the leader-election lock. Without this option a no-op lock is
+// used, which means all replicas project concurrently (the pre-lock behaviour).
+func WithLock(l outbound.ProjectorLock) Option {
+	return func(p *Projector) { p.lock = l }
+}
+
+// WithLockName overrides the lock name passed to Acquire (default: DefaultLockName).
+// Changing the name between builds causes two builds to use different keys and
+// both win the election — only change this in tests.
+func WithLockName(name string) Option {
+	return func(p *Projector) { p.lockName = name }
+}
+
+// WithStandbyInterval overrides the sleep between election retries on standbys
+// and after stepping down (default: 5 s). Set to a shorter value in tests.
+func WithStandbyInterval(d time.Duration) Option {
+	return func(p *Projector) { p.standbyInterval = d }
+}
+
+// noopLock is the default lock when WithLock is not provided. It always
+// succeeds, preserving the pre-election single-replica behaviour.
+type noopLock struct{}
+
+func (noopLock) Acquire(_ context.Context, _ string) (func(), error) { return func() {}, nil }
+
 // Compile-time assertion: Projector satisfies the outbound.Projector port.
 var _ outbound.Projector = (*Projector)(nil)
 
@@ -53,11 +104,19 @@ type Projector struct {
 	notifier outbound.EventNotifier
 	handlers []Handler
 	log      *slog.Logger
+
+	// leader election
+	lock            outbound.ProjectorLock
+	lockName        string
+	standbyInterval time.Duration
+
 	// metrics
-	eventsApplied metric.Int64Counter
-	catchupDur    metric.Float64Histogram
-	handlerErrors metric.Int64Counter
-	deadLetters   metric.Int64Counter
+	eventsApplied  metric.Int64Counter
+	catchupDur     metric.Float64Histogram
+	handlerErrors  metric.Int64Counter
+	deadLetters    metric.Int64Counter
+	leaderAcquired metric.Int64Counter
+	lockContended  metric.Int64Counter
 }
 
 func NewProjector(
@@ -65,6 +124,7 @@ func NewProjector(
 	store outbound.EventStore,
 	notifier outbound.EventNotifier,
 	handlers []Handler,
+	opts ...Option,
 ) *Projector {
 	meter := otel.Meter("sitrep/projector")
 
@@ -85,59 +145,153 @@ func NewProjector(
 		metric.WithDescription("Number of events parked to the dead-letter table"),
 		metric.WithUnit("{event}"),
 	)
+	leaderAcquired, _ := meter.Int64Counter("projector.leadership.acquired",
+		metric.WithDescription("Number of times this instance has been elected projector leader"),
+		metric.WithUnit("{election}"),
+	)
+	lockContended, _ := meter.Int64Counter("projector.lock.contended",
+		metric.WithDescription("Number of times lock acquisition was skipped because another instance leads"),
+		metric.WithUnit("{skip}"),
+	)
 
-	return &Projector{
-		pool:          pool,
-		store:         store,
-		notifier:      notifier,
-		handlers:      handlers,
-		log:           slog.Default().WithGroup("projector"),
-		eventsApplied: eventsApplied,
-		catchupDur:    catchupDur,
-		handlerErrors: handlerErrors,
-		deadLetters:   deadLetters,
+	p := &Projector{
+		pool:            pool,
+		store:           store,
+		notifier:        notifier,
+		handlers:        handlers,
+		log:             slog.Default().WithGroup("projector"),
+		lock:            noopLock{},
+		lockName:        DefaultLockName,
+		standbyInterval: defaultStandbyInterval,
+		eventsApplied:   eventsApplied,
+		catchupDur:      catchupDur,
+		handlerErrors:   handlerErrors,
+		deadLetters:     deadLetters,
+		leaderAcquired:  leaderAcquired,
+		lockContended:   lockContended,
 	}
+	for _, o := range opts {
+		o(p)
+	}
+	return p
 }
 
-// Run starts the projection loop. It blocks until ctx is cancelled.
-// On startup it checks each handler's version and rebuilds stale projections.
+// Run drives leader election and, while elected, the projection loop. Only the
+// elected instance touches the database; standbys idle. Run returns only when
+// ctx is cancelled — transient acquisition and catch-up failures cause a
+// step-down and re-election, not a permanent stop.
 func (p *Projector) Run(ctx context.Context) error {
 	names := make([]string, len(p.handlers))
 	for i, h := range p.handlers {
 		names[i] = h.Name()
 	}
-	p.log.Info("projector starting", "handlers", names)
+	p.log.InfoContext(ctx, "projector starting", "handlers", names)
 
+	for {
+		release, err := p.lock.Acquire(ctx, p.lockName)
+		switch {
+		case errors.Is(err, outbound.ErrLockHeld):
+			p.lockContended.Add(ctx, 1)
+			p.log.DebugContext(ctx, "another instance is leading, standing by")
+		case err != nil:
+			p.log.ErrorContext(ctx, "projector lock acquisition failed", "error", err)
+		default:
+			p.leaderAcquired.Add(ctx, 1)
+			p.log.InfoContext(ctx, "projector elected leader", "lock", p.lockName)
+			if leadErr := p.lead(ctx, release); leadErr != nil && !errors.Is(leadErr, context.Canceled) {
+				p.log.WarnContext(ctx, "projector stepping down", "error", leadErr)
+			}
+		}
+
+		if !p.sleep(ctx, p.standbyInterval) {
+			p.log.InfoContext(ctx, "projector stopped")
+			return ctx.Err()
+		}
+	}
+}
+
+// lead runs the projection loop while this instance holds the lock. It calls
+// release (via defer) before returning, guaranteeing the lock is freed before
+// pool.Close() in Teardown.
+func (p *Projector) lead(ctx context.Context, release func()) error {
+	defer release()
+
+	// initCheckpoints runs on every election: a newly elected leader must
+	// re-check handler versions, and the check is idempotent.
 	if err := p.initCheckpoints(ctx); err != nil {
+		if errors.Is(err, errProjectionAhead) {
+			// This build is older than the stored projection; yield to the
+			// newer replica instead of rebuilding read models backwards.
+			p.log.ErrorContext(ctx, "this build is older than the stored projection, yielding leadership",
+				"error", err)
+		}
 		return fmt.Errorf("projector: init checkpoints: %w", err)
 	}
 
 	pollTicker := time.NewTicker(500 * time.Millisecond)
 	defer pollTicker.Stop()
 
+	consecutiveFailures := 0
 	first := true
+
 	for {
 		if err := p.catchUp(ctx); err != nil {
-			if !errors.Is(err, context.Canceled) {
-				p.log.Error("projector catch-up failed", "error", err)
+			if errors.Is(err, context.Canceled) {
+				return ctx.Err()
 			}
+			consecutiveFailures++
+			p.log.ErrorContext(ctx, "projector catch-up failed",
+				"error", err, "consecutive_failures", consecutiveFailures)
+			if consecutiveFailures >= maxConsecutiveCatchUpFailures {
+				return fmt.Errorf("%w after %d failures: %w", errCatchUpStuck, consecutiveFailures, err)
+			}
+		} else {
+			consecutiveFailures = 0
 		}
+
 		if first {
-			p.log.Info("projector ready — initial catch-up complete")
+			p.log.InfoContext(ctx, "projector ready — initial catch-up complete")
 			first = false
+		}
+
+		// Check that the advisory lock is still held before the next cycle.
+		// This guards against silent split-brain when the lock connection is dropped.
+		if checker, ok := p.lock.(outbound.LockLivenessChecker); ok {
+			if err := checker.CheckHeld(ctx); err != nil {
+				return fmt.Errorf("projector: lock lost: %w", err)
+			}
 		}
 
 		select {
 		case <-ctx.Done():
-			p.log.Info("projector stopped")
 			return ctx.Err()
 		case <-pollTicker.C:
-		// notifier.Wait blocks until a NOTIFY arrives or ctx is cancelled
+		// notifier.Wait blocks until a NOTIFY arrives or ctx is cancelled.
 		default:
 			waitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 			_ = p.notifier.Wait(waitCtx)
 			cancel()
 		}
+	}
+}
+
+// sleep waits for d or until ctx is cancelled. Returns false when ctx is done.
+func (p *Projector) sleep(ctx context.Context, d time.Duration) bool {
+	if d <= 0 {
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+			return true
+		}
+	}
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-t.C:
+		return true
 	}
 }
 
@@ -268,8 +422,16 @@ func (p *Projector) initCheckpoints(ctx context.Context) error {
 			continue
 		}
 
-		if storedVersion != h.Version() {
-			p.log.Info("projection version changed, rebuilding",
+		switch {
+		case storedVersion > h.Version():
+			// Stored version is ahead of this build — a newer replica has already
+			// upgraded the projection. Refuse to rebuild it back to an older schema.
+			p.log.ErrorContext(ctx, "projection is newer than this build, refusing to rebuild",
+				"handler", h.Name(), "stored", storedVersion, "build", h.Version())
+			return fmt.Errorf("%w: %s at v%d, build has v%d",
+				errProjectionAhead, h.Name(), storedVersion, h.Version())
+		case storedVersion < h.Version():
+			p.log.InfoContext(ctx, "projection version changed, rebuilding",
 				"handler", h.Name(), "was", storedVersion, "now", h.Version())
 			if err := p.resetProjection(ctx, h); err != nil {
 				return err
