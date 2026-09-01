@@ -8,6 +8,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.2.1 to 5.3.1 ([#1789](https://github.com/f-eld-ch/sitrep/issues/1789)) - ([d940def](https://github.com/f-eld-ch/sitrep/commit/d940def0f0d31e08ab75ae1e6c9df9fcf6412275))
 - *(deps)* Bump react-i18next from 17.0.12 to 17.0.13 in /ui ([#1791](https://github.com/f-eld-ch/sitrep/issues/1791)) - ([9ce1f45](https://github.com/f-eld-ch/sitrep/commit/9ce1f452001f6530a9bcde54b7fec9a6040a65cc))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.5.0 to 0.5.1 in /ui ([#1785](https://github.com/f-eld-ch/sitrep/issues/1785)) - ([39d3e49](https://github.com/f-eld-ch/sitrep/commit/39d3e497e5d219a0635fc1634fe59a879c8b21c5))
 - *(deps)* Bump proj4 from 2.21.0 to 2.22.0 in /ui ([#1786](https://github.com/f-eld-ch/sitrep/issues/1786)) - ([268b39e](https://github.com/f-eld-ch/sitrep/commit/268b39ebe6eb1f5365bed5b5386588e372d1d999))
