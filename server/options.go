@@ -12,7 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/ravilushqa/otelgqlgen"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 
@@ -129,7 +129,7 @@ func WithApiV2(
 				playground.Handler("SitRep GraphQL", "/api/v2/graphql"),
 			))
 		}
-		apiv2.GET("/health", func(c echo.Context) error {
+		apiv2.GET("/health", func(c *echo.Context) error {
 			return c.String(http.StatusOK, "OK")
 		})
 		return nil

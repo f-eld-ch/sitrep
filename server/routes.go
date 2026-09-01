@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	echootel "github.com/labstack/echo-opentelemetry"
+
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	"github.com/f-eld-ch/sitrep/ui"
 )
@@ -47,19 +48,20 @@ func (s *Server) RegisterMiddlewares() {
 	}))
 	s.router.Use(cacheControlMiddleWare)
 
-	// Use the otelecho middleware with options
-	s.router.Use(otelecho.Middleware("server",
-		otelecho.WithSkipper(func(c echo.Context) bool {
+	// Use the echootel middleware with options
+	s.router.Use(echootel.NewMiddlewareWithConfig(echootel.Config{
+		ServerName: "server",
+		Skipper: func(c *echo.Context) bool {
 			// Skip tracing for health check endpoints
 			return c.Path() == "/health" || strings.HasPrefix(c.Path(), "/assets") || strings.HasPrefix(c.Path(), "/map")
-		}),
-	))
+		},
+	}))
 
 	// Static file serving
 	s.router.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		HTML5:      true,
 		Root:       ui.Build,
-		Filesystem: http.FS(ui.Assets),
+		Filesystem: ui.Assets,
 		Index:      "index.html",
 	}))
 }

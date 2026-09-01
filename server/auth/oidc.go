@@ -14,7 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/zitadel/oidc/v3/pkg/client"
 	"github.com/zitadel/oidc/v3/pkg/client/rp"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
@@ -93,7 +93,7 @@ func state() string {
 }
 
 // SignInHandler initiates the authentication /oauth2/sign_in
-func (o *OIDCClient) SignInHandler(c echo.Context) error {
+func (o *OIDCClient) SignInHandler(c *echo.Context) error {
 	_, err := o.userInfoFrom(c)
 	// if already logged in redirect to main
 	if err == nil {
@@ -104,12 +104,12 @@ func (o *OIDCClient) SignInHandler(c echo.Context) error {
 }
 
 // CallbackHandler handles the auth callback from route /oauth2/callback
-func (o *OIDCClient) CallbackHandler(c echo.Context) error {
+func (o *OIDCClient) CallbackHandler(c *echo.Context) error {
 	return echo.WrapHandler(rp.CodeExchangeHandler(rp.UserinfoCallback(o.marshalUserinfo(c)), o.rp))(c)
 }
 
 // marshalUserinfo handles the user info response and writes it to the HTTP response.
-func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	return func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 		if tokens == nil || tokens.IDToken == "" {
 			o.logger.Warn("No ID token found in callback")
@@ -152,11 +152,11 @@ func (o *OIDCClient) marshalUserinfo(c echo.Context) func(w http.ResponseWriter,
 }
 
 // SignOutHandler handles the signout /oauth2/sign_out
-func (o *OIDCClient) SignOutHandler(c echo.Context) error {
+func (o *OIDCClient) SignOutHandler(c *echo.Context) error {
 	cookie, err := o.secureCookie.Encode("id_token", "")
 	if err != nil {
 		o.logger.Error("Failed to encode id token", "error", err)
-		http.Error(c.Response().Writer, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(c.Response(), "Internal Server Error", http.StatusInternalServerError)
 		return nil
 	}
 	c.SetCookie(&http.Cookie{
@@ -184,7 +184,7 @@ func (o *OIDCClient) SignOutHandler(c echo.Context) error {
 }
 
 // UserInfoHandler retrieves user information from the ID token and returns it as JSON.
-func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
+func (o *OIDCClient) UserInfoHandler(c *echo.Context) error {
 	userInfo, err := o.userInfoFrom(c)
 	if err != nil {
 		if !errors.Is(err, ErrUnauthorized) {
@@ -195,7 +195,7 @@ func (o *OIDCClient) UserInfoHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, userInfo)
 }
 
-func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
+func (o *OIDCClient) userInfoFrom(c *echo.Context) (*UserInfo, error) {
 	idToken := o.decodedTokenFrom(c, "id_token")
 	if idToken == "" {
 		return nil, ErrUnauthorized
@@ -280,7 +280,7 @@ func (o *OIDCClient) userInfoFrom(c echo.Context) (*UserInfo, error) {
 	}, nil
 }
 
-func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string {
+func (o *OIDCClient) decodedTokenFrom(c *echo.Context, cookiename string) string {
 	cookie, err := c.Cookie(cookiename)
 	if err != nil || cookie.Value == "" {
 		return ""
@@ -297,7 +297,7 @@ func (o *OIDCClient) decodedTokenFrom(c echo.Context, cookiename string) string 
 	return decodedCookie
 }
 
-func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, expiresIn int) error {
+func (o *OIDCClient) encodeTokenFrom(c *echo.Context, cookiename, value string, expiresIn int) error {
 	encodedToken, err := o.secureCookie.Encode(cookiename, value)
 	if err != nil {
 		o.logger.Error("failed to encode id token", "error", err)
@@ -319,7 +319,7 @@ func (o *OIDCClient) encodeTokenFrom(c echo.Context, cookiename, value string, e
 
 // Middleware: require valid ID token with JWKS signature verification.
 func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
 		if err != nil {
 			o.logger.Error("failed to get user info", "error.message", err.Error())
