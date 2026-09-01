@@ -22,6 +22,7 @@ func init() {
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
 		viper.AutomaticEnv()
+		_ = viper.ReadInConfig()
 
 		_ = viper.BindEnv("oidc_client_id", "OIDC_CLIENT_ID", "OAUTH2_PROXY_CLIENT_ID")
 		_ = viper.BindEnv("oidc_issuer", "OIDC_ISSUER", "OAUTH2_PROXY_OIDC_ISSUER_URL")
