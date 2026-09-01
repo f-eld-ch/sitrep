@@ -36,13 +36,13 @@ func TestFeatureService_PlaceMoveRestyle(t *testing.T) {
 
 	t.Run("move feature", func(t *testing.T) {
 		newGeom := map[string]any{"type": "Point", "coordinates": []any{8.5418, 47.3770}}
-		err := featureSvc.ModifyFeature(ctx(), featureID, newGeom, nil, testActor)
+		_, err := featureSvc.ModifyFeature(ctx(), featureID, newGeom, nil, testActor)
 		require.NoError(t, err)
 	})
 
 	t.Run("restyle feature", func(t *testing.T) {
 		newProps := map[string]any{"icon": "police-car"}
-		err := featureSvc.ModifyFeature(ctx(), featureID, nil, newProps, testActor)
+		_, err := featureSvc.ModifyFeature(ctx(), featureID, nil, newProps, testActor)
 		require.NoError(t, err)
 	})
 
@@ -66,6 +66,6 @@ func TestFeatureService_ModifyUnknown(t *testing.T) {
 	incidents, _, layers, features := repos(store)
 	featureSvc := factory.FeatureService(features, incidents, layers)
 
-	err := featureSvc.ModifyFeature(ctx(), shared.FeatureID(newID()), testGeometry, nil, testActor)
+	_, err := featureSvc.ModifyFeature(ctx(), shared.FeatureID(newID()), testGeometry, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)
 }

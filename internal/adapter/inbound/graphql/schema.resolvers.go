@@ -357,10 +357,18 @@ func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometr
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor); err != nil {
+	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor)
+	if err != nil {
 		return nil, err
 	}
-	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
+	// Return the full aggregate state so Apollo receives both geometry and
+	// properties even for sparse updates — prevents null from overwriting the
+	// unchanged cached field.
+	return &model.Feature{
+		ID:         id,
+		Geometry:   scalar.JSONMap(state.Geometry),
+		Properties: scalar.JSONMap(state.Properties),
+	}, nil
 }
 
 // DeleteFeature is the resolver for the deleteFeature field.

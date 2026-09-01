@@ -115,13 +115,17 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		}
 		featureJSON := fmt.Sprintf(`{"type":"Feature","id":%q,"geometry":%s,"properties":%s}`,
 			id, d.Geometry, d.Properties)
-		// Remove any existing entry with this feature ID first (idempotent replay).
+		// Remove any existing entry for this feature ID then append the new one.
+		// COALESCE guards against NULL from jsonb_agg on an empty array (first feature).
 		err := exec(tx, ctx, `
 			UPDATE rm_layer_features
 			SET geojson = jsonb_set(
 			      geojson, '{features}',
-			      (SELECT jsonb_agg(f) FROM jsonb_array_elements(geojson->'features') AS f
-			       WHERE f->>'id' != $1::text) || $2::jsonb
+			      COALESCE(
+			        (SELECT jsonb_agg(f) FROM jsonb_array_elements(geojson->'features') AS f
+			         WHERE f->>'id' != $1::text),
+			        '[]'::jsonb
+			      ) || $2::jsonb
 			    ),
 			    revision = revision + 1
 			WHERE id = $3`,

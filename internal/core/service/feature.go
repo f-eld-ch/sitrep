@@ -11,6 +11,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
@@ -94,17 +95,19 @@ func (s *FeatureService) PlaceFeature(
 // ModifyFeature updates geometry and/or properties in a single transaction.
 // Applying both in one aggregate load prevents the optimistic concurrency conflict
 // that would occur if Move and Restyle were saved as two separate operations.
+// Returns the full post-update state so the resolver can respond without a projection read.
 func (s *FeatureService) ModifyFeature(
 	ctx context.Context,
 	id shared.FeatureID,
 	geometry, properties map[string]any,
 	actor identity.Actor,
-) error {
+) (inbound.FeatureState, error) {
 	ctx, span := s.tracer.Start(ctx, "FeatureService.ModifyFeature",
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
 	slog.DebugContext(ctx, "modifying feature", "feature_id", id, "actor", actor.Sub)
 
+	var state inbound.FeatureState
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		at := s.clock.Now()
 		if geometry != nil {
@@ -117,13 +120,19 @@ func (s *FeatureService) ModifyFeature(
 				return err
 			}
 		}
+		state = inbound.FeatureState{
+			ID:         id,
+			Geometry:   f.Geometry(),
+			Properties: f.Properties(),
+		}
 		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		return inbound.FeatureState{}, err
 	}
-	return err
+	return state, nil
 }
 
 // RemoveFeature removes a feature.

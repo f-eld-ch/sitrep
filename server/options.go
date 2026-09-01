@@ -105,7 +105,6 @@ func WithApiV2(
 			opCtx := graphql.GetOperationContext(ctx)
 			slog.ErrorContext(ctx, "resolver panic",
 				"operation", opCtx.OperationName,
-				"query", opCtx.RawQuery,
 				"panic", fmt.Sprintf("%v", p),
 			)
 			return fmt.Errorf("internal server error")

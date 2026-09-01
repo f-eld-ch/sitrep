@@ -43,19 +43,19 @@ function isKnownCode(code: unknown): code is ApiErrorCode {
   return typeof code === "string" && knownCodes.has(code as ApiErrorCode);
 }
 
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { ServerError } from "@apollo/client/errors";
+
 /**
- * Converts an Apollo error into a typed ApiError.
- * Extracts extensions.code from the first GraphQL error when present.
- * Accepts ErrorLike (the type useMutation exposes) but probes for graphQLErrors at runtime.
+ * Converts an Apollo 4 error into a typed ApiError.
+ * GraphQL errors arrive as CombinedGraphQLErrors; transport errors as ServerError.
  */
 export function apiErrorFromApolloError(e: { message: string }): ApiError {
-  // ApolloError extends ErrorLike and carries graphQLErrors at runtime even
-  // though useMutation only types it as ErrorLike.
-  const gqlErrors = (e as { graphQLErrors?: Array<{ extensions?: { code?: unknown } }> })
-    .graphQLErrors;
-  const code = gqlErrors?.[0]?.extensions?.code;
-  if (isKnownCode(code)) return new ApiError(code);
-  const hasNetworkError = (e as { networkError?: unknown }).networkError;
-  if (hasNetworkError) return new ApiError("NETWORK_ERROR");
+  if (CombinedGraphQLErrors.is(e)) {
+    const code = e.errors[0]?.extensions?.["code"];
+    if (isKnownCode(code)) return new ApiError(code);
+    return new ApiError("UNKNOWN");
+  }
+  if (ServerError.is(e)) return new ApiError("NETWORK_ERROR");
   return new ApiError("UNKNOWN");
 }

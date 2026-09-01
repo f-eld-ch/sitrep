@@ -5,7 +5,7 @@ import { useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { ReloadPrompt, UserContext } from "utils";
-import { IncidentContextSetter } from "utils/IncidentContext";
+import { useIncidentSync } from "utils/IncidentContext";
 import { Login } from "./Login";
 
 export interface LayoutProps {
@@ -24,9 +24,10 @@ export const Layout = (props: LayoutProps) => {
 
   if (!userState.isLoggedin) return <Login />;
 
+  useIncidentSync();
+
   return (
     <>
-      <IncidentContextSetter />
       <Navbar />
       <ReloadPrompt />
       <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
@@ -53,9 +54,10 @@ export const LayoutMarginLess = (props: LayoutProps) => {
 
   if (!userState.isLoggedin) return <Login />;
 
+  useIncidentSync();
+
   return (
     <>
-      <IncidentContextSetter />
       <Navbar />
       <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
         <div className="column is-flex">{props.children}</div>

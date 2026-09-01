@@ -1,9 +1,21 @@
 name: sitrep
 services:
-  sitrep:
+  migrate:
+    image: ghcr.io/f-eld-ch/sitrep:edge
+    command: migrate up
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
+    networks:
+      default: null
+    restart: on-failure
+
+  sitrep:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
@@ -30,6 +42,11 @@ services:
     networks:
       default: null
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - type: volume
         source: db_data

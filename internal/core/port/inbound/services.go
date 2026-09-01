@@ -56,6 +56,15 @@ type MessageState struct {
 	DivisionIDs    []shared.DivisionID
 }
 
+// FeatureState is returned from ModifyFeature so the resolver can build the
+// mutation response with the full post-update geometry and properties without
+// a projection read (which would race the asynchronous projector).
+type FeatureState struct {
+	ID         shared.FeatureID
+	Geometry   map[string]any
+	Properties map[string]any
+}
+
 // IncidentService is the driving port for incident lifecycle commands.
 type IncidentService interface {
 	CreateIncident(
@@ -134,6 +143,7 @@ type FeatureService interface {
 
 	// ModifyFeature updates geometry and/or properties in a single aggregate load,
 	// avoiding the optimistic concurrency conflict that would occur from two parallel saves.
-	ModifyFeature(ctx context.Context, id shared.FeatureID, geometry, properties map[string]any, actor identity.Actor) error
+	// Returns the complete post-update state so the resolver can respond without a projection read.
+	ModifyFeature(ctx context.Context, id shared.FeatureID, geometry, properties map[string]any, actor identity.Actor) (FeatureState, error)
 	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
 }
