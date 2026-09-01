@@ -361,6 +361,92 @@ is needed to emit log records to the collector.
 
 ---
 
+## Functional options
+
+The codebase uses functional options for constructors where the number of dependencies would make
+a plain function signature unwieldy, or where options are genuinely optional. Two variants are in
+use — choose based on whether configuration can fail.
+
+### Infallible options — `type Option func(*T)`
+
+Used when setting a field cannot produce an error (e.g. `service.Factory`).
+
+```go
+// Type alias — just a function that mutates the struct.
+type FactoryOption func(*Factory)
+
+// Each option is a function that returns the option.
+func WithTransactor(tx outbound.Transactor) FactoryOption {
+    return func(f *Factory) { f.tx = tx }
+}
+
+func WithClock(clock outbound.Clock) FactoryOption {
+    return func(f *Factory) { f.clock = clock }
+}
+
+// Constructor applies all options in order.
+func NewFactory(opts ...FactoryOption) *Factory {
+    f := &Factory{}
+    for _, o := range opts {
+        o(f)
+    }
+    return f
+}
+
+// Call site — at the composition root.
+factory := service.NewFactory(
+    service.WithTransactor(tx),
+    service.WithClock(clock),
+    service.WithIDs(ids),
+    service.WithNotifier(notifier),
+    service.WithMessageCounter(counter),
+)
+```
+
+### Fallible options — `type Option func(*T) error`
+
+Used when configuration can fail (e.g. `server.Server`, where wiring a route group may error).
+
+```go
+type Option func(*Server) error
+
+func WithPort(port uint) Option {
+    return func(s *Server) error {
+        if port == 0 {
+            return errors.New("port must be non-zero")
+        }
+        s.port = port
+        return nil
+    }
+}
+
+// Constructor collects errors rather than panicking.
+func NewServer(opts ...Option) *Server {
+    s := &Server{}
+    for _, o := range opts {
+        if err := o(s); err != nil {
+            // surface at startup — a misconfigured server must not start silently
+            panic(fmt.Sprintf("server option: %v", err))
+        }
+    }
+    return s
+}
+```
+
+### When to use functional options
+
+Use them when a constructor has more than ~4 dependencies, or when some of those dependencies are
+optional (e.g. OIDC client). For simple types with 1–3 required parameters, a plain constructor
+is clearer — don't introduce options just for consistency.
+
+The `service.Factory` pattern is the primary use case: it holds the **cross-cutting**
+dependencies (transactor, clock, IDs, notifier) that every service needs, so they are injected
+once rather than threaded through every `NewXxxService` call individually. Aggregate-specific
+repositories are passed directly to the factory's service-builder methods, not via options,
+because they are not shared across services.
+
+---
+
 ## GraphQL — regenerating after schema changes
 
 Edit `api/schema.graphql`, then regenerate:
