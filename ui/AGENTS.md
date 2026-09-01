@@ -19,10 +19,10 @@ Requirements: Node (repo root `.nvmrc` pins `lts/*`), Yarn 4.
 The UI needs two things running before it is useful:
 
 ```bash
-# 1. from the repo root — Postgres, Hasura, and Dex (OIDC)
+# 1. from the repo root — Postgres and Dex (OIDC)
 docker compose up -d
 
-# 2. from the repo root — the Go server (fronts Hasura, terminates OIDC, serves /version)
+# 2. from the repo root — the Go server (serves GraphQL, terminates OIDC, serves static assets)
 go run .
 
 # 3. from ui/
@@ -35,12 +35,11 @@ Port map:
 | Port   | Service                                     |
 | ------ | ------------------------------------------- |
 | 3000   | Vite dev server (this app)                  |
-| 4180   | Go server — proxy target for the dev server |
-| 8080   | Hasura GraphQL engine                       |
+| 4180   | Go server — GraphQL API + OIDC + static UI  |
 | 5432   | Postgres                                    |
 | 5556/7 | Dex (OIDC provider)                         |
 
-The dev server proxies `/v1/graphql`, `/oauth2`, and `/version` to `localhost:4180`
+The dev server proxies `/api/v2/graphql`, `/oauth2`, and `/version` to `localhost:4180`
 ([vite.config.ts:200](vite.config.ts#L200)). Requests go through the **Go server**, not directly to
 Hasura — that is where the session cookie is validated. Without step 2 you get auth redirects, not
 data.
