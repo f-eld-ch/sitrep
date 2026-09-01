@@ -25,6 +25,13 @@ import (
 )
 
 func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) error, err error) {
+	noop := func(context.Context) error { return nil }
+
+	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") == "" {
+		slog.InfoContext(ctx, "OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OpenTelemetry setup")
+		return noop, nil
+	}
+
 	var shutdownFuncs []func(context.Context) error
 
 	shutdown = func(ctx context.Context) error {
