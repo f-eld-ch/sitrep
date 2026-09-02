@@ -75,7 +75,7 @@ migration, then restart the server or wait for a standby projector to become lea
 
 | Flag | YAML key | Default | Environment variable | Meaning |
 | --- | --- | --- | --- | --- |
-| `auto-close-incidents` | `auto-close-incidents` | `0` | `SITREP_AUTO_CLOSE_INCIDENTS` | Days after creation before an open incident is automatically closed. |
+| `auto-close-incidents` | `auto-close-incidents` | `0` | `SITREP_AUTO_CLOSE_INCIDENTS` | Days after the open incident was last updated before it is automatically closed. |
 | `auto-archive-incidents` | `auto-archive-incidents` | `0` | `SITREP_AUTO_ARCHIVE_INCIDENTS` | Days after closure before a closed, non-deleted incident is archived. |
 
 Both settings are `uint` day counts and are local to `sitrep serve`. A value of `0` disables the
@@ -106,7 +106,7 @@ per-incident message counter after the archive copies are recorded in the same t
 
 ### Lifecycle
 
-Open incidents past `auto-close-incidents` receive a normal `Closed{ReasonAutoTimeout}` event.
+Open incidents past `auto-close-incidents` receive a normal `Closed{ReasonAutoTimeout}` event. The clock uses the incident read model's `updated_at` timestamp, so reopening an incident resets the wait period.
 Closed incidents past `auto-archive-incidents` receive `Deleted{ReasonPurge}` before their streams
 are archived. A manually deleted incident already has `Deleted{ReasonManual}`, so it is archived
 directly after its fixed seven-day delay without appending a second delete event.
