@@ -29,6 +29,8 @@ export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail } from "./edito
 export { useEditorContext } from "./editorState";
 export { ReactEditor, ReactPreview } from "./Markdown";
 
+const EMPTY_MESSAGES: Message[] = [];
+
 function Editor() {
   const { t } = useTranslation();
   const { incidentId } = useParams();
@@ -54,7 +56,8 @@ function Editor() {
 
   const blocker = useBlocker(isDirty);
 
-  const messages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
+  const messages =
+    messagesResult.status === "ready" ? messagesResult.data.messages : EMPTY_MESSAGES;
 
   const autocompleteDetails = useMemo<AutofillDetail>(
     () => ({
