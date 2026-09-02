@@ -68,14 +68,8 @@ func (s *MessageService) RecordMessage(
 	var state inbound.MessageState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		// Cross-aggregate precondition: incident must be open. Load from aggregate,
-		// not from a projection, to avoid stale-read bugs.
-		inc, err := s.incidents.Load(ctx, incidentID)
-		if err != nil {
+		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
-		}
-		if !inc.IsOpen() {
-			return shared.ErrIncidentNotOpen
 		}
 
 		number, err := s.counter.Next(ctx, incidentID)
@@ -127,6 +121,9 @@ func (s *MessageService) CorrectMessage(
 		if err != nil {
 			return err
 		}
+		if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
+			return err
+		}
 		if err := msg.Correct(content, sender, senderDetail, receiver, receiverDetail,
 			medium, msgTime, actor.Sub, at, actor.Sub); err != nil {
 			return err
@@ -168,11 +165,14 @@ func (s *MessageService) TriageMessage(
 		if err != nil {
 			return err
 		}
+		inc, err := s.incidents.Load(ctx, msg.IncidentID())
+		if err != nil {
+			return err
+		}
+		if !inc.IsOpen() {
+			return shared.ErrIncidentNotOpen
+		}
 		if len(divisionIDs) > 0 {
-			inc, err := s.incidents.Load(ctx, msg.IncidentID())
-			if err != nil {
-				return err
-			}
 			for _, divID := range divisionIDs {
 				if _, ok := inc.Division(divID); !ok {
 					return shared.ValidationError{Field: "divisionId", Message: "division does not belong to this incident"}
@@ -211,6 +211,9 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		if err != nil {
 			return err
 		}
+		if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
+			return err
+		}
 		if err := msg.Delete(shared.DeleteReasonManual, actor.Sub, at); err != nil {
 			return err
 		}
@@ -224,6 +227,17 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
+	return nil
+}
+
+func (s *MessageService) requireIncidentOpen(ctx context.Context, incidentID shared.IncidentID) error {
+	inc, err := s.incidents.Load(ctx, incidentID)
+	if err != nil {
+		return err
+	}
+	if !inc.IsOpen() {
+		return shared.ErrIncidentNotOpen
+	}
 	return nil
 }
 

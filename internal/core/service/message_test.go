@@ -25,7 +25,7 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		assert.NotEqual(t, s1.ID, shared.MessageID{})
 
 		s2, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-			"Lage stabil", "Beobachter Süd", "", "Führungsstab", "", shared.MediumPhone, nil, testActor)
+			"Lage stabil", "Beobachter Süd", "555-1111", "Führungsstab", "555-2222", shared.MediumPhone, nil, testActor)
 		require.NoError(t, err)
 
 		// IDs must differ
@@ -83,7 +83,7 @@ func TestMessageService_TriageMessage(t *testing.T) {
 
 	res, _ := incidentSvc.CreateIncident(ctx(), "Lagebesprechung", nil, nil, nil, testActor)
 	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
-		"Status Update", "Koordinator", "", "Führung", "", shared.MediumPhone, nil, testActor)
+		"Status Update", "Koordinator", "555-1111", "Führung", "555-2222", shared.MediumPhone, nil, testActor)
 	require.NoError(t, err)
 
 	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
@@ -113,6 +113,29 @@ func TestMessageService_DeleteMessage(t *testing.T) {
 		err := messageSvc.DeleteMessage(ctx(), shared.MessageID(newID()), testActor)
 		assert.ErrorIs(t, err, shared.ErrNotFound)
 	})
+}
+
+func TestMessageService_RejectsWritesOnClosedIncident(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, messages, layers, _ := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	messageSvc := factory.MessageService(messages, incidents)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Closed", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	msg, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		"Original", "Sender", "", "Receiver", "", shared.MediumRadio, nil, testActor)
+	require.NoError(t, err)
+	_, err = incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
+	require.NoError(t, err)
+
+	content := "Corrected"
+	_, err = messageSvc.CorrectMessage(ctx(), msg.ID, &content, nil, nil, nil, nil, nil, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	_, err = messageSvc.TriageMessage(ctx(), msg.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	err = messageSvc.DeleteMessage(ctx(), msg.ID, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 
 func TestMessageService_CounterIsPerIncident(t *testing.T) {

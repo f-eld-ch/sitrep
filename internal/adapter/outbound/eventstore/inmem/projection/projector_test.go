@@ -12,9 +12,11 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
+	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
@@ -194,7 +196,7 @@ func TestProjector_MessageCorrected(t *testing.T) {
 
 	res, _ := incSvc.CreateIncident(ctx(), "Brand", nil, nil, nil, testActor)
 	msg, _ := msgSvc.RecordMessage(ctx(), res.IncidentID,
-		"Rauch gesehen", "Beobachter", "", "Stab", "", shared.MediumPhone, nil, testActor)
+		"Rauch gesehen", "Beobachter", "555-1111", "Stab", "555-2222", shared.MediumPhone, nil, testActor)
 
 	newContent := "Rauch und Flammen gesehen"
 	_, err := msgSvc.CorrectMessage(ctx(), msg.ID,
@@ -228,6 +230,33 @@ func TestProjector_MessageTriaged(t *testing.T) {
 	assert.Equal(t, string(shared.PriorityHigh), row.Priority)
 }
 
+func TestProjector_MessageMoreInfoNormalizesLegacyHighPriority(t *testing.T) {
+	s := newStack(t)
+	incSvc, msgSvc := s.messageSvc()
+
+	res, _ := incSvc.CreateIncident(ctx(), "Unfall", nil, nil, nil, testActor)
+	msg, _ := msgSvc.RecordMessage(ctx(), res.IncidentID,
+		"Fahrzeug umgekippt", "Streife", "", "Leitstelle", "", shared.MediumRadio, nil, testActor)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	err := s.messages.Apply(ctx(), eventsourcing.Event{
+		StreamType: "Message",
+		StreamID:   uuid.UUID(msg.ID),
+		EventType:  "Triaged",
+		Data: message.Triaged{
+			Triage:   shared.TriageMoreInfo,
+			Priority: shared.PriorityHigh,
+		},
+		OccurredAt: testAt,
+	})
+	require.NoError(t, err)
+
+	row := s.messages.Get(uuid.UUID(msg.ID))
+	require.NotNil(t, row)
+	assert.Equal(t, string(shared.TriageMoreInfo), row.Triage)
+	assert.Equal(t, string(shared.PriorityNormal), row.Priority)
+}
+
 func TestProjector_MessageDeleted(t *testing.T) {
 	s := newStack(t)
 	incSvc, msgSvc := s.messageSvc()
@@ -255,7 +284,7 @@ func TestProjector_MessagesSegregatedByIncident(t *testing.T) {
 
 	_, err := msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg A", "S", "", "R", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)
-	_, err = msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg B", "S", "", "R", "", shared.MediumPhone, nil, testActor)
+	_, err = msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg B", "S", "555-1111", "R", "555-2222", shared.MediumPhone, nil, testActor)
 	require.NoError(t, err)
 	_, err = msgSvc.RecordMessage(ctx(), res2.IncidentID, "Msg C", "S", "", "R", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)

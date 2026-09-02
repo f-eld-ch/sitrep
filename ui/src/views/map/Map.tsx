@@ -152,6 +152,10 @@ function MapView() {
 
 function Layers() {
   const { state } = useContext(LayerContext);
+  const {
+    state: { incident },
+  } = useContext(IncidentContext);
+  const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
 
   return (
     <>
@@ -161,14 +165,14 @@ function Layers() {
       </div>
 
       {/* Active Layer */}
-      <ActiveLayer />
+      {activeLayer !== undefined && <ActiveLayer />}
       <BabsIconController />
 
       {/* Inactive Layers */}
       <InactiveLayers
         layers={
           state.layers
-            .filter((l) => l.layer?.id !== state.activeLayer)
+            .filter((l) => l.layer?.id !== activeLayer)
             .filter((l) => l.isVisible)
             .map((l) => l.layer) || []
         }
@@ -345,6 +349,9 @@ function ActiveLayer() {
 
 function Draw() {
   const { state, dispatch } = useContext(LayerContext);
+  const {
+    state: { incident },
+  } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
 
@@ -497,7 +504,7 @@ function Draw() {
     }
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
-  if (state.activeLayer === undefined) {
+  if (incident?.closedAt != null || state.activeLayer === undefined) {
     return;
   }
 

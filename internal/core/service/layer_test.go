@@ -48,3 +48,22 @@ func TestLayerService_Remove(t *testing.T) {
 		assert.ErrorIs(t, err, shared.ErrNotFound)
 	})
 }
+
+func TestLayerService_RejectsWritesOnClosedIncident(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, _, layers, _ := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	layerSvc := factory.LayerService(layers, incidents)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Closed", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	layerID, err := layerSvc.CreateLayer(ctx(), res.IncidentID, "Kräfte", testActor)
+	require.NoError(t, err)
+	_, err = incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
+	require.NoError(t, err)
+
+	err = layerSvc.RenameLayer(ctx(), layerID, "Umbenannt", testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	err = layerSvc.RemoveLayer(ctx(), layerID, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}

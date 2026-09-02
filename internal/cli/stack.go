@@ -7,7 +7,6 @@ import (
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/spf13/viper"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
@@ -39,8 +38,7 @@ type stack struct {
 // buildStack wires the full application stack. When DATABASE_URL is set it uses
 // PostgreSQL; otherwise it falls back to in-memory stores (useful for local dev
 // without a running database).
-func buildStack(ctx context.Context) (*stack, error) {
-	dsn := viper.GetString("database_url")
+func buildStack(ctx context.Context, dsn string) (*stack, error) {
 	if dsn == "" {
 		slog.WarnContext(ctx, "No database_url set, using in-memory stores (data will not persist)")
 		return buildInmemStack(ctx)

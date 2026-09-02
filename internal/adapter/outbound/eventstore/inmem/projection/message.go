@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -46,7 +47,7 @@ func NewMessageHandler() *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "rm_message" }
-func (h *MessageHandler) Version() int { return 1 }
+func (h *MessageHandler) Version() int { return 2 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -170,7 +171,7 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			return nil
 		}
 		row.Triage = d.Triage
-		row.Priority = d.Priority
+		row.Priority = priorityForTriage(d.Triage, d.Priority)
 		row.DivisionIDs = d.DivisionIDs
 		row.LastEditorSub = &d.TriagedBy
 		row.UpdatedAt = e.OccurredAt
@@ -182,6 +183,13 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 		}
 	}
 	return nil
+}
+
+func priorityForTriage(triage, priority string) string {
+	if triage == string(shared.TriageMoreInfo) {
+		return string(shared.PriorityNormal)
+	}
+	return priority
 }
 
 // Get returns the row for the given message ID, or nil if not found.

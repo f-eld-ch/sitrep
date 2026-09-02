@@ -93,8 +93,21 @@ export function isNonEmptyString(v: string | null | undefined): v is string {
   return typeof v === "string" && v.length > 0;
 }
 
-export function canSave(state: EditorState): boolean {
-  return state.content.trim() !== "" && state.sender.trim() !== "" && state.receiver.trim() !== "";
+export function hasValidMessageTime(time: Date | undefined, now = new Date()): boolean {
+  return time === undefined || time.getTime() <= now.getTime() + 5 * 60 * 1000;
+}
+
+export function canSave(state: EditorState, now = new Date()): boolean {
+  if (state.content.trim() === "" || state.sender.trim() === "" || state.receiver.trim() === "") {
+    return false;
+  }
+  if (!hasValidMessageTime(state.time, now)) {
+    return false;
+  }
+  if (state.media === Medium.Phone || state.media === Medium.Email) {
+    return state.senderDetail.trim() !== "" && state.receiverDetail.trim() !== "";
+  }
+  return true;
 }
 
 export function buildMessageVars(

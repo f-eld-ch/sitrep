@@ -58,18 +58,14 @@ func (s *LayerService) CreateLayer(
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		inc, err := s.incidents.Load(ctx, incidentID)
-		if err != nil {
+		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
-		}
-		if !inc.IsOpen() {
-			return shared.ErrIncidentNotOpen
 		}
 		l := layer.New(layerID)
 		if err := l.Create(incidentID, name, actor.Sub, at); err != nil {
 			return err
 		}
-		_, err = s.repo.Save(ctx, l)
+		_, err := s.repo.Save(ctx, l)
 		return err
 	})
 	if err != nil {
@@ -93,6 +89,9 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
 		if err != nil {
+			return err
+		}
+		if err := s.requireIncidentOpen(ctx, l.IncidentID()); err != nil {
 			return err
 		}
 		if err := l.Rename(name, actor.Sub, at); err != nil {
@@ -123,6 +122,9 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 		if err != nil {
 			return err
 		}
+		if err := s.requireIncidentOpen(ctx, l.IncidentID()); err != nil {
+			return err
+		}
 		if err := l.Remove(shared.DeleteReasonManual, actor.Sub, at); err != nil {
 			return err
 		}
@@ -135,5 +137,16 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
+	return nil
+}
+
+func (s *LayerService) requireIncidentOpen(ctx context.Context, incidentID shared.IncidentID) error {
+	inc, err := s.incidents.Load(ctx, incidentID)
+	if err != nil {
+		return err
+	}
+	if !inc.IsOpen() {
+		return shared.ErrIncidentNotOpen
+	}
 	return nil
 }

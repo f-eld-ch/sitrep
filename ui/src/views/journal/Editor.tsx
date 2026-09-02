@@ -3,6 +3,7 @@ import uniq from "lodash/uniq";
 import React, { useCallback, useContext, useId, useMemo, useReducer, useRef } from "react";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import { Spinner } from "components";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { useCreateMessage, useIncidentMessages, useUpdateMessage } from "api";
@@ -16,6 +17,7 @@ import {
   EditorContext,
   type EditorContextValue,
   type MediaDetail,
+  canSave,
   editorReducer,
   initEditorState,
   isNonEmptyString,
@@ -38,6 +40,7 @@ function Editor() {
   const [updateMessage, updateState] = useUpdateMessage();
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
   const savingRef = useRef(false);
+  const incidentIsClosed = incident?.closedAt != null;
 
   const isDirty =
     state.content !== "" ||
@@ -75,6 +78,7 @@ function Editor() {
 
   const handleSave = useCallback(async () => {
     if (!incidentId) return;
+    if (!canSave(state)) return;
     if (savingRef.current) return;
     savingRef.current = true;
     const time = state.time ?? new Date();
@@ -129,6 +133,9 @@ function Editor() {
   if (loadedForId === incidentId && incident === null) {
     return <Navigate to="/incident/list" replace />;
   }
+  if (loadedForId !== incidentId) {
+    return <Spinner />;
+  }
 
   const contextValue: EditorContextValue = {
     state,
@@ -162,13 +169,19 @@ function Editor() {
               </div>
             )}
             {saveError && <Notification type="error">{saveError.message}</Notification>}
-            <InputBox />
+            {incidentIsClosed ? (
+              <output className="notification is-warning is-light">
+                {t("incidentClosedNoEdits")}
+              </output>
+            ) : (
+              <InputBox />
+            )}
           </div>
           <div className="column is-half">
             <List
-              showControls={true}
-              setEditorMessage={setEditorMessage}
-              setTriageMessage={setTriageMessage}
+              showControls={!incidentIsClosed}
+              setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
+              setTriageMessage={incidentIsClosed ? undefined : setTriageMessage}
             />
           </div>
           <TriageModal

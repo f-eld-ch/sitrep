@@ -50,8 +50,11 @@ func TestMessage_Record(t *testing.T) {
 	}{
 		{"valid fields", "Wasserstand steigt", "Beobachter Nord", "Führungsstab", nil},
 		{"empty content rejected", "", "Sender", "Receiver", shared.ErrInvalidInput},
+		{"whitespace content rejected", " \t", "Sender", "Receiver", shared.ErrInvalidInput},
 		{"empty sender rejected", "Content", "", "Receiver", shared.ErrInvalidInput},
+		{"whitespace sender rejected", "Content", " \t", "Receiver", shared.ErrInvalidInput},
 		{"empty receiver rejected", "Content", "Sender", "", shared.ErrInvalidInput},
+		{"whitespace receiver rejected", "Content", "Sender", " \t", shared.ErrInvalidInput},
 	}
 
 	for _, tt := range tests {
@@ -70,6 +73,33 @@ func TestMessage_Record(t *testing.T) {
 			assert.Equal(t, "Recorded", pending[0].EventType)
 		})
 	}
+
+	t.Run("Phone and Email messages require details", func(t *testing.T) {
+		m := message.New(id)
+		err := m.Record(incidentID, 1, "Content", "Sender", "", "Receiver", "555-2222",
+			shared.MediumPhone, at, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+
+		m = message.New(id)
+		err = m.Record(incidentID, 1, "Content", "Sender", "sender@example.test", "Receiver", " \t",
+			shared.MediumEmail, at, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("rejects timestamps more than five minutes in the future", func(t *testing.T) {
+		m := message.New(id)
+		err := m.Record(incidentID, 1, "Content", "Sender", "", "Receiver", "", shared.MediumRadio,
+			at.Add(5*time.Minute+time.Nanosecond), actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+		assert.Empty(t, m.Root().PendingEvents())
+	})
+
+	t.Run("allows timestamps up to five minutes in the future", func(t *testing.T) {
+		m := message.New(id)
+		err := m.Record(incidentID, 1, "Content", "Sender", "", "Receiver", "", shared.MediumRadio,
+			at.Add(5*time.Minute), actor, at, actor)
+		require.NoError(t, err)
+	})
 }
 
 func TestMessage_Correct(t *testing.T) {
@@ -100,6 +130,26 @@ func TestMessage_Correct(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
 
+	t.Run("whitespace receiver is rejected", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.Correct(nil, nil, nil, str(" \t"), nil, nil, nil, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("changing to Phone requires details", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		medium := shared.MediumPhone
+		err := m.Correct(nil, nil, nil, nil, nil, &medium, nil, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("cannot correct a timestamp more than five minutes in the future", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		futureTime := at.Add(5*time.Minute + time.Nanosecond)
+		err := m.Correct(nil, nil, nil, nil, nil, nil, &futureTime, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
 	t.Run("correction on deleted message is rejected", func(t *testing.T) {
 		m := replay(t, id, []eventsourcing.Event{recorded(id)})
 		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))
@@ -122,6 +172,13 @@ func TestMessage_Triage(t *testing.T) {
 		assert.Equal(t, shared.PriorityHigh, m.PriorityStatus())
 		require.Len(t, m.DivisionIDs(), 1)
 		assert.Equal(t, divID, m.DivisionIDs()[0])
+	})
+
+	t.Run("needs more information resets priority to normal", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.Triage(shared.TriageMoreInfo, shared.PriorityHigh, nil, actor, at, actor)
+		require.NoError(t, err)
+		assert.Equal(t, shared.PriorityNormal, m.PriorityStatus())
 	})
 
 	t.Run("triage on deleted message is rejected", func(t *testing.T) {

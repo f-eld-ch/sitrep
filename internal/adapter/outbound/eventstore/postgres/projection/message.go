@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -24,7 +25,7 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "rm_message" }
-func (h *MessageHandler) Version() int { return 1 }
+func (h *MessageHandler) Version() int { return 2 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE rm_message`)
 	return err
@@ -109,6 +110,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		if updatedAt.IsZero() {
 			updatedAt = createdAt
 		}
+		d.Priority = priorityForTriage(d.Triage, d.Priority)
 		return exec(db, ctx, `
 			INSERT INTO rm_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
@@ -164,6 +166,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+		d.Priority = priorityForTriage(d.Triage, d.Priority)
 		return exec(db, ctx, `
 			UPDATE rm_message
 			SET triage = $2, priority = $3, division_ids = $4, last_editor_sub = $5,
@@ -175,4 +178,11 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(db, ctx, `DELETE FROM rm_message WHERE id = $1`, id)
 	}
 	return nil
+}
+
+func priorityForTriage(triage, priority string) string {
+	if triage == string(shared.TriageMoreInfo) {
+		return string(shared.PriorityNormal)
+	}
+	return priority
 }

@@ -85,6 +85,11 @@ function TriageForm(props: {
   const [assignments, setAssignments] = useState<Division[]>(
     data.message.divisions.map((d) => d.division),
   );
+  const previewMessage: Message = {
+    ...message,
+    priorityId: priority,
+    divisions: assignments.map((division) => ({ division })),
+  };
 
   const handleSave = async (triage: TriageStatus) => {
     if (!incidentId) return;
@@ -92,9 +97,10 @@ function TriageForm(props: {
       await triageMessage({
         incidentId,
         messageId: message.id,
-        priority,
+        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
         triage,
         divisionIds: assignments.map((d) => d.id),
+        divisions: assignments,
       });
       setMessage(undefined);
     } catch {
@@ -112,7 +118,7 @@ function TriageForm(props: {
           <JournalMessage
             showControls={false}
             id={message.id}
-            message={message}
+            message={previewMessage}
             divisions={assignments}
             setEditorMessage={undefined}
             setTriageMessage={undefined}
@@ -162,7 +168,7 @@ function TriageForm(props: {
                 <h3 className="title is-size-5">{t("assignPriority")}</h3>
                 <div className="select is-rounded is-small">
                   <select
-                    defaultValue={message.priorityId}
+                    value={priority}
                     onChange={(e) => {
                       e.preventDefault();
                       const prio = Object.values(PriorityStatus).find((p) => p === e.target.value);

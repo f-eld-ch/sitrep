@@ -57,6 +57,8 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const [updateIncident, updateState] = useUpdateIncident();
 
   const handleSave = async () => {
+    if (name.trim() === "") return;
+
     if (incident) {
       try {
         await updateIncident({
@@ -218,6 +220,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                 className="button is-primary is-small is-justified is-rounded is-capitalized"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (assignmentName.trim() === "" || assignmentDescription.trim() === "") return;
                   setAssignments(
                     unionBy(
                       assignments,
@@ -228,7 +231,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentName("");
                   setAssignmentDescription("");
                 }}
-                disabled={assignmentName === "" || assignmentDescription === ""}
+                disabled={assignmentName.trim() === "" || assignmentDescription.trim() === ""}
               >
                 {t("add")}
               </button>
@@ -242,6 +245,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             type="submit"
             className="button is-primary is-rounded is-capitalized"
             onClick={() => void handleSave()}
+            disabled={name.trim() === ""}
           >
             {t("save")}
           </button>
