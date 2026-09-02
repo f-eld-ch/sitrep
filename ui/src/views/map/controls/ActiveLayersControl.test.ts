@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Layer } from "types/layer";
 import type { DrawingLayerState } from "../LayerContext";
-import { groupLayersForControl } from "./ActiveLayersControl";
+import { groupLayersForControl, hasOwnLayerGroup } from "./ActiveLayersControl";
 
 function layerState(
   id: string,
@@ -46,5 +46,16 @@ describe("groupLayersForControl", () => {
       "Führungskarte",
       "Nachrichtenkarte",
     ]);
+  });
+});
+
+describe("hasOwnLayerGroup", () => {
+  it("returns false when only inherited layer groups are present", () => {
+    const groups = groupLayersForControl(
+      [layerState("Nachrichtenkarte", "gfs-altdorf", "GFS Altdorf")],
+      "kfs",
+    );
+
+    expect(hasOwnLayerGroup(groups)).toBe(false);
   });
 });

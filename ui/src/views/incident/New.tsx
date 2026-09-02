@@ -99,7 +99,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           (candidate) =>
             candidate.id !== incident?.id &&
             candidate.deletedAt === null &&
-            candidate.closedAt === null &&
+            (candidate.closedAt === null || candidate.id === incident?.parentId) &&
             candidate.parentId === null,
         )
       : [];
@@ -320,7 +320,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 export default New;
 
 function initialDivisions(incident: Incident | undefined, t: (key: string) => string): Division[] {
-  if (incident?.divisions.length) {
+  if (incident !== undefined) {
     return incident.divisions.map((division, index) => initializeDivision(division, index));
   }
 
@@ -375,4 +375,11 @@ function canEditParentIncident(
   );
 }
 
-export { canEditParentIncident, IncidentForm, initializeDivision, New, updateDivision };
+export {
+  canEditParentIncident,
+  IncidentForm,
+  initialDivisions,
+  initializeDivision,
+  New,
+  updateDivision,
+};

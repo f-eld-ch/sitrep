@@ -326,6 +326,31 @@ func TestIncident_UpdateDivisions(t *testing.T) {
 		assert.Empty(t, inc.Root().PendingEvents())
 	})
 
+	t.Run("invalid changed division does not emit preceding removals", func(t *testing.T) {
+		removeID := shared.DivisionID(uuid.New())
+		changeID := shared.DivisionID(uuid.New())
+		inc := incident.New(id)
+		require.NoError(t, inc.Open("Hochwasser", nil, []incident.DivisionData{
+			{ID: removeID, Name: "Karte", Description: "Kartenstelle"},
+			{ID: changeID, Name: "Ops", Description: "Operations"},
+		}, at, actor))
+
+		for _, e := range inc.Root().PendingEvents() {
+			require.NoError(t, eventsourcing.Apply(inc, e))
+		}
+
+		inc.Root().ClearPending()
+
+		err := inc.UpdateDivisions([]incident.DivisionData{
+			{ID: changeID, Name: " ", Description: "Operations"},
+		}, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+		assert.Empty(t, inc.Root().PendingEvents())
+
+		_, ok := inc.Division(removeID)
+		assert.True(t, ok)
+	})
+
 	t.Run("removing a division emits DivisionRemoved", func(t *testing.T) {
 		// First add the division via replay.
 		inc := incident.New(id)

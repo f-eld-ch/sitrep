@@ -47,6 +47,10 @@ export function groupLayersForControl(
   return groups;
 }
 
+export function hasOwnLayerGroup(groups: LayerGroup[]): boolean {
+  return groups.some((group) => !group.isInherited);
+}
+
 const ActiveLayersControl: React.FC = () => {
   const { state, dispatch } = useContext(LayerContext);
   const [showAddLayer, setShowAddLayer] = useState<boolean>(false);
@@ -106,10 +110,18 @@ const ActiveLayersControl: React.FC = () => {
   );
 
   const layerGroups = groupLayersForControl(state.layers, incidentId);
+  const hasOwnGroup = hasOwnLayerGroup(layerGroups);
 
   return (
     <div className="active-layers-control is-size-7">
-      {layerGroups.length === 0 && addLayerControl}
+      {!hasOwnGroup && (
+        <div>
+          <div className="panel-block py-1 has-text-weight-semibold has-text-grey is-size-7">
+            {t("layerControl.currentIncidentLayers")}
+          </div>
+          {addLayerControl}
+        </div>
+      )}
       {layerGroups.map((group) => (
         <div key={group.sourceIncidentId}>
           <div className="panel-block py-1 has-text-weight-semibold has-text-grey is-size-7">

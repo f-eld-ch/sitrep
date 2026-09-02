@@ -206,4 +206,16 @@ describe("IncidentCards", () => {
     expect(screen.getByText("Test Incident")).toBeInTheDocument();
     expect(screen.getByText("Child")).toBeInTheDocument();
   });
+
+  it("renders orphaned child incidents only once", () => {
+    render(
+      <IncidentCards
+        incidents={[{ ...baseIncident, id: "2", name: "Child", parentId: "missing-parent" }]}
+        closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
+        deleteIncident={mockDeleteIncident}
+      />,
+    );
+    expect(screen.getAllByText("Child")).toHaveLength(1);
+  });
 });

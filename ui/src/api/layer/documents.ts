@@ -85,6 +85,8 @@ export const CREATE_LAYER: TypedDocumentNode<CreateLayerMutation, CreateLayerMut
     mutation CreateLayer($incidentId: ID!, $name: String!) {
       createLayer(incidentId: $incidentId, name: $name) {
         id
+        sourceIncidentId
+        sourceIncidentName
         name
       }
     }

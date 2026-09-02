@@ -172,14 +172,18 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 		desiredByID[d.ID] = d
 	}
 
-	// Remove divisions no longer present.
+	var removals []shared.DivisionID
+
 	for id := range i.divisions {
 		if _, keep := desiredByID[id]; !keep {
-			eventsourcing.TrackChange(i, DivisionRemoved{ID: id}, at, meta)
+			removals = append(removals, id)
 		}
 	}
 
-	// Add or update divisions.
+	var additions []DivisionData
+
+	var renames []DivisionData
+
 	for _, d := range desired {
 		existing, exists := i.divisions[d.ID]
 		if !exists {
@@ -187,14 +191,26 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 				return err
 			}
 
-			eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
+			additions = append(additions, d)
 		} else if existing.Name != d.Name || existing.Description != d.Description {
 			if err := validateDivision(d); err != nil {
 				return err
 			}
 
-			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
+			renames = append(renames, d)
 		}
+	}
+
+	for _, id := range removals {
+		eventsourcing.TrackChange(i, DivisionRemoved{ID: id}, at, meta)
+	}
+
+	for _, d := range additions {
+		eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
+	}
+
+	for _, d := range renames {
+		eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
 	}
 
 	return nil

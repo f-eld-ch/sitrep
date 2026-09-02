@@ -89,6 +89,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithIDs(pgstore.UUIDGen{}),
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(pgstore.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(pgstore.NewIncidentHierarchyGuard()),
 	)
 
 	handlers := []pgprojection.Handler{
@@ -152,6 +153,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithIDs(inmem.UUIDGen{}),
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 	)
 
 	incHandler := inprojection.NewIncidentHandler()

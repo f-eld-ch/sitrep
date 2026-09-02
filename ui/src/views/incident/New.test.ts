@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Incident } from "types/incident";
-import { canEditParentIncident, initializeDivision, updateDivision } from "./New";
+import { canEditParentIncident, initialDivisions, initializeDivision, updateDivision } from "./New";
 
 const baseIncident: Incident = {
   id: "incident-1",
@@ -72,6 +72,12 @@ describe("initializeDivision", () => {
       name: "Division 2",
       description: "Division 2",
     });
+  });
+});
+
+describe("initialDivisions", () => {
+  it("uses an existing incident's empty division list instead of creation defaults", () => {
+    expect(initialDivisions(baseIncident, (key) => key)).toEqual([]);
   });
 });
 

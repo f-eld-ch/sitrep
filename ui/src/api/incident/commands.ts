@@ -1,6 +1,5 @@
 import { useMutation } from "@apollo/client/react";
 import { apiErrorFromApolloError } from "../errors";
-import { GET_LAYERS } from "../layer/documents";
 import type { CommandHook, CommandState } from "../result";
 import {
   CLOSE_INCIDENT,
@@ -76,10 +75,6 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
     const result = args.parentId
       ? await mutateWithParent({
           variables: { ...variables, parentId: args.parentId },
-          refetchQueries: [
-            { query: GET_INCIDENTS },
-            { query: GET_LAYERS, variables: { incidentId: args.parentId } },
-          ],
           update(cache, { data }) {
             if (!data?.createIncident) return;
             const cached = cache.readQuery({ query: GET_INCIDENTS });
@@ -92,7 +87,6 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
         })
       : await mutate({
           variables,
-          refetchQueries: [{ query: GET_INCIDENTS }],
           update(cache, { data }) {
             if (!data?.createIncident) return;
             const cached = cache.readQuery({ query: GET_INCIDENTS });
@@ -204,11 +198,6 @@ export function useLinkIncidentParent(): CommandHook<LinkIncidentParentArgs> {
   const linkIncidentParent = async (args: LinkIncidentParentArgs): Promise<void> => {
     await mutate({
       variables: { childId: args.childId, parentId: args.parentId },
-      refetchQueries: [
-        { query: GET_INCIDENTS },
-        { query: GET_LAYERS, variables: { incidentId: args.childId } },
-        { query: GET_LAYERS, variables: { incidentId: args.parentId } },
-      ],
     });
   };
 
@@ -226,11 +215,6 @@ export function useUnlinkIncidentParent(): CommandHook<UnlinkIncidentParentArgs>
   const unlinkIncidentParent = async (args: UnlinkIncidentParentArgs): Promise<void> => {
     await mutate({
       variables: { childId: args.childId },
-      refetchQueries: [
-        { query: GET_INCIDENTS },
-        { query: GET_LAYERS, variables: { incidentId: args.childId } },
-        ...(args.parentId ? [{ query: GET_LAYERS, variables: { incidentId: args.parentId } }] : []),
-      ],
     });
   };
 

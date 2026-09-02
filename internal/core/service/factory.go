@@ -7,11 +7,12 @@ import "github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 // backend implementations; swap the entire set by changing a few lines at the
 // composition root rather than threading every dependency through every call.
 type Factory struct {
-	tx       outbound.Transactor
-	clock    outbound.Clock
-	ids      outbound.IDs
-	notifier outbound.EventNotifier
-	counter  outbound.MessageCounter
+	tx        outbound.Transactor
+	clock     outbound.Clock
+	ids       outbound.IDs
+	notifier  outbound.EventNotifier
+	counter   outbound.MessageCounter
+	hierarchy outbound.IncidentHierarchyGuard
 }
 
 // FactoryOption configures a Factory.
@@ -37,6 +38,10 @@ func WithMessageCounter(counter outbound.MessageCounter) FactoryOption {
 	return func(f *Factory) { f.counter = counter }
 }
 
+func WithIncidentHierarchyGuard(hierarchy outbound.IncidentHierarchyGuard) FactoryOption {
+	return func(f *Factory) { f.hierarchy = hierarchy }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -49,7 +54,7 @@ func NewFactory(opts ...FactoryOption) *Factory {
 
 // IncidentService creates a ready-to-use IncidentService.
 func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbound.LayerRepository) *IncidentService {
-	return NewIncidentService(f.tx, repo, layers, f.clock, f.ids, f.notifier)
+	return NewIncidentService(f.tx, repo, layers, f.hierarchy, f.clock, f.ids, f.notifier)
 }
 
 // MessageService creates a ready-to-use MessageService.

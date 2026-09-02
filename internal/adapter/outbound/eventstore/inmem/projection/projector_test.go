@@ -56,6 +56,7 @@ func newStack(t *testing.T) *testStack {
 		service.WithIDs(inmem.UUIDGen{}),
 		service.WithNotifier(inmem.NewNotifier()),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 	)
 	incidents := projection.NewIncidentHandler()
 	divisions := projection.NewIncidentDivisionHandler()

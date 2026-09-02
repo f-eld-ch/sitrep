@@ -40,6 +40,15 @@ type MessageCounter interface {
 	Next(ctx context.Context, incidentID shared.IncidentID) (int, error)
 }
 
+// IncidentHierarchyGuard serializes hierarchy invariant checks and writes, and
+// answers hierarchy questions from the write-side source of truth.
+type IncidentHierarchyGuard interface {
+	// LockForUpdate must be held from before validation until the hierarchy write
+	// is saved, so cross-aggregate invariants cannot race on different streams.
+	LockForUpdate(ctx context.Context) (release func(), err error)
+	HasChildren(ctx context.Context, incidentID shared.IncidentID) (bool, error)
+}
+
 // UserRepository persists authenticated user profiles.
 // Users are not event-sourced — the table is a plain upsert target keyed on sub.
 type UserRepository interface {

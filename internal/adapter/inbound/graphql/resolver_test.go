@@ -44,6 +44,7 @@ func newTestStack(t *testing.T) *testStack {
 		service.WithIDs(inmemstore.UUIDGen{}),
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(counter),
+		service.WithIncidentHierarchyGuard(inmemstore.NewIncidentHierarchyGuard(store)),
 	)
 
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
@@ -797,6 +798,8 @@ func TestCreateLayer_ReturnsModel(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, layer)
 	assert.Equal(t, "Ops Map", layer.Name)
+	assert.Equal(t, inc.ID, layer.SourceIncidentID)
+	assert.Equal(t, "Layer Mut", layer.SourceIncidentName)
 	assert.Equal(t, 0, layer.Revision)
 	assert.Empty(t, layer.Features)
 	_, parseErr := uuid.Parse(layer.ID)

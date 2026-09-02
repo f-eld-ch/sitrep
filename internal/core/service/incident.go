@@ -25,25 +25,27 @@ import (
 
 // IncidentService handles all write-side operations for the Incident aggregate.
 type IncidentService struct {
-	tx       outbound.Transactor
-	repo     outbound.IncidentRepository
-	layers   outbound.LayerRepository
-	clock    outbound.Clock
-	ids      outbound.IDs
-	notifier outbound.EventNotifier
-	tracer   trace.Tracer
+	tx        outbound.Transactor
+	repo      outbound.IncidentRepository
+	layers    outbound.LayerRepository
+	hierarchy outbound.IncidentHierarchyGuard
+	clock     outbound.Clock
+	ids       outbound.IDs
+	notifier  outbound.EventNotifier
+	tracer    trace.Tracer
 }
 
 func NewIncidentService(
 	tx outbound.Transactor,
 	repo outbound.IncidentRepository,
 	layers outbound.LayerRepository,
+	hierarchy outbound.IncidentHierarchyGuard,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *IncidentService {
 	return &IncidentService{
-		tx: tx, repo: repo, layers: layers, clock: clock, ids: ids, notifier: notifier,
+		tx: tx, repo: repo, layers: layers, hierarchy: hierarchy, clock: clock, ids: ids, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -97,6 +99,12 @@ func (s *IncidentService) CreateIncidentWithParent(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		if parentID != nil {
+			release, err := s.lockHierarchy(ctx)
+			if err != nil {
+				return err
+			}
+			defer release()
+
 			if err := s.requireValidParent(ctx, incID, *parentID); err != nil {
 				return err
 			}
@@ -310,6 +318,12 @@ func (s *IncidentService) LinkIncidentParent(
 	var state inbound.IncidentState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		release, err := s.lockHierarchy(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+
 		child, err := s.repo.Load(ctx, childID)
 		if err != nil {
 			return err
@@ -355,13 +369,43 @@ func (s *IncidentService) UnlinkIncidentParent(
 
 	slog.DebugContext(ctx, "unlinking incident parent", "child_id", childID, "actor", actor.Sub)
 
-	state, err := s.writeIncident(ctx, childID, func(inc *incident.Incident) error {
-		return inc.UnlinkParent(actor.Sub, s.clock.Now())
+	at := s.clock.Now()
+
+	var state inbound.IncidentState
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		release, err := s.lockHierarchy(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+
+		inc, err := s.repo.Load(ctx, childID)
+		if err != nil {
+			return err
+		}
+
+		if err := inc.UnlinkParent(actor.Sub, at); err != nil {
+			return err
+		}
+
+		if _, err = s.repo.Save(ctx, inc); err != nil {
+			return err
+		}
+
+		state = incidentToState(inc, at)
+
+		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+		logIfUnexpected(ctx, "UnlinkIncidentParent", err, "child_id", childID)
+
+		return inbound.IncidentState{}, err
 	}
+
+	_ = s.notifier.Notify(ctx)
 
 	return state, err
 }
@@ -432,6 +476,15 @@ func (s *IncidentService) writeIncident(
 }
 
 func (s *IncidentService) requireValidParent(ctx context.Context, childID, parentID shared.IncidentID) error {
+	hasChildren, err := s.hierarchy.HasChildren(ctx, childID)
+	if err != nil {
+		return err
+	}
+
+	if hasChildren {
+		return shared.ErrInvalidParent
+	}
+
 	parent, err := s.repo.Load(ctx, parentID)
 	if err != nil {
 		return err
@@ -446,6 +499,14 @@ func (s *IncidentService) requireValidParent(ctx context.Context, childID, paren
 	}
 
 	return s.requireAcyclicParent(ctx, childID, parentID)
+}
+
+func (s *IncidentService) lockHierarchy(ctx context.Context) (func(), error) {
+	if s.hierarchy == nil {
+		return func() {}, nil
+	}
+
+	return s.hierarchy.LockForUpdate(ctx)
 }
 
 // LoadIncident returns the incident aggregate (for queries that need aggregate state).

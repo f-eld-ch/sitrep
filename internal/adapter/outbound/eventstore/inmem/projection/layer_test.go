@@ -34,6 +34,7 @@ func newLayerStack(t *testing.T) *layerStack {
 		service.WithIDs(inmem.UUIDGen{}),
 		service.WithNotifier(inmem.NewNotifier()),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 	)
 	layers := projection.NewLayerFeaturesHandler()
 	proj := projection.NewProjector(store, []projection.Handler{

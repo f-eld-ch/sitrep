@@ -458,6 +458,11 @@ func (r *mutationResolver) CreateLayer(
 		return nil, err
 	}
 
+	inc, err := r.Incidents.LoadIncident(ctx, shared.IncidentID(incID))
+	if err != nil {
+		return nil, err
+	}
+
 	layerID, err := r.Layers.CreateLayer(ctx, shared.IncidentID(incID), name, actor)
 	if err != nil {
 		return nil, err
@@ -466,7 +471,7 @@ func (r *mutationResolver) CreateLayer(
 	return &model.Layer{
 		ID:                 uuid.UUID(layerID).String(),
 		SourceIncidentID:   incidentID,
-		SourceIncidentName: "",
+		SourceIncidentName: inc.Name(),
 		Name:               name,
 		Revision:           0,
 		Features:           []*model.Feature{},

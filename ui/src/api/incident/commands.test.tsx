@@ -1,7 +1,5 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { GET_LAYERS } from "../layer/documents";
-import { GET_INCIDENTS } from "./documents";
 import { useCreateIncident, useDeleteIncident } from "./commands";
 
 vi.mock("@apollo/client/react", () => ({
@@ -86,13 +84,12 @@ describe("useCreateIncident", () => {
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({
         variables: expect.not.objectContaining({ parentId: expect.anything() }),
-        refetchQueries: [{ query: GET_INCIDENTS }],
       }),
     );
     expect(mutateWithParent).not.toHaveBeenCalled();
   });
 
-  it("sends parentId and refetches parent layers when creating a child incident", async () => {
+  it("sends parentId without refetching projected read models when creating a child incident", async () => {
     const { mutate, mutateWithParent } = await setupCreateMutations();
     const { result } = renderHook(() => useCreateIncident());
     const [createIncident] = result.current;
@@ -111,10 +108,6 @@ describe("useCreateIncident", () => {
     expect(mutateWithParent).toHaveBeenCalledWith(
       expect.objectContaining({
         variables: expect.objectContaining({ parentId: "parent-1" }),
-        refetchQueries: [
-          { query: GET_INCIDENTS },
-          { query: GET_LAYERS, variables: { incidentId: "parent-1" } },
-        ],
       }),
     );
   });

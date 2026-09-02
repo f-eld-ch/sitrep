@@ -98,9 +98,7 @@ export function IncidentCards(props: {
   }
 
   const isVisible = (incident: Incident) => !hideClosed || incident.closedAt === null;
-  const topLevelIncidents = activeIncidents.filter(
-    (incident) => !incident.parentId || !incidentIDs.has(incident.parentId),
-  );
+  const topLevelIncidents = activeIncidents.filter((incident) => !incident.parentId);
 
   return (
     <div className="container-flex">

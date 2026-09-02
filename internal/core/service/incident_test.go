@@ -296,6 +296,25 @@ func TestIncidentService_LinkIncidentParent(t *testing.T) {
 		_, err = svc.LinkIncidentParent(ctx(), parent.IncidentID, child.IncidentID, testActor)
 		assert.ErrorIs(t, err, shared.ErrInvalidParent)
 	})
+
+	t.Run("child that already has children is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		root, err := svc.CreateIncident(ctx(), "KFS", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "GFS Altdorf", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		otherRoot, err := svc.CreateIncident(ctx(), "Other KFS", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, root.IncidentID, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), root.IncidentID, otherRoot.IncidentID, testActor)
+		assert.ErrorIs(t, err, shared.ErrInvalidParent)
+	})
 }
 
 func TestIncidentService_LoadUnknown(t *testing.T) {
