@@ -11,6 +11,7 @@
 ### 🐛 Bug Fixes
 
 - *(backend)* Improve startup behavior to wait for db conncetions - ([380f188](https://github.com/f-eld-ch/sitrep/commit/380f188d8377c0d08a3d88667f4e5ad8215819db))
+- *(retention)* Base auto-close on updated time ([#1796](https://github.com/f-eld-ch/sitrep/issues/1796)) - ([8b3f1c4](https://github.com/f-eld-ch/sitrep/commit/8b3f1c4a8278db96944ce52d76a07f1abda8706f))
 
 ### ⚙️  Other
 
