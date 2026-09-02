@@ -39,6 +39,7 @@ function Editor() {
   const [updateMessage, updateState] = useUpdateMessage();
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
   const savingRef = useRef(false);
+  const incidentIsClosed = incident?.closedAt != null;
 
   const isDirty =
     state.content !== "" ||
@@ -164,13 +165,13 @@ function Editor() {
               </div>
             )}
             {saveError && <Notification type="error">{saveError.message}</Notification>}
-            <InputBox />
+            {!incidentIsClosed && <InputBox />}
           </div>
           <div className="column is-half">
             <List
-              showControls={true}
-              setEditorMessage={setEditorMessage}
-              setTriageMessage={setTriageMessage}
+              showControls={!incidentIsClosed}
+              setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
+              setTriageMessage={incidentIsClosed ? undefined : setTriageMessage}
             />
           </div>
           <TriageModal

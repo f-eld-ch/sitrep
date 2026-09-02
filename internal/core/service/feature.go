@@ -62,12 +62,8 @@ func (s *FeatureService) PlaceFeature(
 
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		inc, err := s.incidents.Load(ctx, incidentID)
-		if err != nil {
+		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
-		}
-		if !inc.IsOpen() {
-			return shared.ErrIncidentNotOpen
 		}
 		l, err := s.layers.Load(ctx, layerID)
 		if err != nil {
@@ -158,6 +154,9 @@ func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, 
 		if err != nil {
 			return err
 		}
+		if err := s.requireIncidentOpen(ctx, f.IncidentID()); err != nil {
+			return err
+		}
 		if err := fn(f); err != nil {
 			return err
 		}
@@ -168,5 +167,16 @@ func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, 
 		return err
 	}
 	_ = s.notifier.Notify(ctx)
+	return nil
+}
+
+func (s *FeatureService) requireIncidentOpen(ctx context.Context, incidentID shared.IncidentID) error {
+	inc, err := s.incidents.Load(ctx, incidentID)
+	if err != nil {
+		return err
+	}
+	if !inc.IsOpen() {
+		return shared.ErrIncidentNotOpen
+	}
 	return nil
 }

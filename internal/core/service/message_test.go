@@ -115,6 +115,29 @@ func TestMessageService_DeleteMessage(t *testing.T) {
 	})
 }
 
+func TestMessageService_RejectsWritesOnClosedIncident(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, messages, layers, _ := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	messageSvc := factory.MessageService(messages, incidents)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Closed", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	msg, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		"Original", "Sender", "", "Receiver", "", shared.MediumRadio, nil, testActor)
+	require.NoError(t, err)
+	_, err = incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
+	require.NoError(t, err)
+
+	content := "Corrected"
+	_, err = messageSvc.CorrectMessage(ctx(), msg.ID, &content, nil, nil, nil, nil, nil, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	_, err = messageSvc.TriageMessage(ctx(), msg.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	err = messageSvc.DeleteMessage(ctx(), msg.ID, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}
+
 func TestMessageService_CounterIsPerIncident(t *testing.T) {
 	factory, store := testStack(t)
 	incidents, messages, layers, _ := repos(store)

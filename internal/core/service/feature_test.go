@@ -69,3 +69,23 @@ func TestFeatureService_ModifyUnknown(t *testing.T) {
 	_, err := featureSvc.ModifyFeature(ctx(), shared.FeatureID(newID()), testGeometry, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)
 }
+
+func TestFeatureService_RejectsWritesOnClosedIncident(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, _, layers, features := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	featureSvc := factory.FeatureService(features, incidents, layers)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Closed", nil, nil, []string{"Lage"}, testActor)
+	require.NoError(t, err)
+	featureID := shared.FeatureID(newID())
+	err = featureSvc.PlaceFeature(ctx(), featureID, res.IncidentID, res.LayerIDs[0], testGeometry, testProperties, testActor)
+	require.NoError(t, err)
+	_, err = incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
+	require.NoError(t, err)
+
+	_, err = featureSvc.ModifyFeature(ctx(), featureID, testGeometry, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	err = featureSvc.RemoveFeature(ctx(), featureID, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}
