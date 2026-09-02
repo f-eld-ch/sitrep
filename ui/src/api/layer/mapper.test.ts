@@ -19,6 +19,8 @@ const WIRE_FEATURE_2: WireFeature = {
 
 const WIRE_LAYER: WireLayer = {
   id: "layer-1",
+  sourceIncidentId: "inc-1",
+  sourceIncidentName: "Regional",
   name: "Alpha Layer",
   revision: 1,
   features: [WIRE_FEATURE_1, WIRE_FEATURE_2],
@@ -28,6 +30,8 @@ describe("toLayer", () => {
   it("maps id and name", () => {
     const result = toLayer(WIRE_LAYER);
     expect(result.id).toBe("layer-1");
+    expect(result.sourceIncidentId).toBe("inc-1");
+    expect(result.sourceIncidentName).toBe("Regional");
     expect(result.name).toBe("Alpha Layer");
   });
 

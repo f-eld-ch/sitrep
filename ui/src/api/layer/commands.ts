@@ -185,7 +185,13 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
           data: {
             layersForIncident: [
               ...(cached.layersForIncident ?? []),
-              { ...newLayer, revision: 0, features: [] },
+              {
+                ...newLayer,
+                sourceIncidentId: args.incidentId,
+                sourceIncidentName: "",
+                revision: 0,
+                features: [],
+              },
             ],
           },
         });

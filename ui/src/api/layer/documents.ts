@@ -21,6 +21,8 @@ export const GET_LAYERS: TypedDocumentNode<
   query GetLayersForIncident($incidentId: ID!) {
     layersForIncident(incidentId: $incidentId) {
       id
+      sourceIncidentId
+      sourceIncidentName
       name
       revision
       features {

@@ -11,6 +11,8 @@ export type {
   CreateIncidentArgs,
   IncidentDetailsData,
   IncidentsData,
+  LinkIncidentParentArgs,
+  UnlinkIncidentParentArgs,
   UpdateIncidentArgs,
 } from "./incident";
 export {
@@ -20,7 +22,9 @@ export {
   useDeleteIncident,
   useIncidentDetails,
   useIncidents,
+  useLinkIncidentParent,
   useReopenIncident,
+  useUnlinkIncidentParent,
   useUpdateIncident,
 } from "./incident";
 

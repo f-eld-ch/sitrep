@@ -30,7 +30,9 @@ describe("IncidentCard", () => {
     updatedAt: new Date(),
     deletedAt: null,
     closedAt: null,
+    parentId: null,
     divisions: [],
+    childIncidents: [],
     layers: [],
   };
   const mockCloseIncident = vi.fn();
@@ -153,7 +155,9 @@ describe("IncidentCards", () => {
     updatedAt: new Date(),
     deletedAt: null,
     closedAt: null,
+    parentId: null,
     divisions: [],
+    childIncidents: [],
     layers: [],
   };
   const mockCloseIncident = vi.fn();
@@ -188,5 +192,18 @@ describe("IncidentCards", () => {
     );
     expect(screen.getByText("Test Incident")).toBeInTheDocument();
     expect(screen.getAllByTestId("edit-button")).toHaveLength(1);
+  });
+
+  it("nests children under their parent", () => {
+    render(
+      <IncidentCards
+        incidents={[baseIncident, { ...baseIncident, id: "2", name: "Child", parentId: "1" }]}
+        closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
+        deleteIncident={mockDeleteIncident}
+      />,
+    );
+    expect(screen.getByText("Test Incident")).toBeInTheDocument();
+    expect(screen.getByText("Child")).toBeInTheDocument();
   });
 });

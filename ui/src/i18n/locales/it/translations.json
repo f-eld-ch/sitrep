@@ -92,6 +92,8 @@
   "incidentName": "nome di incidente",
   "open": "aprire",
   "options": "opzioni",
+  "parentIncident": "evento superiore",
+  "noParentIncident": "nessun evento superiore",
   "otherDetails": "particolari",
   "overview": "quadro",
   "phone": {
@@ -139,6 +141,7 @@
   },
   "layerControl": {
     "layers": "Livelli",
+    "currentIncidentLayers": "Evento attuale",
     "addLayer": "Aggiungi livello",
     "layerName": "Nome del livello",
     "drawingLayers": "Livello di disegno",
@@ -173,6 +176,7 @@
     "ALREADY_CLOSED": "L'elemento è già chiuso.",
     "ALREADY_OPEN": "L'elemento è già aperto.",
     "INVALID_INPUT": "L'input fornito non è valido.",
+    "INVALID_PARENT_INCIDENT": "L'evento superiore selezionato non può essere utilizzato.",
     "CONFLICT": "La richiesta non può essere completata a causa di un conflitto.",
     "INTERNAL_ERROR": "Si è verificato un errore interno. Riprovare.",
     "NETWORK_ERROR": "Impossibile contattare il server. Controllare la connessione di rete.",

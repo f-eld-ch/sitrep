@@ -92,6 +92,8 @@
   "incidentName": "incident name",
   "open": "open",
   "options": "options",
+  "parentIncident": "parent incident",
+  "noParentIncident": "no parent incident",
   "otherDetails": "details",
   "overview": "overview",
   "phone": {
@@ -139,6 +141,7 @@
   },
   "layerControl": {
     "layers": "Layers",
+    "currentIncidentLayers": "Current incident",
     "addLayer": "Add layer",
     "layerName": "Layer name",
     "drawingLayers": "Drawing layer",
@@ -173,6 +176,7 @@
     "ALREADY_CLOSED": "The item is already closed.",
     "ALREADY_OPEN": "The item is already open.",
     "INVALID_INPUT": "The provided input is invalid.",
+    "INVALID_PARENT_INCIDENT": "The selected parent incident cannot be used.",
     "CONFLICT": "The request could not be completed due to a conflict.",
     "INTERNAL_ERROR": "An internal error occurred. Please try again.",
     "NETWORK_ERROR": "Could not reach the server. Please check your network connection.",

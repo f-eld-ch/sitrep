@@ -33,6 +33,7 @@ func logIfUnexpected(ctx context.Context, op string, err error, attrs ...any) {
 		errors.Is(err, shared.ErrAlreadyOpen) ||
 		errors.Is(err, shared.ErrForbidden) ||
 		errors.Is(err, shared.ErrInvalidInput) ||
+		errors.Is(err, shared.ErrInvalidParent) ||
 		errors.Is(err, shared.ErrConflict) {
 		return
 	}

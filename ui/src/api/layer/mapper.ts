@@ -28,6 +28,8 @@ function toFeature(w: WireFeature): Feature {
 export function toLayer(w: WireLayer): Layer {
   return {
     id: w.id,
+    sourceIncidentId: w.sourceIncidentId,
+    sourceIncidentName: w.sourceIncidentName,
     name: w.name,
     // Server already hides deleted features — no client-side filter needed.
     features: w.features.map(toFeature),

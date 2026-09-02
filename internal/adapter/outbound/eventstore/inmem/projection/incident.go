@@ -24,6 +24,7 @@ var (
 type IncidentRow struct {
 	ID        uuid.UUID
 	Name      string
+	ParentID  *uuid.UUID
 	IsClosed  bool
 	IsDeleted bool
 	ClosedAt  *time.Time
@@ -44,7 +45,7 @@ func NewIncidentHandler() *IncidentHandler {
 }
 
 func (h *IncidentHandler) Name() string { return "rm_incident" }
-func (h *IncidentHandler) Version() int { return 2 }
+func (h *IncidentHandler) Version() int { return 3 }
 
 func (h *IncidentHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -61,7 +62,15 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Opened", "Renamed", "LocationChanged", "Closed", "Reopened", "Deleted", "Imported":
+	case "Opened",
+		"Renamed",
+		"LocationChanged",
+		"ParentLinked",
+		"ParentUnlinked",
+		"Closed",
+		"Reopened",
+		"Deleted",
+		"Imported":
 		return true
 	}
 
@@ -139,6 +148,30 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 		if row := h.rows[id]; row != nil {
 			row.Location = d.Location
+			row.UpdatedAt = e.OccurredAt
+		}
+
+	case "ParentLinked":
+		var d struct {
+			ParentID string `json:"parentId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		parentID, err := uuid.Parse(d.ParentID)
+		if err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.ParentID = &parentID
+			row.UpdatedAt = e.OccurredAt
+		}
+
+	case "ParentUnlinked":
+		if row := h.rows[id]; row != nil {
+			row.ParentID = nil
 			row.UpdatedAt = e.OccurredAt
 		}
 

@@ -27,6 +27,11 @@ func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
 		UpdatedAt: r.CreatedAt,
 		IsClosed:  false,
 	}
+	if r.ParentID != nil {
+		parentID := r.ParentID.String()
+		inc.ParentID = &parentID
+	}
+
 	if r.Location != nil {
 		inc.Location = &model.Location{Name: r.Location.Name}
 	}
@@ -57,6 +62,11 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 		IsClosed:  s.IsClosed,
 		ClosedAt:  s.ClosedAt,
 	}
+	if s.ParentID != nil {
+		parentID := s.ParentID.String()
+		inc.ParentID = &parentID
+	}
+
 	if s.Location != nil {
 		inc.Location = &model.Location{Name: s.Location.Name}
 	}
@@ -108,6 +118,11 @@ func incidentRMToModel(r *outbound.IncidentRM) *model.Incident {
 		ClosedAt:  r.ClosedAt,
 		IsClosed:  r.IsClosed,
 	}
+	if r.ParentID != nil {
+		parentID := r.ParentID.String()
+		inc.ParentID = &parentID
+	}
+
 	if r.Location != nil {
 		inc.Location = locationRMToModel(r.Location)
 	}
@@ -181,9 +196,11 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 
 func layerRMToModel(r *outbound.LayerRM) (*model.Layer, error) {
 	layer := &model.Layer{
-		ID:       r.ID.String(),
-		Name:     r.Name,
-		Revision: r.Revision,
+		ID:                 r.ID.String(),
+		SourceIncidentID:   r.SourceIncidentID.String(),
+		SourceIncidentName: r.SourceIncidentName,
+		Name:               r.Name,
+		Revision:           r.Revision,
 	}
 
 	features, err := featuresFromGeoJSON(r.GeoJSON)

@@ -147,6 +147,134 @@ func TestIncident_DeleteRequiresClosed(t *testing.T) {
 	})
 }
 
+func TestIncident_LinkParent(t *testing.T) {
+	childID := shared.IncidentID(uuid.New())
+	parentID := shared.IncidentID(uuid.New())
+
+	t.Run("open child links to parent", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+
+		err := inc.LinkParent(parentID, actor, at)
+		require.NoError(t, err)
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "ParentLinked", pending[0].EventType)
+		assert.Equal(t, &parentID, inc.ParentID())
+
+		data, ok := pending[0].Data.(incident.ParentLinked)
+		require.True(t, ok)
+		assert.Equal(t, parentID, data.ParentID)
+	})
+
+	t.Run("replay restores parent", func(t *testing.T) {
+		inc := incident.New(childID)
+		require.NoError(t, inc.Open("Municipal", nil, nil, at, actor))
+		require.NoError(t, inc.LinkParent(parentID, actor, at))
+
+		replayed := replay(t, childID, inc.Root().PendingEvents())
+		require.NotNil(t, replayed.ParentID())
+		assert.Equal(t, parentID, *replayed.ParentID())
+	})
+
+	t.Run("relink replaces existing parent", func(t *testing.T) {
+		newParentID := shared.IncidentID(uuid.New())
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+		require.NoError(t, inc.LinkParent(parentID, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.LinkParent(newParentID, actor, at)
+		require.NoError(t, err)
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "ParentLinked", pending[0].EventType)
+		assert.Equal(t, &newParentID, inc.ParentID())
+	})
+
+	t.Run("self parent is rejected", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+
+		err := inc.LinkParent(childID, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+		assert.Nil(t, inc.ParentID())
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+
+	t.Run("closed child cannot link parent", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+		require.NoError(t, inc.Close(shared.ReasonManual, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.LinkParent(parentID, actor, at)
+		require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+
+	t.Run("deleted child cannot link parent", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+		require.NoError(t, inc.Close(shared.ReasonManual, actor, at))
+		require.NoError(t, inc.Delete(shared.DeleteReasonManual, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.LinkParent(parentID, actor, at)
+		require.ErrorIs(t, err, shared.ErrIncidentDeleted)
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+}
+
+func TestIncident_UnlinkParent(t *testing.T) {
+	childID := shared.IncidentID(uuid.New())
+	parentID := shared.IncidentID(uuid.New())
+
+	t.Run("open child unlinks parent", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+		require.NoError(t, inc.LinkParent(parentID, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.UnlinkParent(actor, at)
+		require.NoError(t, err)
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "ParentUnlinked", pending[0].EventType)
+		assert.Nil(t, inc.ParentID())
+	})
+
+	t.Run("replay clears parent", func(t *testing.T) {
+		inc := incident.New(childID)
+		require.NoError(t, inc.Open("Municipal", nil, nil, at, actor))
+		require.NoError(t, inc.LinkParent(parentID, actor, at))
+		require.NoError(t, inc.UnlinkParent(actor, at))
+
+		replayed := replay(t, childID, inc.Root().PendingEvents())
+		assert.Nil(t, replayed.ParentID())
+	})
+
+	t.Run("unlink without parent still emits event", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+
+		err := inc.UnlinkParent(actor, at)
+		require.NoError(t, err)
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "ParentUnlinked", pending[0].EventType)
+		assert.Nil(t, inc.ParentID())
+	})
+
+	t.Run("closed child cannot unlink parent", func(t *testing.T) {
+		inc := replay(t, childID, []eventsourcing.Event{opened(childID, "Municipal")})
+		require.NoError(t, inc.LinkParent(parentID, actor, at))
+		require.NoError(t, inc.Close(shared.ReasonManual, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.UnlinkParent(actor, at)
+		require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+}
+
 func TestIncident_UpdateDivisions(t *testing.T) {
 	id := shared.IncidentID(uuid.New())
 	divID := shared.DivisionID(uuid.New())
@@ -174,6 +302,27 @@ func TestIncident_UpdateDivisions(t *testing.T) {
 			{ID: divID, Name: " ", Description: "Kartenstelle"},
 		}, actor, at)
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+
+	t.Run("unchanged legacy blank division fields do not block updates", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+		require.NoError(t, eventsourcing.Apply(inc, eventsourcing.Event{
+			StreamID:   uuid.UUID(id),
+			StreamType: "Incident",
+			EventType:  "DivisionAdded",
+			Data: incident.DivisionAdded{Division: incident.DivisionData{
+				ID:          divID,
+				Name:        " ",
+				Description: " ",
+			}},
+			OccurredAt: at,
+		}))
+
+		err := inc.UpdateDivisions([]incident.DivisionData{
+			{ID: divID, Name: " ", Description: " "},
+		}, actor, at)
+		require.NoError(t, err)
 		assert.Empty(t, inc.Root().PendingEvents())
 	})
 

@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | "ALREADY_CLOSED"
   | "ALREADY_OPEN"
   | "INVALID_INPUT"
+  | "INVALID_PARENT_INCIDENT"
   | "CONFLICT"
   | "INTERNAL_ERROR"
   | "NETWORK_ERROR"
@@ -35,6 +36,7 @@ const knownCodes = new Set<ApiErrorCode>([
   "ALREADY_CLOSED",
   "ALREADY_OPEN",
   "INVALID_INPUT",
+  "INVALID_PARENT_INCIDENT",
   "CONFLICT",
   "INTERNAL_ERROR",
 ]);

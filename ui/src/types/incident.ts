@@ -9,6 +9,7 @@ export interface Location {
 
 export interface Incident {
   id: string;
+  parentId: string | null;
   name: string;
   createdAt: Date;
   updatedAt: Date | null;
@@ -16,5 +17,6 @@ export interface Incident {
   closedAt: Date | null;
   location: Location;
   divisions: Division[];
+  childIncidents: Incident[];
   layers: Layer[];
 }

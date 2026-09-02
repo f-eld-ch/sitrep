@@ -1,15 +1,19 @@
-import { faClipboard, faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { faClipboard, faLocationDot, faSitemap } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import iteratee from "lodash/iteratee";
-import reject from "lodash/reject";
 import unionBy from "lodash/unionBy";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import type { Division } from "types";
 import type { Incident } from "types/incident";
-import { useCreateIncident, useUpdateIncident } from "api";
+import {
+  useCreateIncident,
+  useIncidents,
+  useLinkIncidentParent,
+  useUnlinkIncidentParent,
+  useUpdateIncident,
+} from "api";
 
 function New() {
   const { t } = useTranslation();
@@ -28,33 +32,19 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   const { incident } = props;
   const { t } = useTranslation();
 
-  const [assignments, setAssignments] = useState<Division[]>(
-    incident?.divisions || [
-      {
-        id: "",
-        name: t("divisionsNames.Karte.name"),
-        description: t("divisionsNames.Karte.description"),
-      },
-      {
-        id: "",
-        name: t("divisionsNames.CLage.name"),
-        description: t("divisionsNames.CLage.description"),
-      },
-      {
-        id: "",
-        name: t("divisionsNames.SC.name"),
-        description: t("divisionsNames.SC.description"),
-      },
-    ],
-  );
+  const [assignments, setAssignments] = useState<Division[]>(() => initialDivisions(incident, t));
   const [name, setName] = useState(incident?.name || "");
   const [location, setLocation] = useState(incident?.location.name || "");
+  const [parentId, setParentId] = useState(incident?.parentId ?? "");
   const [assignmentName, setAssignmentName] = useState("");
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const navigate = useNavigate();
 
   const [createIncident, createState] = useCreateIncident();
   const [updateIncident, updateState] = useUpdateIncident();
+  const [linkIncidentParent, linkParentState] = useLinkIncidentParent();
+  const [unlinkIncidentParent, unlinkParentState] = useUnlinkIncidentParent();
+  const incidentsResult = useIncidents();
 
   const handleSave = async () => {
     if (name.trim() === "") return;
@@ -71,6 +61,13 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             description: d.description,
           })),
         });
+
+        if (parentId && parentId !== incident.parentId) {
+          await linkIncidentParent({ childId: incident.id, parentId });
+        } else if (!parentId && incident.parentId) {
+          await unlinkIncidentParent({ childId: incident.id, parentId: incident.parentId });
+        }
+
         navigate("../journal/view");
       } catch {
         // updateState.error renders the notification
@@ -79,10 +76,12 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       try {
         const { incidentId } = await createIncident({
           name,
+          parentId,
           location,
           layerName: t("divisionsNames.Karte.description"),
           divisions: assignments.map((d) => ({ name: d.name, description: d.description })),
         });
+
         navigate(`../${incidentId}/journal/view`);
       } catch {
         // createState.error renders the notification
@@ -92,7 +91,23 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
   const nameID = useId();
   const locationID = useId();
+  const parentID = useId();
   const divisionsID = useId();
+  const parentCandidates =
+    incidentsResult.status === "ready"
+      ? incidentsResult.data.incidents.filter(
+          (candidate) =>
+            candidate.id !== incident?.id &&
+            candidate.deletedAt === null &&
+            candidate.closedAt === null &&
+            candidate.parentId === null,
+        )
+      : [];
+  const relationshipError = linkParentState.error ?? unlinkParentState.error;
+  const showParentSelector = canEditParentIncident(
+    incident,
+    incidentsResult.status === "ready" ? incidentsResult.data.incidents : [],
+  );
 
   return (
     <>
@@ -101,6 +116,9 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       )}
       {updateState.error && (
         <div className="notification is-danger">{t(`errors.${updateState.error.code}`)}</div>
+      )}
+      {relationshipError && (
+        <div className="notification is-danger">{t(`errors.${relationshipError.code}`)}</div>
       )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
@@ -126,6 +144,38 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </div>
         </div>
       </div>
+      {showParentSelector && (
+        <div className="field is-horizontal">
+          <div className="field-label is-normal">
+            <label htmlFor={parentID} className="label is-capitalized">
+              {t("parentIncident")}
+            </label>
+          </div>
+          <div className="field-body">
+            <div className="field is-normal">
+              <div className="control has-icons-left">
+                <div className="select is-fullwidth">
+                  <select
+                    id={parentID}
+                    value={parentId}
+                    onChange={(e) => setParentId(e.target.value)}
+                  >
+                    <option value="">{t("noParentIncident")}</option>
+                    {parentCandidates.map((candidate) => (
+                      <option key={candidate.id} value={candidate.id}>
+                        {candidate.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <span className="icon is-small is-left">
+                  <FontAwesomeIcon icon={faSitemap} />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label htmlFor={locationID} className="label is-capitalized">
@@ -157,32 +207,45 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </label>
         </div>
         <div className="field-body">
-          <div className="field is-grouped is-grouped-multiline is-normal">
-            {assignments.map((d) => {
-              const tagsClass = classNames({
-                tag: true,
-                "is-primary": !d.id,
-                "is-info": d.id,
-                "is-normal": true,
-              });
-              return (
-                <div key={d.name} className="control">
-                  <div className="tags has-addons">
-                    <p className={tagsClass}>{`${d.description} (${d.name})`}</p>
-                    {d.id === "" && (
-                      <button
-                        type="button"
-                        className="tag is-delete"
-                        onClick={() =>
-                          setAssignments(reject(assignments, (e) => e.name === d.name))
-                        }
-                        aria-label={t("removeDivision") as string}
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="field is-normal is-flex-grow-1">
+            {assignments.map((d, index) => (
+              <div key={d.id || `${d.name}-${index}`} className="field is-grouped mb-2">
+                <p className="control is-expanded">
+                  <input
+                    className="input is-small"
+                    type="text"
+                    value={d.description}
+                    onChange={(e) =>
+                      setAssignments(
+                        updateDivision(assignments, index, { description: e.target.value }),
+                      )
+                    }
+                    placeholder={t("name") as string}
+                  />
+                </p>
+                <p className="control">
+                  <input
+                    className="input is-small"
+                    value={d.name}
+                    type="text"
+                    onChange={(e) =>
+                      setAssignments(updateDivision(assignments, index, { name: e.target.value }))
+                    }
+                    placeholder={t("short") as string}
+                  />
+                </p>
+                <p className="control">
+                  <button
+                    type="button"
+                    className="button is-small is-danger is-light"
+                    onClick={() => setAssignments(assignments.filter((_, i) => i !== index))}
+                    aria-label={t("removeDivision") as string}
+                  >
+                    x
+                  </button>
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -256,4 +319,60 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 }
 export default New;
 
-export { IncidentForm, New };
+function initialDivisions(incident: Incident | undefined, t: (key: string) => string): Division[] {
+  if (incident?.divisions.length) {
+    return incident.divisions.map((division, index) => initializeDivision(division, index));
+  }
+
+  return [
+    {
+      id: "",
+      name: t("divisionsNames.Karte.name"),
+      description: t("divisionsNames.Karte.description"),
+    },
+    {
+      id: "",
+      name: t("divisionsNames.CLage.name"),
+      description: t("divisionsNames.CLage.description"),
+    },
+    {
+      id: "",
+      name: t("divisionsNames.SC.name"),
+      description: t("divisionsNames.SC.description"),
+    },
+  ];
+}
+
+function initializeDivision(division: Division, index: number): Division {
+  const fallback = `Division ${index + 1}`;
+
+  return {
+    ...division,
+    name: division.name.trim() || fallback,
+    description: division.description.trim() || fallback,
+  };
+}
+
+function updateDivision(
+  divisions: Division[],
+  index: number,
+  patch: Partial<Division>,
+): Division[] {
+  return divisions.map((division, i) => (i === index ? { ...division, ...patch } : division));
+}
+
+function canEditParentIncident(
+  incident: Incident | undefined,
+  incidents: Incident[] = [],
+): boolean {
+  if (incident === undefined) return true;
+
+  return (
+    incident.childIncidents.length === 0 &&
+    !incidents.some(
+      (candidate) => candidate.deletedAt === null && candidate.parentId === incident.id,
+    )
+  );
+}
+
+export { canEditParentIncident, IncidentForm, initializeDivision, New, updateDivision };

@@ -178,6 +178,8 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 		code = "FORBIDDEN"
 	case errors.Is(e, shared.ErrInvalidInput):
 		code = "INVALID_INPUT"
+	case errors.Is(e, shared.ErrInvalidParent):
+		code = "INVALID_PARENT_INCIDENT"
 	case errors.Is(e, shared.ErrConflict):
 		code = "CONFLICT"
 	default:

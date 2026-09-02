@@ -52,22 +52,26 @@ type ComplexityRoot struct {
 	}
 
 	Incident struct {
-		ClosedAt  func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		Divisions func(childComplexity int) int
-		ID        func(childComplexity int) int
-		IsClosed  func(childComplexity int) int
-		Location  func(childComplexity int) int
-		Messages  func(childComplexity int) int
-		Name      func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		ChildIncidents func(childComplexity int) int
+		ClosedAt       func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		Divisions      func(childComplexity int) int
+		ID             func(childComplexity int) int
+		IsClosed       func(childComplexity int) int
+		Location       func(childComplexity int) int
+		Messages       func(childComplexity int) int
+		Name           func(childComplexity int) int
+		ParentID       func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
 	}
 
 	Layer struct {
-		Features func(childComplexity int) int
-		ID       func(childComplexity int) int
-		Name     func(childComplexity int) int
-		Revision func(childComplexity int) int
+		Features           func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		Name               func(childComplexity int) int
+		Revision           func(childComplexity int) int
+		SourceIncidentID   func(childComplexity int) int
+		SourceIncidentName func(childComplexity int) int
 	}
 
 	Location struct {
@@ -93,19 +97,21 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddFeature     func(childComplexity int, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
-		CloseIncident  func(childComplexity int, id string) int
-		CreateIncident func(childComplexity int, input model.CreateIncidentInput) int
-		CreateLayer    func(childComplexity int, incidentID string, name string) int
-		CreateMessage  func(childComplexity int, input model.CreateMessageInput) int
-		DeleteFeature  func(childComplexity int, id string) int
-		DeleteIncident func(childComplexity int, id string) int
-		DeleteMessage  func(childComplexity int, id string) int
-		ModifyFeature  func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
-		ReopenIncident func(childComplexity int, id string) int
-		TriageMessage  func(childComplexity int, id string, input model.TriageMessageInput) int
-		UpdateIncident func(childComplexity int, id string, input model.UpdateIncidentInput) int
-		UpdateMessage  func(childComplexity int, id string, input model.UpdateMessageInput) int
+		AddFeature           func(childComplexity int, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		CloseIncident        func(childComplexity int, id string) int
+		CreateIncident       func(childComplexity int, input model.CreateIncidentInput) int
+		CreateLayer          func(childComplexity int, incidentID string, name string) int
+		CreateMessage        func(childComplexity int, input model.CreateMessageInput) int
+		DeleteFeature        func(childComplexity int, id string) int
+		DeleteIncident       func(childComplexity int, id string) int
+		DeleteMessage        func(childComplexity int, id string) int
+		LinkIncidentParent   func(childComplexity int, childID string, parentID string) int
+		ModifyFeature        func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		ReopenIncident       func(childComplexity int, id string) int
+		TriageMessage        func(childComplexity int, id string, input model.TriageMessageInput) int
+		UnlinkIncidentParent func(childComplexity int, childID string) int
+		UpdateIncident       func(childComplexity int, id string, input model.UpdateIncidentInput) int
+		UpdateMessage        func(childComplexity int, id string, input model.UpdateMessageInput) int
 	}
 
 	Query struct {
@@ -121,6 +127,7 @@ type ComplexityRoot struct {
 // region    ************************** generated!.gotpl **************************
 
 type IncidentResolver interface {
+	ChildIncidents(ctx context.Context, obj *model.Incident) ([]*model.Incident, error)
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
 }
 type MutationResolver interface {
@@ -129,6 +136,8 @@ type MutationResolver interface {
 	CloseIncident(ctx context.Context, id string) (*model.Incident, error)
 	ReopenIncident(ctx context.Context, id string) (*model.Incident, error)
 	DeleteIncident(ctx context.Context, id string) (string, error)
+	LinkIncidentParent(ctx context.Context, childID string, parentID string) (*model.Incident, error)
+	UnlinkIncidentParent(ctx context.Context, childID string) (*model.Incident, error)
 	CreateMessage(ctx context.Context, input model.CreateMessageInput) (*model.Message, error)
 	UpdateMessage(ctx context.Context, id string, input model.UpdateMessageInput) (*model.Message, error)
 	TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error)
@@ -201,6 +210,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Feature.Properties(childComplexity), true
 
+	case "Incident.childIncidents":
+		if e.ComplexityRoot.Incident.ChildIncidents == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.ChildIncidents(childComplexity), true
 	case "Incident.closedAt":
 		if e.ComplexityRoot.Incident.ClosedAt == nil {
 			break
@@ -249,6 +264,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Incident.Name(childComplexity), true
+	case "Incident.parentId":
+		if e.ComplexityRoot.Incident.ParentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.ParentID(childComplexity), true
 	case "Incident.updatedAt":
 		if e.ComplexityRoot.Incident.UpdatedAt == nil {
 			break
@@ -280,6 +301,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Layer.Revision(childComplexity), true
+	case "Layer.sourceIncidentId":
+		if e.ComplexityRoot.Layer.SourceIncidentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Layer.SourceIncidentID(childComplexity), true
+	case "Layer.sourceIncidentName":
+		if e.ComplexityRoot.Layer.SourceIncidentName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Layer.SourceIncidentName(childComplexity), true
 
 	case "Location.coordinates":
 		if e.ComplexityRoot.Location.Coordinates == nil {
@@ -467,6 +500,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteMessage(childComplexity, args["id"].(string)), true
+	case "Mutation.linkIncidentParent":
+		if e.ComplexityRoot.Mutation.LinkIncidentParent == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_linkIncidentParent_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.LinkIncidentParent(childComplexity, args["childId"].(string), args["parentId"].(string)), true
 	case "Mutation.modifyFeature":
 		if e.ComplexityRoot.Mutation.ModifyFeature == nil {
 			break
@@ -500,6 +544,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.TriageMessage(childComplexity, args["id"].(string), args["input"].(model.TriageMessageInput)), true
+	case "Mutation.unlinkIncidentParent":
+		if e.ComplexityRoot.Mutation.UnlinkIncidentParent == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_unlinkIncidentParent_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UnlinkIncidentParent(childComplexity, args["childId"].(string)), true
 	case "Mutation.updateIncident":
 		if e.ComplexityRoot.Mutation.UpdateIncident == nil {
 			break
@@ -740,6 +795,7 @@ type Message {
 
 type Incident {
   id: ID!
+  parentId: ID
   name: String!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -747,6 +803,8 @@ type Incident {
   isClosed: Boolean!
   location: Location
   divisions: [Division!]!
+  """Direct child incidents whose layers bubble up into this incident."""
+  childIncidents: [Incident!]!
   """All messages for this incident, newest first."""
   messages: [Message!]!
 }
@@ -759,6 +817,9 @@ type Feature {
 
 type Layer {
   id: ID!
+  """Incident that owns this layer. Differs from the viewed incident for inherited child layers."""
+  sourceIncidentId: ID!
+  sourceIncidentName: String!
   name: String!
   """Revision counter; increments on every feature change. Use for change detection."""
   revision: Int!
@@ -777,7 +838,7 @@ type Query {
   """Single message by ID; used by the triage modal."""
   message(id: ID!): Message
 
-  """All layers for an incident (polled by the map view)."""
+  """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
 }
 
@@ -796,6 +857,8 @@ input DivisionInput {
 
 input CreateIncidentInput {
   name: String!
+  """Optional top-level parent incident whose map will include this incident's layers."""
+  parentId: ID
   """Location display name; server creates the Location record."""
   location: String
   divisions: [DivisionInput!]!
@@ -864,6 +927,12 @@ type Mutation {
   Raises NOT_FOUND if not found or already deleted.
   """
   deleteIncident(id: ID!): ID!
+
+  """Link a child incident to a parent so the child's layers bubble up to the parent."""
+  linkIncidentParent(childId: ID!, parentId: ID!): Incident!
+
+  """Remove the parent link from a child incident."""
+  unlinkIncidentParent(childId: ID!): Incident!
 
   # ── Messages ────────────────────────────────────────────────────────────────
 
@@ -934,6 +1003,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 	switch field.Name {
 	case "id":
 		return ec.fieldContext_Incident_id(ctx, field)
+	case "parentId":
+		return ec.fieldContext_Incident_parentId(ctx, field)
 	case "name":
 		return ec.fieldContext_Incident_name(ctx, field)
 	case "createdAt":
@@ -948,6 +1019,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_location(ctx, field)
 	case "divisions":
 		return ec.fieldContext_Incident_divisions(ctx, field)
+	case "childIncidents":
+		return ec.fieldContext_Incident_childIncidents(ctx, field)
 	case "messages":
 		return ec.fieldContext_Incident_messages(ctx, field)
 	}
@@ -958,6 +1031,10 @@ func (ec *executionContext) childFields_Layer(ctx context.Context, field graphql
 	switch field.Name {
 	case "id":
 		return ec.fieldContext_Layer_id(ctx, field)
+	case "sourceIncidentId":
+		return ec.fieldContext_Layer_sourceIncidentId(ctx, field)
+	case "sourceIncidentName":
+		return ec.fieldContext_Layer_sourceIncidentName(ctx, field)
 	case "name":
 		return ec.fieldContext_Layer_name(ctx, field)
 	case "revision":
@@ -1280,6 +1357,28 @@ func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_linkIncidentParent_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "childId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["childId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "parentId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["parentId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_modifyFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1343,6 +1442,20 @@ func (ec *executionContext) field_Mutation_triageMessage_args(ctx context.Contex
 		return nil, err
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_unlinkIncidentParent_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "childId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["childId"] = arg0
 	return args, nil
 }
 
@@ -1667,6 +1780,29 @@ func (ec *executionContext) fieldContext_Incident_id(_ context.Context, field gr
 	return graphql.NewScalarFieldContext("Incident", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Incident_parentId(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_parentId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ParentID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOID2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_parentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
 func (ec *executionContext) _Incident_name(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1846,6 +1982,38 @@ func (ec *executionContext) fieldContext_Incident_divisions(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Incident_childIncidents(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_childIncidents(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().ChildIncidents(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Incident) graphql.Marshaler {
+			return ec.marshalNIncident2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_childIncidents(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Incident",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Incident(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Incident_messages(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1899,6 +2067,52 @@ func (ec *executionContext) _Layer_id(ctx context.Context, field graphql.Collect
 }
 func (ec *executionContext) fieldContext_Layer_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Layer", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Layer_sourceIncidentId(ctx context.Context, field graphql.CollectedField, obj *model.Layer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Layer_sourceIncidentId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SourceIncidentID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Layer_sourceIncidentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Layer", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Layer_sourceIncidentName(ctx context.Context, field graphql.CollectedField, obj *model.Layer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Layer_sourceIncidentName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SourceIncidentName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Layer_sourceIncidentName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Layer", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Layer_name(ctx context.Context, field graphql.CollectedField, obj *model.Layer) (ret graphql.Marshaler) {
@@ -2570,6 +2784,94 @@ func (ec *executionContext) fieldContext_Mutation_deleteIncident(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteIncident_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_linkIncidentParent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_linkIncidentParent(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().LinkIncidentParent(ctx, fc.Args["childId"].(string), fc.Args["parentId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Incident) graphql.Marshaler {
+			return ec.marshalNIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncident(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_linkIncidentParent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Incident(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_linkIncidentParent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_unlinkIncidentParent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_unlinkIncidentParent(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UnlinkIncidentParent(ctx, fc.Args["childId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Incident) graphql.Marshaler {
+			return ec.marshalNIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncident(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_unlinkIncidentParent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Incident(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_unlinkIncidentParent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4238,7 +4540,7 @@ func (ec *executionContext) unmarshalInputCreateIncidentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "location", "divisions", "layers"}
+	fieldsInOrder := [...]string{"name", "parentId", "location", "divisions", "layers"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4252,6 +4554,13 @@ func (ec *executionContext) unmarshalInputCreateIncidentInput(ctx context.Contex
 				return it, err
 			}
 			it.Name = data
+		case "parentId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
 		case "location":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -4712,6 +5021,11 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "parentId":
+			out.Values[i] = ec._Incident_parentId(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Incident_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4747,6 +5061,44 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "childIncidents":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_childIncidents(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "messages":
 			field := field
 
@@ -4820,6 +5172,16 @@ func (ec *executionContext) _Layer(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = graphql.MarshalString("Layer")
 		case "id":
 			out.Values[i] = ec._Layer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sourceIncidentId":
+			out.Values[i] = ec._Layer_sourceIncidentId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sourceIncidentName":
+			out.Values[i] = ec._Layer_sourceIncidentName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5056,6 +5418,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteIncident":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteIncident(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "linkIncidentParent":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_linkIncidentParent(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unlinkIncidentParent":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_unlinkIncidentParent(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

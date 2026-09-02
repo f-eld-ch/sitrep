@@ -63,6 +63,33 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, inc.Divisions(), 2)
 	})
+
+	t.Run("creates child incident with parent atomically", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "KFS", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		result, err := svc.CreateIncidentWithParent(
+			ctx(),
+			"GFS Altdorf",
+			nil,
+			nil,
+			nil,
+			&parent.IncidentID,
+			testActor,
+		)
+		require.NoError(t, err)
+		require.NotNil(t, result.ParentID)
+		assert.Equal(t, parent.IncidentID, *result.ParentID)
+
+		child, err := svc.LoadIncident(ctx(), result.IncidentID)
+		require.NoError(t, err)
+		require.NotNil(t, child.ParentID())
+		assert.Equal(t, parent.IncidentID, *child.ParentID())
+	})
 }
 
 func TestIncidentService_CloseAndReopen(t *testing.T) {
@@ -142,6 +169,132 @@ func TestIncidentService_Delete(t *testing.T) {
 		inc, err := svc.LoadIncident(ctx(), id)
 		require.NoError(t, err)
 		assert.True(t, inc.IsDeleted())
+	})
+}
+
+func TestIncidentService_LinkIncidentParent(t *testing.T) {
+	t.Run("links and unlinks child parent", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "Regional", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		linked, err := svc.LinkIncidentParent(ctx(), child.IncidentID, parent.IncidentID, testActor)
+		require.NoError(t, err)
+		require.NotNil(t, linked.ParentID)
+		assert.Equal(t, parent.IncidentID, *linked.ParentID)
+
+		loaded, err := svc.LoadIncident(ctx(), child.IncidentID)
+		require.NoError(t, err)
+		require.NotNil(t, loaded.ParentID())
+		assert.Equal(t, parent.IncidentID, *loaded.ParentID())
+
+		unlinked, err := svc.UnlinkIncidentParent(ctx(), child.IncidentID, testActor)
+		require.NoError(t, err)
+		assert.Nil(t, unlinked.ParentID)
+	})
+
+	t.Run("missing parent is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, shared.IncidentID(newID()), testActor)
+		assert.ErrorIs(t, err, shared.ErrNotFound)
+	})
+
+	t.Run("closed parent is allowed", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "Regional", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		_, err = svc.CloseIncident(ctx(), parent.IncidentID, testActor)
+		require.NoError(t, err)
+
+		linked, err := svc.LinkIncidentParent(ctx(), child.IncidentID, parent.IncidentID, testActor)
+		require.NoError(t, err)
+		require.NotNil(t, linked.ParentID)
+		assert.Equal(t, parent.IncidentID, *linked.ParentID)
+	})
+
+	t.Run("deleted parent is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "Regional", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		_, err = svc.CloseIncident(ctx(), parent.IncidentID, testActor)
+		require.NoError(t, err)
+		require.NoError(t, svc.DeleteIncident(ctx(), parent.IncidentID, testActor))
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, parent.IncidentID, testActor)
+		assert.ErrorIs(t, err, shared.ErrIncidentDeleted)
+	})
+
+	t.Run("parent that already has a parent is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		root, err := svc.CreateIncident(ctx(), "KFS", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "GFS Altdorf", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		grandchild, err := svc.CreateIncident(ctx(), "GFS Ahausen", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, root.IncidentID, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), grandchild.IncidentID, child.IncidentID, testActor)
+		assert.ErrorIs(t, err, shared.ErrInvalidParent)
+	})
+
+	t.Run("closed child is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "Regional", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		_, err = svc.CloseIncident(ctx(), child.IncidentID, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, parent.IncidentID, testActor)
+		assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	})
+
+	t.Run("using an existing child as a parent is rejected", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		parent, err := svc.CreateIncident(ctx(), "Regional", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		child, err := svc.CreateIncident(ctx(), "Municipal", nil, nil, nil, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), child.IncidentID, parent.IncidentID, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.LinkIncidentParent(ctx(), parent.IncidentID, child.IncidentID, testActor)
+		assert.ErrorIs(t, err, shared.ErrInvalidParent)
 	})
 }
 

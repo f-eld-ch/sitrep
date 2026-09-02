@@ -59,6 +59,12 @@ type DivisionRemoved struct {
 	ID shared.DivisionID `json:"id"`
 }
 
+type ParentLinked struct {
+	ParentID shared.IncidentID `json:"parentId"`
+}
+
+type ParentUnlinked struct{}
+
 type Closed struct {
 	ClosedAt time.Time          `json:"closedAt"`
 	Reason   shared.CloseReason `json:"reason"`

@@ -104,6 +104,32 @@ func TestProjector_IncidentCreated(t *testing.T) {
 	assert.False(t, row.IsDeleted)
 }
 
+func TestProjector_IncidentParentRebuild(t *testing.T) {
+	s := newStack(t)
+
+	parent, err := s.incidentSvc().CreateIncident(ctx(), "KFS", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	child, err := s.incidentSvc().CreateIncidentWithParent(
+		ctx(),
+		"GFS Altdorf",
+		nil,
+		nil,
+		nil,
+		&parent.IncidentID,
+		testActor,
+	)
+	require.NoError(t, err)
+
+	rebuilt := projection.NewIncidentHandler()
+	replay := projection.NewProjector(s.store, []projection.Handler{rebuilt})
+	require.NoError(t, replay.CatchUp(ctx()))
+
+	row := rebuilt.Get(uuid.UUID(child.IncidentID))
+	require.NotNil(t, row)
+	require.NotNil(t, row.ParentID)
+	assert.Equal(t, uuid.UUID(parent.IncidentID), *row.ParentID)
+}
+
 func TestProjector_IncidentUpdated(t *testing.T) {
 	s := newStack(t)
 

@@ -84,6 +84,7 @@ type Message {
 
 type Incident {
   id: ID!
+  parentId: ID
   name: String!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -91,6 +92,8 @@ type Incident {
   isClosed: Boolean!
   location: Location
   divisions: [Division!]!
+  """Direct child incidents whose layers bubble up into this incident."""
+  childIncidents: [Incident!]!
   """All messages for this incident, newest first."""
   messages: [Message!]!
 }
@@ -103,6 +106,9 @@ type Feature {
 
 type Layer {
   id: ID!
+  """Incident that owns this layer. Differs from the viewed incident for inherited child layers."""
+  sourceIncidentId: ID!
+  sourceIncidentName: String!
   name: String!
   """Revision counter; increments on every feature change. Use for change detection."""
   revision: Int!
@@ -121,7 +127,7 @@ type Query {
   """Single message by ID; used by the triage modal."""
   message(id: ID!): Message
 
-  """All layers for an incident (polled by the map view)."""
+  """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
 }
 
@@ -140,6 +146,8 @@ input DivisionInput {
 
 input CreateIncidentInput {
   name: String!
+  """Optional top-level parent incident whose map will include this incident's layers."""
+  parentId: ID
   """Location display name; server creates the Location record."""
   location: String
   divisions: [DivisionInput!]!
@@ -208,6 +216,12 @@ type Mutation {
   Raises NOT_FOUND if not found or already deleted.
   """
   deleteIncident(id: ID!): ID!
+
+  """Link a child incident to a parent so the child's layers bubble up to the parent."""
+  linkIncidentParent(childId: ID!, parentId: ID!): Incident!
+
+  """Remove the parent link from a child incident."""
+  unlinkIncidentParent(childId: ID!): Incident!
 
   # ── Messages ────────────────────────────────────────────────────────────────
 

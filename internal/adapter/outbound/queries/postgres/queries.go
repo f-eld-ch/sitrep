@@ -39,7 +39,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	slog.DebugContext(ctx, "listing incidents")
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
+		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
 		WHERE is_deleted = false
 		ORDER BY created_at DESC`)
@@ -76,7 +76,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 	slog.DebugContext(ctx, "getting incident", "id", id)
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
+		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
 		WHERE id = $1 AND is_deleted = false`, id)
 	if err != nil {
@@ -115,6 +115,7 @@ type incidentScanner interface {
 func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 	var (
 		id        uuid.UUID
+		parentID  *uuid.UUID
 		name      string
 		isClosed  bool
 		closedAt  *time.Time
@@ -122,12 +123,13 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		updatedAt time.Time
 		locJSON   []byte
 	)
-	if err := row.Scan(&id, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON); err != nil {
+	if err := row.Scan(&id, &parentID, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON); err != nil {
 		return nil, err
 	}
 
 	inc := &outbound.IncidentRM{
 		ID:        id,
+		ParentID:  parentID,
 		Name:      name,
 		IsClosed:  isClosed,
 		ClosedAt:  closedAt,
@@ -145,6 +147,41 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 	}
 
 	return inc, nil
+}
+
+func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "listing child incidents", "parent_id", parentID)
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
+		FROM rm_incident
+		WHERE parent_id = $1 AND is_deleted = false
+		ORDER BY created_at DESC`, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*outbound.IncidentRM
+
+	for rows.Next() {
+		inc, err := scanIncident(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, inc)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if err := q.loadDivisions(ctx, out); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 // loadDivisions bulk-fetches active divisions for the given incidents, keyed by incident ID.
@@ -305,35 +342,65 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT id, incident_id, name, geojson, revision
-		FROM rm_layer_features
-		WHERE incident_id = $1 AND removed = false
-		ORDER BY name`, incidentID)
+		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
+		FROM rm_layer_features l
+		JOIN rm_incident i ON i.id = l.incident_id
+		WHERE l.incident_id = $1 AND l.removed = false
+		ORDER BY l.name`, incidentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	return collectLayers(rows)
+}
+
+func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
+	slog.DebugContext(ctx, "listing visible layers", "incident_id", incidentID)
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
+		FROM rm_layer_features l
+		JOIN rm_incident i ON i.id = l.incident_id
+		WHERE l.removed = false
+		  AND i.is_deleted = false
+		  AND (l.incident_id = $1 OR i.parent_id = $1)
+		ORDER BY
+		  CASE WHEN l.incident_id = $1 THEN 0 ELSE 1 END,
+		  CASE WHEN l.incident_id = $1 THEN lower(l.name) ELSE lower(i.name) END COLLATE "C",
+		  lower(l.name) COLLATE "C"`, incidentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return collectLayers(rows)
+}
+
+func collectLayers(rows pgx.Rows) ([]*outbound.LayerRM, error) {
 	var out []*outbound.LayerRM
 
 	for rows.Next() {
 		var (
-			id       uuid.UUID
-			incID    uuid.UUID
-			name     string
-			geojson  json.RawMessage
-			revision int
+			id                 uuid.UUID
+			incID              uuid.UUID
+			sourceIncidentName string
+			name               string
+			geojson            json.RawMessage
+			revision           int
 		)
-		if err := rows.Scan(&id, &incID, &name, &geojson, &revision); err != nil {
+		if err := rows.Scan(&id, &incID, &sourceIncidentName, &name, &geojson, &revision); err != nil {
 			return nil, err
 		}
 
 		out = append(out, &outbound.LayerRM{
-			ID:         id,
-			IncidentID: incID,
-			Name:       name,
-			GeoJSON:    geojson,
-			Revision:   revision,
+			ID:                 id,
+			IncidentID:         incID,
+			SourceIncidentID:   incID,
+			SourceIncidentName: sourceIncidentName,
+			Name:               name,
+			GeoJSON:            geojson,
+			Revision:           revision,
 		})
 	}
 
