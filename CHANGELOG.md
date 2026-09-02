@@ -5,6 +5,7 @@
 - *(api)* Decouple the UI from Hasura behind an anti-corruption layer ([#1782](https://github.com/f-eld-ch/sitrep/issues/1782)) - ([cf699bf](https://github.com/f-eld-ch/sitrep/commit/cf699bf3adc0fda6ee0c6e68769fc614a0b14707))
 - *(backend)* Replace Hasura with event-sourced Go/gqlgen API ([#1788](https://github.com/f-eld-ch/sitrep/issues/1788)) - ([bb6ce8b](https://github.com/f-eld-ch/sitrep/commit/bb6ce8ba190d268378ddbaf7c5cd1f797a9a562d))
 - *(journal)* Refactor editor forms, fix dead labels and save semantics ([#1781](https://github.com/f-eld-ch/sitrep/issues/1781)) - ([1d4250c](https://github.com/f-eld-ch/sitrep/commit/1d4250c3bc89f168e646d4d67192fe824769f819))
+- *(projection)* Trace projector work ([#1797](https://github.com/f-eld-ch/sitrep/issues/1797)) - ([49b72e3](https://github.com/f-eld-ch/sitrep/commit/49b72e34c2693c10400c58e6fd21e9bdf2ed7904))
 - *(retention)* Archive expired incident streams ([#1794](https://github.com/f-eld-ch/sitrep/issues/1794)) - ([d285ac2](https://github.com/f-eld-ch/sitrep/commit/d285ac28bbe2e0b7beccd53eeb7e96461194fb75))
 - *(ui)* Improve closed incident handling ([#1793](https://github.com/f-eld-ch/sitrep/issues/1793)) - ([750389f](https://github.com/f-eld-ch/sitrep/commit/750389f1bab290fc31429033995a3d89bffeca26))
 
