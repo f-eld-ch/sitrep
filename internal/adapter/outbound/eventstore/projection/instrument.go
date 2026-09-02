@@ -18,6 +18,7 @@ import (
 // gauge drops to 0 outside of a planned shutdown.
 type InstrumentedProjector struct {
 	inner   outbound.Projector
+	backend string
 	running atomic.Int32
 	reg     metric.Registration
 }
@@ -26,7 +27,10 @@ type InstrumentedProjector struct {
 // gauge ("postgres" or "inmem"). Errors registering the gauge are non-fatal —
 // the projector still runs, just without metrics.
 func NewInstrumentedProjector(inner outbound.Projector, backend string) *InstrumentedProjector {
-	ip := &InstrumentedProjector{inner: inner}
+	ip := &InstrumentedProjector{
+		inner:   inner,
+		backend: backend,
+	}
 
 	meter := otel.Meter("sitrep/projector")
 	gauge, err := meter.Int64ObservableGauge("projector.running",

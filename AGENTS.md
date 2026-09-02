@@ -328,9 +328,23 @@ When you add a new service method, follow the pattern above. When you add a new 
 performs I/O (HTTP call, SQL query), check whether an OTel contrib library already instruments it
 before adding manual spans.
 
+### Traces — projector
+
+All projector implementations use `otel.Tracer("sitrep/projector")`. Keep spans around finite
+units of work: lock-acquire attempts, checkpoint initialization, catch-up, handler reset/rebuild,
+retention, and per-event apply. Do not wrap long-lived `Run` loops or leadership periods in spans;
+the `projector.running` gauge covers lifecycle. Attach stable attributes such as handler name,
+lock name, stream type, event type, stream ID, event version, and applied-event counts. Record
+errors and set span status before returning them, but treat `context.Canceled` during shutdown as
+a normal lifecycle outcome rather than a span error.
+
+The Postgres projector relies on `NOTIFY` rather than periodic polling. Its notifier keeps a
+persistent `LISTEN` connection while the projector is running so notifications can queue while a
+catch-up pass is applying events.
+
 ### Metrics — projector
 
-The Postgres projector exposes four counters/histograms registered via `otel.Meter`:
+The projectors expose counters, histograms, and gauges registered via `otel.Meter`:
 
 | Metric name                  | Type      | Attributes                        |
 | ---------------------------- | --------- | --------------------------------- |
@@ -338,6 +352,9 @@ The Postgres projector exposes four counters/histograms registered via `otel.Met
 | `projector.catchup.duration` | histogram | —                                 |
 | `projector.errors`           | counter   | `handler`, `type` (checkpoint/read/apply) |
 | `projector.dead_letters`     | counter   | `handler`                         |
+| `projector.leadership.acquired` | counter | —                                 |
+| `projector.lock.contended`   | counter   | —                                 |
+| `projector.running`          | gauge     | `backend`                         |
 
 When adding metrics elsewhere, obtain a meter with a package-scoped name:
 
