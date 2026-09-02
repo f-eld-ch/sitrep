@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client/react";
-import { Medium, PriorityStatus, TriageStatus } from "types";
+import { Medium, PriorityStatus, TriageStatus, type Division } from "types";
 import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
@@ -25,6 +25,7 @@ export interface TriageMessageArgs {
   priority: PriorityStatus;
   triage: TriageStatus;
   divisionIds: string[];
+  divisions: Division[];
 }
 
 export function useCreateMessage(): CommandHook<CreateMessageArgs> {
@@ -114,6 +115,14 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
         priority: args.priority,
         triage: args.triage,
         divisionIds: args.divisionIds,
+      },
+      optimisticResponse: {
+        triageMessage: {
+          id: args.messageId,
+          triage: args.triage,
+          priority: args.triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : args.priority,
+          divisions: args.divisions,
+        },
       },
       update(cache, { data }) {
         if (!data?.triageMessage) return;
