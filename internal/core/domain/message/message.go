@@ -6,6 +6,7 @@ package message
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -82,7 +83,10 @@ func (m *Message) Record(
 	at time.Time,
 	actor string,
 ) error {
-	if err := validateMessageFields(content, sender, receiver); err != nil {
+	if err := validateMessageFields(content, sender, senderDetail, receiver, receiverDetail, medium); err != nil {
+		return err
+	}
+	if err := validateMessageTime(msgTime, at); err != nil {
 		return err
 	}
 	eventsourcing.TrackChange(m, Recorded{
@@ -112,14 +116,37 @@ func (m *Message) Correct(
 	if m.deleted {
 		return shared.ErrNotFound
 	}
-	if content != nil && *content == "" {
-		return shared.ValidationError{Field: "content", Message: "must not be empty"}
+	nextContent := m.content
+	if content != nil {
+		nextContent = *content
 	}
-	if sender != nil && *sender == "" {
-		return shared.ValidationError{Field: "sender", Message: "must not be empty"}
+	nextSender := m.sender
+	if sender != nil {
+		nextSender = *sender
 	}
-	if receiver != nil && *receiver == "" {
-		return shared.ValidationError{Field: "receiver", Message: "must not be empty"}
+	nextSenderDetail := m.senderDetail
+	if senderDetail != nil {
+		nextSenderDetail = *senderDetail
+	}
+	nextReceiver := m.receiver
+	if receiver != nil {
+		nextReceiver = *receiver
+	}
+	nextReceiverDetail := m.receiverDetail
+	if receiverDetail != nil {
+		nextReceiverDetail = *receiverDetail
+	}
+	nextMedium := m.medium
+	if medium != nil {
+		nextMedium = *medium
+	}
+	if err := validateMessageFields(nextContent, nextSender, nextSenderDetail, nextReceiver, nextReceiverDetail, nextMedium); err != nil {
+		return err
+	}
+	if msgTime != nil {
+		if err := validateMessageTime(*msgTime, at); err != nil {
+			return err
+		}
 	}
 	eventsourcing.TrackChange(m, Corrected{
 		Content:        content,
@@ -238,15 +265,32 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────────
 
-func validateMessageFields(content, sender, receiver string) error {
-	if content == "" {
+const maxMessageClockDrift = 5 * time.Minute
+
+func validateMessageFields(content, sender, senderDetail, receiver, receiverDetail string, medium shared.Medium) error {
+	if strings.TrimSpace(content) == "" {
 		return shared.ValidationError{Field: "content", Message: "must not be empty"}
 	}
-	if sender == "" {
+	if strings.TrimSpace(sender) == "" {
 		return shared.ValidationError{Field: "sender", Message: "must not be empty"}
 	}
-	if receiver == "" {
+	if strings.TrimSpace(receiver) == "" {
 		return shared.ValidationError{Field: "receiver", Message: "must not be empty"}
+	}
+	if medium == shared.MediumPhone || medium == shared.MediumEmail {
+		if strings.TrimSpace(senderDetail) == "" {
+			return shared.ValidationError{Field: "senderDetail", Message: "must not be empty"}
+		}
+		if strings.TrimSpace(receiverDetail) == "" {
+			return shared.ValidationError{Field: "receiverDetail", Message: "must not be empty"}
+		}
+	}
+	return nil
+}
+
+func validateMessageTime(msgTime, at time.Time) error {
+	if msgTime.After(at.Add(maxMessageClockDrift)) {
+		return shared.ValidationError{Field: "time", Message: "must not be more than five minutes in the future"}
 	}
 	return nil
 }

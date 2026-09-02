@@ -86,6 +86,7 @@
   "messageFlow": "flusso di segnalazione",
   "messageSheet": "Modulo di registrazione",
   "messageTriageTitle": "valuta il messaggio",
+  "messageTimeTooFarInFuture": "L'orario del messaggio non può essere più di cinque minuti nel futuro.",
   "name": "nome",
   "incidentName": "nome di incidente",
   "open": "aprire",

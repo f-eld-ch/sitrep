@@ -86,6 +86,7 @@
   "messageFlow": "Meldefluss",
   "messageSheet": "Meldezettel",
   "messageTriageTitle": "Triage der Nachricht",
+  "messageTimeTooFarInFuture": "Die Nachrichtenzeit darf nicht mehr als fünf Minuten in der Zukunft liegen.",
   "name": "Name",
   "incidentName": "Ereignisname",
   "open": "öffnen",

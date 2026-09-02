@@ -16,6 +16,7 @@ import {
   EditorContext,
   type EditorContextValue,
   type MediaDetail,
+  canSave,
   editorReducer,
   initEditorState,
   isNonEmptyString,
@@ -75,6 +76,7 @@ function Editor() {
 
   const handleSave = useCallback(async () => {
     if (!incidentId) return;
+    if (!canSave(state)) return;
     if (savingRef.current) return;
     savingRef.current = true;
     const time = state.time ?? new Date();

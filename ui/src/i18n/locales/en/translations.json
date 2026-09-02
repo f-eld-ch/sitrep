@@ -86,6 +86,7 @@
   "messageFlow": "reporting flow",
   "messageSheet": "message sheet",
   "messageTriageTitle": "message triage",
+  "messageTimeTooFarInFuture": "Message time cannot be more than five minutes in the future.",
   "name": "name",
   "incidentName": "incident name",
   "open": "open",

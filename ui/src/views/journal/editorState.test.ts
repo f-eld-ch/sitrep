@@ -190,6 +190,55 @@ describe("canSave", () => {
       false,
     );
   });
+  it("requires details for Phone and Email messages", () => {
+    expect(
+      canSave({
+        ...initEditorState(),
+        media: Medium.Phone,
+        sender: "a",
+        receiver: "b",
+        content: "c",
+      }),
+    ).toBe(false);
+    expect(
+      canSave({
+        ...initEditorState(),
+        media: Medium.Email,
+        sender: "a",
+        senderDetail: "sender@example.test",
+        receiver: "b",
+        receiverDetail: " \t",
+        content: "c",
+      }),
+    ).toBe(false);
+  });
+  it("allows details to remain empty for Radio and Other messages", () => {
+    expect(
+      canSave({
+        ...initEditorState(),
+        media: Medium.Radio,
+        sender: "a",
+        receiver: "b",
+        content: "c",
+      }),
+    ).toBe(true);
+    expect(
+      canSave({
+        ...initEditorState(),
+        media: Medium.Other,
+        sender: "a",
+        receiver: "b",
+        content: "c",
+      }),
+    ).toBe(true);
+  });
+  it("allows timestamps up to five minutes in the future", () => {
+    const now = new Date("2026-09-02T10:00:00Z");
+    const state = { ...initEditorState(), sender: "a", receiver: "b", content: "c" };
+
+    expect(canSave({ ...state, time: new Date("2026-09-02T10:05:00Z") }, now)).toBe(true);
+    expect(canSave({ ...state, time: new Date("2026-09-02T10:05:01Z") }, now)).toBe(false);
+  });
   it("returns true when all three are non-empty", () => {
     expect(canSave({ ...initEditorState(), sender: "a", receiver: "b", content: "c" })).toBe(true);
   });

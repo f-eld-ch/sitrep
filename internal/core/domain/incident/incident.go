@@ -6,6 +6,7 @@ package incident
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -101,8 +102,11 @@ func (i *Incident) Open(
 	at time.Time,
 	actor string,
 ) error {
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
+	}
+	if err := validateDivisions(divisions); err != nil {
+		return err
 	}
 	meta := baseMeta(actor)
 	eventsourcing.TrackChange(i, Opened{Name: name, Location: loc}, at, meta)
@@ -117,7 +121,7 @@ func (i *Incident) Rename(name, actor string, at time.Time) error {
 	if err := i.requireOpen(); err != nil {
 		return err
 	}
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
 	}
 	eventsourcing.TrackChange(i, Renamed{Name: name}, at, baseMeta(actor))
@@ -145,6 +149,9 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 	if err := i.requireOpen(); err != nil {
 		return err
 	}
+	if err := validateDivisions(desired); err != nil {
+		return err
+	}
 	meta := baseMeta(actor)
 
 	// Build a lookup of desired divisions by ID.
@@ -167,6 +174,18 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 			eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
 		} else if existing.Name != d.Name || existing.Description != d.Description {
 			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
+		}
+	}
+	return nil
+}
+
+func validateDivisions(divisions []DivisionData) error {
+	for _, division := range divisions {
+		if strings.TrimSpace(division.Name) == "" {
+			return shared.ValidationError{Field: "division.name", Message: "must not be empty"}
+		}
+		if strings.TrimSpace(division.Description) == "" {
+			return shared.ValidationError{Field: "division.description", Message: "must not be empty"}
 		}
 	}
 	return nil

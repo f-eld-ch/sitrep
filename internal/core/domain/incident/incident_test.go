@@ -46,6 +46,7 @@ func TestIncident_Open(t *testing.T) {
 	}{
 		{"valid name creates event", "Hochwasser Reuss", nil},
 		{"empty name is rejected", "", shared.ErrInvalidInput},
+		{"whitespace name is rejected", " \t", shared.ErrInvalidInput},
 	}
 
 	for _, tt := range tests {
@@ -149,6 +150,15 @@ func TestIncident_UpdateDivisions(t *testing.T) {
 			types = append(types, e.EventType)
 		}
 		assert.Contains(t, types, "DivisionAdded")
+	})
+
+	t.Run("whitespace division fields are rejected", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+		err := inc.UpdateDivisions([]incident.DivisionData{
+			{ID: divID, Name: " ", Description: "Kartenstelle"},
+		}, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+		assert.Empty(t, inc.Root().PendingEvents())
 	})
 
 	t.Run("removing a division emits DivisionRemoved", func(t *testing.T) {

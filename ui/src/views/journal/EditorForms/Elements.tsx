@@ -7,7 +7,7 @@ import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useDate } from "utils/useDate";
 import { ReactEditor } from "../Markdown";
-import { canSave, useEditorContext } from "../editorState";
+import { canSave, hasValidMessageTime, useEditorContext } from "../editorState";
 
 type NonRadioMedium = Exclude<Medium, Medium.Radio>;
 
@@ -80,25 +80,37 @@ const ContentInput = ({ id }: { id: string }) => {
 };
 
 const TimeInput = ({ id }: { id: string }) => {
+  const { t } = useTranslation();
   const { state, dispatch } = useEditorContext();
   const { now } = useDate();
+  const invalidTime = !hasValidMessageTime(state.time, now);
   return (
-    <div className="control is-expanded has-icons-left is-flex-shrink-1">
-      <input
-        id={id}
-        className="input"
-        value={dayjs(state.time ?? now).format("YYYY-MM-DDTHH:mm")}
-        type="datetime-local"
-        onChange={(e) => {
-          dispatch({
-            type: "set_time",
-            time: e.target.value ? dayjs(e.target.value).toDate() : undefined,
-          });
-        }}
-      />
-      <span className="icon is-small is-left">
-        <FontAwesomeIcon icon={faClock} />
-      </span>
+    <div>
+      <div className="control is-expanded has-icons-left is-flex-shrink-1">
+        <input
+          id={id}
+          className="input"
+          value={dayjs(state.time ?? now).format("YYYY-MM-DDTHH:mm")}
+          type="datetime-local"
+          max={dayjs(now).add(5, "minute").format("YYYY-MM-DDTHH:mm")}
+          aria-invalid={invalidTime}
+          aria-describedby={invalidTime ? `${id}-error` : undefined}
+          onChange={(e) => {
+            dispatch({
+              type: "set_time",
+              time: e.target.value ? dayjs(e.target.value).toDate() : undefined,
+            });
+          }}
+        />
+        <span className="icon is-small is-left">
+          <FontAwesomeIcon icon={faClock} />
+        </span>
+      </div>
+      {invalidTime && (
+        <p id={`${id}-error`} className="help is-danger" role="alert">
+          {t("messageTimeTooFarInFuture")}
+        </p>
+      )}
     </div>
   );
 };

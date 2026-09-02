@@ -86,6 +86,7 @@
   "messageFlow": "Liste de distribution",
   "messageSheet": "formulaire de message",
   "messageTriageTitle": "trier le message",
+  "messageTimeTooFarInFuture": "L'heure du message ne peut pas être à plus de cinq minutes dans le futur.",
   "name": "nom",
   "incidentName": "Nom de l'événement",
   "open": "ouvert",
