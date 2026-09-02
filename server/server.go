@@ -51,8 +51,9 @@ func NewServer(opts ...Option) *Server {
 	s.RegisterRoutes()
 
 	s.Server = &http.Server{
-		Addr:    net.JoinHostPort(s.address, fmt.Sprint(s.port)),
-		Handler: s.router,
+		Addr:              net.JoinHostPort(s.address, fmt.Sprint(s.port)),
+		Handler:           s.router,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	return s
@@ -66,12 +67,14 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 
 	go func() {
 		<-ctx.Done()
-		s.logger.Info("shutting down server")
+		s.logger.InfoContext(ctx, "shutting down server")
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
 		err := s.Shutdown(ctx)
 		if err != nil {
-			s.logger.Error("failed to shutdown server", "error", err)
+			s.logger.ErrorContext(ctx, "failed to shutdown server", "error", err)
 		}
 	}()
 
@@ -80,7 +83,8 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		s.isShuttingDown.Store(true)
 	})
 
-	s.logger.Info("starting server", "address", s.Addr)
+	s.logger.InfoContext(ctx, "starting server", "address", s.Addr)
+
 	return s.Server.ListenAndServe()
 }
 
@@ -90,6 +94,7 @@ func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return next(c)
 		}
+
 		resp.Before(func() {
 			path := c.Request().URL.Path
 			if resp.Status == http.StatusOK {

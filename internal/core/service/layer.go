@@ -53,28 +53,37 @@ func (s *LayerService) CreateLayer(
 			attribute.String("layer.name", name),
 		))
 	defer span.End()
+
 	slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "name", name, "actor", actor.Sub)
 
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
+
 		l := layer.New(layerID)
 		if err := l.Create(incidentID, name, actor.Sub, at); err != nil {
 			return err
 		}
+
 		_, err := s.repo.Save(ctx, l)
+
 		return err
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+
 		return shared.LayerID{}, err
 	}
+
 	span.SetAttributes(attribute.String("layer.id", layerID.String()))
+
 	_ = s.notifier.Notify(ctx)
+
 	return layerID, nil
 }
 
@@ -83,29 +92,38 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 	ctx, span := s.tracer.Start(ctx, "LayerService.RenameLayer",
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "renaming layer", "layer_id", id, "name", name, "actor", actor.Sub)
 
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, l.IncidentID()); err != nil {
 			return err
 		}
+
 		if err := l.Rename(name, actor.Sub, at); err != nil {
 			return err
 		}
+
 		_, err = s.repo.Save(ctx, l)
+
 		return err
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+
 		return err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return nil
 }
 
@@ -114,29 +132,38 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 	ctx, span := s.tracer.Start(ctx, "LayerService.RemoveLayer",
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "removing layer", "layer_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, l.IncidentID()); err != nil {
 			return err
 		}
+
 		if err := l.Remove(shared.DeleteReasonManual, actor.Sub, at); err != nil {
 			return err
 		}
+
 		_, err = s.repo.Save(ctx, l)
+
 		return err
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+
 		return err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return nil
 }
 
@@ -145,8 +172,10 @@ func (s *LayerService) requireIncidentOpen(ctx context.Context, incidentID share
 	if err != nil {
 		return err
 	}
+
 	if !inc.IsOpen() {
 		return shared.ErrIncidentNotOpen
 	}
+
 	return nil
 }

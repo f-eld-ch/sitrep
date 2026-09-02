@@ -75,6 +75,7 @@ func NewRootCmd() (*cobra.Command, error) {
 
 	pf := rootCmd.PersistentFlags()
 	pf.String("config", "", "Path to configuration file")
+
 	if err := rootCmd.MarkPersistentFlagFilename("config", "yaml", "yml"); err != nil {
 		return nil, fmt.Errorf("configure --config completion: %w", err)
 	}
@@ -83,28 +84,35 @@ func NewRootCmd() (*cobra.Command, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := bindFlags(v, pf, rootConfigOptions); err != nil {
 		return nil, err
 	}
+
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {
 			return fmt.Errorf("read --config: %w", err)
 		}
+
 		if err := loadConfig(v, configPath); err != nil {
 			return err
 		}
+
 		return configureLogger(v.GetString("log-level"))
 	}
 	rootCmd.RunE = func(cmd *cobra.Command, args []string) error {
 		return runServe(cmd, args, v)
 	}
+
 	serveCmd, err := newServeCmd(v)
 	if err != nil {
 		return nil, err
 	}
+
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(newMigrateCmd(v))
+
 	return rootCmd, nil
 }
 
@@ -115,27 +123,32 @@ func newViper(options ...[]configOption) (*viper.Viper, error) {
 			return nil, err
 		}
 	}
+
 	return v, nil
 }
 
 func configureOptions(v *viper.Viper, options []configOption) error {
 	for _, option := range options {
 		v.SetDefault(option.name, option.value)
+
 		envNames := append([]string{option.name, canonicalEnvName(option.name)}, option.legacyEnv...)
 		if err := v.BindEnv(envNames...); err != nil {
 			return fmt.Errorf("bind %s environment variables: %w", option.name, err)
 		}
 	}
+
 	return nil
 }
 
 func bindFlags(v *viper.Viper, flags *pflag.FlagSet, options []configOption) error {
 	for _, option := range options {
 		option.addFlag(flags)
+
 		if err := v.BindPFlag(option.name, flags.Lookup(option.name)); err != nil {
 			return fmt.Errorf("bind --%s: %w", option.name, err)
 		}
 	}
+
 	return nil
 }
 
@@ -151,12 +164,14 @@ func loadConfig(v *viper.Viper, configPath string) error {
 		v.SetConfigType("yaml")
 		v.AddConfigPath(".")
 	}
+
 	if err := v.ReadInConfig(); err != nil {
 		var lookupError viper.ConfigFileNotFoundError
 		if configPath != "" || !errors.As(err, &lookupError) {
 			return fmt.Errorf("read configuration: %w", err)
 		}
 	}
+
 	return validateConfig(v)
 }
 
@@ -164,7 +179,9 @@ func validateConfig(v *viper.Viper) error {
 	if port := v.GetUint("port"); port == 0 || port > 65535 {
 		return fmt.Errorf("port must be between 1 and 65535")
 	}
+
 	var level slog.Level
+
 	logLevel := v.GetString("log-level")
 	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
 		return fmt.Errorf("invalid log-level %q: %w", logLevel, err)
@@ -178,14 +195,19 @@ func validateConfig(v *viper.Viper) error {
 		v.GetString("cookie-key"),
 	}
 	configured := 0
+
 	for _, field := range oidcFields {
 		if field != "" {
 			configured++
 		}
 	}
+
 	if configured != 0 && configured != len(oidcFields) {
-		return fmt.Errorf("oidc-client-id, oidc-issuer, oidc-client-secret, oidc-redirect-url, and cookie-key must be configured together")
+		return fmt.Errorf(
+			"oidc-client-id, oidc-issuer, oidc-client-secret, oidc-redirect-url, and cookie-key must be configured together",
+		)
 	}
+
 	return nil
 }
 
@@ -194,7 +216,9 @@ func configureLogger(levelText string) error {
 	if err := level.UnmarshalText([]byte(levelText)); err != nil {
 		return fmt.Errorf("parse log level: %w", err)
 	}
+
 	logLevel.Set(level)
 	initLogger()
+
 	return nil
 }

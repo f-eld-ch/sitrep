@@ -2,7 +2,67 @@ version: "2"
 linters:
   default: standard
   enable:
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - copyloopvar
     - depguard
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - noctx
+    - errorlint
+    - exhaustive
+    - exptostd
+    - gomodguard_v2
+    - gomoddirectives
+    - gosec
+    - iface
+    - interfacebloat
+    - intrange
+    - makezero
+    - nolintlint
+    - modernize
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - predeclared
+    - promlinter
+    - recvcheck
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - sloglint
+    - spancheck
+    - testifylint
+    - thelper
+    - unconvert
+    - unqueryvet
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+    - wsl_v5
+  exclusions:
+    rules:
+      - path: internal/cli/otel.go
+        linters:
+          - contextcheck
+      - path: server/server.go
+        linters:
+          - contextcheck
+          - gosec
+      - path: internal/platform/identity/context_test.go
+        linters:
+          - containedctx
+      - path: internal/cli/migrate_test.go
+        linters:
+          - nilnil
+      - path: migrations/00004_import.go
+        linters:
+          - sqlclosecheck
   settings:
     depguard:
       rules:
@@ -10,30 +70,25 @@ linters:
         domain-pure:
           files:
             - "**/internal/core/domain/**/*.go"
-          deny:
-            - pkg: "github.com/jackc/pgx"
-              desc: "domain must not import pgx — use ports"
-            - pkg: "github.com/labstack/echo"
-              desc: "domain must not import echo — use ports"
-            - pkg: "github.com/99designs/gqlgen"
-              desc: "domain must not import gqlgen — use ports"
-            - pkg: "go.opentelemetry.io/otel"
-              desc: "domain must not import otel directly — instrument at service/adapter layer"
-            - pkg: "github.com/pressly/goose"
-              desc: "domain must not import goose"
-            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
-              desc: "domain must not import adapters"
+            - "!$test"
+          list-mode: strict
+          allow:
+            - $gostd
+            - github.com/f-eld-ch/sitrep/internal/core/domain
+            - github.com/f-eld-ch/sitrep/internal/eventsourcing
+            - github.com/google/uuid
         # Ports may only depend on domain and stdlib/uuid.
         ports-clean:
           files:
             - "**/internal/core/port/**/*.go"
-          deny:
-            - pkg: "github.com/jackc/pgx"
-              desc: "ports must not import pgx"
-            - pkg: "github.com/labstack/echo"
-              desc: "ports must not import echo"
-            - pkg: "github.com/f-eld-ch/sitrep/internal/adapter"
-              desc: "ports must not import adapters"
+            - "!$test"
+          list-mode: strict
+          allow:
+            - $gostd
+            - github.com/f-eld-ch/sitrep/internal/core/domain
+            - github.com/f-eld-ch/sitrep/internal/eventsourcing
+            - github.com/f-eld-ch/sitrep/internal/platform/identity
+            - github.com/google/uuid
         # Application services may not import adapters directly.
         services-no-adapters:
           files:
@@ -67,14 +122,55 @@ linters:
               desc: "migrations must not import adapters"
             - pkg: "github.com/labstack/echo"
               desc: "migrations must not import echo"
+        "non-test files":
+          files:
+            - "!$test"
+          deny:
+            - pkg: math/rand$
+              desc: Use math/rand/v2 instead, see https://go.dev/blog/randv2
+    ireturn:
+      allow:
+        - anon
+        - empty
+        - error
+        - stdlib
+        - github.com/99designs/gqlgen/graphql.Marshaler
+        - 'github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated\..+Resolver'
+        - 'github.com/f-eld-ch/sitrep/internal/core/port/inbound\..+Service'
+        - github.com/jackc/pgx/v5.Tx
+        - go.opentelemetry.io/otel/propagation.TextMapPropagator
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    sloglint:
+      context: scope
+      key-naming-case: snake
+      msg-style: lowercased
+      static-msg: true
+    spancheck:
+      checks:
+        - end
+        - record-error
+        - set-status
+      ignore-check-signatures:
+        - recordSpanError
+    wrapcheck:
+      ignore-package-globs:
+        - github.com/f-eld-ch/sitrep/internal/core/domain/*
+        - github.com/f-eld-ch/sitrep/internal/core/port/*
+      ignore-sig-regexps:
+        - github.com/google/uuid\.UUID\.(MarshalText|UnmarshalText)\(
 
 formatters:
   enable:
     - gci
-    - gofmt
     - gofumpt
-    - goimports
+    - golines
   settings:
+    golines:
+      max-len: 120
+    gofumpt:
+      module-path: github.com/f-eld-ch/sitrep
     gci:
       sections:
         - standard

@@ -86,6 +86,7 @@ func (l *ProjectorLock) Acquire(ctx context.Context, projection string) (func(),
 		conn.Release()
 		return nil, fmt.Errorf("projector lock: pg_try_advisory_lock: %w", err)
 	}
+
 	if !ok {
 		conn.Release()
 		return nil, outbound.ErrLockHeld
@@ -95,6 +96,7 @@ func (l *ProjectorLock) Acquire(ctx context.Context, projection string) (func(),
 	l.key = key
 
 	var once sync.Once
+
 	release := func() {
 		once.Do(func() {
 			// Use a detached context with a generous timeout so the unlock
@@ -117,6 +119,7 @@ func (l *ProjectorLock) Acquire(ctx context.Context, projection string) (func(),
 			conn.Release()
 		})
 	}
+
 	return release, nil
 }
 
@@ -150,9 +153,11 @@ func (l *ProjectorLock) CheckHeld(ctx context.Context) error {
 	).Scan(&count); err != nil {
 		return fmt.Errorf("projector lock: liveness check failed: %w", err)
 	}
+
 	if count == 0 {
 		return fmt.Errorf("projector lock: advisory lock no longer held (session may have been reset)")
 	}
+
 	return nil
 }
 
@@ -167,5 +172,6 @@ func (l *ProjectorLock) CheckHeld(ctx context.Context) error {
 func lockKey(projection string) int32 {
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(projection))
+
 	return int32(h.Sum32()) //nolint:gosec // wrap-around is intentional; we want the full 32-bit range
 }

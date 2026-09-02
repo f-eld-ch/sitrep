@@ -33,6 +33,7 @@ func NewInstrumentedProjector(inner outbound.Projector, backend string) *Instrum
 	}
 
 	meter := otel.Meter("sitrep/projector")
+
 	gauge, err := meter.Int64ObservableGauge("projector.running",
 		metric.WithDescription("1 while the projector goroutine is active, 0 after it exits"),
 		metric.WithUnit("{bool}"),
@@ -42,6 +43,7 @@ func NewInstrumentedProjector(inner outbound.Projector, backend string) *Instrum
 	}
 
 	backendAttr := attribute.String("backend", backend)
+
 	reg, err := meter.RegisterCallback(
 		func(_ context.Context, o metric.Observer) error {
 			o.ObserveInt64(gauge, int64(ip.running.Load()), metric.WithAttributes(backendAttr))
@@ -52,7 +54,9 @@ func NewInstrumentedProjector(inner outbound.Projector, backend string) *Instrum
 	if err != nil {
 		return ip
 	}
+
 	ip.reg = reg
+
 	return ip
 }
 
@@ -61,6 +65,7 @@ func NewInstrumentedProjector(inner outbound.Projector, backend string) *Instrum
 func (ip *InstrumentedProjector) Run(ctx context.Context) error {
 	ip.running.Store(1)
 	defer ip.running.Store(0)
+
 	return ip.inner.Run(ctx)
 }
 

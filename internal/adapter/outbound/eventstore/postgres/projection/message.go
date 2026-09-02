@@ -35,10 +35,12 @@ func (h *MessageHandler) Handles(st, t string) bool {
 	if st != "Message" {
 		return false
 	}
+
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported":
 		return true
 	}
+
 	return false
 }
 
@@ -47,6 +49,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 	if !ok {
 		return fmt.Errorf("rm_message: no tx in context")
 	}
+
 	id := e.StreamID
 
 	switch e.EventType {
@@ -63,10 +66,12 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			Time           time.Time `json:"time"`
 			AuthorSub      string    `json:"authorSub"`
 		}
+
 		var d recorded
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `
 			INSERT INTO rm_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
@@ -95,22 +100,28 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			RecordedAt     time.Time   `json:"recordedAt"`
 			LastUpdatedAt  time.Time   `json:"lastUpdatedAt"`
 		}
+
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
 		}
+
 		createdAt := d.RecordedAt
 		if createdAt.IsZero() {
 			createdAt = e.OccurredAt
 		}
+
 		updatedAt := d.LastUpdatedAt
 		if updatedAt.IsZero() {
 			updatedAt = createdAt
 		}
+
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
+
 		return exec(db, ctx, `
 			INSERT INTO rm_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
@@ -136,10 +147,12 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			Time           *string `json:"time"`
 			EditorSub      string  `json:"editorSub"`
 		}
+
 		var d corrected
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `
 			UPDATE rm_message SET
 			  content         = COALESCE($2, content),
@@ -162,11 +175,14 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			DivisionIDs []uuid.UUID `json:"divisionIds"`
 			TriagedBy   string      `json:"triagedBy"`
 		}
+
 		var d triaged
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
+
 		return exec(db, ctx, `
 			UPDATE rm_message
 			SET triage = $2, priority = $3, division_ids = $4, last_editor_sub = $5,
@@ -177,6 +193,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 	case "Deleted":
 		return exec(db, ctx, `DELETE FROM rm_message WHERE id = $1`, id)
 	}
+
 	return nil
 }
 
@@ -184,5 +201,6 @@ func priorityForTriage(triage, priority string) string {
 	if triage == string(shared.TriageMoreInfo) {
 		return string(shared.PriorityNormal)
 	}
+
 	return priority
 }

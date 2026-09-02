@@ -26,7 +26,9 @@ func (c *MessageCounter) Next(ctx context.Context, incidentID shared.IncidentID)
 	if err != nil {
 		return 0, fmt.Errorf("message counter: %w", err)
 	}
+
 	var n int
+
 	err = tx.QueryRow(ctx, `
 		INSERT INTO eventsourcing.incident_counters (incident_id, next_number)
 		VALUES ($1, 1)
@@ -38,5 +40,6 @@ func (c *MessageCounter) Next(ctx context.Context, incidentID shared.IncidentID)
 	if err != nil {
 		return 0, fmt.Errorf("message counter next: %w", err)
 	}
+
 	return n, nil
 }

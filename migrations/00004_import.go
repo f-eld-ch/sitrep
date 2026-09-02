@@ -70,22 +70,30 @@ func upImportLegacyData(ctx context.Context, tx *sql.Tx) error {
 	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM eventsourcing.events`).Scan(&n); err != nil {
 		return fmt.Errorf("import guard: %w", err)
 	}
+
 	if n > 0 {
-		return fmt.Errorf("import: %d event(s) already exist — migration is one-shot; truncate eventsourcing.events to re-import", n)
+		return fmt.Errorf(
+			"import: %d event(s) already exist — migration is one-shot; truncate eventsourcing.events to re-import",
+			n,
+		)
 	}
 
 	if err := importIncidents(ctx, tx); err != nil {
 		return fmt.Errorf("import incidents: %w", err)
 	}
+
 	if err := importLayers(ctx, tx); err != nil {
 		return fmt.Errorf("import layers: %w", err)
 	}
+
 	if err := importFeatures(ctx, tx); err != nil {
 		return fmt.Errorf("import features: %w", err)
 	}
+
 	if err := importMessages(ctx, tx); err != nil {
 		return fmt.Errorf("import messages: %w", err)
 	}
+
 	return nil
 }
 
@@ -101,6 +109,7 @@ func downImportLegacyData(ctx context.Context, tx *sql.Tx) error {
 			return fmt.Errorf("truncate %s: %w", tbl, err)
 		}
 	}
+
 	return nil
 }
 
@@ -141,6 +150,7 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 	// Materialise before writing events — cannot interleave ExecContext with
 	// an open portal on the same tx connection.
 	var incidents []incidentRow
+
 	for rows.Next() {
 		var r incidentRow
 		if err := rows.Scan(&r.id, &r.name, &r.createdAt, &r.updatedAt, &r.closedAt, &r.deletedAt,
@@ -148,11 +158,14 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 			_ = rows.Close()
 			return err
 		}
+
 		incidents = append(incidents, r)
 	}
+
 	if err := rows.Close(); err != nil {
 		return err
 	}
+
 	if err := rows.Err(); err != nil {
 		return err
 	}
@@ -180,10 +193,12 @@ func importIncidents(ctx context.Context, tx *sql.Tx) error {
 		if err := appendEvent(ctx, tx, "Incident", r.id, 1, "Imported", evt, importMeta(), r.createdAt); err != nil {
 			return fmt.Errorf("incident %s: %w", r.id, err)
 		}
+
 		if err := indexStream(ctx, tx, "Incident", r.id, r.id); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -199,18 +214,23 @@ func loadDivisions(ctx context.Context, tx *sql.Tx) (map[uuid.UUID][]incident.Di
 	defer func() { _ = rows.Close() }()
 
 	out := make(map[uuid.UUID][]incident.DivisionData)
+
 	for rows.Next() {
-		var divID, incID uuid.UUID
-		var name, desc string
+		var (
+			divID, incID uuid.UUID
+			name, desc   string
+		)
 		if err := rows.Scan(&divID, &incID, &name, &desc); err != nil {
 			return nil, err
 		}
+
 		out[incID] = append(out[incID], incident.DivisionData{
 			ID:          shared.DivisionID(divID),
 			Name:        name,
 			Description: desc,
 		})
 	}
+
 	return out, rows.Err()
 }
 
@@ -236,17 +256,21 @@ func importLayers(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	var layers []layerRow
+
 	for rows.Next() {
 		var r layerRow
 		if err := rows.Scan(&r.id, &r.incidentID, &r.name, &r.createdAt, &r.deletedAt); err != nil {
 			_ = rows.Close()
 			return err
 		}
+
 		layers = append(layers, r)
 	}
+
 	if err := rows.Close(); err != nil {
 		return err
 	}
+
 	if err := rows.Err(); err != nil {
 		return err
 	}
@@ -259,17 +283,29 @@ func importLayers(ctx context.Context, tx *sql.Tx) error {
 		if err := appendEvent(ctx, tx, "Layer", r.id, 1, "Imported", evt, importMeta(), r.createdAt); err != nil {
 			return fmt.Errorf("layer %s: %w", r.id, err)
 		}
+
 		if err := indexStream(ctx, tx, "Layer", r.id, r.incidentID); err != nil {
 			return err
 		}
 
 		if r.deletedAt != nil {
 			removed := layer.Removed{Reason: shared.DeleteReasonManual}
-			if err := appendEvent(ctx, tx, "Layer", r.id, 2, "Removed", removed, importMeta(), *r.deletedAt); err != nil {
+			if err := appendEvent(
+				ctx,
+				tx,
+				"Layer",
+				r.id,
+				2,
+				"Removed",
+				removed,
+				importMeta(),
+				*r.deletedAt,
+			); err != nil {
 				return fmt.Errorf("layer %s removed: %w", r.id, err)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -298,17 +334,29 @@ func importFeatures(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	var features []featureRow
+
 	for rows.Next() {
 		var r featureRow
-		if err := rows.Scan(&r.id, &r.layerID, &r.incidentID, &r.geomRaw, &r.propRaw, &r.createdAt, &r.deletedAt); err != nil {
+		if err := rows.Scan(
+			&r.id,
+			&r.layerID,
+			&r.incidentID,
+			&r.geomRaw,
+			&r.propRaw,
+			&r.createdAt,
+			&r.deletedAt,
+		); err != nil {
 			_ = rows.Close()
 			return err
 		}
+
 		features = append(features, r)
 	}
+
 	if err := rows.Close(); err != nil {
 		return err
 	}
+
 	if err := rows.Err(); err != nil {
 		return err
 	}
@@ -318,6 +366,7 @@ func importFeatures(ctx context.Context, tx *sql.Tx) error {
 		if err := json.Unmarshal(r.geomRaw, &geom); err != nil {
 			return fmt.Errorf("feature %s geometry: %w", r.id, err)
 		}
+
 		if err := json.Unmarshal(r.propRaw, &props); err != nil {
 			return fmt.Errorf("feature %s properties: %w", r.id, err)
 		}
@@ -331,17 +380,29 @@ func importFeatures(ctx context.Context, tx *sql.Tx) error {
 		if err := appendEvent(ctx, tx, "Feature", r.id, 1, "Imported", evt, importMeta(), r.createdAt); err != nil {
 			return fmt.Errorf("feature %s: %w", r.id, err)
 		}
+
 		if err := indexStream(ctx, tx, "Feature", r.id, r.incidentID); err != nil {
 			return err
 		}
 
 		if r.deletedAt != nil {
 			removed := feature.Removed{Reason: shared.DeleteReasonManual}
-			if err := appendEvent(ctx, tx, "Feature", r.id, 2, "Removed", removed, importMeta(), *r.deletedAt); err != nil {
+			if err := appendEvent(
+				ctx,
+				tx,
+				"Feature",
+				r.id,
+				2,
+				"Removed",
+				removed,
+				importMeta(),
+				*r.deletedAt,
+			); err != nil {
 				return fmt.Errorf("feature %s removed: %w", r.id, err)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -407,6 +468,7 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 	}
 
 	var msgs []messageRow
+
 	for rows.Next() {
 		var r messageRow
 		if err := rows.Scan(
@@ -419,11 +481,14 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 			_ = rows.Close()
 			return err
 		}
+
 		msgs = append(msgs, r)
 	}
+
 	if err := rows.Close(); err != nil {
 		return err
 	}
+
 	if err := rows.Err(); err != nil {
 		return err
 	}
@@ -435,18 +500,22 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 		if !ok {
 			return fmt.Errorf("message %s: unknown medium %q", r.id, r.mediumRaw)
 		}
+
 		triage, ok := legacyTriage[r.triageRaw]
 		if !ok {
 			return fmt.Errorf("message %s: unknown triage %q", r.id, r.triageRaw)
 		}
+
 		priority, ok := legacyPriority[r.priorityRaw]
 		if !ok {
 			return fmt.Errorf("message %s: unknown priority %q", r.id, r.priorityRaw)
 		}
 
 		var importedAuthor, importedEditor *string
+
 		meta := importMeta()
 		meta["originalJournalId"] = r.journalID.String()
+
 		meta["originalJournalName"] = r.journalName
 		if r.priorityRaw == "critical" {
 			meta["originalPriority"] = "critical"
@@ -464,6 +533,7 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 		if divIDs == nil {
 			divIDs = []shared.DivisionID{}
 		}
+
 		evt := message.Imported{
 			IncidentID:     shared.IncidentID(r.incidentID),
 			Number:         r.number,
@@ -485,6 +555,7 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 		if err := appendEvent(ctx, tx, "Message", r.id, 1, "Imported", evt, meta, r.createdAt); err != nil {
 			return fmt.Errorf("message %s: %w", r.id, err)
 		}
+
 		if err := indexStream(ctx, tx, "Message", r.id, r.incidentID); err != nil {
 			return err
 		}
@@ -512,6 +583,7 @@ func importMessages(ctx context.Context, tx *sql.Tx) error {
 			return fmt.Errorf("incident_counters %s: %w", incID, err)
 		}
 	}
+
 	return nil
 }
 
@@ -524,13 +596,16 @@ func loadMessageDivisionTags(ctx context.Context, tx *sql.Tx) (map[uuid.UUID][]s
 	defer func() { _ = rows.Close() }()
 
 	out := make(map[uuid.UUID][]shared.DivisionID)
+
 	for rows.Next() {
 		var msgID, divID uuid.UUID
 		if err := rows.Scan(&msgID, &divID); err != nil {
 			return nil, err
 		}
+
 		out[msgID] = append(out[msgID], shared.DivisionID(divID))
 	}
+
 	return out, rows.Err()
 }
 
@@ -551,6 +626,7 @@ func RunPreflight(ctx context.Context, db *sql.DB) ([]string, error) {
 		`SELECT COUNT(*) FROM messages WHERE journal_id IS NULL`).Scan(&orphanCount); err != nil {
 		return nil, fmt.Errorf("preflight orphan check: %w", err)
 	}
+
 	if orphanCount > 0 {
 		return nil, fmt.Errorf("preflight: %d message(s) have NULL journal_id — import would drop them", orphanCount)
 	}
@@ -563,9 +639,15 @@ func RunPreflight(ctx context.Context, db *sql.DB) ([]string, error) {
 		) t`).Scan(&multiJournal); err != nil {
 		return nil, fmt.Errorf("preflight multi-journal check: %w", err)
 	}
+
 	if multiJournal > 0 {
-		warnings = append(warnings,
-			fmt.Sprintf("%d incident(s) have multiple journals — messages will be merged into one log per incident", multiJournal))
+		warnings = append(
+			warnings,
+			fmt.Sprintf(
+				"%d incident(s) have multiple journals — messages will be merged into one log per incident",
+				multiJournal,
+			),
+		)
 	}
 
 	// Cross-incident division tags.
@@ -580,18 +662,26 @@ func RunPreflight(ctx context.Context, db *sql.DB) ([]string, error) {
 		)`).Scan(&crossIncident); err != nil {
 		return nil, fmt.Errorf("preflight cross-incident tag check: %w", err)
 	}
+
 	if crossIncident > 0 {
-		warnings = append(warnings,
-			fmt.Sprintf("%d message-division tag(s) reference a division from a different incident — tags will be imported as-is", crossIncident))
+		warnings = append(
+			warnings,
+			fmt.Sprintf(
+				"%d message-division tag(s) reference a division from a different incident — tags will be imported as-is",
+				crossIncident,
+			),
+		)
 	}
 
 	// Unknown enum values (would abort the import).
 	var unknownMedium int
-	if err := db.QueryRowContext(ctx,
+	if err := db.QueryRowContext(
+		ctx,
 		`SELECT COUNT(*) FROM messages WHERE medium_id NOT IN ('radio','phone','email','other') AND medium_id IS NOT NULL`,
 	).Scan(&unknownMedium); err != nil {
 		return nil, fmt.Errorf("preflight medium check: %w", err)
 	}
+
 	if unknownMedium > 0 {
 		return nil, fmt.Errorf("preflight: %d message(s) have unknown medium_id — import would fail", unknownMedium)
 	}
@@ -602,6 +692,7 @@ func RunPreflight(ctx context.Context, db *sql.DB) ([]string, error) {
 	).Scan(&unknownTriage); err != nil {
 		return nil, fmt.Errorf("preflight triage check: %w", err)
 	}
+
 	if unknownTriage > 0 {
 		return nil, fmt.Errorf("preflight: %d message(s) have unknown triage_id — import would fail", unknownTriage)
 	}
@@ -623,15 +714,18 @@ func appendEvent(
 	if err != nil {
 		return fmt.Errorf("marshal event data: %w", err)
 	}
+
 	metaBytes, err := json.Marshal(metadata)
 	if err != nil {
 		return fmt.Errorf("marshal event metadata: %w", err)
 	}
+
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO eventsourcing.events
 		  (stream_type, stream_id, version, event_type, data, metadata, occurred_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		streamType, streamID, version, eventType, dataBytes, metaBytes, occurredAt.UTC())
+
 	return err
 }
 
@@ -641,6 +735,7 @@ func indexStream(ctx context.Context, tx *sql.Tx, streamType string, streamID, i
 		VALUES ($1, $2, $3)
 		ON CONFLICT DO NOTHING`,
 		streamType, streamID, incidentID)
+
 	return err
 }
 

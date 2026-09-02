@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -46,11 +47,13 @@ func TestBuildInfo(t *testing.T) {
 			}
 
 			rec := httptest.NewRecorder()
-			ctx := echo.New().NewContext(httptest.NewRequest(http.MethodGet, "/version", nil), rec)
+			ctx := echo.New().
+				NewContext(httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil), rec)
 
 			if err := s.buildInfo(ctx); err != nil {
 				t.Fatalf("buildInfo returned an error: %v", err)
 			}
+
 			if rec.Code != http.StatusOK {
 				t.Fatalf("expected 200, got %d", rec.Code)
 			}
@@ -59,9 +62,11 @@ func TestBuildInfo(t *testing.T) {
 			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 				t.Fatalf("response is not valid JSON: %v (body %q)", err, rec.Body.String())
 			}
+
 			if got["version"] != tt.wantVersion {
 				t.Errorf("version: got %q, want %q", got["version"], tt.wantVersion)
 			}
+
 			if got["sha"] != tt.wantSha {
 				t.Errorf("sha: got %q, want %q", got["sha"], tt.wantSha)
 			}
@@ -78,7 +83,9 @@ func TestBuildInfoWithoutVersionOption(t *testing.T) {
 	}
 
 	rec := httptest.NewRecorder()
-	ctx := echo.New().NewContext(httptest.NewRequest(http.MethodGet, "/version", nil), rec)
+
+	ctx := echo.New().
+		NewContext(httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil), rec)
 	if err := s.buildInfo(ctx); err != nil {
 		t.Fatalf("buildInfo returned an error: %v", err)
 	}
@@ -87,9 +94,11 @@ func TestBuildInfoWithoutVersionOption(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 		t.Fatalf("response is not valid JSON: %v", err)
 	}
+
 	if _, ok := got["version"]; !ok {
 		t.Error("expected a version key even when unset, so clients can rely on the shape")
 	}
+
 	if _, ok := got["sha"]; !ok {
 		t.Error("expected a sha key even when unset, so clients can rely on the shape")
 	}
@@ -102,5 +111,6 @@ func newTestServer(opts ...Option) (*Server, error) {
 			return nil, err
 		}
 	}
+
 	return s, nil
 }

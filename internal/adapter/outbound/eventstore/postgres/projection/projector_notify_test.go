@@ -49,6 +49,7 @@ func TestProjector_WaitForNotificationOrRetentionWaitsForNotify(t *testing.T) {
 	go func() { done <- p.waitForNotificationOrRetention(context.Background(), retentionC) }()
 
 	<-notifier.entered
+
 	select {
 	case err := <-done:
 		t.Fatalf("wait returned before notification: %v", err)
@@ -56,6 +57,7 @@ func TestProjector_WaitForNotificationOrRetentionWaitsForNotify(t *testing.T) {
 	}
 
 	notifier.release <- nil
+
 	require.NoError(t, <-done)
 }
 
@@ -76,7 +78,9 @@ func TestProjector_WaitForNotificationOrRetentionRunsRetention(t *testing.T) {
 	go func() { done <- p.waitForNotificationOrRetention(context.Background(), retentionC) }()
 
 	<-notifier.entered
+
 	retentionC <- time.Now()
+
 	require.NoError(t, <-done)
 	assert.Equal(t, 1, retentionCalls)
 }
@@ -90,7 +94,9 @@ func TestProjector_WaitForNotificationOrRetentionReturnsNotifierErrors(t *testin
 	go func() { done <- p.waitForNotificationOrRetention(context.Background(), make(chan time.Time)) }()
 
 	<-notifier.entered
+
 	notifier.release <- wantErr
+
 	err := <-done
 	require.Error(t, err)
 	assert.ErrorIs(t, err, wantErr)

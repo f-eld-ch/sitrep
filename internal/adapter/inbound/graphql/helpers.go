@@ -15,10 +15,13 @@ func (r *Resolver) loadMessage(ctx context.Context, msgID uuid.UUID) (*model.Mes
 	if err != nil {
 		return nil, err
 	}
+
 	inc, err := r.Queries.GetIncident(ctx, msg.IncidentID)
 	if err != nil {
 		return nil, err
 	}
+
 	divIndex := divisionsByID(inc.Divisions)
+
 	return messageRMToModel(msg, divIndex), nil
 }

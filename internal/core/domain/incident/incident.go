@@ -53,6 +53,7 @@ func New(id shared.IncidentID) *Incident {
 		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{},
 		Closed{}, Reopened{}, Deleted{}, Imported{},
 	)
+
 	return inc
 }
 
@@ -81,6 +82,7 @@ func (i *Incident) Divisions() []Division {
 	for _, d := range i.divisions {
 		out = append(out, d)
 	}
+
 	return out
 }
 
@@ -105,14 +107,18 @@ func (i *Incident) Open(
 	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
 	}
+
 	if err := validateDivisions(divisions); err != nil {
 		return err
 	}
+
 	meta := baseMeta(actor)
 	eventsourcing.TrackChange(i, Opened{Name: name, Location: loc}, at, meta)
+
 	for _, d := range divisions {
 		eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
 	}
+
 	return nil
 }
 
@@ -121,10 +127,13 @@ func (i *Incident) Rename(name, actor string, at time.Time) error {
 	if err := i.requireOpen(); err != nil {
 		return err
 	}
+
 	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
 	}
+
 	eventsourcing.TrackChange(i, Renamed{Name: name}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -139,7 +148,9 @@ func (i *Incident) ChangeLocation(loc *LocationData, actor string, at time.Time)
 	if loc != nil && (loc.Name != "" || loc.Coordinates != nil) {
 		payload = loc
 	}
+
 	eventsourcing.TrackChange(i, LocationChanged{Location: payload}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -149,9 +160,11 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 	if err := i.requireOpen(); err != nil {
 		return err
 	}
+
 	if err := validateDivisions(desired); err != nil {
 		return err
 	}
+
 	meta := baseMeta(actor)
 
 	// Build a lookup of desired divisions by ID.
@@ -176,6 +189,7 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
 		}
 	}
+
 	return nil
 }
 
@@ -184,10 +198,12 @@ func validateDivisions(divisions []DivisionData) error {
 		if strings.TrimSpace(division.Name) == "" {
 			return shared.ValidationError{Field: "division.name", Message: "must not be empty"}
 		}
+
 		if strings.TrimSpace(division.Description) == "" {
 			return shared.ValidationError{Field: "division.description", Message: "must not be empty"}
 		}
 	}
+
 	return nil
 }
 
@@ -196,10 +212,13 @@ func (i *Incident) Close(reason shared.CloseReason, actor string, at time.Time) 
 	if i.IsDeleted() {
 		return shared.ErrIncidentDeleted
 	}
+
 	if i.IsClosed() {
 		return shared.ErrAlreadyClosed
 	}
+
 	eventsourcing.TrackChange(i, Closed{ClosedAt: at, Reason: reason}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -208,10 +227,13 @@ func (i *Incident) Reopen(actor string, at time.Time) error {
 	if i.IsDeleted() {
 		return shared.ErrIncidentDeleted
 	}
+
 	if i.IsOpen() {
 		return shared.ErrAlreadyOpen
 	}
+
 	eventsourcing.TrackChange(i, Reopened{}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -220,10 +242,13 @@ func (i *Incident) Delete(reason shared.DeleteReason, actor string, at time.Time
 	if i.IsDeleted() {
 		return shared.ErrIncidentDeleted
 	}
+
 	if !i.IsClosed() {
 		return shared.ErrIncidentNotClosed
 	}
+
 	eventsourcing.TrackChange(i, Deleted{Reason: reason}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -236,6 +261,7 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 	switch d := e.Data.(type) {
 	case Opened:
 		i.name = d.Name
+
 		i.createdAt = e.OccurredAt
 		if d.Location != nil {
 			i.location = &Location{Name: d.Location.Name, Coordinates: d.Location.Coordinates}
@@ -260,6 +286,7 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 			if d.Description != nil {
 				div.Description = *d.Description
 			}
+
 			i.divisions[d.ID] = div
 		}
 	case DivisionRemoved:
@@ -273,22 +300,27 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 		i.deletedAt = &now
 	case Imported:
 		i.name = d.Name
+
 		i.createdAt = d.CreatedAt
 		if d.Location != nil {
 			i.location = &Location{Name: d.Location.Name, Coordinates: d.Location.Coordinates}
 		}
+
 		for _, div := range d.Divisions {
 			i.divisions[div.ID] = Division(div)
 		}
+
 		if d.ClosedAt != nil {
 			i.closedAt = d.ClosedAt
 		}
+
 		if d.DeletedAt != nil {
 			i.deletedAt = d.DeletedAt
 		}
 	default:
 		return fmt.Errorf("incident.Transition: unhandled event type %T", e.Data)
 	}
+
 	return nil
 }
 
@@ -300,9 +332,11 @@ func (i *Incident) requireOpen() error {
 	if i.IsDeleted() {
 		return shared.ErrIncidentDeleted
 	}
+
 	if !i.IsOpen() {
 		return shared.ErrIncidentNotOpen
 	}
+
 	return nil
 }
 

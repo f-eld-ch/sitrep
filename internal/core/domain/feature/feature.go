@@ -28,6 +28,7 @@ func New(id shared.FeatureID) *Feature {
 	f := &Feature{}
 	f.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(f, Placed{}, Moved{}, Restyled{}, Removed{}, Imported{})
+
 	return f
 }
 
@@ -54,6 +55,7 @@ func (f *Feature) Place(
 		Geometry:   geometry,
 		Properties: properties,
 	}, at, meta(actor))
+
 	return nil
 }
 
@@ -61,7 +63,9 @@ func (f *Feature) Move(geometry map[string]any, actor string, at time.Time) erro
 	if f.removed {
 		return shared.ErrNotFound
 	}
+
 	eventsourcing.TrackChange(f, Moved{Geometry: geometry}, at, meta(actor))
+
 	return nil
 }
 
@@ -69,7 +73,9 @@ func (f *Feature) Restyle(properties map[string]any, actor string, at time.Time)
 	if f.removed {
 		return shared.ErrNotFound
 	}
+
 	eventsourcing.TrackChange(f, Restyled{Properties: properties}, at, meta(actor))
+
 	return nil
 }
 
@@ -77,7 +83,9 @@ func (f *Feature) Remove(reason shared.DeleteReason, actor string, at time.Time)
 	if f.removed {
 		return shared.ErrNotFound
 	}
+
 	eventsourcing.TrackChange(f, Removed{Reason: reason}, at, meta(actor))
+
 	return nil
 }
 
@@ -102,6 +110,7 @@ func (f *Feature) Transition(e eventsourcing.Event) error {
 	default:
 		return fmt.Errorf("feature.Transition: unhandled event type %T", e.Data)
 	}
+
 	return nil
 }
 

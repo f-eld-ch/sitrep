@@ -49,7 +49,9 @@ func (h *IncidentHandler) Version() int { return 2 }
 func (h *IncidentHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.rows = make(map[uuid.UUID]*IncidentRow)
+
 	return nil
 }
 
@@ -57,10 +59,12 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
 	}
+
 	switch t {
 	case "Opened", "Renamed", "LocationChanged", "Closed", "Reopened", "Deleted", "Imported":
 		return true
 	}
+
 	return false
 }
 
@@ -79,6 +83,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		h.rows[id] = &IncidentRow{
 			ID:        id,
 			Name:      d.Name,
@@ -97,6 +102,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		row := &IncidentRow{
 			ID:        id,
 			Name:      d.Name,
@@ -117,6 +123,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if row := h.rows[id]; row != nil {
 			row.Name = d.Name
 			row.UpdatedAt = e.OccurredAt
@@ -129,6 +136,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if row := h.rows[id]; row != nil {
 			row.Location = d.Location
 			row.UpdatedAt = e.OccurredAt
@@ -157,6 +165,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			row.UpdatedAt = e.OccurredAt
 		}
 	}
+
 	return nil
 }
 
@@ -164,11 +173,14 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 func (h *IncidentHandler) Get(id uuid.UUID) *IncidentRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	row := h.rows[id]
 	if row == nil {
 		return nil
 	}
+
 	cp := *row
+
 	return &cp
 }
 
@@ -176,11 +188,13 @@ func (h *IncidentHandler) Get(id uuid.UUID) *IncidentRow {
 func (h *IncidentHandler) All() []*IncidentRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	out := make([]*IncidentRow, 0, len(h.rows))
 	for _, row := range h.rows {
 		cp := *row
 		out = append(out, &cp)
 	}
+
 	return out
 }
 
@@ -212,7 +226,9 @@ func (h *IncidentDivisionHandler) Version() int { return 1 }
 func (h *IncidentDivisionHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.rows = make(map[uuid.UUID]*DivisionRow)
+
 	return nil
 }
 
@@ -220,16 +236,19 @@ func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
 	}
+
 	switch t {
 	case "Opened", "DivisionAdded", "DivisionRenamed", "DivisionRemoved", "Imported":
 		return true
 	}
+
 	return false
 }
 
 func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	incidentID := e.StreamID
 
 	switch e.EventType {
@@ -244,11 +263,13 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		for _, div := range d.Divisions {
 			id, err := uuid.Parse(div.ID)
 			if err != nil {
 				continue
 			}
+
 			h.rows[id] = &DivisionRow{
 				ID:          id,
 				IncidentID:  incidentID,
@@ -268,10 +289,12 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		id, err := uuid.Parse(d.Division.ID)
 		if err != nil {
 			return err
 		}
+
 		h.rows[id] = &DivisionRow{
 			ID:          id,
 			IncidentID:  incidentID,
@@ -288,10 +311,12 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		id, err := uuid.Parse(d.ID)
 		if err != nil {
 			return err
 		}
+
 		if row := h.rows[id]; row != nil {
 			row.Name = d.Name
 			if d.Description != nil {
@@ -306,15 +331,18 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		id, err := uuid.Parse(d.ID)
 		if err != nil {
 			return err
 		}
+
 		if row := h.rows[id]; row != nil {
 			t := e.OccurredAt
 			row.RemovedAt = &t
 		}
 	}
+
 	return nil
 }
 
@@ -322,12 +350,15 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 func (h *IncidentDivisionHandler) ForIncident(incidentID uuid.UUID) []*DivisionRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	var out []*DivisionRow
+
 	for _, row := range h.rows {
 		if row.IncidentID == incidentID && row.RemovedAt == nil {
 			cp := *row
 			out = append(out, &cp)
 		}
 	}
+
 	return out
 }

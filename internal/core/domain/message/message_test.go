@@ -21,20 +21,25 @@ var (
 
 func recorded(id shared.MessageID) eventsourcing.Event {
 	m := message.New(id)
-	require.NoError(nil, m.Record(
+	if err := m.Record(
 		incidentID, 1,
 		"Wasserstand steigt", "Beobachter Nord", "", "Führungsstab", "",
 		shared.MediumRadio, at, actor, at, actor,
-	))
+	); err != nil {
+		panic(err)
+	}
+
 	return m.Root().PendingEvents()[0]
 }
 
 func replay(t *testing.T, id shared.MessageID, events []eventsourcing.Event) *message.Message {
 	t.Helper()
+
 	m := message.New(id)
 	for _, e := range events {
 		require.NoError(t, eventsourcing.Apply(m, e))
 	}
+
 	return m
 }
 
@@ -60,14 +65,18 @@ func TestMessage_Record(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := message.New(id)
+
 			err := m.Record(incidentID, 1, tt.content, tt.sender, "", tt.recv, "",
 				shared.MediumRadio, at, actor, at, actor)
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)
 				assert.Empty(t, m.Root().PendingEvents())
+
 				return
 			}
+
 			require.NoError(t, err)
+
 			pending := m.Root().PendingEvents()
 			require.Len(t, pending, 1)
 			assert.Equal(t, "Recorded", pending[0].EventType)

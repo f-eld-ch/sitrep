@@ -35,5 +35,6 @@ func ActorFrom(ctx context.Context) (Actor, error) {
 	if !ok || a.Sub == "" {
 		return Actor{}, ErrUnauthenticated
 	}
+
 	return a, nil
 }

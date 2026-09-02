@@ -11,9 +11,11 @@ func TestDeriveSecureCookieKeys(t *testing.T) {
 	if len(hashKey) != 32 {
 		t.Fatalf("expected 32-byte hash key, got %d", len(hashKey))
 	}
+
 	if len(blockKey) != 32 {
 		t.Fatalf("expected 32-byte block key, got %d", len(blockKey))
 	}
+
 	if string(hashKey) == string(blockKey) {
 		t.Fatal("expected distinct hash and block keys")
 	}
@@ -37,6 +39,7 @@ func TestDerivedKeysWorkWithSecureCookie(t *testing.T) {
 	if err := cookie.Decode("id_token", encoded, &decoded); err != nil {
 		t.Fatalf("decode failed: %v", err)
 	}
+
 	if decoded != "value" {
 		t.Fatalf("expected decoded value %q, got %q", "value", decoded)
 	}

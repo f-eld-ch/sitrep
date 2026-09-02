@@ -43,6 +43,7 @@ func TestLoadConfig(t *testing.T) {
 
 	t.Run("retention settings use YAML, environment, and flag precedence", func(t *testing.T) {
 		t.Setenv("SITREP_AUTO_CLOSE_INCIDENTS", "20")
+
 		flags := pflag.NewFlagSet("serve", pflag.ContinueOnError)
 		v, err := newViper(rootConfigOptions, serveConfigOptions)
 		require.NoError(t, err)
@@ -80,9 +81,10 @@ func TestNewRootCmd(t *testing.T) {
 	rootCmd, err := NewRootCmd()
 
 	require.NoError(t, err)
+
 	configFlag := rootCmd.PersistentFlags().Lookup("config")
 	require.NotNil(t, configFlag)
-	assert.Equal(t, "", configFlag.DefValue)
+	assert.Empty(t, configFlag.DefValue)
 	assert.NotNil(t, rootCmd.PersistentFlags().Lookup("database-url"))
 	assert.Nil(t, rootCmd.PersistentFlags().Lookup("port"))
 
@@ -97,8 +99,10 @@ func TestNewRootCmd(t *testing.T) {
 
 func testViper(t *testing.T) *viper.Viper {
 	t.Helper()
+
 	v, err := newViper(rootConfigOptions, serveConfigOptions)
 	require.NoError(t, err)
+
 	return v
 }
 
@@ -106,5 +110,6 @@ func writeConfig(t *testing.T, contents string) string {
 	t.Helper()
 	configPath := filepath.Join(t.TempDir(), "config.yaml")
 	require.NoError(t, os.WriteFile(configPath, []byte(contents), 0o600))
+
 	return configPath
 }

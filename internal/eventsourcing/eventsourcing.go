@@ -67,11 +67,13 @@ func Register(a Aggregate, examples ...any) {
 	if root.registry == nil {
 		root.registry = make(map[string]reflect.Type)
 	}
+
 	for _, ex := range examples {
 		t := reflect.TypeOf(ex)
-		if t.Kind() == reflect.Ptr {
+		if t.Kind() == reflect.Pointer {
 			t = t.Elem()
 		}
+
 		root.registry[typeName(ex)] = t
 	}
 }
@@ -81,6 +83,7 @@ func Register(a Aggregate, examples ...any) {
 func TypeFor(a Aggregate, eventType string) (reflect.Type, bool) {
 	root := a.Root()
 	t, ok := root.registry[eventType]
+
 	return t, ok
 }
 
@@ -103,6 +106,7 @@ func TrackChange(a Aggregate, data any, occurredAt time.Time, metadata map[strin
 	// Transition handles it directly without decoding.
 	_ = a.Transition(e) // Transition must be total — never returns an error for a valid event
 	root.pending = append(root.pending, e)
+
 	return e
 }
 
@@ -118,17 +122,21 @@ func Apply(a Aggregate, e Event) error {
 		if !registered {
 			return fmt.Errorf("eventsourcing: unknown event type %q for aggregate %s", e.EventType, a.AggregateType())
 		}
+
 		ptr := reflect.New(t).Interface()
 		if err := json.Unmarshal(raw, ptr); err != nil {
 			return fmt.Errorf("eventsourcing: decode %s v%d: %w", e.EventType, e.Version, err)
 		}
+
 		e.Data = reflect.ValueOf(ptr).Elem().Interface()
 	}
 
 	if err := a.Transition(e); err != nil {
 		return fmt.Errorf("eventsourcing: transition %s v%d: %w", e.EventType, e.Version, err)
 	}
+
 	root.version = e.Version
+
 	return nil
 }
 
@@ -140,5 +148,6 @@ func typeName(v any) string {
 			return t[i+1:]
 		}
 	}
+
 	return t
 }

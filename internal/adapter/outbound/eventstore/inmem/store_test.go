@@ -30,6 +30,7 @@ func newWidget(id uuid.UUID) *widget {
 	a := &widget{}
 	a.root.SetID(id)
 	eventsourcing.Register(a, WidgetCreated{}, WidgetRenamed{})
+
 	return a
 }
 
@@ -42,6 +43,7 @@ func (a *widget) Transition(e eventsourcing.Event) error {
 	case WidgetRenamed:
 		a.Name = d.Name
 	}
+
 	return nil
 }
 
@@ -160,7 +162,8 @@ func TestEventStore_Read_FromBeginning(t *testing.T) {
 
 func TestEventStore_Read_PaginationWithLimit(t *testing.T) {
 	s := inmem.NewEventStore()
-	for i := 0; i < 5; i++ {
+
+	for range 5 {
 		w := newWidget(uuid.New())
 		track(w, WidgetCreated{Name: "w"})
 		_, err := s.Append(bg, w)
@@ -222,7 +225,7 @@ func TestNotifier_Wait_CancelledContext(t *testing.T) {
 func TestNotifier_Notify_NonBlocking(t *testing.T) {
 	n := inmem.NewNotifier()
 	// Fill the channel buffer (size 16) — further Notify calls must not block.
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		require.NoError(t, n.Notify(bg))
 	}
 }

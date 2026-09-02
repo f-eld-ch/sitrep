@@ -38,9 +38,11 @@ func (l *ProjectorLock) Acquire(_ context.Context, projection string) (func(), e
 	if _, ok := l.held[projection]; ok {
 		return nil, outbound.ErrLockHeld
 	}
+
 	l.held[projection] = struct{}{}
 
 	var once sync.Once
+
 	release := func() {
 		once.Do(func() {
 			l.mu.Lock()
@@ -48,5 +50,6 @@ func (l *ProjectorLock) Acquire(_ context.Context, projection string) (func(), e
 			l.mu.Unlock()
 		})
 	}
+
 	return release, nil
 }

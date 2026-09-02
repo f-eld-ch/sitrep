@@ -22,9 +22,11 @@ func remarshal(data any, dst any) error {
 	if err != nil {
 		return fmt.Errorf("remarshal marshal: %w", err)
 	}
+
 	if err := json.Unmarshal(b, dst); err != nil {
 		return fmt.Errorf("remarshal unmarshal into %T: %w", dst, err)
 	}
+
 	return nil
 }
 
@@ -33,6 +35,7 @@ func nullableJSON(raw json.RawMessage) any {
 	if len(raw) == 0 || string(raw) == "null" {
 		return nil
 	}
+
 	return []byte(raw)
 }
 

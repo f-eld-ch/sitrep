@@ -33,6 +33,7 @@ func WithVersion(version, sha string) Option {
 	return func(s *Server) error {
 		s.version = version
 		s.sha = sha
+
 		return nil
 	}
 }
@@ -88,18 +89,23 @@ func WithApiV2(
 		// Flat cost per list-resolver call to penalise N+1 patterns
 		// (e.g. fetching messages for every incident in a list query)
 		// without rejecting normal single-incident or single-layer queries.
-		const messageCost = 50
-		const featureCost = 20
+		const (
+			messageCost = 50
+			featureCost = 20
+		)
+
 		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity + messageCost }
 		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
 		srv := handler.New(generated.NewExecutableSchema(cfg))
 		srv.AddTransport(transport.POST{})
 		srv.Use(otelgqlgen.Middleware())
 		srv.Use(extension.FixedComplexityLimit(complexityBudget))
+
 		if enableIntrospection {
-			slog.Warn("GraphQL introspection enabled; this is not recommended in production")
+			slog.Warn("graphql introspection enabled; this is not recommended in production")
 			srv.Use(extension.Introspection{})
 		}
+
 		srv.SetErrorPresenter(logAndPresentError)
 		srv.SetRecoverFunc(func(ctx context.Context, p any) error {
 			opCtx := graphql.GetOperationContext(ctx)
@@ -107,19 +113,23 @@ func WithApiV2(
 				"operation", opCtx.OperationName,
 				"panic", fmt.Sprintf("%v", p),
 			)
+
 			return fmt.Errorf("internal server error")
 		})
 
 		apiv2 := s.router.Group("/api/v2", s.RequireLogin)
 		apiv2.POST("/graphql", echo.WrapHandler(srv))
+
 		if enableIntrospection {
 			apiv2.GET("/graphql/play", echo.WrapHandler(
 				playground.Handler("SitRep GraphQL", "/api/v2/graphql"),
 			))
 		}
+
 		apiv2.GET("/health", func(c *echo.Context) error {
 			return c.String(http.StatusOK, "OK")
 		})
+
 		return nil
 	}
 }
@@ -131,8 +141,7 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	// gqlgen wraps resolver errors as *gqlerror.Error with query position info,
 	// making e.Error() noisy ("input:2:3: NOT_FOUND"). Use the clean message instead.
 	errMsg := e.Error()
-	var gqlErr *gqlerror.Error
-	if errors.As(e, &gqlErr) {
+	if gqlErr, ok := errors.AsType[*gqlerror.Error](e); ok {
 		errMsg = gqlErr.Message
 	}
 
@@ -151,6 +160,7 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	}
 
 	var code string
+
 	switch {
 	case errors.Is(e, shared.ErrNotFound):
 		code = "NOT_FOUND"
@@ -172,6 +182,7 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 		code = "CONFLICT"
 	default:
 		slog.ErrorContext(ctx, "resolver error", attrs...)
+
 		return &gqlerror.Error{
 			Message:    "internal server error",
 			Extensions: map[string]any{"code": "INTERNAL_ERROR"},
@@ -179,5 +190,6 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	}
 
 	slog.WarnContext(ctx, "resolver domain error", append(attrs, "code", code)...)
+
 	return &gqlerror.Error{Message: e.Error(), Extensions: map[string]any{"code": code}}
 }

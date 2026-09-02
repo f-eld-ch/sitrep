@@ -45,11 +45,13 @@ func deriveSecureCookieKeys(key string) ([]byte, []byte) {
 	deriveKey := func(master []byte, purpose string) []byte {
 		mac := hmac.New(sha256.New, master)
 		_, _ = mac.Write([]byte(purpose))
+
 		return mac.Sum(nil)
 	}
 
 	hashKey := deriveKey([]byte(key), "securecookie-hash")
 	blockKey := deriveKey([]byte(key), "securecookie-block")
+
 	return hashKey, blockKey
 }
 
@@ -89,6 +91,7 @@ func state() string {
 	if err != nil {
 		return uuid.New().String()
 	}
+
 	return u.String()
 }
 
@@ -109,11 +112,14 @@ func (o *OIDCClient) CallbackHandler(c *echo.Context) error {
 }
 
 // marshalUserinfo handles the user info response and writes it to the HTTP response.
-func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+func (o *OIDCClient) marshalUserinfo(
+	c *echo.Context,
+) func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	return func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 		if tokens == nil || tokens.IDToken == "" {
-			o.logger.Warn("No ID token found in callback")
+			o.logger.WarnContext(r.Context(), "no ID token found in callback")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+
 			return
 		}
 
@@ -124,6 +130,7 @@ func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter
 				return
 			}
 		}
+
 		if tokens.RefreshToken != "" {
 			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, refreshTokenCookieMaxAge)
 			if err != nil {
@@ -139,10 +146,18 @@ func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter
 		}
 
 		if o.users != nil && info != nil {
-			slog.InfoContext(r.Context(), "successful OIDC login of user", slog.String("name", info.Name), slog.String("email", info.Email), slog.String("sub", info.Subject))
+			slog.InfoContext(
+				r.Context(),
+				"successful OIDC login of user",
+				slog.String("name", info.Name),
+				slog.String("email", info.Email),
+				slog.String("sub", info.Subject),
+			)
+
 			if err := o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name); err != nil {
 				o.logger.ErrorContext(r.Context(), "failed to upsert user on login", "sub", info.Subject, "error", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
 				return
 			}
 		}
@@ -155,31 +170,40 @@ func (o *OIDCClient) marshalUserinfo(c *echo.Context) func(w http.ResponseWriter
 func (o *OIDCClient) SignOutHandler(c *echo.Context) error {
 	cookie, err := o.secureCookie.Encode("id_token", "")
 	if err != nil {
-		o.logger.Error("Failed to encode id token", "error", err)
+		o.logger.ErrorContext(c.Request().Context(), "failed to encode id token", "error", err)
 		http.Error(c.Response(), "Internal Server Error", http.StatusInternalServerError)
+
 		return nil
 	}
+
 	c.SetCookie(&http.Cookie{
 		Name:     "id_token",
 		Value:    cookie,
 		Path:     "/",
+		Secure:   true,
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 	c.SetCookie(&http.Cookie{
 		Name:     "access_token",
 		Value:    cookie,
 		Path:     "/",
+		Secure:   true,
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
 	c.SetCookie(&http.Cookie{
 		Name:     "refresh_token",
 		Value:    cookie,
 		Path:     "/",
+		Secure:   true,
 		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})
+
 	return c.Redirect(http.StatusFound, "/")
 }
 
@@ -188,10 +212,12 @@ func (o *OIDCClient) UserInfoHandler(c *echo.Context) error {
 	userInfo, err := o.userInfoFrom(c)
 	if err != nil {
 		if !errors.Is(err, ErrUnauthorized) {
-			o.logger.Error("failed to get user info", "error.message", err.Error())
+			o.logger.ErrorContext(c.Request().Context(), "failed to get user info", "error_message", err.Error())
 		}
+
 		return c.JSON(http.StatusUnauthorized, "Unauthorized")
 	}
+
 	return c.JSON(http.StatusOK, userInfo)
 }
 
@@ -205,34 +231,73 @@ func (o *OIDCClient) userInfoFrom(c *echo.Context) (*UserInfo, error) {
 	refreshToken := o.decodedTokenFrom(c, "refresh_token")
 
 	claims := &oidc.IDTokenClaims{}
+
 	_, err := oidc.ParseToken(idToken, claims)
 	if err != nil {
-		o.logger.Error("failed to parse id_token", "error.message", err.Error())
+		o.logger.ErrorContext(c.Request().Context(), "failed to parse id_token", "error_message", err.Error())
 		return nil, ErrUnauthorized
 	}
 
 	if claims.GetExpiration().Before(time.Now()) {
-		o.logger.Info("id_token is expired", "expiration", claims.GetExpiration().String(), "email", claims.Email, "sub", claims.Subject, "session_id", claims.SessionID)
+		o.logger.Info(
+			"id_token is expired",
+			"expiration",
+			claims.GetExpiration().String(),
+			"email",
+			claims.Email,
+			"sub",
+			claims.Subject,
+			"session_id",
+			claims.SessionID,
+		)
+
 		return nil, ErrUnauthorized
 	}
 
 	// Refresh the ID token if it is expiring within 15 minutes
 	if refreshToken != "" && claims.GetExpiration().Before(time.Now().Add(15*time.Minute)) {
-		o.logger.Info("id_token is expiring soon, refreshing token", "expiration", claims.GetExpiration().String(), "email", claims.Email, "sub", claims.Subject, "session_id", claims.SessionID)
+		o.logger.Info(
+			"id_token is expiring soon, refreshing token",
+			"expiration",
+			claims.GetExpiration().String(),
+			"email",
+			claims.Email,
+			"sub",
+			claims.Subject,
+			"session_id",
+			claims.SessionID,
+		)
 
 		assertion := ""
 		if o.rp.Signer() != nil {
-			assertion, err = client.SignedJWTProfileAssertion(o.rp.OAuthConfig().ClientID, []string{o.rp.Issuer(), o.rp.OAuthConfig().Endpoint.TokenURL}, time.Hour, o.rp.Signer())
+			assertion, err = client.SignedJWTProfileAssertion(
+				o.rp.OAuthConfig().ClientID,
+				[]string{o.rp.Issuer(), o.rp.OAuthConfig().Endpoint.TokenURL},
+				time.Hour,
+				o.rp.Signer(),
+			)
 			if err != nil {
-				o.logger.Error("failed to create client assertion", "error.message", err.Error())
+				o.logger.ErrorContext(
+					c.Request().Context(),
+					"failed to create client assertion",
+					"error_message",
+					err.Error(),
+				)
 			}
 		}
 
-		tokens, err := rp.RefreshTokens[*oidc.IDTokenClaims](c.Request().Context(), o.rp, refreshToken, assertion, oidc.ClientAssertionTypeJWTAssertion)
+		tokens, err := rp.RefreshTokens[*oidc.IDTokenClaims](
+			c.Request().Context(),
+			o.rp,
+			refreshToken,
+			assertion,
+			oidc.ClientAssertionTypeJWTAssertion,
+		)
 		if err != nil {
-			o.logger.Error("failed to refresh token", "error.message", err.Error())
+			o.logger.Error("failed to refresh token", "error_message", err.Error())
 			return nil, ErrUnauthorized
 		}
+
 		if tokens.IDToken == "" {
 			o.logger.Error("no id_token returned from refresh")
 			return nil, ErrUnauthorized
@@ -240,30 +305,35 @@ func (o *OIDCClient) userInfoFrom(c *echo.Context) (*UserInfo, error) {
 
 		err = o.encodeTokenFrom(c, "id_token", tokens.IDToken, int(tokens.ExpiresIn))
 		if err != nil {
-			o.logger.Error("failed to encode refreshed id_token", "error.message", err.Error())
+			o.logger.Error("failed to encode refreshed id_token", "error_message", err.Error())
 			return nil, ErrUnauthorized
 		}
+
 		idToken = tokens.IDToken
+
 		_, err = oidc.ParseToken(idToken, claims)
 		if err != nil {
-			o.logger.Error("failed to parse id_token", "error.message", err.Error())
+			o.logger.Error("failed to parse id_token", "error_message", err.Error())
 			return nil, ErrUnauthorized
 		}
 
 		if tokens.AccessToken != "" {
 			err := o.encodeTokenFrom(c, "access_token", tokens.AccessToken, int(tokens.ExpiresIn))
 			if err != nil {
-				o.logger.Error("failed to encode refreshed access_token", "error.message", err.Error())
+				o.logger.Error("failed to encode refreshed access_token", "error_message", err.Error())
 				return nil, ErrUnauthorized
 			}
+
 			accessToken = tokens.AccessToken
 		}
+
 		if tokens.RefreshToken != "" {
 			err := o.encodeTokenFrom(c, "refresh_token", tokens.RefreshToken, refreshTokenCookieMaxAge)
 			if err != nil {
-				o.logger.Error("failed to encode refreshed refresh_token", "error.message", err.Error())
+				o.logger.Error("failed to encode refreshed refresh_token", "error_message", err.Error())
 				return nil, ErrUnauthorized
 			}
+
 			refreshToken = tokens.RefreshToken
 		}
 	}
@@ -288,6 +358,7 @@ func (o *OIDCClient) decodedTokenFrom(c *echo.Context, cookiename string) string
 
 	// Decode the cookie value
 	decodedCookie := ""
+
 	err = o.secureCookie.Decode(cookiename, cookie.Value, &decodedCookie)
 	if err != nil {
 		o.logger.Error("failed to decode cookie", "cookie_name", cookiename, "error", err)
@@ -322,14 +393,18 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		userInfo, err := o.userInfoFrom(c)
 		if err != nil {
-			o.logger.Error("failed to get user info", "error.message", err.Error())
+			o.logger.Error("failed to get user info", "error_message", err.Error())
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
 
 		// Verify the ID token signature against the issuer's JWKS. This is the
 		// check that Hasura used to perform (HASURA_GRAPHQL_JWT_SECRET with jwk_url);
 		// removing Hasura means we must do it ourselves.
-		if _, err := rp.VerifyIDToken[*oidc.IDTokenClaims](c.Request().Context(), userInfo.IDToken, o.rp.IDTokenVerifier()); err != nil {
+		if _, err := rp.VerifyIDToken[*oidc.IDTokenClaims](
+			c.Request().Context(),
+			userInfo.IDToken,
+			o.rp.IDTokenVerifier(),
+		); err != nil {
 			o.logger.Error("ID token signature verification failed", "error", err)
 			return c.JSON(http.StatusUnauthorized, "Unauthorized")
 		}
@@ -355,6 +430,7 @@ func (o *OIDCClient) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 			semconv.EnduserPseudoID(userInfo.User),
 			semconv.SessionID(userInfo.SessionID),
 		)
+
 		return next(c)
 	}
 }

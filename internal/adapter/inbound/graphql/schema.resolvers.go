@@ -32,21 +32,27 @@ func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([
 	if err != nil {
 		return nil, err
 	}
+
 	divIndex := divisionsByID(inc.Divisions)
 
 	rows, err := r.Queries.ListMessages(ctx, incID)
 	if err != nil {
 		return nil, err
 	}
+
 	out := make([]*model.Message, len(rows))
 	for i, row := range rows {
 		out[i] = messageRMToModel(row, divIndex)
 	}
+
 	return out, nil
 }
 
 // CreateIncident is the resolver for the createIncident field.
-func (r *mutationResolver) CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error) {
+func (r *mutationResolver) CreateIncident(
+	ctx context.Context,
+	input model.CreateIncidentInput,
+) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -71,21 +77,28 @@ func (r *mutationResolver) CreateIncident(ctx context.Context, input model.Creat
 	if err != nil {
 		return nil, err
 	}
+
 	return incidentResultToModel(result), nil
 }
 
 // UpdateIncident is the resolver for the updateIncident field.
-func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input model.UpdateIncidentInput) (*model.Incident, error) {
+func (r *mutationResolver) UpdateIncident(
+	ctx context.Context,
+	id string,
+	input model.UpdateIncidentInput,
+) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	var loc *incident.LocationData
+
 	if input.Location != nil {
 		if *input.Location != "" {
 			loc = &incident.LocationData{Name: *input.Location}
@@ -99,13 +112,16 @@ func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input 
 		divisions = make([]incident.DivisionData, len(input.Divisions))
 		for i, d := range input.Divisions {
 			var divID shared.DivisionID
+
 			if d.ID != nil {
 				u, err := parseUUID(*d.ID)
 				if err != nil {
 					return nil, err
 				}
+
 				divID = shared.DivisionID(u)
 			}
+
 			divisions[i] = incident.DivisionData{ID: divID, Name: d.Name, Description: d.Description}
 		}
 	}
@@ -114,6 +130,7 @@ func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input 
 	if err != nil {
 		return nil, err
 	}
+
 	return incidentStateToModel(state), nil
 }
 
@@ -123,14 +140,17 @@ func (r *mutationResolver) CloseIncident(ctx context.Context, id string) (*model
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
+
 	state, err := r.Incidents.CloseIncident(ctx, shared.IncidentID(incID), actor)
 	if err != nil {
 		return nil, err
 	}
+
 	return incidentStateToModel(state), nil
 }
 
@@ -140,14 +160,17 @@ func (r *mutationResolver) ReopenIncident(ctx context.Context, id string) (*mode
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
+
 	state, err := r.Incidents.ReopenIncident(ctx, shared.IncidentID(incID), actor)
 	if err != nil {
 		return nil, err
 	}
+
 	return incidentStateToModel(state), nil
 }
 
@@ -157,13 +180,16 @@ func (r *mutationResolver) DeleteIncident(ctx context.Context, id string) (strin
 	if err != nil {
 		return "", err
 	}
+
 	incID, err := parseUUID(id)
 	if err != nil {
 		return "", err
 	}
+
 	if err := r.Incidents.DeleteIncident(ctx, shared.IncidentID(incID), actor); err != nil {
 		return "", err
 	}
+
 	return id, nil
 }
 
@@ -173,13 +199,15 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(input.IncidentID)
 	if err != nil {
 		return nil, err
 	}
+
 	medium, err := modelMediumToDomain(input.Medium)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", shared.ErrInvalidInput, err)
+		return nil, fmt.Errorf("%w: %w", shared.ErrInvalidInput, err)
 	}
 
 	state, err := r.Messages.RecordMessage(ctx,
@@ -190,26 +218,34 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 	if err != nil {
 		return nil, err
 	}
+
 	return messageStateToModel(state), nil
 }
 
 // UpdateMessage is the resolver for the updateMessage field.
-func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input model.UpdateMessageInput) (*model.Message, error) {
+func (r *mutationResolver) UpdateMessage(
+	ctx context.Context,
+	id string,
+	input model.UpdateMessageInput,
+) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	msgID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	var medium *shared.Medium
+
 	if input.Medium != nil {
 		m, err := modelMediumToDomain(*input.Medium)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %v", shared.ErrInvalidInput, err)
+			return nil, fmt.Errorf("%w: %w", shared.ErrInvalidInput, err)
 		}
+
 		medium = &m
 	}
 
@@ -225,22 +261,29 @@ func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input m
 }
 
 // TriageMessage is the resolver for the triageMessage field.
-func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error) {
+func (r *mutationResolver) TriageMessage(
+	ctx context.Context,
+	id string,
+	input model.TriageMessageInput,
+) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	msgID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
+
 	triage, err := modelTriageToDomain(input.Triage)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", shared.ErrInvalidInput, err)
+		return nil, fmt.Errorf("%w: %w", shared.ErrInvalidInput, err)
 	}
+
 	priority, err := modelPriorityToDomain(input.Priority)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", shared.ErrInvalidInput, err)
+		return nil, fmt.Errorf("%w: %w", shared.ErrInvalidInput, err)
 	}
 
 	divisionIDs := make([]shared.DivisionID, len(input.DivisionIds))
@@ -249,6 +292,7 @@ func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input m
 		if err != nil {
 			return nil, err
 		}
+
 		divisionIDs[i] = shared.DivisionID(u)
 	}
 
@@ -256,6 +300,7 @@ func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input m
 	if err != nil {
 		return nil, err
 	}
+
 	msg := messageStateToModel(state)
 	// Divisions on a message are incident-level references (stable, no projection race).
 	// Look them up so the mutation response contains full name/description data.
@@ -270,6 +315,7 @@ func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input m
 			}
 		}
 	}
+
 	return msg, nil
 }
 
@@ -279,13 +325,16 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 	if err != nil {
 		return "", err
 	}
+
 	msgID, err := parseUUID(id)
 	if err != nil {
 		return "", err
 	}
+
 	if err := r.Messages.DeleteMessage(ctx, shared.MessageID(msgID), actor); err != nil {
 		return "", err
 	}
+
 	return id, nil
 }
 
@@ -295,14 +344,17 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(incidentID)
 	if err != nil {
 		return nil, err
 	}
+
 	layerID, err := r.Layers.CreateLayer(ctx, shared.IncidentID(incID), name, actor)
 	if err != nil {
 		return nil, err
 	}
+
 	return &model.Layer{
 		ID:       uuid.UUID(layerID).String(),
 		Name:     name,
@@ -312,41 +364,60 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 }
 
 // AddFeature is the resolver for the addFeature field.
-func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
+func (r *mutationResolver) AddFeature(
+	ctx context.Context,
+	incidentID string,
+	layerID string,
+	id string,
+	geometry scalar.JSONMap,
+	properties scalar.JSONMap,
+) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	featureID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
+
 	incID, err := parseUUID(incidentID)
 	if err != nil {
 		return nil, err
 	}
+
 	layID, err := parseUUID(layerID)
 	if err != nil {
 		return nil, err
 	}
+
 	if err := r.Features.PlaceFeature(ctx,
 		shared.FeatureID(featureID), shared.IncidentID(incID), shared.LayerID(layID),
 		geometry, properties, actor); err != nil {
 		return nil, err
 	}
+
 	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
 }
 
 // ModifyFeature is the resolver for the modifyFeature field.
-func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
+func (r *mutationResolver) ModifyFeature(
+	ctx context.Context,
+	id string,
+	geometry scalar.JSONMap,
+	properties scalar.JSONMap,
+) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	featureID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
+
 	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor)
 	if err != nil {
 		return nil, err
@@ -367,13 +438,16 @@ func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string
 	if err != nil {
 		return "", err
 	}
+
 	featureID, err := parseUUID(id)
 	if err != nil {
 		return "", err
 	}
+
 	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), actor); err != nil {
 		return "", err
 	}
+
 	return id, nil
 }
 
@@ -383,10 +457,12 @@ func (r *queryResolver) Incidents(ctx context.Context) ([]*model.Incident, error
 	if err != nil {
 		return nil, err
 	}
+
 	out := make([]*model.Incident, len(rows))
 	for i, row := range rows {
 		out[i] = incidentRMToModel(row)
 	}
+
 	return out, nil
 }
 
@@ -396,10 +472,12 @@ func (r *queryResolver) Incident(ctx context.Context, id string) (*model.Inciden
 	if err != nil {
 		return nil, err
 	}
+
 	row, err := r.Queries.GetIncident(ctx, incID)
 	if err != nil {
 		return nil, err
 	}
+
 	return incidentRMToModel(row), nil
 }
 
@@ -409,6 +487,7 @@ func (r *queryResolver) Message(ctx context.Context, id string) (*model.Message,
 	if err != nil {
 		return nil, err
 	}
+
 	return r.loadMessage(ctx, msgID)
 }
 
@@ -418,18 +497,22 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 	if err != nil {
 		return nil, err
 	}
+
 	rows, err := r.Queries.ListLayers(ctx, incID)
 	if err != nil {
 		return nil, err
 	}
+
 	out := make([]*model.Layer, 0, len(rows))
 	for _, row := range rows {
 		layer, err := layerRMToModel(row)
 		if err != nil {
 			return nil, err
 		}
+
 		out = append(out, layer)
 	}
+
 	return out, nil
 }
 

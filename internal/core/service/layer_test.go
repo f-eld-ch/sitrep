@@ -20,7 +20,7 @@ func TestLayerService_CreateAndRename(t *testing.T) {
 
 	layerID, err := layerSvc.CreateLayer(ctx(), res.IncidentID, "Kräfte", testActor)
 	require.NoError(t, err)
-	assert.NotEqual(t, layerID, shared.LayerID{})
+	assert.NotEqual(t, shared.LayerID{}, layerID)
 
 	require.NoError(t, layerSvc.RenameLayer(ctx(), layerID, "Kräfte (aktualisiert)", testActor))
 }
@@ -63,7 +63,7 @@ func TestLayerService_RejectsWritesOnClosedIncident(t *testing.T) {
 	require.NoError(t, err)
 
 	err = layerSvc.RenameLayer(ctx(), layerID, "Umbenannt", testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	err = layerSvc.RemoveLayer(ctx(), layerID, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }

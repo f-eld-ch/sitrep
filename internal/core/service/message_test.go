@@ -22,7 +22,7 @@ func TestMessageService_RecordMessage(t *testing.T) {
 		s1, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"Pegel steigt", "Beobachter Nord", "Brücke", "Führungsstab", "", shared.MediumRadio, nil, testActor)
 		require.NoError(t, err)
-		assert.NotEqual(t, s1.ID, shared.MessageID{})
+		assert.NotEqual(t, shared.MessageID{}, s1.ID)
 
 		s2, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
 			"Lage stabil", "Beobachter Süd", "555-1111", "Führungsstab", "555-2222", shared.MediumPhone, nil, testActor)
@@ -131,11 +131,11 @@ func TestMessageService_RejectsWritesOnClosedIncident(t *testing.T) {
 
 	content := "Corrected"
 	_, err = messageSvc.CorrectMessage(ctx(), msg.ID, &content, nil, nil, nil, nil, nil, nil, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	_, err = messageSvc.TriageMessage(ctx(), msg.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	err = messageSvc.DeleteMessage(ctx(), msg.ID, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 
 func TestMessageService_CounterIsPerIncident(t *testing.T) {
@@ -147,12 +147,45 @@ func TestMessageService_CounterIsPerIncident(t *testing.T) {
 	res1, _ := incidentSvc.CreateIncident(ctx(), "Incident A", nil, nil, nil, testActor)
 	res2, _ := incidentSvc.CreateIncident(ctx(), "Incident B", nil, nil, nil, testActor)
 
-	_, err := messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg1", "A", "", "B", "", shared.MediumRadio, nil, testActor)
+	_, err := messageSvc.RecordMessage(
+		ctx(),
+		res1.IncidentID,
+		"msg1",
+		"A",
+		"",
+		"B",
+		"",
+		shared.MediumRadio,
+		nil,
+		testActor,
+	)
 	require.NoError(t, err)
-	_, err = messageSvc.RecordMessage(ctx(), res1.IncidentID, "msg2", "A", "", "B", "", shared.MediumRadio, nil, testActor)
+	_, err = messageSvc.RecordMessage(
+		ctx(),
+		res1.IncidentID,
+		"msg2",
+		"A",
+		"",
+		"B",
+		"",
+		shared.MediumRadio,
+		nil,
+		testActor,
+	)
 	require.NoError(t, err)
 
 	// Incident B's counter starts at 1 independently.
-	_, err = messageSvc.RecordMessage(ctx(), res2.IncidentID, "msg1-b", "C", "", "D", "", shared.MediumRadio, nil, testActor)
+	_, err = messageSvc.RecordMessage(
+		ctx(),
+		res2.IncidentID,
+		"msg1-b",
+		"C",
+		"",
+		"D",
+		"",
+		shared.MediumRadio,
+		nil,
+		testActor,
+	)
 	require.NoError(t, err)
 }

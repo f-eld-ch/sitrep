@@ -52,7 +52,9 @@ func (h *MessageHandler) Version() int { return 2 }
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.rows = make(map[uuid.UUID]*MessageRow)
+
 	return nil
 }
 
@@ -60,10 +62,12 @@ func (h *MessageHandler) Handles(st, t string) bool {
 	if st != "Message" {
 		return false
 	}
+
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported":
 		return true
 	}
+
 	return false
 }
 
@@ -90,10 +94,12 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		incidentID, err := uuid.Parse(d.IncidentID)
 		if err != nil {
 			return err
 		}
+
 		authorSub := d.AuthorSub
 		h.rows[id] = &MessageRow{
 			ID:             id,
@@ -128,31 +134,40 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		row := h.rows[id]
 		if row == nil {
 			return nil
 		}
+
 		if d.Content != nil {
 			row.Content = *d.Content
 		}
+
 		if d.Sender != nil {
 			row.Sender = *d.Sender
 		}
+
 		if d.SenderDetail != nil {
 			row.SenderDetail = *d.SenderDetail
 		}
+
 		if d.Receiver != nil {
 			row.Receiver = *d.Receiver
 		}
+
 		if d.ReceiverDetail != nil {
 			row.ReceiverDetail = *d.ReceiverDetail
 		}
+
 		if d.Medium != nil {
 			row.Medium = *d.Medium
 		}
+
 		if d.Time != nil {
 			row.MsgTime = *d.Time
 		}
+
 		row.LastEditorSub = &d.EditorSub
 		row.UpdatedAt = e.OccurredAt
 
@@ -166,10 +181,12 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		row := h.rows[id]
 		if row == nil {
 			return nil
 		}
+
 		row.Triage = d.Triage
 		row.Priority = priorityForTriage(d.Triage, d.Priority)
 		row.DivisionIDs = d.DivisionIDs
@@ -182,6 +199,7 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			row.UpdatedAt = e.OccurredAt
 		}
 	}
+
 	return nil
 }
 
@@ -189,6 +207,7 @@ func priorityForTriage(triage, priority string) string {
 	if triage == string(shared.TriageMoreInfo) {
 		return string(shared.PriorityNormal)
 	}
+
 	return priority
 }
 
@@ -196,11 +215,14 @@ func priorityForTriage(triage, priority string) string {
 func (h *MessageHandler) Get(id uuid.UUID) *MessageRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	row := h.rows[id]
 	if row == nil {
 		return nil
 	}
+
 	cp := *row
+
 	return &cp
 }
 
@@ -208,12 +230,15 @@ func (h *MessageHandler) Get(id uuid.UUID) *MessageRow {
 func (h *MessageHandler) ForIncident(incidentID uuid.UUID) []*MessageRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	var out []*MessageRow
+
 	for _, row := range h.rows {
 		if row.IncidentID == incidentID && !row.Deleted {
 			cp := *row
 			out = append(out, &cp)
 		}
 	}
+
 	return out
 }

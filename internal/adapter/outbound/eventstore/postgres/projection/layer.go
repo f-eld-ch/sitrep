@@ -45,6 +45,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -60,6 +61,7 @@ func (h *LayerFeaturesHandler) Apply(ctx context.Context, e eventsourcing.Event)
 	case "Feature":
 		return h.applyFeatureEvent(ctx, tx, e)
 	}
+
 	return nil
 }
 
@@ -71,32 +73,39 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 			IncidentID string `json:"incidentId"`
 			Name       string `json:"name"`
 		}
+
 		var d created
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		err := exec(tx, ctx, `
 			INSERT INTO rm_layer_features (id, incident_id, name, geojson, revision, removed)
 			VALUES ($1, $2, $3, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, false)
 			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
 			id, d.IncidentID, d.Name)
+
 		return err
 
 	case "Renamed":
 		type renamed struct {
 			Name string `json:"name"`
 		}
+
 		var d renamed
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		err := exec(tx, ctx, `UPDATE rm_layer_features SET name = $1 WHERE id = $2`, d.Name, id)
+
 		return err
 
 	case "Removed":
 		err := exec(tx, ctx, `UPDATE rm_layer_features SET removed = true WHERE id = $1`, id)
 		return err
 	}
+
 	return nil
 }
 
@@ -109,10 +118,12 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			Geometry   json.RawMessage `json:"geometry"`
 			Properties json.RawMessage `json:"properties"`
 		}
+
 		var d placed
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		featureJSON := fmt.Sprintf(`{"type":"Feature","id":%q,"geometry":%s,"properties":%s}`,
 			id, d.Geometry, d.Properties)
 		// Remove any existing entry for this feature ID then append the new one.
@@ -130,12 +141,14 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			    revision = revision + 1
 			WHERE id = $3`,
 			id.String(), featureJSON, d.LayerID)
+
 		return err
 
 	case "Moved":
 		type moved struct {
 			Geometry json.RawMessage `json:"geometry"`
 		}
+
 		var d moved
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -158,12 +171,14 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			       FROM jsonb_array_elements(geojson->'features') AS f
 			       WHERE f->>'id' = $1::text LIMIT 1)`,
 			id.String(), d.Geometry)
+
 		return err
 
 	case "Restyled":
 		type restyled struct {
 			Properties json.RawMessage `json:"properties"`
 		}
+
 		var d restyled
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -186,6 +201,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			       FROM jsonb_array_elements(geojson->'features') AS f
 			       WHERE f->>'id' = $1::text LIMIT 1)`,
 			id.String(), d.Properties)
+
 		return err
 
 	case "Removed":
@@ -200,7 +216,9 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 			    revision = revision + 1
 			WHERE geojson @> jsonb_build_object('features', jsonb_build_array(jsonb_build_object('id', $1::text)))`,
 			id.String())
+
 		return err
 	}
+
 	return nil
 }

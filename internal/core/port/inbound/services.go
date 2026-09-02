@@ -125,7 +125,12 @@ type MessageService interface {
 
 // LayerService is the driving port for layer commands.
 type LayerService interface {
-	CreateLayer(ctx context.Context, incidentID shared.IncidentID, name string, actor identity.Actor) (shared.LayerID, error)
+	CreateLayer(
+		ctx context.Context,
+		incidentID shared.IncidentID,
+		name string,
+		actor identity.Actor,
+	) (shared.LayerID, error)
 	RenameLayer(ctx context.Context, id shared.LayerID, name string, actor identity.Actor) error
 	RemoveLayer(ctx context.Context, id shared.LayerID, actor identity.Actor) error
 }
@@ -144,6 +149,11 @@ type FeatureService interface {
 	// ModifyFeature updates geometry and/or properties in a single aggregate load,
 	// avoiding the optimistic concurrency conflict that would occur from two parallel saves.
 	// Returns the complete post-update state so the resolver can respond without a projection read.
-	ModifyFeature(ctx context.Context, id shared.FeatureID, geometry, properties map[string]any, actor identity.Actor) (FeatureState, error)
+	ModifyFeature(
+		ctx context.Context,
+		id shared.FeatureID,
+		geometry, properties map[string]any,
+		actor identity.Actor,
+	) (FeatureState, error)
 	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
 }

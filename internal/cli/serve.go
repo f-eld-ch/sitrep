@@ -35,7 +35,12 @@ var serveConfigOptions = []configOption{
 	stringOption("oidc-client-secret", "", "OIDC client secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET"),
 	stringOption("oidc-redirect-url", "", "OIDC redirect URL", "OIDC_REDIRECT_URL", "OAUTH2_PROXY_REDIRECT_URL"),
 	stringOption("cookie-key", "", "Cookie signing key", "COOKIE_KEY", "OAUTH2_PROXY_COOKIE_SECRET", "OIDC_COOKIE_KEY"),
-	boolOption("graphql-introspection", false, "Enable GraphQL introspection and playground (dev only)", "GRAPHQL_INTROSPECTION"),
+	boolOption(
+		"graphql-introspection",
+		false,
+		"Enable GraphQL introspection and playground (dev only)",
+		"GRAPHQL_INTROSPECTION",
+	),
 	boolOption("migrate-on-startup", false, "Run database migrations before starting the server", "MIGRATE_ON_STARTUP"),
 }
 
@@ -47,12 +52,15 @@ func newServeCmd(v *viper.Viper) (*cobra.Command, error) {
 			return runServe(cmd, args, v)
 		},
 	}
+
 	if err := configureOptions(v, serveConfigOptions); err != nil {
 		return nil, err
 	}
+
 	if err := bindFlags(v, serveCmd.Flags(), serveConfigOptions); err != nil {
 		return nil, err
 	}
+
 	return serveCmd, nil
 }
 
@@ -70,8 +78,10 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			slog.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", err)
 		}
 	}()
+
 	if v.GetBool("migrate-on-startup") {
 		slog.InfoContext(ctx, "running startup migrations")
+
 		if err := runMigrateUp(cmd, v.GetString("database-url")); err != nil {
 			slog.ErrorContext(ctx, "failed to run startup migrations", "error", err)
 			return err
@@ -108,9 +118,11 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			slog.ErrorContext(ctx, "failed to create OIDC client", "error", err)
 			return err
 		}
+
 		if s.UserRepo != nil {
 			oidcClient.WithUserRepository(s.UserRepo)
 		}
+
 		opts = append(opts, server.WithOidc(oidcClient))
 	} else {
 		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")
@@ -123,6 +135,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	}
 
 	slog.InfoContext(ctx, "server stopped")
+
 	return nil
 }
 
@@ -132,8 +145,11 @@ func deriveCookieKey(input string) string {
 		if _, err := rand.Read(b); err != nil {
 			return string(make([]byte, 32))
 		}
+
 		return string(b)
 	}
+
 	sum := sha256.Sum256([]byte(input))
+
 	return string(sum[:])
 }

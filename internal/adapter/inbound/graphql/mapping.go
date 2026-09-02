@@ -30,6 +30,7 @@ func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
 	if r.Location != nil {
 		inc.Location = &model.Location{Name: r.Location.Name}
 	}
+
 	for _, d := range r.Divisions {
 		inc.Divisions = append(inc.Divisions, &model.Division{
 			ID:          d.ID.String(),
@@ -37,9 +38,11 @@ func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
 			Description: d.Description,
 		})
 	}
+
 	if inc.Divisions == nil {
 		inc.Divisions = []*model.Division{}
 	}
+
 	return inc
 }
 
@@ -57,6 +60,7 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 	if s.Location != nil {
 		inc.Location = &model.Location{Name: s.Location.Name}
 	}
+
 	for _, d := range s.Divisions {
 		inc.Divisions = append(inc.Divisions, &model.Division{
 			ID:          d.ID.String(),
@@ -64,9 +68,11 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 			Description: d.Description,
 		})
 	}
+
 	if inc.Divisions == nil {
 		inc.Divisions = []*model.Division{}
 	}
+
 	return inc
 }
 
@@ -89,6 +95,7 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		Priority:       mapPriorityStatus(string(s.Priority)),
 		Divisions:      []*model.Division{},
 	}
+
 	return msg
 }
 
@@ -104,14 +111,17 @@ func incidentRMToModel(r *outbound.IncidentRM) *model.Incident {
 	if r.Location != nil {
 		inc.Location = locationRMToModel(r.Location)
 	}
+
 	for _, d := range r.Divisions {
 		if d.RemovedAt == nil {
 			inc.Divisions = append(inc.Divisions, divisionRMToModel(d))
 		}
 	}
+
 	if inc.Divisions == nil {
 		inc.Divisions = []*model.Division{}
 	}
+
 	return inc
 }
 
@@ -120,6 +130,7 @@ func locationRMToModel(r *outbound.LocationRM) *model.Location {
 	if r.Coordinates != nil {
 		loc.Coordinates = scalar.JSONMap{"coordinates": []any{r.Coordinates[0], r.Coordinates[1]}}
 	}
+
 	return loc
 }
 
@@ -156,9 +167,11 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 			msg.Divisions = append(msg.Divisions, divisionRMToModel(d))
 		}
 	}
+
 	if msg.Divisions == nil {
 		msg.Divisions = []*model.Division{}
 	}
+
 	return msg
 }
 
@@ -172,11 +185,14 @@ func layerRMToModel(r *outbound.LayerRM) (*model.Layer, error) {
 		Name:     r.Name,
 		Revision: r.Revision,
 	}
+
 	features, err := featuresFromGeoJSON(r.GeoJSON)
 	if err != nil {
 		return nil, fmt.Errorf("layer %s: %w", r.ID, err)
 	}
+
 	layer.Features = features
+
 	return layer, nil
 }
 
@@ -185,6 +201,7 @@ func featuresFromGeoJSON(raw json.RawMessage) ([]*model.Feature, error) {
 	if len(raw) == 0 {
 		return []*model.Feature{}, nil
 	}
+
 	var fc struct {
 		Features []struct {
 			ID         string          `json:"id"`
@@ -195,6 +212,7 @@ func featuresFromGeoJSON(raw json.RawMessage) ([]*model.Feature, error) {
 	if err := json.Unmarshal(raw, &fc); err != nil {
 		return nil, err
 	}
+
 	out := make([]*model.Feature, 0, len(fc.Features))
 	for _, f := range fc.Features {
 		feat := &model.Feature{ID: f.ID}
@@ -203,17 +221,22 @@ func featuresFromGeoJSON(raw json.RawMessage) ([]*model.Feature, error) {
 			if err := json.Unmarshal(f.Geometry, &g); err != nil {
 				return nil, err
 			}
+
 			feat.Geometry = g
 		}
+
 		if len(f.Properties) > 0 && string(f.Properties) != "null" {
 			var p scalar.JSONMap
 			if err := json.Unmarshal(f.Properties, &p); err != nil {
 				return nil, err
 			}
+
 			feat.Properties = p
 		}
+
 		out = append(out, feat)
 	}
+
 	return out, nil
 }
 
@@ -229,6 +252,8 @@ func mapMedium(s string) model.Medium {
 		return model.MediumPhone
 	case shared.MediumEmail:
 		return model.MediumEmail
+	case shared.MediumOther:
+		return model.MediumOther
 	default:
 		return model.MediumOther
 	}
@@ -242,6 +267,8 @@ func mapTriageStatus(s string) model.TriageStatus {
 		return model.TriageStatusMoreinfo
 	case shared.TriageReset:
 		return model.TriageStatusReset
+	case shared.TriagePending:
+		return model.TriageStatusPending
 	default:
 		return model.TriageStatusPending
 	}
@@ -251,6 +278,8 @@ func mapPriorityStatus(s string) model.PriorityStatus {
 	switch shared.PriorityStatus(s) {
 	case shared.PriorityHigh:
 		return model.PriorityStatusHigh
+	case shared.PriorityNormal:
+		return model.PriorityStatusNormal
 	default:
 		return model.PriorityStatusNormal
 	}
@@ -271,6 +300,7 @@ func modelMediumToDomain(m model.Medium) (shared.Medium, error) {
 	case model.MediumOther:
 		return shared.MediumOther, nil
 	}
+
 	return "", fmt.Errorf("unknown medium %q", m)
 }
 
@@ -285,6 +315,7 @@ func modelTriageToDomain(t model.TriageStatus) (shared.TriageStatus, error) {
 	case model.TriageStatusReset:
 		return shared.TriageReset, nil
 	}
+
 	return "", fmt.Errorf("unknown triage status %q", t)
 }
 
@@ -295,6 +326,7 @@ func modelPriorityToDomain(p model.PriorityStatus) (shared.PriorityStatus, error
 	case model.PriorityStatusHigh:
 		return shared.PriorityHigh, nil
 	}
+
 	return "", fmt.Errorf("unknown priority %q", p)
 }
 
@@ -303,6 +335,7 @@ func parseUUID(id string) (uuid.UUID, error) {
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("%w: invalid id %q", shared.ErrInvalidInput, id)
 	}
+
 	return u, nil
 }
 
@@ -312,5 +345,6 @@ func divisionsByID(divs []*outbound.DivisionRM) map[uuid.UUID]*outbound.Division
 	for _, d := range divs {
 		m[d.ID] = d
 	}
+
 	return m
 }

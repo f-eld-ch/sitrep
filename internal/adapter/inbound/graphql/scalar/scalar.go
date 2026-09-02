@@ -20,6 +20,7 @@ func MarshalJSONMap(m JSONMap) graphql.Marshaler {
 			_, _ = fmt.Fprintf(w, "null")
 			return
 		}
+
 		_, _ = w.Write(data)
 	})
 }
@@ -33,6 +34,7 @@ func UnmarshalJSONMap(v any) (JSONMap, error) {
 		if err := json.Unmarshal([]byte(t), &m); err != nil {
 			return nil, fmt.Errorf("JSONMap: cannot unmarshal string: %w", err)
 		}
+
 		return m, nil
 	default:
 		return nil, fmt.Errorf("JSONMap: expected map[string]any, got %T", v)

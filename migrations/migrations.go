@@ -18,5 +18,6 @@ func GoMigrations() []*goose.Migration {
 		&goose.GoFunc{RunTx: downImportLegacyData},
 	)
 	m.Source = "00004_import.go"
+
 	return []*goose.Migration{m}
 }

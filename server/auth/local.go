@@ -31,6 +31,7 @@ func (l *LocalEnforcer) RequireLogin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		ctx := identity.WithActor(c.Request().Context(), actor)
 		c.SetRequest(c.Request().WithContext(ctx))
+
 		return next(c)
 	}
 }

@@ -25,5 +25,6 @@ func (s *Server) ready(c *echo.Context) error {
 	if s.isShuttingDown.Load() {
 		return c.JSON(http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
 	}
+
 	return c.JSON(http.StatusOK, map[string]string{"status": "ready"})
 }

@@ -7,6 +7,7 @@ package inmem
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -46,7 +47,7 @@ type EventStore struct {
 	mu      sync.RWMutex
 	streams map[streamKey][]eventsourcing.Event
 	global  []eventsourcing.Event
-	seq     int64
+	seq     atomic.Int64
 }
 
 func NewEventStore() *EventStore {
@@ -56,13 +57,17 @@ func NewEventStore() *EventStore {
 func (s *EventStore) Load(_ context.Context, streamType string, id uuid.UUID) ([]eventsourcing.Event, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+
 	key := streamKey{streamType: streamType, id: id}
+
 	events := s.streams[key]
 	if len(events) == 0 {
 		return nil, nil
 	}
+
 	out := make([]eventsourcing.Event, len(events))
 	copy(out, events)
+
 	return out, nil
 }
 
@@ -84,57 +89,69 @@ func (s *EventStore) Append(_ context.Context, a eventsourcing.Aggregate) (outbo
 	}
 
 	var lastSeq int64
+
 	for _, e := range pending {
 		// Round-trip through JSON so Apply decoding is exercised in service tests.
-		data, _ := json.Marshal(e.Data)
+		data, err := json.Marshal(e.Data)
+		if err != nil {
+			return nil, fmt.Errorf("inmem: marshal event data: %w", err)
+		}
+
 		e.Data = json.RawMessage(data)
 		e.RecordedAt = time.Now().UTC()
 
-		lastSeq = atomic.AddInt64(&s.seq, 1)
+		lastSeq = s.seq.Add(1)
+
 		existing = append(existing, e)
 		s.global = append(s.global, e)
 	}
+
 	s.streams[key] = existing
+
 	a.Root().ClearPending()
 
 	return encodeInmemCursor(lastSeq), nil
 }
 
-func (s *EventStore) Read(_ context.Context, after outbound.Cursor, limit int) ([]eventsourcing.Event, outbound.Cursor, error) {
+func (s *EventStore) Read(
+	_ context.Context,
+	after outbound.Cursor,
+	limit int,
+) ([]eventsourcing.Event, outbound.Cursor, error) {
 	afterSeq := decodeInmemCursor(after)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var out []eventsourcing.Event
-	var lastSeq int64
+	var (
+		out     []eventsourcing.Event
+		lastSeq int64
+	)
+
 	for i, e := range s.global {
 		eSeq := int64(i + 1)
 		if eSeq > afterSeq {
 			out = append(out, e)
 			lastSeq = eSeq
+
 			if len(out) >= limit {
 				break
 			}
 		}
 	}
+
 	cursor := after
 	if len(out) > 0 {
 		cursor = encodeInmemCursor(lastSeq)
 	}
+
 	return out, cursor, nil
 }
 
 func encodeInmemCursor(seq int64) outbound.Cursor {
 	b := make([]byte, 8)
-	b[0] = byte(seq >> 56)
-	b[1] = byte(seq >> 48)
-	b[2] = byte(seq >> 40)
-	b[3] = byte(seq >> 32)
-	b[4] = byte(seq >> 24)
-	b[5] = byte(seq >> 16)
-	b[6] = byte(seq >> 8)
-	b[7] = byte(seq)
+	binary.BigEndian.PutUint64(b, uint64(seq)) // #nosec G115 -- sequence counter is nonnegative
+
 	return b
 }
 
@@ -142,6 +159,7 @@ func decodeInmemCursor(c outbound.Cursor) int64 {
 	if len(c) < 8 {
 		return 0
 	}
+
 	return int64(c[0])<<56 | int64(c[1])<<48 | int64(c[2])<<40 | int64(c[3])<<32 |
 		int64(c[4])<<24 | int64(c[5])<<16 | int64(c[6])<<8 | int64(c[7])
 }
@@ -178,6 +196,7 @@ func (n *Notifier) Notify(_ context.Context) error {
 	case n.ch <- struct{}{}:
 	default:
 	}
+
 	return nil
 }
 
@@ -231,7 +250,9 @@ func NewMessageCounter() *MessageCounter {
 func (c *MessageCounter) Next(_ context.Context, incidentID shared.IncidentID) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	c.counters[incidentID.String()]++
+
 	return c.counters[incidentID.String()], nil
 }
 
