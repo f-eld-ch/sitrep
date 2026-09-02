@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -14,6 +15,12 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/f-eld-ch/sitrep/migrations"
+)
+
+const (
+	gooseDBConnectWait     = 2 * time.Minute
+	gooseDBConnectInterval = 2 * time.Second
+	gooseDBPingTimeout     = 5 * time.Second
 )
 
 func newMigrateCmd(v *viper.Viper) *cobra.Command {
@@ -35,12 +42,42 @@ func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parsing database URL: %w", err)
 	}
-	db := stdlib.OpenDB(*cfg)
-	if err := db.PingContext(ctx); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("connecting to database: %w", err)
+	return openGooseDBWithRetry(ctx, gooseDBConnectWait, gooseDBConnectInterval, func(ctx context.Context) (*sql.DB, error) {
+		db := stdlib.OpenDB(*cfg)
+		pingCtx, cancel := context.WithTimeout(ctx, gooseDBPingTimeout)
+		defer cancel()
+		if err := db.PingContext(pingCtx); err != nil {
+			_ = db.Close()
+			return nil, err
+		}
+		return db, nil
+	})
+}
+
+func openGooseDBWithRetry(ctx context.Context, wait, interval time.Duration, open func(context.Context) (*sql.DB, error)) (*sql.DB, error) {
+	deadline := time.NewTimer(wait)
+	defer deadline.Stop()
+
+	var lastErr error
+	for {
+		db, err := open(ctx)
+		if err == nil {
+			return db, nil
+		}
+		lastErr = err
+		slog.InfoContext(ctx, "waiting for database connection", "error", err)
+
+		retry := time.NewTimer(interval)
+		select {
+		case <-ctx.Done():
+			retry.Stop()
+			return nil, fmt.Errorf("connecting to database: %w", ctx.Err())
+		case <-deadline.C:
+			retry.Stop()
+			return nil, fmt.Errorf("connecting to database after %s: %w", wait, lastErr)
+		case <-retry.C:
+		}
 	}
-	return db, nil
 }
 
 func gooseProvider(db *sql.DB) (*goose.Provider, error) {

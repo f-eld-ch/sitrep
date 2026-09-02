@@ -36,6 +36,7 @@ var serveConfigOptions = []configOption{
 	stringOption("oidc-redirect-url", "", "OIDC redirect URL", "OIDC_REDIRECT_URL", "OAUTH2_PROXY_REDIRECT_URL"),
 	stringOption("cookie-key", "", "Cookie signing key", "COOKIE_KEY", "OAUTH2_PROXY_COOKIE_SECRET", "OIDC_COOKIE_KEY"),
 	boolOption("graphql-introspection", false, "Enable GraphQL introspection and playground (dev only)", "GRAPHQL_INTROSPECTION"),
+	boolOption("migrate-on-startup", false, "Run database migrations before starting the server", "MIGRATE_ON_STARTUP"),
 }
 
 func newServeCmd(v *viper.Viper) (*cobra.Command, error) {
@@ -69,6 +70,13 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			slog.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", err)
 		}
 	}()
+	if v.GetBool("migrate-on-startup") {
+		slog.InfoContext(ctx, "running startup migrations")
+		if err := runMigrateUp(cmd, v.GetString("database-url")); err != nil {
+			slog.ErrorContext(ctx, "failed to run startup migrations", "error", err)
+			return err
+		}
+	}
 
 	s, err := buildStack(
 		ctx,

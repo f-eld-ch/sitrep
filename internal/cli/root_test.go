@@ -89,6 +89,7 @@ func TestNewRootCmd(t *testing.T) {
 	serveCmd, _, err := rootCmd.Find([]string{"serve"})
 	require.NoError(t, err)
 	assert.NotNil(t, serveCmd.Flags().Lookup("port"))
+	assert.NotNil(t, serveCmd.Flags().Lookup("migrate-on-startup"))
 	assert.Nil(t, serveCmd.Flags().Lookup("database-url"))
 	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-close-incidents").DefValue)
 	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-archive-incidents").DefValue)

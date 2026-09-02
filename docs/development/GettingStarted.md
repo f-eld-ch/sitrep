@@ -86,6 +86,7 @@ variables, configuration file, then defaults.
 | `oidc-redirect-url` | `SITREP_OIDC_REDIRECT_URL` | `OIDC_REDIRECT_URL`, `OAUTH2_PROXY_REDIRECT_URL` |
 | `cookie-key` | `SITREP_COOKIE_KEY` | `COOKIE_KEY`, `OAUTH2_PROXY_COOKIE_SECRET`, `OIDC_COOKIE_KEY` |
 | `graphql-introspection` | `SITREP_GRAPHQL_INTROSPECTION` | `GRAPHQL_INTROSPECTION` |
+| `migrate-on-startup` | `SITREP_MIGRATE_ON_STARTUP` | `MIGRATE_ON_STARTUP` |
 | `auto-close-incidents` | `SITREP_AUTO_CLOSE_INCIDENTS` | — |
 | `auto-archive-incidents` | `SITREP_AUTO_ARCHIVE_INCIDENTS` | — |
 
