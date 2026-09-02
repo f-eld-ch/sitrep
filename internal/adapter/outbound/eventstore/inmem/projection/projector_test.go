@@ -48,6 +48,7 @@ type testStack struct {
 
 func newStack(t *testing.T) *testStack {
 	t.Helper()
+
 	store := inmem.NewEventStore()
 	factory := service.NewFactory(
 		service.WithTransactor(inmem.NewTransactor()),
@@ -60,6 +61,7 @@ func newStack(t *testing.T) *testStack {
 	divisions := projection.NewIncidentDivisionHandler()
 	messages := projection.NewMessageHandler()
 	proj := projection.NewProjector(store, []projection.Handler{incidents, divisions, messages})
+
 	return &testStack{
 		factory:   factory,
 		store:     store,
@@ -73,6 +75,7 @@ func newStack(t *testing.T) *testStack {
 func (s *testStack) incidentSvc() inbound.IncidentService {
 	store := eventstore.NewIncidentRepository(s.store)
 	layers := eventstore.NewLayerRepository(s.store)
+
 	return s.factory.IncidentService(store, layers)
 }
 
@@ -80,6 +83,7 @@ func (s *testStack) messageSvc() (inbound.IncidentService, inbound.MessageServic
 	incidentRepo := eventstore.NewIncidentRepository(s.store)
 	layerRepo := eventstore.NewLayerRepository(s.store)
 	messageRepo := eventstore.NewMessageRepository(s.store)
+
 	return s.factory.IncidentService(incidentRepo, layerRepo),
 		s.factory.MessageService(messageRepo, incidentRepo)
 }
@@ -320,9 +324,31 @@ func TestProjector_MessagesSegregatedByIncident(t *testing.T) {
 	res1, _ := incSvc.CreateIncident(ctx(), "I1", nil, nil, nil, testActor)
 	res2, _ := incSvc.CreateIncident(ctx(), "I2", nil, nil, nil, testActor)
 
-	_, err := msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg A", "S", "", "R", "", shared.MediumRadio, nil, testActor)
+	_, err := msgSvc.RecordMessage(
+		ctx(),
+		res1.IncidentID,
+		"Msg A",
+		"S",
+		"",
+		"R",
+		"",
+		shared.MediumRadio,
+		nil,
+		testActor,
+	)
 	require.NoError(t, err)
-	_, err = msgSvc.RecordMessage(ctx(), res1.IncidentID, "Msg B", "S", "555-1111", "R", "555-2222", shared.MediumPhone, nil, testActor)
+	_, err = msgSvc.RecordMessage(
+		ctx(),
+		res1.IncidentID,
+		"Msg B",
+		"S",
+		"555-1111",
+		"R",
+		"555-2222",
+		shared.MediumPhone,
+		nil,
+		testActor,
+	)
 	require.NoError(t, err)
 	_, err = msgSvc.RecordMessage(ctx(), res2.IncidentID, "Msg C", "S", "", "R", "", shared.MediumRadio, nil, testActor)
 	require.NoError(t, err)

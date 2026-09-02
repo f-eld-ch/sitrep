@@ -20,6 +20,7 @@ func TestActorFrom(t *testing.T) {
 
 	t.Run("preserves values from the parent context", func(t *testing.T) {
 		type parentKey struct{}
+
 		parent := context.WithValue(context.Background(), parentKey{}, "request-value")
 
 		ctx := WithActor(parent, Actor{Sub: "oidc-subject"})
@@ -37,7 +38,7 @@ func TestActorFrom(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			actor, err := ActorFrom(test.ctx)
 
-			assert.ErrorIs(t, err, ErrUnauthenticated)
+			require.ErrorIs(t, err, ErrUnauthenticated)
 			assert.Equal(t, Actor{}, actor)
 		})
 	}

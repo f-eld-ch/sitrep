@@ -5,6 +5,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -59,9 +60,12 @@ func (s *EventStore) Load(ctx context.Context, streamType string, id uuid.UUID) 
 	defer rows.Close()
 
 	var events []eventsourcing.Event
+
 	for rows.Next() {
-		var e eventsourcing.Event
-		var rawData, rawMeta []byte
+		var (
+			e                eventsourcing.Event
+			rawData, rawMeta []byte
+		)
 		if err := rows.Scan(
 			&e.StreamType, &e.StreamID, &e.Version, &e.EventType,
 			&rawData, &rawMeta,
@@ -69,12 +73,15 @@ func (s *EventStore) Load(ctx context.Context, streamType string, id uuid.UUID) 
 		); err != nil {
 			return nil, fmt.Errorf("eventstore.Load scan: %w", err)
 		}
+
 		e.Data = json.RawMessage(rawData)
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal(rawMeta, &e.Metadata)
 		}
+
 		events = append(events, e)
 	}
+
 	return events, rows.Err()
 }
 
@@ -90,18 +97,23 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 	}
 
 	var lastCursor outbound.Cursor
+
 	for _, e := range pending {
 		data, err := json.Marshal(e.Data)
 		if err != nil {
 			return nil, fmt.Errorf("eventstore.Append marshal data: %w", err)
 		}
+
 		meta, err := json.Marshal(e.Metadata)
 		if err != nil {
 			return nil, fmt.Errorf("eventstore.Append marshal meta: %w", err)
 		}
 
-		var xid pgtype.Uint64
-		var seq int64
+		var (
+			xid pgtype.Uint64
+			seq int64
+		)
+
 		err = tx.QueryRow(ctx, `
 			INSERT INTO eventsourcing.events
 			  (stream_type, stream_id, version, event_type, data, metadata, occurred_at)
@@ -114,8 +126,10 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 				return nil, fmt.Errorf("%w: stream %s/%s version %d",
 					errOptimisticConflict, e.StreamType, e.StreamID, e.Version)
 			}
+
 			return nil, fmt.Errorf("eventstore.Append insert: %w", err)
 		}
+
 		lastCursor = encodeCursor(xid.Uint64, seq)
 
 		if e.Version == 1 {
@@ -132,10 +146,15 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 	}
 
 	a.Root().ClearPending()
+
 	return lastCursor, nil
 }
 
-func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int) ([]eventsourcing.Event, outbound.Cursor, error) {
+func (s *EventStore) Read(
+	ctx context.Context,
+	after outbound.Cursor,
+	limit int,
+) ([]eventsourcing.Event, outbound.Cursor, error) {
 	afterXID, afterSeq := decodeCursor(after)
 
 	rows, err := s.pool.Query(ctx, `
@@ -152,13 +171,18 @@ func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int)
 	}
 	defer rows.Close()
 
-	var events []eventsourcing.Event
-	var cursor outbound.Cursor
+	var (
+		events []eventsourcing.Event
+		cursor outbound.Cursor
+	)
+
 	for rows.Next() {
-		var e eventsourcing.Event
-		var rawData, rawMeta []byte
-		var xid pgtype.Uint64
-		var seq int64
+		var (
+			e                eventsourcing.Event
+			rawData, rawMeta []byte
+			xid              pgtype.Uint64
+			seq              int64
+		)
 		if err := rows.Scan(
 			&e.StreamType, &e.StreamID, &e.Version, &e.EventType,
 			&rawData, &rawMeta,
@@ -167,19 +191,24 @@ func (s *EventStore) Read(ctx context.Context, after outbound.Cursor, limit int)
 		); err != nil {
 			return nil, nil, fmt.Errorf("eventstore.Read scan: %w", err)
 		}
+
 		e.Data = json.RawMessage(rawData)
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal(rawMeta, &e.Metadata)
 		}
+
 		events = append(events, e)
 		cursor = encodeCursor(xid.Uint64, seq)
 	}
+
 	if rows.Err() != nil {
 		return nil, nil, rows.Err()
 	}
+
 	if cursor == nil {
 		cursor = after
 	}
+
 	return events, cursor, nil
 }
 
@@ -206,11 +235,13 @@ func (t *Transactor) WithinTx(ctx context.Context, fn func(context.Context) erro
 	if err != nil {
 		return fmt.Errorf("transactor: begin: %w", err)
 	}
+
 	txCtx := context.WithValue(ctx, txKey{}, tx)
 	if err := fn(txCtx); err != nil {
 		_ = tx.Rollback(ctx)
 		return err
 	}
+
 	return tx.Commit(ctx)
 }
 
@@ -221,6 +252,7 @@ func TxFromCtx(ctx context.Context) (pgx.Tx, error) {
 	if !ok || tx == nil {
 		return nil, fmt.Errorf("postgres eventstore: no transaction in context; call WithinTx first")
 	}
+
 	return tx, nil
 }
 
@@ -239,6 +271,7 @@ func NewNotifier(pool *pgxpool.Pool, channel string) *Notifier {
 	if channel == "" {
 		channel = "events"
 	}
+
 	return &Notifier{pool: pool, channel: channel}
 }
 
@@ -250,26 +283,31 @@ func (n *Notifier) Notify(ctx context.Context) error {
 func (n *Notifier) EnsureListening(ctx context.Context) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+
 	return n.ensureListeningLocked(ctx)
 }
 
 func (n *Notifier) Wait(ctx context.Context) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+
 	if err := n.ensureListeningLocked(ctx); err != nil {
 		return err
 	}
+
 	_, err := n.conn.Conn().WaitForNotification(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 		n.conn.Release()
 		n.conn = nil
 	}
+
 	return err
 }
 
 func (n *Notifier) Close() {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+
 	if n.conn != nil {
 		n.conn.Release()
 		n.conn = nil
@@ -280,15 +318,19 @@ func (n *Notifier) ensureListeningLocked(ctx context.Context) error {
 	if n.conn != nil {
 		return nil
 	}
+
 	conn, err := n.pool.Acquire(ctx)
 	if err != nil {
 		return err
 	}
+
 	if _, err := conn.Exec(ctx, fmt.Sprintf("LISTEN %s", n.channel)); err != nil {
 		conn.Release()
 		return err
 	}
+
 	n.conn = conn
+
 	return nil
 }
 
@@ -323,15 +365,15 @@ func isUniqueViolation(err error) bool {
 	if errors.As(err, &pgErr) {
 		return pgErr.SQLState() == "23505"
 	}
+
 	return false
 }
 
 func encodeCursor(xid uint64, seq int64) outbound.Cursor {
 	b := make([]byte, 16)
-	b[0], b[1], b[2], b[3] = byte(xid>>56), byte(xid>>48), byte(xid>>40), byte(xid>>32)
-	b[4], b[5], b[6], b[7] = byte(xid>>24), byte(xid>>16), byte(xid>>8), byte(xid)
-	b[8], b[9], b[10], b[11] = byte(seq>>56), byte(seq>>48), byte(seq>>40), byte(seq>>32)
-	b[12], b[13], b[14], b[15] = byte(seq>>24), byte(seq>>16), byte(seq>>8), byte(seq)
+	binary.BigEndian.PutUint64(b, xid)
+	binary.BigEndian.PutUint64(b[8:], uint64(seq)) // #nosec G115 -- sequence counter is nonnegative
+
 	return b
 }
 
@@ -339,9 +381,11 @@ func decodeCursor(c outbound.Cursor) (xid uint64, seq int64) {
 	if len(c) < 16 {
 		return 0, 0
 	}
+
 	xid = uint64(c[0])<<56 | uint64(c[1])<<48 | uint64(c[2])<<40 | uint64(c[3])<<32 |
 		uint64(c[4])<<24 | uint64(c[5])<<16 | uint64(c[6])<<8 | uint64(c[7])
 	seq = int64(c[8])<<56 | int64(c[9])<<48 | int64(c[10])<<40 | int64(c[11])<<32 |
 		int64(c[12])<<24 | int64(c[13])<<16 | int64(c[14])<<8 | int64(c[15])
+
 	return
 }

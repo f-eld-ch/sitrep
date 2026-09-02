@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"sync"
 
 	"github.com/google/uuid"
@@ -40,6 +41,7 @@ func (r *LayerRow) GeoJSON() json.RawMessage {
 		Geometry   json.RawMessage `json:"geometry"`
 		Properties json.RawMessage `json:"properties"`
 	}
+
 	features := make([]feature, 0, len(r.Features))
 	for id, f := range r.Features {
 		features = append(features, feature{
@@ -49,11 +51,17 @@ func (r *LayerRow) GeoJSON() json.RawMessage {
 			Properties: f.Properties,
 		})
 	}
+
 	type collection struct {
 		Type     string    `json:"type"`
 		Features []feature `json:"features"`
 	}
-	b, _ := json.Marshal(collection{Type: "FeatureCollection", Features: features})
+
+	b, err := json.Marshal(collection{Type: "FeatureCollection", Features: features})
+	if err != nil {
+		panic(fmt.Sprintf("marshal layer GeoJSON: %v", err))
+	}
+
 	return b
 }
 
@@ -73,7 +81,9 @@ func (h *LayerFeaturesHandler) Version() int { return 1 }
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.rows = make(map[uuid.UUID]*LayerRow)
+
 	return nil
 }
 
@@ -90,6 +100,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -103,6 +114,7 @@ func (h *LayerFeaturesHandler) Apply(_ context.Context, e eventsourcing.Event) e
 	case "Feature":
 		return h.applyFeatureEvent(e)
 	}
+
 	return nil
 }
 
@@ -117,10 +129,12 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		incidentID, err := uuid.Parse(d.IncidentID)
 		if err != nil {
 			return err
 		}
+
 		h.rows[id] = &LayerRow{
 			ID:         id,
 			IncidentID: incidentID,
@@ -135,6 +149,7 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if row := h.rows[id]; row != nil {
 			row.Name = d.Name
 		}
@@ -144,6 +159,7 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 			row.Removed = true
 		}
 	}
+
 	return nil
 }
 
@@ -159,14 +175,17 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		layerID, err := uuid.Parse(d.LayerID)
 		if err != nil {
 			return err
 		}
+
 		row := h.rows[layerID]
 		if row == nil {
 			return fmt.Errorf("inmem LayerFeaturesHandler: layer %s not found for feature %s", layerID, featureID)
 		}
+
 		row.Features[featureID] = featureItem{Geometry: d.Geometry, Properties: d.Properties}
 		row.Revision++
 
@@ -177,10 +196,12 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		row, f, ok := h.findFeature(featureID)
 		if !ok {
 			return nil
 		}
+
 		f.Geometry = d.Geometry
 		row.Features[featureID] = f
 		row.Revision++
@@ -192,10 +213,12 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		row, f, ok := h.findFeature(featureID)
 		if !ok {
 			return nil
 		}
+
 		f.Properties = d.Properties
 		row.Features[featureID] = f
 		row.Revision++
@@ -205,9 +228,11 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 		if !ok {
 			return nil
 		}
+
 		delete(row.Features, featureID)
 		row.Revision++
 	}
+
 	return nil
 }
 
@@ -218,6 +243,7 @@ func (h *LayerFeaturesHandler) findFeature(featureID uuid.UUID) (*LayerRow, feat
 			return row, f, true
 		}
 	}
+
 	return nil, featureItem{}, false
 }
 
@@ -225,17 +251,18 @@ func (h *LayerFeaturesHandler) findFeature(featureID uuid.UUID) (*LayerRow, feat
 func (h *LayerFeaturesHandler) ForIncident(incidentID uuid.UUID) []*LayerRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	var out []*LayerRow
+
 	for _, row := range h.rows {
 		if row.IncidentID == incidentID && !row.Removed {
 			cp := *row
 			features := make(map[uuid.UUID]featureItem, len(row.Features))
-			for k, v := range row.Features {
-				features[k] = v
-			}
+			maps.Copy(features, row.Features)
 			cp.Features = features
 			out = append(out, &cp)
 		}
 	}
+
 	return out
 }

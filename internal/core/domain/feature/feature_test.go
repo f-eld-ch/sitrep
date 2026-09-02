@@ -24,16 +24,21 @@ var (
 
 func placed(id shared.FeatureID) eventsourcing.Event {
 	f := feature.New(id)
-	require.NoError(nil, f.Place(incidentID, layerID, geom, props, actor, at))
+	if err := f.Place(incidentID, layerID, geom, props, actor, at); err != nil {
+		panic(err)
+	}
+
 	return f.Root().PendingEvents()[0]
 }
 
 func replay(t *testing.T, id shared.FeatureID, events []eventsourcing.Event) *feature.Feature {
 	t.Helper()
+
 	f := feature.New(id)
 	for _, e := range events {
 		require.NoError(t, eventsourcing.Apply(f, e))
 	}
+
 	return f
 }
 
@@ -44,6 +49,7 @@ func TestFeature_Place(t *testing.T) {
 		f := feature.New(id)
 		err := f.Place(incidentID, layerID, geom, props, actor, at)
 		require.NoError(t, err)
+
 		pending := f.Root().PendingEvents()
 		require.Len(t, pending, 1)
 		assert.Equal(t, "Placed", pending[0].EventType)

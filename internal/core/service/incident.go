@@ -61,6 +61,7 @@ func (s *IncidentService) CreateIncident(
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CreateIncident",
 		trace.WithAttributes(attribute.String("incident.name", name)))
 	defer span.End()
+
 	slog.DebugContext(ctx, "creating incident", "name", name, "actor", actor.Sub)
 
 	if len(layerNames) == 0 {
@@ -88,6 +89,7 @@ func (s *IncidentService) CreateIncident(
 		if err := inc.Open(name, location, divisions, at, actor.Sub); err != nil {
 			return err
 		}
+
 		if _, err := s.repo.Save(ctx, inc); err != nil {
 			return err
 		}
@@ -98,21 +100,26 @@ func (s *IncidentService) CreateIncident(
 			if err := l.Create(incID, layerName, actor.Sub, at); err != nil {
 				return fmt.Errorf("create layer %q: %w", layerName, err)
 			}
+
 			if _, err := s.layers.Save(ctx, l); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "CreateIncident", err, "name", name)
+
 		return inbound.CreateIncidentResult{}, err
 	}
+
 	span.SetAttributes(attribute.String("incident.id", incID.String()))
 	slog.DebugContext(ctx, "incident created", "incident_id", incID, "layers", len(layerIDs))
 	_ = s.notifier.Notify(ctx)
+
 	return inbound.CreateIncidentResult{
 		IncidentID: incID,
 		LayerIDs:   layerIDs,
@@ -135,25 +142,31 @@ func (s *IncidentService) UpdateIncident(
 	ctx, span := s.tracer.Start(ctx, "IncidentService.UpdateIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "updating incident", "incident_id", id, "actor", actor.Sub)
 
 	at := s.clock.Now()
+
 	var state inbound.IncidentState
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if name != nil {
 			if err := inc.Rename(*name, actor.Sub, at); err != nil {
 				return err
 			}
 		}
+
 		if location != nil {
 			if err := inc.ChangeLocation(location, actor.Sub, at); err != nil {
 				return err
 			}
 		}
+
 		if divisions != nil {
 			// pre-generate IDs for new divisions
 			for i := range divisions {
@@ -161,32 +174,45 @@ func (s *IncidentService) UpdateIncident(
 					divisions[i].ID = shared.DivisionID(s.ids.New())
 				}
 			}
+
 			if err := inc.UpdateDivisions(divisions, actor.Sub, at); err != nil {
 				return err
 			}
 		}
+
 		if _, err = s.repo.Save(ctx, inc); err != nil {
 			return err
 		}
+
 		state = incidentToState(inc, at)
+
 		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "UpdateIncident", err, "id", id)
+
 		return inbound.IncidentState{}, err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return state, nil
 }
 
 // CloseIncident closes the incident.
-func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
+func (s *IncidentService) CloseIncident(
+	ctx context.Context,
+	id shared.IncidentID,
+	actor identity.Actor,
+) (inbound.IncidentState, error) {
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CloseIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "closing incident", "incident_id", id, "actor", actor.Sub)
+
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
@@ -194,15 +220,22 @@ func (s *IncidentService) CloseIncident(ctx context.Context, id shared.IncidentI
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
+
 	return state, err
 }
 
 // ReopenIncident reopens a closed incident.
-func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (inbound.IncidentState, error) {
+func (s *IncidentService) ReopenIncident(
+	ctx context.Context,
+	id shared.IncidentID,
+	actor identity.Actor,
+) (inbound.IncidentState, error) {
 	ctx, span := s.tracer.Start(ctx, "IncidentService.ReopenIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "reopening incident", "incident_id", id, "actor", actor.Sub)
+
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
@@ -210,6 +243,7 @@ func (s *IncidentService) ReopenIncident(ctx context.Context, id shared.Incident
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
+
 	return state, err
 }
 
@@ -218,7 +252,9 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 	ctx, span := s.tracer.Start(ctx, "IncidentService.DeleteIncident",
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "deleting incident", "incident_id", id, "actor", actor.Sub)
+
 	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
@@ -226,31 +262,44 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
+
 	return err
 }
 
-func (s *IncidentService) writeIncident(ctx context.Context, id shared.IncidentID, fn func(*incident.Incident) error) (inbound.IncidentState, error) {
+func (s *IncidentService) writeIncident(
+	ctx context.Context,
+	id shared.IncidentID,
+	fn func(*incident.Incident) error,
+) (inbound.IncidentState, error) {
 	at := s.clock.Now()
+
 	var state inbound.IncidentState
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if err := fn(inc); err != nil {
 			return err
 		}
+
 		if _, err = s.repo.Save(ctx, inc); err != nil {
 			return err
 		}
+
 		state = incidentToState(inc, at)
+
 		return nil
 	})
 	if err != nil {
 		logIfUnexpected(ctx, "writeIncident", err, "id", id)
 		return inbound.IncidentState{}, err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return state, nil
 }
 
@@ -260,6 +309,7 @@ func (s *IncidentService) LoadIncident(ctx context.Context, id shared.IncidentID
 	if err != nil {
 		return nil, shared.ErrNotFound
 	}
+
 	return s.repo.Load(ctx, shared.IncidentID(idVal))
 }
 
@@ -277,8 +327,10 @@ func incidentToState(inc *incident.Incident, updatedAt time.Time) inbound.Incide
 	if l := inc.Location(); l != nil {
 		state.Location = &incident.LocationData{Name: l.Name, Coordinates: l.Coordinates}
 	}
+
 	for _, d := range inc.Divisions() {
 		state.Divisions = append(state.Divisions, incident.DivisionData(d))
 	}
+
 	return state
 }

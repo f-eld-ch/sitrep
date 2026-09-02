@@ -58,33 +58,43 @@ func (s *FeatureService) PlaceFeature(
 			attribute.String("layer.id", layerID.String()),
 		))
 	defer span.End()
+
 	slog.DebugContext(ctx, "placing feature", "feature_id", id, "layer_id", layerID, "actor", actor.Sub)
 
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
+
 		l, err := s.layers.Load(ctx, layerID)
 		if err != nil {
 			return err
 		}
+
 		if l.IncidentID() != incidentID {
 			return shared.ValidationError{Field: "layerId", Message: "layer does not belong to this incident"}
 		}
+
 		f := feature.New(id)
 		if err := f.Place(incidentID, layerID, geometry, properties, actor.Sub, at); err != nil {
 			return err
 		}
+
 		_, err = s.repo.Save(ctx, f)
+
 		return err
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+
 		return err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return nil
 }
 
@@ -101,9 +111,11 @@ func (s *FeatureService) ModifyFeature(
 	ctx, span := s.tracer.Start(ctx, "FeatureService.ModifyFeature",
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "modifying feature", "feature_id", id, "actor", actor.Sub)
 
 	var state inbound.FeatureState
+
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		at := s.clock.Now()
 		if geometry != nil {
@@ -111,23 +123,28 @@ func (s *FeatureService) ModifyFeature(
 				return err
 			}
 		}
+
 		if properties != nil {
 			if err := f.Restyle(properties, actor.Sub, at); err != nil {
 				return err
 			}
 		}
+
 		state = inbound.FeatureState{
 			ID:         id,
 			Geometry:   f.Geometry(),
 			Properties: f.Properties(),
 		}
+
 		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
+
 		return inbound.FeatureState{}, err
 	}
+
 	return state, nil
 }
 
@@ -136,6 +153,7 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 	ctx, span := s.tracer.Start(ctx, "FeatureService.RemoveFeature",
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
+
 	slog.DebugContext(ctx, "removing feature", "feature_id", id, "actor", actor.Sub)
 
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
@@ -145,6 +163,7 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
+
 	return err
 }
 
@@ -154,19 +173,25 @@ func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, 
 		if err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, f.IncidentID()); err != nil {
 			return err
 		}
+
 		if err := fn(f); err != nil {
 			return err
 		}
+
 		_, err = s.repo.Save(ctx, f)
+
 		return err
 	})
 	if err != nil {
 		return err
 	}
+
 	_ = s.notifier.Notify(ctx)
+
 	return nil
 }
 
@@ -175,8 +200,10 @@ func (s *FeatureService) requireIncidentOpen(ctx context.Context, incidentID sha
 	if err != nil {
 		return err
 	}
+
 	if !inc.IsOpen() {
 		return shared.ErrIncidentNotOpen
 	}
+
 	return nil
 }

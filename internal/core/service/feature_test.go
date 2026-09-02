@@ -23,6 +23,7 @@ func TestFeatureService_PlaceMoveRestyle(t *testing.T) {
 
 	res, err := incidentSvc.CreateIncident(ctx(), "Lagebild", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
+
 	layerID := res.LayerIDs[0]
 	_ = layerSvc // used via incidentSvc; avoid unused-variable error
 
@@ -78,14 +79,23 @@ func TestFeatureService_RejectsWritesOnClosedIncident(t *testing.T) {
 
 	res, err := incidentSvc.CreateIncident(ctx(), "Closed", nil, nil, []string{"Lage"}, testActor)
 	require.NoError(t, err)
+
 	featureID := shared.FeatureID(newID())
-	err = featureSvc.PlaceFeature(ctx(), featureID, res.IncidentID, res.LayerIDs[0], testGeometry, testProperties, testActor)
+	err = featureSvc.PlaceFeature(
+		ctx(),
+		featureID,
+		res.IncidentID,
+		res.LayerIDs[0],
+		testGeometry,
+		testProperties,
+		testActor,
+	)
 	require.NoError(t, err)
 	_, err = incidentSvc.CloseIncident(ctx(), res.IncidentID, testActor)
 	require.NoError(t, err)
 
 	_, err = featureSvc.ModifyFeature(ctx(), featureID, testGeometry, nil, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	err = featureSvc.RemoveFeature(ctx(), featureID, testActor)
-	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }

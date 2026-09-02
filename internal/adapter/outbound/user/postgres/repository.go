@@ -30,5 +30,6 @@ func (r *Repository) Upsert(ctx context.Context, sub, email, name string) error 
 		 ON CONFLICT ON CONSTRAINT users_name_key
 		 DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()`,
 		sub, email, name)
+
 	return err
 }

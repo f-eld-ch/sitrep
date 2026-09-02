@@ -40,9 +40,10 @@ type stack struct {
 // without a running database).
 func buildStack(ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint) (*stack, error) {
 	if dsn == "" {
-		slog.WarnContext(ctx, "No database_url set, using in-memory stores (data will not persist)")
+		slog.WarnContext(ctx, "no database_url set, using in-memory stores (data will not persist)")
 		return buildInmemStack(ctx)
 	}
+
 	return buildPostgresStack(ctx, dsn, autoCloseDays, autoArchiveDays)
 }
 
@@ -53,6 +54,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	if err != nil {
 		return nil, err
 	}
+
 	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
 	// The projector leader holds one connection for the advisory lock for its
 	// entire lifetime; Notifier.Wait keeps one persistent LISTEN connection. The pgx default of
@@ -60,10 +62,12 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	if cfg.MaxConns < 8 {
 		cfg.MaxConns = 8
 	}
+
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, err
@@ -103,9 +107,11 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		})), "postgres")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
+
 	projDone := make(chan struct{})
 	go func() {
 		defer close(projDone)
+
 		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
 			slog.ErrorContext(projCtx, "projector stopped unexpectedly", "error", err)
 		}
@@ -158,9 +164,11 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
+
 	projDone := make(chan struct{})
 	go func() {
 		defer close(projDone)
+
 		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
 			slog.ErrorContext(projCtx, "projector stopped unexpectedly", "error", err)
 		}

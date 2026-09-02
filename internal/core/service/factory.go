@@ -43,6 +43,7 @@ func NewFactory(opts ...FactoryOption) *Factory {
 	for _, o := range opts {
 		o(f)
 	}
+
 	return f
 }
 
@@ -52,7 +53,10 @@ func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbo
 }
 
 // MessageService creates a ready-to-use MessageService.
-func (f *Factory) MessageService(repo outbound.MessageRepository, incidents outbound.IncidentRepository) *MessageService {
+func (f *Factory) MessageService(
+	repo outbound.MessageRepository,
+	incidents outbound.IncidentRepository,
+) *MessageService {
 	return NewMessageService(f.tx, repo, incidents, f.counter, f.clock, f.ids, f.notifier)
 }
 
@@ -62,6 +66,10 @@ func (f *Factory) LayerService(repo outbound.LayerRepository, incidents outbound
 }
 
 // FeatureService creates a ready-to-use FeatureService.
-func (f *Factory) FeatureService(repo outbound.FeatureRepository, incidents outbound.IncidentRepository, layers outbound.LayerRepository) *FeatureService {
+func (f *Factory) FeatureService(
+	repo outbound.FeatureRepository,
+	incidents outbound.IncidentRepository,
+	layers outbound.LayerRepository,
+) *FeatureService {
 	return NewFeatureService(f.tx, repo, incidents, layers, f.clock, f.notifier)
 }

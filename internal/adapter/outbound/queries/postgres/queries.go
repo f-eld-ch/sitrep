@@ -37,6 +37,7 @@ func NewQueries(pool *pgxpool.Pool) *Queries {
 
 func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing incidents")
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
@@ -48,13 +49,16 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	defer rows.Close()
 
 	var out []*outbound.IncidentRM
+
 	for rows.Next() {
 		inc, err := scanIncident(rows)
 		if err != nil {
 			return nil, err
 		}
+
 		out = append(out, inc)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -62,12 +66,15 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	if err := q.loadDivisions(ctx, out); err != nil {
 		return nil, err
 	}
+
 	slog.DebugContext(ctx, "listed incidents", "count", len(out))
+
 	return out, nil
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "getting incident", "id", id)
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM rm_incident
@@ -81,12 +88,15 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 		if err := rows.Err(); err != nil {
 			return nil, err
 		}
+
 		return nil, shared.ErrNotFound
 	}
+
 	inc, err := scanIncident(rows)
 	if err != nil {
 		return nil, err
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -94,6 +104,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 	if err := q.loadDivisions(ctx, []*outbound.IncidentRM{inc}); err != nil {
 		return nil, err
 	}
+
 	return inc, nil
 }
 
@@ -114,6 +125,7 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 	if err := row.Scan(&id, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON); err != nil {
 		return nil, err
 	}
+
 	inc := &outbound.IncidentRM{
 		ID:        id,
 		Name:      name,
@@ -122,13 +134,16 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
+
 	if len(locJSON) > 0 {
 		loc, err := parseLocation(locJSON)
 		if err != nil {
 			return nil, fmt.Errorf("parse location for incident %s: %w", id, err)
 		}
+
 		inc.Location = loc
 	}
+
 	return inc, nil
 }
 
@@ -137,7 +152,9 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 	if len(incidents) == 0 {
 		return nil
 	}
+
 	ids := make([]uuid.UUID, len(incidents))
+
 	idx := make(map[uuid.UUID]*outbound.IncidentRM, len(incidents))
 	for i, inc := range incidents {
 		ids[i] = inc.ID
@@ -165,6 +182,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 		if err := rows.Scan(&divID, &incidentID, &name, &desc, &removedAt); err != nil {
 			return err
 		}
+
 		if inc, ok := idx[incidentID]; ok {
 			inc.Divisions = append(inc.Divisions, &outbound.DivisionRM{
 				ID:          divID,
@@ -174,6 +192,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 			})
 		}
 	}
+
 	return rows.Err()
 }
 
@@ -183,6 +202,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
@@ -194,11 +214,13 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 		return nil, err
 	}
 	defer rows.Close()
+
 	return collectMessages(rows)
 }
 
 func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "getting message", "id", id)
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
@@ -214,15 +236,19 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	if err != nil {
 		return nil, err
 	}
+
 	if len(msgs) == 0 {
 		return nil, shared.ErrNotFound
 	}
+
 	return msgs[0], nil
 }
 
 func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 	defer rows.Close()
+
 	var out []*outbound.MessageRM
+
 	for rows.Next() {
 		var (
 			id             uuid.UUID
@@ -248,6 +274,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 		); err != nil {
 			return nil, err
 		}
+
 		out = append(out, &outbound.MessageRM{
 			ID:             id,
 			Number:         number,
@@ -266,6 +293,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 			DivisionIDs:    divisionIDs,
 		})
 	}
+
 	return out, rows.Err()
 }
 
@@ -275,6 +303,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, incident_id, name, geojson, revision
 		FROM rm_layer_features
@@ -286,6 +315,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	defer rows.Close()
 
 	var out []*outbound.LayerRM
+
 	for rows.Next() {
 		var (
 			id       uuid.UUID
@@ -297,6 +327,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 		if err := rows.Scan(&id, &incID, &name, &geojson, &revision); err != nil {
 			return nil, err
 		}
+
 		out = append(out, &outbound.LayerRM{
 			ID:         id,
 			IncidentID: incID,
@@ -305,6 +336,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 			Revision:   revision,
 		})
 	}
+
 	return out, rows.Err()
 }
 
@@ -322,6 +354,7 @@ func parseLocation(b []byte) (*outbound.LocationRM, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return nil, err
 	}
+
 	return &outbound.LocationRM{
 		Name:        raw.Name,
 		Coordinates: raw.Coordinates,

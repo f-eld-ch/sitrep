@@ -33,6 +33,7 @@ func (c fixedClock) Now() time.Time { return c.t }
 // underlying store so tests can verify persisted aggregate state.
 func testStack(t *testing.T) (*service.Factory, *inmem.EventStore) {
 	t.Helper()
+
 	store := inmem.NewEventStore()
 	factory := service.NewFactory(
 		service.WithTransactor(inmem.NewTransactor()),
@@ -41,6 +42,7 @@ func testStack(t *testing.T) (*service.Factory, *inmem.EventStore) {
 		service.WithNotifier(inmem.NewNotifier()),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
 	)
+
 	return factory, store
 }
 

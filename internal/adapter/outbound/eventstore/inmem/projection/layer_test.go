@@ -26,6 +26,7 @@ type layerStack struct {
 
 func newLayerStack(t *testing.T) *layerStack {
 	t.Helper()
+
 	store := inmem.NewEventStore()
 	factory := service.NewFactory(
 		service.WithTransactor(inmem.NewTransactor()),
@@ -41,6 +42,7 @@ func newLayerStack(t *testing.T) *layerStack {
 		projection.NewMessageHandler(),
 		layers,
 	})
+
 	return &layerStack{factory: factory, store: store, proj: proj, layers: layers}
 }
 
@@ -91,10 +93,12 @@ func TestLayerHandler_LayerCreatedExplicitly(t *testing.T) {
 
 	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
 	assert.Len(t, rows, 2, "default layer + explicitly created layer")
+
 	names := make([]string, len(rows))
 	for i, r := range rows {
 		names[i] = r.Name
 	}
+
 	assert.Contains(t, names, "Sector A")
 }
 
@@ -126,6 +130,7 @@ func TestLayerHandler_LayersSegregatedByIncident(t *testing.T) {
 
 	rowsA := s.layers.ForIncident(uuid.UUID(incA.IncidentID))
 	rowsB := s.layers.ForIncident(uuid.UUID(incB.IncidentID))
+
 	require.Len(t, rowsA, 1)
 	require.Len(t, rowsB, 1)
 	assert.Equal(t, "Map A", rowsA[0].Name)
@@ -149,7 +154,8 @@ func TestLayerHandler_FeaturePlaced(t *testing.T) {
 	layerID := inc.LayerIDs[0]
 	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	err = s.featureSvc().
+		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
@@ -169,11 +175,13 @@ func TestLayerHandler_FeaturePlaced_GeoJSONContainsFeature(t *testing.T) {
 	layerID := inc.LayerIDs[0]
 	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	err = s.featureSvc().
+		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	gj := s.layers.ForIncident(uuid.UUID(inc.IncidentID))[0].GeoJSON()
+
 	var fc struct {
 		Type     string `json:"type"`
 		Features []struct {
@@ -196,7 +204,8 @@ func TestLayerHandler_FeatureRemoved(t *testing.T) {
 	layerID := inc.LayerIDs[0]
 	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	err = s.featureSvc().
+		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
 	require.NoError(t, err)
 
 	err = s.featureSvc().RemoveFeature(ctx(), featureID, testActor)
@@ -220,8 +229,14 @@ func TestLayerHandler_MultipleFeatures_RevisionTracked(t *testing.T) {
 	f1 := shared.FeatureID(uuid.New())
 	f2 := shared.FeatureID(uuid.New())
 
-	require.NoError(t, s.featureSvc().PlaceFeature(ctx(), f1, inc.IncidentID, layerID, testGeometry, testProperties, testActor))
-	require.NoError(t, s.featureSvc().PlaceFeature(ctx(), f2, inc.IncidentID, layerID, testGeometry, testProperties, testActor))
+	require.NoError(
+		t,
+		s.featureSvc().PlaceFeature(ctx(), f1, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
+	)
+	require.NoError(
+		t,
+		s.featureSvc().PlaceFeature(ctx(), f2, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
+	)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
@@ -243,8 +258,8 @@ func TestLayerHandler_GeoJSON_EmptyLayer(t *testing.T) {
 	require.Len(t, rows, 1)
 
 	var fc struct {
-		Type     string        `json:"type"`
-		Features []interface{} `json:"features"`
+		Type     string `json:"type"`
+		Features []any  `json:"features"`
 	}
 	require.NoError(t, json.Unmarshal(rows[0].GeoJSON(), &fc))
 	assert.Equal(t, "FeatureCollection", fc.Type)

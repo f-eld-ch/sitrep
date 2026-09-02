@@ -22,6 +22,7 @@ func recordSpanError(span trace.Span, err error) {
 	if err == nil || errors.Is(err, context.Canceled) {
 		return
 	}
+
 	span.RecordError(err)
 	span.SetStatus(codes.Error, err.Error())
 }
@@ -49,6 +50,7 @@ func NewProjector(store outbound.EventStore, handlers []Handler) *Projector {
 	for _, h := range handlers {
 		cursors[h.Name()] = nil // start from the beginning
 	}
+
 	return &Projector{
 		store:    store,
 		handlers: handlers,
@@ -70,42 +72,59 @@ func (p *Projector) WithNotifier(n outbound.EventNotifier) *Projector {
 func (p *Projector) CatchUp(ctx context.Context) (err error) {
 	ctx, span := p.tracer.Start(ctx, "InmemProjector.CatchUp",
 		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+
 	defer func() {
-		recordSpanError(span, err)
+		if err == nil {
+			span.SetStatus(codes.Ok, "")
+		} else {
+			recordSpanError(span, err)
+		}
+
 		span.End()
 	}()
 
 	var totalApplied int
+
 	for _, h := range p.handlers {
 		cursor := p.cursors[h.Name()]
 		handlerApplied := 0
+
 		for {
-			events, next, err := p.store.Read(ctx, cursor, batchSize)
-			if err != nil {
-				return fmt.Errorf("inmem projector read for %s: %w", h.Name(), err)
+			events, next, readErr := p.store.Read(ctx, cursor, batchSize)
+			if readErr != nil {
+				return fmt.Errorf("inmem projector read for %s: %w", h.Name(), readErr)
 			}
+
 			if len(events) == 0 {
 				break
 			}
+
 			for _, e := range events {
 				if !h.Handles(e.StreamType, e.EventType) {
 					continue
 				}
+
 				if err := p.applyEvent(ctx, h, e); err != nil {
 					return fmt.Errorf("inmem projector %s apply %s/%s v%d: %w",
 						h.Name(), e.StreamType, e.EventType, e.Version, err)
 				}
+
 				handlerApplied++
 			}
+
 			p.cursors[h.Name()] = next
 			cursor = next
+
 			if len(events) < batchSize {
 				break
 			}
 		}
+
 		totalApplied += handlerApplied
 	}
+
 	span.SetAttributes(attribute.Int("projector.events.applied", totalApplied))
+
 	return nil
 }
 
@@ -118,8 +137,14 @@ func (p *Projector) applyEvent(ctx context.Context, h Handler, e eventsourcing.E
 			attribute.String("event.type", e.EventType),
 			attribute.Int("event.version", e.Version),
 		))
+
 	defer func() {
-		recordSpanError(span, err)
+		if err == nil {
+			span.SetStatus(codes.Ok, "")
+		} else {
+			recordSpanError(span, err)
+		}
+
 		span.End()
 	}()
 
@@ -131,8 +156,14 @@ func (p *Projector) applyEvent(ctx context.Context, h Handler, e eventsourcing.E
 func (p *Projector) Reset(ctx context.Context) (err error) {
 	ctx, span := p.tracer.Start(ctx, "InmemProjector.Reset",
 		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+
 	defer func() {
-		recordSpanError(span, err)
+		if err == nil {
+			span.SetStatus(codes.Ok, "")
+		} else {
+			recordSpanError(span, err)
+		}
+
 		span.End()
 	}()
 
@@ -140,8 +171,10 @@ func (p *Projector) Reset(ctx context.Context) (err error) {
 		if err := h.Reset(ctx); err != nil {
 			return fmt.Errorf("inmem projector reset %s: %w", h.Name(), err)
 		}
+
 		p.cursors[h.Name()] = nil
 	}
+
 	return p.CatchUp(ctx)
 }
 
@@ -171,6 +204,7 @@ func (p *Projector) Run(ctx context.Context) error {
 		default:
 			waitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 			_ = p.notifier.Wait(waitCtx)
+
 			cancel()
 		}
 

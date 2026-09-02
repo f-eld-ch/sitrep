@@ -42,6 +42,7 @@ func (r *IncidentRepository) Load(ctx context.Context, id shared.IncidentID) (*i
 	if err := loadAggregate(ctx, r.store, inc, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("incident repository load %s: %w", id, err)
 	}
+
 	return inc, nil
 }
 
@@ -50,6 +51,7 @@ func (r *IncidentRepository) Save(ctx context.Context, a *incident.Incident) (ou
 	if err != nil {
 		return nil, fmt.Errorf("incident repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -68,6 +70,7 @@ func (r *MessageRepository) Load(ctx context.Context, id shared.MessageID) (*mes
 	if err := loadAggregate(ctx, r.store, msg, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("message repository load %s: %w", id, err)
 	}
+
 	return msg, nil
 }
 
@@ -76,6 +79,7 @@ func (r *MessageRepository) Save(ctx context.Context, a *message.Message) (outbo
 	if err != nil {
 		return nil, fmt.Errorf("message repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -94,6 +98,7 @@ func (r *LayerRepository) Load(ctx context.Context, id shared.LayerID) (*layer.L
 	if err := loadAggregate(ctx, r.store, l, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("layer repository load %s: %w", id, err)
 	}
+
 	return l, nil
 }
 
@@ -102,6 +107,7 @@ func (r *LayerRepository) Save(ctx context.Context, a *layer.Layer) (outbound.Cu
 	if err != nil {
 		return nil, fmt.Errorf("layer repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -120,6 +126,7 @@ func (r *FeatureRepository) Load(ctx context.Context, id shared.FeatureID) (*fea
 	if err := loadAggregate(ctx, r.store, f, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("feature repository load %s: %w", id, err)
 	}
+
 	return f, nil
 }
 
@@ -128,6 +135,7 @@ func (r *FeatureRepository) Save(ctx context.Context, a *feature.Feature) (outbo
 	if err != nil {
 		return nil, fmt.Errorf("feature repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -140,13 +148,16 @@ func loadAggregate(ctx context.Context, store outbound.EventStore, a eventsourci
 	if err != nil {
 		return err
 	}
+
 	if len(events) == 0 {
 		return shared.ErrNotFound
 	}
+
 	for _, e := range events {
 		if err := eventsourcing.Apply(a, e); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }

@@ -21,16 +21,21 @@ var (
 
 func created(id shared.LayerID) eventsourcing.Event {
 	l := layer.New(id)
-	require.NoError(nil, l.Create(incidentID, "Lage", actor, at))
+	if err := l.Create(incidentID, "Lage", actor, at); err != nil {
+		panic(err)
+	}
+
 	return l.Root().PendingEvents()[0]
 }
 
 func replay(t *testing.T, id shared.LayerID, events []eventsourcing.Event) *layer.Layer {
 	t.Helper()
+
 	l := layer.New(id)
 	for _, e := range events {
 		require.NoError(t, eventsourcing.Apply(l, e))
 	}
+
 	return l
 }
 
@@ -41,6 +46,7 @@ func TestLayer_Create(t *testing.T) {
 		l := layer.New(id)
 		err := l.Create(incidentID, "Lage", actor, at)
 		require.NoError(t, err)
+
 		pending := l.Root().PendingEvents()
 		require.Len(t, pending, 1)
 		assert.Equal(t, "Created", pending[0].EventType)

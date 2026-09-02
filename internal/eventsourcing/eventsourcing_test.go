@@ -30,6 +30,7 @@ func newThing(id uuid.UUID) *thing {
 	a := &thing{}
 	a.root.SetID(id)
 	eventsourcing.Register(a, ThingCreated{}, ThingRenamed{}, ThingDeleted{})
+
 	return a
 }
 
@@ -44,6 +45,7 @@ func (a *thing) Transition(e eventsourcing.Event) error {
 	case ThingDeleted:
 		a.Deleted = true
 	}
+
 	return nil
 }
 
@@ -134,7 +136,9 @@ func TestClearPending_EmptiesQueue(t *testing.T) {
 func TestApply_DecodesJSONAndTransitions(t *testing.T) {
 	a := newThing(uuid.New())
 
-	raw, _ := json.Marshal(ThingCreated{Name: "decoded"})
+	raw, err := json.Marshal(ThingCreated{Name: "decoded"})
+	require.NoError(t, err)
+
 	e := eventsourcing.Event{
 		StreamType: "Thing",
 		StreamID:   a.Root().ID(),
@@ -153,7 +157,9 @@ func TestApply_AdvancesVersion(t *testing.T) {
 	a := newThing(uuid.New())
 
 	for i := 1; i <= 3; i++ {
-		raw, _ := json.Marshal(ThingRenamed{Name: "step"})
+		raw, err := json.Marshal(ThingRenamed{Name: "step"})
+		require.NoError(t, err)
+
 		e := eventsourcing.Event{
 			Version: i, EventType: "ThingRenamed",
 			Data: json.RawMessage(raw),
@@ -181,14 +187,16 @@ func TestApply_ConcreteDataSkipsDecoding(t *testing.T) {
 func TestApply_UnknownEventType_ReturnsError(t *testing.T) {
 	a := newThing(uuid.New())
 
-	raw, _ := json.Marshal(struct{}{})
+	raw, err := json.Marshal(struct{}{})
+	require.NoError(t, err)
+
 	e := eventsourcing.Event{
 		Version:   1,
 		EventType: "Unregistered",
 		Data:      json.RawMessage(raw),
 	}
 
-	err := eventsourcing.Apply(a, e)
+	err = eventsourcing.Apply(a, e)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown event type")
 }

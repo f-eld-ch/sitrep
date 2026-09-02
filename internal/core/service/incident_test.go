@@ -18,7 +18,7 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 
 		result, err := svc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
 		require.NoError(t, err)
-		assert.NotEqual(t, result.IncidentID, shared.IncidentID{})
+		assert.NotEqual(t, shared.IncidentID{}, result.IncidentID)
 		// default layer created when no layerNames supplied
 		assert.Len(t, result.LayerIDs, 1)
 	})
@@ -73,6 +73,7 @@ func TestIncidentService_CloseAndReopen(t *testing.T) {
 
 		result, err := svc.CreateIncident(ctx(), "Unfall", nil, nil, nil, testActor)
 		require.NoError(t, err)
+
 		id := result.IncidentID
 
 		_, err = svc.CloseIncident(ctx(), id, testActor)
@@ -160,6 +161,7 @@ func TestIncidentService_UpdateDivisions(t *testing.T) {
 
 	result, err := svc.CreateIncident(ctx(), "Übung", nil, nil, nil, testActor)
 	require.NoError(t, err)
+
 	id := result.IncidentID
 
 	newName := "Führungsstab"
@@ -169,6 +171,7 @@ func TestIncidentService_UpdateDivisions(t *testing.T) {
 
 	inc, err := svc.LoadIncident(ctx(), id)
 	require.NoError(t, err)
+
 	if assert.Len(t, inc.Divisions(), 1) {
 		assert.Equal(t, newName, inc.Divisions()[0].Name)
 	}

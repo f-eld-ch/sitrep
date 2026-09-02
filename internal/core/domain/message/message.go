@@ -41,6 +41,7 @@ func New(id shared.MessageID) *Message {
 	m := &Message{}
 	m.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(m, Recorded{}, Corrected{}, Triaged{}, Deleted{}, Imported{})
+
 	return m
 }
 
@@ -86,9 +87,11 @@ func (m *Message) Record(
 	if err := validateMessageFields(content, sender, senderDetail, receiver, receiverDetail, medium); err != nil {
 		return err
 	}
+
 	if err := validateMessageTime(msgTime, at); err != nil {
 		return err
 	}
+
 	eventsourcing.TrackChange(m, Recorded{
 		IncidentID:     incidentID,
 		Number:         number,
@@ -101,6 +104,7 @@ func (m *Message) Record(
 		Time:           msgTime,
 		AuthorSub:      authorSub,
 	}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -116,38 +120,54 @@ func (m *Message) Correct(
 	if m.deleted {
 		return shared.ErrNotFound
 	}
+
 	nextContent := m.content
 	if content != nil {
 		nextContent = *content
 	}
+
 	nextSender := m.sender
 	if sender != nil {
 		nextSender = *sender
 	}
+
 	nextSenderDetail := m.senderDetail
 	if senderDetail != nil {
 		nextSenderDetail = *senderDetail
 	}
+
 	nextReceiver := m.receiver
 	if receiver != nil {
 		nextReceiver = *receiver
 	}
+
 	nextReceiverDetail := m.receiverDetail
 	if receiverDetail != nil {
 		nextReceiverDetail = *receiverDetail
 	}
+
 	nextMedium := m.medium
 	if medium != nil {
 		nextMedium = *medium
 	}
-	if err := validateMessageFields(nextContent, nextSender, nextSenderDetail, nextReceiver, nextReceiverDetail, nextMedium); err != nil {
+
+	if err := validateMessageFields(
+		nextContent,
+		nextSender,
+		nextSenderDetail,
+		nextReceiver,
+		nextReceiverDetail,
+		nextMedium,
+	); err != nil {
 		return err
 	}
+
 	if msgTime != nil {
 		if err := validateMessageTime(*msgTime, at); err != nil {
 			return err
 		}
 	}
+
 	eventsourcing.TrackChange(m, Corrected{
 		Content:        content,
 		Sender:         sender,
@@ -158,6 +178,7 @@ func (m *Message) Correct(
 		Time:           msgTime,
 		EditorSub:      editorSub,
 	}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -173,15 +194,18 @@ func (m *Message) Triage(
 	if m.deleted {
 		return shared.ErrNotFound
 	}
+
 	if triage == shared.TriageMoreInfo {
 		priority = shared.PriorityNormal
 	}
+
 	eventsourcing.TrackChange(m, Triaged{
 		Triage:      triage,
 		Priority:    priority,
 		DivisionIDs: divisionIDs,
 		TriagedBy:   triagedBy,
 	}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -190,7 +214,9 @@ func (m *Message) Delete(reason shared.DeleteReason, actor string, at time.Time)
 	if m.deleted {
 		return shared.ErrNotFound
 	}
+
 	eventsourcing.TrackChange(m, Deleted{Reason: reason}, at, baseMeta(actor))
+
 	return nil
 }
 
@@ -216,24 +242,31 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		if d.Content != nil {
 			m.content = *d.Content
 		}
+
 		if d.Sender != nil {
 			m.sender = *d.Sender
 		}
+
 		if d.SenderDetail != nil {
 			m.senderDetail = *d.SenderDetail
 		}
+
 		if d.Receiver != nil {
 			m.receiver = *d.Receiver
 		}
+
 		if d.ReceiverDetail != nil {
 			m.receiverDetail = *d.ReceiverDetail
 		}
+
 		if d.Medium != nil {
 			m.medium = *d.Medium
 		}
+
 		if d.Time != nil {
 			m.time = *d.Time
 		}
+
 		m.lastEditorSub = &d.EditorSub
 	case Triaged:
 		m.triage = d.Triage
@@ -261,6 +294,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 	default:
 		return fmt.Errorf("message.Transition: unhandled event type %T", e.Data)
 	}
+
 	return nil
 }
 
@@ -274,20 +308,25 @@ func validateMessageFields(content, sender, senderDetail, receiver, receiverDeta
 	if strings.TrimSpace(content) == "" {
 		return shared.ValidationError{Field: "content", Message: "must not be empty"}
 	}
+
 	if strings.TrimSpace(sender) == "" {
 		return shared.ValidationError{Field: "sender", Message: "must not be empty"}
 	}
+
 	if strings.TrimSpace(receiver) == "" {
 		return shared.ValidationError{Field: "receiver", Message: "must not be empty"}
 	}
+
 	if medium == shared.MediumPhone || medium == shared.MediumEmail {
 		if strings.TrimSpace(senderDetail) == "" {
 			return shared.ValidationError{Field: "senderDetail", Message: "must not be empty"}
 		}
+
 		if strings.TrimSpace(receiverDetail) == "" {
 			return shared.ValidationError{Field: "receiverDetail", Message: "must not be empty"}
 		}
 	}
+
 	return nil
 }
 
@@ -295,6 +334,7 @@ func validateMessageTime(msgTime, at time.Time) error {
 	if msgTime.After(at.Add(maxMessageClockDrift)) {
 		return shared.ValidationError{Field: "time", Message: "must not be more than five minutes in the future"}
 	}
+
 	return nil
 }
 

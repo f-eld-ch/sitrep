@@ -39,7 +39,9 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 		for _, fn := range shutdownFuncs {
 			err = errors.Join(err, fn(ctx))
 		}
+
 		shutdownFuncs = nil
+
 		return err
 	}
 
@@ -67,6 +69,7 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	if err != nil {
 		return shutdown, err
 	}
+
 	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 
@@ -74,6 +77,7 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	if err != nil {
 		return shutdown, err
 	}
+
 	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
 	otel.SetMeterProvider(meterProvider)
 
@@ -81,6 +85,7 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	if err != nil {
 		return shutdown, err
 	}
+
 	shutdownFuncs = append(shutdownFuncs, loggerProvider.Shutdown)
 	global.SetLoggerProvider(loggerProvider)
 
@@ -107,6 +112,7 @@ func newTracerProvider(ctx context.Context, res *resource.Resource) (*trace.Trac
 	if err != nil {
 		return nil, err
 	}
+
 	return trace.NewTracerProvider(
 		trace.WithResource(res),
 		trace.WithBatcher(traceExporter),
@@ -118,6 +124,7 @@ func newMeterProvider(ctx context.Context, res *resource.Resource) (*metric.Mete
 	if err != nil {
 		return nil, err
 	}
+
 	return metric.NewMeterProvider(
 		metric.WithResource(res),
 		metric.WithReader(metric.NewPeriodicReader(metricExporter)),
@@ -136,9 +143,11 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.Logger
 	)
 
 	// Debug logs go to stdout only — never to the OTLP exporter.
-	minInfo := slogmulti.NewEnabledInlineMiddleware(func(_ context.Context, level slog.Level, next func(context.Context, slog.Level) bool) bool {
-		return level >= slog.LevelInfo && next(context.Background(), level)
-	})
+	minInfo := slogmulti.NewEnabledInlineMiddleware(
+		func(_ context.Context, level slog.Level, next func(context.Context, slog.Level) bool) bool {
+			return level >= slog.LevelInfo && next(context.Background(), level)
+		},
+	)
 	otlpHandler := slogmulti.Pipe(minInfo).Handler(
 		otelslog.NewHandler("github.com/f-eld-ch/sitrep",
 			otelslog.WithLoggerProvider(loggerProvider),

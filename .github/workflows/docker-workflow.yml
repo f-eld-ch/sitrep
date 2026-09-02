@@ -42,6 +42,21 @@ jobs:
       - name: Install Go dependencies
         run: go mod download
 
+      - name: Install Go Linter
+        uses: golangci/golangci-lint-action@v9.3.0
+        with:
+          install-only: true
+          version: v2.13.2
+
+      - name: Go Format
+        run: golangci-lint fmt ./...
+
+      - name: Go Lint
+        uses: golangci/golangci-lint-action@v9.3.0
+        with:
+          version: v2.13.2
+          args: --timeout=5m ./...
+
       - name: Go Test
         run: go test -coverprofile=go-coverage.out ./...
 

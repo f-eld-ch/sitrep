@@ -31,6 +31,7 @@ func newMigrateCmd(v *viper.Viper) *cobra.Command {
 		newMigrateStatusCmd(v),
 		newMigratePreflightCmd(v),
 	)
+
 	return migrateCmd
 }
 
@@ -38,32 +39,48 @@ func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("--database-url / DATABASE_URL is required for migrate commands")
 	}
+
 	cfg, err := pgx.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("parsing database URL: %w", err)
 	}
-	return openGooseDBWithRetry(ctx, gooseDBConnectWait, gooseDBConnectInterval, func(ctx context.Context) (*sql.DB, error) {
-		db := stdlib.OpenDB(*cfg)
-		pingCtx, cancel := context.WithTimeout(ctx, gooseDBPingTimeout)
-		defer cancel()
-		if err := db.PingContext(pingCtx); err != nil {
-			_ = db.Close()
-			return nil, err
-		}
-		return db, nil
-	})
+
+	return openGooseDBWithRetry(
+		ctx,
+		gooseDBConnectWait,
+		gooseDBConnectInterval,
+		func(ctx context.Context) (*sql.DB, error) {
+			db := stdlib.OpenDB(*cfg)
+
+			pingCtx, cancel := context.WithTimeout(ctx, gooseDBPingTimeout)
+			defer cancel()
+
+			if err := db.PingContext(pingCtx); err != nil {
+				_ = db.Close()
+				return nil, err
+			}
+
+			return db, nil
+		},
+	)
 }
 
-func openGooseDBWithRetry(ctx context.Context, wait, interval time.Duration, open func(context.Context) (*sql.DB, error)) (*sql.DB, error) {
+func openGooseDBWithRetry(
+	ctx context.Context,
+	wait, interval time.Duration,
+	open func(context.Context) (*sql.DB, error),
+) (*sql.DB, error) {
 	deadline := time.NewTimer(wait)
 	defer deadline.Stop()
 
 	var lastErr error
+
 	for {
 		db, err := open(ctx)
 		if err == nil {
 			return db, nil
 		}
+
 		lastErr = err
 		slog.InfoContext(ctx, "waiting for database connection", "error", err)
 
@@ -106,14 +123,26 @@ func runMigrateUp(cmd *cobra.Command, dsn string) error {
 		return err
 	}
 	defer func() { _ = db.Close() }()
+
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
 	}
+
 	results, err := p.Up(cmd.Context())
 	for _, r := range results {
-		slog.InfoContext(cmd.Context(), "migration applied", "version", r.Source.Version, "type", r.Source.Type, "duration", r.Duration)
+		slog.InfoContext(
+			cmd.Context(),
+			"migration applied",
+			"version",
+			r.Source.Version,
+			"type",
+			r.Source.Type,
+			"duration",
+			r.Duration,
+		)
 	}
+
 	return err
 }
 
@@ -133,15 +162,19 @@ func runMigrateDown(cmd *cobra.Command, dsn string) error {
 		return err
 	}
 	defer func() { _ = db.Close() }()
+
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
 	}
+
 	result, err := p.Down(cmd.Context())
 	if err != nil {
 		return err
 	}
+
 	slog.InfoContext(cmd.Context(), "migration rolled back", "version", result.Source.Version)
+
 	return nil
 }
 
@@ -161,21 +194,26 @@ func runMigrateStatus(cmd *cobra.Command, dsn string) error {
 		return err
 	}
 	defer func() { _ = db.Close() }()
+
 	p, err := gooseProvider(db)
 	if err != nil {
 		return err
 	}
+
 	statuses, err := p.Status(cmd.Context())
 	if err != nil {
 		return err
 	}
+
 	for _, s := range statuses {
 		state := "pending"
 		if s.State == goose.StateApplied {
 			state = "applied"
 		}
+
 		_, _ = fmt.Fprintf(os.Stdout, "%5d  %-8s  %s\n", s.Source.Version, state, s.Source.Path)
 	}
+
 	return nil
 }
 
@@ -200,13 +238,16 @@ func runMigratePreflight(cmd *cobra.Command, dsn string) error {
 	for _, w := range warnings {
 		slog.WarnContext(cmd.Context(), "preflight", "finding", w)
 	}
+
 	if err != nil {
 		return fmt.Errorf("preflight failed: %w", err)
 	}
+
 	if len(warnings) == 0 {
 		slog.InfoContext(cmd.Context(), "preflight: all checks passed — data is ready to import")
 	} else {
 		slog.InfoContext(cmd.Context(), "preflight: checks passed with warnings", "count", len(warnings))
 	}
+
 	return nil
 }

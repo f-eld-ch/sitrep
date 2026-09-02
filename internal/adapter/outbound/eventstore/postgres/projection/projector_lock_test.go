@@ -14,7 +14,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	pgprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
-	"github.com/f-eld-ch/sitrep/internal/eventsourcing" //nolint:typecheck // used by countingStore methods
+	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
 // countingStore wraps an in-memory event store and counts calls to Read.
@@ -32,7 +32,11 @@ func (s *countingStore) Append(ctx context.Context, a eventsourcing.Aggregate) (
 	return s.inner.Append(ctx, a)
 }
 
-func (s *countingStore) Read(ctx context.Context, cursor outbound.Cursor, limit int) ([]eventsourcing.Event, outbound.Cursor, error) {
+func (s *countingStore) Read(
+	ctx context.Context,
+	cursor outbound.Cursor,
+	limit int,
+) ([]eventsourcing.Event, outbound.Cursor, error) {
 	s.reads.Add(1)
 	return s.inner.Read(ctx, cursor, limit)
 }
@@ -50,6 +54,7 @@ func TestProjector_Standby_NeverTouchesStore(t *testing.T) {
 	// Occupy the lock — the projector will never acquire it.
 	existingRelease, err := lock.Acquire(context.Background(), pgprojection.DefaultLockName)
 	require.NoError(t, err)
+
 	defer existingRelease()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
@@ -65,7 +70,7 @@ func TestProjector_Standby_NeverTouchesStore(t *testing.T) {
 	)
 
 	err = p.Run(ctx)
-	assert.True(t, errors.Is(err, context.DeadlineExceeded), "Run must return context error, got: %v", err)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 	assert.Equal(t, int64(0), store.reads.Load(),
 		"a standby must never call store.Read")
 }
@@ -108,6 +113,7 @@ func TestProjector_Handover_TransitionsToLeader(t *testing.T) {
 	// released by the projector, we could not acquire it here while the
 	// projector is still running (but in this test we cancel first).
 	cancel()
+
 	gotErr := <-done
 	assert.True(t,
 		errors.Is(gotErr, context.Canceled) || errors.Is(gotErr, context.DeadlineExceeded),

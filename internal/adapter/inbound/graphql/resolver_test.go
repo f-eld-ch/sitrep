@@ -69,6 +69,7 @@ func newTestStack(t *testing.T) *testStack {
 		Features:  featureSvc,
 		Queries:   queries,
 	}
+
 	return &testStack{resolver: r, proj: proj}
 }
 
@@ -149,6 +150,7 @@ func TestCreateIncident_InvalidUUID_NotAnIssue(t *testing.T) {
 	})
 
 	require.NoError(t, err)
+
 	_, parseErr := uuid.Parse(result.ID)
 	assert.NoError(t, parseErr)
 }
@@ -670,12 +672,15 @@ func TestCreateLayer_AppearsInQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	var found bool
+
 	for _, l := range layers {
 		if l.ID == created.ID {
 			found = true
+
 			assert.Equal(t, "New Layer", l.Name)
 		}
 	}
+
 	assert.True(t, found, "created layer must appear in LayersForIncident query")
 }
 
@@ -720,6 +725,7 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx))
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
 	require.NoError(t, err)
+
 	layerID := layers[0].ID
 
 	featureID := uuid.NewString()
@@ -751,6 +757,7 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx))
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
 	require.NoError(t, err)
+
 	layerID := layers[0].ID
 
 	featureID := uuid.NewString()

@@ -49,27 +49,34 @@ func NewQueries(
 
 func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing incidents")
+
 	rows := q.incidents.All()
+
 	out := make([]*outbound.IncidentRM, 0, len(rows))
 	for _, row := range rows {
 		if row.IsDeleted {
 			continue
 		}
+
 		out = append(out, q.toIncidentRM(row))
 	}
+
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].CreatedAt.After(out[j].CreatedAt)
 	})
 	slog.DebugContext(ctx, "listed incidents", "count", len(out))
+
 	return out, nil
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "getting incident", "id", id)
+
 	row := q.incidents.Get(id)
 	if row == nil || row.IsDeleted {
 		return nil, shared.ErrNotFound
 	}
+
 	return q.toIncidentRM(row), nil
 }
 
@@ -90,6 +97,7 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 			RemovedAt:   div.RemovedAt,
 		})
 	}
+
 	return inc
 }
 
@@ -100,25 +108,31 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
 	rows := q.messages.ForIncident(incidentID)
+
 	out := make([]*outbound.MessageRM, 0, len(rows))
 	for _, row := range rows {
 		out = append(out, toMessageRM(row))
 	}
+
 	sort.Slice(out, func(i, j int) bool {
 		if out[i].Time.Equal(out[j].Time) {
 			return out[i].CreatedAt.After(out[j].CreatedAt)
 		}
+
 		return out[i].Time.After(out[j].Time)
 	})
+
 	return out, nil
 }
 
 func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "getting message", "id", id)
+
 	row := q.messages.Get(id)
 	if row == nil || row.Deleted {
 		return nil, shared.ErrNotFound
 	}
+
 	return toMessageRM(row), nil
 }
 
@@ -149,6 +163,7 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
 	rows := q.layers.ForIncident(incidentID)
+
 	out := make([]*outbound.LayerRM, 0, len(rows))
 	for _, row := range rows {
 		out = append(out, &outbound.LayerRM{
@@ -159,6 +174,8 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 			Revision:   row.Revision,
 		})
 	}
+
 	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+
 	return out, nil
 }

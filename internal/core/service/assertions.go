@@ -24,6 +24,7 @@ func logIfUnexpected(ctx context.Context, op string, err error, attrs ...any) {
 	if err == nil {
 		return
 	}
+
 	if errors.Is(err, shared.ErrNotFound) ||
 		errors.Is(err, shared.ErrIncidentNotOpen) ||
 		errors.Is(err, shared.ErrIncidentNotClosed) ||
@@ -35,5 +36,6 @@ func logIfUnexpected(ctx context.Context, op string, err error, attrs ...any) {
 		errors.Is(err, shared.ErrConflict) {
 		return
 	}
+
 	slog.ErrorContext(ctx, "service error", append([]any{"operation", op, "error", err}, attrs...)...)
 }

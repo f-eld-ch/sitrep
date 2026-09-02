@@ -37,10 +37,12 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
 	}
+
 	switch t {
 	case "Opened", "Renamed", "LocationChanged", "Closed", "Reopened", "Deleted", "Imported":
 		return true
 	}
+
 	return false
 }
 
@@ -49,6 +51,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 	if !ok {
 		return fmt.Errorf("rm_incident: no tx in context")
 	}
+
 	id := e.StreamID
 
 	switch e.EventType {
@@ -57,10 +60,12 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			Name     string          `json:"name"`
 			Location json.RawMessage `json:"location"`
 		}
+
 		var d opened
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `
 			INSERT INTO rm_incident (id, name, location, is_closed, is_deleted, created_at, updated_at)
 			VALUES ($1, $2, $3, false, false, $4, $4)
@@ -77,6 +82,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			DeletedAt *string         `json:"deletedAt"`
 			UpdatedAt *time.Time      `json:"updatedAt,omitempty"`
 		}
+
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -88,6 +94,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		if d.UpdatedAt != nil {
 			updatedAt = *d.UpdatedAt
 		}
+
 		return exec(db, ctx, `
 			INSERT INTO rm_incident
 			  (id, name, location, is_closed, is_deleted, closed_at, deleted_at, created_at, updated_at)
@@ -104,10 +111,12 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		type renamed struct {
 			Name string `json:"name"`
 		}
+
 		var d renamed
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `UPDATE rm_incident SET name = $1, updated_at = $2 WHERE id = $3`,
 			d.Name, e.OccurredAt, id)
 
@@ -115,10 +124,12 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		type locationChanged struct {
 			Location json.RawMessage `json:"location"`
 		}
+
 		var d locationChanged
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `UPDATE rm_incident SET location = $1, updated_at = $2 WHERE id = $3`,
 			nullableJSON(d.Location), e.OccurredAt, id)
 
@@ -137,6 +148,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			UPDATE rm_incident SET is_deleted = true, deleted_at = $1, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 	}
+
 	return nil
 }
 
@@ -163,10 +175,12 @@ func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	if st != "Incident" {
 		return false
 	}
+
 	switch t {
 	case "Opened", "DivisionAdded", "DivisionRenamed", "DivisionRemoved", "Imported":
 		return true
 	}
+
 	return false
 }
 
@@ -175,6 +189,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 	if !ok {
 		return fmt.Errorf("rm_incident_division: no tx in context")
 	}
+
 	incidentID := e.StreamID
 
 	switch e.EventType {
@@ -184,13 +199,16 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 			Name        string `json:"name"`
 			Description string `json:"description"`
 		}
+
 		type withDivisions struct {
 			Divisions []division `json:"divisions"`
 		}
+
 		var d withDivisions
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		for _, div := range d.Divisions {
 			if err := exec(db, ctx, `
 				INSERT INTO rm_incident_division (id, incident_id, name, description, removed_at)
@@ -200,6 +218,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 				return err
 			}
 		}
+
 		return nil
 
 	case "DivisionAdded":
@@ -210,10 +229,12 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 				Description string `json:"description"`
 			} `json:"division"`
 		}
+
 		var d divisionAdded
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `
 			INSERT INTO rm_incident_division (id, incident_id, name, description, removed_at)
 			VALUES ($1, $2, $3, $4, NULL)
@@ -226,26 +247,32 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 			Name        string  `json:"name"`
 			Description *string `json:"description,omitempty"`
 		}
+
 		var d divisionRenamed
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if d.Description != nil {
 			return exec(db, ctx, `UPDATE rm_incident_division SET name = $1, description = $2 WHERE id = $3`,
 				d.Name, *d.Description, d.ID)
 		}
+
 		return exec(db, ctx, `UPDATE rm_incident_division SET name = $1 WHERE id = $2`, d.Name, d.ID)
 
 	case "DivisionRemoved":
 		type divisionRemoved struct {
 			ID string `json:"id"`
 		}
+
 		var d divisionRemoved
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(db, ctx, `UPDATE rm_incident_division SET removed_at = $1 WHERE id = $2`,
 			e.OccurredAt, d.ID)
 	}
+
 	return nil
 }

@@ -20,6 +20,7 @@ func TestLockKey(t *testing.T) {
 	// projection.DefaultLockName constant to avoid an import cycle, and to
 	// make any rename immediately visible as a test failure.
 	const projectorLockName = "postgres-projector"
+
 	got := lockKey(projectorLockName)
 
 	// Golden value: FNV-32a of "postgres-projector" → 0x56b9782f (1454995503)
