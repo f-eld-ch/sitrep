@@ -92,7 +92,7 @@ function TriageForm(props: {
       await triageMessage({
         incidentId,
         messageId: message.id,
-        priority,
+        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
         triage,
         divisionIds: assignments.map((d) => d.id),
       });

@@ -174,6 +174,13 @@ func TestMessage_Triage(t *testing.T) {
 		assert.Equal(t, divID, m.DivisionIDs()[0])
 	})
 
+	t.Run("needs more information resets priority to normal", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.Triage(shared.TriageMoreInfo, shared.PriorityHigh, nil, actor, at, actor)
+		require.NoError(t, err)
+		assert.Equal(t, shared.PriorityNormal, m.PriorityStatus())
+	})
+
 	t.Run("triage on deleted message is rejected", func(t *testing.T) {
 		m := replay(t, id, []eventsourcing.Event{recorded(id)})
 		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))

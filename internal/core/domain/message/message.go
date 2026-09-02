@@ -173,6 +173,9 @@ func (m *Message) Triage(
 	if m.deleted {
 		return shared.ErrNotFound
 	}
+	if triage == shared.TriageMoreInfo {
+		priority = shared.PriorityNormal
+	}
 	eventsourcing.TrackChange(m, Triaged{
 		Triage:      triage,
 		Priority:    priority,

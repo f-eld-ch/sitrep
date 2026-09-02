@@ -366,8 +366,8 @@ func TestUpdateMessage_CorrectContent(t *testing.T) {
 		IncidentID:     inc.ID,
 		Sender:         "Alice",
 		Receiver:       "Bob",
-		SenderDetail:   "",
-		ReceiverDetail: "",
+		SenderDetail:   "555-1111",
+		ReceiverDetail: "555-2222",
 		Content:        "Original",
 		Medium:         model.MediumPhone,
 	})
@@ -404,8 +404,8 @@ func TestDeleteMessage(t *testing.T) {
 		IncidentID:     inc.ID,
 		Sender:         "X",
 		Receiver:       "Y",
-		SenderDetail:   "",
-		ReceiverDetail: "",
+		SenderDetail:   "sender@example.test",
+		ReceiverDetail: "receiver@example.test",
 		Content:        "To Remove",
 		Medium:         model.MediumEmail,
 	})
