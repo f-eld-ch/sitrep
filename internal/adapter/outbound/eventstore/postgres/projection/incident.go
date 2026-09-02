@@ -27,7 +27,7 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 }
 
 func (h *IncidentHandler) Name() string { return "rm_incident" }
-func (h *IncidentHandler) Version() int { return 1 }
+func (h *IncidentHandler) Version() int { return 2 }
 func (h *IncidentHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident`)
 	return err
@@ -90,14 +90,15 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 		return exec(db, ctx, `
 			INSERT INTO rm_incident
-			  (id, name, location, is_closed, is_deleted, closed_at, created_at, updated_at)
-			VALUES ($1, $2, $3, $4, $5, $6::timestamptz, $7, $8)
+			  (id, name, location, is_closed, is_deleted, closed_at, deleted_at, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6::timestamptz, $7::timestamptz, $8, $9)
 			ON CONFLICT (id) DO UPDATE
 			  SET name = EXCLUDED.name, location = EXCLUDED.location,
 			      is_closed = EXCLUDED.is_closed, is_deleted = EXCLUDED.is_deleted,
-			      closed_at = EXCLUDED.closed_at, updated_at = EXCLUDED.updated_at`,
+			      closed_at = EXCLUDED.closed_at, deleted_at = EXCLUDED.deleted_at,
+			      updated_at = EXCLUDED.updated_at`,
 			id, d.Name, nullableJSON(d.Location), d.ClosedAt != nil, d.DeletedAt != nil,
-			d.ClosedAt, e.OccurredAt, updatedAt)
+			d.ClosedAt, d.DeletedAt, e.OccurredAt, updatedAt)
 
 	case "Renamed":
 		type renamed struct {
@@ -133,7 +134,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "Deleted":
 		return exec(db, ctx, `
-			UPDATE rm_incident SET is_deleted = true, updated_at = $1 WHERE id = $2`,
+			UPDATE rm_incident SET is_deleted = true, deleted_at = $1, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 	}
 	return nil
