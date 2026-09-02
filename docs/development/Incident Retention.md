@@ -75,11 +75,11 @@ migration, then restart the server or wait for a standby projector to become lea
 
 | Flag | YAML key | Default | Environment variable | Meaning |
 | --- | --- | --- | --- | --- |
-| `auto-close-incidents` | `auto-close-incidents` | `30` | `SITREP_AUTO_CLOSE_INCIDENTS` | Days after creation before an open incident is automatically closed. |
-| `auto-archive-incidents` | `auto-archive-incidents` | `730` | `SITREP_AUTO_ARCHIVE_INCIDENTS` | Days after closure before a closed, non-deleted incident is archived. |
+| `auto-close-incidents` | `auto-close-incidents` | `0` | `SITREP_AUTO_CLOSE_INCIDENTS` | Days after creation before an open incident is automatically closed. |
+| `auto-archive-incidents` | `auto-archive-incidents` | `0` | `SITREP_AUTO_ARCHIVE_INCIDENTS` | Days after closure before a closed, non-deleted incident is archived. |
 
 Both settings are `uint` day counts and are local to `sitrep serve`. A value of `0` disables the
-corresponding policy.
+corresponding policy. Retention is disabled by default; configure a positive value to enable it.
 
 ### Manual deletion
 

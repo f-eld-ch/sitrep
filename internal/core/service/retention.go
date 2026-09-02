@@ -5,6 +5,11 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
@@ -29,6 +34,7 @@ type RetentionService struct {
 	clock     outbound.Clock
 	notifier  outbound.EventNotifier
 	batchSize int
+	tracer    trace.Tracer
 }
 
 func NewRetentionService(
@@ -41,11 +47,18 @@ func NewRetentionService(
 	return &RetentionService{
 		tx: tx, incidents: incidents, retention: retention, clock: clock, notifier: notifier,
 		batchSize: retentionBatchSize,
+		tracer:    otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
 
 // Run applies enabled retention policies. A zero day count disables its policy.
 func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDays uint) (RetentionResult, error) {
+	ctx, span := s.tracer.Start(ctx, "RetentionService.Run",
+		trace.WithAttributes(
+			attribute.Int("retention.auto_close_days", int(autoCloseDays)),
+			attribute.Int("retention.auto_archive_days", int(autoArchiveDays)),
+		))
+	defer span.End()
 	result := RetentionResult{}
 	now := s.clock.Now()
 	slog.DebugContext(ctx, "running incident retention",
@@ -56,6 +69,8 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		ids, err := s.retention.OpenBefore(ctx, cutoff, s.batchSize)
 		if err != nil {
 			logIfUnexpected(ctx, "Retention.OpenBefore", err, "cutoff", cutoff)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return result, err
 		}
 		slog.InfoContext(ctx, "incident retention auto-close candidates",
@@ -64,6 +79,8 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			closed, err := s.close(ctx, id, now)
 			if err != nil {
 				logIfUnexpected(ctx, "Retention.Close", err, "incident_id", id)
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				return result, err
 			}
 			if closed {
@@ -82,6 +99,8 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		if err != nil {
 			logIfUnexpected(ctx, "Retention.ArchiveBefore", err,
 				"closed_cutoff", closedCutoff, "deleted_cutoff", deletedCutoff)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return result, err
 		}
 		slog.InfoContext(ctx, "incident retention archive candidates",
@@ -91,6 +110,8 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			archived, err := s.archive(ctx, id, now)
 			if err != nil {
 				logIfUnexpected(ctx, "Retention.Archive", err, "incident_id", id)
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				return result, err
 			}
 			if archived {
@@ -104,9 +125,12 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 
 	if result.Closed > 0 || result.Archived > 0 {
 		if err := s.notifier.Notify(ctx); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return result, err
 		}
 	}
+	span.SetAttributes(attribute.Int("retention.closed", result.Closed), attribute.Int("retention.archived", result.Archived))
 	slog.InfoContext(ctx, "incident retention complete", "closed", result.Closed, "archived", result.Archived)
 	return result, nil
 }

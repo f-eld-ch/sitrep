@@ -12,6 +12,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -146,6 +147,43 @@ func TestProjector_IncidentReopened(t *testing.T) {
 	require.NotNil(t, row)
 	assert.False(t, row.IsClosed)
 	assert.Nil(t, row.ClosedAt)
+}
+
+func TestProjector_IncidentDeletedRecordsDeletedAt(t *testing.T) {
+	s := newStack(t)
+	res, err := s.incidentSvc().CreateIncident(ctx(), "Deleted", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	_, err = s.incidentSvc().CloseIncident(ctx(), res.IncidentID, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.incidentSvc().DeleteIncident(ctx(), res.IncidentID, testActor))
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	row := s.incidents.Get(uuid.UUID(res.IncidentID))
+	require.NotNil(t, row)
+	assert.True(t, row.IsDeleted)
+	require.NotNil(t, row.DeletedAt)
+	assert.Equal(t, testAt, *row.DeletedAt)
+}
+
+func TestProjector_ImportedDeletedIncidentRecordsDeletedAt(t *testing.T) {
+	handler := projection.NewIncidentHandler()
+	deletedAt := testAt.Add(-7 * 24 * time.Hour)
+	err := handler.Apply(ctx(), eventsourcing.Event{
+		StreamType: "Incident",
+		StreamID:   uuid.New(),
+		EventType:  "Imported",
+		OccurredAt: testAt,
+		Data: incident.Imported{
+			Name:      "Imported",
+			DeletedAt: &deletedAt,
+		},
+	})
+	require.NoError(t, err)
+
+	row := handler.All()[0]
+	assert.True(t, row.IsDeleted)
+	require.NotNil(t, row.DeletedAt)
+	assert.Equal(t, deletedAt, *row.DeletedAt)
 }
 
 func TestProjector_MultipleIncidents(t *testing.T) {

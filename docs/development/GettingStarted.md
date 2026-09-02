@@ -92,7 +92,8 @@ variables, configuration file, then defaults.
 `log-level` and `database-url` are root flags. The remaining flags are specific to `sitrep serve`.
 `--config` selects the YAML file and does not have an environment-variable counterpart.
 
-See [Incident Retention](Incident%20Retention.md) for retention policy defaults and operation.
+Retention is disabled by default. See [Incident Retention](Incident%20Retention.md) to configure
+and operate it.
 
 ### Observability (optional)
 

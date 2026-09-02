@@ -297,12 +297,22 @@ func (p *Projector) runRetentionOnce(ctx context.Context) error {
 		return nil
 	}
 	archived, err := p.runRetention(ctx)
-	if err != nil {
-		return fmt.Errorf("projector retention: %w", err)
+	return handleRetentionResult(archived, err, func() error { return p.rebuildAfterArchive(ctx) })
+}
+
+func handleRetentionResult(archived bool, retentionErr error, rebuild func() error) error {
+	if archived {
+		if err := rebuild(); err != nil {
+			return err
+		}
 	}
-	if !archived {
-		return nil
+	if retentionErr != nil {
+		return fmt.Errorf("projector retention: %w", retentionErr)
 	}
+	return nil
+}
+
+func (p *Projector) rebuildAfterArchive(ctx context.Context) error {
 	p.log.InfoContext(ctx, "retention archived incidents, rebuilding read models")
 	for _, handler := range p.handlers {
 		if err := p.resetProjection(ctx, handler); err != nil {
