@@ -10,8 +10,8 @@ import (
 var logLevel = new(slog.LevelVar) // defaults to slog.LevelInfo
 
 // initLogger installs a plain-text stdout handler that honours logLevel.
-// It is called from cobra.OnInitialize (after viper has read config + flags),
-// and again by setupOpenTelemetry when it builds the OTLP fanout.
+// It is called after configuration is loaded, and again by setupOpenTelemetry
+// when it builds the OTLP fanout.
 func initLogger() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})))
 }

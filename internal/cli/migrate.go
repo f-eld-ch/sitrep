@@ -16,44 +16,18 @@ import (
 	"github.com/f-eld-ch/sitrep/migrations"
 )
 
-var migrateCmd = &cobra.Command{
-	Use:   "migrate",
-	Short: "Database migration commands",
+func newMigrateCmd(v *viper.Viper) *cobra.Command {
+	migrateCmd := &cobra.Command{Use: "migrate", Short: "Database migration commands"}
+	migrateCmd.AddCommand(
+		newMigrateUpCmd(v),
+		newMigrateDownCmd(v),
+		newMigrateStatusCmd(v),
+		newMigratePreflightCmd(v),
+	)
+	return migrateCmd
 }
 
-var migrateUpCmd = &cobra.Command{
-	Use:   "up",
-	Short: "Apply all pending migrations",
-	RunE:  runMigrateUp,
-}
-
-var migrateDownCmd = &cobra.Command{
-	Use:   "down",
-	Short: "Roll back the last applied migration",
-	RunE:  runMigrateDown,
-}
-
-var migrateStatusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Print migration status",
-	RunE:  runMigrateStatus,
-}
-
-var migratePreflightCmd = &cobra.Command{
-	Use:   "preflight",
-	Short: "Run import data checks without migrating (safe to run against production)",
-	RunE:  runMigratePreflight,
-}
-
-func init() {
-	migrateCmd.AddCommand(migrateUpCmd)
-	migrateCmd.AddCommand(migrateDownCmd)
-	migrateCmd.AddCommand(migrateStatusCmd)
-	migrateCmd.AddCommand(migratePreflightCmd)
-}
-
-func openGooseDB(ctx context.Context) (*sql.DB, error) {
-	dsn := viper.GetString("database_url")
+func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("--database-url / DATABASE_URL is required for migrate commands")
 	}
@@ -79,8 +53,18 @@ func gooseProvider(db *sql.DB) (*goose.Provider, error) {
 	)
 }
 
-func runMigrateUp(cmd *cobra.Command, _ []string) error {
-	db, err := openGooseDB(cmd.Context())
+func newMigrateUpCmd(v *viper.Viper) *cobra.Command {
+	return &cobra.Command{
+		Use:   "up",
+		Short: "Apply all pending migrations",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runMigrateUp(cmd, v.GetString("database-url"))
+		},
+	}
+}
+
+func runMigrateUp(cmd *cobra.Command, dsn string) error {
+	db, err := openGooseDB(cmd.Context(), dsn)
 	if err != nil {
 		return err
 	}
@@ -96,8 +80,18 @@ func runMigrateUp(cmd *cobra.Command, _ []string) error {
 	return err
 }
 
-func runMigrateDown(cmd *cobra.Command, _ []string) error {
-	db, err := openGooseDB(cmd.Context())
+func newMigrateDownCmd(v *viper.Viper) *cobra.Command {
+	return &cobra.Command{
+		Use:   "down",
+		Short: "Roll back the last applied migration",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runMigrateDown(cmd, v.GetString("database-url"))
+		},
+	}
+}
+
+func runMigrateDown(cmd *cobra.Command, dsn string) error {
+	db, err := openGooseDB(cmd.Context(), dsn)
 	if err != nil {
 		return err
 	}
@@ -114,8 +108,18 @@ func runMigrateDown(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func runMigrateStatus(cmd *cobra.Command, _ []string) error {
-	db, err := openGooseDB(cmd.Context())
+func newMigrateStatusCmd(v *viper.Viper) *cobra.Command {
+	return &cobra.Command{
+		Use:   "status",
+		Short: "Print migration status",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runMigrateStatus(cmd, v.GetString("database-url"))
+		},
+	}
+}
+
+func runMigrateStatus(cmd *cobra.Command, dsn string) error {
+	db, err := openGooseDB(cmd.Context(), dsn)
 	if err != nil {
 		return err
 	}
@@ -138,8 +142,18 @@ func runMigrateStatus(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func runMigratePreflight(cmd *cobra.Command, _ []string) error {
-	db, err := openGooseDB(cmd.Context())
+func newMigratePreflightCmd(v *viper.Viper) *cobra.Command {
+	return &cobra.Command{
+		Use:   "preflight",
+		Short: "Run import data checks without migrating (safe to run against production)",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runMigratePreflight(cmd, v.GetString("database-url"))
+		},
+	}
+}
+
+func runMigratePreflight(cmd *cobra.Command, dsn string) error {
+	db, err := openGooseDB(cmd.Context(), dsn)
 	if err != nil {
 		return err
 	}

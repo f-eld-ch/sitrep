@@ -9,15 +9,15 @@ A simple local development environment uses Docker Compose for infrastructure (P
 2. Create a `config.yaml` in the repo root for the Go server (this file is gitignored):
 
 ```yaml
-oidc_issuer: "http://localhost:5556/dex"
-oidc_client_id: "sitrep"
-oidc_client_secret: "ds8LCRW4jhB58nWdMgZHeVISqx3O3e1o3g0LEr9H8tM="  # generate with: openssl rand -base64 32 | tr -- '+/' '-_'
-oidc_redirect_url: "http://localhost:3000/oauth2/callback"
-cookie_key: "0123456789abcdef0123456789abcdef"                        # generate with: openssl rand -hex 16
+oidc-issuer: "http://localhost:5556/dex"
+oidc-client-id: "sitrep"
+oidc-client-secret: "ds8LCRW4jhB58nWdMgZHeVISqx3O3e1o3g0LEr9H8tM="  # generate with: openssl rand -base64 32 | tr -- '+/' '-_'
+oidc-redirect-url: "http://localhost:3000/oauth2/callback"
+cookie-key: "0123456789abcdef0123456789abcdef"                        # generate with: openssl rand -hex 16
 
-database_url: "postgres://postgres:postgrespassword@localhost:5432/postgres?sslmode=disable"
+database-url: "postgres://postgres:postgrespassword@localhost:5432/postgres?sslmode=disable"
 
-graphql_introspection: true  # enables /api/v2/graphql/play
+graphql-introspection: true  # enables /api/v2/graphql/play
 ```
 
 3. Create a `.env.local` in the repo root for Docker Compose (sets the Postgres password and Dex OIDC client):
@@ -40,10 +40,17 @@ On SELinux machines use the selinux compose file:
 docker compose -f docker-compose.selinux.yml --env-file .env.local up -d
 ```
 
-5. Start the Go backend server (reads `config.yaml` from the working directory):
+5. Start the Go backend server (by default, reads `config.yaml` from the working directory):
 
 ```
 go run .
+```
+
+To use a configuration file elsewhere, pass its path explicitly. An explicit path must exist and
+contain valid YAML:
+
+```
+go run . --config /path/to/config.yaml
 ```
 
 Or build and run the binary:
@@ -60,7 +67,28 @@ cd ui && yarn start
 
 7. Open [localhost:3000](http://localhost:3000/). The Vite dev server proxies `/api/v2/graphql` and `/oauth2` to the Go server at `:4180`. Authentication is handled by the local Dex IDP — click **Log in with Example**.
 
-The GraphQL playground is available at [localhost:4180/api/v2/graphql/play](http://localhost:4180/api/v2/graphql/play) when `graphql_introspection: true` is set in `config.yaml`.
+The GraphQL playground is available at [localhost:4180/api/v2/graphql/play](http://localhost:4180/api/v2/graphql/play) when `graphql-introspection: true` is set in `config.yaml`.
+
+### Server Configuration
+
+Every configuration-backed CLI flag also has a YAML key with the same name and a canonical
+`SITREP_*` environment variable. Values take precedence in this order: CLI flags, environment
+variables, configuration file, then defaults.
+
+| Flag / YAML key | Canonical environment variable | Legacy environment variables |
+| --- | --- | --- |
+| `log-level` | `SITREP_LOG_LEVEL` | `LOG_LEVEL` |
+| `database-url` | `SITREP_DATABASE_URL` | `DATABASE_URL` |
+| `port` | `SITREP_PORT` | `SITREP_SERVER_PORT`, `SERVER_PORT` |
+| `oidc-client-id` | `SITREP_OIDC_CLIENT_ID` | `OIDC_CLIENT_ID`, `OAUTH2_PROXY_CLIENT_ID` |
+| `oidc-issuer` | `SITREP_OIDC_ISSUER` | `OIDC_ISSUER`, `OAUTH2_PROXY_OIDC_ISSUER_URL` |
+| `oidc-client-secret` | `SITREP_OIDC_CLIENT_SECRET` | `OIDC_CLIENT_SECRET`, `OAUTH2_PROXY_CLIENT_SECRET` |
+| `oidc-redirect-url` | `SITREP_OIDC_REDIRECT_URL` | `OIDC_REDIRECT_URL`, `OAUTH2_PROXY_REDIRECT_URL` |
+| `cookie-key` | `SITREP_COOKIE_KEY` | `COOKIE_KEY`, `OAUTH2_PROXY_COOKIE_SECRET`, `OIDC_COOKIE_KEY` |
+| `graphql-introspection` | `SITREP_GRAPHQL_INTROSPECTION` | `GRAPHQL_INTROSPECTION` |
+
+`log-level` and `database-url` are root flags. The remaining flags are specific to `sitrep serve`.
+`--config` selects the YAML file and does not have an environment-variable counterpart.
 
 ### Observability (optional)
 

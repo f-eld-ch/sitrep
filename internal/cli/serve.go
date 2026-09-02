@@ -26,13 +26,34 @@ func SetBuildInfo(version, sha string) {
 	Sha = sha
 }
 
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "Start the SitRep API server",
-	RunE:  runServe,
+var serveConfigOptions = []configOption{
+	uintOption("port", 4180, "Server port", "SITREP_SERVER_PORT", "SERVER_PORT"),
+	stringOption("oidc-client-id", "", "OIDC client ID", "OIDC_CLIENT_ID", "OAUTH2_PROXY_CLIENT_ID"),
+	stringOption("oidc-issuer", "", "OIDC issuer URL", "OIDC_ISSUER", "OAUTH2_PROXY_OIDC_ISSUER_URL"),
+	stringOption("oidc-client-secret", "", "OIDC client secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET"),
+	stringOption("oidc-redirect-url", "", "OIDC redirect URL", "OIDC_REDIRECT_URL", "OAUTH2_PROXY_REDIRECT_URL"),
+	stringOption("cookie-key", "", "Cookie signing key", "COOKIE_KEY", "OAUTH2_PROXY_COOKIE_SECRET", "OIDC_COOKIE_KEY"),
+	boolOption("graphql-introspection", false, "Enable GraphQL introspection and playground (dev only)", "GRAPHQL_INTROSPECTION"),
 }
 
-func runServe(cmd *cobra.Command, _ []string) error {
+func newServeCmd(v *viper.Viper) (*cobra.Command, error) {
+	serveCmd := &cobra.Command{
+		Use:   "serve",
+		Short: "Start the SitRep API server",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runServe(cmd, args, v)
+		},
+	}
+	if err := configureOptions(v, serveConfigOptions); err != nil {
+		return nil, err
+	}
+	if err := bindFlags(v, serveCmd.Flags(), serveConfigOptions); err != nil {
+		return nil, err
+	}
+	return serveCmd, nil
+}
+
+func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	ctx := cmd.Context()
 	slog.InfoContext(ctx, "starting sitrep", "version", Version, "sha", Sha)
 
@@ -47,26 +68,26 @@ func runServe(cmd *cobra.Command, _ []string) error {
 		}
 	}()
 
-	s, err := buildStack(ctx)
+	s, err := buildStack(ctx, v.GetString("database-url"))
 	if err != nil {
 		return err
 	}
 	defer s.Teardown()
 
 	opts := []server.Option{
-		server.WithPort(viper.GetUint("server_port")),
+		server.WithPort(v.GetUint("port")),
 		server.WithApiV2(s.IncidentSvc, s.MessageSvc, s.LayerSvc, s.FeatureSvc, s.Queries,
-			viper.GetBool("graphql_introspection")),
+			v.GetBool("graphql-introspection")),
 		server.WithVersion(Version, Sha),
 	}
 
-	if viper.GetString("oidc_client_id") != "" && viper.GetString("oidc_issuer") != "" {
+	if v.GetString("oidc-client-id") != "" {
 		oidcClient, err := auth.NewOIDC(ctx,
-			viper.GetString("oidc_issuer"),
-			viper.GetString("oidc_client_id"),
-			viper.GetString("oidc_client_secret"),
-			viper.GetString("oidc_redirect_url"),
-			deriveCookieKey(viper.GetString("cookie_key")),
+			v.GetString("oidc-issuer"),
+			v.GetString("oidc-client-id"),
+			v.GetString("oidc-client-secret"),
+			v.GetString("oidc-redirect-url"),
+			deriveCookieKey(v.GetString("cookie-key")),
 		)
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to create OIDC client", "error", err)
