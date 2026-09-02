@@ -465,6 +465,7 @@ are preserved. Never edit the generated `generated/` package by hand.
 Migrations live in `migrations/`. Use goose conventions:
 
 - SQL: `NNNN_<slug>.sql` with `-- +goose Up` / `-- +goose Down` annotations.
+- Never change past migration files that may already be committed or applied; add a new migration instead. Only edit migration files that are still uncommitted and not yet applied anywhere.
 - Go: register in `migrations/migrations.go` via `goose.NewGoMigration`; always set `m.Source`
   to the filename so the migration appears correctly in goose output:
   ```go
