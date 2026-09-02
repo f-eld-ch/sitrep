@@ -27,6 +27,7 @@ type IncidentRow struct {
 	IsClosed  bool
 	IsDeleted bool
 	ClosedAt  *time.Time
+	DeletedAt *time.Time
 	Location  json.RawMessage
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -43,7 +44,7 @@ func NewIncidentHandler() *IncidentHandler {
 }
 
 func (h *IncidentHandler) Name() string { return "rm_incident" }
-func (h *IncidentHandler) Version() int { return 1 }
+func (h *IncidentHandler) Version() int { return 2 }
 
 func (h *IncidentHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -103,6 +104,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			IsClosed:  d.ClosedAt != nil,
 			IsDeleted: d.DeletedAt != nil,
 			ClosedAt:  d.ClosedAt,
+			DeletedAt: d.DeletedAt,
 			CreatedAt: e.OccurredAt,
 			UpdatedAt: e.OccurredAt,
 		}
@@ -149,7 +151,9 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 	case "Deleted":
 		if row := h.rows[id]; row != nil {
+			t := e.OccurredAt
 			row.IsDeleted = true
+			row.DeletedAt = &t
 			row.UpdatedAt = e.OccurredAt
 		}
 	}

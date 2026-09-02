@@ -51,6 +51,13 @@ var errCatchUpStuck = errors.New("projector: too many consecutive catch-up failu
 // Option configures a Projector.
 type Option func(*Projector)
 
+// WithRetention runs maintenance only from the elected projector leader. The
+// callback returns true when it removed live event streams and requires a full
+// read-model rebuild.
+func WithRetention(run func(context.Context) (bool, error)) Option {
+	return func(p *Projector) { p.runRetention = run }
+}
+
 // WithLock sets the leader-election lock. Without this option a no-op lock is
 // used, which means all replicas project concurrently (the pre-lock behaviour).
 func WithLock(l outbound.ProjectorLock) Option {
@@ -109,6 +116,7 @@ type Projector struct {
 	lock            outbound.ProjectorLock
 	lockName        string
 	standbyInterval time.Duration
+	runRetention    func(context.Context) (bool, error)
 
 	// metrics
 	eventsApplied  metric.Int64Counter
@@ -230,6 +238,8 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 
 	pollTicker := time.NewTicker(500 * time.Millisecond)
 	defer pollTicker.Stop()
+	retentionTicker := time.NewTicker(time.Hour)
+	defer retentionTicker.Stop()
 
 	consecutiveFailures := 0
 	first := true
@@ -251,6 +261,9 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 
 		if first {
 			p.log.InfoContext(ctx, "projector ready — initial catch-up complete")
+			if err := p.runRetentionOnce(ctx); err != nil {
+				return err
+			}
 			first = false
 		}
 
@@ -266,6 +279,10 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-pollTicker.C:
+		case <-retentionTicker.C:
+			if err := p.runRetentionOnce(ctx); err != nil {
+				return err
+			}
 		// notifier.Wait blocks until a NOTIFY arrives or ctx is cancelled.
 		default:
 			waitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
@@ -273,6 +290,36 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 			cancel()
 		}
 	}
+}
+
+func (p *Projector) runRetentionOnce(ctx context.Context) error {
+	if p.runRetention == nil {
+		return nil
+	}
+	archived, err := p.runRetention(ctx)
+	return handleRetentionResult(archived, err, func() error { return p.rebuildAfterArchive(ctx) })
+}
+
+func handleRetentionResult(archived bool, retentionErr error, rebuild func() error) error {
+	if archived {
+		if err := rebuild(); err != nil {
+			return err
+		}
+	}
+	if retentionErr != nil {
+		return fmt.Errorf("projector retention: %w", retentionErr)
+	}
+	return nil
+}
+
+func (p *Projector) rebuildAfterArchive(ctx context.Context) error {
+	p.log.InfoContext(ctx, "retention archived incidents, rebuilding read models")
+	for _, handler := range p.handlers {
+		if err := p.resetProjection(ctx, handler); err != nil {
+			return err
+		}
+	}
+	return p.catchUp(ctx)
 }
 
 // sleep waits for d or until ctx is cancelled. Returns false when ctx is done.

@@ -38,17 +38,17 @@ type stack struct {
 // buildStack wires the full application stack. When DATABASE_URL is set it uses
 // PostgreSQL; otherwise it falls back to in-memory stores (useful for local dev
 // without a running database).
-func buildStack(ctx context.Context, dsn string) (*stack, error) {
+func buildStack(ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint) (*stack, error) {
 	if dsn == "" {
 		slog.WarnContext(ctx, "No database_url set, using in-memory stores (data will not persist)")
 		return buildInmemStack(ctx)
 	}
-	return buildPostgresStack(ctx, dsn)
+	return buildPostgresStack(ctx, dsn, autoCloseDays, autoArchiveDays)
 }
 
 // ── Postgres ──────────────────────────────────────────────────────────────────
 
-func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
+func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint) (*stack, error) {
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, err
@@ -77,6 +77,7 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	retention := pgstore.NewIncidentRetention(pool)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -93,8 +94,13 @@ func buildPostgresStack(ctx context.Context, dsn string) (*stack, error) {
 		pgprojection.NewLayerFeaturesHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
+	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
 	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers,
-		pgprojection.WithLock(projLock)), "postgres")
+		pgprojection.WithLock(projLock),
+		pgprojection.WithRetention(func(ctx context.Context) (bool, error) {
+			result, err := retentionSvc.Run(ctx, autoCloseDays, autoArchiveDays)
+			return result.Archived > 0, err
+		})), "postgres")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
 	projDone := make(chan struct{})

@@ -28,6 +28,8 @@ func SetBuildInfo(version, sha string) {
 
 var serveConfigOptions = []configOption{
 	uintOption("port", 4180, "Server port", "SITREP_SERVER_PORT", "SERVER_PORT"),
+	uintOption("auto-close-incidents", 0, "Automatically close incidents after this many days (0 disables)"),
+	uintOption("auto-archive-incidents", 0, "Archive closed incidents after this many days (0 disables)"),
 	stringOption("oidc-client-id", "", "OIDC client ID", "OIDC_CLIENT_ID", "OAUTH2_PROXY_CLIENT_ID"),
 	stringOption("oidc-issuer", "", "OIDC issuer URL", "OIDC_ISSUER", "OAUTH2_PROXY_OIDC_ISSUER_URL"),
 	stringOption("oidc-client-secret", "", "OIDC client secret", "OIDC_CLIENT_SECRET", "OAUTH2_PROXY_CLIENT_SECRET"),
@@ -68,7 +70,12 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		}
 	}()
 
-	s, err := buildStack(ctx, v.GetString("database-url"))
+	s, err := buildStack(
+		ctx,
+		v.GetString("database-url"),
+		v.GetUint("auto-close-incidents"),
+		v.GetUint("auto-archive-incidents"),
+	)
 	if err != nil {
 		return err
 	}

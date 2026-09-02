@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,6 +39,20 @@ func TestLoadConfig(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Equal(t, uint(5432), v.GetUint("port"))
+	})
+
+	t.Run("retention settings use YAML, environment, and flag precedence", func(t *testing.T) {
+		t.Setenv("SITREP_AUTO_CLOSE_INCIDENTS", "20")
+		flags := pflag.NewFlagSet("serve", pflag.ContinueOnError)
+		v, err := newViper(rootConfigOptions, serveConfigOptions)
+		require.NoError(t, err)
+		require.NoError(t, bindFlags(v, flags, serveConfigOptions))
+		require.NoError(t, flags.Parse([]string{"--auto-close-incidents=10"}))
+		configPath := writeConfig(t, "auto-close-incidents: 30\nauto-archive-incidents: 90\n")
+
+		require.NoError(t, loadConfig(v, configPath))
+		assert.Equal(t, uint(10), v.GetUint("auto-close-incidents"))
+		assert.Equal(t, uint(90), v.GetUint("auto-archive-incidents"))
 	})
 }
 
@@ -75,6 +90,8 @@ func TestNewRootCmd(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, serveCmd.Flags().Lookup("port"))
 	assert.Nil(t, serveCmd.Flags().Lookup("database-url"))
+	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-close-incidents").DefValue)
+	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-archive-incidents").DefValue)
 }
 
 func testViper(t *testing.T) *viper.Viper {
