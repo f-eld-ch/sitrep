@@ -8,6 +8,10 @@
 - *(retention)* Archive expired incident streams ([#1794](https://github.com/f-eld-ch/sitrep/issues/1794)) - ([d285ac2](https://github.com/f-eld-ch/sitrep/commit/d285ac28bbe2e0b7beccd53eeb7e96461194fb75))
 - *(ui)* Improve closed incident handling ([#1793](https://github.com/f-eld-ch/sitrep/issues/1793)) - ([750389f](https://github.com/f-eld-ch/sitrep/commit/750389f1bab290fc31429033995a3d89bffeca26))
 
+### 🐛 Bug Fixes
+
+- *(backend)* Improve startup behavior to wait for db conncetions - ([380f188](https://github.com/f-eld-ch/sitrep/commit/380f188d8377c0d08a3d88667f4e5ad8215819db))
+
 ### ⚙️  Other
 
 - *(deps)* Bump github.com/labstack/echo/v5 from 5.2.1 to 5.3.1 ([#1789](https://github.com/f-eld-ch/sitrep/issues/1789)) - ([d940def](https://github.com/f-eld-ch/sitrep/commit/d940def0f0d31e08ab75ae1e6c9df9fcf6412275))
