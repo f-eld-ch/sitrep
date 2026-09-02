@@ -3,6 +3,7 @@ import uniq from "lodash/uniq";
 import React, { useCallback, useContext, useId, useMemo, useReducer, useRef } from "react";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import { Spinner } from "components";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
 import { useCreateMessage, useIncidentMessages, useUpdateMessage } from "api";
@@ -132,6 +133,9 @@ function Editor() {
   if (loadedForId === incidentId && incident === null) {
     return <Navigate to="/incident/list" replace />;
   }
+  if (loadedForId !== incidentId) {
+    return <Spinner />;
+  }
 
   const contextValue: EditorContextValue = {
     state,
@@ -165,7 +169,13 @@ function Editor() {
               </div>
             )}
             {saveError && <Notification type="error">{saveError.message}</Notification>}
-            {!incidentIsClosed && <InputBox />}
+            {incidentIsClosed ? (
+              <output className="notification is-warning is-light">
+                {t("incidentClosedNoEdits")}
+              </output>
+            ) : (
+              <InputBox />
+            )}
           </div>
           <div className="column is-half">
             <List

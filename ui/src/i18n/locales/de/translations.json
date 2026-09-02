@@ -30,6 +30,7 @@
   "filtered": "gefiltert",
   "hideClosed": "Verstecke geschlossene",
   "hotline": "Hotline Editor",
+  "incidentClosedNoEdits": "Dieses Ereignis ist geschlossen. Bearbeiten ist derzeit nicht möglich.",
   "immediateMeasures": "Sofortmassnahmen",
   "incident": "Ereignis",
   "incidents": "Ereignisse",
