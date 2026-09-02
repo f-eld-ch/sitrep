@@ -7,10 +7,24 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
 const batchSize = 100
+
+func recordSpanError(span trace.Span, err error) {
+	if err == nil || errors.Is(err, context.Canceled) {
+		return
+	}
+	span.RecordError(err)
+	span.SetStatus(codes.Error, err.Error())
+}
 
 // Projector reads the global event stream from the in-memory store and applies
 // handlers synchronously. It is designed for test use:
@@ -27,6 +41,7 @@ type Projector struct {
 	handlers []Handler
 	cursors  map[string]outbound.Cursor
 	log      *slog.Logger
+	tracer   trace.Tracer
 }
 
 func NewProjector(store outbound.EventStore, handlers []Handler) *Projector {
@@ -39,6 +54,7 @@ func NewProjector(store outbound.EventStore, handlers []Handler) *Projector {
 		handlers: handlers,
 		cursors:  cursors,
 		log:      slog.Default().WithGroup("inmem-projector"),
+		tracer:   otel.Tracer("sitrep/projector"),
 	}
 }
 
@@ -51,9 +67,18 @@ func (p *Projector) WithNotifier(n outbound.EventNotifier) *Projector {
 
 // CatchUp reads all events appended since each handler's last cursor and applies
 // them. It processes handlers in registration order and returns on the first error.
-func (p *Projector) CatchUp(ctx context.Context) error {
+func (p *Projector) CatchUp(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "InmemProjector.CatchUp",
+		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
+	var totalApplied int
 	for _, h := range p.handlers {
 		cursor := p.cursors[h.Name()]
+		handlerApplied := 0
 		for {
 			events, next, err := p.store.Read(ctx, cursor, batchSize)
 			if err != nil {
@@ -66,10 +91,11 @@ func (p *Projector) CatchUp(ctx context.Context) error {
 				if !h.Handles(e.StreamType, e.EventType) {
 					continue
 				}
-				if err := h.Apply(ctx, e); err != nil {
+				if err := p.applyEvent(ctx, h, e); err != nil {
 					return fmt.Errorf("inmem projector %s apply %s/%s v%d: %w",
 						h.Name(), e.StreamType, e.EventType, e.Version, err)
 				}
+				handlerApplied++
 			}
 			p.cursors[h.Name()] = next
 			cursor = next
@@ -77,13 +103,39 @@ func (p *Projector) CatchUp(ctx context.Context) error {
 				break
 			}
 		}
+		totalApplied += handlerApplied
 	}
+	span.SetAttributes(attribute.Int("projector.events.applied", totalApplied))
 	return nil
+}
+
+func (p *Projector) applyEvent(ctx context.Context, h Handler, e eventsourcing.Event) (err error) {
+	ctx, span := p.tracer.Start(ctx, "InmemProjector.ApplyEvent",
+		trace.WithAttributes(
+			attribute.String("projector.handler", h.Name()),
+			attribute.String("event.stream_type", e.StreamType),
+			attribute.String("event.stream_id", e.StreamID.String()),
+			attribute.String("event.type", e.EventType),
+			attribute.Int("event.version", e.Version),
+		))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
+	return h.Apply(ctx, e)
 }
 
 // Reset rebuilds all handlers from the beginning of the event log. Useful when a
 // handler's Version() changes or when tests need a clean read-model mid-run.
-func (p *Projector) Reset(ctx context.Context) error {
+func (p *Projector) Reset(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "InmemProjector.Reset",
+		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	for _, h := range p.handlers {
 		if err := h.Reset(ctx); err != nil {
 			return fmt.Errorf("inmem projector reset %s: %w", h.Name(), err)

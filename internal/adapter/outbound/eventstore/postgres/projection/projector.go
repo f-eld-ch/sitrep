@@ -5,7 +5,8 @@
 // registration order, and advances the checkpoint.
 //
 // All projections are asynchronous — they run outside the write transaction.
-// NOTIFY wakes the projector on commit; watermark polling guarantees correctness.
+// NOTIFY wakes the projector on commit; a persistent LISTEN connection avoids
+// missing notifications between catch-up passes.
 package projection
 
 import (
@@ -19,7 +20,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -47,6 +50,14 @@ var errProjectionAhead = errors.New("stored projection version is ahead of this 
 // than maxConsecutiveCatchUpFailures times, so the leader releases and a
 // standby can try.
 var errCatchUpStuck = errors.New("projector: too many consecutive catch-up failures")
+
+func recordSpanError(span trace.Span, err error) {
+	if err == nil || errors.Is(err, context.Canceled) {
+		return
+	}
+	span.RecordError(err)
+	span.SetStatus(codes.Error, err.Error())
+}
 
 // Option configures a Projector.
 type Option func(*Projector)
@@ -83,6 +94,10 @@ type noopLock struct{}
 
 func (noopLock) Acquire(_ context.Context, _ string) (func(), error) { return func() {}, nil }
 
+type listenStarter interface {
+	EnsureListening(context.Context) error
+}
+
 // Compile-time assertion: Projector satisfies the outbound.Projector port.
 var _ outbound.Projector = (*Projector)(nil)
 
@@ -111,6 +126,7 @@ type Projector struct {
 	notifier outbound.EventNotifier
 	handlers []Handler
 	log      *slog.Logger
+	tracer   trace.Tracer
 
 	// leader election
 	lock            outbound.ProjectorLock
@@ -168,6 +184,7 @@ func NewProjector(
 		notifier:        notifier,
 		handlers:        handlers,
 		log:             slog.Default().WithGroup("projector"),
+		tracer:          otel.Tracer("sitrep/projector"),
 		lock:            noopLock{},
 		lockName:        DefaultLockName,
 		standbyInterval: defaultStandbyInterval,
@@ -196,7 +213,7 @@ func (p *Projector) Run(ctx context.Context) error {
 	p.log.InfoContext(ctx, "projector starting", "handlers", names)
 
 	for {
-		release, err := p.lock.Acquire(ctx, p.lockName)
+		release, err := p.acquireLock(ctx)
 		switch {
 		case errors.Is(err, outbound.ErrLockHeld):
 			p.lockContended.Add(ctx, 1)
@@ -218,6 +235,18 @@ func (p *Projector) Run(ctx context.Context) error {
 	}
 }
 
+func (p *Projector) acquireLock(ctx context.Context) (release func(), err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.AcquireLock",
+		trace.WithAttributes(attribute.String("projector.lock_name", p.lockName)))
+	defer func() {
+		if err != nil && !errors.Is(err, outbound.ErrLockHeld) {
+			recordSpanError(span, err)
+		}
+		span.End()
+	}()
+	return p.lock.Acquire(ctx, p.lockName)
+}
+
 // lead runs the projection loop while this instance holds the lock. It calls
 // release (via defer) before returning, guaranteeing the lock is freed before
 // pool.Close() in Teardown.
@@ -236,8 +265,12 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 		return fmt.Errorf("projector: init checkpoints: %w", err)
 	}
 
-	pollTicker := time.NewTicker(500 * time.Millisecond)
-	defer pollTicker.Stop()
+	if starter, ok := p.notifier.(listenStarter); ok {
+		if err := starter.EnsureListening(ctx); err != nil {
+			return fmt.Errorf("projector: start notifier listener: %w", err)
+		}
+	}
+
 	retentionTicker := time.NewTicker(time.Hour)
 	defer retentionTicker.Stop()
 
@@ -275,28 +308,47 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 			}
 		}
 
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-pollTicker.C:
-		case <-retentionTicker.C:
-			if err := p.runRetentionOnce(ctx); err != nil {
-				return err
-			}
-		// notifier.Wait blocks until a NOTIFY arrives or ctx is cancelled.
-		default:
-			waitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
-			_ = p.notifier.Wait(waitCtx)
-			cancel()
+		if err := p.waitForNotificationOrRetention(ctx, retentionTicker.C); err != nil {
+			return err
 		}
 	}
 }
 
-func (p *Projector) runRetentionOnce(ctx context.Context) error {
+func (p *Projector) waitForNotificationOrRetention(ctx context.Context, retentionC <-chan time.Time) error {
+	waitCtx, cancel := context.WithCancel(ctx)
+	waitDone := make(chan error, 1)
+	go func() { waitDone <- p.notifier.Wait(waitCtx) }()
+
+	select {
+	case <-ctx.Done():
+		cancel()
+		<-waitDone
+		return ctx.Err()
+	case <-retentionC:
+		cancel()
+		<-waitDone
+		return p.runRetentionOnce(ctx)
+	case err := <-waitDone:
+		cancel()
+		if err != nil && !errors.Is(err, context.Canceled) {
+			return fmt.Errorf("projector notification wait: %w", err)
+		}
+		return nil
+	}
+}
+
+func (p *Projector) runRetentionOnce(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.RunRetention")
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	if p.runRetention == nil {
 		return nil
 	}
 	archived, err := p.runRetention(ctx)
+	span.SetAttributes(attribute.Bool("projector.retention.archived", archived))
 	return handleRetentionResult(archived, err, func() error { return p.rebuildAfterArchive(ctx) })
 }
 
@@ -312,7 +364,14 @@ func handleRetentionResult(archived bool, retentionErr error, rebuild func() err
 	return nil
 }
 
-func (p *Projector) rebuildAfterArchive(ctx context.Context) error {
+func (p *Projector) rebuildAfterArchive(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.RebuildAfterArchive",
+		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	p.log.InfoContext(ctx, "retention archived incidents, rebuilding read models")
 	for _, handler := range p.handlers {
 		if err := p.resetProjection(ctx, handler); err != nil {
@@ -343,7 +402,15 @@ func (p *Projector) sleep(ctx context.Context, d time.Duration) bool {
 }
 
 // catchUp reads all new events from each handler's checkpoint and applies them.
-func (p *Projector) catchUp(ctx context.Context) error {
+func (p *Projector) catchUp(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.CatchUp",
+		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
+	slog.DebugContext(ctx, "catch-up starting")
 	start := time.Now()
 	var totalApplied int
 	for _, h := range p.handlers {
@@ -368,10 +435,27 @@ func (p *Projector) catchUp(ctx context.Context) error {
 					continue
 				}
 				if err := p.applyWithDeadLetter(ctx, h, e); err != nil {
+					span.RecordError(err,
+						trace.WithAttributes(
+							attribute.String("projector.handler", h.Name()),
+							attribute.String("event.stream_type", e.StreamType),
+							attribute.String("event.stream_id", e.StreamID.String()),
+							attribute.String("event.type", e.EventType),
+							attribute.Int("event.version", e.Version),
+						))
 					p.log.Error("handler failed after retries", "handler", h.Name(), "error", err)
 					p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "apply")))
 					// park the event and continue — the projection is now known-incomplete
 					if parkErr := p.parkDeadLetter(ctx, h.Name(), next, e, err); parkErr != nil {
+						span.RecordError(parkErr,
+							trace.WithAttributes(
+								attribute.String("projector.handler", h.Name()),
+								attribute.String("projector.error_type", "dead_letter"),
+								attribute.String("event.stream_type", e.StreamType),
+								attribute.String("event.stream_id", e.StreamID.String()),
+								attribute.String("event.type", e.EventType),
+								attribute.Int("event.version", e.Version),
+							))
 						p.log.Error("failed to park dead letter", "error", parkErr)
 					} else {
 						p.deadLetters.Add(ctx, 1, metric.WithAttributes(handlerAttr))
@@ -399,6 +483,7 @@ func (p *Projector) catchUp(ctx context.Context) error {
 		p.log.Info("catch-up complete", "total_applied", totalApplied)
 	}
 	p.catchupDur.Record(ctx, time.Since(start).Seconds())
+	span.SetAttributes(attribute.Int("projector.events.applied", totalApplied))
 	return nil
 }
 
@@ -418,7 +503,20 @@ func (p *Projector) applyWithDeadLetter(ctx context.Context, h Handler, e events
 	return lastErr
 }
 
-func (p *Projector) applyInTx(ctx context.Context, h Handler, e eventsourcing.Event) error {
+func (p *Projector) applyInTx(ctx context.Context, h Handler, e eventsourcing.Event) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.ApplyEvent",
+		trace.WithAttributes(
+			attribute.String("projector.handler", h.Name()),
+			attribute.String("event.stream_type", e.StreamType),
+			attribute.String("event.stream_id", e.StreamID.String()),
+			attribute.String("event.type", e.EventType),
+			attribute.Int("event.version", e.Version),
+		))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	tx, err := p.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -449,7 +547,14 @@ func TxFromCtx(ctx context.Context) (interface {
 // Checkpoint management
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (p *Projector) initCheckpoints(ctx context.Context) error {
+func (p *Projector) initCheckpoints(ctx context.Context) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.InitCheckpoints",
+		trace.WithAttributes(attribute.Int("projector.handlers", len(p.handlers))))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	for _, h := range p.handlers {
 		var storedVersion int
 		err := p.pool.QueryRow(ctx,
@@ -488,11 +593,21 @@ func (p *Projector) initCheckpoints(ctx context.Context) error {
 	return nil
 }
 
-func (p *Projector) resetProjection(ctx context.Context, h Handler) error {
+func (p *Projector) resetProjection(ctx context.Context, h Handler) (err error) {
+	ctx, span := p.tracer.Start(ctx, "PostgresProjector.ResetProjection",
+		trace.WithAttributes(
+			attribute.String("projector.handler", h.Name()),
+			attribute.Int("projector.handler_version", h.Version()),
+		))
+	defer func() {
+		recordSpanError(span, err)
+		span.End()
+	}()
+
 	if err := h.Reset(ctx); err != nil {
 		return fmt.Errorf("reset projection %s: %w", h.Name(), err)
 	}
-	_, err := p.pool.Exec(ctx, `
+	_, err = p.pool.Exec(ctx, `
 		DELETE FROM eventsourcing.projection_dead_letter WHERE projection = $1`,
 		h.Name())
 	if err != nil {

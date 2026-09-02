@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -230,6 +231,8 @@ func TxFromCtx(ctx context.Context) (pgx.Tx, error) {
 type Notifier struct {
 	pool    *pgxpool.Pool
 	channel string
+	mu      sync.Mutex
+	conn    *pgxpool.Conn
 }
 
 func NewNotifier(pool *pgxpool.Pool, channel string) *Notifier {
@@ -244,17 +247,49 @@ func (n *Notifier) Notify(ctx context.Context) error {
 	return err
 }
 
+func (n *Notifier) EnsureListening(ctx context.Context) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return n.ensureListeningLocked(ctx)
+}
+
 func (n *Notifier) Wait(ctx context.Context) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	if err := n.ensureListeningLocked(ctx); err != nil {
+		return err
+	}
+	_, err := n.conn.Conn().WaitForNotification(ctx)
+	if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+		n.conn.Release()
+		n.conn = nil
+	}
+	return err
+}
+
+func (n *Notifier) Close() {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	if n.conn != nil {
+		n.conn.Release()
+		n.conn = nil
+	}
+}
+
+func (n *Notifier) ensureListeningLocked(ctx context.Context) error {
+	if n.conn != nil {
+		return nil
+	}
 	conn, err := n.pool.Acquire(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
-	if _, err = conn.Exec(ctx, fmt.Sprintf("LISTEN %s", n.channel)); err != nil {
+	if _, err := conn.Exec(ctx, fmt.Sprintf("LISTEN %s", n.channel)); err != nil {
+		conn.Release()
 		return err
 	}
-	_, err = conn.Conn().WaitForNotification(ctx)
-	return err
+	n.conn = conn
+	return nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

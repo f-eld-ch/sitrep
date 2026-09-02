@@ -55,7 +55,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	}
 	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
 	// The projector leader holds one connection for the advisory lock for its
-	// entire lifetime; Notifier.Wait needs one every ~2s. The pgx default of
+	// entire lifetime; Notifier.Wait keeps one persistent LISTEN connection. The pgx default of
 	// max(4, NumCPU) is too small under concurrent load, so we enforce a floor.
 	if cfg.MaxConns < 8 {
 		cfg.MaxConns = 8
@@ -122,6 +122,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 			cancelProj()
 			<-projDone
 			proj.Unregister()
+			notifier.Close()
 			pool.Close()
 		},
 	}, nil
