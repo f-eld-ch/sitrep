@@ -12,6 +12,12 @@ jobs:
   ui-build:
     name: Build UI
     uses: ./.github/workflows/ui-workflow.yml
+    # The called workflow's job requests actions/packages read; a called workflow
+    # can never exceed the caller's permissions, so grant them here.
+    permissions:
+      contents: read
+      actions: read
+      packages: read
     with:
       build: true
 
