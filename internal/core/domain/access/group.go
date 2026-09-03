@@ -19,6 +19,10 @@ type GroupRenamed struct {
 	Name string `json:"name"`
 }
 
+type GroupDescriptionChanged struct {
+	Description string `json:"description"`
+}
+
 type GroupArchived struct{}
 
 type GroupMemberAdded struct {
@@ -40,7 +44,15 @@ type AccessGroup struct {
 func NewAccessGroup(id uuid.UUID) *AccessGroup {
 	g := &AccessGroup{members: make(map[string]bool)}
 	g.root.SetID(id)
-	eventsourcing.Register(g, GroupCreated{}, GroupRenamed{}, GroupArchived{}, GroupMemberAdded{}, GroupMemberRemoved{})
+	eventsourcing.Register(
+		g,
+		GroupCreated{},
+		GroupRenamed{},
+		GroupDescriptionChanged{},
+		GroupArchived{},
+		GroupMemberAdded{},
+		GroupMemberRemoved{},
+	)
 
 	return g
 }
@@ -76,6 +88,20 @@ func (g *AccessGroup) Rename(name, actor string, at time.Time) error {
 	}
 
 	eventsourcing.TrackChange(g, GroupRenamed{Name: name}, at, meta(actor))
+
+	return nil
+}
+
+func (g *AccessGroup) UpdateDescription(description, actor string, at time.Time) error {
+	if g.archived {
+		return fmt.Errorf("group is archived")
+	}
+
+	if g.description == description {
+		return nil
+	}
+
+	eventsourcing.TrackChange(g, GroupDescriptionChanged{Description: description}, at, meta(actor))
 
 	return nil
 }
@@ -124,6 +150,8 @@ func (g *AccessGroup) Transition(e eventsourcing.Event) error {
 		g.name, g.description = d.Name, d.Description
 	case GroupRenamed:
 		g.name = d.Name
+	case GroupDescriptionChanged:
+		g.description = d.Description
 	case GroupArchived:
 		g.archived = true
 	case GroupMemberAdded:

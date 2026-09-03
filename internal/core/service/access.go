@@ -188,6 +188,22 @@ func (s *AccessService) RenameAccessGroup(
 	)
 }
 
+func (s *AccessService) UpdateAccessGroupDescription(
+	ctx context.Context,
+	groupID uuid.UUID,
+	description string,
+	actor identity.Actor,
+) error {
+	return s.changeGroup(
+		ctx,
+		groupID,
+		actor,
+		func(g *access.AccessGroup, at time.Time) error {
+			return g.UpdateDescription(description, actor.Sub, at)
+		},
+	)
+}
+
 func (s *AccessService) ArchiveAccessGroup(ctx context.Context, groupID uuid.UUID, actor identity.Actor) error {
 	return s.changeGroup(
 		ctx,

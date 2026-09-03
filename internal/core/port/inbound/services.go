@@ -41,6 +41,7 @@ type IncidentAccessService interface {
 type GroupAccessService interface {
 	CreateAccessGroup(ctx context.Context, name, description string, actor identity.Actor) (uuid.UUID, error)
 	RenameAccessGroup(ctx context.Context, groupID uuid.UUID, name string, actor identity.Actor) error
+	UpdateAccessGroupDescription(ctx context.Context, groupID uuid.UUID, description string, actor identity.Actor) error
 	ArchiveAccessGroup(ctx context.Context, groupID uuid.UUID, actor identity.Actor) error
 	AddGroupMember(ctx context.Context, groupID uuid.UUID, subject string, actor identity.Actor) error
 	RemoveGroupMember(ctx context.Context, groupID uuid.UUID, subject string, actor identity.Actor) error
