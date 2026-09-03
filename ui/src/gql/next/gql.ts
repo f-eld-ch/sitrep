@@ -17,6 +17,16 @@ type Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.ListIncidentAccessDocument,
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": typeof types.ListGroupMembersDocument,
+    "\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.ChangeIncidentAccessModeDocument,
+    "\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.GrantIncidentRoleDocument,
+    "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": typeof types.RevokeIncidentRoleDocument,
+    "\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.CreateAccessGroupDocument,
+    "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.RenameAccessGroupDocument,
+    "\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n": typeof types.ArchiveAccessGroupDocument,
+    "\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n": typeof types.AddGroupMemberDocument,
+    "\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n": typeof types.RemoveGroupMemberDocument,
+    "\n  mutation GrantGlobalRole($subject: ID!, $role: GlobalRole!) {\n    grantGlobalRole(subject: $subject, role: $role)\n  }\n": typeof types.GrantGlobalRoleDocument,
+    "\n  mutation RevokeGlobalRole($subject: ID!, $role: GlobalRole!) {\n    revokeGlobalRole(subject: $subject, role: $role)\n  }\n": typeof types.RevokeGlobalRoleDocument,
     "\n    query FetchIncidents {\n      incidents {\n        id\n        parentId\n        name\n        createdAt\n        updatedAt\n        closedAt\n        isClosed\n        location {\n          name\n          coordinates\n        }\n      }\n    }\n  ": typeof types.FetchIncidentsDocument,
     "\n  query GetIncidentDetail($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      parentId\n      name\n      createdAt\n      updatedAt\n      closedAt\n      isClosed\n      location {\n        name\n        coordinates\n      }\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.GetIncidentDetailDocument,
     "\n  mutation CreateIncident(\n    $name: String!\n    $location: String\n    $divisions: [DivisionInput!]!\n    $layers: [LayerInput!]!\n  ) {\n    createIncident(\n      input: { name: $name, location: $location, divisions: $divisions, layers: $layers }\n    ) {\n      id\n      name\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.CreateIncidentDocument,
@@ -42,6 +52,16 @@ const documents: Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.ListIncidentAccessDocument,
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": types.ListGroupMembersDocument,
+    "\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.ChangeIncidentAccessModeDocument,
+    "\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.GrantIncidentRoleDocument,
+    "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": types.RevokeIncidentRoleDocument,
+    "\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.CreateAccessGroupDocument,
+    "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.RenameAccessGroupDocument,
+    "\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n": types.ArchiveAccessGroupDocument,
+    "\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n": types.AddGroupMemberDocument,
+    "\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n": types.RemoveGroupMemberDocument,
+    "\n  mutation GrantGlobalRole($subject: ID!, $role: GlobalRole!) {\n    grantGlobalRole(subject: $subject, role: $role)\n  }\n": types.GrantGlobalRoleDocument,
+    "\n  mutation RevokeGlobalRole($subject: ID!, $role: GlobalRole!) {\n    revokeGlobalRole(subject: $subject, role: $role)\n  }\n": types.RevokeGlobalRoleDocument,
     "\n    query FetchIncidents {\n      incidents {\n        id\n        parentId\n        name\n        createdAt\n        updatedAt\n        closedAt\n        isClosed\n        location {\n          name\n          coordinates\n        }\n      }\n    }\n  ": types.FetchIncidentsDocument,
     "\n  query GetIncidentDetail($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      parentId\n      name\n      createdAt\n      updatedAt\n      closedAt\n      isClosed\n      location {\n        name\n        coordinates\n      }\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": types.GetIncidentDetailDocument,
     "\n  mutation CreateIncident(\n    $name: String!\n    $location: String\n    $divisions: [DivisionInput!]!\n    $layers: [LayerInput!]!\n  ) {\n    createIncident(\n      input: { name: $name, location: $location, divisions: $divisions, layers: $layers }\n    ) {\n      id\n      name\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": types.CreateIncidentDocument,
@@ -90,6 +110,46 @@ export function graphql(source: "\n  query ListAccessGroups {\n    accessGroups 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n"): (typeof documents)["\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"): (typeof documents)["\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"): (typeof documents)["\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n"): (typeof documents)["\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"): (typeof documents)["\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"): (typeof documents)["\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n"): (typeof documents)["\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n"): (typeof documents)["\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n"): (typeof documents)["\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation GrantGlobalRole($subject: ID!, $role: GlobalRole!) {\n    grantGlobalRole(subject: $subject, role: $role)\n  }\n"): (typeof documents)["\n  mutation GrantGlobalRole($subject: ID!, $role: GlobalRole!) {\n    grantGlobalRole(subject: $subject, role: $role)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RevokeGlobalRole($subject: ID!, $role: GlobalRole!) {\n    revokeGlobalRole(subject: $subject, role: $role)\n  }\n"): (typeof documents)["\n  mutation RevokeGlobalRole($subject: ID!, $role: GlobalRole!) {\n    revokeGlobalRole(subject: $subject, role: $role)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

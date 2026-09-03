@@ -8,7 +8,29 @@ export type { CommandHook, CommandState, QueryResult } from "./result";
 
 // Access control
 export type { AccessGroupsData, GroupMembersData, IncidentAccessData } from "./access";
-export { useAccessGroups, useGroupMembers, useIncidentAccess } from "./access";
+export type {
+  ChangeIncidentAccessModeArgs,
+  CreateAccessGroupArgs,
+  GlobalRoleArgs,
+  GroupMemberArgs,
+  IncidentRoleArgs,
+  RenameAccessGroupArgs,
+} from "./access";
+export {
+  useAccessGroups,
+  useAddGroupMember,
+  useArchiveAccessGroup,
+  useChangeIncidentAccessMode,
+  useCreateAccessGroup,
+  useGrantGlobalRole,
+  useGrantIncidentRole,
+  useGroupMembers,
+  useIncidentAccess,
+  useRemoveGroupMember,
+  useRenameAccessGroup,
+  useRevokeGlobalRole,
+  useRevokeIncidentRole,
+} from "./access";
 
 // Incident aggregate
 export type {
