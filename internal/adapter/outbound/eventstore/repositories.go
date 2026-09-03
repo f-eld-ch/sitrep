@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
@@ -21,10 +22,13 @@ import (
 
 // Compile-time assertions: all repositories satisfy their port interfaces.
 var (
-	_ outbound.IncidentRepository = (*IncidentRepository)(nil)
-	_ outbound.MessageRepository  = (*MessageRepository)(nil)
-	_ outbound.LayerRepository    = (*LayerRepository)(nil)
-	_ outbound.FeatureRepository  = (*FeatureRepository)(nil)
+	_ outbound.IncidentRepository       = (*IncidentRepository)(nil)
+	_ outbound.MessageRepository        = (*MessageRepository)(nil)
+	_ outbound.LayerRepository          = (*LayerRepository)(nil)
+	_ outbound.FeatureRepository        = (*FeatureRepository)(nil)
+	_ outbound.IncidentAccessRepository = (*IncidentAccessRepository)(nil)
+	_ outbound.AccessGroupRepository    = (*AccessGroupRepository)(nil)
+	_ outbound.GlobalAccessRepository   = (*GlobalAccessRepository)(nil)
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -119,6 +123,72 @@ type FeatureRepository struct{ store outbound.EventStore }
 
 func NewFeatureRepository(store outbound.EventStore) *FeatureRepository {
 	return &FeatureRepository{store: store}
+}
+
+type IncidentAccessRepository struct{ store outbound.EventStore }
+
+func NewIncidentAccessRepository(store outbound.EventStore) *IncidentAccessRepository {
+	return &IncidentAccessRepository{store: store}
+}
+
+func (r *IncidentAccessRepository) Load(ctx context.Context, id shared.IncidentID) (*access.IncidentAccess, error) {
+	a := access.NewIncidentAccess(id)
+	if err := loadAggregate(ctx, r.store, a, uuid.UUID(id)); err != nil {
+		return nil, fmt.Errorf("incident access repository load %s: %w", id, err)
+	}
+	return a, nil
+}
+
+func (r *IncidentAccessRepository) Save(ctx context.Context, a *access.IncidentAccess) (outbound.Cursor, error) {
+	cursor, err := r.store.Append(ctx, a)
+	if err != nil {
+		return nil, fmt.Errorf("incident access repository save %s: %w", a.Root().ID(), err)
+	}
+	return cursor, nil
+}
+
+type AccessGroupRepository struct{ store outbound.EventStore }
+
+func NewAccessGroupRepository(store outbound.EventStore) *AccessGroupRepository {
+	return &AccessGroupRepository{store: store}
+}
+
+func (r *AccessGroupRepository) Load(ctx context.Context, id uuid.UUID) (*access.AccessGroup, error) {
+	a := access.NewAccessGroup(id)
+	if err := loadAggregate(ctx, r.store, a, id); err != nil {
+		return nil, fmt.Errorf("access group repository load %s: %w", id, err)
+	}
+	return a, nil
+}
+
+func (r *AccessGroupRepository) Save(ctx context.Context, a *access.AccessGroup) (outbound.Cursor, error) {
+	cursor, err := r.store.Append(ctx, a)
+	if err != nil {
+		return nil, fmt.Errorf("access group repository save %s: %w", a.Root().ID(), err)
+	}
+	return cursor, nil
+}
+
+type GlobalAccessRepository struct{ store outbound.EventStore }
+
+func NewGlobalAccessRepository(store outbound.EventStore) *GlobalAccessRepository {
+	return &GlobalAccessRepository{store: store}
+}
+
+func (r *GlobalAccessRepository) Load(ctx context.Context) (*access.GlobalAccess, error) {
+	a := access.NewGlobalAccess()
+	if err := loadAggregate(ctx, r.store, a, access.GlobalAccessID); err != nil {
+		return nil, fmt.Errorf("global access repository load: %w", err)
+	}
+	return a, nil
+}
+
+func (r *GlobalAccessRepository) Save(ctx context.Context, a *access.GlobalAccess) (outbound.Cursor, error) {
+	cursor, err := r.store.Append(ctx, a)
+	if err != nil {
+		return nil, fmt.Errorf("global access repository save: %w", err)
+	}
+	return cursor, nil
 }
 
 func (r *FeatureRepository) Load(ctx context.Context, id shared.FeatureID) (*feature.Feature, error) {

@@ -3,6 +3,9 @@ package outbound
 import (
 	"context"
 
+	"github.com/google/uuid"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
@@ -32,6 +35,21 @@ type LayerRepository interface {
 type FeatureRepository interface {
 	Load(ctx context.Context, id shared.FeatureID) (*feature.Feature, error)
 	Save(ctx context.Context, a *feature.Feature) (Cursor, error)
+}
+
+type IncidentAccessRepository interface {
+	Load(ctx context.Context, id shared.IncidentID) (*access.IncidentAccess, error)
+	Save(ctx context.Context, a *access.IncidentAccess) (Cursor, error)
+}
+
+type AccessGroupRepository interface {
+	Load(ctx context.Context, id uuid.UUID) (*access.AccessGroup, error)
+	Save(ctx context.Context, a *access.AccessGroup) (Cursor, error)
+}
+
+type GlobalAccessRepository interface {
+	Load(ctx context.Context) (*access.GlobalAccess, error)
+	Save(ctx context.Context, a *access.GlobalAccess) (Cursor, error)
 }
 
 // MessageCounter assigns the next sequential message number for an incident.
