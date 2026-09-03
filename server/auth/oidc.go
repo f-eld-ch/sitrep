@@ -199,6 +199,13 @@ func (o *OIDCClient) marshalUserinfo(
 
 					return
 				}
+
+				slog.InfoContext(
+					r.Context(),
+					"first user bootstrapped as system admin",
+					slog.String("sub", info.Subject),
+					slog.String("role", "system_admin"),
+				)
 			}
 		}
 
