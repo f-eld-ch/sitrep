@@ -158,9 +158,10 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	divHandler := inprojection.NewIncidentDivisionHandler()
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
+	accessHandler := inprojection.NewAccessHandler()
 
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler,
+		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
 	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)

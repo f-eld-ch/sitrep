@@ -1,0 +1,72 @@
+package projection
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+)
+
+func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	groupID := uuid.New()
+	at := time.Unix(1, 0)
+
+	incidentAccess := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incidentAccess.Initialize(nil, access.OpenOperational, "admin", at))
+	require.NoError(t, incidentAccess.ChangeAccessMode(access.Restricted, "owner", at))
+	require.NoError(
+		t,
+		incidentAccess.GrantRole(
+			access.Principal{Kind: access.GroupPrincipal, ID: groupID.String()},
+			access.Viewer,
+			"owner",
+			at,
+		),
+	)
+	_, err := eventstore.NewIncidentAccessRepository(store).Save(ctx, incidentAccess)
+	require.NoError(t, err)
+
+	group := access.NewAccessGroup(groupID)
+	require.NoError(t, group.Create("Operations", "", "admin", at))
+	require.NoError(t, group.AddMember("member-1", "admin", at))
+	_, err = eventstore.NewAccessGroupRepository(store).Save(ctx, group)
+	require.NoError(t, err)
+
+	handler := NewAccessHandler()
+	projector := NewProjector(store, []Handler{handler})
+	require.NoError(t, projector.CatchUp(ctx))
+
+	rows := handler.Policies()
+	require.NotEmpty(t, rows)
+	assert.Contains(
+		t,
+		rows,
+		AccessPolicyRow{
+			Subject: "user:owner",
+			Domain:  "incident:" + incidentID.String(),
+			Object:  "incident",
+			Action:  "incident.read",
+		},
+	)
+	assert.Contains(
+		t,
+		rows,
+		AccessPolicyRow{
+			Subject: "user:member-1",
+			Domain:  "incident:" + incidentID.String(),
+			Object:  "incident",
+			Action:  "incident.read",
+		},
+	)
+}
