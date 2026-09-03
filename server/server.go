@@ -26,10 +26,8 @@ type Server struct {
 	version        string
 	sha            string
 	auth.Enforcer
-	router         *echo.Echo
-	registerAPIV2  func()
-	projectorReady func() bool
-	listening      atomic.Bool
+	router        *echo.Echo
+	registerAPIV2 func()
 	*http.Server
 }
 
@@ -95,15 +93,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 
 	s.logger.InfoContext(ctx, "starting server", "address", s.Addr)
 
-	listener, err := (&net.ListenConfig{}).Listen(ctx, "tcp", s.Addr)
-	if err != nil {
-		return err
-	}
-
-	s.listening.Store(true)
-	defer s.listening.Store(false)
-
-	return s.Serve(listener)
+	return s.Server.ListenAndServe()
 }
 
 func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {

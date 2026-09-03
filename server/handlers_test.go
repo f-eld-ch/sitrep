@@ -31,67 +31,6 @@ func TestShutdownSignals(t *testing.T) {
 	}
 }
 
-func TestReadyRequiresListenerAndProjector(t *testing.T) {
-	tests := []struct {
-		name           string
-		listening      bool
-		projectorReady bool
-		wantStatus     int
-		wantReady      bool
-	}{
-		{name: "listener not bound", wantStatus: http.StatusServiceUnavailable},
-		{name: "projector catching up", listening: true, wantStatus: http.StatusServiceUnavailable},
-		{
-			name:           "ready to serve",
-			listening:      true,
-			projectorReady: true,
-			wantStatus:     http.StatusOK,
-			wantReady:      true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Server{projectorReady: func() bool { return tt.projectorReady }}
-			s.listening.Store(tt.listening)
-
-			rec := httptest.NewRecorder()
-			ctx := echo.New().NewContext(
-				httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/ready", nil),
-				rec,
-			)
-
-			if err := s.ready(ctx); err != nil {
-				t.Fatalf("ready: %v", err)
-			}
-
-			if rec.Code != tt.wantStatus {
-				t.Errorf("status: got %d, want %d", rec.Code, tt.wantStatus)
-			}
-
-			var response struct {
-				Status         string `json:"status"`
-				Listening      bool   `json:"listening"`
-				ProjectorReady bool   `json:"projector_ready"`
-				ShuttingDown   bool   `json:"shutting_down"`
-			}
-			if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
-				t.Fatalf("ready response: %v", err)
-			}
-
-			wantState := "unavailable"
-			if tt.wantReady {
-				wantState = "ready"
-			}
-
-			if response.Status != wantState || response.Listening != tt.listening ||
-				response.ProjectorReady != tt.projectorReady || response.ShuttingDown {
-				t.Errorf("ready response: got %+v", response)
-			}
-		})
-	}
-}
-
 func TestAPIV2UsesFinalEnforcer(t *testing.T) {
 	s := NewServer(
 		WithApiV2(Stack{}),
