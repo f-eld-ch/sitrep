@@ -185,19 +185,27 @@ function Layers() {
 // LayerFetcher polls from the layers and sets the layers from remote
 function LayerFetcher() {
   const { incidentId } = useParams();
-  const { state, dispatch } = useContext(LayerContext);
+  const { dispatch } = useContext(LayerContext);
+  const syncedLayers = useRef<Layer[] | undefined>(undefined);
+  const syncedIncidentId = useRef<string | undefined>(undefined);
 
   const result = useLayersForIncident(incidentId);
+  const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
 
   useEffect(() => {
-    if (result.status !== "ready") return;
-    const stateLayers = state.layers.map((l) => l.layer);
-    // result.data reference is stable when Apollo cache is unchanged (useMemo keyed on data),
-    // so isEqual only passes when content actually changed.
-    if (!isEqual(result.data.layers, stateLayers)) {
-      dispatch({ type: "SET_LAYERS", payload: { layers: result.data.layers } });
+    if (remoteLayers === undefined) return;
+
+    if (syncedIncidentId.current === incidentId && isEqual(remoteLayers, syncedLayers.current)) {
+      return;
     }
-  }, [result, dispatch, state.layers]);
+
+    syncedIncidentId.current = incidentId;
+    syncedLayers.current = remoteLayers;
+    dispatch({
+      type: "SET_LAYERS",
+      payload: { layers: remoteLayers, viewedIncidentId: incidentId },
+    });
+  }, [remoteLayers, dispatch, incidentId]);
 
   return null;
 }
@@ -288,18 +296,16 @@ function useLiveDrawGeometry(
 }
 
 function ActiveLayer() {
-  // A ref, not state: this only latches the one-off viewport fit and is never read
-  // during render, so making it state would force a pointless extra render.
-  const initialized = useRef(false);
+  const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
-  const featureCollection = useMemo(
-    () =>
-      layerToFeatureCollection(
-        first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
-      ),
+  const { incidentId } = useParams();
+  const activeLayer = useMemo(
+    () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
     [state.layers, state.activeLayer],
   );
+  const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
+  const featureCollection = useMemo(() => layerToFeatureCollection(activeLayer), [activeLayer]);
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
   // arrow and the slide arrow track a vertex as it is dragged rather than jumping once the
@@ -318,11 +324,10 @@ function ActiveLayer() {
   }, [featureCollection, liveGeometry, state.selectedFeature]);
 
   useEffect(() => {
-    if (initialized.current || !map?.loaded) {
+    if (fittedLayer.current === state.activeLayer || !map?.loaded) {
       return;
     }
-    // only run this for the initialization as we don't want to continously
-    // change the map viewport on new features
+
     if (map !== undefined && featureCollection.features.length > 0) {
       const bboxArray = bbox(featureCollection);
       map.fitBounds(
@@ -335,9 +340,17 @@ function ActiveLayer() {
           padding: { top: 30, bottom: 30, left: 30, right: 30 },
         },
       );
-      initialized.current = true;
+      fittedLayer.current = state.activeLayer;
     }
-  }, [featureCollection, map]);
+  }, [featureCollection, map, state.activeLayer]);
+
+  if (state.activeLayer === undefined) {
+    return null;
+  }
+
+  if (!isOwnLayer) {
+    return <InactiveLayer id={state.activeLayer} featureCollection={featureCollection} />;
+  }
 
   return (
     <>

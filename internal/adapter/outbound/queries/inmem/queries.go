@@ -83,6 +83,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM {
 	inc := &outbound.IncidentRM{
 		ID:        row.ID,
+		ParentID:  row.ParentID,
 		Name:      row.Name,
 		IsClosed:  row.IsClosed,
 		ClosedAt:  row.ClosedAt,
@@ -164,18 +165,82 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
 	rows := q.layers.ForIncident(incidentID)
 
+	return q.layerRowsToRM(rows, nil), nil
+}
+
+func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
+	slog.DebugContext(ctx, "listing visible layers", "incident_id", incidentID)
+
+	rows := q.layers.ForIncident(incidentID)
+	for _, incidentRow := range q.incidents.All() {
+		if incidentRow.IsDeleted || incidentRow.ParentID == nil || *incidentRow.ParentID != incidentID {
+			continue
+		}
+
+		rows = append(rows, q.layers.ForIncident(incidentRow.ID)...)
+	}
+
+	return q.layerRowsToRM(rows, &incidentID), nil
+}
+
+func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
+	slog.DebugContext(ctx, "listing child incidents", "parent_id", parentID)
+
+	var out []*outbound.IncidentRM
+
+	for _, row := range q.incidents.All() {
+		if row.IsDeleted || row.ParentID == nil || *row.ParentID != parentID {
+			continue
+		}
+
+		out = append(out, q.toIncidentRM(row))
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].CreatedAt.After(out[j].CreatedAt)
+	})
+
+	return out, nil
+}
+
+func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *uuid.UUID) []*outbound.LayerRM {
 	out := make([]*outbound.LayerRM, 0, len(rows))
 	for _, row := range rows {
+		sourceName := ""
+		if incidentRow := q.incidents.Get(row.IncidentID); incidentRow != nil {
+			sourceName = incidentRow.Name
+		}
+
 		out = append(out, &outbound.LayerRM{
-			ID:         row.ID,
-			IncidentID: row.IncidentID,
-			Name:       row.Name,
-			GeoJSON:    row.GeoJSON(),
-			Revision:   row.Revision,
+			ID:                 row.ID,
+			IncidentID:         row.IncidentID,
+			SourceIncidentID:   row.IncidentID,
+			SourceIncidentName: sourceName,
+			Name:               row.Name,
+			GeoJSON:            row.GeoJSON(),
+			Revision:           row.Revision,
 		})
 	}
 
-	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	sort.Slice(out, func(i, j int) bool {
+		left := out[i]
+		right := out[j]
 
-	return out, nil
+		if viewedIncidentID != nil {
+			leftOwn := left.SourceIncidentID == *viewedIncidentID
+			rightOwn := right.SourceIncidentID == *viewedIncidentID
+
+			if leftOwn != rightOwn {
+				return leftOwn
+			}
+
+			if !leftOwn && left.SourceIncidentName != right.SourceIncidentName {
+				return left.SourceIncidentName < right.SourceIncidentName
+			}
+		}
+
+		return left.Name < right.Name
+	})
+
+	return out
 }

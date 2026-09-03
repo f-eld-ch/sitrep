@@ -92,6 +92,8 @@
   "incidentName": "Ereignisname",
   "open": "öffnen",
   "options": "Optionen",
+  "parentIncident": "übergeordnetes Ereignis",
+  "noParentIncident": "kein übergeordnetes Ereignis",
   "otherDetails": "Details",
   "overview": "Übersicht",
   "phone": {
@@ -139,6 +141,7 @@
   },
   "layerControl": {
     "layers": "Layer",
+    "currentIncidentLayers": "Aktuelles Ereignis",
     "addLayer": "Layer hinzufügen",
     "layerName": "Layer-Name",
     "drawingLayers": "Zeichnungs-Layer",
@@ -173,6 +176,7 @@
     "ALREADY_CLOSED": "Der Eintrag ist bereits geschlossen.",
     "ALREADY_OPEN": "Der Eintrag ist bereits offen.",
     "INVALID_INPUT": "Die Eingabe ist ungültig.",
+    "INVALID_PARENT_INCIDENT": "Das ausgewählte übergeordnete Ereignis kann nicht verwendet werden.",
     "CONFLICT": "Die Anfrage kann aufgrund eines Konflikts nicht ausgeführt werden.",
     "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "NETWORK_ERROR": "Keine Verbindung zum Server. Bitte überprüfen Sie Ihre Netzwerkverbindung.",

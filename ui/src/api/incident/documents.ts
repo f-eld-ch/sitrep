@@ -4,14 +4,20 @@ import type {
   CloseIncidentMutationVariables,
   CreateIncidentMutation,
   CreateIncidentMutationVariables,
+  CreateIncidentWithParentMutation,
+  CreateIncidentWithParentMutationVariables,
   DeleteIncidentMutation,
   DeleteIncidentMutationVariables,
   FetchIncidentsQuery,
   FetchIncidentsQueryVariables,
   GetIncidentDetailQuery,
   GetIncidentDetailQueryVariables,
+  LinkIncidentParentMutation,
+  LinkIncidentParentMutationVariables,
   ReopenIncidentMutation,
   ReopenIncidentMutationVariables,
+  UnlinkIncidentParentMutation,
+  UnlinkIncidentParentMutationVariables,
   UpdateIncidentMutation,
   UpdateIncidentMutationVariables,
 } from "gql/next";
@@ -23,6 +29,7 @@ export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncident
     query FetchIncidents {
       incidents {
         id
+        parentId
         name
         createdAt
         updatedAt
@@ -43,6 +50,7 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
   query GetIncidentDetail($incidentId: ID!) {
     incident(id: $incidentId) {
       id
+      parentId
       name
       createdAt
       updatedAt
@@ -77,6 +85,38 @@ export const CREATE_INCIDENT: TypedDocumentNode<
       input: { name: $name, location: $location, divisions: $divisions, layers: $layers }
     ) {
       id
+      name
+      divisions {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+export const CREATE_INCIDENT_WITH_PARENT: TypedDocumentNode<
+  CreateIncidentWithParentMutation,
+  CreateIncidentWithParentMutationVariables
+> = gql`
+  mutation CreateIncidentWithParent(
+    $name: String!
+    $parentId: ID!
+    $location: String
+    $divisions: [DivisionInput!]!
+    $layers: [LayerInput!]!
+  ) {
+    createIncident(
+      input: {
+        name: $name
+        parentId: $parentId
+        location: $location
+        divisions: $divisions
+        layers: $layers
+      }
+    ) {
+      id
+      parentId
       name
       divisions {
         id
@@ -145,5 +185,31 @@ export const DELETE_INCIDENT: TypedDocumentNode<
 > = gql`
   mutation DeleteIncident($id: ID!) {
     deleteIncident(id: $id)
+  }
+`;
+
+export const LINK_INCIDENT_PARENT: TypedDocumentNode<
+  LinkIncidentParentMutation,
+  LinkIncidentParentMutationVariables
+> = gql`
+  mutation LinkIncidentParent($childId: ID!, $parentId: ID!) {
+    linkIncidentParent(childId: $childId, parentId: $parentId) {
+      id
+      parentId
+      updatedAt
+    }
+  }
+`;
+
+export const UNLINK_INCIDENT_PARENT: TypedDocumentNode<
+  UnlinkIncidentParentMutation,
+  UnlinkIncidentParentMutationVariables
+> = gql`
+  mutation UnlinkIncidentParent($childId: ID!) {
+    unlinkIncidentParent(childId: $childId) {
+      id
+      parentId
+      updatedAt
+    }
   }
 `;

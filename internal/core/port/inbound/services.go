@@ -16,6 +16,7 @@ import (
 // the mutation response from aggregate state without a projection read.
 type CreateIncidentResult struct {
 	IncidentID shared.IncidentID
+	ParentID   *shared.IncidentID
 	LayerIDs   []shared.LayerID
 	Name       string
 	Location   *incident.LocationData
@@ -27,6 +28,7 @@ type CreateIncidentResult struct {
 // build responses from aggregate state without a projection read.
 type IncidentState struct {
 	ID        shared.IncidentID
+	ParentID  *shared.IncidentID
 	Name      string
 	Location  *incident.LocationData
 	Divisions []incident.DivisionData
@@ -76,6 +78,16 @@ type IncidentService interface {
 		actor identity.Actor,
 	) (CreateIncidentResult, error)
 
+	CreateIncidentWithParent(
+		ctx context.Context,
+		name string,
+		location *incident.LocationData,
+		divisions []incident.DivisionData,
+		layerNames []string,
+		parentID *shared.IncidentID,
+		actor identity.Actor,
+	) (CreateIncidentResult, error)
+
 	UpdateIncident(
 		ctx context.Context,
 		id shared.IncidentID,
@@ -88,6 +100,12 @@ type IncidentService interface {
 	CloseIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (IncidentState, error)
 	ReopenIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) (IncidentState, error)
 	DeleteIncident(ctx context.Context, id shared.IncidentID, actor identity.Actor) error
+	LinkIncidentParent(
+		ctx context.Context,
+		childID, parentID shared.IncidentID,
+		actor identity.Actor,
+	) (IncidentState, error)
+	UnlinkIncidentParent(ctx context.Context, childID shared.IncidentID, actor identity.Actor) (IncidentState, error)
 	LoadIncident(ctx context.Context, id shared.IncidentID) (*incident.Incident, error)
 }
 

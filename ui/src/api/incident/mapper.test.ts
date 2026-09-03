@@ -4,6 +4,7 @@ import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql/next";
 
 const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
   id: "inc-1",
+  parentId: null,
   name: "Forest Fire Alpha",
   createdAt: "2024-03-15T08:00:00Z",
   updatedAt: "2024-03-15T09:00:00Z",
@@ -14,6 +15,7 @@ const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
 
 const WIRE_DETAILS: NonNullable<GetIncidentDetailQuery["incident"]> = {
   id: "inc-1",
+  parentId: null,
   name: "Forest Fire Alpha",
   createdAt: "2024-03-15T08:00:00Z",
   updatedAt: "2024-03-15T09:00:00Z",
@@ -50,7 +52,13 @@ describe("toIncidentSummary", () => {
   it("initialises divisions and layers as empty arrays", () => {
     const result = toIncidentSummary(WIRE_SUMMARY);
     expect(result.divisions).toEqual([]);
+    expect(result.childIncidents).toEqual([]);
     expect(result.layers).toEqual([]);
+  });
+
+  it("maps parent id", () => {
+    const result = toIncidentSummary({ ...WIRE_SUMMARY, parentId: "parent-1" });
+    expect(result.parentId).toBe("parent-1");
   });
 
   it("does not include __typename in the result", () => {
@@ -81,6 +89,11 @@ describe("toIncidentDetails", () => {
       name: "Alpha",
       description: "Alpha division",
     });
+  });
+
+  it("maps detail parent id", () => {
+    const result = toIncidentDetails({ ...WIRE_DETAILS, parentId: "parent-1" });
+    expect(result.parentId).toBe("parent-1");
   });
 
   it("sets deletedAt to null (not in new schema)", () => {

@@ -33,6 +33,7 @@ export interface SetLayerAction {
   type: "SET_LAYERS";
   payload: {
     layers: Layer[];
+    viewedIncidentId?: string;
   };
 }
 
@@ -143,12 +144,31 @@ export interface AddCustomWMSServerAction {
 export const layersReducer = (state: LayersState, action: LayersAction) => {
   switch (action.type) {
     case "SET_LAYERS":
-      return action.payload.layers.map((layer) => ({
-        layer,
-        isVisible: state.some((s) => s.layer.id === layer.id)
-          ? (state.find((s) => s.layer.id === layer.id)?.isVisible ?? true)
-          : true,
-      }));
+      return [...action.payload.layers]
+        .sort((left, right) => {
+          const viewedIncidentId = action.payload.viewedIncidentId;
+          if (viewedIncidentId !== undefined) {
+            const leftOwn = left.sourceIncidentId === viewedIncidentId;
+            const rightOwn = right.sourceIncidentId === viewedIncidentId;
+            if (leftOwn !== rightOwn) return leftOwn ? -1 : 1;
+
+            if (!leftOwn) {
+              const sourceOrder = compareLayerText(
+                left.sourceIncidentName,
+                right.sourceIncidentName,
+              );
+              if (sourceOrder !== 0) return sourceOrder;
+            }
+          }
+
+          return compareLayerText(left.name, right.name);
+        })
+        .map((layer) => ({
+          layer,
+          isVisible: state.some((s) => s.layer.id === layer.id)
+            ? (state.find((s) => s.layer.id === layer.id)?.isVisible ?? true)
+            : true,
+        }));
     case "TOGGLE_LAYER_VISIBILITY":
       return state.map((s) =>
         s.layer.id === action.payload.layerId ? { ...s, isVisible: action.payload.isVisible } : s,
@@ -157,6 +177,16 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
       return state;
   }
 };
+
+function compareLayerText(left: string, right: string): number {
+  const normalizedLeft = left.toLowerCase();
+  const normalizedRight = right.toLowerCase();
+
+  if (normalizedLeft < normalizedRight) return -1;
+  if (normalizedLeft > normalizedRight) return 1;
+
+  return 0;
+}
 
 export const selectedFeatureReducer = (state: SelectedFeatureState, action: LayersAction) => {
   switch (action.type) {
@@ -174,10 +204,23 @@ export const activeLayerReducer = (state: ActiveLayerState, action: LayersAction
     case "SET_ACTIVE_LAYER":
       return action.payload.layerId;
     case "SET_LAYERS":
+      const firstEditableLayer = first(
+        action.payload.layers.filter(
+          (layer) =>
+            action.payload.viewedIncidentId === undefined ||
+            layer.sourceIncidentId === action.payload.viewedIncidentId,
+        ),
+      )?.id;
+
       if (state === undefined) {
         // set the first layer as active if we have not an active layer yet
-        return first(action.payload.layers)?.id;
+        return firstEditableLayer;
       }
+
+      if (!action.payload.layers.some((layer) => layer.id === state)) {
+        return firstEditableLayer;
+      }
+
       return state;
     default:
       return state;

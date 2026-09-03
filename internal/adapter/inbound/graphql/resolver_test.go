@@ -44,6 +44,7 @@ func newTestStack(t *testing.T) *testStack {
 		service.WithIDs(inmemstore.UUIDGen{}),
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(counter),
+		service.WithIncidentHierarchyGuard(inmemstore.NewIncidentHierarchyGuard(store)),
 	)
 
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
@@ -551,6 +552,155 @@ func TestLayersForIncident_AfterCreate(t *testing.T) {
 	assert.Equal(t, "Sector Map", layers[0].Name)
 }
 
+func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	parent, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "KFS",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{{Name: "KFS Karte"}},
+	})
+	require.NoError(t, err)
+
+	child, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "GFS Altdorf",
+		ParentID:  &parent.ID,
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, child.ParentID)
+	assert.Equal(t, parent.ID, *child.ParentID)
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Nachrichtenkarte"}, []string{
+		layers[0].SourceIncidentName + ":" + layers[0].Name,
+		layers[1].SourceIncidentName + ":" + layers[1].Name,
+	})
+}
+
+func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	parent, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "Regional",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{{Name: "Regional Map"}},
+	})
+	require.NoError(t, err)
+
+	child, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "Municipal",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{{Name: "Municipal Map"}},
+	})
+	require.NoError(t, err)
+
+	linked, err := s.resolver.Mutation().LinkIncidentParent(ctx, child.ID, parent.ID)
+	require.NoError(t, err)
+	require.NotNil(t, linked.ParentID)
+	assert.Equal(t, parent.ID, *linked.ParentID)
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	require.NoError(t, err)
+	require.Len(t, parentLayers, 2)
+	assert.ElementsMatch(
+		t,
+		[]string{"Regional Map", "Municipal Map"},
+		[]string{parentLayers[0].Name, parentLayers[1].Name},
+	)
+
+	for _, layer := range parentLayers {
+		switch layer.Name {
+		case "Regional Map":
+			assert.Equal(t, parent.ID, layer.SourceIncidentID)
+			assert.Equal(t, "Regional", layer.SourceIncidentName)
+		case "Municipal Map":
+			assert.Equal(t, child.ID, layer.SourceIncidentID)
+			assert.Equal(t, "Municipal", layer.SourceIncidentName)
+		}
+	}
+
+	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.ID)
+	require.NoError(t, err)
+	require.Len(t, childLayers, 1)
+	assert.Equal(t, "Municipal Map", childLayers[0].Name)
+
+	unlinked, err := s.resolver.Mutation().UnlinkIncidentParent(ctx, child.ID)
+	require.NoError(t, err)
+	assert.Nil(t, unlinked.ParentID)
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	require.NoError(t, err)
+	require.Len(t, parentLayers, 1)
+	assert.Equal(t, "Regional Map", parentLayers[0].Name)
+}
+
+func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	parent, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "KFS",
+		Divisions: []*model.DivisionInput{},
+		Layers: []*model.LayerInput{
+			{Name: "Zweite KFS Karte"},
+			{Name: "Erste KFS Karte"},
+		},
+	})
+	require.NoError(t, err)
+
+	ahausen, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "GFS Ahausen",
+		Divisions: []*model.DivisionInput{},
+		Layers: []*model.LayerInput{
+			{Name: "Nachrichtenkarte"},
+			{Name: "Führungskarte"},
+		},
+	})
+	require.NoError(t, err)
+
+	altdorf, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "GFS Altdorf",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+	})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, ahausen.ID, parent.ID)
+	require.NoError(t, err)
+	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, altdorf.ID, parent.ID)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	require.NoError(t, err)
+	require.Len(t, layers, 5)
+
+	assert.Equal(t, []string{
+		"KFS:Erste KFS Karte",
+		"KFS:Zweite KFS Karte",
+		"GFS Ahausen:Führungskarte",
+		"GFS Ahausen:Nachrichtenkarte",
+		"GFS Altdorf:Nachrichtenkarte",
+	}, []string{
+		layers[0].SourceIncidentName + ":" + layers[0].Name,
+		layers[1].SourceIncidentName + ":" + layers[1].Name,
+		layers[2].SourceIncidentName + ":" + layers[2].Name,
+		layers[3].SourceIncidentName + ":" + layers[3].Name,
+		layers[4].SourceIncidentName + ":" + layers[4].Name,
+	})
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TriageMessage resolver
 // ─────────────────────────────────────────────────────────────────────────────
@@ -648,6 +798,8 @@ func TestCreateLayer_ReturnsModel(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, layer)
 	assert.Equal(t, "Ops Map", layer.Name)
+	assert.Equal(t, inc.ID, layer.SourceIncidentID)
+	assert.Equal(t, "Layer Mut", layer.SourceIncidentName)
 	assert.Equal(t, 0, layer.Revision)
 	assert.Empty(t, layer.Features)
 	_, parseErr := uuid.Parse(layer.ID)

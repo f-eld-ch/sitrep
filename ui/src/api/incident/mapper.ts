@@ -17,6 +17,7 @@ function toLocation(w: WireIncidentSummary["location"] | WireIncidentDetail["loc
 export function toIncidentSummary(w: WireIncidentSummary): Incident {
   return {
     id: w.id,
+    parentId: w.parentId ?? null,
     name: w.name,
     createdAt: toDate(w.createdAt),
     updatedAt: toOptionalDate(w.updatedAt),
@@ -24,6 +25,7 @@ export function toIncidentSummary(w: WireIncidentSummary): Incident {
     closedAt: toOptionalDate(w.closedAt),
     location: toLocation(w.location),
     divisions: [],
+    childIncidents: [],
     layers: [],
   };
 }
@@ -31,6 +33,7 @@ export function toIncidentSummary(w: WireIncidentSummary): Incident {
 export function toIncidentDetails(w: WireIncidentDetail): Incident {
   return {
     id: w.id,
+    parentId: w.parentId ?? null,
     name: w.name,
     createdAt: toDate(w.createdAt),
     updatedAt: toOptionalDate(w.updatedAt),
@@ -42,6 +45,7 @@ export function toIncidentDetails(w: WireIncidentDetail): Incident {
       name: d.name,
       description: d.description,
     })),
+    childIncidents: [],
     layers: [],
   };
 }

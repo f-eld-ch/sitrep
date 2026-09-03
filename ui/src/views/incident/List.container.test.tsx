@@ -35,7 +35,9 @@ const baseIncident: Incident = {
   updatedAt: null,
   deletedAt: null,
   closedAt: null,
+  parentId: null,
   divisions: [],
+  childIncidents: [],
   layers: [],
 };
 
@@ -89,5 +91,25 @@ describe("List (container)", () => {
     renderList();
     expect(screen.getByText("Test Incident")).toBeInTheDocument();
     expect(screen.queryByText("Closed One")).not.toBeInTheDocument();
+  });
+
+  it("keeps a closed parent visible as context for an open child", async () => {
+    const { useIncidents } = await import("api");
+    const parent: Incident = {
+      ...baseIncident,
+      id: "parent",
+      name: "Closed Regional",
+      closedAt: new Date(),
+    };
+    const child: Incident = {
+      ...baseIncident,
+      id: "child",
+      name: "Open Municipal",
+      parentId: "parent",
+    };
+    vi.mocked(useIncidents).mockReturnValue(readyResult({ incidents: [parent, child] }));
+    renderList();
+    expect(screen.getByText("Closed Regional")).toBeInTheDocument();
+    expect(screen.getByText("Open Municipal")).toBeInTheDocument();
   });
 });

@@ -25,25 +25,27 @@ import (
 
 // IncidentService handles all write-side operations for the Incident aggregate.
 type IncidentService struct {
-	tx       outbound.Transactor
-	repo     outbound.IncidentRepository
-	layers   outbound.LayerRepository
-	clock    outbound.Clock
-	ids      outbound.IDs
-	notifier outbound.EventNotifier
-	tracer   trace.Tracer
+	tx        outbound.Transactor
+	repo      outbound.IncidentRepository
+	layers    outbound.LayerRepository
+	hierarchy outbound.IncidentHierarchyGuard
+	clock     outbound.Clock
+	ids       outbound.IDs
+	notifier  outbound.EventNotifier
+	tracer    trace.Tracer
 }
 
 func NewIncidentService(
 	tx outbound.Transactor,
 	repo outbound.IncidentRepository,
 	layers outbound.LayerRepository,
+	hierarchy outbound.IncidentHierarchyGuard,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *IncidentService {
 	return &IncidentService{
-		tx: tx, repo: repo, layers: layers, clock: clock, ids: ids, notifier: notifier,
+		tx: tx, repo: repo, layers: layers, hierarchy: hierarchy, clock: clock, ids: ids, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -58,11 +60,23 @@ func (s *IncidentService) CreateIncident(
 	layerNames []string,
 	actor identity.Actor,
 ) (inbound.CreateIncidentResult, error) {
+	return s.CreateIncidentWithParent(ctx, name, location, divisions, layerNames, nil, actor)
+}
+
+func (s *IncidentService) CreateIncidentWithParent(
+	ctx context.Context,
+	name string,
+	location *incident.LocationData,
+	divisions []incident.DivisionData,
+	layerNames []string,
+	parentID *shared.IncidentID,
+	actor identity.Actor,
+) (inbound.CreateIncidentResult, error) {
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CreateIncident",
 		trace.WithAttributes(attribute.String("incident.name", name)))
 	defer span.End()
 
-	slog.DebugContext(ctx, "creating incident", "name", name, "actor", actor.Sub)
+	slog.DebugContext(ctx, "creating incident", "name", name, "parent_id", parentID, "actor", actor.Sub)
 
 	if len(layerNames) == 0 {
 		layerNames = []string{"Lage"}
@@ -84,10 +98,28 @@ func (s *IncidentService) CreateIncident(
 	}
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if parentID != nil {
+			release, err := s.lockHierarchy(ctx)
+			if err != nil {
+				return err
+			}
+			defer release()
+
+			if err := s.requireValidParent(ctx, incID, *parentID); err != nil {
+				return err
+			}
+		}
+
 		// 1. Create the Incident aggregate.
 		inc := incident.New(incID)
 		if err := inc.Open(name, location, divisions, at, actor.Sub); err != nil {
 			return err
+		}
+
+		if parentID != nil {
+			if err := inc.LinkParent(*parentID, actor.Sub, at); err != nil {
+				return err
+			}
 		}
 
 		if _, err := s.repo.Save(ctx, inc); err != nil {
@@ -122,6 +154,7 @@ func (s *IncidentService) CreateIncident(
 
 	return inbound.CreateIncidentResult{
 		IncidentID: incID,
+		ParentID:   parentID,
 		LayerIDs:   layerIDs,
 		Name:       name,
 		Location:   location,
@@ -266,6 +299,145 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 	return err
 }
 
+func (s *IncidentService) LinkIncidentParent(
+	ctx context.Context,
+	childID, parentID shared.IncidentID,
+	actor identity.Actor,
+) (inbound.IncidentState, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.LinkIncidentParent",
+		trace.WithAttributes(
+			attribute.String("incident.child_id", childID.String()),
+			attribute.String("incident.parent_id", parentID.String()),
+		))
+	defer span.End()
+
+	slog.DebugContext(ctx, "linking incident parent", "child_id", childID, "parent_id", parentID, "actor", actor.Sub)
+
+	at := s.clock.Now()
+
+	var state inbound.IncidentState
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		release, err := s.lockHierarchy(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+
+		child, err := s.repo.Load(ctx, childID)
+		if err != nil {
+			return err
+		}
+
+		if err := s.requireValidParent(ctx, childID, parentID); err != nil {
+			return err
+		}
+
+		if err := child.LinkParent(parentID, actor.Sub, at); err != nil {
+			return err
+		}
+
+		if _, err = s.repo.Save(ctx, child); err != nil {
+			return err
+		}
+
+		state = incidentToState(child, at)
+
+		return nil
+	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		logIfUnexpected(ctx, "LinkIncidentParent", err, "child_id", childID, "parent_id", parentID)
+
+		return inbound.IncidentState{}, err
+	}
+
+	_ = s.notifier.Notify(ctx)
+
+	return state, nil
+}
+
+func (s *IncidentService) UnlinkIncidentParent(
+	ctx context.Context,
+	childID shared.IncidentID,
+	actor identity.Actor,
+) (inbound.IncidentState, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.UnlinkIncidentParent",
+		trace.WithAttributes(attribute.String("incident.child_id", childID.String())))
+	defer span.End()
+
+	slog.DebugContext(ctx, "unlinking incident parent", "child_id", childID, "actor", actor.Sub)
+
+	at := s.clock.Now()
+
+	var state inbound.IncidentState
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		release, err := s.lockHierarchy(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+
+		inc, err := s.repo.Load(ctx, childID)
+		if err != nil {
+			return err
+		}
+
+		if err := inc.UnlinkParent(actor.Sub, at); err != nil {
+			return err
+		}
+
+		if _, err = s.repo.Save(ctx, inc); err != nil {
+			return err
+		}
+
+		state = incidentToState(inc, at)
+
+		return nil
+	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		logIfUnexpected(ctx, "UnlinkIncidentParent", err, "child_id", childID)
+
+		return inbound.IncidentState{}, err
+	}
+
+	_ = s.notifier.Notify(ctx)
+
+	return state, err
+}
+
+func (s *IncidentService) requireAcyclicParent(ctx context.Context, childID, parentID shared.IncidentID) error {
+	if childID == parentID {
+		return shared.ValidationError{Field: "parentId", Message: "must not reference the incident itself"}
+	}
+
+	seen := map[shared.IncidentID]struct{}{childID: {}}
+	currentID := parentID
+
+	for {
+		if _, ok := seen[currentID]; ok {
+			return shared.ErrConflict
+		}
+
+		seen[currentID] = struct{}{}
+
+		current, err := s.repo.Load(ctx, currentID)
+		if err != nil {
+			return err
+		}
+
+		if current.ParentID() == nil {
+			return nil
+		}
+
+		currentID = *current.ParentID()
+	}
+}
+
 func (s *IncidentService) writeIncident(
 	ctx context.Context,
 	id shared.IncidentID,
@@ -303,6 +475,40 @@ func (s *IncidentService) writeIncident(
 	return state, nil
 }
 
+func (s *IncidentService) requireValidParent(ctx context.Context, childID, parentID shared.IncidentID) error {
+	hasChildren, err := s.hierarchy.HasChildren(ctx, childID)
+	if err != nil {
+		return err
+	}
+
+	if hasChildren {
+		return shared.ErrInvalidParent
+	}
+
+	parent, err := s.repo.Load(ctx, parentID)
+	if err != nil {
+		return err
+	}
+
+	if parent.IsDeleted() {
+		return shared.ErrIncidentDeleted
+	}
+
+	if parent.ParentID() != nil {
+		return shared.ErrInvalidParent
+	}
+
+	return s.requireAcyclicParent(ctx, childID, parentID)
+}
+
+func (s *IncidentService) lockHierarchy(ctx context.Context) (func(), error) {
+	if s.hierarchy == nil {
+		return func() {}, nil
+	}
+
+	return s.hierarchy.LockForUpdate(ctx)
+}
+
 // LoadIncident returns the incident aggregate (for queries that need aggregate state).
 func (s *IncidentService) LoadIncident(ctx context.Context, id shared.IncidentID) (*incident.Incident, error) {
 	idVal, err := uuid.Parse(id.String())
@@ -318,6 +524,7 @@ func (s *IncidentService) LoadIncident(ctx context.Context, id shared.IncidentID
 func incidentToState(inc *incident.Incident, updatedAt time.Time) inbound.IncidentState {
 	state := inbound.IncidentState{
 		ID:        shared.IncidentID(inc.Root().ID()),
+		ParentID:  inc.ParentID(),
 		Name:      inc.Name(),
 		CreatedAt: inc.CreatedAt(),
 		UpdatedAt: updatedAt,

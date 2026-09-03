@@ -41,6 +41,7 @@ func testStack(t *testing.T) (*service.Factory, *inmem.EventStore) {
 		service.WithIDs(inmem.UUIDGen{}),
 		service.WithNotifier(inmem.NewNotifier()),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 	)
 
 	return factory, store

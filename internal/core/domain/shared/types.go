@@ -124,6 +124,7 @@ var (
 	ErrAlreadyOpen       = errors.New("ALREADY_OPEN")
 	ErrForbidden         = errors.New("FORBIDDEN")
 	ErrInvalidInput      = errors.New("INVALID_INPUT")
+	ErrInvalidParent     = errors.New("INVALID_PARENT_INCIDENT")
 	ErrConflict          = errors.New("CONFLICT")
 )
 

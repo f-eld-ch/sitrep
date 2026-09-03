@@ -21,6 +21,8 @@ export const GET_LAYERS: TypedDocumentNode<
   query GetLayersForIncident($incidentId: ID!) {
     layersForIncident(incidentId: $incidentId) {
       id
+      sourceIncidentId
+      sourceIncidentName
       name
       revision
       features {
@@ -83,6 +85,8 @@ export const CREATE_LAYER: TypedDocumentNode<CreateLayerMutation, CreateLayerMut
     mutation CreateLayer($incidentId: ID!, $name: String!) {
       createLayer(incidentId: $incidentId, name: $name) {
         id
+        sourceIncidentId
+        sourceIncidentName
         name
       }
     }

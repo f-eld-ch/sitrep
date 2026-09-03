@@ -96,15 +96,25 @@ const LayerContext = createContext<{
 });
 
 const mainReducer: Reducer<LayerState, LayersAction> = (
-  { layers, activeLayer, selectedFeature, draw, wms }: LayerState,
+  state: LayerState,
   action: LayersAction,
-) => ({
-  layers: layersReducer(layers, action),
-  activeLayer: activeLayerReducer(activeLayer, action),
-  selectedFeature: selectedFeatureReducer(selectedFeature, action),
-  draw: drawReducer(draw, action),
-  wms: wmsReducer(wms, action),
-});
+) => {
+  const next = {
+    layers: layersReducer(state.layers, action),
+    activeLayer: activeLayerReducer(state.activeLayer, action),
+    selectedFeature: selectedFeatureReducer(state.selectedFeature, action),
+    draw: drawReducer(state.draw, action),
+    wms: wmsReducer(state.wms, action),
+  };
+
+  return next.layers === state.layers &&
+    next.activeLayer === state.activeLayer &&
+    next.selectedFeature === state.selectedFeature &&
+    next.draw === state.draw &&
+    next.wms === state.wms
+    ? state
+    : next;
+};
 
 // This key is used to store the WMS state in localStorage
 const wmsLocalStorageKey = "wmsLayersState";

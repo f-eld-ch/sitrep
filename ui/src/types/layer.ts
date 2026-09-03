@@ -3,6 +3,8 @@ import type { Incident } from "./incident";
 
 export interface Layer {
   id: string;
+  sourceIncidentId: string;
+  sourceIncidentName: string;
   name: string;
   incident: Incident;
   features: Feature[];

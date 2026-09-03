@@ -65,12 +65,11 @@ function List() {
         </button>
       </div>
       <IncidentCards
-        incidents={result.data.incidents.filter(
-          (incident) => !filterClosed || incident.closedAt === null,
-        )}
+        incidents={result.data.incidents}
         closeIncident={(id) => closeIncident({ incidentId: id })}
         reopenIncident={(id) => reopenIncident({ incidentId: id })}
         deleteIncident={(id) => deleteIncident({ incidentId: id })}
+        hideClosed={filterClosed}
       />
     </div>
   );
@@ -81,13 +80,65 @@ export function IncidentCards(props: {
   closeIncident: (incidentId: string) => Promise<void>;
   reopenIncident: (incidentId: string) => Promise<void>;
   deleteIncident: (incidentId: string) => Promise<void>;
+  hideClosed?: boolean;
 }) {
-  const { incidents, closeIncident, reopenIncident, deleteIncident } = props;
+  const { incidents, closeIncident, reopenIncident, deleteIncident, hideClosed = false } = props;
+
+  const activeIncidents = incidents.filter((incident) => !incident.deletedAt);
+  const incidentIDs = new Set(activeIncidents.map((incident) => incident.id));
+  const childrenByParent = new Map<string, Incident[]>();
+
+  for (const incident of activeIncidents) {
+    if (!incident.parentId || !incidentIDs.has(incident.parentId)) continue;
+
+    childrenByParent.set(incident.parentId, [
+      ...(childrenByParent.get(incident.parentId) ?? []),
+      incident,
+    ]);
+  }
+
+  const isVisible = (incident: Incident) => !hideClosed || incident.closedAt === null;
+  const topLevelIncidents = activeIncidents.filter((incident) => !incident.parentId);
 
   return (
     <div className="container-flex">
-      {incidents
-        .filter((incident) => !incident.deletedAt)
+      {topLevelIncidents.map((incident) => {
+        const children = childrenByParent.get(incident.id) ?? [];
+        const visibleChildren = children.filter(isVisible);
+        const showIncident = isVisible(incident) || visibleChildren.length > 0;
+
+        if (!showIncident) return null;
+
+        return (
+          <div key={incident.id} className="mb-4">
+            <IncidentCard
+              incident={incident}
+              closeIncident={closeIncident}
+              reopenIncident={reopenIncident}
+              deleteIncident={deleteIncident}
+              childCount={children.length}
+              contextOnly={!isVisible(incident)}
+            />
+            {visibleChildren.length > 0 && (
+              <div className="ml-5 pl-4" style={{ borderLeft: "3px solid var(--bulma-info)" }}>
+                {visibleChildren.map((child) => (
+                  <IncidentCard
+                    key={child.id}
+                    incident={child}
+                    closeIncident={closeIncident}
+                    reopenIncident={reopenIncident}
+                    deleteIncident={deleteIncident}
+                    isChild={true}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {activeIncidents
+        .filter((incident) => incident.parentId && !incidentIDs.has(incident.parentId))
+        .filter(isVisible)
         .map((incident) => (
           <IncidentCard
             key={incident.id}
@@ -95,6 +146,7 @@ export function IncidentCards(props: {
             closeIncident={closeIncident}
             reopenIncident={reopenIncident}
             deleteIncident={deleteIncident}
+            isChild={true}
           />
         ))}
     </div>
@@ -106,8 +158,19 @@ export function IncidentCard(props: {
   closeIncident: (incidentId: string) => Promise<void>;
   reopenIncident: (incidentId: string) => Promise<void>;
   deleteIncident: (incidentId: string) => Promise<void>;
+  isChild?: boolean;
+  childCount?: number;
+  contextOnly?: boolean;
 }) {
-  const { incident, closeIncident, reopenIncident, deleteIncident } = props;
+  const {
+    incident,
+    closeIncident,
+    reopenIncident,
+    deleteIncident,
+    isChild = false,
+    childCount = 0,
+    contextOnly = false,
+  } = props;
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
@@ -116,12 +179,16 @@ export function IncidentCard(props: {
     card: true,
     "mb-3": true,
     "has-background-primary-light": incident.closedAt,
+    "has-background-light": contextOnly,
   });
   return (
     <div className={cardClass}>
       <div className="card-content">
         <div className="content has-text-small">
-          <h4 className="title is-5">{incident.name}</h4>
+          <h4 className={classNames("title", { "is-5": !isChild, "is-6": isChild })}>
+            {incident.name}
+            {childCount > 0 && <span className="tag is-info is-light ml-2">{childCount}</span>}
+          </h4>
           <div className="columns">
             <div className="column is-one-third">
               <strong>{t("location")}: </strong>
@@ -140,72 +207,74 @@ export function IncidentCard(props: {
           </div>
         </div>
       </div>
-      <footer className="card-footer">
-        <button
-          type="button"
-          data-testid="enter-button"
-          className="card-footer-item is-ahref is-capitalized"
-          onClick={() => {
-            navigate(`../${props.incident.id}/journal/edit`);
-            dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
-          }}
-        >
-          <span className="icon">
-            <FontAwesomeIcon icon={faArrowRightFromBracket} />
-          </span>
-          <span>{t("enter")}</span>
-        </button>
-        {incident.closedAt === null ? (
+      {!contextOnly && (
+        <footer className="card-footer">
           <button
             type="button"
-            data-testid="edit-button"
+            data-testid="enter-button"
             className="card-footer-item is-ahref is-capitalized"
-            onClick={() => navigate(`../${incident.id}/edit`)}
+            onClick={() => {
+              navigate(`../${props.incident.id}/journal/edit`);
+              dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
+            }}
           >
             <span className="icon">
-              <FontAwesomeIcon icon={faEdit} />
+              <FontAwesomeIcon icon={faArrowRightFromBracket} />
             </span>
-            <span>{t("edit")}</span>
+            <span>{t("enter")}</span>
           </button>
-        ) : (
-          <button
-            type="button"
-            data-testid="delete-button"
-            className="card-footer-item is-ahref is-capitalized"
-            onClick={() => void deleteIncident(incident.id)}
-          >
-            <span className="icon">
-              <FontAwesomeIcon icon={faTrash} />
-            </span>
-            <span>{t("delete")}</span>
-          </button>
-        )}
-        {incident.closedAt === null ? (
-          <button
-            type="button"
-            data-testid="close-button"
-            className="card-footer-item is-ahref is-capitalized is-danger"
-            onClick={() => void closeIncident(incident.id)}
-          >
-            <span className="icon">
-              <FontAwesomeIcon icon={faFolderClosed} />
-            </span>
-            <span>{t("close")}</span>
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="card-footer-item is-ahref is-capitalized is-success"
-            data-testid="open-button"
-            onClick={() => void reopenIncident(incident.id)}
-          >
-            <span className="icon">
-              <FontAwesomeIcon icon={faFolderOpen} />
-            </span>
-            <span>{t("open")}</span>
-          </button>
-        )}
-      </footer>
+          {incident.closedAt === null ? (
+            <button
+              type="button"
+              data-testid="edit-button"
+              className="card-footer-item is-ahref is-capitalized"
+              onClick={() => navigate(`../${incident.id}/edit`)}
+            >
+              <span className="icon">
+                <FontAwesomeIcon icon={faEdit} />
+              </span>
+              <span>{t("edit")}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="delete-button"
+              className="card-footer-item is-ahref is-capitalized"
+              onClick={() => void deleteIncident(incident.id)}
+            >
+              <span className="icon">
+                <FontAwesomeIcon icon={faTrash} />
+              </span>
+              <span>{t("delete")}</span>
+            </button>
+          )}
+          {incident.closedAt === null ? (
+            <button
+              type="button"
+              data-testid="close-button"
+              className="card-footer-item is-ahref is-capitalized is-danger"
+              onClick={() => void closeIncident(incident.id)}
+            >
+              <span className="icon">
+                <FontAwesomeIcon icon={faFolderClosed} />
+              </span>
+              <span>{t("close")}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="card-footer-item is-ahref is-capitalized is-success"
+              data-testid="open-button"
+              onClick={() => void reopenIncident(incident.id)}
+            >
+              <span className="icon">
+                <FontAwesomeIcon icon={faFolderOpen} />
+              </span>
+              <span>{t("open")}</span>
+            </button>
+          )}
+        </footer>
+      )}
     </div>
   );
 }

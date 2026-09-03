@@ -19,6 +19,26 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
+// ChildIncidents is the resolver for the childIncidents field.
+func (r *incidentResolver) ChildIncidents(ctx context.Context, obj *model.Incident) ([]*model.Incident, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListChildIncidents(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Incident, len(rows))
+	for i, row := range rows {
+		out[i] = incidentRMToModel(row)
+	}
+
+	return out, nil
+}
+
 // Messages is the field resolver for Incident.messages.
 // It is called whenever a client requests the messages field on an Incident.
 func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error) {
@@ -58,6 +78,18 @@ func (r *mutationResolver) CreateIncident(
 		return nil, err
 	}
 
+	var parentID *shared.IncidentID
+
+	if input.ParentID != nil {
+		u, err := parseUUID(*input.ParentID)
+		if err != nil {
+			return nil, err
+		}
+
+		id := shared.IncidentID(u)
+		parentID = &id
+	}
+
 	var loc *incident.LocationData
 	if input.Location != nil && *input.Location != "" {
 		loc = &incident.LocationData{Name: *input.Location}
@@ -73,7 +105,15 @@ func (r *mutationResolver) CreateIncident(
 		layerNames[i] = l.Name
 	}
 
-	result, err := r.Incidents.CreateIncident(ctx, input.Name, loc, divisions, layerNames, actor)
+	result, err := r.Incidents.CreateIncidentWithParent(
+		ctx,
+		input.Name,
+		loc,
+		divisions,
+		layerNames,
+		parentID,
+		actor,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -193,6 +233,63 @@ func (r *mutationResolver) DeleteIncident(ctx context.Context, id string) (strin
 	return id, nil
 }
 
+// LinkIncidentParent is the resolver for the linkIncidentParent field.
+func (r *mutationResolver) LinkIncidentParent(
+	ctx context.Context,
+	childID string,
+	parentID string,
+) (*model.Incident, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	childUUID, err := parseUUID(childID)
+	if err != nil {
+		return nil, err
+	}
+
+	parentUUID, err := parseUUID(parentID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Incidents.LinkIncidentParent(
+		ctx,
+		shared.IncidentID(childUUID),
+		shared.IncidentID(parentUUID),
+		actor,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return incidentStateToModel(state), nil
+}
+
+// UnlinkIncidentParent is the resolver for the unlinkIncidentParent field.
+func (r *mutationResolver) UnlinkIncidentParent(
+	ctx context.Context,
+	childID string,
+) (*model.Incident, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	childUUID, err := parseUUID(childID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Incidents.UnlinkIncidentParent(ctx, shared.IncidentID(childUUID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return incidentStateToModel(state), nil
+}
+
 // CreateMessage is the resolver for the createMessage field.
 func (r *mutationResolver) CreateMessage(ctx context.Context, input model.CreateMessageInput) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
@@ -296,7 +393,14 @@ func (r *mutationResolver) TriageMessage(
 		divisionIDs[i] = shared.DivisionID(u)
 	}
 
-	state, err := r.Messages.TriageMessage(ctx, shared.MessageID(msgID), triage, priority, divisionIDs, actor)
+	state, err := r.Messages.TriageMessage(
+		ctx,
+		shared.MessageID(msgID),
+		triage,
+		priority,
+		divisionIDs,
+		actor,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +443,11 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 }
 
 // CreateLayer is the resolver for the createLayer field.
-func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error) {
+func (r *mutationResolver) CreateLayer(
+	ctx context.Context,
+	incidentID string,
+	name string,
+) (*model.Layer, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -350,16 +458,23 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 		return nil, err
 	}
 
+	inc, err := r.Incidents.LoadIncident(ctx, shared.IncidentID(incID))
+	if err != nil {
+		return nil, err
+	}
+
 	layerID, err := r.Layers.CreateLayer(ctx, shared.IncidentID(incID), name, actor)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Layer{
-		ID:       uuid.UUID(layerID).String(),
-		Name:     name,
-		Revision: 0,
-		Features: []*model.Feature{},
+		ID:                 uuid.UUID(layerID).String(),
+		SourceIncidentID:   incidentID,
+		SourceIncidentName: inc.Name(),
+		Name:               name,
+		Revision:           0,
+		Features:           []*model.Feature{},
 	}, nil
 }
 
@@ -498,7 +613,7 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 		return nil, err
 	}
 
-	rows, err := r.Queries.ListLayers(ctx, incID)
+	rows, err := r.Queries.ListVisibleLayers(ctx, incID)
 	if err != nil {
 		return nil, err
 	}

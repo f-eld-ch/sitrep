@@ -92,6 +92,8 @@
   "incidentName": "Nom de l'événement",
   "open": "ouvert",
   "options": "options",
+  "parentIncident": "événement parent",
+  "noParentIncident": "aucun événement parent",
   "otherDetails": "détails",
   "overview": "aperçu",
   "phone": {
@@ -139,6 +141,7 @@
   },
   "layerControl": {
     "layers": "Calques",
+    "currentIncidentLayers": "Événement actuel",
     "addLayer": "Ajouter un calque",
     "layerName": "Nom du calque",
     "drawingLayers": "Calques de dessin",
@@ -173,6 +176,7 @@
     "ALREADY_CLOSED": "L'élément est déjà fermé.",
     "ALREADY_OPEN": "L'élément est déjà ouvert.",
     "INVALID_INPUT": "La saisie fournie est invalide.",
+    "INVALID_PARENT_INCIDENT": "L'événement parent sélectionné ne peut pas être utilisé.",
     "CONFLICT": "La demande n'a pas pu être complétée en raison d'un conflit.",
     "INTERNAL_ERROR": "Une erreur interne s'est produite. Veuillez réessayer.",
     "NETWORK_ERROR": "Impossible de contacter le serveur. Veuillez vérifier votre connexion réseau.",

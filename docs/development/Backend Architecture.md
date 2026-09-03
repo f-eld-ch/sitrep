@@ -161,6 +161,24 @@ Each event carries a monotonically increasing version number scoped to its strea
 
 The `modifyFeature` mutation avoids a conflict by loading the `Feature` aggregate once and applying both `Move` and `Restyle` within a single operation, rather than as two separate mutations that would race on the same version.
 
+### Cross-stream invariants
+
+Optimistic concurrency only protects one aggregate stream at a time. If an invariant depends on
+several streams, two requests can each write to a different stream and both commit even though their
+combined result is invalid.
+
+Incident hierarchy writes are the current example. The parent relationship is recorded on the child
+incident stream, but the invariant spans multiple incidents: a parent must be top-level, a child must
+not already have children, and cycles must be impossible. Concurrent requests such as `A -> B` and
+`B -> A` would append to different streams, so stream-version checks alone cannot reject the cycle.
+
+For this reason `IncidentService` uses the `outbound.IncidentHierarchyGuard` port around hierarchy
+mutations. The guard's `LockForUpdate` method is held from before validation until the child stream
+is saved, and `HasChildren` answers write-side hierarchy questions from the event log. The Postgres
+adapter implements the guard with a transaction-scoped advisory lock; the in-memory adapter uses a
+process-local mutex for tests. Keep this pattern behind outbound ports — services may depend on the
+guard interface, but `internal/core/` must not import Postgres locking primitives.
+
 ---
 
 ## Projectors

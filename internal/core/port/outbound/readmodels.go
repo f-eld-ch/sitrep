@@ -30,6 +30,7 @@ type DivisionRM struct {
 
 type IncidentRM struct {
 	ID        uuid.UUID
+	ParentID  *uuid.UUID
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -61,11 +62,13 @@ type MessageRM struct {
 // The GeoJSON is stored opaquely so the resolver can forward it to the client
 // without parsing; individual Feature objects are extracted on demand.
 type LayerRM struct {
-	ID         uuid.UUID
-	IncidentID uuid.UUID
-	Name       string
-	GeoJSON    json.RawMessage
-	Revision   int
+	ID                 uuid.UUID
+	IncidentID         uuid.UUID
+	SourceIncidentID   uuid.UUID
+	SourceIncidentName string
+	Name               string
+	GeoJSON            json.RawMessage
+	Revision           int
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -92,4 +95,11 @@ type Queries interface {
 	// ListLayers returns all non-removed layers for an incident.
 	// Each LayerRM carries the full GeoJSON FeatureCollection.
 	ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
+
+	// ListVisibleLayers returns layers visible from an incident: its own layers
+	// plus layers owned by direct child incidents.
+	ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
+
+	// ListChildIncidents returns non-deleted incidents directly linked to parentID.
+	ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*IncidentRM, error)
 }

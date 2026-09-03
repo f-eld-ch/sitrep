@@ -192,6 +192,15 @@ In-memory state is updated before the event is saved. A command that calls `Trac
 will see the updated state from the first call when it executes the second. This is intentional —
 do not re-read from the aggregate between `TrackChange` calls.
 
+### Cross-stream invariants need explicit guards
+
+Optimistic concurrency only protects the stream being saved. If a service validates an invariant
+across multiple aggregate streams, serialize that validation/write window behind an outbound port.
+Incident hierarchy writes use `outbound.IncidentHierarchyGuard.LockForUpdate` for this reason:
+parent links are stored on child streams, while the two-level/no-cycle invariant depends on several
+incident streams. Do not import Postgres advisory locking into `internal/core/`; keep locking in the
+adapter implementation.
+
 ### Service signatures
 
 Application service methods always accept a `context.Context` first and return an error last.

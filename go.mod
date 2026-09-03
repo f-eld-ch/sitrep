@@ -14,6 +14,7 @@ require (
 	github.com/ravilushqa/otelgqlgen v0.19.0
 	github.com/samber/slog-multi v1.8.0
 	github.com/spf13/cobra v1.10.2
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
 	github.com/vektah/gqlparser/v2 v2.5.37
@@ -62,7 +63,6 @@ require (
 	github.com/sosodev/duration v1.4.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/urfave/cli/v3 v3.10.1 // indirect
 	github.com/zitadel/schema v1.3.2 // indirect

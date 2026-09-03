@@ -35,6 +35,7 @@ type Incident struct {
 	name      string
 	location  *Location
 	divisions map[shared.DivisionID]Division
+	parentID  *shared.IncidentID
 
 	createdAt time.Time
 	closedAt  *time.Time
@@ -51,6 +52,7 @@ func New(id shared.IncidentID) *Incident {
 	eventsourcing.Register(inc,
 		Opened{}, Renamed{}, LocationChanged{},
 		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{},
+		ParentLinked{}, ParentUnlinked{},
 		Closed{}, Reopened{}, Deleted{}, Imported{},
 	)
 
@@ -69,13 +71,14 @@ func (i *Incident) AggregateType() string { return "Incident" }
 
 func (i *Incident) OwnerIncidentID() uuid.UUID { return i.root.ID() }
 
-func (i *Incident) Name() string         { return i.name }
-func (i *Incident) Location() *Location  { return i.location }
-func (i *Incident) CreatedAt() time.Time { return i.createdAt }
-func (i *Incident) ClosedAt() *time.Time { return i.closedAt }
-func (i *Incident) IsOpen() bool         { return i.closedAt == nil && i.deletedAt == nil }
-func (i *Incident) IsClosed() bool       { return i.closedAt != nil && i.deletedAt == nil }
-func (i *Incident) IsDeleted() bool      { return i.deletedAt != nil }
+func (i *Incident) Name() string                 { return i.name }
+func (i *Incident) Location() *Location          { return i.location }
+func (i *Incident) ParentID() *shared.IncidentID { return i.parentID }
+func (i *Incident) CreatedAt() time.Time         { return i.createdAt }
+func (i *Incident) ClosedAt() *time.Time         { return i.closedAt }
+func (i *Incident) IsOpen() bool                 { return i.closedAt == nil && i.deletedAt == nil }
+func (i *Incident) IsClosed() bool               { return i.closedAt != nil && i.deletedAt == nil }
+func (i *Incident) IsDeleted() bool              { return i.deletedAt != nil }
 
 func (i *Incident) Divisions() []Division {
 	out := make([]Division, 0, len(i.divisions))
@@ -161,10 +164,6 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 		return err
 	}
 
-	if err := validateDivisions(desired); err != nil {
-		return err
-	}
-
 	meta := baseMeta(actor)
 
 	// Build a lookup of desired divisions by ID.
@@ -173,21 +172,45 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 		desiredByID[d.ID] = d
 	}
 
-	// Remove divisions no longer present.
+	var removals []shared.DivisionID
+
 	for id := range i.divisions {
 		if _, keep := desiredByID[id]; !keep {
-			eventsourcing.TrackChange(i, DivisionRemoved{ID: id}, at, meta)
+			removals = append(removals, id)
 		}
 	}
 
-	// Add or update divisions.
+	var additions []DivisionData
+
+	var renames []DivisionData
+
 	for _, d := range desired {
 		existing, exists := i.divisions[d.ID]
 		if !exists {
-			eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
+			if err := validateDivision(d); err != nil {
+				return err
+			}
+
+			additions = append(additions, d)
 		} else if existing.Name != d.Name || existing.Description != d.Description {
-			eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
+			if err := validateDivision(d); err != nil {
+				return err
+			}
+
+			renames = append(renames, d)
 		}
+	}
+
+	for _, id := range removals {
+		eventsourcing.TrackChange(i, DivisionRemoved{ID: id}, at, meta)
+	}
+
+	for _, d := range additions {
+		eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
+	}
+
+	for _, d := range renames {
+		eventsourcing.TrackChange(i, DivisionRenamed{ID: d.ID, Name: d.Name, Description: &d.Description}, at, meta)
 	}
 
 	return nil
@@ -195,13 +218,21 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 
 func validateDivisions(divisions []DivisionData) error {
 	for _, division := range divisions {
-		if strings.TrimSpace(division.Name) == "" {
-			return shared.ValidationError{Field: "division.name", Message: "must not be empty"}
+		if err := validateDivision(division); err != nil {
+			return err
 		}
+	}
 
-		if strings.TrimSpace(division.Description) == "" {
-			return shared.ValidationError{Field: "division.description", Message: "must not be empty"}
-		}
+	return nil
+}
+
+func validateDivision(division DivisionData) error {
+	if strings.TrimSpace(division.Name) == "" {
+		return shared.ValidationError{Field: "division.name", Message: "must not be empty"}
+	}
+
+	if strings.TrimSpace(division.Description) == "" {
+		return shared.ValidationError{Field: "division.description", Message: "must not be empty"}
 	}
 
 	return nil
@@ -252,6 +283,30 @@ func (i *Incident) Delete(reason shared.DeleteReason, actor string, at time.Time
 	return nil
 }
 
+func (i *Incident) LinkParent(parentID shared.IncidentID, actor string, at time.Time) error {
+	if err := i.requireOpen(); err != nil {
+		return err
+	}
+
+	if parentID == shared.IncidentID(i.root.ID()) {
+		return shared.ValidationError{Field: "parentId", Message: "must not reference the incident itself"}
+	}
+
+	eventsourcing.TrackChange(i, ParentLinked{ParentID: parentID}, at, baseMeta(actor))
+
+	return nil
+}
+
+func (i *Incident) UnlinkParent(actor string, at time.Time) error {
+	if err := i.requireOpen(); err != nil {
+		return err
+	}
+
+	eventsourcing.TrackChange(i, ParentUnlinked{}, at, baseMeta(actor))
+
+	return nil
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Transition — applies one event to update in-memory state
 // ──────────────────────────────────────────────────────────────────────────────
@@ -291,6 +346,11 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 		}
 	case DivisionRemoved:
 		delete(i.divisions, d.ID)
+	case ParentLinked:
+		parentID := d.ParentID
+		i.parentID = &parentID
+	case ParentUnlinked:
+		i.parentID = nil
 	case Closed:
 		i.closedAt = &d.ClosedAt
 	case Reopened:

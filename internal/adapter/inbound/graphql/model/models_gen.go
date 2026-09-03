@@ -14,6 +14,8 @@ import (
 
 type CreateIncidentInput struct {
 	Name string `json:"name"`
+	// Optional top-level parent incident whose map will include this incident's layers.
+	ParentID *string `json:"parentId,omitempty"`
 	// Location display name; server creates the Location record.
 	Location  *string          `json:"location,omitempty"`
 	Divisions []*DivisionInput `json:"divisions"`
@@ -54,6 +56,7 @@ type Feature struct {
 
 type Incident struct {
 	ID        string      `json:"id"`
+	ParentID  *string     `json:"parentId,omitempty"`
 	Name      string      `json:"name"`
 	CreatedAt time.Time   `json:"createdAt"`
 	UpdatedAt time.Time   `json:"updatedAt"`
@@ -61,13 +64,18 @@ type Incident struct {
 	IsClosed  bool        `json:"isClosed"`
 	Location  *Location   `json:"location,omitempty"`
 	Divisions []*Division `json:"divisions"`
+	// Direct child incidents whose layers bubble up into this incident.
+	ChildIncidents []*Incident `json:"childIncidents"`
 	// All messages for this incident, newest first.
 	Messages []*Message `json:"messages"`
 }
 
 type Layer struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID string `json:"id"`
+	// Incident that owns this layer. Differs from the viewed incident for inherited child layers.
+	SourceIncidentID   string `json:"sourceIncidentId"`
+	SourceIncidentName string `json:"sourceIncidentName"`
+	Name               string `json:"name"`
 	// Revision counter; increments on every feature change. Use for change detection.
 	Revision int        `json:"revision"`
 	Features []*Feature `json:"features"`

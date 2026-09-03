@@ -26,6 +26,8 @@ models:
     model: github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar.JSONMap
   Incident:
     fields:
+      childIncidents:
+        resolver: true
       messages:
         resolver: true
 
