@@ -7,6 +7,7 @@ import {
   useAccessUsers,
   useAddGroupMember,
   useArchiveAccessGroup,
+  useGlobalRoles,
   useGroupMembers,
   useRemoveGroupMember,
   useRenameAccessGroup,
@@ -18,6 +19,7 @@ function GroupDetail() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const groupsResult = useAccessGroups();
+  const globalRolesResult = useGlobalRoles();
   const usersResult = useAccessUsers();
   const membersResult = useGroupMembers(groupId);
   const [userFilter, setUserFilter] = useState("");
@@ -79,7 +81,7 @@ function GroupDetail() {
             </p>
           )}
         </div>
-        {!group.archivedAt && (
+        {!group.archivedAt && globalRolesResult.status === "ready" && (
           <button
             type="button"
             className="button is-danger is-light"
