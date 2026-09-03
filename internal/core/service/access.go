@@ -273,6 +273,13 @@ func (s *AccessService) changeGroup(
 	}
 	at := s.clock.Now()
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if s.guard != nil {
+			release, err := s.guard.LockForUpdate(ctx)
+			if err != nil {
+				return err
+			}
+			defer release()
+		}
 		g, err := s.groupRepo.Load(ctx, id)
 		if err != nil {
 			return err
