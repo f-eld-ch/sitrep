@@ -181,6 +181,42 @@ guard interface, but `internal/core/` must not import Postgres locking primitive
 
 ---
 
+## Authorization and per-incident access
+
+Authorization facts are event-sourced separately from operational aggregates:
+
+- `IncidentAccess` owns grants and access mode for one incident.
+- `AccessGroup` owns group metadata and membership.
+- `GlobalAccess` is a singleton stream for system-admin and group-admin grants.
+
+Users remain profile rows keyed by the OIDC `sub`. OIDC claims establish identity only; they do
+not grant SitRep permissions. `open_operational` incidents preserve authenticated-user
+operational access while `incident.manage_access` remains explicitly authorized. `restricted`
+incidents require explicit incident grants. Incident creation is available to every authenticated
+user, and the creator receives an owner grant in the same transaction.
+
+The `rm_access` projector owns `rm_incident_access`, `rm_incident_access_mode`,
+`rm_access_group`, `rm_access_group_member`, `rm_global_access`, and flattened
+`rm_access_policy` as one consistency unit. It derives concrete policies from grants, group
+membership, access mode, and the role matrix. Permission-changing projection failures halt this
+handler instead of being skipped, because advancing past a missed revocation would leave access
+incorrectly enabled. Increment its version whenever policy derivation changes.
+
+Casbin is the enforcement engine, not the authorization source of truth. Checkers load projected
+policies using subjects such as `user:<sub>` and domains such as `incident:<id>`; Casbin contains no
+role inheritance or group membership. Stale but readable projections serve their last known state.
+Unavailable projection data fails closed for restricted access and access-management mutations.
+
+Authorization is enforced in services as well as resolvers, and read adapters filter incidents,
+messages, and layers by actor. Parent-child relationships do not inherit permissions. Cross-stream
+checks such as owner protection, restricting an ownerless incident, and group-grant changes use
+`outbound.AccessGuard`, implemented with an advisory lock in Postgres and a mutex in memory.
+
+The first user on a fresh deployment is bootstrapped as a system admin under a database lock.
+Existing deployments must nominate admins explicitly with the CLI; existing users prevent
+automatic promotion. The last active system admin cannot be revoked, and group archival is
+rejected while active incident grants reference that group.
+
 ## Projectors
 
 Projectors maintain denormalised read-model tables from the event log. They run as a background goroutine and process events asynchronously after a write.
