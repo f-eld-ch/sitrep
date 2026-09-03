@@ -120,14 +120,12 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	}()
 
 	return &stack{
-		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   pgqueries.NewQueries(pool),
-		},
-		UserRepo: pguser.NewRepository(pool),
+		IncidentSvc: factory.IncidentService(repos, layers),
+		MessageSvc:  factory.MessageService(messages, repos),
+		LayerSvc:    factory.LayerService(layers, repos),
+		FeatureSvc:  factory.FeatureService(features, repos, layers),
+		Queries:     pgqueries.NewQueries(pool, accessChecker),
+		UserRepo:    pguser.NewRepository(pool),
 		Teardown: func() {
 			cancelProj()
 			<-projDone

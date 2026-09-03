@@ -16,6 +16,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 // Compile-time assertion.
@@ -23,12 +24,17 @@ var _ outbound.Queries = (*Queries)(nil)
 
 // Queries queries the read-model projection tables.
 type Queries struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	access outbound.IncidentAccessChecker
 }
 
 // NewQueries creates a Queries adapter backed by the given pool.
-func NewQueries(pool *pgxpool.Pool) *Queries {
-	return &Queries{pool: pool}
+func NewQueries(pool *pgxpool.Pool, accessCheckers ...outbound.IncidentAccessChecker) *Queries {
+	var accessChecker outbound.IncidentAccessChecker
+	if len(accessCheckers) > 0 {
+		accessChecker = accessCheckers[0]
+	}
+	return &Queries{pool: pool, access: accessChecker}
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -37,12 +43,28 @@ func NewQueries(pool *pgxpool.Pool) *Queries {
 
 func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing incidents")
+	query := `
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		FROM readmodel.incident i
+		WHERE i.is_deleted = false
+		ORDER BY i.created_at DESC`
+	args := []any{}
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+		query = `
+			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+			FROM readmodel.incident i
+			WHERE i.is_deleted = false
+			  AND (EXISTS (SELECT 1 FROM rm_incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'open_operational')
+			       OR EXISTS (SELECT 1 FROM rm_access_policy p WHERE p.subject = $1 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))
+			ORDER BY i.created_at DESC`
+		args = append(args, "user:"+actor.Sub)
+	}
 
-	rows, err := q.pool.Query(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM readmodel.incident
-		WHERE is_deleted = false
-		ORDER BY created_at DESC`)
+	rows, err := q.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +95,22 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
-	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
+	slog.DebugContext(ctx, "getting incident", "id", id)
+	query := `
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		FROM readmodel.incident i
+		WHERE i.id = $1 AND i.is_deleted = false`
+	args := []any{id}
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+		query += ` AND (EXISTS (SELECT 1 FROM rm_incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'open_operational') OR EXISTS (SELECT 1 FROM rm_access_policy p WHERE p.subject = $2 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
+		args = append(args, "user:"+actor.Sub)
+	}
 
-	rows, err := q.pool.Query(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM readmodel.incident
-		WHERE id = $1 AND is_deleted = false`, id)
+	rows, err := q.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
