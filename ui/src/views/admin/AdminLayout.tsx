@@ -1,10 +1,12 @@
-import { NavLink, Outlet } from "react-router";
-import { useGlobalRoles } from "api";
+import { NavLink, Outlet, useParams } from "react-router";
+import { useAccessGroups, useGlobalRoles } from "api";
 
 /** Two-column admin shell: a left-hand section menu plus the routed section content. */
 function AdminLayout() {
+  const groupsResult = useAccessGroups();
   // Only reveal the link if the query actually succeeds — same signal the server uses to authorize it.
   const globalRolesResult = useGlobalRoles();
+  const { groupId } = useParams();
 
   return (
     <div className="container">
@@ -15,9 +17,27 @@ function AdminLayout() {
             <p className="menu-label">Access control</p>
             <ul className="menu-list">
               <li>
-                <NavLink to="groups" className={({ isActive }) => (isActive ? "is-active" : "")}>
+                <NavLink
+                  to="groups"
+                  end
+                  className={({ isActive }) => (isActive ? "is-active" : "")}
+                >
                   Groups
                 </NavLink>
+                {groupsResult.status === "ready" && groupsResult.data.groups.length > 0 && (
+                  <ul>
+                    {groupsResult.data.groups.map((group) => (
+                      <li key={group.id}>
+                        <NavLink
+                          to={`groups/${group.id}`}
+                          className={group.id === groupId ? "is-active" : ""}
+                        >
+                          {group.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
               {globalRolesResult.status === "ready" && (
                 <li>

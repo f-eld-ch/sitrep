@@ -8,7 +8,7 @@ import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
-import { AdminLayout, GlobalRoles, Groups } from "./views/admin";
+import { AdminLayout, GlobalRoles, GroupDetail, Groups } from "./views/admin";
 import {
   Editor as IncidentEditor,
   List as IncidentList,
@@ -43,6 +43,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="groups" replace /> },
       { path: "groups", element: <Groups /> },
+      { path: "groups/:groupId", element: <GroupDetail /> },
       { path: "global-roles", element: <GlobalRoles /> },
     ],
   },
