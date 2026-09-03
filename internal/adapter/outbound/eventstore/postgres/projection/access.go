@@ -16,6 +16,7 @@ type AccessHandler struct{ pool *pgxpool.Pool }
 func NewAccessHandler(pool *pgxpool.Pool) *AccessHandler { return &AccessHandler{pool: pool} }
 func (h *AccessHandler) Name() string                    { return "rm_access" }
 func (h *AccessHandler) Version() int                    { return 1 }
+func (h *AccessHandler) HaltOnError() bool               { return true }
 func (h *AccessHandler) Handles(streamType, _ string) bool {
 	return streamType == "IncidentAccess" || streamType == "AccessGroup" || streamType == "GlobalAccess"
 }
