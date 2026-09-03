@@ -21,6 +21,8 @@ type AccessGroup struct {
 
 type CreateIncidentInput struct {
 	Name string `json:"name"`
+	// Access mode for the incident; omitted defaults to OPEN_OPERATIONAL.
+	Mode *IncidentAccessMode `json:"mode,omitempty"`
 	// Optional top-level parent incident whose map will include this incident's layers.
 	ParentID *string `json:"parentId,omitempty"`
 	// Location display name; server creates the Location record.

@@ -40,37 +40,6 @@ func (r *incidentResolver) ChildIncidents(ctx context.Context, obj *model.Incide
 	return out, nil
 }
 
-func accessModeToDomain(mode model.IncidentAccessMode) access.IncidentMode {
-	if mode == model.IncidentAccessModeRestricted {
-		return access.Restricted
-	}
-
-	return access.OpenOperational
-}
-
-func incidentRoleToDomain(role model.IncidentRole) access.Role {
-	switch role {
-	case model.IncidentRoleOwner:
-		return access.Owner
-	case model.IncidentRoleManager:
-		return access.Manager
-	case model.IncidentRoleEditor:
-		return access.Editor
-	case model.IncidentRoleViewer:
-		return access.Viewer
-	}
-
-	return access.Viewer
-}
-
-func principalKindToDomain(kind model.AccessPrincipalKind) access.PrincipalKind {
-	if kind == model.AccessPrincipalKindGroup {
-		return access.GroupPrincipal
-	}
-
-	return access.UserPrincipal
-}
-
 // Messages is the field resolver for Incident.messages.
 // It is called whenever a client requests the messages field on an Incident.
 func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error) {
@@ -137,14 +106,13 @@ func (r *mutationResolver) CreateIncident(
 		layerNames[i] = l.Name
 	}
 
-	result, err := r.Incidents.CreateIncidentWithParent(
-		ctx,
-		input.Name,
-		loc,
-		divisions,
-		layerNames,
-		parentID,
-		actor,
+	mode := access.OpenOperational
+	if input.Mode != nil {
+		mode = accessModeToDomain(*input.Mode)
+	}
+
+	result, err := r.Incidents.CreateIncidentWithParentMode(
+		ctx, input.Name, loc, divisions, layerNames, parentID, mode, actor,
 	)
 	if err != nil {
 		return nil, err
@@ -498,11 +466,7 @@ func (r *mutationResolver) DeleteIncident(ctx context.Context, id string) (strin
 }
 
 // LinkIncidentParent is the resolver for the linkIncidentParent field.
-func (r *mutationResolver) LinkIncidentParent(
-	ctx context.Context,
-	childID string,
-	parentID string,
-) (*model.Incident, error) {
+func (r *mutationResolver) LinkIncidentParent(ctx context.Context, childID string, parentID string) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -581,11 +545,7 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 }
 
 // UpdateMessage is the resolver for the updateMessage field.
-func (r *mutationResolver) UpdateMessage(
-	ctx context.Context,
-	id string,
-	input model.UpdateMessageInput,
-) (*model.Message, error) {
+func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input model.UpdateMessageInput) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -619,11 +579,7 @@ func (r *mutationResolver) UpdateMessage(
 }
 
 // TriageMessage is the resolver for the triageMessage field.
-func (r *mutationResolver) TriageMessage(
-	ctx context.Context,
-	id string,
-	input model.TriageMessageInput,
-) (*model.Message, error) {
+func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -736,14 +692,7 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 }
 
 // AddFeature is the resolver for the addFeature field.
-func (r *mutationResolver) AddFeature(
-	ctx context.Context,
-	incidentID string,
-	layerID string,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -774,12 +723,7 @@ func (r *mutationResolver) AddFeature(
 }
 
 // ModifyFeature is the resolver for the modifyFeature field.
-func (r *mutationResolver) ModifyFeature(
-	ctx context.Context,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err

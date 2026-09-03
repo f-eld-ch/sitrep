@@ -177,6 +177,8 @@ input DivisionInput {
 
 input CreateIncidentInput {
   name: String!
+  """Access mode for the incident; omitted defaults to OPEN_OPERATIONAL."""
+  mode: IncidentAccessMode
   """Optional top-level parent incident whose map will include this incident's layers."""
   parentId: ID
   """Location display name; server creates the Location record."""

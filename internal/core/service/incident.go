@@ -73,7 +73,16 @@ func (s *IncidentService) CreateIncident(
 	layerNames []string,
 	actor identity.Actor,
 ) (inbound.CreateIncidentResult, error) {
-	return s.CreateIncidentWithParent(ctx, name, location, divisions, layerNames, nil, actor)
+	return s.CreateIncidentWithParentMode(
+		ctx,
+		name,
+		location,
+		divisions,
+		layerNames,
+		nil,
+		access.OpenOperational,
+		actor,
+	)
 }
 
 func (s *IncidentService) CreateIncidentWithParent(
@@ -83,6 +92,28 @@ func (s *IncidentService) CreateIncidentWithParent(
 	divisions []incident.DivisionData,
 	layerNames []string,
 	parentID *shared.IncidentID,
+	actor identity.Actor,
+) (inbound.CreateIncidentResult, error) {
+	return s.CreateIncidentWithParentMode(
+		ctx,
+		name,
+		location,
+		divisions,
+		layerNames,
+		parentID,
+		access.OpenOperational,
+		actor,
+	)
+}
+
+func (s *IncidentService) CreateIncidentWithParentMode(
+	ctx context.Context,
+	name string,
+	location *incident.LocationData,
+	divisions []incident.DivisionData,
+	layerNames []string,
+	parentID *shared.IncidentID,
+	mode access.IncidentMode,
 	actor identity.Actor,
 ) (inbound.CreateIncidentResult, error) {
 	ctx, span := s.tracer.Start(ctx, "IncidentService.CreateIncident",
@@ -147,7 +178,7 @@ func (s *IncidentService) CreateIncidentWithParent(
 
 		if s.accessRepo != nil {
 			accessAggregate := access.NewIncidentAccess(incID)
-			if err := accessAggregate.Initialize(&actor.Sub, access.OpenOperational, actor.Sub, at); err != nil {
+			if err := accessAggregate.Initialize(&actor.Sub, mode, actor.Sub, at); err != nil {
 				return err
 			}
 

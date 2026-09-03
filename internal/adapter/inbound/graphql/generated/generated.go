@@ -1056,6 +1056,8 @@ input DivisionInput {
 
 input CreateIncidentInput {
   name: String!
+  """Access mode for the incident; omitted defaults to OPEN_OPERATIONAL."""
+  mode: IncidentAccessMode
   """Optional top-level parent incident whose map will include this incident's layers."""
   parentId: ID
   """Location display name; server creates the Location record."""
@@ -5512,7 +5514,7 @@ func (ec *executionContext) unmarshalInputCreateIncidentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "parentId", "location", "divisions", "layers"}
+	fieldsInOrder := [...]string{"name", "mode", "parentId", "location", "divisions", "layers"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5526,6 +5528,13 @@ func (ec *executionContext) unmarshalInputCreateIncidentInput(ctx context.Contex
 				return it, err
 			}
 			it.Name = data
+		case "mode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mode"))
+			data, err := ec.unmarshalOIncidentAccessMode2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Mode = data
 		case "parentId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentId"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
@@ -7834,6 +7843,22 @@ func (ec *executionContext) marshalOIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsi
 		return graphql.Null
 	}
 	return ec._Incident(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOIncidentAccessMode2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx context.Context, v any) (*model.IncidentAccessMode, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.IncidentAccessMode)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOIncidentAccessMode2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx context.Context, sel ast.SelectionSet, v *model.IncidentAccessMode) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx context.Context, v any) (scalar.JSONMap, error) {

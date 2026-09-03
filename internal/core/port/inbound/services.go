@@ -130,6 +130,17 @@ type IncidentService interface {
 		actor identity.Actor,
 	) (CreateIncidentResult, error)
 
+	CreateIncidentWithParentMode(
+		ctx context.Context,
+		name string,
+		location *incident.LocationData,
+		divisions []incident.DivisionData,
+		layerNames []string,
+		parentID *shared.IncidentID,
+		mode access.IncidentMode,
+		actor identity.Actor,
+	) (CreateIncidentResult, error)
+
 	UpdateIncident(
 		ctx context.Context,
 		id shared.IncidentID,
