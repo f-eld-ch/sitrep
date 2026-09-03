@@ -161,6 +161,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Access:                s.AccessSvc,
 			IncidentAccessChecker: s.IncidentAccessChecker,
 			GlobalAccessChecker:   s.GlobalAccessChecker,
+			AccessQueries:         s.AccessQueries,
 			Queries:               s.Queries,
 		}, apiOpts...),
 	}

@@ -8,6 +8,7 @@ import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
+import Administration from "./views/Administration";
 import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
 import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
@@ -27,6 +28,14 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 const MapView = lazy(() => import("views/map"));
 
 const router = createBrowserRouter([
+  {
+    path: "/admin/access",
+    element: (
+      <Layout>
+        <Administration />
+      </Layout>
+    ),
+  },
   {
     path: "/incident",
     children: [

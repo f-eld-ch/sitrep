@@ -18,5 +18,11 @@ func GoMigrations() []*goose.Migration {
 	)
 	m.Source = "00004_import.go"
 
-	return []*goose.Migration{m}
+	access := goose.NewGoMigration(12,
+		&goose.GoFunc{RunTx: upBackfillIncidentAccess},
+		&goose.GoFunc{RunTx: downBackfillIncidentAccess},
+	)
+	access.Source = "00012_backfill_incident_access.go"
+
+	return []*goose.Migration{m, access}
 }

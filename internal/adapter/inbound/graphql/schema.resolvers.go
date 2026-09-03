@@ -8,6 +8,7 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -939,6 +940,7 @@ func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup,
 	if err != nil {
 		return nil, err
 	}
+	slog.DebugContext(ctx, "checking access-group administration", "subject", actor.Sub)
 	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
 		return nil, shared.ErrForbidden
 	}

@@ -18,6 +18,7 @@ import {
   faRightFromBracket,
   faSun,
   faTruckMedical,
+  faUserShield,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -264,6 +265,14 @@ function UserNavBar() {
         <DarkModeSwitcher />
         <LanguageSwitcher />
         <hr className="navbar-divider" />
+        <NavLink className="navbar-item" to="/admin/access">
+          <span className="icon-text is-flex-wrap-nowrap">
+            <span className="icon">
+              <FontAwesomeIcon icon={faUserShield} />
+            </span>
+            <span>Administration</span>
+          </span>
+        </NavLink>
         <a className="navbar-item" href="/oauth2/sign_out" aria-label={t("logout")}>
           <span className="icon-text is-flex-wrap-nowrap is-capitalized">
             <span className="icon">

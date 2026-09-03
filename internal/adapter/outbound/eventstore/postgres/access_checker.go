@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
@@ -94,6 +95,8 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 	}
 	defer rows.Close()
 
+	policyCount := 0
+
 	for rows.Next() {
 		var policySubject, policyDomain, object, policyAction string
 		if err := rows.Scan(&policySubject, &policyDomain, &object, &policyAction); err != nil {
@@ -103,13 +106,19 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 		if _, err := e.AddPolicy(policySubject, policyDomain, object, policyAction, "allow"); err != nil {
 			return false, fmt.Errorf("add access policy: %w", err)
 		}
+
+		policyCount++
 	}
 
 	if err := rows.Err(); err != nil {
 		return false, err
 	}
 
-	return e.Enforce(subject, domain, objectForAction(action), action)
+	allowed, err := e.Enforce(subject, domain, objectForAction(action), action)
+	slog.DebugContext(ctx, "evaluated access policy", "subject", subject, "domain", domain,
+		"action", action, "policies", policyCount, "allowed", allowed)
+
+	return allowed, err
 }
 
 func objectForAction(action string) string {

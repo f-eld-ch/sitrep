@@ -15,7 +15,7 @@ type AccessHandler struct{ pool *pgxpool.Pool }
 
 func NewAccessHandler(pool *pgxpool.Pool) *AccessHandler { return &AccessHandler{pool: pool} }
 func (h *AccessHandler) Name() string                    { return "rm_access" }
-func (h *AccessHandler) Version() int                    { return 1 }
+func (h *AccessHandler) Version() int                    { return 2 }
 func (h *AccessHandler) HaltOnError() bool               { return true }
 func (h *AccessHandler) Handles(streamType, _ string) bool {
 	return streamType == "IncidentAccess" || streamType == "AccessGroup" || streamType == "GlobalAccess"
@@ -289,8 +289,14 @@ WHERE a.revoked_at IS NULL AND a.principal_kind = 'group' AND (m.mode = 'restric
 ON CONFLICT DO NOTHING;
 
 INSERT INTO rm_access_policy (subject, domain, object, action)
-SELECT 'user:' || subject, 'global', CASE role WHEN 'system_admin' THEN 'system_admin' ELSE 'group' END, CASE role WHEN 'system_admin' THEN 'system_admin.manage' ELSE 'group.manage' END
-FROM rm_global_access WHERE revoked_at IS NULL`)
+SELECT 'user:' || a.subject, 'global', p.object, p.action
+FROM rm_global_access a
+JOIN (VALUES
+ ('system_admin', 'system_admin', 'system_admin.manage'),
+ ('system_admin', 'group', 'group.manage'),
+ ('group_admin', 'group', 'group.manage')
+) AS p(role, object, action) ON p.role = a.role
+WHERE a.revoked_at IS NULL`)
 }
 
 func actorFrom(e eventsourcing.Event) string {
