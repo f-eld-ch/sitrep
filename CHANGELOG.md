@@ -13,6 +13,7 @@
 
 - *(backend)* Improve startup behavior to wait for db conncetions - ([380f188](https://github.com/f-eld-ch/sitrep/commit/380f188d8377c0d08a3d88667f4e5ad8215819db))
 - *(retention)* Base auto-close on updated time ([#1796](https://github.com/f-eld-ch/sitrep/issues/1796)) - ([8b3f1c4](https://github.com/f-eld-ch/sitrep/commit/8b3f1c4a8278db96944ce52d76a07f1abda8706f))
+- *(ui)* Stabilize journal autocomplete dependencies ([#1801](https://github.com/f-eld-ch/sitrep/issues/1801)) - ([be6c8c2](https://github.com/f-eld-ch/sitrep/commit/be6c8c2f38236bb6ecd07c9d9d77525c535f2da1))
 
 ### ⚙️  Other
 
