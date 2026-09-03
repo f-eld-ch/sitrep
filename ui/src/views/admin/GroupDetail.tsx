@@ -180,6 +180,7 @@ function GroupDetail() {
                         <button
                           type="button"
                           className={`button is-small ${selectedMembers.has(user.sub) ? "is-danger" : "is-success"}`}
+                          style={{ width: "6.5rem" }}
                           onClick={() => {
                             if (selectedMembers.has(user.sub)) {
                               setPendingRemovals((pending) => new Set(pending).add(user.sub));
