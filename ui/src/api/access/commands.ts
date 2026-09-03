@@ -122,8 +122,6 @@ export function useAddGroupMember(): CommandHook<GroupMemberArgs> {
   const add = async (args: GroupMemberArgs): Promise<void> => {
     await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_GROUP_MEMBERS, variables: { groupId: args.groupId } }],
-      awaitRefetchQueries: true,
       update(cache) {
         const cached = cache.readQuery({
           query: LIST_GROUP_MEMBERS,
@@ -146,8 +144,6 @@ export function useRemoveGroupMember(): CommandHook<GroupMemberArgs> {
   const remove = async (args: GroupMemberArgs): Promise<void> => {
     await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_GROUP_MEMBERS, variables: { groupId: args.groupId } }],
-      awaitRefetchQueries: true,
       update(cache) {
         const cached = cache.readQuery({
           query: LIST_GROUP_MEMBERS,
