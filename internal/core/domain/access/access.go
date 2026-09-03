@@ -106,6 +106,10 @@ func (a *IncidentAccess) IsOwner(sub string) bool {
 	return a.HasRole(Principal{Kind: UserPrincipal, ID: sub}, Owner)
 }
 
+func (a *IncidentAccess) HasDirectUserOwner() bool {
+	return a.directOwnerCount() > 0
+}
+
 func (a *IncidentAccess) HasRole(p Principal, role Role) bool {
 	return a.roles[principalKey(p)][role]
 }

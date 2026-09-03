@@ -116,7 +116,9 @@ func (s *AccessService) ChangeIncidentAccessMode(
 			incidentID,
 			access.IncidentManageAccess,
 		); err != nil {
-			return err
+			if !(a.Mode() == access.OpenOperational && mode == access.Restricted && !a.HasDirectUserOwner()) {
+				return err
+			}
 		}
 		return a.ChangeAccessMode(mode, actor.Sub, at)
 	})
