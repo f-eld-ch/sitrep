@@ -1,0 +1,72 @@
+package service_test
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
+	projection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/service"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
+)
+
+func TestAccessServiceRequiresProjectedIncidentPermission(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	at := time.Unix(1, 0)
+	owner := "owner-1"
+
+	incidentRepo := eventstore.NewIncidentAccessRepository(store)
+	incident := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incident.Initialize(&owner, access.Restricted, owner, at))
+	_, err := incidentRepo.Save(ctx, incident)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	projector := projection.NewProjector(store, []projection.Handler{handler})
+	require.NoError(t, projector.CatchUp(ctx))
+	checker := inmem.NewIncidentAccessChecker(handler)
+
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		incidentRepo,
+		eventstore.NewAccessGroupRepository(store),
+		eventstore.NewGlobalAccessRepository(store),
+		checker,
+		inmem.NewGlobalAccessChecker(handler),
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	err = svc.GrantIncidentRole(
+		ctx,
+		incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "viewer-1"},
+		access.Viewer,
+		identity.Actor{Sub: "other-user"},
+	)
+	require.ErrorIs(t, err, shared.ErrForbidden)
+
+	err = svc.GrantIncidentRole(
+		ctx,
+		incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "viewer-1"},
+		access.Viewer,
+		identity.Actor{Sub: owner},
+	)
+	require.NoError(t, err)
+}
+
+type fixedAccessClock struct{ t time.Time }
+
+func (c fixedAccessClock) Now() time.Time { return c.t }
