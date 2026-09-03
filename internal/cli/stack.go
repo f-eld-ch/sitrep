@@ -17,14 +17,19 @@ import (
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
 	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
-	"github.com/f-eld-ch/sitrep/server"
 )
 
 // stack holds all wired-up application services and the infrastructure teardown.
 type stack struct {
-	server.Stack
+	IncidentSvc inbound.IncidentService
+	MessageSvc  inbound.MessageService
+	LayerSvc    inbound.LayerService
+	FeatureSvc  inbound.FeatureService
+	AccessSvc   inbound.AccessService
+	Queries     outbound.Queries
 	// UserRepo is nil when running with the in-memory backend.
 	UserRepo outbound.UserRepository
 	// Teardown stops the projector and releases infrastructure resources.
@@ -75,10 +80,13 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 
 	repos := eventstore.NewIncidentRepository(store)
 	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	accessChecker := pgstore.NewIncidentAccessChecker(pool)
+	globalChecker := pgstore.NewGlobalAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
 
 	factory := service.NewFactory(
@@ -90,6 +98,9 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithIncidentHierarchyGuard(pgstore.NewIncidentHierarchyGuard()),
 		service.WithIncidentAccessRepository(accessRepo),
 		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
 	)
 
 	handlers := []pgprojection.Handler{
@@ -124,6 +135,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		MessageSvc:  factory.MessageService(messages, repos),
 		LayerSvc:    factory.LayerService(layers, repos),
 		FeatureSvc:  factory.FeatureService(features, repos, layers),
+		AccessSvc:   factory.AccessService(),
 		Queries:     pgqueries.NewQueries(pool, accessChecker),
 		UserRepo:    pguser.NewRepository(pool),
 		Teardown: func() {
@@ -145,11 +157,14 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 
 	repos := eventstore.NewIncidentRepository(store)
 	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	accessHandler := inprojection.NewAccessHandler()
 	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
+	globalChecker := inmem.NewGlobalAccessChecker(accessHandler)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -160,6 +175,9 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 		service.WithIncidentAccessRepository(accessRepo),
 		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
 	)
 
 	incHandler := inprojection.NewIncidentHandler()
@@ -186,6 +204,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		MessageSvc:  factory.MessageService(messages, repos),
 		LayerSvc:    factory.LayerService(layers, repos),
 		FeatureSvc:  factory.FeatureService(features, repos, layers),
+		AccessSvc:   factory.AccessService(),
 		Queries:     inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
 		UserRepo:    nil,
 		Teardown: func() {

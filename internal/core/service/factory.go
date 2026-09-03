@@ -16,6 +16,9 @@ type Factory struct {
 	accessGuard   outbound.AccessGuard
 	accessChecker outbound.IncidentAccessChecker
 	accessRepo    outbound.IncidentAccessRepository
+	groupRepo     outbound.AccessGroupRepository
+	globalRepo    outbound.GlobalAccessRepository
+	globalChecker outbound.GlobalAccessChecker
 }
 
 // FactoryOption configures a Factory.
@@ -57,6 +60,18 @@ func WithIncidentAccessRepository(accessRepo outbound.IncidentAccessRepository) 
 	return func(f *Factory) { f.accessRepo = accessRepo }
 }
 
+func WithAccessGroupRepository(groupRepo outbound.AccessGroupRepository) FactoryOption {
+	return func(f *Factory) { f.groupRepo = groupRepo }
+}
+
+func WithGlobalAccessRepository(globalRepo outbound.GlobalAccessRepository) FactoryOption {
+	return func(f *Factory) { f.globalRepo = globalRepo }
+}
+
+func WithGlobalAccessChecker(globalChecker outbound.GlobalAccessChecker) FactoryOption {
+	return func(f *Factory) { f.globalChecker = globalChecker }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -76,6 +91,21 @@ func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbo
 		f.hierarchy,
 		f.accessChecker,
 		f.accessRepo,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
+}
+
+func (f *Factory) AccessService() *AccessService {
+	return NewAccessService(
+		f.tx,
+		f.accessRepo,
+		f.groupRepo,
+		f.globalRepo,
+		f.accessChecker,
+		f.globalChecker,
+		f.accessGuard,
 		f.clock,
 		f.ids,
 		f.notifier,

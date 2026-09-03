@@ -7,10 +7,43 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
+
+type AccessService interface {
+	GrantIncidentRole(
+		ctx context.Context,
+		incidentID shared.IncidentID,
+		principal access.Principal,
+		role access.Role,
+		actor identity.Actor,
+	) error
+	RevokeIncidentRole(
+		ctx context.Context,
+		incidentID shared.IncidentID,
+		principal access.Principal,
+		role access.Role,
+		actor identity.Actor,
+	) error
+	ChangeIncidentAccessMode(
+		ctx context.Context,
+		incidentID shared.IncidentID,
+		mode access.IncidentMode,
+		actor identity.Actor,
+	) error
+	CreateAccessGroup(ctx context.Context, name, description string, actor identity.Actor) (uuid.UUID, error)
+	RenameAccessGroup(ctx context.Context, groupID uuid.UUID, name string, actor identity.Actor) error
+	ArchiveAccessGroup(ctx context.Context, groupID uuid.UUID, actor identity.Actor) error
+	AddGroupMember(ctx context.Context, groupID uuid.UUID, subject string, actor identity.Actor) error
+	RemoveGroupMember(ctx context.Context, groupID uuid.UUID, subject string, actor identity.Actor) error
+	GrantGlobalRole(ctx context.Context, subject string, role access.GlobalRole, actor identity.Actor) error
+	RevokeGlobalRole(ctx context.Context, subject string, role access.GlobalRole, actor identity.Actor) error
+}
 
 // CreateIncidentResult is returned from CreateIncident so resolvers can build
 // the mutation response from aggregate state without a projection read.
