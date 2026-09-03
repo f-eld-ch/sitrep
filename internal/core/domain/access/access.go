@@ -265,6 +265,16 @@ func (a *GlobalAccess) Root() *eventsourcing.Root                    { return &a
 func (a *GlobalAccess) AggregateType() string                        { return "GlobalAccess" }
 func (a *GlobalAccess) HasRole(subject string, role GlobalRole) bool { return a.roles[subject][role] }
 
+func (a *GlobalAccess) SubjectsWithRole(role GlobalRole) []string {
+	subjects := make([]string, 0)
+	for subject, roles := range a.roles {
+		if roles[role] {
+			subjects = append(subjects, subject)
+		}
+	}
+	return subjects
+}
+
 func (a *GlobalAccess) Initialize(actor string, at time.Time) error {
 	eventsourcing.TrackChange(a, GlobalAccessInitialized{}, at, meta(actor))
 	return nil

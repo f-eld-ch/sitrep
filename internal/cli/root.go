@@ -124,6 +124,7 @@ func NewRootCmd() (*cobra.Command, error) {
 
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(newMigrateCmd(v))
+	rootCmd.AddCommand(newAccessCmd(v))
 
 	return rootCmd, nil
 }
