@@ -898,7 +898,12 @@ func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup,
 	}
 	out := make([]*model.AccessGroup, 0, len(rows))
 	for _, row := range rows {
-		out = append(out, &model.AccessGroup{ID: row.ID.String(), Name: row.Name, Description: row.Description})
+		out = append(out, &model.AccessGroup{
+			ID:          row.ID.String(),
+			Name:        row.Name,
+			Description: row.Description,
+			ArchivedAt:  row.ArchivedAt,
+		})
 	}
 	return out, nil
 }

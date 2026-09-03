@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -37,7 +38,7 @@ type AccessHandler struct {
 type groupProjection struct {
 	name        string
 	description string
-	archived    bool
+	archivedAt  *time.Time
 	members     map[string]bool
 }
 
@@ -152,7 +153,8 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 
 		g.name = d.Name
 	case "GroupArchived":
-		g.archived = true
+		archivedAt := e.OccurredAt
+		g.archivedAt = &archivedAt
 	case "GroupMemberAdded":
 		var d access.GroupMemberAdded
 		if err := remarshal(e.Data, &d); err != nil {
@@ -228,7 +230,7 @@ func (h *AccessHandler) recompute() {
 				continue
 			}
 
-			if group := h.groups[groupID]; group != nil && !group.archived {
+			if group := h.groups[groupID]; group != nil && group.archivedAt == nil {
 				for member := range group.members {
 					for _, action := range actionsForMode(role, h.modes[incidentID]) {
 						h.addPolicy("user:"+member, "incident:"+incidentID.String(), string(action))
@@ -298,7 +300,7 @@ func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow 
 func (h *AccessHandler) Groups() map[uuid.UUID]struct {
 	Name        string
 	Description string
-	Archived    bool
+	ArchivedAt  *time.Time
 	Members     []string
 } {
 	h.mu.RLock()
@@ -307,7 +309,7 @@ func (h *AccessHandler) Groups() map[uuid.UUID]struct {
 	result := make(map[uuid.UUID]struct {
 		Name        string
 		Description string
-		Archived    bool
+		ArchivedAt  *time.Time
 		Members     []string
 	}, len(h.groups))
 	for id, group := range h.groups {
@@ -320,12 +322,12 @@ func (h *AccessHandler) Groups() map[uuid.UUID]struct {
 		result[id] = struct {
 			Name        string
 			Description string
-			Archived    bool
+			ArchivedAt  *time.Time
 			Members     []string
 		}{
 			Name:        group.name,
 			Description: group.description,
-			Archived:    group.archived,
+			ArchivedAt:  group.archivedAt,
 			Members:     members,
 		}
 	}

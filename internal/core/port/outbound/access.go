@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -28,7 +29,7 @@ type AccessGroupRM struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
-	Archived    bool
+	ArchivedAt  *time.Time
 }
 
 type GroupMemberRM struct {

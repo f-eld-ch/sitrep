@@ -45,7 +45,7 @@ func (q *AccessQueries) ListIncidentAccess(
 func (q *AccessQueries) ListAccessGroups(ctx context.Context) ([]outbound.AccessGroupRM, error) {
 	rows, err := q.pool.Query(
 		ctx,
-		`SELECT id, name, description, archived_at IS NOT NULL FROM rm_access_group ORDER BY name, id`,
+		`SELECT id, name, description, archived_at FROM rm_access_group ORDER BY name, id`,
 	)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (q *AccessQueries) ListAccessGroups(ctx context.Context) ([]outbound.Access
 
 	for rows.Next() {
 		var row outbound.AccessGroupRM
-		if err := rows.Scan(&row.ID, &row.Name, &row.Description, &row.Archived); err != nil {
+		if err := rows.Scan(&row.ID, &row.Name, &row.Description, &row.ArchivedAt); err != nil {
 			return nil, err
 		}
 

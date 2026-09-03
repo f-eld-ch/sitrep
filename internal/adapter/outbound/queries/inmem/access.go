@@ -3,6 +3,7 @@ package inmem
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -44,11 +45,16 @@ func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGr
 
 	out := make([]outbound.AccessGroupRM, 0, len(groups))
 	for id, group := range groups {
+		var archivedAt *time.Time
+		if group.ArchivedAt != nil {
+			archivedAt = group.ArchivedAt
+		}
+
 		out = append(out, outbound.AccessGroupRM{
 			ID:          id,
 			Name:        group.Name,
 			Description: group.Description,
-			Archived:    group.Archived,
+			ArchivedAt:  archivedAt,
 		})
 	}
 
