@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import logo from "assets/logo.svg";
 import classNames from "classnames";
+import { useAccessGroups } from "api";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
@@ -244,6 +245,11 @@ function VersionNavBar() {
 function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
+  const showRbacEditors = useBooleanFlagValue("show-rbac-editors", false);
+  // The link is a UX convenience only; the accessGroups query itself is what the
+  // server actually authorizes, so a denied user only sees an empty/forbidden page.
+  const groupsResult = useAccessGroups(!showRbacEditors || !userState.isLoggedin);
+  const canManageGroups = showRbacEditors && groupsResult.status === "ready";
 
   if (!userState.isLoggedin) return;
 
@@ -265,14 +271,16 @@ function UserNavBar() {
         <DarkModeSwitcher />
         <LanguageSwitcher />
         <hr className="navbar-divider" />
-        <NavLink className="navbar-item" to="/admin/access">
-          <span className="icon-text is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faUserShield} />
+        {showRbacEditors && canManageGroups && (
+          <NavLink className="navbar-item" to="/admin/access">
+            <span className="icon-text is-flex-wrap-nowrap">
+              <span className="icon">
+                <FontAwesomeIcon icon={faUserShield} />
+              </span>
+              <span>Administration</span>
             </span>
-            <span>Administration</span>
-          </span>
-        </NavLink>
+          </NavLink>
+        )}
         <a className="navbar-item" href="/oauth2/sign_out" aria-label={t("logout")}>
           <span className="icon-text is-flex-wrap-nowrap is-capitalized">
             <span className="icon">

@@ -88,10 +88,10 @@ export function useIncidentAccessMode(
   };
 }
 
-export function useAccessGroups(): QueryResult<AccessGroupsData> {
-  const { loading, error, data, refetch } = useQuery(LIST_ACCESS_GROUPS);
+export function useAccessGroups(skip = false): QueryResult<AccessGroupsData> {
+  const { loading, error, data, refetch } = useQuery(LIST_ACCESS_GROUPS, { skip });
   const refresh = () => void refetch();
-  if (loading && !data) {
+  if (skip || (loading && !data)) {
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
   }
   if (error) {
