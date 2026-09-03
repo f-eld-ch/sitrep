@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useParams } from "react-router";
+import { NavLink, Outlet, useLocation, useParams } from "react-router";
 import { useAccessGroups, useGlobalRoles } from "api";
 
 /** Two-column admin shell: a left-hand section menu plus the routed section content. */
@@ -7,6 +7,8 @@ function AdminLayout() {
   // Only reveal the link if the query actually succeeds — same signal the server uses to authorize it.
   const globalRolesResult = useGlobalRoles();
   const { groupId } = useParams();
+  const location = useLocation();
+  const onGroupsSection = location.pathname.startsWith("/admin/access/groups");
 
   return (
     <div className="container">
@@ -24,20 +26,22 @@ function AdminLayout() {
                 >
                   Groups
                 </NavLink>
-                {groupsResult.status === "ready" && groupsResult.data.groups.length > 0 && (
-                  <ul>
-                    {groupsResult.data.groups.map((group) => (
-                      <li key={group.id}>
-                        <NavLink
-                          to={`groups/${group.id}`}
-                          className={group.id === groupId ? "is-active" : ""}
-                        >
-                          {group.name}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {onGroupsSection &&
+                  groupsResult.status === "ready" &&
+                  groupsResult.data.groups.length > 0 && (
+                    <ul>
+                      {groupsResult.data.groups.map((group) => (
+                        <li key={group.id}>
+                          <NavLink
+                            to={`groups/${group.id}`}
+                            className={group.id === groupId ? "is-active" : ""}
+                          >
+                            {group.name}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
               </li>
               {globalRolesResult.status === "ready" && (
                 <li>
