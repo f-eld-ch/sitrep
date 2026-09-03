@@ -8,8 +8,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
-	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
-	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -220,45 +218,11 @@ func (h *AccessHandler) Policies() []AccessPolicyRow {
 	return rows
 }
 
-type (
-	IncidentAccessChecker struct{ handler *AccessHandler }
-	GlobalAccessChecker   struct{ handler *AccessHandler }
-)
-
-func NewIncidentAccessChecker(handler *AccessHandler) *IncidentAccessChecker {
-	return &IncidentAccessChecker{handler: handler}
+func (h *AccessHandler) Mode(incidentID uuid.UUID) access.IncidentMode {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return h.modes[incidentID]
 }
-
-func NewGlobalAccessChecker(handler *AccessHandler) *GlobalAccessChecker {
-	return &GlobalAccessChecker{handler: handler}
-}
-
-func (c *IncidentAccessChecker) Can(
-	_ context.Context,
-	subject string,
-	incidentID shared.IncidentID,
-	action access.Action,
-) (bool, error) {
-	c.handler.mu.RLock()
-	defer c.handler.mu.RUnlock()
-	if c.handler.modes[uuid.UUID(incidentID)] == access.OpenOperational && action != access.IncidentManageAccess {
-		return true, nil
-	}
-	_, ok := c.handler.policies[policyKey(AccessPolicyRow{Subject: "user:" + subject, Domain: "incident:" + uuid.UUID(incidentID).String(), Object: objectForAction(string(action)), Action: string(action)})]
-	return ok, nil
-}
-
-func (c *GlobalAccessChecker) Can(_ context.Context, subject string, action access.GlobalAction) (bool, error) {
-	c.handler.mu.RLock()
-	defer c.handler.mu.RUnlock()
-	_, ok := c.handler.policies[policyKey(AccessPolicyRow{Subject: "user:" + subject, Domain: "global", Object: objectForAction(string(action)), Action: string(action)})]
-	return ok, nil
-}
-
-var (
-	_ outbound.IncidentAccessChecker = (*IncidentAccessChecker)(nil)
-	_ outbound.GlobalAccessChecker   = (*GlobalAccessChecker)(nil)
-)
 
 func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role access.Role) string {
 	return id.String() + "|" + string(kind) + "|" + subject + "|" + string(role)

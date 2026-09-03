@@ -1,4 +1,4 @@
-package projection
+package projection_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 )
@@ -43,8 +44,8 @@ func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
 	_, err = eventstore.NewAccessGroupRepository(store).Save(ctx, group)
 	require.NoError(t, err)
 
-	handler := NewAccessHandler()
-	projector := NewProjector(store, []Handler{handler})
+	handler := projection.NewAccessHandler()
+	projector := projection.NewProjector(store, []projection.Handler{handler})
 	require.NoError(t, projector.CatchUp(ctx))
 
 	rows := handler.Policies()
@@ -52,7 +53,7 @@ func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
 	assert.Contains(
 		t,
 		rows,
-		AccessPolicyRow{
+		projection.AccessPolicyRow{
 			Subject: "user:owner",
 			Domain:  "incident:" + incidentID.String(),
 			Object:  "incident",
@@ -62,7 +63,7 @@ func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
 	assert.Contains(
 		t,
 		rows,
-		AccessPolicyRow{
+		projection.AccessPolicyRow{
 			Subject: "user:member-1",
 			Domain:  "incident:" + incidentID.String(),
 			Object:  "incident",

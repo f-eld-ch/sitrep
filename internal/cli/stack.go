@@ -151,7 +151,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	accessHandler := inprojection.NewAccessHandler()
-	accessChecker := inprojection.NewIncidentAccessChecker(accessHandler)
+	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
