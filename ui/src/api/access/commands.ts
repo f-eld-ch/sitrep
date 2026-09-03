@@ -146,9 +146,27 @@ export function useRevokeIncidentRole(): CommandHook<IncidentRoleArgs> {
 export function useCreateAccessGroup(): CommandHook<CreateAccessGroupArgs, { groupId: string }> {
   const [mutate, result] = useMutation(CREATE_ACCESS_GROUP);
   const create = async (args: CreateAccessGroupArgs): Promise<{ groupId: string }> => {
+    const optimisticGroupId = `optimistic-${crypto.randomUUID()}`;
     const response = await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_ACCESS_GROUPS }],
+      optimisticResponse: {
+        createAccessGroup: {
+          id: optimisticGroupId,
+          name: args.name,
+          description: args.description,
+          archivedAt: null,
+        },
+      },
+      update(cache, { data }) {
+        const group = data?.createAccessGroup;
+        if (!group) return;
+        const cached = cache.readQuery({ query: LIST_ACCESS_GROUPS });
+        if (!cached || cached.accessGroups.some((existing) => existing.id === group.id)) return;
+        cache.writeQuery({
+          query: LIST_ACCESS_GROUPS,
+          data: { accessGroups: [...cached.accessGroups, group] },
+        });
+      },
     });
     const groupId = response.data?.createAccessGroup?.id;
     if (!groupId)
