@@ -309,42 +309,6 @@ function Administration() {
                       </table>
                     </div>
                   )}
-                  <div className="content">
-                    <ul>
-                      {membersResult.data.subjects.map((subject) => (
-                        <li key={subject}>
-                          <span>{subject}</span>
-                          {!selectedGroup.archivedAt && (
-                            <button
-                              type="button"
-                              className="button is-small is-text ml-2"
-                              onClick={() => {
-                                setPendingRemovals((pending) => new Set(pending).add(subject));
-                                void removeMember({ groupId: selectedGroup.id, subject })
-                                  .catch(() => undefined)
-                                  .finally(() => {
-                                    setPendingRemovals((pending) => {
-                                      const remaining = new Set(pending);
-                                      remaining.delete(subject);
-                                      return remaining;
-                                    });
-                                  });
-                              }}
-                              disabled={pendingRemovals.has(subject)}
-                            >
-                              {pendingRemovals.has(subject) ? (
-                                <>
-                                  <FontAwesomeIcon icon={faSpinner} spin /> Removing
-                                </>
-                              ) : (
-                                "Remove"
-                              )}
-                            </button>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </>
               )}
             </div>
