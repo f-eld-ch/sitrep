@@ -41,6 +41,22 @@ func WithVersion(version, sha string) Option {
 // Option defines a functional option for Server.
 type Option func(*Server) error
 
+// Stack contains the application dependencies exposed by the server.
+type Stack struct {
+	Incidents inbound.IncidentService
+	Messages  inbound.MessageService
+	Layers    inbound.LayerService
+	Features  inbound.FeatureService
+	Queries   outbound.Queries
+}
+
+// APIV2Option configures the API-v2 GraphQL handler.
+type APIV2Option func(*apiV2Config)
+
+type apiV2Config struct {
+	introspection bool
+}
+
 // WithPort sets the server port.
 func WithPort(port uint) Option {
 	return func(s *Server) error {
@@ -57,12 +73,14 @@ func WithAddress(addr string) Option {
 	}
 }
 
-func WithOidc(oidcClient *auth.OIDCClient) Option {
+func WithEnforcer(enforcer auth.Enforcer) Option {
 	return func(s *Server) error {
-		s.Enforcer = oidcClient
+		s.Enforcer = enforcer
 		return nil
 	}
 }
+
+func WithOidc(oidcClient *auth.OIDCClient) Option { return WithEnforcer(oidcClient) }
 
 // complexityBudget caps the total cost of a single GraphQL operation.
 // Budget reasoning: a realistic dashboard query fetches ~10 incidents with their
@@ -70,68 +88,76 @@ func WithOidc(oidcClient *auth.OIDCClient) Option {
 // Budget set to 5000 to allow that with headroom.
 const complexityBudget = 5000
 
-func WithApiV2(
-	incidents inbound.IncidentService,
-	messages inbound.MessageService,
-	layers inbound.LayerService,
-	features inbound.FeatureService,
-	queries outbound.Queries,
-	enableIntrospection bool,
-) Option {
+func WithGraphQLIntrospection() APIV2Option {
+	return func(c *apiV2Config) { c.introspection = true }
+}
+
+func WithApiV2(stack Stack, opts ...APIV2Option) Option {
 	return func(s *Server) error {
-		cfg := generated.Config{Resolvers: &graph.Resolver{
-			Incidents: incidents,
-			Messages:  messages,
-			Layers:    layers,
-			Features:  features,
-			Queries:   queries,
-		}}
-		// Flat cost per list-resolver call to penalise N+1 patterns
-		// (e.g. fetching messages for every incident in a list query)
-		// without rejecting normal single-incident or single-layer queries.
-		const (
-			messageCost = 50
-			featureCost = 20
-		)
-
-		cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity + messageCost }
-		cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
-		srv := handler.New(generated.NewExecutableSchema(cfg))
-		srv.AddTransport(transport.POST{})
-		srv.Use(otelgqlgen.Middleware())
-		srv.Use(extension.FixedComplexityLimit(complexityBudget))
-
-		if enableIntrospection {
-			slog.Warn("graphql introspection enabled; this is not recommended in production")
-			srv.Use(extension.Introspection{})
+		config := &apiV2Config{
+			introspection: false,
+		}
+		for _, opt := range opts {
+			opt(config)
 		}
 
-		srv.SetErrorPresenter(logAndPresentError)
-		srv.SetRecoverFunc(func(ctx context.Context, p any) error {
-			opCtx := graphql.GetOperationContext(ctx)
-			slog.ErrorContext(ctx, "resolver panic",
-				"operation", opCtx.OperationName,
-				"panic", fmt.Sprintf("%v", p),
-			)
-
-			return fmt.Errorf("internal server error")
-		})
-
-		apiv2 := s.router.Group("/api/v2", s.RequireLogin)
-		apiv2.POST("/graphql", echo.WrapHandler(srv))
-
-		if enableIntrospection {
-			apiv2.GET("/graphql/play", echo.WrapHandler(
-				playground.Handler("SitRep GraphQL", "/api/v2/graphql"),
-			))
-		}
-
-		apiv2.GET("/health", func(c *echo.Context) error {
-			return c.String(http.StatusOK, "OK")
-		})
+		s.registerAPIV2 = func() { registerAPIV2(s, stack, *config) }
 
 		return nil
 	}
+}
+
+func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
+	cfg := generated.Config{Resolvers: &graph.Resolver{
+		Incidents: stack.Incidents,
+		Messages:  stack.Messages,
+		Layers:    stack.Layers,
+		Features:  stack.Features,
+		Queries:   stack.Queries,
+	}}
+	// Flat cost per list-resolver call to penalise N+1 patterns
+	// (e.g. fetching messages for every incident in a list query)
+	// without rejecting normal single-incident or single-layer queries.
+	const (
+		messageCost = 50
+		featureCost = 20
+	)
+
+	cfg.Complexity.Incident.Messages = func(childComplexity int) int { return childComplexity + messageCost }
+	cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
+	srv := handler.New(generated.NewExecutableSchema(cfg))
+	srv.AddTransport(transport.POST{})
+	srv.Use(otelgqlgen.Middleware())
+	srv.Use(extension.FixedComplexityLimit(complexityBudget))
+
+	if config.introspection {
+		slog.Warn("graphql introspection enabled; this is not recommended in production")
+		srv.Use(extension.Introspection{})
+	}
+
+	srv.SetErrorPresenter(logAndPresentError)
+	srv.SetRecoverFunc(func(ctx context.Context, p any) error {
+		opCtx := graphql.GetOperationContext(ctx)
+		slog.ErrorContext(ctx, "resolver panic",
+			"operation", opCtx.OperationName,
+			"panic", fmt.Sprintf("%v", p),
+		)
+
+		return fmt.Errorf("internal server error")
+	})
+
+	apiv2 := s.router.Group("/api/v2", s.RequireLogin)
+	apiv2.POST("/graphql", echo.WrapHandler(srv))
+
+	if config.introspection {
+		apiv2.GET("/graphql/play", echo.WrapHandler(
+			playground.Handler("SitRep GraphQL", "/api/v2/graphql"),
+		))
+	}
+
+	apiv2.GET("/health", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 }
 
 func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {

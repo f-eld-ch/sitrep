@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -25,7 +26,8 @@ type Server struct {
 	version        string
 	sha            string
 	auth.Enforcer
-	router *echo.Echo
+	router        *echo.Echo
+	registerAPIV2 func()
 	*http.Server
 }
 
@@ -46,6 +48,10 @@ func NewServer(opts ...Option) *Server {
 		}
 	}
 
+	if s.registerAPIV2 != nil {
+		s.registerAPIV2()
+	}
+
 	// register routes && middlewares
 	s.RegisterMiddlewares()
 	s.RegisterRoutes()
@@ -59,10 +65,12 @@ func NewServer(opts ...Option) *Server {
 	return s
 }
 
+func shutdownSignals() []os.Signal { return []os.Signal{os.Interrupt, syscall.SIGTERM} }
+
 func (s *Server) ListenAndServe(ctx context.Context) error {
 	s.isShuttingDown.Store(false)
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals()...)
 	defer cancel()
 
 	go func() {
