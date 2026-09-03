@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,8 +19,34 @@ import (
 
 func newAccessCmd(v *viper.Viper) *cobra.Command {
 	accessCmd := &cobra.Command{Use: "access", Short: "Authorization and access commands"}
-	accessCmd.AddCommand(newGrantSystemAdminCmd(v), newListSystemAdminsCmd(v), newRevokeSystemAdminCmd(v))
+	accessCmd.AddCommand(
+		newGrantSystemAdminCmd(v),
+		newListSystemAdminsCmd(v),
+		newRevokeSystemAdminCmd(v),
+		newGrantIncidentOwnerCmd(v),
+	)
 	return accessCmd
+}
+
+func newGrantIncidentOwnerCmd(v *viper.Viper) *cobra.Command {
+	var incidentID, subject string
+	cmd := &cobra.Command{
+		Use:   "grant-incident-owner",
+		Short: "Assign an incident owner",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if incidentID == "" || subject == "" {
+				return fmt.Errorf("--incident and --sub are required")
+			}
+			id, err := uuid.Parse(incidentID)
+			if err != nil {
+				return fmt.Errorf("invalid --incident: %w", err)
+			}
+			return runIncidentOwnerCommand(cmd.Context(), v.GetString("database-url"), id, subject)
+		},
+	}
+	cmd.Flags().StringVar(&incidentID, "incident", "", "Incident ID")
+	cmd.Flags().StringVar(&subject, "sub", "", "OIDC subject")
+	return cmd
 }
 
 func newGrantSystemAdminCmd(v *viper.Viper) *cobra.Command {
@@ -148,4 +175,58 @@ func openAccessPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 	return pool, nil
+}
+
+func runIncidentOwnerCommand(ctx context.Context, dsn string, incidentID uuid.UUID, subject string) error {
+	pool, err := openAccessPool(ctx, dsn)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	var exists bool
+	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users WHERE sub = $1)`, subject).
+		Scan(&exists); err != nil {
+		return fmt.Errorf("find user: %w", err)
+	}
+	if !exists {
+		return fmt.Errorf("user subject %q is not present in users", subject)
+	}
+	store := pgstore.NewEventStore(pool)
+	repo := eventstore.NewIncidentAccessRepository(store)
+	tx := pgstore.NewTransactor(pool)
+	guard := pgstore.NewAccessGuard()
+	var changed bool
+	if err := tx.WithinTx(ctx, func(ctx context.Context) error {
+		release, err := guard.LockForUpdate(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+		aggregate, err := repo.Load(ctx, shared.IncidentID(incidentID))
+		if err != nil {
+			return err
+		}
+		before := aggregate.HasRole(access.Principal{Kind: access.UserPrincipal, ID: subject}, access.Owner)
+		if err := aggregate.GrantRole(
+			access.Principal{Kind: access.UserPrincipal, ID: subject},
+			access.Owner,
+			"system:cli",
+			pgstore.WallClock{}.Now(),
+		); err != nil {
+			return err
+		}
+		changed = !before
+		if changed {
+			_, err = repo.Save(ctx, aggregate)
+		}
+		return err
+	}); err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+	notifier := pgstore.NewNotifier(pool, "events")
+	defer notifier.Close()
+	return notifier.Notify(ctx)
 }
