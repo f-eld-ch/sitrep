@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   useAccessGroups,
   useAccessUsers,
@@ -20,6 +22,7 @@ function Administration() {
   const [description, setDescription] = useState("");
   const [userFilter, setUserFilter] = useState("");
   const [pendingMembers, setPendingMembers] = useState<Set<string>>(new Set());
+  const [pendingRemovals, setPendingRemovals] = useState<Set<string>>(new Set());
   const [groupName, setGroupName] = useState("");
   const [createGroup, createState] = useCreateAccessGroup();
   const [renameGroup, renameState] = useRenameAccessGroup();
@@ -249,10 +252,21 @@ function Administration() {
                                   className={`button is-small ${selectedMembers.has(user.sub) ? "is-danger" : "is-primary"}`}
                                   onClick={() => {
                                     if (selectedMembers.has(user.sub)) {
+                                      setPendingRemovals((pending) =>
+                                        new Set(pending).add(user.sub),
+                                      );
                                       void removeMember({
                                         groupId: selectedGroup.id,
                                         subject: user.sub,
-                                      });
+                                      })
+                                        .catch(() => undefined)
+                                        .finally(() => {
+                                          setPendingRemovals((pending) => {
+                                            const remaining = new Set(pending);
+                                            remaining.delete(user.sub);
+                                            return remaining;
+                                          });
+                                        });
                                       return;
                                     }
 
@@ -280,15 +294,22 @@ function Administration() {
                                   disabled={
                                     Boolean(selectedGroup.archivedAt) ||
                                     pendingMembers.has(user.sub) ||
-                                    (selectedMembers.has(user.sub) && removeMemberState.loading) ||
-                                    (!selectedMembers.has(user.sub) && addMemberState.loading)
+                                    pendingRemovals.has(user.sub)
                                   }
                                 >
-                                  {selectedMembers.has(user.sub)
-                                    ? "Remove"
-                                    : pendingMembers.has(user.sub)
-                                      ? "Pending"
-                                      : "Add"}
+                                  {pendingMembers.has(user.sub) ? (
+                                    <>
+                                      <FontAwesomeIcon icon={faSpinner} spin /> Adding
+                                    </>
+                                  ) : pendingRemovals.has(user.sub) ? (
+                                    <>
+                                      <FontAwesomeIcon icon={faSpinner} spin /> Removing
+                                    </>
+                                  ) : selectedMembers.has(user.sub) ? (
+                                    "Remove"
+                                  ) : (
+                                    "Add"
+                                  )}
                                 </button>
                               </td>
                             </tr>
@@ -306,12 +327,27 @@ function Administration() {
                             <button
                               type="button"
                               className="button is-small is-text ml-2"
-                              onClick={() =>
+                              onClick={() => {
+                                setPendingRemovals((pending) => new Set(pending).add(subject));
                                 void removeMember({ groupId: selectedGroup.id, subject })
-                              }
-                              disabled={removeMemberState.loading}
+                                  .catch(() => undefined)
+                                  .finally(() => {
+                                    setPendingRemovals((pending) => {
+                                      const remaining = new Set(pending);
+                                      remaining.delete(subject);
+                                      return remaining;
+                                    });
+                                  });
+                              }}
+                              disabled={pendingRemovals.has(subject)}
                             >
-                              Remove
+                              {pendingRemovals.has(subject) ? (
+                                <>
+                                  <FontAwesomeIcon icon={faSpinner} spin /> Removing
+                                </>
+                              ) : (
+                                "Remove"
+                              )}
                             </button>
                           )}
                         </li>

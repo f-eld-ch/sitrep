@@ -147,6 +147,21 @@ export function useRemoveGroupMember(): CommandHook<GroupMemberArgs> {
     await mutate({
       variables: args,
       refetchQueries: [{ query: LIST_GROUP_MEMBERS, variables: { groupId: args.groupId } }],
+      awaitRefetchQueries: true,
+      update(cache) {
+        const cached = cache.readQuery({
+          query: LIST_GROUP_MEMBERS,
+          variables: { groupId: args.groupId },
+        });
+        if (!cached) return;
+        cache.writeQuery({
+          query: LIST_GROUP_MEMBERS,
+          variables: { groupId: args.groupId },
+          data: {
+            groupMembers: cached.groupMembers.filter((subject) => subject !== args.subject),
+          },
+        });
+      },
     });
   };
   return [remove, commandState(result.loading, result.error)];
