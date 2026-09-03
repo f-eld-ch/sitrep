@@ -78,6 +78,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	accessChecker := pgstore.NewIncidentAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
 
 	factory := service.NewFactory(
@@ -88,6 +89,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithMessageCounter(pgstore.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(pgstore.NewIncidentHierarchyGuard()),
 		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
 	)
 
 	handlers := []pgprojection.Handler{
@@ -148,6 +150,8 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	accessHandler := inprojection.NewAccessHandler()
+	accessChecker := inprojection.NewIncidentAccessChecker(accessHandler)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -157,14 +161,13 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithMessageCounter(inmem.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
 		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
 	)
 
 	incHandler := inprojection.NewIncidentHandler()
 	divHandler := inprojection.NewIncidentDivisionHandler()
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
-	accessHandler := inprojection.NewAccessHandler()
-
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
 		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
 	}).WithNotifier(notifier), "inmem")
