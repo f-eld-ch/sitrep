@@ -60,7 +60,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
     <>
       {modeResult.status === "ready" && (
         <div className="box">
-          <div className="level">
+          <div className="level mb-2">
             <div>
               <p className="heading">Access mode</p>
               <p className="title is-5">
@@ -88,8 +88,13 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               Restrict incident
             </label>
           </div>
+          <p className="help">
+            {modeResult.data.mode === "RESTRICTED"
+              ? "Only the principals granted below can view or edit this incident."
+              : "Every authenticated user can view and edit this incident. Grants below only control who can manage access."}
+          </p>
           {modeState.error && (
-            <div className="notification is-danger">{modeState.error.message}</div>
+            <div className="notification is-danger mt-3">{modeState.error.message}</div>
           )}
         </div>
       )}
@@ -173,44 +178,48 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                 </button>
               </div>
             </div>
-            <table className="table is-fullwidth">
-              <thead>
-                <tr>
-                  <th>Principal</th>
-                  <th>Role</th>
-                  <th aria-label="Actions" />
-                </tr>
-              </thead>
-              <tbody>
-                {accessResult.data.grants.map((grant) => (
-                  <tr key={`${grant.principalKind}-${grant.principalId}-${grant.role}`}>
-                    <td>
-                      {principalName(grant.principalKind, grant.principalId, grant.principalName)} (
-                      {grant.principalKind === "GROUP" ? "Group" : "User"})
-                      <br />
-                      <small>{grant.principalId}</small>
-                    </td>
-                    <td>{grant.role}</td>
-                    <td className="has-text-right">
-                      <button
-                        type="button"
-                        className="button is-small is-danger is-light"
-                        disabled={revokeState.loading}
-                        onClick={() => void revokeRole(grant)}
-                      >
-                        {revokeState.loading ? (
-                          <>
-                            <FontAwesomeIcon icon={faSpinner} spin /> Revoking
-                          </>
-                        ) : (
-                          "Revoke"
-                        )}
-                      </button>
-                    </td>
+            {accessResult.data.grants.length === 0 ? (
+              <p className="has-text-grey">No explicit grants yet.</p>
+            ) : (
+              <table className="table is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Principal</th>
+                    <th>Role</th>
+                    <th aria-label="Actions" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {accessResult.data.grants.map((grant) => (
+                    <tr key={`${grant.principalKind}-${grant.principalId}-${grant.role}`}>
+                      <td>
+                        {principalName(grant.principalKind, grant.principalId, grant.principalName)}{" "}
+                        ({grant.principalKind === "GROUP" ? "Group" : "User"})
+                        <br />
+                        <small>{grant.principalId}</small>
+                      </td>
+                      <td>{grant.role}</td>
+                      <td className="has-text-right">
+                        <button
+                          type="button"
+                          className="button is-small is-danger is-light"
+                          disabled={revokeState.loading}
+                          onClick={() => void revokeRole(grant)}
+                        >
+                          {revokeState.loading ? (
+                            <>
+                              <FontAwesomeIcon icon={faSpinner} spin /> Revoking
+                            </>
+                          ) : (
+                            "Revoke"
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </>
         )}
       </div>

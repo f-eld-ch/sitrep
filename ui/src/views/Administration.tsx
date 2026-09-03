@@ -76,10 +76,9 @@ function Administration() {
     <div className="container">
       <div className="level mb-5">
         <div>
-          <p className="heading">Access control</p>
           <h1 className="title is-3">Administration</h1>
         </div>
-        <button type="button" className="button is-light" onClick={groupsResult.refresh}>
+        <button type="button" className="button" onClick={groupsResult.refresh}>
           Refresh
         </button>
       </div>
@@ -118,7 +117,7 @@ function Administration() {
             </div>
             <button
               type="button"
-              className="button is-primary"
+              className="button is-success"
               onClick={() => void create()}
               disabled={createState.loading}
             >
@@ -156,18 +155,38 @@ function Administration() {
                 <div>
                   <h2 className="title is-4 mb-1">{selectedGroup.name}</h2>
                   <p>{selectedGroup.description || "No description"}</p>
+                  {membersResult.status === "ready" && (
+                    <p className="help">
+                      {membersResult.data.subjects.length}{" "}
+                      {membersResult.data.subjects.length === 1 ? "member" : "members"}
+                    </p>
+                  )}
                 </div>
                 {!selectedGroup.archivedAt && (
                   <button
                     type="button"
                     className="button is-danger is-light"
-                    onClick={() => void archiveGroup({ groupId: selectedGroup.id })}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Archive "${selectedGroup.name}"? Archived groups can no longer be renamed or granted incident access.`,
+                        )
+                      ) {
+                        void archiveGroup({ groupId: selectedGroup.id });
+                      }
+                    }}
                     disabled={archiveState.loading}
                   >
                     Archive
                   </button>
                 )}
               </div>
+
+              {selectedGroup.archivedAt && (
+                <div className="notification is-warning is-light">
+                  This group is archived and read-only. Membership can no longer be changed.
+                </div>
+              )}
 
               {!selectedGroup.archivedAt && (
                 <div className="field has-addons mt-5">
@@ -218,7 +237,10 @@ function Administration() {
                   {usersResult.status === "error" && (
                     <div className="notification is-danger">{usersResult.error.message}</div>
                   )}
-                  {usersResult.status === "ready" && (
+                  {usersResult.status === "ready" && filteredUsers.length === 0 && (
+                    <p className="has-text-grey">No users match your search.</p>
+                  )}
+                  {usersResult.status === "ready" && filteredUsers.length > 0 && (
                     <div className="table-container">
                       <table className="table is-fullwidth is-hoverable">
                         <thead>
@@ -240,7 +262,7 @@ function Administration() {
                               <td className="has-text-right">
                                 <button
                                   type="button"
-                                  className={`button is-small ${selectedMembers.has(user.sub) ? "is-danger" : "is-primary"}`}
+                                  className={`button is-small ${selectedMembers.has(user.sub) ? "is-danger" : "is-success"}`}
                                   onClick={() => {
                                     if (selectedMembers.has(user.sub)) {
                                       setPendingRemovals((pending) =>
