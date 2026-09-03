@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Incident } from "types/incident";
-import { canEditParentIncident, initialDivisions, initializeDivision, updateDivision } from "./New";
+import {
+  canEditParentIncident,
+  canRemoveDivision,
+  initialDivisions,
+  initializeDivision,
+  updateDivision,
+} from "./New";
 
 const baseIncident: Incident = {
   id: "incident-1",
@@ -96,5 +102,17 @@ describe("updateDivision", () => {
       { id: "division-1", name: "Ops", description: "Operations" },
       { id: "division-2", name: "Situation", description: "Mapping" },
     ]);
+  });
+});
+
+describe("canRemoveDivision", () => {
+  it("allows removing unsaved divisions", () => {
+    expect(canRemoveDivision({ id: "", name: "Ops", description: "Operations" })).toBe(true);
+  });
+
+  it("hides removal for persisted divisions in the UI", () => {
+    expect(canRemoveDivision({ id: "division-1", name: "Ops", description: "Operations" })).toBe(
+      false,
+    );
   });
 });
