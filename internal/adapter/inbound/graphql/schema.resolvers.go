@@ -894,6 +894,103 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 	return out, nil
 }
 
+// IncidentAccess is the resolver for the incidentAccess field.
+func (r *queryResolver) IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+	if r.AccessQueries == nil || r.Access == nil || r.IncidentAccessChecker == nil {
+		return nil, shared.ErrForbidden
+	}
+	allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(id), access.IncidentManageAccess)
+	if err != nil {
+		return nil, err
+	}
+	if !allowed {
+		return nil, shared.ErrForbidden
+	}
+	rows, err := r.AccessQueries.ListIncidentAccess(ctx, shared.IncidentID(id))
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*model.IncidentAccessGrant, 0, len(rows))
+	for _, row := range rows {
+		out = append(
+			out,
+			&model.IncidentAccessGrant{
+				IncidentID:    incidentID,
+				PrincipalKind: principalKindFromDomain(row.PrincipalKind),
+				PrincipalID:   row.PrincipalID,
+				Role:          incidentRoleFromDomain(row.Role),
+			},
+		)
+	}
+	return out, nil
+}
+
+// AccessGroups is the resolver for the accessGroups field.
+func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
+		return nil, shared.ErrForbidden
+	}
+	allowed, err := r.GlobalAccessChecker.Can(ctx, actor.Sub, access.GroupManage)
+	if err != nil {
+		return nil, err
+	}
+	if !allowed {
+		return nil, shared.ErrForbidden
+	}
+	rows, err := r.AccessQueries.ListAccessGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*model.AccessGroup, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, &model.AccessGroup{ID: row.ID.String(), Name: row.Name, Description: row.Description})
+	}
+	return out, nil
+}
+
+// GroupMembers is the resolver for the groupMembers field.
+func (r *queryResolver) GroupMembers(ctx context.Context, groupID string) ([]string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
+		return nil, shared.ErrForbidden
+	}
+	allowed, err := r.GlobalAccessChecker.Can(ctx, actor.Sub, access.GroupManage)
+	if err != nil {
+		return nil, err
+	}
+	if !allowed {
+		return nil, shared.ErrForbidden
+	}
+	id, err := parseUUID(groupID)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.AccessQueries.ListGroupMembers(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, row.Subject)
+	}
+	return out, nil
+}
+
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 

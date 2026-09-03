@@ -154,12 +154,14 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		server.WithPort(v.GetUint("port")),
 		server.WithVersion(Version, Sha),
 		server.WithApiV2(server.Stack{
-			Incidents: s.IncidentSvc,
-			Messages:  s.MessageSvc,
-			Layers:    s.LayerSvc,
-			Features:  s.FeatureSvc,
-			Access:    s.AccessSvc,
-			Queries:   s.Queries,
+			Incidents:             s.IncidentSvc,
+			Messages:              s.MessageSvc,
+			Layers:                s.LayerSvc,
+			Features:              s.FeatureSvc,
+			Access:                s.AccessSvc,
+			IncidentAccessChecker: s.IncidentAccessChecker,
+			GlobalAccessChecker:   s.GlobalAccessChecker,
+			Queries:               s.Queries,
 		}, apiOpts...),
 	}
 	opts = append(opts, tlsOptions(v)...)

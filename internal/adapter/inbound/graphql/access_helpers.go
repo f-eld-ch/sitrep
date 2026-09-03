@@ -36,6 +36,29 @@ func principalKindToDomain(kind model.AccessPrincipalKind) access.PrincipalKind 
 	return access.UserPrincipal
 }
 
+func principalKindFromDomain(kind access.PrincipalKind) model.AccessPrincipalKind {
+	if kind == access.GroupPrincipal {
+		return model.AccessPrincipalKindGroup
+	}
+
+	return model.AccessPrincipalKindUser
+}
+
+func incidentRoleFromDomain(role access.Role) model.IncidentRole {
+	switch role {
+	case access.Owner:
+		return model.IncidentRoleOwner
+	case access.Manager:
+		return model.IncidentRoleManager
+	case access.Editor:
+		return model.IncidentRoleEditor
+	case access.Viewer:
+		return model.IncidentRoleViewer
+	}
+
+	return model.IncidentRoleViewer
+}
+
 func globalRoleToDomain(role model.GlobalRole) access.GlobalRole {
 	if role == model.GlobalRoleGroupAdmin {
 		return access.GroupAdmin

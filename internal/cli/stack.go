@@ -24,13 +24,15 @@ import (
 
 // stack holds all wired-up application services and the infrastructure teardown.
 type stack struct {
-	IncidentSvc   inbound.IncidentService
-	MessageSvc    inbound.MessageService
-	LayerSvc      inbound.LayerService
-	FeatureSvc    inbound.FeatureService
-	AccessSvc     inbound.AccessService
-	Queries       outbound.Queries
-	AccessQueries outbound.AccessQueries
+	IncidentSvc           inbound.IncidentService
+	MessageSvc            inbound.MessageService
+	LayerSvc              inbound.LayerService
+	FeatureSvc            inbound.FeatureService
+	AccessSvc             inbound.AccessService
+	Queries               outbound.Queries
+	AccessQueries         outbound.AccessQueries
+	IncidentAccessChecker outbound.IncidentAccessChecker
+	GlobalAccessChecker   outbound.GlobalAccessChecker
 	// UserRepo is nil when running with the in-memory backend.
 	UserRepo outbound.UserRepository
 	// Teardown stops the projector and releases infrastructure resources.
@@ -133,14 +135,16 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	}()
 
 	return &stack{
-		IncidentSvc:   factory.IncidentService(repos, layers),
-		MessageSvc:    factory.MessageService(messages, repos),
-		LayerSvc:      factory.LayerService(layers, repos),
-		FeatureSvc:    factory.FeatureService(features, repos, layers),
-		AccessSvc:     factory.AccessService(),
-		Queries:       pgqueries.NewQueries(pool, accessChecker),
-		AccessQueries: pgqueries.NewAccessQueries(pool),
-		UserRepo:      pguser.NewRepository(pool),
+		IncidentSvc:           factory.IncidentService(repos, layers),
+		MessageSvc:            factory.MessageService(messages, repos),
+		LayerSvc:              factory.LayerService(layers, repos),
+		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		AccessSvc:             factory.AccessService(),
+		Queries:               pgqueries.NewQueries(pool, accessChecker),
+		AccessQueries:         pgqueries.NewAccessQueries(pool),
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+		UserRepo:              pguser.NewRepository(pool),
 		Teardown: func() {
 			cancelProj()
 			<-projDone
@@ -204,14 +208,16 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	}()
 
 	return &stack{
-		IncidentSvc:   factory.IncidentService(repos, layers),
-		MessageSvc:    factory.MessageService(messages, repos),
-		LayerSvc:      factory.LayerService(layers, repos),
-		FeatureSvc:    factory.FeatureService(features, repos, layers),
-		AccessSvc:     factory.AccessService(),
-		Queries:       inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
-		AccessQueries: inmemqueries.NewAccessQueries(accessHandler),
-		UserRepo:      nil,
+		IncidentSvc:           factory.IncidentService(repos, layers),
+		MessageSvc:            factory.MessageService(messages, repos),
+		LayerSvc:              factory.LayerService(layers, repos),
+		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		AccessSvc:             factory.AccessService(),
+		Queries:               inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
+		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+		UserRepo:              nil,
 		Teardown: func() {
 			cancelProj()
 			<-projDone

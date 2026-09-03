@@ -43,12 +43,14 @@ type Option func(*Server) error
 
 // Stack contains the application dependencies exposed by the server.
 type Stack struct {
-	Incidents inbound.IncidentService
-	Messages  inbound.MessageService
-	Layers    inbound.LayerService
-	Features  inbound.FeatureService
-	Access    inbound.AccessService
-	Queries   outbound.Queries
+	Incidents             inbound.IncidentService
+	Messages              inbound.MessageService
+	Layers                inbound.LayerService
+	Features              inbound.FeatureService
+	Access                inbound.AccessService
+	IncidentAccessChecker outbound.IncidentAccessChecker
+	GlobalAccessChecker   outbound.GlobalAccessChecker
+	Queries               outbound.Queries
 }
 
 // APIV2Option configures the API-v2 GraphQL handler.
@@ -110,12 +112,14 @@ func WithApiV2(stack Stack, opts ...APIV2Option) Option {
 
 func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 	cfg := generated.Config{Resolvers: &graph.Resolver{
-		Incidents: stack.Incidents,
-		Messages:  stack.Messages,
-		Layers:    stack.Layers,
-		Features:  stack.Features,
-		Access:    stack.Access,
-		Queries:   stack.Queries,
+		Incidents:             stack.Incidents,
+		Messages:              stack.Messages,
+		Layers:                stack.Layers,
+		Features:              stack.Features,
+		Access:                stack.Access,
+		IncidentAccessChecker: stack.IncidentAccessChecker,
+		GlobalAccessChecker:   stack.GlobalAccessChecker,
+		Queries:               stack.Queries,
 	}}
 	// Flat cost per list-resolver call to penalise N+1 patterns
 	// (e.g. fetching messages for every incident in a list query)

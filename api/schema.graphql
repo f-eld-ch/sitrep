@@ -165,6 +165,10 @@ type Query {
 
   """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
+
+  incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
+  accessGroups: [AccessGroup!]!
+  groupMembers(groupId: ID!): [ID!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
