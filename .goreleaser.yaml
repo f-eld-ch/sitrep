@@ -1,0 +1,73 @@
+version: 2
+
+project_name: sitrep
+
+builds:
+  - id: sitrep
+    main: .
+    binary: sitrep
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.sha={{ .FullCommit }}
+
+archives:
+  - formats: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-beta.1+{{ .ShortCommit }}"
+
+kos:
+  - id: sitrep
+    build: sitrep
+    repositories:
+      - ghcr.io/f-eld-ch/sitrep
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    tags:
+      - "v{{ .Version }}"
+      - "v{{ .Major }}.{{ .Minor }}"
+      - "v{{ .Major }}"
+      - "{{ if not .Prerelease }}stable{{ end }}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    creation_time: "{{ .CommitTimestamp }}"
+    ko_data_creation_time: "{{ .CommitTimestamp }}"
+    labels:
+      org.opencontainers.image.created: "{{ .CommitTimestamp }}"
+      org.opencontainers.image.description: "SitRep: Digitale Lagebewirtschaftung für Führungsstäbe"
+      org.opencontainers.image.licenses: "AGPL-3.0"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.source: "https://github.com/f-eld-ch/sitrep"
+      org.opencontainers.image.title: "sitrep"
+      org.opencontainers.image.url: "https://github.com/f-eld-ch/sitrep"
+      org.opencontainers.image.version: "v{{ .Version }}"
+    annotations:
+      manifest:org.opencontainers.image.created: "{{ .CommitTimestamp }}"
+      manifest:org.opencontainers.image.description: "SitRep: Digitale Lagebewirtschaftung für Führungsstäbe"
+      manifest:org.opencontainers.image.licenses: "AGPL-3.0"
+      manifest:org.opencontainers.image.revision: "{{ .FullCommit }}"
+      manifest:org.opencontainers.image.source: "https://github.com/f-eld-ch/sitrep"
+      manifest:org.opencontainers.image.title: sitrep
+      manifest:org.opencontainers.image.url: "https://github.com/f-eld-ch/sitrep"
+      manifest:org.opencontainers.image.version: "v{{ .Version }}"
+    bare: true
+    preserve_import_paths: false
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  prerelease: auto
+  make_latest: "{{ not .Prerelease }}"
+  mode: replace
+  preflight:
+    fail_on_error: true
