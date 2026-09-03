@@ -39,7 +39,6 @@ function Administration() {
   }
 
   const selectedGroup = groupsResult.data.groups.find((group) => group.id === selectedGroupId);
-  const visibleMembers = new Set([...selectedMembers, ...pendingMembers]);
   const filteredUsers =
     usersResult.status === "ready"
       ? usersResult.data.users.filter((user) => {
@@ -52,14 +51,6 @@ function Administration() {
           );
         })
       : [];
-  const sortedUsers = [...filteredUsers].sort((left, right) => {
-    const leftMember = visibleMembers.has(left.sub);
-    const rightMember = visibleMembers.has(right.sub);
-    if (leftMember !== rightMember) return leftMember ? -1 : 1;
-    return (left.name || left.email || left.sub).localeCompare(
-      right.name || right.email || right.sub,
-    );
-  });
   const mutationError =
     createState.error ??
     renameState.error ??
@@ -239,7 +230,7 @@ function Administration() {
                           </tr>
                         </thead>
                         <tbody>
-                          {sortedUsers.map((user) => (
+                          {filteredUsers.map((user) => (
                             <tr key={user.sub}>
                               <td>{user.name || "Unnamed user"}</td>
                               <td>{user.email}</td>
