@@ -353,6 +353,44 @@ func (r *mutationResolver) RemoveGroupMember(ctx context.Context, groupID string
 	return groupID, nil
 }
 
+// GrantGlobalRole is the resolver for the grantGlobalRole field.
+func (r *mutationResolver) GrantGlobalRole(ctx context.Context, subject string, role model.GlobalRole) (string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	if r.Access == nil {
+		return "", shared.ErrForbidden
+	}
+	if err := r.Access.GrantGlobalRole(ctx, subject, globalRoleToDomain(role), actor); err != nil {
+		return "", err
+	}
+
+	return subject, nil
+}
+
+// RevokeGlobalRole is the resolver for the revokeGlobalRole field.
+func (r *mutationResolver) RevokeGlobalRole(
+	ctx context.Context,
+	subject string,
+	role model.GlobalRole,
+) (string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	if r.Access == nil {
+		return "", shared.ErrForbidden
+	}
+	if err := r.Access.RevokeGlobalRole(ctx, subject, globalRoleToDomain(role), actor); err != nil {
+		return "", err
+	}
+
+	return subject, nil
+}
+
 // UpdateIncident is the resolver for the updateIncident field.
 func (r *mutationResolver) UpdateIncident(
 	ctx context.Context,

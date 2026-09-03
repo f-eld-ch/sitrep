@@ -66,6 +66,11 @@ enum AccessPrincipalKind {
   GROUP
 }
 
+enum GlobalRole {
+  SYSTEM_ADMIN
+  GROUP_ADMIN
+}
+
 type AccessGroup {
   id: ID!
   name: String!
@@ -239,6 +244,8 @@ type Mutation {
   archiveAccessGroup(groupId: ID!): ID!
   addGroupMember(groupId: ID!, subject: String!): ID!
   removeGroupMember(groupId: ID!, subject: String!): ID!
+  grantGlobalRole(subject: ID!, role: GlobalRole!): ID!
+  revokeGlobalRole(subject: ID!, role: GlobalRole!): ID!
 
   """Update incident name, location, and/or divisions. Omitted fields are unchanged."""
   updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!

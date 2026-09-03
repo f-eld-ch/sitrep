@@ -35,3 +35,11 @@ func principalKindToDomain(kind model.AccessPrincipalKind) access.PrincipalKind 
 
 	return access.UserPrincipal
 }
+
+func globalRoleToDomain(role model.GlobalRole) access.GlobalRole {
+	if role == model.GlobalRoleGroupAdmin {
+		return access.GroupAdmin
+	}
+
+	return access.SystemAdmin
+}

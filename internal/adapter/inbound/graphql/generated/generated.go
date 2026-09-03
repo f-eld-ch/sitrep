@@ -123,12 +123,14 @@ type ComplexityRoot struct {
 		DeleteFeature            func(childComplexity int, id string) int
 		DeleteIncident           func(childComplexity int, id string) int
 		DeleteMessage            func(childComplexity int, id string) int
+		GrantGlobalRole          func(childComplexity int, subject string, role model.GlobalRole) int
 		GrantIncidentRole        func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		LinkIncidentParent       func(childComplexity int, childID string, parentID string) int
 		ModifyFeature            func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
 		RemoveGroupMember        func(childComplexity int, groupID string, subject string) int
 		RenameAccessGroup        func(childComplexity int, groupID string, name string) int
 		ReopenIncident           func(childComplexity int, id string) int
+		RevokeGlobalRole         func(childComplexity int, subject string, role model.GlobalRole) int
 		RevokeIncidentRole       func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		TriageMessage            func(childComplexity int, id string, input model.TriageMessageInput) int
 		UnlinkIncidentParent     func(childComplexity int, childID string) int
@@ -162,6 +164,8 @@ type MutationResolver interface {
 	ArchiveAccessGroup(ctx context.Context, groupID string) (string, error)
 	AddGroupMember(ctx context.Context, groupID string, subject string) (string, error)
 	RemoveGroupMember(ctx context.Context, groupID string, subject string) (string, error)
+	GrantGlobalRole(ctx context.Context, subject string, role model.GlobalRole) (string, error)
+	RevokeGlobalRole(ctx context.Context, subject string, role model.GlobalRole) (string, error)
 	UpdateIncident(ctx context.Context, id string, input model.UpdateIncidentInput) (*model.Incident, error)
 	CloseIncident(ctx context.Context, id string) (*model.Incident, error)
 	ReopenIncident(ctx context.Context, id string) (*model.Incident, error)
@@ -624,6 +628,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteMessage(childComplexity, args["id"].(string)), true
+	case "Mutation.grantGlobalRole":
+		if e.ComplexityRoot.Mutation.GrantGlobalRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_grantGlobalRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GrantGlobalRole(childComplexity, args["subject"].(string), args["role"].(model.GlobalRole)), true
 	case "Mutation.grantIncidentRole":
 		if e.ComplexityRoot.Mutation.GrantIncidentRole == nil {
 			break
@@ -690,6 +705,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ReopenIncident(childComplexity, args["id"].(string)), true
+	case "Mutation.revokeGlobalRole":
+		if e.ComplexityRoot.Mutation.RevokeGlobalRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokeGlobalRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokeGlobalRole(childComplexity, args["subject"].(string), args["role"].(model.GlobalRole)), true
 	case "Mutation.revokeIncidentRole":
 		if e.ComplexityRoot.Mutation.RevokeIncidentRole == nil {
 			break
@@ -945,6 +971,11 @@ enum AccessPrincipalKind {
   GROUP
 }
 
+enum GlobalRole {
+  SYSTEM_ADMIN
+  GROUP_ADMIN
+}
+
 type AccessGroup {
   id: ID!
   name: String!
@@ -1118,6 +1149,8 @@ type Mutation {
   archiveAccessGroup(groupId: ID!): ID!
   addGroupMember(groupId: ID!, subject: String!): ID!
   removeGroupMember(groupId: ID!, subject: String!): ID!
+  grantGlobalRole(subject: ID!, role: GlobalRole!): ID!
+  revokeGlobalRole(subject: ID!, role: GlobalRole!): ID!
 
   """Update incident name, location, and/or divisions. Omitted fields are unchanged."""
   updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!
@@ -1675,6 +1708,28 @@ func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_grantGlobalRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "subject",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["subject"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "role",
+		func(ctx context.Context, v any) (model.GlobalRole, error) {
+			return ec.unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["role"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_grantIncidentRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1820,6 +1875,28 @@ func (ec *executionContext) field_Mutation_reopenIncident_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_revokeGlobalRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "subject",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["subject"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "role",
+		func(ctx context.Context, v any) (model.GlobalRole, error) {
+			return ec.unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["role"] = arg1
 	return args, nil
 }
 
@@ -3582,6 +3659,94 @@ func (ec *executionContext) fieldContext_Mutation_removeGroupMember(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_removeGroupMember_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_grantGlobalRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_grantGlobalRole(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GrantGlobalRole(ctx, fc.Args["subject"].(string), fc.Args["role"].(model.GlobalRole))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_grantGlobalRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_grantGlobalRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_revokeGlobalRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_revokeGlobalRole(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RevokeGlobalRole(ctx, fc.Args["subject"].(string), fc.Args["role"].(model.GlobalRole))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_revokeGlobalRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_revokeGlobalRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6537,6 +6702,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "grantGlobalRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_grantGlobalRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "revokeGlobalRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_revokeGlobalRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "updateIncident":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateIncident(ctx, field)
@@ -7330,6 +7509,16 @@ func (ec *executionContext) marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsit
 		return graphql.Null
 	}
 	return ec._Feature(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx context.Context, v any) (model.GlobalRole, error) {
+	var res model.GlobalRole
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx context.Context, sel ast.SelectionSet, v model.GlobalRole) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {

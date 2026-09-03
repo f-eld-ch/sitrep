@@ -210,6 +210,61 @@ func (e AccessPrincipalKind) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+type GlobalRole string
+
+const (
+	GlobalRoleSystemAdmin GlobalRole = "SYSTEM_ADMIN"
+	GlobalRoleGroupAdmin  GlobalRole = "GROUP_ADMIN"
+)
+
+var AllGlobalRole = []GlobalRole{
+	GlobalRoleSystemAdmin,
+	GlobalRoleGroupAdmin,
+}
+
+func (e GlobalRole) IsValid() bool {
+	switch e {
+	case GlobalRoleSystemAdmin, GlobalRoleGroupAdmin:
+		return true
+	}
+	return false
+}
+
+func (e GlobalRole) String() string {
+	return string(e)
+}
+
+func (e *GlobalRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GlobalRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GlobalRole", str)
+	}
+	return nil
+}
+
+func (e GlobalRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *GlobalRole) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e GlobalRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type IncidentAccessMode string
 
 const (
