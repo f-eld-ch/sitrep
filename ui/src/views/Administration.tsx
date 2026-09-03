@@ -49,6 +49,14 @@ function Administration() {
           );
         })
       : [];
+  const sortedUsers = [...filteredUsers].sort((left, right) => {
+    const leftMember = visibleMembers.has(left.sub);
+    const rightMember = visibleMembers.has(right.sub);
+    if (leftMember !== rightMember) return leftMember ? -1 : 1;
+    return (left.name || left.email || left.sub).localeCompare(
+      right.name || right.email || right.sub,
+    );
+  });
   const mutationError =
     createState.error ??
     renameState.error ??
@@ -228,7 +236,7 @@ function Administration() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredUsers.map((user) => (
+                          {sortedUsers.map((user) => (
                             <tr key={user.sub}>
                               <td>{user.name || "Unnamed user"}</td>
                               <td>{user.email}</td>
@@ -238,8 +246,17 @@ function Administration() {
                               <td className="has-text-right">
                                 <button
                                   type="button"
-                                  className="button is-small is-primary"
+                                  className={`button is-small ${selectedMembers.has(user.sub) ? "is-danger" : "is-primary"}`}
                                   onClick={() => {
+                                    if (selectedMembers.has(user.sub)) {
+                                      void removeMember({
+                                        groupId: selectedGroup.id,
+                                        subject: user.sub,
+                                      });
+                                      return;
+                                    }
+
+                                    if (pendingMembers.has(user.sub)) return;
                                     setPendingMembers((pending) => new Set(pending).add(user.sub));
                                     void addMember({
                                       groupId: selectedGroup.id,
@@ -254,12 +271,13 @@ function Administration() {
                                   }}
                                   disabled={
                                     Boolean(selectedGroup.archivedAt) ||
-                                    visibleMembers.has(user.sub) ||
-                                    addMemberState.loading
+                                    pendingMembers.has(user.sub) ||
+                                    (selectedMembers.has(user.sub) && removeMemberState.loading) ||
+                                    (!selectedMembers.has(user.sub) && addMemberState.loading)
                                   }
                                 >
                                   {selectedMembers.has(user.sub)
-                                    ? "Member"
+                                    ? "Remove"
                                     : pendingMembers.has(user.sub)
                                       ? "Pending"
                                       : "Add"}
