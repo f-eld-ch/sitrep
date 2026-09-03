@@ -185,10 +185,11 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 		return exec(
 			tx,
 			ctx,
-			`UPDATE rm_access_group_member SET removed_at = $3, removed_by = $3 WHERE group_id = $1 AND subject = $2`,
+			`UPDATE rm_access_group_member SET removed_at = $3, removed_by = $4 WHERE group_id = $1 AND subject = $2`,
 			e.StreamID,
 			d.Subject,
 			e.OccurredAt,
+			actorFrom(e),
 		)
 	}
 	return nil
@@ -260,7 +261,12 @@ FROM rm_incident_access a
 JOIN rm_incident_access_mode m ON m.incident_id = a.incident_id AND m.mode = 'restricted'
 JOIN rm_access_group_member gm ON gm.group_id::text = a.principal_id AND gm.removed_at IS NULL
 JOIN rm_access_group g ON g.id = gm.group_id AND g.archived_at IS NULL
-JOIN (VALUES ('owner','incident','incident.read'), ('owner','incident','incident.write'), ('owner','incident','incident.manage_access'), ('manager','incident','incident.read'), ('manager','incident','incident.write'), ('manager','incident','incident.manage_access'), ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('viewer','incident','incident.read')) AS p(role, object, action) ON p.role = a.role
+JOIN (VALUES
+ ('owner','incident','incident.read'), ('owner','incident','incident.write'), ('owner','incident','incident.delete'), ('owner','incident','incident.close'), ('owner','incident','incident.reopen'), ('owner','incident','incident.manage_access'), ('owner','incident','incident.link_parent'), ('owner','incident','incident.unlink_parent'), ('owner','message','message.read'), ('owner','message','message.write'), ('owner','layer','layer.read'), ('owner','layer','layer.create'), ('owner','layer','layer.write'), ('owner','layer','layer.delete'), ('owner','feature','feature.write'),
+ ('manager','incident','incident.read'), ('manager','incident','incident.write'), ('manager','incident','incident.close'), ('manager','incident','incident.reopen'), ('manager','incident','incident.manage_access'), ('manager','message','message.read'), ('manager','message','message.write'), ('manager','layer','layer.read'), ('manager','layer','layer.create'), ('manager','layer','layer.write'), ('manager','layer','layer.delete'), ('manager','feature','feature.write'),
+ ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'), ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'), ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
+ ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read')
+) AS p(role, object, action) ON p.role = a.role
 WHERE a.revoked_at IS NULL AND a.principal_kind = 'group'
 ON CONFLICT DO NOTHING;
 
