@@ -137,6 +137,7 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		}
 
 		g.members[d.Subject] = true
+
 	case "GroupMemberRemoved":
 		var d access.GroupMemberRemoved
 		if err := remarshal(e.Data, &d); err != nil {
@@ -144,6 +145,7 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		}
 
 		delete(g.members, d.Subject)
+
 	default:
 		return fmt.Errorf("rm_access: unhandled group event %q", e.EventType)
 	}

@@ -33,12 +33,14 @@ func (c *IncidentAccessChecker) Can(
 	if c.handler.Mode(uuid.UUID(incidentID)) == access.OpenOperational && action != access.IncidentManageAccess {
 		return true, nil
 	}
+
 	for _, row := range c.handler.Policies() {
 		if row.Subject == "user:"+subject && row.Domain == "incident:"+uuid.UUID(incidentID).String() &&
 			row.Action == string(action) {
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 
@@ -48,6 +50,7 @@ func (c *GlobalAccessChecker) Can(_ context.Context, subject string, action acce
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 

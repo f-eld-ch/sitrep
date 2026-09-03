@@ -52,9 +52,11 @@ func (c *IncidentAccessChecker) Can(
 		Scan(&mode); err != nil {
 		return false, fmt.Errorf("access mode: %w", err)
 	}
+
 	if mode == access.OpenOperational && action != access.IncidentManageAccess {
 		return true, nil
 	}
+
 	return c.enforce(ctx, "user:"+subject, "incident:"+uuid.UUID(incidentID).String(), string(action))
 }
 
@@ -75,6 +77,7 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 	if err != nil {
 		return false, fmt.Errorf("access policy model: %w", err)
 	}
+
 	e, err := casbin.NewEnforcer(m)
 	if err != nil {
 		return false, fmt.Errorf("access enforcer: %w", err)
@@ -90,18 +93,22 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 		return false, fmt.Errorf("access policies: %w", err)
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var policySubject, policyDomain, object, policyAction string
 		if err := rows.Scan(&policySubject, &policyDomain, &object, &policyAction); err != nil {
 			return false, err
 		}
+
 		if _, err := e.AddPolicy(policySubject, policyDomain, object, policyAction, "allow"); err != nil {
 			return false, fmt.Errorf("add access policy: %w", err)
 		}
 	}
+
 	if err := rows.Err(); err != nil {
 		return false, err
 	}
+
 	return e.Enforce(subject, domain, objectForAction(action), action)
 }
 
@@ -111,5 +118,6 @@ func objectForAction(action string) string {
 			return action[:i]
 		}
 	}
+
 	return action
 }

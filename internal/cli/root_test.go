@@ -99,6 +99,7 @@ func TestNewRootCmd(t *testing.T) {
 	accessCmd, _, err := rootCmd.Find([]string{"access"})
 	require.NoError(t, err)
 	assert.NotNil(t, accessCmd)
+
 	usersCmd, _, err := rootCmd.Find([]string{"access", "users"})
 	require.NoError(t, err)
 	assert.NotNil(t, usersCmd)

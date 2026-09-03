@@ -18,9 +18,11 @@ func (g *AccessGuard) LockForUpdate(ctx context.Context) (func(), error) {
 	if err != nil {
 		return nil, fmt.Errorf("access guard lock: %w", err)
 	}
+
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1, $2)`, lockClassID, accessGuardLockID); err != nil {
 		return nil, fmt.Errorf("access guard lock: %w", err)
 	}
+
 	return func() {}, nil
 }
 

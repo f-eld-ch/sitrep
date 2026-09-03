@@ -136,6 +136,7 @@ func (r *IncidentAccessRepository) Load(ctx context.Context, id shared.IncidentI
 	if err := loadAggregate(ctx, r.store, a, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("incident access repository load %s: %w", id, err)
 	}
+
 	return a, nil
 }
 
@@ -144,6 +145,7 @@ func (r *IncidentAccessRepository) Save(ctx context.Context, a *access.IncidentA
 	if err != nil {
 		return nil, fmt.Errorf("incident access repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -158,6 +160,7 @@ func (r *AccessGroupRepository) Load(ctx context.Context, id uuid.UUID) (*access
 	if err := loadAggregate(ctx, r.store, a, id); err != nil {
 		return nil, fmt.Errorf("access group repository load %s: %w", id, err)
 	}
+
 	return a, nil
 }
 
@@ -166,6 +169,7 @@ func (r *AccessGroupRepository) Save(ctx context.Context, a *access.AccessGroup)
 	if err != nil {
 		return nil, fmt.Errorf("access group repository save %s: %w", a.Root().ID(), err)
 	}
+
 	return cursor, nil
 }
 
@@ -180,6 +184,7 @@ func (r *GlobalAccessRepository) Load(ctx context.Context) (*access.GlobalAccess
 	if err := loadAggregate(ctx, r.store, a, access.GlobalAccessID); err != nil {
 		return nil, fmt.Errorf("global access repository load: %w", err)
 	}
+
 	return a, nil
 }
 
@@ -188,6 +193,7 @@ func (r *GlobalAccessRepository) Save(ctx context.Context, a *access.GlobalAcces
 	if err != nil {
 		return nil, fmt.Errorf("global access repository save: %w", err)
 	}
+
 	return cursor, nil
 }
 

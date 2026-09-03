@@ -95,6 +95,7 @@ func NewIncidentAccess(id shared.IncidentID) *IncidentAccess {
 	a := &IncidentAccess{roles: make(map[string]map[Role]bool)}
 	a.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(a, AccessInitialized{}, RoleGranted{}, RoleRevoked{}, AccessModeChanged{})
+
 	return a
 }
 
@@ -118,13 +119,17 @@ func (a *IncidentAccess) Initialize(ownerSub *string, mode IncidentMode, actor s
 	if !validMode(mode) {
 		return fmt.Errorf("%w: invalid access mode", shared.ErrInvalidInput)
 	}
+
 	if ownerSub == nil && mode == Restricted {
 		return fmt.Errorf("%w: restricted access requires an owner", shared.ErrInvalidInput)
 	}
+
 	if ownerSub != nil && strings.TrimSpace(*ownerSub) == "" {
 		return fmt.Errorf("%w: owner subject must not be empty", shared.ErrInvalidInput)
 	}
+
 	eventsourcing.TrackChange(a, AccessInitialized{Mode: mode, OwnerSub: ownerSub}, at, meta(actor))
+
 	return nil
 }
 
@@ -132,13 +137,17 @@ func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time
 	if err := validatePrincipal(p); err != nil {
 		return err
 	}
+
 	if !validRole(role) {
 		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
 	}
+
 	if a.HasRole(p, role) {
 		return nil
 	}
+
 	eventsourcing.TrackChange(a, RoleGranted{Principal: p, Role: role}, at, meta(actor))
+
 	return nil
 }
 
@@ -146,16 +155,21 @@ func (a *IncidentAccess) RevokeRole(p Principal, role Role, actor string, at tim
 	if err := validatePrincipal(p); err != nil {
 		return err
 	}
+
 	if !validRole(role) {
 		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
 	}
+
 	if !a.HasRole(p, role) {
 		return nil
 	}
+
 	if role == Owner && a.directOwnerCount() == 1 {
 		return fmt.Errorf("%w: cannot revoke last owner", shared.ErrForbidden)
 	}
+
 	eventsourcing.TrackChange(a, RoleRevoked{Principal: p, Role: role}, at, meta(actor))
+
 	return nil
 }
 
@@ -163,15 +177,19 @@ func (a *IncidentAccess) ChangeAccessMode(mode IncidentMode, actor string, at ti
 	if !validMode(mode) {
 		return fmt.Errorf("%w: invalid access mode", shared.ErrInvalidInput)
 	}
+
 	if a.mode == mode {
 		return nil
 	}
+
 	if mode == Restricted && a.directOwnerCount() == 0 {
 		if err := a.GrantRole(Principal{Kind: UserPrincipal, ID: actor}, Owner, actor, at); err != nil {
 			return err
 		}
 	}
+
 	eventsourcing.TrackChange(a, AccessModeChanged{Mode: mode}, at, meta(actor))
+
 	return nil
 }
 
@@ -191,16 +209,19 @@ func (a *IncidentAccess) Transition(e eventsourcing.Event) error {
 	default:
 		return fmt.Errorf("access.Transition: unhandled event type %T", e.Data)
 	}
+
 	return nil
 }
 
 func (a *IncidentAccess) directOwnerCount() int {
 	count := 0
+
 	for key, roles := range a.roles {
 		if roles[Owner] && strings.HasPrefix(key, string(UserPrincipal)+":") {
 			count++
 		}
 	}
+
 	return count
 }
 
@@ -209,6 +230,7 @@ func (a *IncidentAccess) addRole(p Principal, role Role) {
 	if a.roles[key] == nil {
 		a.roles[key] = make(map[Role]bool)
 	}
+
 	a.roles[key][role] = true
 }
 
@@ -222,9 +244,11 @@ func validatePrincipal(p Principal) error {
 	if p.Kind != UserPrincipal && p.Kind != GroupPrincipal {
 		return fmt.Errorf("%w: invalid principal kind", shared.ErrInvalidInput)
 	}
+
 	if strings.TrimSpace(p.ID) == "" {
 		return fmt.Errorf("%w: principal id must not be empty", shared.ErrInvalidInput)
 	}
+
 	return nil
 }
 func meta(actor string) map[string]any { return map[string]any{"actor": actor} }
@@ -259,6 +283,7 @@ func NewGlobalAccess() *GlobalAccess {
 	a := &GlobalAccess{roles: make(map[string]map[GlobalRole]bool)}
 	a.root.SetID(GlobalAccessID)
 	eventsourcing.Register(a, GlobalAccessInitialized{}, GlobalRoleGranted{}, GlobalRoleRevoked{})
+
 	return a
 }
 func (a *GlobalAccess) Root() *eventsourcing.Root                    { return &a.root }
@@ -267,11 +292,13 @@ func (a *GlobalAccess) HasRole(subject string, role GlobalRole) bool { return a.
 
 func (a *GlobalAccess) SubjectsWithRole(role GlobalRole) []string {
 	subjects := make([]string, 0)
+
 	for subject, roles := range a.roles {
 		if roles[role] {
 			subjects = append(subjects, subject)
 		}
 	}
+
 	return subjects
 }
 
@@ -284,10 +311,13 @@ func (a *GlobalAccess) GrantRole(subject string, role GlobalRole, actor string, 
 	if strings.TrimSpace(subject) == "" || (role != SystemAdmin && role != GroupAdmin) {
 		return fmt.Errorf("%w: invalid global role grant", shared.ErrInvalidInput)
 	}
+
 	if a.HasRole(subject, role) {
 		return nil
 	}
+
 	eventsourcing.TrackChange(a, GlobalRoleGranted{Subject: subject, Role: role}, at, meta(actor))
+
 	return nil
 }
 
@@ -295,10 +325,13 @@ func (a *GlobalAccess) RevokeRole(subject string, role GlobalRole, actor string,
 	if !a.HasRole(subject, role) {
 		return nil
 	}
+
 	if role == SystemAdmin && a.systemAdminCount() == 1 {
 		return fmt.Errorf("%w: cannot revoke last system admin", shared.ErrForbidden)
 	}
+
 	eventsourcing.TrackChange(a, GlobalRoleRevoked{Subject: subject, Role: role}, at, meta(actor))
+
 	return nil
 }
 
@@ -309,21 +342,25 @@ func (a *GlobalAccess) Transition(e eventsourcing.Event) error {
 		if a.roles[d.Subject] == nil {
 			a.roles[d.Subject] = make(map[GlobalRole]bool)
 		}
+
 		a.roles[d.Subject][d.Role] = true
 	case GlobalRoleRevoked:
 		delete(a.roles[d.Subject], d.Role)
 	default:
 		return fmt.Errorf("access.Transition: unhandled event type %T", e.Data)
 	}
+
 	return nil
 }
 
 func (a *GlobalAccess) systemAdminCount() int {
 	count := 0
+
 	for _, roles := range a.roles {
 		if roles[SystemAdmin] {
 			count++
 		}
 	}
+
 	return count
 }

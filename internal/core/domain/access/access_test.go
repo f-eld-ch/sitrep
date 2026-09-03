@@ -93,7 +93,9 @@ func TestAccessGroupReplayAndArchive(t *testing.T) {
 
 func mustJSON(t *testing.T, value any) json.RawMessage {
 	t.Helper()
+
 	data, err := json.Marshal(value)
 	require.NoError(t, err)
+
 	return json.RawMessage(data)
 }

@@ -150,6 +150,7 @@ func (s *IncidentService) CreateIncidentWithParent(
 			if err := accessAggregate.Initialize(&actor.Sub, access.OpenOperational, actor.Sub, at); err != nil {
 				return err
 			}
+
 			if _, err := s.accessRepo.Save(ctx, accessAggregate); err != nil {
 				return err
 			}
@@ -217,6 +218,7 @@ func (s *IncidentService) UpdateIncident(
 		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentWrite); err != nil {
 			return err
 		}
+
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
@@ -285,6 +287,7 @@ func (s *IncidentService) CloseIncident(
 		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentClose); err != nil {
 			return err
 		}
+
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -312,6 +315,7 @@ func (s *IncidentService) ReopenIncident(
 		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentReopen); err != nil {
 			return err
 		}
+
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -335,6 +339,7 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentDelete); err != nil {
 			return err
 		}
+
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -370,6 +375,7 @@ func (s *IncidentService) LinkIncidentParent(
 		if err := requireIncidentAccess(ctx, s.access, actor, childID, access.IncidentLinkParent); err != nil {
 			return err
 		}
+
 		release, err := s.lockHierarchy(ctx)
 		if err != nil {
 			return err
@@ -431,6 +437,7 @@ func (s *IncidentService) UnlinkIncidentParent(
 		if err := requireIncidentAccess(ctx, s.access, actor, childID, access.IncidentUnlinkParent); err != nil {
 			return err
 		}
+
 		release, err := s.lockHierarchy(ctx)
 		if err != nil {
 			return err

@@ -26,6 +26,7 @@ func (h *AccessHandler) Reset(ctx context.Context) error {
 		ctx,
 		`TRUNCATE rm_access_policy, rm_global_access, rm_access_group_member, rm_access_group, rm_incident_access_mode, rm_incident_access`,
 	)
+
 	return err
 }
 
@@ -51,6 +52,7 @@ func (h *AccessHandler) Apply(ctx context.Context, e eventsourcing.Event) error 
 	default:
 		return nil
 	}
+
 	return h.rebuildPolicies(ctx, tx)
 }
 
@@ -65,6 +67,7 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if err := exec(
 			tx,
 			ctx,
@@ -74,6 +77,7 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 		); err != nil {
 			return err
 		}
+
 		if d.OwnerSub != nil {
 			return exec(
 				tx,
@@ -90,12 +94,14 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(tx, ctx, `UPDATE rm_incident_access_mode SET mode = $2 WHERE incident_id = $1`, e.StreamID, d.Mode)
 	case "RoleGranted":
 		var d access.RoleGranted
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -112,6 +118,7 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -124,6 +131,7 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 			actorFrom(e),
 		)
 	}
+
 	return nil
 }
 
@@ -134,6 +142,7 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -148,6 +157,7 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -169,6 +179,7 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -183,6 +194,7 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -193,6 +205,7 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 			actorFrom(e),
 		)
 	}
+
 	return nil
 }
 
@@ -203,6 +216,7 @@ func (h *AccessHandler) applyGlobal(ctx context.Context, tx pgx.Tx, e eventsourc
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -217,6 +231,7 @@ func (h *AccessHandler) applyGlobal(ctx context.Context, tx pgx.Tx, e eventsourc
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		return exec(
 			tx,
 			ctx,
@@ -226,6 +241,7 @@ func (h *AccessHandler) applyGlobal(ctx context.Context, tx pgx.Tx, e eventsourc
 			e.OccurredAt,
 		)
 	}
+
 	return nil
 }
 
@@ -233,6 +249,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx pgx.Tx) error {
 	if err := exec(tx, ctx, `TRUNCATE rm_access_policy`); err != nil {
 		return err
 	}
+
 	return exec(tx, ctx, `
 INSERT INTO rm_access_policy (subject, domain, object, action)
 SELECT 'user:' || a.principal_id, 'incident:' || a.incident_id, p.object, p.action
@@ -280,5 +297,6 @@ func actorFrom(e eventsourcing.Event) string {
 	if actor, ok := e.Metadata["actor"].(string); ok {
 		return actor
 	}
+
 	return "system:projection"
 }

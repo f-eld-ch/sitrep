@@ -73,6 +73,7 @@ func (s *FeatureService) PlaceFeature(
 		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.FeatureWrite); err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -190,6 +191,7 @@ func (s *FeatureService) writeFeature(
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, f.IncidentID(), action); err != nil {
 			return err
 		}

@@ -43,6 +43,7 @@ func NewQueries(
 	if len(accessCheckers) > 0 {
 		accessChecker = accessCheckers[0]
 	}
+
 	return &Queries{
 		incidents: incidents,
 		divisions: divisions,
@@ -66,6 +67,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 		if row.IsDeleted {
 			continue
 		}
+
 		if !q.canRead(ctx, shared.IncidentID(row.ID)) {
 			continue
 		}
@@ -88,6 +90,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 	if row == nil || row.IsDeleted {
 		return nil, shared.ErrNotFound
 	}
+
 	if !q.canRead(ctx, shared.IncidentID(id)) {
 		return nil, shared.ErrNotFound
 	}
@@ -123,9 +126,11 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+
 	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
 		return nil, shared.ErrNotFound
 	}
+
 	rows := q.messages.ForIncident(incidentID)
 
 	out := make([]*outbound.MessageRM, 0, len(rows))
@@ -151,6 +156,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	if row == nil || row.Deleted {
 		return nil, shared.ErrNotFound
 	}
+
 	if !q.canRead(ctx, shared.IncidentID(row.IncidentID)) {
 		return nil, shared.ErrNotFound
 	}
@@ -184,9 +190,11 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+
 	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
 		return nil, shared.ErrNotFound
 	}
+
 	rows := q.layers.ForIncident(incidentID)
 
 	return q.layerRowsToRM(rows, nil), nil
@@ -203,6 +211,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 		if incidentRow.IsDeleted || incidentRow.ParentID == nil || *incidentRow.ParentID != incidentID {
 			continue
 		}
+
 		if !q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
 			continue
 		}
@@ -222,6 +231,7 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 		if row.IsDeleted || row.ParentID == nil || *row.ParentID != parentID {
 			continue
 		}
+
 		if !q.canRead(ctx, shared.IncidentID(row.ID)) {
 			continue
 		}
@@ -240,11 +250,14 @@ func (q *Queries) canRead(ctx context.Context, incidentID shared.IncidentID) boo
 	if q.access == nil {
 		return true
 	}
+
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return false
 	}
+
 	allowed, err := q.access.Can(ctx, actor.Sub, incidentID, access.IncidentRead)
+
 	return err == nil && allowed
 }
 

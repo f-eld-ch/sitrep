@@ -69,6 +69,7 @@ func (s *LayerService) CreateLayer(
 		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.LayerCreate); err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -114,6 +115,7 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, l.IncidentID(), access.LayerWrite); err != nil {
 			return err
 		}
@@ -158,6 +160,7 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, l.IncidentID(), access.LayerDelete); err != nil {
 			return err
 		}

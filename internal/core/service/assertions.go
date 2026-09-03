@@ -22,13 +22,16 @@ func requireIncidentAccess(
 	if checker == nil {
 		return nil
 	}
+
 	allowed, err := checker.Can(ctx, actor.Sub, incidentID, action)
 	if err != nil {
 		return err
 	}
+
 	if !allowed {
 		return shared.ErrForbidden
 	}
+
 	return nil
 }
 

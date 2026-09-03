@@ -78,6 +78,7 @@ func (s *MessageService) RecordMessage(
 		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.IncidentWrite); err != nil {
 			return err
 		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -142,6 +143,7 @@ func (s *MessageService) CorrectMessage(
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
 			return err
 		}
@@ -203,6 +205,7 @@ func (s *MessageService) TriageMessage(
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
 			return err
 		}
@@ -268,6 +271,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		if err != nil {
 			return err
 		}
+
 		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
 			return err
 		}

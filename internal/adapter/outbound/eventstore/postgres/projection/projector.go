@@ -487,6 +487,7 @@ func (p *Projector) catchUp(ctx context.Context) (err error) {
 						slog.String("handler", h.Name()),
 						slog.String("error", err.Error()))
 					p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "apply")))
+
 					if halt, ok := h.(haltOnErrorHandler); ok && halt.HaltOnError() {
 						return fmt.Errorf("projection %s halted on event %s: %w", h.Name(), e.EventType, err)
 					}
