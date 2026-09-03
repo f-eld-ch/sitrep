@@ -17,7 +17,7 @@ import (
 const policyModel = `[request_definition]
 r = sub, dom, obj, act
 [policy_definition]
-p = sub, dom, obj, act
+p = sub, dom, obj, act, eft
 [policy_effect]
 e = some(where (p.eft == allow))
 [matchers]
@@ -95,7 +95,7 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 		if err := rows.Scan(&policySubject, &policyDomain, &object, &policyAction); err != nil {
 			return false, err
 		}
-		if _, err := e.AddPolicy(policySubject, policyDomain, object, policyAction); err != nil {
+		if _, err := e.AddPolicy(policySubject, policyDomain, object, policyAction, "allow"); err != nil {
 			return false, fmt.Errorf("add access policy: %w", err)
 		}
 	}
