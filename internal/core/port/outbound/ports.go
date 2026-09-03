@@ -119,4 +119,5 @@ type LockLivenessChecker interface {
 // Run blocks until ctx is cancelled.
 type Projector interface {
 	Run(ctx context.Context) error
+	Ready() bool
 }

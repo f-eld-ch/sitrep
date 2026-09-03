@@ -43,11 +43,12 @@ type Option func(*Server) error
 
 // Stack contains the application dependencies exposed by the server.
 type Stack struct {
-	Incidents inbound.IncidentService
-	Messages  inbound.MessageService
-	Layers    inbound.LayerService
-	Features  inbound.FeatureService
-	Queries   outbound.Queries
+	Incidents      inbound.IncidentService
+	Messages       inbound.MessageService
+	Layers         inbound.LayerService
+	Features       inbound.FeatureService
+	Queries        outbound.Queries
+	ProjectorReady func() bool
 }
 
 // APIV2Option configures the API-v2 GraphQL handler.
@@ -102,6 +103,7 @@ func WithApiV2(stack Stack, opts ...APIV2Option) Option {
 		}
 
 		s.registerAPIV2 = func() { registerAPIV2(s, stack, *config) }
+		s.projectorReady = stack.ProjectorReady
 
 		return nil
 	}

@@ -69,6 +69,8 @@ func (ip *InstrumentedProjector) Run(ctx context.Context) error {
 	return ip.inner.Run(ctx)
 }
 
+func (ip *InstrumentedProjector) Ready() bool { return ip.inner.Ready() }
+
 // Unregister detaches the observable gauge callback. Call it after Run returns
 // so the OTEL meter does not hold a reference to a stopped projector.
 func (ip *InstrumentedProjector) Unregister() {

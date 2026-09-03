@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync/atomic"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -142,6 +143,7 @@ type Projector struct {
 	deadLetters    metric.Int64Counter
 	leaderAcquired metric.Int64Counter
 	lockContended  metric.Int64Counter
+	ready          atomic.Bool
 }
 
 func NewProjector(
@@ -208,6 +210,9 @@ func NewProjector(
 // ctx is cancelled — transient acquisition and catch-up failures cause a
 // step-down and re-election, not a permanent stop.
 func (p *Projector) Run(ctx context.Context) error {
+	p.ready.Store(false)
+	defer p.ready.Store(false)
+
 	names := make([]string, len(p.handlers))
 	for i, h := range p.handlers {
 		names[i] = h.Name()
@@ -239,6 +244,8 @@ func (p *Projector) Run(ctx context.Context) error {
 	}
 }
 
+func (p *Projector) Ready() bool { return p.ready.Load() }
+
 func (p *Projector) acquireLock(ctx context.Context) (release func(), err error) {
 	ctx, span := p.tracer.Start(ctx, "PostgresProjector.AcquireLock",
 		trace.WithAttributes(attribute.String("projector.lock_name", p.lockName)))
@@ -259,6 +266,7 @@ func (p *Projector) acquireLock(ctx context.Context) (release func(), err error)
 // pool.Close() in Teardown.
 func (p *Projector) lead(ctx context.Context, release func()) error {
 	defer release()
+	defer p.ready.Store(false)
 
 	// initCheckpoints runs on every election: a newly elected leader must
 	// re-check handler versions, and the check is idempotent.
@@ -308,6 +316,8 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 			if err := p.runRetentionOnce(ctx); err != nil {
 				return err
 			}
+
+			p.ready.Store(true)
 
 			first = false
 		}

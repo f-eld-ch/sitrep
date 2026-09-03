@@ -116,11 +116,12 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 
 	return &stack{
 		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   pgqueries.NewQueries(pool),
+			Incidents:      factory.IncidentService(repos, layers),
+			Messages:       factory.MessageService(messages, repos),
+			Layers:         factory.LayerService(layers, repos),
+			Features:       factory.FeatureService(features, repos, layers),
+			Queries:        pgqueries.NewQueries(pool),
+			ProjectorReady: proj.Ready,
 		},
 		UserRepo: pguser.NewRepository(pool),
 		Teardown: func() {
@@ -176,11 +177,12 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 
 	return &stack{
 		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
+			Incidents:      factory.IncidentService(repos, layers),
+			Messages:       factory.MessageService(messages, repos),
+			Layers:         factory.LayerService(layers, repos),
+			Features:       factory.FeatureService(features, repos, layers),
+			Queries:        inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
+			ProjectorReady: proj.Ready,
 		},
 		UserRepo: nil,
 		Teardown: func() {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync/atomic"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -43,6 +44,7 @@ type Projector struct {
 	cursors  map[string]outbound.Cursor
 	log      *slog.Logger
 	tracer   trace.Tracer
+	ready    atomic.Bool
 }
 
 func NewProjector(store outbound.EventStore, handlers []Handler) *Projector {
@@ -66,6 +68,8 @@ func (p *Projector) WithNotifier(n outbound.EventNotifier) *Projector {
 	p.notifier = n
 	return p
 }
+
+func (p *Projector) Ready() bool { return p.ready.Load() }
 
 // CatchUp reads all events appended since each handler's last cursor and applies
 // them. It processes handlers in registration order and returns on the first error.
@@ -183,10 +187,15 @@ func (p *Projector) Reset(ctx context.Context) (err error) {
 // ctx is cancelled — suitable for tests that drive projections manually via
 // CatchUp.
 func (p *Projector) Run(ctx context.Context) error {
+	p.ready.Store(false)
+	defer p.ready.Store(false)
+
 	if err := p.CatchUp(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		p.log.ErrorContext(ctx, "inmem projector initial catch-up failed", "error", err)
 		return err
 	}
+
+	p.ready.Store(true)
 
 	if p.notifier == nil {
 		<-ctx.Done()

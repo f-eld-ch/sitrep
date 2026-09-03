@@ -267,6 +267,8 @@ type Projector struct{}
 
 func NewProjector() *Projector { return &Projector{} }
 
+func (p *Projector) Ready() bool { return true }
+
 func (p *Projector) Run(ctx context.Context) error {
 	<-ctx.Done()
 	return ctx.Err()

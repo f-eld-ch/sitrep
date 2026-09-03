@@ -6,6 +6,13 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+type readinessResponse struct {
+	Status         string `json:"status"`
+	Listening      bool   `json:"listening"`
+	ProjectorReady bool   `json:"projector_ready"`
+	ShuttingDown   bool   `json:"shutting_down"`
+}
+
 func (s *Server) health(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
@@ -22,9 +29,21 @@ func (s *Server) buildInfo(c *echo.Context) error {
 }
 
 func (s *Server) ready(c *echo.Context) error {
-	if s.isShuttingDown.Load() {
-		return c.JSON(http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
+	shuttingDown := s.isShuttingDown.Load()
+	listening := s.listening.Load()
+	projectorReady := s.projectorReady == nil || s.projectorReady()
+
+	response := readinessResponse{
+		Listening:      listening,
+		ProjectorReady: projectorReady,
+		ShuttingDown:   shuttingDown,
+	}
+	if shuttingDown || !listening || !projectorReady {
+		response.Status = "unavailable"
+		return c.JSON(http.StatusServiceUnavailable, response)
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"status": "ready"})
+	response.Status = "ready"
+
+	return c.JSON(http.StatusOK, response)
 }
