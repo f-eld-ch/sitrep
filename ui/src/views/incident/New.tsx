@@ -3,6 +3,7 @@ import {
   faDeleteLeft,
   faLocationDot,
   faSitemap,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import iteratee from "lodash/iteratee";
@@ -273,7 +274,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </label>
         </div>
         <div className="field-body">
-          <div className="field is-grouped is-grouped-multiline">
+          <div className="field is-grouped is-flex-grow-1">
             <p className="control is-expanded">
               <input
                 className="input is-small"
@@ -296,7 +297,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             <p className="control">
               <button
                 type="submit"
-                className="button is-primary is-small is-justified is-rounded is-capitalized"
+                className="button is-success is-small px-3"
                 onClick={(e) => {
                   e.preventDefault();
                   if (assignmentName.trim() === "" || assignmentDescription.trim() === "") return;
@@ -311,8 +312,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentDescription("");
                 }}
                 disabled={assignmentName.trim() === "" || assignmentDescription.trim() === ""}
+                aria-label={t("add") as string}
               >
-                {t("add")}
+                <span className="icon is-small">
+                  <FontAwesomeIcon icon={faPlus} />
+                </span>
               </button>
             </p>
           </div>
