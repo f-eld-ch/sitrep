@@ -3,6 +3,8 @@ package inmem
 import (
 	"context"
 
+	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
@@ -10,6 +12,15 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
+
+const policyModel = `[request_definition]
+r = sub, dom, obj, act
+[policy_definition]
+p = sub, dom, obj, act, eft
+[policy_effect]
+e = some(where (p.eft == allow))
+[matchers]
+m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act`
 
 type (
 	IncidentAccessChecker struct{ handler *projection.AccessHandler }
@@ -34,24 +45,41 @@ func (c *IncidentAccessChecker) Can(
 		return true, nil
 	}
 
-	for _, row := range c.handler.Policies() {
-		if row.Subject == "user:"+subject && row.Domain == "incident:"+uuid.UUID(incidentID).String() &&
-			row.Action == string(action) {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return enforce(c.handler.Policies(), "user:"+subject, "incident:"+uuid.UUID(incidentID).String(), string(action))
 }
 
 func (c *GlobalAccessChecker) Can(_ context.Context, subject string, action access.GlobalAction) (bool, error) {
-	for _, row := range c.handler.Policies() {
-		if row.Subject == "user:"+subject && row.Domain == "global" && row.Action == string(action) {
-			return true, nil
+	return enforce(c.handler.Policies(), "user:"+subject, "global", string(action))
+}
+
+func enforce(rows []projection.AccessPolicyRow, subject, domain, action string) (bool, error) {
+	m, err := model.NewModelFromString(policyModel)
+	if err != nil {
+		return false, err
+	}
+
+	enforcer, err := casbin.NewEnforcer(m)
+	if err != nil {
+		return false, err
+	}
+
+	for _, row := range rows {
+		if _, err := enforcer.AddPolicy(row.Subject, row.Domain, row.Object, row.Action, "allow"); err != nil {
+			return false, err
 		}
 	}
 
-	return false, nil
+	return enforcer.Enforce(subject, domain, objectForAction(action), action)
+}
+
+func objectForAction(action string) string {
+	for i := len(action) - 1; i >= 0; i-- {
+		if action[i] == '.' {
+			return action[:i]
+		}
+	}
+
+	return action
 }
 
 var (
