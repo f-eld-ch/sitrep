@@ -181,6 +181,10 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			oidcClient.WithUserRepository(s.UserRepo)
 		}
 
+		if s.AccessSvc != nil {
+			oidcClient.WithFirstUserBootstrap(s.AccessSvc.BootstrapFirstSystemAdmin)
+		}
+
 		opts = append(opts, server.WithOidc(oidcClient))
 	} else {
 		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")

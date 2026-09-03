@@ -15,7 +15,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
-type AccessService interface {
+type IncidentAccessService interface {
 	GrantIncidentRole(
 		ctx context.Context,
 		incidentID shared.IncidentID,
@@ -36,6 +36,9 @@ type AccessService interface {
 		mode access.IncidentMode,
 		actor identity.Actor,
 	) error
+}
+
+type GroupAccessService interface {
 	CreateAccessGroup(ctx context.Context, name, description string, actor identity.Actor) (uuid.UUID, error)
 	RenameAccessGroup(ctx context.Context, groupID uuid.UUID, name string, actor identity.Actor) error
 	ArchiveAccessGroup(ctx context.Context, groupID uuid.UUID, actor identity.Actor) error
@@ -43,6 +46,12 @@ type AccessService interface {
 	RemoveGroupMember(ctx context.Context, groupID uuid.UUID, subject string, actor identity.Actor) error
 	GrantGlobalRole(ctx context.Context, subject string, role access.GlobalRole, actor identity.Actor) error
 	RevokeGlobalRole(ctx context.Context, subject string, role access.GlobalRole, actor identity.Actor) error
+}
+
+type AccessService interface {
+	IncidentAccessService
+	GroupAccessService
+	BootstrapFirstSystemAdmin(ctx context.Context, subject string, actor identity.Actor) error
 }
 
 // CreateIncidentResult is returned from CreateIncident so resolvers can build

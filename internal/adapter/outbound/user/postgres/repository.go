@@ -12,7 +12,10 @@ import (
 )
 
 // Compile-time assertion.
-var _ outbound.UserRepository = (*Repository)(nil)
+var (
+	_ outbound.UserRepository      = (*Repository)(nil)
+	_ outbound.FirstUserRepository = (*Repository)(nil)
+)
 
 // Repository implements outbound.UserRepository.
 type Repository struct {
@@ -32,4 +35,37 @@ func (r *Repository) Upsert(ctx context.Context, sub, email, name string) error 
 		sub, email, name)
 
 	return err
+}
+
+func (r *Repository) UpsertAndReportFirst(ctx context.Context, sub, email, name string) (bool, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(17731, 1)`); err != nil {
+		return false, err
+	}
+
+	var empty bool
+	if err := tx.QueryRow(ctx, `SELECT NOT EXISTS (SELECT 1 FROM users)`).Scan(&empty); err != nil {
+		return false, err
+	}
+
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO users (sub, email, name)
+		 VALUES ($1, $2, $3)
+		 ON CONFLICT ON CONSTRAINT users_name_key
+		 DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()`,
+		sub, email, name,
+	); err != nil {
+		return false, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return false, err
+	}
+
+	return empty, nil
 }

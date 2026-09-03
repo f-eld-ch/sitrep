@@ -30,11 +30,16 @@ type OIDCClient struct {
 	logger       *slog.Logger
 	secureCookie *securecookie.SecureCookie
 	users        outbound.UserRepository
+	bootstrap    func(context.Context, string, identity.Actor) error
 }
 
 // WithUserRepository attaches a UserRepository so profiles are upserted on login.
 func (o *OIDCClient) WithUserRepository(repo outbound.UserRepository) {
 	o.users = repo
+}
+
+func (o *OIDCClient) WithFirstUserBootstrap(bootstrap func(context.Context, string, identity.Actor) error) {
+	o.bootstrap = bootstrap
 }
 
 var ErrUnauthorized = errors.New("unauthorized")
@@ -154,7 +159,17 @@ func (o *OIDCClient) marshalUserinfo(
 				slog.String("sub", info.Subject),
 			)
 
-			if err := o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name); err != nil {
+			first := false
+
+			var err error
+
+			if firstUserRepo, ok := o.users.(outbound.FirstUserRepository); ok {
+				first, err = firstUserRepo.UpsertAndReportFirst(r.Context(), info.Subject, info.Email, info.Name)
+			} else {
+				err = o.users.Upsert(r.Context(), info.Subject, info.Email, info.Name)
+			}
+
+			if err != nil {
 				o.logger.ErrorContext(
 					r.Context(),
 					"failed to upsert user on login",
@@ -164,6 +179,26 @@ func (o *OIDCClient) marshalUserinfo(
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
 				return
+			}
+
+			if first && o.bootstrap != nil {
+				if err := o.bootstrap(
+					r.Context(),
+					info.Subject,
+					identity.Actor{Sub: info.Subject, Email: info.Email, Name: info.Name},
+				); err != nil {
+					o.logger.ErrorContext(
+						r.Context(),
+						"failed to bootstrap first system admin",
+						"sub",
+						info.Subject,
+						"error",
+						err,
+					)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+					return
+				}
 			}
 		}
 

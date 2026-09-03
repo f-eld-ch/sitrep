@@ -259,6 +259,16 @@ func (s *AccessService) RevokeGlobalRole(
 	)
 }
 
+func (s *AccessService) BootstrapFirstSystemAdmin(ctx context.Context, subject string, actor identity.Actor) error {
+	return s.changeGlobal(ctx, actor, func(g *access.GlobalAccess, at time.Time) error {
+		if len(g.SubjectsWithRole(access.SystemAdmin)) > 0 {
+			return nil
+		}
+
+		return g.GrantRole(subject, access.SystemAdmin, "system:bootstrap", at)
+	})
+}
+
 func (s *AccessService) changeIncident(
 	ctx context.Context,
 	id shared.IncidentID,

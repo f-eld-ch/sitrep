@@ -72,3 +72,8 @@ type IncidentHierarchyGuard interface {
 type UserRepository interface {
 	Upsert(ctx context.Context, sub, email, name string) error
 }
+
+type FirstUserRepository interface {
+	UserRepository
+	UpsertAndReportFirst(ctx context.Context, sub, email, name string) (bool, error)
+}
