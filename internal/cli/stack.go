@@ -74,6 +74,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	notifier := pgstore.NewNotifier(pool, "events")
 
 	repos := eventstore.NewIncidentRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
@@ -86,6 +87,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(pgstore.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(pgstore.NewIncidentHierarchyGuard()),
+		service.WithIncidentAccessRepository(accessRepo),
 	)
 
 	handlers := []pgprojection.Handler{
@@ -142,6 +144,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	notifier := inmem.NewNotifier()
 
 	repos := eventstore.NewIncidentRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
@@ -153,6 +156,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
+		service.WithIncidentAccessRepository(accessRepo),
 	)
 
 	incHandler := inprojection.NewIncidentHandler()

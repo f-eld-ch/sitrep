@@ -15,6 +15,7 @@ type Factory struct {
 	hierarchy     outbound.IncidentHierarchyGuard
 	accessGuard   outbound.AccessGuard
 	accessChecker outbound.IncidentAccessChecker
+	accessRepo    outbound.IncidentAccessRepository
 }
 
 // FactoryOption configures a Factory.
@@ -52,6 +53,10 @@ func WithIncidentAccessChecker(accessChecker outbound.IncidentAccessChecker) Fac
 	return func(f *Factory) { f.accessChecker = accessChecker }
 }
 
+func WithIncidentAccessRepository(accessRepo outbound.IncidentAccessRepository) FactoryOption {
+	return func(f *Factory) { f.accessRepo = accessRepo }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -64,7 +69,17 @@ func NewFactory(opts ...FactoryOption) *Factory {
 
 // IncidentService creates a ready-to-use IncidentService.
 func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbound.LayerRepository) *IncidentService {
-	return NewIncidentService(f.tx, repo, layers, f.hierarchy, f.accessChecker, f.clock, f.ids, f.notifier)
+	return NewIncidentService(
+		f.tx,
+		repo,
+		layers,
+		f.hierarchy,
+		f.accessChecker,
+		f.accessRepo,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
 }
 
 // MessageService creates a ready-to-use MessageService.

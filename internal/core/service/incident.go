@@ -26,15 +26,16 @@ import (
 
 // IncidentService handles all write-side operations for the Incident aggregate.
 type IncidentService struct {
-	tx        outbound.Transactor
-	repo      outbound.IncidentRepository
-	layers    outbound.LayerRepository
-	hierarchy outbound.IncidentHierarchyGuard
-	access    outbound.IncidentAccessChecker
-	clock     outbound.Clock
-	ids       outbound.IDs
-	notifier  outbound.EventNotifier
-	tracer    trace.Tracer
+	tx         outbound.Transactor
+	repo       outbound.IncidentRepository
+	layers     outbound.LayerRepository
+	hierarchy  outbound.IncidentHierarchyGuard
+	access     outbound.IncidentAccessChecker
+	accessRepo outbound.IncidentAccessRepository
+	clock      outbound.Clock
+	ids        outbound.IDs
+	notifier   outbound.EventNotifier
+	tracer     trace.Tracer
 }
 
 func NewIncidentService(
@@ -43,20 +44,22 @@ func NewIncidentService(
 	layers outbound.LayerRepository,
 	hierarchy outbound.IncidentHierarchyGuard,
 	access outbound.IncidentAccessChecker,
+	accessRepo outbound.IncidentAccessRepository,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *IncidentService {
 	return &IncidentService{
-		tx:        tx,
-		repo:      repo,
-		layers:    layers,
-		hierarchy: hierarchy,
-		access:    access,
-		clock:     clock,
-		ids:       ids,
-		notifier:  notifier,
-		tracer:    otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+		tx:         tx,
+		repo:       repo,
+		layers:     layers,
+		hierarchy:  hierarchy,
+		access:     access,
+		accessRepo: accessRepo,
+		clock:      clock,
+		ids:        ids,
+		notifier:   notifier,
+		tracer:     otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
 
@@ -140,6 +143,16 @@ func (s *IncidentService) CreateIncidentWithParent(
 
 		if _, err := s.repo.Save(ctx, inc); err != nil {
 			return err
+		}
+
+		if s.accessRepo != nil {
+			accessAggregate := access.NewIncidentAccess(incID)
+			if err := accessAggregate.Initialize(&actor.Sub, access.OpenOperational, actor.Sub, at); err != nil {
+				return err
+			}
+			if _, err := s.accessRepo.Save(ctx, accessAggregate); err != nil {
+				return err
+			}
 		}
 
 		// 2. Create each Layer.
