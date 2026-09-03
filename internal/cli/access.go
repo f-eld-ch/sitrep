@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -24,8 +25,95 @@ func newAccessCmd(v *viper.Viper) *cobra.Command {
 		newListSystemAdminsCmd(v),
 		newRevokeSystemAdminCmd(v),
 		newGrantIncidentOwnerCmd(v),
+		newUsersCmd(v),
 	)
 	return accessCmd
+}
+
+type accessUser struct {
+	Sub   string `json:"sub"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func newUsersCmd(v *viper.Viper) *cobra.Command {
+	users := &cobra.Command{Use: "users", Short: "Inspect known user identities"}
+	users.AddCommand(newUsersListCmd(v), newUsersSearchCmd(v))
+	return users
+}
+
+func newUsersListCmd(v *viper.Viper) *cobra.Command {
+	var format string
+	cmd := &cobra.Command{Use: "list", Short: "List known users", RunE: func(cmd *cobra.Command, _ []string) error {
+		users, err := queryAccessUsers(cmd.Context(), v.GetString("database-url"), "", "")
+		if err != nil {
+			return err
+		}
+		return printAccessUsers(cmd, users, format)
+	}}
+	cmd.Flags().StringVar(&format, "format", "table", "Output format: table or json")
+	return cmd
+}
+
+func newUsersSearchCmd(v *viper.Viper) *cobra.Command {
+	var email, name, format string
+	cmd := &cobra.Command{Use: "search", Short: "Search known users", RunE: func(cmd *cobra.Command, _ []string) error {
+		if email == "" && name == "" {
+			return fmt.Errorf("--email or --name is required")
+		}
+		users, err := queryAccessUsers(cmd.Context(), v.GetString("database-url"), email, name)
+		if err != nil {
+			return err
+		}
+		return printAccessUsers(cmd, users, format)
+	}}
+	cmd.Flags().StringVar(&email, "email", "", "Exact email")
+	cmd.Flags().StringVar(&name, "name", "", "Name search")
+	cmd.Flags().StringVar(&format, "format", "table", "Output format: table or json")
+	return cmd
+}
+
+func queryAccessUsers(ctx context.Context, dsn, email, name string) ([]accessUser, error) {
+	pool, err := openAccessPool(ctx, dsn)
+	if err != nil {
+		return nil, err
+	}
+	defer pool.Close()
+	rows, err := pool.Query(
+		ctx,
+		`SELECT sub, name, email FROM users WHERE ($1 = '' OR email = $1) AND ($2 = '' OR name ILIKE '%' || $2 || '%') ORDER BY name, email, sub`,
+		email,
+		name,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []accessUser
+	for rows.Next() {
+		var user accessUser
+		if err := rows.Scan(&user.Sub, &user.Name, &user.Email); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, rows.Err()
+}
+
+func printAccessUsers(cmd *cobra.Command, users []accessUser, format string) error {
+	switch format {
+	case "json":
+		return json.NewEncoder(cmd.OutOrStdout()).Encode(users)
+	case "table":
+		w := cmd.OutOrStdout()
+		_, _ = fmt.Fprintln(w, "SUB\tNAME\tEMAIL")
+		for _, user := range users {
+			_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", user.Sub, user.Name, user.Email)
+		}
+		return nil
+	default:
+		return fmt.Errorf("unsupported --format %q", format)
+	}
 }
 
 func newGrantIncidentOwnerCmd(v *viper.Viper) *cobra.Command {
