@@ -44,7 +44,12 @@ func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGr
 
 	out := make([]outbound.AccessGroupRM, 0, len(groups))
 	for id, group := range groups {
-		out = append(out, outbound.AccessGroupRM{ID: id, Archived: group.Archived})
+		out = append(out, outbound.AccessGroupRM{
+			ID:          id,
+			Name:        group.Name,
+			Description: group.Description,
+			Archived:    group.Archived,
+		})
 	}
 
 	sort.Slice(out, func(i, j int) bool { return out[i].ID.String() < out[j].ID.String() })

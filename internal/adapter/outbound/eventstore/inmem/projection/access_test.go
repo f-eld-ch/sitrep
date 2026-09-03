@@ -48,6 +48,11 @@ func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
 	projector := projection.NewProjector(store, []projection.Handler{handler})
 	require.NoError(t, projector.CatchUp(ctx))
 
+	groupProjection, ok := handler.Groups()[groupID]
+	require.True(t, ok)
+	assert.Equal(t, "Operations", groupProjection.Name)
+	assert.Empty(t, groupProjection.Description)
+
 	rows := handler.Policies()
 	require.NotEmpty(t, rows)
 	assert.Contains(

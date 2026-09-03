@@ -35,8 +35,10 @@ type AccessHandler struct {
 }
 
 type groupProjection struct {
-	archived bool
-	members  map[string]bool
+	name        string
+	description string
+	archived    bool
+	members     map[string]bool
 }
 
 func NewAccessHandler() *AccessHandler {
@@ -134,7 +136,21 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 	}
 
 	switch e.EventType {
-	case "GroupCreated", "GroupRenamed":
+	case "GroupCreated":
+		var d access.GroupCreated
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		g.name = d.Name
+		g.description = d.Description
+	case "GroupRenamed":
+		var d access.GroupRenamed
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		g.name = d.Name
 	case "GroupArchived":
 		g.archived = true
 	case "GroupMemberAdded":
@@ -280,15 +296,19 @@ func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow 
 }
 
 func (h *AccessHandler) Groups() map[uuid.UUID]struct {
-	Archived bool
-	Members  []string
+	Name        string
+	Description string
+	Archived    bool
+	Members     []string
 } {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
 	result := make(map[uuid.UUID]struct {
-		Archived bool
-		Members  []string
+		Name        string
+		Description string
+		Archived    bool
+		Members     []string
 	}, len(h.groups))
 	for id, group := range h.groups {
 		members := make([]string, 0, len(group.members))
@@ -298,9 +318,16 @@ func (h *AccessHandler) Groups() map[uuid.UUID]struct {
 		}
 
 		result[id] = struct {
-			Archived bool
-			Members  []string
-		}{Archived: group.archived, Members: members}
+			Name        string
+			Description string
+			Archived    bool
+			Members     []string
+		}{
+			Name:        group.name,
+			Description: group.description,
+			Archived:    group.archived,
+			Members:     members,
+		}
 	}
 
 	return result
