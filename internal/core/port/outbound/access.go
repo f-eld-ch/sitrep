@@ -36,10 +36,17 @@ type GroupMemberRM struct {
 	Subject string
 }
 
+type UserRM struct {
+	Sub   string
+	Name  string
+	Email string
+}
+
 type AccessQueries interface {
 	ListIncidentAccess(ctx context.Context, incidentID shared.IncidentID) ([]IncidentAccessGrantRM, error)
 	ListAccessGroups(ctx context.Context) ([]AccessGroupRM, error)
 	ListGroupMembers(ctx context.Context, groupID uuid.UUID) ([]GroupMemberRM, error)
+	ListUsers(ctx context.Context) ([]UserRM, error)
 }
 
 // AccessGuard serializes cross-stream ownership and group-grant invariants.

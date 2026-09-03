@@ -78,6 +78,12 @@ type AccessGroup {
   archivedAt: DateTime
 }
 
+type User {
+  sub: ID!
+  name: String!
+  email: String!
+}
+
 type IncidentAccessGrant {
   incidentId: ID!
   principalKind: AccessPrincipalKind!
@@ -169,6 +175,7 @@ type Query {
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
   accessGroups: [AccessGroup!]!
   groupMembers(groupId: ID!): [ID!]!
+  users: [User!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────

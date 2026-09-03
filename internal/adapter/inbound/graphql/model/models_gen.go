@@ -155,6 +155,12 @@ type UpdateMessageInput struct {
 	Time           *time.Time `json:"time,omitempty"`
 }
 
+type User struct {
+	Sub   string `json:"sub"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type AccessPrincipalKind string
 
 const (

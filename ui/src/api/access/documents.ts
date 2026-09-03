@@ -6,6 +6,8 @@ import type {
   ListGroupMembersQueryVariables,
   ListIncidentAccessQuery,
   ListIncidentAccessQueryVariables,
+  ListUsersQuery,
+  ListUsersQueryVariables,
   AddGroupMemberMutation,
   AddGroupMemberMutationVariables,
   ArchiveAccessGroupMutation,
@@ -62,6 +64,16 @@ export const LIST_GROUP_MEMBERS: TypedDocumentNode<
 > = gql`
   query ListGroupMembers($groupId: ID!) {
     groupMembers(groupId: $groupId)
+  }
+`;
+
+export const LIST_USERS: TypedDocumentNode<ListUsersQuery, ListUsersQueryVariables> = gql`
+  query ListUsers {
+    users {
+      sub
+      name
+      email
+    }
   }
 `;
 

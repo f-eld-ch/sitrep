@@ -71,4 +71,8 @@ func (q *AccessQueries) ListGroupMembers(_ context.Context, groupID uuid.UUID) (
 	return out, nil
 }
 
+func (q *AccessQueries) ListUsers(_ context.Context) ([]outbound.UserRM, error) {
+	return []outbound.UserRM{}, nil
+}
+
 var _ outbound.AccessQueries = (*AccessQueries)(nil)

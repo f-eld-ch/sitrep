@@ -91,4 +91,25 @@ func (q *AccessQueries) ListGroupMembers(ctx context.Context, groupID uuid.UUID)
 	return out, rows.Err()
 }
 
+func (q *AccessQueries) ListUsers(ctx context.Context) ([]outbound.UserRM, error) {
+	rows, err := q.pool.Query(ctx, `SELECT sub, name, email FROM users ORDER BY name, email, sub`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []outbound.UserRM
+
+	for rows.Next() {
+		var row outbound.UserRM
+		if err := rows.Scan(&row.Sub, &row.Name, &row.Email); err != nil {
+			return nil, err
+		}
+
+		out = append(out, row)
+	}
+
+	return out, rows.Err()
+}
+
 var _ outbound.AccessQueries = (*AccessQueries)(nil)

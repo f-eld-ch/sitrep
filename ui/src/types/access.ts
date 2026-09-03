@@ -19,3 +19,9 @@ export interface AccessGroup {
   description: string;
   archivedAt: Date | null;
 }
+
+export interface AccessUser {
+  sub: string;
+  name: string;
+  email: string;
+}

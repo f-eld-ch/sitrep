@@ -1,6 +1,7 @@
 export type { IncidentContext, UserState } from "./context";
 export type {
   AccessGroup,
+  AccessUser,
   AccessPrincipalKind,
   GlobalRole,
   IncidentAccessGrant,

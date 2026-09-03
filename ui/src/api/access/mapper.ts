@@ -1,9 +1,10 @@
-import type { AccessGroup, IncidentAccessGrant } from "types";
+import type { AccessGroup, AccessUser, IncidentAccessGrant } from "types";
 import { toOptionalDate } from "../common/mapper";
-import type { ListAccessGroupsQuery, ListIncidentAccessQuery } from "gql/next";
+import type { ListAccessGroupsQuery, ListIncidentAccessQuery, ListUsersQuery } from "gql/next";
 
 type WireIncidentAccessGrant = ListIncidentAccessQuery["incidentAccess"][0];
 type WireAccessGroup = ListAccessGroupsQuery["accessGroups"][0];
+type WireAccessUser = ListUsersQuery["users"][0];
 
 export function toIncidentAccessGrant(w: WireIncidentAccessGrant): IncidentAccessGrant {
   return {
@@ -21,4 +22,8 @@ export function toAccessGroup(w: WireAccessGroup): AccessGroup {
     description: w.description,
     archivedAt: toOptionalDate(w.archivedAt),
   };
+}
+
+export function toAccessUser(w: WireAccessUser): AccessUser {
+  return { sub: w.sub, name: w.name, email: w.email };
 }
