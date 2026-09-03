@@ -19,6 +19,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1803](https://github.com/f-eld-ch/sitrep/issues/1803)) - ([0916b26](https://github.com/f-eld-ch/sitrep/commit/0916b26c005bb85f2ce7034a76390c3ddbbdbc4f))
+- *(deps)* Bump react-map-gl from 8.1.2 to 8.1.3 in /ui ([#1806](https://github.com/f-eld-ch/sitrep/issues/1806)) - ([ed91c37](https://github.com/f-eld-ch/sitrep/commit/ed91c37ceea3e65ed76cb6e3bcc38e54865fbc91))
+- *(deps)* Bump maplibre-gl from 6.6.0 to 6.7.0 in /ui ([#1807](https://github.com/f-eld-ch/sitrep/issues/1807)) - ([c078eff](https://github.com/f-eld-ch/sitrep/commit/c078eff540a06e0f7139e9f9991b66a96fc9cfb3))
 - *(deps)* Bump maplibre-gl from 6.6.0 to 6.7.0 in /ui ([#1798](https://github.com/f-eld-ch/sitrep/issues/1798)) - ([af1c4eb](https://github.com/f-eld-ch/sitrep/commit/af1c4eb4c26ba28735621f3ad238df3d53b75133))
 - *(deps)* Bump github.com/labstack/echo/v5 from 5.2.1 to 5.3.1 ([#1789](https://github.com/f-eld-ch/sitrep/issues/1789)) - ([d940def](https://github.com/f-eld-ch/sitrep/commit/d940def0f0d31e08ab75ae1e6c9df9fcf6412275))
 - *(deps)* Bump react-i18next from 17.0.12 to 17.0.13 in /ui ([#1791](https://github.com/f-eld-ch/sitrep/issues/1791)) - ([9ce1f45](https://github.com/f-eld-ch/sitrep/commit/9ce1f452001f6530a9bcde54b7fec9a6040a65cc))
