@@ -166,7 +166,9 @@ func newListSystemAdminsCmd(v *viper.Viper) *cobra.Command {
 			admins := g.SubjectsWithRole(access.SystemAdmin)
 			sort.Strings(admins)
 			for _, admin := range admins {
-				fmt.Fprintln(cmd.OutOrStdout(), admin)
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), admin); err != nil {
+					return err
+				}
 			}
 			return nil
 		},

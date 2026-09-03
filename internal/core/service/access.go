@@ -129,7 +129,7 @@ func (s *AccessService) ChangeIncidentAccessMode(
 			incidentID,
 			access.IncidentManageAccess,
 		); err != nil {
-			if !(a.Mode() == access.OpenOperational && mode == access.Restricted && !a.HasDirectUserOwner()) {
+			if a.Mode() != access.OpenOperational || mode != access.Restricted || a.HasDirectUserOwner() {
 				return err
 			}
 		}

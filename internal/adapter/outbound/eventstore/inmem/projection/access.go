@@ -247,7 +247,7 @@ func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.
 func split(value string, sep byte) []string {
 	var out []string
 	start := 0
-	for i := 0; i < len(value); i++ {
+	for i := range value {
 		if value[i] == sep {
 			out = append(out, value[start:i])
 			start = i + 1
