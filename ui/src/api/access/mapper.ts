@@ -11,6 +11,7 @@ export function toIncidentAccessGrant(w: WireIncidentAccessGrant): IncidentAcces
     incidentId: w.incidentId,
     principalKind: w.principalKind,
     principalId: w.principalId,
+    principalName: w.principalName,
     role: w.role,
   };
 }

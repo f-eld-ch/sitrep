@@ -22,6 +22,7 @@ type IncidentAccessGrantRM struct {
 	IncidentID    shared.IncidentID
 	PrincipalKind access.PrincipalKind
 	PrincipalID   string
+	PrincipalName string
 	Role          access.Role
 }
 

@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 		IncidentID    func(childComplexity int) int
 		PrincipalID   func(childComplexity int) int
 		PrincipalKind func(childComplexity int) int
+		PrincipalName func(childComplexity int) int
 		Role          func(childComplexity int) int
 	}
 
@@ -370,6 +371,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.IncidentAccessGrant.PrincipalKind(childComplexity), true
+	case "IncidentAccessGrant.principalName":
+		if e.ComplexityRoot.IncidentAccessGrant.PrincipalName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IncidentAccessGrant.PrincipalName(childComplexity), true
 	case "IncidentAccessGrant.role":
 		if e.ComplexityRoot.IncidentAccessGrant.Role == nil {
 			break
@@ -1073,6 +1080,7 @@ type IncidentAccessGrant {
   incidentId: ID!
   principalKind: AccessPrincipalKind!
   principalId: ID!
+  principalName: String!
   role: IncidentRole!
 }
 
@@ -1384,6 +1392,8 @@ func (ec *executionContext) childFields_IncidentAccessGrant(ctx context.Context,
 		return ec.fieldContext_IncidentAccessGrant_principalKind(ctx, field)
 	case "principalId":
 		return ec.fieldContext_IncidentAccessGrant_principalId(ctx, field)
+	case "principalName":
+		return ec.fieldContext_IncidentAccessGrant_principalName(ctx, field)
 	case "role":
 		return ec.fieldContext_IncidentAccessGrant_role(ctx, field)
 	}
@@ -2866,6 +2876,29 @@ func (ec *executionContext) _IncidentAccessGrant_principalId(ctx context.Context
 }
 func (ec *executionContext) fieldContext_IncidentAccessGrant_principalId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("IncidentAccessGrant", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _IncidentAccessGrant_principalName(ctx context.Context, field graphql.CollectedField, obj *model.IncidentAccessGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_IncidentAccessGrant_principalName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PrincipalName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_IncidentAccessGrant_principalName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("IncidentAccessGrant", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _IncidentAccessGrant_role(ctx context.Context, field graphql.CollectedField, obj *model.IncidentAccessGrant) (ret graphql.Marshaler) {
@@ -6792,6 +6825,11 @@ func (ec *executionContext) _IncidentAccessGrant(ctx context.Context, sel ast.Se
 			}
 		case "principalId":
 			out.Values[i] = ec._IncidentAccessGrant_principalId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "principalName":
+			out.Values[i] = ec._IncidentAccessGrant_principalName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

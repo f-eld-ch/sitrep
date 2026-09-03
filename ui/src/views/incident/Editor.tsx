@@ -1,5 +1,7 @@
 import { Spinner } from "components";
 import { useState } from "react";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import {
@@ -199,7 +201,13 @@ function IncidentAccessPanel({
                 disabled={!principalId || grantState.loading}
                 onClick={() => void grantRole({ incidentId, principalKind, principalId, role })}
               >
-                Grant
+                {grantState.loading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin /> Granting
+                  </>
+                ) : (
+                  "Grant"
+                )}
               </button>
             </div>
           </div>
@@ -215,7 +223,19 @@ function IncidentAccessPanel({
               {accessResult.data.grants.map((grant: any) => (
                 <tr key={`${grant.principalKind}-${grant.principalId}-${grant.role}`}>
                   <td>
-                    {grant.principalKind === "GROUP" ? "Group" : "User"}: {grant.principalId}
+                    {grant.principalKind === "GROUP"
+                      ? groupsResult.status === "ready"
+                        ? groupsResult.data.groups.find(
+                            (group: any) => group.id === grant.principalId,
+                          )?.name || grant.principalName
+                        : grant.principalName
+                      : usersResult.status === "ready"
+                        ? usersResult.data.users.find((user: any) => user.sub === grant.principalId)
+                            ?.name || grant.principalName
+                        : grant.principalName}{" "}
+                    ({grant.principalKind === "GROUP" ? "Group" : "User"})
+                    <br />
+                    <small>{grant.principalId}</small>
                   </td>
                   <td>{grant.role}</td>
                   <td className="has-text-right">
@@ -225,7 +245,13 @@ function IncidentAccessPanel({
                       disabled={revokeState.loading}
                       onClick={() => void revokeRole({ incidentId, ...grant })}
                     >
-                      Revoke
+                      {revokeState.loading ? (
+                        <>
+                          <FontAwesomeIcon icon={faSpinner} spin /> Revoking
+                        </>
+                      ) : (
+                        "Revoke"
+                      )}
                     </button>
                   </td>
                 </tr>

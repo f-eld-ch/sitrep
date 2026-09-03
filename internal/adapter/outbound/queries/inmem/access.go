@@ -33,6 +33,7 @@ func (q *AccessQueries) ListIncidentAccess(
 				IncidentID:    incidentID,
 				PrincipalKind: row.PrincipalKind,
 				PrincipalID:   row.PrincipalID,
+				PrincipalName: row.PrincipalID,
 				Role:          row.Role,
 			},
 		)

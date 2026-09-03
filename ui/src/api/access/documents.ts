@@ -41,6 +41,7 @@ export const LIST_INCIDENT_ACCESS: TypedDocumentNode<
       incidentId
       principalKind
       principalId
+      principalName
       role
     }
   }
@@ -121,6 +122,7 @@ export const GRANT_INCIDENT_ROLE: TypedDocumentNode<
       incidentId
       principalKind
       principalId
+      principalName
       role
     }
   }

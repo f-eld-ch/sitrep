@@ -88,6 +88,7 @@ type IncidentAccessGrant {
   incidentId: ID!
   principalKind: AccessPrincipalKind!
   principalId: ID!
+  principalName: String!
   role: IncidentRole!
 }
 

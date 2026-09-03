@@ -10,6 +10,7 @@ export interface IncidentAccessGrant {
   incidentId: string;
   principalKind: AccessPrincipalKind;
   principalId: string;
+  principalName: string;
   role: IncidentRole;
 }
 

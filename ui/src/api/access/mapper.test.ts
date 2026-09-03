@@ -7,6 +7,7 @@ describe("access mappers", () => {
       incidentId: "incident-1",
       principalKind: "GROUP",
       principalId: "group-1",
+      principalName: "Operations",
       role: "EDITOR",
     };
 

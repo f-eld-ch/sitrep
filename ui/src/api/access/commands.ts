@@ -73,7 +73,37 @@ export function useGrantIncidentRole(): CommandHook<IncidentRoleArgs> {
   const grant = async (args: IncidentRoleArgs): Promise<void> => {
     await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } }],
+      optimisticResponse: {
+        grantIncidentRole: {
+          incidentId: args.incidentId,
+          principalKind: args.principalKind,
+          principalId: args.principalId,
+          principalName: args.principalId,
+          role: args.role,
+        },
+      },
+      update(cache, { data }) {
+        const grant = data?.grantIncidentRole;
+        if (!grant) return;
+        const cached = cache.readQuery({
+          query: LIST_INCIDENT_ACCESS,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached) return;
+        const withoutExisting = cached.incidentAccess.filter(
+          (existing) =>
+            !(
+              existing.principalKind === grant.principalKind &&
+              existing.principalId === grant.principalId &&
+              existing.role === grant.role
+            ),
+        );
+        cache.writeQuery({
+          query: LIST_INCIDENT_ACCESS,
+          variables: { incidentId: args.incidentId },
+          data: { incidentAccess: [...withoutExisting, grant] },
+        });
+      },
     });
   };
   return [grant, commandState(result.loading, result.error)];
@@ -84,7 +114,28 @@ export function useRevokeIncidentRole(): CommandHook<IncidentRoleArgs> {
   const revoke = async (args: IncidentRoleArgs): Promise<void> => {
     await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } }],
+      optimisticResponse: { revokeIncidentRole: args.principalId },
+      update(cache) {
+        const cached = cache.readQuery({
+          query: LIST_INCIDENT_ACCESS,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached) return;
+        cache.writeQuery({
+          query: LIST_INCIDENT_ACCESS,
+          variables: { incidentId: args.incidentId },
+          data: {
+            incidentAccess: cached.incidentAccess.filter(
+              (existing) =>
+                !(
+                  existing.principalKind === args.principalKind &&
+                  existing.principalId === args.principalId &&
+                  existing.role === args.role
+                ),
+            ),
+          },
+        });
+      },
     });
   };
   return [revoke, commandState(result.loading, result.error)];

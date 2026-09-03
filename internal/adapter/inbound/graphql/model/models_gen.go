@@ -83,6 +83,7 @@ type IncidentAccessGrant struct {
 	IncidentID    string              `json:"incidentId"`
 	PrincipalKind AccessPrincipalKind `json:"principalKind"`
 	PrincipalID   string              `json:"principalId"`
+	PrincipalName string              `json:"principalName"`
 	Role          IncidentRole        `json:"role"`
 }
 

@@ -21,7 +21,12 @@ func (q *AccessQueries) ListIncidentAccess(
 ) ([]outbound.IncidentAccessGrantRM, error) {
 	rows, err := q.pool.Query(
 		ctx,
-		`SELECT incident_id, principal_kind, principal_id, role FROM rm_incident_access WHERE incident_id = $1 AND revoked_at IS NULL ORDER BY principal_kind, principal_id, role`,
+		`SELECT a.incident_id, a.principal_kind, a.principal_id, COALESCE(u.name, g.name, a.principal_id), a.role
+		 FROM rm_incident_access a
+		 LEFT JOIN users u ON a.principal_kind = 'user' AND u.sub = a.principal_id
+		 LEFT JOIN rm_access_group g ON a.principal_kind = 'group' AND g.id::text = a.principal_id
+		 WHERE a.incident_id = $1 AND a.revoked_at IS NULL
+		 ORDER BY a.principal_kind, COALESCE(u.name, g.name, a.principal_id), a.role`,
 		uuid.UUID(incidentID),
 	)
 	if err != nil {
@@ -33,7 +38,13 @@ func (q *AccessQueries) ListIncidentAccess(
 
 	for rows.Next() {
 		var row outbound.IncidentAccessGrantRM
-		if err := rows.Scan(&row.IncidentID, &row.PrincipalKind, &row.PrincipalID, &row.Role); err != nil {
+		if err := rows.Scan(
+			&row.IncidentID,
+			&row.PrincipalKind,
+			&row.PrincipalID,
+			&row.PrincipalName,
+			&row.Role,
+		); err != nil {
 			return nil, err
 		}
 

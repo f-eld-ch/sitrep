@@ -868,6 +868,7 @@ func (r *queryResolver) IncidentAccess(ctx context.Context, incidentID string) (
 				IncidentID:    incidentID,
 				PrincipalKind: principalKindFromDomain(row.PrincipalKind),
 				PrincipalID:   row.PrincipalID,
+				PrincipalName: row.PrincipalName,
 				Role:          incidentRoleFromDomain(row.Role),
 			},
 		)
