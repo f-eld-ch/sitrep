@@ -51,11 +51,13 @@ func (h *AccessHandler) Handles(st, _ string) bool {
 func (h *AccessHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	h.grants = make(map[string]access.Role)
 	h.groups = make(map[uuid.UUID]*groupProjection)
 	h.global = make(map[string]map[access.GlobalRole]bool)
 	h.modes = make(map[uuid.UUID]access.IncidentMode)
 	h.policies = make(map[string]AccessPolicyRow)
+
 	return nil
 }
 
@@ -82,6 +84,7 @@ func (h *AccessHandler) applyIncident(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		h.modes[e.StreamID] = d.Mode
 		if d.OwnerSub != nil {
 			h.grants[grantKey(e.StreamID, access.UserPrincipal, *d.OwnerSub, access.Owner)] = access.Owner
@@ -91,23 +94,28 @@ func (h *AccessHandler) applyIncident(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		h.grants[grantKey(e.StreamID, d.Principal.Kind, d.Principal.ID, d.Role)] = d.Role
 	case "RoleRevoked":
 		var d access.RoleRevoked
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		delete(h.grants, grantKey(e.StreamID, d.Principal.Kind, d.Principal.ID, d.Role))
 	case "AccessModeChanged":
 		var d access.AccessModeChanged
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		h.modes[e.StreamID] = d.Mode
 	default:
 		return fmt.Errorf("rm_access: unhandled incident event %q", e.EventType)
 	}
+
 	h.recompute()
+
 	return nil
 }
 
@@ -117,6 +125,7 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		g = &groupProjection{members: make(map[string]bool)}
 		h.groups[e.StreamID] = g
 	}
+
 	switch e.EventType {
 	case "GroupCreated", "GroupRenamed":
 	case "GroupArchived":
@@ -126,17 +135,21 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		g.members[d.Subject] = true
 	case "GroupMemberRemoved":
 		var d access.GroupMemberRemoved
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		delete(g.members, d.Subject)
 	default:
 		return fmt.Errorf("rm_access: unhandled group event %q", e.EventType)
 	}
+
 	h.recompute()
+
 	return nil
 }
 
@@ -146,6 +159,7 @@ func (h *AccessHandler) applyGlobal(e eventsourcing.Event) error {
 		roles = make(map[access.GlobalRole]bool)
 		h.global[e.StreamID.String()] = roles
 	}
+
 	switch e.EventType {
 	case "GlobalAccessInitialized":
 	case "GlobalRoleGranted":
@@ -153,20 +167,25 @@ func (h *AccessHandler) applyGlobal(e eventsourcing.Event) error {
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		if h.global[d.Subject] == nil {
 			h.global[d.Subject] = make(map[access.GlobalRole]bool)
 		}
+
 		h.global[d.Subject][d.Role] = true
 	case "GlobalRoleRevoked":
 		var d access.GlobalRoleRevoked
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		delete(h.global[d.Subject], d.Role)
 	default:
 		return fmt.Errorf("rm_access: unhandled global event %q", e.EventType)
 	}
+
 	h.recompute()
+
 	return nil
 }
 
@@ -177,14 +196,17 @@ func (h *AccessHandler) recompute() {
 		if h.modes[incidentID] == access.OpenOperational {
 			continue
 		}
+
 		for _, action := range incidentActions(role) {
 			h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
 		}
+
 		if kind == access.GroupPrincipal {
 			groupID, err := uuid.Parse(subject)
 			if err != nil {
 				continue
 			}
+
 			if group := h.groups[groupID]; group != nil && !group.archived {
 				for member := range group.members {
 					for _, action := range incidentActions(role) {
@@ -194,6 +216,7 @@ func (h *AccessHandler) recompute() {
 			}
 		}
 	}
+
 	for subject, roles := range h.global {
 		for role := range roles {
 			for _, action := range globalActions(role) {
@@ -211,16 +234,19 @@ func (h *AccessHandler) addPolicy(subject, domain, action string) {
 func (h *AccessHandler) Policies() []AccessPolicyRow {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	rows := make([]AccessPolicyRow, 0, len(h.policies))
 	for _, row := range h.policies {
 		rows = append(rows, row)
 	}
+
 	return rows
 }
 
 func (h *AccessHandler) Mode(incidentID uuid.UUID) access.IncidentMode {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	return h.modes[incidentID]
 }
 
@@ -229,11 +255,15 @@ func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role acce
 }
 
 func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.Role) {
-	var id uuid.UUID
-	var kind access.PrincipalKind
-	var subject string
-	var role access.Role
+	var (
+		id      uuid.UUID
+		kind    access.PrincipalKind
+		subject string
+		role    access.Role
+	)
+
 	_, _ = fmt.Sscanf(key, "%s", &subject)
+
 	parts := split(key, '|')
 	if len(parts) == 4 {
 		id, _ = uuid.Parse(parts[0])
@@ -241,18 +271,22 @@ func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.
 		subject = parts[2]
 		role = access.Role(parts[3])
 	}
+
 	return id, kind, subject, role
 }
 
 func split(value string, sep byte) []string {
 	var out []string
+
 	start := 0
+
 	for i := range value {
 		if value[i] == sep {
 			out = append(out, value[start:i])
 			start = i + 1
 		}
 	}
+
 	return append(out, value[start:])
 }
 
@@ -264,6 +298,7 @@ func objectForAction(action string) string {
 	if i := lastDot(action); i >= 0 {
 		return action[:i]
 	}
+
 	return action
 }
 
@@ -273,6 +308,7 @@ func lastDot(value string) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -326,6 +362,7 @@ func incidentActions(role access.Role) []access.Action {
 	case access.Viewer:
 		return []access.Action{IncidentRead, MessageRead, LayerRead}
 	}
+
 	return nil
 }
 
@@ -336,6 +373,7 @@ func globalActions(role access.GlobalRole) []access.GlobalAction {
 	case access.GroupAdmin:
 		return []access.GlobalAction{access.GroupManage}
 	}
+
 	return nil
 }
 

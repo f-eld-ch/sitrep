@@ -71,22 +71,27 @@ func (s *AccessService) GrantIncidentRole(
 		); err != nil {
 			return err
 		}
+
 		if role == access.Owner && !a.IsOwner(actor.Sub) {
 			return shared.ErrForbidden
 		}
+
 		if principal.Kind == access.GroupPrincipal && s.groupRepo != nil {
 			groupID, err := uuid.Parse(principal.ID)
 			if err != nil {
 				return shared.ErrInvalidInput
 			}
+
 			group, err := s.groupRepo.Load(ctx, groupID)
 			if err != nil {
 				return err
 			}
+
 			if group.IsArchived() {
 				return shared.ErrInvalidInput
 			}
 		}
+
 		return a.GrantRole(principal, role, actor.Sub, at)
 	})
 }
@@ -108,9 +113,11 @@ func (s *AccessService) RevokeIncidentRole(
 		); err != nil {
 			return err
 		}
+
 		if role == access.Owner && !a.IsOwner(actor.Sub) {
 			return shared.ErrForbidden
 		}
+
 		return a.RevokeRole(principal, role, actor.Sub, at)
 	})
 }
@@ -133,6 +140,7 @@ func (s *AccessService) ChangeIncidentAccessMode(
 				return err
 			}
 		}
+
 		return a.ChangeAccessMode(mode, actor.Sub, at)
 	})
 }
@@ -145,19 +153,24 @@ func (s *AccessService) CreateAccessGroup(
 	if err := s.requireGlobal(ctx, actor, access.GroupManage); err != nil {
 		return uuid.Nil, err
 	}
+
 	id := s.ids.New()
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		group := access.NewAccessGroup(id)
 		if err := group.Create(name, description, actor.Sub, at); err != nil {
 			return err
 		}
+
 		_, err := s.groupRepo.Save(ctx, group)
+
 		return err
 	})
 	if err == nil {
 		_ = s.notifier.Notify(ctx)
 	}
+
 	return id, err
 }
 
@@ -221,6 +234,7 @@ func (s *AccessService) GrantGlobalRole(
 	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
 		return err
 	}
+
 	return s.changeGlobal(
 		ctx,
 		actor,
@@ -237,6 +251,7 @@ func (s *AccessService) RevokeGlobalRole(
 	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
 		return err
 	}
+
 	return s.changeGlobal(
 		ctx,
 		actor,
@@ -251,11 +266,13 @@ func (s *AccessService) changeIncident(
 	fn func(*access.IncidentAccess, time.Time) error,
 ) error {
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		a, err := s.incRepo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if s.guard != nil {
 			release, err := s.guard.LockForUpdate(ctx)
 			if err != nil {
@@ -263,15 +280,19 @@ func (s *AccessService) changeIncident(
 			}
 			defer release()
 		}
+
 		if err := fn(a, at); err != nil {
 			return err
 		}
+
 		_, err = s.incRepo.Save(ctx, a)
+
 		return err
 	})
 	if err == nil {
 		_ = s.notifier.Notify(ctx)
 	}
+
 	return err
 }
 
@@ -284,7 +305,9 @@ func (s *AccessService) changeGroup(
 	if err := s.requireGlobal(ctx, actor, access.GroupManage); err != nil {
 		return err
 	}
+
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		if s.guard != nil {
 			release, err := s.guard.LockForUpdate(ctx)
@@ -293,19 +316,24 @@ func (s *AccessService) changeGroup(
 			}
 			defer release()
 		}
+
 		g, err := s.groupRepo.Load(ctx, id)
 		if err != nil {
 			return err
 		}
+
 		if err := fn(g, at); err != nil {
 			return err
 		}
+
 		_, err = s.groupRepo.Save(ctx, g)
+
 		return err
 	})
 	if err == nil {
 		_ = s.notifier.Notify(ctx)
 	}
+
 	return err
 }
 
@@ -315,26 +343,32 @@ func (s *AccessService) changeGlobal(
 	fn func(*access.GlobalAccess, time.Time) error,
 ) error {
 	at := s.clock.Now()
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		g, err := s.globalRepo.Load(ctx)
 		if err != nil {
 			if !errors.Is(err, shared.ErrNotFound) {
 				return err
 			}
+
 			g = access.NewGlobalAccess()
 			if err := g.Initialize(actor.Sub, at); err != nil {
 				return err
 			}
 		}
+
 		if err := fn(g, at); err != nil {
 			return err
 		}
+
 		_, err = s.globalRepo.Save(ctx, g)
+
 		return err
 	})
 	if err == nil {
 		_ = s.notifier.Notify(ctx)
 	}
+
 	return err
 }
 
@@ -342,13 +376,16 @@ func (s *AccessService) requireGlobal(ctx context.Context, actor identity.Actor,
 	if s.globalChecker == nil {
 		return nil
 	}
+
 	ok, err := s.globalChecker.Can(ctx, actor.Sub, action)
 	if err != nil {
 		return err
 	}
+
 	if !ok {
 		return fmt.Errorf("%w: global action %s", shared.ErrForbidden, action)
 	}
+
 	return nil
 }
 
