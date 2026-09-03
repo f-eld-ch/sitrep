@@ -194,6 +194,9 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 
 func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing visible layers", slog.String("incident_id", incidentID.String()))
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
 
 	rows := q.layers.ForIncident(incidentID)
 	for _, incidentRow := range q.incidents.All() {
