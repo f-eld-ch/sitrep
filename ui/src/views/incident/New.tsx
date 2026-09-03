@@ -1,4 +1,10 @@
-import { faClipboard, faLocationDot, faSitemap } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClipboard,
+  faDeleteLeft,
+  faLocationDot,
+  faSitemap,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import iteratee from "lodash/iteratee";
 import unionBy from "lodash/unionBy";
@@ -200,6 +206,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </div>
         </div>
       </div>
+      <hr className="my-5" />
       <div className="field is-horizontal">
         <div className="field-label is-normal">
           <label htmlFor={divisionsID} className="label is-capitalized">
@@ -235,14 +242,24 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   />
                 </p>
                 <p className="control">
-                  <button
-                    type="button"
-                    className="button is-small is-danger is-light"
-                    onClick={() => setAssignments(assignments.filter((_, i) => i !== index))}
-                    aria-label={t("removeDivision") as string}
-                  >
-                    x
-                  </button>
+                  {canRemoveDivision(d) ? (
+                    <button
+                      type="button"
+                      className="button is-small is-danger is-light px-3"
+                      onClick={() => setAssignments(assignments.filter((_, i) => i !== index))}
+                      aria-label={t("removeDivision") as string}
+                    >
+                      <span className="icon is-small">
+                        <FontAwesomeIcon icon={faDeleteLeft} />
+                      </span>
+                    </button>
+                  ) : (
+                    <span className="button is-small is-invisible is-light px-3">
+                      <span className="icon is-small">
+                        <FontAwesomeIcon icon={faDeleteLeft} />
+                      </span>
+                    </span>
+                  )}
                 </p>
               </div>
             ))}
@@ -257,7 +274,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </label>
         </div>
         <div className="field-body">
-          <div className="field is-grouped is-grouped-multiline">
+          <div className="field is-grouped is-flex-grow-1">
             <p className="control is-expanded">
               <input
                 className="input is-small"
@@ -280,7 +297,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             <p className="control">
               <button
                 type="submit"
-                className="button is-primary is-small is-justified is-rounded is-capitalized"
+                className="button is-success is-small px-3"
                 onClick={(e) => {
                   e.preventDefault();
                   if (assignmentName.trim() === "" || assignmentDescription.trim() === "") return;
@@ -295,8 +312,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
                   setAssignmentDescription("");
                 }}
                 disabled={assignmentName.trim() === "" || assignmentDescription.trim() === ""}
+                aria-label={t("add") as string}
               >
-                {t("add")}
+                <span className="icon is-small">
+                  <FontAwesomeIcon icon={faPlus} />
+                </span>
               </button>
             </p>
           </div>
@@ -361,6 +381,10 @@ function updateDivision(
   return divisions.map((division, i) => (i === index ? { ...division, ...patch } : division));
 }
 
+function canRemoveDivision(division: Division): boolean {
+  return division.id === "";
+}
+
 function canEditParentIncident(
   incident: Incident | undefined,
   incidents: Incident[] = [],
@@ -378,6 +402,7 @@ function canEditParentIncident(
 export {
   canEditParentIncident,
   IncidentForm,
+  canRemoveDivision,
   initialDivisions,
   initializeDivision,
   New,
