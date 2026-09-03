@@ -17,18 +17,14 @@ import (
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
 	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
-	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
+	"github.com/f-eld-ch/sitrep/server"
 )
 
 // stack holds all wired-up application services and the infrastructure teardown.
 type stack struct {
-	IncidentSvc inbound.IncidentService
-	MessageSvc  inbound.MessageService
-	LayerSvc    inbound.LayerService
-	FeatureSvc  inbound.FeatureService
-	Queries     outbound.Queries
+	server.Stack
 	// UserRepo is nil when running with the in-memory backend.
 	UserRepo outbound.UserRepository
 	// Teardown stops the projector and releases infrastructure resources.
@@ -119,12 +115,14 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	}()
 
 	return &stack{
-		IncidentSvc: factory.IncidentService(repos, layers),
-		MessageSvc:  factory.MessageService(messages, repos),
-		LayerSvc:    factory.LayerService(layers, repos),
-		FeatureSvc:  factory.FeatureService(features, repos, layers),
-		Queries:     pgqueries.NewQueries(pool),
-		UserRepo:    pguser.NewRepository(pool),
+		Stack: server.Stack{
+			Incidents: factory.IncidentService(repos, layers),
+			Messages:  factory.MessageService(messages, repos),
+			Layers:    factory.LayerService(layers, repos),
+			Features:  factory.FeatureService(features, repos, layers),
+			Queries:   pgqueries.NewQueries(pool),
+		},
+		UserRepo: pguser.NewRepository(pool),
 		Teardown: func() {
 			cancelProj()
 			<-projDone
@@ -177,12 +175,14 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	}()
 
 	return &stack{
-		IncidentSvc: factory.IncidentService(repos, layers),
-		MessageSvc:  factory.MessageService(messages, repos),
-		LayerSvc:    factory.LayerService(layers, repos),
-		FeatureSvc:  factory.FeatureService(features, repos, layers),
-		Queries:     inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
-		UserRepo:    nil,
+		Stack: server.Stack{
+			Incidents: factory.IncidentService(repos, layers),
+			Messages:  factory.MessageService(messages, repos),
+			Layers:    factory.LayerService(layers, repos),
+			Features:  factory.FeatureService(features, repos, layers),
+			Queries:   inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
+		},
+		UserRepo: nil,
 		Teardown: func() {
 			cancelProj()
 			<-projDone

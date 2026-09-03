@@ -99,11 +99,15 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	}
 	defer s.Teardown()
 
+	apiOpts := []server.APIV2Option{}
+	if v.GetBool("graphql-introspection") {
+		apiOpts = append(apiOpts, server.WithGraphQLIntrospection())
+	}
+
 	opts := []server.Option{
 		server.WithPort(v.GetUint("port")),
-		server.WithApiV2(s.IncidentSvc, s.MessageSvc, s.LayerSvc, s.FeatureSvc, s.Queries,
-			v.GetBool("graphql-introspection")),
 		server.WithVersion(Version, Sha),
+		server.WithApiV2(s.Stack, apiOpts...),
 	}
 
 	if v.GetString("oidc-client-id") != "" {

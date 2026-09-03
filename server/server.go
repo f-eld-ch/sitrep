@@ -25,7 +25,8 @@ type Server struct {
 	version        string
 	sha            string
 	auth.Enforcer
-	router *echo.Echo
+	router        *echo.Echo
+	registerAPIV2 func()
 	*http.Server
 }
 
@@ -44,6 +45,10 @@ func NewServer(opts ...Option) *Server {
 			s.logger.Error("failed to apply server option", "error", err)
 			return nil
 		}
+	}
+
+	if s.registerAPIV2 != nil {
+		s.registerAPIV2()
 	}
 
 	// register routes && middlewares

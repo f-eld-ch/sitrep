@@ -10,6 +10,31 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+type rejectingEnforcer struct{}
+
+func (rejectingEnforcer) RequireLogin(_ echo.HandlerFunc) echo.HandlerFunc {
+	return func(c *echo.Context) error { return c.NoContent(http.StatusUnauthorized) }
+}
+
+func (rejectingEnforcer) SignInHandler(*echo.Context) error   { return nil }
+func (rejectingEnforcer) SignOutHandler(*echo.Context) error  { return nil }
+func (rejectingEnforcer) UserInfoHandler(*echo.Context) error { return nil }
+func (rejectingEnforcer) CallbackHandler(*echo.Context) error { return nil }
+
+func TestAPIV2UsesFinalEnforcer(t *testing.T) {
+	s := NewServer(
+		WithApiV2(Stack{}),
+		WithEnforcer(rejectingEnforcer{}),
+	)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/v2/health", nil)
+	s.router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("API-v2 status: got %d, want %d", rec.Code, http.StatusUnauthorized)
+	}
+}
+
 // The update prompt in the UI compares this response against its own compiled-in version
 // to decide which changelog to link to, so an empty or malformed body silently sends users
 // to the wrong release notes.
