@@ -28,18 +28,20 @@ function AdminLayout() {
                 </NavLink>
                 {onGroupsSection &&
                   groupsResult.status === "ready" &&
-                  groupsResult.data.groups.length > 0 && (
+                  groupsResult.data.groups.some((group) => !group.archivedAt) && (
                     <ul>
-                      {groupsResult.data.groups.map((group) => (
-                        <li key={group.id}>
-                          <NavLink
-                            to={`groups/${group.id}`}
-                            className={group.id === groupId ? "is-active" : ""}
-                          >
-                            {group.name}
-                          </NavLink>
-                        </li>
-                      ))}
+                      {groupsResult.data.groups
+                        .filter((group) => !group.archivedAt)
+                        .map((group) => (
+                          <li key={group.id}>
+                            <NavLink
+                              to={`groups/${group.id}`}
+                              className={group.id === groupId ? "is-active" : ""}
+                            >
+                              {group.name}
+                            </NavLink>
+                          </li>
+                        ))}
                     </ul>
                   )}
               </li>
