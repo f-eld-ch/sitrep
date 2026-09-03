@@ -44,6 +44,7 @@ func TestIncidentAccessReplay(t *testing.T) {
 
 	require.NoError(t, a.Initialize(&owner, OpenOperational, owner, at))
 	require.NoError(t, a.GrantRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Viewer, owner, at))
+	require.NoError(t, a.GrantRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Editor, owner, at))
 
 	replayed := NewIncidentAccess(shared.IncidentID(a.Root().ID()))
 	for _, event := range a.Root().PendingEvents() {
@@ -54,6 +55,7 @@ func TestIncidentAccessReplay(t *testing.T) {
 	assert.Equal(t, a.Mode(), replayed.Mode())
 	assert.True(t, replayed.IsOwner(owner))
 	assert.True(t, replayed.HasRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Viewer))
+	assert.True(t, replayed.HasRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Editor))
 }
 
 func TestGlobalAccessSupportsMultipleRolesAndProtectsLastAdmin(t *testing.T) {

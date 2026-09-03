@@ -88,11 +88,11 @@ type AccessModeChanged struct {
 type IncidentAccess struct {
 	root  eventsourcing.Root
 	mode  IncidentMode
-	roles map[string]Role
+	roles map[string]map[Role]bool
 }
 
 func NewIncidentAccess(id shared.IncidentID) *IncidentAccess {
-	a := &IncidentAccess{roles: make(map[string]Role)}
+	a := &IncidentAccess{roles: make(map[string]map[Role]bool)}
 	a.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(a, AccessInitialized{}, RoleGranted{}, RoleRevoked{}, AccessModeChanged{})
 	return a
@@ -103,11 +103,11 @@ func (a *IncidentAccess) AggregateType() string      { return "IncidentAccess" }
 func (a *IncidentAccess) OwnerIncidentID() uuid.UUID { return a.root.ID() }
 func (a *IncidentAccess) Mode() IncidentMode         { return a.mode }
 func (a *IncidentAccess) IsOwner(sub string) bool {
-	return a.roles[principalKey(Principal{Kind: UserPrincipal, ID: sub})] == Owner
+	return a.HasRole(Principal{Kind: UserPrincipal, ID: sub}, Owner)
 }
 
 func (a *IncidentAccess) HasRole(p Principal, role Role) bool {
-	return a.roles[principalKey(p)] == role
+	return a.roles[principalKey(p)][role]
 }
 
 func (a *IncidentAccess) Initialize(ownerSub *string, mode IncidentMode, actor string, at time.Time) error {
@@ -131,8 +131,7 @@ func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time
 	if !validRole(role) {
 		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
 	}
-	key := principalKey(p)
-	if a.roles[key] == role {
+	if a.HasRole(p, role) {
 		return nil
 	}
 	eventsourcing.TrackChange(a, RoleGranted{Principal: p, Role: role}, at, meta(actor))
@@ -146,7 +145,7 @@ func (a *IncidentAccess) RevokeRole(p Principal, role Role, actor string, at tim
 	if !validRole(role) {
 		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
 	}
-	if a.roles[principalKey(p)] != role {
+	if !a.HasRole(p, role) {
 		return nil
 	}
 	if role == Owner && a.directOwnerCount() == 1 {
@@ -177,12 +176,12 @@ func (a *IncidentAccess) Transition(e eventsourcing.Event) error {
 	case AccessInitialized:
 		a.mode = d.Mode
 		if d.OwnerSub != nil {
-			a.roles[principalKey(Principal{Kind: UserPrincipal, ID: *d.OwnerSub})] = Owner
+			a.addRole(Principal{Kind: UserPrincipal, ID: *d.OwnerSub}, Owner)
 		}
 	case RoleGranted:
-		a.roles[principalKey(d.Principal)] = d.Role
+		a.addRole(d.Principal, d.Role)
 	case RoleRevoked:
-		delete(a.roles, principalKey(d.Principal))
+		delete(a.roles[principalKey(d.Principal)], d.Role)
 	case AccessModeChanged:
 		a.mode = d.Mode
 	default:
@@ -193,12 +192,20 @@ func (a *IncidentAccess) Transition(e eventsourcing.Event) error {
 
 func (a *IncidentAccess) directOwnerCount() int {
 	count := 0
-	for key, role := range a.roles {
-		if role == Owner && strings.HasPrefix(key, string(UserPrincipal)+":") {
+	for key, roles := range a.roles {
+		if roles[Owner] && strings.HasPrefix(key, string(UserPrincipal)+":") {
 			count++
 		}
 	}
 	return count
+}
+
+func (a *IncidentAccess) addRole(p Principal, role Role) {
+	key := principalKey(p)
+	if a.roles[key] == nil {
+		a.roles[key] = make(map[Role]bool)
+	}
+	a.roles[key][role] = true
 }
 
 func principalKey(p Principal) string  { return string(p.Kind) + ":" + p.ID }
