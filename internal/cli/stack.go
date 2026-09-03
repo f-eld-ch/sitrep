@@ -93,6 +93,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		pgprojection.NewIncidentDivisionHandler(pool),
 		pgprojection.NewMessageHandler(pool),
 		pgprojection.NewLayerFeaturesHandler(pool),
+		pgprojection.NewAccessHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
