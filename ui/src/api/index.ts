@@ -6,6 +6,10 @@ export type { ApiError, ApiErrorCode } from "./errors";
 export { isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
+// Access control
+export type { AccessGroupsData, GroupMembersData, IncidentAccessData } from "./access";
+export { useAccessGroups, useGroupMembers, useIncidentAccess } from "./access";
+
 // Incident aggregate
 export type {
   CreateIncidentArgs,

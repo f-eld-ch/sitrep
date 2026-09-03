@@ -14,6 +14,9 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.ListIncidentAccessDocument,
+    "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.ListAccessGroupsDocument,
+    "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": typeof types.ListGroupMembersDocument,
     "\n    query FetchIncidents {\n      incidents {\n        id\n        parentId\n        name\n        createdAt\n        updatedAt\n        closedAt\n        isClosed\n        location {\n          name\n          coordinates\n        }\n      }\n    }\n  ": typeof types.FetchIncidentsDocument,
     "\n  query GetIncidentDetail($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      parentId\n      name\n      createdAt\n      updatedAt\n      closedAt\n      isClosed\n      location {\n        name\n        coordinates\n      }\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.GetIncidentDetailDocument,
     "\n  mutation CreateIncident(\n    $name: String!\n    $location: String\n    $divisions: [DivisionInput!]!\n    $layers: [LayerInput!]!\n  ) {\n    createIncident(\n      input: { name: $name, location: $location, divisions: $divisions, layers: $layers }\n    ) {\n      id\n      name\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.CreateIncidentDocument,
@@ -36,6 +39,9 @@ type Documents = {
     "\n  mutation TriageMessage(\n    $id: ID!\n    $triage: TriageStatus!\n    $priority: PriorityStatus!\n    $divisionIds: [ID!]!\n  ) {\n    triageMessage(\n      id: $id\n      input: { triage: $triage, priority: $priority, divisionIds: $divisionIds }\n    ) {\n      id\n      triage\n      priority\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.TriageMessageDocument,
 };
 const documents: Documents = {
+    "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.ListIncidentAccessDocument,
+    "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.ListAccessGroupsDocument,
+    "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": types.ListGroupMembersDocument,
     "\n    query FetchIncidents {\n      incidents {\n        id\n        parentId\n        name\n        createdAt\n        updatedAt\n        closedAt\n        isClosed\n        location {\n          name\n          coordinates\n        }\n      }\n    }\n  ": types.FetchIncidentsDocument,
     "\n  query GetIncidentDetail($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      parentId\n      name\n      createdAt\n      updatedAt\n      closedAt\n      isClosed\n      location {\n        name\n        coordinates\n      }\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": types.GetIncidentDetailDocument,
     "\n  mutation CreateIncident(\n    $name: String!\n    $location: String\n    $divisions: [DivisionInput!]!\n    $layers: [LayerInput!]!\n  ) {\n    createIncident(\n      input: { name: $name, location: $location, divisions: $divisions, layers: $layers }\n    ) {\n      id\n      name\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": types.CreateIncidentDocument,
@@ -72,6 +78,18 @@ const documents: Documents = {
  */
 export function graphql(source: string): unknown;
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"): (typeof documents)["\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"): (typeof documents)["\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n"): (typeof documents)["\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
