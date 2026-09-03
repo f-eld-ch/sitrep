@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -409,32 +408,43 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 		return nil, shared.ErrNotFound
 	}
 
+	visibleIncidentIDs := []uuid.UUID{incidentID}
+	childRows, err := q.pool.Query(
+		ctx,
+		`SELECT id FROM rm_incident WHERE parent_id = $1 AND is_deleted = false`,
+		incidentID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	for childRows.Next() {
+		var childID uuid.UUID
+		if err := childRows.Scan(&childID); err != nil {
+			childRows.Close()
+			return nil, err
+		}
+		if q.canRead(ctx, childID) {
+			visibleIncidentIDs = append(visibleIncidentIDs, childID)
+		}
+	}
+	if err := childRows.Err(); err != nil {
+		childRows.Close()
+		return nil, err
+	}
+	childRows.Close()
+
 	query := `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
 		FROM readmodel.layer_features l
 		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.removed = false
 		  AND i.is_deleted = false
-		  AND (l.incident_id = $1 OR i.parent_id = $1)
+		  AND l.incident_id = ANY($2)
 		ORDER BY
 		  CASE WHEN l.incident_id = $1 THEN 0 ELSE 1 END,
 		  CASE WHEN l.incident_id = $1 THEN lower(l.name) ELSE lower(i.name) END COLLATE "C",
 		  lower(l.name) COLLATE "C"`
-	args := []any{incidentID}
-	if q.access != nil {
-		actor, err := identity.ActorFrom(ctx)
-		if err != nil {
-			return nil, err
-		}
-		query = strings.Replace(
-			query,
-			"\t\tORDER BY",
-			"\t\tAND (i.parent_id IS NULL OR EXISTS (SELECT 1 FROM rm_incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'open_operational') OR EXISTS (SELECT 1 FROM rm_access_policy p WHERE p.subject = $2 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))\n\t\tORDER BY",
-			1,
-		)
-		args = append(args, "user:"+actor.Sub)
-	}
-	rows, err := q.pool.Query(ctx, query, args...)
+	rows, err := q.pool.Query(ctx, query, incidentID, visibleIncidentIDs)
 	if err != nil {
 		return nil, err
 	}
