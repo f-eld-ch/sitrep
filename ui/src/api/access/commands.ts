@@ -11,6 +11,7 @@ import {
   LIST_ACCESS_GROUPS,
   LIST_GROUP_MEMBERS,
   LIST_INCIDENT_ACCESS,
+  LIST_INCIDENT_ACCESS_MODE,
   REMOVE_GROUP_MEMBER,
   RENAME_ACCESS_GROUP,
   REVOKE_GLOBAL_ROLE,
@@ -58,7 +59,10 @@ export function useChangeIncidentAccessMode(): CommandHook<ChangeIncidentAccessM
   const changeMode = async (args: ChangeIncidentAccessModeArgs): Promise<void> => {
     await mutate({
       variables: args,
-      refetchQueries: [{ query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } }],
+      refetchQueries: [
+        { query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } },
+        { query: LIST_INCIDENT_ACCESS_MODE, variables: { incidentId: args.incidentId } },
+      ],
     });
   };
   return [changeMode, commandState(result.loading, result.error)];
