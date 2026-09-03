@@ -47,6 +47,7 @@ type Stack struct {
 	Messages  inbound.MessageService
 	Layers    inbound.LayerService
 	Features  inbound.FeatureService
+	Access    inbound.AccessService
 	Queries   outbound.Queries
 }
 
@@ -113,6 +114,7 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 		Messages:  stack.Messages,
 		Layers:    stack.Layers,
 		Features:  stack.Features,
+		Access:    stack.Access,
 		Queries:   stack.Queries,
 	}}
 	// Flat cost per list-resolver call to penalise N+1 patterns

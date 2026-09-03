@@ -158,6 +158,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Messages:  s.MessageSvc,
 			Layers:    s.LayerSvc,
 			Features:  s.FeatureSvc,
+			Access:    s.AccessSvc,
 			Queries:   s.Queries,
 		}, apiOpts...),
 	}
