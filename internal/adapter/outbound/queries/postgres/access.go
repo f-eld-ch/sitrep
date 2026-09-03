@@ -136,4 +136,32 @@ func (q *AccessQueries) ListUsers(ctx context.Context) ([]outbound.UserRM, error
 	return out, rows.Err()
 }
 
+func (q *AccessQueries) ListGlobalRoles(ctx context.Context) ([]outbound.GlobalRoleGrantRM, error) {
+	rows, err := q.pool.Query(
+		ctx,
+		`SELECT a.subject, a.role, COALESCE(u.name, ''), COALESCE(u.email, '')
+		 FROM rm_global_access a
+		 LEFT JOIN users u ON u.sub = a.subject
+		 WHERE a.revoked_at IS NULL
+		 ORDER BY a.role, COALESCE(u.name, a.subject)`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []outbound.GlobalRoleGrantRM
+
+	for rows.Next() {
+		var row outbound.GlobalRoleGrantRM
+		if err := rows.Scan(&row.Subject, &row.Role, &row.Name, &row.Email); err != nil {
+			return nil, err
+		}
+
+		out = append(out, row)
+	}
+
+	return out, rows.Err()
+}
+
 var _ outbound.AccessQueries = (*AccessQueries)(nil)

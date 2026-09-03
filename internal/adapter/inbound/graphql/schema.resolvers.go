@@ -996,6 +996,39 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return out, nil
 }
 
+// GlobalRoles is the resolver for the globalRoles field.
+func (r *queryResolver) GlobalRoles(ctx context.Context) ([]*model.GlobalRoleGrant, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
+		return nil, shared.ErrForbidden
+	}
+	allowed, err := r.GlobalAccessChecker.Can(ctx, actor.Sub, access.SystemAdminManage)
+	if err != nil {
+		return nil, err
+	}
+	if !allowed {
+		return nil, shared.ErrForbidden
+	}
+	rows, err := r.AccessQueries.ListGlobalRoles(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*model.GlobalRoleGrant, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, &model.GlobalRoleGrant{
+			Subject: row.Subject,
+			Role:    globalRoleFromDomain(row.Role),
+			Name:    row.Name,
+			Email:   row.Email,
+		})
+	}
+
+	return out, nil
+}
+
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 

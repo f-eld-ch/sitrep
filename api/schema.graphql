@@ -84,6 +84,13 @@ type User {
   email: String!
 }
 
+type GlobalRoleGrant {
+  subject: ID!
+  role: GlobalRole!
+  name: String!
+  email: String!
+}
+
 type IncidentAccessGrant {
   incidentId: ID!
   principalKind: AccessPrincipalKind!
@@ -178,6 +185,7 @@ type Query {
   accessGroups: [AccessGroup!]!
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
+  globalRoles: [GlobalRoleGrant!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────

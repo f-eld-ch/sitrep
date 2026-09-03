@@ -48,12 +48,20 @@ type UserRM struct {
 	Email string
 }
 
+type GlobalRoleGrantRM struct {
+	Subject string
+	Role    access.GlobalRole
+	Name    string
+	Email   string
+}
+
 type AccessQueries interface {
 	ListIncidentAccess(ctx context.Context, incidentID shared.IncidentID) ([]IncidentAccessGrantRM, error)
 	GetIncidentAccessMode(ctx context.Context, incidentID shared.IncidentID) (access.IncidentMode, error)
 	ListAccessGroups(ctx context.Context) ([]AccessGroupRM, error)
 	ListGroupMembers(ctx context.Context, groupID uuid.UUID) ([]GroupMemberRM, error)
 	ListUsers(ctx context.Context) ([]UserRM, error)
+	ListGlobalRoles(ctx context.Context) ([]GlobalRoleGrantRM, error)
 }
 
 // AccessGuard serializes cross-stream ownership and group-grant invariants.

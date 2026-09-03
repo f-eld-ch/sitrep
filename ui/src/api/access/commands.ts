@@ -9,9 +9,11 @@ import {
   GRANT_GLOBAL_ROLE,
   GRANT_INCIDENT_ROLE,
   LIST_ACCESS_GROUPS,
+  LIST_GLOBAL_ROLES,
   LIST_GROUP_MEMBERS,
   LIST_INCIDENT_ACCESS,
   LIST_INCIDENT_ACCESS_MODE,
+  LIST_USERS,
   REMOVE_GROUP_MEMBER,
   RENAME_ACCESS_GROUP,
   REVOKE_GLOBAL_ROLE,
@@ -221,7 +223,35 @@ export function useRemoveGroupMember(): CommandHook<GroupMemberArgs> {
 export function useGrantGlobalRole(): CommandHook<GlobalRoleArgs> {
   const [mutate, result] = useMutation(GRANT_GLOBAL_ROLE);
   const grant = async (args: GlobalRoleArgs): Promise<void> => {
-    await mutate({ variables: args });
+    await mutate({
+      variables: args,
+      optimisticResponse: { grantGlobalRole: args.subject },
+      update(cache) {
+        const cachedRoles = cache.readQuery({ query: LIST_GLOBAL_ROLES });
+        if (!cachedRoles) return;
+
+        const withoutExisting = cachedRoles.globalRoles.filter(
+          (grant) => !(grant.subject === args.subject && grant.role === args.role),
+        );
+        const cachedUsers = cache.readQuery({ query: LIST_USERS });
+        const user = cachedUsers?.users.find((candidate) => candidate.sub === args.subject);
+
+        cache.writeQuery({
+          query: LIST_GLOBAL_ROLES,
+          data: {
+            globalRoles: [
+              ...withoutExisting,
+              {
+                subject: args.subject,
+                role: args.role,
+                name: user?.name ?? "",
+                email: user?.email ?? "",
+              },
+            ],
+          },
+        });
+      },
+    });
   };
   return [grant, commandState(result.loading, result.error)];
 }
@@ -229,7 +259,23 @@ export function useGrantGlobalRole(): CommandHook<GlobalRoleArgs> {
 export function useRevokeGlobalRole(): CommandHook<GlobalRoleArgs> {
   const [mutate, result] = useMutation(REVOKE_GLOBAL_ROLE);
   const revoke = async (args: GlobalRoleArgs): Promise<void> => {
-    await mutate({ variables: args });
+    await mutate({
+      variables: args,
+      optimisticResponse: { revokeGlobalRole: args.subject },
+      update(cache) {
+        const cached = cache.readQuery({ query: LIST_GLOBAL_ROLES });
+        if (!cached) return;
+
+        cache.writeQuery({
+          query: LIST_GLOBAL_ROLES,
+          data: {
+            globalRoles: cached.globalRoles.filter(
+              (grant) => !(grant.subject === args.subject && grant.role === args.role),
+            ),
+          },
+        });
+      },
+    });
   };
   return [revoke, commandState(result.loading, result.error)];
 }

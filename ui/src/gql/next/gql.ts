@@ -19,6 +19,7 @@ type Documents = {
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": typeof types.ListGroupMembersDocument,
     "\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n": typeof types.ListUsersDocument,
+    "\n  query ListGlobalRoles {\n    globalRoles {\n      subject\n      role\n      name\n      email\n    }\n  }\n": typeof types.ListGlobalRolesDocument,
     "\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.ChangeIncidentAccessModeDocument,
     "\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      principalName\n      role\n    }\n  }\n": typeof types.GrantIncidentRoleDocument,
     "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": typeof types.RevokeIncidentRoleDocument,
@@ -56,6 +57,7 @@ const documents: Documents = {
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": types.ListGroupMembersDocument,
     "\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n": types.ListUsersDocument,
+    "\n  query ListGlobalRoles {\n    globalRoles {\n      subject\n      role\n      name\n      email\n    }\n  }\n": types.ListGlobalRolesDocument,
     "\n  mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {\n    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.ChangeIncidentAccessModeDocument,
     "\n  mutation GrantIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    grantIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    ) {\n      incidentId\n      principalKind\n      principalId\n      principalName\n      role\n    }\n  }\n": types.GrantIncidentRoleDocument,
     "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": types.RevokeIncidentRoleDocument,
@@ -122,6 +124,10 @@ export function graphql(source: "\n  query ListGroupMembers($groupId: ID!) {\n  
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n"): (typeof documents)["\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ListGlobalRoles {\n    globalRoles {\n      subject\n      role\n      name\n      email\n    }\n  }\n"): (typeof documents)["\n  query ListGlobalRoles {\n    globalRoles {\n      subject\n      role\n      name\n      email\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

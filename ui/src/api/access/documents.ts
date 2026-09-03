@@ -10,6 +10,8 @@ import type {
   ListIncidentAccessModeQueryVariables,
   ListUsersQuery,
   ListUsersQueryVariables,
+  ListGlobalRolesQuery,
+  ListGlobalRolesQueryVariables,
   AddGroupMemberMutation,
   AddGroupMemberMutationVariables,
   ArchiveAccessGroupMutation,
@@ -83,6 +85,20 @@ export const LIST_USERS: TypedDocumentNode<ListUsersQuery, ListUsersQueryVariabl
   query ListUsers {
     users {
       sub
+      name
+      email
+    }
+  }
+`;
+
+export const LIST_GLOBAL_ROLES: TypedDocumentNode<
+  ListGlobalRolesQuery,
+  ListGlobalRolesQueryVariables
+> = gql`
+  query ListGlobalRoles {
+    globalRoles {
+      subject
+      role
       name
       email
     }

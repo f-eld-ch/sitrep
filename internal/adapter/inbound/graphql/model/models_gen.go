@@ -63,6 +63,13 @@ type Feature struct {
 	Properties scalar.JSONMap `json:"properties,omitempty"`
 }
 
+type GlobalRoleGrant struct {
+	Subject string     `json:"subject"`
+	Role    GlobalRole `json:"role"`
+	Name    string     `json:"name"`
+	Email   string     `json:"email"`
+}
+
 type Incident struct {
 	ID        string      `json:"id"`
 	ParentID  *string     `json:"parentId,omitempty"`

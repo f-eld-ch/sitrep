@@ -3,11 +3,13 @@ export type {
   GroupMembersData,
   IncidentAccessData,
   IncidentAccessModeData,
+  GlobalRolesData,
   UsersData,
 } from "./queries";
 export {
   useAccessGroups,
   useAccessUsers,
+  useGlobalRoles,
   useGroupMembers,
   useIncidentAccess,
   useIncidentAccessMode,

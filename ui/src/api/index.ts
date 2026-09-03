@@ -12,6 +12,7 @@ export type {
   GroupMembersData,
   IncidentAccessData,
   IncidentAccessModeData,
+  GlobalRolesData,
   UsersData,
 } from "./access";
 export type {
@@ -29,6 +30,7 @@ export {
   useArchiveAccessGroup,
   useChangeIncidentAccessMode,
   useCreateAccessGroup,
+  useGlobalRoles,
   useGrantGlobalRole,
   useGrantIncidentRole,
   useGroupMembers,

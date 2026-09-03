@@ -4,6 +4,7 @@ export type {
   AccessUser,
   AccessPrincipalKind,
   GlobalRole,
+  GlobalRoleGrant,
   IncidentAccessGrant,
   IncidentAccessMode,
   IncidentRole,

@@ -10,6 +10,7 @@ import {
   useIncidentAccessMode,
   useRevokeIncidentRole,
 } from "api";
+import { useRedirectIfForbidden } from "utils";
 import type { AccessPrincipalKind, IncidentRole } from "types";
 
 interface Principal {
@@ -29,6 +30,8 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
   const [principalKind, setPrincipalKind] = useState<AccessPrincipalKind>("USER");
   const [principalId, setPrincipalId] = useState("");
   const [role, setRole] = useState<IncidentRole>("VIEWER");
+
+  useRedirectIfForbidden(accessResult.status === "error" ? accessResult.error : undefined);
 
   const principals: Principal[] =
     principalKind === "USER"
@@ -101,7 +104,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
 
       <div className="box">
         <h4 className="title is-5">Incident access</h4>
-        {accessResult.status === "error" && (
+        {accessResult.status === "error" && accessResult.error.code !== "FORBIDDEN" && (
           <div className="notification is-danger">{accessResult.error.message}</div>
         )}
         {accessResult.status === "ready" && (

@@ -26,3 +26,10 @@ export interface AccessUser {
   name: string;
   email: string;
 }
+
+export interface GlobalRoleGrant {
+  subject: string;
+  role: GlobalRole;
+  name: string;
+  email: string;
+}

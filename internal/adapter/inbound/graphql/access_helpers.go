@@ -74,3 +74,11 @@ func globalRoleToDomain(role model.GlobalRole) access.GlobalRole {
 
 	return access.SystemAdmin
 }
+
+func globalRoleFromDomain(role access.GlobalRole) model.GlobalRole {
+	if role == access.GroupAdmin {
+		return model.GlobalRoleGroupAdmin
+	}
+
+	return model.GlobalRoleSystemAdmin
+}

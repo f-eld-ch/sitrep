@@ -90,4 +90,18 @@ func (q *AccessQueries) ListUsers(_ context.Context) ([]outbound.UserRM, error) 
 	return []outbound.UserRM{}, nil
 }
 
+func (q *AccessQueries) ListGlobalRoles(_ context.Context) ([]outbound.GlobalRoleGrantRM, error) {
+	roles := q.handler.GlobalRoles()
+
+	var out []outbound.GlobalRoleGrantRM
+
+	for subject, list := range roles {
+		for _, role := range list {
+			out = append(out, outbound.GlobalRoleGrantRM{Subject: subject, Role: role})
+		}
+	}
+
+	return out, nil
+}
+
 var _ outbound.AccessQueries = (*AccessQueries)(nil)

@@ -58,6 +58,13 @@ type ComplexityRoot struct {
 		Properties func(childComplexity int) int
 	}
 
+	GlobalRoleGrant struct {
+		Email   func(childComplexity int) int
+		Name    func(childComplexity int) int
+		Role    func(childComplexity int) int
+		Subject func(childComplexity int) int
+	}
+
 	Incident struct {
 		ChildIncidents func(childComplexity int) int
 		ClosedAt       func(childComplexity int) int
@@ -141,6 +148,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AccessGroups       func(childComplexity int) int
+		GlobalRoles        func(childComplexity int) int
 		GroupMembers       func(childComplexity int, groupID string) int
 		Incident           func(childComplexity int, id string) int
 		IncidentAccess     func(childComplexity int, incidentID string) int
@@ -203,6 +211,7 @@ type QueryResolver interface {
 	AccessGroups(ctx context.Context) ([]*model.AccessGroup, error)
 	GroupMembers(ctx context.Context, groupID string) ([]string, error)
 	Users(ctx context.Context) ([]*model.User, error)
+	GlobalRoles(ctx context.Context) ([]*model.GlobalRoleGrant, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -285,6 +294,31 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Feature.Properties(childComplexity), true
+
+	case "GlobalRoleGrant.email":
+		if e.ComplexityRoot.GlobalRoleGrant.Email == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GlobalRoleGrant.Email(childComplexity), true
+	case "GlobalRoleGrant.name":
+		if e.ComplexityRoot.GlobalRoleGrant.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GlobalRoleGrant.Name(childComplexity), true
+	case "GlobalRoleGrant.role":
+		if e.ComplexityRoot.GlobalRoleGrant.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GlobalRoleGrant.Role(childComplexity), true
+	case "GlobalRoleGrant.subject":
+		if e.ComplexityRoot.GlobalRoleGrant.Subject == nil {
+			break
+		}
+
+		return e.ComplexityRoot.GlobalRoleGrant.Subject(childComplexity), true
 
 	case "Incident.childIncidents":
 		if e.ComplexityRoot.Incident.ChildIncidents == nil {
@@ -801,6 +835,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.AccessGroups(childComplexity), true
+	case "Query.globalRoles":
+		if e.ComplexityRoot.Query.GlobalRoles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.GlobalRoles(childComplexity), true
 	case "Query.groupMembers":
 		if e.ComplexityRoot.Query.GroupMembers == nil {
 			break
@@ -1076,6 +1116,13 @@ type User {
   email: String!
 }
 
+type GlobalRoleGrant {
+  subject: ID!
+  role: GlobalRole!
+  name: String!
+  email: String!
+}
+
 type IncidentAccessGrant {
   incidentId: ID!
   principalKind: AccessPrincipalKind!
@@ -1170,6 +1217,7 @@ type Query {
   accessGroups: [AccessGroup!]!
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
+  globalRoles: [GlobalRoleGrant!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -1354,6 +1402,20 @@ func (ec *executionContext) childFields_Feature(ctx context.Context, field graph
 		return ec.fieldContext_Feature_properties(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Feature", field.Name)
+}
+
+func (ec *executionContext) childFields_GlobalRoleGrant(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "subject":
+		return ec.fieldContext_GlobalRoleGrant_subject(ctx, field)
+	case "role":
+		return ec.fieldContext_GlobalRoleGrant_role(ctx, field)
+	case "name":
+		return ec.fieldContext_GlobalRoleGrant_name(ctx, field)
+	case "email":
+		return ec.fieldContext_GlobalRoleGrant_email(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type GlobalRoleGrant", field.Name)
 }
 
 func (ec *executionContext) childFields_Incident(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -2518,6 +2580,98 @@ func (ec *executionContext) _Feature_properties(ctx context.Context, field graph
 }
 func (ec *executionContext) fieldContext_Feature_properties(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Feature", field, false, false, errors.New("field of type JSONObject does not have child fields"))
+}
+
+func (ec *executionContext) _GlobalRoleGrant_subject(ctx context.Context, field graphql.CollectedField, obj *model.GlobalRoleGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GlobalRoleGrant_subject(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Subject, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GlobalRoleGrant_subject(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GlobalRoleGrant", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _GlobalRoleGrant_role(ctx context.Context, field graphql.CollectedField, obj *model.GlobalRoleGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GlobalRoleGrant_role(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Role, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.GlobalRole) graphql.Marshaler {
+			return ec.marshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GlobalRoleGrant_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GlobalRoleGrant", field, false, false, errors.New("field of type GlobalRole does not have child fields"))
+}
+
+func (ec *executionContext) _GlobalRoleGrant_name(ctx context.Context, field graphql.CollectedField, obj *model.GlobalRoleGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GlobalRoleGrant_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GlobalRoleGrant_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GlobalRoleGrant", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _GlobalRoleGrant_email(ctx context.Context, field graphql.CollectedField, obj *model.GlobalRoleGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_GlobalRoleGrant_email(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Email, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_GlobalRoleGrant_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("GlobalRoleGrant", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Incident_id(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
@@ -4908,6 +5062,38 @@ func (ec *executionContext) fieldContext_Query_users(_ context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_globalRoles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_globalRoles(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().GlobalRoles(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.GlobalRoleGrant) graphql.Marshaler {
+			return ec.marshalNGlobalRoleGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRoleGrantᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_globalRoles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GlobalRoleGrant(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6647,6 +6833,59 @@ func (ec *executionContext) _Feature(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var globalRoleGrantImplementors = []string{"GlobalRoleGrant"}
+
+func (ec *executionContext) _GlobalRoleGrant(ctx context.Context, sel ast.SelectionSet, obj *model.GlobalRoleGrant) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, globalRoleGrantImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GlobalRoleGrant")
+		case "subject":
+			out.Values[i] = ec._GlobalRoleGrant_subject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			out.Values[i] = ec._GlobalRoleGrant_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._GlobalRoleGrant_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "email":
+			out.Values[i] = ec._GlobalRoleGrant_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var incidentImplementors = []string{"Incident"}
 
 func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet, obj *model.Incident) graphql.Marshaler {
@@ -7502,6 +7741,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "globalRoles":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_globalRoles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -8142,6 +8403,32 @@ func (ec *executionContext) unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋs
 
 func (ec *executionContext) marshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx context.Context, sel ast.SelectionSet, v model.GlobalRole) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNGlobalRoleGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRoleGrantᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.GlobalRoleGrant) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNGlobalRoleGrant2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRoleGrant(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNGlobalRoleGrant2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRoleGrant(ctx context.Context, sel ast.SelectionSet, v *model.GlobalRoleGrant) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._GlobalRoleGrant(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {

@@ -335,6 +335,24 @@ func (h *AccessHandler) Groups() map[uuid.UUID]struct {
 	return result
 }
 
+// GlobalRoles returns each subject's active global roles, keyed by subject.
+func (h *AccessHandler) GlobalRoles() map[string][]access.GlobalRole {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	result := make(map[string][]access.GlobalRole, len(h.global))
+	for subject, roles := range h.global {
+		list := make([]access.GlobalRole, 0, len(roles))
+		for role := range roles {
+			list = append(list, role)
+		}
+
+		result[subject] = list
+	}
+
+	return result
+}
+
 func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role access.Role) string {
 	return id.String() + "|" + string(kind) + "|" + subject + "|" + string(role)
 }

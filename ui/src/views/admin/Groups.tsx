@@ -12,8 +12,9 @@ import {
   useRenameAccessGroup,
 } from "api";
 import { Spinner } from "components";
+import { useRedirectIfForbidden } from "utils";
 
-function Administration() {
+function Groups() {
   const groupsResult = useAccessGroups();
   const usersResult = useAccessUsers();
   const [selectedGroupId, setSelectedGroupId] = useState<string>();
@@ -33,8 +34,11 @@ function Administration() {
   const selectedMembers =
     membersResult.status === "ready" ? new Set(membersResult.data.subjects) : new Set<string>();
 
+  useRedirectIfForbidden(groupsResult.status === "error" ? groupsResult.error : undefined);
+
   if (groupsResult.status === "loading") return <Spinner />;
   if (groupsResult.status === "error") {
+    if (groupsResult.error.code === "FORBIDDEN") return null;
     return <div className="notification is-danger">{groupsResult.error.message}</div>;
   }
 
@@ -73,10 +77,10 @@ function Administration() {
   };
 
   return (
-    <div className="container">
+    <>
       <div className="level mb-5">
         <div>
-          <h1 className="title is-3">Administration</h1>
+          <h2 className="title is-4">Groups</h2>
         </div>
         <button type="button" className="button" onClick={groupsResult.refresh}>
           Refresh
@@ -88,7 +92,7 @@ function Administration() {
       <div className="columns is-variable is-5">
         <div className="column is-one-third">
           <div className="box">
-            <h2 className="title is-5">Create group</h2>
+            <h3 className="title is-5">Create group</h3>
             <div className="field">
               <label className="label" htmlFor="group-name">
                 Name
@@ -337,8 +341,8 @@ function Administration() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-export default Administration;
+export default Groups;
