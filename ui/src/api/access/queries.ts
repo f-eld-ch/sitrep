@@ -1,9 +1,14 @@
 import { useQuery } from "@apollo/client/react";
-import type { AccessGroup, IncidentAccessGrant } from "types";
+import type { AccessGroup, AccessUser, IncidentAccessGrant } from "types";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
-import { LIST_ACCESS_GROUPS, LIST_GROUP_MEMBERS, LIST_INCIDENT_ACCESS } from "./documents";
-import { toAccessGroup, toIncidentAccessGrant } from "./mapper";
+import {
+  LIST_ACCESS_GROUPS,
+  LIST_GROUP_MEMBERS,
+  LIST_INCIDENT_ACCESS,
+  LIST_USERS,
+} from "./documents";
+import { toAccessGroup, toAccessUser, toIncidentAccessGrant } from "./mapper";
 
 export interface IncidentAccessData {
   grants: IncidentAccessGrant[];
@@ -15,6 +20,10 @@ export interface AccessGroupsData {
 
 export interface GroupMembersData {
   subjects: string[];
+}
+
+export interface UsersData {
+  users: AccessUser[];
 }
 
 export function useIncidentAccess(incidentId: string | undefined): QueryResult<IncidentAccessData> {
@@ -73,6 +82,7 @@ export function useGroupMembers(groupId: string | undefined): QueryResult<GroupM
   const { loading, error, data, refetch } = useQuery(LIST_GROUP_MEMBERS, {
     variables: { groupId: groupId ?? "" },
     skip: !groupId,
+    pollInterval: 1000,
   });
   const refresh = () => void refetch();
   if (!groupId || (loading && !data)) {
@@ -90,6 +100,30 @@ export function useGroupMembers(groupId: string | undefined): QueryResult<GroupM
   return {
     status: "ready",
     data: { subjects: data?.groupMembers ?? [] },
+    error: undefined,
+    isRefreshing: loading,
+    refresh,
+  };
+}
+
+export function useAccessUsers(): QueryResult<UsersData> {
+  const { loading, error, data, refetch } = useQuery(LIST_USERS);
+  const refresh = () => void refetch();
+  if (loading && !data) {
+    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+  }
+  if (error) {
+    return {
+      status: "error",
+      data: data ? { users: data.users.map(toAccessUser) } : undefined,
+      error: apiErrorFromApolloError(error),
+      isRefreshing: loading,
+      refresh,
+    };
+  }
+  return {
+    status: "ready",
+    data: { users: (data?.users ?? []).map(toAccessUser) },
     error: undefined,
     isRefreshing: loading,
     refresh,

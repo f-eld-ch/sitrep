@@ -123,6 +123,7 @@ export function useAddGroupMember(): CommandHook<GroupMemberArgs> {
     await mutate({
       variables: args,
       refetchQueries: [{ query: LIST_GROUP_MEMBERS, variables: { groupId: args.groupId } }],
+      awaitRefetchQueries: true,
     });
   };
   return [add, commandState(result.loading, result.error)];
