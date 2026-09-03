@@ -139,14 +139,15 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AccessGroups      func(childComplexity int) int
-		GroupMembers      func(childComplexity int, groupID string) int
-		Incident          func(childComplexity int, id string) int
-		IncidentAccess    func(childComplexity int, incidentID string) int
-		Incidents         func(childComplexity int) int
-		LayersForIncident func(childComplexity int, incidentID string) int
-		Message           func(childComplexity int, id string) int
-		Users             func(childComplexity int) int
+		AccessGroups       func(childComplexity int) int
+		GroupMembers       func(childComplexity int, groupID string) int
+		Incident           func(childComplexity int, id string) int
+		IncidentAccess     func(childComplexity int, incidentID string) int
+		IncidentAccessMode func(childComplexity int, incidentID string) int
+		Incidents          func(childComplexity int) int
+		LayersForIncident  func(childComplexity int, incidentID string) int
+		Message            func(childComplexity int, id string) int
+		Users              func(childComplexity int) int
 	}
 
 	User struct {
@@ -197,6 +198,7 @@ type QueryResolver interface {
 	Message(ctx context.Context, id string) (*model.Message, error)
 	LayersForIncident(ctx context.Context, incidentID string) ([]*model.Layer, error)
 	IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error)
+	IncidentAccessMode(ctx context.Context, incidentID string) (model.IncidentAccessMode, error)
 	AccessGroups(ctx context.Context) ([]*model.AccessGroup, error)
 	GroupMembers(ctx context.Context, groupID string) ([]string, error)
 	Users(ctx context.Context) ([]*model.User, error)
@@ -825,6 +827,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.IncidentAccess(childComplexity, args["incidentId"].(string)), true
+	case "Query.incidentAccessMode":
+		if e.ComplexityRoot.Query.IncidentAccessMode == nil {
+			break
+		}
+
+		args, err := ec.field_Query_incidentAccessMode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.IncidentAccessMode(childComplexity, args["incidentId"].(string)), true
 	case "Query.incidents":
 		if e.ComplexityRoot.Query.Incidents == nil {
 			break
@@ -1145,6 +1158,7 @@ type Query {
   layersForIncident(incidentId: ID!): [Layer!]!
 
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
+  incidentAccessMode(incidentId: ID!): IncidentAccessMode!
   accessGroups: [AccessGroup!]!
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
@@ -2133,6 +2147,20 @@ func (ec *executionContext) field_Query_groupMembers_args(ctx context.Context, r
 		return nil, err
 	}
 	args["groupId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_incidentAccessMode_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "incidentId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["incidentId"] = arg0
 	return args, nil
 }
 
@@ -4689,6 +4717,50 @@ func (ec *executionContext) fieldContext_Query_incidentAccess(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_incidentAccess_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_incidentAccessMode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_incidentAccessMode(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().IncidentAccessMode(ctx, fc.Args["incidentId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentAccessMode) graphql.Marshaler {
+			return ec.marshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_incidentAccessMode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type IncidentAccessMode does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_incidentAccessMode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7292,6 +7364,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_incidentAccess(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "incidentAccessMode":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_incidentAccessMode(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

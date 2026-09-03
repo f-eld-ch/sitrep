@@ -15,6 +15,7 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  */
 type Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": typeof types.ListIncidentAccessDocument,
+    "\n  query ListIncidentAccessMode($incidentId: ID!) {\n    incidentAccessMode(incidentId: $incidentId)\n  }\n": typeof types.ListIncidentAccessModeDocument,
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": typeof types.ListGroupMembersDocument,
     "\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n": typeof types.ListUsersDocument,
@@ -51,6 +52,7 @@ type Documents = {
 };
 const documents: Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n": types.ListIncidentAccessDocument,
+    "\n  query ListIncidentAccessMode($incidentId: ID!) {\n    incidentAccessMode(incidentId: $incidentId)\n  }\n": types.ListIncidentAccessModeDocument,
     "\n  query ListAccessGroups {\n    accessGroups {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.ListAccessGroupsDocument,
     "\n  query ListGroupMembers($groupId: ID!) {\n    groupMembers(groupId: $groupId)\n  }\n": types.ListGroupMembersDocument,
     "\n  query ListUsers {\n    users {\n      sub\n      name\n      email\n    }\n  }\n": types.ListUsersDocument,
@@ -104,6 +106,10 @@ export function graphql(source: string): unknown;
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"): (typeof documents)["\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ListIncidentAccessMode($incidentId: ID!) {\n    incidentAccessMode(incidentId: $incidentId)\n  }\n"): (typeof documents)["\n  query ListIncidentAccessMode($incidentId: ID!) {\n    incidentAccessMode(incidentId: $incidentId)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -13,6 +13,14 @@ func accessModeToDomain(mode model.IncidentAccessMode) access.IncidentMode {
 	return access.OpenOperational
 }
 
+func incidentModeFromDomain(mode access.IncidentMode) model.IncidentAccessMode {
+	if mode == access.Restricted {
+		return model.IncidentAccessModeRestricted
+	}
+
+	return model.IncidentAccessModeOpenOperational
+}
+
 func incidentRoleToDomain(role model.IncidentRole) access.Role {
 	switch role {
 	case model.IncidentRoleOwner:

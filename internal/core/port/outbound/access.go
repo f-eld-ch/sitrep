@@ -25,6 +25,10 @@ type IncidentAccessGrantRM struct {
 	Role          access.Role
 }
 
+type IncidentAccessModeRM struct {
+	Mode access.IncidentMode
+}
+
 type AccessGroupRM struct {
 	ID          uuid.UUID
 	Name        string
@@ -45,6 +49,7 @@ type UserRM struct {
 
 type AccessQueries interface {
 	ListIncidentAccess(ctx context.Context, incidentID shared.IncidentID) ([]IncidentAccessGrantRM, error)
+	GetIncidentAccessMode(ctx context.Context, incidentID shared.IncidentID) (access.IncidentMode, error)
 	ListAccessGroups(ctx context.Context) ([]AccessGroupRM, error)
 	ListGroupMembers(ctx context.Context, groupID uuid.UUID) ([]GroupMemberRM, error)
 	ListUsers(ctx context.Context) ([]UserRM, error)

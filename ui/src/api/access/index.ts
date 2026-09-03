@@ -1,5 +1,17 @@
-export type { AccessGroupsData, GroupMembersData, IncidentAccessData, UsersData } from "./queries";
-export { useAccessGroups, useAccessUsers, useGroupMembers, useIncidentAccess } from "./queries";
+export type {
+  AccessGroupsData,
+  GroupMembersData,
+  IncidentAccessData,
+  IncidentAccessModeData,
+  UsersData,
+} from "./queries";
+export {
+  useAccessGroups,
+  useAccessUsers,
+  useGroupMembers,
+  useIncidentAccess,
+  useIncidentAccessMode,
+} from "./queries";
 export type {
   ChangeIncidentAccessModeArgs,
   CreateAccessGroupArgs,

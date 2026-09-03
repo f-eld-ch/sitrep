@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
@@ -38,6 +39,13 @@ func (q *AccessQueries) ListIncidentAccess(
 	}
 
 	return out, nil
+}
+
+func (q *AccessQueries) GetIncidentAccessMode(
+	_ context.Context,
+	incidentID shared.IncidentID,
+) (access.IncidentMode, error) {
+	return q.handler.Mode(uuid.UUID(incidentID)), nil
 }
 
 func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGroupRM, error) {

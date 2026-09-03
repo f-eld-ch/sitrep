@@ -875,6 +875,34 @@ func (r *queryResolver) IncidentAccess(ctx context.Context, incidentID string) (
 	return out, nil
 }
 
+// IncidentAccessMode is the resolver for the incidentAccessMode field.
+func (r *queryResolver) IncidentAccessMode(ctx context.Context, incidentID string) (model.IncidentAccessMode, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+	id, err := parseUUID(incidentID)
+	if err != nil {
+		return "", err
+	}
+	if r.AccessQueries == nil || r.IncidentAccessChecker == nil {
+		return "", shared.ErrForbidden
+	}
+	allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(id), access.IncidentRead)
+	if err != nil {
+		return "", err
+	}
+	if !allowed {
+		return "", shared.ErrNotFound
+	}
+	mode, err := r.AccessQueries.GetIncidentAccessMode(ctx, shared.IncidentID(id))
+	if err != nil {
+		return "", err
+	}
+
+	return incidentModeFromDomain(mode), nil
+}
+
 // AccessGroups is the resolver for the accessGroups field.
 func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup, error) {
 	actor, err := identity.ActorFrom(ctx)

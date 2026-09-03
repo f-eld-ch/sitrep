@@ -7,7 +7,13 @@ export { isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
 // Access control
-export type { AccessGroupsData, GroupMembersData, IncidentAccessData, UsersData } from "./access";
+export type {
+  AccessGroupsData,
+  GroupMembersData,
+  IncidentAccessData,
+  IncidentAccessModeData,
+  UsersData,
+} from "./access";
 export type {
   ChangeIncidentAccessModeArgs,
   CreateAccessGroupArgs,
@@ -27,6 +33,7 @@ export {
   useGrantIncidentRole,
   useGroupMembers,
   useIncidentAccess,
+  useIncidentAccessMode,
   useRemoveGroupMember,
   useRenameAccessGroup,
   useRevokeGlobalRole,

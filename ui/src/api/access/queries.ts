@@ -6,12 +6,17 @@ import {
   LIST_ACCESS_GROUPS,
   LIST_GROUP_MEMBERS,
   LIST_INCIDENT_ACCESS,
+  LIST_INCIDENT_ACCESS_MODE,
   LIST_USERS,
 } from "./documents";
 import { toAccessGroup, toAccessUser, toIncidentAccessGrant } from "./mapper";
 
 export interface IncidentAccessData {
   grants: IncidentAccessGrant[];
+}
+
+export interface IncidentAccessModeData {
+  mode: "OPEN_OPERATIONAL" | "RESTRICTED";
 }
 
 export interface AccessGroupsData {
@@ -48,6 +53,35 @@ export function useIncidentAccess(incidentId: string | undefined): QueryResult<I
   return {
     status: "ready",
     data: { grants: (data?.incidentAccess ?? []).map(toIncidentAccessGrant) },
+    error: undefined,
+    isRefreshing: loading,
+    refresh,
+  };
+}
+
+export function useIncidentAccessMode(
+  incidentId: string | undefined,
+): QueryResult<IncidentAccessModeData> {
+  const { loading, error, data, refetch } = useQuery(LIST_INCIDENT_ACCESS_MODE, {
+    variables: { incidentId: incidentId ?? "" },
+    skip: !incidentId,
+  });
+  const refresh = () => void refetch();
+  if (!incidentId || (loading && !data)) {
+    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+  }
+  if (error) {
+    return {
+      status: "error",
+      data: data ? { mode: data.incidentAccessMode } : undefined,
+      error: apiErrorFromApolloError(error),
+      isRefreshing: loading,
+      refresh,
+    };
+  }
+  return {
+    status: "ready",
+    data: { mode: data?.incidentAccessMode ?? "OPEN_OPERATIONAL" },
     error: undefined,
     isRefreshing: loading,
     refresh,

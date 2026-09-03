@@ -6,6 +6,8 @@ import type {
   ListGroupMembersQueryVariables,
   ListIncidentAccessQuery,
   ListIncidentAccessQueryVariables,
+  ListIncidentAccessModeQuery,
+  ListIncidentAccessModeQueryVariables,
   ListUsersQuery,
   ListUsersQueryVariables,
   AddGroupMemberMutation,
@@ -41,6 +43,15 @@ export const LIST_INCIDENT_ACCESS: TypedDocumentNode<
       principalId
       role
     }
+  }
+`;
+
+export const LIST_INCIDENT_ACCESS_MODE: TypedDocumentNode<
+  ListIncidentAccessModeQuery,
+  ListIncidentAccessModeQueryVariables
+> = gql`
+  query ListIncidentAccessMode($incidentId: ID!) {
+    incidentAccessMode(incidentId: $incidentId)
   }
 `;
 

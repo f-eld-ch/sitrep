@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
@@ -40,6 +41,18 @@ func (q *AccessQueries) ListIncidentAccess(
 	}
 
 	return out, rows.Err()
+}
+
+func (q *AccessQueries) GetIncidentAccessMode(
+	ctx context.Context,
+	incidentID shared.IncidentID,
+) (access.IncidentMode, error) {
+	var mode access.IncidentMode
+
+	err := q.pool.QueryRow(ctx, `SELECT mode FROM rm_incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
+		Scan(&mode)
+
+	return mode, err
 }
 
 func (q *AccessQueries) ListAccessGroups(ctx context.Context) ([]outbound.AccessGroupRM, error) {

@@ -173,6 +173,7 @@ type Query {
   layersForIncident(incidentId: ID!): [Layer!]!
 
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
+  incidentAccessMode(incidentId: ID!): IncidentAccessMode!
   accessGroups: [AccessGroup!]!
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
