@@ -74,6 +74,19 @@ func (s *AccessService) GrantIncidentRole(
 		if role == access.Owner && !a.IsOwner(actor.Sub) {
 			return shared.ErrForbidden
 		}
+		if principal.Kind == access.GroupPrincipal && s.groupRepo != nil {
+			groupID, err := uuid.Parse(principal.ID)
+			if err != nil {
+				return shared.ErrInvalidInput
+			}
+			group, err := s.groupRepo.Load(ctx, groupID)
+			if err != nil {
+				return err
+			}
+			if group.IsArchived() {
+				return shared.ErrInvalidInput
+			}
+		}
 		return a.GrantRole(principal, role, actor.Sub, at)
 	})
 }
