@@ -15,6 +15,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -29,6 +30,7 @@ type IncidentService struct {
 	repo      outbound.IncidentRepository
 	layers    outbound.LayerRepository
 	hierarchy outbound.IncidentHierarchyGuard
+	access    outbound.IncidentAccessChecker
 	clock     outbound.Clock
 	ids       outbound.IDs
 	notifier  outbound.EventNotifier
@@ -40,13 +42,21 @@ func NewIncidentService(
 	repo outbound.IncidentRepository,
 	layers outbound.LayerRepository,
 	hierarchy outbound.IncidentHierarchyGuard,
+	access outbound.IncidentAccessChecker,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *IncidentService {
 	return &IncidentService{
-		tx: tx, repo: repo, layers: layers, hierarchy: hierarchy, clock: clock, ids: ids, notifier: notifier,
-		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+		tx:        tx,
+		repo:      repo,
+		layers:    layers,
+		hierarchy: hierarchy,
+		access:    access,
+		clock:     clock,
+		ids:       ids,
+		notifier:  notifier,
+		tracer:    otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
 
@@ -191,6 +201,9 @@ func (s *IncidentService) UpdateIncident(
 	var state inbound.IncidentState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentWrite); err != nil {
+			return err
+		}
 		inc, err := s.repo.Load(ctx, id)
 		if err != nil {
 			return err
@@ -256,6 +269,9 @@ func (s *IncidentService) CloseIncident(
 		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentClose); err != nil {
+			return err
+		}
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -280,6 +296,9 @@ func (s *IncidentService) ReopenIncident(
 		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentReopen); err != nil {
+			return err
+		}
 		return inc.Reopen(actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -300,6 +319,9 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, id, access.IncidentDelete); err != nil {
+			return err
+		}
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -332,6 +354,9 @@ func (s *IncidentService) LinkIncidentParent(
 	var state inbound.IncidentState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, childID, access.IncidentLinkParent); err != nil {
+			return err
+		}
 		release, err := s.lockHierarchy(ctx)
 		if err != nil {
 			return err
@@ -390,6 +415,9 @@ func (s *IncidentService) UnlinkIncidentParent(
 	var state inbound.IncidentState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, childID, access.IncidentUnlinkParent); err != nil {
+			return err
+		}
 		release, err := s.lockHierarchy(ctx)
 		if err != nil {
 			return err
