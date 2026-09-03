@@ -175,8 +175,6 @@ function GroupDetail() {
                     <tr key={user.sub}>
                       <td>
                         {user.name || "Unnamed user"} ({user.email})
-                        <br />
-                        <small>{user.sub}</small>
                       </td>
                       <td className="has-text-right">
                         <button
