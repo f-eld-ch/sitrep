@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
@@ -137,6 +138,33 @@ func TestAccessServiceCannotRevokeLastSystemAdmin(t *testing.T) {
 
 	err = svc.RevokeGlobalRole(ctx, admin, access.SystemAdmin, identity.Actor{Sub: admin})
 	require.ErrorIs(t, err, shared.ErrForbidden)
+}
+
+func TestAccessServiceBootstrapsOnlyFirstSystemAdmin(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	at := time.Unix(1, 0)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		eventstore.NewIncidentAccessRepository(store),
+		eventstore.NewAccessGroupRepository(store),
+		globalRepo,
+		nil,
+		nil,
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	require.NoError(t, svc.BootstrapFirstSystemAdmin(ctx, "first-user", identity.Actor{Sub: "first-user"}))
+	require.NoError(t, svc.BootstrapFirstSystemAdmin(ctx, "second-user", identity.Actor{Sub: "second-user"}))
+
+	global, err := globalRepo.Load(ctx)
+	require.NoError(t, err)
+	assert.True(t, global.HasRole("first-user", access.SystemAdmin))
+	assert.False(t, global.HasRole("second-user", access.SystemAdmin))
 }
 
 type fixedAccessClock struct{ t time.Time }
