@@ -49,6 +49,37 @@ enum PriorityStatus {
   HIGH
 }
 
+enum IncidentAccessMode {
+  OPEN_OPERATIONAL
+  RESTRICTED
+}
+
+enum IncidentRole {
+  OWNER
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+enum AccessPrincipalKind {
+  USER
+  GROUP
+}
+
+type AccessGroup {
+  id: ID!
+  name: String!
+  description: String!
+  archivedAt: DateTime
+}
+
+type IncidentAccessGrant {
+  incidentId: ID!
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  role: IncidentRole!
+}
+
 # ─── Domain types ─────────────────────────────────────────────────────────────
 
 type Location {
@@ -197,6 +228,15 @@ type Mutation {
 
   """Create an incident with optional divisions and map layers."""
   createIncident(input: CreateIncidentInput!): Incident!
+
+  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessGrant!
+  grantIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): IncidentAccessGrant!
+  revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
+  createAccessGroup(name: String!, description: String!): AccessGroup!
+  renameAccessGroup(groupId: ID!, name: String!): AccessGroup!
+  archiveAccessGroup(groupId: ID!): ID!
+  addGroupMember(groupId: ID!, subject: String!): ID!
+  removeGroupMember(groupId: ID!, subject: String!): ID!
 
   """Update incident name, location, and/or divisions. Omitted fields are unchanged."""
   updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!

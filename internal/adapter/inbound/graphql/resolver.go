@@ -15,5 +15,6 @@ type Resolver struct {
 	Messages  inbound.MessageService
 	Layers    inbound.LayerService
 	Features  inbound.FeatureService
+	Access    inbound.AccessService
 	Queries   outbound.Queries
 }
