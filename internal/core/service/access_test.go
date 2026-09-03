@@ -67,6 +67,77 @@ func TestAccessServiceRequiresProjectedIncidentPermission(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAccessServiceRejectsInvalidGroupGrant(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	at := time.Unix(1, 0)
+	owner := "owner-1"
+
+	incidentRepo := eventstore.NewIncidentAccessRepository(store)
+	incident := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incident.Initialize(&owner, access.Restricted, owner, at))
+	_, err := incidentRepo.Save(ctx, incident)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	require.NoError(t, projection.NewProjector(store, []projection.Handler{handler}).CatchUp(ctx))
+	checker := inmem.NewIncidentAccessChecker(handler)
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		incidentRepo,
+		eventstore.NewAccessGroupRepository(store),
+		eventstore.NewGlobalAccessRepository(store),
+		checker,
+		inmem.NewGlobalAccessChecker(handler),
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	err = svc.GrantIncidentRole(
+		ctx,
+		incidentID,
+		access.Principal{Kind: access.GroupPrincipal, ID: "not-a-uuid"},
+		access.Viewer,
+		identity.Actor{Sub: owner},
+	)
+	require.ErrorIs(t, err, shared.ErrInvalidInput)
+}
+
+func TestAccessServiceCannotRevokeLastSystemAdmin(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	at := time.Unix(1, 0)
+	admin := "admin-1"
+
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
+	global := access.NewGlobalAccess()
+	require.NoError(t, global.Initialize("bootstrap", at))
+	require.NoError(t, global.GrantRole(admin, access.SystemAdmin, "bootstrap", at))
+	_, err := globalRepo.Save(ctx, global)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	require.NoError(t, projection.NewProjector(store, []projection.Handler{handler}).CatchUp(ctx))
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		eventstore.NewIncidentAccessRepository(store),
+		eventstore.NewAccessGroupRepository(store),
+		globalRepo,
+		inmem.NewIncidentAccessChecker(handler),
+		inmem.NewGlobalAccessChecker(handler),
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	err = svc.RevokeGlobalRole(ctx, admin, access.SystemAdmin, identity.Actor{Sub: admin})
+	require.ErrorIs(t, err, shared.ErrForbidden)
+}
+
 type fixedAccessClock struct{ t time.Time }
 
 func (c fixedAccessClock) Now() time.Time { return c.t }
