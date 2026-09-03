@@ -71,3 +71,24 @@ func TestAccessHandlerProjectsDirectAndGroupPolicies(t *testing.T) {
 		},
 	)
 }
+
+func TestAccessHandlerKeepsOpenIncidentManagementPolicy(t *testing.T) {
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	at := time.Unix(1, 0)
+	owner := "owner-1"
+	incident := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incident.Initialize(&owner, access.OpenOperational, owner, at))
+	_, err := eventstore.NewIncidentAccessRepository(store).Save(context.Background(), incident)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	require.NoError(t, projection.NewProjector(store, []projection.Handler{handler}).CatchUp(context.Background()))
+	checker := inmem.NewIncidentAccessChecker(handler)
+	allowed, err := checker.Can(context.Background(), owner, incidentID, access.IncidentManageAccess)
+	require.NoError(t, err)
+	assert.True(t, allowed)
+	allowed, err = checker.Can(context.Background(), "viewer", incidentID, access.IncidentManageAccess)
+	require.NoError(t, err)
+	assert.False(t, allowed)
+}

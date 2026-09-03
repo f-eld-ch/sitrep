@@ -195,11 +195,7 @@ func (h *AccessHandler) recompute() {
 	h.policies = make(map[string]AccessPolicyRow)
 	for key, role := range h.grants {
 		incidentID, kind, subject, _ := parseGrantKey(key)
-		if h.modes[incidentID] == access.OpenOperational {
-			continue
-		}
-
-		for _, action := range incidentActions(role) {
+		for _, action := range actionsForMode(role, h.modes[incidentID]) {
 			h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
 		}
 
@@ -211,7 +207,7 @@ func (h *AccessHandler) recompute() {
 
 			if group := h.groups[groupID]; group != nil && !group.archived {
 				for member := range group.members {
-					for _, action := range incidentActions(role) {
+					for _, action := range actionsForMode(role, h.modes[incidentID]) {
 						h.addPolicy("user:"+member, "incident:"+incidentID.String(), string(action))
 					}
 				}
@@ -226,6 +222,14 @@ func (h *AccessHandler) recompute() {
 			}
 		}
 	}
+}
+
+func actionsForMode(role access.Role, mode access.IncidentMode) []access.Action {
+	if mode != access.OpenOperational {
+		return incidentActions(role)
+	}
+
+	return []access.Action{IncidentManageAccess}
 }
 
 func (h *AccessHandler) addPolicy(subject, domain, action string) {

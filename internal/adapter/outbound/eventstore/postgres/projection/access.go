@@ -254,7 +254,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx pgx.Tx) error {
 INSERT INTO rm_access_policy (subject, domain, object, action)
 SELECT 'user:' || a.principal_id, 'incident:' || a.incident_id, p.object, p.action
 FROM rm_incident_access a
-JOIN rm_incident_access_mode m ON m.incident_id = a.incident_id AND m.mode = 'restricted'
+JOIN rm_incident_access_mode m ON m.incident_id = a.incident_id
 JOIN (VALUES
  ('owner','incident','incident.read'), ('owner','incident','incident.write'), ('owner','incident','incident.delete'),
  ('owner','incident','incident.close'), ('owner','incident','incident.reopen'), ('owner','incident','incident.manage_access'),
@@ -270,13 +270,13 @@ JOIN (VALUES
  ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
  ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read')
 ) AS p(role, object, action) ON p.role = a.role
-WHERE a.revoked_at IS NULL AND a.principal_kind = 'user'
+WHERE a.revoked_at IS NULL AND a.principal_kind = 'user' AND (m.mode = 'restricted' OR p.action = 'incident.manage_access')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO rm_access_policy (subject, domain, object, action)
 SELECT 'user:' || gm.subject, 'incident:' || a.incident_id, p.object, p.action
 FROM rm_incident_access a
-JOIN rm_incident_access_mode m ON m.incident_id = a.incident_id AND m.mode = 'restricted'
+JOIN rm_incident_access_mode m ON m.incident_id = a.incident_id
 JOIN rm_access_group_member gm ON gm.group_id::text = a.principal_id AND gm.removed_at IS NULL
 JOIN rm_access_group g ON g.id = gm.group_id AND g.archived_at IS NULL
 JOIN (VALUES
@@ -285,7 +285,7 @@ JOIN (VALUES
  ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'), ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'), ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
  ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read')
 ) AS p(role, object, action) ON p.role = a.role
-WHERE a.revoked_at IS NULL AND a.principal_kind = 'group'
+WHERE a.revoked_at IS NULL AND a.principal_kind = 'group' AND (m.mode = 'restricted' OR p.action = 'incident.manage_access')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO rm_access_policy (subject, domain, object, action)
