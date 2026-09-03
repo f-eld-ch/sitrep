@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"slices"
+	"syscall"
 	"testing"
 
 	"github.com/labstack/echo/v5"
@@ -20,6 +23,13 @@ func (rejectingEnforcer) SignInHandler(*echo.Context) error   { return nil }
 func (rejectingEnforcer) SignOutHandler(*echo.Context) error  { return nil }
 func (rejectingEnforcer) UserInfoHandler(*echo.Context) error { return nil }
 func (rejectingEnforcer) CallbackHandler(*echo.Context) error { return nil }
+
+func TestShutdownSignals(t *testing.T) {
+	want := []os.Signal{os.Interrupt, syscall.SIGTERM}
+	if got := shutdownSignals(); !slices.Equal(got, want) {
+		t.Errorf("shutdown signals: got %v, want %v", got, want)
+	}
+}
 
 func TestAPIV2UsesFinalEnforcer(t *testing.T) {
 	s := NewServer(

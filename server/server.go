@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -64,10 +65,12 @@ func NewServer(opts ...Option) *Server {
 	return s
 }
 
+func shutdownSignals() []os.Signal { return []os.Signal{os.Interrupt, syscall.SIGTERM} }
+
 func (s *Server) ListenAndServe(ctx context.Context) error {
 	s.isShuttingDown.Store(false)
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals()...)
 	defer cancel()
 
 	go func() {
