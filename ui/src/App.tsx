@@ -9,7 +9,12 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import Administration from "./views/Administration";
-import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
+import {
+  Editor as IncidentEditor,
+  List as IncidentList,
+  New as IncidentNew,
+  AccessPage as IncidentAccessPage,
+} from "views/incident";
 import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -63,6 +68,15 @@ const router = createBrowserRouter([
             element: (
               <Layout>
                 <IncidentEditor />
+              </Layout>
+            ),
+          },
+          {
+            // Not linked from the navbar; reachable only by direct URL.
+            path: "access",
+            element: (
+              <Layout>
+                <IncidentAccessPage />
               </Layout>
             ),
           },
