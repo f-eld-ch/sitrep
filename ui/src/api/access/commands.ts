@@ -124,6 +124,18 @@ export function useAddGroupMember(): CommandHook<GroupMemberArgs> {
       variables: args,
       refetchQueries: [{ query: LIST_GROUP_MEMBERS, variables: { groupId: args.groupId } }],
       awaitRefetchQueries: true,
+      update(cache) {
+        const cached = cache.readQuery({
+          query: LIST_GROUP_MEMBERS,
+          variables: { groupId: args.groupId },
+        });
+        if (!cached || cached.groupMembers.includes(args.subject)) return;
+        cache.writeQuery({
+          query: LIST_GROUP_MEMBERS,
+          variables: { groupId: args.groupId },
+          data: { groupMembers: [...cached.groupMembers, args.subject] },
+        });
+      },
     });
   };
   return [add, commandState(result.loading, result.error)];

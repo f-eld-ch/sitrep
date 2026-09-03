@@ -261,13 +261,21 @@ function Administration() {
                                     void addMember({
                                       groupId: selectedGroup.id,
                                       subject: user.sub,
-                                    }).catch(() => {
-                                      setPendingMembers((pending) => {
-                                        const remaining = new Set(pending);
-                                        remaining.delete(user.sub);
-                                        return remaining;
+                                    })
+                                      .catch(() => {
+                                        setPendingMembers((pending) => {
+                                          const remaining = new Set(pending);
+                                          remaining.delete(user.sub);
+                                          return remaining;
+                                        });
+                                      })
+                                      .then(() => {
+                                        setPendingMembers((pending) => {
+                                          const remaining = new Set(pending);
+                                          remaining.delete(user.sub);
+                                          return remaining;
+                                        });
                                       });
-                                    });
                                   }}
                                   disabled={
                                     Boolean(selectedGroup.archivedAt) ||
