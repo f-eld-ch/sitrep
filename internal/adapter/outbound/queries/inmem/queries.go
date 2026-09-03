@@ -12,8 +12,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 // Compile-time assertion.
@@ -27,6 +29,7 @@ type Queries struct {
 	divisions *projection.IncidentDivisionHandler
 	messages  *projection.MessageHandler
 	layers    *projection.LayerFeaturesHandler
+	access    outbound.IncidentAccessChecker
 }
 
 func NewQueries(
@@ -34,12 +37,18 @@ func NewQueries(
 	divisions *projection.IncidentDivisionHandler,
 	messages *projection.MessageHandler,
 	layers *projection.LayerFeaturesHandler,
+	accessCheckers ...outbound.IncidentAccessChecker,
 ) *Queries {
+	var accessChecker outbound.IncidentAccessChecker
+	if len(accessCheckers) > 0 {
+		accessChecker = accessCheckers[0]
+	}
 	return &Queries{
 		incidents: incidents,
 		divisions: divisions,
 		messages:  messages,
 		layers:    layers,
+		access:    accessChecker,
 	}
 }
 
@@ -55,6 +64,9 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	out := make([]*outbound.IncidentRM, 0, len(rows))
 	for _, row := range rows {
 		if row.IsDeleted {
+			continue
+		}
+		if !q.canRead(ctx, shared.IncidentID(row.ID)) {
 			continue
 		}
 
@@ -74,6 +86,9 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 
 	row := q.incidents.Get(id)
 	if row == nil || row.IsDeleted {
+		return nil, shared.ErrNotFound
+	}
+	if !q.canRead(ctx, shared.IncidentID(id)) {
 		return nil, shared.ErrNotFound
 	}
 
@@ -107,7 +122,10 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
-	slog.DebugContext(ctx, "listing messages", slog.String("incident_id", incidentID.String()))
+	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
 	rows := q.messages.ForIncident(incidentID)
 
 	out := make([]*outbound.MessageRM, 0, len(rows))
@@ -131,6 +149,9 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 
 	row := q.messages.Get(id)
 	if row == nil || row.Deleted {
+		return nil, shared.ErrNotFound
+	}
+	if !q.canRead(ctx, shared.IncidentID(row.IncidentID)) {
 		return nil, shared.ErrNotFound
 	}
 
@@ -162,7 +183,10 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing layers", slog.String("incident_id", incidentID.String()))
+	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
 	rows := q.layers.ForIncident(incidentID)
 
 	return q.layerRowsToRM(rows, nil), nil
@@ -174,6 +198,9 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	rows := q.layers.ForIncident(incidentID)
 	for _, incidentRow := range q.incidents.All() {
 		if incidentRow.IsDeleted || incidentRow.ParentID == nil || *incidentRow.ParentID != incidentID {
+			continue
+		}
+		if !q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
 			continue
 		}
 
@@ -192,6 +219,9 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 		if row.IsDeleted || row.ParentID == nil || *row.ParentID != parentID {
 			continue
 		}
+		if !q.canRead(ctx, shared.IncidentID(row.ID)) {
+			continue
+		}
 
 		out = append(out, q.toIncidentRM(row))
 	}
@@ -201,6 +231,18 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 	})
 
 	return out, nil
+}
+
+func (q *Queries) canRead(ctx context.Context, incidentID shared.IncidentID) bool {
+	if q.access == nil {
+		return true
+	}
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false
+	}
+	allowed, err := q.access.Can(ctx, actor.Sub, incidentID, access.IncidentRead)
+	return err == nil && allowed
 }
 
 func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *uuid.UUID) []*outbound.LayerRM {

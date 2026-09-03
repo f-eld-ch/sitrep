@@ -184,14 +184,12 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	}()
 
 	return &stack{
-		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
-		},
-		UserRepo: nil,
+		IncidentSvc: factory.IncidentService(repos, layers),
+		MessageSvc:  factory.MessageService(messages, repos),
+		LayerSvc:    factory.LayerService(layers, repos),
+		FeatureSvc:  factory.FeatureService(features, repos, layers),
+		Queries:     inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
+		UserRepo:    nil,
 		Teardown: func() {
 			cancelProj()
 			<-projDone
