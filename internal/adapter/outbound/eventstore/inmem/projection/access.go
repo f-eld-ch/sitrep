@@ -18,6 +18,13 @@ type AccessPolicyRow struct {
 	Action  string
 }
 
+type IncidentGrantRow struct {
+	IncidentID    uuid.UUID
+	PrincipalKind access.PrincipalKind
+	PrincipalID   string
+	Role          access.Role
+}
+
 type AccessHandler struct {
 	mu       sync.RWMutex
 	grants   map[string]access.Role
@@ -254,6 +261,49 @@ func (h *AccessHandler) Mode(incidentID uuid.UUID) access.IncidentMode {
 	defer h.mu.RUnlock()
 
 	return h.modes[incidentID]
+}
+
+func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var rows []IncidentGrantRow
+
+	for key, role := range h.grants {
+		id, kind, subject, _ := parseGrantKey(key)
+		if id == incidentID {
+			rows = append(rows, IncidentGrantRow{IncidentID: id, PrincipalKind: kind, PrincipalID: subject, Role: role})
+		}
+	}
+
+	return rows
+}
+
+func (h *AccessHandler) Groups() map[uuid.UUID]struct {
+	Archived bool
+	Members  []string
+} {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	result := make(map[uuid.UUID]struct {
+		Archived bool
+		Members  []string
+	}, len(h.groups))
+	for id, group := range h.groups {
+		members := make([]string, 0, len(group.members))
+
+		for subject := range group.members {
+			members = append(members, subject)
+		}
+
+		result[id] = struct {
+			Archived bool
+			Members  []string
+		}{Archived: group.archived, Members: members}
+	}
+
+	return result
 }
 
 func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role access.Role) string {
