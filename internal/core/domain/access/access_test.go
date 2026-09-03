@@ -54,8 +54,33 @@ func TestIncidentAccessReplay(t *testing.T) {
 
 	assert.Equal(t, a.Mode(), replayed.Mode())
 	assert.True(t, replayed.IsOwner(owner))
-	assert.True(t, replayed.HasRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Viewer))
+	assert.False(t, replayed.HasRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Viewer))
 	assert.True(t, replayed.HasRole(Principal{Kind: GroupPrincipal, ID: "group-1"}, Editor))
+}
+
+func TestIncidentAccessGrantReplacesPriorRole(t *testing.T) {
+	a := NewIncidentAccess(shared.IncidentID(uuid.New()))
+	at := time.Unix(1, 0)
+	owner := "user-1"
+
+	require.NoError(t, a.Initialize(&owner, OpenOperational, owner, at))
+	require.NoError(t, a.GrantRole(Principal{Kind: UserPrincipal, ID: "user-2"}, Viewer, owner, at))
+	require.NoError(t, a.GrantRole(Principal{Kind: UserPrincipal, ID: "user-2"}, Manager, owner, at))
+
+	assert.False(t, a.HasRole(Principal{Kind: UserPrincipal, ID: "user-2"}, Viewer))
+	assert.True(t, a.HasRole(Principal{Kind: UserPrincipal, ID: "user-2"}, Manager))
+}
+
+func TestIncidentAccessGrantCannotReplaceLastOwner(t *testing.T) {
+	a := NewIncidentAccess(shared.IncidentID(uuid.New()))
+	at := time.Unix(1, 0)
+	owner := "user-1"
+
+	require.NoError(t, a.Initialize(&owner, Restricted, owner, at))
+	err := a.GrantRole(Principal{Kind: UserPrincipal, ID: owner}, Viewer, owner, at)
+
+	require.ErrorIs(t, err, shared.ErrForbidden)
+	assert.True(t, a.HasRole(Principal{Kind: UserPrincipal, ID: owner}, Owner))
 }
 
 func TestGlobalAccessSupportsMultipleRolesAndProtectsLastAdmin(t *testing.T) {

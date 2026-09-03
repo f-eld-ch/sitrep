@@ -90,12 +90,12 @@ export function useGrantIncidentRole(): CommandHook<IncidentRoleArgs> {
           variables: { incidentId: args.incidentId },
         });
         if (!cached) return;
+        // A principal holds at most one role per incident; a new grant replaces any other role row.
         const withoutExisting = cached.incidentAccess.filter(
           (existing) =>
             !(
               existing.principalKind === grant.principalKind &&
-              existing.principalId === grant.principalId &&
-              existing.role === grant.role
+              existing.principalId === grant.principalId
             ),
         );
         cache.writeQuery({

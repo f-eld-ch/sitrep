@@ -133,6 +133,9 @@ func (a *IncidentAccess) Initialize(ownerSub *string, mode IncidentMode, actor s
 	return nil
 }
 
+// GrantRole assigns role to p, replacing any other role the principal
+// currently holds on this incident so a principal never holds more than one
+// active role per incident.
 func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time.Time) error {
 	if err := validatePrincipal(p); err != nil {
 		return err
@@ -144,6 +147,21 @@ func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time
 
 	if a.HasRole(p, role) {
 		return nil
+	}
+
+	toRevoke := make([]Role, 0, len(a.roles[principalKey(p)]))
+	for existing := range a.roles[principalKey(p)] {
+		toRevoke = append(toRevoke, existing)
+	}
+
+	for _, existing := range toRevoke {
+		if existing == Owner && a.directOwnerCount() == 1 {
+			return fmt.Errorf("%w: cannot replace last owner", shared.ErrForbidden)
+		}
+	}
+
+	for _, existing := range toRevoke {
+		eventsourcing.TrackChange(a, RoleRevoked{Principal: p, Role: existing}, at, meta(actor))
 	}
 
 	eventsourcing.TrackChange(a, RoleGranted{Principal: p, Role: role}, at, meta(actor))
