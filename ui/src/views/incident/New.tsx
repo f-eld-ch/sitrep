@@ -209,7 +209,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         <div className="field-body">
           <div className="field is-normal is-flex-grow-1">
             {assignments.map((d, index) => (
-              <div key={d.id || `${d.name}-${index}`} className="field is-grouped mb-2">
+              <div key={d.id || `new-${index}`} className="field is-grouped mb-2">
                 <p className="control is-expanded">
                   <input
                     className="input is-small"
