@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(server)* Add TLS support with optional ACME certificates ([#1814](https://github.com/f-eld-ch/sitrep/issues/1814)) - ([5dd1615](https://github.com/f-eld-ch/sitrep/commit/5dd161595c8b25cbef70ed220a157de7d8fcf6e1))
+
 ### 🐛 Bug Fixes
 
 - *(otel)* Improve slog logs to have fully typed attributes ([#1811](https://github.com/f-eld-ch/sitrep/issues/1811)) - ([cb51fd8](https://github.com/f-eld-ch/sitrep/commit/cb51fd8dd92670c0effd098abdee4cc3dce8db1f))
