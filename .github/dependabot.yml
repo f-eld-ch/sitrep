@@ -22,6 +22,13 @@ updates:
       exclude:
         - "@f-eld-ch/*"
     groups:
+      # Must precede development-dependencies: Dependabot assigns each dependency
+      # to the first matching group in declaration order.
+      vitest:
+        applies-to: version-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       development-dependencies:
         dependency-type: "development"
         applies-to: version-updates

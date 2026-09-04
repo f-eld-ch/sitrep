@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 import { fc } from "@fast-check/vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
