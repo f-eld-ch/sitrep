@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,6 +43,51 @@ var serveConfigOptions = []configOption{
 		"GRAPHQL_INTROSPECTION",
 	),
 	boolOption("migrate-on-startup", false, "Run database migrations before starting the server", "MIGRATE_ON_STARTUP"),
+	stringOption("tls-cert", "", "Path to a PEM certificate; enables HTTPS together with --tls-key", "TLS_CERT"),
+	stringOption("tls-key", "", "Path to the PEM private key matching --tls-cert", "TLS_KEY"),
+	stringSliceOption(
+		"acme-domains",
+		nil,
+		"Hostnames to obtain a Let's Encrypt certificate for; enables ACME and requires --port 443",
+	),
+	stringOption("acme-email", "", "Contact address registered with the ACME CA for expiry notices"),
+	stringOption("acme-cache-dir", "/var/lib/sitrep/acme", "Directory persisting ACME account keys and certificates"),
+	stringOption("acme-directory-url", "", "ACME directory URL; empty uses Let's Encrypt production"),
+}
+
+// splitList accepts a repeated flag, a comma-separated string, or a YAML list,
+// so the same value works from the command line, the environment and the file.
+func splitList(values []string) []string {
+	out := make([]string, 0, len(values))
+
+	for _, value := range values {
+		for part := range strings.SplitSeq(value, ",") {
+			if part = strings.TrimSpace(part); part != "" {
+				out = append(out, part)
+			}
+		}
+	}
+
+	return out
+}
+
+// tlsOptions returns the TLS server option, or nothing when the server should
+// serve plain HTTP behind a terminating proxy.
+func tlsOptions(v *viper.Viper) []server.Option {
+	cfg := server.TLSConfig{
+		CertFile:         v.GetString("tls-cert"),
+		KeyFile:          v.GetString("tls-key"),
+		ACMEDomains:      splitList(v.GetStringSlice("acme-domains")),
+		ACMEEmail:        v.GetString("acme-email"),
+		ACMECacheDir:     v.GetString("acme-cache-dir"),
+		ACMEDirectoryURL: v.GetString("acme-directory-url"),
+	}
+
+	if cfg.CertFile == "" && cfg.KeyFile == "" && len(cfg.ACMEDomains) == 0 {
+		return nil
+	}
+
+	return []server.Option{server.WithTLS(cfg)}
 }
 
 func newServeCmd(v *viper.Viper) (*cobra.Command, error) {
@@ -109,6 +155,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		server.WithVersion(Version, Sha),
 		server.WithApiV2(s.Stack, apiOpts...),
 	}
+	opts = append(opts, tlsOptions(v)...)
 
 	if v.GetString("oidc-client-id") != "" {
 		oidcClient, err := auth.NewOIDC(ctx,
@@ -132,7 +179,12 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")
 	}
 
-	srv := server.NewServer(opts...)
+	srv, err := server.NewServer(opts...)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to configure server", slog.String("error", err.Error()))
+		return err
+	}
+
 	if err := srv.ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.ErrorContext(ctx, "failed to start server", slog.String("error", err.Error()))
 		return err
