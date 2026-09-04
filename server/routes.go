@@ -25,6 +25,11 @@ func (s *Server) RegisterRoutes() {
 	// served asset filenames do not already reveal.
 	s.router.GET("/version", s.buildInfo)
 
+	// Removed pre-26.9.0 endpoint; see legacyGraphQLGone for why this needs its own route
+	// rather than falling through to the SPA static fallback.
+	s.router.Any("/v1/graphql", s.legacyGraphQLGone)
+	s.router.Any("/v1/graphql/*", s.legacyGraphQLGone)
+
 	// OIDC handlers
 	oidc := s.router.Group("/oauth2")
 	oidc.GET("/sign_in", s.SignInHandler)

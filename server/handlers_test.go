@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"slices"
 	"syscall"
 	"testing"
 
 	"github.com/labstack/echo/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type rejectingEnforcer struct{}
@@ -26,9 +27,7 @@ func (rejectingEnforcer) CallbackHandler(*echo.Context) error { return nil }
 
 func TestShutdownSignals(t *testing.T) {
 	want := []os.Signal{os.Interrupt, syscall.SIGTERM}
-	if got := shutdownSignals(); !slices.Equal(got, want) {
-		t.Errorf("shutdown signals: got %v, want %v", got, want)
-	}
+	assert.Equal(t, want, shutdownSignals())
 }
 
 func TestAPIV2UsesFinalEnforcer(t *testing.T) {
@@ -40,9 +39,7 @@ func TestAPIV2UsesFinalEnforcer(t *testing.T) {
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/v2/health", nil)
 	s.router.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusUnauthorized {
-		t.Errorf("API-v2 status: got %d, want %d", rec.Code, http.StatusUnauthorized)
-	}
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
 
 // The update prompt in the UI compares this response against its own compiled-in version
@@ -77,34 +74,20 @@ func TestBuildInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s, err := newTestServer(WithVersion(tt.version, tt.sha))
-			if err != nil {
-				t.Fatalf("building server: %v", err)
-			}
+			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			ctx := echo.New().
 				NewContext(httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil), rec)
 
-			if err := s.buildInfo(ctx); err != nil {
-				t.Fatalf("buildInfo returned an error: %v", err)
-			}
-
-			if rec.Code != http.StatusOK {
-				t.Fatalf("expected 200, got %d", rec.Code)
-			}
+			require.NoError(t, s.buildInfo(ctx))
+			require.Equal(t, http.StatusOK, rec.Code)
 
 			var got map[string]string
-			if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-				t.Fatalf("response is not valid JSON: %v (body %q)", err, rec.Body.String())
-			}
+			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
 
-			if got["version"] != tt.wantVersion {
-				t.Errorf("version: got %q, want %q", got["version"], tt.wantVersion)
-			}
-
-			if got["sha"] != tt.wantSha {
-				t.Errorf("sha: got %q, want %q", got["sha"], tt.wantSha)
-			}
+			assert.Equal(t, tt.wantVersion, got["version"])
+			assert.Equal(t, tt.wantSha, got["sha"])
 		})
 	}
 }
@@ -113,30 +96,55 @@ func TestBuildInfo(t *testing.T) {
 // empty strings. Asserting it keeps that distinguishable from a real version.
 func TestBuildInfoWithoutVersionOption(t *testing.T) {
 	s, err := newTestServer()
-	if err != nil {
-		t.Fatalf("building server: %v", err)
-	}
+	require.NoError(t, err)
 
 	rec := httptest.NewRecorder()
 
 	ctx := echo.New().
 		NewContext(httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/version", nil), rec)
-	if err := s.buildInfo(ctx); err != nil {
-		t.Fatalf("buildInfo returned an error: %v", err)
-	}
+	require.NoError(t, s.buildInfo(ctx))
 
 	var got map[string]string
-	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
-		t.Fatalf("response is not valid JSON: %v", err)
-	}
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
 
-	if _, ok := got["version"]; !ok {
-		t.Error("expected a version key even when unset, so clients can rely on the shape")
-	}
+	assert.Contains(t, got, "version", "expected a version key even when unset, so clients can rely on the shape")
+	assert.Contains(t, got, "sha", "expected a sha key even when unset, so clients can rely on the shape")
+}
 
-	if _, ok := got["sha"]; !ok {
-		t.Error("expected a sha key even when unset, so clients can rely on the shape")
+// Pre-26.9.0 clients call this removed endpoint from a stale cached bundle. Asserting the
+// exact response guards against a regression back to the SPA fallback serving index.html,
+// which is what a JSON-parsing old client chokes on.
+func TestLegacyGraphQLGone(t *testing.T) {
+	s := NewServer()
+
+	for _, path := range []string{"/v1/graphql", "/v1/graphql/ws"} {
+		t.Run(path, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, path, nil)
+			s.router.ServeHTTP(rec, req)
+
+			require.Equal(t, http.StatusGone, rec.Code)
+			assert.Equal(t, `"cache", "storage"`, rec.Header().Get("Clear-Site-Data"))
+			assert.Equal(t, "no-store", rec.Header().Get("Cache-Control"))
+
+			var got map[string]any
+			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
+			assert.Contains(t, got, "errors")
+		})
 	}
+}
+
+// The static SPA fallback must still catch genuinely unknown paths; only the removed
+// legacy endpoint gets the Clear-Site-Data treatment.
+func TestUnrelatedUnmatchedPathStillFallsBackToSPA(t *testing.T) {
+	s := NewServer()
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/some/unknown/route", nil)
+	s.router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Empty(t, rec.Header().Get("Clear-Site-Data"))
 }
 
 func newTestServer(opts ...Option) (*Server, error) {
