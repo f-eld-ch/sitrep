@@ -7,9 +7,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// The systemd unit runs `migrate up` unconditionally before serve, which itself
+// falls back to in-memory stores when no database is configured.
+func TestMigrateUpWithoutDatabaseURLIsANoOp(t *testing.T) {
+	cmd := &cobra.Command{}
+	cmd.SetContext(t.Context())
+
+	require.NoError(t, runMigrateUp(cmd, ""))
+}
 
 func TestOpenGooseDBWithRetry(t *testing.T) {
 	t.Run("waits for the database to become reachable", func(t *testing.T) {
