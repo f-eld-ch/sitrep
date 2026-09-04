@@ -184,7 +184,7 @@ func (p *Projector) Reset(ctx context.Context) (err error) {
 // CatchUp.
 func (p *Projector) Run(ctx context.Context) error {
 	if err := p.CatchUp(ctx); err != nil && !errors.Is(err, context.Canceled) {
-		p.log.ErrorContext(ctx, "inmem projector initial catch-up failed", "error", err)
+		p.log.ErrorContext(ctx, "inmem projector initial catch-up failed", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -209,7 +209,7 @@ func (p *Projector) Run(ctx context.Context) error {
 		}
 
 		if err := p.CatchUp(ctx); err != nil && !errors.Is(err, context.Canceled) {
-			p.log.ErrorContext(ctx, "inmem projector catch-up failed", "error", err)
+			p.log.ErrorContext(ctx, "inmem projector catch-up failed", slog.String("error", err.Error()))
 		}
 	}
 }

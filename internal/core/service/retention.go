@@ -51,7 +51,7 @@ func NewRetentionService(
 	}
 }
 
-// Run applies enabled retention policies. A zero day count disables its policy.
+// Run applies enabled retention policies. A zero dacutoffy count disables its policy.
 func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDays uint) (RetentionResult, error) {
 	ctx, span := s.tracer.Start(ctx, "RetentionService.Run",
 		trace.WithAttributes(
@@ -64,14 +64,15 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 	now := s.clock.Now()
 
 	slog.DebugContext(ctx, "running incident retention",
-		"auto_close_days", autoCloseDays, "auto_archive_days", autoArchiveDays)
+		slog.Uint64("auto_close_days", uint64(autoCloseDays)),
+		slog.Uint64("auto_archive_days", uint64(autoArchiveDays)))
 
 	if autoCloseDays > 0 {
 		cutoff := now.AddDate(0, 0, -int(autoCloseDays))
 
 		ids, err := s.retention.OpenBefore(ctx, cutoff, s.batchSize)
 		if err != nil {
-			logIfUnexpected(ctx, "Retention.OpenBefore", err, "cutoff", cutoff)
+			logIfUnexpected(ctx, "Retention.OpenBefore", err, slog.String("cutoff", cutoff.Format(time.RFC3339)))
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
 
@@ -79,12 +80,14 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		}
 
 		slog.InfoContext(ctx, "incident retention auto-close candidates",
-			"count", len(ids), "cutoff", cutoff, "batch_size", s.batchSize)
+			slog.Int("count", len(ids)),
+			slog.String("cutoff", cutoff.Format(time.RFC3339)),
+			slog.Int("batch_size", s.batchSize))
 
 		for _, id := range ids {
 			closed, err := s.close(ctx, id, now)
 			if err != nil {
-				logIfUnexpected(ctx, "Retention.Close", err, "incident_id", id)
+				logIfUnexpected(ctx, "Retention.Close", err, slog.String("incident_id", id.String()))
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())
 
@@ -94,7 +97,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			if closed {
 				result.Closed++
 
-				slog.InfoContext(ctx, "incident automatically closed", "incident_id", id)
+				slog.InfoContext(ctx, "incident automatically closed", slog.String("incident_id", id.String()))
 			}
 		}
 	} else {
@@ -107,8 +110,13 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 
 		ids, err := s.retention.ArchiveBefore(ctx, closedCutoff, deletedCutoff, s.batchSize)
 		if err != nil {
-			logIfUnexpected(ctx, "Retention.ArchiveBefore", err,
-				"closed_cutoff", closedCutoff, "deleted_cutoff", deletedCutoff)
+			logIfUnexpected(
+				ctx,
+				"Retention.ArchiveBefore",
+				err,
+				slog.String("closed_cutoff", closedCutoff.Format(time.RFC3339)),
+				slog.String("deleted_cutoff", deletedCutoff.Format(time.RFC3339)),
+			)
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
 
@@ -116,13 +124,15 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		}
 
 		slog.InfoContext(ctx, "incident retention archive candidates",
-			"count", len(ids), "closed_cutoff", closedCutoff,
-			"deleted_cutoff", deletedCutoff, "batch_size", s.batchSize)
+			slog.Int("count", len(ids)),
+			slog.String("closed_cutoff", closedCutoff.Format(time.RFC3339)),
+			slog.String("deleted_cutoff", deletedCutoff.Format(time.RFC3339)),
+			slog.Int("batch_size", s.batchSize))
 
 		for _, id := range ids {
 			archived, err := s.archive(ctx, id, now)
 			if err != nil {
-				logIfUnexpected(ctx, "Retention.Archive", err, "incident_id", id)
+				logIfUnexpected(ctx, "Retention.Archive", err, slog.String("incident_id", id.String()))
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())
 
@@ -132,7 +142,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			if archived {
 				result.Archived++
 
-				slog.InfoContext(ctx, "incident event streams archived", "incident_id", id)
+				slog.InfoContext(ctx, "incident event streams archived", slog.String("incident_id", id.String()))
 			}
 		}
 	} else {
@@ -152,7 +162,8 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		attribute.Int("retention.closed", result.Closed),
 		attribute.Int("retention.archived", result.Archived),
 	)
-	slog.InfoContext(ctx, "incident retention complete", "closed", result.Closed, "archived", result.Archived)
+	slog.InfoContext(ctx, "incident retention complete",
+		slog.Int("closed", result.Closed), slog.Int("archived", result.Archived))
 
 	return result, nil
 }

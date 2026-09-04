@@ -59,7 +59,10 @@ func (s *FeatureService) PlaceFeature(
 		))
 	defer span.End()
 
-	slog.DebugContext(ctx, "placing feature", "feature_id", id, "layer_id", layerID, "actor", actor.Sub)
+	slog.DebugContext(ctx, "placing feature",
+		slog.String("feature_id", id.String()),
+		slog.String("layer_id", layerID.String()),
+		slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -112,7 +115,8 @@ func (s *FeatureService) ModifyFeature(
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "modifying feature", "feature_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "modifying feature",
+		slog.String("feature_id", id.String()), slog.String("actor", actor.Sub))
 
 	var state inbound.FeatureState
 
@@ -154,7 +158,8 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 		trace.WithAttributes(attribute.String("feature.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "removing feature", "feature_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "removing feature",
+		slog.String("feature_id", id.String()), slog.String("actor", actor.Sub))
 
 	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
 		return f.Remove(shared.DeleteReasonManual, actor.Sub, s.clock.Now())

@@ -110,7 +110,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		defer close(projDone)
 
 		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
-			slog.ErrorContext(projCtx, "projector stopped unexpectedly", "error", err)
+			slog.ErrorContext(projCtx, "projector stopped unexpectedly", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -170,7 +170,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		defer close(projDone)
 
 		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
-			slog.ErrorContext(projCtx, "projector stopped unexpectedly", "error", err)
+			slog.ErrorContext(projCtx, "projector stopped unexpectedly", slog.String("error", err.Error()))
 		}
 	}()
 

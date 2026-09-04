@@ -59,7 +59,8 @@ func (s *MessageService) RecordMessage(
 		trace.WithAttributes(attribute.String("incident.id", incidentID.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "recording message", "incident_id", incidentID, "actor", actor.Sub)
+	slog.DebugContext(ctx, "recording message",
+		slog.String("incident_id", incidentID.String()), slog.String("actor", actor.Sub))
 
 	msgID := shared.MessageID(s.ids.New())
 
@@ -98,7 +99,7 @@ func (s *MessageService) RecordMessage(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "RecordMessage", err, "incidentId", incidentID)
+		logIfUnexpected(ctx, "RecordMessage", err, slog.String("incident_id", incidentID.String()))
 
 		return inbound.MessageState{}, err
 	}
@@ -123,7 +124,8 @@ func (s *MessageService) CorrectMessage(
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "correcting message", "message_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "correcting message",
+		slog.String("message_id", id.String()), slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -155,7 +157,7 @@ func (s *MessageService) CorrectMessage(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "CorrectMessage", err, "id", id)
+		logIfUnexpected(ctx, "CorrectMessage", err, slog.String("id", id.String()))
 
 		return inbound.MessageState{}, err
 	}
@@ -178,7 +180,10 @@ func (s *MessageService) TriageMessage(
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "triaging message", "message_id", id, "triage", triage, "actor", actor.Sub)
+	slog.DebugContext(ctx, "triaging message",
+		slog.String("message_id", id.String()),
+		slog.String("triage", string(triage)),
+		slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -225,7 +230,7 @@ func (s *MessageService) TriageMessage(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "TriageMessage", err, "id", id)
+		logIfUnexpected(ctx, "TriageMessage", err, slog.String("id", id.String()))
 
 		return inbound.MessageState{}, err
 	}
@@ -241,7 +246,8 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		trace.WithAttributes(attribute.String("message.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "deleting message", "message_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "deleting message",
+		slog.String("message_id", id.String()), slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -266,7 +272,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "DeleteMessage", err, "id", id)
+		logIfUnexpected(ctx, "DeleteMessage", err, slog.String("id", id.String()))
 
 		return err
 	}

@@ -223,16 +223,59 @@ at startup by `internal/cli/log.go` and replaced with the OTel fan-out logger wh
 `OTEL_EXPORTER_OTLP_ENDPOINT` is set (`internal/cli/otel.go`). You never initialise a logger
 yourself — use the package-level functions.
 
+### Always use typed `slog.Attr` constructors
+
+Never pass loose alternating key/value pairs. The console handler stringifies values
+automatically; the OTel log bridge does not, so untyped values lose their type — or are dropped —
+once logs are exported. `sloglint`'s `attr-only` rule enforces this.
+
+```go
+// correct — typed attributes
+slog.DebugContext(ctx, "creating layer",
+    slog.String("incident_id", incidentID.String()),
+    slog.String("actor", actor.Sub))
+slog.InfoContext(ctx, "migration applied", slog.Int64("version", r.Source.Version))
+slog.ErrorContext(ctx, "service error",
+    slog.String("operation", op), slog.String("error", err.Error()))
+
+// wrong — loose key/value pairs
+slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "actor", actor.Sub)
+```
+
+Mapping rules:
+
+| Value                                             | Attribute                                  |
+| ------------------------------------------------- | ------------------------------------------ |
+| `uuid.UUID`, domain IDs, anything with `String()` | `slog.String(k, v.String())`               |
+| `error`                                           | `slog.String("error", err.Error())`        |
+| named string types (`shared.TriageStatus`, …)     | `slog.String(k, string(v))`                |
+| `int` / `int64` / `uint`                          | `slog.Int` / `slog.Int64` / `slog.Uint64`  |
+| `bool`, `float64`                                 | `slog.Bool`, `slog.Float64`                |
+| `time.Time`, `time.Duration`                      | `slog.Time`, `slog.Duration`               |
+| slices                                            | render to a string (e.g. `strings.Join`)   |
+
+Keys are `snake_case`; the error key is always `error`. `slog.Any` is a last resort — prefer
+rendering the value explicitly.
+
+When attributes are assembled conditionally into a `[]slog.Attr`, log via `slog.LogAttrs`
+(a `[]slog.Attr` cannot be spread into the `...any` parameter of `InfoContext` & co.):
+
+```go
+attrs := []slog.Attr{slog.String("operation", op)}
+if fieldCtx != nil {
+    attrs = append(attrs, slog.String("path", fieldCtx.Path().String()))
+}
+
+slog.LogAttrs(ctx, slog.LevelError, "resolver error", attrs...)
+```
+
 ### Always pass context
 
 Use the `Context` variants so that trace/span IDs are attached to every log line automatically:
 
 ```go
 // correct — span IDs flow through
-slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "actor", actor.Sub)
-slog.InfoContext(ctx, "migration applied", "version", r.Source.Version)
-slog.WarnContext(ctx, "preflight finding", "finding", w)
-slog.ErrorContext(ctx, "service error", "operation", op, "error", err)
+slog.DebugContext(ctx, "creating layer", slog.String("incident_id", incidentID.String()))
 
 // wrong — never use the context-free variants inside request paths
 slog.Debug("creating layer", ...)
@@ -258,7 +301,8 @@ func NewProjector(...) *Projector {
 }
 
 // usage inside the struct — still passes ctx for trace correlation
-p.log.Info("projection caught up", "handler", h.Name(), "applied", n)
+p.log.InfoContext(ctx, "projection caught up",
+    slog.String("handler", h.Name()), slog.Int("applied", n))
 ```
 
 ### Log levels
@@ -276,7 +320,11 @@ p.log.Info("projection caught up", "handler", h.Name(), "applied", n)
 expected domain sentinels (`ErrNotFound`, `ErrIncidentNotOpen`, `ErrAlreadyClosed`, …). Those
 errors are normal business outcomes and are handled at the resolver boundary. Only call
 `logIfUnexpected` (or log at `Error`) for infrastructure failures that indicate something is
-genuinely broken.
+genuinely broken. It takes `...slog.Attr` — pass typed attributes:
+
+```go
+logIfUnexpected(ctx, "UpdateIncident", err, slog.String("id", id.String()))
+```
 
 ---
 

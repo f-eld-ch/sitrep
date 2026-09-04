@@ -20,7 +20,7 @@ var (
 // logIfUnexpected logs err at error level when it is an infrastructure/unexpected
 // error. Domain errors are intentionally excluded — they are expected business
 // outcomes and are logged at the resolver boundary.
-func logIfUnexpected(ctx context.Context, op string, err error, attrs ...any) {
+func logIfUnexpected(ctx context.Context, op string, err error, attrs ...slog.Attr) {
 	if err == nil {
 		return
 	}
@@ -38,5 +38,6 @@ func logIfUnexpected(ctx context.Context, op string, err error, attrs ...any) {
 		return
 	}
 
-	slog.ErrorContext(ctx, "service error", append([]any{"operation", op, "error", err}, attrs...)...)
+	slog.LogAttrs(ctx, slog.LevelError, "service error",
+		append([]slog.Attr{slog.String("operation", op), slog.String("error", err.Error())}, attrs...)...)
 }

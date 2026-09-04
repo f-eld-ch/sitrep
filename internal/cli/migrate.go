@@ -82,7 +82,7 @@ func openGooseDBWithRetry(
 		}
 
 		lastErr = err
-		slog.InfoContext(ctx, "waiting for database connection", "error", err)
+		slog.InfoContext(ctx, "waiting for database connection", slog.String("error", err.Error()))
 
 		retry := time.NewTimer(interval)
 		select {
@@ -134,12 +134,9 @@ func runMigrateUp(cmd *cobra.Command, dsn string) error {
 		slog.InfoContext(
 			cmd.Context(),
 			"migration applied",
-			"version",
-			r.Source.Version,
-			"type",
-			r.Source.Type,
-			"duration",
-			r.Duration,
+			slog.Int64("version", r.Source.Version),
+			slog.String("type", string(r.Source.Type)),
+			slog.Duration("duration", r.Duration),
 		)
 	}
 
@@ -173,7 +170,7 @@ func runMigrateDown(cmd *cobra.Command, dsn string) error {
 		return err
 	}
 
-	slog.InfoContext(cmd.Context(), "migration rolled back", "version", result.Source.Version)
+	slog.InfoContext(cmd.Context(), "migration rolled back", slog.Int64("version", result.Source.Version))
 
 	return nil
 }
@@ -236,7 +233,7 @@ func runMigratePreflight(cmd *cobra.Command, dsn string) error {
 
 	warnings, err := migrations.RunPreflight(cmd.Context(), db)
 	for _, w := range warnings {
-		slog.WarnContext(cmd.Context(), "preflight", "finding", w)
+		slog.WarnContext(cmd.Context(), "preflight", slog.String("finding", w))
 	}
 
 	if err != nil {
@@ -246,7 +243,7 @@ func runMigratePreflight(cmd *cobra.Command, dsn string) error {
 	if len(warnings) == 0 {
 		slog.InfoContext(cmd.Context(), "preflight: all checks passed — data is ready to import")
 	} else {
-		slog.InfoContext(cmd.Context(), "preflight: checks passed with warnings", "count", len(warnings))
+		slog.InfoContext(cmd.Context(), "preflight: checks passed with warnings", slog.Int("count", len(warnings)))
 	}
 
 	return nil
