@@ -55,6 +55,18 @@ func boolOption(name string, defaultValue bool, description string, legacyEnv ..
 	}
 }
 
+func stringSliceOption(name string, defaultValue []string, description string, legacyEnv ...string) configOption {
+	return configOption{
+		name:        name,
+		value:       defaultValue,
+		description: description,
+		legacyEnv:   legacyEnv,
+		addFlag: func(flags *pflag.FlagSet) {
+			flags.StringSlice(name, defaultValue, description)
+		},
+	}
+}
+
 var rootConfigOptions = []configOption{
 	stringOption("log-level", "info", "Log level (debug, info, warn, error)", "LOG_LEVEL"),
 	stringOption("database-url", "", "PostgreSQL connection string (DSN or URL)", "DATABASE_URL"),

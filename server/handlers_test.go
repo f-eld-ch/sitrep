@@ -31,10 +31,12 @@ func TestShutdownSignals(t *testing.T) {
 }
 
 func TestAPIV2UsesFinalEnforcer(t *testing.T) {
-	s := NewServer(
+	s, err := NewServer(
 		WithApiV2(Stack{}),
 		WithEnforcer(rejectingEnforcer{}),
 	)
+	require.NoError(t, err)
+
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/api/v2/health", nil)
 	s.router.ServeHTTP(rec, req)
@@ -115,7 +117,8 @@ func TestBuildInfoWithoutVersionOption(t *testing.T) {
 // exact response guards against a regression back to the SPA fallback serving index.html,
 // which is what a JSON-parsing old client chokes on.
 func TestLegacyGraphQLGone(t *testing.T) {
-	s := NewServer()
+	s, err := NewServer()
+	require.NoError(t, err)
 
 	for _, path := range []string{"/v1/graphql", "/v1/graphql/ws"} {
 		t.Run(path, func(t *testing.T) {
@@ -142,7 +145,8 @@ func TestLegacyGraphQLGone(t *testing.T) {
 // middleware answers 500, whereas a real build answers 200. Either way, this route isn't
 // legacyGraphQLGone, which is the only thing worth asserting here.
 func TestUnrelatedUnmatchedPathStillFallsBackToSPA(t *testing.T) {
-	s := NewServer()
+	s, err := NewServer()
+	require.NoError(t, err)
 
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/some/unknown/route", nil)

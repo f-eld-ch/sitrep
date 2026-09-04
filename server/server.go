@@ -28,10 +28,11 @@ type Server struct {
 	auth.Enforcer
 	router        *echo.Echo
 	registerAPIV2 func()
+	tls           *TLSConfig
 	*http.Server
 }
 
-func NewServer(opts ...Option) *Server {
+func NewServer(opts ...Option) (*Server, error) {
 	s := &Server{
 		logger:   slog.Default().WithGroup("server"),
 		port:     8081,
@@ -41,10 +42,8 @@ func NewServer(opts ...Option) *Server {
 	}
 
 	for _, opt := range opts {
-		err := opt(s)
-		if err != nil {
-			s.logger.Error("failed to apply server option", slog.String("error", err.Error()))
-			return nil
+		if err := opt(s); err != nil {
+			return nil, fmt.Errorf("apply server option: %w", err)
 		}
 	}
 
@@ -62,7 +61,7 @@ func NewServer(opts ...Option) *Server {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	return s
+	return s, nil
 }
 
 func shutdownSignals() []os.Signal { return []os.Signal{os.Interrupt, syscall.SIGTERM} }
@@ -93,7 +92,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 
 	s.logger.InfoContext(ctx, "starting server", slog.String("address", s.Addr))
 
-	return s.Server.ListenAndServe()
+	return s.listenAndServe()
 }
 
 func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
