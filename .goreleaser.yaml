@@ -22,6 +22,52 @@ archives:
   - formats: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
+nfpms:
+  - id: sitrep
+    ids:
+      - sitrep
+    package_name: sitrep
+    vendor: f-eld.ch
+    homepage: "https://github.com/f-eld-ch/sitrep"
+    maintainer: "Verein F-ELD <info@f-eld.ch>"
+    description: |-
+      SitRep: Digitale Lagebewirtschaftung für Führungsstäbe.
+      Single binary serving the API and the embedded web UI.
+    license: AGPL-3.0-or-later
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # Postgres is reachable over the network, so it is not a package dependency.
+    dependencies:
+      - systemd
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/sitrep/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/sitrep/README.md
+      # Root-owned: systemd reads it and passes it to the sandbox as a credential.
+      - dst: /etc/sitrep
+        type: dir
+        file_info:
+          mode: 0700
+      - src: packaging/config.yaml
+        dst: /etc/sitrep/config.yaml
+        type: "config|noreplace"
+        file_info:
+          mode: 0600
+      - src: packaging/sitrep.service
+        dst: /usr/lib/systemd/system/sitrep.service
+        file_info:
+          mode: 0644
+    scripts:
+      postinstall: packaging/scripts/postinstall.sh
+      preremove: packaging/scripts/preremove.sh
+      postremove: packaging/scripts/postremove.sh
+    rpm:
+      group: Applications/Internet
+
 snapshot:
   version_template: "{{ incpatch .Version }}-beta.1+{{ .ShortCommit }}"
 
@@ -34,11 +80,12 @@ kos:
       - linux/amd64
       - linux/arm64
     tags:
-      - "v{{ .Version }}"
-      - "v{{ .Major }}.{{ .Minor }}"
-      - "v{{ .Major }}"
-      - "{{ if not .Prerelease }}stable{{ end }}"
-      - "{{ if not .Prerelease }}latest{{ end }}"
+      - "{{ if .IsSnapshot }}develop{{end}}"
+      - "{{ if not .IsSnapshot }}v{{ .Version }}{{end}}"
+      - "{{ if not .IsSnapshot }}v{{ .Major }}.{{ .Minor }}{{end}}"
+      - "{{ if not .IsSnapshot }}v{{ .Major }}{{end}}"
+      - "{{ if not .IsSnapshot }}stable{{ end }}"
+      - "{{ if not .IsSnapshot }}latest{{ end }}"
     creation_time: "{{ .CommitTimestamp }}"
     ko_data_creation_time: "{{ .CommitTimestamp }}"
     labels:

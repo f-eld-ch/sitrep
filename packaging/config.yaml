@@ -1,0 +1,81 @@
+# SitRep configuration.
+#
+# Keys are the long flag names of `sitrep serve` — always spelled with dashes.
+# Underscored keys are silently ignored.
+#
+# Precedence: command-line flag > environment variable > this file > default.
+# Every key can also be set as SITREP_<KEY_WITH_UNDERSCORES>, e.g.
+# SITREP_DATABASE_URL, SITREP_OIDC_CLIENT_SECRET.
+
+# ── Server ───────────────────────────────────────────────────────────────────
+
+# TCP port to listen on. 
+# Change to 443 when HTTPS is enabled, and grant CAP_NET_BIND_SERVICE to the binary.
+port: 4180
+
+# Log level: debug, info, warn, error.
+log-level: info
+
+# ── Database ─────────────────────────────────────────────────────────────────
+
+# PostgreSQL connection string. Required when running under the packaged
+# systemd unit, which applies migrations before starting the server. Leave empty
+# only for a throwaway run with in-memory stores — nothing is persisted then.
+#database-url: "postgres://sitrep:CHANGE_ME@localhost:5432/sitrep?sslmode=require"
+
+# Run pending migrations inside the server process. The packaged systemd unit
+# applies them in an ExecStartPre step instead, so leave this false there.
+migrate-on-startup: false
+
+# ── Authentication ───────────────────────────────────────────────────────────
+
+# All five OIDC keys must be set together, or none of them. With none set the
+# server falls back to a static local actor — never do that in production.
+#oidc-issuer: "https://id.example.org"
+#oidc-client-id: "sitrep"
+#oidc-client-secret: "CHANGE_ME"
+#oidc-redirect-url: "https://sitrep.example.org/oauth2/callback"
+
+# Key used to sign session cookies. Generate with: openssl rand -base64 32
+#cookie-key: "CHANGE_ME"
+
+# ── Retention ────────────────────────────────────────────────────────────────
+
+# Automatically close incidents that stayed open this many days (0 disables).
+auto-close-incidents: 0
+
+# Archive event streams of incidents closed this many days ago (0 disables).
+# Archiving removes live event streams and triggers a read-model rebuild.
+auto-archive-incidents: 0
+
+# ── Development ──────────────────────────────────────────────────────────────
+
+# Exposes the GraphQL playground and schema introspection. Keep disabled in
+# production.
+graphql-introspection: false
+
+# ── TLS ──────────────────────────────────────────────────────────────────────
+
+# Leave everything below unset to serve plain HTTP behind a terminating reverse
+# proxy — the usual deployment. Set at most one of the two blocks.
+
+# Static key pair. Under the packaged unit, point these at the credential paths
+# and uncomment the matching LoadCredential lines in the unit drop-in.
+#tls-cert: "/etc/sitrep/tls/cert.pem"
+#tls-key: "/etc/sitrep/tls/key.pem"
+
+# Automatic certificates from Let's Encrypt via ACME. Requires port 443, since
+# the TLS-ALPN-01 challenge is answered on the listening socket and the CA
+# always dials 443. Set port: 443 above and grant CAP_NET_BIND_SERVICE.
+#acme-domains:
+#  - "sitrep.example.org"
+#acme-email: "ops@example.org"
+
+# Persists account keys and issued certificates. Must survive restarts —
+# without it every restart requests a new certificate and hits the CA's rate
+# limits. Matches the unit's StateDirectory.
+acme-cache-dir: "/var/lib/sitrep/acme"
+
+# Point at the staging directory while testing to avoid burning rate limits:
+# https://acme-staging-v02.api.letsencrypt.org/directory
+#acme-directory-url: ""
