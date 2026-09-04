@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(otel)* Improve slog logs to have fully typed attributes ([#1811](https://github.com/f-eld-ch/sitrep/issues/1811)) - ([cb51fd8](https://github.com/f-eld-ch/sitrep/commit/cb51fd8dd92670c0effd098abdee4cc3dce8db1f))
+
+
 ## [26.9.1](https://github.com/f-eld-ch/sitrep/compare/v26.9.0..v26.9.1) - 2026-09-04
 
 ### 🐛 Bug Fixes
