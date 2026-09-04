@@ -1,3 +1,10 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(server)* Improve handling of stale clients to force cache clearning ([#1810](https://github.com/f-eld-ch/sitrep/issues/1810)) - ([4e83cf4](https://github.com/f-eld-ch/sitrep/commit/4e83cf431771365603dc5d325130eb53b8c8cc7f))
+
+
 ## [26.9.0](https://github.com/f-eld-ch/sitrep/compare/v26.8.2..v26.9.0) - 2026-09-03
 
 ### ⛰️  Features
