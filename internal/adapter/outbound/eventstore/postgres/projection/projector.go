@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -213,7 +214,7 @@ func (p *Projector) Run(ctx context.Context) error {
 		names[i] = h.Name()
 	}
 
-	p.log.InfoContext(ctx, "projector starting", "handlers", names)
+	p.log.InfoContext(ctx, "projector starting", slog.String("handlers", strings.Join(names, ",")))
 
 	for {
 		release, err := p.acquireLock(ctx)
@@ -222,13 +223,13 @@ func (p *Projector) Run(ctx context.Context) error {
 			p.lockContended.Add(ctx, 1)
 			p.log.DebugContext(ctx, "another instance is leading, standing by")
 		case err != nil:
-			p.log.ErrorContext(ctx, "projector lock acquisition failed", "error", err)
+			p.log.ErrorContext(ctx, "projector lock acquisition failed", slog.String("error", err.Error()))
 		default:
 			p.leaderAcquired.Add(ctx, 1)
-			p.log.InfoContext(ctx, "projector elected leader", "lock", p.lockName)
+			p.log.InfoContext(ctx, "projector elected leader", slog.String("lock", p.lockName))
 
 			if leadErr := p.lead(ctx, release); leadErr != nil && !errors.Is(leadErr, context.Canceled) {
-				p.log.WarnContext(ctx, "projector stepping down", "error", leadErr)
+				p.log.WarnContext(ctx, "projector stepping down", slog.String("error", leadErr.Error()))
 			}
 		}
 
@@ -267,7 +268,7 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 			// This build is older than the stored projection; yield to the
 			// newer replica instead of rebuilding read models backwards.
 			p.log.ErrorContext(ctx, "this build is older than the stored projection, yielding leadership",
-				"error", err)
+				slog.String("error", err.Error()))
 		}
 
 		return fmt.Errorf("projector: init checkpoints: %w", err)
@@ -293,7 +294,8 @@ func (p *Projector) lead(ctx context.Context, release func()) error {
 
 			consecutiveFailures++
 			p.log.ErrorContext(ctx, "projector catch-up failed",
-				"error", err, "consecutive_failures", consecutiveFailures)
+				slog.String("error", err.Error()),
+				slog.Int("consecutive_failures", consecutiveFailures))
 
 			if consecutiveFailures >= maxConsecutiveCatchUpFailures {
 				return fmt.Errorf("%w after %d failures: %w", errCatchUpStuck, consecutiveFailures, err)
@@ -477,7 +479,9 @@ func (p *Projector) catchUp(ctx context.Context) (err error) {
 							attribute.String("event.type", e.EventType),
 							attribute.Int("event.version", e.Version),
 						))
-					p.log.ErrorContext(ctx, "handler failed after retries", "handler", h.Name(), "error", err)
+					p.log.ErrorContext(ctx, "handler failed after retries",
+						slog.String("handler", h.Name()),
+						slog.String("error", err.Error()))
 					p.handlerErrors.Add(ctx, 1, metric.WithAttributes(handlerAttr, attribute.String("type", "apply")))
 					// park the event and continue — the projection is now known-incomplete
 					if parkErr := p.parkDeadLetter(ctx, h.Name(), next, e, err); parkErr != nil {
@@ -490,7 +494,7 @@ func (p *Projector) catchUp(ctx context.Context) (err error) {
 								attribute.String("event.type", e.EventType),
 								attribute.Int("event.version", e.Version),
 							))
-						p.log.ErrorContext(ctx, "failed to park dead letter", "error", parkErr)
+						p.log.ErrorContext(ctx, "failed to park dead letter", slog.String("error", parkErr.Error()))
 					} else {
 						p.deadLetters.Add(ctx, 1, metric.WithAttributes(handlerAttr))
 					}
@@ -514,14 +518,16 @@ func (p *Projector) catchUp(ctx context.Context) (err error) {
 		}
 
 		if handlerApplied > 0 {
-			p.log.InfoContext(ctx, "projection caught up", "handler", h.Name(), "applied", handlerApplied)
+			p.log.InfoContext(ctx, "projection caught up",
+				slog.String("handler", h.Name()),
+				slog.Int("applied", handlerApplied))
 		}
 
 		totalApplied += handlerApplied
 	}
 
 	if totalApplied > 0 {
-		p.log.InfoContext(ctx, "catch-up complete", "total_applied", totalApplied)
+		p.log.InfoContext(ctx, "catch-up complete", slog.Int("total_applied", totalApplied))
 	}
 
 	p.catchupDur.Record(ctx, time.Since(start).Seconds())
@@ -632,13 +638,17 @@ func (p *Projector) initCheckpoints(ctx context.Context) (err error) {
 			// Stored version is ahead of this build — a newer replica has already
 			// upgraded the projection. Refuse to rebuild it back to an older schema.
 			p.log.ErrorContext(ctx, "projection is newer than this build, refusing to rebuild",
-				"handler", h.Name(), "stored", storedVersion, "build", h.Version())
+				slog.String("handler", h.Name()),
+				slog.Int("stored", storedVersion),
+				slog.Int("build", h.Version()))
 
 			return fmt.Errorf("%w: %s at v%d, build has v%d",
 				errProjectionAhead, h.Name(), storedVersion, h.Version())
 		case storedVersion < h.Version():
 			p.log.InfoContext(ctx, "projection version changed, rebuilding",
-				"handler", h.Name(), "was", storedVersion, "now", h.Version())
+				slog.String("handler", h.Name()),
+				slog.Int("was", storedVersion),
+				slog.Int("now", h.Version()))
 
 			if err := p.resetProjection(ctx, h); err != nil {
 				return err

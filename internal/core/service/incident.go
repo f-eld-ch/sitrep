@@ -76,7 +76,13 @@ func (s *IncidentService) CreateIncidentWithParent(
 		trace.WithAttributes(attribute.String("incident.name", name)))
 	defer span.End()
 
-	slog.DebugContext(ctx, "creating incident", "name", name, "parent_id", parentID, "actor", actor.Sub)
+	parentAttr := slog.String("parent_id", "")
+	if parentID != nil {
+		parentAttr = slog.String("parent_id", parentID.String())
+	}
+
+	slog.DebugContext(ctx, "creating incident",
+		slog.String("name", name), parentAttr, slog.String("actor", actor.Sub))
 
 	if len(layerNames) == 0 {
 		layerNames = []string{"Lage"}
@@ -143,13 +149,14 @@ func (s *IncidentService) CreateIncidentWithParent(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "CreateIncident", err, "name", name)
+		logIfUnexpected(ctx, "CreateIncident", err, slog.String("name", name))
 
 		return inbound.CreateIncidentResult{}, err
 	}
 
 	span.SetAttributes(attribute.String("incident.id", incID.String()))
-	slog.DebugContext(ctx, "incident created", "incident_id", incID, "layers", len(layerIDs))
+	slog.DebugContext(ctx, "incident created",
+		slog.String("incident_id", incID.String()), slog.Int("layers", len(layerIDs)))
 	_ = s.notifier.Notify(ctx)
 
 	return inbound.CreateIncidentResult{
@@ -176,7 +183,8 @@ func (s *IncidentService) UpdateIncident(
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "updating incident", "incident_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "updating incident",
+		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -224,7 +232,7 @@ func (s *IncidentService) UpdateIncident(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "UpdateIncident", err, "id", id)
+		logIfUnexpected(ctx, "UpdateIncident", err, slog.String("id", id.String()))
 
 		return inbound.IncidentState{}, err
 	}
@@ -244,7 +252,8 @@ func (s *IncidentService) CloseIncident(
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "closing incident", "incident_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "closing incident",
+		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
@@ -267,7 +276,8 @@ func (s *IncidentService) ReopenIncident(
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "reopening incident", "incident_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "reopening incident",
+		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	state, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Reopen(actor.Sub, s.clock.Now())
@@ -286,7 +296,8 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 		trace.WithAttributes(attribute.String("incident.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "deleting incident", "incident_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "deleting incident",
+		slog.String("incident_id", id.String()), slog.String("actor", actor.Sub))
 
 	_, err := s.writeIncident(ctx, id, func(inc *incident.Incident) error {
 		return inc.Delete(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
@@ -311,7 +322,10 @@ func (s *IncidentService) LinkIncidentParent(
 		))
 	defer span.End()
 
-	slog.DebugContext(ctx, "linking incident parent", "child_id", childID, "parent_id", parentID, "actor", actor.Sub)
+	slog.DebugContext(ctx, "linking incident parent",
+		slog.String("child_id", childID.String()),
+		slog.String("parent_id", parentID.String()),
+		slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -348,7 +362,8 @@ func (s *IncidentService) LinkIncidentParent(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "LinkIncidentParent", err, "child_id", childID, "parent_id", parentID)
+		logIfUnexpected(ctx, "LinkIncidentParent", err,
+			slog.String("child_id", childID.String()), slog.String("parent_id", parentID.String()))
 
 		return inbound.IncidentState{}, err
 	}
@@ -367,7 +382,8 @@ func (s *IncidentService) UnlinkIncidentParent(
 		trace.WithAttributes(attribute.String("incident.child_id", childID.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "unlinking incident parent", "child_id", childID, "actor", actor.Sub)
+	slog.DebugContext(ctx, "unlinking incident parent",
+		slog.String("child_id", childID.String()), slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -400,7 +416,7 @@ func (s *IncidentService) UnlinkIncidentParent(
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "UnlinkIncidentParent", err, "child_id", childID)
+		logIfUnexpected(ctx, "UnlinkIncidentParent", err, slog.String("child_id", childID.String()))
 
 		return inbound.IncidentState{}, err
 	}
@@ -466,7 +482,7 @@ func (s *IncidentService) writeIncident(
 		return nil
 	})
 	if err != nil {
-		logIfUnexpected(ctx, "writeIncident", err, "id", id)
+		logIfUnexpected(ctx, "writeIncident", err, slog.String("id", id.String()))
 		return inbound.IncidentState{}, err
 	}
 

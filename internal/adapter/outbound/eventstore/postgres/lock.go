@@ -109,7 +109,7 @@ func (l *ProjectorLock) Acquire(ctx context.Context, projection string) (func(),
 				`SELECT pg_advisory_unlock($1, $2)`, lockClassID, key)
 			if unlockErr != nil {
 				l.log.WarnContext(unlockCtx, "projector lock: advisory unlock failed — lock released by session end",
-					"error", unlockErr)
+					slog.String("error", unlockErr.Error()))
 			}
 
 			l.mu.Lock()

@@ -54,7 +54,10 @@ func (s *LayerService) CreateLayer(
 		))
 	defer span.End()
 
-	slog.DebugContext(ctx, "creating layer", "incident_id", incidentID, "name", name, "actor", actor.Sub)
+	slog.DebugContext(ctx, "creating layer",
+		slog.String("incident_id", incidentID.String()),
+		slog.String("name", name),
+		slog.String("actor", actor.Sub))
 
 	layerID := shared.LayerID(s.ids.New())
 	at := s.clock.Now()
@@ -93,7 +96,10 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "renaming layer", "layer_id", id, "name", name, "actor", actor.Sub)
+	slog.DebugContext(ctx, "renaming layer",
+		slog.String("layer_id", id.String()),
+		slog.String("name", name),
+		slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 
@@ -133,7 +139,8 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 		trace.WithAttributes(attribute.String("layer.id", id.String())))
 	defer span.End()
 
-	slog.DebugContext(ctx, "removing layer", "layer_id", id, "actor", actor.Sub)
+	slog.DebugContext(ctx, "removing layer",
+		slog.String("layer_id", id.String()), slog.String("actor", actor.Sub))
 
 	at := s.clock.Now()
 

@@ -66,16 +66,16 @@ func newServeCmd(v *viper.Viper) (*cobra.Command, error) {
 
 func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	ctx := cmd.Context()
-	slog.InfoContext(ctx, "starting sitrep", "version", Version, "sha", Sha)
+	slog.InfoContext(ctx, "starting sitrep", slog.String("version", Version), slog.String("sha", Sha))
 
 	shutdown, err := setupOpenTelemetry(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "failed to configure OpenTelemetry", "error", err)
+		slog.ErrorContext(ctx, "failed to configure OpenTelemetry", slog.String("error", err.Error()))
 		return err
 	}
 	defer func() {
 		if err := shutdown(ctx); err != nil {
-			slog.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", err)
+			slog.ErrorContext(ctx, "failed to shutdown OpenTelemetry", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -83,7 +83,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		slog.InfoContext(ctx, "running startup migrations")
 
 		if err := runMigrateUp(cmd, v.GetString("database-url")); err != nil {
-			slog.ErrorContext(ctx, "failed to run startup migrations", "error", err)
+			slog.ErrorContext(ctx, "failed to run startup migrations", slog.String("error", err.Error()))
 			return err
 		}
 	}
@@ -119,7 +119,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			deriveCookieKey(v.GetString("cookie-key")),
 		)
 		if err != nil {
-			slog.ErrorContext(ctx, "failed to create OIDC client", "error", err)
+			slog.ErrorContext(ctx, "failed to create OIDC client", slog.String("error", err.Error()))
 			return err
 		}
 
@@ -134,7 +134,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 
 	srv := server.NewServer(opts...)
 	if err := srv.ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.ErrorContext(ctx, "failed to start server", "error", err)
+		slog.ErrorContext(ctx, "failed to start server", slog.String("error", err.Error()))
 		return err
 	}
 

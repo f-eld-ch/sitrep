@@ -43,7 +43,7 @@ func NewServer(opts ...Option) *Server {
 	for _, opt := range opts {
 		err := opt(s)
 		if err != nil {
-			s.logger.Error("failed to apply server option", "error", err)
+			s.logger.Error("failed to apply server option", slog.String("error", err.Error()))
 			return nil
 		}
 	}
@@ -82,7 +82,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 
 		err := s.Shutdown(ctx)
 		if err != nil {
-			s.logger.ErrorContext(ctx, "failed to shutdown server", "error", err)
+			s.logger.ErrorContext(ctx, "failed to shutdown server", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -91,7 +91,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		s.isShuttingDown.Store(true)
 	})
 
-	s.logger.InfoContext(ctx, "starting server", "address", s.Addr)
+	s.logger.InfoContext(ctx, "starting server", slog.String("address", s.Addr))
 
 	return s.Server.ListenAndServe()
 }

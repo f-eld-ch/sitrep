@@ -123,7 +123,9 @@ func (r *IncidentRetention) Archive(ctx context.Context, incidentID shared.Incid
 	}
 
 	slog.InfoContext(ctx, "archived incident event-store data",
-		"incident_id", incidentID, "events", archiveEvents, "streams", archiveStreams)
+		slog.String("incident_id", incidentID.String()),
+		slog.Int64("events", archiveEvents),
+		slog.Int64("streams", archiveStreams))
 
 	return nil
 }

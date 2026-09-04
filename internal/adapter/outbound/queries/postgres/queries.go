@@ -67,13 +67,13 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 		return nil, err
 	}
 
-	slog.DebugContext(ctx, "listed incidents", "count", len(out))
+	slog.DebugContext(ctx, "listed incidents", slog.Int("count", len(out)))
 
 	return out, nil
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
-	slog.DebugContext(ctx, "getting incident", "id", id)
+	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
@@ -150,7 +150,7 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 }
 
 func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
-	slog.DebugContext(ctx, "listing child incidents", "parent_id", parentID)
+	slog.DebugContext(ctx, "listing child incidents", slog.String("parent_id", parentID.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
@@ -238,7 +238,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
-	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing messages", slog.String("incident_id", incidentID.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
@@ -256,7 +256,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 }
 
 func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.MessageRM, error) {
-	slog.DebugContext(ctx, "getting message", "id", id)
+	slog.DebugContext(ctx, "getting message", slog.String("id", id.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
@@ -339,7 +339,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing layers", slog.String("incident_id", incidentID.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
@@ -356,7 +356,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 }
 
 func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing visible layers", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing visible layers", slog.String("incident_id", incidentID.String()))
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision

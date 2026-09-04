@@ -143,6 +143,7 @@ linters:
       require-explanation: true
       require-specific: true
     sloglint:
+      attr-only: true
       context: scope
       key-naming-case: snake
       msg-style: lowercased

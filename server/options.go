@@ -139,8 +139,8 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 	srv.SetRecoverFunc(func(ctx context.Context, p any) error {
 		opCtx := graphql.GetOperationContext(ctx)
 		slog.ErrorContext(ctx, "resolver panic",
-			"operation", opCtx.OperationName,
-			"panic", fmt.Sprintf("%v", p),
+			slog.String("operation", opCtx.OperationName),
+			slog.String("panic", fmt.Sprintf("%v", p)),
 		)
 
 		return fmt.Errorf("internal server error")
@@ -171,12 +171,12 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 		errMsg = gqlErr.Message
 	}
 
-	attrs := []any{
-		"operation", opCtx.OperationName,
-		"error", errMsg,
+	attrs := []slog.Attr{
+		slog.String("operation", opCtx.OperationName),
+		slog.String("error", errMsg),
 	}
 	if fieldCtx != nil {
-		attrs = append(attrs, "path", fieldCtx.Path())
+		attrs = append(attrs, slog.String("path", fieldCtx.Path().String()))
 	}
 
 	// gqlgen emits this when DisableIntrospection is set; it is not a server error.
@@ -209,7 +209,7 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	case errors.Is(e, shared.ErrConflict):
 		code = "CONFLICT"
 	default:
-		slog.ErrorContext(ctx, "resolver error", attrs...)
+		slog.LogAttrs(ctx, slog.LevelError, "resolver error", attrs...)
 
 		return &gqlerror.Error{
 			Message:    "internal server error",
@@ -217,7 +217,7 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 		}
 	}
 
-	slog.WarnContext(ctx, "resolver domain error", append(attrs, "code", code)...)
+	slog.LogAttrs(ctx, slog.LevelWarn, "resolver domain error", append(attrs, slog.String("code", code))...)
 
 	return &gqlerror.Error{Message: e.Error(), Extensions: map[string]any{"code": code}}
 }
