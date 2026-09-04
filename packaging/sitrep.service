@@ -20,14 +20,19 @@ StateDirectoryMode=0700
 # .yaml suffix because viper derives the config format from the extension.
 LoadCredential=config.yaml:/etc/sitrep/config.yaml
 
-# For a static key pair, uncomment these and point tls-cert/tls-key in
-# config.yaml at %d/tls-cert.pem and %d/tls-key.pem. ACME needs neither: it
-# stores its certificates in StateDirectory instead.
-#LoadCredential=tls-cert.pem:/etc/sitrep/tls/cert.pem
-#LoadCredential=tls-key.pem:/etc/sitrep/tls/key.pem
+# Every file dropped into /etc/sitrep/tls is exposed to the sandbox as
+# $CREDENTIALS_DIRECTORY/tls_<filename>. An empty directory is not an error, so
+# this stays active whether or not a key pair is installed. Copy real files in —
+# symlinks are ignored, so linking to a certbot live/ directory yields nothing.
+LoadCredential=tls:/etc/sitrep/tls
 
-ExecStartPre=/usr/bin/sitrep migrate up --config ${CREDENTIALS_DIRECTORY}/config.yaml
-ExecStart=/usr/bin/sitrep serve --config ${CREDENTIALS_DIRECTORY}/config.yaml
+# Credentials are the only files the service reads, so run from there and refer
+# to them by name. An absolute path would have to embed the unit name, which
+# breaks the moment the unit is renamed or templated.
+WorkingDirectory=%d
+
+ExecStartPre=/usr/bin/sitrep migrate up --config config.yaml
+ExecStart=/usr/bin/sitrep serve --config config.yaml
 
 # `migrate up` waits up to 2 minutes for the database to accept connections,
 # which outlives the default 90s start timeout.

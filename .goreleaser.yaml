@@ -52,6 +52,11 @@ nfpms:
         type: dir
         file_info:
           mode: 0700
+      # Drop-off point for a static TLS key pair; empty unless an operator uses one.
+      - dst: /etc/sitrep/tls
+        type: dir
+        file_info:
+          mode: 0700
       - src: packaging/config.yaml
         dst: /etc/sitrep/config.yaml
         type: "config|noreplace"

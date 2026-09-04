@@ -18,9 +18,8 @@ log-level: info
 
 # ── Database ─────────────────────────────────────────────────────────────────
 
-# PostgreSQL connection string. Required when running under the packaged
-# systemd unit, which applies migrations before starting the server. Leave empty
-# only for a throwaway run with in-memory stores — nothing is persisted then.
+# PostgreSQL connection string. Leave empty only for a throwaway run: the
+# server then falls back to in-memory stores and nothing is persisted.
 #database-url: "postgres://sitrep:CHANGE_ME@localhost:5432/sitrep?sslmode=require"
 
 # Run pending migrations inside the server process. The packaged systemd unit
@@ -59,10 +58,15 @@ graphql-introspection: false
 # Leave everything below unset to serve plain HTTP behind a terminating reverse
 # proxy — the usual deployment. Set at most one of the two blocks.
 
-# Static key pair. Under the packaged unit, point these at the credential paths
-# and uncomment the matching LoadCredential lines in the unit drop-in.
-#tls-cert: "/etc/sitrep/tls/cert.pem"
-#tls-key: "/etc/sitrep/tls/key.pem"
+# Static key pair. Copy cert.pem and key.pem into /etc/sitrep/tls as real files —
+# symlinks are skipped, so linking a certbot live/ directory yields nothing.
+#
+# The unit loads that directory as a credential named "tls" and runs from the
+# credentials directory. systemd flattens a directory credential into one entry
+# per file, named <id>_<filename>, so /etc/sitrep/tls/cert.pem is visible here as
+# tls_cert.pem — a flat name, not a tls/ subdirectory.
+#tls-cert: "tls_cert.pem"
+#tls-key: "tls_key.pem"
 
 # Automatic certificates from Let's Encrypt via ACME. Requires port 443, since
 # the TLS-ALPN-01 challenge is answered on the listening socket and the CA
