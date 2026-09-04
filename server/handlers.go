@@ -39,10 +39,12 @@ func (s *Server) ready(c *echo.Context) error {
 // the *next* navigation is guaranteed to fetch a current bundle instead of repeating the same
 // broken request against the same stale worker.
 func (s *Server) legacyGraphQLGone(c *echo.Context) error {
-	c.Response().Header().Set("Clear-Site-Data", `"cache", "storage"`)
+	c.Response().Header().Set("Clear-Site-Data", `"cache", "storage", "executionContexts"`)
 	c.Response().Header().Set(echo.HeaderCacheControl, "no-store")
 
-	return c.JSON(http.StatusGone, map[string]any{
+	// Chromium ignores Clear-Site-Data on 4xx/5xx responses, so this must be a 2xx to take
+	// effect at all. 200 + an errors array is also just the normal GraphQL error convention.
+	return c.JSON(http.StatusOK, map[string]any{
 		"errors": []map[string]string{
 			{"message": "this API was removed; reload the page to fetch the current version"},
 		},
