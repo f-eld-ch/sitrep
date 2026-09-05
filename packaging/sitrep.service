@@ -1,0 +1,73 @@
+[Unit]
+Description=SitRep — Digitale Lagebewirtschaftung für Führungsstäbe
+Documentation=https://github.com/f-eld-ch/sitrep
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# No package-managed account: systemd allocates a transient user per start.
+DynamicUser=yes
+
+# /var/lib/sitrep, created and chowned to the transient user on every start.
+StateDirectory=sitrep
+StateDirectoryMode=0700
+
+# The config holds the OIDC client secret and the cookie key, so it stays
+# root-owned and unreadable by the service user. systemd reads it as root and
+# exposes a private copy under $CREDENTIALS_DIRECTORY. The credential keeps the
+# .yaml suffix because viper derives the config format from the extension.
+LoadCredential=config.yaml:/etc/sitrep/config.yaml
+
+# Every file dropped into /etc/sitrep/tls is exposed to the sandbox as
+# $CREDENTIALS_DIRECTORY/tls_<filename>. An empty directory is not an error, so
+# this stays active whether or not a key pair is installed. Copy real files in —
+# symlinks are ignored, so linking to a certbot live/ directory yields nothing.
+LoadCredential=tls:/etc/sitrep/tls
+
+# Credentials are the only files the service reads, so run from there and refer
+# to them by name. An absolute path would have to embed the unit name, which
+# breaks the moment the unit is renamed or templated.
+WorkingDirectory=%d
+
+ExecStartPre=/usr/bin/sitrep migrate up --config config.yaml
+ExecStart=/usr/bin/sitrep serve --config config.yaml
+
+# `migrate up` waits up to 2 minutes for the database to accept connections,
+# which outlives the default 90s start timeout.
+TimeoutStartSec=300
+
+Restart=on-failure
+RestartSec=5s
+
+# Set OTEL_EXPORTER_OTLP_ENDPOINT via a drop-in to enable traces, metrics and logs.
+
+# Hardening. The service is the TLS edge, so it needs to bind 443; this is the
+# only capability it may hold, and it cannot acquire any other.
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+PrivateTmp=yes
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectProc=invisible
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

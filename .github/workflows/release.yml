@@ -56,11 +56,26 @@ jobs:
           name: ui-build
           path: ui/build/
 
+      # `--current` would range from the previous tag of any kind, so after a
+      # candidate the final release would only list what changed since the last
+      # rc. Range from the previous stable tag instead, matching the changelog
+      # section cliff.toml produces (it ignores rc tags).
+      - name: Resolve changelog range
+        id: range
+        run: |
+          current="${GITHUB_REF_NAME}"
+          previous="$(git tag --list 'v*' --sort=-v:refname --merged "$current" \
+            | grep -vE -- '-(rc|alpha|beta)' \
+            | grep -vxF "$current" \
+            | head -n1)"
+          echo "range=${previous:+$previous..}$current" >> "$GITHUB_OUTPUT"
+          echo "Changelog range: ${previous:-<start>}..$current"
+
       - name: Generate release notes
         uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
         with:
           config: cliff.toml
-          args: --current --strip header --output ${{ runner.temp }}/RELEASE_NOTES.md
+          args: ${{ steps.range.outputs.range }} --strip header --output ${{ runner.temp }}/RELEASE_NOTES.md
         env:
           GITHUB_REPO: ${{ github.repository }}
 
@@ -72,3 +87,18 @@ jobs:
           args: release --clean --release-notes=${{ runner.temp }}/RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dispatch package repository update
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGE_REPO_DISPATCH_TOKEN }}
+        run: |
+          if echo "${GITHUB_REF_NAME}" | grep -qE '\-(rc|beta|alpha)'; then
+            CHANNEL="testing"
+          else
+            CHANNEL="stable"
+          fi
+          gh api repos/f-eld-ch/package-repo/dispatches \
+            --method POST \
+            -f event_type=new-release \
+            -f client_payload[tag]="${GITHUB_REF_NAME}" \
+            -f client_payload[channel]="${CHANNEL}"

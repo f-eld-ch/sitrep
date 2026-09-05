@@ -118,6 +118,14 @@ func newMigrateUpCmd(v *viper.Viper) *cobra.Command {
 }
 
 func runMigrateUp(cmd *cobra.Command, dsn string) error {
+	// serve falls back to in-memory stores without a database, so there is
+	// nothing to migrate. Skipping keeps `migrate up` usable as an
+	// unconditional pre-start step in the systemd unit.
+	if dsn == "" {
+		slog.WarnContext(cmd.Context(), "no database-url set, skipping migrations")
+		return nil
+	}
+
 	db, err := openGooseDB(cmd.Context(), dsn)
 	if err != nil {
 		return err
