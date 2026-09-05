@@ -74,7 +74,7 @@ nfpms:
       group: Applications/Internet
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-beta.1+{{ .ShortCommit }}"
+  version_template: '{{ incpatch .Version }}-snapshot.{{ .Now.Format "20060102150405" }}+{{ .ShortCommit }}'
 
 kos:
   - id: sitrep
@@ -85,10 +85,12 @@ kos:
       - linux/amd64
       - linux/arm64
     tags:
-      - "{{ if .IsSnapshot }}develop{{end}}"
+      # Rolling tags stay on the newest stable release; a pre-release publishes
+      # only its exact version so it can never be pulled by accident.
+      - "git-{{ .ShortCommit }}"
       - "{{ if not .IsSnapshot }}v{{ .Version }}{{end}}"
-      - "{{ if not .IsSnapshot }}v{{ .Major }}.{{ .Minor }}{{end}}"
-      - "{{ if not .IsSnapshot }}v{{ .Major }}{{end}}"
+      - "{{ if and (not .IsSnapshot) (not .Prerelease) }}v{{ .Major }}.{{ .Minor }}{{end}}"
+      - "{{ if and (not .IsSnapshot) (not .Prerelease) }}v{{ .Major }}{{end}}"
       - "{{ if and (not .IsSnapshot) (not .Prerelease) }}stable{{ end }}"
       - "{{ if and (not .IsSnapshot) (not .Prerelease) }}latest{{ end }}"
     creation_time: "{{ .CommitTimestamp }}"
