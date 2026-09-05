@@ -1,29 +1,21 @@
-name: Automated Tests and Linting
+name: Go Build & Test
 
-# Tests and linting only — deliberately no coverage upload.
-#
-# upload-code-coverage can only attach a report to a pull request or the default branch.
-# This workflow runs on push to every branch except main/develop, so before a PR exists
-# there is nothing to attach to and the upload fails with
-#   HTTP 400: Only default branch is allowed if no pull_request_number is provided
-# (which is why re-running after opening the PR used to fix it). Once a PR does exist,
-# main.yml runs on the pull_request event — which fires on every push to the head branch —
-# and uploads both reports with a proper PR number, so uploading here only duplicated it.
-permissions: read-all
 on:
-  push:
-    branches-ignore:
-      - "main"
-      - "develop"
+  workflow_call:
+    inputs:
+      coverage:
+        description: "Whether to produce and upload the coverage artifact"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
 jobs:
-  ui-tests:
-    name: "UI Tests Only"
-    uses: ./.github/workflows/ui-workflow.yml
-    with:
-      build: false
-  go-tests:
+  go:
     runs-on: ubuntu-latest
-    name: "Go Tests"
+    name: "Go Lint and Test"
     permissions:
       contents: read
     services:
@@ -50,21 +42,43 @@ jobs:
         with:
           go-version: "stable"
 
+      # ui.Assets embeds ui/build, so the packages fail to compile without it.
+      # A placeholder keeps this job independent of the UI build, so the two run
+      # in parallel; nothing here asserts on the served assets.
       - name: Create placeholder UI build dir
         run: mkdir -p ui/build && echo "placeholder" > ui/build/placeholder
 
       - name: Install Go dependencies
         run: go mod download
 
+      - name: Install Go Linter
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          install-only: true
+          version: v2.13.2
+
+      # --diff reports and fails; a bare `fmt` rewrites the checkout and exits 0,
+      # which never fails a build.
+      - name: Go Format
+        run: golangci-lint fmt --diff ./...
+
+      - name: Go Lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.13.2
+          args: --timeout=5m ./...
+
       - name: Go Test
         run: go test -coverprofile=go-coverage.out ./...
 
       - name: Convert Go coverage to Cobertura
+        if: inputs.coverage
         run: |
           go install github.com/boumenot/gocover-cobertura@4afa1205ab3b54ae098dd4724c1657aad10f7484
           gocover-cobertura < go-coverage.out > go-cobertura.xml
 
       - name: Upload Go coverage artifact
+        if: inputs.coverage
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-report-go
