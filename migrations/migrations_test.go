@@ -64,8 +64,8 @@ func TestForDSN(t *testing.T) {
 			errContains: "sqlite migrations are not yet supported",
 		},
 		{
-			name:        "unsupported scheme",
-			dsn:         "mysql://localhost:3306/db",
+			name:        "unsupported scheme with credentials",
+			dsn:         "mysql://localhost:3306/db?auth=some_secret",
 			expectErr:   true,
 			errContains: "unsupported database URL format",
 		},
@@ -77,6 +77,7 @@ func TestForDSN(t *testing.T) {
 			if tt.expectErr {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errContains)
+				assert.NotContains(t, err.Error(), "some_secret")
 				assert.Nil(t, set)
 			} else {
 				require.NoError(t, err)

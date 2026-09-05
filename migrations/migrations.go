@@ -48,7 +48,7 @@ func ForDSN(dsn string) (*MigrationSet, error) {
 		return nil, fmt.Errorf("sqlite migrations are not yet supported")
 	}
 
-	return nil, fmt.Errorf("unsupported database URL format: %q", dsn)
+	return nil, fmt.Errorf("unsupported database URL format")
 }
 
 // RunPreflight delegates preflight data checks to the dialect handler (currently Postgres).
