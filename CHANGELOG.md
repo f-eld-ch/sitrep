@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(packaging)* Build deb and rpm packages with a hardened systemd unit ([#1818](https://github.com/f-eld-ch/sitrep/issues/1818)) - ([2c6a980](https://github.com/f-eld-ch/sitrep/commit/2c6a9809160ae11e0ba6c04abb0097e06e3e73a8))
 - *(server)* Add TLS support with optional ACME certificates ([#1814](https://github.com/f-eld-ch/sitrep/issues/1814)) - ([5dd1615](https://github.com/f-eld-ch/sitrep/commit/5dd161595c8b25cbef70ed220a157de7d8fcf6e1))
 
 ### 🐛 Bug Fixes
