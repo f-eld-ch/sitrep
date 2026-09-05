@@ -89,8 +89,8 @@ kos:
       - "{{ if not .IsSnapshot }}v{{ .Version }}{{end}}"
       - "{{ if not .IsSnapshot }}v{{ .Major }}.{{ .Minor }}{{end}}"
       - "{{ if not .IsSnapshot }}v{{ .Major }}{{end}}"
-      - "{{ if not .IsSnapshot }}stable{{ end }}"
-      - "{{ if not .IsSnapshot }}latest{{ end }}"
+      - "{{ if and (not .IsSnapshot) (not .Prerelease) }}stable{{ end }}"
+      - "{{ if and (not .IsSnapshot) (not .Prerelease) }}latest{{ end }}"
     creation_time: "{{ .CommitTimestamp }}"
     ko_data_creation_time: "{{ .CommitTimestamp }}"
     labels:
