@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(ci)* Run the Go gates on every path, including releases ([#1820](https://github.com/f-eld-ch/sitrep/issues/1820)) - ([686db50](https://github.com/f-eld-ch/sitrep/commit/686db50405d2b927525def6b9acfde6760d46818))
+
+
 ## [26.9.2](https://github.com/f-eld-ch/sitrep/compare/v26.9.1..v26.9.2) - 2026-09-05
 
 ### ⛰️  Features
