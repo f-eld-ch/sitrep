@@ -18,7 +18,7 @@ var (
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
-// IncidentRow mirrors rm_incident
+// IncidentRow mirrors readmodel.incident
 // ──────────────────────────────────────────────────────────────────────────────
 
 type IncidentRow struct {
@@ -34,7 +34,7 @@ type IncidentRow struct {
 	UpdatedAt time.Time
 }
 
-// IncidentHandler maintains an in-memory projection of the rm_incident table.
+// IncidentHandler maintains an in-memory projection of the readmodel.incident table.
 type IncidentHandler struct {
 	mu   sync.RWMutex
 	rows map[uuid.UUID]*IncidentRow
@@ -44,7 +44,7 @@ func NewIncidentHandler() *IncidentHandler {
 	return &IncidentHandler{rows: make(map[uuid.UUID]*IncidentRow)}
 }
 
-func (h *IncidentHandler) Name() string { return "rm_incident" }
+func (h *IncidentHandler) Name() string { return "readmodel.incident" }
 func (h *IncidentHandler) Version() int { return 3 }
 
 func (h *IncidentHandler) Reset(_ context.Context) error {
@@ -232,7 +232,7 @@ func (h *IncidentHandler) All() []*IncidentRow {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// DivisionRow + IncidentDivisionHandler mirrors rm_incident_division
+// DivisionRow + IncidentDivisionHandler mirrors readmodel.incident_division
 // ──────────────────────────────────────────────────────────────────────────────
 
 type DivisionRow struct {
@@ -243,7 +243,7 @@ type DivisionRow struct {
 	RemovedAt   *time.Time
 }
 
-// IncidentDivisionHandler maintains an in-memory projection of rm_incident_division.
+// IncidentDivisionHandler maintains an in-memory projection of readmodel.incident_division.
 type IncidentDivisionHandler struct {
 	mu   sync.RWMutex
 	rows map[uuid.UUID]*DivisionRow
@@ -253,7 +253,7 @@ func NewIncidentDivisionHandler() *IncidentDivisionHandler {
 	return &IncidentDivisionHandler{rows: make(map[uuid.UUID]*DivisionRow)}
 }
 
-func (h *IncidentDivisionHandler) Name() string { return "rm_incident_division" }
+func (h *IncidentDivisionHandler) Name() string { return "readmodel.incident_division" }
 func (h *IncidentDivisionHandler) Version() int { return 1 }
 
 func (h *IncidentDivisionHandler) Reset(_ context.Context) error {

@@ -17,7 +17,7 @@ var (
 	_ Handler = (*IncidentDivisionHandler)(nil)
 )
 
-// IncidentHandler maintains the rm_incident read model.
+// IncidentHandler maintains the readmodel.incident read model.
 type IncidentHandler struct {
 	pool *pgxpool.Pool
 }
@@ -26,10 +26,10 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 	return &IncidentHandler{pool: pool}
 }
 
-func (h *IncidentHandler) Name() string { return "rm_incident" }
+func (h *IncidentHandler) Name() string { return "readmodel.incident" }
 func (h *IncidentHandler) Version() int { return 3 }
 func (h *IncidentHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.incident`)
 	return err
 }
 
@@ -57,7 +57,7 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) error {
 	db, ok := pgxTxFromCtx(ctx)
 	if !ok {
-		return fmt.Errorf("rm_incident: no tx in context")
+		return fmt.Errorf("readmodel.incident: no tx in context")
 	}
 
 	id := e.StreamID
@@ -75,7 +75,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(db, ctx, `
-			INSERT INTO rm_incident (id, parent_id, name, location, is_closed, is_deleted, created_at, updated_at)
+			INSERT INTO readmodel.incident (id, parent_id, name, location, is_closed, is_deleted, created_at, updated_at)
 			VALUES ($1, NULL, $2, $3, false, false, $4, $4)
 			ON CONFLICT (id) DO UPDATE
 			  SET parent_id = EXCLUDED.parent_id, name = EXCLUDED.name, location = EXCLUDED.location,
@@ -104,7 +104,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(db, ctx, `
-			INSERT INTO rm_incident
+			INSERT INTO readmodel.incident
 			  (id, parent_id, name, location, is_closed, is_deleted, closed_at, deleted_at, created_at, updated_at)
 			VALUES ($1, NULL, $2, $3, $4, $5, $6::timestamptz, $7::timestamptz, $8, $9)
 			ON CONFLICT (id) DO UPDATE
@@ -125,7 +125,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(db, ctx, `UPDATE rm_incident SET name = $1, updated_at = $2 WHERE id = $3`,
+		return exec(db, ctx, `UPDATE readmodel.incident SET name = $1, updated_at = $2 WHERE id = $3`,
 			d.Name, e.OccurredAt, id)
 
 	case "LocationChanged":
@@ -138,7 +138,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(db, ctx, `UPDATE rm_incident SET location = $1, updated_at = $2 WHERE id = $3`,
+		return exec(db, ctx, `UPDATE readmodel.incident SET location = $1, updated_at = $2 WHERE id = $3`,
 			nullableJSON(d.Location), e.OccurredAt, id)
 
 	case "ParentLinked":
@@ -151,26 +151,26 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(db, ctx, `UPDATE rm_incident SET parent_id = $1, updated_at = $2 WHERE id = $3`,
+		return exec(db, ctx, `UPDATE readmodel.incident SET parent_id = $1, updated_at = $2 WHERE id = $3`,
 			d.ParentID, e.OccurredAt, id)
 
 	case "ParentUnlinked":
-		return exec(db, ctx, `UPDATE rm_incident SET parent_id = NULL, updated_at = $1 WHERE id = $2`,
+		return exec(db, ctx, `UPDATE readmodel.incident SET parent_id = NULL, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 
 	case "Closed":
 		return exec(db, ctx, `
-			UPDATE rm_incident SET is_closed = true, closed_at = $1, updated_at = $1 WHERE id = $2`,
+			UPDATE readmodel.incident SET is_closed = true, closed_at = $1, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 
 	case "Reopened":
 		return exec(db, ctx, `
-			UPDATE rm_incident SET is_closed = false, closed_at = NULL, updated_at = $1 WHERE id = $2`,
+			UPDATE readmodel.incident SET is_closed = false, closed_at = NULL, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 
 	case "Deleted":
 		return exec(db, ctx, `
-			UPDATE rm_incident SET is_deleted = true, deleted_at = $1, updated_at = $1 WHERE id = $2`,
+			UPDATE readmodel.incident SET is_deleted = true, deleted_at = $1, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
 	}
 
@@ -178,7 +178,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// IncidentDivisionHandler — rm_incident_division
+// IncidentDivisionHandler — readmodel.incident_division
 // ──────────────────────────────────────────────────────────────────────────────
 
 type IncidentDivisionHandler struct {
@@ -189,10 +189,10 @@ func NewIncidentDivisionHandler(pool *pgxpool.Pool) *IncidentDivisionHandler {
 	return &IncidentDivisionHandler{pool: pool}
 }
 
-func (h *IncidentDivisionHandler) Name() string { return "rm_incident_division" }
+func (h *IncidentDivisionHandler) Name() string { return "readmodel.incident_division" }
 func (h *IncidentDivisionHandler) Version() int { return 2 }
 func (h *IncidentDivisionHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE rm_incident_division`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.incident_division`)
 	return err
 }
 
@@ -212,7 +212,7 @@ func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Event) error {
 	db, ok := pgxTxFromCtx(ctx)
 	if !ok {
-		return fmt.Errorf("rm_incident_division: no tx in context")
+		return fmt.Errorf("readmodel.incident_division: no tx in context")
 	}
 
 	incidentID := e.StreamID
@@ -236,7 +236,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 
 		for _, div := range d.Divisions {
 			if err := exec(db, ctx, `
-				INSERT INTO rm_incident_division (id, incident_id, name, description, removed_at)
+				INSERT INTO readmodel.incident_division (id, incident_id, name, description, removed_at)
 				VALUES ($1, $2, $3, $4, NULL)
 				ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
 				div.ID, incidentID, div.Name, div.Description); err != nil {
@@ -261,7 +261,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 		}
 
 		return exec(db, ctx, `
-			INSERT INTO rm_incident_division (id, incident_id, name, description, removed_at)
+			INSERT INTO readmodel.incident_division (id, incident_id, name, description, removed_at)
 			VALUES ($1, $2, $3, $4, NULL)
 			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
 			d.Division.ID, incidentID, d.Division.Name, d.Division.Description)
@@ -279,11 +279,11 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 		}
 
 		if d.Description != nil {
-			return exec(db, ctx, `UPDATE rm_incident_division SET name = $1, description = $2 WHERE id = $3`,
+			return exec(db, ctx, `UPDATE readmodel.incident_division SET name = $1, description = $2 WHERE id = $3`,
 				d.Name, *d.Description, d.ID)
 		}
 
-		return exec(db, ctx, `UPDATE rm_incident_division SET name = $1 WHERE id = $2`, d.Name, d.ID)
+		return exec(db, ctx, `UPDATE readmodel.incident_division SET name = $1 WHERE id = $2`, d.Name, d.ID)
 
 	case "DivisionRemoved":
 		type divisionRemoved struct {
@@ -295,7 +295,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 			return err
 		}
 
-		return exec(db, ctx, `UPDATE rm_incident_division SET removed_at = $1 WHERE id = $2`,
+		return exec(db, ctx, `UPDATE readmodel.incident_division SET removed_at = $1 WHERE id = $2`,
 			e.OccurredAt, d.ID)
 	}
 

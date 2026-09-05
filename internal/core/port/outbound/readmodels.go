@@ -76,7 +76,7 @@ type LayerRM struct {
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Queries is the driven port for read-model access. Implementations query
-// projection tables (rm_*) and never touch the event store or aggregates.
+// projection tables and never touch the event store or aggregates.
 type Queries interface {
 	// ListIncidents returns all non-deleted incidents, newest first.
 	ListIncidents(ctx context.Context) ([]*IncidentRM, error)

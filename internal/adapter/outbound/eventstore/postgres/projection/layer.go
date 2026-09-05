@@ -14,7 +14,7 @@ import (
 // Compile-time assertion: LayerFeaturesHandler implements Handler.
 var _ Handler = (*LayerFeaturesHandler)(nil)
 
-// LayerFeaturesHandler maintains rm_layer_features.
+// LayerFeaturesHandler maintains readmodel.layer_features.
 // One row per layer holding a complete GeoJSON FeatureCollection as jsonb,
 // plus a revision counter. Polled every 2s by the UI map view.
 type LayerFeaturesHandler struct {
@@ -25,10 +25,10 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 	return &LayerFeaturesHandler{pool: pool}
 }
 
-func (h *LayerFeaturesHandler) Name() string { return "rm_layer_features" }
+func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
 func (h *LayerFeaturesHandler) Version() int { return 1 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE rm_layer_features`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features`)
 	return err
 }
 
@@ -52,7 +52,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 func (h *LayerFeaturesHandler) Apply(ctx context.Context, e eventsourcing.Event) error {
 	tx, ok := pgxTxFromCtx(ctx)
 	if !ok {
-		return fmt.Errorf("rm_layer_features: no transaction in context")
+		return fmt.Errorf("readmodel.layer_features: no transaction in context")
 	}
 
 	switch e.StreamType {
@@ -80,7 +80,7 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 		}
 
 		err := exec(tx, ctx, `
-			INSERT INTO rm_layer_features (id, incident_id, name, geojson, revision, removed)
+			INSERT INTO readmodel.layer_features (id, incident_id, name, geojson, revision, removed)
 			VALUES ($1, $2, $3, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, false)
 			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
 			id, d.IncidentID, d.Name)
@@ -97,12 +97,12 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 			return err
 		}
 
-		err := exec(tx, ctx, `UPDATE rm_layer_features SET name = $1 WHERE id = $2`, d.Name, id)
+		err := exec(tx, ctx, `UPDATE readmodel.layer_features SET name = $1 WHERE id = $2`, d.Name, id)
 
 		return err
 
 	case "Removed":
-		err := exec(tx, ctx, `UPDATE rm_layer_features SET removed = true WHERE id = $1`, id)
+		err := exec(tx, ctx, `UPDATE readmodel.layer_features SET removed = true WHERE id = $1`, id)
 		return err
 	}
 
@@ -129,7 +129,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		// Remove any existing entry for this feature ID then append the new one.
 		// COALESCE guards against NULL from jsonb_agg on an empty array (first feature).
 		err := exec(tx, ctx, `
-			UPDATE rm_layer_features
+			UPDATE readmodel.layer_features
 			SET geojson = jsonb_set(
 			      geojson, '{features}',
 			      COALESCE(
@@ -155,7 +155,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		}
 		// Only update when the stored geometry differs — makes replay idempotent.
 		err := exec(tx, ctx, `
-			UPDATE rm_layer_features
+			UPDATE readmodel.layer_features
 			SET geojson = jsonb_set(
 			      geojson,
 			      ARRAY['features',
@@ -185,7 +185,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 		}
 		// Only update when the stored properties differ — makes replay idempotent.
 		err := exec(tx, ctx, `
-			UPDATE rm_layer_features
+			UPDATE readmodel.layer_features
 			SET geojson = jsonb_set(
 			      geojson,
 			      ARRAY['features',
@@ -206,7 +206,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 
 	case "Removed":
 		err := exec(tx, ctx, `
-			UPDATE rm_layer_features
+			UPDATE readmodel.layer_features
 			SET geojson = jsonb_set(
 			      geojson, '{features}',
 			      (SELECT COALESCE(jsonb_agg(f), '[]'::jsonb)
