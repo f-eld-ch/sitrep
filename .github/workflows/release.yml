@@ -72,3 +72,18 @@ jobs:
           args: release --clean --release-notes=${{ runner.temp }}/RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dispatch package repository update
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGE_REPO_DISPATCH_TOKEN }}
+        run: |
+          if echo "${GITHUB_REF_NAME}" | grep -qE '\-(rc|beta|alpha)'; then
+            CHANNEL="testing"
+          else
+            CHANNEL="stable"
+          fi
+          gh api repos/f-eld-ch/package-repo/dispatches \
+            --method POST \
+            -f event_type=new-release \
+            -f client_payload[tag]="${GITHUB_REF_NAME}" \
+            -f client_payload[channel]="${CHANNEL}"
