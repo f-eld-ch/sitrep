@@ -21,9 +21,19 @@ jobs:
     with:
       build: true
 
+  # A tag is normally cut from a develop commit that main.yml already tested,
+  # but nothing guarantees it: the tag push and the branch push race, and a tag
+  # can be placed on any commit. Re-running the gates here is what actually
+  # blocks a broken release from publishing.
+  go-build:
+    name: Lint and test Go
+    uses: ./.github/workflows/go-workflow.yml
+    with:
+      coverage: false
+
   release:
     name: Create GitHub release
-    needs: ui-build
+    needs: [ui-build, go-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write

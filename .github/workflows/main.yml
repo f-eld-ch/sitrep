@@ -44,7 +44,11 @@ jobs:
     uses: ./.github/workflows/ui-workflow.yml
     with:
       build: true
-  
+
+  go-build:
+    name: "Go Lint and Test"
+    uses: ./.github/workflows/go-workflow.yml
+
   docker-build:
     name: "Build and Push Sitrep Image"
     needs: ui-build  # Only depends on UI, not on hasura
@@ -87,14 +91,14 @@ jobs:
           label: code-coverage-agent
 
   upload-coverage-go:
-    needs: docker-build
+    needs: go-build
     # Coverage attaches to a pull request or the default branch. This workflow also
     # runs on v* tag pushes, which are neither — upload-code-coverage rejects those
     # with "Only default branch is allowed if no pull_request_number is provided", so
     # skip them rather than fail the release run.
     if: >-
       ${{ !cancelled()
-      && needs.docker-build.result == 'success'
+      && needs.go-build.result == 'success'
       && (github.event_name != 'pull_request'
           || github.event.pull_request.head.repo.full_name == github.repository)
       && (github.event_name == 'pull_request'
