@@ -10,6 +10,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.4.1 to 26.4.2 in /ui ([#1813](https://github.com/f-eld-ch/sitrep/issues/1813)) - ([60c0a77](https://github.com/f-eld-ch/sitrep/commit/60c0a77cf0135087ce8d06a733a6aca35aca60ff))
 - *(deps)* Bump github.com/99designs/gqlgen from 0.17.94 to 0.17.95 ([#1816](https://github.com/f-eld-ch/sitrep/issues/1816)) - ([f371706](https://github.com/f-eld-ch/sitrep/commit/f371706aa65b63e673b00e0929c2f129e58980c9))
 
 
