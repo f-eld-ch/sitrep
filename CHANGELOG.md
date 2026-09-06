@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(migrations)* Move postgres migrations and introduce readmodel schema ([#1821](https://github.com/f-eld-ch/sitrep/issues/1821)) - ([ba3a12d](https://github.com/f-eld-ch/sitrep/commit/ba3a12dc5fbe0aa3db18f136542163eb5fcd20fd))
+
 ### ⚙️  Other
 
 - *(ci)* Run the Go gates on every path, including releases ([#1820](https://github.com/f-eld-ch/sitrep/issues/1820)) - ([686db50](https://github.com/f-eld-ch/sitrep/commit/686db50405d2b927525def6b9acfde6760d46818))
