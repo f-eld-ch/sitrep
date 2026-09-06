@@ -27,7 +27,7 @@ func NewIncidentRetention(pool *pgxpool.Pool) *IncidentRetention {
 
 func (r *IncidentRetention) OpenBefore(ctx context.Context, before time.Time, limit int) ([]shared.IncidentID, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id FROM rm_incident
+		SELECT id FROM readmodel.incident
 		WHERE is_closed = false AND is_deleted = false AND updated_at <= $1
 		ORDER BY updated_at
 		LIMIT $2`, before, limit)
@@ -41,7 +41,7 @@ func (r *IncidentRetention) ArchiveBefore(
 	limit int,
 ) ([]shared.IncidentID, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id FROM rm_incident
+		SELECT id FROM readmodel.incident
 		WHERE (is_deleted = false AND is_closed = true AND closed_at <= $1)
 		   OR (is_deleted = true AND deleted_at <= $2)
 		ORDER BY COALESCE(deleted_at, closed_at)

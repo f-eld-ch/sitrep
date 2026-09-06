@@ -40,29 +40,40 @@ func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 		return nil, fmt.Errorf("--database-url / DATABASE_URL is required for migrate commands")
 	}
 
-	cfg, err := pgx.ParseConfig(dsn)
+	set, err := migrations.ForDSN(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("parsing database URL: %w", err)
+		return nil, err
 	}
 
-	return openGooseDBWithRetry(
-		ctx,
-		gooseDBConnectWait,
-		gooseDBConnectInterval,
-		func(ctx context.Context) (*sql.DB, error) {
-			db := stdlib.OpenDB(*cfg)
+	switch set.Dialect {
+	case goose.DialectPostgres:
+		cfg, err := pgx.ParseConfig(dsn)
+		if err != nil {
+			return nil, fmt.Errorf("parsing database URL: %w", err)
+		}
 
-			pingCtx, cancel := context.WithTimeout(ctx, gooseDBPingTimeout)
-			defer cancel()
+		return openGooseDBWithRetry(
+			ctx,
+			gooseDBConnectWait,
+			gooseDBConnectInterval,
+			func(ctx context.Context) (*sql.DB, error) {
+				db := stdlib.OpenDB(*cfg)
 
-			if err := db.PingContext(pingCtx); err != nil {
-				_ = db.Close()
-				return nil, err
-			}
+				pingCtx, cancel := context.WithTimeout(ctx, gooseDBPingTimeout)
+				defer cancel()
 
-			return db, nil
-		},
-	)
+				if err := db.PingContext(pingCtx); err != nil {
+					_ = db.Close()
+					return nil, err
+				}
+
+				return db, nil
+			},
+		)
+
+	default:
+		return nil, fmt.Errorf("unsupported database dialect: %s", set.Dialect)
+	}
 }
 
 func openGooseDBWithRetry(
@@ -97,12 +108,17 @@ func openGooseDBWithRetry(
 	}
 }
 
-func gooseProvider(db *sql.DB) (*goose.Provider, error) {
+func gooseProvider(db *sql.DB, dsn string) (*goose.Provider, error) {
+	set, err := migrations.ForDSN(dsn)
+	if err != nil {
+		return nil, err
+	}
+
 	return goose.NewProvider(
-		goose.DialectPostgres,
+		set.Dialect,
 		db,
-		migrations.FS,
-		goose.WithGoMigrations(migrations.GoMigrations()...),
+		set.FS,
+		goose.WithGoMigrations(set.GoMigrations...),
 		goose.WithVerbose(true),
 	)
 }
@@ -132,7 +148,7 @@ func runMigrateUp(cmd *cobra.Command, dsn string) error {
 	}
 	defer func() { _ = db.Close() }()
 
-	p, err := gooseProvider(db)
+	p, err := gooseProvider(db, dsn)
 	if err != nil {
 		return err
 	}
@@ -168,7 +184,7 @@ func runMigrateDown(cmd *cobra.Command, dsn string) error {
 	}
 	defer func() { _ = db.Close() }()
 
-	p, err := gooseProvider(db)
+	p, err := gooseProvider(db, dsn)
 	if err != nil {
 		return err
 	}
@@ -200,7 +216,7 @@ func runMigrateStatus(cmd *cobra.Command, dsn string) error {
 	}
 	defer func() { _ = db.Close() }()
 
-	p, err := gooseProvider(db)
+	p, err := gooseProvider(db, dsn)
 	if err != nil {
 		return err
 	}

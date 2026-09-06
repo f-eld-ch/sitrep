@@ -14,7 +14,7 @@ import (
 // Compile-time assertion.
 var _ Handler = (*MessageHandler)(nil)
 
-// MessageRow mirrors rm_message.
+// MessageRow mirrors readmodel.message.
 type MessageRow struct {
 	ID             uuid.UUID
 	IncidentID     uuid.UUID
@@ -36,7 +36,7 @@ type MessageRow struct {
 	Deleted        bool
 }
 
-// MessageHandler maintains an in-memory projection of the rm_message table.
+// MessageHandler maintains an in-memory projection of the readmodel.message table.
 type MessageHandler struct {
 	mu   sync.RWMutex
 	rows map[uuid.UUID]*MessageRow
@@ -46,7 +46,7 @@ func NewMessageHandler() *MessageHandler {
 	return &MessageHandler{rows: make(map[uuid.UUID]*MessageRow)}
 }
 
-func (h *MessageHandler) Name() string { return "rm_message" }
+func (h *MessageHandler) Name() string { return "readmodel.message" }
 func (h *MessageHandler) Version() int { return 2 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {

@@ -1,4 +1,4 @@
-package migrations
+package postgres
 
 // Import migration: reads the legacy Hasura tables and writes events into the
 // eventsourcing schema.  This is a one-shot migration — it refuses to run if any

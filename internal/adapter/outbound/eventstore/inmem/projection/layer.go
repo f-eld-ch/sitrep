@@ -21,7 +21,7 @@ type featureItem struct {
 	Properties json.RawMessage
 }
 
-// LayerRow mirrors rm_layer_features.
+// LayerRow mirrors readmodel.layer_features.
 // Features are kept as a map so individual add/move/restyle/remove operations
 // are O(1). GeoJSON is built on demand by Queries.
 type LayerRow struct {
@@ -65,7 +65,7 @@ func (r *LayerRow) GeoJSON() json.RawMessage {
 	return b
 }
 
-// LayerFeaturesHandler maintains an in-memory projection of rm_layer_features.
+// LayerFeaturesHandler maintains an in-memory projection of readmodel.layer_features.
 type LayerFeaturesHandler struct {
 	mu   sync.RWMutex
 	rows map[uuid.UUID]*LayerRow
@@ -75,7 +75,7 @@ func NewLayerFeaturesHandler() *LayerFeaturesHandler {
 	return &LayerFeaturesHandler{rows: make(map[uuid.UUID]*LayerRow)}
 }
 
-func (h *LayerFeaturesHandler) Name() string { return "rm_layer_features" }
+func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
 func (h *LayerFeaturesHandler) Version() int { return 1 }
 
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {

@@ -15,7 +15,7 @@ import (
 // Compile-time assertion: MessageHandler implements Handler.
 var _ Handler = (*MessageHandler)(nil)
 
-// MessageHandler maintains the rm_message read model.
+// MessageHandler maintains the readmodel.message read model.
 type MessageHandler struct {
 	pool *pgxpool.Pool
 }
@@ -24,10 +24,10 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 	return &MessageHandler{pool: pool}
 }
 
-func (h *MessageHandler) Name() string { return "rm_message" }
+func (h *MessageHandler) Name() string { return "readmodel.message" }
 func (h *MessageHandler) Version() int { return 2 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE rm_message`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message`)
 	return err
 }
 
@@ -47,7 +47,7 @@ func (h *MessageHandler) Handles(st, t string) bool {
 func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error {
 	db, ok := pgxTxFromCtx(ctx)
 	if !ok {
-		return fmt.Errorf("rm_message: no tx in context")
+		return fmt.Errorf("readmodel.message: no tx in context")
 	}
 
 	id := e.StreamID
@@ -73,7 +73,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		}
 
 		return exec(db, ctx, `
-			INSERT INTO rm_message
+			INSERT INTO readmodel.message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
 			   medium, msg_time, triage, priority, division_ids, author_sub, created_at, updated_at)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'PENDING','NORMAL','{}',$11,$12,$12)
@@ -123,7 +123,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
 
 		return exec(db, ctx, `
-			INSERT INTO rm_message
+			INSERT INTO readmodel.message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
 			   medium, msg_time, triage, priority, division_ids, author_sub, last_editor_sub,
 			   created_at, updated_at)
@@ -154,7 +154,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		}
 
 		return exec(db, ctx, `
-			UPDATE rm_message SET
+			UPDATE readmodel.message SET
 			  content         = COALESCE($2, content),
 			  sender          = COALESCE($3, sender),
 			  sender_detail   = COALESCE($4, sender_detail),
@@ -184,14 +184,14 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
 
 		return exec(db, ctx, `
-			UPDATE rm_message
+			UPDATE readmodel.message
 			SET triage = $2, priority = $3, division_ids = $4, last_editor_sub = $5,
 			    updated_at = $6
 			WHERE id = $1`,
 			id, d.Triage, d.Priority, d.DivisionIDs, d.TriagedBy, e.OccurredAt)
 
 	case "Deleted":
-		return exec(db, ctx, `DELETE FROM rm_message WHERE id = $1`, id)
+		return exec(db, ctx, `DELETE FROM readmodel.message WHERE id = $1`, id)
 	}
 
 	return nil

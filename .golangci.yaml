@@ -60,7 +60,7 @@ linters:
       - path: internal/cli/migrate_test.go
         linters:
           - nilnil
-      - path: migrations/00004_import.go
+      - path: migrations/postgres/00004_import.go
         linters:
           - sqlclosecheck
   settings:

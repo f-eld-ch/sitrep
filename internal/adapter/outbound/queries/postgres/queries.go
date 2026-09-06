@@ -1,5 +1,5 @@
 // Package postgres implements the outbound.Queries port against the Postgres
-// projection tables (rm_incident, rm_incident_division, rm_message, rm_layer_features).
+// projection tables (readmodel.incident, readmodel.incident_division, readmodel.message, readmodel.layer_features).
 // These are plain SQL reads — no event store, no aggregates.
 package postgres
 
@@ -40,7 +40,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM rm_incident
+		FROM readmodel.incident
 		WHERE is_deleted = false
 		ORDER BY created_at DESC`)
 	if err != nil {
@@ -77,7 +77,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM rm_incident
+		FROM readmodel.incident
 		WHERE id = $1 AND is_deleted = false`, id)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM rm_incident
+		FROM readmodel.incident
 		WHERE parent_id = $1 AND is_deleted = false
 		ORDER BY created_at DESC`, parentID)
 	if err != nil {
@@ -200,7 +200,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, incident_id, name, description, removed_at
-		FROM rm_incident_division
+		FROM readmodel.incident_division
 		WHERE incident_id = ANY($1)
 		ORDER BY incident_id, name`, ids)
 	if err != nil {
@@ -244,7 +244,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
 		       created_at, updated_at, triage, priority, division_ids
-		FROM rm_message
+		FROM readmodel.message
 		WHERE incident_id = $1
 		ORDER BY msg_time DESC, created_at DESC`, incidentID)
 	if err != nil {
@@ -262,7 +262,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
 		       created_at, updated_at, triage, priority, division_ids
-		FROM rm_message
+		FROM readmodel.message
 		WHERE id = $1`, id)
 	if err != nil {
 		return nil, err
@@ -343,8 +343,8 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
-		FROM rm_layer_features l
-		JOIN rm_incident i ON i.id = l.incident_id
+		FROM readmodel.layer_features l
+		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.incident_id = $1 AND l.removed = false
 		ORDER BY l.name`, incidentID)
 	if err != nil {
@@ -360,8 +360,8 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 
 	rows, err := q.pool.Query(ctx, `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
-		FROM rm_layer_features l
-		JOIN rm_incident i ON i.id = l.incident_id
+		FROM readmodel.layer_features l
+		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.removed = false
 		  AND i.is_deleted = false
 		  AND (l.incident_id = $1 OR i.parent_id = $1)

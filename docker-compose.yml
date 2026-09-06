@@ -15,7 +15,7 @@ services:
     ports:
       - mode: ingress
         target: 5432
-        published: "5432"
+        published: "15432"
         protocol: tcp
   dex:
     image: docker.io/dexidp/dex:latest

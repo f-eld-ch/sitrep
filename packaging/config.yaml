@@ -20,7 +20,7 @@ log-level: info
 
 # PostgreSQL connection string. Leave empty only for a throwaway run: the
 # server then falls back to in-memory stores and nothing is persisted.
-#database-url: "postgres://sitrep:CHANGE_ME@localhost:5432/sitrep?sslmode=require"
+#database-url: "postgres://sitrep@/sitrep?host=/var/run/postgresql"
 
 # Run pending migrations inside the server process. The packaged systemd unit
 # applies them in an ExecStartPre step instead, so leave this false there.
