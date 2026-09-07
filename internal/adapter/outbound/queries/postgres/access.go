@@ -22,9 +22,9 @@ func (q *AccessQueries) ListIncidentAccess(
 	rows, err := q.pool.Query(
 		ctx,
 		`SELECT a.incident_id, a.principal_kind, a.principal_id, COALESCE(u.name, g.name, a.principal_id), a.role
-		 FROM rm_incident_access a
+		 FROM readmodel.incident_access a
 		 LEFT JOIN users u ON a.principal_kind = 'user' AND u.sub = a.principal_id
-		 LEFT JOIN rm_access_group g ON a.principal_kind = 'group' AND g.id::text = a.principal_id
+		 LEFT JOIN readmodel.access_group g ON a.principal_kind = 'group' AND g.id::text = a.principal_id
 		 WHERE a.incident_id = $1 AND a.revoked_at IS NULL
 		 ORDER BY a.principal_kind, COALESCE(u.name, g.name, a.principal_id), a.role`,
 		uuid.UUID(incidentID),
@@ -60,7 +60,7 @@ func (q *AccessQueries) GetIncidentAccessMode(
 ) (access.IncidentMode, error) {
 	var mode access.IncidentMode
 
-	err := q.pool.QueryRow(ctx, `SELECT mode FROM rm_incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
+	err := q.pool.QueryRow(ctx, `SELECT mode FROM readmodel.incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
 		Scan(&mode)
 
 	return mode, err
@@ -69,7 +69,7 @@ func (q *AccessQueries) GetIncidentAccessMode(
 func (q *AccessQueries) ListAccessGroups(ctx context.Context) ([]outbound.AccessGroupRM, error) {
 	rows, err := q.pool.Query(
 		ctx,
-		`SELECT id, name, description, archived_at FROM rm_access_group ORDER BY name, id`,
+		`SELECT id, name, description, archived_at FROM readmodel.access_group ORDER BY name, id`,
 	)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (q *AccessQueries) ListAccessGroups(ctx context.Context) ([]outbound.Access
 func (q *AccessQueries) ListGroupMembers(ctx context.Context, groupID uuid.UUID) ([]outbound.GroupMemberRM, error) {
 	rows, err := q.pool.Query(
 		ctx,
-		`SELECT group_id, subject FROM rm_access_group_member WHERE group_id = $1 AND removed_at IS NULL ORDER BY subject`,
+		`SELECT group_id, subject FROM readmodel.access_group_member WHERE group_id = $1 AND removed_at IS NULL ORDER BY subject`,
 		groupID,
 	)
 	if err != nil {
@@ -140,7 +140,7 @@ func (q *AccessQueries) ListGlobalRoles(ctx context.Context) ([]outbound.GlobalR
 	rows, err := q.pool.Query(
 		ctx,
 		`SELECT a.subject, a.role, COALESCE(u.name, ''), COALESCE(u.email, '')
-		 FROM rm_global_access a
+		 FROM readmodel.global_access a
 		 LEFT JOIN users u ON u.sub = a.subject
 		 WHERE a.revoked_at IS NULL
 		 ORDER BY a.role, COALESCE(u.name, a.subject)`,

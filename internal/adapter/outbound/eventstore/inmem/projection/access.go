@@ -52,7 +52,7 @@ func NewAccessHandler() *AccessHandler {
 	}
 }
 
-func (h *AccessHandler) Name() string { return "rm_access" }
+func (h *AccessHandler) Name() string { return "readmodel.access" }
 func (h *AccessHandler) Version() int { return 1 }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
@@ -121,7 +121,7 @@ func (h *AccessHandler) applyIncident(e eventsourcing.Event) error {
 
 		h.modes[e.StreamID] = d.Mode
 	default:
-		return fmt.Errorf("rm_access: unhandled incident event %q", e.EventType)
+		return fmt.Errorf("access: unhandled incident event %q", e.EventType)
 	}
 
 	h.recompute()
@@ -172,7 +172,7 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		delete(g.members, d.Subject)
 
 	default:
-		return fmt.Errorf("rm_access: unhandled group event %q", e.EventType)
+		return fmt.Errorf("access: unhandled group event %q", e.EventType)
 	}
 
 	h.recompute()
@@ -208,7 +208,7 @@ func (h *AccessHandler) applyGlobal(e eventsourcing.Event) error {
 
 		delete(h.global[d.Subject], d.Role)
 	default:
-		return fmt.Errorf("rm_access: unhandled global event %q", e.EventType)
+		return fmt.Errorf("access: unhandled global event %q", e.EventType)
 	}
 
 	h.recompute()

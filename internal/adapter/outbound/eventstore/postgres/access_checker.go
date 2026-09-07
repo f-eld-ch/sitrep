@@ -49,7 +49,7 @@ func (c *IncidentAccessChecker) Can(
 	action access.Action,
 ) (bool, error) {
 	var mode access.IncidentMode
-	if err := c.pool.QueryRow(ctx, `SELECT mode FROM rm_incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
+	if err := c.pool.QueryRow(ctx, `SELECT mode FROM readmodel.incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
 		Scan(&mode); err != nil {
 		return false, fmt.Errorf("access mode: %w", err)
 	}
@@ -86,7 +86,7 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 
 	rows, err := pool.Query(
 		ctx,
-		`SELECT subject, domain, object, action FROM rm_access_policy WHERE subject = $1 AND domain = $2`,
+		`SELECT subject, domain, object, action FROM readmodel.access_policy WHERE subject = $1 AND domain = $2`,
 		subject,
 		domain,
 	)
