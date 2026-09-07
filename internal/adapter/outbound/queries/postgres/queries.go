@@ -101,7 +101,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
-	slog.DebugContext(ctx, "getting incident", "id", id)
+	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 
 	query := `
 		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
@@ -192,7 +192,7 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 }
 
 func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
-	slog.DebugContext(ctx, "listing child incidents", "parent_id", parentID)
+	slog.DebugContext(ctx, "listing child incidents", slog.String("parent_id", parentID.String()))
 
 	if !q.canRead(ctx, parentID) {
 		return nil, shared.ErrNotFound
@@ -286,7 +286,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
-	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing messages", slog.String("incident_id", incidentID.String()))
 
 	if !q.canRead(ctx, incidentID) {
 		return nil, shared.ErrNotFound
@@ -395,7 +395,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing layers", slog.String("incident_id", incidentID.String()))
 
 	if !q.canRead(ctx, incidentID) {
 		return nil, shared.ErrNotFound
@@ -416,7 +416,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 }
 
 func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing visible layers", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing visible layers", slog.String("incident_id", incidentID.String()))
 
 	if !q.canRead(ctx, incidentID) {
 		return nil, shared.ErrNotFound

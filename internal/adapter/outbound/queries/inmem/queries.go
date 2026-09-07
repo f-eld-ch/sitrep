@@ -125,7 +125,7 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
-	slog.DebugContext(ctx, "listing messages", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing messages", slog.String("incident_id", incidentID.String()))
 
 	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
 		return nil, shared.ErrNotFound
@@ -189,7 +189,7 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
-	slog.DebugContext(ctx, "listing layers", "incident_id", incidentID)
+	slog.DebugContext(ctx, "listing layers", slog.String("incident_id", incidentID.String()))
 
 	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
 		return nil, shared.ErrNotFound
@@ -202,6 +202,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 
 func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing visible layers", slog.String("incident_id", incidentID.String()))
+
 	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
 		return nil, shared.ErrNotFound
 	}

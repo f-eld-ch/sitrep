@@ -115,8 +115,12 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 	}
 
 	allowed, err := e.Enforce(subject, domain, objectForAction(action), action)
-	slog.DebugContext(ctx, "evaluated access policy", "subject", subject, "domain", domain,
-		"action", action, "policies", policyCount, "allowed", allowed)
+	slog.DebugContext(ctx, "evaluated access policy",
+		slog.String("subject", subject),
+		slog.String("domain", domain),
+		slog.String("action", action),
+		slog.Int("policies", policyCount),
+		slog.Bool("allowed", allowed))
 
 	return allowed, err
 }

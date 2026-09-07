@@ -910,7 +910,7 @@ func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup,
 	if err != nil {
 		return nil, err
 	}
-	slog.DebugContext(ctx, "checking access-group administration", "subject", actor.Sub)
+	slog.DebugContext(ctx, "checking access-group administration", slog.String("subject", actor.Sub))
 	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
 		return nil, shared.ErrForbidden
 	}

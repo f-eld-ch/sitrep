@@ -190,10 +190,8 @@ func (o *OIDCClient) marshalUserinfo(
 					o.logger.ErrorContext(
 						r.Context(),
 						"failed to bootstrap first system admin",
-						"sub",
-						info.Subject,
-						"error",
-						err,
+						slog.String("sub", info.Subject),
+						slog.String("error", err.Error()),
 					)
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
