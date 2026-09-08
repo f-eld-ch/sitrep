@@ -208,6 +208,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			ctx,
 			"OIDC not configured: set --oidc-client-id or pass --insecure-local-auth to allow unauthenticated access",
 		)
+
 		return fmt.Errorf(
 			"OIDC client ID is required; pass --insecure-local-auth to explicitly allow unauthenticated local access",
 		)
