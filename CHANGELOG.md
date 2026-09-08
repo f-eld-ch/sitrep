@@ -12,6 +12,7 @@
 ### ⚙️  Other
 
 - *(ci)* Run the Go gates on every path, including releases ([#1820](https://github.com/f-eld-ch/sitrep/issues/1820)) - ([686db50](https://github.com/f-eld-ch/sitrep/commit/686db50405d2b927525def6b9acfde6760d46818))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.4 to 3.49.6 ([#1826](https://github.com/f-eld-ch/sitrep/issues/1826)) - ([bc7ed2a](https://github.com/f-eld-ch/sitrep/commit/bc7ed2a323a8f94d5e3778737f3e92cc5de317af))
 
 
 ## [26.9.2](https://github.com/f-eld-ch/sitrep/compare/v26.9.1..v26.9.2) - 2026-09-05
