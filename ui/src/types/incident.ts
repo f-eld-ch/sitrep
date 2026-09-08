@@ -15,6 +15,8 @@ export interface Incident {
   updatedAt: Date | null;
   deletedAt: Date | null;
   closedAt: Date | null;
+  canWrite: boolean;
+  canManage: boolean;
   location: Location;
   divisions: Division[];
   childIncidents: Incident[];

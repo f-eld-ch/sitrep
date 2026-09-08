@@ -66,6 +66,8 @@ type ComplexityRoot struct {
 	}
 
 	Incident struct {
+		CanManage      func(childComplexity int) int
+		CanWrite       func(childComplexity int) int
 		ChildIncidents func(childComplexity int) int
 		ClosedAt       func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
@@ -175,6 +177,8 @@ type ComplexityRoot struct {
 type IncidentResolver interface {
 	ChildIncidents(ctx context.Context, obj *model.Incident) ([]*model.Incident, error)
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
+	CanWrite(ctx context.Context, obj *model.Incident) (bool, error)
+	CanManage(ctx context.Context, obj *model.Incident) (bool, error)
 }
 type MutationResolver interface {
 	CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error)
@@ -324,6 +328,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.GlobalRoleGrant.Subject(childComplexity), true
 
+	case "Incident.canManage":
+		if e.ComplexityRoot.Incident.CanManage == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.CanManage(childComplexity), true
+	case "Incident.canWrite":
+		if e.ComplexityRoot.Incident.CanWrite == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.CanWrite(childComplexity), true
 	case "Incident.childIncidents":
 		if e.ComplexityRoot.Incident.ChildIncidents == nil {
 			break
@@ -1200,6 +1216,10 @@ type Incident {
   childIncidents: [Incident!]!
   """All messages for this incident, newest first."""
   messages: [Message!]!
+  """Whether the current user has write access to this incident."""
+  canWrite: Boolean!
+  """Whether the current user can close, reopen, or delete this incident."""
+  canManage: Boolean!
 }
 
 type Feature {
@@ -1466,6 +1486,10 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_childIncidents(ctx, field)
 	case "messages":
 		return ec.fieldContext_Incident_messages(ctx, field)
+	case "canWrite":
+		return ec.fieldContext_Incident_canWrite(ctx, field)
+	case "canManage":
+		return ec.fieldContext_Incident_canManage(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Incident", field.Name)
 }
@@ -3007,6 +3031,52 @@ func (ec *executionContext) fieldContext_Incident_messages(_ context.Context, fi
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Incident_canWrite(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_canWrite(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().CanWrite(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_canWrite(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _Incident_canManage(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_canManage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().CanManage(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_canManage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _IncidentAccessGrant_incidentId(ctx context.Context, field graphql.CollectedField, obj *model.IncidentAccessGrant) (ret graphql.Marshaler) {
@@ -7113,6 +7183,82 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Incident_messages(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "canWrite":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_canWrite(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "canManage":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_canManage(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

@@ -16,6 +16,8 @@ const baseIncident: Incident = {
   updatedAt: null,
   deletedAt: null,
   closedAt: null,
+  canWrite: true,
+  canManage: true,
   location: { id: "", name: "", coordinates: "" },
   divisions: [],
   childIncidents: [],

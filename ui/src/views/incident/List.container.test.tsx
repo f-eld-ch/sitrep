@@ -36,6 +36,8 @@ const baseIncident: Incident = {
   deletedAt: null,
   closedAt: null,
   parentId: null,
+  canWrite: true,
+  canManage: true,
   divisions: [],
   childIncidents: [],
   layers: [],

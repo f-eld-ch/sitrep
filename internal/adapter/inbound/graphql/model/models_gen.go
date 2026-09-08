@@ -84,6 +84,10 @@ type Incident struct {
 	ChildIncidents []*Incident `json:"childIncidents"`
 	// All messages for this incident, newest first.
 	Messages []*Message `json:"messages"`
+	// Whether the current user has write access to this incident.
+	CanWrite bool `json:"canWrite"`
+	// Whether the current user can close, reopen, or delete this incident.
+	CanManage bool `json:"canManage"`
 }
 
 type IncidentAccessGrant struct {

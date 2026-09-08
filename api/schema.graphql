@@ -147,6 +147,10 @@ type Incident {
   childIncidents: [Incident!]!
   """All messages for this incident, newest first."""
   messages: [Message!]!
+  """Whether the current user has write access to this incident."""
+  canWrite: Boolean!
+  """Whether the current user can close, reopen, or delete this incident."""
+  canManage: Boolean!
 }
 
 type Feature {

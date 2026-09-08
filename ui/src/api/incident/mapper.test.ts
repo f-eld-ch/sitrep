@@ -10,6 +10,8 @@ const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
   updatedAt: "2024-03-15T09:00:00Z",
   closedAt: null,
   isClosed: false,
+  canWrite: true,
+  canManage: true,
   location: { name: "Sector 7", coordinates: null },
 };
 

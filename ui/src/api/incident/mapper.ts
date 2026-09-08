@@ -23,6 +23,8 @@ export function toIncidentSummary(w: WireIncidentSummary): Incident {
     updatedAt: toOptionalDate(w.updatedAt),
     deletedAt: null,
     closedAt: toOptionalDate(w.closedAt),
+    canWrite: w.canWrite,
+    canManage: w.canManage,
     location: toLocation(w.location),
     divisions: [],
     childIncidents: [],
@@ -39,6 +41,8 @@ export function toIncidentDetails(w: WireIncidentDetail): Incident {
     updatedAt: toOptionalDate(w.updatedAt),
     deletedAt: null,
     closedAt: toOptionalDate(w.closedAt),
+    canWrite: false,
+    canManage: false,
     location: toLocation(w.location),
     divisions: w.divisions.map((d): Division => ({
       id: d.id,

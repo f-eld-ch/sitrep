@@ -223,7 +223,7 @@ export function IncidentCard(props: {
             </span>
             <span>{t("enter")}</span>
           </button>
-          {incident.closedAt === null ? (
+          {incident.canWrite && incident.closedAt === null && (
             <button
               type="button"
               data-testid="edit-button"
@@ -235,7 +235,8 @@ export function IncidentCard(props: {
               </span>
               <span>{t("edit")}</span>
             </button>
-          ) : (
+          )}
+          {incident.canManage && incident.closedAt !== null && (
             <button
               type="button"
               data-testid="delete-button"
@@ -248,7 +249,7 @@ export function IncidentCard(props: {
               <span>{t("delete")}</span>
             </button>
           )}
-          {incident.closedAt === null ? (
+          {incident.canManage && incident.closedAt === null && (
             <button
               type="button"
               data-testid="close-button"
@@ -260,7 +261,8 @@ export function IncidentCard(props: {
               </span>
               <span>{t("close")}</span>
             </button>
-          ) : (
+          )}
+          {incident.canManage && incident.closedAt !== null && (
             <button
               type="button"
               className="card-footer-item is-ahref is-capitalized is-success"
