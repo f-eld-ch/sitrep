@@ -181,6 +181,18 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	}
 	opts = append(opts, tlsOptions(v)...)
 
+	oidcPartial := []string{"oidc-issuer", "oidc-client-secret", "oidc-redirect-url"}
+	if v.GetString("oidc-client-id") != "" {
+		for _, key := range oidcPartial {
+			if v.GetString(key) == "" {
+				err := fmt.Errorf("oidc-client-id, oidc-issuer, oidc-client-secret, and oidc-redirect-url must be configured together")
+				slog.ErrorContext(ctx, "incomplete OIDC configuration", slog.String("missing", key), slog.String("error", err.Error()))
+
+				return err
+			}
+		}
+	}
+
 	if v.GetString("oidc-client-id") != "" {
 		oidcClient, err := auth.NewOIDC(ctx,
 			v.GetString("oidc-issuer"),

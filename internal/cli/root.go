@@ -200,27 +200,6 @@ func validateConfig(v *viper.Viper) error {
 		return fmt.Errorf("invalid log-level %q: %w", logLevel, err)
 	}
 
-	oidcFields := []string{
-		v.GetString("oidc-client-id"),
-		v.GetString("oidc-issuer"),
-		v.GetString("oidc-client-secret"),
-		v.GetString("oidc-redirect-url"),
-		v.GetString("cookie-key"),
-	}
-	configured := 0
-
-	for _, field := range oidcFields {
-		if field != "" {
-			configured++
-		}
-	}
-
-	if configured != 0 && configured != len(oidcFields) {
-		return fmt.Errorf(
-			"oidc-client-id, oidc-issuer, oidc-client-secret, oidc-redirect-url, and cookie-key must be configured together",
-		)
-	}
-
 	return nil
 }
 
