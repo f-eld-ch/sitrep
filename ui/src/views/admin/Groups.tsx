@@ -74,7 +74,7 @@ function Groups() {
             <div className="control">
               <input
                 id="group-name"
-                className="input"
+                className={`input${name.length === 64 ? " is-danger" : ""}`}
                 autoFocus
                 maxLength={64}
                 value={name}
@@ -85,6 +85,11 @@ function Groups() {
                 }}
               />
             </div>
+            {name.length >= 54 && (
+              <p className={`help${name.length === 64 ? " is-danger" : " is-warning"}`}>
+                {64 - name.length} / 64
+              </p>
+            )}
           </div>
           <div className="field">
             <label className="label" htmlFor="group-description">

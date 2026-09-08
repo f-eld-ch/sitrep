@@ -147,7 +147,7 @@ function GroupDetail() {
           <div className="field has-addons mb-1">
             <div className="control is-expanded">
               <input
-                className="input"
+                className={`input${renameValue.length === 64 ? " is-danger" : ""}`}
                 placeholder={t("adminGroupDetail.groupNamePlaceholder")}
                 autoFocus
                 maxLength={64}
@@ -158,6 +158,11 @@ function GroupDetail() {
                   if (e.key === "Escape") setIsRenaming(false);
                 }}
               />
+              {renameValue.length >= 54 && (
+                <p className={`help${renameValue.length === 64 ? " is-danger" : " is-warning"}`}>
+                  {64 - renameValue.length} / 64
+                </p>
+              )}
             </div>
             <div className="control">
               <button
