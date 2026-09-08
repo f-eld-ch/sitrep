@@ -1,5 +1,5 @@
-import { useMutation } from "@apollo/client/react";
-import { apiErrorFromApolloError } from "../errors";
+import { useApolloClient, useMutation } from "@apollo/client/react";
+import { apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
   ADD_GROUP_MEMBER,
@@ -16,6 +16,7 @@ import {
   LIST_USERS,
   REMOVE_GROUP_MEMBER,
   RENAME_ACCESS_GROUP,
+  UPDATE_ACCESS_GROUP_DESCRIPTION,
   REVOKE_GLOBAL_ROLE,
   REVOKE_INCIDENT_ROLE,
 } from "./documents";
@@ -27,7 +28,7 @@ export interface ChangeIncidentAccessModeArgs {
 
 export interface IncidentRoleArgs {
   incidentId: string;
-  principalKind: "USER" | "GROUP";
+  principalKind: "USER" | "GROUP" | "ALL";
   principalId: string;
   role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER";
 }
@@ -57,15 +58,20 @@ function commandState(loading: boolean, error: { message: string } | undefined):
 }
 
 export function useChangeIncidentAccessMode(): CommandHook<ChangeIncidentAccessModeArgs> {
+  const client = useApolloClient();
   const [mutate, result] = useMutation(CHANGE_INCIDENT_ACCESS_MODE);
   const changeMode = async (args: ChangeIncidentAccessModeArgs): Promise<void> => {
+    client.writeQuery({
+      query: LIST_INCIDENT_ACCESS_MODE,
+      variables: { incidentId: args.incidentId },
+      data: { incidentAccessMode: args.mode },
+    });
     await mutate({
       variables: args,
       refetchQueries: [
         { query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } },
-        { query: LIST_INCIDENT_ACCESS_MODE, variables: { incidentId: args.incidentId } },
       ],
-    });
+    }).catch(rethrowAsApiError);
   };
   return [changeMode, commandState(result.loading, result.error)];
 }
@@ -106,7 +112,7 @@ export function useGrantIncidentRole(): CommandHook<IncidentRoleArgs> {
           data: { incidentAccess: [...withoutExisting, grant] },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [grant, commandState(result.loading, result.error)];
 }
@@ -138,7 +144,7 @@ export function useRevokeIncidentRole(): CommandHook<IncidentRoleArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [revoke, commandState(result.loading, result.error)];
 }
@@ -174,6 +180,19 @@ export function useCreateAccessGroup(): CommandHook<CreateAccessGroupArgs, { gro
     return { groupId };
   };
   return [create, commandState(result.loading, result.error)];
+}
+
+export interface UpdateAccessGroupDescriptionArgs {
+  groupId: string;
+  description: string;
+}
+
+export function useUpdateAccessGroupDescription(): CommandHook<UpdateAccessGroupDescriptionArgs> {
+  const [mutate, result] = useMutation(UPDATE_ACCESS_GROUP_DESCRIPTION);
+  const update = async (args: UpdateAccessGroupDescriptionArgs): Promise<void> => {
+    await mutate({ variables: args, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] });
+  };
+  return [update, commandState(result.loading, result.error)];
 }
 
 export function useRenameAccessGroup(): CommandHook<RenameAccessGroupArgs> {

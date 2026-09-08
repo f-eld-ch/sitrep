@@ -174,16 +174,18 @@ type AccessPrincipalKind string
 const (
 	AccessPrincipalKindUser  AccessPrincipalKind = "USER"
 	AccessPrincipalKindGroup AccessPrincipalKind = "GROUP"
+	AccessPrincipalKindAll   AccessPrincipalKind = "ALL"
 )
 
 var AllAccessPrincipalKind = []AccessPrincipalKind{
 	AccessPrincipalKindUser,
 	AccessPrincipalKindGroup,
+	AccessPrincipalKindAll,
 }
 
 func (e AccessPrincipalKind) IsValid() bool {
 	switch e {
-	case AccessPrincipalKindUser, AccessPrincipalKindGroup:
+	case AccessPrincipalKindUser, AccessPrincipalKindGroup, AccessPrincipalKindAll:
 		return true
 	}
 	return false
@@ -207,7 +209,7 @@ func (e *AccessPrincipalKind) UnmarshalGQL(v any) error {
 }
 
 func (e AccessPrincipalKind) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *AccessPrincipalKind) UnmarshalJSON(b []byte) error {
@@ -262,7 +264,7 @@ func (e *GlobalRole) UnmarshalGQL(v any) error {
 }
 
 func (e GlobalRole) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *GlobalRole) UnmarshalJSON(b []byte) error {
@@ -317,7 +319,7 @@ func (e *IncidentAccessMode) UnmarshalGQL(v any) error {
 }
 
 func (e IncidentAccessMode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *IncidentAccessMode) UnmarshalJSON(b []byte) error {
@@ -376,7 +378,7 @@ func (e *IncidentRole) UnmarshalGQL(v any) error {
 }
 
 func (e IncidentRole) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *IncidentRole) UnmarshalJSON(b []byte) error {
@@ -435,7 +437,7 @@ func (e *Medium) UnmarshalGQL(v any) error {
 }
 
 func (e Medium) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *Medium) UnmarshalJSON(b []byte) error {
@@ -490,7 +492,7 @@ func (e *PriorityStatus) UnmarshalGQL(v any) error {
 }
 
 func (e PriorityStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *PriorityStatus) UnmarshalJSON(b []byte) error {
@@ -549,7 +551,7 @@ func (e *TriageStatus) UnmarshalGQL(v any) error {
 }
 
 func (e TriageStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *TriageStatus) UnmarshalJSON(b []byte) error {

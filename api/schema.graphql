@@ -64,6 +64,7 @@ enum IncidentRole {
 enum AccessPrincipalKind {
   USER
   GROUP
+  ALL
 }
 
 enum GlobalRole {
@@ -262,6 +263,7 @@ type Mutation {
   revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
   createAccessGroup(name: String!, description: String!): AccessGroup!
   renameAccessGroup(groupId: ID!, name: String!): AccessGroup!
+  updateAccessGroupDescription(groupId: ID!, description: String!): AccessGroup!
   archiveAccessGroup(groupId: ID!): ID!
   addGroupMember(groupId: ID!, subject: String!): ID!
   removeGroupMember(groupId: ID!, subject: String!): ID!

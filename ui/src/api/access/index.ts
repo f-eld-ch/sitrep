@@ -21,6 +21,7 @@ export type {
   GroupMemberArgs,
   IncidentRoleArgs,
   RenameAccessGroupArgs,
+  UpdateAccessGroupDescriptionArgs,
 } from "./commands";
 export {
   useAddGroupMember,
@@ -31,6 +32,7 @@ export {
   useGrantIncidentRole,
   useRemoveGroupMember,
   useRenameAccessGroup,
+  useUpdateAccessGroupDescription,
   useRevokeGlobalRole,
   useRevokeIncidentRole,
 } from "./commands";

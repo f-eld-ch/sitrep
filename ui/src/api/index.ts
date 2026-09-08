@@ -22,6 +22,7 @@ export type {
   GroupMemberArgs,
   IncidentRoleArgs,
   RenameAccessGroupArgs,
+  UpdateAccessGroupDescriptionArgs,
 } from "./access";
 export {
   useAccessGroups,
@@ -38,6 +39,7 @@ export {
   useIncidentAccessMode,
   useRemoveGroupMember,
   useRenameAccessGroup,
+  useUpdateAccessGroupDescription,
   useRevokeGlobalRole,
   useRevokeIncidentRole,
 } from "./access";

@@ -25,6 +25,7 @@ type Documents = {
     "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": typeof types.RevokeIncidentRoleDocument,
     "\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.CreateAccessGroupDocument,
     "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.RenameAccessGroupDocument,
+    "\n  mutation UpdateAccessGroupDescription($groupId: ID!, $description: String!) {\n    updateAccessGroupDescription(groupId: $groupId, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": typeof types.UpdateAccessGroupDescriptionDocument,
     "\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n": typeof types.ArchiveAccessGroupDocument,
     "\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n": typeof types.AddGroupMemberDocument,
     "\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n": typeof types.RemoveGroupMemberDocument,
@@ -63,6 +64,7 @@ const documents: Documents = {
     "\n  mutation RevokeIncidentRole(\n    $incidentId: ID!\n    $principalKind: AccessPrincipalKind!\n    $principalId: ID!\n    $role: IncidentRole!\n  ) {\n    revokeIncidentRole(\n      incidentId: $incidentId\n      principalKind: $principalKind\n      principalId: $principalId\n      role: $role\n    )\n  }\n": types.RevokeIncidentRoleDocument,
     "\n  mutation CreateAccessGroup($name: String!, $description: String!) {\n    createAccessGroup(name: $name, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.CreateAccessGroupDocument,
     "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.RenameAccessGroupDocument,
+    "\n  mutation UpdateAccessGroupDescription($groupId: ID!, $description: String!) {\n    updateAccessGroupDescription(groupId: $groupId, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n": types.UpdateAccessGroupDescriptionDocument,
     "\n  mutation ArchiveAccessGroup($groupId: ID!) {\n    archiveAccessGroup(groupId: $groupId)\n  }\n": types.ArchiveAccessGroupDocument,
     "\n  mutation AddGroupMember($groupId: ID!, $subject: String!) {\n    addGroupMember(groupId: $groupId, subject: $subject)\n  }\n": types.AddGroupMemberDocument,
     "\n  mutation RemoveGroupMember($groupId: ID!, $subject: String!) {\n    removeGroupMember(groupId: $groupId, subject: $subject)\n  }\n": types.RemoveGroupMemberDocument,
@@ -148,6 +150,10 @@ export function graphql(source: "\n  mutation CreateAccessGroup($name: String!, 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"): (typeof documents)["\n  mutation RenameAccessGroup($groupId: ID!, $name: String!) {\n    renameAccessGroup(groupId: $groupId, name: $name) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateAccessGroupDescription($groupId: ID!, $description: String!) {\n    updateAccessGroupDescription(groupId: $groupId, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateAccessGroupDescription($groupId: ID!, $description: String!) {\n    updateAccessGroupDescription(groupId: $groupId, description: $description) {\n      id\n      name\n      description\n      archivedAt\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

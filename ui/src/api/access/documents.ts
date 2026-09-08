@@ -28,6 +28,8 @@ import type {
   RemoveGroupMemberMutationVariables,
   RenameAccessGroupMutation,
   RenameAccessGroupMutationVariables,
+  UpdateAccessGroupDescriptionMutation,
+  UpdateAccessGroupDescriptionMutationVariables,
   RevokeGlobalRoleMutation,
   RevokeGlobalRoleMutationVariables,
   RevokeIncidentRoleMutation,
@@ -183,6 +185,20 @@ export const RENAME_ACCESS_GROUP: TypedDocumentNode<
 > = gql`
   mutation RenameAccessGroup($groupId: ID!, $name: String!) {
     renameAccessGroup(groupId: $groupId, name: $name) {
+      id
+      name
+      description
+      archivedAt
+    }
+  }
+`;
+
+export const UPDATE_ACCESS_GROUP_DESCRIPTION: TypedDocumentNode<
+  UpdateAccessGroupDescriptionMutation,
+  UpdateAccessGroupDescriptionMutationVariables
+> = gql`
+  mutation UpdateAccessGroupDescription($groupId: ID!, $description: String!) {
+    updateAccessGroupDescription(groupId: $groupId, description: $description) {
       id
       name
       description

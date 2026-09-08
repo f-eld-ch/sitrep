@@ -13,11 +13,27 @@ export type ApiErrorCode =
   | "NETWORK_ERROR"
   | "UNKNOWN";
 
+const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
+  NOT_FOUND: "The requested resource was not found.",
+  FORBIDDEN: "You don't have permission to perform this action.",
+  INCIDENT_NOT_OPEN: "This action requires the incident to be open.",
+  INCIDENT_NOT_CLOSED: "This action requires the incident to be closed.",
+  INCIDENT_DELETED: "This incident has been deleted.",
+  ALREADY_CLOSED: "The incident is already closed.",
+  ALREADY_OPEN: "The incident is already open.",
+  INVALID_INPUT: "The request contained invalid data.",
+  INVALID_PARENT_INCIDENT: "The specified parent incident is not valid.",
+  CONFLICT: "This change conflicts with another operation — please refresh and try again.",
+  INTERNAL_ERROR: "An unexpected server error occurred.",
+  NETWORK_ERROR: "Network error — please check your connection.",
+  UNKNOWN: "An unexpected error occurred.",
+};
+
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
 
   constructor(code: ApiErrorCode, message?: string) {
-    super(message ?? code);
+    super(message ?? DEFAULT_MESSAGES[code]);
     this.code = code;
     this.name = "ApiError";
   }
@@ -52,12 +68,31 @@ import { ServerError } from "@apollo/client/errors";
  * Converts an Apollo 4 error into a typed ApiError.
  * GraphQL errors arrive as CombinedGraphQLErrors; transport errors as ServerError.
  */
+// Strip the "source:line:col: fieldName " prefix that gqlgen adds to error messages.
+function extractServerMessage(raw: string, code: unknown): string | undefined {
+  const stripped = raw.replace(/^\S+:\d+:\d+:\s+\S+\s+/, "").trim();
+  // If what remains is just the error code echoed back, it adds no value.
+  if (!stripped || stripped === code) return undefined;
+  return stripped;
+}
+
 export function apiErrorFromApolloError(e: { message: string }): ApiError {
   if (CombinedGraphQLErrors.is(e)) {
-    const code = e.errors[0]?.extensions?.["code"];
-    if (isKnownCode(code)) return new ApiError(code);
-    return new ApiError("UNKNOWN");
+    const firstError = e.errors[0];
+    const code = firstError?.extensions?.["code"];
+    const serverMessage = extractServerMessage(firstError?.message ?? "", code);
+    if (isKnownCode(code)) return new ApiError(code, serverMessage);
+    return new ApiError("UNKNOWN", serverMessage);
   }
   if (ServerError.is(e)) return new ApiError("NETWORK_ERROR");
   return new ApiError("UNKNOWN");
+}
+
+/** Converts any thrown value to an ApiError and rethrows it. */
+export function rethrowAsApiError(e: unknown): never {
+  if (e instanceof ApiError) throw e;
+  if (e != null && typeof e === "object" && "message" in e) {
+    throw apiErrorFromApolloError(e as { message: string });
+  }
+  throw new ApiError("UNKNOWN");
 }

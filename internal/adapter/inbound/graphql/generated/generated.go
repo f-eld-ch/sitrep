@@ -119,31 +119,32 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddFeature               func(childComplexity int, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
-		AddGroupMember           func(childComplexity int, groupID string, subject string) int
-		ArchiveAccessGroup       func(childComplexity int, groupID string) int
-		ChangeIncidentAccessMode func(childComplexity int, incidentID string, mode model.IncidentAccessMode) int
-		CloseIncident            func(childComplexity int, id string) int
-		CreateAccessGroup        func(childComplexity int, name string, description string) int
-		CreateIncident           func(childComplexity int, input model.CreateIncidentInput) int
-		CreateLayer              func(childComplexity int, incidentID string, name string) int
-		CreateMessage            func(childComplexity int, input model.CreateMessageInput) int
-		DeleteFeature            func(childComplexity int, id string) int
-		DeleteIncident           func(childComplexity int, id string) int
-		DeleteMessage            func(childComplexity int, id string) int
-		GrantGlobalRole          func(childComplexity int, subject string, role model.GlobalRole) int
-		GrantIncidentRole        func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
-		LinkIncidentParent       func(childComplexity int, childID string, parentID string) int
-		ModifyFeature            func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
-		RemoveGroupMember        func(childComplexity int, groupID string, subject string) int
-		RenameAccessGroup        func(childComplexity int, groupID string, name string) int
-		ReopenIncident           func(childComplexity int, id string) int
-		RevokeGlobalRole         func(childComplexity int, subject string, role model.GlobalRole) int
-		RevokeIncidentRole       func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
-		TriageMessage            func(childComplexity int, id string, input model.TriageMessageInput) int
-		UnlinkIncidentParent     func(childComplexity int, childID string) int
-		UpdateIncident           func(childComplexity int, id string, input model.UpdateIncidentInput) int
-		UpdateMessage            func(childComplexity int, id string, input model.UpdateMessageInput) int
+		AddFeature                   func(childComplexity int, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		AddGroupMember               func(childComplexity int, groupID string, subject string) int
+		ArchiveAccessGroup           func(childComplexity int, groupID string) int
+		ChangeIncidentAccessMode     func(childComplexity int, incidentID string, mode model.IncidentAccessMode) int
+		CloseIncident                func(childComplexity int, id string) int
+		CreateAccessGroup            func(childComplexity int, name string, description string) int
+		CreateIncident               func(childComplexity int, input model.CreateIncidentInput) int
+		CreateLayer                  func(childComplexity int, incidentID string, name string) int
+		CreateMessage                func(childComplexity int, input model.CreateMessageInput) int
+		DeleteFeature                func(childComplexity int, id string) int
+		DeleteIncident               func(childComplexity int, id string) int
+		DeleteMessage                func(childComplexity int, id string) int
+		GrantGlobalRole              func(childComplexity int, subject string, role model.GlobalRole) int
+		GrantIncidentRole            func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
+		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
+		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		RemoveGroupMember            func(childComplexity int, groupID string, subject string) int
+		RenameAccessGroup            func(childComplexity int, groupID string, name string) int
+		ReopenIncident               func(childComplexity int, id string) int
+		RevokeGlobalRole             func(childComplexity int, subject string, role model.GlobalRole) int
+		RevokeIncidentRole           func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
+		TriageMessage                func(childComplexity int, id string, input model.TriageMessageInput) int
+		UnlinkIncidentParent         func(childComplexity int, childID string) int
+		UpdateAccessGroupDescription func(childComplexity int, groupID string, description string) int
+		UpdateIncident               func(childComplexity int, id string, input model.UpdateIncidentInput) int
+		UpdateMessage                func(childComplexity int, id string, input model.UpdateMessageInput) int
 	}
 
 	Query struct {
@@ -181,6 +182,7 @@ type MutationResolver interface {
 	RevokeIncidentRole(ctx context.Context, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (string, error)
 	CreateAccessGroup(ctx context.Context, name string, description string) (*model.AccessGroup, error)
 	RenameAccessGroup(ctx context.Context, groupID string, name string) (*model.AccessGroup, error)
+	UpdateAccessGroupDescription(ctx context.Context, groupID string, description string) (*model.AccessGroup, error)
 	ArchiveAccessGroup(ctx context.Context, groupID string) (string, error)
 	AddGroupMember(ctx context.Context, groupID string, subject string) (string, error)
 	RemoveGroupMember(ctx context.Context, groupID string, subject string) (string, error)
@@ -806,6 +808,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UnlinkIncidentParent(childComplexity, args["childId"].(string)), true
+	case "Mutation.updateAccessGroupDescription":
+		if e.ComplexityRoot.Mutation.UpdateAccessGroupDescription == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAccessGroupDescription_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateAccessGroupDescription(childComplexity, args["groupId"].(string), args["description"].(string)), true
 	case "Mutation.updateIncident":
 		if e.ComplexityRoot.Mutation.UpdateIncident == nil {
 			break
@@ -1096,6 +1109,7 @@ enum IncidentRole {
 enum AccessPrincipalKind {
   USER
   GROUP
+  ALL
 }
 
 enum GlobalRole {
@@ -1294,6 +1308,7 @@ type Mutation {
   revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
   createAccessGroup(name: String!, description: String!): AccessGroup!
   renameAccessGroup(groupId: ID!, name: String!): AccessGroup!
+  updateAccessGroupDescription(groupId: ID!, description: String!): AccessGroup!
   archiveAccessGroup(groupId: ID!): ID!
   addGroupMember(groupId: ID!, subject: String!): ID!
   removeGroupMember(groupId: ID!, subject: String!): ID!
@@ -2147,6 +2162,28 @@ func (ec *executionContext) field_Mutation_unlinkIncidentParent_args(ctx context
 		return nil, err
 	}
 	args["childId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAccessGroupDescription_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "groupId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["groupId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "description",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["description"] = arg1
 	return args, nil
 }
 
@@ -3860,6 +3897,50 @@ func (ec *executionContext) fieldContext_Mutation_renameAccessGroup(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_renameAccessGroup_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateAccessGroupDescription(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateAccessGroupDescription(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateAccessGroupDescription(ctx, fc.Args["groupId"].(string), fc.Args["description"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.AccessGroup) graphql.Marshaler {
+			return ec.marshalNAccessGroup2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessGroup(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateAccessGroupDescription(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AccessGroup(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateAccessGroupDescription_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7369,6 +7450,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateAccessGroupDescription":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateAccessGroupDescription(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "archiveAccessGroup":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_archiveAccessGroup(ctx, field)
@@ -8238,10 +8326,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAccessGroup2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessGroup(ctx context.Context, sel ast.SelectionSet, v model.AccessGroup) graphql.Marshaler {
-	return ec._AccessGroup(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNAccessGroup2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessGroupᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AccessGroup) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8365,10 +8449,6 @@ func (ec *executionContext) unmarshalNDivisionInput2ᚖgithubᚗcomᚋfᚑeldᚑ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFeature2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeature(ctx context.Context, sel ast.SelectionSet, v model.Feature) graphql.Marshaler {
-	return ec._Feature(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNFeature2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Feature) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8476,10 +8556,6 @@ func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast
 	return ret
 }
 
-func (ec *executionContext) marshalNIncident2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncident(ctx context.Context, sel ast.SelectionSet, v model.Incident) graphql.Marshaler {
-	return ec._Incident(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNIncident2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Incident) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8504,10 +8580,6 @@ func (ec *executionContext) marshalNIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsi
 		return graphql.Null
 	}
 	return ec._Incident(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNIncidentAccessGrant2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessGrant(ctx context.Context, sel ast.SelectionSet, v model.IncidentAccessGrant) graphql.Marshaler {
-	return ec._IncidentAccessGrant(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNIncidentAccessGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessGrantᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.IncidentAccessGrant) graphql.Marshaler {
@@ -8572,10 +8644,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNLayer2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayer(ctx context.Context, sel ast.SelectionSet, v model.Layer) graphql.Marshaler {
-	return ec._Layer(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNLayer2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayerᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Layer) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -8629,10 +8697,6 @@ func (ec *executionContext) unmarshalNMedium2githubᚗcomᚋfᚑeldᚑchᚋsitre
 
 func (ec *executionContext) marshalNMedium2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMedium(ctx context.Context, sel ast.SelectionSet, v model.Medium) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNMessage2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMessage(ctx context.Context, sel ast.SelectionSet, v model.Message) graphql.Marshaler {
-	return ec._Message(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMessageᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Message) graphql.Marshaler {

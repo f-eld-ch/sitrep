@@ -59,7 +59,11 @@ type PrincipalKind string
 const (
 	UserPrincipal  PrincipalKind = "user"
 	GroupPrincipal PrincipalKind = "group"
+	AllPrincipal   PrincipalKind = "all"
 )
+
+// AllPrincipalID is the fixed principal ID used when granting access to all users.
+const AllPrincipalID = "*"
 
 type Principal struct {
 	Kind PrincipalKind `json:"kind"`
@@ -145,6 +149,10 @@ func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time
 		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
 	}
 
+	if err := validatePrincipalRole(p, role); err != nil {
+		return err
+	}
+
 	if a.HasRole(p, role) {
 		return nil
 	}
@@ -155,7 +163,7 @@ func (a *IncidentAccess) GrantRole(p Principal, role Role, actor string, at time
 	}
 
 	for _, existing := range toRevoke {
-		if existing == Owner && a.directOwnerCount() == 1 {
+		if existing == Owner && a.ownerCount() == 1 {
 			return fmt.Errorf("%w: cannot replace last owner", shared.ErrForbidden)
 		}
 	}
@@ -182,7 +190,7 @@ func (a *IncidentAccess) RevokeRole(p Principal, role Role, actor string, at tim
 		return nil
 	}
 
-	if role == Owner && a.directOwnerCount() == 1 {
+	if role == Owner && a.ownerCount() == 1 {
 		return fmt.Errorf("%w: cannot revoke last owner", shared.ErrForbidden)
 	}
 
@@ -231,15 +239,23 @@ func (a *IncidentAccess) Transition(e eventsourcing.Event) error {
 	return nil
 }
 
+func (a *IncidentAccess) ownerCount() int {
+	count := 0
+	for _, roles := range a.roles {
+		if roles[Owner] {
+			count++
+		}
+	}
+	return count
+}
+
 func (a *IncidentAccess) directOwnerCount() int {
 	count := 0
-
 	for key, roles := range a.roles {
 		if roles[Owner] && strings.HasPrefix(key, string(UserPrincipal)+":") {
 			count++
 		}
 	}
-
 	return count
 }
 
@@ -259,12 +275,25 @@ func validRole(role Role) bool {
 }
 
 func validatePrincipal(p Principal) error {
-	if p.Kind != UserPrincipal && p.Kind != GroupPrincipal {
+	switch p.Kind {
+	case UserPrincipal, GroupPrincipal:
+		if strings.TrimSpace(p.ID) == "" {
+			return fmt.Errorf("%w: principal id must not be empty", shared.ErrInvalidInput)
+		}
+	case AllPrincipal:
+		if p.ID != AllPrincipalID {
+			return fmt.Errorf("%w: all principal must use id %q", shared.ErrInvalidInput, AllPrincipalID)
+		}
+	default:
 		return fmt.Errorf("%w: invalid principal kind", shared.ErrInvalidInput)
 	}
 
-	if strings.TrimSpace(p.ID) == "" {
-		return fmt.Errorf("%w: principal id must not be empty", shared.ErrInvalidInput)
+	return nil
+}
+
+func validatePrincipalRole(p Principal, role Role) error {
+	if p.Kind == AllPrincipal && role != Viewer && role != Editor {
+		return fmt.Errorf("%w: all principal only supports viewer and editor roles", shared.ErrInvalidInput)
 	}
 
 	return nil

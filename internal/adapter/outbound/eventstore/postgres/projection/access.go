@@ -172,6 +172,20 @@ func (h *AccessHandler) applyGroup(ctx context.Context, tx pgx.Tx, e eventsourci
 			d.Name,
 			e.OccurredAt,
 		)
+	case "GroupDescriptionChanged":
+		var d access.GroupDescriptionChanged
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel.access_group SET description = $2, updated_at = $3 WHERE id = $1`,
+			e.StreamID,
+			d.Description,
+			e.OccurredAt,
+		)
 	case "GroupArchived":
 		return exec(
 			tx,
@@ -241,10 +255,11 @@ func (h *AccessHandler) applyGlobal(ctx context.Context, tx pgx.Tx, e eventsourc
 		return exec(
 			tx,
 			ctx,
-			`UPDATE readmodel.global_access SET revoked_at = $3, revoked_by = $3 WHERE subject = $1 AND role = $2`,
+			`UPDATE readmodel.global_access SET revoked_at = $3, revoked_by = $4 WHERE subject = $1 AND role = $2`,
 			d.Subject,
 			d.Role,
 			e.OccurredAt,
+			actorFrom(e),
 		)
 	}
 
@@ -302,7 +317,20 @@ JOIN (VALUES
  ('system_admin', 'group', 'group.manage'),
  ('group_admin', 'group', 'group.manage')
 ) AS p(role, object, action) ON p.role = a.role
-WHERE a.revoked_at IS NULL`)
+WHERE a.revoked_at IS NULL
+ON CONFLICT DO NOTHING;
+
+INSERT INTO readmodel.access_policy (subject, domain, object, action)
+SELECT 'all', 'incident:' || a.incident_id, p.object, p.action
+FROM readmodel.incident_access a
+JOIN (VALUES
+ ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read'),
+ ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'),
+ ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'),
+ ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write')
+) AS p(role, object, action) ON p.role = a.role
+WHERE a.revoked_at IS NULL AND a.principal_kind = 'all'
+ON CONFLICT DO NOTHING`)
 }
 
 func actorFrom(e eventsourcing.Event) string {

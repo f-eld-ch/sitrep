@@ -152,6 +152,13 @@ func (h *AccessHandler) applyGroup(e eventsourcing.Event) error {
 		}
 
 		g.name = d.Name
+	case "GroupDescriptionChanged":
+		var d access.GroupDescriptionChanged
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		g.description = d.Description
 	case "GroupArchived":
 		archivedAt := e.OccurredAt
 		g.archivedAt = &archivedAt
@@ -236,6 +243,12 @@ func (h *AccessHandler) recompute() {
 						h.addPolicy("user:"+member, "incident:"+incidentID.String(), string(action))
 					}
 				}
+			}
+		}
+
+		if kind == access.AllPrincipal {
+			for _, action := range incidentActions(role) {
+				h.addPolicy("all", "incident:"+incidentID.String(), string(action))
 			}
 		}
 	}

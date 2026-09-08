@@ -86,7 +86,7 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 
 	rows, err := pool.Query(
 		ctx,
-		`SELECT subject, domain, object, action FROM readmodel.access_policy WHERE subject = $1 AND domain = $2`,
+		`SELECT subject, domain, object, action FROM readmodel.access_policy WHERE (subject = $1 OR subject = 'all') AND domain = $2`,
 		subject,
 		domain,
 	)
@@ -101,6 +101,11 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 		var policySubject, policyDomain, object, policyAction string
 		if err := rows.Scan(&policySubject, &policyDomain, &object, &policyAction); err != nil {
 			return false, err
+		}
+
+		// 'all' rows grant access to every user — rewrite to the actual subject so the matcher fires.
+		if policySubject == "all" {
+			policySubject = subject
 		}
 
 		if _, err := e.AddPolicy(policySubject, policyDomain, object, policyAction, "allow"); err != nil {

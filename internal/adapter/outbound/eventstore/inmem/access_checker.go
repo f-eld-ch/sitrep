@@ -64,7 +64,12 @@ func enforce(rows []projection.AccessPolicyRow, subject, domain, action string) 
 	}
 
 	for _, row := range rows {
-		if _, err := enforcer.AddPolicy(row.Subject, row.Domain, row.Object, row.Action, "allow"); err != nil {
+		addSubject := row.Subject
+		if row.Subject == "all" {
+			addSubject = subject
+		}
+
+		if _, err := enforcer.AddPolicy(addSubject, row.Domain, row.Object, row.Action, "allow"); err != nil {
 			return false, err
 		}
 	}

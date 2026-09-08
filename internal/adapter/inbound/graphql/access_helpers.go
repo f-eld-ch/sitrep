@@ -37,16 +37,22 @@ func incidentRoleToDomain(role model.IncidentRole) access.Role {
 }
 
 func principalKindToDomain(kind model.AccessPrincipalKind) access.PrincipalKind {
-	if kind == model.AccessPrincipalKindGroup {
+	switch kind {
+	case model.AccessPrincipalKindGroup:
 		return access.GroupPrincipal
+	case model.AccessPrincipalKindAll:
+		return access.AllPrincipal
 	}
 
 	return access.UserPrincipal
 }
 
 func principalKindFromDomain(kind access.PrincipalKind) model.AccessPrincipalKind {
-	if kind == access.GroupPrincipal {
+	switch kind {
+	case access.GroupPrincipal:
 		return model.AccessPrincipalKindGroup
+	case access.AllPrincipal:
+		return model.AccessPrincipalKindAll
 	}
 
 	return model.AccessPrincipalKindUser

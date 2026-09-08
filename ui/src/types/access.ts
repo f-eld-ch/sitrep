@@ -2,7 +2,7 @@ export type IncidentAccessMode = "OPEN_OPERATIONAL" | "RESTRICTED";
 
 export type IncidentRole = "OWNER" | "MANAGER" | "EDITOR" | "VIEWER";
 
-export type AccessPrincipalKind = "USER" | "GROUP";
+export type AccessPrincipalKind = "USER" | "GROUP" | "ALL";
 
 export type GlobalRole = "SYSTEM_ADMIN" | "GROUP_ADMIN";
 
