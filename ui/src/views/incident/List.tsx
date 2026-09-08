@@ -5,6 +5,8 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
+  faLock,
+  faLockOpen,
   faPlusCircle,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -188,6 +190,12 @@ export function IncidentCard(props: {
           <h4 className={classNames("title", { "is-5": !isChild, "is-6": isChild })}>
             {incident.name}
             {childCount > 0 && <span className="tag is-info is-light ml-2">{childCount}</span>}
+            <span
+              className="tag is-light ml-2"
+              title={incident.accessMode === "RESTRICTED" ? "Restricted" : "Open"}
+            >
+              <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
+            </span>
           </h4>
           <div className="columns">
             <div className="column is-one-third">

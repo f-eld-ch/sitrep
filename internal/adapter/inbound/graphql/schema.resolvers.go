@@ -7,6 +7,7 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
@@ -104,6 +105,47 @@ func (r *incidentResolver) CanManage(ctx context.Context, obj *model.Incident) (
 	}
 
 	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentClose)
+}
+
+// CanManageAccess is the resolver for the canManageAccess field.
+func (r *incidentResolver) CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentManageAccess)
+}
+
+// AccessMode is the resolver for the accessMode field.
+func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error) {
+	if r.AccessQueries == nil {
+		return model.IncidentAccessModeOpenOperational, nil
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return "", err
+	}
+
+	mode, err := r.AccessQueries.GetIncidentAccessMode(ctx, shared.IncidentID(incID))
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return model.IncidentAccessModeOpenOperational, nil
+		}
+		return "", err
+	}
+
+	return incidentModeFromDomain(mode), nil
 }
 
 // CreateIncident is the resolver for the createIncident field.

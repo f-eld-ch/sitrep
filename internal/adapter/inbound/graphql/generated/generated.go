@@ -66,19 +66,21 @@ type ComplexityRoot struct {
 	}
 
 	Incident struct {
-		CanManage      func(childComplexity int) int
-		CanWrite       func(childComplexity int) int
-		ChildIncidents func(childComplexity int) int
-		ClosedAt       func(childComplexity int) int
-		CreatedAt      func(childComplexity int) int
-		Divisions      func(childComplexity int) int
-		ID             func(childComplexity int) int
-		IsClosed       func(childComplexity int) int
-		Location       func(childComplexity int) int
-		Messages       func(childComplexity int) int
-		Name           func(childComplexity int) int
-		ParentID       func(childComplexity int) int
-		UpdatedAt      func(childComplexity int) int
+		AccessMode      func(childComplexity int) int
+		CanManage       func(childComplexity int) int
+		CanManageAccess func(childComplexity int) int
+		CanWrite        func(childComplexity int) int
+		ChildIncidents  func(childComplexity int) int
+		ClosedAt        func(childComplexity int) int
+		CreatedAt       func(childComplexity int) int
+		Divisions       func(childComplexity int) int
+		ID              func(childComplexity int) int
+		IsClosed        func(childComplexity int) int
+		Location        func(childComplexity int) int
+		Messages        func(childComplexity int) int
+		Name            func(childComplexity int) int
+		ParentID        func(childComplexity int) int
+		UpdatedAt       func(childComplexity int) int
 	}
 
 	IncidentAccessGrant struct {
@@ -179,6 +181,8 @@ type IncidentResolver interface {
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
 	CanWrite(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManage(ctx context.Context, obj *model.Incident) (bool, error)
+	CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error)
+	AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error)
 }
 type MutationResolver interface {
 	CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error)
@@ -328,12 +332,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.GlobalRoleGrant.Subject(childComplexity), true
 
+	case "Incident.accessMode":
+		if e.ComplexityRoot.Incident.AccessMode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.AccessMode(childComplexity), true
 	case "Incident.canManage":
 		if e.ComplexityRoot.Incident.CanManage == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Incident.CanManage(childComplexity), true
+	case "Incident.canManageAccess":
+		if e.ComplexityRoot.Incident.CanManageAccess == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.CanManageAccess(childComplexity), true
 	case "Incident.canWrite":
 		if e.ComplexityRoot.Incident.CanWrite == nil {
 			break
@@ -1220,6 +1236,10 @@ type Incident {
   canWrite: Boolean!
   """Whether the current user can close, reopen, or delete this incident."""
   canManage: Boolean!
+  """Whether the current user can manage access grants for this incident."""
+  canManageAccess: Boolean!
+  """Access mode of this incident."""
+  accessMode: IncidentAccessMode!
 }
 
 type Feature {
@@ -1490,6 +1510,10 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_canWrite(ctx, field)
 	case "canManage":
 		return ec.fieldContext_Incident_canManage(ctx, field)
+	case "canManageAccess":
+		return ec.fieldContext_Incident_canManageAccess(ctx, field)
+	case "accessMode":
+		return ec.fieldContext_Incident_accessMode(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Incident", field.Name)
 }
@@ -3077,6 +3101,52 @@ func (ec *executionContext) _Incident_canManage(ctx context.Context, field graph
 }
 func (ec *executionContext) fieldContext_Incident_canManage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _Incident_canManageAccess(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_canManageAccess(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().CanManageAccess(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_canManageAccess(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _Incident_accessMode(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_accessMode(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().AccessMode(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentAccessMode) graphql.Marshaler {
+			return ec.marshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_accessMode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type IncidentAccessMode does not have child fields"))
 }
 
 func (ec *executionContext) _IncidentAccessGrant_incidentId(ctx context.Context, field graphql.CollectedField, obj *model.IncidentAccessGrant) (ret graphql.Marshaler) {
@@ -7259,6 +7329,82 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Incident_canManage(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "canManageAccess":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_canManageAccess(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "accessMode":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_accessMode(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

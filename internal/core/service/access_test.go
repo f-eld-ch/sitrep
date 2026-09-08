@@ -226,6 +226,81 @@ func TestOwnerlessOpenIncidentIsClaimable(t *testing.T) {
 	assert.False(t, canManageAfter, "once owned, ungranted users cannot manage access")
 }
 
+// TestGroupOwnerCanGrantOwner verifies that a user who holds the Owner role through group
+// membership can grant the Owner role to another principal.
+func TestGroupOwnerCanGrantOwner(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	groupID := uuid.New()
+	at := time.Unix(1, 0)
+	groupMemberSub := "member-of-owner-group"
+
+	// Set up restricted incident: seed with a direct user owner, then also grant the group as Owner.
+	bootstrapOwner := "bootstrap-owner"
+	incidentRepo := eventstore.NewIncidentAccessRepository(store)
+	incident := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incident.Initialize(&bootstrapOwner, access.Restricted, bootstrapOwner, at))
+	require.NoError(t, incident.GrantRole(
+		access.Principal{Kind: access.GroupPrincipal, ID: groupID.String()},
+		access.Owner, bootstrapOwner, at,
+	))
+	_, err := incidentRepo.Save(ctx, incident)
+	require.NoError(t, err)
+
+	// Set up the group with groupMemberSub as a member.
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	group := access.NewAccessGroup(groupID)
+	require.NoError(t, group.Create("KFS", "", "admin", at))
+	require.NoError(t, group.AddMember(groupMemberSub, "admin", at))
+	_, err = groupRepo.Save(ctx, group)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	projector := projection.NewProjector(store, []projection.Handler{handler})
+	require.NoError(t, projector.CatchUp(ctx))
+	checker := inmem.NewIncidentAccessChecker(handler)
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		incidentRepo,
+		groupRepo,
+		eventstore.NewGlobalAccessRepository(store),
+		checker,
+		inmem.NewGlobalAccessChecker(handler),
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	// Group member (effective Owner) should be able to grant Owner to another user.
+	err = svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "new-owner"},
+		access.Owner,
+		identity.Actor{Sub: groupMemberSub},
+	)
+	require.NoError(t, err, "group-based owner should be able to grant Owner role")
+	require.NoError(t, projector.CatchUp(ctx))
+
+	// A plain Manager should NOT be able to grant Owner.
+	require.NoError(t, svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "plain-manager"},
+		access.Manager,
+		identity.Actor{Sub: "new-owner"},
+	))
+	require.NoError(t, projector.CatchUp(ctx))
+
+	err = svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "someone-else"},
+		access.Owner,
+		identity.Actor{Sub: "plain-manager"},
+	)
+	require.ErrorIs(t, err, shared.ErrForbidden, "a Manager should not be able to grant Owner role")
+}
+
 type fixedAccessClock struct{ t time.Time }
 
 func (c fixedAccessClock) Now() time.Time { return c.t }

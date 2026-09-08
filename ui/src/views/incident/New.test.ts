@@ -18,6 +18,8 @@ const baseIncident: Incident = {
   closedAt: null,
   canWrite: true,
   canManage: true,
+  canManageAccess: true,
+  accessMode: "OPEN_OPERATIONAL" as const,
   location: { id: "", name: "", coordinates: "" },
   divisions: [],
   childIncidents: [],

@@ -88,6 +88,10 @@ type Incident struct {
 	CanWrite bool `json:"canWrite"`
 	// Whether the current user can close, reopen, or delete this incident.
 	CanManage bool `json:"canManage"`
+	// Whether the current user can manage access grants for this incident.
+	CanManageAccess bool `json:"canManageAccess"`
+	// Access mode of this incident.
+	AccessMode IncidentAccessMode `json:"accessMode"`
 }
 
 type IncidentAccessGrant struct {

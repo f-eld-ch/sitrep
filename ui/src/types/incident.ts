@@ -17,6 +17,8 @@ export interface Incident {
   closedAt: Date | null;
   canWrite: boolean;
   canManage: boolean;
+  canManageAccess: boolean;
+  accessMode: "OPEN_OPERATIONAL" | "RESTRICTED";
   location: Location;
   divisions: Division[];
   childIncidents: Incident[];

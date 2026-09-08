@@ -151,6 +151,10 @@ type Incident {
   canWrite: Boolean!
   """Whether the current user can close, reopen, or delete this incident."""
   canManage: Boolean!
+  """Whether the current user can manage access grants for this incident."""
+  canManageAccess: Boolean!
+  """Access mode of this incident."""
+  accessMode: IncidentAccessMode!
 }
 
 type Feature {
