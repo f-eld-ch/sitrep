@@ -1,6 +1,0 @@
-FROM docker.io/hasura/graphql-engine:v2.48.6-ce.cli-migrations-v3.ubi@sha256:945f352923f51c0fefa9a84d5f286afaf7b61414b0d5a71e49ae4302f76d7a3d
-COPY hasura/migrations /hasura-migrations
-COPY hasura/metadata /hasura-metadata
-ENV HASURA_GRAPHQL_EXPERIMENTAL_FEATURES=naming_convention
-ENV HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION=graphql-default
-ENV HASURA_GRAPHQL_ENABLE_TELEMETRY=false
