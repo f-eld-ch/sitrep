@@ -42,6 +42,8 @@ func principalKindToDomain(kind model.AccessPrincipalKind) access.PrincipalKind 
 		return access.GroupPrincipal
 	case model.AccessPrincipalKindAll:
 		return access.AllPrincipal
+	case model.AccessPrincipalKindUser:
+		return access.UserPrincipal
 	}
 
 	return access.UserPrincipal
@@ -53,6 +55,8 @@ func principalKindFromDomain(kind access.PrincipalKind) model.AccessPrincipalKin
 		return model.AccessPrincipalKindGroup
 	case access.AllPrincipal:
 		return model.AccessPrincipalKindAll
+	case access.UserPrincipal:
+		return model.AccessPrincipalKindUser
 	}
 
 	return model.AccessPrincipalKindUser

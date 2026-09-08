@@ -50,12 +50,14 @@ func (c *IncidentAccessChecker) Can(
 	// Open incident with no owner: any authenticated user may claim management.
 	if mode == access.OpenOperational {
 		hasOwner := false
+
 		for _, g := range c.handler.IncidentGrants(uuid.UUID(incidentID)) {
 			if g.Role == access.Owner {
 				hasOwner = true
 				break
 			}
 		}
+
 		if !hasOwner {
 			return true, nil
 		}

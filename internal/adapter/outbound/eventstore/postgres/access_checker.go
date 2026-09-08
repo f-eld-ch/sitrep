@@ -73,6 +73,7 @@ func (c *IncidentAccessChecker) Can(
 			uuid.UUID(incidentID)).Scan(&ownerCount); err != nil {
 			return false, fmt.Errorf("access owner check: %w", err)
 		}
+
 		if ownerCount == 0 {
 			return true, nil
 		}
