@@ -151,7 +151,7 @@ function Groups() {
             className="button is-ghost is-small has-text-grey px-0"
             onClick={() => setShowArchived(!showArchived)}
           >
-            {showArchived ? "▾" : "▸"}&ensp;{t("adminGroups.archived", { count: archivedGroups.length })} ({archivedGroups.length})
+            {showArchived ? "▾" : "▸"}&ensp;{t("adminGroups.archived", { count: archivedGroups.length })}
           </button>
           {showArchived && (
             <div className="table-container mt-2">

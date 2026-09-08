@@ -37,6 +37,7 @@ function AdminLayout() {
                         <NavLink
                           to={`groups/${group.id}`}
                           className={group.id === groupId ? "is-active" : ""}
+                          style={{ whiteSpace: "normal", wordBreak: "break-word" }}
                         >
                           {group.name}
                         </NavLink>
