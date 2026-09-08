@@ -35,6 +35,10 @@ migrate-on-startup: false
 #oidc-client-secret: "CHANGE_ME"
 #oidc-redirect-url: "https://sitrep.example.org/oauth2/callback"
 
+# Insecure local authentication. When set to true, the server allows unauthenticated
+# access as a local user. Never enable this in production.
+#insecure-local-auth: false
+
 # Key used to sign session cookies. Generate with: openssl rand -base64 32
 #cookie-key: "CHANGE_ME"
 
