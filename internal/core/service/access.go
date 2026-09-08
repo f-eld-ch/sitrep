@@ -73,7 +73,7 @@ func (s *AccessService) GrantIncidentRole(
 		}
 
 		// Allow claiming ownership on ownerless open incidents; otherwise only existing owners may grant Owner.
-		if role == access.Owner && !a.IsOwner(actor.Sub) && a.HasDirectUserOwner() {
+		if role == access.Owner && !a.IsOwner(actor.Sub) && a.HasAnyOwner() {
 			return shared.ErrForbidden
 		}
 

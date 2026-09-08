@@ -115,6 +115,19 @@ func (a *IncidentAccess) HasDirectUserOwner() bool {
 	return a.directOwnerCount() > 0
 }
 
+// HasAnyOwner returns true when any principal (user or group) holds the Owner role.
+// Use this to decide whether an incident is claimable: an incident is ownerless
+// only when this returns false.
+func (a *IncidentAccess) HasAnyOwner() bool {
+	for _, roles := range a.roles {
+		if roles[Owner] {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (a *IncidentAccess) HasRole(p Principal, role Role) bool {
 	return a.roles[principalKey(p)][role]
 }
@@ -241,21 +254,25 @@ func (a *IncidentAccess) Transition(e eventsourcing.Event) error {
 
 func (a *IncidentAccess) ownerCount() int {
 	count := 0
+
 	for _, roles := range a.roles {
 		if roles[Owner] {
 			count++
 		}
 	}
+
 	return count
 }
 
 func (a *IncidentAccess) directOwnerCount() int {
 	count := 0
+
 	for key, roles := range a.roles {
 		if roles[Owner] && strings.HasPrefix(key, string(UserPrincipal)+":") {
 			count++
 		}
 	}
+
 	return count
 }
 
