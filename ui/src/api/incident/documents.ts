@@ -35,6 +35,10 @@ export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncident
         updatedAt
         closedAt
         isClosed
+        canWrite
+        canManage
+        canDelete
+        accessMode
         location {
           name
           coordinates
@@ -56,6 +60,9 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
       updatedAt
       closedAt
       isClosed
+      canManage
+      canDelete
+      canManageAccess
       location {
         name
         coordinates

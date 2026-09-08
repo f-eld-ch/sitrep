@@ -25,7 +25,9 @@ function Editor() {
       <div className="box">
         <IncidentForm incident={result.data.incident} />
       </div>
-      {showRbacEditors && incidentId && <IncidentAccessSection incidentId={incidentId} />}
+      {showRbacEditors && incidentId && result.data.incident.canManageAccess && (
+        <IncidentAccessSection incidentId={incidentId} />
+      )}
     </>
   );
 }

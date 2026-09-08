@@ -220,10 +220,95 @@ func TestOwnerlessOpenIncidentIsClaimable(t *testing.T) {
 	))
 	require.NoError(t, projector.CatchUp(ctx))
 
-	// Now a different user without a grant cannot manage access.
+	// Even after ownership is assigned, any user can still manage access and close an open incident.
 	canManageAfter, err := checker.Can(ctx, "another-user", incidentID, access.IncidentManageAccess)
 	require.NoError(t, err)
-	assert.False(t, canManageAfter, "once owned, ungranted users cannot manage access")
+	assert.True(t, canManageAfter, "any user can manage access on an open incident regardless of ownership")
+
+	canClose, err := checker.Can(ctx, "another-user", incidentID, access.IncidentClose)
+	require.NoError(t, err)
+	assert.True(t, canClose, "any user can close an open incident regardless of ownership")
+
+	// But delete remains owner-only even on open incidents.
+	canDelete, err := checker.Can(ctx, "another-user", incidentID, access.IncidentDelete)
+	require.NoError(t, err)
+	assert.False(t, canDelete, "delete is restricted to owners even on open incidents")
+}
+
+// TestGroupOwnerCanGrantOwner verifies that a user who holds the Owner role through group
+// membership can grant the Owner role to another principal.
+func TestGroupOwnerCanGrantOwner(t *testing.T) {
+	ctx := context.Background()
+	store := inmem.NewEventStore()
+	incidentID := shared.IncidentID(uuid.New())
+	groupID := uuid.New()
+	at := time.Unix(1, 0)
+	groupMemberSub := "member-of-owner-group"
+
+	// Set up restricted incident: seed with a direct user owner, then also grant the group as Owner.
+	bootstrapOwner := "bootstrap-owner"
+	incidentRepo := eventstore.NewIncidentAccessRepository(store)
+	incident := access.NewIncidentAccess(incidentID)
+	require.NoError(t, incident.Initialize(&bootstrapOwner, access.Restricted, bootstrapOwner, at))
+	require.NoError(t, incident.GrantRole(
+		access.Principal{Kind: access.GroupPrincipal, ID: groupID.String()},
+		access.Owner, bootstrapOwner, at,
+	))
+	_, err := incidentRepo.Save(ctx, incident)
+	require.NoError(t, err)
+
+	// Set up the group with groupMemberSub as a member.
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	group := access.NewAccessGroup(groupID)
+	require.NoError(t, group.Create("KFS", "", "admin", at))
+	require.NoError(t, group.AddMember(groupMemberSub, "admin", at))
+	_, err = groupRepo.Save(ctx, group)
+	require.NoError(t, err)
+
+	handler := projection.NewAccessHandler()
+	projector := projection.NewProjector(store, []projection.Handler{handler})
+	require.NoError(t, projector.CatchUp(ctx))
+
+	checker := inmem.NewIncidentAccessChecker(handler)
+	svc := service.NewAccessService(
+		inmem.NewTransactor(),
+		incidentRepo,
+		groupRepo,
+		eventstore.NewGlobalAccessRepository(store),
+		checker,
+		inmem.NewGlobalAccessChecker(handler),
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+
+	// Group member (effective Owner) should be able to grant Owner to another user.
+	err = svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "new-owner"},
+		access.Owner,
+		identity.Actor{Sub: groupMemberSub},
+	)
+	require.NoError(t, err, "group-based owner should be able to grant Owner role")
+	require.NoError(t, projector.CatchUp(ctx))
+
+	// A plain Manager should NOT be able to grant Owner.
+	require.NoError(t, svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "plain-manager"},
+		access.Manager,
+		identity.Actor{Sub: "new-owner"},
+	))
+	require.NoError(t, projector.CatchUp(ctx))
+
+	err = svc.GrantIncidentRole(
+		ctx, incidentID,
+		access.Principal{Kind: access.UserPrincipal, ID: "someone-else"},
+		access.Owner,
+		identity.Actor{Sub: "plain-manager"},
+	)
+	require.ErrorIs(t, err, shared.ErrForbidden, "a Manager should not be able to grant Owner role")
 }
 
 type fixedAccessClock struct{ t time.Time }

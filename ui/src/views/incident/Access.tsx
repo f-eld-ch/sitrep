@@ -162,7 +162,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
           <h4 className="title is-5 mb-4">{t("incidentAccess.accessMode")}</h4>
           <div className="field">
             <div className="control">
-              <label className="radio" style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
+              <label className="radio" aria-label={t("incidentAccess.openAccess")} style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
                 <input
                   type="radio"
                   name={`access-mode-${incidentId}`}
@@ -182,7 +182,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               </label>
             </div>
             <div className="control mt-3">
-              <label className="radio" style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
+              <label className="radio" aria-label={t("incidentAccess.restricted")} style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
                 <input
                   type="radio"
                   name={`access-mode-${incidentId}`}
@@ -244,7 +244,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
         )}
         {mutationError && (
           <div className="notification is-danger is-light">
-            <button className="delete" onClick={() => setMutationError(null)} />
+            <button className="delete" aria-label={t("close")} onClick={() => setMutationError(null)} />
             {mutationError}
           </div>
         )}
@@ -286,7 +286,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                             }}
                           />
                         </td>
-                        <td />
+                        <td aria-hidden="true" />
                       </tr>
                     )}
 
@@ -488,6 +488,7 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
             type="radio"
             name={name}
             value={opt}
+            aria-label={labels[opt] ?? opt}
             checked={value === opt}
             disabled={disabled}
             onChange={() => onChange(opt)}
@@ -531,13 +532,14 @@ function GrantRow({ label, sublabel, tooltip, loading, onGrant }: GrantRowProps)
         <span title={tooltip}>{label}</span>
         {sublabel && <span className="has-text-grey ml-2 is-size-7">{sublabel}</span>}
       </td>
-      <td>
+      <td aria-label={label}>
         <div className="field has-addons mb-0">
           <div className="control is-expanded">
             <div className="select is-small is-fullwidth">
               <select
                 value={role}
                 disabled={loading}
+                aria-label={label}
                 title={roleDescriptions[role]}
                 onChange={(e) => setRole(e.target.value as IncidentRole)}
               >
@@ -552,6 +554,7 @@ function GrantRow({ label, sublabel, tooltip, loading, onGrant }: GrantRowProps)
               type="button"
               className="button is-success is-small"
               disabled={loading}
+              aria-label={t("incidentAccess.grant")}
               onClick={() => onGrant(role)}
             >
               {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("incidentAccess.grant")}

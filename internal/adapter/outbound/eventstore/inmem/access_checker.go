@@ -43,12 +43,8 @@ func (c *IncidentAccessChecker) Can(
 ) (bool, error) {
 	mode := c.handler.Mode(uuid.UUID(incidentID))
 
-	if mode == access.OpenOperational && action != access.IncidentManageAccess {
-		return true, nil
-	}
-
-	// Open incident with no owner: any authenticated user may claim management.
 	if mode == access.OpenOperational {
+		// Ownerless open incidents are fully claimable.
 		hasOwner := false
 
 		for _, g := range c.handler.IncidentGrants(uuid.UUID(incidentID)) {
@@ -59,6 +55,11 @@ func (c *IncidentAccessChecker) Can(
 		}
 
 		if !hasOwner {
+			return true, nil
+		}
+
+		// Once an owner is set: delete is policy-gated (owner only); everything else is open.
+		if action != access.IncidentDelete {
 			return true, nil
 		}
 	}

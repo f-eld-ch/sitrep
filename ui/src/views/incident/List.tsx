@@ -5,6 +5,8 @@ import {
   faEyeLowVision,
   faFolderClosed,
   faFolderOpen,
+  faLock,
+  faLockOpen,
   faPlusCircle,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -188,6 +190,12 @@ export function IncidentCard(props: {
           <h4 className={classNames("title", { "is-5": !isChild, "is-6": isChild })}>
             {incident.name}
             {childCount > 0 && <span className="tag is-info is-light ml-2">{childCount}</span>}
+            <span
+              className="tag is-light ml-2"
+              title={incident.accessMode === "RESTRICTED" ? "Restricted" : "Open"}
+            >
+              <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
+            </span>
           </h4>
           <div className="columns">
             <div className="column is-one-third">
@@ -223,7 +231,7 @@ export function IncidentCard(props: {
             </span>
             <span>{t("enter")}</span>
           </button>
-          {incident.closedAt === null ? (
+          {incident.canWrite && incident.closedAt === null && (
             <button
               type="button"
               data-testid="edit-button"
@@ -235,7 +243,8 @@ export function IncidentCard(props: {
               </span>
               <span>{t("edit")}</span>
             </button>
-          ) : (
+          )}
+          {incident.canDelete && incident.closedAt !== null && (
             <button
               type="button"
               data-testid="delete-button"
@@ -248,7 +257,7 @@ export function IncidentCard(props: {
               <span>{t("delete")}</span>
             </button>
           )}
-          {incident.closedAt === null ? (
+          {incident.canManage && incident.closedAt === null && (
             <button
               type="button"
               data-testid="close-button"
@@ -260,7 +269,8 @@ export function IncidentCard(props: {
               </span>
               <span>{t("close")}</span>
             </button>
-          ) : (
+          )}
+          {incident.canManage && incident.closedAt !== null && (
             <button
               type="button"
               className="card-footer-item is-ahref is-capitalized is-success"

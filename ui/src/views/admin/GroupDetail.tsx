@@ -149,7 +149,6 @@ function GroupDetail() {
               <input
                 className={`input${renameValue.length === 64 ? " is-danger" : ""}`}
                 placeholder={t("adminGroupDetail.groupNamePlaceholder")}
-                autoFocus
                 maxLength={64}
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
@@ -205,7 +204,6 @@ function GroupDetail() {
               <input
                 className="input is-small"
                 placeholder={t("adminGroupDetail.groupDescriptionPlaceholder")}
-                autoFocus
                 value={descriptionValue}
                 onChange={(e) => setDescriptionValue(e.target.value)}
                 onKeyDown={(e) => {

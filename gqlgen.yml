@@ -30,4 +30,14 @@ models:
         resolver: true
       messages:
         resolver: true
+      canWrite:
+        resolver: true
+      canManage:
+        resolver: true
+      canDelete:
+        resolver: true
+      canManageAccess:
+        resolver: true
+      accessMode:
+        resolver: true
 

@@ -7,6 +7,7 @@ package graphql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -67,6 +68,104 @@ func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([
 	}
 
 	return out, nil
+}
+
+// CanWrite is the resolver for the canWrite field.
+func (r *incidentResolver) CanWrite(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentWrite)
+}
+
+// CanManage is the resolver for the canManage field.
+func (r *incidentResolver) CanManage(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentClose)
+}
+
+// CanDelete is the resolver for the canDelete field.
+func (r *incidentResolver) CanDelete(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentDelete)
+}
+
+// CanManageAccess is the resolver for the canManageAccess field.
+func (r *incidentResolver) CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentManageAccess)
+}
+
+// AccessMode is the resolver for the accessMode field.
+func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error) {
+	if r.AccessQueries == nil {
+		return model.IncidentAccessModeOpenOperational, nil
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return "", err
+	}
+
+	mode, err := r.AccessQueries.GetIncidentAccessMode(ctx, shared.IncidentID(incID))
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return model.IncidentAccessModeOpenOperational, nil
+		}
+		return "", err
+	}
+
+	return incidentModeFromDomain(mode), nil
 }
 
 // CreateIncident is the resolver for the createIncident field.
@@ -635,7 +734,12 @@ func (r *mutationResolver) UpdateMessage(
 	}
 
 	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(msg.IncidentID), access.IncidentWrite)
+		allowed, err := r.IncidentAccessChecker.Can(
+			ctx,
+			actor.Sub,
+			shared.IncidentID(msg.IncidentID),
+			access.IncidentWrite,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -689,7 +793,12 @@ func (r *mutationResolver) TriageMessage(
 	}
 
 	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(triageMsg.IncidentID), access.IncidentWrite)
+		allowed, err := r.IncidentAccessChecker.Can(
+			ctx,
+			actor.Sub,
+			shared.IncidentID(triageMsg.IncidentID),
+			access.IncidentWrite,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -767,7 +876,12 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 	}
 
 	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(delMsg.IncidentID), access.IncidentWrite)
+		allowed, err := r.IncidentAccessChecker.Can(
+			ctx,
+			actor.Sub,
+			shared.IncidentID(delMsg.IncidentID),
+			access.IncidentWrite,
+		)
 		if err != nil {
 			return "", err
 		}
@@ -877,7 +991,12 @@ func (r *mutationResolver) ModifyFeature(
 			return nil, err
 		}
 
-		allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(featureIncID), access.IncidentWrite)
+		allowed, err := r.IncidentAccessChecker.Can(
+			ctx,
+			actor.Sub,
+			shared.IncidentID(featureIncID),
+			access.IncidentWrite,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -919,7 +1038,12 @@ func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string
 			return "", err
 		}
 
-		allowed, err := r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(featureIncID), access.IncidentWrite)
+		allowed, err := r.IncidentAccessChecker.Can(
+			ctx,
+			actor.Sub,
+			shared.IncidentID(featureIncID),
+			access.IncidentWrite,
+		)
 		if err != nil {
 			return "", err
 		}

@@ -72,9 +72,17 @@ func (s *AccessService) GrantIncidentRole(
 			return err
 		}
 
-		// Allow claiming ownership on ownerless open incidents; otherwise only existing owners may grant Owner.
-		if role == access.Owner && !a.IsOwner(actor.Sub) && a.HasAnyOwner() {
-			return shared.ErrForbidden
+		// Allow claiming ownership on ownerless open incidents; otherwise only
+		// users who already hold the Owner role (directly or via group) may grant Owner.
+		if role == access.Owner && a.HasAnyOwner() {
+			isOwner, err := s.incidentChecker.Can(ctx, actor.Sub, incidentID, access.IncidentDelete)
+			if err != nil {
+				return err
+			}
+
+			if !isOwner {
+				return shared.ErrForbidden
+			}
 		}
 
 		if principal.Kind == access.GroupPrincipal && s.groupRepo != nil {
@@ -115,8 +123,15 @@ func (s *AccessService) RevokeIncidentRole(
 			return err
 		}
 
-		if role == access.Owner && !a.IsOwner(actor.Sub) {
-			return shared.ErrForbidden
+		if role == access.Owner {
+			isOwner, err := s.incidentChecker.Can(ctx, actor.Sub, incidentID, access.IncidentDelete)
+			if err != nil {
+				return err
+			}
+
+			if !isOwner {
+				return shared.ErrForbidden
+			}
 		}
 
 		return a.RevokeRole(principal, role, actor.Sub, at)

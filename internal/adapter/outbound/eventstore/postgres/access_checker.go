@@ -54,19 +54,15 @@ func (c *IncidentAccessChecker) Can(
 	if err := c.pool.QueryRow(ctx, `SELECT mode FROM readmodel.incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
 		Scan(&mode); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			// Projection hasn't caught up yet (or pre-RBAC incident) — treat as open.
-			return action != access.IncidentManageAccess, nil
+			// Projection hasn't caught up yet (or pre-RBAC incident) — treat as ownerless open.
+			return true, nil
 		}
 
 		return false, fmt.Errorf("access mode: %w", err)
 	}
 
-	if mode == access.OpenOperational && action != access.IncidentManageAccess {
-		return true, nil
-	}
-
-	// Open incident with no owner: any authenticated user may claim management.
 	if mode == access.OpenOperational {
+		// Ownerless open incidents are fully claimable.
 		var ownerCount int
 		if err := c.pool.QueryRow(ctx,
 			`SELECT COUNT(*) FROM readmodel.incident_access WHERE incident_id = $1 AND role = 'owner'`,
@@ -75,6 +71,11 @@ func (c *IncidentAccessChecker) Can(
 		}
 
 		if ownerCount == 0 {
+			return true, nil
+		}
+
+		// Once an owner is set: delete is policy-gated (owner only); everything else is open.
+		if action != access.IncidentDelete {
 			return true, nil
 		}
 	}
