@@ -14,6 +14,7 @@
 - *(ui)* Show FontAwesome spinner on service worker update button ([#1833](https://github.com/f-eld-ch/sitrep/issues/1833)) - ([f415d45](https://github.com/f-eld-ch/sitrep/commit/f415d45143fe0b517c68351e424c09a3f18f0d73))
 - *(ui)* Replace Bulma spinner with FontAwesome faSpinner on update button - ([5bb699f](https://github.com/f-eld-ch/sitrep/commit/5bb699f235b7cadd5fd878cfb19aaefdd9551ba2))
 - *(ui)* Show spinner on update button while service worker reloads - ([2da66cc](https://github.com/f-eld-ch/sitrep/commit/2da66cc884ab127e0d1045603c1ff22ce8f5e91d))
+- Fix switch directions of directional linetypes ([#1835](https://github.com/f-eld-ch/sitrep/issues/1835)) - ([818f5ac](https://github.com/f-eld-ch/sitrep/commit/818f5accf43057276ebbcee5e97c5b76d7bcfe82))
 
 ### 📚 Documentation
 
