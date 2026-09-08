@@ -41,8 +41,24 @@ func (c *IncidentAccessChecker) Can(
 	incidentID shared.IncidentID,
 	action access.Action,
 ) (bool, error) {
-	if c.handler.Mode(uuid.UUID(incidentID)) == access.OpenOperational && action != access.IncidentManageAccess {
+	mode := c.handler.Mode(uuid.UUID(incidentID))
+
+	if mode == access.OpenOperational && action != access.IncidentManageAccess {
 		return true, nil
+	}
+
+	// Open incident with no owner: any authenticated user may claim management.
+	if mode == access.OpenOperational {
+		hasOwner := false
+		for _, g := range c.handler.IncidentGrants(uuid.UUID(incidentID)) {
+			if g.Role == access.Owner {
+				hasOwner = true
+				break
+			}
+		}
+		if !hasOwner {
+			return true, nil
+		}
 	}
 
 	return enforce(c.handler.Policies(), "user:"+subject, "incident:"+uuid.UUID(incidentID).String(), string(action))

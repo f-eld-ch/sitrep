@@ -65,6 +65,19 @@ func (c *IncidentAccessChecker) Can(
 		return true, nil
 	}
 
+	// Open incident with no owner: any authenticated user may claim management.
+	if mode == access.OpenOperational {
+		var ownerCount int
+		if err := c.pool.QueryRow(ctx,
+			`SELECT COUNT(*) FROM readmodel.incident_access WHERE incident_id = $1 AND role = 'owner'`,
+			uuid.UUID(incidentID)).Scan(&ownerCount); err != nil {
+			return false, fmt.Errorf("access owner check: %w", err)
+		}
+		if ownerCount == 0 {
+			return true, nil
+		}
+	}
+
 	return c.enforce(ctx, "user:"+subject, "incident:"+uuid.UUID(incidentID).String(), string(action))
 }
 
