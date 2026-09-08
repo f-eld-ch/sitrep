@@ -426,7 +426,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 
 	childRows, err := q.pool.Query(
 		ctx,
-		`SELECT id FROM rm_incident WHERE parent_id = $1 AND is_deleted = false`,
+		`SELECT id FROM readmodel.incident WHERE parent_id = $1 AND is_deleted = false`,
 		incidentID,
 	)
 	if err != nil {
