@@ -49,6 +49,57 @@ enum PriorityStatus {
   HIGH
 }
 
+enum IncidentAccessMode {
+  OPEN_OPERATIONAL
+  RESTRICTED
+}
+
+enum IncidentRole {
+  OWNER
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+enum AccessPrincipalKind {
+  USER
+  GROUP
+  ALL
+}
+
+enum GlobalRole {
+  SYSTEM_ADMIN
+  GROUP_ADMIN
+}
+
+type AccessGroup {
+  id: ID!
+  name: String!
+  description: String!
+  archivedAt: DateTime
+}
+
+type User {
+  sub: ID!
+  name: String!
+  email: String!
+}
+
+type GlobalRoleGrant {
+  subject: ID!
+  role: GlobalRole!
+  name: String!
+  email: String!
+}
+
+type IncidentAccessGrant {
+  incidentId: ID!
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  principalName: String!
+  role: IncidentRole!
+}
+
 # ─── Domain types ─────────────────────────────────────────────────────────────
 
 type Location {
@@ -129,6 +180,13 @@ type Query {
 
   """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
+
+  incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
+  incidentAccessMode(incidentId: ID!): IncidentAccessMode!
+  accessGroups: [AccessGroup!]!
+  groupMembers(groupId: ID!): [ID!]!
+  users: [User!]!
+  globalRoles: [GlobalRoleGrant!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -146,6 +204,8 @@ input DivisionInput {
 
 input CreateIncidentInput {
   name: String!
+  """Access mode for the incident; omitted defaults to OPEN_OPERATIONAL."""
+  mode: IncidentAccessMode
   """Optional top-level parent incident whose map will include this incident's layers."""
   parentId: ID
   """Location display name; server creates the Location record."""
@@ -197,6 +257,18 @@ type Mutation {
 
   """Create an incident with optional divisions and map layers."""
   createIncident(input: CreateIncidentInput!): Incident!
+
+  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessGrant!
+  grantIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): IncidentAccessGrant!
+  revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
+  createAccessGroup(name: String!, description: String!): AccessGroup!
+  renameAccessGroup(groupId: ID!, name: String!): AccessGroup!
+  updateAccessGroupDescription(groupId: ID!, description: String!): AccessGroup!
+  archiveAccessGroup(groupId: ID!): ID!
+  addGroupMember(groupId: ID!, subject: String!): ID!
+  removeGroupMember(groupId: ID!, subject: String!): ID!
+  grantGlobalRole(subject: ID!, role: GlobalRole!): ID!
+  revokeGlobalRole(subject: ID!, role: GlobalRole!): ID!
 
   """Update incident name, location, and/or divisions. Omitted fields are unchanged."""
   updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!

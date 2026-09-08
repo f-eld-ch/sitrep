@@ -48,6 +48,7 @@ $tablet: 769px;
 @forward "bulma/sass/components/breadcrumb";
 @forward "bulma/sass/components/card";
 @forward "bulma/sass/components/dropdown";
+@forward "bulma/sass/components/menu";
 @forward "bulma/sass/components/panel" with (
   $panel-heading-padding: 1em 1.25em,
   $panel-heading-line-height: 0.8em,

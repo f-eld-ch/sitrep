@@ -7,12 +7,18 @@ import "github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 // backend implementations; swap the entire set by changing a few lines at the
 // composition root rather than threading every dependency through every call.
 type Factory struct {
-	tx        outbound.Transactor
-	clock     outbound.Clock
-	ids       outbound.IDs
-	notifier  outbound.EventNotifier
-	counter   outbound.MessageCounter
-	hierarchy outbound.IncidentHierarchyGuard
+	tx            outbound.Transactor
+	clock         outbound.Clock
+	ids           outbound.IDs
+	notifier      outbound.EventNotifier
+	counter       outbound.MessageCounter
+	hierarchy     outbound.IncidentHierarchyGuard
+	accessGuard   outbound.AccessGuard
+	accessChecker outbound.IncidentAccessChecker
+	accessRepo    outbound.IncidentAccessRepository
+	groupRepo     outbound.AccessGroupRepository
+	globalRepo    outbound.GlobalAccessRepository
+	globalChecker outbound.GlobalAccessChecker
 }
 
 // FactoryOption configures a Factory.
@@ -42,6 +48,30 @@ func WithIncidentHierarchyGuard(hierarchy outbound.IncidentHierarchyGuard) Facto
 	return func(f *Factory) { f.hierarchy = hierarchy }
 }
 
+func WithAccessGuard(accessGuard outbound.AccessGuard) FactoryOption {
+	return func(f *Factory) { f.accessGuard = accessGuard }
+}
+
+func WithIncidentAccessChecker(accessChecker outbound.IncidentAccessChecker) FactoryOption {
+	return func(f *Factory) { f.accessChecker = accessChecker }
+}
+
+func WithIncidentAccessRepository(accessRepo outbound.IncidentAccessRepository) FactoryOption {
+	return func(f *Factory) { f.accessRepo = accessRepo }
+}
+
+func WithAccessGroupRepository(groupRepo outbound.AccessGroupRepository) FactoryOption {
+	return func(f *Factory) { f.groupRepo = groupRepo }
+}
+
+func WithGlobalAccessRepository(globalRepo outbound.GlobalAccessRepository) FactoryOption {
+	return func(f *Factory) { f.globalRepo = globalRepo }
+}
+
+func WithGlobalAccessChecker(globalChecker outbound.GlobalAccessChecker) FactoryOption {
+	return func(f *Factory) { f.globalChecker = globalChecker }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -54,7 +84,32 @@ func NewFactory(opts ...FactoryOption) *Factory {
 
 // IncidentService creates a ready-to-use IncidentService.
 func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbound.LayerRepository) *IncidentService {
-	return NewIncidentService(f.tx, repo, layers, f.hierarchy, f.clock, f.ids, f.notifier)
+	return NewIncidentService(
+		f.tx,
+		repo,
+		layers,
+		f.hierarchy,
+		f.accessChecker,
+		f.accessRepo,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
+}
+
+func (f *Factory) AccessService() *AccessService {
+	return NewAccessService(
+		f.tx,
+		f.accessRepo,
+		f.groupRepo,
+		f.globalRepo,
+		f.accessChecker,
+		f.globalChecker,
+		f.accessGuard,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
 }
 
 // MessageService creates a ready-to-use MessageService.
@@ -62,12 +117,12 @@ func (f *Factory) MessageService(
 	repo outbound.MessageRepository,
 	incidents outbound.IncidentRepository,
 ) *MessageService {
-	return NewMessageService(f.tx, repo, incidents, f.counter, f.clock, f.ids, f.notifier)
+	return NewMessageService(f.tx, repo, incidents, f.counter, f.accessChecker, f.clock, f.ids, f.notifier)
 }
 
 // LayerService creates a ready-to-use LayerService.
 func (f *Factory) LayerService(repo outbound.LayerRepository, incidents outbound.IncidentRepository) *LayerService {
-	return NewLayerService(f.tx, repo, incidents, f.clock, f.ids, f.notifier)
+	return NewLayerService(f.tx, repo, incidents, f.accessChecker, f.clock, f.ids, f.notifier)
 }
 
 // FeatureService creates a ready-to-use FeatureService.
@@ -76,5 +131,5 @@ func (f *Factory) FeatureService(
 	incidents outbound.IncidentRepository,
 	layers outbound.LayerRepository,
 ) *FeatureService {
-	return NewFeatureService(f.tx, repo, incidents, layers, f.clock, f.notifier)
+	return NewFeatureService(f.tx, repo, incidents, layers, f.accessChecker, f.clock, f.notifier)
 }

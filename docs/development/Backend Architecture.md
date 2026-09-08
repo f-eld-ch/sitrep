@@ -181,6 +181,16 @@ guard interface, but `internal/core/` must not import Postgres locking primitive
 
 ---
 
+## Authorization and per-incident access
+
+See **[RBAC.md](RBAC.md)** for the full design. Summary:
+
+- Three event streams carry all authorization facts: `IncidentAccess` (one per incident), `AccessGroup` (one per group), and `GlobalAccess` (singleton).
+- The `AccessHandler` projection materialises these into `readmodel.access_*` tables and a flat `readmodel.access_policy` table for Casbin.
+- Enforcement short-circuits for `open_operational` incidents (all actions except `manage_access` are allowed to any authenticated user without a Casbin lookup).
+- Casbin is a stateless evaluator loaded from the projected policy rows; it contains no role inheritance — group expansion and the `all` principal are resolved in the projection.
+- The `AccessGuard` port serialises cross-stream invariants (owner protection, group archival) with an advisory lock in PostgreSQL.
+
 ## Projectors
 
 Projectors maintain denormalised read-model tables from the event log. They run as a background goroutine and process events asynchronously after a write.
@@ -215,19 +225,28 @@ Each handler has:
 
 | Handler | Reads events from | Writes to |
 |---|---|---|
-| `IncidentHandler` | `Incident` stream | `rm_incident` |
-| `IncidentDivisionHandler` | `Incident` stream | `rm_incident_division` |
-| `MessageHandler` | `Message` stream | `rm_message` |
-| `LayerFeaturesHandler` | `Layer` + `Feature` streams | `rm_layer_features` |
+| `IncidentHandler` | `Incident` stream | `readmodel.incident` |
+| `IncidentDivisionHandler` | `Incident` stream | `readmodel.incident_division` |
+| `MessageHandler` | `Message` stream | `readmodel.message` |
+| `LayerFeaturesHandler` | `Layer` + `Feature` streams | `readmodel.layer_features` |
+| `AccessHandler` | `IncidentAccess`, `AccessGroup`, `GlobalAccess` streams | `readmodel.incident_access`, `readmodel.incident_access_mode`, `readmodel.access_group`, `readmodel.access_group_member`, `readmodel.global_access`, `readmodel.access_policy` |
 
 ### Read-model tables
 
+All read-model tables live in the `readmodel` PostgreSQL schema.
+
 ```
-rm_incident          — one row per incident (name, location, status, timestamps)
-rm_incident_division — one row per division per incident
-rm_message           — one row per message (content, sender, receiver, medium, msg_time, triage, …)
-rm_layer_features    — one row per layer; geojson holds the full FeatureCollection;
-                       revision increments on every feature change for client-side diffing
+readmodel.incident              — one row per incident (name, location, status, timestamps)
+readmodel.incident_division     — one row per division per incident
+readmodel.message               — one row per message (content, sender, receiver, medium, msg_time, triage, …)
+readmodel.layer_features        — one row per layer; geojson holds the full FeatureCollection;
+                                  revision increments on every feature change for client-side diffing
+readmodel.incident_access       — one row per (incident, principal, role) grant
+readmodel.incident_access_mode  — one row per incident; mode is open_operational or restricted
+readmodel.access_group          — one row per access group
+readmodel.access_group_member   — one row per (group, subject) membership
+readmodel.global_access         — one row per (subject, role) system-level grant
+readmodel.access_policy         — flattened (subject, domain, object, action) tuples for Casbin enforcement
 ```
 
 ### Error handling
@@ -270,7 +289,7 @@ type Resolver struct {
 
 | Backend | Package |
 |---|---|
-| PostgreSQL | `internal/adapter/outbound/queries/postgres` — queries `rm_*` tables via SQL |
+| PostgreSQL | `internal/adapter/outbound/queries/postgres` — queries `readmodel.*` tables via SQL |
 | In-memory | `internal/adapter/outbound/queries/inmem` — reads from the in-memory projection handlers |
 
 ### Projector ↔ Queries synchronisation
@@ -278,11 +297,11 @@ type Resolver struct {
 The Projector and Queries are closely coupled even though they share no port or interface — their connection is the **read-model storage layer**. The Projector is its exclusive writer; Queries is its exclusive reader.
 
 ```
-Write path                           Read-model storage        Read path
-─────────────────────────────────    ──────────────────────    ───────────────────
-Service → EventStore.Append          rm_incident               Queries.ListIncidents
-        → Notifier.Notify      →     rm_message            →   Queries.ListMessages
-                                     rm_layer_features         Queries.ListLayers
+Write path                           Read-model storage               Read path
+─────────────────────────────────    ───────────────────────────────  ───────────────────
+Service → EventStore.Append          readmodel.incident               Queries.ListIncidents
+        → Notifier.Notify      →     readmodel.message            →   Queries.ListMessages
+                                     readmodel.layer_features         Queries.ListLayers
 Projector.CatchUp
   handler.Apply (writes)             (shared storage)          (reads)
 ```
@@ -296,7 +315,7 @@ The projector runs asynchronously. A `Queries` call issued in the same HTTP requ
 
 **PostgreSQL**
 
-Both the projector and the queries implementation hold a `*pgxpool.Pool` pointed at the same database. Synchronisation is entirely implicit: the projector commits a transaction, the `rm_*` rows become visible, and the next SQL query from `Queries` reads them. No shared Go state; no explicit coordination needed.
+Both the projector and the queries implementation hold a `*pgxpool.Pool` pointed at the same database. Synchronisation is entirely implicit: the projector commits a transaction, the `readmodel.*` rows become visible, and the next SQL query from `Queries` reads them. No shared Go state; no explicit coordination needed.
 
 **In-memory**
 
@@ -317,7 +336,7 @@ The projector calls `handler.Apply`, which mutates the maps. `Queries` reads tho
 
 There is no Go type that both the Projector and Queries depend on to exchange data. Their only coupling is the storage layer itself.
 
-**PostgreSQL** — the contract is the `rm_*` table schema (column names and types). The Projector decodes event JSON into ad-hoc local structs and executes SQL `INSERT`/`UPDATE` statements. Queries scans SQL rows into `*RM` types. Neither side imports the other; the database schema is the interface.
+**PostgreSQL** — the contract is the `readmodel.*` table schema (column names and types). The Projector decodes event JSON into ad-hoc local structs and executes SQL `INSERT`/`UPDATE` statements. Queries scans SQL rows into `*RM` types. Neither side imports the other; the database schema is the interface.
 
 **In-memory** — the `*Row` structs (`IncidentRow`, `MessageRow`, `LayerRow`) in the projection package act as the in-memory table schema. The Projector writes into them; Queries reads from them and maps to `*RM` types. This coupling is contained within the adapter boundary and involves no serialization.
 
@@ -430,14 +449,20 @@ Each `h.Apply` call runs inside its own database transaction so a handler failur
 
 **Dead-letter:** If all 3 attempts fail, `parkDeadLetter` upserts a row into `eventsourcing.projection_dead_letter` recording the projection name, cursor, event coordinates, error text, and attempt count. The projector then advances the checkpoint past the failing event so one bad event cannot permanently stall the projection. Dead-lettered rows can be replayed by resetting the checkpoint cursor to before the parked event.
 
-**Read-model tables** (schema: `migrations/00003_readmodels.sql`):
+**Read-model tables** (schema: `migrations/postgres/00011_readmodel_schema.sql`, access tables: `migrations/postgres/00012_access_rbac.sql`):
 
 | Table | Owner handler | Description |
 |---|---|---|
-| `rm_incident` | `IncidentHandler` | One row per incident — name, status flags, location JSON, timestamps |
-| `rm_incident_division` | `IncidentDivisionHandler` | One row per division per incident; soft-deleted via `removed_at` |
-| `rm_message` | `MessageHandler` | One row per message — all fields including `msg_time`, `division_ids uuid[]`, author/editor subs |
-| `rm_layer_features` | `LayerFeaturesHandler` | One row per layer; `geojson jsonb` holds the full `FeatureCollection`; `revision int` increments on every feature change for client-side diff detection |
+| `readmodel.incident` | `IncidentHandler` | One row per incident — name, status flags, location JSON, timestamps |
+| `readmodel.incident_division` | `IncidentDivisionHandler` | One row per division per incident; soft-deleted via `removed_at` |
+| `readmodel.message` | `MessageHandler` | One row per message — all fields including `msg_time`, `division_ids uuid[]`, author/editor subs |
+| `readmodel.layer_features` | `LayerFeaturesHandler` | One row per layer; `geojson jsonb` holds the full `FeatureCollection`; `revision int` increments on every feature change for client-side diff detection |
+| `readmodel.incident_access` | `AccessHandler` | One row per (incident, principal, role) grant |
+| `readmodel.incident_access_mode` | `AccessHandler` | One row per incident; mode is `open_operational` or `restricted` |
+| `readmodel.access_group` | `AccessHandler` | One row per access group |
+| `readmodel.access_group_member` | `AccessHandler` | One row per (group, subject) membership |
+| `readmodel.global_access` | `AccessHandler` | One row per (subject, role) system-level grant |
+| `readmodel.access_policy` | `AccessHandler` | Flattened (subject, domain, object, action) tuples for Casbin enforcement; rebuilt on every access event |
 
 ### SQLite (planned)
 

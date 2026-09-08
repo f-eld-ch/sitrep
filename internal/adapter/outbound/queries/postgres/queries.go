@@ -14,8 +14,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
 // Compile-time assertion.
@@ -23,12 +25,18 @@ var _ outbound.Queries = (*Queries)(nil)
 
 // Queries queries the read-model projection tables.
 type Queries struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	access outbound.IncidentAccessChecker
 }
 
 // NewQueries creates a Queries adapter backed by the given pool.
-func NewQueries(pool *pgxpool.Pool) *Queries {
-	return &Queries{pool: pool}
+func NewQueries(pool *pgxpool.Pool, accessCheckers ...outbound.IncidentAccessChecker) *Queries {
+	var accessChecker outbound.IncidentAccessChecker
+	if len(accessCheckers) > 0 {
+		accessChecker = accessCheckers[0]
+	}
+
+	return &Queries{pool: pool, access: accessChecker}
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -38,11 +46,31 @@ func NewQueries(pool *pgxpool.Pool) *Queries {
 func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing incidents")
 
-	rows, err := q.pool.Query(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM readmodel.incident
-		WHERE is_deleted = false
-		ORDER BY created_at DESC`)
+	query := `
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		FROM readmodel.incident i
+		WHERE i.is_deleted = false
+		ORDER BY i.created_at DESC`
+	args := []any{}
+
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		query = `
+			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+			FROM readmodel.incident i
+			WHERE i.is_deleted = false
+			  AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
+			       OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $1 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))
+			ORDER BY i.created_at DESC`
+
+		args = append(args, "user:"+actor.Sub)
+	}
+
+	rows, err := q.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,10 +103,24 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 
-	rows, err := q.pool.Query(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
-		FROM readmodel.incident
-		WHERE id = $1 AND is_deleted = false`, id)
+	query := `
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		FROM readmodel.incident i
+		WHERE i.id = $1 AND i.is_deleted = false`
+	args := []any{id}
+
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		query += ` AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted') OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $2 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
+
+		args = append(args, "user:"+actor.Sub)
+	}
+
+	rows, err := q.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +194,10 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing child incidents", slog.String("parent_id", parentID.String()))
 
+	if !q.canRead(ctx, parentID) {
+		return nil, shared.ErrNotFound
+	}
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
 		FROM readmodel.incident
@@ -170,7 +216,9 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 			return nil, err
 		}
 
-		out = append(out, inc)
+		if q.canRead(ctx, inc.ID) {
+			out = append(out, inc)
+		}
 	}
 
 	if err := rows.Err(); err != nil {
@@ -240,6 +288,10 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*outbound.MessageRM, error) {
 	slog.DebugContext(ctx, "listing messages", slog.String("incident_id", incidentID.String()))
 
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
@@ -275,6 +327,10 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	}
 
 	if len(msgs) == 0 {
+		return nil, shared.ErrNotFound
+	}
+
+	if !q.canRead(ctx, msgs[0].IncidentID) {
 		return nil, shared.ErrNotFound
 	}
 
@@ -341,6 +397,10 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing layers", slog.String("incident_id", incidentID.String()))
 
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
 	rows, err := q.pool.Query(ctx, `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
 		FROM readmodel.layer_features l
@@ -358,23 +418,74 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*outbound.LayerRM, error) {
 	slog.DebugContext(ctx, "listing visible layers", slog.String("incident_id", incidentID.String()))
 
-	rows, err := q.pool.Query(ctx, `
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visibleIncidentIDs := []uuid.UUID{incidentID}
+
+	childRows, err := q.pool.Query(
+		ctx,
+		`SELECT id FROM readmodel.incident WHERE parent_id = $1 AND is_deleted = false`,
+		incidentID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for childRows.Next() {
+		var childID uuid.UUID
+		if err := childRows.Scan(&childID); err != nil {
+			childRows.Close()
+			return nil, err
+		}
+
+		if q.canRead(ctx, childID) {
+			visibleIncidentIDs = append(visibleIncidentIDs, childID)
+		}
+	}
+
+	if err := childRows.Err(); err != nil {
+		childRows.Close()
+		return nil, err
+	}
+
+	childRows.Close()
+
+	query := `
 		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
 		FROM readmodel.layer_features l
 		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.removed = false
 		  AND i.is_deleted = false
-		  AND (l.incident_id = $1 OR i.parent_id = $1)
+		  AND l.incident_id = ANY($2)
 		ORDER BY
 		  CASE WHEN l.incident_id = $1 THEN 0 ELSE 1 END,
 		  CASE WHEN l.incident_id = $1 THEN lower(l.name) ELSE lower(i.name) END COLLATE "C",
-		  lower(l.name) COLLATE "C"`, incidentID)
+		  lower(l.name) COLLATE "C"`
+
+	rows, err := q.pool.Query(ctx, query, incidentID, visibleIncidentIDs)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	return collectLayers(rows)
+}
+
+func (q *Queries) canRead(ctx context.Context, incidentID uuid.UUID) bool {
+	if q.access == nil {
+		return true
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false
+	}
+
+	allowed, err := q.access.Can(ctx, actor.Sub, shared.IncidentID(incidentID), access.IncidentRead)
+
+	return err == nil && allowed
 }
 
 func collectLayers(rows pgx.Rows) ([]*outbound.LayerRM, error) {

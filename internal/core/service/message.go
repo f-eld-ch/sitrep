@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -23,6 +24,7 @@ type MessageService struct {
 	repo      outbound.MessageRepository
 	incidents outbound.IncidentRepository
 	counter   outbound.MessageCounter
+	access    outbound.IncidentAccessChecker
 	clock     outbound.Clock
 	ids       outbound.IDs
 	notifier  outbound.EventNotifier
@@ -34,12 +36,13 @@ func NewMessageService(
 	repo outbound.MessageRepository,
 	incidents outbound.IncidentRepository,
 	counter outbound.MessageCounter,
+	access outbound.IncidentAccessChecker,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *MessageService {
 	return &MessageService{
-		tx: tx, repo: repo, incidents: incidents,
+		tx: tx, repo: repo, incidents: incidents, access: access,
 		counter: counter, clock: clock, ids: ids, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
@@ -72,6 +75,10 @@ func (s *MessageService) RecordMessage(
 	var state inbound.MessageState
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.IncidentWrite); err != nil {
+			return err
+		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -137,6 +144,10 @@ func (s *MessageService) CorrectMessage(
 			return err
 		}
 
+		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
+			return err
+		}
+
 		if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
 			return err
 		}
@@ -192,6 +203,10 @@ func (s *MessageService) TriageMessage(
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		msg, err := s.repo.Load(ctx, id)
 		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
 			return err
 		}
 
@@ -254,6 +269,10 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		msg, err := s.repo.Load(ctx, id)
 		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
 			return err
 		}
 

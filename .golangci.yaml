@@ -63,6 +63,10 @@ linters:
       - path: migrations/postgres/00004_import.go
         linters:
           - sqlclosecheck
+      - path: internal/adapter/inbound/graphql/schema.resolvers.go
+        linters:
+          - wsl_v5
+          - golines
   settings:
     depguard:
       rules:

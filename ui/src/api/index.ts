@@ -6,6 +6,44 @@ export type { ApiError, ApiErrorCode } from "./errors";
 export { isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
+// Access control
+export type {
+  AccessGroupsData,
+  GroupMembersData,
+  IncidentAccessData,
+  IncidentAccessModeData,
+  GlobalRolesData,
+  UsersData,
+} from "./access";
+export type {
+  ChangeIncidentAccessModeArgs,
+  CreateAccessGroupArgs,
+  GlobalRoleArgs,
+  GroupMemberArgs,
+  IncidentRoleArgs,
+  RenameAccessGroupArgs,
+  UpdateAccessGroupDescriptionArgs,
+} from "./access";
+export {
+  useAccessGroups,
+  useAccessUsers,
+  useAddGroupMember,
+  useArchiveAccessGroup,
+  useChangeIncidentAccessMode,
+  useCreateAccessGroup,
+  useGlobalRoles,
+  useGrantGlobalRole,
+  useGrantIncidentRole,
+  useGroupMembers,
+  useIncidentAccess,
+  useIncidentAccessMode,
+  useRemoveGroupMember,
+  useRenameAccessGroup,
+  useUpdateAccessGroupDescription,
+  useRevokeGlobalRole,
+  useRevokeIncidentRole,
+} from "./access";
+
 // Incident aggregate
 export type {
   CreateIncidentArgs,

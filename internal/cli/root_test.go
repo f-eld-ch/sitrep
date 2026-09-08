@@ -95,6 +95,14 @@ func TestNewRootCmd(t *testing.T) {
 	assert.Nil(t, serveCmd.Flags().Lookup("database-url"))
 	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-close-incidents").DefValue)
 	assert.Equal(t, "0", serveCmd.Flags().Lookup("auto-archive-incidents").DefValue)
+
+	accessCmd, _, err := rootCmd.Find([]string{"access"})
+	require.NoError(t, err)
+	assert.NotNil(t, accessCmd)
+
+	usersCmd, _, err := rootCmd.Find([]string{"access", "users"})
+	require.NoError(t, err)
+	assert.NotNil(t, usersCmd)
 }
 
 func testViper(t *testing.T) *viper.Viper {

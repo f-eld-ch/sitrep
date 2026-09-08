@@ -17,14 +17,22 @@ import (
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
 	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
-	"github.com/f-eld-ch/sitrep/server"
 )
 
 // stack holds all wired-up application services and the infrastructure teardown.
 type stack struct {
-	server.Stack
+	IncidentSvc           inbound.IncidentService
+	MessageSvc            inbound.MessageService
+	LayerSvc              inbound.LayerService
+	FeatureSvc            inbound.FeatureService
+	AccessSvc             inbound.AccessService
+	Queries               outbound.Queries
+	AccessQueries         outbound.AccessQueries
+	IncidentAccessChecker outbound.IncidentAccessChecker
+	GlobalAccessChecker   outbound.GlobalAccessChecker
 	// UserRepo is nil when running with the in-memory backend.
 	UserRepo outbound.UserRepository
 	// Teardown stops the projector and releases infrastructure resources.
@@ -74,9 +82,14 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	notifier := pgstore.NewNotifier(pool, "events")
 
 	repos := eventstore.NewIncidentRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	accessChecker := pgstore.NewIncidentAccessChecker(pool)
+	globalChecker := pgstore.NewGlobalAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
 
 	factory := service.NewFactory(
@@ -86,6 +99,12 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(pgstore.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(pgstore.NewIncidentHierarchyGuard()),
+		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGuard(pgstore.NewAccessGuard()),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
 	)
 
 	handlers := []pgprojection.Handler{
@@ -93,6 +112,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		pgprojection.NewIncidentDivisionHandler(pool),
 		pgprojection.NewMessageHandler(pool),
 		pgprojection.NewLayerFeaturesHandler(pool),
+		pgprojection.NewAccessHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
@@ -115,14 +135,16 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	}()
 
 	return &stack{
-		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   pgqueries.NewQueries(pool),
-		},
-		UserRepo: pguser.NewRepository(pool),
+		IncidentSvc:           factory.IncidentService(repos, layers),
+		MessageSvc:            factory.MessageService(messages, repos),
+		LayerSvc:              factory.LayerService(layers, repos),
+		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		AccessSvc:             factory.AccessService(),
+		Queries:               pgqueries.NewQueries(pool, accessChecker),
+		AccessQueries:         pgqueries.NewAccessQueries(pool),
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+		UserRepo:              pguser.NewRepository(pool),
 		Teardown: func() {
 			cancelProj()
 			<-projDone
@@ -141,9 +163,15 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	notifier := inmem.NewNotifier()
 
 	repos := eventstore.NewIncidentRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	accessHandler := inprojection.NewAccessHandler()
+	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
+	globalChecker := inmem.NewGlobalAccessChecker(accessHandler)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -152,15 +180,20 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithNotifier(notifier),
 		service.WithMessageCounter(inmem.NewMessageCounter()),
 		service.WithIncidentHierarchyGuard(inmem.NewIncidentHierarchyGuard(store)),
+		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGuard(inmem.NewAccessGuard()),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
 	)
 
 	incHandler := inprojection.NewIncidentHandler()
 	divHandler := inprojection.NewIncidentDivisionHandler()
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
-
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler,
+		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
 	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
@@ -175,14 +208,16 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	}()
 
 	return &stack{
-		Stack: server.Stack{
-			Incidents: factory.IncidentService(repos, layers),
-			Messages:  factory.MessageService(messages, repos),
-			Layers:    factory.LayerService(layers, repos),
-			Features:  factory.FeatureService(features, repos, layers),
-			Queries:   inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler),
-		},
-		UserRepo: nil,
+		IncidentSvc:           factory.IncidentService(repos, layers),
+		MessageSvc:            factory.MessageService(messages, repos),
+		LayerSvc:              factory.LayerService(layers, repos),
+		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		AccessSvc:             factory.AccessService(),
+		Queries:               inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
+		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+		UserRepo:              nil,
 		Teardown: func() {
 			cancelProj()
 			<-projDone

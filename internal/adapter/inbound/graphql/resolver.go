@@ -11,9 +11,13 @@ import (
 // It holds inbound port interfaces (services) for the write path and the outbound
 // Queries port for the read path. Never concrete service types or adapters.
 type Resolver struct {
-	Incidents inbound.IncidentService
-	Messages  inbound.MessageService
-	Layers    inbound.LayerService
-	Features  inbound.FeatureService
-	Queries   outbound.Queries
+	Incidents             inbound.IncidentService
+	Messages              inbound.MessageService
+	Layers                inbound.LayerService
+	Features              inbound.FeatureService
+	Access                inbound.AccessService
+	AccessQueries         outbound.AccessQueries
+	IncidentAccessChecker outbound.IncidentAccessChecker
+	GlobalAccessChecker   outbound.GlobalAccessChecker
+	Queries               outbound.Queries
 }

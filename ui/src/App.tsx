@@ -8,7 +8,13 @@ import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
-import { Editor as IncidentEditor, List as IncidentList, New as IncidentNew } from "views/incident";
+import { AdminLayout, GlobalRoles, GroupDetail, Groups } from "./views/admin";
+import {
+  Editor as IncidentEditor,
+  List as IncidentList,
+  New as IncidentNew,
+  AccessPage as IncidentAccessPage,
+} from "views/incident";
 import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -27,6 +33,20 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 const MapView = lazy(() => import("views/map"));
 
 const router = createBrowserRouter([
+  {
+    path: "/admin/access",
+    element: (
+      <Layout>
+        <AdminLayout />
+      </Layout>
+    ),
+    children: [
+      { index: true, element: <Navigate to="groups" replace /> },
+      { path: "groups", element: <Groups /> },
+      { path: "groups/:groupId", element: <GroupDetail /> },
+      { path: "global-roles", element: <GlobalRoles /> },
+    ],
+  },
   {
     path: "/incident",
     children: [
@@ -54,6 +74,15 @@ const router = createBrowserRouter([
             element: (
               <Layout>
                 <IncidentEditor />
+              </Layout>
+            ),
+          },
+          {
+            // Not linked from the navbar; reachable only by direct URL.
+            path: "access",
+            element: (
+              <Layout>
+                <IncidentAccessPage />
               </Layout>
             ),
           },

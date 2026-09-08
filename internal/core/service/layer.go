@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -20,6 +21,7 @@ type LayerService struct {
 	tx        outbound.Transactor
 	repo      outbound.LayerRepository
 	incidents outbound.IncidentRepository
+	access    outbound.IncidentAccessChecker
 	clock     outbound.Clock
 	ids       outbound.IDs
 	notifier  outbound.EventNotifier
@@ -30,12 +32,13 @@ func NewLayerService(
 	tx outbound.Transactor,
 	repo outbound.LayerRepository,
 	incidents outbound.IncidentRepository,
+	access outbound.IncidentAccessChecker,
 	clock outbound.Clock,
 	ids outbound.IDs,
 	notifier outbound.EventNotifier,
 ) *LayerService {
 	return &LayerService{
-		tx: tx, repo: repo, incidents: incidents, clock: clock, ids: ids, notifier: notifier,
+		tx: tx, repo: repo, incidents: incidents, access: access, clock: clock, ids: ids, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -63,6 +66,10 @@ func (s *LayerService) CreateLayer(
 	at := s.clock.Now()
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.LayerCreate); err != nil {
+			return err
+		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -109,6 +116,10 @@ func (s *LayerService) RenameLayer(ctx context.Context, id shared.LayerID, name 
 			return err
 		}
 
+		if err := requireIncidentAccess(ctx, s.access, actor, l.IncidentID(), access.LayerWrite); err != nil {
+			return err
+		}
+
 		if err := s.requireIncidentOpen(ctx, l.IncidentID()); err != nil {
 			return err
 		}
@@ -147,6 +158,10 @@ func (s *LayerService) RemoveLayer(ctx context.Context, id shared.LayerID, actor
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		l, err := s.repo.Load(ctx, id)
 		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(ctx, s.access, actor, l.IncidentID(), access.LayerDelete); err != nil {
 			return err
 		}
 

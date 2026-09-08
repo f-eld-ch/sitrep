@@ -153,7 +153,17 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	opts := []server.Option{
 		server.WithPort(v.GetUint("port")),
 		server.WithVersion(Version, Sha),
-		server.WithApiV2(s.Stack, apiOpts...),
+		server.WithApiV2(server.Stack{
+			Incidents:             s.IncidentSvc,
+			Messages:              s.MessageSvc,
+			Layers:                s.LayerSvc,
+			Features:              s.FeatureSvc,
+			Access:                s.AccessSvc,
+			IncidentAccessChecker: s.IncidentAccessChecker,
+			GlobalAccessChecker:   s.GlobalAccessChecker,
+			AccessQueries:         s.AccessQueries,
+			Queries:               s.Queries,
+		}, apiOpts...),
 	}
 	opts = append(opts, tlsOptions(v)...)
 
@@ -172,6 +182,10 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 
 		if s.UserRepo != nil {
 			oidcClient.WithUserRepository(s.UserRepo)
+		}
+
+		if s.AccessSvc != nil {
+			oidcClient.WithFirstUserBootstrap(s.AccessSvc.BootstrapFirstSystemAdmin)
 		}
 
 		opts = append(opts, server.WithOidc(oidcClient))

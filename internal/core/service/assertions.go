@@ -5,9 +5,35 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
+	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
+
+func requireIncidentAccess(
+	ctx context.Context,
+	checker outbound.IncidentAccessChecker,
+	actor identity.Actor,
+	incidentID shared.IncidentID,
+	action access.Action,
+) error {
+	if checker == nil {
+		return nil
+	}
+
+	allowed, err := checker.Can(ctx, actor.Sub, incidentID, action)
+	if err != nil {
+		return err
+	}
+
+	if !allowed {
+		return shared.ErrForbidden
+	}
+
+	return nil
+}
 
 // Compile-time assertions: concrete services satisfy their inbound port interfaces.
 var (

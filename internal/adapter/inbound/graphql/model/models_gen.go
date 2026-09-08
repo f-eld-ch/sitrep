@@ -12,8 +12,17 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 )
 
+type AccessGroup struct {
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
+}
+
 type CreateIncidentInput struct {
 	Name string `json:"name"`
+	// Access mode for the incident; omitted defaults to OPEN_OPERATIONAL.
+	Mode *IncidentAccessMode `json:"mode,omitempty"`
 	// Optional top-level parent incident whose map will include this incident's layers.
 	ParentID *string `json:"parentId,omitempty"`
 	// Location display name; server creates the Location record.
@@ -54,6 +63,13 @@ type Feature struct {
 	Properties scalar.JSONMap `json:"properties,omitempty"`
 }
 
+type GlobalRoleGrant struct {
+	Subject string     `json:"subject"`
+	Role    GlobalRole `json:"role"`
+	Name    string     `json:"name"`
+	Email   string     `json:"email"`
+}
+
 type Incident struct {
 	ID        string      `json:"id"`
 	ParentID  *string     `json:"parentId,omitempty"`
@@ -68,6 +84,14 @@ type Incident struct {
 	ChildIncidents []*Incident `json:"childIncidents"`
 	// All messages for this incident, newest first.
 	Messages []*Message `json:"messages"`
+}
+
+type IncidentAccessGrant struct {
+	IncidentID    string              `json:"incidentId"`
+	PrincipalKind AccessPrincipalKind `json:"principalKind"`
+	PrincipalID   string              `json:"principalId"`
+	PrincipalName string              `json:"principalName"`
+	Role          IncidentRole        `json:"role"`
 }
 
 type Layer struct {
@@ -139,6 +163,238 @@ type UpdateMessageInput struct {
 	Time           *time.Time `json:"time,omitempty"`
 }
 
+type User struct {
+	Sub   string `json:"sub"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type AccessPrincipalKind string
+
+const (
+	AccessPrincipalKindUser  AccessPrincipalKind = "USER"
+	AccessPrincipalKindGroup AccessPrincipalKind = "GROUP"
+	AccessPrincipalKindAll   AccessPrincipalKind = "ALL"
+)
+
+var AllAccessPrincipalKind = []AccessPrincipalKind{
+	AccessPrincipalKindUser,
+	AccessPrincipalKindGroup,
+	AccessPrincipalKindAll,
+}
+
+func (e AccessPrincipalKind) IsValid() bool {
+	switch e {
+	case AccessPrincipalKindUser, AccessPrincipalKindGroup, AccessPrincipalKindAll:
+		return true
+	}
+	return false
+}
+
+func (e AccessPrincipalKind) String() string {
+	return string(e)
+}
+
+func (e *AccessPrincipalKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AccessPrincipalKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AccessPrincipalKind", str)
+	}
+	return nil
+}
+
+func (e AccessPrincipalKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *AccessPrincipalKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e AccessPrincipalKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type GlobalRole string
+
+const (
+	GlobalRoleSystemAdmin GlobalRole = "SYSTEM_ADMIN"
+	GlobalRoleGroupAdmin  GlobalRole = "GROUP_ADMIN"
+)
+
+var AllGlobalRole = []GlobalRole{
+	GlobalRoleSystemAdmin,
+	GlobalRoleGroupAdmin,
+}
+
+func (e GlobalRole) IsValid() bool {
+	switch e {
+	case GlobalRoleSystemAdmin, GlobalRoleGroupAdmin:
+		return true
+	}
+	return false
+}
+
+func (e GlobalRole) String() string {
+	return string(e)
+}
+
+func (e *GlobalRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GlobalRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GlobalRole", str)
+	}
+	return nil
+}
+
+func (e GlobalRole) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *GlobalRole) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e GlobalRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type IncidentAccessMode string
+
+const (
+	IncidentAccessModeOpenOperational IncidentAccessMode = "OPEN_OPERATIONAL"
+	IncidentAccessModeRestricted      IncidentAccessMode = "RESTRICTED"
+)
+
+var AllIncidentAccessMode = []IncidentAccessMode{
+	IncidentAccessModeOpenOperational,
+	IncidentAccessModeRestricted,
+}
+
+func (e IncidentAccessMode) IsValid() bool {
+	switch e {
+	case IncidentAccessModeOpenOperational, IncidentAccessModeRestricted:
+		return true
+	}
+	return false
+}
+
+func (e IncidentAccessMode) String() string {
+	return string(e)
+}
+
+func (e *IncidentAccessMode) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = IncidentAccessMode(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid IncidentAccessMode", str)
+	}
+	return nil
+}
+
+func (e IncidentAccessMode) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *IncidentAccessMode) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e IncidentAccessMode) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type IncidentRole string
+
+const (
+	IncidentRoleOwner   IncidentRole = "OWNER"
+	IncidentRoleManager IncidentRole = "MANAGER"
+	IncidentRoleEditor  IncidentRole = "EDITOR"
+	IncidentRoleViewer  IncidentRole = "VIEWER"
+)
+
+var AllIncidentRole = []IncidentRole{
+	IncidentRoleOwner,
+	IncidentRoleManager,
+	IncidentRoleEditor,
+	IncidentRoleViewer,
+}
+
+func (e IncidentRole) IsValid() bool {
+	switch e {
+	case IncidentRoleOwner, IncidentRoleManager, IncidentRoleEditor, IncidentRoleViewer:
+		return true
+	}
+	return false
+}
+
+func (e IncidentRole) String() string {
+	return string(e)
+}
+
+func (e *IncidentRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = IncidentRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid IncidentRole", str)
+	}
+	return nil
+}
+
+func (e IncidentRole) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *IncidentRole) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e IncidentRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type Medium string
 
 const (
@@ -181,7 +437,7 @@ func (e *Medium) UnmarshalGQL(v any) error {
 }
 
 func (e Medium) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *Medium) UnmarshalJSON(b []byte) error {
@@ -236,7 +492,7 @@ func (e *PriorityStatus) UnmarshalGQL(v any) error {
 }
 
 func (e PriorityStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *PriorityStatus) UnmarshalJSON(b []byte) error {
@@ -295,7 +551,7 @@ func (e *TriageStatus) UnmarshalGQL(v any) error {
 }
 
 func (e TriageStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 func (e *TriageStatus) UnmarshalJSON(b []byte) error {

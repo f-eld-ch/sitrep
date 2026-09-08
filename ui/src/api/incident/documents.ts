@@ -85,7 +85,16 @@ export const CREATE_INCIDENT: TypedDocumentNode<
       input: { name: $name, location: $location, divisions: $divisions, layers: $layers }
     ) {
       id
+      parentId
       name
+      createdAt
+      updatedAt
+      closedAt
+      isClosed
+      location {
+        name
+        coordinates
+      }
       divisions {
         id
         name
@@ -118,6 +127,14 @@ export const CREATE_INCIDENT_WITH_PARENT: TypedDocumentNode<
       id
       parentId
       name
+      createdAt
+      updatedAt
+      closedAt
+      isClosed
+      location {
+        name
+        coordinates
+      }
       divisions {
         id
         name

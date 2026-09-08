@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -23,6 +24,7 @@ type FeatureService struct {
 	repo      outbound.FeatureRepository
 	incidents outbound.IncidentRepository
 	layers    outbound.LayerRepository
+	access    outbound.IncidentAccessChecker
 	clock     outbound.Clock
 	notifier  outbound.EventNotifier
 	tracer    trace.Tracer
@@ -33,11 +35,12 @@ func NewFeatureService(
 	repo outbound.FeatureRepository,
 	incidents outbound.IncidentRepository,
 	layers outbound.LayerRepository,
+	access outbound.IncidentAccessChecker,
 	clock outbound.Clock,
 	notifier outbound.EventNotifier,
 ) *FeatureService {
 	return &FeatureService{
-		tx: tx, repo: repo, incidents: incidents, layers: layers, clock: clock, notifier: notifier,
+		tx: tx, repo: repo, incidents: incidents, layers: layers, access: access, clock: clock, notifier: notifier,
 		tracer: otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
@@ -67,6 +70,10 @@ func (s *FeatureService) PlaceFeature(
 	at := s.clock.Now()
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		if err := requireIncidentAccess(ctx, s.access, actor, incidentID, access.FeatureWrite); err != nil {
+			return err
+		}
+
 		if err := s.requireIncidentOpen(ctx, incidentID); err != nil {
 			return err
 		}
@@ -120,7 +127,7 @@ func (s *FeatureService) ModifyFeature(
 
 	var state inbound.FeatureState
 
-	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
+	err := s.writeFeature(ctx, id, actor, access.LayerWrite, func(f *feature.Feature) error {
 		at := s.clock.Now()
 		if geometry != nil {
 			if err := f.Move(geometry, actor.Sub, at); err != nil {
@@ -161,7 +168,7 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 	slog.DebugContext(ctx, "removing feature",
 		slog.String("feature_id", id.String()), slog.String("actor", actor.Sub))
 
-	err := s.writeFeature(ctx, id, func(f *feature.Feature) error {
+	err := s.writeFeature(ctx, id, actor, access.FeatureWrite, func(f *feature.Feature) error {
 		return f.Remove(shared.DeleteReasonManual, actor.Sub, s.clock.Now())
 	})
 	if err != nil {
@@ -172,10 +179,20 @@ func (s *FeatureService) RemoveFeature(ctx context.Context, id shared.FeatureID,
 	return err
 }
 
-func (s *FeatureService) writeFeature(ctx context.Context, id shared.FeatureID, fn func(*feature.Feature) error) error {
+func (s *FeatureService) writeFeature(
+	ctx context.Context,
+	id shared.FeatureID,
+	actor identity.Actor,
+	action access.Action,
+	fn func(*feature.Feature) error,
+) error {
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		f, err := s.repo.Load(ctx, id)
 		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(ctx, s.access, actor, f.IncidentID(), action); err != nil {
 			return err
 		}
 

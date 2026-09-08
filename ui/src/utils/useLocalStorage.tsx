@@ -49,21 +49,23 @@ export function useLocalStorage<T>(
 ): [T, Dispatch<SetStateAction<T>>] {
   const { initializeWithValue = true } = options;
 
+  const { serializer: serializerFn, deserializer: deserializerFn } = options;
+
   const serializer = useCallback<(value: T) => string>(
     (value) => {
-      if (options.serializer) {
-        return options.serializer(value);
+      if (serializerFn) {
+        return serializerFn(value);
       }
 
       return JSON.stringify(value);
     },
-    [options],
+    [serializerFn],
   );
 
   const deserializer = useCallback<(value: string) => T>(
     (value) => {
-      if (options.deserializer) {
-        return options.deserializer(value);
+      if (deserializerFn) {
+        return deserializerFn(value);
       }
       // Support 'undefined' as a value
       if (value === "undefined") {
@@ -82,7 +84,7 @@ export function useLocalStorage<T>(
 
       return parsed as T;
     },
-    [options, initialValue],
+    [deserializerFn, initialValue],
   );
 
   // Get from local storage then

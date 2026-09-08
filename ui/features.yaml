@@ -31,6 +31,16 @@ flags:
       - segment:
           key: SitrepManaged
           value: true
+  # nimdanitro: flag for rolling out the RBAC editors (incident access panel, admin), remove after RBAC is GA
+  - key: show-rbac-editors
+    name: Show RBAC editors
+    type: BOOLEAN_FLAG_TYPE
+    description: Show the incident access panel and the admin group/user management UI
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
 segments:
   - key: Development
     name: Development

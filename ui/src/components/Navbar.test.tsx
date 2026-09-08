@@ -25,6 +25,17 @@ vi.mock("@openfeature/react-sdk", () => ({
   useBooleanFlagValue: vi.fn().mockReturnValue(false),
 }));
 
+// Mock the api module — Navbar checks group-management permission for the Administration link.
+vi.mock("api", () => ({
+  useAccessGroups: vi.fn().mockReturnValue({
+    status: "loading",
+    data: undefined,
+    error: undefined,
+    isRefreshing: false,
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock the useDate hook
 vi.mock("../utils/useDate", () => ({
   useDate: () => ({
