@@ -25,6 +25,7 @@ type Server struct {
 	address        string
 	version        string
 	sha            string
+	allowedOrigins []string
 	auth.Enforcer
 	router        *echo.Echo
 	registerAPIV2 func()
