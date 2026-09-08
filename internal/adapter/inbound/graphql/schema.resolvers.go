@@ -728,27 +728,8 @@ func (r *mutationResolver) UpdateMessage(
 		return nil, err
 	}
 
-	msg, err := r.Queries.GetMessage(ctx, msgID)
-	if err != nil {
-		return nil, err
-	}
-
-	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(
-			ctx,
-			actor.Sub,
-			shared.IncidentID(msg.IncidentID),
-			access.IncidentWrite,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if !allowed {
-			return nil, shared.ErrForbidden
-		}
-	}
-
+	// Ownership is enforced by MessageService.CorrectMessage against the freshly loaded
+	// aggregate, not here — a pre-check against the read model would race the projector.
 	var medium *shared.Medium
 
 	if input.Medium != nil {
@@ -787,27 +768,8 @@ func (r *mutationResolver) TriageMessage(
 		return nil, err
 	}
 
-	triageMsg, err := r.Queries.GetMessage(ctx, msgID)
-	if err != nil {
-		return nil, err
-	}
-
-	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(
-			ctx,
-			actor.Sub,
-			shared.IncidentID(triageMsg.IncidentID),
-			access.IncidentWrite,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if !allowed {
-			return nil, shared.ErrForbidden
-		}
-	}
-
+	// Ownership is enforced by MessageService.TriageMessage against the freshly loaded
+	// aggregate, not here — a pre-check against the read model would race the projector.
 	triage, err := modelTriageToDomain(input.Triage)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", shared.ErrInvalidInput, err)
@@ -870,27 +832,8 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 		return "", err
 	}
 
-	delMsg, err := r.Queries.GetMessage(ctx, msgID)
-	if err != nil {
-		return "", err
-	}
-
-	if r.IncidentAccessChecker != nil {
-		allowed, err := r.IncidentAccessChecker.Can(
-			ctx,
-			actor.Sub,
-			shared.IncidentID(delMsg.IncidentID),
-			access.IncidentWrite,
-		)
-		if err != nil {
-			return "", err
-		}
-
-		if !allowed {
-			return "", shared.ErrForbidden
-		}
-	}
-
+	// Ownership is enforced by MessageService.DeleteMessage against the freshly loaded
+	// aggregate, not here — a pre-check against the read model would race the projector.
 	if err := r.Messages.DeleteMessage(ctx, shared.MessageID(msgID), actor); err != nil {
 		return "", err
 	}
@@ -985,27 +928,8 @@ func (r *mutationResolver) ModifyFeature(
 		return nil, err
 	}
 
-	if r.IncidentAccessChecker != nil {
-		featureIncID, err := r.Queries.GetFeatureIncidentID(ctx, featureID)
-		if err != nil {
-			return nil, err
-		}
-
-		allowed, err := r.IncidentAccessChecker.Can(
-			ctx,
-			actor.Sub,
-			shared.IncidentID(featureIncID),
-			access.IncidentWrite,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if !allowed {
-			return nil, shared.ErrForbidden
-		}
-	}
-
+	// Ownership is enforced by FeatureService.ModifyFeature against the freshly loaded
+	// aggregate, not here — a pre-check against the read model would race the projector.
 	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor)
 	if err != nil {
 		return nil, err
@@ -1032,27 +956,8 @@ func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string
 		return "", err
 	}
 
-	if r.IncidentAccessChecker != nil {
-		featureIncID, err := r.Queries.GetFeatureIncidentID(ctx, featureID)
-		if err != nil {
-			return "", err
-		}
-
-		allowed, err := r.IncidentAccessChecker.Can(
-			ctx,
-			actor.Sub,
-			shared.IncidentID(featureIncID),
-			access.IncidentWrite,
-		)
-		if err != nil {
-			return "", err
-		}
-
-		if !allowed {
-			return "", shared.ErrForbidden
-		}
-	}
-
+	// Ownership is enforced by FeatureService.RemoveFeature against the freshly loaded
+	// aggregate, not here — a pre-check against the read model would race the projector.
 	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), actor); err != nil {
 		return "", err
 	}

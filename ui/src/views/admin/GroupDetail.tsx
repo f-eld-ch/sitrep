@@ -62,7 +62,9 @@ function GroupDetail() {
 
   const currentMembers =
     membersResult.status === "ready"
-      ? membersResult.data.subjects.map((sub) => userBySub.get(sub) ?? { sub, name: sub, email: "" })
+      ? membersResult.data.subjects.map(
+          (sub) => userBySub.get(sub) ?? { sub, name: sub, email: "" },
+        )
       : [];
 
   const addQuery = addFilter.trim().toLowerCase();
@@ -170,7 +172,11 @@ function GroupDetail() {
                 onClick={() => void commitRename()}
                 disabled={renameState.loading}
               >
-                {renameState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.save")}
+                {renameState.loading ? (
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                ) : (
+                  t("adminGroupDetail.save")
+                )}
               </button>
             </div>
             <div className="control">
@@ -286,7 +292,11 @@ function GroupDetail() {
                   );
                 }}
               >
-                {archiveState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.confirmArchive")}
+                {archiveState.loading ? (
+                  <FontAwesomeIcon icon={faSpinner} spin />
+                ) : (
+                  t("adminGroupDetail.confirmArchive")
+                )}
               </button>
               <button
                 type="button"

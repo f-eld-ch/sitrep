@@ -109,19 +109,17 @@ export const LIST_GLOBAL_ROLES: TypedDocumentNode<
   }
 `;
 
-export const MY_GLOBAL_ROLES: TypedDocumentNode<
-  MyGlobalRolesQuery,
-  MyGlobalRolesQueryVariables
-> = gql`
-  query MyGlobalRoles {
-    myGlobalRoles {
-      subject
-      role
-      name
-      email
+export const MY_GLOBAL_ROLES: TypedDocumentNode<MyGlobalRolesQuery, MyGlobalRolesQueryVariables> =
+  gql`
+    query MyGlobalRoles {
+      myGlobalRoles {
+        subject
+        role
+        name
+        email
+      }
     }
-  }
-`;
+  `;
 
 export const CHANGE_INCIDENT_ACCESS_MODE: TypedDocumentNode<
   ChangeIncidentAccessModeMutation,

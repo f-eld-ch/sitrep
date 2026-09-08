@@ -132,19 +132,35 @@ function GlobalRoles() {
                 const isConfirming = confirmingRevoke === key;
                 return (
                   <tr key={key}>
-                    <td>{grantRow.name || t("adminGlobalRoles.unnamedUser")} ({grantRow.email || grantRow.subject})</td>
-                    <td>{grantRow.role === "SYSTEM_ADMIN" ? t("adminGlobalRoles.systemAdmin") : t("adminGlobalRoles.groupAdmin")}</td>
+                    <td>
+                      {grantRow.name || t("adminGlobalRoles.unnamedUser")} (
+                      {grantRow.email || grantRow.subject})
+                    </td>
+                    <td>
+                      {grantRow.role === "SYSTEM_ADMIN"
+                        ? t("adminGlobalRoles.systemAdmin")
+                        : t("adminGlobalRoles.groupAdmin")}
+                    </td>
                     <td className="has-text-right">
                       {isConfirming ? (
-                        <span className="is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: "0.5rem" }}>
-                          <span className="is-size-7 has-text-grey">{t("adminGlobalRoles.revokeConfirm")}</span>
+                        <span
+                          className="is-flex is-align-items-center is-justify-content-flex-end"
+                          style={{ gap: "0.5rem" }}
+                        >
+                          <span className="is-size-7 has-text-grey">
+                            {t("adminGlobalRoles.revokeConfirm")}
+                          </span>
                           <button
                             type="button"
                             className="button is-small is-danger"
                             disabled={isPending}
                             onClick={() => revoke(grantRow.subject, grantRow.role)}
                           >
-                            {isPending ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGlobalRoles.confirm")}
+                            {isPending ? (
+                              <FontAwesomeIcon icon={faSpinner} spin />
+                            ) : (
+                              t("adminGlobalRoles.confirm")
+                            )}
                           </button>
                           <button
                             type="button"

@@ -68,9 +68,7 @@ export function useChangeIncidentAccessMode(): CommandHook<ChangeIncidentAccessM
     });
     await mutate({
       variables: args,
-      refetchQueries: [
-        { query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } },
-      ],
+      refetchQueries: [{ query: LIST_INCIDENT_ACCESS, variables: { incidentId: args.incidentId } }],
     }).catch(rethrowAsApiError);
   };
   return [changeMode, commandState(result.loading, result.error)];
