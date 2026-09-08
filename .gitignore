@@ -57,4 +57,7 @@ ui/coverage/
 *.tsbuildinfo
 
 # Local dev config. Anchored: packaging/config.yaml is the shipped sample.
-/config.yaml
+config.yaml
+config.dev.yaml
+key.pem
+cert.pem

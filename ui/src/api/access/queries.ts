@@ -9,6 +9,7 @@ import {
   LIST_INCIDENT_ACCESS,
   LIST_INCIDENT_ACCESS_MODE,
   LIST_USERS,
+  MY_GLOBAL_ROLES,
 } from "./documents";
 import { toAccessGroup, toAccessUser, toGlobalRoleGrant, toIncidentAccessGrant } from "./mapper";
 
@@ -166,6 +167,29 @@ export function useAccessUsers(): QueryResult<UsersData> {
     error: undefined,
     isRefreshing: loading,
     refresh,
+  };
+}
+
+export function useMyGlobalRoles(skip = false): QueryResult<GlobalRolesData> {
+  const { loading, error, data } = useQuery(MY_GLOBAL_ROLES, { skip });
+  if (loading && !data) {
+    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh: () => undefined };
+  }
+  if (error) {
+    return {
+      status: "error",
+      data: data ? { grants: data.myGlobalRoles.map(toGlobalRoleGrant) } : undefined,
+      error: apiErrorFromApolloError(error),
+      isRefreshing: loading,
+      refresh: () => undefined,
+    };
+  }
+  return {
+    status: "ready",
+    data: { grants: (data?.myGlobalRoles ?? []).map(toGlobalRoleGrant) },
+    error: undefined,
+    isRefreshing: loading,
+    refresh: () => undefined,
   };
 }
 

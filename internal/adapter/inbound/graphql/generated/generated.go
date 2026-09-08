@@ -157,6 +157,7 @@ type ComplexityRoot struct {
 		Incidents          func(childComplexity int) int
 		LayersForIncident  func(childComplexity int, incidentID string) int
 		Message            func(childComplexity int, id string) int
+		MyGlobalRoles      func(childComplexity int) int
 		Users              func(childComplexity int) int
 	}
 
@@ -214,6 +215,7 @@ type QueryResolver interface {
 	GroupMembers(ctx context.Context, groupID string) ([]string, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	GlobalRoles(ctx context.Context) ([]*model.GlobalRoleGrant, error)
+	MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleGrant, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -927,6 +929,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Message(childComplexity, args["id"].(string)), true
+	case "Query.myGlobalRoles":
+		if e.ComplexityRoot.Query.MyGlobalRoles == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.MyGlobalRoles(childComplexity), true
 	case "Query.users":
 		if e.ComplexityRoot.Query.Users == nil {
 			break
@@ -1232,6 +1240,7 @@ type Query {
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
   globalRoles: [GlobalRoleGrant!]!
+  myGlobalRoles: [GlobalRoleGrant!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -5175,6 +5184,38 @@ func (ec *executionContext) fieldContext_Query_globalRoles(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_myGlobalRoles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_myGlobalRoles(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().MyGlobalRoles(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.GlobalRoleGrant) graphql.Marshaler {
+			return ec.marshalNGlobalRoleGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRoleGrantᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_myGlobalRoles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_GlobalRoleGrant(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -7839,6 +7880,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_globalRoles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "myGlobalRoles":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_myGlobalRoles(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
