@@ -187,6 +187,7 @@ type Query {
   groupMembers(groupId: ID!): [ID!]!
   users: [User!]!
   globalRoles: [GlobalRoleGrant!]!
+  myGlobalRoles: [GlobalRoleGrant!]!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────

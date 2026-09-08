@@ -10,6 +10,7 @@ export {
   useAccessGroups,
   useAccessUsers,
   useGlobalRoles,
+  useMyGlobalRoles,
   useGroupMembers,
   useIncidentAccess,
   useIncidentAccessMode,

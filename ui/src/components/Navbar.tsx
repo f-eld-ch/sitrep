@@ -25,7 +25,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import logo from "assets/logo.svg";
 import classNames from "classnames";
-import { useAccessGroups } from "api";
+import { useMyGlobalRoles } from "api";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
@@ -246,10 +246,11 @@ function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
   const showRbacEditors = useBooleanFlagValue("show-rbac-editors", false);
-  // The link is a UX convenience only; the accessGroups query itself is what the
-  // server actually authorizes, so a denied user only sees an empty/forbidden page.
-  const groupsResult = useAccessGroups(!showRbacEditors || !userState.isLoggedin);
-  const canManageGroups = showRbacEditors && groupsResult.status === "ready";
+  const myRolesResult = useMyGlobalRoles(!showRbacEditors || !userState.isLoggedin);
+  const isAdmin =
+    showRbacEditors &&
+    myRolesResult.status === "ready" &&
+    (myRolesResult.data?.grants ?? []).length > 0;
 
   if (!userState.isLoggedin) return;
 
@@ -271,7 +272,7 @@ function UserNavBar() {
         <DarkModeSwitcher />
         <LanguageSwitcher />
         <hr className="navbar-divider" />
-        {showRbacEditors && canManageGroups && (
+        {isAdmin && (
           <NavLink className="navbar-item" to="/admin/access">
             <span className="icon-text is-flex-wrap-nowrap">
               <span className="icon">

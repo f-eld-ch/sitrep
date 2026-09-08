@@ -62,6 +62,7 @@ type AccessQueries interface {
 	ListGroupMembers(ctx context.Context, groupID uuid.UUID) ([]GroupMemberRM, error)
 	ListUsers(ctx context.Context) ([]UserRM, error)
 	ListGlobalRoles(ctx context.Context) ([]GlobalRoleGrantRM, error)
+	MyGlobalRoles(ctx context.Context, subject string) ([]GlobalRoleGrantRM, error)
 }
 
 // AccessGuard serializes cross-stream ownership and group-grant invariants.

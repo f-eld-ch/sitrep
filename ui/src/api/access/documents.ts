@@ -12,6 +12,8 @@ import type {
   ListUsersQueryVariables,
   ListGlobalRolesQuery,
   ListGlobalRolesQueryVariables,
+  MyGlobalRolesQuery,
+  MyGlobalRolesQueryVariables,
   AddGroupMemberMutation,
   AddGroupMemberMutationVariables,
   ArchiveAccessGroupMutation,
@@ -99,6 +101,20 @@ export const LIST_GLOBAL_ROLES: TypedDocumentNode<
 > = gql`
   query ListGlobalRoles {
     globalRoles {
+      subject
+      role
+      name
+      email
+    }
+  }
+`;
+
+export const MY_GLOBAL_ROLES: TypedDocumentNode<
+  MyGlobalRolesQuery,
+  MyGlobalRolesQueryVariables
+> = gql`
+  query MyGlobalRoles {
+    myGlobalRoles {
       subject
       role
       name

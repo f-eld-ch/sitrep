@@ -32,6 +32,7 @@ export {
   useChangeIncidentAccessMode,
   useCreateAccessGroup,
   useGlobalRoles,
+  useMyGlobalRoles,
   useGrantGlobalRole,
   useGrantIncidentRole,
   useGroupMembers,
