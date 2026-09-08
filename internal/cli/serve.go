@@ -185,8 +185,15 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	if v.GetString("oidc-client-id") != "" {
 		for _, key := range oidcPartial {
 			if v.GetString(key) == "" {
-				err := fmt.Errorf("oidc-client-id, oidc-issuer, oidc-client-secret, and oidc-redirect-url must be configured together")
-				slog.ErrorContext(ctx, "incomplete OIDC configuration", slog.String("missing", key), slog.String("error", err.Error()))
+				err := fmt.Errorf(
+					"oidc-client-id, oidc-issuer, oidc-client-secret, and oidc-redirect-url must be configured together",
+				)
+				slog.ErrorContext(
+					ctx,
+					"incomplete OIDC configuration",
+					slog.String("missing", key),
+					slog.String("error", err.Error()),
+				)
 
 				return err
 			}

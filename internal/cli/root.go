@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -75,14 +76,18 @@ var rootConfigOptions = []configOption{
 func Execute() {
 	rootCmd, err := NewRootCmd()
 	cobra.CheckErr(err)
-	cobra.CheckErr(rootCmd.Execute())
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
 
 func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
-		Use:          "sitrep",
-		Short:        "SitRep — incident management server",
-		SilenceUsage: true,
+		Use:           "sitrep",
+		Short:         "SitRep — incident management server",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	pf := rootCmd.PersistentFlags()
