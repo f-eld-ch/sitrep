@@ -5,6 +5,10 @@
 - *(access)* Per-incident RBAC with groups and global roles ([#1828](https://github.com/f-eld-ch/sitrep/issues/1828)) - ([04d3618](https://github.com/f-eld-ch/sitrep/commit/04d361851eb6829ffc262a5e8825933265102d8c))
 - *(migrations)* Move postgres migrations and introduce readmodel schema ([#1821](https://github.com/f-eld-ch/sitrep/issues/1821)) - ([ba3a12d](https://github.com/f-eld-ch/sitrep/commit/ba3a12dc5fbe0aa3db18f136542163eb5fcd20fd))
 
+### 🐛 Bug Fixes
+
+- *(access)* Hide Administration menu for non-admin users ([#1830](https://github.com/f-eld-ch/sitrep/issues/1830)) - ([4530580](https://github.com/f-eld-ch/sitrep/commit/45305809e2999e479f1c4dc464a0c781be558f32))
+
 ### 📚 Documentation
 
 - *(admin)* Add local PostgreSQL administrator setup guide ([#1822](https://github.com/f-eld-ch/sitrep/issues/1822)) - ([ab8be1e](https://github.com/f-eld-ch/sitrep/commit/ab8be1e4ece4aacbec2e2b504136fe0cdfb3a943))
