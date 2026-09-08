@@ -187,7 +187,7 @@
     "accessMode": "Access mode",
     "addGrant": "Add grant",
     "openAccess": "Open access",
-    "openAccessHelp": "Every authenticated user can view and edit this incident. Grants below only control who can manage access.",
+    "openAccessHelp": "Every authenticated user can view, edit, and close this incident. Only the owner can delete it.",
     "restricted": "Restricted",
     "restrictedHelp": "Only the principals granted below can view or edit this incident.",
     "headsUp": "Heads up:",
@@ -222,9 +222,9 @@
     "roleDescriptions": {
       "NONE": "No access to this incident.",
       "VIEWER": "Can view the incident and its timeline.",
-      "EDITOR": "Can edit the incident, post updates, and manage tasks.",
-      "MANAGER": "Can edit the incident and manage access grants.",
-      "OWNER": "Full control — can archive, transfer ownership, and delete the incident."
+      "EDITOR": "Can edit the incident, post updates, manage tasks, and link/unlink sub-incidents.",
+      "MANAGER": "Can edit the incident, close/reopen it, link/unlink sub-incidents, and manage access grants.",
+      "OWNER": "Full control — can close, delete, and manage access grants."
     }
   },
   "adminGroups": {

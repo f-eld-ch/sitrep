@@ -107,6 +107,25 @@ func (r *incidentResolver) CanManage(ctx context.Context, obj *model.Incident) (
 	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentClose)
 }
 
+// CanDelete is the resolver for the canDelete field.
+func (r *incidentResolver) CanDelete(ctx context.Context, obj *model.Incident) (bool, error) {
+	if r.IncidentAccessChecker == nil {
+		return true, nil
+	}
+
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.IncidentAccessChecker.Can(ctx, actor.Sub, shared.IncidentID(incID), access.IncidentDelete)
+}
+
 // CanManageAccess is the resolver for the canManageAccess field.
 func (r *incidentResolver) CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error) {
 	if r.IncidentAccessChecker == nil {

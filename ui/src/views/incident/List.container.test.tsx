@@ -38,6 +38,7 @@ const baseIncident: Incident = {
   parentId: null,
   canWrite: true,
   canManage: true,
+  canDelete: true,
   canManageAccess: true,
   accessMode: "OPEN_OPERATIONAL" as const,
   divisions: [],

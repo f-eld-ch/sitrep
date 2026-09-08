@@ -15,7 +15,7 @@ type AccessHandler struct{ pool *pgxpool.Pool }
 
 func NewAccessHandler(pool *pgxpool.Pool) *AccessHandler { return &AccessHandler{pool: pool} }
 func (h *AccessHandler) Name() string                    { return "readmodel.access" }
-func (h *AccessHandler) Version() int                    { return 2 }
+func (h *AccessHandler) Version() int                    { return 4 }
 func (h *AccessHandler) HaltOnError() bool               { return true }
 func (h *AccessHandler) Handles(streamType, _ string) bool {
 	return streamType == "IncidentAccess" || streamType == "AccessGroup" || streamType == "GlobalAccess"
@@ -283,15 +283,19 @@ JOIN (VALUES
  ('owner','message','message.write'), ('owner','layer','layer.read'), ('owner','layer','layer.create'),
  ('owner','layer','layer.write'), ('owner','layer','layer.delete'), ('owner','feature','feature.write'),
  ('manager','incident','incident.read'), ('manager','incident','incident.write'), ('manager','incident','incident.close'),
- ('manager','incident','incident.reopen'), ('manager','incident','incident.manage_access'), ('manager','message','message.read'),
- ('manager','message','message.write'), ('manager','layer','layer.read'), ('manager','layer','layer.create'),
- ('manager','layer','layer.write'), ('manager','layer','layer.delete'), ('manager','feature','feature.write'),
- ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'),
- ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'),
- ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
+ ('manager','incident','incident.reopen'), ('manager','incident','incident.manage_access'),
+ ('manager','incident','incident.link_parent'), ('manager','incident','incident.unlink_parent'),
+ ('manager','message','message.read'), ('manager','message','message.write'), ('manager','layer','layer.read'),
+ ('manager','layer','layer.create'), ('manager','layer','layer.write'), ('manager','layer','layer.delete'),
+ ('manager','feature','feature.write'),
+ ('editor','incident','incident.read'), ('editor','incident','incident.write'),
+ ('editor','incident','incident.link_parent'), ('editor','incident','incident.unlink_parent'),
+ ('editor','message','message.read'), ('editor','message','message.write'), ('editor','layer','layer.read'),
+ ('editor','layer','layer.create'), ('editor','layer','layer.write'), ('editor','layer','layer.delete'),
+ ('editor','feature','feature.write'),
  ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read')
 ) AS p(role, object, action) ON p.role = a.role
-WHERE a.revoked_at IS NULL AND a.principal_kind = 'user' AND (m.mode = 'restricted' OR p.action = 'incident.manage_access')
+WHERE a.revoked_at IS NULL AND a.principal_kind = 'user' AND (m.mode = 'restricted' OR p.action = 'incident.delete')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO readmodel.access_policy (subject, domain, object, action)
@@ -302,11 +306,11 @@ JOIN readmodel.access_group_member gm ON gm.group_id::text = a.principal_id AND 
 JOIN readmodel.access_group g ON g.id = gm.group_id AND g.archived_at IS NULL
 JOIN (VALUES
  ('owner','incident','incident.read'), ('owner','incident','incident.write'), ('owner','incident','incident.delete'), ('owner','incident','incident.close'), ('owner','incident','incident.reopen'), ('owner','incident','incident.manage_access'), ('owner','incident','incident.link_parent'), ('owner','incident','incident.unlink_parent'), ('owner','message','message.read'), ('owner','message','message.write'), ('owner','layer','layer.read'), ('owner','layer','layer.create'), ('owner','layer','layer.write'), ('owner','layer','layer.delete'), ('owner','feature','feature.write'),
- ('manager','incident','incident.read'), ('manager','incident','incident.write'), ('manager','incident','incident.close'), ('manager','incident','incident.reopen'), ('manager','incident','incident.manage_access'), ('manager','message','message.read'), ('manager','message','message.write'), ('manager','layer','layer.read'), ('manager','layer','layer.create'), ('manager','layer','layer.write'), ('manager','layer','layer.delete'), ('manager','feature','feature.write'),
- ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'), ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'), ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
+ ('manager','incident','incident.read'), ('manager','incident','incident.write'), ('manager','incident','incident.close'), ('manager','incident','incident.reopen'), ('manager','incident','incident.manage_access'), ('manager','incident','incident.link_parent'), ('manager','incident','incident.unlink_parent'), ('manager','message','message.read'), ('manager','message','message.write'), ('manager','layer','layer.read'), ('manager','layer','layer.create'), ('manager','layer','layer.write'), ('manager','layer','layer.delete'), ('manager','feature','feature.write'),
+ ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','incident','incident.link_parent'), ('editor','incident','incident.unlink_parent'), ('editor','message','message.read'), ('editor','message','message.write'), ('editor','layer','layer.read'), ('editor','layer','layer.create'), ('editor','layer','layer.write'), ('editor','layer','layer.delete'), ('editor','feature','feature.write'),
  ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read')
 ) AS p(role, object, action) ON p.role = a.role
-WHERE a.revoked_at IS NULL AND a.principal_kind = 'group' AND (m.mode = 'restricted' OR p.action = 'incident.manage_access')
+WHERE a.revoked_at IS NULL AND a.principal_kind = 'group' AND (m.mode = 'restricted' OR p.action = 'incident.delete')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO readmodel.access_policy (subject, domain, object, action)

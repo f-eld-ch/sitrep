@@ -37,6 +37,7 @@ export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncident
         isClosed
         canWrite
         canManage
+        canDelete
         accessMode
         location {
           name
@@ -60,6 +61,7 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
       closedAt
       isClosed
       canManage
+      canDelete
       canManageAccess
       location {
         name

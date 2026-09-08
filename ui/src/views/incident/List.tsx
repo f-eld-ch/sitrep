@@ -244,7 +244,7 @@ export function IncidentCard(props: {
               <span>{t("edit")}</span>
             </button>
           )}
-          {incident.canManage && incident.closedAt !== null && (
+          {incident.canDelete && incident.closedAt !== null && (
             <button
               type="button"
               data-testid="delete-button"

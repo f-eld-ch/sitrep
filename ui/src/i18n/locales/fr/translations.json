@@ -187,7 +187,7 @@
     "accessMode": "Mode d'accès",
     "addGrant": "Ajouter une autorisation",
     "openAccess": "Accès ouvert",
-    "openAccessHelp": "Tout utilisateur authentifié peut consulter et modifier cet événement. Les autorisations ci-dessous contrôlent uniquement qui peut gérer l'accès.",
+    "openAccessHelp": "Tout utilisateur authentifié peut consulter, modifier et clôturer cet événement. Seul le propriétaire peut le supprimer.",
     "restricted": "Restreint",
     "restrictedHelp": "Seuls les principaux listés ci-dessous peuvent consulter ou modifier cet événement.",
     "headsUp": "Attention :",
@@ -222,9 +222,9 @@
     "roleDescriptions": {
       "NONE": "Aucun accès à cet événement.",
       "VIEWER": "Peut consulter l'événement et son historique.",
-      "EDITOR": "Peut modifier l'événement, publier des mises à jour et gérer les tâches.",
-      "MANAGER": "Peut modifier l'événement et gérer les autorisations d'accès.",
-      "OWNER": "Contrôle total — peut archiver, transférer la propriété et supprimer l'événement."
+      "EDITOR": "Peut modifier l'événement, publier des mises à jour, gérer les tâches et lier/délier des sous-événements.",
+      "MANAGER": "Peut modifier l'événement, le clôturer/rouvrir, lier/délier des sous-événements et gérer les autorisations d'accès.",
+      "OWNER": "Contrôle total — peut clôturer, supprimer et gérer les autorisations d'accès."
     }
   },
   "adminGroups": {

@@ -55,8 +55,10 @@ A principal holds exactly one role per incident (the domain enforces this — gr
 | Create / edit / delete layers and features | | ✓ | ✓ | ✓ |
 | Close / reopen incident | | | ✓ | ✓ |
 | Manage access grants (`incident.manage_access`) | | | ✓ | ✓ |
-| Link / unlink parent incident | | | | ✓ |
-| Delete incident | | | | ✓ |
+| Link / unlink parent incident | | ✓ | ✓ | ✓ |
+| Delete incident (`incident.delete`) | | | | ✓ |
+
+> These permissions apply to **restricted** incidents. On **open_operational** incidents the access checker bypasses Casbin for every action except `incident.delete` (see Access Modes below).
 
 **Important:** `NONE` is not a stored role — revoking a grant removes the row entirely. `NONE` appears in the UI as a way to express "revoke whatever role this principal has".
 
@@ -72,10 +74,14 @@ Every incident has exactly one of two modes:
 
 | Mode | Meaning |
 |---|---|
-| `open_operational` | Every authenticated user can read and write the incident (all standard actions except `incident.manage_access`). Explicit grants are only enforced for `manage_access`. |
-| `restricted` | Only principals with an explicit grant (user, group, or `all`) can access the incident. |
+| `open_operational` | Every authenticated user can read, write, close, and manage access grants on the incident. **Only `incident.delete` is policy-gated** — it is restricted to owners even on open incidents. |
+| `restricted` | Only principals with an explicit grant (user, group, or `all`) can access the incident. All actions are Casbin-enforced. |
 
-This asymmetry is the core of the open-mode optimisation: the access checker short-circuits on `open_operational` for everything except access management, avoiding a Casbin lookup on every request.
+### Open-mode bypass detail
+
+When an incident is `open_operational` and already has at least one owner grant, the access checker short-circuits for every action **except** `incident.delete`, avoiding a Casbin lookup. If no owner grant exists yet (ownerless incident), *all* actions are bypassed — the incident is fully claimable by any authenticated user.
+
+When the mode row is missing entirely (projection lag or pre-RBAC incident), the checker treats the incident as ownerless-open and allows all actions.
 
 ### Mode transition invariant
 
@@ -118,7 +124,7 @@ After every access event, `recompute()` rebuilds `access_policy` from scratch. T
 1. **Direct user grant** — for each `(incidentID, user, role)` grant, emit one policy row per action the role holds (see permission table above).
 2. **Group grant** — for each `(incidentID, group, role)` grant, also enumerate every group member and emit their individual policy rows. Archived groups are excluded.
 3. **`all` grant** — emit a policy row with `subject = 'all'` for every action the role holds. The enforcer rewrites `all` to the actual requesting subject at evaluation time.
-4. **Open-mode optimisation** — when an incident is in `open_operational` mode, only `incident.manage_access` policies are emitted from grants. All other access decisions short-circuit to `true` at the checker level before reaching Casbin.
+4. **Open-mode optimisation** — when an incident is in `open_operational` mode, only `incident.delete` policies are emitted from grants (owner-only action that remains gated even on open incidents). All other access decisions short-circuit to `true` at the checker level before reaching Casbin.
 5. **Global roles** — emit one policy per action the global role holds, with `domain = 'global'`.
 
 The `AccessHandler` sets `HaltOnError() = true` — a projection failure stops the handler entirely rather than skipping the event. A missed revocation would leave access incorrectly enabled; it is better to halt and require manual intervention.
@@ -134,9 +140,12 @@ GraphQL resolver / service
   │
   ├── IncidentAccessChecker.Can(ctx, subject, incidentID, action)
   │       ├── SELECT mode FROM readmodel.incident_access_mode
-  │       │       not found  → treat as open (projection lag)
-  │       │       open_operational + action ≠ manage_access → return true
-  │       │       restricted  → fall through to Casbin
+  │       │       not found        → treat as ownerless-open → return true
+  │       │       open_operational → check owner count
+  │       │           no owners   → return true (fully claimable)
+  │       │           has owners + action ≠ incident.delete → return true
+  │       │           has owners + action = incident.delete → fall through to Casbin
+  │       │       restricted       → fall through to Casbin
   │       └── enforce(subject, domain, object, action)
   │               SELECT policies WHERE (subject=$1 OR subject='all') AND domain=$2
   │               load into in-process Casbin enforcer
@@ -152,7 +161,7 @@ The Casbin policy model is RBAC-free (`p = sub, dom, obj, act`; `e = some(where 
 
 ### Missing mode row
 
-If `readmodel.incident_access_mode` has no row for a given incident (the projection has not caught up yet, or the incident pre-dates RBAC), the checker treats the incident as `open_operational`. This prevents the async projector lag from making newly created incidents invisible.
+If `readmodel.incident_access_mode` has no row for a given incident (the projection has not caught up yet, or the incident pre-dates RBAC), the checker treats the incident as ownerless-open and returns `true` for all actions. This prevents the async projector lag from making newly created incidents inaccessible.
 
 ---
 

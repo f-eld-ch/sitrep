@@ -149,8 +149,10 @@ type Incident {
   messages: [Message!]!
   """Whether the current user has write access to this incident."""
   canWrite: Boolean!
-  """Whether the current user can close, reopen, or delete this incident."""
+  """Whether the current user can close or reopen this incident."""
   canManage: Boolean!
+  """Whether the current user can delete this incident (owner only)."""
+  canDelete: Boolean!
   """Whether the current user can manage access grants for this incident."""
   canManageAccess: Boolean!
   """Access mode of this incident."""

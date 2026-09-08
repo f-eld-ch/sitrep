@@ -53,7 +53,7 @@ func NewAccessHandler() *AccessHandler {
 }
 
 func (h *AccessHandler) Name() string { return "readmodel.access" }
-func (h *AccessHandler) Version() int { return 1 }
+func (h *AccessHandler) Version() int { return 3 }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
 }
@@ -267,7 +267,12 @@ func actionsForMode(role access.Role, mode access.IncidentMode) []access.Action 
 		return incidentActions(role)
 	}
 
-	return []access.Action{IncidentManageAccess}
+	// On open incidents only delete is policy-gated; emit it only for owners.
+	if role == access.Owner {
+		return []access.Action{IncidentDelete}
+	}
+
+	return nil
 }
 
 func (h *AccessHandler) addPolicy(subject, domain, action string) {
@@ -455,6 +460,8 @@ func incidentActions(role access.Role) []access.Action {
 			IncidentClose,
 			IncidentReopen,
 			IncidentManageAccess,
+			IncidentLinkParent,
+			IncidentUnlinkParent,
 			MessageRead,
 			MessageWrite,
 			LayerRead,
@@ -467,6 +474,8 @@ func incidentActions(role access.Role) []access.Action {
 		return []access.Action{
 			IncidentRead,
 			IncidentWrite,
+			IncidentLinkParent,
+			IncidentUnlinkParent,
 			MessageRead,
 			MessageWrite,
 			LayerRead,

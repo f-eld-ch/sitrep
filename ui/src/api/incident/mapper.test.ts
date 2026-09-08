@@ -12,6 +12,7 @@ const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
   isClosed: false,
   canWrite: true,
   canManage: true,
+  canDelete: true,
   accessMode: "OPEN_OPERATIONAL" as const,
   location: { name: "Sector 7", coordinates: null },
 };
@@ -25,6 +26,7 @@ const WIRE_DETAILS: NonNullable<GetIncidentDetailQuery["incident"]> = {
   closedAt: null,
   isClosed: false,
   canManage: true,
+  canDelete: true,
   canManageAccess: true,
   location: { name: "Sector 7", coordinates: null },
   divisions: [{ id: "div-1", name: "Alpha", description: "Alpha division" }],

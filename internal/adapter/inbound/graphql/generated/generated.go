@@ -67,6 +67,7 @@ type ComplexityRoot struct {
 
 	Incident struct {
 		AccessMode      func(childComplexity int) int
+		CanDelete       func(childComplexity int) int
 		CanManage       func(childComplexity int) int
 		CanManageAccess func(childComplexity int) int
 		CanWrite        func(childComplexity int) int
@@ -181,6 +182,7 @@ type IncidentResolver interface {
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
 	CanWrite(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManage(ctx context.Context, obj *model.Incident) (bool, error)
+	CanDelete(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error)
 	AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error)
 }
@@ -338,6 +340,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Incident.AccessMode(childComplexity), true
+	case "Incident.canDelete":
+		if e.ComplexityRoot.Incident.CanDelete == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.CanDelete(childComplexity), true
 	case "Incident.canManage":
 		if e.ComplexityRoot.Incident.CanManage == nil {
 			break
@@ -1234,8 +1242,10 @@ type Incident {
   messages: [Message!]!
   """Whether the current user has write access to this incident."""
   canWrite: Boolean!
-  """Whether the current user can close, reopen, or delete this incident."""
+  """Whether the current user can close or reopen this incident."""
   canManage: Boolean!
+  """Whether the current user can delete this incident (owner only)."""
+  canDelete: Boolean!
   """Whether the current user can manage access grants for this incident."""
   canManageAccess: Boolean!
   """Access mode of this incident."""
@@ -1510,6 +1520,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_canWrite(ctx, field)
 	case "canManage":
 		return ec.fieldContext_Incident_canManage(ctx, field)
+	case "canDelete":
+		return ec.fieldContext_Incident_canDelete(ctx, field)
 	case "canManageAccess":
 		return ec.fieldContext_Incident_canManageAccess(ctx, field)
 	case "accessMode":
@@ -3100,6 +3112,29 @@ func (ec *executionContext) _Incident_canManage(ctx context.Context, field graph
 	)
 }
 func (ec *executionContext) fieldContext_Incident_canManage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _Incident_canDelete(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_canDelete(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().CanDelete(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_canDelete(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
@@ -7329,6 +7364,44 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Incident_canManage(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "canDelete":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_canDelete(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

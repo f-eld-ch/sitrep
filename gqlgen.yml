@@ -34,6 +34,8 @@ models:
         resolver: true
       canManage:
         resolver: true
+      canDelete:
+        resolver: true
       canManageAccess:
         resolver: true
       accessMode:

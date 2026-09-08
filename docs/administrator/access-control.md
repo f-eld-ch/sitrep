@@ -81,9 +81,11 @@ Every user who can interact with an incident holds one of the following roles:
 | Role | Can do |
 |---|---|
 | **Viewer** | Read the incident, view the journal and situation map |
-| **Editor** | Everything a Viewer can do, plus post journal entries and edit the situation map |
+| **Editor** | Everything a Viewer can do, plus post journal entries, edit the situation map, and link/unlink parent incidents |
 | **Manager** | Everything an Editor can do, plus close/reopen the incident and manage who has access |
-| **Owner** | Everything a Manager can do, plus delete the incident and link/unlink parent incidents |
+| **Owner** | Everything a Manager can do, plus **delete** the incident |
+
+> **Note on open incidents:** On open access incidents, every authenticated user can do everything a Manager can do — view, edit, close, and manage access grants. Only **delete** remains restricted to the Owner, even on open incidents.
 
 A principal (user, group, or "all users") holds exactly one role per incident. Granting a new role replaces the old one automatically.
 
@@ -95,8 +97,8 @@ Each incident has an **access mode** that determines the default visibility:
 
 | Mode | Who can access the incident |
 |---|---|
-| **Open access** | Every authenticated SitRep user can read and edit the incident. Access grants are only enforced for users who need to manage access (Manager or Owner). |
-| **Restricted** | Only users (or group members) with an explicit grant can view or edit the incident. |
+| **Open access** | Every authenticated SitRep user can view, edit, close, and manage access grants on the incident. Only **deleting** the incident is restricted to the Owner. |
+| **Restricted** | Only users (or group members) with an explicit grant can view or interact with the incident. Role permissions apply in full. |
 
 New incidents are created in **Open access** mode. Switch to **Restricted** when the incident contains sensitive information or when you want to control exactly who participates.
 
@@ -106,7 +108,7 @@ New incidents are created in **Open access** mode. Switch to **Restricted** when
 
 ## Managing Incident Access
 
-Open the **Access** tab on any incident (or navigate directly to `/incident/<id>/access`). You must hold the **Manager** or **Owner** role on the incident to see or change its access settings.
+Open the **Access** tab on any incident (or navigate directly to `/incident/<id>/access`). On open access incidents, any authenticated user can see and change the access settings. On restricted incidents, you must hold the **Manager** or **Owner** role.
 
 ### Switching access mode
 
@@ -145,6 +147,8 @@ Click **Revoke** next to a grant to remove it. If the incident is in Restricted 
 
 ## Summary: Who Can Do What
 
+The table below shows permissions for **restricted** incidents. On **open access** incidents, all users effectively have Manager-level permissions — except delete, which is always Owner-only.
+
 | Action | Viewer | Editor | Manager | Owner | Group admin | System admin |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | View incident and journal | ✓ | ✓ | ✓ | ✓ | | |
@@ -152,8 +156,8 @@ Click **Revoke** next to a grant to remove it. If the incident is in Restricted 
 | Edit situation map | | ✓ | ✓ | ✓ | | |
 | Close / reopen incident | | | ✓ | ✓ | | |
 | Manage incident access | | | ✓ | ✓ | | |
+| Link / unlink sub-incidents | | ✓ | ✓ | ✓ | | |
 | Delete incident | | | | ✓ | | |
-| Link / unlink sub-incidents | | | | ✓ | | |
 | Create / archive groups | | | | | ✓ | ✓ |
 | Manage group membership | | | | | ✓ | ✓ |
 | Grant / revoke global roles | | | | | | ✓ |

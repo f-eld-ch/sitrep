@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -62,6 +64,9 @@ func (q *AccessQueries) GetIncidentAccessMode(
 
 	err := q.pool.QueryRow(ctx, `SELECT mode FROM readmodel.incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
 		Scan(&mode)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", shared.ErrNotFound
+	}
 
 	return mode, err
 }

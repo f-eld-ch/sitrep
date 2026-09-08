@@ -187,7 +187,7 @@
     "accessMode": "Zugriffsmodus",
     "addGrant": "Berechtigung hinzufügen",
     "openAccess": "Offener Zugriff",
-    "openAccessHelp": "Jeder authentifizierte Benutzer kann dieses Ereignis einsehen und bearbeiten. Die untenstehenden Berechtigungen regeln nur, wer den Zugriff verwalten kann.",
+    "openAccessHelp": "Jeder authentifizierte Benutzer kann dieses Ereignis einsehen, bearbeiten und abschliessen. Nur der Eigentümer kann es löschen.",
     "restricted": "Eingeschränkt",
     "restrictedHelp": "Nur die unten aufgeführten Principals können dieses Ereignis einsehen oder bearbeiten.",
     "headsUp": "Achtung:",
@@ -222,9 +222,9 @@
     "roleDescriptions": {
       "NONE": "Kein Zugriff auf dieses Ereignis.",
       "VIEWER": "Kann das Ereignis und seinen Verlauf einsehen.",
-      "EDITOR": "Kann das Ereignis bearbeiten, Aktualisierungen veröffentlichen und Aufgaben verwalten.",
-      "MANAGER": "Kann das Ereignis bearbeiten und Zugriffsberechtigungen verwalten.",
-      "OWNER": "Volle Kontrolle — kann archivieren, Eigentümerschaft übertragen und das Ereignis löschen."
+      "EDITOR": "Kann das Ereignis bearbeiten, Aktualisierungen veröffentlichen, Aufgaben verwalten und Unterereignisse verknüpfen.",
+      "MANAGER": "Kann das Ereignis bearbeiten, abschliessen/wieder öffnen, Unterereignisse verknüpfen und Zugriffsberechtigungen verwalten.",
+      "OWNER": "Volle Kontrolle — kann abschliessen, löschen und Zugriffsberechtigungen verwalten."
     }
   },
   "adminGroups": {

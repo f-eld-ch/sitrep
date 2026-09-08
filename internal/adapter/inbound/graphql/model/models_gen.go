@@ -86,8 +86,10 @@ type Incident struct {
 	Messages []*Message `json:"messages"`
 	// Whether the current user has write access to this incident.
 	CanWrite bool `json:"canWrite"`
-	// Whether the current user can close, reopen, or delete this incident.
+	// Whether the current user can close or reopen this incident.
 	CanManage bool `json:"canManage"`
+	// Whether the current user can delete this incident (owner only).
+	CanDelete bool `json:"canDelete"`
 	// Whether the current user can manage access grants for this incident.
 	CanManageAccess bool `json:"canManageAccess"`
 	// Access mode of this incident.
