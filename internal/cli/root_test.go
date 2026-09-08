@@ -58,15 +58,6 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestConfigValidate(t *testing.T) {
-	t.Run("rejects partial OIDC configuration", func(t *testing.T) {
-		v := testViper(t)
-		v.Set("oidc-client-id", "sitrep")
-		err := validateConfig(v)
-
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "must be configured together")
-	})
-
 	t.Run("rejects an invalid server port", func(t *testing.T) {
 		v := testViper(t)
 		v.Set("port", 65536)

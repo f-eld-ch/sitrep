@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -43,6 +44,18 @@ var serveConfigOptions = []configOption{
 		"GRAPHQL_INTROSPECTION",
 	),
 	boolOption("migrate-on-startup", false, "Run database migrations before starting the server", "MIGRATE_ON_STARTUP"),
+	boolOption(
+		"insecure-local-auth",
+		false,
+		"Allow unauthenticated access using a hardcoded local identity (development only)",
+		"INSECURE_LOCAL_AUTH",
+	),
+	stringSliceOption(
+		"allowed-origins",
+		nil,
+		"Allowed CORS origins (e.g. https://sitrep.example.com). Empty = same-origin only.",
+		"ALLOWED_ORIGINS",
+	),
 	stringOption("tls-cert", "", "Path to a PEM certificate; enables HTTPS together with --tls-key", "TLS_CERT"),
 	stringOption("tls-key", "", "Path to the PEM private key matching --tls-cert", "TLS_KEY"),
 	stringSliceOption(
@@ -153,6 +166,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	opts := []server.Option{
 		server.WithPort(v.GetUint("port")),
 		server.WithVersion(Version, Sha),
+		server.WithAllowedOrigins(splitList(v.GetStringSlice("allowed-origins"))),
 		server.WithApiV2(server.Stack{
 			Incidents:             s.IncidentSvc,
 			Messages:              s.MessageSvc,
@@ -166,6 +180,25 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		}, apiOpts...),
 	}
 	opts = append(opts, tlsOptions(v)...)
+
+	oidcPartial := []string{"oidc-issuer", "oidc-client-secret", "oidc-redirect-url"}
+	if v.GetString("oidc-client-id") != "" {
+		for _, key := range oidcPartial {
+			if v.GetString(key) == "" {
+				err := fmt.Errorf(
+					"oidc-client-id, oidc-issuer, oidc-client-secret, and oidc-redirect-url must be configured together",
+				)
+				slog.ErrorContext(
+					ctx,
+					"incomplete OIDC configuration",
+					slog.String("missing", key),
+					slog.String("error", err.Error()),
+				)
+
+				return err
+			}
+		}
+	}
 
 	if v.GetString("oidc-client-id") != "" {
 		oidcClient, err := auth.NewOIDC(ctx,
@@ -189,8 +222,17 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		}
 
 		opts = append(opts, server.WithOidc(oidcClient))
+	} else if !v.GetBool("insecure-local-auth") {
+		slog.ErrorContext(
+			ctx,
+			"OIDC not configured: set --oidc-client-id or pass --insecure-local-auth to allow unauthenticated access",
+		)
+
+		return fmt.Errorf(
+			"OIDC client ID is required; pass --insecure-local-auth to explicitly allow unauthenticated local access",
+		)
 	} else {
-		slog.WarnContext(ctx, "OIDC client not configured, using local enforcer")
+		slog.WarnContext(ctx, "INSECURE: running without authentication, all requests accepted as local-user")
 	}
 
 	srv, err := server.NewServer(opts...)
@@ -213,7 +255,7 @@ func deriveCookieKey(input string) string {
 	if input == "" {
 		b := make([]byte, 32)
 		if _, err := rand.Read(b); err != nil {
-			return string(make([]byte, 32))
+			panic(fmt.Sprintf("crypto/rand unavailable, cannot generate cookie signing key: %v", err))
 		}
 
 		return string(b)

@@ -223,6 +223,15 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	return q.layerRowsToRM(rows, &incidentID), nil
 }
 
+func (q *Queries) GetFeatureIncidentID(_ context.Context, featureID uuid.UUID) (uuid.UUID, error) {
+	incidentID, ok := q.layers.FindFeatureIncidentID(featureID)
+	if !ok {
+		return uuid.UUID{}, shared.ErrNotFound
+	}
+
+	return incidentID, nil
+}
+
 func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "listing child incidents", slog.String("parent_id", parentID.String()))
 

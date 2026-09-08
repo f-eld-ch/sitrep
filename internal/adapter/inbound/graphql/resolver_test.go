@@ -376,6 +376,7 @@ func TestUpdateMessage_CorrectContent(t *testing.T) {
 		Medium:         model.MediumPhone,
 	})
 	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
 
 	corrected := "Corrected"
 	updated, err := s.resolver.Mutation().UpdateMessage(ctx, msg.ID, model.UpdateMessageInput{
@@ -414,6 +415,7 @@ func TestDeleteMessage(t *testing.T) {
 		Medium:         model.MediumEmail,
 	})
 	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
 
 	deletedID, err := s.resolver.Mutation().DeleteMessage(ctx, msg.ID)
 	require.NoError(t, err)
@@ -720,6 +722,7 @@ func TestTriageMessage_SetsTriageAndPriority(t *testing.T) {
 		SenderDetail: "", ReceiverDetail: "", Content: "Urgent", Medium: model.MediumRadio,
 	})
 	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
 
 	triaged, err := s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
 		Triage:      model.TriageStatusDone,

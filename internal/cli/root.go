@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -75,14 +76,18 @@ var rootConfigOptions = []configOption{
 func Execute() {
 	rootCmd, err := NewRootCmd()
 	cobra.CheckErr(err)
-	cobra.CheckErr(rootCmd.Execute())
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
 
 func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
-		Use:          "sitrep",
-		Short:        "SitRep — incident management server",
-		SilenceUsage: true,
+		Use:           "sitrep",
+		Short:         "SitRep — incident management server",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	pf := rootCmd.PersistentFlags()
@@ -198,27 +203,6 @@ func validateConfig(v *viper.Viper) error {
 	logLevel := v.GetString("log-level")
 	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
 		return fmt.Errorf("invalid log-level %q: %w", logLevel, err)
-	}
-
-	oidcFields := []string{
-		v.GetString("oidc-client-id"),
-		v.GetString("oidc-issuer"),
-		v.GetString("oidc-client-secret"),
-		v.GetString("oidc-redirect-url"),
-		v.GetString("cookie-key"),
-	}
-	configured := 0
-
-	for _, field := range oidcFields {
-		if field != "" {
-			configured++
-		}
-	}
-
-	if configured != 0 && configured != len(oidcFields) {
-		return fmt.Errorf(
-			"oidc-client-id, oidc-issuer, oidc-client-secret, oidc-redirect-url, and cookie-key must be configured together",
-		)
 	}
 
 	return nil

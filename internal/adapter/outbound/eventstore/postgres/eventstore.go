@@ -276,7 +276,7 @@ func NewNotifier(pool *pgxpool.Pool, channel string) *Notifier {
 }
 
 func (n *Notifier) Notify(ctx context.Context) error {
-	_, err := n.pool.Exec(ctx, fmt.Sprintf("NOTIFY %s", n.channel))
+	_, err := n.pool.Exec(ctx, "NOTIFY "+pgx.Identifier{n.channel}.Sanitize())
 	return err
 }
 
@@ -324,7 +324,7 @@ func (n *Notifier) ensureListeningLocked(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := conn.Exec(ctx, fmt.Sprintf("LISTEN %s", n.channel)); err != nil {
+	if _, err := conn.Exec(ctx, "LISTEN "+pgx.Identifier{n.channel}.Sanitize()); err != nil {
 		conn.Release()
 		return err
 	}

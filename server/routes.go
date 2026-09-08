@@ -43,13 +43,18 @@ func (s *Server) RegisterMiddlewares() {
 	s.router.Use(middleware.Secure())
 	s.router.Use(middleware.RequestID())
 
-	// CORS MiddleWare
-	s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{http.MethodGet, http.MethodPost, http.MethodOptions},
-		AllowHeaders:  []string{"Content-Type", "Authorization"},
-		ExposeHeaders: []string{"Content-Length"},
-	}))
+	// CORS middleware — only installed when origins are explicitly configured.
+	// When allowedOrigins is empty the browser's same-origin policy applies and
+	// no Access-Control-Allow-Origin header is emitted.
+	if len(s.allowedOrigins) > 0 {
+		s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins:  s.allowedOrigins,
+			AllowMethods:  []string{http.MethodGet, http.MethodPost, http.MethodOptions},
+			AllowHeaders:  []string{"Content-Type", "Authorization"},
+			ExposeHeaders: []string{"Content-Length"},
+		}))
+	}
+
 	s.router.Use(cacheControlMiddleWare)
 
 	// Use the echootel middleware with options

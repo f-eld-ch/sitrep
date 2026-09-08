@@ -6,6 +6,7 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -471,6 +472,24 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	defer rows.Close()
 
 	return collectLayers(rows)
+}
+
+func (q *Queries) GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error) {
+	var incidentID uuid.UUID
+
+	err := q.pool.QueryRow(ctx,
+		`SELECT incident_id FROM readmodel.layer_features WHERE id = $1 AND removed = false`,
+		featureID,
+	).Scan(&incidentID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.UUID{}, shared.ErrNotFound
+		}
+
+		return uuid.UUID{}, err
+	}
+
+	return incidentID, nil
 }
 
 func (q *Queries) canRead(ctx context.Context, incidentID uuid.UUID) bool {

@@ -100,6 +100,10 @@ type Queries interface {
 	// plus layers owned by direct child incidents.
 	ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
 
+	// GetFeatureIncidentID returns the incident ID that owns the given feature.
+	// Returns ErrNotFound when the feature does not exist or has been removed.
+	GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error)
+
 	// ListChildIncidents returns non-deleted incidents directly linked to parentID.
 	ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*IncidentRM, error)
 }

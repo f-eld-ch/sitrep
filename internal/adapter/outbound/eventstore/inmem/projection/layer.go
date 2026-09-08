@@ -247,6 +247,20 @@ func (h *LayerFeaturesHandler) findFeature(featureID uuid.UUID) (*LayerRow, feat
 	return nil, featureItem{}, false
 }
 
+// FindFeatureIncidentID returns the incident ID for the layer that contains
+// the given feature, or uuid.Nil if the feature does not exist or was removed.
+func (h *LayerFeaturesHandler) FindFeatureIncidentID(featureID uuid.UUID) (uuid.UUID, bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	row, _, ok := h.findFeature(featureID)
+	if !ok {
+		return uuid.UUID{}, false
+	}
+
+	return row.IncidentID, true
+}
+
 // ForIncident returns all non-removed layers for the given incident.
 func (h *LayerFeaturesHandler) ForIncident(incidentID uuid.UUID) []*LayerRow {
 	h.mu.RLock()

@@ -77,6 +77,16 @@ func WithAddress(addr string) Option {
 	}
 }
 
+// WithAllowedOrigins restricts the CORS allowed origins. Defaults to same-origin
+// only (empty slice) when not set. Pass explicit origins for deployments that
+// serve the UI from a different host than the API.
+func WithAllowedOrigins(origins []string) Option {
+	return func(s *Server) error {
+		s.allowedOrigins = origins
+		return nil
+	}
+}
+
 func WithEnforcer(enforcer auth.Enforcer) Option {
 	return func(s *Server) error {
 		s.Enforcer = enforcer
