@@ -463,7 +463,7 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
     OWNER: t("incidentAccess.roleDescriptions.OWNER"),
   };
   return (
-    <div className="is-flex" style={{ gap: "0.25rem", flexWrap: "nowrap" }}>
+    <div className="is-flex" style={{ gap: "1.25rem", flexWrap: "nowrap" }}>
       {options.map((opt) => (
         <label
           key={opt}
@@ -474,7 +474,7 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
             minWidth: "5.5rem",
             display: "inline-flex",
             alignItems: "center",
-            gap: "0.25rem",
+            gap: "0.4rem",
             whiteSpace: "nowrap",
           }}
         >
