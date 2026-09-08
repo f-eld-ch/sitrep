@@ -2,12 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -51,6 +53,11 @@ func (c *IncidentAccessChecker) Can(
 	var mode access.IncidentMode
 	if err := c.pool.QueryRow(ctx, `SELECT mode FROM readmodel.incident_access_mode WHERE incident_id = $1`, uuid.UUID(incidentID)).
 		Scan(&mode); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Projection hasn't caught up yet (or pre-RBAC incident) — treat as open.
+			return action != access.IncidentManageAccess, nil
+		}
+
 		return false, fmt.Errorf("access mode: %w", err)
 	}
 

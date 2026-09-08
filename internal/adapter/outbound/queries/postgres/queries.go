@@ -63,7 +63,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
 			FROM readmodel.incident i
 			WHERE i.is_deleted = false
-			  AND (EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'open_operational')
+			  AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
 			       OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $1 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))
 			ORDER BY i.created_at DESC`
 
@@ -115,7 +115,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 			return nil, err
 		}
 
-		query += ` AND (EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'open_operational') OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $2 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
+		query += ` AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted') OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $2 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
 
 		args = append(args, "user:"+actor.Sub)
 	}
