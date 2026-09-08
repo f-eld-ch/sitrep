@@ -69,6 +69,10 @@ func (g *AccessGroup) Create(name, description, actor string, at time.Time) erro
 		return fmt.Errorf("group name must not be empty")
 	}
 
+	if len(name) > 64 {
+		return fmt.Errorf("group name must not exceed 64 characters")
+	}
+
 	eventsourcing.TrackChange(g, GroupCreated{Name: name, Description: description}, at, meta(actor))
 
 	return nil
@@ -81,6 +85,10 @@ func (g *AccessGroup) Rename(name, actor string, at time.Time) error {
 
 	if strings.TrimSpace(name) == "" {
 		return fmt.Errorf("group name must not be empty")
+	}
+
+	if len(name) > 64 {
+		return fmt.Errorf("group name must not exceed 64 characters")
 	}
 
 	if g.name == name {

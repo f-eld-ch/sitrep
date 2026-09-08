@@ -150,6 +150,7 @@ function GroupDetail() {
                 className="input"
                 placeholder={t("adminGroupDetail.groupNamePlaceholder")}
                 autoFocus
+                maxLength={64}
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
                 onKeyDown={(e) => {

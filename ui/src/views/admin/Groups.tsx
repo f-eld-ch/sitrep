@@ -76,6 +76,7 @@ function Groups() {
                 id="group-name"
                 className="input"
                 autoFocus
+                maxLength={64}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => {
