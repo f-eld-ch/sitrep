@@ -2,6 +2,7 @@
 
 ### ⛰️  Features
 
+- *(access)* Per-incident RBAC with groups and global roles ([#1828](https://github.com/f-eld-ch/sitrep/issues/1828)) - ([04d3618](https://github.com/f-eld-ch/sitrep/commit/04d361851eb6829ffc262a5e8825933265102d8c))
 - *(migrations)* Move postgres migrations and introduce readmodel schema ([#1821](https://github.com/f-eld-ch/sitrep/issues/1821)) - ([ba3a12d](https://github.com/f-eld-ch/sitrep/commit/ba3a12dc5fbe0aa3db18f136542163eb5fcd20fd))
 
 ### 📚 Documentation
