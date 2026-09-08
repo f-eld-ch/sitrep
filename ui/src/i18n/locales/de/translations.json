@@ -208,6 +208,7 @@
     "noMatches": "Keine Treffer.",
     "allUsersHaveGrants": "Alle Benutzer haben bereits Berechtigungen.",
     "noActiveGroups": "Keine aktiven Gruppen verfügbar.",
+    "userDetailsRestricted": "Sie haben keine Berechtigung, einzelne Benutzerdetails anzuzeigen.",
     "revokeFailed": "Entfernen fehlgeschlagen",
     "grantFailed": "Berechtigung fehlgeschlagen",
     "roleChangeFailed": "Rollenänderung fehlgeschlagen",

@@ -33,7 +33,8 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   // Grant form state
-  const [principalKind, setPrincipalKind] = useState<"USER" | "GROUP">("USER");
+  const canListUsers = usersResult.status === "ready" || usersResult.status === "loading";
+  const [principalKind, setPrincipalKind] = useState<"USER" | "GROUP">("GROUP");
   const [searchQuery, setSearchQuery] = useState("");
   const [pendingGrants, setPendingGrants] = useState<Set<string>>(new Set());
 
@@ -298,7 +299,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                             ? (groupsResult.status === "ready"
                                 ? (groupsResult.data.groups.find((g) => g.id === grant.principalId)?.name ?? grant.principalName)
                                 : grant.principalName)
-                            : (user?.name || user?.email || grant.principalName);
+                            : (user?.name || user?.email || grant.principalName || grant.principalId);
                         return { grant, displayName, user };
                       })
                       .sort((a, b) => {
@@ -317,11 +318,14 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                         return (
                           <tr key={principalKey}>
                             <td>
-                              <span title={grant.principalKind === "USER" ? grant.principalId : undefined}>
+                              <span title={grant.principalKind === "USER" ? (!user ? t("incidentAccess.userDetailsRestricted") : grant.principalId) : undefined}>
                                 {displayName}
                               </span>
                               {grant.principalKind === "USER" && user?.email && user.name && (
                                 <span className="has-text-grey ml-2 is-size-7">{user.email}</span>
+                              )}
+                              {grant.principalKind === "USER" && !user && (
+                                <span className="tag is-light is-small ml-2" title={t("incidentAccess.userDetailsRestricted")}>{t("incidentAccess.user")}</span>
                               )}
                               {grant.principalKind === "GROUP" && (
                                 <span className="tag is-light is-small ml-2">{t("incidentAccess.groupTag")}</span>
@@ -367,13 +371,15 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
             <div className="field is-grouped mb-3">
               <div className="control">
                 <div className="buttons has-addons">
-                  <button
-                    type="button"
-                    className={`button is-small ${principalKind === "USER" ? "is-primary is-selected" : ""}`}
-                    onClick={() => { setPrincipalKind("USER"); setSearchQuery(""); }}
-                  >
-                    {t("incidentAccess.user")}
-                  </button>
+                  {canListUsers && (
+                    <button
+                      type="button"
+                      className={`button is-small ${principalKind === "USER" ? "is-primary is-selected" : ""}`}
+                      onClick={() => { setPrincipalKind("USER"); setSearchQuery(""); }}
+                    >
+                      {t("incidentAccess.user")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     className={`button is-small ${principalKind === "GROUP" ? "is-primary is-selected" : ""}`}

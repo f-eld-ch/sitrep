@@ -208,6 +208,7 @@
     "noMatches": "No matches.",
     "allUsersHaveGrants": "All users already have grants.",
     "noActiveGroups": "No active groups available.",
+    "userDetailsRestricted": "You do not have permission to view individual user details.",
     "revokeFailed": "Revoke failed",
     "grantFailed": "Grant failed",
     "roleChangeFailed": "Role change failed",

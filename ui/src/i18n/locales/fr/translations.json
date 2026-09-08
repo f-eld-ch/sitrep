@@ -208,6 +208,7 @@
     "noMatches": "Aucun résultat.",
     "allUsersHaveGrants": "Tous les utilisateurs ont déjà des autorisations.",
     "noActiveGroups": "Aucun groupe actif disponible.",
+    "userDetailsRestricted": "Vous n'avez pas la permission de consulter les détails des utilisateurs.",
     "revokeFailed": "Échec de la révocation",
     "grantFailed": "Échec de l'autorisation",
     "roleChangeFailed": "Échec du changement de rôle",

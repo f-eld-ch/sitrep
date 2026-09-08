@@ -8,7 +8,6 @@ package graphql
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
@@ -928,19 +927,11 @@ func (r *queryResolver) IncidentAccessMode(ctx context.Context, incidentID strin
 
 // AccessGroups is the resolver for the accessGroups field.
 func (r *queryResolver) AccessGroups(ctx context.Context) ([]*model.AccessGroup, error) {
-	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
+	// Any authenticated user may list groups (names only — members require GroupManage).
+	if _, err := identity.ActorFrom(ctx); err != nil {
 		return nil, err
 	}
-	slog.DebugContext(ctx, "checking access-group administration", slog.String("subject", actor.Sub))
-	if r.AccessQueries == nil || r.GlobalAccessChecker == nil {
-		return nil, shared.ErrForbidden
-	}
-	allowed, err := r.GlobalAccessChecker.Can(ctx, actor.Sub, access.GroupManage)
-	if err != nil {
-		return nil, err
-	}
-	if !allowed {
+	if r.AccessQueries == nil {
 		return nil, shared.ErrForbidden
 	}
 	rows, err := r.AccessQueries.ListAccessGroups(ctx)

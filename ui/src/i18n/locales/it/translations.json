@@ -208,6 +208,7 @@
     "noMatches": "Nessun risultato.",
     "allUsersHaveGrants": "Tutti gli utenti hanno già autorizzazioni.",
     "noActiveGroups": "Nessun gruppo attivo disponibile.",
+    "userDetailsRestricted": "Non si dispone dell'autorizzazione per visualizzare i dettagli dei singoli utenti.",
     "revokeFailed": "Revoca non riuscita",
     "grantFailed": "Autorizzazione non riuscita",
     "roleChangeFailed": "Modifica del ruolo non riuscita",
