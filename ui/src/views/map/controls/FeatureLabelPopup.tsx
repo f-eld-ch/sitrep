@@ -180,7 +180,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       ...selectedFeature,
       geometry: { ...selectedFeature.geometry, coordinates: coords },
     };
-    onUpdate({ features: [reversed], action: "featureDetail" });
+    onUpdate({ features: [reversed], action: "reverseDirection" });
   }, [onUpdate, selectedFeature]);
 
   const onRotationChange = (value: number) => {

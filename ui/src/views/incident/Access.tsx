@@ -81,7 +81,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
           })
         : [];
 
-  const doRevoke = (grantKey: string, principalKindArg: AccessPrincipalKind, principalId: string, role: IncidentRole) => {
+  const doRevoke = (
+    grantKey: string,
+    principalKindArg: AccessPrincipalKind,
+    principalId: string,
+    role: IncidentRole,
+  ) => {
     if (pendingRevokes.has(grantKey)) return;
     setMutationError(null);
     setPendingRevokes((prev) => new Set(prev).add(grantKey));
@@ -116,7 +121,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
       });
   };
 
-  const doRoleChange = (principalKey: string, principalKindArg: AccessPrincipalKind, principalId: string, role: IncidentRole) => {
+  const doRoleChange = (
+    principalKey: string,
+    principalKindArg: AccessPrincipalKind,
+    principalId: string,
+    role: IncidentRole,
+  ) => {
     setMutationError(null);
     setPendingGrants((prev) => new Set(prev).add(principalKey));
     void grantRole({ incidentId, principalKind: principalKindArg, principalId, role })
@@ -162,7 +172,11 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
           <h4 className="title is-5 mb-4">{t("incidentAccess.accessMode")}</h4>
           <div className="field">
             <div className="control">
-              <label className="radio" aria-label={t("incidentAccess.openAccess")} style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
+              <label
+                className="radio"
+                aria-label={t("incidentAccess.openAccess")}
+                style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}
+              >
                 <input
                   type="radio"
                   name={`access-mode-${incidentId}`}
@@ -182,7 +196,11 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               </label>
             </div>
             <div className="control mt-3">
-              <label className="radio" aria-label={t("incidentAccess.restricted")} style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
+              <label
+                className="radio"
+                aria-label={t("incidentAccess.restricted")}
+                style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}
+              >
                 <input
                   type="radio"
                   name={`access-mode-${incidentId}`}
@@ -205,7 +223,8 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
 
           {confirmingRestrict && (
             <div className="notification is-warning is-light mt-3 py-3">
-              <strong>{t("incidentAccess.headsUp")}</strong> {t("incidentAccess.confirmRestrictWarning")}
+              <strong>{t("incidentAccess.headsUp")}</strong>{" "}
+              {t("incidentAccess.confirmRestrictWarning")}
               <div className="mt-2" style={{ display: "flex", gap: "0.5rem" }}>
                 <button
                   type="button"
@@ -216,7 +235,11 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                     void changeMode({ incidentId, mode: "RESTRICTED" });
                   }}
                 >
-                  {modeState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("incidentAccess.confirmRestrict")}
+                  {modeState.loading ? (
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                  ) : (
+                    t("incidentAccess.confirmRestrict")
+                  )}
                 </button>
                 <button
                   type="button"
@@ -244,7 +267,11 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
         )}
         {mutationError && (
           <div className="notification is-danger is-light">
-            <button className="delete" aria-label={t("close")} onClick={() => setMutationError(null)} />
+            <button
+              className="delete"
+              aria-label={t("close")}
+              onClick={() => setMutationError(null)}
+            />
             {mutationError}
           </div>
         )}
@@ -266,7 +293,9 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                     {isRestricted && (
                       <tr>
                         <td>
-                          <span className="has-text-weight-medium">{t("incidentAccess.allUsers")}</span>
+                          <span className="has-text-weight-medium">
+                            {t("incidentAccess.allUsers")}
+                          </span>
                           <p className="help mt-0">{t("incidentAccess.allUsersHelp")}</p>
                         </td>
                         <td>
@@ -278,7 +307,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                             onChange={(next) => {
                               if (next === "NONE") {
                                 if (allGrant) {
-                                  doRevoke(`ALL:*:${allGrant.role}`, "ALL", ALL_PRINCIPAL_ID, allGrant.role);
+                                  doRevoke(
+                                    `ALL:*:${allGrant.role}`,
+                                    "ALL",
+                                    ALL_PRINCIPAL_ID,
+                                    allGrant.role,
+                                  );
                                 }
                               } else {
                                 doAllGrant(next as IncidentRole);
@@ -293,13 +327,17 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                     {/* Group grants (alpha) then user grants (alpha) */}
                     {[...grants]
                       .map((grant) => {
-                        const user = grant.principalKind === "USER" ? userBySub.get(grant.principalId) : undefined;
+                        const user =
+                          grant.principalKind === "USER"
+                            ? userBySub.get(grant.principalId)
+                            : undefined;
                         const displayName =
                           grant.principalKind === "GROUP"
-                            ? (groupsResult.status === "ready"
-                                ? (groupsResult.data.groups.find((g) => g.id === grant.principalId)?.name ?? grant.principalName)
-                                : grant.principalName)
-                            : (user?.name || user?.email || grant.principalName || grant.principalId);
+                            ? groupsResult.status === "ready"
+                              ? (groupsResult.data.groups.find((g) => g.id === grant.principalId)
+                                  ?.name ?? grant.principalName)
+                              : grant.principalName
+                            : user?.name || user?.email || grant.principalName || grant.principalId;
                         return { grant, displayName, user };
                       })
                       .sort((a, b) => {
@@ -318,17 +356,32 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                         return (
                           <tr key={principalKey}>
                             <td>
-                              <span title={grant.principalKind === "USER" ? (!user ? t("incidentAccess.userDetailsRestricted") : grant.principalId) : undefined}>
+                              <span
+                                title={
+                                  grant.principalKind === "USER"
+                                    ? !user
+                                      ? t("incidentAccess.userDetailsRestricted")
+                                      : grant.principalId
+                                    : undefined
+                                }
+                              >
                                 {displayName}
                               </span>
                               {grant.principalKind === "USER" && user?.email && user.name && (
                                 <span className="has-text-grey ml-2 is-size-7">{user.email}</span>
                               )}
                               {grant.principalKind === "USER" && !user && (
-                                <span className="tag is-light is-small ml-2" title={t("incidentAccess.userDetailsRestricted")}>{t("incidentAccess.user")}</span>
+                                <span
+                                  className="tag is-light is-small ml-2"
+                                  title={t("incidentAccess.userDetailsRestricted")}
+                                >
+                                  {t("incidentAccess.user")}
+                                </span>
                               )}
                               {grant.principalKind === "GROUP" && (
-                                <span className="tag is-light is-small ml-2">{t("incidentAccess.groupTag")}</span>
+                                <span className="tag is-light is-small ml-2">
+                                  {t("incidentAccess.groupTag")}
+                                </span>
                               )}
                             </td>
                             <td>
@@ -339,7 +392,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 name={principalKey}
                                 onChange={(newRole) => {
                                   if (newRole === grant.role) return;
-                                  doRoleChange(principalKey, grant.principalKind, grant.principalId, newRole as IncidentRole);
+                                  doRoleChange(
+                                    principalKey,
+                                    grant.principalKind,
+                                    grant.principalId,
+                                    newRole as IncidentRole,
+                                  );
                                 }}
                               />
                             </td>
@@ -348,7 +406,14 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 type="button"
                                 className="button is-ghost is-small has-text-danger"
                                 disabled={isBusy}
-                                onClick={() => doRevoke(revokeKey, grant.principalKind, grant.principalId, grant.role)}
+                                onClick={() =>
+                                  doRevoke(
+                                    revokeKey,
+                                    grant.principalKind,
+                                    grant.principalId,
+                                    grant.role,
+                                  )
+                                }
                                 title={t("incidentAccess.revoke")}
                               >
                                 {isRevoking ? (
@@ -375,7 +440,10 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                     <button
                       type="button"
                       className={`button is-small ${principalKind === "USER" ? "is-primary is-selected" : ""}`}
-                      onClick={() => { setPrincipalKind("USER"); setSearchQuery(""); }}
+                      onClick={() => {
+                        setPrincipalKind("USER");
+                        setSearchQuery("");
+                      }}
                     >
                       {t("incidentAccess.user")}
                     </button>
@@ -383,7 +451,10 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                   <button
                     type="button"
                     className={`button is-small ${principalKind === "GROUP" ? "is-primary is-selected" : ""}`}
-                    onClick={() => { setPrincipalKind("GROUP"); setSearchQuery(""); }}
+                    onClick={() => {
+                      setPrincipalKind("GROUP");
+                      setSearchQuery("");
+                    }}
                   >
                     {t("incidentAccess.group")}
                   </button>
@@ -392,25 +463,32 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               <div className="control is-expanded">
                 <input
                   className="input is-small"
-                  placeholder={principalKind === "USER" ? t("incidentAccess.searchByNameOrEmail") : t("incidentAccess.searchByName")}
+                  placeholder={
+                    principalKind === "USER"
+                      ? t("incidentAccess.searchByNameOrEmail")
+                      : t("incidentAccess.searchByName")
+                  }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
 
-            {(principalKind === "USER" ? usersResult.status : groupsResult.status) === "loading" && (
-              <Spinner />
-            )}
+            {(principalKind === "USER" ? usersResult.status : groupsResult.status) ===
+              "loading" && <Spinner />}
 
             {availablePrincipals.length === 0 && query && (
               <p className="has-text-grey is-size-7">{t("incidentAccess.noMatches")}</p>
             )}
-            {availablePrincipals.length === 0 && !query && (principalKind === "USER" ? usersResult.status : groupsResult.status) === "ready" && (
-              <p className="has-text-grey is-size-7">
-                {principalKind === "USER" ? t("incidentAccess.allUsersHaveGrants") : t("incidentAccess.noActiveGroups")}
-              </p>
-            )}
+            {availablePrincipals.length === 0 &&
+              !query &&
+              (principalKind === "USER" ? usersResult.status : groupsResult.status) === "ready" && (
+                <p className="has-text-grey is-size-7">
+                  {principalKind === "USER"
+                    ? t("incidentAccess.allUsersHaveGrants")
+                    : t("incidentAccess.noActiveGroups")}
+                </p>
+              )}
 
             {availablePrincipals.length > 0 && (
               <div className="table-container">
@@ -423,7 +501,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                       return (
                         <GrantRow
                           key={id}
-                          label={"sub" in p ? (p.name || p.email || p.sub) : p.name}
+                          label={"sub" in p ? p.name || p.email || p.sub : p.name}
                           sublabel={"sub" in p && p.name ? p.email : undefined}
                           tooltip={"sub" in p ? p.sub : undefined}
                           loading={isPending}
@@ -544,7 +622,9 @@ function GrantRow({ label, sublabel, tooltip, loading, onGrant }: GrantRowProps)
                 onChange={(e) => setRole(e.target.value as IncidentRole)}
               >
                 {ROLE_OPTIONS.map((r) => (
-                  <option key={r} value={r}>{roleLabels[r]}</option>
+                  <option key={r} value={r}>
+                    {roleLabels[r]}
+                  </option>
                 ))}
               </select>
             </div>

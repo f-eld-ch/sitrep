@@ -173,7 +173,13 @@ export function useAccessUsers(): QueryResult<UsersData> {
 export function useMyGlobalRoles(skip = false): QueryResult<GlobalRolesData> {
   const { loading, error, data } = useQuery(MY_GLOBAL_ROLES, { skip });
   if (loading && !data) {
-    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh: () => undefined };
+    return {
+      status: "loading",
+      data: undefined,
+      error: undefined,
+      isRefreshing: false,
+      refresh: () => undefined,
+    };
   }
   if (error) {
     return {

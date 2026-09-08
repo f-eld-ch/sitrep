@@ -49,11 +49,7 @@ function Groups() {
         </div>
         <div className="level-right">
           {!showCreate && (
-            <button
-              type="button"
-              className="button is-primary"
-              onClick={() => setShowCreate(true)}
-            >
+            <button type="button" className="button is-primary" onClick={() => setShowCreate(true)}>
               {t("adminGroups.newGroup")}
             </button>
           )}
@@ -156,7 +152,8 @@ function Groups() {
             className="button is-ghost is-small has-text-grey px-0"
             onClick={() => setShowArchived(!showArchived)}
           >
-            {showArchived ? "▾" : "▸"}&ensp;{t("adminGroups.archived", { count: archivedGroups.length })}
+            {showArchived ? "▾" : "▸"}&ensp;
+            {t("adminGroups.archived", { count: archivedGroups.length })}
           </button>
           {showArchived && (
             <div className="table-container mt-2">

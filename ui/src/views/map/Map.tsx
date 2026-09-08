@@ -423,13 +423,14 @@ function Draw() {
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
       const isPropertyOnly = e.action === "featureDetail";
+      const isGeometryOnly = e.action === "reverseDirection";
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
         void modifyFeature({
           id: String(feature.id ?? ""),
           geometry: isPropertyOnly ? undefined : feature.geometry,
-          properties: isPropertyOnly ? feature.properties : undefined,
+          properties: isGeometryOnly ? undefined : feature.properties,
           currentGeometry: feature.geometry,
           currentProperties: feature.properties,
           incidentId: incidentId ?? "",
@@ -601,7 +602,7 @@ export { MapWithProvder as Map };
 
 export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
-  /** "featureDetail" = property-only change; absent or other = geometry change */
+  /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
 }
 

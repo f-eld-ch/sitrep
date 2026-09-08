@@ -74,14 +74,17 @@ describe("apiErrorFromApolloError", () => {
 
   it("uses the server message when it differs from the code after stripping", () => {
     mockCombined.mockReturnValue(true);
-    const e = Object.assign(new Error("input:2:3: getIncident This incident has already been deleted."), {
-      errors: [
-        {
-          message: "input:2:3: getIncident This incident has already been deleted.",
-          extensions: { code: "NOT_FOUND" },
-        },
-      ],
-    });
+    const e = Object.assign(
+      new Error("input:2:3: getIncident This incident has already been deleted."),
+      {
+        errors: [
+          {
+            message: "input:2:3: getIncident This incident has already been deleted.",
+            extensions: { code: "NOT_FOUND" },
+          },
+        ],
+      },
+    );
     const err = apiErrorFromApolloError(e);
     expect(err.code).toBe("NOT_FOUND");
     expect(err.message).toBe("This incident has already been deleted.");
@@ -90,7 +93,9 @@ describe("apiErrorFromApolloError", () => {
   it("falls back to UNKNOWN for an unrecognised error code", () => {
     mockCombined.mockReturnValue(true);
     const e = Object.assign(new Error("input:1:1: someField FUTURE_CODE"), {
-      errors: [{ message: "input:1:1: someField FUTURE_CODE", extensions: { code: "FUTURE_CODE" } }],
+      errors: [
+        { message: "input:1:1: someField FUTURE_CODE", extensions: { code: "FUTURE_CODE" } },
+      ],
     });
     const err = apiErrorFromApolloError(e);
     expect(err.code).toBe("UNKNOWN");

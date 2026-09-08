@@ -10,9 +10,7 @@ function AdminLayout() {
   const { groupId } = useParams();
 
   const activeGroups =
-    groupsResult.status === "ready"
-      ? groupsResult.data.groups.filter((g) => !g.archivedAt)
-      : [];
+    groupsResult.status === "ready" ? groupsResult.data.groups.filter((g) => !g.archivedAt) : [];
 
   return (
     <div className="container">
