@@ -27,9 +27,9 @@ vi.mock("@openfeature/react-sdk", () => ({
 
 // Mock the api module — Navbar checks group-management permission for the Administration link.
 vi.mock("api", () => ({
-  useAccessGroups: vi.fn().mockReturnValue({
-    status: "loading",
-    data: undefined,
+  useMyGlobalRoles: vi.fn().mockReturnValue({
+    status: "ready",
+    data: { grants: [] },
     error: undefined,
     isRefreshing: false,
     refresh: vi.fn(),
