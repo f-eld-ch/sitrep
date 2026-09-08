@@ -79,6 +79,7 @@ func (s *AccessService) GrantIncidentRole(
 			if err != nil {
 				return err
 			}
+
 			if !isOwner {
 				return shared.ErrForbidden
 			}
@@ -127,6 +128,7 @@ func (s *AccessService) RevokeIncidentRole(
 			if err != nil {
 				return err
 			}
+
 			if !isOwner {
 				return shared.ErrForbidden
 			}

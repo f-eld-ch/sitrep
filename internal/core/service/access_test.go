@@ -268,6 +268,7 @@ func TestGroupOwnerCanGrantOwner(t *testing.T) {
 	handler := projection.NewAccessHandler()
 	projector := projection.NewProjector(store, []projection.Handler{handler})
 	require.NoError(t, projector.CatchUp(ctx))
+
 	checker := inmem.NewIncidentAccessChecker(handler)
 	svc := service.NewAccessService(
 		inmem.NewTransactor(),

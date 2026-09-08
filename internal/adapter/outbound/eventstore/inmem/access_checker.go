@@ -46,6 +46,7 @@ func (c *IncidentAccessChecker) Can(
 	if mode == access.OpenOperational {
 		// Ownerless open incidents are fully claimable.
 		hasOwner := false
+
 		for _, g := range c.handler.IncidentGrants(uuid.UUID(incidentID)) {
 			if g.Role == access.Owner {
 				hasOwner = true
