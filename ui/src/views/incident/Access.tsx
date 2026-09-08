@@ -159,7 +159,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
       {/* Access mode */}
       {modeResult.status === "ready" && (
         <div className="box mb-4">
-          <p className="heading mb-3">{t("incidentAccess.accessMode")}</p>
+          <h4 className="title is-5 mb-4">{t("incidentAccess.accessMode")}</h4>
           <div className="field">
             <div className="control">
               <label className="radio" style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}>
