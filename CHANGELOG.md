@@ -8,6 +8,7 @@
 ### 🐛 Bug Fixes
 
 - *(access)* Hide Administration menu for non-admin users ([#1830](https://github.com/f-eld-ch/sitrep/issues/1830)) - ([4530580](https://github.com/f-eld-ch/sitrep/commit/45305809e2999e479f1c4dc464a0c781be558f32))
+- *(security)* Address sec-review-20260906 findings ([#1831](https://github.com/f-eld-ch/sitrep/issues/1831)) - ([9fbf271](https://github.com/f-eld-ch/sitrep/commit/9fbf271a3e9e4cd2e057d873c16c8cfe88c1d3cf))
 
 ### 📚 Documentation
 
