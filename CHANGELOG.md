@@ -9,6 +9,7 @@
 
 - *(access)* Hide Administration menu for non-admin users ([#1830](https://github.com/f-eld-ch/sitrep/issues/1830)) - ([4530580](https://github.com/f-eld-ch/sitrep/commit/45305809e2999e479f1c4dc464a0c781be558f32))
 - *(admin)* Group UI polish — duplicate count, name wrapping, 64-char limit ([#1832](https://github.com/f-eld-ch/sitrep/issues/1832)) - ([c45c3b4](https://github.com/f-eld-ch/sitrep/commit/c45c3b4cbf50095f65f971d6cf22c4543f62ca35))
+- *(incident)* Hide edit/close/delete buttons based on user permissions ([#1834](https://github.com/f-eld-ch/sitrep/issues/1834)) - ([117b911](https://github.com/f-eld-ch/sitrep/commit/117b9110e400568ae851f04990da419511055791))
 - *(security)* Address sec-review-20260906 findings ([#1831](https://github.com/f-eld-ch/sitrep/issues/1831)) - ([9fbf271](https://github.com/f-eld-ch/sitrep/commit/9fbf271a3e9e4cd2e057d873c16c8cfe88c1d3cf))
 - *(ui)* Show FontAwesome spinner on service worker update button ([#1833](https://github.com/f-eld-ch/sitrep/issues/1833)) - ([f415d45](https://github.com/f-eld-ch/sitrep/commit/f415d45143fe0b517c68351e424c09a3f18f0d73))
 - *(ui)* Replace Bulma spinner with FontAwesome faSpinner on update button - ([5bb699f](https://github.com/f-eld-ch/sitrep/commit/5bb699f235b7cadd5fd878cfb19aaefdd9551ba2))
