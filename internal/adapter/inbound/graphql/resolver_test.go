@@ -15,6 +15,7 @@ import (
 	inmemstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
@@ -937,4 +938,39 @@ func TestAddFeature_InvalidLayerID_ReturnsError(t *testing.T) {
 	_, err = s.resolver.Mutation().AddFeature(ctx, inc.ID, "not-a-uuid", uuid.NewString(),
 		map[string]any{}, map[string]any{})
 	require.Error(t, err)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AccessGroups resolver
+// ─────────────────────────────────────────────────────────────────────────────
+
+func TestAccessGroups_Unauthenticated_ReturnsError(t *testing.T) {
+	accessHandler := projection.NewAccessHandler()
+	accessQueries := inmemqueries.NewAccessQueries(accessHandler)
+
+	r := &gqlresolver.Resolver{AccessQueries: accessQueries}
+
+	_, err := r.Query().AccessGroups(context.Background())
+	require.Error(t, err)
+}
+
+func TestAccessGroups_NilAccessQueries_ReturnsForbidden(t *testing.T) {
+	// Resolver with no AccessQueries wired — must return ErrForbidden for
+	// authenticated callers rather than panic.
+	r := &gqlresolver.Resolver{}
+
+	_, err := r.Query().AccessGroups(actorCtx())
+	require.ErrorIs(t, err, shared.ErrForbidden)
+}
+
+func TestAccessGroups_AuthenticatedUser_ReturnsGroups(t *testing.T) {
+	// Any authenticated user (not just admins) may list groups.
+	accessHandler := projection.NewAccessHandler()
+	accessQueries := inmemqueries.NewAccessQueries(accessHandler)
+
+	r := &gqlresolver.Resolver{AccessQueries: accessQueries}
+
+	groups, err := r.Query().AccessGroups(actorCtx())
+	require.NoError(t, err)
+	assert.NotNil(t, groups)
 }
