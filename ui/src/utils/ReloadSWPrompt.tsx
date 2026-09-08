@@ -1,6 +1,8 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { t } from "i18next";
 import { useEffect, useId, useRef, useState } from "react";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createSWChannel, now, type SWMessage } from "./swUpdateChannel";
 import {
   CURRENT_SHA,
@@ -270,10 +272,11 @@ export function ReloadPrompt() {
               <div className="buttons pt-2">
                 <button
                   type="button"
-                  className={`button is-success is-small${reloading ? " is-loading" : ""}`}
+                  className="button is-success is-small"
                   onClick={handleReloadNow}
                   disabled={reloading}
                 >
+                  {reloading && <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />}
                   {t("reloadNow")}
                 </button>
                 <button
