@@ -74,8 +74,9 @@ function Groups() {
             <div className="control">
               <input
                 id="group-name"
-                className="input"
+                className={`input${name.length === 64 ? " is-danger" : ""}`}
                 autoFocus
+                maxLength={64}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => {
@@ -84,6 +85,11 @@ function Groups() {
                 }}
               />
             </div>
+            {name.length >= 54 && (
+              <p className={`help${name.length === 64 ? " is-danger" : " is-warning"}`}>
+                {64 - name.length} / 64
+              </p>
+            )}
           </div>
           <div className="field">
             <label className="label" htmlFor="group-description">
@@ -151,7 +157,7 @@ function Groups() {
             className="button is-ghost is-small has-text-grey px-0"
             onClick={() => setShowArchived(!showArchived)}
           >
-            {showArchived ? "▾" : "▸"}&ensp;{t("adminGroups.archived", { count: archivedGroups.length })} ({archivedGroups.length})
+            {showArchived ? "▾" : "▸"}&ensp;{t("adminGroups.archived", { count: archivedGroups.length })}
           </button>
           {showArchived && (
             <div className="table-container mt-2">
