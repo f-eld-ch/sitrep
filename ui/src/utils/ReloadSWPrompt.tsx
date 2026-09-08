@@ -218,7 +218,10 @@ export function ReloadPrompt() {
     }
   };
 
+  const [reloading, setReloading] = useState(false);
+
   const handleReloadNow = () => {
+    setReloading(true);
     channelRef.current?.post({ type: "apply-now", tabId });
     updateServiceWorker(true);
   };
@@ -267,8 +270,9 @@ export function ReloadPrompt() {
               <div className="buttons pt-2">
                 <button
                   type="button"
-                  className="button is-success is-small"
+                  className={`button is-success is-small${reloading ? " is-loading" : ""}`}
                   onClick={handleReloadNow}
+                  disabled={reloading}
                 >
                   {t("reloadNow")}
                 </button>
