@@ -1,10 +1,8 @@
 name: Changelog
 permissions: read-all
 on:
-  push:
-    branches:
-      - "main"
-      - "develop"
+  schedule:
+    - cron: "0 3 * * *"
 jobs:
   changelog:
     name: Generate changelog
@@ -20,6 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
       - name: Generate changelog
@@ -32,10 +31,10 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
       - name: Commit
         run: |
-          git checkout ${GITHUB_REF_NAME}
+          git checkout ${GITHUB_REF#refs/heads/}
           git config user.name 'f-eld-ch-changelog[bot]'
           git config user.email 'f-eld-ch-changelog[bot]@users.noreply.github.com'
           set +e
           git add CHANGELOG.md
           git commit -m "chore(changelog): Update changelog [skip ci]"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git ${GITHUB_REF_NAME}
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git ${GITHUB_REF#refs/heads/}
