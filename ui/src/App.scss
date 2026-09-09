@@ -1,27 +1,34 @@
-$orange: hsl(18, 90%, 57%);
-
-$yellow: #ecb341;
-$red: #d60000;
-$blue: #0030cc;
+// Brand colours — mirror brand/tokens.json color.brand / color.semantic. Keep in sync manually;
+// Sass @use can't consume the generated tokens.css custom properties at compile time.
+$dodger-blue: #2077cc; // brand + interactive, primary/info/link share this colour
+$alert-red: #ff3b30; // fixed, never re-toned
+$warning-color: #e3ae28;
+$success-color: #006b30;
+$ink: #111111;
+$dark-elevated: #242424; // brand: surface.dark.bgElevated
 $navbar-height: 0.75rem;
 
-$grey-darker: hsl(221, 14%, 21%);
-$grey-dark: hsl(221, 14%, 29%);
-$grey: hsl(221, 14%, 48%);
-$grey-light: hsl(221, 14%, 71%);
-$grey-lighter: hsl(221, 14%, 86%);
-$grey-lightest: hsl(221, 14%, 93%);
+// Neutral ramp — true neutrals (no hue tint), mirrors brand/tokens.json color.neutral.
+// grey and grey-darker have no direct brand token; grey-darker reuses ink (base body text),
+// grey is interpolated between neutral.muted and neutral.disabled for bulma's mid-tone uses.
+$grey-darker: $ink;
+$grey-dark: #555555;
+$grey: #7a7a7a;
+$grey-light: #a4a4a4;
+$grey-lighter: #e1e1e1;
+$grey-lightest: #f5f5f5;
 $tablet: 769px;
 
 // Override global Sass variables from the /utilities folder
 @use "bulma/sass/utilities" with (
   $family-primary: "B612",
   $family-monospace: "B612 Mono",
-  $primary: $orange,
-  $warning: $yellow,
-  $danger: $red,
-  $info: $blue,
-  $link: $orange,
+  $primary: $dodger-blue,
+  $warning: $warning-color,
+  $danger: $alert-red,
+  $info: $dodger-blue,
+  $success: $success-color,
+  $link: $dodger-blue,
   $weight-light: 100,
   $weight-normal: 300,
   $weight-medium: 500,
@@ -63,7 +70,7 @@ $tablet: 769px;
 );
 @use "bulma/sass/components/navbar" with (
   $navbar-height: $navbar-height,
-  $navbar-tab-active-background-color: $yellow
+  $navbar-tab-active-background-color: $warning-color
 );
 @forward "bulma/sass/components/tabs";
 
@@ -160,7 +167,57 @@ section {
 }
 
 .input:invalid {
-  border-color: $red;
+  border-color: $alert-red;
+}
+
+// Bulma's bare .tag.is-light resolves its text colour through the "light" pseudo-colour's
+// invert, which doesn't hold enough contrast in dark mode. Fixed, theme-independent
+// alternative for small persistent indicators (e.g. the incident access-mode icon).
+.tag.is-fixed-light {
+  background-color: $grey-lightest;
+  color: $ink;
+}
+
+.login-split {
+  min-height: 100vh;
+}
+
+// Fixed brand panel — deliberately doesn't follow the app's light/dark toggle.
+.login-brand {
+  background-color: $dark-elevated;
+  color: $grey-lightest;
+}
+
+// .message.is-dark computes its text colour to contrast against the page's scheme-main,
+// not against .message-body's own background — in dark mode both end up near-black.
+// Fixed pairing instead, since a "triaged" message is meant to read as dark either way.
+// colorClassNames' conditions aren't mutually exclusive (e.g. triaged + high priority both
+// apply) — :not() keeps this scoped to is-dark alone so danger/warning/success still win.
+// Only overridden in dark mode. useDarkMode() always applies .theme-dark or .theme-light
+// once mounted, so relying on the class alone (not @media) avoids overriding an explicit
+// light-mode choice when the OS itself prefers dark.
+.theme-dark .message.is-dark:not(.is-danger):not(.is-warning):not(.is-success) .message-body {
+  background-color: $ink;
+  color: $grey-lightest;
+}
+
+// Bulma darkens a colour by 20% for the message's left border. Our success green is
+// deliberately low-lightness for accessibility (brand: "separated from error by
+// luminance, not hue"), so that delta crushes it to near-black. Use it as-is instead.
+.message.is-success .message-body {
+  border-inline-start-color: $success-color;
+}
+
+// Bulma pads the dropdown box itself above its first item, reading as a gap under the navbar.
+.navbar-dropdown {
+  padding-top: 0;
+}
+
+// .columns stacks below $tablet — give the button room once it drops under the brand panel.
+@media (max-width: $tablet) {
+  .login-actions {
+    margin-top: 2rem;
+  }
 }
 
 @media screen {

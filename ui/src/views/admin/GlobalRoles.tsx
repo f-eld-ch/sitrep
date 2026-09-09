@@ -122,7 +122,7 @@ function GlobalRoles() {
               <tr>
                 <th>{t("adminGlobalRoles.userLabel")}</th>
                 <th>{t("adminGlobalRoles.roleLabel")}</th>
-                <th aria-label="Actions" />
+                <th aria-label={t("actions")} />
               </tr>
             </thead>
             <tbody>

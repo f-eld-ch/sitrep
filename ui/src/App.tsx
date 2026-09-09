@@ -8,6 +8,7 @@ import { default as client } from "client";
 import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
+import { useDarkMode } from "utils/useDarkMode";
 import { AdminLayout, GlobalRoles, GroupDetail, Groups } from "./views/admin";
 import {
   Editor as IncidentEditor,
@@ -161,6 +162,10 @@ const router = createBrowserRouter([
 function App() {
   const { i18n } = useTranslation();
   dayjs.extend(LocalizedFormat);
+
+  // Applies the stored theme preference to the document root regardless of route —
+  // Navbar (and its toggle button) isn't mounted on the pre-login screen.
+  useDarkMode();
 
   useEffect(() => {
     i18n.changeLanguage();

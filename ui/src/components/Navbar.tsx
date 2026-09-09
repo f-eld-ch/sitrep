@@ -23,7 +23,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
-import logo from "assets/logo.svg";
+import logo from "assets/lockup-blue.svg";
 import classNames from "classnames";
 import { useMyGlobalRoles } from "api";
 import { type FunctionComponent, useContext, useEffect, useState } from "react";
@@ -49,6 +49,14 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   const showResources = useBooleanFlagValue("show-resources", false);
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
+  // Reserves space for the fixed navbar — only relevant while Navbar is actually mounted
+  // (not on the pre-login screen, which has no navbar).
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("has-navbar-fixed-top");
+    return () => root.classList.remove("has-navbar-fixed-top");
+  }, []);
+
   return (
     <nav className="navbar is-fixed-top is-hidden-print">
       <div className="navbar-brand">
@@ -56,8 +64,9 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           to="/"
           className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
         >
-          <figure className="image is-24x24">
-            <img src={logo} alt="Logo" />
+          <figure className="image">
+            {/* lockup-blue.svg is a 393x96 wordmark, not square — size by height only */}
+            <img src={logo} alt="Logo" style={{ height: "1.5rem", width: "auto" }} />
           </figure>
         </NavLink>
         <button
@@ -159,22 +168,6 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
 
 function DarkModeSwitcher() {
   const { isDarkMode, toggle } = useDarkMode();
-
-  useEffect(
-    () => {
-      const element = window.document.querySelector(":root");
-      if (isDarkMode) {
-        element?.classList.add("theme-dark");
-        element?.classList.remove("theme-light");
-        document.documentElement.setAttribute("data-color-mode", "dark");
-      } else {
-        element?.classList.remove("theme-dark");
-        element?.classList.add("theme-light");
-        document.documentElement.setAttribute("data-color-mode", "light");
-      }
-    },
-    [isDarkMode], // Only re-call effect when value changes
-  );
 
   return (
     <div className="navbar-item">

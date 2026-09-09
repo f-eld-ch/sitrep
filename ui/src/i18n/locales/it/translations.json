@@ -1,4 +1,5 @@
 {
+  "actions": "azioni",
   "add": "aggiungere",
   "devisionAdd": "aggiungere nuovo dipartimento",
   "all": "tutti",
@@ -15,6 +16,7 @@
   "delete": "eliminare",
   "discard": "Scarta le modifiche",
   "unsavedChanges": "Hai modifiche non salvate. Scartare e uscire?",
+  "dismissNotification": "Chiudi notifica",
   "divisions": "dipartimenti",
   "edit": "modificare",
   "editIncident": "modifica incidente",
@@ -38,6 +40,8 @@
   "journalFeed": "feed del diario delle operazioni",
   "journalList": "panoramica del diario delle operazioni",
   "location": "posizione",
+  "login": "accesso",
+  "loginTagline": "Condotta dell'intervento. Indipendente. Digitale.",
   "logout": "disconnessione",
   "map": "immagine della situazione",
   "mapview": {

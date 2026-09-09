@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useTimeout } from "usehooks-ts";
 
 interface NotificationProps {
@@ -17,6 +18,7 @@ function Notification({
 }: NotificationProps & { timeout?: number }) {
   const [visible, setVisible] = useState(true);
   const hide = () => setVisible(false);
+  const { t } = useTranslation();
 
   useTimeout(hide, timeout);
 
@@ -36,7 +38,7 @@ function Notification({
       <button
         type="button"
         className="delete"
-        aria-label="Dismiss notification"
+        aria-label={t("dismissNotification")}
         onClick={() => setVisible(false)}
       />
       {children}

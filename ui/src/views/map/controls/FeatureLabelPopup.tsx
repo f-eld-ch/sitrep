@@ -396,11 +396,11 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           const isKemler = field.key === UN_SIGN_FIELDS.kemler;
           const isUnNumber = field.key === UN_SIGN_FIELDS.unNumber;
           return (
-            <div key={field.key} className="field mb-2">
-              <label className="label is-small mb-1" htmlFor={inputId}>
+            <div key={field.key} className="field mb-2 has-text-dark">
+              <label className="label is-small mb-1 has-text-dark" htmlFor={inputId}>
                 {field.label}
               </label>
-              <div className="control">
+              <div className="control has-text-dark">
                 {isKemler ? (
                   <div className="select is-small is-fullwidth">
                     <select
@@ -449,10 +449,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           );
         })}
         {canRotate && (
-          <div className="field mb-2">
+          <div className="field mb-2 has-text-dark">
             {rotationFixed ? (
               <>
-                <label className="label is-small mb-1" htmlFor={`${baseId}-rotation`}>
+                <label className="label is-small mb-1 has-text-dark" htmlFor={`${baseId}-rotation`}>
                   <span className="icon is-small mr-1">
                     <FontAwesomeIcon icon={faArrowsRotate} />
                   </span>
@@ -499,7 +499,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           </div>
         )}
         {isDirectionalLine && (
-          <div className="field mb-2">
+          <div className="field mb-2 has-text-dark">
             <div className="control">
               <button
                 type="button"
@@ -515,7 +515,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           </div>
         )}
         <div className="field">
-          <div className="control">
+          <div className="control has-text-dark">
             <button
               type="button"
               className="button is-primary is-small is-fullwidth"

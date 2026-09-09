@@ -57,7 +57,7 @@ function List() {
         </button>
         <button
           type="button"
-          className="button is-primary is-small is-responsive is-rounded is-light"
+          className="button is-warning is-small is-responsive is-rounded is-light"
           onClick={() => setFilterClosed(!filterClosed)}
         >
           <span className="icon is-small">
@@ -180,35 +180,53 @@ export function IncidentCard(props: {
   const cardClass = classNames({
     card: true,
     "mb-3": true,
-    "has-background-primary-light": incident.closedAt,
+    "has-background-warning-light": incident.closedAt,
+    // has-background-*-light always renders a pale tint regardless of theme;
+    // pair it with light-invert text so closed cards stay readable in dark mode.
+    "has-text-warning-invert": incident.closedAt,
     "has-background-light": contextOnly,
   });
+  // strong and .title set their own explicit color, so they don't inherit the card's
+  // text color — this class must be applied to each of them directly too.
+  const closedTextClass = classNames({ "has-text-warning-invert": incident.closedAt });
   return (
     <div className={cardClass}>
       <div className="card-content">
         <div className="content has-text-small">
-          <h4 className={classNames("title", { "is-5": !isChild, "is-6": isChild })}>
+          <h4
+            className={classNames("title", closedTextClass, {
+              "is-5": !isChild,
+              "is-6": isChild,
+            })}
+          >
             {incident.name}
-            {childCount > 0 && <span className="tag is-info is-light ml-2">{childCount}</span>}
+            {childCount > 0 && <span className="tag is-info ml-2">{childCount}</span>}
             <span
-              className="tag is-light ml-2"
-              title={incident.accessMode === "RESTRICTED" ? "Restricted" : "Open"}
+              className={classNames("tag", "ml-2", {
+                "is-info": incident.accessMode === "RESTRICTED",
+                "is-gray": incident.accessMode === "OPEN_OPERATIONAL",
+              })}
+              title={
+                incident.accessMode === "RESTRICTED"
+                  ? t("incidentAccess.restricted")
+                  : t("incidentAccess.openAccess")
+              }
             >
               <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
             </span>
           </h4>
           <div className="columns">
             <div className="column is-one-third">
-              <strong>{t("location")}: </strong>
+              <strong className={closedTextClass}>{t("location")}: </strong>
               {incident.location.name}
             </div>
             <div className="column is-one-third">
-              <strong>{t("createdAt")}: </strong>
+              <strong className={closedTextClass}>{t("createdAt")}: </strong>
               {dayjs(incident.createdAt).format("LLL")}
             </div>
             {incident.closedAt && (
               <div className="column">
-                <strong>{t("closedAt")}: </strong>
+                <strong className={closedTextClass}>{t("closedAt")}: </strong>
                 {dayjs(incident.closedAt).format("LLL")}
               </div>
             )}

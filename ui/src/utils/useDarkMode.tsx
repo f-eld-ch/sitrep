@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocalStorage } from "./useLocalStorage";
 import { useMediaQuery } from "./useMediaQuery";
 
@@ -34,6 +35,15 @@ export function useDarkMode(
       initializeWithValue,
     },
   );
+
+  // Synced here, not in whichever component happens to call this hook, so the stored
+  // preference applies even on screens rendered without the Navbar (e.g. the login screen).
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("theme-dark", isDarkMode);
+    root.classList.toggle("theme-light", !isDarkMode);
+    root.setAttribute("data-color-mode", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   return {
     isDarkMode,

@@ -1,4 +1,5 @@
 {
+  "actions": "actions",
   "add": "ajouter",
   "devisionAdd": "ajouter un nouveau domaine",
   "all": "tout",
@@ -15,6 +16,7 @@
   "delete": "supprimer",
   "discard": "Ignorer les modifications",
   "unsavedChanges": "Vous avez des modifications non enregistrées. Ignorer et quitter?",
+  "dismissNotification": "Ignorer la notification",
   "divisions": "domaine",
   "edit": "éditer",
   "editIncident": "Modifier un événement",
@@ -38,6 +40,8 @@
   "journalFeed": "Flux du journal d'intervention",
   "journalList": "présentation du journal d'intervention",
   "location": "emplacement",
+  "login": "connexion",
+  "loginTagline": "Conduite d'intervention. Indépendante. Digitale.",
   "logout": "déconnexion",
   "map": "Suivi dessiné",
   "mapview": {
