@@ -16,9 +16,11 @@ export const Login = () => {
 
   return (
     <div className="columns is-gapless login-split m-0">
-      <div className="column is-half login-brand is-flex is-flex-direction-column is-justify-content-center is-align-items-center has-text-centered">
-        <img src={logo} alt="sitrep" style={{ height: "4rem", width: "auto" }} />
-        <p className="mt-4 is-size-5">{t("loginTagline")}</p>
+      <div className="column is-half login-brand is-flex is-justify-content-center is-align-items-center">
+        <div className="is-flex is-flex-direction-column is-align-items-flex-start">
+          <img src={logo} alt="sitrep" style={{ height: "6rem", width: "auto" }} />
+          <p className="mt-4 is-size-5 ml-3">{t("loginTagline")}</p>
+        </div>
       </div>
       <div className="column is-half login-actions is-flex is-justify-content-center is-align-items-center mt-6">
         <button
