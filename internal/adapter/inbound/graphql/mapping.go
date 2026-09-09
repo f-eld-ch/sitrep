@@ -104,9 +104,22 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		Triage:         mapTriageStatus(string(s.Triage)),
 		Priority:       mapPriorityStatus(string(s.Priority)),
 		Divisions:      []*model.Division{},
+		Attachments:    []*model.Attachment{},
 	}
 
 	return msg
+}
+
+func attachmentRMToModel(r *outbound.AttachmentRM) *model.Attachment {
+	return &model.Attachment{
+		ID:          r.ID.String(),
+		Filename:    r.Filename,
+		ContentType: r.ContentType,
+		Size:        int(r.Size),
+		CreatedAt:   r.CreatedAt,
+		UploadedBy:  r.UploaderSub,
+		URL:         "/api/v2/attachments/" + r.ID.String(),
+	}
 }
 
 func incidentRMToModel(r *outbound.IncidentRM) *model.Incident {
@@ -186,6 +199,8 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 	if msg.Divisions == nil {
 		msg.Divisions = []*model.Division{}
 	}
+
+	msg.Attachments = []*model.Attachment{}
 
 	return msg
 }

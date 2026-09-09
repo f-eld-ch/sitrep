@@ -113,6 +113,20 @@ type Division {
   description: String!
 }
 
+"""A file attached to a message."""
+type Attachment {
+  id: ID!
+  filename: String!
+  contentType: String!
+  """File size in bytes."""
+  size: Int!
+  createdAt: DateTime!
+  """OIDC subject of the operator who uploaded this attachment."""
+  uploadedBy: String!
+  """Server-rendered download URL — the UI must never construct this itself."""
+  url: String!
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -131,6 +145,8 @@ type Message {
   priority: PriorityStatus!
   """Divisions this message has been triaged to (flat — no join-table wrapper)."""
   divisions: [Division!]!
+  """Files attached to this message, oldest first."""
+  attachments: [Attachment!]!
 }
 
 type Incident {
@@ -318,6 +334,8 @@ type Mutation {
   triageMessage(id: ID!, input: TriageMessageInput!): Message!
 
   deleteMessage(id: ID!): ID!
+
+  removeAttachment(messageId: ID!, attachmentId: ID!): ID!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

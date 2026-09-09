@@ -19,6 +19,20 @@ type AccessGroup struct {
 	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
 }
 
+// A file attached to a message.
+type Attachment struct {
+	ID          string `json:"id"`
+	Filename    string `json:"filename"`
+	ContentType string `json:"contentType"`
+	// File size in bytes.
+	Size      int       `json:"size"`
+	CreatedAt time.Time `json:"createdAt"`
+	// OIDC subject of the operator who uploaded this attachment.
+	UploadedBy string `json:"uploadedBy"`
+	// Server-rendered download URL — the UI must never construct this itself.
+	URL string `json:"url"`
+}
+
 type CreateIncidentInput struct {
 	Name string `json:"name"`
 	// Access mode for the incident; omitted defaults to OPEN_OPERATIONAL.
@@ -142,6 +156,8 @@ type Message struct {
 	Priority  PriorityStatus `json:"priority"`
 	// Divisions this message has been triaged to (flat — no join-table wrapper).
 	Divisions []*Division `json:"divisions"`
+	// Files attached to this message, oldest first.
+	Attachments []*Attachment `json:"attachments"`
 }
 
 type Mutation struct {
