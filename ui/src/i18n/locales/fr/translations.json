@@ -86,7 +86,15 @@
     "sender": "expéditeur",
     "time": "Date / Heure",
     "triage": "statut de triage",
-    "type": "communication"
+    "type": "communication",
+    "attachments": {
+      "title": "Pièces jointes",
+      "download": "Télécharger",
+      "remove": "Supprimer la pièce jointe",
+      "add": "Ajouter une pièce jointe",
+      "dropHere": "Déposez les fichiers ici",
+      "uploadFailed": "Échec du téléversement"
+    }
   },
   "messageFlow": "Liste de distribution",
   "messageSheet": "formulaire de message",

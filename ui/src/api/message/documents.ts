@@ -6,6 +6,8 @@ import type {
   GetIncidentMessagesQueryVariables,
   GetMessageForTriageQuery,
   GetMessageForTriageQueryVariables,
+  RemoveAttachmentMutation,
+  RemoveAttachmentMutationVariables,
   TriageMessageMutation,
   TriageMessageMutationVariables,
   UpdateMessageMutation,
@@ -45,6 +47,15 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
           name
           description
         }
+        attachments {
+          id
+          filename
+          contentType
+          size
+          createdAt
+          uploadedBy
+          url
+        }
       }
     }
   }
@@ -73,6 +84,15 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
         id
         name
         description
+      }
+      attachments {
+        id
+        filename
+        contentType
+        size
+        createdAt
+        uploadedBy
+        url
       }
     }
     incident(id: $incidentId) {
@@ -201,5 +221,14 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         description
       }
     }
+  }
+`;
+
+export const REMOVE_ATTACHMENT: TypedDocumentNode<
+  RemoveAttachmentMutation,
+  RemoveAttachmentMutationVariables
+> = gql`
+  mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {
+    removeAttachment(messageId: $messageId, attachmentId: $attachmentId)
   }
 `;

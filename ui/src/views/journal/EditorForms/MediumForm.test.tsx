@@ -27,6 +27,9 @@ function renderForm(ui: React.ReactElement, overrides?: Partial<EditorContextVal
       senderReceiverDetails: [],
       channelList: [],
     },
+    pendingFiles: [],
+    addPendingFile: vi.fn(),
+    removePendingFile: vi.fn(),
     ...overrides,
   };
   return render(<EditorContext.Provider value={value}>{ui}</EditorContext.Provider>);

@@ -1,8 +1,9 @@
-import { useMutation } from "@apollo/client/react";
-import { Medium, PriorityStatus, TriageStatus, type Division } from "types";
-import { apiErrorFromApolloError } from "../errors";
+import { useApolloClient, useMutation } from "@apollo/client/react";
+import { useState } from "react";
+import { Medium, PriorityStatus, TriageStatus, type Attachment, type Division } from "types";
+import { ApiError, apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
-import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
+import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, REMOVE_ATTACHMENT, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
 
 export interface CreateMessageArgs {
   incidentId: string;
@@ -28,7 +29,7 @@ export interface TriageMessageArgs {
   divisions: Division[];
 }
 
-export function useCreateMessage(): CommandHook<CreateMessageArgs> {
+export function useCreateMessage(): CommandHook<CreateMessageArgs, string> {
   const [mutate, { loading, error }] = useMutation(CREATE_MESSAGE);
 
   const state: CommandState = {
@@ -36,8 +37,8 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs> {
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const createMessage = async (args: CreateMessageArgs): Promise<void> => {
-    await mutate({
+  const createMessage = async (args: CreateMessageArgs): Promise<string> => {
+    const result = await mutate({
       variables: {
         incidentId: args.incidentId,
         sender: args.sender,
@@ -61,12 +62,13 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs> {
           data: {
             incident: {
               ...cached.incident,
-              messages: [...cached.incident.messages, data.createMessage],
+              messages: [...cached.incident.messages, { ...data.createMessage, attachments: [] }],
             },
           },
         });
       },
     });
+    return result.data?.createMessage?.id ?? "";
   };
 
   return [createMessage, state];
@@ -155,4 +157,154 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
   };
 
   return [triageMessage, state];
+}
+
+export interface RemoveAttachmentArgs {
+  incidentId: string;
+  messageId: string;
+  attachmentId: string;
+}
+
+export function useRemoveAttachment(): CommandHook<RemoveAttachmentArgs> {
+  const [mutate, { loading, error }] = useMutation(REMOVE_ATTACHMENT);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const removeAttachment = async (args: RemoveAttachmentArgs): Promise<void> => {
+    await mutate({
+      variables: { messageId: args.messageId, attachmentId: args.attachmentId },
+      update(cache) {
+        const cached = cache.readQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached?.incident) return;
+        cache.writeQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+          data: {
+            incident: {
+              ...cached.incident,
+              messages: cached.incident.messages.map((m) =>
+                m.id === args.messageId
+                  ? { ...m, attachments: m.attachments.filter((a) => a.id !== args.attachmentId) }
+                  : m,
+              ),
+            },
+          },
+        });
+      },
+    });
+  };
+
+  return [removeAttachment, state];
+}
+
+export interface UploadAttachmentArgs {
+  incidentId: string;
+  messageId: string;
+  file: File;
+}
+
+export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachment> {
+  const client = useApolloClient();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  const state: CommandState = {
+    loading,
+    error: error ? new ApiError("UNKNOWN", error) : undefined,
+  };
+
+  const uploadAttachment = async (args: UploadAttachmentArgs): Promise<Attachment> => {
+    setLoading(true);
+    setError(undefined);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", args.file, args.file.name);
+
+      const response = await fetch(`/api/v2/messages/${args.messageId}/attachments`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        headers: { "X-Sitrep-Upload": "1" },
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? `upload failed: ${response.status}`);
+      }
+
+      const data = (await response.json()) as {
+        ID: string;
+        Filename: string;
+        ContentType: string;
+        Size: number;
+        CreatedAt: string;
+        UploaderSub: string;
+        URL: string;
+      };
+
+      const attachment: Attachment = {
+        id: data.ID,
+        filename: data.Filename,
+        contentType: data.ContentType,
+        size: data.Size,
+        createdAt: new Date(data.CreatedAt),
+        uploadedBy: data.UploaderSub,
+        url: data.URL,
+      };
+
+      // Optimistically update the Apollo cache so the UI reflects the new attachment immediately.
+      const cached = client.readQuery({
+        query: GET_INCIDENT_MESSAGES,
+        variables: { incidentId: args.incidentId },
+      });
+
+      if (cached?.incident) {
+        client.writeQuery({
+          query: GET_INCIDENT_MESSAGES,
+          variables: { incidentId: args.incidentId },
+          data: {
+            incident: {
+              ...cached.incident,
+              messages: cached.incident.messages.map((m) =>
+                m.id === args.messageId
+                  ? {
+                      ...m,
+                      attachments: [
+                        ...m.attachments,
+                        {
+                          id: attachment.id,
+                          filename: attachment.filename,
+                          contentType: attachment.contentType,
+                          size: attachment.size,
+                          createdAt: attachment.createdAt.toISOString(),
+                          uploadedBy: attachment.uploadedBy,
+                          url: attachment.url,
+                        },
+                      ],
+                    }
+                  : m,
+              ),
+            },
+          },
+        });
+      }
+
+      return attachment;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "upload failed";
+      setError(msg);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return [uploadAttachment, state];
 }

@@ -86,7 +86,15 @@
     "sender": "mittente",
     "time": "volta",
     "triage": "stato di triage",
-    "type": "comunicazione"
+    "type": "comunicazione",
+    "attachments": {
+      "title": "Allegati",
+      "download": "Scaricare",
+      "remove": "Rimuovi allegato",
+      "add": "Aggiungi allegato",
+      "dropHere": "Rilascia i file qui",
+      "uploadFailed": "Caricamento non riuscito"
+    }
   },
   "messageFlow": "flusso di segnalazione",
   "messageSheet": "Modulo di registrazione",

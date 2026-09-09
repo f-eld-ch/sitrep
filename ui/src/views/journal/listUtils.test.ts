@@ -19,6 +19,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     medium: Medium.Radio,
     triageId: TriageStatus.Pending,
     priorityId: PriorityStatus.Normal,
+    attachments: [],
     ...overrides,
   };
 }

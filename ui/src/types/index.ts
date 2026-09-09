@@ -10,5 +10,5 @@ export type {
   IncidentRole,
 } from "./access";
 export type { Incident, Location } from "./incident";
-export type { Division, DivisionList, Message, Priority, Triage } from "./journal";
+export type { Attachment, Division, DivisionList, Message, Priority, Triage } from "./journal";
 export { Medium, PriorityStatus, TriageStatus } from "./journal";

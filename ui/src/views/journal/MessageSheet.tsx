@@ -97,6 +97,18 @@ const MessageSheet = (
               </div>
             </td>
           </tr>
+          {message.attachments && message.attachments.length > 0 && (
+            <tr>
+              <th style={{ verticalAlign: "top" }}>{t("message.attachments.title")}</th>
+              <td colSpan={4} style={{ ...cellStyle, verticalAlign: "top" }}>
+                {message.attachments.map((a, i) => (
+                  <span key={a.id} style={{ display: "block" }}>
+                    {i + 1}. {a.filename}
+                  </span>
+                ))}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
       <table className="table is-bordered is-fullwidth mt-2 is-fixed message-sheet">

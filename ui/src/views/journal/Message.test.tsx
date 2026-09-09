@@ -2,7 +2,7 @@
 import { fc } from "@fast-check/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import type { Division, Message } from "../../types";
+import type { Attachment, Division, Message } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
 import MessageContainer from "./Message";
 
@@ -52,6 +52,7 @@ describe("MessageContainer", () => {
     updatedAt: new Date(),
     deletedAt: new Date(0),
     medium: Medium.Email,
+    attachments: [],
   };
   const divisions: Division[] = [];
 
@@ -59,6 +60,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={baseMessage}
         divisions={divisions}
         showControls={false}
@@ -74,6 +76,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={baseMessage}
         divisions={divisions}
         showControls={true}
@@ -88,6 +91,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={{ ...baseMessage, triageId: TriageStatus.Triaged }}
         divisions={divisions}
         showControls={true}
@@ -101,6 +105,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={baseMessage}
         divisions={divisions}
         showControls={true}
@@ -115,6 +120,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={baseMessage}
         divisions={divisions}
         showControls={true}
@@ -128,6 +134,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={baseMessage}
         divisions={divisions}
         showControls={false}
@@ -140,6 +147,7 @@ describe("MessageContainer", () => {
     render(
       <MessageContainer
         id="msg1"
+        incidentId="incident1"
         message={{ ...baseMessage, number: 42 }}
         divisions={divisions}
         showControls={false}
@@ -154,6 +162,7 @@ describe("MessageContainer", () => {
       const { unmount } = render(
         <MessageContainer
           id="msg1"
+        incidentId="incident1"
           message={{ ...baseMessage, number: num }}
           divisions={divisions}
           showControls={false}
@@ -187,11 +196,13 @@ describe("MessageContainer", () => {
           deletedAt: fc.date(),
           medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
           number: fc.nat(),
+          attachments: fc.constant([] as Attachment[]),
         }),
         (msg) => {
           const { unmount } = render(
             <MessageContainer
               id={msg.id}
+              incidentId="incident1"
               message={{ ...msg, divisions: [...msg.divisions] } as Message}
               divisions={[]}
               showControls={false}

@@ -187,6 +187,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 		},
 	)
 	if err != nil {
+		slog.ErrorContext(ctx, "failed to build stack", slog.String("error", err.Error()))
 		return err
 	}
 	defer s.Teardown()

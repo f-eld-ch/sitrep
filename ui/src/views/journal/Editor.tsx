@@ -1,14 +1,19 @@
 import { useTranslation } from "react-i18next";
+import { faPaperclip, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import uniq from "lodash/uniq";
-import React, { useCallback, useContext, useId, useMemo, useReducer, useRef } from "react";
+import React, { useCallback, useContext, useId, useMemo, useReducer, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { Spinner } from "components";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
-import { useCreateMessage, useIncidentMessages, useUpdateMessage } from "api";
+import { useCreateMessage, useIncidentMessages, useRemoveAttachment, useUpdateMessage, useUploadAttachment } from "api";
 import { IncidentContext } from "utils";
 import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
+import { FormRow } from "./EditorForms/FormRow";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
 import TriageModal from "./TriageModal";
@@ -40,8 +45,18 @@ function Editor() {
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const [createMessage, createState] = useCreateMessage();
   const [updateMessage, updateState] = useUpdateMessage();
+  const [uploadAttachment] = useUploadAttachment();
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const savingRef = useRef(false);
+
+  const addPendingFile = useCallback((file: File) => {
+    setPendingFiles((prev) => [...prev, file]);
+  }, []);
+
+  const removePendingFile = useCallback((index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
   const incidentIsClosed = incident?.closedAt != null;
 
   const isDirty =
@@ -101,7 +116,7 @@ function Editor() {
           receiverDetail,
         });
       } else {
-        await createMessage({
+        const newId = await createMessage({
           incidentId,
           time,
           content: state.content,
@@ -111,6 +126,13 @@ function Editor() {
           receiver: state.receiver,
           receiverDetail,
         });
+        if (newId) {
+          const files = pendingFiles;
+          setPendingFiles([]);
+          for (const file of files) {
+            await uploadAttachment({ incidentId, messageId: newId, file }).catch(() => {});
+          }
+        }
       }
       savingRef.current = false;
       if (blocker.state === "blocked") blocker.reset();
@@ -118,7 +140,7 @@ function Editor() {
     } catch {
       savingRef.current = false;
     }
-  }, [state, createMessage, updateMessage, incidentId, blocker]);
+  }, [state, createMessage, updateMessage, uploadAttachment, pendingFiles, incidentId, blocker]);
 
   const setEditorMessage = useCallback((message: Message | undefined) => {
     if (message) {
@@ -146,6 +168,9 @@ function Editor() {
     onSave: handleSave,
     saving,
     autocompleteDetails,
+    pendingFiles,
+    addPendingFile,
+    removePendingFile,
   };
 
   return (
@@ -199,6 +224,128 @@ function Editor() {
   );
 }
 
+function AttachmentUpload({
+  messageId,
+  incidentId,
+}: {
+  messageId: string | undefined;
+  incidentId: string;
+}) {
+  const { t } = useTranslation();
+  const showAttachments = useBooleanFlagValue("show-message-attachments", true);
+  const { state, dispatch, pendingFiles, addPendingFile, removePendingFile } = useEditorContext();
+  const [uploadAttachment, { loading, error }] = useUploadAttachment();
+  const [removeAttachment] = useRemoveAttachment();
+  // Track files uploaded during this edit session so the editor shows feedback immediately.
+  const [justUploaded, setJustUploaded] = useState<{ filename: string }[]>([]);
+
+  const onDrop = useCallback(
+    async (accepted: File[]) => {
+      for (const file of accepted) {
+        if (messageId) {
+          const result = await uploadAttachment({ incidentId, messageId, file }).catch(() => null);
+          if (result) {
+            setJustUploaded((prev) => [...prev, { filename: result.filename }]);
+          }
+        } else {
+          addPendingFile(file);
+        }
+      }
+    },
+    [messageId, incidentId, uploadAttachment, addPendingFile],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: true,
+    disabled: loading,
+  });
+
+  if (!showAttachments) return null;
+
+  // In edit mode, show existing attachments + just-uploaded ones for visual confirmation.
+  const existingAttachments = messageId ? (state.messageToEdit?.attachments ?? []) : [];
+  const justUploadedNew = justUploaded.filter((u) => !existingAttachments.some((a) => a.filename === u.filename));
+
+  return (
+    <FormRow label={t("message.attachments.title") as string}>
+      {() => (
+        <div>
+          {/* Staged files for new message */}
+          {!messageId && pendingFiles.length > 0 && (
+            <div className="tags mb-2">
+              {pendingFiles.map((f, i) => (
+                <span key={i} className="tag is-light">
+                  <span className="icon is-small mr-1">
+                    <FontAwesomeIcon icon={faPaperclip} />
+                  </span>
+                  {f.name}
+                  <button
+                    className="delete is-small"
+                    aria-label={t("message.attachments.remove")}
+                    onClick={() => removePendingFile(i)}
+                  />
+                </span>
+              ))}
+            </div>
+          )}
+          {/* Current attachments for edit mode — removable */}
+          {messageId && (existingAttachments.length > 0 || justUploadedNew.length > 0) && (
+            <div className="tags mb-2">
+              {existingAttachments.map((a) => (
+                <span key={a.id} className="tag is-light">
+                  <span className="icon is-small mr-1">
+                    <FontAwesomeIcon icon={faPaperclip} />
+                  </span>
+                  {a.filename}
+                  <button
+                    className="delete is-small"
+                    aria-label={t("message.attachments.remove")}
+                    onClick={() => {
+                      void removeAttachment({ incidentId, messageId, attachmentId: a.id }).then(() => {
+                        dispatch({ type: "remove_attachment", attachmentId: a.id });
+                      });
+                    }}
+                  />
+                </span>
+              ))}
+              {justUploadedNew.map((u) => (
+                <span key={u.filename} className="tag is-light">
+                  <span className="icon is-small mr-1">
+                    <FontAwesomeIcon icon={faPaperclip} />
+                  </span>
+                  {u.filename}
+                </span>
+              ))}
+            </div>
+          )}
+          {/* Drop zone */}
+          <div
+            {...getRootProps()}
+            className={`file is-small${isDragActive ? " has-background-info-light" : ""}`}
+            style={{ border: "2px dashed #dbdbdb", borderRadius: "4px", padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", width: "100%" }}
+          >
+            <input {...getInputProps()} aria-label={t("message.attachments.add")} />
+            {loading ? (
+              <span className="icon is-small">
+                <FontAwesomeIcon icon={faSpinner} spin />
+              </span>
+            ) : (
+              <span className="icon is-small">
+                <FontAwesomeIcon icon={faPaperclip} />
+              </span>
+            )}
+            <span className="is-size-7">
+              {isDragActive ? t("message.attachments.dropHere") : t("message.attachments.add")}
+            </span>
+          </div>
+          {error && <p className="help is-danger mt-1">{t("message.attachments.uploadFailed")}</p>}
+        </div>
+      )}
+    </FormRow>
+  );
+}
+
 function InputBox() {
   const { t } = useTranslation();
   const { incidentId } = useParams();
@@ -237,6 +384,7 @@ function InputBox() {
     time: state.time || new Date(),
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
+    attachments: state.messageToEdit?.attachments ?? [],
   };
 
   const mediumId = useId();
@@ -282,13 +430,19 @@ function InputBox() {
         }}
         noValidate
       >
-        <MediumForm medium={state.media} />
+        <MediumForm
+          medium={state.media}
+          afterContent={
+            <AttachmentUpload messageId={state.messageToEdit?.id} incidentId={incidentId ?? ""} />
+          }
+        />
       </form>
       {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
           <div className="title is-size-4 is-capitalized">{t("preview")}</div>
           <JournalMessage
             id={undefined}
+            incidentId={incidentId ?? ""}
             message={message}
             showControls={false}
             divisions={[]}

@@ -1,3 +1,4 @@
+import React from "react";
 import { Medium } from "types";
 import { useTranslation } from "react-i18next";
 import {
@@ -34,7 +35,7 @@ const PARTY_INPUTS = {
   receiver: { Input: ReceiverInput, Detail: ReceiverDetailInput },
 } as const;
 
-export function MediumForm({ medium }: { medium: Medium }) {
+export function MediumForm({ medium, afterContent }: { medium: Medium; afterContent?: React.ReactNode }) {
   const { t } = useTranslation();
   const { order, detailPlaceholderKey } = MEDIUM_FORM_CONFIG[medium];
   const hasDetail = detailPlaceholderKey !== undefined;
@@ -61,6 +62,7 @@ export function MediumForm({ medium }: { medium: Medium }) {
       })}
       <FormRow label={t("message.time") as string}>{(id) => <TimeInput id={id} />}</FormRow>
       <FormRow label={t("message.content") as string}>{(id) => <ContentInput id={id} />}</FormRow>
+      {afterContent}
       <FormRow>{() => <SaveButton />}</FormRow>
     </div>
   );

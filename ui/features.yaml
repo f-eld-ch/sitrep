@@ -31,6 +31,16 @@ flags:
       - segment:
           key: SitrepManaged
           value: true
+  # nimdanitro: flag for rolling out message attachments, remove after attachments is GA
+  - key: show-message-attachments
+    name: Show Message Attachments
+    type: BOOLEAN_FLAG_TYPE
+    description: Show attachment chips on messages and allow uploading/removing attachments
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
   # nimdanitro: flag for rolling out the RBAC editors (incident access panel, admin), remove after RBAC is GA
   - key: show-rbac-editors
     name: Show RBAC editors

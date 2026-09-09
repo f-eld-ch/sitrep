@@ -27,6 +27,7 @@ const WIRE_MESSAGE: WireMessage = {
   triage: "PENDING",
   priority: "NORMAL",
   divisions: [WIRE_DIVISION],
+  attachments: [],
 };
 
 describe("toDivision", () => {

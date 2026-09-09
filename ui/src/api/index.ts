@@ -81,8 +81,10 @@ export {
   useIncidentMessages,
   useJournalMessages,
   useMessageForTriage,
+  useRemoveAttachment,
   useTriageMessage,
   useUpdateMessage,
+  useUploadAttachment,
 } from "./message";
 
 // Layer aggregate

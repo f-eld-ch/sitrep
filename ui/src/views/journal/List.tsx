@@ -162,6 +162,7 @@ function List(props: {
         <MemoMessages
           messages={messages}
           divisions={divisions}
+          incidentId={incidentId ?? ""}
           showControls={props.showControls}
           setTriageMessage={props.setTriageMessage}
           setEditorMessage={props.setEditorMessage}
@@ -184,6 +185,7 @@ const MemoMessages = memo(Messages);
 
 function Messages(props: {
   showControls: boolean;
+  incidentId: string;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
@@ -197,6 +199,7 @@ function Messages(props: {
             <JournalMessage
               key={message.id}
               id={message.id}
+              incidentId={props.incidentId}
               message={message}
               divisions={props.divisions}
               showControls={props.showControls}

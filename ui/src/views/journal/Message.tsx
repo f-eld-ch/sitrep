@@ -1,4 +1,4 @@
-import { faArrowsToEye, faEdit, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faEdit, faPaperclip, faPrint, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import classNames from "classnames";
@@ -6,18 +6,58 @@ import dayjs from "dayjs";
 import { memo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
-import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
+import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
 import { ReactPreview } from "./Markdown";
 import MessageSheet from "./MessageSheet";
 
 export interface MessageProps {
   id: string | undefined;
+  incidentId: string;
   message: Message;
   divisions: Division[];
   showControls: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }
+
+const AttachmentChip = ({
+  attachment,
+}: {
+  attachment: Attachment;
+}) => {
+  const isImage = attachment.contentType.startsWith("image/");
+
+  if (isImage) {
+    return (
+      <a
+        href={attachment.url}
+        download={attachment.filename}
+        className="mr-2 mb-1"
+        title={attachment.filename}
+        style={{ display: "inline-block", lineHeight: 0 }}
+      >
+        <img
+          src={attachment.url}
+          alt={attachment.filename}
+          style={{ height: "48px", width: "48px", objectFit: "cover", borderRadius: "4px", border: "1px solid #ededed" }}
+        />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={attachment.url}
+      download={attachment.filename}
+      className="tag is-light mr-1 mb-1"
+    >
+      <span className="icon is-small mr-1">
+        <FontAwesomeIcon icon={faPaperclip} />
+      </span>
+      {attachment.filename}
+    </a>
+  );
+};
 
 const MessageContainer = ({
   id,
@@ -170,6 +210,27 @@ const MessageContainer = ({
               ))}
             </div>
           </div>
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="column is-full is-flex-shrink-0 is-flex-grow-0">
+              <p className="heading is-size-7 has-text-weight-bold has-text-grey mb-2" style={{ borderTop: "1px solid #ededed", paddingTop: "8px" }}>
+                {t("message.attachments.title")}
+              </p>
+              {message.attachments.some((a) => a.contentType.startsWith("image/")) && (
+                <div className="is-flex is-flex-wrap-wrap mb-2" style={{ gap: "6px" }}>
+                  {message.attachments.filter((a) => a.contentType.startsWith("image/")).map((a) => (
+                    <AttachmentChip key={a.id} attachment={a} />
+                  ))}
+                </div>
+              )}
+              {message.attachments.some((a) => !a.contentType.startsWith("image/")) && (
+                <div className="tags is-multiline mb-0">
+                  {message.attachments.filter((a) => !a.contentType.startsWith("image/")).map((a) => (
+                    <AttachmentChip key={a.id} attachment={a} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {showControls === true && id !== undefined && (
           <div className={tabClassNames} style={{ borderBottomRightRadius: "4px" }}>

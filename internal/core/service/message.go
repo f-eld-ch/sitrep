@@ -27,6 +27,15 @@ import (
 const maxAttachRetries = 3
 
 // MessageService handles write-side operations for the Message aggregate.
+// byteCounter is an io.Writer that counts the total bytes written through it.
+type byteCounter struct{ n *int64 }
+
+func (c byteCounter) Write(p []byte) (int, error) {
+	*c.n += int64(len(p))
+
+	return len(p), nil
+}
+
 type MessageService struct {
 	tx        outbound.Transactor
 	repo      outbound.MessageRepository
@@ -394,9 +403,12 @@ func (s *MessageService) AttachFile(
 	storageKey := fmt.Sprintf("incidents/%s/%s", incidentID, attachmentID)
 
 	// Write blob before opening the event-store transaction.
-	// Compute checksum inline via TeeReader — one pass, no buffering.
+	// Compute checksum and measure actual byte count in one streaming pass.
 	h := sha256.New()
-	checksumReader := io.TeeReader(input.Content, h)
+
+	var bytesWritten int64
+
+	checksumReader := io.TeeReader(input.Content, io.MultiWriter(h, byteCounter{&bytesWritten}))
 
 	if err := s.blobs.Put(ctx, storageKey, checksumReader, input.Size, input.ContentType); err != nil {
 		span.RecordError(err)
@@ -405,6 +417,9 @@ func (s *MessageService) AttachFile(
 		return inbound.AttachmentState{}, err
 	}
 
+	// Use the measured byte count instead of the caller-supplied hint (which may be -1
+	// when size is unknown at upload time, e.g. multipart streaming without Content-Length).
+	actualSize := bytesWritten
 	checksum := "sha256:" + hex.EncodeToString(h.Sum(nil))
 
 	var state inbound.AttachmentState
@@ -431,7 +446,7 @@ func (s *MessageService) AttachFile(
 				attachmentID,
 				input.Filename,
 				input.ContentType,
-				input.Size,
+				actualSize,
 				checksum,
 				storageKey,
 				actor.Sub,
