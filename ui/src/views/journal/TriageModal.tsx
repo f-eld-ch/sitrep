@@ -43,7 +43,7 @@ function Triage(props: {
           <button
             type="button"
             className="delete"
-            aria-label="close"
+            aria-label={t("close")}
             onClick={() => setMessage(undefined)}
           />
         </header>

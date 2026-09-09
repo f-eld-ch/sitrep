@@ -285,7 +285,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                     <tr>
                       <th>{t("incidentAccess.principal")}</th>
                       <th>{t("incidentAccess.role")}</th>
-                      <th aria-label="Actions" />
+                      <th aria-label={t("actions")} />
                     </tr>
                   </thead>
                   <tbody>
