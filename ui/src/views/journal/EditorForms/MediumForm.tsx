@@ -35,7 +35,13 @@ const PARTY_INPUTS = {
   receiver: { Input: ReceiverInput, Detail: ReceiverDetailInput },
 } as const;
 
-export function MediumForm({ medium, afterContent }: { medium: Medium; afterContent?: React.ReactNode }) {
+export function MediumForm({
+  medium,
+  afterContent,
+}: {
+  medium: Medium;
+  afterContent?: React.ReactNode;
+}) {
   const { t } = useTranslation();
   const { order, detailPlaceholderKey } = MEDIUM_FORM_CONFIG[medium];
   const hasDetail = detailPlaceholderKey !== undefined;

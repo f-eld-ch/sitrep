@@ -162,7 +162,7 @@ describe("MessageContainer", () => {
       const { unmount } = render(
         <MessageContainer
           id="msg1"
-        incidentId="incident1"
+          incidentId="incident1"
           message={{ ...baseMessage, number: num }}
           divisions={divisions}
           showControls={false}

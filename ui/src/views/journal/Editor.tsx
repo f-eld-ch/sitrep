@@ -3,14 +3,28 @@ import { faPaperclip, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import uniq from "lodash/uniq";
-import React, { useCallback, useContext, useId, useMemo, useReducer, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useId,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { useDropzone } from "react-dropzone";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { Spinner } from "components";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
-import { useCreateMessage, useIncidentMessages, useRemoveAttachment, useUpdateMessage, useUploadAttachment } from "api";
+import {
+  useCreateMessage,
+  useIncidentMessages,
+  useRemoveAttachment,
+  useUpdateMessage,
+  useUploadAttachment,
+} from "api";
 import { IncidentContext } from "utils";
 import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { FormRow } from "./EditorForms/FormRow";
@@ -265,7 +279,9 @@ function AttachmentUpload({
 
   // In edit mode, show existing attachments + just-uploaded ones for visual confirmation.
   const existingAttachments = messageId ? (state.messageToEdit?.attachments ?? []) : [];
-  const justUploadedNew = justUploaded.filter((u) => !existingAttachments.some((a) => a.filename === u.filename));
+  const justUploadedNew = justUploaded.filter(
+    (u) => !existingAttachments.some((a) => a.filename === u.filename),
+  );
 
   return (
     <FormRow label={t("message.attachments.title") as string}>
@@ -302,9 +318,11 @@ function AttachmentUpload({
                     className="delete is-small"
                     aria-label={t("message.attachments.remove")}
                     onClick={() => {
-                      void removeAttachment({ incidentId, messageId, attachmentId: a.id }).then(() => {
-                        dispatch({ type: "remove_attachment", attachmentId: a.id });
-                      });
+                      void removeAttachment({ incidentId, messageId, attachmentId: a.id }).then(
+                        () => {
+                          dispatch({ type: "remove_attachment", attachmentId: a.id });
+                        },
+                      );
                     }}
                   />
                 </span>
@@ -323,7 +341,16 @@ function AttachmentUpload({
           <div
             {...getRootProps()}
             className={`file is-small${isDragActive ? " has-background-info-light" : ""}`}
-            style={{ border: "2px dashed #dbdbdb", borderRadius: "4px", padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", width: "100%" }}
+            style={{
+              border: "2px dashed #dbdbdb",
+              borderRadius: "4px",
+              padding: "8px 12px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              width: "100%",
+            }}
           >
             <input {...getInputProps()} aria-label={t("message.attachments.add")} />
             {loading ? (

@@ -3,7 +3,13 @@ import { useState } from "react";
 import { Medium, PriorityStatus, TriageStatus, type Attachment, type Division } from "types";
 import { ApiError, apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
-import { CREATE_MESSAGE, GET_INCIDENT_MESSAGES, REMOVE_ATTACHMENT, TRIAGE_MESSAGE, UPDATE_MESSAGE } from "./documents";
+import {
+  CREATE_MESSAGE,
+  GET_INCIDENT_MESSAGES,
+  REMOVE_ATTACHMENT,
+  TRIAGE_MESSAGE,
+  UPDATE_MESSAGE,
+} from "./documents";
 
 export interface CreateMessageArgs {
   incidentId: string;
