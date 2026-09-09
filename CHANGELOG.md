@@ -23,6 +23,7 @@
 ### ⚙️  Other
 
 - *(ci)* Run the Go gates on every path, including releases ([#1820](https://github.com/f-eld-ch/sitrep/issues/1820)) - ([686db50](https://github.com/f-eld-ch/sitrep/commit/686db50405d2b927525def6b9acfde6760d46818))
+- *(deps)* Bump maplibre-gl from 6.7.0 to 6.8.0 in /ui ([#1836](https://github.com/f-eld-ch/sitrep/issues/1836)) - ([9053c54](https://github.com/f-eld-ch/sitrep/commit/9053c547bbdb35aa57b1b629e4528c8da72481b7))
 - *(deps)* Bump github.com/pressly/goose/v3 from 3.27.3 to 3.28.0 ([#1825](https://github.com/f-eld-ch/sitrep/issues/1825)) - ([bde97a7](https://github.com/f-eld-ch/sitrep/commit/bde97a7f83e0c01cbeeac21675d43f33a80d7e5b))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.4 to 3.49.6 ([#1826](https://github.com/f-eld-ch/sitrep/issues/1826)) - ([bc7ed2a](https://github.com/f-eld-ch/sitrep/commit/bc7ed2a323a8f94d5e3778737f3e92cc5de317af))
 - Remove Hasura leftovers ([#1829](https://github.com/f-eld-ch/sitrep/issues/1829)) - ([e1024e6](https://github.com/f-eld-ch/sitrep/commit/e1024e6365bc62b9e2ba6c0ac8f7229a8dd1f9a5))
