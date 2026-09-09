@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,10 +15,21 @@ import (
 
 type configOption struct {
 	name        string
+	flag        string // pflag name; defaults to name when empty (used for dotted viper keys)
 	value       any
 	description string
 	legacyEnv   []string
 	addFlag     func(*pflag.FlagSet)
+}
+
+// flagName returns the pflag flag name. When a separate flag name is configured
+// (e.g. for dotted viper keys), it is used; otherwise the viper key is the flag name.
+func (o configOption) flagName() string {
+	if o.flag != "" {
+		return o.flag
+	}
+
+	return o.name
 }
 
 func stringOption(name, defaultValue, description string, legacyEnv ...string) configOption {
@@ -52,6 +64,35 @@ func boolOption(name string, defaultValue bool, description string, legacyEnv ..
 		legacyEnv:   legacyEnv,
 		addFlag: func(flags *pflag.FlagSet) {
 			flags.Bool(name, defaultValue, description)
+		},
+	}
+}
+
+// stringOptionF creates an option whose viper key (name) differs from its pflag name (flag).
+// Used for dotted viper keys like "storage.attachments.enabled" → flag "attachments-enabled".
+func stringOptionF(viperKey, flagName, defaultValue, description string, legacyEnv ...string) configOption {
+	return configOption{
+		name:        viperKey,
+		flag:        flagName,
+		value:       defaultValue,
+		description: description,
+		legacyEnv:   legacyEnv,
+		addFlag: func(flags *pflag.FlagSet) {
+			flags.String(flagName, defaultValue, description)
+		},
+	}
+}
+
+// boolOptionF creates a bool option whose viper key (name) differs from its pflag name (flag).
+func boolOptionF(viperKey, flagName string, defaultValue bool, description string, legacyEnv ...string) configOption {
+	return configOption{
+		name:        viperKey,
+		flag:        flagName,
+		value:       defaultValue,
+		description: description,
+		legacyEnv:   legacyEnv,
+		addFlag: func(flags *pflag.FlagSet) {
+			flags.Bool(flagName, defaultValue, description)
 		},
 	}
 }
@@ -162,8 +203,8 @@ func bindFlags(v *viper.Viper, flags *pflag.FlagSet, options []configOption) err
 	for _, option := range options {
 		option.addFlag(flags)
 
-		if err := v.BindPFlag(option.name, flags.Lookup(option.name)); err != nil {
-			return fmt.Errorf("bind --%s: %w", option.name, err)
+		if err := v.BindPFlag(option.name, flags.Lookup(option.flagName())); err != nil {
+			return fmt.Errorf("bind --%s: %w", option.flagName(), err)
 		}
 	}
 
@@ -171,7 +212,8 @@ func bindFlags(v *viper.Viper, flags *pflag.FlagSet, options []configOption) err
 }
 
 func canonicalEnvName(option string) string {
-	return "SITREP_" + strings.ToUpper(strings.ReplaceAll(option, "-", "_"))
+	r := strings.NewReplacer("-", "_", ".", "_")
+	return "SITREP_" + strings.ToUpper(r.Replace(option))
 }
 
 func loadConfig(v *viper.Viper, configPath string) error {
@@ -193,6 +235,10 @@ func loadConfig(v *viper.Viper, configPath string) error {
 	return validateConfig(v)
 }
 
+// validSizePattern matches viper's parseSizeInBytes accepted forms:
+// optional digits, optional whitespace, optional kb/mb/gb suffix (case-insensitive).
+var validSizePattern = regexp.MustCompile(`(?i)^\s*\d+\s*(kb|mb|gb|b)?\s*$`)
+
 func validateConfig(v *viper.Viper) error {
 	if port := v.GetUint("port"); port == 0 || port > 65535 {
 		return fmt.Errorf("port must be between 1 and 65535")
@@ -203,6 +249,29 @@ func validateConfig(v *viper.Viper) error {
 	logLevel := v.GetString("log-level")
 	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
 		return fmt.Errorf("invalid log-level %q: %w", logLevel, err)
+	}
+
+	// Validate attachment config only when attachments are enabled.
+	if v.GetBool("storage.attachments.enabled") {
+		backend := v.GetString("storage.attachments.backend")
+		switch backend {
+		case "filesystem", "ephemeral", "database":
+		default:
+			return fmt.Errorf("storage.attachments.backend must be filesystem, ephemeral, or database; got %q", backend)
+		}
+
+		rawSize := v.GetString("storage.attachments.max-size")
+		if !validSizePattern.MatchString(rawSize) {
+			return fmt.Errorf("invalid size %q: use bytes or a kb/mb/gb suffix (e.g. 25mb)", rawSize)
+		}
+
+		if v.GetSizeInBytes("storage.attachments.max-size") == 0 {
+			return fmt.Errorf("storage.attachments.max-size must be greater than zero")
+		}
+
+		if backend == "filesystem" && v.GetString("storage.attachments.filesystem.dir") == "" {
+			return fmt.Errorf("storage.attachments.filesystem.dir must be set when backend is filesystem")
+		}
 	}
 
 	return nil

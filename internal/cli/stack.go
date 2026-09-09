@@ -3,11 +3,15 @@ package cli
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/blobs/filesystem"
+	pgblobs "github.com/f-eld-ch/sitrep/internal/adapter/outbound/blobs/postgres"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	inprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
@@ -21,6 +25,14 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 )
+
+// attachmentConfig carries blob-storage configuration derived from viper flags.
+type attachmentConfig struct {
+	enabled bool
+	backend string
+	maxSize int64
+	dir     string
+}
 
 // stack holds all wired-up application services and the infrastructure teardown.
 type stack struct {
@@ -42,18 +54,69 @@ type stack struct {
 // buildStack wires the full application stack. When DATABASE_URL is set it uses
 // PostgreSQL; otherwise it falls back to in-memory stores (useful for local dev
 // without a running database).
-func buildStack(ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint) (*stack, error) {
+func buildStack(
+	ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint, attCfg attachmentConfig,
+) (*stack, error) {
 	if dsn == "" {
 		slog.WarnContext(ctx, "no database_url set, using in-memory stores (data will not persist)")
-		return buildInmemStack(ctx)
+		return buildInmemStack(ctx, attCfg)
 	}
 
-	return buildPostgresStack(ctx, dsn, autoCloseDays, autoArchiveDays)
+	return buildPostgresStack(ctx, dsn, autoCloseDays, autoArchiveDays, attCfg)
+}
+
+// buildBlobStore constructs the BlobStore for the given config and returns a teardown function.
+// The teardown must be called even when an error is returned (it is a no-op in that case).
+func buildBlobStore(ctx context.Context, pool *pgxpool.Pool, cfg attachmentConfig) (outbound.BlobStore, func(), error) {
+	if !cfg.enabled {
+		return nil, func() {}, nil
+	}
+
+	switch cfg.backend {
+	case "ephemeral":
+		dir, err := os.MkdirTemp("", "sitrep-attachments-*")
+		if err != nil {
+			return nil, func() {}, fmt.Errorf("create ephemeral attachment dir: %w", err)
+		}
+
+		slog.WarnContext(ctx, "attachment backend is ephemeral; files will be lost on restart",
+			slog.String("dir", dir))
+
+		store, err := filesystem.New(dir)
+		if err != nil {
+			_ = os.RemoveAll(dir)
+
+			return nil, func() {}, fmt.Errorf("open ephemeral attachment store: %w", err)
+		}
+
+		return store, func() {
+			_ = store.Close()
+			_ = os.RemoveAll(dir)
+		}, nil
+
+	case "database":
+		if pool == nil {
+			slog.WarnContext(ctx, "attachment backend=database requires a database-url; falling back to ephemeral")
+			return buildBlobStore(ctx, nil, attachmentConfig{enabled: true, backend: "ephemeral"})
+		}
+
+		return pgblobs.New(pool), func() {}, nil
+
+	default: // "filesystem"
+		store, err := filesystem.New(cfg.dir)
+		if err != nil {
+			return nil, func() {}, fmt.Errorf("open attachment store at %q: %w", cfg.dir, err)
+		}
+
+		return store, func() { _ = store.Close() }, nil
+	}
 }
 
 // ── Postgres ──────────────────────────────────────────────────────────────────
 
-func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint) (*stack, error) {
+func buildPostgresStack(
+	ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint, attCfg attachmentConfig,
+) (*stack, error) {
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, err
@@ -92,7 +155,17 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 	globalChecker := pgstore.NewGlobalAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
 
-	factory := service.NewFactory(
+	queries := pgqueries.NewQueries(pool, accessChecker)
+
+	blobs, blobsTeardown, err := buildBlobStore(ctx, pool, attCfg)
+	if err != nil {
+		pool.Close()
+		notifier.Close()
+
+		return nil, err
+	}
+
+	factoryOpts := []service.FactoryOption{
 		service.WithTransactor(tx),
 		service.WithClock(pgstore.WallClock{}),
 		service.WithIDs(pgstore.UUIDGen{}),
@@ -105,7 +178,16 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		service.WithAccessGroupRepository(groupRepo),
 		service.WithGlobalAccessRepository(globalRepo),
 		service.WithGlobalAccessChecker(globalChecker),
-	)
+	}
+
+	if blobs != nil {
+		factoryOpts = append(factoryOpts,
+			service.WithBlobStore(blobs),
+			service.WithQueries(queries),
+		)
+	}
+
+	factory := service.NewFactory(factoryOpts...)
 
 	handlers := []pgprojection.Handler{
 		pgprojection.NewIncidentHandler(pool),
@@ -140,7 +222,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 		LayerSvc:              factory.LayerService(layers, repos),
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
-		Queries:               pgqueries.NewQueries(pool, accessChecker),
+		Queries:               queries,
 		AccessQueries:         pgqueries.NewAccessQueries(pool),
 		IncidentAccessChecker: accessChecker,
 		GlobalAccessChecker:   globalChecker,
@@ -149,6 +231,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 			cancelProj()
 			<-projDone
 			proj.Unregister()
+			blobsTeardown()
 			notifier.Close()
 			pool.Close()
 		},
@@ -157,7 +240,7 @@ func buildPostgresStack(ctx context.Context, dsn string, autoCloseDays, autoArch
 
 // ── In-memory ─────────────────────────────────────────────────────────────────
 
-func buildInmemStack(ctx context.Context) (*stack, error) {
+func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, error) {
 	store := inmem.NewEventStore()
 	tx := inmem.NewTransactor()
 	notifier := inmem.NewNotifier()
@@ -173,7 +256,24 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
 	globalChecker := inmem.NewGlobalAccessChecker(accessHandler)
 
-	factory := service.NewFactory(
+	incHandler := inprojection.NewIncidentHandler()
+	divHandler := inprojection.NewIncidentDivisionHandler()
+	msgHandler := inprojection.NewMessageHandler()
+	layerHandler := inprojection.NewLayerFeaturesHandler()
+
+	// For the no-DSN dev path, default to ephemeral if no backend is configured.
+	if attCfg.enabled && attCfg.backend == "" {
+		attCfg.backend = "ephemeral"
+	}
+
+	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker)
+
+	blobs, blobsTeardown, err := buildBlobStore(ctx, nil, attCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	inmemFactoryOpts := []service.FactoryOption{
 		service.WithTransactor(tx),
 		service.WithClock(pgstore.WallClock{}),
 		service.WithIDs(inmem.UUIDGen{}),
@@ -186,12 +286,17 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		service.WithAccessGroupRepository(groupRepo),
 		service.WithGlobalAccessRepository(globalRepo),
 		service.WithGlobalAccessChecker(globalChecker),
-	)
+	}
 
-	incHandler := inprojection.NewIncidentHandler()
-	divHandler := inprojection.NewIncidentDivisionHandler()
-	msgHandler := inprojection.NewMessageHandler()
-	layerHandler := inprojection.NewLayerFeaturesHandler()
+	if blobs != nil {
+		inmemFactoryOpts = append(inmemFactoryOpts,
+			service.WithBlobStore(blobs),
+			service.WithQueries(queries),
+		)
+	}
+
+	factory := service.NewFactory(inmemFactoryOpts...)
+
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
 		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
 	}).WithNotifier(notifier), "inmem")
@@ -213,7 +318,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 		LayerSvc:              factory.LayerService(layers, repos),
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
-		Queries:               inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker),
+		Queries:               queries,
 		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
 		IncidentAccessChecker: accessChecker,
 		GlobalAccessChecker:   globalChecker,
@@ -222,6 +327,7 @@ func buildInmemStack(ctx context.Context) (*stack, error) {
 			cancelProj()
 			<-projDone
 			proj.Unregister()
+			blobsTeardown()
 		},
 	}, nil
 }
