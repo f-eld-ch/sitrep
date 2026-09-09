@@ -2,7 +2,6 @@ package filesystem_test
 
 import (
 	"context"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -23,6 +22,7 @@ func newStore(t *testing.T) *filesystem.Store {
 	s, err := filesystem.New(t.TempDir())
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = s.Close() })
+
 	return s
 }
 
@@ -41,7 +41,8 @@ func TestFilesystemStore_RoundTrip(t *testing.T) {
 
 	rc, err := s.Get(ctx, key)
 	require.NoError(t, err)
-	defer rc.Close()
+
+	t.Cleanup(func() { _ = rc.Close() })
 
 	got, err := io.ReadAll(rc)
 	require.NoError(t, err)
@@ -53,7 +54,7 @@ func TestFilesystemStore_GetMissing(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := s.Get(ctx, validKey(t))
-	require.True(t, errors.Is(err, outbound.ErrBlobNotFound))
+	require.ErrorIs(t, err, outbound.ErrBlobNotFound)
 }
 
 func TestFilesystemStore_Overwrite(t *testing.T) {
@@ -66,7 +67,8 @@ func TestFilesystemStore_Overwrite(t *testing.T) {
 
 	rc, err := s.Get(ctx, key)
 	require.NoError(t, err)
-	defer rc.Close()
+
+	t.Cleanup(func() { _ = rc.Close() })
 
 	got, err := io.ReadAll(rc)
 	require.NoError(t, err)
@@ -84,7 +86,7 @@ func TestFilesystemStore_DeleteIdempotent(t *testing.T) {
 	require.NoError(t, s.Delete(ctx, key))
 
 	_, err := s.Get(ctx, key)
-	require.True(t, errors.Is(err, outbound.ErrBlobNotFound))
+	require.ErrorIs(t, err, outbound.ErrBlobNotFound)
 }
 
 func TestFilesystemStore_DeletePrefix(t *testing.T) {
@@ -104,13 +106,14 @@ func TestFilesystemStore_DeletePrefix(t *testing.T) {
 	require.NoError(t, s.DeletePrefix(ctx, blobkey.PrefixForIncident(incA)))
 
 	_, err := s.Get(ctx, keyA1)
-	assert.True(t, errors.Is(err, outbound.ErrBlobNotFound), "keyA1 should be deleted")
+	require.ErrorIs(t, err, outbound.ErrBlobNotFound, "keyA1 should be deleted")
 	_, err = s.Get(ctx, keyA2)
-	assert.True(t, errors.Is(err, outbound.ErrBlobNotFound), "keyA2 should be deleted")
+	require.ErrorIs(t, err, outbound.ErrBlobNotFound, "keyA2 should be deleted")
 
 	rc, err := s.Get(ctx, keyB)
 	require.NoError(t, err, "keyB should survive")
-	rc.Close()
+
+	_ = rc.Close()
 }
 
 func TestFilesystemStore_DeletePrefixIdempotent(t *testing.T) {
@@ -150,7 +153,8 @@ func TestFilesystemStore_RangeRead(t *testing.T) {
 
 	rc, err := s.Get(ctx, key)
 	require.NoError(t, err)
-	defer rc.Close()
+
+	t.Cleanup(func() { _ = rc.Close() })
 
 	// Seek to offset 5 — simulates a Range read.
 	_, err = rc.Seek(5, io.SeekStart)
@@ -165,7 +169,8 @@ func TestFilesystemStore_SymlinkCannotEscapeRoot(t *testing.T) {
 	tmpDir := t.TempDir()
 	s, err := filesystem.New(tmpDir)
 	require.NoError(t, err)
-	defer s.Close()
+
+	t.Cleanup(func() { _ = s.Close() })
 
 	ctx := context.Background()
 	incID := uuid.New()
@@ -192,7 +197,7 @@ func TestFilesystemStore_SymlinkCannotEscapeRoot(t *testing.T) {
 	_ = s.Put(ctx, key, strings.NewReader("attacker"), 8, "text/plain")
 
 	// Critical assertion: the file outside the store root is never written.
-	data, readErr := os.ReadFile(escapedFile)
+	data, readErr := os.ReadFile(escapedFile) //nolint:gosec // test reads a known temp file path
 	require.NoError(t, readErr)
 	assert.Equal(t, "secret data", string(data), "file outside store root must not be modified")
 }

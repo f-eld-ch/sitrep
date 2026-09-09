@@ -202,6 +202,7 @@ func (s *RetentionService) close(ctx context.Context, id shared.IncidentID, at t
 
 func (s *RetentionService) archive(ctx context.Context, id shared.IncidentID, at time.Time) (bool, error) {
 	archived := false
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		inc, err := s.incidents.Load(ctx, id)
 		if err != nil {
@@ -230,7 +231,6 @@ func (s *RetentionService) archive(ctx context.Context, id shared.IncidentID, at
 
 		return nil
 	})
-
 	if err != nil {
 		return false, err
 	}

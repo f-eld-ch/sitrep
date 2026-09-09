@@ -87,6 +87,7 @@ func (m *Message) IsDeleted() bool                       { return m.deleted }
 func (m *Message) Attachments() []Attachment {
 	cp := make([]Attachment, len(m.attachments))
 	copy(cp, m.attachments)
+
 	return cp
 }
 
@@ -275,6 +276,7 @@ func (m *Message) RemoveAttachment(id shared.AttachmentID, removedBy string, at 
 	}
 
 	found := false
+
 	for _, a := range m.attachments {
 		if a.ID == id {
 			found = true
@@ -394,6 +396,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 				next = append(next, a)
 			}
 		}
+
 		m.attachments = next
 	default:
 		return fmt.Errorf("message.Transition: unhandled event type %T", e.Data)
@@ -415,22 +418,22 @@ const (
 // allowedContentTypes is the allowlist for attachment content types.
 // SVG and HTML are intentionally excluded to prevent stored XSS via the download route.
 var allowedContentTypes = map[string]bool{
-	"image/jpeg":                                                      true,
-	"image/png":                                                       true,
-	"image/gif":                                                       true,
-	"image/webp":                                                      true,
-	"image/tiff":                                                      true,
-	"application/pdf":                                                 true,
-	"text/plain":                                                      true,
-	"text/csv":                                                        true,
-	"application/msword":                                              true,
+	"image/jpeg":         true,
+	"image/png":          true,
+	"image/gif":          true,
+	"image/webp":         true,
+	"image/tiff":         true,
+	"application/pdf":    true,
+	"text/plain":         true,
+	"text/csv":           true,
+	"application/msword": true,
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
-	"application/vnd.ms-excel":                                        true,
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true,
-	"application/vnd.ms-powerpoint":                                   true,
+	"application/vnd.ms-excel": true,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         true,
+	"application/vnd.ms-powerpoint":                                             true,
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
-	"application/zip":                                                 true,
-	"application/x-zip-compressed":                                    true,
+	"application/zip":              true,
+	"application/x-zip-compressed": true,
 }
 
 func validateAttachment(filename, contentType string, size int64) error {

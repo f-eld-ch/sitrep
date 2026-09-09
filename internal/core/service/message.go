@@ -356,7 +356,11 @@ func (s *MessageService) AttachFile(
 		slog.String("message_id", messageID.String()), slog.String("actor", actor.Sub))
 
 	if s.blobs == nil {
-		return inbound.AttachmentState{}, fmt.Errorf("attachments not configured")
+		err := fmt.Errorf("attachments not configured")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return inbound.AttachmentState{}, err
 	}
 
 	attachmentID := shared.AttachmentID(s.ids.New())
@@ -441,11 +445,19 @@ func (s *MessageService) AttachFile(
 				return err
 			}
 
-			state = attachmentToState(attachmentID, messageID, msg.IncidentID(), input, checksum, storageKey, actor.Sub, at)
+			state = attachmentToState(
+				attachmentID,
+				messageID,
+				msg.IncidentID(),
+				input,
+				checksum,
+				storageKey,
+				actor.Sub,
+				at,
+			)
 
 			return nil
 		})
-
 		if txErr == nil {
 			break
 		}
@@ -454,7 +466,7 @@ func (s *MessageService) AttachFile(
 			break
 		}
 
-		slog.DebugContext(ctx, "AttachFile optimistic conflict, retrying",
+		slog.DebugContext(ctx, "attach file optimistic conflict, retrying",
 			slog.Int("attempt", attempt+1), slog.String("message_id", messageID.String()))
 	}
 
@@ -499,10 +511,15 @@ func (s *MessageService) RemoveAttachment(
 		slog.String("actor", actor.Sub))
 
 	if s.blobs == nil {
-		return fmt.Errorf("attachments not configured")
+		err := fmt.Errorf("attachments not configured")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return err
 	}
 
 	at := s.clock.Now()
+
 	var storageKey string
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
@@ -572,7 +589,11 @@ func (s *MessageService) OpenAttachment(
 		slog.String("attachment_id", attachmentID.String()), slog.String("actor", actor.Sub))
 
 	if s.blobs == nil || s.queries == nil {
-		return inbound.AttachmentState{}, nil, fmt.Errorf("attachments not configured")
+		err := fmt.Errorf("attachments not configured")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return inbound.AttachmentState{}, nil, err
 	}
 
 	row, err := s.queries.GetAttachment(ctx, uuid.UUID(attachmentID))
@@ -583,7 +604,13 @@ func (s *MessageService) OpenAttachment(
 		return inbound.AttachmentState{}, nil, err
 	}
 
-	if err := requireIncidentAccess(ctx, s.access, actor, shared.IncidentID(row.IncidentID), access.IncidentRead); err != nil {
+	if err := requireIncidentAccess(
+		ctx,
+		s.access,
+		actor,
+		shared.IncidentID(row.IncidentID),
+		access.IncidentRead,
+	); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 

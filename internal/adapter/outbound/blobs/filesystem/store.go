@@ -99,12 +99,14 @@ func (s *Store) Put(_ context.Context, key string, r io.Reader, _ int64, _ strin
 	if _, err := io.Copy(f, r); err != nil {
 		_ = f.Close()
 		_ = s.root.Remove(tmpName)
+
 		return fmt.Errorf("filesystem blob store: write: %w", err)
 	}
 
 	if err := f.Sync(); err != nil {
 		_ = f.Close()
 		_ = s.root.Remove(tmpName)
+
 		return fmt.Errorf("filesystem blob store: sync: %w", err)
 	}
 

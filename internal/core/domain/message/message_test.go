@@ -330,6 +330,7 @@ func TestMessage_RemoveAttachment(t *testing.T) {
 		require.NoError(t, m.AddAttachment(attID, "photo.jpg", "image/jpeg", 1024,
 			"sha256:abc", "incidents/x/y", actor, at, actor))
 		m.Root().ClearPending()
+
 		return m
 	}
 

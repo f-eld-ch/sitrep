@@ -216,6 +216,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 		// Resolve incidentID from the message row.
 		var incidentID string
+
 		row := db.QueryRow(ctx, `SELECT incident_id FROM readmodel.message WHERE id = $1`, id)
 		if err := row.Scan(&incidentID); err != nil {
 			return fmt.Errorf("readmodel.message_attachment: resolve incident_id: %w", err)

@@ -23,25 +23,25 @@ import (
 // allowedContentTypes is the set of MIME types permitted for attachments.
 // SVG and HTML are intentionally excluded to prevent stored XSS.
 var allowedContentTypes = map[string]bool{
-	"image/jpeg":                                                  true,
-	"image/png":                                                   true,
-	"image/gif":                                                   true,
-	"image/webp":                                                  true,
-	"image/avif":                                                  true,
-	"image/tiff":                                                  true,
-	"image/bmp":                                                   true,
-	"application/pdf":                                             true,
-	"text/plain":                                                  true,
-	"application/zip":                                             true,
-	"application/vnd.ms-excel":                                   true,
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         true,
-	"application/msword":                                         true,
+	"image/jpeg":               true,
+	"image/png":                true,
+	"image/gif":                true,
+	"image/webp":               true,
+	"image/avif":               true,
+	"image/tiff":               true,
+	"image/bmp":                true,
+	"application/pdf":          true,
+	"text/plain":               true,
+	"application/zip":          true,
+	"application/vnd.ms-excel": true,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true,
+	"application/msword": true,
 	"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   true,
-	"application/vnd.ms-powerpoint":                              true,
+	"application/vnd.ms-powerpoint":                                             true,
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
-	"application/vnd.oasis.opendocument.text":                    true,
-	"application/vnd.oasis.opendocument.spreadsheet":             true,
-	"application/vnd.oasis.opendocument.presentation":            true,
+	"application/vnd.oasis.opendocument.text":                                   true,
+	"application/vnd.oasis.opendocument.spreadsheet":                            true,
+	"application/vnd.oasis.opendocument.presentation":                           true,
 }
 
 // unsafeFilenameChars strips characters that are dangerous in Content-Disposition filenames.
@@ -50,10 +50,12 @@ var unsafeFilenameChars = regexp.MustCompile(`[^\w\-. ]`)
 func sanitizeFilename(name string) string {
 	// strip path components
 	name = name[strings.LastIndexAny(name, `/\`)+1:]
+
 	name = unsafeFilenameChars.ReplaceAllString(name, "_")
 	if name == "" {
 		return "attachment"
 	}
+
 	return name
 }
 
@@ -100,7 +102,8 @@ func uploadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "no file part in multipart body"})
 		}
-		defer part.Close()
+
+		defer func() { _ = part.Close() }()
 
 		filename := part.FileName()
 		if filename == "" {
@@ -111,6 +114,7 @@ func uploadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		peek := make([]byte, 512)
 		n, peekErr := io.ReadFull(part, peek)
 		peek = peek[:n]
+
 		if peekErr != nil && !errors.Is(peekErr, io.ErrUnexpectedEOF) && !errors.Is(peekErr, io.EOF) {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "failed to read upload"})
 		}
@@ -140,6 +144,7 @@ func uploadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		}
 
 		state.URL = "/api/v2/attachments/" + state.ID.String()
+
 		return c.JSON(http.StatusCreated, state)
 	}
 }
@@ -161,7 +166,8 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		if err != nil {
 			return attachmentErrorToHTTP(c, err)
 		}
-		defer rc.Close()
+
+		defer func() { _ = rc.Close() }()
 
 		safe := sanitizeFilename(state.Filename)
 		encoded := url.PathEscape(safe)
@@ -173,6 +179,7 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		header.Set("Cache-Control", "private, max-age=31536000, immutable")
 
 		http.ServeContent(c.Response(), c.Request(), state.Filename, time.Time{}, rc)
+
 		return nil
 	}
 }

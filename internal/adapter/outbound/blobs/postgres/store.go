@@ -43,7 +43,7 @@ func New(pool *pgxpool.Pool) *Store {
 
 // Put writes r to the blobstore.blob table at key. Upserts on conflict so
 // retried uploads are idempotent.
-func (s *Store) Put(_ context.Context, key string, r io.Reader, _ int64, contentType string) error {
+func (s *Store) Put(ctx context.Context, key string, r io.Reader, _ int64, contentType string) error {
 	incID, attID, err := blobkey.Parse(key)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func (s *Store) Put(_ context.Context, key string, r io.Reader, _ int64, content
 		return fmt.Errorf("postgres blob store: payload exceeds maximum size of %d bytes", message.MaxAttachmentSize)
 	}
 
-	_, err = s.pool.Exec(context.Background(), `
+	_, err = s.pool.Exec(ctx, `
 		INSERT INTO blobstore.blob (key, incident_id, content_type, size, data)
 		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (key) DO UPDATE

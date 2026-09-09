@@ -222,15 +222,29 @@ type MessageService interface {
 	// AttachFile streams a file onto an existing message.
 	// The blob is persisted before the event is committed; on commit failure
 	// the implementation performs a best-effort compensating delete of the blob.
-	AttachFile(ctx context.Context, messageID shared.MessageID, input AttachFileInput, actor identity.Actor) (AttachmentState, error)
+	AttachFile(
+		ctx context.Context,
+		messageID shared.MessageID,
+		input AttachFileInput,
+		actor identity.Actor,
+	) (AttachmentState, error)
 
 	// RemoveAttachment deletes an attachment from a message.
 	// The blob is removed after a successful commit.
-	RemoveAttachment(ctx context.Context, messageID shared.MessageID, attachmentID shared.AttachmentID, actor identity.Actor) error
+	RemoveAttachment(
+		ctx context.Context,
+		messageID shared.MessageID,
+		attachmentID shared.AttachmentID,
+		actor identity.Actor,
+	) error
 
 	// OpenAttachment resolves attachment metadata and opens the blob for reading.
 	// Authorization (IncidentRead) is enforced before the store is touched.
-	OpenAttachment(ctx context.Context, attachmentID shared.AttachmentID, actor identity.Actor) (AttachmentState, io.ReadSeekCloser, error)
+	OpenAttachment(
+		ctx context.Context,
+		attachmentID shared.AttachmentID,
+		actor identity.Actor,
+	) (AttachmentState, io.ReadSeekCloser, error)
 }
 
 // LayerService is the driving port for layer commands.
