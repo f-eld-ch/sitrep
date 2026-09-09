@@ -45,6 +45,26 @@ type Deleted struct {
 	Reason shared.DeleteReason `json:"reason"`
 }
 
+// AttachmentAdded records that a file was attached to this message.
+// It carries metadata only — bytes are never embedded in events.
+type AttachmentAdded struct {
+	AttachmentID shared.AttachmentID `json:"attachmentId"`
+	Filename     string              `json:"filename"`
+	ContentType  string              `json:"contentType"`
+	Size         int64               `json:"size"`
+	Checksum     string              `json:"checksum"`
+	StorageKey   string              `json:"storageKey"`
+	UploaderSub  string              `json:"uploaderSub"`
+}
+
+// AttachmentRemoved records that an attachment was deleted from this message.
+// StorageKey is intentionally absent — the service resolves it from aggregate
+// state so a replayed removal cannot be poisoned by a stale key.
+type AttachmentRemoved struct {
+	AttachmentID shared.AttachmentID `json:"attachmentId"`
+	RemovedBy    string              `json:"removedBy"`
+}
+
 // Imported is the one-shot import event — see migration design.
 // AuthorSub may be empty if the author is ambiguous (was last editor in Hasura).
 type Imported struct {

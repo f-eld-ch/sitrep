@@ -33,6 +33,7 @@ type RetentionService struct {
 	retention outbound.IncidentRetention
 	clock     outbound.Clock
 	notifier  outbound.EventNotifier
+	blobs     outbound.BlobStore
 	batchSize int
 	tracer    trace.Tracer
 }
@@ -49,6 +50,12 @@ func NewRetentionService(
 		batchSize: retentionBatchSize,
 		tracer:    otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
+}
+
+// WithBlobStore sets the BlobStore used to delete blobs during incident archive.
+func (s *RetentionService) WithBlobStore(blobs outbound.BlobStore) *RetentionService {
+	s.blobs = blobs
+	return s
 }
 
 // Run applies enabled retention policies. A zero dacutoffy count disables its policy.
@@ -224,5 +231,18 @@ func (s *RetentionService) archive(ctx context.Context, id shared.IncidentID, at
 		return nil
 	})
 
-	return archived, err
+	if err != nil {
+		return false, err
+	}
+
+	// Best-effort blob deletion after the archive transaction commits.
+	if archived && s.blobs != nil {
+		prefix := "incidents/" + id.String() + "/"
+		if delErr := s.blobs.DeletePrefix(ctx, prefix); delErr != nil {
+			slog.WarnContext(ctx, "failed to delete blobs during incident archive",
+				slog.String("incident_id", id.String()), slog.String("err", delErr.Error()))
+		}
+	}
+
+	return archived, nil
 }

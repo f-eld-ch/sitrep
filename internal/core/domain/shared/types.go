@@ -14,30 +14,34 @@ import (
 // ──────────────────────────────────────────────────────────────────────────────
 
 type (
-	IncidentID uuid.UUID
-	MessageID  uuid.UUID
-	LayerID    uuid.UUID
-	FeatureID  uuid.UUID
-	DivisionID uuid.UUID
+	IncidentID   uuid.UUID
+	MessageID    uuid.UUID
+	LayerID      uuid.UUID
+	FeatureID    uuid.UUID
+	DivisionID   uuid.UUID
+	AttachmentID uuid.UUID
 )
 
-func (id IncidentID) String() string { return uuid.UUID(id).String() }
-func (id MessageID) String() string  { return uuid.UUID(id).String() }
-func (id LayerID) String() string    { return uuid.UUID(id).String() }
-func (id FeatureID) String() string  { return uuid.UUID(id).String() }
-func (id DivisionID) String() string { return uuid.UUID(id).String() }
+func (id IncidentID) String() string   { return uuid.UUID(id).String() }
+func (id MessageID) String() string    { return uuid.UUID(id).String() }
+func (id LayerID) String() string      { return uuid.UUID(id).String() }
+func (id FeatureID) String() string    { return uuid.UUID(id).String() }
+func (id DivisionID) String() string   { return uuid.UUID(id).String() }
+func (id AttachmentID) String() string { return uuid.UUID(id).String() }
 
-func (id IncidentID) MarshalText() ([]byte, error) { return uuid.UUID(id).MarshalText() }
-func (id MessageID) MarshalText() ([]byte, error)  { return uuid.UUID(id).MarshalText() }
-func (id LayerID) MarshalText() ([]byte, error)    { return uuid.UUID(id).MarshalText() }
-func (id FeatureID) MarshalText() ([]byte, error)  { return uuid.UUID(id).MarshalText() }
-func (id DivisionID) MarshalText() ([]byte, error) { return uuid.UUID(id).MarshalText() }
+func (id IncidentID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
+func (id MessageID) MarshalText() ([]byte, error)    { return uuid.UUID(id).MarshalText() }
+func (id LayerID) MarshalText() ([]byte, error)      { return uuid.UUID(id).MarshalText() }
+func (id FeatureID) MarshalText() ([]byte, error)    { return uuid.UUID(id).MarshalText() }
+func (id DivisionID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
+func (id AttachmentID) MarshalText() ([]byte, error) { return uuid.UUID(id).MarshalText() }
 
-func (id *IncidentID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *MessageID) UnmarshalText(b []byte) error  { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *LayerID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *FeatureID) UnmarshalText(b []byte) error  { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *DivisionID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *IncidentID) UnmarshalText(b []byte) error   { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *MessageID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *LayerID) UnmarshalText(b []byte) error      { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *FeatureID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *DivisionID) UnmarshalText(b []byte) error   { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *AttachmentID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
 
 func ParseIncidentID(s string) (IncidentID, error) {
 	id, err := uuid.Parse(s)
@@ -62,6 +66,11 @@ func ParseFeatureID(s string) (FeatureID, error) {
 func ParseDivisionID(s string) (DivisionID, error) {
 	id, err := uuid.Parse(s)
 	return DivisionID(id), err
+}
+
+func ParseAttachmentID(s string) (AttachmentID, error) {
+	id, err := uuid.Parse(s)
+	return AttachmentID(id), err
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

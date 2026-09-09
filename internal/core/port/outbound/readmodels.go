@@ -58,6 +58,19 @@ type MessageRM struct {
 	DivisionIDs    []uuid.UUID
 }
 
+type AttachmentRM struct {
+	ID          uuid.UUID
+	MessageID   uuid.UUID
+	IncidentID  uuid.UUID
+	Filename    string
+	ContentType string
+	Size        int64
+	Checksum    string
+	StorageKey  string
+	UploaderSub string
+	CreatedAt   time.Time
+}
+
 // LayerRM carries a full GeoJSON FeatureCollection for one layer.
 // The GeoJSON is stored opaquely so the resolver can forward it to the client
 // without parsing; individual Feature objects are extracted on demand.
@@ -106,4 +119,11 @@ type Queries interface {
 
 	// ListChildIncidents returns non-deleted incidents directly linked to parentID.
 	ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*IncidentRM, error)
+
+	// ListAttachments returns all attachments for the given message, ordered by created_at ASC.
+	ListAttachments(ctx context.Context, messageID uuid.UUID) ([]*AttachmentRM, error)
+
+	// GetAttachment returns one attachment by ID.
+	// Returns ErrNotFound when the attachment does not exist.
+	GetAttachment(ctx context.Context, id uuid.UUID) (*AttachmentRM, error)
 }

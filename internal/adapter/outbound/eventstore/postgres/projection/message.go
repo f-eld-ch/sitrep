@@ -25,9 +25,9 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 2 }
+func (h *MessageHandler) Version() int { return 3 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message, readmodel.message_attachment`)
 	return err
 }
 
@@ -37,7 +37,8 @@ func (h *MessageHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported":
+	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported",
+		"AttachmentAdded", "AttachmentRemoved":
 		return true
 	}
 
@@ -191,7 +192,54 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			id, d.Triage, d.Priority, d.DivisionIDs, d.TriagedBy, e.OccurredAt)
 
 	case "Deleted":
-		return exec(db, ctx, `DELETE FROM readmodel.message WHERE id = $1`, id)
+		if err := exec(db, ctx, `DELETE FROM readmodel.message WHERE id = $1`, id); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `DELETE FROM readmodel.message_attachment WHERE message_id = $1`, id)
+
+	case "AttachmentAdded":
+		type attachmentAdded struct {
+			AttachmentID string `json:"attachmentId"`
+			Filename     string `json:"filename"`
+			ContentType  string `json:"contentType"`
+			Size         int64  `json:"size"`
+			Checksum     string `json:"checksum"`
+			StorageKey   string `json:"storageKey"`
+			UploaderSub  string `json:"uploaderSub"`
+		}
+
+		var d attachmentAdded
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		// Resolve incidentID from the message row.
+		var incidentID string
+		row := db.QueryRow(ctx, `SELECT incident_id FROM readmodel.message WHERE id = $1`, id)
+		if err := row.Scan(&incidentID); err != nil {
+			return fmt.Errorf("readmodel.message_attachment: resolve incident_id: %w", err)
+		}
+
+		return exec(db, ctx, `
+			INSERT INTO readmodel.message_attachment
+			  (id, message_id, incident_id, filename, content_type, size, checksum, storage_key, uploader_sub, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			ON CONFLICT (id) DO NOTHING`,
+			d.AttachmentID, id, incidentID, d.Filename, d.ContentType,
+			d.Size, d.Checksum, d.StorageKey, d.UploaderSub, e.OccurredAt)
+
+	case "AttachmentRemoved":
+		type attachmentRemoved struct {
+			AttachmentID string `json:"attachmentId"`
+		}
+
+		var d attachmentRemoved
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `DELETE FROM readmodel.message_attachment WHERE id = $1`, d.AttachmentID)
 	}
 
 	return nil
