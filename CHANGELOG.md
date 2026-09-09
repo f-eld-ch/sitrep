@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(ui)* Apply new brand identity and fix dark-mode contrast issues ([#1837](https://github.com/f-eld-ch/sitrep/issues/1837)) - ([732c6fe](https://github.com/f-eld-ch/sitrep/commit/732c6feea4feaa4c6329dbbb6e695150da7453c9))
+
+
 ## [26.9.3](https://github.com/f-eld-ch/sitrep/compare/v26.9.2..v26.9.3) - 2026-09-09
 
 ### ⛰️  Features
