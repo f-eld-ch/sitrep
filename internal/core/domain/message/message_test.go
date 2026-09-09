@@ -222,3 +222,148 @@ func TestMessage_Delete(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
 }
+
+func TestMessage_AddAttachment(t *testing.T) {
+	id := shared.MessageID(uuid.New())
+	attID := shared.AttachmentID(uuid.New())
+
+	validAdd := func(m *message.Message) error {
+		return m.AddAttachment(attID, "photo.jpg", "image/jpeg", 1024,
+			"sha256:abc", "incidents/x/y", actor, at, actor)
+	}
+
+	t.Run("adds attachment to recorded message", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, validAdd(m))
+
+		attachments := m.Attachments()
+		require.Len(t, attachments, 1)
+		assert.Equal(t, attID, attachments[0].ID)
+		assert.Equal(t, "photo.jpg", attachments[0].Filename)
+		assert.Equal(t, "image/jpeg", attachments[0].ContentType)
+		assert.Equal(t, int64(1024), attachments[0].Size)
+		assert.Equal(t, "sha256:abc", attachments[0].Checksum)
+		assert.Equal(t, actor, attachments[0].UploaderSub)
+
+		pending := m.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "AttachmentAdded", pending[0].EventType)
+	})
+
+	t.Run("adding same attachment ID twice is idempotent", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, validAdd(m))
+		m.Root().ClearPending()
+
+		// Second add with the same ID: no error and no new pending event.
+		require.NoError(t, validAdd(m))
+		assert.Empty(t, m.Root().PendingEvents())
+		assert.Len(t, m.Attachments(), 1)
+	})
+
+	t.Run("rejected on deleted message", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))
+		m.Root().ClearPending()
+
+		err := validAdd(m)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+	})
+
+	t.Run("rejected for empty filename", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.AddAttachment(shared.AttachmentID(uuid.New()), "", "image/jpeg", 1024,
+			"sha256:x", "k", actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("rejected for zero size", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.AddAttachment(shared.AttachmentID(uuid.New()), "f.jpg", "image/jpeg", 0,
+			"sha256:x", "k", actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("rejected for over-cap size", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.AddAttachment(shared.AttachmentID(uuid.New()), "f.jpg", "image/jpeg",
+			message.MaxAttachmentSize+1, "sha256:x", "k", actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("rejected for disallowed content type", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		err := m.AddAttachment(shared.AttachmentID(uuid.New()), "f.html", "text/html", 100,
+			"sha256:x", "k", actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("Attachments returns a copy — mutation does not affect aggregate", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, validAdd(m))
+
+		got := m.Attachments()
+		got[0].Filename = "tampered"
+
+		assert.Equal(t, "photo.jpg", m.Attachments()[0].Filename)
+	})
+
+	t.Run("replay via Transition restores attachment state", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, validAdd(m))
+
+		// Collect all events and replay on a fresh aggregate.
+		events := m.Root().PendingEvents()
+		m2 := replay(t, id, events)
+		require.Len(t, m2.Attachments(), 1)
+		assert.Equal(t, attID, m2.Attachments()[0].ID)
+	})
+}
+
+func TestMessage_RemoveAttachment(t *testing.T) {
+	id := shared.MessageID(uuid.New())
+	attID := shared.AttachmentID(uuid.New())
+
+	msgWithAttachment := func(t *testing.T) *message.Message {
+		t.Helper()
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, m.AddAttachment(attID, "photo.jpg", "image/jpeg", 1024,
+			"sha256:abc", "incidents/x/y", actor, at, actor))
+		m.Root().ClearPending()
+		return m
+	}
+
+	t.Run("removes known attachment", func(t *testing.T) {
+		m := msgWithAttachment(t)
+		require.NoError(t, m.RemoveAttachment(attID, actor, at, actor))
+
+		assert.Empty(t, m.Attachments())
+		pending := m.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "AttachmentRemoved", pending[0].EventType)
+	})
+
+	t.Run("unknown attachment ID returns ErrNotFound", func(t *testing.T) {
+		m := msgWithAttachment(t)
+		err := m.RemoveAttachment(shared.AttachmentID(uuid.New()), actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+	})
+
+	t.Run("rejected on deleted message", func(t *testing.T) {
+		m := msgWithAttachment(t)
+		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))
+		m.Root().ClearPending()
+
+		err := m.RemoveAttachment(attID, actor, at, actor)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+	})
+
+	t.Run("replay via Transition removes attachment from state", func(t *testing.T) {
+		m := msgWithAttachment(t)
+		require.NoError(t, m.RemoveAttachment(attID, actor, at, actor))
+
+		events := m.Root().PendingEvents()
+		m2 := replay(t, id, events)
+		assert.Empty(t, m2.Attachments())
+	})
+}
