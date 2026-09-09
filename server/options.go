@@ -176,6 +176,9 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 	apiv2.GET("/health", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	})
+
+	apiv2.POST("/messages/:id/attachments", uploadAttachment(stack.Messages))
+	apiv2.GET("/attachments/:id", downloadAttachment(stack.Messages))
 }
 
 func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {

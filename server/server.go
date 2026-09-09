@@ -115,6 +115,11 @@ func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
 					resp.Header().Set("Cache-Control", "public, max-age=604800")
 					return
 				}
+				// attachment blobs are immutable (UUID-keyed); aggressive private caching
+				if strings.HasPrefix(path, "/api/v2/attachments/") {
+					resp.Header().Set("Cache-Control", "private, max-age=31536000, immutable")
+					return
+				}
 			}
 
 			// for everything else set no-cache
