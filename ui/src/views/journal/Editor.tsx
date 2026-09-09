@@ -222,6 +222,8 @@ function InputBox() {
 
   const message: Message = {
     id: state.messageToEdit?.id || "",
+    // 0 is the not-yet-assigned sentinel — this is a live preview, not a saved message.
+    number: state.messageToEdit?.number ?? 0,
     content: messageContentDebounced,
     sender: state.sender,
     senderDetail: state.senderDetail,

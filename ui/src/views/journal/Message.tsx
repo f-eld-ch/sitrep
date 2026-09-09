@@ -142,7 +142,7 @@ const MessageContainer = ({
                   </p>
                 </div>
               </div>
-              {message.number !== undefined && (
+              {message.number > 0 && (
                 <div className="level-item has-text-centered is-flex-shrink-0">
                   <div className="mb-0">
                     <p className="heading is-size-7 has-text-weight-bold">{t("message.id")}</p>

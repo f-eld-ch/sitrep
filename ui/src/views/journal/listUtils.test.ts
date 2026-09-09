@@ -5,7 +5,7 @@ import { buildMessageList, stableOrderByCreatedAt } from "./listUtils";
 function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: "msg-1",
-    number: undefined,
+    number: 1,
     content: "hello",
     sender: "Alice",
     senderDetail: "",
@@ -57,13 +57,23 @@ describe("stableOrderByCreatedAt", () => {
 
 describe("buildMessageList", () => {
   describe("numbering", () => {
-    it("assigns sequential numbers based on createdAt order", () => {
-      const first = makeMessage({ id: "a", createdAt: new Date("2024-01-01T08:00:00Z") });
-      const second = makeMessage({ id: "b", createdAt: new Date("2024-01-01T09:00:00Z") });
+    it("preserves the server-assigned number instead of renumbering positionally", () => {
+      const first = makeMessage({
+        id: "a",
+        number: 1,
+        createdAt: new Date("2024-01-01T08:00:00Z"),
+      });
+      // Gap at 2 — e.g. that message was deleted server-side. The list must not
+      // collapse this back into a contiguous 1, 2 sequence.
+      const second = makeMessage({
+        id: "b",
+        number: 3,
+        createdAt: new Date("2024-01-01T09:00:00Z"),
+      });
       const result = buildMessageList([second, first], ALL_FILTERS);
       const byId = Object.fromEntries(result.map((m) => [m.id, m]));
       expect(byId["a"].number).toBe(1);
-      expect(byId["b"].number).toBe(2);
+      expect(byId["b"].number).toBe(3);
     });
   });
 

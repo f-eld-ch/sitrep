@@ -12,6 +12,7 @@ import {
 function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: "msg-1",
+    number: 1,
     content: "hello",
     sender: "Alice",
     senderDetail: "HQ",

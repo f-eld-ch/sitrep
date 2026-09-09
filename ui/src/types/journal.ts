@@ -19,7 +19,7 @@ export enum Medium {
 
 export interface Message {
   id: string;
-  number?: number;
+  number: number;
   content: string;
   sender: string;
   senderDetail: string;

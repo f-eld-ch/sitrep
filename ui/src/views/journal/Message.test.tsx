@@ -38,6 +38,7 @@ vi.mock("dayjs", () => {
 describe("MessageContainer", () => {
   const baseMessage: Message = {
     id: "msg1",
+    number: 0,
     sender: "Alice",
     senderDetail: "HQ",
     receiver: "Bob",
@@ -123,7 +124,7 @@ describe("MessageContainer", () => {
     expect(screen.getByTestId("create-task-button")).toBeInTheDocument();
   });
 
-  it("does not render message number when number is undefined", () => {
+  it("does not render message number when number is 0 (not yet assigned)", () => {
     render(
       <MessageContainer
         id="msg1"
@@ -185,7 +186,7 @@ describe("MessageContainer", () => {
           updatedAt: fc.date(),
           deletedAt: fc.date(),
           medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
-          number: fc.option(fc.nat(), { nil: undefined }),
+          number: fc.nat(),
         }),
         (msg) => {
           const { unmount } = render(
@@ -199,7 +200,7 @@ describe("MessageContainer", () => {
           );
           expect(screen.getByTestId(`sender-${msg.id}`).textContent).toBe(msg.sender);
           expect(screen.getByTestId(`receiver-${msg.id}`).textContent).toBe(msg.receiver);
-          if (msg.number !== undefined) {
+          if (msg.number > 0) {
             // oxlint-disable-next-line jest/no-conditional-expect
             expect(screen.getByTestId(`number-${msg.id}`).textContent).toBe(`# ${msg.number}`);
           } else {
