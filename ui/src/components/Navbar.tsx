@@ -62,7 +62,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       <div className="navbar-brand">
         <NavLink
           to="/"
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
         >
           <figure className="image">
             {/* lockup-blue.svg is a 393x96 wordmark, not square — size by height only */}
@@ -91,7 +91,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             <NavLink
               to={incidentState.incident ? `/incident/${incidentState.incident.id}/edit` : "/"}
               className={({ isActive }) =>
-                `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                `navbar-item${isActive ? " is-active has-text-white" : ""}`
               }
             >
               <span className="icon-text">
@@ -110,7 +110,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             <div className="navbar-dropdown">
               <NavLink
                 className={({ isActive }) =>
-                  `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                  `navbar-item${isActive ? " is-active has-text-white" : ""}`
                 }
                 to="/incident/list"
               >
@@ -123,7 +123,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                  `navbar-item${isActive ? " is-active has-text-white" : ""}`
                 }
                 to="/incident/new"
               >
@@ -137,7 +137,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               {incidentState.incident && (
                 <NavLink
                   className={({ isActive }) =>
-                    `navbar-item${isActive ? " is-active has-text-dark" : ""}`
+                    `navbar-item${isActive ? " is-active has-text-white" : ""}`
                   }
                   to={`/incident/${incidentState.incident.id}/edit`}
                 >
@@ -300,7 +300,7 @@ const JournalNavBar: FunctionComponent = () => {
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
         className={({ isActive }) =>
-          `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+          `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
         }
         to={`/incident/${incidentId}/journal/messages`}
       >
@@ -314,7 +314,7 @@ const JournalNavBar: FunctionComponent = () => {
       <div className="navbar-dropdown">
         <NavLink
           className={({ isActive }) =>
-            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+            `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
           }
           to={`/incident/${incidentId}/journal/messages`}
         >
@@ -327,7 +327,7 @@ const JournalNavBar: FunctionComponent = () => {
         </NavLink>
         <NavLink
           className={({ isActive }) =>
-            `navbar-item is-capitalized${isActive ? " is-active has-text-dark" : ""}`
+            `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
           }
           to={`/incident/${incidentId}/journal/edit`}
         >
@@ -352,7 +352,7 @@ const TasksNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
         to={`/incident/${incidentId}/tasks`}
       >
         <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -364,7 +364,7 @@ const TasksNavBar: FunctionComponent = () => {
       </NavLink>
       <div className="navbar-dropdown">
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
           to={`/incident/${incidentId}/tasks`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -375,7 +375,7 @@ const TasksNavBar: FunctionComponent = () => {
           </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
           to={`/incident/${incidentId}/requests`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -386,7 +386,7 @@ const TasksNavBar: FunctionComponent = () => {
           </span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
           to={`/incident/${incidentId}/soma`}
         >
           <span className="icon-text is-capitalized is-flex-wrap-nowrap">
@@ -410,7 +410,7 @@ const ResourcesNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
         to={`/incident/${incidentId}/resources`}
       >
         <span className="icon-text is-capitalized">
@@ -433,7 +433,7 @@ const MapNavBar: FunctionComponent = () => {
   return (
     <div className="navbar-item has-dropdown is-hoverable">
       <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-dark" : ""}`}
+        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
         to={`/incident/${incidentId}/map`}
       >
         <span className="icon-text is-capitalized">

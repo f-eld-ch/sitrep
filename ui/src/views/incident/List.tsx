@@ -200,12 +200,8 @@ export function IncidentCard(props: {
             })}
           >
             {incident.name}
-            {childCount > 0 && <span className="tag is-info ml-2">{childCount}</span>}
             <span
-              className={classNames("tag", "ml-2", {
-                "is-info": incident.accessMode === "RESTRICTED",
-                "is-gray": incident.accessMode === "OPEN_OPERATIONAL",
-              })}
+              className="tag ml-2 p-1 is-gray"
               title={
                 incident.accessMode === "RESTRICTED"
                   ? t("incidentAccess.restricted")
