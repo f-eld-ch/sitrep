@@ -170,7 +170,6 @@ export function IncidentCard(props: {
     reopenIncident,
     deleteIncident,
     isChild = false,
-    childCount = 0,
     contextOnly = false,
   } = props;
   const navigate = useNavigate();
