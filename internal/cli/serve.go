@@ -175,16 +175,16 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 
 	s, err := buildStack(
 		ctx,
-		v.GetString("database-url"),
-		v.GetUint("auto-close-incidents"),
-		v.GetUint("auto-archive-incidents"),
-		attachmentConfig{
+		withDSN(v.GetString("database-url")),
+		withAutoClose(v.GetUint("auto-close-incidents")),
+		withAutoArchive(v.GetUint("auto-archive-incidents")),
+		withAttachmentConfig(attachmentConfig{
 			enabled: v.GetBool("storage.attachments.enabled"),
 			backend: v.GetString("storage.attachments.backend"),
 			//nolint:gosec // viper returns uint64 safely bounded by config validation
 			maxSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
 			dir:     v.GetString("storage.attachments.filesystem.dir"),
-		},
+		}),
 	)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to build stack", slog.String("error", err.Error()))
@@ -211,6 +211,8 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			GlobalAccessChecker:   s.GlobalAccessChecker,
 			AccessQueries:         s.AccessQueries,
 			Queries:               s.Queries,
+			//nolint:gosec // viper returns uint64 safely bounded by config validation
+			MaxAttachmentSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
 		}, apiOpts...),
 	}
 	opts = append(opts, tlsOptions(v)...)

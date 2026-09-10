@@ -27,9 +27,7 @@ var allowedContentTypes = map[string]bool{
 	"image/png":       true,
 	"image/gif":       true,
 	"image/webp":      true,
-	"image/avif":      true,
 	"image/tiff":      true,
-	"image/bmp":       true,
 	"application/pdf": true,
 	"application/zip": true,
 }
@@ -65,7 +63,7 @@ func attachmentErrorToHTTP(c *echo.Context, err error) error {
 }
 
 // uploadAttachment handles POST /api/v2/messages/:id/attachments.
-func uploadAttachment(messages inbound.MessageService) echo.HandlerFunc {
+func uploadAttachment(messages inbound.MessageService, maxSize int64) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		// CSRF: multipart/form-data is a CORS-simple content type so no preflight fires.
 		// Requiring this custom header forces a preflight on cross-origin requests.
@@ -121,16 +119,25 @@ func uploadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		// Reconstruct the full stream: peeked bytes + remainder.
 		fullReader := io.MultiReader(bytes.NewReader(peek), part)
 
-		// Size is unknown when streaming; pass -1 and let the service's MaxAttachmentSize
-		// check catch oversized uploads via the domain validation.
+		// Bound the stream at maxSize+1 bytes so the blob store never receives more.
+		limited := io.LimitReader(fullReader, maxSize+1)
+
+		// Size is unknown when streaming; pass -1 and let the service measure it.
 		state, err := messages.AttachFile(c.Request().Context(), msgID, inbound.AttachFileInput{
 			Filename:    filename,
 			ContentType: mediaType,
 			Size:        -1,
-			Content:     fullReader,
+			Content:     limited,
 		}, actor)
 		if err != nil {
 			return attachmentErrorToHTTP(c, err)
+		}
+
+		// If the service measured more than maxSize bytes the upload was oversized.
+		if state.Size > maxSize {
+			return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{
+				"error": fmt.Sprintf("attachment exceeds maximum size of %d bytes", maxSize),
+			})
 		}
 
 		state.URL = "/api/v2/attachments/" + state.ID.String()
@@ -175,7 +182,8 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		// Blobs are immutable (keyed by attachment UUID); aggressive caching is safe.
 		header.Set("Cache-Control", "private, max-age=31536000, immutable")
 
-		http.ServeContent(c.Response(), c.Request(), state.Filename, time.Time{}, rc)
+		header.Set("Content-Type", state.ContentType)
+		http.ServeContent(c.Response(), c.Request(), "", time.Time{}, rc)
 
 		return nil
 	}

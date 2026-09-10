@@ -51,18 +51,43 @@ type stack struct {
 	Teardown func()
 }
 
+// stackOption is a functional option for buildStack.
+type stackOption func(*stackConfig)
+
+// stackConfig holds all configuration for buildStack.
+type stackConfig struct {
+	dsn             string
+	autoCloseDays   uint
+	autoArchiveDays uint
+	attCfg          attachmentConfig
+}
+
+func withDSN(dsn string) stackOption { return func(c *stackConfig) { c.dsn = dsn } }
+func withAutoClose(days uint) stackOption {
+	return func(c *stackConfig) { c.autoCloseDays = days }
+}
+func withAutoArchive(days uint) stackOption {
+	return func(c *stackConfig) { c.autoArchiveDays = days }
+}
+func withAttachmentConfig(cfg attachmentConfig) stackOption {
+	return func(c *stackConfig) { c.attCfg = cfg }
+}
+
 // buildStack wires the full application stack. When DATABASE_URL is set it uses
 // PostgreSQL; otherwise it falls back to in-memory stores (useful for local dev
 // without a running database).
-func buildStack(
-	ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint, attCfg attachmentConfig,
-) (*stack, error) {
-	if dsn == "" {
-		slog.WarnContext(ctx, "no database_url set, using in-memory stores (data will not persist)")
-		return buildInmemStack(ctx, attCfg)
+func buildStack(ctx context.Context, opts ...stackOption) (*stack, error) {
+	cfg := &stackConfig{}
+	for _, o := range opts {
+		o(cfg)
 	}
 
-	return buildPostgresStack(ctx, dsn, autoCloseDays, autoArchiveDays, attCfg)
+	if cfg.dsn == "" {
+		slog.WarnContext(ctx, "no database_url set, using in-memory stores (data will not persist)")
+		return buildInmemStack(ctx, cfg.attCfg)
+	}
+
+	return buildPostgresStack(ctx, cfg.dsn, cfg.autoCloseDays, cfg.autoArchiveDays, cfg.attCfg)
 }
 
 // buildBlobStore constructs the BlobStore for the given config and returns a teardown function.
@@ -107,8 +132,7 @@ func buildBlobStore(ctx context.Context, pool *pgxpool.Pool, cfg attachmentConfi
 
 	case "database":
 		if pool == nil {
-			slog.WarnContext(ctx, "attachment backend=database requires a database-url; falling back to ephemeral")
-			return buildBlobStore(ctx, nil, attachmentConfig{enabled: true, backend: "ephemeral"})
+			return nil, func() {}, fmt.Errorf("attachment backend=database requires database-url to be configured")
 		}
 
 		return pgblobs.New(pool), func() {}, nil
@@ -209,6 +233,9 @@ func buildPostgresStack(
 	}
 	projLock := pgstore.NewProjectorLock(pool)
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
+	if blobs != nil {
+		retentionSvc.WithBlobStore(blobs)
+	}
 	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers,
 		pgprojection.WithLock(projLock),
 		pgprojection.WithRetention(func(ctx context.Context) (bool, error) {

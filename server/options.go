@@ -52,6 +52,9 @@ type Stack struct {
 	GlobalAccessChecker   outbound.GlobalAccessChecker
 	AccessQueries         outbound.AccessQueries
 	Queries               outbound.Queries
+	// MaxAttachmentSize is the maximum allowed size in bytes for file attachments.
+	// Zero means no server-side limit (domain validation still applies).
+	MaxAttachmentSize int64
 }
 
 // APIV2Option configures the API-v2 GraphQL handler.
@@ -177,7 +180,7 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 		return c.String(http.StatusOK, "OK")
 	})
 
-	apiv2.POST("/messages/:id/attachments", uploadAttachment(stack.Messages))
+	apiv2.POST("/messages/:id/attachments", uploadAttachment(stack.Messages, stack.MaxAttachmentSize))
 	apiv2.GET("/attachments/:id", downloadAttachment(stack.Messages))
 }
 

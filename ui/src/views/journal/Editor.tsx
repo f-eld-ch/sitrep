@@ -13,7 +13,7 @@ import React, {
 } from "react";
 import { useDropzone } from "react-dropzone";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
-import { Medium, type Message, PriorityStatus, TriageStatus } from "types";
+import { type Attachment, Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { Spinner } from "components";
 import Notification from "utils/Notification";
 import useDebounce from "utils/useDebounce";
@@ -80,7 +80,8 @@ function Editor() {
     state.senderDetail !== "" ||
     state.receiverDetail !== "" ||
     state.time !== undefined ||
-    state.messageToEdit !== undefined;
+    state.messageToEdit !== undefined ||
+    pendingFiles.length > 0;
 
   const blocker = useBlocker(isDirty);
 
@@ -140,11 +141,15 @@ function Editor() {
           receiverDetail,
         });
         if (newId) {
-          const files = pendingFiles;
-          setPendingFiles([]);
-          for (const file of files) {
-            await uploadAttachment({ incidentId, messageId: newId, file }).catch(() => {});
+          const failedFiles: File[] = [];
+          for (const file of pendingFiles) {
+            try {
+              await uploadAttachment({ incidentId, messageId: newId, file });
+            } catch {
+              failedFiles.push(file);
+            }
           }
+          setPendingFiles(failedFiles);
         }
       }
       savingRef.current = false;
@@ -249,7 +254,7 @@ function AttachmentUpload({
   const [uploadAttachment, { loading, error }] = useUploadAttachment();
   const [removeAttachment] = useRemoveAttachment();
   // Track files uploaded during this edit session so the editor shows feedback immediately.
-  const [justUploaded, setJustUploaded] = useState<{ filename: string }[]>([]);
+  const [justUploaded, setJustUploaded] = useState<Attachment[]>([]);
 
   const onDrop = useCallback(
     async (accepted: File[]) => {
@@ -257,7 +262,7 @@ function AttachmentUpload({
         if (messageId) {
           const result = await uploadAttachment({ incidentId, messageId, file }).catch(() => null);
           if (result) {
-            setJustUploaded((prev) => [...prev, { filename: result.filename }]);
+            setJustUploaded((prev) => [...prev, result]);
           }
         } else {
           addPendingFile(file);
@@ -281,7 +286,7 @@ function AttachmentUpload({
   // In edit mode, show existing attachments + just-uploaded ones for visual confirmation.
   const existingAttachments = messageId ? (state.messageToEdit?.attachments ?? []) : [];
   const justUploadedNew = justUploaded.filter(
-    (u) => !existingAttachments.some((a) => a.filename === u.filename),
+    (u) => !existingAttachments.some((a) => a.id === u.id),
   );
 
   return (
@@ -328,11 +333,21 @@ function AttachmentUpload({
                 </span>
               ))}
               {justUploadedNew.map((u) => (
-                <span key={u.filename} className="tag is-light">
+                <span key={u.id} className="tag is-light">
                   <span className="icon is-small mr-1">
                     <FontAwesomeIcon icon={faPaperclip} />
                   </span>
                   {u.filename}
+                  <button
+                    type="button"
+                    className="delete is-small"
+                    aria-label={t("message.attachments.remove")}
+                    onClick={() => {
+                      dispatch({ type: "remove_attachment", attachmentId: u.id });
+                      void removeAttachment({ incidentId, messageId: messageId!, attachmentId: u.id });
+                      setJustUploaded((prev) => prev.filter((j) => j.id !== u.id));
+                    }}
+                  />
                 </span>
               ))}
             </div>

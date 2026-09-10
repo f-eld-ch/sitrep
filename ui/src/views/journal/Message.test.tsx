@@ -267,7 +267,7 @@ describe("MessageContainer", () => {
     it("renders images and non-images in separate rows (no mixed alignment)", () => {
       const img = makeAttachment({ id: "i1", filename: "photo.jpg", contentType: "image/jpeg" });
       const pdf = makeAttachment({ id: "p1", filename: "doc.pdf", contentType: "application/pdf" });
-      const { container } = render(
+      render(
         <MessageContainer
           id="msg1"
           incidentId="incident1"

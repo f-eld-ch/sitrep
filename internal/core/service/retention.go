@@ -240,7 +240,7 @@ func (s *RetentionService) archive(ctx context.Context, id shared.IncidentID, at
 		prefix := "incidents/" + id.String() + "/"
 		if delErr := s.blobs.DeletePrefix(ctx, prefix); delErr != nil {
 			slog.WarnContext(ctx, "failed to delete blobs during incident archive",
-				slog.String("incident_id", id.String()), slog.String("err", delErr.Error()))
+				slog.String("incident_id", id.String()), slog.String("error",delErr.Error()))
 		}
 	}
 

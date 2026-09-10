@@ -356,7 +356,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		for _, key := range blobKeys {
 			if err := s.blobs.Delete(ctx, key); err != nil {
 				slog.WarnContext(ctx, "failed to delete blob after message deletion",
-					slog.String("key", key), slog.String("err", err.Error()))
+					slog.String("key", key), slog.String("error",err.Error()))
 			}
 		}
 	}
@@ -479,6 +479,7 @@ func (s *MessageService) AttachFile(
 				messageID,
 				msg.IncidentID(),
 				input,
+				actualSize,
 				checksum,
 				storageKey,
 				actor.Sub,
@@ -503,7 +504,7 @@ func (s *MessageService) AttachFile(
 		// Compensating delete: best-effort remove the blob we wrote.
 		if delErr := s.blobs.Delete(ctx, storageKey); delErr != nil {
 			slog.WarnContext(ctx, "compensating blob delete failed",
-				slog.String("key", storageKey), slog.String("err", delErr.Error()))
+				slog.String("key", storageKey), slog.String("error",delErr.Error()))
 		}
 
 		span.RecordError(txErr)
@@ -613,7 +614,7 @@ func (s *MessageService) RemoveAttachment(
 	if storageKey != "" {
 		if err := s.blobs.Delete(ctx, storageKey); err != nil {
 			slog.WarnContext(ctx, "failed to delete blob after attachment removal",
-				slog.String("key", storageKey), slog.String("err", err.Error()))
+				slog.String("key", storageKey), slog.String("error",err.Error()))
 		}
 	}
 
@@ -698,6 +699,7 @@ func attachmentToState(
 	messageID shared.MessageID,
 	incidentID shared.IncidentID,
 	input inbound.AttachFileInput,
+	actualSize int64,
 	checksum, storageKey, uploaderSub string,
 	at time.Time,
 ) inbound.AttachmentState {
@@ -707,7 +709,7 @@ func attachmentToState(
 		IncidentID:  incidentID,
 		Filename:    input.Filename,
 		ContentType: input.ContentType,
-		Size:        input.Size,
+		Size:        actualSize,
 		Checksum:    checksum,
 		StorageKey:  storageKey,
 		UploaderSub: uploaderSub,
