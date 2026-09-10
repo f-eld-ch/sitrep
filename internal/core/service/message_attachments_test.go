@@ -52,6 +52,7 @@ func (s *memBlobStore) Put(_ context.Context, key string, r io.Reader, size int6
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	s.blobs[key] = data
 
 	return nil
@@ -72,6 +73,7 @@ func (s *memBlobStore) Get(_ context.Context, key string) (io.ReadSeekCloser, er
 func (s *memBlobStore) Delete(_ context.Context, key string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	delete(s.blobs, key)
 
 	return nil
@@ -209,6 +211,7 @@ func TestMessageService_AttachFile(t *testing.T) {
 
 	t.Run("ErrBlobTooLarge when file exceeds configured max size", func(t *testing.T) {
 		const maxBytes = 10
+
 		s := newAttachStack(t, maxBytes)
 
 		incRes, _ := s.incidents.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
@@ -218,7 +221,7 @@ func TestMessageService_AttachFile(t *testing.T) {
 		oversized := bytes.Repeat([]byte("x"), maxBytes+1)
 		_, err := s.messages.AttachFile(ctx(), msgRes.ID,
 			fileInput("big.bin", "application/octet-stream", oversized), testActor)
-		assert.ErrorIs(t, err, outbound.ErrBlobTooLarge)
+		require.ErrorIs(t, err, outbound.ErrBlobTooLarge)
 		// Compensating delete must have removed the partial blob.
 		assert.Equal(t, 0, s.blobs.count())
 	})
@@ -313,7 +316,8 @@ func TestMessageService_OpenAttachment(t *testing.T) {
 
 		meta, rc, err := s.messages.OpenAttachment(ctx(), state.ID, testActor)
 		require.NoError(t, err)
-		defer rc.Close()
+
+		t.Cleanup(func() { require.NoError(t, rc.Close()) })
 
 		assert.Equal(t, state.ID, meta.ID)
 		assert.Equal(t, "report.pdf", meta.Filename)
