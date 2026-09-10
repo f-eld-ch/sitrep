@@ -255,7 +255,7 @@ func validateConfig(v *viper.Viper) error {
 	if v.GetBool("storage.attachments.enabled") {
 		backend := v.GetString("storage.attachments.backend")
 		switch backend {
-		case "filesystem", "ephemeral", "database":
+		case "", "filesystem", "ephemeral", "database":
 		default:
 			return fmt.Errorf("storage.attachments.backend must be filesystem, ephemeral, or database; got %q", backend)
 		}

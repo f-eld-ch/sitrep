@@ -33,7 +33,8 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
     return (
       <a
         href={attachment.url}
-        download={attachment.filename}
+        target="_blank"
+        rel="noopener noreferrer"
         className="mr-2 mb-1"
         title={attachment.filename}
         style={{ display: "inline-block", lineHeight: 0 }}
@@ -42,8 +43,8 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
           src={attachment.url}
           alt={attachment.filename}
           style={{
-            height: "48px",
-            width: "48px",
+            height: "64px",
+            width: "64px",
             objectFit: "cover",
             borderRadius: "4px",
             border: "1px solid #ededed",
@@ -53,8 +54,16 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
     );
   }
 
+  const isPdf = attachment.contentType === "application/pdf";
+
   return (
-    <a href={attachment.url} download={attachment.filename} className="tag is-light mr-1 mb-1">
+    <a
+      href={attachment.url}
+      className="tag is-light mr-1 mb-1"
+      {...(isPdf
+        ? { target: "_blank", rel: "noopener noreferrer" }
+        : { download: attachment.filename })}
+    >
       <span className="icon is-small mr-1">
         <FontAwesomeIcon icon={faPaperclip} />
       </span>

@@ -72,7 +72,18 @@ func buildBlobStore(ctx context.Context, pool *pgxpool.Pool, cfg attachmentConfi
 		return nil, func() {}, nil
 	}
 
-	switch cfg.backend {
+	backend := cfg.backend
+	if backend == "" {
+		if pool != nil {
+			backend = "database"
+		} else {
+			backend = "ephemeral"
+		}
+		slog.InfoContext(ctx, "attachment backend not configured; using default",
+			slog.String("backend", backend))
+	}
+
+	switch backend {
 	case "ephemeral":
 		dir, err := os.MkdirTemp("", "sitrep-attachments-*")
 		if err != nil {

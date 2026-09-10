@@ -23,25 +23,15 @@ import (
 // allowedContentTypes is the set of MIME types permitted for attachments.
 // SVG and HTML are intentionally excluded to prevent stored XSS.
 var allowedContentTypes = map[string]bool{
-	"image/jpeg":               true,
-	"image/png":                true,
-	"image/gif":                true,
-	"image/webp":               true,
-	"image/avif":               true,
-	"image/tiff":               true,
-	"image/bmp":                true,
-	"application/pdf":          true,
-	"text/plain":               true,
-	"application/zip":          true,
-	"application/vnd.ms-excel": true,
-	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": true,
-	"application/msword": true,
-	"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   true,
-	"application/vnd.ms-powerpoint":                                             true,
-	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
-	"application/vnd.oasis.opendocument.text":                                   true,
-	"application/vnd.oasis.opendocument.spreadsheet":                            true,
-	"application/vnd.oasis.opendocument.presentation":                           true,
+	"image/jpeg":      true,
+	"image/png":       true,
+	"image/gif":       true,
+	"image/webp":      true,
+	"image/avif":      true,
+	"image/tiff":      true,
+	"image/bmp":       true,
+	"application/pdf": true,
+	"application/zip": true,
 }
 
 // unsafeFilenameChars strips characters that are dangerous in Content-Disposition filenames.
@@ -172,8 +162,15 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		safe := sanitizeFilename(state.Filename)
 		encoded := url.PathEscape(safe)
 
+		// Use "inline" for types browsers can render natively (images, PDF) so
+		// target="_blank" links open the file in a tab instead of downloading.
+		disposition := "attachment"
+		if strings.HasPrefix(state.ContentType, "image/") || state.ContentType == "application/pdf" {
+			disposition = "inline"
+		}
+
 		header := c.Response().Header()
-		header.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"; filename*=UTF-8''%s`, safe, encoded))
+		header.Set("Content-Disposition", fmt.Sprintf(`%s; filename="%s"; filename*=UTF-8''%s`, disposition, safe, encoded))
 		header.Set("X-Content-Type-Options", "nosniff")
 		// Blobs are immutable (keyed by attachment UUID); aggressive caching is safe.
 		header.Set("Cache-Control", "private, max-age=31536000, immutable")

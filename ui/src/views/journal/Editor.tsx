@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { faPaperclip, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import uniq from "lodash/uniq";
 import React, {
   useCallback,
@@ -246,7 +245,6 @@ function AttachmentUpload({
   incidentId: string;
 }) {
   const { t } = useTranslation();
-  const showAttachments = useBooleanFlagValue("show-message-attachments", true);
   const { state, dispatch, pendingFiles, addPendingFile, removePendingFile } = useEditorContext();
   const [uploadAttachment, { loading, error }] = useUploadAttachment();
   const [removeAttachment] = useRemoveAttachment();
@@ -273,9 +271,12 @@ function AttachmentUpload({
     onDrop,
     multiple: true,
     disabled: loading,
+    accept: {
+      "image/*": [],
+      "application/pdf": [".pdf"],
+      "application/zip": [".zip"],
+    },
   });
-
-  if (!showAttachments) return null;
 
   // In edit mode, show existing attachments + just-uploaded ones for visual confirmation.
   const existingAttachments = messageId ? (state.messageToEdit?.attachments ?? []) : [];

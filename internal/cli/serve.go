@@ -77,8 +77,8 @@ var serveConfigOptions = []configOption{
 	stringOptionF(
 		"storage.attachments.backend",
 		"attachments-backend",
-		"filesystem",
-		"Blob backend: filesystem | ephemeral | database",
+		"",
+		"Blob backend: filesystem | ephemeral | database (default: database when database-url is set, ephemeral otherwise)",
 	),
 	stringOptionF(
 		"storage.attachments.max-size",
