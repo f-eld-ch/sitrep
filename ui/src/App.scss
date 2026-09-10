@@ -90,9 +90,7 @@ $tablet: 769px;
 @forward "bulma/sass/elements/tag";
 @forward "bulma/sass/elements/title";
 
-@use "bulma/sass/layout/footer" with (
-  $footer-padding: 0.5rem 1.5rem 0.5rem
-);
+// bulma/sass/layout/footer removed — Footer.tsx uses Tailwind
 @forward "bulma/sass/layout/hero";
 @forward "bulma/sass/layout/section";
 @forward "bulma/sass/layout/level";
@@ -178,15 +176,7 @@ section {
   color: $ink;
 }
 
-.login-split {
-  min-height: 100vh;
-}
-
-// Fixed brand panel — deliberately doesn't follow the app's light/dark toggle.
-.login-brand {
-  background-color: $dark-elevated;
-  color: $grey-lightest;
-}
+// login-split, login-brand, login-actions removed — Login.tsx uses Tailwind
 
 // .message.is-dark computes its text colour to contrast against the page's scheme-main,
 // not against .message-body's own background — in dark mode both end up near-black.
@@ -213,12 +203,6 @@ section {
   padding-top: 0;
 }
 
-// .columns stacks below $tablet — give the button room once it drops under the brand panel.
-@media (max-width: $tablet) {
-  .login-actions {
-    margin-top: 2rem;
-  }
-}
 
 @media screen {
   .is-print {

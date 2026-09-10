@@ -6,38 +6,28 @@ import VSHN from "../assets/vshn.svg";
 
 function Footer() {
   return (
-    <footer className="footer is-hidden-print">
-      <div className="content has-text-centered is-flex-desktop is-flex-wrap-nowrap is-align-content-space-around is-flex-direction-row	is-align-items-center is-justify-content-center">
+    <footer className="print:hidden px-6 py-2">
+      <div className="flex flex-nowrap flex-row items-center justify-center gap-1 text-xs font-mono">
         <a
-          className="has-text-current"
+          className="text-current"
           aria-label="SitRep on GitHub"
           href="https://github.com/f-eld-ch/sitrep"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span className="icon-text is-small is-size-7">
-            <span className="icon is-align-content-center">
-              <FontAwesomeIcon icon={faGithub} />
-            </span>
-            <span>
-              <strong>
-                <p className="is-size-7 is-family-monospace has-text-current">SitRep</p>
-              </strong>
-            </span>
+          <span className="inline-flex items-center gap-1">
+            <FontAwesomeIcon icon={faGithub} />
+            <strong>SitRep</strong>
           </span>
         </a>
 
-        <div className="is-size-7 is-hidden-touch is-family-monospace ml-1 is-flex-desktop is-justis-align-content-center is-align-items-center">
+        <div className="hidden md:inline-flex items-center gap-1 ml-1">
           made with
-          <span className="icon-text is-small is-size-7">
-            <span className="icon is-align-content-center">
-              <FontAwesomeIcon icon={faHeart} color="red" />
-            </span>
-          </span>
+          <FontAwesomeIcon icon={faHeart} color="red" />
           in Switzerland by
-          <strong className="has-text-current">
+          <strong>
             <a
-              className="has-text-current ml-1"
+              className="text-current ml-1"
               href="https://www.f-eld.ch"
               target="_blank"
               rel="noopener noreferrer"
@@ -59,20 +49,15 @@ function FooterManaged() {
     return;
   }
   return (
-    <div className="is-flex is-size-7 is-family-monospace is-hidden-touch	ml-1 is-justify-content-center is-align-content-center is-align-items-center">
+    <div className="hidden md:inline-flex items-center ml-1">
       and hosted by
       <a
-        className="has-text-current is-align-self-center ml-1 is-align-content-center is-align-items-center is-justify-content-center"
+        className="text-current self-center ml-1"
         href="https://www.vshn.ch"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img
-          src={VSHN}
-          alt="VSHN"
-          className="is-align-self-center"
-          style={{ minHeight: "0.7rem" }}
-        />
+        <img src={VSHN} alt="VSHN" className="self-center" style={{ minHeight: "0.7rem" }} />
       </a>
     </div>
   );

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
 
 import "./App.scss";
+import "./tailwind.css";
 
 import { ApolloProvider } from "@apollo/client/react";
 import { default as client } from "client";

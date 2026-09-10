@@ -42,6 +42,9 @@ export function useDarkMode(
     const root = document.documentElement;
     root.classList.toggle("theme-dark", isDarkMode);
     root.classList.toggle("theme-light", !isDarkMode);
+    // data-theme: consumed by brand tokens.css and Tailwind's dark: variant
+    root.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+    // data-color-mode: kept during Bulma transition (Bulma v1 themes use this attribute)
     root.setAttribute("data-color-mode", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 

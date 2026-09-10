@@ -13,6 +13,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Spinner } from "components";
+import { Button, Notification, Tag } from "components/ui";
 import dayjs from "dayjs";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,37 +35,42 @@ function List() {
   const mutationError = closeState.error ?? deleteState.error;
 
   if (result.status === "error") {
-    return <div className="notification is-danger">{t(`errors.${result.error.code}`)}</div>;
+    return <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>;
   }
   if (result.status === "loading") return <Spinner />;
 
   return (
     <div>
-      <h3 className="title is-size-3 is-capitalized">{t("incidents")}</h3>
+      <h3 className="text-3xl font-bold capitalize mb-4">{t("incidents")}</h3>
       {mutationError && (
-        <div className="notification is-danger">{t(`errors.${mutationError.code}`)}</div>
+        <Notification variant="danger" className="mb-4">
+          {t(`errors.${mutationError.code}`)}
+        </Notification>
       )}
-      <div className="buttons">
-        <button
+      <div className="flex gap-2 mb-4">
+        <Button
           type="button"
-          className="button is-success is-small is-responsive is-rounded is-light is-capitalized"
+          variant="success"
+          size="sm"
+          rounded
+          light
+          capitalized
           onClick={() => navigate("../new")}
         >
-          <span className="icon is-small">
-            <FontAwesomeIcon icon={faPlusCircle} />
-          </span>
+          <FontAwesomeIcon icon={faPlusCircle} />
           <span>{t("create")}</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="button is-warning is-small is-responsive is-rounded is-light"
+          variant="warning"
+          size="sm"
+          rounded
+          light
           onClick={() => setFilterClosed(!filterClosed)}
         >
-          <span className="icon is-small">
-            <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
-          </span>
+          <FontAwesomeIcon icon={filterClosed ? faEye : faEyeLowVision} />
           <span>{filterClosed ? t("showClosed") : t("hideClosed")}</span>
-        </button>
+        </Button>
       </div>
       <IncidentCards
         incidents={result.data.incidents}
@@ -103,7 +109,7 @@ export function IncidentCards(props: {
   const topLevelIncidents = activeIncidents.filter((incident) => !incident.parentId);
 
   return (
-    <div className="container-flex">
+    <div>
       {topLevelIncidents.map((incident) => {
         const children = childrenByParent.get(incident.id) ?? [];
         const visibleChildren = children.filter(isVisible);
@@ -122,7 +128,7 @@ export function IncidentCards(props: {
               contextOnly={!isVisible(incident)}
             />
             {visibleChildren.length > 0 && (
-              <div className="ml-5 pl-4" style={{ borderLeft: "3px solid var(--bulma-info)" }}>
+              <div className="ml-5 pl-4 border-l-[3px] border-info">
                 {visibleChildren.map((child) => (
                   <IncidentCard
                     key={child.id}
@@ -155,6 +161,9 @@ export function IncidentCards(props: {
   );
 }
 
+const footerItem =
+  "flex flex-1 items-center justify-center gap-1.5 py-2 text-sm capitalize cursor-pointer hover:bg-bg-subtle border-r border-border last:border-r-0 transition-colors";
+
 export function IncidentCard(props: {
   incident: Incident;
   closeIncident: (incidentId: string) => Promise<void>;
@@ -176,31 +185,27 @@ export function IncidentCard(props: {
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
 
-  const cardClass = classNames({
-    card: true,
-    "mb-3": true,
-    "has-background-warning-light": incident.closedAt,
-    // has-background-*-light always renders a pale tint regardless of theme;
-    // pair it with light-invert text so closed cards stay readable in dark mode.
-    "has-text-warning-invert": incident.closedAt,
-    "has-background-light": contextOnly,
-  });
-  // strong and .title set their own explicit color, so they don't inherit the card's
-  // text color — this class must be applied to each of them directly too.
-  const closedTextClass = classNames({ "has-text-warning-invert": incident.closedAt });
+  const cardClass = classNames(
+    "border border-border rounded shadow-sm mb-3",
+    incident.closedAt
+      ? "bg-warning/10 dark:bg-warning/5"
+      : contextOnly
+        ? "bg-bg-subtle"
+        : "bg-bg-elevated",
+  );
+
   return (
     <div className={cardClass}>
-      <div className="card-content">
-        <div className="content has-text-small">
+      <div className="p-4">
+        <div className="text-sm">
           <h4
-            className={classNames("title", closedTextClass, {
-              "is-5": !isChild,
-              "is-6": isChild,
-            })}
+            className={classNames("font-bold mb-2", isChild ? "text-lg" : "text-xl")}
           >
             {incident.name}
-            <span
-              className="tag ml-2 p-1 is-gray"
+            <Tag
+              size="sm"
+              variant="gray"
+              className="ml-2 align-middle"
               title={
                 incident.accessMode === "RESTRICTED"
                   ? t("incidentAccess.restricted")
@@ -208,20 +213,20 @@ export function IncidentCard(props: {
               }
             >
               <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
-            </span>
+            </Tag>
           </h4>
-          <div className="columns">
-            <div className="column is-one-third">
-              <strong className={closedTextClass}>{t("location")}: </strong>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            <div>
+              <strong>{t("location")}: </strong>
               {incident.location.name}
             </div>
-            <div className="column is-one-third">
-              <strong className={closedTextClass}>{t("createdAt")}: </strong>
+            <div>
+              <strong>{t("createdAt")}: </strong>
               {dayjs(incident.createdAt).format("LLL")}
             </div>
             {incident.closedAt && (
-              <div className="column">
-                <strong className={closedTextClass}>{t("closedAt")}: </strong>
+              <div>
+                <strong>{t("closedAt")}: </strong>
                 {dayjs(incident.closedAt).format("LLL")}
               </div>
             )}
@@ -229,31 +234,27 @@ export function IncidentCard(props: {
         </div>
       </div>
       {!contextOnly && (
-        <footer className="card-footer">
+        <footer className="flex border-t border-border">
           <button
             type="button"
             data-testid="enter-button"
-            className="card-footer-item is-ahref is-capitalized"
+            className={footerItem}
             onClick={() => {
               navigate(`../${props.incident.id}/journal/edit`);
               dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
             }}
           >
-            <span className="icon">
-              <FontAwesomeIcon icon={faArrowRightFromBracket} />
-            </span>
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
             <span>{t("enter")}</span>
           </button>
           {incident.canWrite && incident.closedAt === null && (
             <button
               type="button"
               data-testid="edit-button"
-              className="card-footer-item is-ahref is-capitalized"
+              className={footerItem}
               onClick={() => navigate(`../${incident.id}/edit`)}
             >
-              <span className="icon">
-                <FontAwesomeIcon icon={faEdit} />
-              </span>
+              <FontAwesomeIcon icon={faEdit} />
               <span>{t("edit")}</span>
             </button>
           )}
@@ -261,12 +262,10 @@ export function IncidentCard(props: {
             <button
               type="button"
               data-testid="delete-button"
-              className="card-footer-item is-ahref is-capitalized"
+              className={classNames(footerItem, "text-danger")}
               onClick={() => void deleteIncident(incident.id)}
             >
-              <span className="icon">
-                <FontAwesomeIcon icon={faTrash} />
-              </span>
+              <FontAwesomeIcon icon={faTrash} />
               <span>{t("delete")}</span>
             </button>
           )}
@@ -274,25 +273,21 @@ export function IncidentCard(props: {
             <button
               type="button"
               data-testid="close-button"
-              className="card-footer-item is-ahref is-capitalized is-danger"
+              className={classNames(footerItem, "text-danger")}
               onClick={() => void closeIncident(incident.id)}
             >
-              <span className="icon">
-                <FontAwesomeIcon icon={faFolderClosed} />
-              </span>
+              <FontAwesomeIcon icon={faFolderClosed} />
               <span>{t("close")}</span>
             </button>
           )}
           {incident.canManage && incident.closedAt !== null && (
             <button
               type="button"
-              className="card-footer-item is-ahref is-capitalized is-success"
               data-testid="open-button"
+              className={classNames(footerItem, "text-success")}
               onClick={() => void reopenIncident(incident.id)}
             >
-              <span className="icon">
-                <FontAwesomeIcon icon={faFolderOpen} />
-              </span>
+              <FontAwesomeIcon icon={faFolderOpen} />
               <span>{t("open")}</span>
             </button>
           )}

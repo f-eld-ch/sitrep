@@ -14,7 +14,14 @@ import {
   useUpdateAccessGroupDescription,
 } from "api";
 import { Spinner } from "components";
+import { Button, Notification } from "components/ui";
+import classNames from "classnames";
 import { useRedirectIfForbidden } from "utils";
+
+const inputBase =
+  "w-full rounded border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
+const inputSm =
+  "w-full rounded border px-2 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
 
 function GroupDetail() {
   const { t } = useTranslation();
@@ -44,12 +51,12 @@ function GroupDetail() {
   if (groupsResult.status === "loading") return <Spinner />;
   if (groupsResult.status === "error") {
     if (groupsResult.error.code === "FORBIDDEN") return null;
-    return <div className="notification is-danger">{groupsResult.error.message}</div>;
+    return <Notification variant="danger">{groupsResult.error.message}</Notification>;
   }
 
   const group = groupsResult.data.groups.find((candidate) => candidate.id === groupId);
   if (!group) {
-    return <div className="notification is-warning">{t("adminGroupDetail.groupNotFound")}</div>;
+    return <Notification variant="warning">{t("adminGroupDetail.groupNotFound")}</Notification>;
   }
 
   const isArchived = Boolean(group.archivedAt);
@@ -146,10 +153,10 @@ function GroupDetail() {
       {/* Header */}
       <div className="mb-4">
         {isRenaming ? (
-          <div className="field has-addons mb-1">
-            <div className="control is-expanded">
+          <div className="flex gap-2 mb-1">
+            <div className="flex-1">
               <input
-                className={`input${renameValue.length === 64 ? " is-danger" : ""}`}
+                className={classNames(inputBase, renameValue.length === 64 ? "border-danger" : "border-border")}
                 placeholder={t("adminGroupDetail.groupNamePlaceholder")}
                 maxLength={64}
                 value={renameValue}
@@ -160,131 +167,115 @@ function GroupDetail() {
                 }}
               />
               {renameValue.length >= 54 && (
-                <p className={`help${renameValue.length === 64 ? " is-danger" : " is-warning"}`}>
+                <p className={classNames("text-xs mt-0.5", renameValue.length === 64 ? "text-danger" : "text-warning")}>
                   {64 - renameValue.length} / 64
                 </p>
               )}
             </div>
-            <div className="control">
-              <button
-                type="button"
-                className="button is-primary"
-                onClick={() => void commitRename()}
-                disabled={renameState.loading}
-              >
-                {renameState.loading ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                ) : (
-                  t("adminGroupDetail.save")
-                )}
-              </button>
-            </div>
-            <div className="control">
-              <button
-                type="button"
-                className="button is-light"
-                onClick={() => setIsRenaming(false)}
-              >
-                {t("adminGroupDetail.cancel")}
-              </button>
-            </div>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => void commitRename()}
+              disabled={renameState.loading}
+            >
+              {renameState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.save")}
+            </Button>
+            <Button type="button" variant="light" onClick={() => setIsRenaming(false)}>
+              {t("adminGroupDetail.cancel")}
+            </Button>
           </div>
         ) : (
-          <div className="is-flex is-align-items-center mb-1" style={{ gap: "0.5rem" }}>
-            <h2 className="title is-4 mb-0">{group.name}</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-2xl font-bold">{group.name}</h2>
             {canManage && (
-              <button
+              <Button
                 type="button"
-                className="button is-ghost is-small has-text-grey"
+                variant="ghost"
+                size="sm"
+                className="text-fg-muted"
                 onClick={startRename}
                 title={t("adminGroupDetail.renameGroup")}
               >
                 <FontAwesomeIcon icon={faEdit} />
-              </button>
+              </Button>
             )}
           </div>
         )}
+
         {isEditingDescription ? (
-          <div className="field has-addons mt-1 mb-1">
-            <div className="control is-expanded">
-              <input
-                className="input is-small"
-                placeholder={t("adminGroupDetail.groupDescriptionPlaceholder")}
-                value={descriptionValue}
-                onChange={(e) => setDescriptionValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void commitDescription();
-                  if (e.key === "Escape") setIsEditingDescription(false);
-                }}
-              />
-            </div>
-            <div className="control">
-              <button
-                type="button"
-                className="button is-small is-primary"
-                onClick={() => void commitDescription()}
-                disabled={updateDescriptionState.loading}
-              >
-                {updateDescriptionState.loading ? (
-                  <FontAwesomeIcon icon={faSpinner} spin />
-                ) : (
-                  t("adminGroupDetail.save")
-                )}
-              </button>
-            </div>
-            <div className="control">
-              <button
-                type="button"
-                className="button is-small is-light"
-                onClick={() => setIsEditingDescription(false)}
-              >
-                {t("adminGroupDetail.cancel")}
-              </button>
-            </div>
+          <div className="flex gap-2 mt-1 mb-1">
+            <input
+              className={classNames(inputSm, "flex-1 border-border")}
+              placeholder={t("adminGroupDetail.groupDescriptionPlaceholder")}
+              value={descriptionValue}
+              onChange={(e) => setDescriptionValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void commitDescription();
+                if (e.key === "Escape") setIsEditingDescription(false);
+              }}
+            />
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => void commitDescription()}
+              disabled={updateDescriptionState.loading}
+            >
+              {updateDescriptionState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.save")}
+            </Button>
+            <Button type="button" variant="light" size="sm" onClick={() => setIsEditingDescription(false)}>
+              {t("adminGroupDetail.cancel")}
+            </Button>
           </div>
         ) : (
-          <div className="is-flex is-align-items-center mt-1" style={{ gap: "0.4rem" }}>
-            <p className="has-text-grey">
+          <div className="flex items-center gap-1 mt-1">
+            <p className="text-fg-muted">
               {group.description || (canManage ? t("adminGroupDetail.noDescriptionClick") : "")}
             </p>
             {canManage && (
-              <button
+              <Button
                 type="button"
-                className="button is-ghost is-small has-text-grey"
+                variant="ghost"
+                size="sm"
+                className="text-fg-muted"
                 onClick={startEditDescription}
                 title={t("adminGroupDetail.editDescription")}
               >
                 <FontAwesomeIcon icon={faEdit} />
-              </button>
+              </Button>
             )}
           </div>
         )}
+
         {membersResult.status === "ready" && (
-          <p className="help mt-1">
+          <p className="text-xs text-fg-muted mt-1">
             {t("adminGroupDetail.memberCount", { count: membersResult.data.subjects.length })}
           </p>
         )}
       </div>
 
-      {mutationError && <div className="notification is-danger">{mutationError.message}</div>}
+      {mutationError && (
+        <Notification variant="danger" className="mb-4">
+          {mutationError.message}
+        </Notification>
+      )}
 
       {isArchived && (
-        <div className="notification is-warning is-light">
+        <Notification variant="warning" light className="mb-4">
           {t("adminGroupDetail.groupArchived")}
-        </div>
+        </Notification>
       )}
 
       {/* Archive action */}
       {canManage && (
         <div className="mb-5">
           {confirmingArchive ? (
-            <div className="is-flex is-align-items-center" style={{ gap: "0.5rem" }}>
-              <span className="has-text-grey is-size-7">
-                {t("adminGroupDetail.archiveConfirm")}
-              </span>
-              <button
+            <div className="flex items-center gap-2">
+              <span className="text-fg-muted text-xs">{t("adminGroupDetail.archiveConfirm")}</span>
+              <Button
                 type="button"
-                className="button is-danger is-small"
+                variant="danger"
+                size="sm"
                 disabled={archiveState.loading}
                 onClick={() => {
                   void archiveGroup({ groupId: group.id }).then(() =>
@@ -297,53 +288,53 @@ function GroupDetail() {
                 ) : (
                   t("adminGroupDetail.confirmArchive")
                 )}
-              </button>
-              <button
-                type="button"
-                className="button is-small is-light"
-                onClick={() => setConfirmingArchive(false)}
-              >
+              </Button>
+              <Button type="button" variant="light" size="sm" onClick={() => setConfirmingArchive(false)}>
                 {t("adminGroupDetail.cancel")}
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button
               type="button"
-              className="button is-danger is-light is-small"
+              variant="danger"
+              size="sm"
+              light
               onClick={() => setConfirmingArchive(true)}
             >
               {t("adminGroupDetail.archiveGroup")}
-            </button>
+            </Button>
           )}
         </div>
       )}
 
       {/* Current members */}
-      <h3 className="title is-5 mt-5 mb-3">{t("adminGroupDetail.members")}</h3>
+      <h3 className="text-xl font-bold mt-5 mb-3">{t("adminGroupDetail.members")}</h3>
       {membersResult.status === "loading" && <Spinner />}
       {membersResult.status === "error" && (
-        <div className="notification is-danger">{membersResult.error.message}</div>
+        <Notification variant="danger">{membersResult.error.message}</Notification>
       )}
       {membersResult.status === "ready" && currentMembers.length === 0 && (
-        <p className="has-text-grey mb-5">{t("adminGroupDetail.noMembersYet")}</p>
+        <p className="text-fg-muted mb-5">{t("adminGroupDetail.noMembersYet")}</p>
       )}
       {membersResult.status === "ready" && currentMembers.length > 0 && (
-        <div className="table-container mb-5">
-          <table className="table is-fullwidth">
+        <div className="overflow-x-auto mb-5">
+          <table className="w-full text-sm">
             <tbody>
               {currentMembers.map((user) => (
-                <tr key={user.sub}>
-                  <td>
+                <tr key={user.sub} className="border-b border-border">
+                  <td className="py-1.5">
                     <span title={user.sub}>{user.name || user.email || user.sub}</span>
                     {user.email && user.name && (
-                      <span className="has-text-grey ml-2 is-size-7">{user.email}</span>
+                      <span className="text-fg-muted text-xs ml-2">{user.email}</span>
                     )}
                   </td>
-                  <td className="has-text-right" style={{ width: "3rem" }}>
+                  <td className="py-1.5 text-right w-12">
                     {canManage && (
-                      <button
+                      <Button
                         type="button"
-                        className="button is-ghost is-small has-text-danger"
+                        variant="ghost"
+                        size="sm"
+                        className="!text-danger"
                         disabled={pendingRemovals.has(user.sub)}
                         onClick={() => doRemove(user.sub)}
                         title={t("adminGroupDetail.removeFromGroup")}
@@ -353,7 +344,7 @@ function GroupDetail() {
                         ) : (
                           <FontAwesomeIcon icon={faTrash} />
                         )}
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -366,43 +357,42 @@ function GroupDetail() {
       {/* Add members */}
       {canManage && membersResult.status === "ready" && (
         <>
-          <h3 className="title is-5 mb-3">{t("adminGroupDetail.addMembers")}</h3>
-          <div className="field mb-3">
-            <div className="control">
-              <input
-                className="input"
-                placeholder={t("adminGroupDetail.searchMembersPlaceholder")}
-                value={addFilter}
-                onChange={(e) => setAddFilter(e.target.value)}
-              />
-            </div>
+          <h3 className="text-xl font-bold mb-3">{t("adminGroupDetail.addMembers")}</h3>
+          <div className="mb-3">
+            <input
+              className={classNames(inputBase, "border-border")}
+              placeholder={t("adminGroupDetail.searchMembersPlaceholder")}
+              value={addFilter}
+              onChange={(e) => setAddFilter(e.target.value)}
+            />
           </div>
           {usersResult.status === "loading" && <Spinner />}
           {usersResult.status === "error" && (
-            <div className="notification is-danger">{usersResult.error.message}</div>
+            <Notification variant="danger">{usersResult.error.message}</Notification>
           )}
           {usersResult.status === "ready" && addableUsers.length === 0 && addQuery && (
-            <p className="has-text-grey">{t("adminGroupDetail.noUsersMatch")}</p>
+            <p className="text-fg-muted">{t("adminGroupDetail.noUsersMatch")}</p>
           )}
           {usersResult.status === "ready" && addableUsers.length === 0 && !addQuery && (
-            <p className="has-text-grey">{t("adminGroupDetail.allUsersMembers")}</p>
+            <p className="text-fg-muted">{t("adminGroupDetail.allUsersMembers")}</p>
           )}
           {usersResult.status === "ready" && addableUsers.length > 0 && (
-            <div className="table-container">
-              <table className="table is-fullwidth is-hoverable">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <tbody>
                   {addableUsers.map((user) => (
-                    <tr key={user.sub}>
-                      <td>
+                    <tr key={user.sub} className="border-b border-border hover:bg-bg-subtle">
+                      <td className="py-1">
                         <span title={user.sub}>{user.name || user.email || user.sub}</span>
                         {user.email && user.name && (
-                          <span className="has-text-grey ml-2 is-size-7">{user.email}</span>
+                          <span className="text-fg-muted text-xs ml-2">{user.email}</span>
                         )}
                       </td>
-                      <td className="has-text-right" style={{ width: "5rem" }}>
-                        <button
+                      <td className="py-1.5 text-right w-20">
+                        <Button
                           type="button"
-                          className="button is-success is-small"
+                          variant="success"
+                          size="sm"
                           disabled={pendingMembers.has(user.sub)}
                           onClick={() => doAdd(user.sub)}
                         >
@@ -411,7 +401,7 @@ function GroupDetail() {
                           ) : (
                             t("adminGroupDetail.add")
                           )}
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}

@@ -1,0 +1,42 @@
+/* Tailwind entry point — processed by @tailwindcss/vite, not Sass.
+   Keep Bulma/Sass styles in App.scss; Tailwind-specific directives live here. */
+
+@import "./assets/tokens/tokens.css";
+
+/* Match the dark toggle set by useDarkMode() in utils/useDarkMode.tsx */
+@custom-variant dark ([data-theme="dark"] &);
+
+@theme {
+  /* Semantic roles — light/dark aware via tokens.css */
+  --color-primary:     var(--sitrep-color-dodger-blue);
+  --color-info:        var(--sitrep-color-info);
+  --color-success:     var(--sitrep-color-success);
+  --color-warning:     var(--sitrep-color-warning);
+  --color-danger:      var(--sitrep-color-error);
+  --color-bg:          var(--sitrep-bg);
+  --color-bg-subtle:   var(--sitrep-bg-subtle);
+  --color-bg-elevated: var(--sitrep-bg-elevated);
+  --color-fg:          var(--sitrep-fg);
+  --color-fg-muted:    var(--sitrep-fg-muted);
+  --color-border:      var(--sitrep-line);
+
+  /* Raw brand palette — fixed values, not theme-aware */
+  --color-ink:              var(--sitrep-color-ink);
+  --color-paper:            var(--sitrep-color-paper);
+  --color-dark-elevated:    var(--sitrep-color-dark-elevated);
+  --color-dark-border:      var(--sitrep-color-dark-border);
+  --color-disabled:         var(--sitrep-color-disabled);
+  --color-interactive-hover:    var(--sitrep-color-interactive-hover);
+  --color-interactive-pressed:  var(--sitrep-color-interactive-pressed);
+
+  /* Typography */
+  --font-sans: var(--sitrep-font-sans);
+  --font-mono: var(--sitrep-font-mono);
+}
+
+/* theme: breakpoints + default color/spacing scales, no preflight reset
+   utilities: all utility classes + responsive/dark/hover/print variants
+   preflight is intentionally excluded — Bulma manages base element styles.
+   Switch to @import "tailwindcss" once Bulma is fully removed. */
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
