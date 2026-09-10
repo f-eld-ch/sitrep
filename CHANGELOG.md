@@ -1,8 +1,19 @@
-## [unreleased]
+## [26.9.4](https://github.com/f-eld-ch/sitrep/compare/v26.9.3..v26.9.4) - 2026-09-10
 
 ### ⛰️  Features
 
 - *(ui)* Apply new brand identity and fix dark-mode contrast issues ([#1837](https://github.com/f-eld-ch/sitrep/issues/1837)) - ([732c6fe](https://github.com/f-eld-ch/sitrep/commit/732c6feea4feaa4c6329dbbb6e695150da7453c9))
+
+### 🐛 Bug Fixes
+
+- *(ui)* Remove stale child count artefacts for incident view - ([6765c58](https://github.com/f-eld-ch/sitrep/commit/6765c5853cf99700bdd78480244b5e732b87e231))
+- *(ui)* Improve coloring of navbar - ([7343ec5](https://github.com/f-eld-ch/sitrep/commit/7343ec5530425f21cdbc77c511c6ef80fbd5856d))
+- *(ui)* Update PWA assets for new brand ([#1838](https://github.com/f-eld-ch/sitrep/issues/1838)) - ([1fc5992](https://github.com/f-eld-ch/sitrep/commit/1fc5992003c8371920a11d8f70feae330590b4a0))
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 6.7.0 to 6.9.0 in /ui ([#1841](https://github.com/f-eld-ch/sitrep/issues/1841)) - ([08549b2](https://github.com/f-eld-ch/sitrep/commit/08549b25ed83b7e235cbc8cd3c375bb794e0201a))
+- *(deps)* Bump the react group in /ui with 2 updates ([#1840](https://github.com/f-eld-ch/sitrep/issues/1840)) - ([19d0d22](https://github.com/f-eld-ch/sitrep/commit/19d0d22643bda6f67968afcc69e883ca765c01b0))
 
 
 ## [26.9.3](https://github.com/f-eld-ch/sitrep/compare/v26.9.2..v26.9.3) - 2026-09-09
