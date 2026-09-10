@@ -1,6 +1,6 @@
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
-import { toDivision, toMessage } from "./mapper";
+import { toDivision, toAttachment, toMessage } from "./mapper";
 import type { GetIncidentMessagesQuery } from "gql/next";
 
 type WireMessage = NonNullable<GetIncidentMessagesQuery["incident"]>["messages"][0];
@@ -10,6 +10,16 @@ const WIRE_DIVISION: WireDivision = {
   id: "div-1",
   name: "Alpha",
   description: "Alpha division",
+};
+
+const WIRE_ATTACHMENT = {
+  id: "att-1",
+  filename: "photo.jpg",
+  contentType: "image/jpeg",
+  size: 12345,
+  createdAt: "2024-03-15T09:01:00Z",
+  uploadedBy: "user-1",
+  url: "/api/v2/attachments/att-1",
 };
 
 const WIRE_MESSAGE: WireMessage = {
@@ -27,7 +37,21 @@ const WIRE_MESSAGE: WireMessage = {
   triage: "PENDING",
   priority: "NORMAL",
   divisions: [WIRE_DIVISION],
+  attachments: [],
 };
+
+describe("toAttachment", () => {
+  it("maps all fields from the wire type", () => {
+    const result = toAttachment(WIRE_ATTACHMENT);
+    expect(result.id).toBe("att-1");
+    expect(result.filename).toBe("photo.jpg");
+    expect(result.contentType).toBe("image/jpeg");
+    expect(result.size).toBe(12345);
+    expect(result.createdAt).toBeInstanceOf(Date);
+    expect(result.uploadedBy).toBe("user-1");
+    expect(result.url).toBe("/api/v2/attachments/att-1");
+  });
+});
 
 describe("toDivision", () => {
   it("maps id, name, and description", () => {
@@ -119,5 +143,23 @@ describe("toMessage", () => {
     const wireWithTypename = { ...WIRE_MESSAGE, __typename: "Message" as const };
     const result = toMessage(wireWithTypename);
     expect(Object.keys(result)).not.toContain("__typename");
+  });
+
+  it("maps attachments to domain Attachment objects", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, attachments: [WIRE_ATTACHMENT] });
+    expect(result.attachments).toHaveLength(1);
+    expect(result.attachments[0].id).toBe("att-1");
+    expect(result.attachments[0].contentType).toBe("image/jpeg");
+    expect(result.attachments[0].createdAt).toBeInstanceOf(Date);
+  });
+
+  it("maps empty attachments array to empty array", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, attachments: [] });
+    expect(result.attachments).toEqual([]);
+  });
+
+  it("treats missing attachments as empty array", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, attachments: null as unknown as [] });
+    expect(result.attachments).toEqual([]);
   });
 });

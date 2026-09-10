@@ -50,7 +50,7 @@ func (s *Server) RegisterMiddlewares() {
 		s.router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins:  s.allowedOrigins,
 			AllowMethods:  []string{http.MethodGet, http.MethodPost, http.MethodOptions},
-			AllowHeaders:  []string{"Content-Type", "Authorization"},
+			AllowHeaders:  []string{"Content-Type", "Authorization", "X-Sitrep-Upload"},
 			ExposeHeaders: []string{"Content-Length"},
 		}))
 	}

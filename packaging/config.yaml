@@ -51,6 +51,31 @@ auto-close-incidents: 0
 # Archiving removes live event streams and triggers a read-model rebuild.
 auto-archive-incidents: 0
 
+# ── Attachments ──────────────────────────────────────────────────────────────
+
+# Enable file attachments on messages (default: true).
+# Env: SITREP_STORAGE_ATTACHMENTS_ENABLED
+#storage:
+#  attachments:
+#    enabled: true
+
+# Blob backend: database | ephemeral | filesystem
+# - database  store blobs in the PostgreSQL database (default when database-url is set)
+# - ephemeral store blobs in a temp directory; lost on restart (default without database-url)
+# - filesystem store blobs on disk at the path set by filesystem.dir below
+# Env: SITREP_STORAGE_ATTACHMENTS_BACKEND
+#    backend: database
+
+# Maximum upload size per file. Accepts a plain byte count or a kb/mb/gb suffix.
+# Env: SITREP_STORAGE_ATTACHMENTS_MAX_SIZE
+#    max-size: 25mb
+
+# Root directory for attachment blobs (backend=filesystem only).
+# The directory must exist and be writable by the sitrep process.
+# Env: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
+#    filesystem:
+#      dir: "/var/lib/sitrep/attachments"
+
 # ── Development ──────────────────────────────────────────────────────────────
 
 # Exposes the GraphQL playground and schema introspection. Keep disabled in

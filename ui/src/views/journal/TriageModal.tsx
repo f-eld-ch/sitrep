@@ -91,21 +91,19 @@ function TriageForm(props: {
     divisions: assignments.map((division) => ({ division })),
   };
 
-  const handleSave = async (triage: TriageStatus) => {
+  const handleSave = (triage: TriageStatus) => {
     if (!incidentId) return;
-    try {
-      await triageMessage({
-        incidentId,
-        messageId: message.id,
-        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
-        triage,
-        divisionIds: assignments.map((d) => d.id),
-        divisions: assignments,
-      });
-      setMessage(undefined);
-    } catch {
-      // triageState.error is set; modal stays open so user can retry
-    }
+    // Close immediately — the optimistic cache update is already applied.
+    // The mutation continues in the background; on failure the list will revert.
+    setMessage(undefined);
+    triageMessage({
+      incidentId,
+      messageId: message.id,
+      priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+      triage,
+      divisionIds: assignments.map((d) => d.id),
+      divisions: assignments,
+    }).catch(() => {});
   };
 
   return (
@@ -118,6 +116,7 @@ function TriageForm(props: {
           <JournalMessage
             showControls={false}
             id={message.id}
+            incidentId={incidentId ?? ""}
             message={previewMessage}
             divisions={assignments}
             setEditorMessage={undefined}

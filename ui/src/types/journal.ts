@@ -17,9 +17,19 @@ export enum Medium {
   Other = "OTHER",
 }
 
+export interface Attachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  createdAt: Date;
+  uploadedBy: string;
+  url: string;
+}
+
 export interface Message {
   id: string;
-  number?: number;
+  number: number;
   content: string;
   sender: string;
   senderDetail: string;
@@ -33,6 +43,7 @@ export interface Message {
   medium: Medium;
   triageId: TriageStatus;
   priorityId: PriorityStatus;
+  attachments: Attachment[];
 }
 
 export interface Triage {

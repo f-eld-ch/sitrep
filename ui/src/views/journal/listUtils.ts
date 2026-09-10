@@ -21,7 +21,6 @@ export function buildMessageList(messages: Message[], filters: MessageFilters): 
   return messages
     .filter((m) => m.createdAt !== null)
     .sort(stableOrderByCreatedAt)
-    .map((m, i) => ({ ...m, number: i + 1 }))
     .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
     .filter((m) => filters.triage === "all" || m.triageId === filters.triage)
     .filter((m) => filters.priority === "all" || m.priorityId === filters.priority)

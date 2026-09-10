@@ -19,6 +19,8 @@ type Factory struct {
 	groupRepo     outbound.AccessGroupRepository
 	globalRepo    outbound.GlobalAccessRepository
 	globalChecker outbound.GlobalAccessChecker
+	blobs         outbound.BlobStore
+	queries       outbound.Queries
 }
 
 // FactoryOption configures a Factory.
@@ -72,6 +74,14 @@ func WithGlobalAccessChecker(globalChecker outbound.GlobalAccessChecker) Factory
 	return func(f *Factory) { f.globalChecker = globalChecker }
 }
 
+func WithBlobStore(blobs outbound.BlobStore) FactoryOption {
+	return func(f *Factory) { f.blobs = blobs }
+}
+
+func WithQueries(queries outbound.Queries) FactoryOption {
+	return func(f *Factory) { f.queries = queries }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -117,7 +127,16 @@ func (f *Factory) MessageService(
 	repo outbound.MessageRepository,
 	incidents outbound.IncidentRepository,
 ) *MessageService {
-	return NewMessageService(f.tx, repo, incidents, f.counter, f.accessChecker, f.clock, f.ids, f.notifier)
+	svc := NewMessageService(f.tx, repo, incidents, f.counter, f.accessChecker, f.clock, f.ids, f.notifier)
+	if f.blobs != nil {
+		svc.WithBlobStore(f.blobs)
+	}
+
+	if f.queries != nil {
+		svc.WithQueries(f.queries)
+	}
+
+	return svc
 }
 
 // LayerService creates a ready-to-use LayerService.

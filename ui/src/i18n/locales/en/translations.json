@@ -86,7 +86,17 @@
     "sender": "sender",
     "time": "time",
     "triage": "triage status",
-    "type": "communication"
+    "type": "communication",
+    "attachments": {
+      "title": "Attachments",
+      "download": "Download",
+      "remove": "Remove attachment",
+      "add": "Add attachment",
+      "dropHere": "Drop files here",
+      "uploadFailed": "Upload failed",
+      "tooLarge": "File exceeds the maximum upload size",
+      "disabled": "File attachments are not enabled on this server"
+    }
   },
   "messageFlow": "reporting flow",
   "messageSheet": "message sheet",

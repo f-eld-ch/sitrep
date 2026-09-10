@@ -338,6 +338,82 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	return msgs[0], nil
 }
 
+func (q *Queries) ListAttachments(ctx context.Context, messageID uuid.UUID) ([]*outbound.AttachmentRM, error) {
+	rows, err := q.pool.Query(ctx, `
+		SELECT id, message_id, incident_id, filename, content_type, size, checksum, storage_key, uploader_sub, created_at
+		FROM readmodel.message_attachment
+		WHERE message_id = $1
+		ORDER BY created_at ASC`, messageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return collectAttachments(rows)
+}
+
+func (q *Queries) GetAttachment(ctx context.Context, id uuid.UUID) (*outbound.AttachmentRM, error) {
+	rows, err := q.pool.Query(ctx, `
+		SELECT id, message_id, incident_id, filename, content_type, size, checksum, storage_key, uploader_sub, created_at
+		FROM readmodel.message_attachment
+		WHERE id = $1`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	atts, err := collectAttachments(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(atts) == 0 {
+		return nil, shared.ErrNotFound
+	}
+
+	return atts[0], nil
+}
+
+func collectAttachments(rows pgx.Rows) ([]*outbound.AttachmentRM, error) {
+	var out []*outbound.AttachmentRM
+
+	for rows.Next() {
+		var (
+			id          uuid.UUID
+			messageID   uuid.UUID
+			incidentID  uuid.UUID
+			filename    string
+			contentType string
+			size        int64
+			checksum    string
+			storageKey  string
+			uploaderSub string
+			createdAt   time.Time
+		)
+		if err := rows.Scan(
+			&id, &messageID, &incidentID, &filename, &contentType,
+			&size, &checksum, &storageKey, &uploaderSub, &createdAt,
+		); err != nil {
+			return nil, err
+		}
+
+		out = append(out, &outbound.AttachmentRM{
+			ID:          id,
+			MessageID:   messageID,
+			IncidentID:  incidentID,
+			Filename:    filename,
+			ContentType: contentType,
+			Size:        size,
+			Checksum:    checksum,
+			StorageKey:  storageKey,
+			UploaderSub: uploaderSub,
+			CreatedAt:   createdAt,
+		})
+	}
+
+	return out, rows.Err()
+}
+
 func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 	defer rows.Close()
 

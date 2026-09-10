@@ -57,6 +57,25 @@ func TestLoadConfig(t *testing.T) {
 	})
 }
 
+func TestCanonicalEnvName(t *testing.T) {
+	tests := []struct {
+		option string
+		want   string
+	}{
+		{"port", "SITREP_PORT"},
+		{"log-level", "SITREP_LOG_LEVEL"},
+		{"storage.attachments.enabled", "SITREP_STORAGE_ATTACHMENTS_ENABLED"},
+		{"storage.attachments.max-size", "SITREP_STORAGE_ATTACHMENTS_MAX_SIZE"},
+		{"storage.attachments.filesystem.dir", "SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.option, func(t *testing.T) {
+			assert.Equal(t, tt.want, canonicalEnvName(tt.option))
+		})
+	}
+}
+
 func TestConfigValidate(t *testing.T) {
 	t.Run("rejects an invalid server port", func(t *testing.T) {
 		v := testViper(t)
@@ -65,6 +84,51 @@ func TestConfigValidate(t *testing.T) {
 
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "port")
+	})
+
+	t.Run("rejects unknown attachment backend", func(t *testing.T) {
+		v := testViper(t)
+		v.Set("storage.attachments.enabled", true)
+		v.Set("storage.attachments.backend", "s3")
+		v.Set("storage.attachments.max-size", "25mb")
+		v.Set("storage.attachments.filesystem.dir", "/tmp/att")
+		err := validateConfig(v)
+
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "backend")
+	})
+
+	t.Run("rejects invalid max-size format", func(t *testing.T) {
+		v := testViper(t)
+		v.Set("storage.attachments.enabled", true)
+		v.Set("storage.attachments.backend", "ephemeral")
+		v.Set("storage.attachments.max-size", "25MiB")
+		err := validateConfig(v)
+
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "invalid size")
+	})
+
+	t.Run("rejects empty dir when backend is filesystem", func(t *testing.T) {
+		v := testViper(t)
+		v.Set("storage.attachments.enabled", true)
+		v.Set("storage.attachments.backend", "filesystem")
+		v.Set("storage.attachments.max-size", "25mb")
+		v.Set("storage.attachments.filesystem.dir", "")
+		err := validateConfig(v)
+
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "filesystem.dir")
+	})
+
+	t.Run("passes valid attachment config", func(t *testing.T) {
+		v := testViper(t)
+		v.Set("storage.attachments.enabled", true)
+		v.Set("storage.attachments.backend", "ephemeral")
+		v.Set("storage.attachments.max-size", "25mb")
+		err := validateConfig(v)
+
+		require.NoError(t, err)
 	})
 }
 

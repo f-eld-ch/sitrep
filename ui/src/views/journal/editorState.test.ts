@@ -12,6 +12,7 @@ import {
 function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
     id: "msg-1",
+    number: 1,
     content: "hello",
     sender: "Alice",
     senderDetail: "HQ",
@@ -25,6 +26,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     medium: Medium.Radio,
     triageId: TriageStatus.Pending,
     priorityId: PriorityStatus.Normal,
+    attachments: [],
     ...overrides,
   };
 }
@@ -172,6 +174,41 @@ describe("editorReducer", () => {
       ),
       { numRuns: 200 },
     );
+  });
+
+  describe("remove_attachment", () => {
+    it("removes the attachment with the matching id from messageToEdit", () => {
+      const msg = makeMessage({
+        attachments: [
+          { id: "a1", filename: "photo.jpg", contentType: "image/jpeg", size: 100, createdAt: new Date(), uploadedBy: "u1", url: "/a1" },
+          { id: "a2", filename: "report.pdf", contentType: "application/pdf", size: 200, createdAt: new Date(), uploadedBy: "u1", url: "/a2" },
+        ],
+      });
+      const state = reduce([
+        { type: "set_edit_message", message: msg },
+        { type: "remove_attachment", attachmentId: "a1" },
+      ]);
+      expect(state.messageToEdit?.attachments).toHaveLength(1);
+      expect(state.messageToEdit?.attachments[0].id).toBe("a2");
+    });
+
+    it("is a no-op when messageToEdit is undefined", () => {
+      const state = reduce([{ type: "remove_attachment", attachmentId: "a1" }]);
+      expect(state.messageToEdit).toBeUndefined();
+    });
+
+    it("leaves all attachments when id does not match", () => {
+      const msg = makeMessage({
+        attachments: [
+          { id: "x", filename: "x.zip", contentType: "application/zip", size: 1, createdAt: new Date(), uploadedBy: "u", url: "/x" },
+        ],
+      });
+      const state = reduce([
+        { type: "set_edit_message", message: msg },
+        { type: "remove_attachment", attachmentId: "nonexistent" },
+      ]);
+      expect(state.messageToEdit?.attachments).toHaveLength(1);
+    });
   });
 });
 

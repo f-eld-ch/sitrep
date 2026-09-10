@@ -19,7 +19,7 @@ export function toOptionalDate(value: string | Date | null | undefined): Date | 
 /**
  * Safe enum coercion with a fallback.
  *
- * Hasura can return enum values that don't yet exist in the client-side enum
+ * The server can return enum values that don't yet exist in the client-side enum
  * (e.g. a new status added to the DB before the UI is deployed). Rather than
  * crashing or returning undefined, fall back to the provided default.
  */

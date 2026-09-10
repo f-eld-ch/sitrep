@@ -1,13 +1,26 @@
-import { Medium, PriorityStatus, TriageStatus, type Message } from "types";
+import { Medium, PriorityStatus, TriageStatus, type Attachment, type Message } from "types";
 import type { Division } from "types";
 import { toDate, toEnum } from "../common/mapper";
 import type { GetIncidentMessagesQuery } from "gql/next";
 
 type WireMessage = NonNullable<GetIncidentMessagesQuery["incident"]>["messages"][0];
+type WireAttachment = WireMessage["attachments"][0];
 
 const ALL_MEDIA = Object.values(Medium) as string[];
 const ALL_TRIAGE = Object.values(TriageStatus) as string[];
 const ALL_PRIORITY = Object.values(PriorityStatus) as string[];
+
+export function toAttachment(w: WireAttachment): Attachment {
+  return {
+    id: w.id,
+    filename: w.filename,
+    contentType: w.contentType,
+    size: w.size,
+    createdAt: toDate(w.createdAt),
+    uploadedBy: w.uploadedBy,
+    url: w.url,
+  };
+}
 
 export function toDivision(w: { id: string; name: string; description: string }): Division {
   return {
@@ -36,5 +49,6 @@ export function toMessage(w: WireMessage): Message {
     divisions: w.divisions.map((d) => ({ division: toDivision(d) })),
     triageId: toEnum(ALL_TRIAGE, w.triage, TriageStatus.Pending) as TriageStatus,
     priorityId: toEnum(ALL_PRIORITY, w.priority, PriorityStatus.Normal) as PriorityStatus,
+    attachments: (w.attachments ?? []).map(toAttachment),
   };
 }

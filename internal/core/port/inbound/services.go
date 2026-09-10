@@ -5,6 +5,7 @@ package inbound
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/google/uuid"
@@ -81,6 +82,29 @@ type IncidentState struct {
 	ClosedAt  *time.Time
 }
 
+// AttachmentState carries attachment metadata returned from service operations.
+type AttachmentState struct {
+	ID          shared.AttachmentID
+	MessageID   shared.MessageID
+	IncidentID  shared.IncidentID
+	Filename    string
+	ContentType string
+	Size        int64
+	Checksum    string
+	StorageKey  string
+	UploaderSub string
+	CreatedAt   time.Time
+	URL         string
+}
+
+// AttachFileInput groups parameters for AttachFile to avoid a long positional list.
+type AttachFileInput struct {
+	Filename    string
+	ContentType string
+	Size        int64
+	Content     io.Reader
+}
+
 // MessageState is returned from message mutation services so resolvers can
 // build responses from aggregate state without a projection read.
 type MessageState struct {
@@ -99,6 +123,7 @@ type MessageState struct {
 	Triage         shared.TriageStatus
 	Priority       shared.PriorityStatus
 	DivisionIDs    []shared.DivisionID
+	Attachments    []AttachmentState
 }
 
 // FeatureState is returned from ModifyFeature so the resolver can build the
@@ -193,6 +218,33 @@ type MessageService interface {
 	) (MessageState, error)
 
 	DeleteMessage(ctx context.Context, id shared.MessageID, actor identity.Actor) error
+
+	// AttachFile streams a file onto an existing message.
+	// The blob is persisted before the event is committed; on commit failure
+	// the implementation performs a best-effort compensating delete of the blob.
+	AttachFile(
+		ctx context.Context,
+		messageID shared.MessageID,
+		input AttachFileInput,
+		actor identity.Actor,
+	) (AttachmentState, error)
+
+	// RemoveAttachment deletes an attachment from a message.
+	// The blob is removed after a successful commit.
+	RemoveAttachment(
+		ctx context.Context,
+		messageID shared.MessageID,
+		attachmentID shared.AttachmentID,
+		actor identity.Actor,
+	) error
+
+	// OpenAttachment resolves attachment metadata and opens the blob for reading.
+	// Authorization (IncidentRead) is enforced before the store is touched.
+	OpenAttachment(
+		ctx context.Context,
+		attachmentID shared.AttachmentID,
+		actor identity.Actor,
+	) (AttachmentState, io.ReadSeekCloser, error)
 }
 
 // LayerService is the driving port for layer commands.

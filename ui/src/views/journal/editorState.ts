@@ -54,7 +54,8 @@ export type EditorAction =
   | { type: "set_receiver"; receiver: string }
   | { type: "set_content"; content: string }
   | { type: "set_time"; time: Date | undefined }
-  | { type: "set_media_detail"; detail: MediaDetail };
+  | { type: "set_media_detail"; detail: MediaDetail }
+  | { type: "remove_attachment"; attachmentId: string };
 
 export type EditorDispatch = (action: EditorAction) => void;
 
@@ -64,6 +65,9 @@ export interface EditorContextValue {
   onSave: () => void;
   saving: boolean;
   autocompleteDetails: AutofillDetail;
+  pendingFiles: File[];
+  addPendingFile: (file: File) => void;
+  removePendingFile: (index: number) => void;
 }
 
 export const EditorContext = React.createContext<EditorContextValue | null>(null);
@@ -177,6 +181,15 @@ export const editorReducer = (state: EditorState, action: EditorAction): EditorS
     }
     case "set_triage_message":
       return { ...state, messageToTriage: action.message };
+    case "remove_attachment":
+      if (!state.messageToEdit) return state;
+      return {
+        ...state,
+        messageToEdit: {
+          ...state.messageToEdit,
+          attachments: state.messageToEdit.attachments.filter((a) => a.id !== action.attachmentId),
+        },
+      };
     default:
       throw new Error(`Unhandled action type: ${JSON.stringify(action)}`);
   }

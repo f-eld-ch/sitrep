@@ -2,18 +2,18 @@
 
 ## Overview
 
-`ui/src/api/` is the **anti-corruption layer** (ACL) between React components and Apollo/Hasura.
+`ui/src/api/` is the **anti-corruption layer** (ACL) between React components and Apollo/gqlgen.
 Components and views import _only_ from the `api` path alias. `@apollo/client` may not be imported
 anywhere outside this directory — enforced by an oxlint `no-restricted-imports` rule in
 `.oxlintrc.jsonc`. That rule is currently severity `warn` with a documented allowlist of legacy
 violators; the allowlist may shrink, never grow, and a new direct Apollo import in a view is a
 review rejection regardless of the warn severity.
 
-The goal is a swap-day where changing from Hasura to gqlgen touches only files inside `src/api/`,
-with zero changes to views or components.
+The backend is a hand-written Go/gqlgen API — there is no pending schema swap. The ACL boundary
+still stands on its own merits: it keeps every Apollo/GraphQL detail out of views and components.
 
 For project setup, the commit gates, and the wider UI layout, see [AGENTS.md](AGENTS.md). This
-document covers only the ACL and the migration.
+document covers only the ACL.
 
 ---
 
@@ -29,9 +29,9 @@ src/api/
   common/
     mapper.ts       — shared utilities: toDate, toOptionalDate, toEnum
   incident/         — incident aggregate
-  journal/          — journal aggregate
   message/          — message aggregate
   layer/            — layer aggregate
+  access/           — access aggregate
   testing/
     results.ts      — test helpers: loadingResult, errorResult, readyResult
 ```
@@ -50,81 +50,50 @@ Each aggregate follows the same structure:
 
 ### No hand-written wire types
 
-There is no `wire.ts`. Hand-written Hasura response types were deleted; both the
+There is no `wire.ts`. Hand-written response types were deleted; both the
 `TypedDocumentNode` parameters and the mapper input types now come from the **generated**
-`src/gql/graphql.ts` (imported via the `gql` path alias), with mapper parameters extracted inline
-from the operation result:
+`src/gql/next/graphql.ts` (imported via the `gql/next` path alias), with mapper parameters
+extracted inline from the operation result:
 
 ```ts
-import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql";
+import type { GetIncidentsQuery, GetIncidentDetailQuery } from "gql/next";
 
-export function toIncidentSummary(w: FetchIncidentsQuery["incidents"][0]): Incident { … }
-export function toIncidentDetails(w: NonNullable<GetIncidentDetailQuery["incidentsByPk"]>): Incident { … }
+export function toIncidentSummary(w: GetIncidentsQuery["incidents"][0]): Incident { … }
+export function toIncidentDetails(w: NonNullable<GetIncidentDetailQuery["incident"]>): Incident { … }
 ```
 
 This means the compiler — not a hand-maintained interface — is the source of truth for the wire
-shape. Generated nullability is accurate and stricter than the old hand-written types were, so
-mappers coerce (`?? ""`) rather than cast. Variable types come from the matching
+shape. Generated nullability is accurate, so mappers coerce (`?? ""`) rather than cast. Variable
+types come from the matching
 `*QueryVariables` / `*MutationVariables` type, so aggregates no longer declare their own
 `*Vars` interfaces.
 
 ---
 
-## Schema files
+## Schema file
 
 ### `api/schema.graphql` (repo root)
 
-The _future_ gqlgen schema. This is the contract between the UI and the Go backend.
-Both `ui/codegen.next.ts` and `gqlgen.yml` consume this file.
-
-**Not** the current Hasura schema. It uses intent-named mutations (`closeIncident`, not
-`updateIncidents`), flat domain types (no Hasura envelopes), and omits wire artefacts like
-`affectedRows`, `byPk`, `_eq`, `_isNull`.
-
-### `hasura/schema/hasura.graphql`
-
-A committed SDL snapshot of the Hasura schema, introspected as role `editor`. Used only by
-`ui/codegen.ts` to generate types for the current Hasura wire layer. Refresh manually when
-the Hasura schema changes:
-
-```sh
-yarn codegen:schema   # introspects running Hasura, writes hasura/schema/hasura.graphql
-```
-
-The file is committed so CI has no Hasura dependency.
+The contract between the UI and the Go backend. Both `ui/codegen.ts` and `gqlgen.yml` consume this
+file. Intent-named mutations (`closeIncident`, not `updateIncidents`), flat domain types, no wire
+artefacts like `affectedRows`, `byPk`, `_eq`, `_isNull`.
 
 ---
 
-## Codegen configs
+## Codegen config
 
-| File                   | Schema source                  | Documents matched      | Output                         |
-| ---------------------- | ------------------------------ | ---------------------- | ------------------------------ |
-| `ui/codegen.ts`        | `hasura/schema/hasura.graphql` | `src/api/**/*.ts`      | `ui/src/gql/`                  |
-| `ui/codegen.next.ts`   | `api/schema.graphql`           | `src/api/**/*.next.ts` | `ui/src/gql/next/`             |
-| `ui/codegen.schema.ts` | live Hasura (introspection)    | —                      | `hasura/schema/hasura.graphql` |
+| File            | Schema source        | Documents matched | Output             |
+| --------------- | -------------------- | ----------------- | ------------------ |
+| `ui/codegen.ts` | `api/schema.graphql` | `src/api/**/*.ts` | `ui/src/gql/next/` |
 
 Run locally:
 
 ```sh
-yarn codegen             # regenerate ui/src/gql/ from the Hasura SDL snapshot
-yarn codegen:check       # same, fail if committed output differs (CI gate)
-yarn codegen:next        # regenerate ui/src/gql/next/ from api/schema.graphql
-yarn codegen:next:check  # same, fail if committed output differs (CI gate)
-yarn codegen:schema      # refresh the SDL snapshot from a running Hasura
+yarn codegen        # regenerate ui/src/gql/next/ from api/schema.graphql
+yarn codegen:check  # same, fail if committed output differs (CI gate)
 ```
 
-Both check commands run in CI on every push. The `codegen:next:check` gate means you cannot write
-a future-facing UI query that the Go server will not be able to answer, even before Go exists.
-
-**`codegen.next.ts` matches only `*.next.ts`.** The current documents use Hasura vocabulary
-(`byPk`, `_eq`, `uuid`, `affectedRows`) that does not exist in `api/schema.graphql`, so including
-them would fail with dozens of errors. With no `*.next.ts` files yet the check passes vacuously via
-`ignoreNoDocuments` — the correct starting state. As each aggregate is ported, add a
-`documents.next.ts` beside its `documents.ts` and the gate begins covering it. The count of ported
-aggregates is the migration's burn-down.
-
-`yarn codegen:schema` reads `HASURA_GRAPHQL_ADMIN_SECRET` from the environment. Never hardcode a
-secret in `codegen.schema.ts`.
+`yarn codegen:check` runs in CI on every push — you cannot land a query the Go server can't answer.
 
 **Generated output is committed and must not be formatted.** `src/gql/**` is in the `oxfmt`
 ignore list; formatting it changes quote style and makes `codegen:check` report stale files.
@@ -170,7 +139,7 @@ Commands return promises so callers can `await` and chain navigation or selectio
 
 ## Mappers
 
-Mappers convert Hasura wire shapes to domain types. Every field is written out explicitly — no
+Mappers convert gqlgen wire shapes to domain types. Every field is written out explicitly — no
 spreads. This serves two purposes:
 
 1. **`__typename` is never propagated** into domain objects. The cache normalises by `__typename`;
@@ -219,10 +188,9 @@ is what prevents that.
 The ACL boundary supports three test tiers:
 
 **Mapper tests** (`{aggregate}/mapper.test.ts`) — pure functions, no Apollo/React. Wire literal in,
-domain object out. The only Hasura-aware tests; the first things deleted at cutover. Assert:
-`__typename` dropped, timestamps are `instanceof Date`, soft-deleted records absent, unknown enums
-fall back. Fixtures are typed with the generated operation types, so a schema change that breaks a
-fixture is a compile error rather than a silently-passing test.
+domain object out. Assert: `__typename` dropped, timestamps are `instanceof Date`, soft-deleted
+records absent, unknown enums fall back. Fixtures are typed with the generated operation types, so
+a schema change that breaks a fixture is a compile error rather than a silently-passing test.
 
 **Enum conformance** (`common/enum-conformance.test.ts`) — asserts domain enums and generated
 schema enums agree in both directions: a compile-time subset check catches renames, and runtime
@@ -251,75 +219,3 @@ it("shows a spinner while loading", async () => {
 
 Helpers `loadingResult()`, `errorResult(err)`, `readyResult(data)` live in
 `api/testing/results.ts`.
-
----
-
-## gqlgen migration guide
-
-### Per-aggregate swap
-
-> **Not yet implemented.** This section is the plan. `src/api/client.ts` currently has a single
-> link and no backend switch; the OpenFeature machinery exists in views (`useBooleanFlagValue`)
-> but is not wired to transport selection. Build this before porting the first aggregate.
-
-Each aggregate is migrated independently, behind an OpenFeature flag. The flag selects which
-`ApolloLink` is active — Hasura or gqlgen — via `ApolloLink.split` on `context.backend`. Both
-share one `InMemoryCache`, which is coherent precisely because the ACL already made the two
-backends produce identical domain shapes.
-
-Rollback is a flag flip: the next poll (≤10 s, ≤2 s on the map) returns to Hasura with no
-redeploy, since both backends run against the same Postgres.
-
-**Steps for one aggregate:**
-
-1. **Write `documents.next.ts`** — the same operations expressed in the gqlgen vocabulary, typed
-   from `src/gql/next/`. `yarn codegen:next:check` confirms validity against `api/schema.graphql`
-   before you touch any other file. The old `documents.ts` stays in place and serving until the
-   flag flips.
-
-2. **Update `mapper.ts`** — repoint the input types at the `src/gql/next/` operation types and
-   update field mappings. When every line is `x: w.x`, delete the mapper and have the query hook
-   return the result directly.
-
-3. **Update `commands.ts`** — remove Hasura-specific logic:
-   - Delete `affectedRows === 0` checks (gqlgen raises a proper GraphQL error instead)
-   - Delete client-generated timestamps (`closedAt: new Date()` → server sets it)
-   - Delete `returning` envelope unwrapping
-
-4. **Update `invalidate.ts`** — repoint at the new documents.
-
-5. **Flip the feature flag to 100 %**, observe for one release cycle, then delete the old
-   `documents.ts`, remove the flag, and drop the Hasura link.
-
-### Known Hasura-specific logic to remove per aggregate
-
-| File                   | What to remove                                         | Why                                          |
-| ---------------------- | ------------------------------------------------------ | -------------------------------------------- |
-| `incident/commands.ts` | `affectedRows === 0` guard in `useDeleteIncident`      | gqlgen raises `INCIDENT_NOT_DELETABLE` error |
-| `incident/commands.ts` | `closedAt: new Date()` in `useCloseIncident`           | server sets the timestamp                    |
-| `incident/commands.ts` | `updateJournals` cascade in `useCloseIncident`         | server handles cascade                       |
-| `incident/commands.ts` | `on_conflict` / constraint name in `useUpdateIncident` | gqlgen takes named input                     |
-| `message/commands.ts`  | delete-then-reinsert in `useTriageMessage`             | gqlgen transaction                           |
-| `layer/commands.ts`    | `deletedAt: new Date()` in `useDeleteFeature`          | server soft-deletes                          |
-| `layer/mapper.ts`      | `deletedAt` filter in `toLayer`                        | gqlgen omits deleted rows                    |
-| All `queries.ts`       | `pollInterval` / `fetchPolicy`                         | replace with subscriptions via `live: true`  |
-
-### Multi-root transactions
-
-`useTriageMessage` today relies on Hasura's multi-root mutation transactionality (delete +
-reinsert in one request). The comment in `message/commands.ts` documents this explicitly. The
-gqlgen server must wrap this in a proper transaction. Verify with an integration test that kills
-the process between the delete and the insert.
-
-### The `insert_user_for_messages` trigger
-
-`hasura/migrations/Postgres/.../up.sql` defines a trigger that reads `current_setting('hasura.user')`
-to upsert into `users` on every message write. This trigger is still live.
-
-**Sequenced removal:**
-
-1. Make the trigger tolerate a missing `hasura.user` setting (return early instead of error)
-2. Have the gqlgen server upsert the user explicitly before writing the message
-3. Drop the trigger after full cutover
-
-Both backends must be writable simultaneously during the transition.

@@ -115,6 +115,11 @@ func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
 					resp.Header().Set("Cache-Control", "public, max-age=604800")
 					return
 				}
+				// attachments are access-controlled; must not be cached
+				if strings.HasPrefix(path, "/api/v2/attachments/") {
+					resp.Header().Set("Cache-Control", "no-store")
+					return
+				}
 			}
 
 			// for everything else set no-cache

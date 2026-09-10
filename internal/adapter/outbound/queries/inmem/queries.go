@@ -164,6 +164,45 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	return toMessageRM(row), nil
 }
 
+func (q *Queries) ListAttachments(_ context.Context, messageID uuid.UUID) ([]*outbound.AttachmentRM, error) {
+	rows := q.messages.AttachmentsForMessage(messageID)
+
+	out := make([]*outbound.AttachmentRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, toAttachmentRM(row))
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].CreatedAt.Before(out[j].CreatedAt)
+	})
+
+	return out, nil
+}
+
+func (q *Queries) GetAttachment(_ context.Context, id uuid.UUID) (*outbound.AttachmentRM, error) {
+	row := q.messages.GetAttachment(id)
+	if row == nil {
+		return nil, shared.ErrNotFound
+	}
+
+	return toAttachmentRM(row), nil
+}
+
+func toAttachmentRM(row *projection.AttachmentRow) *outbound.AttachmentRM {
+	return &outbound.AttachmentRM{
+		ID:          row.ID,
+		MessageID:   row.MessageID,
+		IncidentID:  row.IncidentID,
+		Filename:    row.Filename,
+		ContentType: row.ContentType,
+		Size:        row.Size,
+		Checksum:    row.Checksum,
+		StorageKey:  row.StorageKey,
+		UploaderSub: row.UploaderSub,
+		CreatedAt:   row.CreatedAt,
+	}
+}
+
 func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 	return &outbound.MessageRM{
 		ID:             row.ID,

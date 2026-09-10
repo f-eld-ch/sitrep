@@ -211,6 +211,14 @@ export default defineConfig({
         target: "http://localhost:4180",
         changeOrigin: true,
       },
+      "/api/v2/messages": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      "/api/v2/attachments": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
       "/oauth2": {
         target: "http://localhost:4180",
         changeOrigin: true,
@@ -233,6 +241,14 @@ export default defineConfig({
       },
       // New gqlgen-based Go backend endpoint
       "/api/v2/graphql": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      "/api/v2/messages": {
+        target: "http://localhost:4180",
+        changeOrigin: true,
+      },
+      "/api/v2/attachments": {
         target: "http://localhost:4180",
         changeOrigin: true,
       },

@@ -168,6 +168,26 @@ func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) 
 	return incidentModeFromDomain(mode), nil
 }
 
+// Attachments is the resolver for the attachments field.
+func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error) {
+	msgID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListAttachments(ctx, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Attachment, len(rows))
+	for i, row := range rows {
+		out[i] = attachmentRMToModel(row)
+	}
+
+	return out, nil
+}
+
 // CreateIncident is the resolver for the createIncident field.
 func (r *mutationResolver) CreateIncident(
 	ctx context.Context,
@@ -841,6 +861,34 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 	return id, nil
 }
 
+// RemoveAttachment is the resolver for the removeAttachment field.
+func (r *mutationResolver) RemoveAttachment(
+	ctx context.Context,
+	messageID string,
+	attachmentID string,
+) (string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	msgID, err := shared.ParseMessageID(messageID)
+	if err != nil {
+		return "", err
+	}
+
+	attID, err := shared.ParseAttachmentID(attachmentID)
+	if err != nil {
+		return "", err
+	}
+
+	if err := r.Messages.RemoveAttachment(ctx, msgID, attID, actor); err != nil {
+		return "", err
+	}
+
+	return attachmentID, nil
+}
+
 // CreateLayer is the resolver for the createLayer field.
 func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error) {
 	actor, err := identity.ActorFrom(ctx)
@@ -1244,6 +1292,9 @@ func (r *queryResolver) MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleG
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 
+// Message returns generated.MessageResolver implementation.
+func (r *Resolver) Message() generated.MessageResolver { return &messageResolver{r} }
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -1252,6 +1303,7 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type (
 	incidentResolver struct{ *Resolver }
+	messageResolver  struct{ *Resolver }
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )

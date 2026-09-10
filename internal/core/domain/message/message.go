@@ -15,6 +15,18 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
+// Attachment holds file metadata stored on the aggregate. Bytes are never here.
+type Attachment struct {
+	ID          shared.AttachmentID
+	Filename    string
+	ContentType string
+	Size        int64
+	Checksum    string
+	StorageKey  string
+	UploaderSub string
+	AddedAt     time.Time
+}
+
 // Message is the aggregate root for a single message entry.
 type Message struct {
 	root eventsourcing.Root
@@ -35,12 +47,14 @@ type Message struct {
 	authorSub      *string
 	lastEditorSub  *string
 	deleted        bool
+	attachments    []Attachment
 }
 
 func New(id shared.MessageID) *Message {
 	m := &Message{}
 	m.root.SetID(uuid.UUID(id))
-	eventsourcing.Register(m, Recorded{}, Corrected{}, Triaged{}, Deleted{}, Imported{})
+	eventsourcing.Register(m, Recorded{}, Corrected{}, Triaged{}, Deleted{}, Imported{},
+		AttachmentAdded{}, AttachmentRemoved{})
 
 	return m
 }
@@ -68,6 +82,14 @@ func (m *Message) PriorityStatus() shared.PriorityStatus { return m.priority }
 func (m *Message) DivisionIDs() []shared.DivisionID      { return m.divisionIDs }
 func (m *Message) AuthorSub() *string                    { return m.authorSub }
 func (m *Message) IsDeleted() bool                       { return m.deleted }
+
+// Attachments returns a copy of the attachment list so callers cannot mutate aggregate state.
+func (m *Message) Attachments() []Attachment {
+	cp := make([]Attachment, len(m.attachments))
+	copy(cp, m.attachments)
+
+	return cp
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Commands
@@ -209,6 +231,71 @@ func (m *Message) Triage(
 	return nil
 }
 
+// AddAttachment records that a file was attached to this message.
+// Adding the same attachmentID twice is an idempotent no-op (safe for retried uploads).
+func (m *Message) AddAttachment(
+	id shared.AttachmentID,
+	filename, contentType string,
+	size int64,
+	checksum, storageKey, uploaderSub string,
+	at time.Time,
+	actor string,
+) error {
+	if m.deleted {
+		return shared.ErrNotFound
+	}
+
+	if err := validateAttachment(filename, contentType, size); err != nil {
+		return err
+	}
+
+	// Idempotent: if already present, skip without error.
+	for _, a := range m.attachments {
+		if a.ID == id {
+			return nil
+		}
+	}
+
+	eventsourcing.TrackChange(m, AttachmentAdded{
+		AttachmentID: id,
+		Filename:     filename,
+		ContentType:  contentType,
+		Size:         size,
+		Checksum:     checksum,
+		StorageKey:   storageKey,
+		UploaderSub:  uploaderSub,
+	}, at, baseMeta(actor))
+
+	return nil
+}
+
+// RemoveAttachment records that an attachment was removed from this message.
+func (m *Message) RemoveAttachment(id shared.AttachmentID, removedBy string, at time.Time, actor string) error {
+	if m.deleted {
+		return shared.ErrNotFound
+	}
+
+	found := false
+
+	for _, a := range m.attachments {
+		if a.ID == id {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return shared.ErrNotFound
+	}
+
+	eventsourcing.TrackChange(m, AttachmentRemoved{
+		AttachmentID: id,
+		RemovedBy:    removedBy,
+	}, at, baseMeta(actor))
+
+	return nil
+}
+
 // Delete soft-deletes the message.
 func (m *Message) Delete(reason shared.DeleteReason, actor string, at time.Time) error {
 	if m.deleted {
@@ -291,6 +378,26 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.divisionIDs = d.DivisionIDs
 		m.authorSub = d.AuthorSub
 		m.lastEditorSub = d.LastEditorSub
+	case AttachmentAdded:
+		m.attachments = append(m.attachments, Attachment{
+			ID:          d.AttachmentID,
+			Filename:    d.Filename,
+			ContentType: d.ContentType,
+			Size:        d.Size,
+			Checksum:    d.Checksum,
+			StorageKey:  d.StorageKey,
+			UploaderSub: d.UploaderSub,
+			AddedAt:     e.OccurredAt,
+		})
+	case AttachmentRemoved:
+		next := m.attachments[:0]
+		for _, a := range m.attachments {
+			if a.ID != d.AttachmentID {
+				next = append(next, a)
+			}
+		}
+
+		m.attachments = next
 	default:
 		return fmt.Errorf("message.Transition: unhandled event type %T", e.Data)
 	}
@@ -302,7 +409,56 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────────
 
-const maxMessageClockDrift = 5 * time.Minute
+const (
+	maxMessageClockDrift  = 5 * time.Minute
+	MaxAttachmentSize     = 25 << 20 // 25 MiB
+	maxAttachmentFilename = 255
+)
+
+// allowedContentTypes is the allowlist for attachment content types.
+// SVG and HTML are intentionally excluded to prevent stored XSS via the download route.
+var allowedContentTypes = map[string]bool{
+	"image/jpeg":         true,
+	"image/png":          true,
+	"image/gif":          true,
+	"image/webp":         true,
+	"image/tiff":         true,
+	"application/pdf":    true,
+	"text/plain":         true,
+	"text/csv":           true,
+	"application/msword": true,
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
+	"application/vnd.ms-excel": true,
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         true,
+	"application/vnd.ms-powerpoint":                                             true,
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": true,
+	"application/zip":              true,
+	"application/x-zip-compressed": true,
+}
+
+func validateAttachment(filename, contentType string, size int64) error {
+	if strings.TrimSpace(filename) == "" {
+		return shared.ValidationError{Field: "filename", Message: "must not be empty"}
+	}
+
+	if len(filename) > maxAttachmentFilename {
+		return shared.ValidationError{Field: "filename", Message: "must not exceed 255 characters"}
+	}
+
+	if size <= 0 {
+		return shared.ValidationError{Field: "size", Message: "must be greater than zero"}
+	}
+
+	if size > MaxAttachmentSize {
+		return shared.ValidationError{Field: "size", Message: "exceeds maximum allowed size of 25 MiB"}
+	}
+
+	if !allowedContentTypes[contentType] {
+		return shared.ValidationError{Field: "contentType", Message: "content type not allowed"}
+	}
+
+	return nil
+}
 
 func validateMessageFields(content, sender, senderDetail, receiver, receiverDetail string, medium shared.Medium) error {
 	if strings.TrimSpace(content) == "" {

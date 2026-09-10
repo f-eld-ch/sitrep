@@ -11,6 +11,20 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
+// AttachmentRow mirrors readmodel.message_attachment.
+type AttachmentRow struct {
+	ID          uuid.UUID
+	MessageID   uuid.UUID
+	IncidentID  uuid.UUID
+	Filename    string
+	ContentType string
+	Size        int64
+	Checksum    string
+	StorageKey  string
+	UploaderSub string
+	CreatedAt   time.Time
+}
+
 // Compile-time assertion.
 var _ Handler = (*MessageHandler)(nil)
 
@@ -36,24 +50,30 @@ type MessageRow struct {
 	Deleted        bool
 }
 
-// MessageHandler maintains an in-memory projection of the readmodel.message table.
+// MessageHandler maintains an in-memory projection of the readmodel.message
+// and readmodel.message_attachment tables.
 type MessageHandler struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*MessageRow
+	mu          sync.RWMutex
+	rows        map[uuid.UUID]*MessageRow
+	attachments map[uuid.UUID]*AttachmentRow // keyed by attachment ID
 }
 
 func NewMessageHandler() *MessageHandler {
-	return &MessageHandler{rows: make(map[uuid.UUID]*MessageRow)}
+	return &MessageHandler{
+		rows:        make(map[uuid.UUID]*MessageRow),
+		attachments: make(map[uuid.UUID]*AttachmentRow),
+	}
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 2 }
+func (h *MessageHandler) Version() int { return 3 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	h.rows = make(map[uuid.UUID]*MessageRow)
+	h.attachments = make(map[uuid.UUID]*AttachmentRow)
 
 	return nil
 }
@@ -64,7 +84,8 @@ func (h *MessageHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported":
+	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported",
+		"AttachmentAdded", "AttachmentRemoved":
 		return true
 	}
 
@@ -198,6 +219,68 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			row.Deleted = true
 			row.UpdatedAt = e.OccurredAt
 		}
+
+		// Remove all attachments for this message.
+		for attID, att := range h.attachments {
+			if att.MessageID == id {
+				delete(h.attachments, attID)
+			}
+		}
+
+	case "AttachmentAdded":
+		var d struct {
+			AttachmentID string `json:"attachmentId"`
+			Filename     string `json:"filename"`
+			ContentType  string `json:"contentType"`
+			Size         int64  `json:"size"`
+			Checksum     string `json:"checksum"`
+			StorageKey   string `json:"storageKey"`
+			UploaderSub  string `json:"uploaderSub"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		attID, err := uuid.Parse(d.AttachmentID)
+		if err != nil {
+			return err
+		}
+
+		// Resolve incidentID from message row.
+		var incidentID uuid.UUID
+		if row := h.rows[id]; row != nil {
+			incidentID = row.IncidentID
+		}
+
+		if _, exists := h.attachments[attID]; !exists {
+			h.attachments[attID] = &AttachmentRow{
+				ID:          attID,
+				MessageID:   id,
+				IncidentID:  incidentID,
+				Filename:    d.Filename,
+				ContentType: d.ContentType,
+				Size:        d.Size,
+				Checksum:    d.Checksum,
+				StorageKey:  d.StorageKey,
+				UploaderSub: d.UploaderSub,
+				CreatedAt:   e.OccurredAt,
+			}
+		}
+
+	case "AttachmentRemoved":
+		var d struct {
+			AttachmentID string `json:"attachmentId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		attID, err := uuid.Parse(d.AttachmentID)
+		if err != nil {
+			return err
+		}
+
+		delete(h.attachments, attID)
 	}
 
 	return nil
@@ -209,6 +292,38 @@ func priorityForTriage(triage, priority string) string {
 	}
 
 	return priority
+}
+
+// GetAttachment returns the attachment row for the given ID, or nil if not found.
+func (h *MessageHandler) GetAttachment(id uuid.UUID) *AttachmentRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	row := h.attachments[id]
+	if row == nil {
+		return nil
+	}
+
+	cp := *row
+
+	return &cp
+}
+
+// AttachmentsForMessage returns all attachments for the given message, ordered by created_at.
+func (h *MessageHandler) AttachmentsForMessage(messageID uuid.UUID) []*AttachmentRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var out []*AttachmentRow
+
+	for _, row := range h.attachments {
+		if row.MessageID == messageID {
+			cp := *row
+			out = append(out, &cp)
+		}
+	}
+
+	return out
 }
 
 // Get returns the row for the given message ID, or nil if not found.

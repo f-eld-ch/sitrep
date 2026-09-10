@@ -66,6 +66,32 @@ var serveConfigOptions = []configOption{
 	stringOption("acme-email", "", "Contact address registered with the ACME CA for expiry notices"),
 	stringOption("acme-cache-dir", "/var/lib/sitrep/acme", "Directory persisting ACME account keys and certificates"),
 	stringOption("acme-directory-url", "", "ACME directory URL; empty uses Let's Encrypt production"),
+
+	// Attachment storage
+	boolOptionF(
+		"storage.attachments.enabled",
+		"attachments-enabled",
+		true,
+		"Enable file attachments on messages",
+	),
+	stringOptionF(
+		"storage.attachments.backend",
+		"attachments-backend",
+		"",
+		"Blob backend: filesystem | ephemeral | database (default: database when database-url is set, ephemeral otherwise)",
+	),
+	stringOptionF(
+		"storage.attachments.max-size",
+		"attachments-max-size",
+		"25mb",
+		"Maximum attachment size (e.g. 25mb, 10kb, 1gb)",
+	),
+	stringOptionF(
+		"storage.attachments.filesystem.dir",
+		"attachments-dir",
+		"/var/lib/sitrep/attachments",
+		"Root directory for attachment blobs (backend=filesystem only)",
+	),
 }
 
 // splitList accepts a repeated flag, a comma-separated string, or a YAML list,
@@ -149,11 +175,19 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 
 	s, err := buildStack(
 		ctx,
-		v.GetString("database-url"),
-		v.GetUint("auto-close-incidents"),
-		v.GetUint("auto-archive-incidents"),
+		withDSN(v.GetString("database-url")),
+		withAutoClose(v.GetUint("auto-close-incidents")),
+		withAutoArchive(v.GetUint("auto-archive-incidents")),
+		withAttachmentConfig(attachmentConfig{
+			enabled: v.GetBool("storage.attachments.enabled"),
+			backend: v.GetString("storage.attachments.backend"),
+			//nolint:gosec // viper returns uint64 safely bounded by config validation
+			maxSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
+			dir:     v.GetString("storage.attachments.filesystem.dir"),
+		}),
 	)
 	if err != nil {
+		slog.ErrorContext(ctx, "failed to build stack", slog.String("error", err.Error()))
 		return err
 	}
 	defer s.Teardown()
@@ -177,6 +211,8 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			GlobalAccessChecker:   s.GlobalAccessChecker,
 			AccessQueries:         s.AccessQueries,
 			Queries:               s.Queries,
+			//nolint:gosec // viper returns uint64 safely bounded by config validation
+			MaxAttachmentSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
 		}, apiOpts...),
 	}
 	opts = append(opts, tlsOptions(v)...)

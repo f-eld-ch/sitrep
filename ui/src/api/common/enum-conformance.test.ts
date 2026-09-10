@@ -1,14 +1,11 @@
 /**
- * Bidirectional conformance between domain enums and the generated Hasura schema enums.
+ * Bidirectional conformance between domain enums and the generated gqlgen schema enums.
  *
  * Direction 1 (compile-time): every domain enum value must be assignable to the schema union
  *   type. A renamed or removed schema value is a type error here.
  *
  * Direction 2 (runtime): every schema union value must appear in the domain enum's runtime
  *   values. A value added to the DB enum table but not to the domain enum fails here.
- *
- * When the schema switches from Hasura to gqlgen, update the imports from "gql" and keep
- * the test body identical — the assertions are what matters, not the source of the types.
  */
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
