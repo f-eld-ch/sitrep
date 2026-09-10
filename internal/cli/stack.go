@@ -66,9 +66,11 @@ func withDSN(dsn string) stackOption { return func(c *stackConfig) { c.dsn = dsn
 func withAutoClose(days uint) stackOption {
 	return func(c *stackConfig) { c.autoCloseDays = days }
 }
+
 func withAutoArchive(days uint) stackOption {
 	return func(c *stackConfig) { c.autoArchiveDays = days }
 }
+
 func withAttachmentConfig(cfg attachmentConfig) stackOption {
 	return func(c *stackConfig) { c.attCfg = cfg }
 }
@@ -104,6 +106,7 @@ func buildBlobStore(ctx context.Context, pool *pgxpool.Pool, cfg attachmentConfi
 		} else {
 			backend = "ephemeral"
 		}
+
 		slog.InfoContext(ctx, "attachment backend not configured; using default",
 			slog.String("backend", backend))
 	}
@@ -232,10 +235,12 @@ func buildPostgresStack(
 		pgprojection.NewAccessHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
+
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
 	if blobs != nil {
 		retentionSvc.WithBlobStore(blobs)
 	}
+
 	proj := projection.NewInstrumentedProjector(pgprojection.NewProjector(pool, store, notifier, handlers,
 		pgprojection.WithLock(projLock),
 		pgprojection.WithRetention(func(ctx context.Context) (bool, error) {

@@ -177,7 +177,10 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 		}
 
 		header := c.Response().Header()
-		header.Set("Content-Disposition", fmt.Sprintf(`%s; filename="%s"; filename*=UTF-8''%s`, disposition, safe, encoded))
+		header.Set(
+			"Content-Disposition",
+			fmt.Sprintf(`%s; filename="%s"; filename*=UTF-8''%s`, disposition, safe, encoded),
+		)
 		header.Set("X-Content-Type-Options", "nosniff")
 		// Blobs are immutable (keyed by attachment UUID); aggressive caching is safe.
 		header.Set("Cache-Control", "private, max-age=31536000, immutable")

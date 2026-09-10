@@ -215,7 +215,7 @@ func (s *Store) sweepTmp() {
 			name := filepath.Join(tmpDir, e.Name())
 			if err := s.root.Remove(name); err != nil {
 				slog.Warn("filesystem blob store: failed to sweep stale tmp file",
-					slog.String("name", name), slog.String("error",err.Error()))
+					slog.String("name", name), slog.String("error", err.Error()))
 			}
 		}
 	}

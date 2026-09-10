@@ -356,7 +356,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 		for _, key := range blobKeys {
 			if err := s.blobs.Delete(ctx, key); err != nil {
 				slog.WarnContext(ctx, "failed to delete blob after message deletion",
-					slog.String("key", key), slog.String("error",err.Error()))
+					slog.String("key", key), slog.String("error", err.Error()))
 			}
 		}
 	}
@@ -504,7 +504,7 @@ func (s *MessageService) AttachFile(
 		// Compensating delete: best-effort remove the blob we wrote.
 		if delErr := s.blobs.Delete(ctx, storageKey); delErr != nil {
 			slog.WarnContext(ctx, "compensating blob delete failed",
-				slog.String("key", storageKey), slog.String("error",delErr.Error()))
+				slog.String("key", storageKey), slog.String("error", delErr.Error()))
 		}
 
 		span.RecordError(txErr)
@@ -553,6 +553,7 @@ func (s *MessageService) RemoveAttachment(
 	var storageKey string
 
 	var txErr error
+
 	for attempt := range maxAttachRetries {
 		storageKey = ""
 
@@ -614,7 +615,7 @@ func (s *MessageService) RemoveAttachment(
 	if storageKey != "" {
 		if err := s.blobs.Delete(ctx, storageKey); err != nil {
 			slog.WarnContext(ctx, "failed to delete blob after attachment removal",
-				slog.String("key", storageKey), slog.String("error",err.Error()))
+				slog.String("key", storageKey), slog.String("error", err.Error()))
 		}
 	}
 
