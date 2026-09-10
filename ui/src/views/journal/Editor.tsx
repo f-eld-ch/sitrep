@@ -321,11 +321,8 @@ function AttachmentUpload({
                     className="delete is-small"
                     aria-label={t("message.attachments.remove")}
                     onClick={() => {
-                      void removeAttachment({ incidentId, messageId, attachmentId: a.id }).then(
-                        () => {
-                          dispatch({ type: "remove_attachment", attachmentId: a.id });
-                        },
-                      );
+                      dispatch({ type: "remove_attachment", attachmentId: a.id });
+                      void removeAttachment({ incidentId, messageId, attachmentId: a.id });
                     }}
                   />
                 </span>

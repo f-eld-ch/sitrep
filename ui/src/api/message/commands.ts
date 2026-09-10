@@ -182,6 +182,7 @@ export function useRemoveAttachment(): CommandHook<RemoveAttachmentArgs> {
   const removeAttachment = async (args: RemoveAttachmentArgs): Promise<void> => {
     await mutate({
       variables: { messageId: args.messageId, attachmentId: args.attachmentId },
+      optimisticResponse: { removeAttachment: args.attachmentId },
       update(cache) {
         const cached = cache.readQuery({
           query: GET_INCIDENT_MESSAGES,
