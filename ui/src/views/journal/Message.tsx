@@ -35,9 +35,9 @@ const IMG_RETRY_DELAYS = [300, 800, 2000];
 function accentKey(message: Message): "warning" | "success" | "dark" | "danger" | "none" {
   if (message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset)
     return "warning";
+  if (message.priorityId === PriorityStatus.High) return "danger";
   if (message.triageId === TriageStatus.MoreInfo) return "success";
   if (message.triageId === TriageStatus.Triaged) return "dark";
-  if (message.priorityId === PriorityStatus.High) return "danger";
   return "none";
 }
 
@@ -57,13 +57,6 @@ const bgTint: Record<string, string> = {
   none: "",
 };
 
-const actionBorderT: Record<string, string> = {
-  warning: "border-t-warning",
-  success: "border-t-success",
-  dark: "border-t-fg",
-  danger: "border-t-danger",
-  none: "border-t-border",
-};
 
 const tagVariantMap: Record<string, TagVariant> = {
   warning: "warning",
@@ -234,7 +227,7 @@ const MessageContainer = ({
 
         {/* Content */}
         <div
-          className="text-sm text-left break-words"
+          className="text-sm text-left break-words mt-6"
           data-testid={`content-${message.id}`}
         >
           <ReactPreview content={message.content} />
@@ -242,9 +235,9 @@ const MessageContainer = ({
 
         {/* Division tags */}
         {hasDivisions && (
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="flex flex-wrap gap-3 mt-2">
             {message.divisions?.map((d) => (
-              <Tag key={d.division.id} size="sm" variant={tagVariant}>
+              <Tag key={d.division.id} size="sm" className="pl-2 pr-2" variant={tagVariant}>
                 {d.division.name && d.division.name.trim() !== ""
                   ? d.division.name
                   : d.division.description}
@@ -284,10 +277,7 @@ const MessageContainer = ({
       {/* Action bar (tabs) */}
       {showControls === true && id !== undefined && (
         <div
-          className={classNames(
-            "flex justify-end border-t-2 rounded-b",
-            actionBorderT[accent],
-          )}
+          className="flex justify-end rounded-b"
           style={{ borderBottomRightRadius: "4px" }}
         >
           {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
