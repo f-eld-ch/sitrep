@@ -135,6 +135,9 @@ var (
 	ErrInvalidInput      = errors.New("INVALID_INPUT")
 	ErrInvalidParent     = errors.New("INVALID_PARENT_INCIDENT")
 	ErrConflict          = errors.New("CONFLICT")
+	// ErrNotSupported is returned when the requested operation is not enabled
+	// in this deployment (e.g. attachments storage is not configured).
+	ErrNotSupported = errors.New("NOT_SUPPORTED")
 )
 
 // ValidationError carries a field-level message suitable for the API response.

@@ -94,7 +94,8 @@
       "add": "Ajouter une pièce jointe",
       "dropHere": "Déposez les fichiers ici",
       "uploadFailed": "Échec du téléversement",
-      "tooLarge": "Le fichier dépasse la taille maximale autorisée"
+      "tooLarge": "Le fichier dépasse la taille maximale autorisée",
+      "disabled": "Les pièces jointes ne sont pas activées sur ce serveur"
     }
   },
   "messageFlow": "Liste de distribution",

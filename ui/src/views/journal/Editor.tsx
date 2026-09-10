@@ -413,7 +413,9 @@ function AttachmentUpload({
             <p className="help is-danger mt-1">
               {error.code === "ATTACHMENT_TOO_LARGE"
                 ? t("message.attachments.tooLarge")
-                : t("message.attachments.uploadFailed")}
+                : error.code === "ATTACHMENT_DISABLED"
+                  ? t("message.attachments.disabled")
+                  : t("message.attachments.uploadFailed")}
             </p>
           )}
         </div>

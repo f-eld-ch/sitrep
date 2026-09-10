@@ -94,7 +94,8 @@
       "add": "Aggiungi allegato",
       "dropHere": "Rilascia i file qui",
       "uploadFailed": "Caricamento non riuscito",
-      "tooLarge": "Il file supera la dimensione massima consentita"
+      "tooLarge": "Il file supera la dimensione massima consentita",
+      "disabled": "Gli allegati non sono abilitati su questo server"
     }
   },
   "messageFlow": "flusso di segnalazione",

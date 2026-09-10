@@ -12,6 +12,7 @@ export type ApiErrorCode =
   | "INTERNAL_ERROR"
   | "NETWORK_ERROR"
   | "ATTACHMENT_TOO_LARGE"
+  | "ATTACHMENT_DISABLED"
   | "UNKNOWN";
 
 const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
@@ -28,6 +29,7 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
   INTERNAL_ERROR: "An unexpected server error occurred.",
   NETWORK_ERROR: "Network error — please check your connection.",
   ATTACHMENT_TOO_LARGE: "The file exceeds the maximum allowed upload size.",
+  ATTACHMENT_DISABLED: "File attachments are not enabled on this server.",
   UNKNOWN: "An unexpected error occurred.",
 };
 

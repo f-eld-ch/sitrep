@@ -241,6 +241,7 @@ export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachm
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
         if (response.status === 413) throw new ApiError("ATTACHMENT_TOO_LARGE");
+        if (response.status === 501) throw new ApiError("ATTACHMENT_DISABLED");
         throw new ApiError("UNKNOWN", body.error ?? `upload failed: ${response.status}`);
       }
 

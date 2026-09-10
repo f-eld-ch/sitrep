@@ -94,7 +94,8 @@
       "add": "Anhang hinzufügen",
       "dropHere": "Dateien hier ablegen",
       "uploadFailed": "Upload fehlgeschlagen",
-      "tooLarge": "Datei überschreitet die maximale Upload-Grösse"
+      "tooLarge": "Datei überschreitet die maximale Upload-Grösse",
+      "disabled": "Dateianhänge sind auf diesem Server nicht aktiviert"
     }
   },
   "messageFlow": "Meldefluss",

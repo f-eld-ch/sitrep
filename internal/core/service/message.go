@@ -379,7 +379,7 @@ func (s *MessageService) AttachFile(
 		slog.String("message_id", messageID.String()), slog.String("actor", actor.Sub))
 
 	if s.blobs == nil {
-		err := fmt.Errorf("attachments not configured")
+		err := shared.ErrNotSupported
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -541,7 +541,7 @@ func (s *MessageService) RemoveAttachment(
 		slog.String("actor", actor.Sub))
 
 	if s.blobs == nil {
-		err := fmt.Errorf("attachments not configured")
+		err := shared.ErrNotSupported
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -636,7 +636,7 @@ func (s *MessageService) OpenAttachment(
 		slog.String("attachment_id", attachmentID.String()), slog.String("actor", actor.Sub))
 
 	if s.blobs == nil || s.queries == nil {
-		err := fmt.Errorf("attachments not configured")
+		err := shared.ErrNotSupported
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 

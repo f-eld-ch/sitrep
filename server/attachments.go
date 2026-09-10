@@ -51,6 +51,9 @@ func sanitizeFilename(name string) string {
 // attachmentErrorToHTTP maps domain errors to HTTP status codes.
 func attachmentErrorToHTTP(c *echo.Context, err error) error {
 	switch {
+	case errors.Is(err, shared.ErrNotSupported):
+		// 501 — attachments are not enabled on this server; not a server fault.
+		return c.JSON(http.StatusNotImplemented, map[string]string{"error": err.Error()})
 	case errors.Is(err, outbound.ErrBlobTooLarge):
 		return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{"error": err.Error()})
 	case errors.Is(err, shared.ErrNotFound):
