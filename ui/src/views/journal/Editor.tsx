@@ -409,7 +409,13 @@ function AttachmentUpload({
               {isDragActive ? t("message.attachments.dropHere") : t("message.attachments.add")}
             </span>
           </div>
-          {error && <p className="help is-danger mt-1">{t("message.attachments.uploadFailed")}</p>}
+          {error && (
+            <p className="help is-danger mt-1">
+              {error.code === "ATTACHMENT_TOO_LARGE"
+                ? t("message.attachments.tooLarge")
+                : t("message.attachments.uploadFailed")}
+            </p>
+          )}
         </div>
       )}
     </FormRow>

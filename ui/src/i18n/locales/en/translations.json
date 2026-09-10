@@ -93,7 +93,8 @@
       "remove": "Remove attachment",
       "add": "Add attachment",
       "dropHere": "Drop files here",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "tooLarge": "File exceeds the maximum upload size"
     }
   },
   "messageFlow": "reporting flow",

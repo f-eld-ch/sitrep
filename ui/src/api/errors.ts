@@ -11,6 +11,7 @@ export type ApiErrorCode =
   | "CONFLICT"
   | "INTERNAL_ERROR"
   | "NETWORK_ERROR"
+  | "ATTACHMENT_TOO_LARGE"
   | "UNKNOWN";
 
 const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
@@ -26,6 +27,7 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
   CONFLICT: "This change conflicts with another operation — please refresh and try again.",
   INTERNAL_ERROR: "An unexpected server error occurred.",
   NETWORK_ERROR: "Network error — please check your connection.",
+  ATTACHMENT_TOO_LARGE: "The file exceeds the maximum allowed upload size.",
   UNKNOWN: "An unexpected error occurred.",
 };
 

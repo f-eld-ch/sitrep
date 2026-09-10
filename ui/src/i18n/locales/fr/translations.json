@@ -93,7 +93,8 @@
       "remove": "Supprimer la pièce jointe",
       "add": "Ajouter une pièce jointe",
       "dropHere": "Déposez les fichiers ici",
-      "uploadFailed": "Échec du téléversement"
+      "uploadFailed": "Échec du téléversement",
+      "tooLarge": "Le fichier dépasse la taille maximale autorisée"
     }
   },
   "messageFlow": "Liste de distribution",

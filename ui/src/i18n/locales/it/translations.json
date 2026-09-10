@@ -93,7 +93,8 @@
       "remove": "Rimuovi allegato",
       "add": "Aggiungi allegato",
       "dropHere": "Rilascia i file qui",
-      "uploadFailed": "Caricamento non riuscito"
+      "uploadFailed": "Caricamento non riuscito",
+      "tooLarge": "Il file supera la dimensione massima consentita"
     }
   },
   "messageFlow": "flusso di segnalazione",

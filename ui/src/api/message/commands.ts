@@ -219,12 +219,9 @@ export interface UploadAttachmentArgs {
 export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachment> {
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<ApiError | undefined>(undefined);
 
-  const state: CommandState = {
-    loading,
-    error: error ? new ApiError("UNKNOWN", error) : undefined,
-  };
+  const state: CommandState = { loading, error };
 
   const uploadAttachment = async (args: UploadAttachmentArgs): Promise<Attachment> => {
     setLoading(true);
@@ -243,7 +240,8 @@ export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachm
 
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? `upload failed: ${response.status}`);
+        if (response.status === 413) throw new ApiError("ATTACHMENT_TOO_LARGE");
+        throw new ApiError("UNKNOWN", body.error ?? `upload failed: ${response.status}`);
       }
 
       const data = (await response.json()) as {
@@ -305,8 +303,7 @@ export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachm
 
       return attachment;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "upload failed";
-      setError(msg);
+      setError(e instanceof ApiError ? e : new ApiError("UNKNOWN"));
       throw e;
     } finally {
       setLoading(false);
