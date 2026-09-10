@@ -71,7 +71,9 @@ func (s *Store) Close() error {
 
 // Put streams r into the store at key. The write is atomic: data lands in tmp/
 // and is renamed into place only after Sync. Any error leaves no partial file.
-func (s *Store) Put(_ context.Context, key string, r io.Reader, _ int64, _ string) error {
+// When size >= 0 the copy is bounded to size+1 bytes; exceeding that limit
+// returns an error so oversized blobs are never committed to disk.
+func (s *Store) Put(_ context.Context, key string, r io.Reader, size int64, _ string) error {
 	incID, attID, err := blobkey.Parse(key)
 	if err != nil {
 		return err
@@ -96,11 +98,26 @@ func (s *Store) Put(_ context.Context, key string, r io.Reader, _ int64, _ strin
 		return fmt.Errorf("filesystem blob store: create tmp file: %w", err)
 	}
 
-	if _, err := io.Copy(f, r); err != nil {
+	// When a size hint is provided, cap the read to size+1 so we can detect
+	// oversized uploads without buffering the entire body first.
+	src := r
+	if size >= 0 {
+		src = io.LimitReader(r, size+1)
+	}
+
+	n, copyErr := io.Copy(f, src)
+	if copyErr != nil {
 		_ = f.Close()
 		_ = s.root.Remove(tmpName)
 
-		return fmt.Errorf("filesystem blob store: write: %w", err)
+		return fmt.Errorf("filesystem blob store: write: %w", copyErr)
+	}
+
+	if size >= 0 && n > size {
+		_ = f.Close()
+		_ = s.root.Remove(tmpName)
+
+		return fmt.Errorf("filesystem blob store: blob exceeds declared size of %d bytes", size)
 	}
 
 	if err := f.Sync(); err != nil {
