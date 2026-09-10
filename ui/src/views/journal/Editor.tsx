@@ -298,6 +298,7 @@ function AttachmentUpload({
                   </span>
                   {f.name}
                   <button
+                    type="button"
                     className="delete is-small"
                     aria-label={t("message.attachments.remove")}
                     onClick={() => removePendingFile(i)}
@@ -316,6 +317,7 @@ function AttachmentUpload({
                   </span>
                   {a.filename}
                   <button
+                    type="button"
                     className="delete is-small"
                     aria-label={t("message.attachments.remove")}
                     onClick={() => {
