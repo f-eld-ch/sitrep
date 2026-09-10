@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import classNames from "classnames";
 import dayjs from "dayjs";
-import { memo, useRef } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
@@ -26,10 +26,31 @@ export interface MessageProps {
   setTriageMessage?: (message: Message | undefined) => void;
 }
 
+const MAX_IMG_RETRIES = 3;
+const IMG_RETRY_DELAYS = [300, 800, 2000];
+
 const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
   const isImage = attachment.contentType.startsWith("image/");
+  const [imgFailed, setImgFailed] = useState(false);
+  const retryCount = useRef(0);
 
-  if (isImage) {
+  const handleImgError = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      if (retryCount.current >= MAX_IMG_RETRIES) {
+        setImgFailed(true);
+        return;
+      }
+      const delay = IMG_RETRY_DELAYS[retryCount.current] ?? 2000;
+      retryCount.current += 1;
+      const img = e.currentTarget;
+      setTimeout(() => {
+        img.src = `${attachment.url}?r=${retryCount.current}`;
+      }, delay);
+    },
+    [attachment.url],
+  );
+
+  if (isImage && !imgFailed) {
     return (
       <a
         href={attachment.url}
@@ -42,6 +63,7 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
         <img
           src={attachment.url}
           alt={attachment.filename}
+          onError={handleImgError}
           style={{
             height: "64px",
             width: "64px",
