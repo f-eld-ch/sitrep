@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 )
 
 type configOption struct {
@@ -265,8 +267,16 @@ func validateConfig(v *viper.Viper) error {
 			return fmt.Errorf("invalid size %q: use bytes or a kb/mb/gb suffix (e.g. 25mb)", rawSize)
 		}
 
-		if v.GetSizeInBytes("storage.attachments.max-size") == 0 {
+		maxBytes := v.GetSizeInBytes("storage.attachments.max-size")
+		if maxBytes == 0 {
 			return fmt.Errorf("storage.attachments.max-size must be greater than zero")
+		}
+
+		if maxBytes > message.MaxAttachmentSize {
+			return fmt.Errorf(
+				"storage.attachments.max-size %d bytes exceeds the domain maximum of %d bytes (25 MiB)",
+				maxBytes, message.MaxAttachmentSize,
+			)
 		}
 
 		if backend == "filesystem" && v.GetString("storage.attachments.filesystem.dir") == "" {

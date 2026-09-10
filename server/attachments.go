@@ -17,6 +17,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
@@ -50,6 +51,8 @@ func sanitizeFilename(name string) string {
 // attachmentErrorToHTTP maps domain errors to HTTP status codes.
 func attachmentErrorToHTTP(c *echo.Context, err error) error {
 	switch {
+	case errors.Is(err, outbound.ErrBlobTooLarge):
+		return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{"error": err.Error()})
 	case errors.Is(err, shared.ErrNotFound):
 		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	case errors.Is(err, shared.ErrForbidden):
@@ -119,25 +122,20 @@ func uploadAttachment(messages inbound.MessageService, maxSize int64) echo.Handl
 		// Reconstruct the full stream: peeked bytes + remainder.
 		fullReader := io.MultiReader(bytes.NewReader(peek), part)
 
-		// Bound the stream at maxSize+1 bytes so the blob store never receives more.
+		// Bound the stream at maxSize+1 bytes and pass maxSize as the size hint
+		// so the blob store enforces the limit before committing the event.
+		// If the stream exceeds maxSize the store returns ErrBlobTooLarge and
+		// AttachFile performs a compensating delete — no event is committed.
 		limited := io.LimitReader(fullReader, maxSize+1)
 
-		// Size is unknown when streaming; pass -1 and let the service measure it.
 		state, err := messages.AttachFile(c.Request().Context(), msgID, inbound.AttachFileInput{
 			Filename:    filename,
 			ContentType: mediaType,
-			Size:        -1,
+			Size:        maxSize,
 			Content:     limited,
 		}, actor)
 		if err != nil {
 			return attachmentErrorToHTTP(c, err)
-		}
-
-		// If the service measured more than maxSize bytes the upload was oversized.
-		if state.Size > maxSize {
-			return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{
-				"error": fmt.Sprintf("attachment exceeds maximum size of %d bytes", maxSize),
-			})
 		}
 
 		state.URL = "/api/v2/attachments/" + state.ID.String()
@@ -182,8 +180,9 @@ func downloadAttachment(messages inbound.MessageService) echo.HandlerFunc {
 			fmt.Sprintf(`%s; filename="%s"; filename*=UTF-8''%s`, disposition, safe, encoded),
 		)
 		header.Set("X-Content-Type-Options", "nosniff")
-		// Blobs are immutable (keyed by attachment UUID); aggressive caching is safe.
-		header.Set("Cache-Control", "private, max-age=31536000, immutable")
+		// Do not cache: attachment access is authorized per-request, so a
+		// long-lived cache would serve protected bytes after access is revoked.
+		header.Set("Cache-Control", "no-store")
 
 		header.Set("Content-Type", state.ContentType)
 		http.ServeContent(c.Response(), c.Request(), "", time.Time{}, rc)

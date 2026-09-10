@@ -9,6 +9,10 @@ import (
 // ErrBlobNotFound is returned by BlobStore.Get when no blob exists for the key.
 var ErrBlobNotFound = errors.New("blob not found")
 
+// ErrBlobTooLarge is returned by BlobStore.Put when the incoming stream exceeds
+// the declared size hint. The caller should map this to a 413 response.
+var ErrBlobTooLarge = errors.New("blob exceeds declared size")
+
 // BlobStore is the driven port for binary blob persistence.
 // Implementations must be safe for concurrent use.
 //

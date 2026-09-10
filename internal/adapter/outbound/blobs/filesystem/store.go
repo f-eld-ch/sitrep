@@ -15,6 +15,7 @@ package filesystem
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
@@ -90,8 +91,14 @@ func (s *Store) Put(_ context.Context, key string, r io.Reader, size int64, _ st
 		return fmt.Errorf("filesystem blob store: mkdir tmp: %w", err)
 	}
 
-	// Write to a temp file inside tmp/.
-	tmpName := filepath.Join(tmpDir, attID.String()+".tmp")
+	// Use a random suffix so concurrent Put calls for the same key (e.g. a
+	// retry loop) never share a tmp path and race each other.
+	var randSuffix [8]byte
+	if _, err := rand.Read(randSuffix[:]); err != nil {
+		return fmt.Errorf("filesystem blob store: generate tmp name: %w", err)
+	}
+
+	tmpName := filepath.Join(tmpDir, fmt.Sprintf("%s-%x.tmp", attID, randSuffix))
 
 	f, err := s.root.OpenFile(tmpName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm)
 	if err != nil {
@@ -117,7 +124,7 @@ func (s *Store) Put(_ context.Context, key string, r io.Reader, size int64, _ st
 		_ = f.Close()
 		_ = s.root.Remove(tmpName)
 
-		return fmt.Errorf("filesystem blob store: blob exceeds declared size of %d bytes", size)
+		return fmt.Errorf("filesystem blob store: %w (%d bytes)", outbound.ErrBlobTooLarge, size)
 	}
 
 	if err := f.Sync(); err != nil {

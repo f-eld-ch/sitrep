@@ -149,7 +149,35 @@ function Editor() {
               failedFiles.push(file);
             }
           }
-          setPendingFiles(failedFiles);
+          setPendingFiles([]);
+          if (failedFiles.length > 0) {
+            // Switch to edit mode so a retry saves to the existing message
+            // rather than creating a duplicate. The user can re-add failed
+            // files via the attachment dropzone.
+            dispatch({
+              type: "set_edit_message",
+              message: {
+                id: newId,
+                number: 0,
+                sender: state.sender,
+                senderDetail,
+                receiver: state.receiver,
+                receiverDetail,
+                medium: state.media,
+                content: state.content,
+                time,
+                priorityId: PriorityStatus.Normal,
+                triageId: TriageStatus.Pending,
+                divisions: [],
+                attachments: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: new Date(0),
+              },
+            });
+            savingRef.current = false;
+            return;
+          }
         }
       }
       savingRef.current = false;
