@@ -169,34 +169,48 @@ func (s *MessageService) CorrectMessage(
 
 	var state inbound.MessageState
 
-	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		msg, err := s.repo.Load(ctx, id)
-		if err != nil {
-			return err
+	var txErr error
+	for attempt := range maxAttachRetries {
+		txErr = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+			msg, err := s.repo.Load(ctx, id)
+			if err != nil {
+				return err
+			}
+
+			if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
+				return err
+			}
+
+			if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
+				return err
+			}
+
+			if err := msg.Correct(content, sender, senderDetail, receiver, receiverDetail,
+				medium, msgTime, actor.Sub, at, actor.Sub); err != nil {
+				return err
+			}
+
+			if _, err = s.repo.Save(ctx, msg); err != nil {
+				return err
+			}
+
+			state = messageToState(msg, at)
+
+			return nil
+		})
+		if txErr == nil {
+			break
 		}
 
-		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
-			return err
+		if !isOptimisticConflict(txErr) || attempt == maxAttachRetries-1 {
+			break
 		}
 
-		if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
-			return err
-		}
+		slog.DebugContext(ctx, "correct message optimistic conflict, retrying",
+			slog.Int("attempt", attempt+1), slog.String("message_id", id.String()))
+	}
 
-		if err := msg.Correct(content, sender, senderDetail, receiver, receiverDetail,
-			medium, msgTime, actor.Sub, at, actor.Sub); err != nil {
-			return err
-		}
-
-		if _, err = s.repo.Save(ctx, msg); err != nil {
-			return err
-		}
-
-		state = messageToState(msg, at)
-
-		return nil
-	})
-	if err != nil {
+	if err := txErr; err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "CorrectMessage", err, slog.String("id", id.String()))
@@ -537,37 +551,53 @@ func (s *MessageService) RemoveAttachment(
 
 	var storageKey string
 
-	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		msg, err := s.repo.Load(ctx, messageID)
-		if err != nil {
-			return err
-		}
+	var txErr error
+	for attempt := range maxAttachRetries {
+		storageKey = ""
 
-		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
-			return err
-		}
-
-		if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
-			return err
-		}
-
-		// Resolve storage key before removal.
-		for _, a := range msg.Attachments() {
-			if a.ID == attachmentID {
-				storageKey = a.StorageKey
-				break
+		txErr = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+			msg, err := s.repo.Load(ctx, messageID)
+			if err != nil {
+				return err
 			}
-		}
 
-		if err := msg.RemoveAttachment(attachmentID, actor.Sub, at, actor.Sub); err != nil {
+			if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
+				return err
+			}
+
+			if err := s.requireIncidentOpen(ctx, msg.IncidentID()); err != nil {
+				return err
+			}
+
+			// Resolve storage key before removal.
+			for _, a := range msg.Attachments() {
+				if a.ID == attachmentID {
+					storageKey = a.StorageKey
+					break
+				}
+			}
+
+			if err := msg.RemoveAttachment(attachmentID, actor.Sub, at, actor.Sub); err != nil {
+				return err
+			}
+
+			_, err = s.repo.Save(ctx, msg)
+
 			return err
+		})
+		if txErr == nil {
+			break
 		}
 
-		_, err = s.repo.Save(ctx, msg)
+		if !isOptimisticConflict(txErr) || attempt == maxAttachRetries-1 {
+			break
+		}
 
-		return err
-	})
-	if err != nil {
+		slog.DebugContext(ctx, "remove attachment optimistic conflict, retrying",
+			slog.Int("attempt", attempt+1), slog.String("message_id", messageID.String()))
+	}
+
+	if err := txErr; err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		logIfUnexpected(ctx, "RemoveAttachment", err,
