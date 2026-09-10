@@ -1,4 +1,3 @@
-export { default as Dashboard } from "./Dashboard";
 export { default as Editor } from "./Editor";
 export { default as AccessPage } from "./AccessPage";
 export { default as List } from "./List";

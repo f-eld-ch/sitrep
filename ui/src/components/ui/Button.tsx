@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { type ButtonHTMLAttributes } from "react";
 
 export type ButtonVariant = "primary" | "success" | "warning" | "danger" | "light" | "ghost";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -19,6 +19,7 @@ const base =
   "inline-flex items-center justify-center cursor-pointer border font-medium transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const sizes: Record<ButtonSize, string> = {
+  xs: "text-xs px-2 py-0.5 h-6",
   sm: "text-sm px-3 py-1 h-7",
   md: "text-base px-4 py-2 h-9",
   lg: "text-lg px-6 py-3 h-12",

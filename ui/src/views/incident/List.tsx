@@ -186,7 +186,7 @@ export function IncidentCard(props: {
   const { t } = useTranslation();
 
   const cardClass = classNames(
-    "border border-border rounded shadow-sm mb-3",
+    "border border-border rounded shadow-md dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)] dark:border-white/10 mb-3",
     incident.closedAt
       ? "bg-warning/10 dark:bg-warning/5"
       : contextOnly
@@ -203,9 +203,10 @@ export function IncidentCard(props: {
           >
             {incident.name}
             <Tag
+              light={true}
               size="sm"
               variant="gray"
-              className="ml-2 align-middle"
+              className="ml-2 p-1 align-middle"
               title={
                 incident.accessMode === "RESTRICTED"
                   ? t("incidentAccess.restricted")
@@ -215,17 +216,17 @@ export function IncidentCard(props: {
               <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
             </Tag>
           </h4>
-          <div className="flex flex-wrap gap-x-6 gap-y-1">
-            <div>
+          <div className="flex gap-4">
+            <div className="flex-1">
               <strong>{t("location")}: </strong>
               {incident.location.name}
             </div>
-            <div>
+            <div className="flex-1">
               <strong>{t("createdAt")}: </strong>
               {dayjs(incident.createdAt).format("LLL")}
             </div>
             {incident.closedAt && (
-              <div>
+              <div className="flex-1">
                 <strong>{t("closedAt")}: </strong>
                 {dayjs(incident.closedAt).format("LLL")}
               </div>
