@@ -41,6 +41,8 @@ export function useDarkMode(
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+    // @uiw/react-md-editor reads data-color-mode from the nearest ancestor to choose its theme.
+    root.setAttribute("data-color-mode", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   return {
