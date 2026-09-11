@@ -24,7 +24,7 @@ const SenderInput = ({ id }: { id: string }) => {
   const { state, dispatch, autocompleteDetails } = useEditorContext();
 
   return (
-    <div className="relative flex-1 min-w-0">
+    <div className="relative min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
@@ -54,7 +54,7 @@ const ReceiverInput = ({ id }: { id: string }) => {
   const { state, dispatch, autocompleteDetails } = useEditorContext();
 
   return (
-    <div className="relative flex-1 min-w-0">
+    <div className="relative min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
@@ -93,7 +93,7 @@ const TimeInput = ({ id }: { id: string }) => {
   const { now } = useDate();
   const invalidTime = !hasValidMessageTime(state.time, now);
   return (
-    <div className="flex-1 min-w-0">
+    <div className="min-w-0 flex-1">
       <div className="relative">
         <input
           id={id}
@@ -115,7 +115,7 @@ const TimeInput = ({ id }: { id: string }) => {
         </span>
       </div>
       {invalidTime && (
-        <p id={`${id}-error`} className="text-xs text-danger mt-1" role="alert">
+        <p id={`${id}-error`} className="mt-1 text-xs text-danger" role="alert">
           {t("messageTimeTooFarInFuture")}
         </p>
       )}
@@ -133,7 +133,7 @@ const SenderDetailInput = ({
   const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
-    <div className="flex-1 min-w-0">
+    <div className="min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}
@@ -168,7 +168,7 @@ const ReceiverDetailInput = ({
   const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
-    <div className="flex-1 min-w-0">
+    <div className="min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}

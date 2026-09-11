@@ -242,19 +242,19 @@ const WMSLayerMenu = () => {
       {state.wms.activeLayers.map((layer: WMSLayer) => (
         <div
           key={layer.name}
-          className="flex items-center justify-between flex-wrap px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs cursor-pointer hover:bg-gray-100 transition-colors"
+          className="flex cursor-pointer flex-wrap items-center justify-between border-b border-gray-200 px-3 py-2 text-xs transition-colors last:border-b-0 hover:bg-gray-100"
           onClick={() => handleVisibilityToggle(layer.name, !layer.isVisible)}
         >
-          <div className="mr-3 flex items-center flex-1">
-            <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3">
+          <div className="mr-3 flex flex-1 items-center">
+            <span className="mr-3 inline-flex h-[1em] w-[1em] items-center justify-center">
               <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
             </span>
             <span>{layer.title}</span>
           </div>
-          <div className="flex flex-row items-center shrink-0 gap-2">
+          <div className="flex shrink-0 flex-row items-center gap-2">
             {layer.legendURL && (
               <button
-                className="hover:text-primary transition-colors leading-none"
+                className="leading-none transition-colors hover:text-primary"
                 type="button"
                 onClick={(e) => { e.stopPropagation(); handleInfoToggle(layer.name); }}
               >
@@ -262,7 +262,7 @@ const WMSLayerMenu = () => {
               </button>
             )}
             <button
-              className="hover:text-primary transition-colors leading-none"
+              className="leading-none transition-colors hover:text-primary"
               type="button"
               onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(layer.name, !layer.isVisible); }}
             >
@@ -281,7 +281,7 @@ const WMSLayerMenu = () => {
               }
             />
             <button
-              className="hover:text-danger transition-colors leading-none"
+              className="leading-none transition-colors hover:text-danger"
               type="button"
               onClick={(e) => { e.stopPropagation(); handleDeleteLayer(layer.name); }}
             >
@@ -290,12 +290,12 @@ const WMSLayerMenu = () => {
           </div>
           {expandedLayer === layer.name && (
             <div className="flex items-center justify-center">
-              <img src={layer.legendURL} alt={`${layer.title}`} style={{ width: "100%" }} />
+              <img src={layer.legendURL} alt={`${layer.title}`} className="w-full" />
             </div>
           )}
         </div>
       ))}
-      <div className="flex flex-col items-start px-3 py-2 border-b border-gray-200 last:border-b-0">
+      <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 last:border-b-0">
         {!showAddLayer && (
           <Button size="sm" variant="primary" onClick={() => setShowAddLayer(true)}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
@@ -304,10 +304,10 @@ const WMSLayerMenu = () => {
         )}
 
         {showAddLayer && (
-          <div className="flex flex-wrap gap-2 w-full">
-            <div className="flex-1 min-w-0">
+          <div className="flex w-full flex-wrap gap-2">
+            <div className="min-w-0 flex-1">
               <select
-                className="rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none mb-2"
+                className="mb-2 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
                 onChange={handleServerSelect}
                 value={state.wms.currentServer}
               >
@@ -321,13 +321,13 @@ const WMSLayerMenu = () => {
             </div>
 
             {state.wms.currentServer === "" && (
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <input
                   type="text"
                   placeholder={t("wmsLayerMenu.enterServerUrl")}
                   value={customServer}
                   onChange={handleCustomServerChange}
-                  className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                  className="mb-2 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
 
                 <Button variant="primary" onClick={handleCustomServerSubmit}>
@@ -336,12 +336,11 @@ const WMSLayerMenu = () => {
               </div>
             )}
             {state.wms.currentServer && (
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <select
-                  className={`rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+                  className={clsx("w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none", isLoading && "cursor-wait opacity-50")}
                   onChange={handleLayerSelect}
                   value={selectedLayer || ""}
-                  style={{ width: "100%" }}
                 >
                   <option value="" disabled>
                     {t("wmsLayerMenu.selectLayer")}
@@ -358,7 +357,7 @@ const WMSLayerMenu = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded p-3 text-xs text-red-700 relative w-full mt-2">
+          <div className="relative mt-2 w-full rounded border border-red-200 bg-red-50 p-3 text-xs text-red-700">
             <button
               type="button"
               className="absolute top-2 right-2 text-red-400 hover:text-red-600"

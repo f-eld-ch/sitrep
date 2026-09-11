@@ -78,7 +78,6 @@ function renderWithMap(children: React.ReactNode) {
   return render(
     <MapLibre
       initialViewState={{ longitude: 0, latitude: 0, zoom: 1 }}
-      style={{ width: 400, height: 400 }}
       mapStyle={mapStyle}
     >
       {children}

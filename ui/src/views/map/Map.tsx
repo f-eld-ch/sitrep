@@ -109,7 +109,7 @@ function MapView() {
   );
 
   return (
-    <div className="flex-grow mt-[2.75rem]" data-theme="light">
+    <div className="mt-[2.75rem] grow" data-theme="light">
       <MapClass
         mapLib={maplibre}
         initialViewState={{
@@ -150,7 +150,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right flex flex-col mx-2 my-2">
+      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col">
         <LayerControl />
         <StyleController />
       </div>

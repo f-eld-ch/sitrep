@@ -78,13 +78,13 @@ const ActiveLayersControl: React.FC = () => {
   };
 
   const addLayerControl = showAddLayer ? (
-    <div className="flex flex-col items-start px-3 py-2 border-b border-gray-200 text-xs">
+    <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 text-xs">
       <input
         type="text"
         placeholder={t("layerControl.layerName")}
         value={layerName}
         onChange={(e) => setLayerName(e.target.value)}
-        className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+        className="mb-2 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
       />
       <Button
         variant="primary"
@@ -99,7 +99,7 @@ const ActiveLayersControl: React.FC = () => {
       </Button>
     </div>
   ) : (
-    <div className="flex flex-col items-start px-3 py-2 border-b border-gray-200 text-xs">
+    <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 text-xs">
       <button type="button" onClick={() => setShowAddLayer(true)}>
         <span className="mr-1">
           <FontAwesomeIcon icon={faPlus} />
@@ -113,10 +113,10 @@ const ActiveLayersControl: React.FC = () => {
   const hasOwnGroup = hasOwnLayerGroup(layerGroups);
 
   return (
-    <div className="active-layers-control text-xs">
+    <div className="text-xs">
       {!hasOwnGroup && (
         <div>
-          <div className="flex items-center px-3 py-1 border-b border-gray-200 last:border-b-0 text-xs font-semibold text-gray-500">
+          <div className="flex items-center border-b border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 last:border-b-0">
             {t("layerControl.currentIncidentLayers")}
           </div>
           {addLayerControl}
@@ -124,7 +124,7 @@ const ActiveLayersControl: React.FC = () => {
       )}
       {layerGroups.map((group) => (
         <div key={group.sourceIncidentId}>
-          <div className="flex items-center px-3 py-1 border-b border-gray-200 last:border-b-0 text-xs font-semibold text-gray-500">
+          <div className="flex items-center border-b border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 last:border-b-0">
             {group.isInherited ? group.sourceIncidentName : t("layerControl.currentIncidentLayers")}
           </div>
           {group.layers.map((s) => {
@@ -133,11 +133,11 @@ const ActiveLayersControl: React.FC = () => {
             return (
               <div
                 key={s.layer.id}
-                className={`flex items-center justify-between px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs cursor-pointer hover:bg-gray-100 transition-colors ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
+                className={`flex cursor-pointer items-center justify-between border-b border-gray-200 px-3 py-2 text-xs transition-colors last:border-b-0 hover:bg-gray-100 ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
                 onClick={() => handleLayerClick(s.layer.id)}
               >
-                <div className={`flex-1 flex items-center mr-3 ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}>
-                  <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3 shrink-0">
+                <div className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}>
+                  <span className="mr-3 inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center">
                     <FontAwesomeIcon
                       icon={
                         isInherited
@@ -152,9 +152,9 @@ const ActiveLayersControl: React.FC = () => {
                   {s.layer.name}
                 </div>
                 {s.layer.id !== state.activeLayer && (
-                  <div className="flex items-center shrink-0 gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <button
-                      className="hover:text-primary transition-colors leading-none"
+                      className="leading-none transition-colors hover:text-primary"
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(s.layer.id, !s.isVisible); }}
                     >
@@ -162,7 +162,7 @@ const ActiveLayersControl: React.FC = () => {
                     </button>
                     {!isInherited && (
                       <button
-                        className="hover:text-primary transition-colors leading-none"
+                        className="leading-none transition-colors hover:text-primary"
                         type="button"
                         onClick={(e) => { e.stopPropagation(); handleLayerClick(s.layer.id); }}
                       >

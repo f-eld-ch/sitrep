@@ -33,13 +33,13 @@ function Triage(props: {
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50" onClick={() => setMessage(undefined)} />
       {/* Card */}
-      <div className="relative bg-bg-elevated border border-border rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-bg-elevated shadow-xl">
         {/* Header */}
-        <header className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+        <header className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <p className="text-lg font-semibold">{t("messageTriageTitle")}</p>
           <button
             type="button"
-            className="text-fg-muted hover:text-fg p-1 leading-none"
+            className="p-1 leading-none text-fg-muted hover:text-fg"
             aria-label={t("close")}
             onClick={() => setMessage(undefined)}
           >
@@ -48,7 +48,7 @@ function Triage(props: {
         </header>
 
         {result.status === "loading" && (
-          <section className="px-5 py-8 flex justify-center">
+          <section className="flex justify-center px-5 py-8">
             <Spinner />
           </section>
         )}
@@ -107,7 +107,7 @@ function TriageForm(props: {
   return (
     <>
       {/* Body */}
-      <section className="px-5 py-4 overflow-y-auto flex-1">
+      <section className="flex-1 overflow-y-auto px-5 py-4">
         {triageState.error && (
           <Notification variant="danger" className="mb-4">
             {t(`errors.${triageState.error.code}`)}
@@ -127,20 +127,20 @@ function TriageForm(props: {
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:flex-wrap">
           {/* Division assignment */}
-          <div className="sm:flex-1 min-w-0">
-            <h3 className="text-base font-bold mb-3">{t("messageFlow")}</h3>
+          <div className="min-w-0 sm:flex-1">
+            <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
             <div className="flex flex-wrap gap-2">
               {data.incidentDivisions.map((d) => {
                 const isPresent = assignments.some((e) => e.name === d.name);
                 return (
-                  <div key={d.name} className="flex rounded overflow-hidden text-xs font-semibold">
+                  <div key={d.name} className="flex overflow-hidden rounded text-xs font-semibold">
                     <span
                       className={
                         isPresent
-                          ? "bg-primary text-white px-3 py-0.5"
-                          : "bg-fg text-bg px-3 py-0.5"
+                          ? "bg-primary px-3 py-0.5 text-white"
+                          : "bg-fg px-3 py-0.5 text-bg"
                       }
                     >
                       {d.description || d.name}
@@ -148,7 +148,7 @@ function TriageForm(props: {
                     {isPresent ? (
                       <button
                         type="button"
-                        className="bg-primary/20 text-primary px-2 py-0.5 hover:bg-primary/30 transition-colors"
+                        className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
                         onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
                       >
                         <FontAwesomeIcon icon={faMinus} />
@@ -156,7 +156,7 @@ function TriageForm(props: {
                     ) : (
                       <button
                         type="button"
-                        className="bg-success/20 text-success px-2 py-0.5 hover:bg-success/30 transition-colors"
+                        className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
                         onClick={() => setAssignments(union(assignments, [d]))}
                       >
                         <FontAwesomeIcon icon={faPlus} />
@@ -170,7 +170,7 @@ function TriageForm(props: {
 
           {/* Priority */}
           <div className="shrink-0">
-            <h3 className="text-base font-bold mb-3">{t("assignPriority")}</h3>
+            <h3 className="mb-3 text-base font-bold">{t("assignPriority")}</h3>
             <select
               value={priority}
               className={selectClass}
@@ -192,8 +192,8 @@ function TriageForm(props: {
           </div>
 
           {showTasks && (
-            <div className="sm:flex-1 min-w-0">
-              <h3 className="text-base font-bold mb-3">{t("createNewTask")}</h3>
+            <div className="min-w-0 sm:flex-1">
+              <h3 className="mb-3 text-base font-bold">{t("createNewTask")}</h3>
               <TaskNew />
             </div>
           )}
@@ -201,7 +201,7 @@ function TriageForm(props: {
       </section>
 
       {/* Footer */}
-      <footer className="px-5 py-4 border-t border-border flex gap-2 shrink-0">
+      <footer className="flex shrink-0 gap-2 border-t border-border px-5 py-4">
         <Button
           type="submit"
           variant="primary"

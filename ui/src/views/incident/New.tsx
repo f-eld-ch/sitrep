@@ -33,7 +33,7 @@ function New() {
   return (
     <>
       <PageTitle>{t("createIncident")}</PageTitle>
-      <div className="bg-bg-elevated border border-border rounded p-5 shadow-sm">
+      <div className="rounded border border-border bg-bg-elevated p-5 shadow-sm">
         <IncidentForm incident={undefined} />
       </div>
     </>
@@ -140,15 +140,15 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       )}
 
       {/* Incident name */}
-      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
+      <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
         <label
           htmlFor={nameID}
-          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
         >
           {t("incidentName")}
         </label>
-        <div className="flex-1 w-full relative">
-          <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
+        <div className="relative w-full flex-1">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
             <FontAwesomeIcon icon={faClipboard} />
           </span>
           <input
@@ -164,15 +164,15 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       {/* Parent incident */}
       {showParentSelector && (
-        <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
+        <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
           <label
             htmlFor={parentID}
-            className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
+            className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
           >
             {t("parentIncident")}
           </label>
-          <div className="flex-1 w-full relative">
-            <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
+          <div className="relative w-full flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
               <FontAwesomeIcon icon={faSitemap} />
             </span>
             <select
@@ -193,15 +193,15 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       )}
 
       {/* Location */}
-      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
+      <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
         <label
           htmlFor={locationID}
-          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
         >
           {t("location")}
         </label>
-        <div className="flex-1 w-full relative">
-          <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
+        <div className="relative w-full flex-1">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
             <FontAwesomeIcon icon={faLocationDot} />
           </span>
           <input
@@ -218,11 +218,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       <hr className="my-5 border-border" />
 
       {/* Existing divisions */}
-      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-2">
-        <label className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0">
+      <div className="mb-2 flex flex-col items-start xl:flex-row xl:gap-4">
+        <label className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right">
           {t("divisions")}
         </label>
-        <div className="flex-1 w-full space-y-2">
+        <div className="w-full flex-1 space-y-2">
           {assignments.map((d, index) => (
             <div key={d.id || `new-${index}`} className="flex gap-2">
               <input
@@ -267,14 +267,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
 
       {/* Add division */}
-      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-5">
+      <div className="mb-5 flex flex-col items-start xl:flex-row xl:gap-4">
         <label
           htmlFor={divisionsID}
-          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
         >
           {t("devisionAdd")}
         </label>
-        <div className="flex-1 w-full flex gap-2">
+        <div className="flex w-full flex-1 gap-2">
           <input
             className={inputSmBase + " flex-1 min-w-0"}
             type="text"

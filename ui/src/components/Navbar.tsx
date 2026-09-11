@@ -51,29 +51,29 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
     "flex items-center px-8 py-1.5 gap-2 text-sm hover:bg-bg-subtle capitalize w-full";
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-30 bg-bg text-text text-base [&_a]:text-inherit print:hidden">
+    <nav className="fixed inset-x-0 top-0 z-30 bg-bg text-base text-text print:hidden [&_a]:text-inherit">
       {/* Brand row — always visible, fixed height */}
-      <div className="flex items-stretch" style={{ height: "2.75rem" }}>
+      <div className="flex h-[2.75rem] items-stretch">
         <NavLink
           to="/"
           className={({ isActive }) =>
-            clsx("flex items-center px-3 shrink-0", isActive && "bg-primary !text-white")
+            clsx("flex shrink-0 items-center px-3", isActive && "bg-primary text-white!")
           }
         >
-          <img src={logo} alt="Logo" style={{ height: "1.5rem", width: "auto" }} />
+          <img src={logo} alt="Logo" className="h-6 w-auto" />
         </NavLink>
 
         {/* Desktop menu — inline in brand row */}
-        <div className="hidden lg:flex flex-1 flex-row items-stretch">
+        <div className="hidden flex-1 flex-row items-stretch lg:flex">
           {/* start */}
-          <div className="flex flex-row items-stretch flex-1">
+          <div className="flex flex-1 flex-row items-stretch">
             <div className="group relative flex items-stretch">
               <NavLink
                 to={incidentId ? `/incident/${incidentId}/edit` : "/"}
                 className={({ isActive }) =>
                   clsx(
-                    "flex items-center px-3 gap-2 hover:bg-bg-subtle",
-                    isActive && "bg-primary !text-white",
+                    "flex items-center gap-2 px-3 hover:bg-bg-subtle",
+                    isActive && "bg-primary text-white!",
                   )
                 }
               >
@@ -84,12 +84,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                     : t("incident")}
                 </span>
               </NavLink>
-              <div className="absolute top-full left-0 hidden group-hover:block bg-bg text-text text-sm border-t border-border shadow-lg min-w-52 z-50 rounded-b-xl overflow-hidden whitespace-nowrap [&_a]:text-inherit">
+              <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
                 <NavLink
                   className={({ isActive }) =>
                     clsx(
-                      "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-                      isActive && "bg-primary !text-white",
+                      "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+                      isActive && "bg-primary text-white!",
                     )
                   }
                   to="/incident/list"
@@ -100,8 +100,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                 <NavLink
                   className={({ isActive }) =>
                     clsx(
-                      "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-                      isActive && "bg-primary !text-white",
+                      "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+                      isActive && "bg-primary text-white!",
                     )
                   }
                   to="/incident/new"
@@ -113,8 +113,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                   <NavLink
                     className={({ isActive }) =>
                       clsx(
-                        "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-                        isActive && "bg-primary !text-white",
+                        "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+                        isActive && "bg-primary text-white!",
                       )
                     }
                     to={`/incident/${incidentId}/edit`}
@@ -140,7 +140,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         {/* Burger */}
         <button
           type="button"
-          className="flex items-center px-3 ml-auto lg:hidden"
+          className="ml-auto flex items-center px-3 lg:hidden"
           aria-label="Toggle menu"
           aria-expanded={isMenuActive}
           onClick={(e) => {
@@ -156,13 +156,13 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
       {isMenuActive && (
         <div
           id="navbarBasic"
-          className="lg:hidden bg-bg border-t border-border shadow-lg py-1 text-sm"
+          className="border-t border-border bg-bg py-1 text-sm shadow-lg lg:hidden"
           data-testid="navbar-menu"
         >
           {/* Incident */}
           <NavLink
             className={({ isActive }) =>
-              clsx(mobileItem, isActive && "bg-primary !text-white")
+              clsx(mobileItem, isActive && "bg-primary text-white!")
             }
             to={incidentId ? `/incident/${incidentId}/edit` : "/"}
           >
@@ -171,7 +171,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           </NavLink>
           <NavLink
             className={({ isActive }) =>
-              clsx(mobileSubItem, isActive && "bg-primary !text-white")
+              clsx(mobileSubItem, isActive && "bg-primary text-white!")
             }
             to="/incident/list"
           >
@@ -180,7 +180,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           </NavLink>
           <NavLink
             className={({ isActive }) =>
-              clsx(mobileSubItem, isActive && "bg-primary !text-white")
+              clsx(mobileSubItem, isActive && "bg-primary text-white!")
             }
             to="/incident/new"
           >
@@ -190,7 +190,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {incidentState.incident && (
             <NavLink
               className={({ isActive }) =>
-                clsx(mobileSubItem, isActive && "bg-primary !text-white")
+                clsx(mobileSubItem, isActive && "bg-primary text-white!")
               }
               to={`/incident/${incidentId}/edit`}
             >
@@ -203,7 +203,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             <>
               <NavLink
                 className={({ isActive }) =>
-                  clsx(mobileItem, isActive && "bg-primary !text-white")
+                  clsx(mobileItem, isActive && "bg-primary text-white!")
                 }
                 to={`/incident/${incidentId}/journal/messages`}
               >
@@ -212,7 +212,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  clsx(mobileSubItem, isActive && "bg-primary !text-white")
+                  clsx(mobileSubItem, isActive && "bg-primary text-white!")
                 }
                 to={`/incident/${incidentId}/journal/messages`}
               >
@@ -221,7 +221,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  clsx(mobileSubItem, isActive && "bg-primary !text-white")
+                  clsx(mobileSubItem, isActive && "bg-primary text-white!")
                 }
                 to={`/incident/${incidentId}/journal/edit`}
               >
@@ -234,7 +234,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {incidentId && (
             <NavLink
               className={({ isActive }) =>
-                clsx(mobileItem, isActive && "bg-primary !text-white")
+                clsx(mobileItem, isActive && "bg-primary text-white!")
               }
               to={`/incident/${incidentId}/map`}
             >
@@ -256,7 +256,7 @@ function DarkModeSwitcher() {
   return (
     <button
       type="button"
-      className="flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle w-full"
+      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-bg-subtle"
       aria-label={isDarkMode ? "Switch to light mode (Dark)" : "Switch to dark mode (Light)"}
       onClick={toggle}
     >
@@ -271,11 +271,11 @@ function CurrentTime() {
 
   return (
     <>
-      <div className="hidden lg:flex items-center px-3 gap-2 text-sm">
+      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
         <FontAwesomeIcon icon={faCalendar} />
         <span>{date}</span>
       </div>
-      <div className="hidden lg:flex items-center px-3 gap-2 text-sm">
+      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
         <FontAwesomeIcon icon={faClock} />
         <span>{time}</span>
       </div>
@@ -285,7 +285,7 @@ function CurrentTime() {
 
 function VersionNavBar() {
   return (
-    <div className="flex items-center px-4 py-2 gap-2">
+    <div className="flex items-center gap-2 px-4 py-2">
       <FontAwesomeIcon icon={faCodeBranch} />
       <span>
         <a
@@ -317,26 +317,26 @@ function UserNavBar() {
   return (
     <>
       {/* Desktop: hover dropdown */}
-      <div className="hidden lg:flex group relative items-stretch lg:ml-3">
-        <div className="flex items-center px-3 gap-1.5 cursor-pointer">
+      <div className="group relative hidden items-stretch lg:ml-3 lg:flex">
+        <div className="flex cursor-pointer items-center gap-1.5 px-3">
           <FontAwesomeIcon icon={faCog} />
           <FontAwesomeIcon icon={faChevronDown} className="text-xs opacity-60" />
         </div>
-        <div className="absolute top-full right-0 hidden group-hover:block bg-bg text-text text-sm border-t border-border shadow-lg min-w-52 z-50 rounded-b-xl whitespace-nowrap [&_a]:text-inherit">
+        <div className="absolute top-full right-0 z-50 hidden min-w-52 rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
           <VersionNavBar />
-          <div className="flex items-center px-4 py-2 gap-2">
+          <div className="flex items-center gap-2 px-4 py-2">
             <FontAwesomeIcon icon={faUser} />
             <span>{userState.email || userState.username}</span>
           </div>
           <DarkModeSwitcher />
           <LanguageSwitcher />
-          <hr className="border-t border-border my-1" />
+          <hr className="my-1 border-t border-border" />
           {isAdmin && (
             <NavLink
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle w-full",
-                  isActive && "bg-primary !text-white",
+                  "flex w-full items-center gap-2 px-4 py-2 hover:bg-bg-subtle",
+                  isActive && "bg-primary text-white!",
                 )
               }
               to="/admin/access"
@@ -346,7 +346,7 @@ function UserNavBar() {
             </NavLink>
           )}
           <a
-            className="flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full"
+            className="flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle"
             href="/oauth2/sign_out"
             aria-label={t("logout")}
           >
@@ -356,9 +356,9 @@ function UserNavBar() {
         </div>
       </div>
       {/* Mobile: inline items */}
-      <div className="flex flex-col lg:hidden border-t border-border mt-1 pt-1 text-sm">
+      <div className="mt-1 flex flex-col border-t border-border pt-1 text-sm lg:hidden">
         <VersionNavBar />
-        <div className="flex items-center px-3 py-2 gap-2">
+        <div className="flex items-center gap-2 px-3 py-2">
           <FontAwesomeIcon icon={faUser} />
           <span>{userState.email || userState.username}</span>
         </div>
@@ -366,7 +366,7 @@ function UserNavBar() {
         <LanguageSwitcher />
         {isAdmin && (
           <NavLink
-            className="flex items-center px-3 py-2 gap-2 hover:bg-bg-subtle"
+            className="flex items-center gap-2 px-3 py-2 hover:bg-bg-subtle"
             to="/admin/access"
           >
             <FontAwesomeIcon icon={faUserShield} />
@@ -374,7 +374,7 @@ function UserNavBar() {
           </NavLink>
         )}
         <a
-          className="flex items-center px-3 py-2 gap-2 hover:bg-bg-subtle capitalize"
+          className="flex items-center gap-2 px-3 py-2 capitalize hover:bg-bg-subtle"
           href="/oauth2/sign_out"
           aria-label={t("logout")}
         >
@@ -399,8 +399,8 @@ const JournalNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center px-3 gap-2 hover:bg-bg-subtle capitalize",
-            isActive && "bg-primary !text-white",
+            "flex items-center gap-2 px-3 capitalize hover:bg-bg-subtle",
+            isActive && "bg-primary text-white!",
           )
         }
         to={`/incident/${incidentId}/journal/messages`}
@@ -408,12 +408,12 @@ const JournalNavBar: FunctionComponent = () => {
         <FontAwesomeIcon icon={faBars} />
         <span>{t("journal")}</span>
       </NavLink>
-      <div className="absolute top-full left-0 hidden group-hover:block bg-bg text-text text-sm border-t border-border shadow-lg min-w-52 z-50 rounded-b-xl overflow-hidden whitespace-nowrap [&_a]:text-inherit">
+      <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
           className={({ isActive }) =>
             clsx(
-              "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-              isActive && "bg-primary !text-white",
+              "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+              isActive && "bg-primary text-white!",
             )
           }
           to={`/incident/${incidentId}/journal/messages`}
@@ -424,8 +424,8 @@ const JournalNavBar: FunctionComponent = () => {
         <NavLink
           className={({ isActive }) =>
             clsx(
-              "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-              isActive && "bg-primary !text-white",
+              "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+              isActive && "bg-primary text-white!",
             )
           }
           to={`/incident/${incidentId}/journal/edit`}
@@ -449,8 +449,8 @@ const TasksNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center px-3 gap-2 hover:bg-bg-subtle capitalize",
-            isActive && "bg-primary !text-white",
+            "flex items-center gap-2 px-3 capitalize hover:bg-bg-subtle",
+            isActive && "bg-primary text-white!",
           )
         }
         to={`/incident/${incidentId}/tasks`}
@@ -458,12 +458,12 @@ const TasksNavBar: FunctionComponent = () => {
         <FontAwesomeIcon icon={faClipboard} />
         <span>{t("tasksRequestOrders")}</span>
       </NavLink>
-      <div className="absolute top-full left-0 hidden group-hover:block bg-bg text-text text-sm border-t border-border shadow-lg min-w-52 z-50 rounded-b-xl overflow-hidden whitespace-nowrap [&_a]:text-inherit">
+      <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
           className={({ isActive }) =>
             clsx(
-              "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-              isActive && "bg-primary !text-white",
+              "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+              isActive && "bg-primary text-white!",
             )
           }
           to={`/incident/${incidentId}/tasks`}
@@ -474,8 +474,8 @@ const TasksNavBar: FunctionComponent = () => {
         <NavLink
           className={({ isActive }) =>
             clsx(
-              "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-              isActive && "bg-primary !text-white",
+              "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+              isActive && "bg-primary text-white!",
             )
           }
           to={`/incident/${incidentId}/requests`}
@@ -486,8 +486,8 @@ const TasksNavBar: FunctionComponent = () => {
         <NavLink
           className={({ isActive }) =>
             clsx(
-              "flex items-center px-4 py-2 gap-2 hover:bg-bg-subtle capitalize w-full",
-              isActive && "bg-primary !text-white",
+              "flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle",
+              isActive && "bg-primary text-white!",
             )
           }
           to={`/incident/${incidentId}/soma`}
@@ -510,8 +510,8 @@ const ResourcesNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center px-3 gap-2 hover:bg-bg-subtle capitalize",
-          isActive && "bg-primary !text-white",
+          "flex items-center gap-2 px-3 capitalize hover:bg-bg-subtle",
+          isActive && "bg-primary text-white!",
         )
       }
       to={`/incident/${incidentId}/resources`}
@@ -532,8 +532,8 @@ const MapNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center px-3 gap-2 hover:bg-bg-subtle capitalize",
-          isActive && "bg-primary !text-white",
+          "flex items-center gap-2 px-3 capitalize hover:bg-bg-subtle",
+          isActive && "bg-primary text-white!",
         )
       }
       to={`/incident/${incidentId}/map`}

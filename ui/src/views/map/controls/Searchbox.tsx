@@ -127,33 +127,33 @@ function SearchControl() {
 
   const id = useId();
   return (
-    <div className="flex justify-center items-center mt-3">
+    <div className="mt-3 flex items-center justify-center">
       <div className="relative">
         <div className="flex">
           <div className="relative flex-1">
             <input
-              className="w-full rounded border border-gray-300 pl-9 pr-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded border border-gray-300 bg-white py-1.5 pr-3 pl-9 text-sm text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               type="search"
               value={input}
               placeholder=""
               onChange={onChange}
               onKeyDown={(e) => e.key === "Enter" && executeSearch(input)}
             />
-            <span className="absolute inset-y-0 left-0 w-9 flex items-center justify-center text-gray-400 pointer-events-none text-sm">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-9 items-center justify-center text-sm text-gray-400">
               <FontAwesomeIcon icon={faSearch} />
             </span>
           </div>
         </div>
         {searchResults.length > 0 && (
           <div
-            className="absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded shadow-lg mt-1"
+            className="absolute right-0 left-0 z-50 mt-1 rounded border border-gray-200 bg-white shadow-lg"
             id={id}
           >
             {searchResults?.map((result: SearchFeature) => (
               <a
                 onClick={() => flyTo(result)}
                 key={result.id}
-                className="block px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                className="block cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
               >
                 {parse(result.properties.label)}
               </a>

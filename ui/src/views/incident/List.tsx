@@ -47,7 +47,7 @@ function List() {
           {t(`errors.${mutationError.code}`)}
         </Notification>
       )}
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex gap-2">
         <Button
           type="button"
           variant="success"
@@ -128,7 +128,7 @@ export function IncidentCards(props: {
               contextOnly={!isVisible(incident)}
             />
             {visibleChildren.length > 0 && (
-              <div className="ml-5 pl-4 border-l-[3px] border-info">
+              <div className="ml-5 border-l-[3px] border-info pl-4">
                 {visibleChildren.map((child) => (
                   <IncidentCard
                     key={child.id}
@@ -186,7 +186,7 @@ export function IncidentCard(props: {
   const { t } = useTranslation();
 
   const cardClass = clsx(
-    "border border-border rounded shadow-md dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)] dark:border-white/10 mb-3",
+    "mb-3 rounded border border-border shadow-md dark:border-white/10 dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]",
     incident.closedAt
       ? "bg-warning/10 dark:bg-warning/5"
       : contextOnly
@@ -198,7 +198,7 @@ export function IncidentCard(props: {
     <div className={cardClass}>
       <div className="p-4">
         <div className="text-sm">
-          <h4 className={clsx("font-bold mb-2", isChild ? "text-lg" : "text-xl")}>
+          <h4 className={clsx("mb-2 font-bold", isChild ? "text-lg" : "text-xl")}>
             {incident.name}
             <Tag
               light={true}
@@ -214,7 +214,7 @@ export function IncidentCard(props: {
               <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
             </Tag>
           </h4>
-          <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
             <div className="sm:flex-1">
               <strong>{t("location")}: </strong>
               {incident.location.name}
@@ -233,7 +233,7 @@ export function IncidentCard(props: {
         </div>
       </div>
       {!contextOnly && (
-        <footer className="flex flex-wrap border-t border-border divide-x divide-border">
+        <footer className="flex flex-wrap divide-x divide-border border-t border-border">
           <button
             type="button"
             data-testid="enter-button"

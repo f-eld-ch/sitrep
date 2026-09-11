@@ -221,18 +221,18 @@ function Editor() {
 
   return (
     <EditorContext.Provider value={contextValue}>
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 min-w-0">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="min-w-0 flex-1">
           <PageTitle level={1} className="mb-4">
             {t("editor")}
           </PageTitle>
           {blocker.state === "blocked" && (
-            <div className="bg-danger/10 border border-danger/30 rounded p-4 mb-4">
-              <div className="flex justify-between items-start mb-2">
+            <div className="mb-4 rounded border border-danger/30 bg-danger/10 p-4">
+              <div className="mb-2 flex items-start justify-between">
                 <p className="text-sm">{t("unsavedChanges")}</p>
                 <button
                   type="button"
-                  className="text-fg-muted hover:text-fg text-sm leading-none p-1 -mt-1 -mr-1"
+                  className="-mt-1 -mr-1 p-1 text-sm leading-none text-fg-muted hover:text-fg"
                   aria-label={t("cancel") as string}
                   onClick={() => blocker.reset()}
                 >
@@ -257,7 +257,7 @@ function Editor() {
             <InputBox />
           )}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <List
             showControls={!incidentIsClosed}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
@@ -323,7 +323,7 @@ function AttachmentUpload({
   const removeBtn = (onClick: () => void) => (
     <button
       type="button"
-      className="ml-1 text-fg-muted hover:text-fg leading-none"
+      className="ml-1 leading-none text-fg-muted hover:text-fg"
       aria-label={t("message.attachments.remove")}
       onClick={onClick}
     >
@@ -336,7 +336,7 @@ function AttachmentUpload({
       {() => (
         <div>
           {!messageId && pendingFiles.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {pendingFiles.map((f, i) => (
                 <Tag key={i} size="sm" light>
                   <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
@@ -347,7 +347,7 @@ function AttachmentUpload({
             </div>
           )}
           {messageId && (existingAttachments.length > 0 || justUploadedNew.length > 0) && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {existingAttachments.map((a) => (
                 <Tag key={a.id} size="sm" light>
                   <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
@@ -377,22 +377,22 @@ function AttachmentUpload({
           )}
           <div
             {...getRootProps()}
-            className={`flex items-center gap-2 w-full px-3 py-2 rounded border-2 border-dashed cursor-pointer text-sm transition-colors ${
+            className={`flex w-full cursor-pointer items-center gap-2 rounded border-2 border-dashed px-3 py-2 text-sm transition-colors ${
               isDragActive ? "border-info bg-info/10" : "border-border"
             }`}
           >
             <input {...getInputProps()} aria-label={t("message.attachments.add")} />
             {loading ? (
-              <FontAwesomeIcon icon={faSpinner} spin className="text-fg-muted text-sm" />
+              <FontAwesomeIcon icon={faSpinner} spin className="text-sm text-fg-muted" />
             ) : (
-              <FontAwesomeIcon icon={faPaperclip} className="text-fg-muted text-sm" />
+              <FontAwesomeIcon icon={faPaperclip} className="text-sm text-fg-muted" />
             )}
             <span className="text-xs text-fg-muted">
               {isDragActive ? t("message.attachments.dropHere") : t("message.attachments.add")}
             </span>
           </div>
           {error && (
-            <p className="text-xs text-danger mt-1">
+            <p className="mt-1 text-xs text-danger">
               {error.code === "ATTACHMENT_TOO_LARGE"
                 ? t("message.attachments.tooLarge")
                 : error.code === "ATTACHMENT_DISABLED"
@@ -451,11 +451,11 @@ function InputBox() {
 
   const mediumId = useId();
   return (
-    <div className="bg-bg-elevated border border-border rounded p-5 shadow-sm">
-      <div className="flex justify-end mb-2">
+    <div className="rounded border border-border bg-bg-elevated p-5 shadow-sm">
+      <div className="mb-2 flex justify-end">
         <button
           type="button"
-          className="text-fg-muted hover:text-fg text-sm p-1 leading-none"
+          className="p-1 text-sm leading-none text-fg-muted hover:text-fg"
           aria-label={t("close")}
           onClick={() => navigate(`/incident/${incidentId}/journal/messages`)}
         >
@@ -463,15 +463,15 @@ function InputBox() {
         </button>
       </div>
 
-      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-3">
-        <div className="w-full xl:w-32 xl:shrink-0 xl:text-right xl:pt-1.5 mb-1 xl:mb-0">
+      <div className="mb-3 flex flex-col items-start xl:flex-row xl:gap-4">
+        <div className="mb-1 w-full xl:mb-0 xl:w-32 xl:shrink-0 xl:pt-1.5 xl:text-right">
           <label htmlFor={mediumId} className="text-sm font-bold capitalize">
             {t("mediumName")}
           </label>
         </div>
-        <div className="flex-1 w-full min-w-0">
+        <div className="w-full min-w-0 flex-1">
           <div className="flex flex-wrap gap-2">
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <select
                 id={mediumId}
                 value={state.media}
@@ -509,7 +509,7 @@ function InputBox() {
       </form>
       {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
-          <div className="text-xl font-bold capitalize mb-3 mt-4">{t("preview")}</div>
+          <div className="mt-4 mb-3 text-xl font-bold capitalize">{t("preview")}</div>
           <JournalMessage
             id={undefined}
             incidentId={incidentId ?? ""}

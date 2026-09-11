@@ -24,14 +24,14 @@ const MessageTable = (
     assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all";
 
   return (
-    <div ref={ref} style={{ overflow: "visible" }}>
-      <PageTitle className="print:text-base print:mb-2">
+    <div ref={ref} className="overflow-visible">
+      <PageTitle className="print:mb-2 print:text-base">
         {t("journal")}
         {props.incidentName && ` — ${props.incidentName}`}
         {isFiltered && ` (${t("filtered")})`}
       </PageTitle>
 
-      <p className="text-xs text-fg-muted mt-4 print:mt-1">
+      <p className="mt-4 text-xs text-fg-muted print:mt-1">
         {t("state")}: {dayjs(now).format("DD.MM.YYYY HH:mm")}
       </p>
       <FilterState
@@ -40,8 +40,7 @@ const MessageTable = (
         triageFilter={triageFilter}
       />
       <table
-        className="w-full text-sm print:text-xs border-collapse [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1"
-        style={{ pageBreakInside: "auto" }}
+        className="w-full border-collapse break-inside-auto text-sm print:text-xs [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:text-left"
       >
         <thead>
           <tr>
@@ -54,8 +53,8 @@ const MessageTable = (
         <tbody>
           {props.messages?.map((message) => (
             <tr key={message.id}>
-              <td className="print:text-[10px] text-nowrap" >{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
-              <td className="print:text-[10px] break-all whitespace-normal wrap-break-word">
+              <td className="text-nowrap print:text-[10px]" >{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
                 {message.senderDetail ? (
                   <>
                     {message.sender}
@@ -65,7 +64,7 @@ const MessageTable = (
                   message.sender
                 )}
               </td>
-              <td className="print:text-[10px] break-all whitespace-normal wrap-break-word">
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
                 {message.receiverDetail ? (
                   <>
                     {message.receiver}
@@ -75,8 +74,8 @@ const MessageTable = (
                   message.receiver
                 )}
               </td>
-              <td className="print:text-[10px] break-all whitespace-normal wrap-break-word">
-                <div className="text-left" style={{ pageBreakInside: "avoid" }}>
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
+                <div className="break-inside-avoid text-left">
                   <ReactPreview content={message.content} />
                 </div>
               </td>

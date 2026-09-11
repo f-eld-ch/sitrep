@@ -67,7 +67,7 @@ export function Button({
         {
           "w-full": fullWidth,
           capitalize: capitalized,
-          "ring-2 ring-inset ring-current": selected,
+          "ring-2 ring-current ring-inset": selected,
           invisible: invisible,
         },
         className,

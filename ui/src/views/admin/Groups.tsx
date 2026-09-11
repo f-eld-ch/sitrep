@@ -45,7 +45,7 @@ function Groups() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t("adminGroups.title")}</h2>
         {!showCreate && (
           <Button type="button" variant="primary" size="md" onClick={() => setShowCreate(true)}>
@@ -61,17 +61,17 @@ function Groups() {
       )}
 
       {showCreate && (
-        <div className="bg-bg-elevated border border-border rounded-lg p-5 mb-5 shadow-sm">
-          <h3 className="text-base font-bold mb-3">{t("adminGroups.newGroup")}</h3>
+        <div className="mb-5 rounded-lg border border-border bg-bg-elevated p-5 shadow-sm">
+          <h3 className="mb-3 text-base font-bold">{t("adminGroups.newGroup")}</h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-fg mb-1" htmlFor="group-name">
+            <label className="mb-1 block text-sm font-medium text-fg" htmlFor="group-name">
               {t("adminGroups.name")}
             </label>
             <input
               id="group-name"
               className={clsx(
-                "w-full rounded border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary",
+                "w-full rounded border bg-bg px-3 py-1.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none",
                 name.length === 64 ? "border-danger" : "border-border",
               )}
               maxLength={64}
@@ -85,7 +85,7 @@ function Groups() {
             {name.length >= 54 && (
               <p
                 className={clsx(
-                  "text-xs mt-1",
+                  "mt-1 text-xs",
                   name.length === 64 ? "text-danger" : "text-warning",
                 )}
               >
@@ -95,12 +95,12 @@ function Groups() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-fg mb-1" htmlFor="group-description">
+            <label className="mb-1 block text-sm font-medium text-fg" htmlFor="group-description">
               {t("adminGroups.description")}
             </label>
             <textarea
               id="group-description"
-              className="w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded border border-border bg-bg px-3 py-1.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -155,14 +155,14 @@ function Groups() {
             type="button"
             variant="ghost"
             size="sm"
-            className="text-fg-muted px-0"
+            className="px-0 text-fg-muted"
             onClick={() => setShowArchived(!showArchived)}
           >
             {showArchived ? "▾" : "▸"}&ensp;
             {t("adminGroups.archived", { count: archivedGroups.length })}
           </Button>
           {showArchived && (
-            <div className="overflow-x-auto mt-2">
+            <div className="mt-2 overflow-x-auto">
               <table className="w-full text-sm">
                 <tbody>
                   {archivedGroups.map((group) => (

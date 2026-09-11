@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { clsx } from "clsx";
 import { faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
@@ -174,10 +175,10 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
       {/* Access mode */}
       {modeResult.status === "ready" && (
         <div className={box}>
-          <h4 className="text-xl font-bold mb-4">{t("incidentAccess.accessMode")}</h4>
+          <h4 className="mb-4 text-xl font-bold">{t("incidentAccess.accessMode")}</h4>
           <div className="space-y-3">
             <label
-              className="flex gap-2 items-start cursor-pointer"
+              className="flex cursor-pointer items-start gap-2"
               aria-label={t("incidentAccess.openAccess")}
             >
               <input
@@ -194,11 +195,11 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               />
               <div>
                 <strong>{t("incidentAccess.openAccess")}</strong>
-                <p className="text-xs text-fg-muted mt-0">{t("incidentAccess.openAccessHelp")}</p>
+                <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.openAccessHelp")}</p>
               </div>
             </label>
             <label
-              className="flex gap-2 items-start cursor-pointer"
+              className="flex cursor-pointer items-start gap-2"
               aria-label={t("incidentAccess.restricted")}
             >
               <input
@@ -215,7 +216,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               />
               <div>
                 <strong>{t("incidentAccess.restricted")}</strong>
-                <p className="text-xs text-fg-muted mt-0">{t("incidentAccess.restrictedHelp")}</p>
+                <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.restrictedHelp")}</p>
               </div>
             </label>
           </div>
@@ -263,7 +264,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
 
       {/* Grants box */}
       <div className={box}>
-        <h4 className="text-xl font-bold mb-4">{t("incidentAccess.title")}</h4>
+        <h4 className="mb-4 text-xl font-bold">{t("incidentAccess.title")}</h4>
 
         {accessResult.status === "error" && accessResult.error.code !== "FORBIDDEN" && (
           <Notification variant="danger" className="mb-3">
@@ -274,7 +275,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
           <Notification variant="danger" light className="mb-3 flex items-start justify-between">
             <span>{mutationError}</span>
             <button
-              className="ml-3 text-danger font-bold leading-none"
+              className="ml-3 leading-none font-bold text-danger"
               aria-label={t("close")}
               onClick={() => setMutationError(null)}
             >
@@ -286,13 +287,13 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
         {accessResult.status === "ready" && (
           <>
             {(isRestricted || grants.length > 0) && (
-              <div className="overflow-x-auto mb-5">
+              <div className="mb-5 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border text-left">
                       <th className="pb-2 font-semibold">{t("incidentAccess.principal")}</th>
                       <th className="pb-2 font-semibold">{t("incidentAccess.role")}</th>
-                      <th className="pb-2 w-12" aria-label={t("actions")} />
+                      <th className="w-12 pb-2" aria-label={t("actions")} />
                     </tr>
                   </thead>
                   <tbody>
@@ -301,7 +302,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                       <tr className="border-b border-border">
                         <td className="py-2 pr-4">
                           <span className="font-medium">{t("incidentAccess.allUsers")}</span>
-                          <p className="text-xs text-fg-muted mt-0">
+                          <p className="mt-0 text-xs text-fg-muted">
                             {t("incidentAccess.allUsersHelp")}
                           </p>
                         </td>
@@ -374,7 +375,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 {displayName}
                               </span>
                               {grant.principalKind === "USER" && user?.email && user.name && (
-                                <span className="text-fg-muted ml-2 text-xs">{user.email}</span>
+                                <span className="ml-2 text-xs text-fg-muted">{user.email}</span>
                               )}
                               {grant.principalKind === "USER" && !user && (
                                 <Tag
@@ -409,12 +410,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 }}
                               />
                             </td>
-                            <td className="py-2 text-right w-12">
+                            <td className="w-12 py-2 text-right">
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="!text-danger"
+                                className="text-danger!"
                                 disabled={isBusy}
                                 onClick={() =>
                                   doRevoke(
@@ -442,9 +443,9 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
             )}
 
             {/* Add grant */}
-            <h5 className="text-lg font-bold mb-3">{t("incidentAccess.addGrant")}</h5>
-            <div className="flex gap-2 mb-3">
-              <div className="flex rounded overflow-hidden border border-border">
+            <h5 className="mb-3 text-lg font-bold">{t("incidentAccess.addGrant")}</h5>
+            <div className="mb-3 flex gap-2">
+              <div className="flex overflow-hidden rounded border border-border">
                 {canListUsers && (
                   <Button
                     type="button"
@@ -488,12 +489,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               "loading" && <Spinner />}
 
             {availablePrincipals.length === 0 && query && (
-              <p className="text-fg-muted text-xs">{t("incidentAccess.noMatches")}</p>
+              <p className="text-xs text-fg-muted">{t("incidentAccess.noMatches")}</p>
             )}
             {availablePrincipals.length === 0 &&
               !query &&
               (principalKind === "USER" ? usersResult.status : groupsResult.status) === "ready" && (
-                <p className="text-fg-muted text-xs">
+                <p className="text-xs text-fg-muted">
                   {principalKind === "USER"
                     ? t("incidentAccess.allUsersHaveGrants")
                     : t("incidentAccess.noActiveGroups")}
@@ -557,13 +558,12 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
     OWNER: t("incidentAccess.roleDescriptions.OWNER"),
   };
   return (
-    <div className="flex gap-5 flex-nowrap">
+    <div className="flex flex-nowrap gap-5">
       {options.map((opt) => (
         <label
           key={opt}
-          className="inline-flex items-center gap-1.5 whitespace-nowrap min-w-[5.5rem]"
+          className={clsx("inline-flex min-w-[5.5rem] items-center gap-1.5 whitespace-nowrap", disabled ? "cursor-default" : "cursor-pointer")}
           title={descriptions[opt]}
-          style={{ cursor: disabled ? "default" : "pointer" }}
         >
           <input
             type="radio"
@@ -611,12 +611,12 @@ function GrantRow({ label, sublabel, tooltip, loading, onGrant }: GrantRowProps)
     <tr className="border-b border-border hover:bg-bg-subtle">
       <td className="py-1.5 pr-4">
         <span title={tooltip}>{label}</span>
-        {sublabel && <span className="text-fg-muted ml-2 text-xs">{sublabel}</span>}
+        {sublabel && <span className="ml-2 text-xs text-fg-muted">{sublabel}</span>}
       </td>
       <td className="py-1.5" aria-label={label}>
-        <div className="flex gap-1 justify-end">
+        <div className="flex justify-end gap-1">
           <select
-            className="w-32 rounded border border-border px-2 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            className="w-32 rounded border border-border bg-bg px-2 py-0.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none disabled:opacity-50"
             value={role}
             disabled={loading}
             aria-label={label}

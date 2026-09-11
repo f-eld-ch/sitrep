@@ -153,7 +153,7 @@ function GroupDetail() {
       {/* Header */}
       <div className="mb-4">
         {isRenaming ? (
-          <div className="flex gap-2 mb-1">
+          <div className="mb-1 flex gap-2">
             <div className="flex-1">
               <input
                 className={clsx(
@@ -172,7 +172,7 @@ function GroupDetail() {
               {renameValue.length >= 54 && (
                 <p
                   className={clsx(
-                    "text-xs mt-0.5",
+                    "mt-0.5 text-xs",
                     renameValue.length === 64 ? "text-danger" : "text-warning",
                   )}
                 >
@@ -197,7 +197,7 @@ function GroupDetail() {
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 mb-1">
+          <div className="mb-1 flex items-center gap-2">
             <h2 className="text-2xl font-bold">{group.name}</h2>
             {canManage && (
               <Button
@@ -215,7 +215,7 @@ function GroupDetail() {
         )}
 
         {isEditingDescription ? (
-          <div className="flex gap-2 mt-1 mb-1">
+          <div className="mt-1 mb-1 flex gap-2">
             <input
               className={clsx(inputSm, "flex-1 border-border")}
               placeholder={t("adminGroupDetail.groupDescriptionPlaceholder")}
@@ -249,7 +249,7 @@ function GroupDetail() {
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="mt-1 flex items-center gap-1">
             <p className="text-fg-muted">
               {group.description || (canManage ? t("adminGroupDetail.noDescriptionClick") : "")}
             </p>
@@ -269,7 +269,7 @@ function GroupDetail() {
         )}
 
         {membersResult.status === "ready" && (
-          <p className="text-xs text-fg-muted mt-1">
+          <p className="mt-1 text-xs text-fg-muted">
             {t("adminGroupDetail.memberCount", { count: membersResult.data.subjects.length })}
           </p>
         )}
@@ -292,7 +292,7 @@ function GroupDetail() {
         <div className="mb-5">
           {confirmingArchive ? (
             <div className="flex items-center gap-2">
-              <span className="text-fg-muted text-xs">{t("adminGroupDetail.archiveConfirm")}</span>
+              <span className="text-xs text-fg-muted">{t("adminGroupDetail.archiveConfirm")}</span>
               <Button
                 type="button"
                 variant="danger"
@@ -334,16 +334,16 @@ function GroupDetail() {
       )}
 
       {/* Current members */}
-      <h3 className="text-xl font-bold mt-5 mb-3">{t("adminGroupDetail.members")}</h3>
+      <h3 className="mt-5 mb-3 text-xl font-bold">{t("adminGroupDetail.members")}</h3>
       {membersResult.status === "loading" && <Spinner />}
       {membersResult.status === "error" && (
         <Notification variant="danger">{membersResult.error.message}</Notification>
       )}
       {membersResult.status === "ready" && currentMembers.length === 0 && (
-        <p className="text-fg-muted mb-5">{t("adminGroupDetail.noMembersYet")}</p>
+        <p className="mb-5 text-fg-muted">{t("adminGroupDetail.noMembersYet")}</p>
       )}
       {membersResult.status === "ready" && currentMembers.length > 0 && (
-        <div className="overflow-x-auto mb-5">
+        <div className="mb-5 overflow-x-auto">
           <table className="w-full text-sm">
             <tbody>
               {currentMembers.map((user) => (
@@ -351,16 +351,16 @@ function GroupDetail() {
                   <td className="py-1.5">
                     <span title={user.sub}>{user.name || user.email || user.sub}</span>
                     {user.email && user.name && (
-                      <span className="text-fg-muted text-xs ml-2">{user.email}</span>
+                      <span className="ml-2 text-xs text-fg-muted">{user.email}</span>
                     )}
                   </td>
-                  <td className="py-1.5 text-right w-12">
+                  <td className="w-12 py-1.5 text-right">
                     {canManage && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="!text-danger"
+                        className="text-danger!"
                         disabled={pendingRemovals.has(user.sub)}
                         onClick={() => doRemove(user.sub)}
                         title={t("adminGroupDetail.removeFromGroup")}
@@ -383,7 +383,7 @@ function GroupDetail() {
       {/* Add members */}
       {canManage && membersResult.status === "ready" && (
         <>
-          <h3 className="text-xl font-bold mb-3">{t("adminGroupDetail.addMembers")}</h3>
+          <h3 className="mb-3 text-xl font-bold">{t("adminGroupDetail.addMembers")}</h3>
           <div className="mb-3">
             <input
               className={clsx(inputBase, "border-border")}
@@ -411,10 +411,10 @@ function GroupDetail() {
                       <td className="py-1">
                         <span title={user.sub}>{user.name || user.email || user.sub}</span>
                         {user.email && user.name && (
-                          <span className="text-fg-muted text-xs ml-2">{user.email}</span>
+                          <span className="ml-2 text-xs text-fg-muted">{user.email}</span>
                         )}
                       </td>
-                      <td className="py-1.5 text-right w-20">
+                      <td className="w-20 py-1.5 text-right">
                         <Button
                           type="button"
                           variant="success"

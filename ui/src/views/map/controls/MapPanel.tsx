@@ -7,21 +7,20 @@ interface MapPanelProps {
   title: React.ReactNode;
   onClose: () => void;
   children: React.ReactNode;
-  style?: React.CSSProperties;
+  className?: string;
 }
 
-export function MapPanel({ title, onClose, children, style }: MapPanelProps) {
+export function MapPanel({ title, onClose, children, className }: MapPanelProps) {
   return (
     <nav
       data-theme="light"
-      className="maplibregl-ctrl bg-paper text-gray-700 border border-gray-200 rounded shadow-lg self-end overflow-hidden"
-      style={{ pointerEvents: "auto", ...style }}
+      className={clsx("maplibregl-ctrl pointer-events-auto self-end overflow-hidden rounded border border-gray-200 bg-paper text-gray-700 shadow-lg", className)}
     >
-      <div className="flex justify-between items-center px-3 py-2 border-b border-gray-200 text-sm font-semibold">
+      <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 text-sm font-semibold">
         <span>{title}</span>
         <button
           type="button"
-          className="text-gray-400 hover:text-gray-600 p-1 leading-none"
+          className="p-1 leading-none text-gray-400 hover:text-gray-600"
           onClick={onClose}
           aria-label="close"
         >
@@ -47,10 +46,10 @@ export function MapPanelTabs({ tabs, activeTab, onChange }: MapPanelTabsProps) {
           key={tab.key}
           type="button"
           className={clsx(
-            "px-3 py-2 cursor-pointer border-b-2 border-transparent transition-colors",
+            "cursor-pointer border-b-2 border-transparent px-3 py-2 transition-colors",
             activeTab === tab.key
-              ? "bg-primary text-white border-primary"
-              : "hover:text-primary hover:bg-primary/10",
+              ? "border-primary bg-primary text-white"
+              : "hover:bg-primary/10 hover:text-primary",
           )}
           onClick={() => onChange(tab.key)}
         >
@@ -79,7 +78,7 @@ export function MapPanelBlock({
   return (
     <div
       className={clsx(
-        "flex px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs",
+        "flex border-b border-gray-200 px-3 py-2 text-xs last:border-b-0",
         column ? "flex-col items-start" : "items-center",
         active && "bg-primary/10",
         onClick && "cursor-pointer hover:bg-gray-100",

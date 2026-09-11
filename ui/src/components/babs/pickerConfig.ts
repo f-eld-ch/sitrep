@@ -14,21 +14,6 @@ import type { BabsCategoryNumber, BabsGroupNumber, BabsIconId } from "@f-eld-ch/
  */
 export const PICKER_ICON_SIZE = 30;
 
-/** Gap between adjacent picker buttons, in px. */
-export const PICKER_GAP = 1;
-
-/**
- * Marks a glyph as belonging to the icon picker.
- *
- * The button's padding and centring are keyed off this class in
- * BabsIconController.scss, so the styling travels with the icon rather than being applied
- * to buttons. That matters because the stylesheet is global: styling
- * `.maplibregl-ctrl-group button` directly also hits MapLibre's own zoom, compass and
- * fullscreen controls, which centre a background-image and end up off-centre once padding
- * is added.
- */
-export const PICKER_ICON_CLASS = "babs-picker-icon";
-
 /**
  * Icon shown on a category's collapsed button.
  *

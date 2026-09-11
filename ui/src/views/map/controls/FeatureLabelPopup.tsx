@@ -298,7 +298,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       // Measure the rendered popup and pan only as far as needed, without changing zoom.
       const frame = requestAnimationFrame(() => {
         const mapRect = map.getContainer().getBoundingClientRect();
-        const popup = map.getContainer().querySelector<HTMLElement>(".feature-label-popup");
+        const popup = map.getContainer().querySelector<HTMLElement>("[data-popup='feature-label']");
         if (!popup) return;
 
         const popupRect = popup.getBoundingClientRect();
@@ -379,14 +379,14 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       focusAfterOpen
       anchor={anchor}
       offset={30}
-      className="feature-label-popup"
+      data-popup="feature-label"
     >
-      <div className="p-3" style={{ minWidth: "220px" }}>
-        <div className="flex justify-between items-center mb-3">
+      <div className="min-w-[220px] p-3">
+        <div className="mb-3 flex items-center justify-between">
           {title ? <p className="text-sm font-bold">{title}</p> : <span />}
           <button
             type="button"
-            className="text-gray-400 hover:text-gray-600 p-1 leading-none shrink-0 ml-2"
+            className="ml-2 shrink-0 p-1 leading-none text-gray-400 hover:text-gray-600"
             aria-label={t("close")}
             onClick={close}
           >
@@ -399,14 +399,14 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           const isUnNumber = field.key === UN_SIGN_FIELDS.unNumber;
           return (
             <div key={field.key} className="mb-2">
-              <label className="block text-xs font-semibold mb-1 text-gray-800" htmlFor={inputId}>
+              <label className="mb-1 block text-xs font-semibold text-gray-800" htmlFor={inputId}>
                 {field.label}
               </label>
               <div>
                 {isKemler ? (
                   <select
                     id={inputId}
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none"
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
                     value={values[field.key] ?? ""}
                     onChange={(e) =>
                       setValues((prev) => ({
@@ -425,7 +425,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                 ) : (
                   <input
                     id={inputId}
-                    className="rounded border border-gray-300 px-2 py-1 text-xs w-full bg-white text-gray-900 focus:outline-none"
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
                     type="text"
                     inputMode={isUnNumber ? "numeric" : undefined}
                     maxLength={isUnNumber ? 4 : undefined}
@@ -454,7 +454,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             {rotationFixed ? (
               <>
                 <label
-                  className="block text-xs font-semibold mb-1 text-gray-800"
+                  className="mb-1 block text-xs font-semibold text-gray-800"
                   htmlFor={`${baseId}-rotation`}
                 >
                   <span className="mr-1">
@@ -478,7 +478,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                 <Button
                   variant="light"
                   size="sm"
-                  className="w-full mt-2"
+                  className="mt-2 w-full"
                   onClick={onRotationUnlock}
                 >
                   <span>

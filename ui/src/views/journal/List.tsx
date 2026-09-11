@@ -73,10 +73,10 @@ function List(props: {
     <>
       <div className="print:hidden">
         <PageTitle className="mb-3">{t("journal")}</PageTitle>
-        <div className="flex flex-wrap gap-2 mb-3 items-center">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           {/* Triage filter */}
-          <div className="relative group">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+          <div className="group relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faArrowsToEye} />
             </span>
             <select
@@ -97,14 +97,14 @@ function List(props: {
                 </option>
               ))}
             </select>
-            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faChevronDown} />
             </span>
           </div>
 
           {/* Priority filter */}
-          <div className="relative group">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+          <div className="group relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faBell} />
             </span>
             <select
@@ -125,14 +125,14 @@ function List(props: {
                 </option>
               ))}
             </select>
-            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faChevronDown} />
             </span>
           </div>
 
           {/* Assignment filter */}
-          <div className="relative group">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+          <div className="group relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faUserGroup} />
             </span>
             <select
@@ -150,7 +150,7 @@ function List(props: {
                 </option>
               ))}
             </select>
-            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex w-8 items-center justify-center text-xs text-fg-muted/50 transition-colors group-focus-within:text-fg-muted group-hover:text-fg-muted">
               <FontAwesomeIcon icon={faChevronDown} />
             </span>
           </div>
@@ -181,7 +181,7 @@ function List(props: {
         />
       </div>
 
-      <div style={{ display: "none" }}>
+      <div className="hidden">
         <MessageTable
           ref={tableRef}
           messages={messages}

@@ -22,17 +22,12 @@ const MessageSheet = (
     return;
   }
 
-  const cellStyle = {
-    wordWrap: "break-word" as const,
-    wordBreak: "break-all" as const,
-    whiteSpace: "normal" as const,
-    overflowWrap: "break-word" as const,
-  };
+  const cellClass = "break-words break-all whitespace-normal";
 
   return (
     <div ref={ref}>
-      <h3 className="text-base font-bold capitalize mb-2">{t("messageSheet")}</h3>
-      <table className="w-full text-sm border-collapse border border-border [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5">
+      <h3 className="mb-2 text-base font-bold capitalize">{t("messageSheet")}</h3>
+      <table className="w-full border-collapse border border-border text-sm [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left">
         <tbody>
           <tr>
             <th rowSpan={6} className="w-[150px]">
@@ -40,11 +35,11 @@ const MessageSheet = (
             </th>
             <th>{t("message.sender")}</th>
             {message.medium === Medium.Radio || !message.senderDetail?.length ? (
-              <td colSpan={3} style={cellStyle}>
+              <td colSpan={3} className={cellClass}>
                 {message.sender}
               </td>
             ) : (
-              <td colSpan={3} style={cellStyle}>
+              <td colSpan={3} className={cellClass}>
                 {message.sender} ({message.senderDetail})
               </td>
             )}
@@ -52,11 +47,11 @@ const MessageSheet = (
           <tr>
             <th>{t("message.receiver")}</th>
             {message.medium === Medium.Radio || !message.receiverDetail?.length ? (
-              <td colSpan={3} style={cellStyle}>
+              <td colSpan={3} className={cellClass}>
                 {message.receiver}
               </td>
             ) : (
-              <td colSpan={3} style={cellStyle}>
+              <td colSpan={3} className={cellClass}>
                 {message.receiver} ({message.receiverDetail})
               </td>
             )}
@@ -91,16 +86,16 @@ const MessageSheet = (
           </tr>
           <tr className="h-[400px]">
             <th>{t("message.content")}</th>
-            <td colSpan={4} style={cellStyle}>
+            <td colSpan={4} className={cellClass}>
               <ReactPreview content={message.content} />
             </td>
           </tr>
           {message.attachments && message.attachments.length > 0 && (
             <tr>
-              <th style={{ verticalAlign: "top" }}>{t("message.attachments.title")}</th>
-              <td colSpan={4} style={{ ...cellStyle, verticalAlign: "top" }}>
+              <th className="align-top">{t("message.attachments.title")}</th>
+              <td colSpan={4} className={`${cellClass} align-top`}>
                 {message.attachments.map((a, i) => (
-                  <span key={a.id} style={{ display: "block" }}>
+                  <span key={a.id} className="block">
                     {i + 1}. {a.filename}
                   </span>
                 ))}
@@ -109,7 +104,7 @@ const MessageSheet = (
           )}
         </tbody>
       </table>
-      <table className="w-full table-fixed text-sm border-collapse border border-border mt-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5">
+      <table className="mt-2 w-full table-fixed border-collapse border border-border text-sm [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left">
         <tbody>
           <tr>
             <th rowSpan={2} className="w-[150px]">

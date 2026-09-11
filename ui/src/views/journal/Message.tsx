@@ -124,7 +124,7 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
           src={attachment.url}
           alt={attachment.filename}
           onError={handleImgError}
-          className="h-16 w-16 object-cover rounded border border-border"
+          className="h-16 w-16 rounded border border-border object-cover"
         />
       </a>
     );
@@ -162,16 +162,16 @@ const LevelItem = ({
 }) => (
   <div
     className={clsx(
-      "flex flex-col items-center text-center min-w-0",
+      "flex min-w-0 flex-col items-center text-center",
       shrink === 0 && "shrink-0",
       shrink === 1 && "shrink",
-      shrink === 2 && "[flex-shrink:2]",
+      shrink === 2 && "shrink-2",
     )}
   >
-    <div className="text-[11px] uppercase tracking-wider font-bold mb-0.5 leading-tight">
+    <div className="mb-0.5 text-[11px] leading-tight font-bold tracking-wider uppercase">
       {label}
     </div>
-    <div className="text-xs [overflow-wrap:anywhere] w-full" data-testid={testId}>
+    <div className="w-full text-xs wrap-anywhere" data-testid={testId}>
       {children}
     </div>
   </div>
@@ -198,7 +198,7 @@ const MessageContainer = ({
   const hasDivisions = message.divisions && message.divisions.length > 0;
   const tagVariant = tagVariantMap[accent];
   const actionLinkClass = clsx(
-    "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors select-none",
+    "flex cursor-pointer items-center gap-1.5 px-4 py-2 text-xs font-semibold transition-colors select-none",
     accentTextColor[accent],
     accentHoverBg[accent],
   );
@@ -206,7 +206,7 @@ const MessageContainer = ({
   return (
     <div
       className={clsx(
-        "border-0 border-solid rounded shadow-sm",
+        "rounded border-0 border-solid shadow-sm",
         accentSide === "right" ? "border-r-4" : "border-l-4",
         accentSide === "right" ? borderR[accent] : borderL[accent],
         bgTint[accent],
@@ -217,7 +217,7 @@ const MessageContainer = ({
       <div className="px-3 pt-3 pb-2">
         {/* Level bar — sender / receiver / time / number / priority / triage
             Mobile: 2-col grid (3 rows). Desktop sm+: single flex row. */}
-        <nav className="grid grid-cols-1 justify-items-center gap-y-3 sm:grid-cols-2 sm:gap-x-4 md:flex md:items-baseline md:justify-between md:flex-wrap md:gap-x-4 md:gap-y-2 mb-3 px-0">
+        <nav className="mb-3 grid grid-cols-1 justify-items-center gap-y-3 px-0 sm:grid-cols-2 sm:gap-x-4 md:flex md:flex-wrap md:items-baseline md:justify-between md:gap-x-4 md:gap-y-2">
           <LevelItem label={t("message.sender")} shrink={2}>
             <div className="flex flex-col items-center gap-0">
               <span data-testid={`sender-${message.id}`}>{message.sender}</span>
@@ -258,18 +258,18 @@ const MessageContainer = ({
         </nav>
 
         {/* Content */}
-        <div className="text-sm text-left break-words mt-6" data-testid={`content-${message.id}`}>
+        <div className="mt-6 text-left text-sm wrap-break-word" data-testid={`content-${message.id}`}>
           <ReactPreview content={message.content} />
         </div>
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-3 pt-2">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-fg-muted mb-2">
+            <p className="mb-2 text-[11px] font-bold tracking-wider text-fg-muted uppercase">
               {t("message.attachments.title")}
             </p>
             {message.attachments.some((a) => a.contentType.startsWith("image/")) && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="mb-2 flex flex-wrap gap-1.5">
                 {message.attachments
                   .filter((a) => a.contentType.startsWith("image/"))
                   .map((a) => (
@@ -278,7 +278,7 @@ const MessageContainer = ({
               </div>
             )}
             {message.attachments.some((a) => !a.contentType.startsWith("image/")) && (
-              <div className="flex flex-wrap gap-1 mb-0">
+              <div className="mb-0 flex flex-wrap gap-1">
                 {message.attachments
                   .filter((a) => !a.contentType.startsWith("image/"))
                   .map((a) => (
@@ -292,9 +292,9 @@ const MessageContainer = ({
 
       {/* Action bar — division tags left, edit/triage buttons right */}
       {(hasDivisions || (showControls === true && id !== undefined)) && (
-        <div className="flex flex-wrap items-center rounded-b pt-1.5 gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-b pt-1.5">
           {/* Left — division tags (full-width on mobile so buttons wrap below) */}
-          <div className="flex flex-wrap gap-1.5 px-2 py-4 w-full sm:w-auto sm:flex-1">
+          <div className="flex w-full flex-wrap gap-1.5 px-2 py-4 sm:w-auto sm:flex-1">
             {message.divisions?.map((d) => (
               <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
                 {d.division.name && d.division.name.trim() !== ""
@@ -306,7 +306,7 @@ const MessageContainer = ({
 
           {/* Right — action buttons */}
           {showControls === true && id !== undefined && (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:ml-auto w-full sm:w-auto">
+            <div className="flex w-full flex-col sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
               {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
                 <button
                   type="button"
@@ -348,7 +348,7 @@ const MessageContainer = ({
             </div>
           )}
 
-          <div style={{ display: "none" }}>
+          <div className="hidden">
             <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
           </div>
         </div>

@@ -56,16 +56,16 @@ function GlobalRoles() {
         </Notification>
       )}
 
-      <div className="bg-bg-elevated border border-border rounded p-5 mb-5">
+      <div className="mb-5 rounded border border-border bg-bg-elevated p-5">
         <PageTitle level={3}>{t("adminGlobalRoles.grantRole")}</PageTitle>
         <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-semibold mb-1" htmlFor="global-role-subject">
+          <div className="min-w-[200px] flex-1">
+            <label className="mb-1 block text-sm font-semibold" htmlFor="global-role-subject">
               {t("adminGlobalRoles.userLabel")}
             </label>
             <select
               id="global-role-subject"
-              className="w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded border border-border bg-bg px-3 py-1.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none"
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
             >
@@ -78,13 +78,13 @@ function GlobalRoles() {
                 ))}
             </select>
           </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-semibold mb-1" htmlFor="global-role-role">
+          <div className="min-w-[200px] flex-1">
+            <label className="mb-1 block text-sm font-semibold" htmlFor="global-role-role">
               {t("adminGlobalRoles.roleLabel")}
             </label>
             <select
               id="global-role-role"
-              className="w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded border border-border bg-bg px-3 py-1.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none"
               value={role}
               onChange={(event) => setRole(event.target.value as GlobalRole)}
             >
@@ -92,7 +92,7 @@ function GlobalRoles() {
               <option value="SYSTEM_ADMIN">{t("adminGlobalRoles.systemAdmin")}</option>
             </select>
           </div>
-          <div className="shrink-0 flex items-end">
+          <div className="flex shrink-0 items-end">
             <Button
               variant="primary"
               disabled={!subject || grantState.loading}
@@ -111,19 +111,19 @@ function GlobalRoles() {
         </div>
       </div>
 
-      <div className="bg-bg-elevated border border-border rounded p-5 mb-5">
+      <div className="mb-5 rounded border border-border bg-bg-elevated p-5">
         <PageTitle level={3}>{t("adminGlobalRoles.currentHolders")}</PageTitle>
         {rolesResult.data.grants.length === 0 ? (
-          <p className="text-fg-muted text-sm">{t("adminGlobalRoles.noRolesGranted")}</p>
+          <p className="text-sm text-fg-muted">{t("adminGlobalRoles.noRolesGranted")}</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 pr-4 font-semibold">
+                <th className="py-2 pr-4 text-left font-semibold">
                   {t("adminGlobalRoles.userLabel")}
                 </th>
-                <th className="text-left py-2 pr-4 font-semibold">
+                <th className="py-2 pr-4 text-left font-semibold">
                   {t("adminGlobalRoles.roleLabel")}
                 </th>
                 <th aria-label={t("actions")} />

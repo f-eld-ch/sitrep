@@ -14,7 +14,7 @@ function LayerPanel() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group text-black self-end">
+      <div className="maplibregl-ctrl maplibregl-ctrl-group self-end text-black">
         <button type="button" className="maplibregl-ctrl-icon" onClick={() => setActive(true)}>
           <FontAwesomeIcon icon={faLayerGroup} size="lg" />
         </button>
@@ -26,7 +26,7 @@ function LayerPanel() {
     <MapPanel
       title={t("layerControl.layers")}
       onClose={() => setActive(false)}
-      style={{ width: "40vh" }}
+      className="w-[40vh]"
     >
       <MapPanelTabs
         tabs={[

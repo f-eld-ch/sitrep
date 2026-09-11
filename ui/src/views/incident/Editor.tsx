@@ -22,8 +22,8 @@ function Editor() {
 
   return (
     <>
-      <h3 className="text-3xl font-bold capitalize mb-4">{t("editIncident")}</h3>
-      <div className="bg-bg-elevated border border-border rounded p-5 shadow-sm mb-4">
+      <h3 className="mb-4 text-3xl font-bold capitalize">{t("editIncident")}</h3>
+      <div className="mb-4 rounded border border-border bg-bg-elevated p-5 shadow-sm">
         <IncidentForm incident={result.data.incident} />
       </div>
       {showRbacEditors && incidentId && result.data.incident.canManageAccess && (

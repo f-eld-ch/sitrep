@@ -16,15 +16,15 @@ export const Login = () => {
   }, [lang, i18n]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex min-h-screen flex-col md:flex-row">
       {/* Brand panel — deliberately ignores light/dark toggle, always dark */}
-      <div className="w-full md:w-1/2 flex justify-center items-center bg-dark-elevated text-paper">
+      <div className="flex w-full items-center justify-center bg-dark-elevated text-paper md:w-1/2">
         <div className="flex flex-col items-start">
-          <img src={logo} alt="sitrep" style={{ height: "6rem", width: "auto" }} />
-          <p className="mt-4 text-xl ml-3">{t("loginTagline")}</p>
+          <img src={logo} alt="sitrep" className="h-24 w-auto" />
+          <p className="mt-4 ml-3 text-xl">{t("loginTagline")}</p>
         </div>
       </div>
-      <div className="w-full md:w-1/2 flex justify-center items-center mt-8 md:mt-0">
+      <div className="mt-8 flex w-full items-center justify-center md:mt-0 md:w-1/2">
         <Button
           type="button"
           variant="primary"

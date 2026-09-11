@@ -33,9 +33,9 @@ function LanguageSwitcher() {
   const active = i18n.resolvedLanguage ?? i18n.language;
 
   return (
-    <div className="flex items-center px-4 py-2 gap-2">
+    <div className="flex items-center gap-2 px-4 py-2">
       <FontAwesomeIcon icon={faGlobe} />
-      <div className="flex rounded overflow-hidden border border-border">
+      <div className="flex overflow-hidden rounded border border-border">
         {LANGUAGES.map((language) => {
           const isActive = active === language.code;
           return (

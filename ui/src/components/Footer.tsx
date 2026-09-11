@@ -6,8 +6,8 @@ import VSHN from "../assets/vshn.svg";
 
 function Footer() {
   return (
-    <footer className="print:hidden px-6 py-2">
-      <div className="flex flex-nowrap flex-row items-center justify-center gap-1 text-xs font-mono">
+    <footer className="px-6 py-2 print:hidden">
+      <div className="flex flex-row flex-nowrap items-center justify-center gap-1 font-mono text-xs">
         <a
           className="text-current"
           aria-label="SitRep on GitHub"
@@ -21,13 +21,13 @@ function Footer() {
           </span>
         </a>
 
-        <div className="hidden md:inline-flex items-center gap-1 ml-1">
+        <div className="ml-1 hidden items-center gap-1 md:inline-flex">
           made with
           <FontAwesomeIcon icon={faHeart} color="red" />
           in Switzerland by
           <strong>
             <a
-              className="text-current ml-1"
+              className="ml-1 text-current"
               href="https://www.f-eld.ch"
               target="_blank"
               rel="noopener noreferrer"
@@ -49,15 +49,15 @@ function FooterManaged() {
     return;
   }
   return (
-    <div className="hidden md:inline-flex items-center ml-1 self-end">
+    <div className="ml-1 hidden items-center self-end md:inline-flex">
       and hosted by
       <a
-        className="text-current self-center ml-1"
+        className="ml-1 self-center text-current"
         href="https://www.vshn.ch"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img src={VSHN} alt="VSHN" className="self-center h-3" />
+        <img src={VSHN} alt="VSHN" className="h-3 self-center" />
       </a>
     </div>
   );

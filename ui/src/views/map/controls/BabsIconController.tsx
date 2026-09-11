@@ -27,8 +27,6 @@ import {
   CATEGORY_DRILL_DOWN,
   CATEGORY_ICON,
   type DrillDownEntry,
-  PICKER_GAP,
-  PICKER_ICON_CLASS,
   PICKER_ICON_SIZE,
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
@@ -49,17 +47,16 @@ import { layerToFeatureCollection } from "api";
 const pickerBtnClass =
   "w-[35px] h-[35px] inline-flex items-center justify-center box-border p-[3px]";
 
-// Wrapper for expanded category rows/columns — dynamic gap kept as inline style.
 const rowWrapClass =
-  "flex flex-row flex-wrap [flex-grow:2] [flex-shrink:4] basis-0 justify-end self-baseline";
+  "flex flex-row flex-wrap gap-px [flex-grow:2] [flex-shrink:4] basis-0 justify-end self-baseline";
 const colWrapClass =
-  "flex flex-col flex-wrap [flex-grow:2] [flex-shrink:4] basis-0 justify-end self-baseline";
+  "flex flex-col flex-wrap gap-px [flex-grow:2] [flex-shrink:4] basis-0 justify-end self-baseline";
 
 // Top-right overlay container: 80% wide, pushed below the fixed toolbar.
 const overlayClass = "w-[80%] mt-[160px]";
 
-// BabsIcon className: `block` prevents SVG from sitting on the text baseline.
-const babsIconClass = clsx(PICKER_ICON_CLASS, "block");
+// `block` prevents SVG from sitting on the text baseline.
+const babsIconClass = "block";
 
 const IconController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
@@ -173,7 +170,6 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     return (
       <div
         className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
-        style={{ gap: `${PICKER_GAP}px` }}
       >
         <BackButton title={categoryLabel} onClick={collapse} />
         {drillDown.map((entry) => {
@@ -206,7 +202,6 @@ function IconCategoryMenu(props: CategoryMenuProps) {
     return (
       <div
         className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
-        style={{ gap: `${PICKER_GAP}px` }}
       >
         {/* Back to the group list for a drill-down category, otherwise straight to collapsed. */}
         <BackButton
@@ -315,7 +310,6 @@ const LineController = memo((props: BabsIconControllerProps) => {
     <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
       <div
         className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
-        style={{ gap: `${PICKER_GAP}px` }}
       >
         {byColor(LineTypes).map((l) => (
           <button
@@ -377,7 +371,6 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
     <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
       <div
         className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
-        style={{ gap: `${PICKER_GAP}px` }}
       >
         {byColor(ZoneTypes).map((l) => (
           <button
@@ -525,7 +518,7 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl-top-right text-black mr-[45px]">
+      <div className="maplibregl-ctrl-top-right mr-[45px] text-black">
         <div className="maplibregl-ctrl maplibregl-ctrl-group">
           <button type="button" className="maplibregl-ctrl-icon" onClick={() => setActive(!active)}>
             <FontAwesomeIcon icon={faHeading} size="lg" />
@@ -537,10 +530,10 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className="maplibregl-ctrl maplibregl-ctrl-top-right min-h-[10%] min-w-[20%]">
-      <h5 className="text-lg font-bold mb-2">{t("name")}</h5>
+      <h5 className="mb-2 text-lg font-bold">{t("name")}</h5>
       <div className="relative mb-1">
         <input
-          className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           type="text"
           placeholder={t("name")}
           onChange={(e) => {
@@ -553,7 +546,7 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
             }
           }}
         />
-        <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-gray-400 pointer-events-none text-xs">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex w-8 items-center justify-center text-xs text-gray-400">
           <FontAwesomeIcon icon={faFileText} />
         </span>
       </div>

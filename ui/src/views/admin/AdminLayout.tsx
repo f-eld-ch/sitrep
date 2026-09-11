@@ -20,9 +20,9 @@ function AdminLayout() {
   return (
     <div className="mx-auto max-w-7xl px-4">
       <PageTitle>{t("adminLayout.title")}</PageTitle>
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
         <aside className="md:w-48 md:shrink-0">
-          <p className="text-xs uppercase tracking-wider font-semibold text-fg-muted mb-2">
+          <p className="mb-2 text-xs font-semibold tracking-wider text-fg-muted uppercase">
             {t("adminLayout.accessControl")}
           </p>
           <ul className="flex flex-row flex-wrap gap-1 md:flex-col md:gap-0 md:space-y-0.5">
@@ -35,7 +35,7 @@ function AdminLayout() {
                 {t("adminLayout.groups")}
               </NavLink>
               {groupsResult.status === "ready" && activeGroups.length > 0 && (
-                <ul className="hidden md:block ml-3 mt-0.5 space-y-0.5">
+                <ul className="mt-0.5 ml-3 hidden space-y-0.5 md:block">
                   {activeGroups.map((group) => (
                     <li key={group.id}>
                       <NavLink
@@ -61,7 +61,7 @@ function AdminLayout() {
             )}
           </ul>
         </aside>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <Outlet />
         </div>
       </div>
