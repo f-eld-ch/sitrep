@@ -133,10 +133,11 @@ const ActiveLayersControl: React.FC = () => {
             return (
               <div
                 key={s.layer.id}
-                className={`flex items-start justify-between px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs ${state.activeLayer === s.layer.id ? "bg-primary/10" : ""}`}
+                className={`flex items-center justify-between px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs cursor-pointer hover:bg-gray-100 transition-colors ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
+                onClick={() => handleLayerClick(s.layer.id)}
               >
-                <div className="mr-3 flex items-center">
-                  <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3">
+                <div className={`flex-1 flex items-center mr-3 ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}>
+                  <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3 shrink-0">
                     <FontAwesomeIcon
                       icon={
                         isInherited
@@ -148,28 +149,22 @@ const ActiveLayersControl: React.FC = () => {
                       size="lg"
                     />
                   </span>
-                  <button
-                    type="button"
-                    className={state.activeLayer === s.layer.id ? "font-bold" : ""}
-                    onClick={() => handleLayerClick(s.layer.id)}
-                  >
-                    {s.layer.name}
-                  </button>
+                  {s.layer.name}
                 </div>
                 {s.layer.id !== state.activeLayer && (
-                  <div className="flex items-end shrink-0">
+                  <div className="flex items-center shrink-0 gap-2">
                     <button
-                      className="mr-2 self-center"
+                      className="hover:text-primary transition-colors leading-none"
                       type="button"
-                      onClick={() => handleVisibilityToggle(s.layer.id, !s.isVisible)}
+                      onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(s.layer.id, !s.isVisible); }}
                     >
                       <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
                     </button>
                     {!isInherited && (
                       <button
-                        className="mr-2 self-center"
+                        className="hover:text-primary transition-colors leading-none"
                         type="button"
-                        onClick={() => handleLayerClick(s.layer.id)}
+                        onClick={(e) => { e.stopPropagation(); handleLayerClick(s.layer.id); }}
                       >
                         <FontAwesomeIcon icon={faEdit} />
                       </button>

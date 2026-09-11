@@ -100,6 +100,21 @@
   cursor: grab;
 }
 
+/* Export (print) control popup */
+.maplibregl-export-list .print-table {
+  padding: 8px 12px;
+}
+.maplibregl-export-list .print-table td {
+  padding: 3px 6px;
+}
+.maplibregl-ctrl-group .maplibregl-export-list button {
+  padding: 8px 16px;
+}
+.maplibregl-ctrl-group .maplibregl-export-list button:hover {
+  background-color: var(--color-primary) !important;
+  color: white;
+}
+
 /* Control position adjustments */
 .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
   float: right;

@@ -242,44 +242,49 @@ const WMSLayerMenu = () => {
       {state.wms.activeLayers.map((layer: WMSLayer) => (
         <div
           key={layer.name}
-          className="flex items-center justify-between flex-wrap px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs"
+          className="flex items-center justify-between flex-wrap px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => handleVisibilityToggle(layer.name, !layer.isVisible)}
         >
-          <div className="mr-3 flex items-center shrink-[2]" style={{ width: "50%" }}>
+          <div className="mr-3 flex items-center flex-1">
             <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3">
               <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
             </span>
             <span>{layer.title}</span>
           </div>
-          <div className="flex flex-row items-end shrink-0 flex-wrap" style={{ width: "45%" }}>
+          <div className="flex flex-row items-center shrink-0 gap-2">
             {layer.legendURL && (
               <button
-                className="mr-2 self-center"
+                className="hover:text-primary transition-colors leading-none"
                 type="button"
-                onClick={() => handleInfoToggle(layer.name)}
+                onClick={(e) => { e.stopPropagation(); handleInfoToggle(layer.name); }}
               >
                 <FontAwesomeIcon icon={faInfoCircle} />
               </button>
             )}
-
             <button
-              className="mr-2 self-center"
+              className="hover:text-primary transition-colors leading-none"
               type="button"
-              onClick={() => handleVisibilityToggle(layer.name, !layer.isVisible)}
+              onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(layer.name, !layer.isVisible); }}
             >
               <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
             </button>
             <input
-              className="mr-2"
+              className="mx-1"
               type="range"
               min="0"
               max="1"
               step="0.1"
               value={layer.opacity}
+              onClick={(e) => e.stopPropagation()}
               onChange={(e) =>
                 handleWMSOpacityChange(layer.name, Number.parseFloat(e.target.value))
               }
             />
-            <button type="button" onClick={() => handleDeleteLayer(layer.name)}>
+            <button
+              className="hover:text-danger transition-colors leading-none"
+              type="button"
+              onClick={(e) => { e.stopPropagation(); handleDeleteLayer(layer.name); }}
+            >
               <FontAwesomeIcon icon={faTrash} />
             </button>
           </div>

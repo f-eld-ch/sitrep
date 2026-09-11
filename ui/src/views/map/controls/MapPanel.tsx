@@ -66,6 +66,7 @@ interface MapPanelBlockProps {
   active?: boolean;
   column?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
 export function MapPanelBlock({
@@ -73,6 +74,7 @@ export function MapPanelBlock({
   active = false,
   column = false,
   className,
+  onClick,
 }: MapPanelBlockProps) {
   return (
     <div
@@ -80,8 +82,10 @@ export function MapPanelBlock({
         "flex px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs",
         column ? "flex-col items-start" : "items-center",
         active && "bg-primary/10",
+        onClick && "cursor-pointer hover:bg-gray-100",
         className,
       )}
+      onClick={onClick}
     >
       {children}
     </div>
