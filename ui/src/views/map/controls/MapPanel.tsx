@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import type React from "react";
 
 interface MapPanelProps {
@@ -46,7 +46,7 @@ export function MapPanelTabs({ tabs, activeTab, onChange }: MapPanelTabsProps) {
         <button
           key={tab.key}
           type="button"
-          className={classNames(
+          className={clsx(
             "px-3 py-2 cursor-pointer border-b-2 border-transparent transition-colors",
             activeTab === tab.key
               ? "bg-primary text-white border-primary"
@@ -68,10 +68,15 @@ interface MapPanelBlockProps {
   className?: string;
 }
 
-export function MapPanelBlock({ children, active = false, column = false, className }: MapPanelBlockProps) {
+export function MapPanelBlock({
+  children,
+  active = false,
+  column = false,
+  className,
+}: MapPanelBlockProps) {
   return (
     <div
-      className={classNames(
+      className={clsx(
         "flex px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs",
         column ? "flex-col items-start" : "items-center",
         active && "bg-primary/10",

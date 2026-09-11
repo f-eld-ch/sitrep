@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { type ButtonHTMLAttributes } from "react";
 
 export type ButtonVariant = "primary" | "success" | "warning" | "danger" | "light" | "ghost";
@@ -16,7 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  "inline-flex items-center justify-center cursor-pointer border font-medium transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-1.5 cursor-pointer border font-medium transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const sizes: Record<ButtonSize, string> = {
   xs: "text-xs px-2 py-0.5 h-6",
@@ -59,7 +59,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={classNames(
+      className={clsx(
         base,
         sizes[size],
         light ? lightVariants[variant] : variants[variant],

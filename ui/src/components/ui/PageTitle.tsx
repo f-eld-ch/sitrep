@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { type ReactNode } from "react";
 
 type Level = 1 | 2 | 3;
@@ -20,7 +20,7 @@ interface PageTitleProps {
 export function PageTitle({ children, level = 1, className }: PageTitleProps) {
   const Tag = TAG[level];
   return (
-    <Tag className={classNames("font-bold capitalize mb-5", SIZE[level], className)}>
+    <Tag className={clsx("font-bold capitalize mb-5", SIZE[level], className)}>
       {children}
     </Tag>
   );

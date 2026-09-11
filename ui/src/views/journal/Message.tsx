@@ -7,7 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -61,27 +61,26 @@ const borderR: Record<string, string> = {
 const accentTextColor: Record<string, string> = {
   warning: "!text-warning",
   success: "!text-success",
-  dark:    "!text-fg",
-  danger:  "!text-danger",
-  none:    "!text-fg",
+  dark: "!text-fg",
+  danger: "!text-danger",
+  none: "!text-fg",
 };
 
 const accentHoverBg: Record<string, string> = {
   warning: "hover:bg-warning/15",
   success: "hover:bg-success/15",
-  dark:    "hover:bg-fg/10",
-  danger:  "hover:bg-danger/15",
-  none:    "hover:bg-bg-subtle",
+  dark: "hover:bg-fg/10",
+  danger: "hover:bg-danger/15",
+  none: "hover:bg-bg-subtle",
 };
 
 const bgTint: Record<string, string> = {
   warning: "bg-[var(--color-msg-warning-bg)]",
   success: "bg-[var(--color-msg-success-bg)]",
-  dark:    "bg-[var(--color-msg-dark-bg)]",
-  danger:  "bg-[var(--color-msg-danger-bg)]",
+  dark: "bg-[var(--color-msg-dark-bg)]",
+  danger: "bg-[var(--color-msg-danger-bg)]",
   none: "",
 };
-
 
 const tagVariantMap: Record<string, TagVariant> = {
   warning: "warning",
@@ -162,7 +161,7 @@ const LevelItem = ({
   "data-testid"?: string;
 }) => (
   <div
-    className={classNames(
+    className={clsx(
       "flex flex-col items-center text-center min-w-0",
       shrink === 0 && "shrink-0",
       shrink === 1 && "shrink",
@@ -198,7 +197,7 @@ const MessageContainer = ({
   const accent = accentKey(message);
   const hasDivisions = message.divisions && message.divisions.length > 0;
   const tagVariant = tagVariantMap[accent];
-  const actionLinkClass = classNames(
+  const actionLinkClass = clsx(
     "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors select-none",
     accentTextColor[accent],
     accentHoverBg[accent],
@@ -206,7 +205,7 @@ const MessageContainer = ({
 
   return (
     <div
-      className={classNames(
+      className={clsx(
         "border-0 border-solid rounded shadow-sm",
         accentSide === "right" ? "border-r-4" : "border-l-4",
         accentSide === "right" ? borderR[accent] : borderL[accent],
@@ -259,10 +258,7 @@ const MessageContainer = ({
         </nav>
 
         {/* Content */}
-        <div
-          className="text-sm text-left break-words mt-6"
-          data-testid={`content-${message.id}`}
-        >
+        <div className="text-sm text-left break-words mt-6" data-testid={`content-${message.id}`}>
           <ReactPreview content={message.content} />
         </div>
 
@@ -298,7 +294,7 @@ const MessageContainer = ({
       {(hasDivisions || (showControls === true && id !== undefined)) && (
         <div className="flex flex-wrap items-center rounded-b pt-1.5 gap-x-2 gap-y-1">
           {/* Left — division tags (full-width on mobile so buttons wrap below) */}
-          <div className="flex flex-wrap gap-1.5 px-2 w-full sm:w-auto sm:flex-1">
+          <div className="flex flex-wrap gap-1.5 px-2 py-4 w-full sm:w-auto sm:flex-1">
             {message.divisions?.map((d) => (
               <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
                 {d.division.name && d.division.name.trim() !== ""
@@ -344,11 +340,7 @@ const MessageContainer = ({
                 </button>
               )}
               {showTasks && (
-                <button
-                  type="button"
-                  className={actionLinkClass}
-                  data-testid="create-task-button"
-                >
+                <button type="button" className={actionLinkClass} data-testid="create-task-button">
                   <FontAwesomeIcon icon={faSquareCheck} />
                   <span>{t("createNewTask")}</span>
                 </button>

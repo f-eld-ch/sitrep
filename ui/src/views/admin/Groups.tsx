@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { useAccessGroups, useCreateAccessGroup } from "api";
 import { Spinner } from "components";
 import { Button, Notification, Tag } from "components/ui";
@@ -70,7 +70,7 @@ function Groups() {
             </label>
             <input
               id="group-name"
-              className={classNames(
+              className={clsx(
                 "w-full rounded border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary",
                 name.length === 64 ? "border-danger" : "border-border",
               )}
@@ -83,7 +83,12 @@ function Groups() {
               }}
             />
             {name.length >= 54 && (
-              <p className={classNames("text-xs mt-1", name.length === 64 ? "text-danger" : "text-warning")}>
+              <p
+                className={clsx(
+                  "text-xs mt-1",
+                  name.length === 64 ? "text-danger" : "text-warning",
+                )}
+              >
                 {64 - name.length} / 64
               </p>
             )}

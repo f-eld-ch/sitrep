@@ -15,7 +15,7 @@ import {
 } from "api";
 import { Spinner } from "components";
 import { Button, Notification } from "components/ui";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { useRedirectIfForbidden } from "utils";
 
 const inputBase =
@@ -156,7 +156,10 @@ function GroupDetail() {
           <div className="flex gap-2 mb-1">
             <div className="flex-1">
               <input
-                className={classNames(inputBase, renameValue.length === 64 ? "border-danger" : "border-border")}
+                className={clsx(
+                  inputBase,
+                  renameValue.length === 64 ? "border-danger" : "border-border",
+                )}
                 placeholder={t("adminGroupDetail.groupNamePlaceholder")}
                 maxLength={64}
                 value={renameValue}
@@ -167,7 +170,12 @@ function GroupDetail() {
                 }}
               />
               {renameValue.length >= 54 && (
-                <p className={classNames("text-xs mt-0.5", renameValue.length === 64 ? "text-danger" : "text-warning")}>
+                <p
+                  className={clsx(
+                    "text-xs mt-0.5",
+                    renameValue.length === 64 ? "text-danger" : "text-warning",
+                  )}
+                >
                   {64 - renameValue.length} / 64
                 </p>
               )}
@@ -178,7 +186,11 @@ function GroupDetail() {
               onClick={() => void commitRename()}
               disabled={renameState.loading}
             >
-              {renameState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.save")}
+              {renameState.loading ? (
+                <FontAwesomeIcon icon={faSpinner} spin />
+              ) : (
+                t("adminGroupDetail.save")
+              )}
             </Button>
             <Button type="button" variant="light" onClick={() => setIsRenaming(false)}>
               {t("adminGroupDetail.cancel")}
@@ -205,7 +217,7 @@ function GroupDetail() {
         {isEditingDescription ? (
           <div className="flex gap-2 mt-1 mb-1">
             <input
-              className={classNames(inputSm, "flex-1 border-border")}
+              className={clsx(inputSm, "flex-1 border-border")}
               placeholder={t("adminGroupDetail.groupDescriptionPlaceholder")}
               value={descriptionValue}
               onChange={(e) => setDescriptionValue(e.target.value)}
@@ -221,9 +233,18 @@ function GroupDetail() {
               onClick={() => void commitDescription()}
               disabled={updateDescriptionState.loading}
             >
-              {updateDescriptionState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("adminGroupDetail.save")}
+              {updateDescriptionState.loading ? (
+                <FontAwesomeIcon icon={faSpinner} spin />
+              ) : (
+                t("adminGroupDetail.save")
+              )}
             </Button>
-            <Button type="button" variant="light" size="sm" onClick={() => setIsEditingDescription(false)}>
+            <Button
+              type="button"
+              variant="light"
+              size="sm"
+              onClick={() => setIsEditingDescription(false)}
+            >
               {t("adminGroupDetail.cancel")}
             </Button>
           </div>
@@ -289,7 +310,12 @@ function GroupDetail() {
                   t("adminGroupDetail.confirmArchive")
                 )}
               </Button>
-              <Button type="button" variant="light" size="sm" onClick={() => setConfirmingArchive(false)}>
+              <Button
+                type="button"
+                variant="light"
+                size="sm"
+                onClick={() => setConfirmingArchive(false)}
+              >
                 {t("adminGroupDetail.cancel")}
               </Button>
             </div>
@@ -360,7 +386,7 @@ function GroupDetail() {
           <h3 className="text-xl font-bold mb-3">{t("adminGroupDetail.addMembers")}</h3>
           <div className="mb-3">
             <input
-              className={classNames(inputBase, "border-border")}
+              className={clsx(inputBase, "border-border")}
               placeholder={t("adminGroupDetail.searchMembersPlaceholder")}
               value={addFilter}
               onChange={(e) => setAddFilter(e.target.value)}

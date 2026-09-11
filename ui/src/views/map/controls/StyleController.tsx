@@ -1,6 +1,6 @@
 import { faMap } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPanel, MapPanelBlock } from "./MapPanel";
@@ -82,7 +82,7 @@ function StyleController() {
   const { selectedStyle: style, setSelectedStyle } = useMapStyle();
   const { t } = useTranslation();
 
-  const btnClass = classNames({
+  const btnClass = clsx({
     "maplibregl-ctrl-icon": true,
   });
 

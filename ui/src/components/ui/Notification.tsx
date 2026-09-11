@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { type HTMLAttributes } from "react";
 
 export type NotificationVariant = "danger" | "warning" | "success" | "info";
@@ -33,7 +33,7 @@ export function Notification({
 }: NotificationProps) {
   return (
     <Tag
-      className={classNames(
+      className={clsx(
         "rounded px-4 py-3 text-sm",
         light ? lightVariants[variant] : variants[variant],
         className,

@@ -11,9 +11,9 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { Spinner } from "components";
-import { Button, Notification, Tag } from "components/ui";
+import { Button, Notification, PageTitle, Tag } from "components/ui";
 import dayjs from "dayjs";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,7 +41,7 @@ function List() {
 
   return (
     <div>
-      <h3 className="text-3xl font-bold capitalize mb-4">{t("incidents")}</h3>
+      <PageTitle>{t("incidents")}</PageTitle>
       {mutationError && (
         <Notification variant="danger" className="mb-4">
           {t(`errors.${mutationError.code}`)}
@@ -162,7 +162,7 @@ export function IncidentCards(props: {
 }
 
 const footerItem =
-  "flex flex-1 items-center justify-center gap-1.5 py-2 text-sm capitalize cursor-pointer hover:bg-bg-subtle border-r border-border last:border-r-0 transition-colors";
+  "flex flex-1 basis-1/2 sm:basis-0 items-center justify-center gap-1.5 py-2 text-sm capitalize cursor-pointer hover:bg-bg-subtle transition-colors";
 
 export function IncidentCard(props: {
   incident: Incident;
@@ -185,7 +185,7 @@ export function IncidentCard(props: {
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
 
-  const cardClass = classNames(
+  const cardClass = clsx(
     "border border-border rounded shadow-md dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)] dark:border-white/10 mb-3",
     incident.closedAt
       ? "bg-warning/10 dark:bg-warning/5"
@@ -198,9 +198,7 @@ export function IncidentCard(props: {
     <div className={cardClass}>
       <div className="p-4">
         <div className="text-sm">
-          <h4
-            className={classNames("font-bold mb-2", isChild ? "text-lg" : "text-xl")}
-          >
+          <h4 className={clsx("font-bold mb-2", isChild ? "text-lg" : "text-xl")}>
             {incident.name}
             <Tag
               light={true}
@@ -216,17 +214,17 @@ export function IncidentCard(props: {
               <FontAwesomeIcon icon={incident.accessMode === "RESTRICTED" ? faLock : faLockOpen} />
             </Tag>
           </h4>
-          <div className="flex gap-4">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+            <div className="sm:flex-1">
               <strong>{t("location")}: </strong>
               {incident.location.name}
             </div>
-            <div className="flex-1">
+            <div className="sm:flex-1">
               <strong>{t("createdAt")}: </strong>
               {dayjs(incident.createdAt).format("LLL")}
             </div>
             {incident.closedAt && (
-              <div className="flex-1">
+              <div className="sm:flex-1">
                 <strong>{t("closedAt")}: </strong>
                 {dayjs(incident.closedAt).format("LLL")}
               </div>
@@ -235,7 +233,7 @@ export function IncidentCard(props: {
         </div>
       </div>
       {!contextOnly && (
-        <footer className="flex border-t border-border">
+        <footer className="flex flex-wrap border-t border-border divide-x divide-border">
           <button
             type="button"
             data-testid="enter-button"
@@ -263,7 +261,7 @@ export function IncidentCard(props: {
             <button
               type="button"
               data-testid="delete-button"
-              className={classNames(footerItem, "text-danger")}
+              className={clsx(footerItem, "text-danger")}
               onClick={() => void deleteIncident(incident.id)}
             >
               <FontAwesomeIcon icon={faTrash} />
@@ -274,7 +272,7 @@ export function IncidentCard(props: {
             <button
               type="button"
               data-testid="close-button"
-              className={classNames(footerItem, "text-danger")}
+              className={clsx(footerItem, "text-danger")}
               onClick={() => void closeIncident(incident.id)}
             >
               <FontAwesomeIcon icon={faFolderClosed} />
@@ -285,7 +283,7 @@ export function IncidentCard(props: {
             <button
               type="button"
               data-testid="open-button"
-              className={classNames(footerItem, "text-success")}
+              className={clsx(footerItem, "text-success")}
               onClick={() => void reopenIncident(incident.id)}
             >
               <FontAwesomeIcon icon={faFolderOpen} />

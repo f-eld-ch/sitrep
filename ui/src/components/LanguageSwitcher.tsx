@@ -1,6 +1,6 @@
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -42,11 +42,9 @@ function LanguageSwitcher() {
             <button
               key={language.code}
               type="button"
-              className={classNames(
+              className={clsx(
                 "px-2 py-0.5 text-xs font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-white"
-                  : "bg-bg text-fg hover:bg-bg-subtle",
+                isActive ? "bg-primary text-white" : "bg-bg text-fg hover:bg-bg-subtle",
               )}
               title={language.name}
               aria-label={language.name}

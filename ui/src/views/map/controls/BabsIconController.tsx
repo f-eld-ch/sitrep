@@ -12,7 +12,7 @@ import { faFileText } from "@fortawesome/free-regular-svg-icons";
 import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "components/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
 import { aliasFor } from "components/babs/iconResolver";
 import { rotationAllowed, unsupportedLabelKeys } from "components/babs/labelSchema";
@@ -59,7 +59,7 @@ const colWrapClass =
 const overlayClass = "w-[80%] mt-[160px]";
 
 // BabsIcon className: `block` prevents SVG from sitting on the text baseline.
-const babsIconClass = classNames(PICKER_ICON_CLASS, "block");
+const babsIconClass = clsx(PICKER_ICON_CLASS, "block");
 
 const IconController = memo((props: BabsIconControllerProps) => {
   const { selectedFeature, onUpdate } = props;
@@ -73,7 +73,7 @@ const IconController = memo((props: BabsIconControllerProps) => {
   }
 
   return (
-    <div className={classNames("maplibregl-ctrl-top-right", overlayClass)}>
+    <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
       {CATEGORIES.map((category) => (
         <IconCategoryMenu
           key={category.number}
@@ -172,7 +172,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
   if (expanded && drillDown && openEntry === null) {
     return (
       <div
-        className={classNames("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
+        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
         style={{ gap: `${PICKER_GAP}px` }}
       >
         <BackButton title={categoryLabel} onClick={collapse} />
@@ -205,7 +205,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
   if (expanded) {
     return (
       <div
-        className={classNames("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
+        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
         style={{ gap: `${PICKER_GAP}px` }}
       >
         {/* Back to the group list for a drill-down category, otherwise straight to collapsed. */}
@@ -312,9 +312,9 @@ const LineController = memo((props: BabsIconControllerProps) => {
   }
 
   return (
-    <div className={classNames("maplibregl-ctrl-top-right", overlayClass)}>
+    <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
       <div
-        className={classNames("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
+        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
         style={{ gap: `${PICKER_GAP}px` }}
       >
         {byColor(LineTypes).map((l) => (
@@ -374,9 +374,9 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
   }
 
   return (
-    <div className={classNames("maplibregl-ctrl-top-right", overlayClass)}>
+    <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
       <div
-        className={classNames("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
+        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
         style={{ gap: `${PICKER_GAP}px` }}
       >
         {byColor(ZoneTypes).map((l) => (
@@ -527,11 +527,7 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
     return (
       <div className="maplibregl-ctrl-top-right text-black mr-[45px]">
         <div className="maplibregl-ctrl maplibregl-ctrl-group">
-          <button
-            type="button"
-            className="maplibregl-ctrl-icon"
-            onClick={() => setActive(!active)}
-          >
+          <button type="button" className="maplibregl-ctrl-icon" onClick={() => setActive(!active)}>
             <FontAwesomeIcon icon={faHeading} size="lg" />
           </button>
         </div>

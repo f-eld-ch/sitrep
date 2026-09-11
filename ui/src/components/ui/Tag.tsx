@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { type AnchorHTMLAttributes, type HTMLAttributes } from "react";
 
 export type TagVariant = "primary" | "success" | "warning" | "danger" | "light" | "gray";
@@ -29,14 +29,26 @@ const lightVariants: Record<TagVariant, string> = {
   gray: "bg-disabled/30 text-fg-muted",
 };
 
-export function Tag({ variant = "light", light = false, size = "md", className, children, ...props }: TagProps) {
+export function Tag({
+  variant = "light",
+  light = false,
+  size = "md",
+  className,
+  children,
+  ...props
+}: TagProps) {
   const Tag = (props as AnchorProps).as ?? "span";
   const colorClass = light ? lightVariants[variant] : variants[variant];
   const sizeClass = size === "sm" ? "text-xs px-1 py-0.5" : "text-sm px-2 py-0.5";
 
   return (
     <Tag
-      className={classNames("inline-flex items-center rounded font-medium", sizeClass, colorClass, className)}
+      className={clsx(
+        "inline-flex items-center rounded font-medium",
+        sizeClass,
+        colorClass,
+        className,
+      )}
       {...(props as object)}
     >
       {children}
