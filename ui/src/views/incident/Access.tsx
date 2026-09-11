@@ -136,9 +136,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
     setPendingGrants((prev) => new Set(prev).add(principalKey));
     void grantRole({ incidentId, principalKind: principalKindArg, principalId, role })
       .catch((err: unknown) => {
-        setMutationError(
-          err instanceof Error ? err.message : t("incidentAccess.roleChangeFailed"),
-        );
+        setMutationError(err instanceof Error ? err.message : t("incidentAccess.roleChangeFailed"));
       })
       .finally(() => {
         setPendingGrants((prev) => {

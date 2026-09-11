@@ -244,19 +244,13 @@ const WMSLayerMenu = () => {
           key={layer.name}
           className="flex items-center justify-between flex-wrap px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs"
         >
-          <div
-            className="mr-3 flex items-center shrink-[2]"
-            style={{ width: "50%" }}
-          >
-            <span className="panel-icon" style={{ verticalAlign: "center" }}>
+          <div className="mr-3 flex items-center shrink-[2]" style={{ width: "50%" }}>
+            <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3">
               <FontAwesomeIcon icon={faHexagonNodesBolt} size="lg" />
             </span>
             <span>{layer.title}</span>
           </div>
-          <div
-            className="flex flex-row items-end shrink-0 flex-wrap"
-            style={{ width: "45%" }}
-          >
+          <div className="flex flex-row items-end shrink-0 flex-wrap" style={{ width: "45%" }}>
             {layer.legendURL && (
               <button
                 className="mr-2 self-center"
@@ -298,11 +292,7 @@ const WMSLayerMenu = () => {
       ))}
       <div className="flex flex-col items-start px-3 py-2 border-b border-gray-200 last:border-b-0">
         {!showAddLayer && (
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => setShowAddLayer(true)}
-          >
+          <Button size="sm" variant="primary" onClick={() => setShowAddLayer(true)}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
             {t("layerControl.addWMSLayer")}
           </Button>

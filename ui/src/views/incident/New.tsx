@@ -20,7 +20,7 @@ import {
   useUnlinkIncidentParent,
   useUpdateIncident,
 } from "api";
-import { Button, Notification } from "components/ui";
+import { Button, Notification, PageTitle } from "components/ui";
 
 const inputWithIcon =
   "w-full rounded border border-border pl-10 pr-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
@@ -32,7 +32,7 @@ function New() {
 
   return (
     <>
-      <h3 className="text-3xl font-bold capitalize mb-4">{t("createIncident")}</h3>
+      <PageTitle>{t("createIncident")}</PageTitle>
       <div className="bg-bg-elevated border border-border rounded p-5 shadow-sm">
         <IncidentForm incident={undefined} />
       </div>
@@ -140,14 +140,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       )}
 
       {/* Incident name */}
-      <div className="flex gap-4 items-start mb-4">
+      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
         <label
           htmlFor={nameID}
-          className="w-64 shrink-0 text-right text-sm font-bold pt-1.5 capitalize"
+          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
         >
           {t("incidentName")}
         </label>
-        <div className="flex-1 relative">
+        <div className="flex-1 w-full relative">
           <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
             <FontAwesomeIcon icon={faClipboard} />
           </span>
@@ -164,14 +164,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
 
       {/* Parent incident */}
       {showParentSelector && (
-        <div className="flex gap-4 items-start mb-4">
+        <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
           <label
             htmlFor={parentID}
-            className="w-64 shrink-0 text-right text-sm font-bold pt-1.5 capitalize"
+            className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
           >
             {t("parentIncident")}
           </label>
-          <div className="flex-1 relative">
+          <div className="flex-1 w-full relative">
             <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
               <FontAwesomeIcon icon={faSitemap} />
             </span>
@@ -193,14 +193,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       )}
 
       {/* Location */}
-      <div className="flex gap-4 items-start mb-4">
+      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-4">
         <label
           htmlFor={locationID}
-          className="w-64 shrink-0 text-right text-sm font-bold pt-1.5 capitalize"
+          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
         >
           {t("location")}
         </label>
-        <div className="flex-1 relative">
+        <div className="flex-1 w-full relative">
           <span className="absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm">
             <FontAwesomeIcon icon={faLocationDot} />
           </span>
@@ -218,11 +218,11 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       <hr className="my-5 border-border" />
 
       {/* Existing divisions */}
-      <div className="flex gap-4 items-start mb-2">
-        <label className="w-64 shrink-0 text-right text-sm font-bold pt-1.5 capitalize">
+      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-2">
+        <label className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0">
           {t("divisions")}
         </label>
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 w-full space-y-2">
           {assignments.map((d, index) => (
             <div key={d.id || `new-${index}`} className="flex gap-2">
               <input
@@ -267,14 +267,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
 
       {/* Add division */}
-      <div className="flex gap-4 items-start mb-5">
+      <div className="flex flex-col xl:flex-row xl:gap-4 items-start mb-5">
         <label
           htmlFor={divisionsID}
-           className="w-64 shrink-0 text-right text-sm font-bold pt-1.5 capitalize"
+          className="w-full xl:w-64 xl:shrink-0 xl:text-right text-sm font-bold xl:pt-1.5 capitalize mb-1 xl:mb-0"
         >
           {t("devisionAdd")}
         </label>
-        <div className="flex-1 flex gap-2">
+        <div className="flex-1 w-full flex gap-2">
           <input
             className={inputSmBase + " flex-1 min-w-0"}
             type="text"
@@ -316,7 +316,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       </div>
 
       <Button
-        className="ml-68"
+        className="xl:ml-[272px]"
         type="submit"
         variant="primary"
         capitalized

@@ -15,7 +15,7 @@ import { useDropzone } from "react-dropzone";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { type Attachment, Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { Spinner } from "components";
-import { Button, Notification, Tag } from "components/ui";
+import { Button, Notification, PageTitle, Tag } from "components/ui";
 import useDebounce from "utils/useDebounce";
 import {
   useCreateMessage,
@@ -223,7 +223,9 @@ function Editor() {
     <EditorContext.Provider value={contextValue}>
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-1 min-w-0">
-          <h3 className="text-2xl font-bold capitalize mb-4">{t("editor")}</h3>
+          <PageTitle level={1} className="mb-4">
+            {t("editor")}
+          </PageTitle>
           {blocker.state === "blocked" && (
             <div className="bg-danger/10 border border-danger/30 rounded p-4 mb-4">
               <div className="flex justify-between items-start mb-2">
@@ -362,7 +364,11 @@ function AttachmentUpload({
                   {u.filename}
                   {removeBtn(() => {
                     dispatch({ type: "remove_attachment", attachmentId: u.id });
-                    void removeAttachment({ incidentId, messageId: messageId!, attachmentId: u.id });
+                    void removeAttachment({
+                      incidentId,
+                      messageId: messageId!,
+                      attachmentId: u.id,
+                    });
                     setJustUploaded((prev) => prev.filter((j) => j.id !== u.id));
                   })}
                 </Tag>
@@ -466,7 +472,12 @@ function InputBox() {
         <div className="flex-1 w-full min-w-0">
           <div className="flex flex-wrap gap-2">
             <div className="flex-1 min-w-0">
-              <select id={mediumId} value={state.media} onChange={handleMediumChange} className={selectClass}>
+              <select
+                id={mediumId}
+                value={state.media}
+                onChange={handleMediumChange}
+                className={selectClass}
+              >
                 {Object.values(Medium).map((medium: Medium) => (
                   <option
                     key={medium}

@@ -381,7 +381,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       offset={30}
       className="feature-label-popup"
     >
-      <div data-theme="light" className="p-3" style={{ minWidth: "220px" }}>
+      <div className="p-3" style={{ minWidth: "220px" }}>
         <div className="flex justify-between items-center mb-3">
           {title ? <p className="text-sm font-bold">{title}</p> : <span />}
           <button
@@ -453,7 +453,10 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           <div className="mb-2">
             {rotationFixed ? (
               <>
-                <label className="block text-xs font-semibold mb-1 text-gray-800" htmlFor={`${baseId}-rotation`}>
+                <label
+                  className="block text-xs font-semibold mb-1 text-gray-800"
+                  htmlFor={`${baseId}-rotation`}
+                >
                   <span className="mr-1">
                     <FontAwesomeIcon icon={faArrowsRotate} />
                   </span>
@@ -472,7 +475,12 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                     onChange={(e) => onRotationChange(Number(e.target.value))}
                   />
                 </div>
-                <Button variant="light" size="sm" className="w-full mt-2" onClick={onRotationUnlock}>
+                <Button
+                  variant="light"
+                  size="sm"
+                  className="w-full mt-2"
+                  onClick={onRotationUnlock}
+                >
                   <span>
                     <FontAwesomeIcon icon={faLock} />
                   </span>

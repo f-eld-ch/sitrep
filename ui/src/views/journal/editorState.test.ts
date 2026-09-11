@@ -180,8 +180,24 @@ describe("editorReducer", () => {
     it("removes the attachment with the matching id from messageToEdit", () => {
       const msg = makeMessage({
         attachments: [
-          { id: "a1", filename: "photo.jpg", contentType: "image/jpeg", size: 100, createdAt: new Date(), uploadedBy: "u1", url: "/a1" },
-          { id: "a2", filename: "report.pdf", contentType: "application/pdf", size: 200, createdAt: new Date(), uploadedBy: "u1", url: "/a2" },
+          {
+            id: "a1",
+            filename: "photo.jpg",
+            contentType: "image/jpeg",
+            size: 100,
+            createdAt: new Date(),
+            uploadedBy: "u1",
+            url: "/a1",
+          },
+          {
+            id: "a2",
+            filename: "report.pdf",
+            contentType: "application/pdf",
+            size: 200,
+            createdAt: new Date(),
+            uploadedBy: "u1",
+            url: "/a2",
+          },
         ],
       });
       const state = reduce([
@@ -200,7 +216,15 @@ describe("editorReducer", () => {
     it("leaves all attachments when id does not match", () => {
       const msg = makeMessage({
         attachments: [
-          { id: "x", filename: "x.zip", contentType: "application/zip", size: 1, createdAt: new Date(), uploadedBy: "u", url: "/x" },
+          {
+            id: "x",
+            filename: "x.zip",
+            contentType: "application/zip",
+            size: 1,
+            createdAt: new Date(),
+            uploadedBy: "u",
+            url: "/x",
+          },
         ],
       });
       const state = reduce([

@@ -136,7 +136,7 @@ const ActiveLayersControl: React.FC = () => {
                 className={`flex items-start justify-between px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs ${state.activeLayer === s.layer.id ? "bg-primary/10" : ""}`}
               >
                 <div className="mr-3 flex items-center">
-                  <span className="panel-icon" style={{ verticalAlign: "center" }}>
+                  <span className="inline-flex items-center justify-center w-[1em] h-[1em] mr-3">
                     <FontAwesomeIcon
                       icon={
                         isInherited

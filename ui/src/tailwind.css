@@ -1,5 +1,4 @@
-/* Tailwind entry point — processed by @tailwindcss/vite, not Sass.
-   Keep Bulma/Sass styles in App.scss; Tailwind-specific directives live here. */
+/* Tailwind entry point — processed by @tailwindcss/vite, not Sass. */
 
 @import "./assets/tokens/tokens.css";
 
@@ -8,54 +7,68 @@
 
 @theme {
   /* Semantic roles — light/dark aware via tokens.css */
-  --color-primary:     var(--sitrep-color-dodger-blue);
-  --color-info:        var(--sitrep-color-info);
-  --color-success:     var(--sitrep-color-success);
-  --color-warning:     var(--sitrep-color-warning);
-  --color-danger:      var(--sitrep-color-error);
-  --color-bg:          var(--sitrep-bg);
-  --color-bg-subtle:   var(--sitrep-bg-subtle);
+  --color-primary: var(--sitrep-color-dodger-blue);
+  --color-info: var(--sitrep-color-info);
+  --color-success: var(--sitrep-color-success);
+  --color-warning: var(--sitrep-color-warning);
+  --color-danger: var(--sitrep-color-error);
+  --color-bg: var(--sitrep-bg);
+  --color-bg-subtle: var(--sitrep-bg-subtle);
   --color-bg-elevated: var(--sitrep-bg-elevated);
-  --color-fg:          var(--sitrep-fg);
-  --color-fg-muted:    var(--sitrep-fg-muted);
-  --color-border:      var(--sitrep-line);
+  --color-fg: var(--sitrep-fg);
+  --color-fg-muted: var(--sitrep-fg-muted);
+  --color-border: var(--sitrep-line);
 
   /* Raw brand palette — fixed values, not theme-aware */
-  --color-text:             var(--sitrep-color-text);
-  --color-ink:              var(--sitrep-color-ink);
-  --color-paper:            var(--sitrep-color-paper);
-  --color-dark-elevated:    var(--sitrep-color-dark-elevated);
-  --color-dark-border:      var(--sitrep-color-dark-border);
-  --color-disabled:         var(--sitrep-color-disabled);
-  --color-interactive-hover:    var(--sitrep-color-interactive-hover);
-  --color-interactive-pressed:  var(--sitrep-color-interactive-pressed);
+  --color-text: var(--sitrep-color-text);
+  --color-ink: var(--sitrep-color-ink);
+  --color-paper: var(--sitrep-color-paper);
+  --color-dark-elevated: var(--sitrep-color-dark-elevated);
+  --color-dark-border: var(--sitrep-color-dark-border);
+  --color-disabled: var(--sitrep-color-disabled);
+  --color-interactive-hover: var(--sitrep-color-interactive-hover);
+  --color-interactive-pressed: var(--sitrep-color-interactive-pressed);
 
   /* Typography */
   --font-sans: var(--sitrep-font-sans);
   --font-mono: var(--sitrep-font-mono);
-
 }
 
-/* theme: breakpoints + default color/spacing scales, no preflight reset
-   utilities: all utility classes + responsive/dark/hover/print variants
-   preflight is intentionally excluded — Bulma manages base element styles.
-   Switch to @import "tailwindcss" once Bulma is fully removed. */
-@import "tailwindcss/theme";
-@import "tailwindcss/utilities";
+/* Full Tailwind import: preflight reset + theme + utilities.
+   Preflight now manages base element styles — Bulma's base is removed. */
+@import "tailwindcss";
 
-.has-navbar-fixed-top { padding-top: 2.75rem; }
+body {
+  overflow-y: auto;
+}
 
 /* Message background tints — outside @theme so color-mix(var()) resolves at runtime, not build time */
 :root {
-  --color-msg-warning-bg: rgb(253, 248, 237); /* color-mix(in hsl, var(--sitrep-color-warning) 5%,white) */
-  --color-msg-success-bg:  rgb(237, 250, 237);
-  --color-msg-danger-bg:  rgb(255, 236, 235);
-  --color-msg-dark-bg:    color-mix(in hsl, var(--sitrep-fg)            5%, white);
+  --color-msg-warning-bg: rgb(
+    253,
+    248,
+    237
+  ); /* color-mix(in hsl, var(--sitrep-color-warning) 5%,white) */
+  --color-msg-success-bg: rgb(237, 250, 237);
+  --color-msg-danger-bg: rgb(255, 236, 235);
+  --color-msg-dark-bg: color-mix(in hsl, var(--sitrep-fg) 5%, white);
 }
 
 [data-theme="dark"] {
-  --color-msg-warning-bg: color-mix(in hsl, var(--sitrep-color-warning) 35%, var(--sitrep-bg-elevated));
-  --color-msg-success-bg: color-mix(in hsl, var(--sitrep-color-success) 30%, var(--sitrep-bg-elevated));
-  --color-msg-danger-bg:  color-mix(in hsl, var(--sitrep-color-error)   35%, var(--sitrep-bg-elevated));
-  --color-msg-dark-bg:    color-mix(in hsl, var(--sitrep-fg)             8%, var(--sitrep-bg-elevated));
+  --color-msg-warning-bg: color-mix(
+    in hsl,
+    var(--sitrep-color-warning) 35%,
+    var(--sitrep-bg-elevated)
+  );
+  --color-msg-success-bg: color-mix(
+    in hsl,
+    var(--sitrep-color-success) 30%,
+    var(--sitrep-bg-elevated)
+  );
+  --color-msg-danger-bg: color-mix(
+    in hsl,
+    var(--sitrep-color-error) 35%,
+    var(--sitrep-bg-elevated)
+  );
+  --color-msg-dark-bg: color-mix(in hsl, var(--sitrep-fg) 8%, var(--sitrep-bg-elevated));
 }

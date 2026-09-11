@@ -223,11 +223,7 @@ const SaveButton = () => {
   const { t } = useTranslation();
   const { state, saving } = useEditorContext();
   return (
-    <Button
-      type="submit"
-      variant="primary"
-      disabled={!canSave(state) || saving}
-    >
+    <Button type="submit" variant="primary" disabled={!canSave(state) || saving}>
       {t("save")}
     </Button>
   );

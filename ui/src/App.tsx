@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
 
-import "./App.scss";
+import "./App.css";
 import "./tailwind.css";
 
 import { ApolloProvider } from "@apollo/client/react";

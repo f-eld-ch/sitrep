@@ -145,9 +145,16 @@ function SearchControl() {
           </div>
         </div>
         {searchResults.length > 0 && (
-          <div className="absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded shadow-lg mt-1" id={id}>
+          <div
+            className="absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded shadow-lg mt-1"
+            id={id}
+          >
             {searchResults?.map((result: SearchFeature) => (
-              <a onClick={() => flyTo(result)} key={result.id} className="block px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+              <a
+                onClick={() => flyTo(result)}
+                key={result.id}
+                className="block px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+              >
                 {parse(result.properties.label)}
               </a>
             ))}

@@ -265,9 +265,7 @@ export function ReloadPrompt() {
               >
                 {t("viewChangelog")}
               </a>
-              <span className="ml-3 font-semibold">
-                {deployed?.version ?? CURRENT_VERSION}
-              </span>
+              <span className="ml-3 font-semibold">{deployed?.version ?? CURRENT_VERSION}</span>
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="success" size="sm" onClick={handleReloadNow} disabled={reloading}>

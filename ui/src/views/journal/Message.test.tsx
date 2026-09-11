@@ -214,7 +214,12 @@ describe("MessageContainer", () => {
     });
 
     it("renders an image attachment as a thumbnail linking to the file in a new tab", () => {
-      const att = makeAttachment({ id: "img-1", filename: "photo.jpg", contentType: "image/jpeg", url: "/api/v2/attachments/img-1" });
+      const att = makeAttachment({
+        id: "img-1",
+        filename: "photo.jpg",
+        contentType: "image/jpeg",
+        url: "/api/v2/attachments/img-1",
+      });
       render(
         <MessageContainer
           id="msg1"
@@ -232,7 +237,12 @@ describe("MessageContainer", () => {
     });
 
     it("renders a PDF attachment as a tag pill opening in a new tab", () => {
-      const att = makeAttachment({ id: "pdf-1", filename: "report.pdf", contentType: "application/pdf", url: "/api/v2/attachments/pdf-1" });
+      const att = makeAttachment({
+        id: "pdf-1",
+        filename: "report.pdf",
+        contentType: "application/pdf",
+        url: "/api/v2/attachments/pdf-1",
+      });
       render(
         <MessageContainer
           id="msg1"
@@ -249,7 +259,12 @@ describe("MessageContainer", () => {
     });
 
     it("renders a ZIP attachment as a tag pill with a download attribute", () => {
-      const att = makeAttachment({ id: "zip-1", filename: "data.zip", contentType: "application/zip", url: "/api/v2/attachments/zip-1" });
+      const att = makeAttachment({
+        id: "zip-1",
+        filename: "data.zip",
+        contentType: "application/zip",
+        url: "/api/v2/attachments/zip-1",
+      });
       render(
         <MessageContainer
           id="msg1"
