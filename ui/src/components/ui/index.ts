@@ -6,3 +6,5 @@ export type { NotificationProps, NotificationVariant } from "./Notification";
 
 export { Tag } from "./Tag";
 export type { TagProps, TagVariant } from "./Tag";
+
+export { PageTitle } from "./PageTitle";

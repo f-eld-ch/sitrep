@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button, Notification, PageTitle } from "components/ui";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAccessUsers, useGlobalRoles, useGrantGlobalRole, useRevokeGlobalRole } from "api";
@@ -23,7 +24,7 @@ function GlobalRoles() {
   if (rolesResult.status === "loading") return <Spinner />;
   if (rolesResult.status === "error") {
     if (rolesResult.error.code === "FORBIDDEN") return null;
-    return <div className="notification is-danger">{rolesResult.error.message}</div>;
+    return <Notification variant="danger">{rolesResult.error.message}</Notification>;
   }
 
   const grant = async () => {
@@ -47,81 +48,79 @@ function GlobalRoles() {
 
   return (
     <>
-      <h2 className="title is-4 mb-5">{t("adminGlobalRoles.title")}</h2>
+      <PageTitle level={2}>{t("adminGlobalRoles.title")}</PageTitle>
 
       {(grantState.error ?? revokeState.error) && (
-        <div className="notification is-danger">
+        <Notification variant="danger" className="mb-4">
           {(grantState.error ?? revokeState.error)?.message}
-        </div>
+        </Notification>
       )}
 
-      <div className="box">
-        <h3 className="title is-5">{t("adminGlobalRoles.grantRole")}</h3>
-        <div className="columns is-variable is-2">
-          <div className="column is-half">
-            <label className="label" htmlFor="global-role-subject">
+      <div className="bg-bg-elevated border border-border rounded p-5 mb-5">
+        <PageTitle level={3}>{t("adminGlobalRoles.grantRole")}</PageTitle>
+        <div className="flex flex-wrap gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-semibold mb-1" htmlFor="global-role-subject">
               {t("adminGlobalRoles.userLabel")}
             </label>
-            <div className="select is-fullwidth">
-              <select
-                id="global-role-subject"
-                value={subject}
-                onChange={(event) => setSubject(event.target.value)}
-              >
-                <option value="">{t("adminGlobalRoles.selectUser")}</option>
-                {usersResult.status === "ready" &&
-                  usersResult.data.users.map((user) => (
-                    <option key={user.sub} value={user.sub}>
-                      {user.name || t("adminGlobalRoles.unnamedUser")} ({user.email})
-                    </option>
-                  ))}
-              </select>
-            </div>
+            <select
+              id="global-role-subject"
+              className="w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary"
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+            >
+              <option value="">{t("adminGlobalRoles.selectUser")}</option>
+              {usersResult.status === "ready" &&
+                usersResult.data.users.map((user) => (
+                  <option key={user.sub} value={user.sub}>
+                    {user.name || t("adminGlobalRoles.unnamedUser")} ({user.email})
+                  </option>
+                ))}
+            </select>
           </div>
-          <div className="column">
-            <label className="label" htmlFor="global-role-role">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-semibold mb-1" htmlFor="global-role-role">
               {t("adminGlobalRoles.roleLabel")}
             </label>
-            <div className="select is-fullwidth">
-              <select
-                id="global-role-role"
-                value={role}
-                onChange={(event) => setRole(event.target.value as GlobalRole)}
-              >
-                <option value="GROUP_ADMIN">{t("adminGlobalRoles.groupAdmin")}</option>
-                <option value="SYSTEM_ADMIN">{t("adminGlobalRoles.systemAdmin")}</option>
-              </select>
-            </div>
+            <select
+              id="global-role-role"
+              className="w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary"
+              value={role}
+              onChange={(event) => setRole(event.target.value as GlobalRole)}
+            >
+              <option value="GROUP_ADMIN">{t("adminGlobalRoles.groupAdmin")}</option>
+              <option value="SYSTEM_ADMIN">{t("adminGlobalRoles.systemAdmin")}</option>
+            </select>
           </div>
-          <div className="column is-narrow is-flex is-align-items-flex-end">
-            <button
-              type="button"
-              className="button is-primary"
+          <div className="shrink-0 flex items-end">
+            <Button
+              variant="primary"
               disabled={!subject || grantState.loading}
               onClick={() => void grant()}
             >
               {grantState.loading ? (
                 <>
-                  <FontAwesomeIcon icon={faSpinner} spin /> {t("adminGlobalRoles.granting")}
+                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                  {t("adminGlobalRoles.granting")}
                 </>
               ) : (
                 t("adminGlobalRoles.grant")
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="box">
-        <h3 className="title is-5">{t("adminGlobalRoles.currentHolders")}</h3>
+      <div className="bg-bg-elevated border border-border rounded p-5 mb-5">
+        <PageTitle level={3}>{t("adminGlobalRoles.currentHolders")}</PageTitle>
         {rolesResult.data.grants.length === 0 ? (
-          <p className="has-text-grey">{t("adminGlobalRoles.noRolesGranted")}</p>
+          <p className="text-fg-muted text-sm">{t("adminGlobalRoles.noRolesGranted")}</p>
         ) : (
-          <table className="table is-fullwidth">
+          <table className="w-full text-sm">
             <thead>
-              <tr>
-                <th>{t("adminGlobalRoles.userLabel")}</th>
-                <th>{t("adminGlobalRoles.roleLabel")}</th>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 pr-4 font-semibold">{t("adminGlobalRoles.userLabel")}</th>
+                <th className="text-left py-2 pr-4 font-semibold">{t("adminGlobalRoles.roleLabel")}</th>
                 <th aria-label={t("actions")} />
               </tr>
             </thead>
@@ -131,28 +130,25 @@ function GlobalRoles() {
                 const isPending = pendingRevokes.has(key);
                 const isConfirming = confirmingRevoke === key;
                 return (
-                  <tr key={key}>
-                    <td>
+                  <tr key={key} className="border-b border-border last:border-0">
+                    <td className="py-2 pr-4">
                       {grantRow.name || t("adminGlobalRoles.unnamedUser")} (
                       {grantRow.email || grantRow.subject})
                     </td>
-                    <td>
+                    <td className="py-2 pr-4">
                       {grantRow.role === "SYSTEM_ADMIN"
                         ? t("adminGlobalRoles.systemAdmin")
                         : t("adminGlobalRoles.groupAdmin")}
                     </td>
-                    <td className="has-text-right">
+                    <td className="py-2 text-right">
                       {isConfirming ? (
-                        <span
-                          className="is-flex is-align-items-center is-justify-content-flex-end"
-                          style={{ gap: "0.5rem" }}
-                        >
-                          <span className="is-size-7 has-text-grey">
+                        <span className="flex items-center justify-end gap-2">
+                          <span className="text-xs text-fg-muted">
                             {t("adminGlobalRoles.revokeConfirm")}
                           </span>
-                          <button
-                            type="button"
-                            className="button is-small is-danger"
+                          <Button
+                            size="sm"
+                            variant="danger"
                             disabled={isPending}
                             onClick={() => revoke(grantRow.subject, grantRow.role)}
                           >
@@ -161,19 +157,20 @@ function GlobalRoles() {
                             ) : (
                               t("adminGlobalRoles.confirm")
                             )}
-                          </button>
-                          <button
-                            type="button"
-                            className="button is-small is-light"
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="light"
                             onClick={() => setConfirmingRevoke(null)}
                           >
                             {t("adminGlobalRoles.cancel")}
-                          </button>
+                          </Button>
                         </span>
                       ) : (
-                        <button
-                          type="button"
-                          className="button is-small is-danger is-light"
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          light
                           disabled={isPending}
                           onClick={() => setConfirmingRevoke(key)}
                         >
@@ -182,7 +179,7 @@ function GlobalRoles() {
                           ) : (
                             t("adminGlobalRoles.revoke")
                           )}
-                        </button>
+                        </Button>
                       )}
                     </td>
                   </tr>

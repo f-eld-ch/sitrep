@@ -381,7 +381,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       offset={30}
       className="feature-label-popup"
     >
-      <div className="p-3" style={{ minWidth: "220px" }}>
+      <div data-theme="light" className="p-3" style={{ minWidth: "220px" }}>
         <div className="flex justify-between items-center mb-3">
           {title ? <p className="text-sm font-bold">{title}</p> : <span />}
           <button

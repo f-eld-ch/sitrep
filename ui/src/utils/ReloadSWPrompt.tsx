@@ -1,8 +1,9 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { t } from "i18next";
 import { useEffect, useId, useRef, useState } from "react";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, Notification } from "components/ui";
 import { createSWChannel, now, type SWMessage } from "./swUpdateChannel";
 import {
   CURRENT_SHA,
@@ -245,50 +246,39 @@ export function ReloadPrompt() {
   return (
     <>
       {visible && offlineReady && (
-        <div className="container is-fluid pt-4">
-          <div className="notification is-light is-success mt-2">
+        <div className="px-4 pt-4">
+          <Notification variant="success" light className="relative mt-2">
             <button
               type="button"
-              className="delete"
+              className="absolute top-2 right-2 opacity-60 hover:opacity-100"
               aria-label={t("close")}
               onClick={() => handleLater(4)}
-            />
-            <div>
-              <div>
-                <strong>{t("updateNotification")}</strong>
-                <div className="mt-2">
-                  <a
-                    href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t("viewChangelog")}
-                  </a>
-                  <span className="ml-3 has-text-weight-semibold">
-                    {deployed?.version ?? CURRENT_VERSION}
-                  </span>
-                </div>
-              </div>
-              <div className="buttons pt-2">
-                <button
-                  type="button"
-                  className="button is-success is-small"
-                  onClick={handleReloadNow}
-                  disabled={reloading}
-                >
-                  {reloading && <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />}
-                  {t("reloadNow")}
-                </button>
-                <button
-                  type="button"
-                  className="button is-warning is-small"
-                  onClick={() => handleLater(4)}
-                >
-                  {t("later")}
-                </button>
-              </div>
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+            <strong>{t("updateNotification")}</strong>
+            <div className="mt-2">
+              <a
+                href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("viewChangelog")}
+              </a>
+              <span className="ml-3 font-semibold">
+                {deployed?.version ?? CURRENT_VERSION}
+              </span>
             </div>
-          </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="success" size="sm" onClick={handleReloadNow} disabled={reloading}>
+                {reloading && <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />}
+                {t("reloadNow")}
+              </Button>
+              <Button variant="warning" size="sm" onClick={() => handleLater(4)}>
+                {t("later")}
+              </Button>
+            </div>
+          </Notification>
         </div>
       )}
     </>
