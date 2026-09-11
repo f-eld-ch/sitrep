@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(attachments)* Message attachments (upload, download, remove) ([#1842](https://github.com/f-eld-ch/sitrep/issues/1842)) - ([cdd0375](https://github.com/f-eld-ch/sitrep/commit/cdd03759fb0d34428299e0b5c448e2777d4f8046))
+
+
 ## [26.9.4](https://github.com/f-eld-ch/sitrep/compare/v26.9.3..v26.9.4) - 2026-09-10
 
 ### ⛰️  Features
