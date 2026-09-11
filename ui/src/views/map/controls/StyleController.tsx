@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import "./StyleController.scss";
+import { MapPanel, MapPanelBlock } from "./MapPanel";
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
@@ -96,7 +96,7 @@ function StyleController() {
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl maplibregl-ctrl-group has-text-black is-align-self-flex-end">
+      <div className="maplibregl-ctrl maplibregl-ctrl-group text-black self-end">
         <button type="button" className={btnClass} onClick={() => setActive(!active)}>
           <FontAwesomeIcon icon={faMap} size="lg" />
         </button>
@@ -105,41 +105,19 @@ function StyleController() {
   }
 
   return (
-    <nav
-      className="panel has-background-white is-align-self-flex-end"
-      style={{ pointerEvents: "auto" }}
-    >
-      <p className="panel-heading is-flex is-justify-content-space-between is-align-items-center is-size-6">
-        <span className="px-2">{t("styleController.maps")}</span>
-        <button
-          type="button"
-          className="delete is-align-self-flex-end"
-          onClick={() => setActive(!active)}
-          aria-label={t("close")}
-        />
-      </p>
+    <MapPanel title={t("styleController.maps")} onClose={() => setActive(false)}>
       {MapStyles.map((s) => (
-        <div
-          key={s.name}
-          className={classNames({
-            "is-success": style.name === s.name,
-            "panel-block": true,
-            "is-size-7": true,
-          })}
-        >
+        <MapPanelBlock key={s.name} active={style.name === s.name}>
           <button
             type="button"
-            className={classNames({
-              "is-capitalized": true,
-              "has-text-primary": style.name === s.name,
-            })}
+            className={`capitalize ${style.name === s.name ? "text-primary font-semibold" : ""}`}
             onClick={() => onClick(s)}
           >
             {t(`styleController.${s.name}`)}
           </button>
-        </div>
+        </MapPanelBlock>
       ))}
-    </nav>
+    </MapPanel>
   );
 }
 

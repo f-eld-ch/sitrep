@@ -5,13 +5,14 @@ import {
   faInfoCircle,
   faPlus,
   faTrash,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import WMSCapabilities from "ol/format/WMSCapabilities";
 import type React from "react";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "components/ui";
 import {
   LayerContext,
   type WMSLayer as StateLayer,
@@ -241,10 +242,10 @@ const WMSLayerMenu = () => {
       {state.wms.activeLayers.map((layer: WMSLayer) => (
         <div
           key={layer.name}
-          className="panel-block is-align-items-center is-justify-content-space-between is-flex-wrap-wrap is-size-7"
+          className="flex items-center justify-between flex-wrap px-3 py-2 border-b border-gray-200 last:border-b-0 text-xs"
         >
           <div
-            className="mr-3 is-align-items-flex-start is-align-content-center is-flex-shrink-2"
+            className="mr-3 flex items-center shrink-[2]"
             style={{ width: "50%" }}
           >
             <span className="panel-icon" style={{ verticalAlign: "center" }}>
@@ -253,12 +254,12 @@ const WMSLayerMenu = () => {
             <span>{layer.title}</span>
           </div>
           <div
-            className="is-flex-direction-row	is-align-items-flex-end is-flex-shrink-0 is-flex-wrap-wrap"
+            className="flex flex-row items-end shrink-0 flex-wrap"
             style={{ width: "45%" }}
           >
             {layer.legendURL && (
               <button
-                className="mr-2 is-align-self-center"
+                className="mr-2 self-center"
                 type="button"
                 onClick={() => handleInfoToggle(layer.name)}
               >
@@ -267,7 +268,7 @@ const WMSLayerMenu = () => {
             )}
 
             <button
-              className="mr-2 is-align-self-center"
+              className="mr-2 self-center"
               type="button"
               onClick={() => handleVisibilityToggle(layer.name, !layer.isVisible)}
             >
@@ -289,106 +290,90 @@ const WMSLayerMenu = () => {
             </button>
           </div>
           {expandedLayer === layer.name && (
-            <div className="is-align-content-center">
+            <div className="flex items-center justify-center">
               <img src={layer.legendURL} alt={`${layer.title}`} style={{ width: "100%" }} />
             </div>
           )}
         </div>
       ))}
-      <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column">
+      <div className="flex flex-col items-start px-3 py-2 border-b border-gray-200 last:border-b-0">
         {!showAddLayer && (
-          <button
-            type="button"
-            className="button is-small is-rounded"
+          <Button
+            size="sm"
+            variant="primary"
             onClick={() => setShowAddLayer(true)}
           >
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
             {t("layerControl.addWMSLayer")}
-          </button>
+          </Button>
         )}
 
         {showAddLayer && (
-          <div className="columns is-multiline">
-            <div className="column">
-              <div className="select is-small">
-                <select
-                  className="mb-2"
-                  onChange={handleServerSelect}
-                  value={state.wms.currentServer}
-                >
-                  {filteredServers.map((server: WMSServer) => (
-                    <option key={server.url} value={server.url}>
-                      {server.name}
-                    </option>
-                  ))}
-                  <option value="">{t("wmsLayerMenu.customServer")}</option>
-                </select>
-              </div>
+          <div className="flex flex-wrap gap-2 w-full">
+            <div className="flex-1 min-w-0">
+              <select
+                className="rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none mb-2"
+                onChange={handleServerSelect}
+                value={state.wms.currentServer}
+              >
+                {filteredServers.map((server: WMSServer) => (
+                  <option key={server.url} value={server.url}>
+                    {server.name}
+                  </option>
+                ))}
+                <option value="">{t("wmsLayerMenu.customServer")}</option>
+              </select>
             </div>
 
             {state.wms.currentServer === "" && (
-              <div className="column">
+              <div className="flex-1 min-w-0">
                 <input
                   type="text"
                   placeholder={t("wmsLayerMenu.enterServerUrl")}
                   value={customServer}
                   onChange={handleCustomServerChange}
-                  className="input is-small mb-2"
+                  className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
                 />
 
-                <button
-                  type="button"
-                  onClick={handleCustomServerSubmit}
-                  className="button is-primary"
-                >
+                <Button variant="primary" onClick={handleCustomServerSubmit}>
                   {t("wmsLayerMenu.fetchLayers")}
-                </button>
+                </Button>
               </div>
             )}
             {state.wms.currentServer && (
-              <div className="column">
-                <div
-                  className={classNames({
-                    select: true,
-                    "is-small": true,
-                    "is-loading": isLoading,
-                  })}
+              <div className="flex-1 min-w-0">
+                <select
+                  className={`rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+                  onChange={handleLayerSelect}
+                  value={selectedLayer || ""}
+                  style={{ width: "100%" }}
                 >
-                  <select
-                    className="is-align-items-flex-start is-justify-content-space-between"
-                    onChange={handleLayerSelect}
-                    value={selectedLayer || ""}
-                    style={{ width: "100%" }}
-                  >
-                    <option value="" disabled>
-                      {t("wmsLayerMenu.selectLayer")}
+                  <option value="" disabled>
+                    {t("wmsLayerMenu.selectLayer")}
+                  </option>
+                  {layers.map((layer) => (
+                    <option key={layer.name} value={layer.name}>
+                      {layer.title}
                     </option>
-                    {layers.map((layer) => (
-                      <option key={layer.name} value={layer.name}>
-                        {layer.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  ))}
+                </select>
               </div>
             )}
           </div>
         )}
 
         {error && (
-          <div className="columns is-flex-grow-1">
-            <div className="column is-full">
-              <div className="notification is-danger" style={{ width: "100%" }}>
-                <button
-                  type="button"
-                  className="delete is-align-self-flex-end"
-                  onClick={() => setError(null)}
-                  aria-label={t("close")}
-                />
-                {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
-                {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
-              </div>
-            </div>
+          <div className="bg-red-50 border border-red-200 rounded p-3 text-xs text-red-700 relative w-full mt-2">
+            <button
+              type="button"
+              className="absolute top-2 right-2 text-red-400 hover:text-red-600"
+              onClick={() => setError(null)}
+              aria-label={t("close")}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+            {error === NO_LAYERS_FOUND_ERROR && t("mapview.wmsLayerMenu.noLayersFound")}
+            {error === FETCH_LAYERS_ERROR && t("mapview.wmsLayerMenu.errorFetchingLayers")}
           </div>
         )}
       </div>

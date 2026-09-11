@@ -4,7 +4,7 @@
 @import "./assets/tokens/tokens.css";
 
 /* Match the dark toggle set by useDarkMode() in utils/useDarkMode.tsx */
-@custom-variant dark ([data-theme="dark"] &);
+@custom-variant dark ([data-theme="dark"] &:not([data-theme="light"]):not([data-theme="light"] *));
 
 @theme {
   /* Semantic roles — light/dark aware via tokens.css */
@@ -21,6 +21,7 @@
   --color-border:      var(--sitrep-line);
 
   /* Raw brand palette — fixed values, not theme-aware */
+  --color-text:             var(--sitrep-color-text);
   --color-ink:              var(--sitrep-color-ink);
   --color-paper:            var(--sitrep-color-paper);
   --color-dark-elevated:    var(--sitrep-color-dark-elevated);
@@ -32,6 +33,7 @@
   /* Typography */
   --font-sans: var(--sitrep-font-sans);
   --font-mono: var(--sitrep-font-mono);
+
 }
 
 /* theme: breakpoints + default color/spacing scales, no preflight reset
@@ -40,3 +42,20 @@
    Switch to @import "tailwindcss" once Bulma is fully removed. */
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
+
+.has-navbar-fixed-top { padding-top: 2.75rem; }
+
+/* Message background tints — outside @theme so color-mix(var()) resolves at runtime, not build time */
+:root {
+  --color-msg-warning-bg: rgb(253, 248, 237); /* color-mix(in hsl, var(--sitrep-color-warning) 5%,white) */
+  --color-msg-success-bg:  rgb(237, 250, 237);
+  --color-msg-danger-bg:  rgb(255, 236, 235);
+  --color-msg-dark-bg:    color-mix(in hsl, var(--sitrep-fg)            5%, white);
+}
+
+[data-theme="dark"] {
+  --color-msg-warning-bg: color-mix(in hsl, var(--sitrep-color-warning) 35%, var(--sitrep-bg-elevated));
+  --color-msg-success-bg: color-mix(in hsl, var(--sitrep-color-success) 30%, var(--sitrep-bg-elevated));
+  --color-msg-danger-bg:  color-mix(in hsl, var(--sitrep-color-error)   35%, var(--sitrep-bg-elevated));
+  --color-msg-dark-bg:    color-mix(in hsl, var(--sitrep-fg)             8%, var(--sitrep-bg-elevated));
+}

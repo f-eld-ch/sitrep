@@ -1,9 +1,7 @@
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
-import isEmpty from "lodash/isEmpty";
 import proj4 from "proj4";
 import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
@@ -127,41 +125,34 @@ function SearchControl() {
     debouncedSearch(value);
   };
 
-  const dropdown = classNames({
-    dropdown: true,
-    "is-active": !isEmpty(searchResults),
-  });
-
   const id = useId();
   return (
-    <div className="is-flex is-justify-content-center	is-align-content-center mt-3">
-      <div className={dropdown}>
-        <div className="dropdown-trigger">
-          <div className="field has-addons">
-            <div className="control is-expanded has-icons-left">
-              <input
-                className="input"
-                type="search"
-                value={input}
-                placeholder=""
-                onChange={onChange}
-                onKeyDown={(e) => e.key === "Enter" && executeSearch(input)}
-              />
-              <span className="icon is-left">
-                <FontAwesomeIcon icon={faSearch} />
-              </span>
-            </div>
-          </div>
-          <div className="dropdown-menu" id={id}>
-            <div className="dropdown-content">
-              {searchResults?.map((result: SearchFeature) => (
-                <a onClick={() => flyTo(result)} key={result.id} className="dropdown-item">
-                  {parse(result.properties.label)}
-                </a>
-              ))}
-            </div>
+    <div className="flex justify-center items-center mt-3">
+      <div className="relative">
+        <div className="flex">
+          <div className="relative flex-1">
+            <input
+              className="w-full rounded border border-gray-300 pl-9 pr-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              type="search"
+              value={input}
+              placeholder=""
+              onChange={onChange}
+              onKeyDown={(e) => e.key === "Enter" && executeSearch(input)}
+            />
+            <span className="absolute inset-y-0 left-0 w-9 flex items-center justify-center text-gray-400 pointer-events-none text-sm">
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
           </div>
         </div>
+        {searchResults.length > 0 && (
+          <div className="absolute left-0 right-0 z-50 bg-white border border-gray-200 rounded shadow-lg mt-1" id={id}>
+            {searchResults?.map((result: SearchFeature) => (
+              <a onClick={() => flyTo(result)} key={result.id} className="block px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+                {parse(result.properties.label)}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

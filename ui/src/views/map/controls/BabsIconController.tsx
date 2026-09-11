@@ -10,6 +10,7 @@ import {
 import { BabsIcon, BabsIconProvider, useBabsLang } from "@f-eld-ch/babs-react";
 import { faFileText } from "@fortawesome/free-regular-svg-icons";
 import { faChevronLeft, faHeading } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "components/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
@@ -518,12 +519,12 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
   const btnClass = classNames({
     "maplibregl-ctrl-icon": true,
     active: active,
-    "is-hidden": active,
+    hidden: active,
   });
 
   if (!active) {
     return (
-      <div className="maplibregl-ctrl-top-right has-text-black" style={{ marginRight: "45px" }}>
+      <div className="maplibregl-ctrl-top-right text-black" style={{ marginRight: "45px" }}>
         <div className="maplibregl-ctrl maplibregl-ctrl-group">
           <button type="button" className={btnClass} onClick={() => setActive(!active)}>
             <FontAwesomeIcon icon={faHeading} size="lg" />
@@ -535,10 +536,10 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className="maplibregl-ctrl maplibregl-ctrl-top-right control-panel">
-      <h5 className="title is-5">{t("name")}</h5>
-      <div className="control has-icons-left has-icons-right mb-1">
+      <h5 className="text-lg font-bold mb-2">{t("name")}</h5>
+      <div className="relative mb-1">
         <input
-          className="input is-small"
+          className="w-full rounded border border-gray-300 px-2 py-1 text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
           type="text"
           placeholder={t("name")}
           onChange={(e) => {
@@ -551,17 +552,13 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
             }
           }}
         />
-        <span className="icon is-small is-left">
+        <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-gray-400 pointer-events-none text-xs">
           <FontAwesomeIcon icon={faFileText} />
         </span>
       </div>
-      <button
-        type="button"
-        className="button is-primary is-small"
-        onClick={() => onInput(enteredText)}
-      >
+      <Button variant="primary" size="sm" onClick={() => onInput(enteredText)}>
         {t("save")}
-      </button>
+      </Button>
     </div>
   );
 });

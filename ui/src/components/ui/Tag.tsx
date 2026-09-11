@@ -17,7 +17,7 @@ const variants: Record<TagVariant, string> = {
   warning: "bg-warning text-ink",
   danger: "bg-danger text-white",
   light: "bg-bg-subtle text-fg-muted",
-  gray: "bg-disabled text-fg-muted",
+  gray: "bg-dark-elevated text-white",
 };
 
 const lightVariants: Record<TagVariant, string> = {

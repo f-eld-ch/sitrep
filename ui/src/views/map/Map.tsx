@@ -3,7 +3,6 @@ import "./Map.scss";
 import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
-import classNames from "classnames";
 import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
@@ -109,16 +108,8 @@ function MapView() {
     [mapStyle.style, i18n.resolvedLanguage, i18n.language],
   );
 
-  const mapClass = classNames({
-    "is-flex-grow-1": true,
-    "is-align-items-stretch": true,
-    "is-align-self-strech": true,
-    "mt-5": true,
-    "theme-light": true,
-  });
-
   return (
-    <div className={mapClass} data-theme="light">
+    <div className="flex-grow mt-5" data-theme="light">
       <MapClass
         mapLib={maplibre}
         initialViewState={{
@@ -159,7 +150,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right is-flex is-flex-direction-column mx-2 my-2">
+      <div className="maplibregl-ctrl-bottom-right flex flex-col mx-2 my-2">
         <LayerControl />
         <StyleController />
       </div>

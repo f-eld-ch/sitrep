@@ -24,6 +24,7 @@ export interface MessageProps {
   message: Message;
   divisions: Division[];
   showControls: boolean;
+  accentSide?: "left" | "right";
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }
@@ -49,11 +50,35 @@ const borderL: Record<string, string> = {
   none: "border-l-border",
 };
 
+const borderR: Record<string, string> = {
+  warning: "border-r-warning",
+  success: "border-r-success",
+  dark: "border-r-fg",
+  danger: "border-r-danger",
+  none: "border-r-border",
+};
+
+const accentTextColor: Record<string, string> = {
+  warning: "!text-warning",
+  success: "!text-success",
+  dark:    "!text-fg",
+  danger:  "!text-danger",
+  none:    "!text-fg",
+};
+
+const accentHoverBg: Record<string, string> = {
+  warning: "hover:bg-warning/15",
+  success: "hover:bg-success/15",
+  dark:    "hover:bg-fg/10",
+  danger:  "hover:bg-danger/15",
+  none:    "hover:bg-bg-subtle",
+};
+
 const bgTint: Record<string, string> = {
-  warning: "bg-warning/10",
-  success: "bg-success/10",
-  dark: "bg-fg/10",
-  danger: "bg-danger/10",
+  warning: "bg-[var(--color-msg-warning-bg)]",
+  success: "bg-[var(--color-msg-success-bg)]",
+  dark:    "bg-[var(--color-msg-dark-bg)]",
+  danger:  "bg-[var(--color-msg-danger-bg)]",
   none: "",
 };
 
@@ -147,7 +172,7 @@ const LevelItem = ({
     <div className="text-[11px] uppercase tracking-wider font-bold mb-0.5 leading-tight">
       {label}
     </div>
-    <div className="text-xs" data-testid={testId}>
+    <div className="text-xs [overflow-wrap:anywhere] w-full" data-testid={testId}>
       {children}
     </div>
   </div>
@@ -157,6 +182,7 @@ const MessageContainer = ({
   id,
   message,
   showControls = false,
+  accentSide = "left",
   setEditorMessage,
   setTriageMessage,
   divisions,
@@ -172,22 +198,27 @@ const MessageContainer = ({
   const accent = accentKey(message);
   const hasDivisions = message.divisions && message.divisions.length > 0;
   const tagVariant = tagVariantMap[accent];
-  const actionLinkClass =
-    "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-fg cursor-pointer hover:bg-bg-subtle transition-colors select-none";
+  const actionLinkClass = classNames(
+    "flex items-center gap-1.5 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors select-none",
+    accentTextColor[accent],
+    accentHoverBg[accent],
+  );
 
   return (
     <div
       className={classNames(
-        "border border-border border-l-4 rounded shadow-sm",
-        borderL[accent],
+        "border-0 border-solid rounded shadow-sm",
+        accentSide === "right" ? "border-r-4" : "border-l-4",
+        accentSide === "right" ? borderR[accent] : borderL[accent],
         bgTint[accent],
         !showControls && "mb-3",
       )}
     >
       {/* Message body */}
       <div className="px-3 pt-3 pb-2">
-        {/* Level bar — sender / receiver / time / priority / triage / number */}
-        <nav className="flex items-baseline justify-between gap-x-4 gap-y-2 flex-wrap mb-3 px-0">
+        {/* Level bar — sender / receiver / time / number / priority / triage
+            Mobile: 2-col grid (3 rows). Desktop sm+: single flex row. */}
+        <nav className="grid grid-cols-1 justify-items-center gap-y-3 sm:grid-cols-2 sm:gap-x-4 md:flex md:items-baseline md:justify-between md:flex-wrap md:gap-x-4 md:gap-y-2 mb-3 px-0">
           <LevelItem label={t("message.sender")} shrink={2}>
             <div className="flex flex-col items-center gap-0">
               <span data-testid={`sender-${message.id}`}>{message.sender}</span>
@@ -210,6 +241,14 @@ const MessageContainer = ({
             {dayjs(message.time).locale(i18n.language).format("LLL")}
           </LevelItem>
 
+          {message.number > 0 ? (
+            <LevelItem label={t("message.id")}>
+              <span data-testid={`number-${message.id}`}># {message.number}</span>
+            </LevelItem>
+          ) : (
+            <div className="sm:hidden" />
+          )}
+
           <LevelItem label={t("message.priority")}>
             {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
           </LevelItem>
@@ -217,12 +256,6 @@ const MessageContainer = ({
           <LevelItem label={t("message.triage")}>
             {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
           </LevelItem>
-
-          {message.number > 0 && (
-            <LevelItem label={t("message.id")}>
-              <span data-testid={`number-${message.id}`}># {message.number}</span>
-            </LevelItem>
-          )}
         </nav>
 
         {/* Content */}
@@ -233,22 +266,9 @@ const MessageContainer = ({
           <ReactPreview content={message.content} />
         </div>
 
-        {/* Division tags */}
-        {hasDivisions && (
-          <div className="flex flex-wrap gap-3 mt-2">
-            {message.divisions?.map((d) => (
-              <Tag key={d.division.id} size="sm" className="pl-2 pr-2" variant={tagVariant}>
-                {d.division.name && d.division.name.trim() !== ""
-                  ? d.division.name
-                  : d.division.description}
-              </Tag>
-            ))}
-          </div>
-        )}
-
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-border">
+          <div className="mt-3 pt-2">
             <p className="text-[11px] uppercase tracking-wider font-bold text-fg-muted mb-2">
               {t("message.attachments.title")}
             </p>
@@ -274,55 +294,66 @@ const MessageContainer = ({
         )}
       </div>
 
-      {/* Action bar (tabs) */}
-      {showControls === true && id !== undefined && (
-        <div
-          className="flex justify-end rounded-b"
-          style={{ borderBottomRightRadius: "4px" }}
-        >
-          {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
-            <button
-              type="button"
-              className={actionLinkClass}
-              data-testid="edit-button"
-              onClick={() => setEditorMessage(message)}
-            >
-              <FontAwesomeIcon icon={faEdit} />
-              <span>{t("edit")}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={actionLinkClass}
-              data-testid="print-button"
-              onClick={() => handlePrint()}
-            >
-              <FontAwesomeIcon icon={faPrint} />
-              <span>{t("messageSheet")}</span>
-            </button>
-          )}
+      {/* Action bar — division tags left, edit/triage buttons right */}
+      {(hasDivisions || (showControls === true && id !== undefined)) && (
+        <div className="flex flex-wrap items-center rounded-b pt-1.5 gap-x-2 gap-y-1">
+          {/* Left — division tags (full-width on mobile so buttons wrap below) */}
+          <div className="flex flex-wrap gap-1.5 px-2 w-full sm:w-auto sm:flex-1">
+            {message.divisions?.map((d) => (
+              <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
+                {d.division.name && d.division.name.trim() !== ""
+                  ? d.division.name
+                  : d.division.description}
+              </Tag>
+            ))}
+          </div>
 
-          {setTriageMessage && message && (
-            <button
-              type="button"
-              className={actionLinkClass}
-              data-testid="save-triage-button"
-              onClick={() => setTriageMessage(message)}
-            >
-              <FontAwesomeIcon icon={faArrowsToEye} />
-              <span>{t("saveTriage")}</span>
-            </button>
-          )}
-
-          {showTasks && (
-            <button
-              type="button"
-              className={actionLinkClass}
-              data-testid="create-task-button"
-            >
-              <FontAwesomeIcon icon={faSquareCheck} />
-              <span>{t("createNewTask")}</span>
-            </button>
+          {/* Right — action buttons */}
+          {showControls === true && id !== undefined && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:ml-auto w-full sm:w-auto">
+              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="edit-button"
+                  onClick={() => setEditorMessage(message)}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                  <span>{t("edit")}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="print-button"
+                  onClick={() => handlePrint()}
+                >
+                  <FontAwesomeIcon icon={faPrint} />
+                  <span>{t("messageSheet")}</span>
+                </button>
+              )}
+              {setTriageMessage && message && (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="save-triage-button"
+                  onClick={() => setTriageMessage(message)}
+                >
+                  <FontAwesomeIcon icon={faArrowsToEye} />
+                  <span>{t("saveTriage")}</span>
+                </button>
+              )}
+              {showTasks && (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="create-task-button"
+                >
+                  <FontAwesomeIcon icon={faSquareCheck} />
+                  <span>{t("createNewTask")}</span>
+                </button>
+              )}
+            </div>
           )}
 
           <div style={{ display: "none" }}>

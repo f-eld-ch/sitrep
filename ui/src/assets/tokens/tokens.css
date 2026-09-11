@@ -69,6 +69,7 @@
     --sitrep-fg:          var(--sitrep-color-paper);
     --sitrep-fg-muted:    var(--sitrep-color-disabled);
     --sitrep-line:        var(--sitrep-color-dark-border);
+    --sitrep-color-text:  var(--sitrep-color-disabled);
   }
 }
 
@@ -79,6 +80,7 @@
   --sitrep-fg:          var(--sitrep-color-paper);
   --sitrep-fg-muted:    var(--sitrep-color-disabled);
   --sitrep-line:        var(--sitrep-color-dark-border);
+  --sitrep-color-text:  var(--sitrep-color-surface);
 }
 
 [data-theme="light"] {
@@ -88,4 +90,5 @@
   --sitrep-fg:          var(--sitrep-color-ink);
   --sitrep-fg-muted:    var(--sitrep-color-muted);
   --sitrep-line:        var(--sitrep-color-border);
+  --sitrep-color-text:  var(--sitrep-color-muted);
 }

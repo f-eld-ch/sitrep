@@ -1,4 +1,4 @@
-import { faArrowsToEye, faBell, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faBell, faChevronDown, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Spinner } from "components";
 import { Notification } from "components/ui";
@@ -15,7 +15,7 @@ import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
 
 const selectWithIcon =
-  "rounded-full border border-border pl-8 pr-3 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary appearance-none";
+  "rounded-full border border-border pl-8 pr-8 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary appearance-none";
 
 function List(props: {
   showControls: boolean;
@@ -65,10 +65,10 @@ function List(props: {
     <>
       <div className="print:hidden">
         <h3 className="text-3xl font-bold capitalize mb-3">{t("journal")}</h3>
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-3 items-center">
           {/* Triage filter */}
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 pointer-events-none text-xs">
+          <div className="relative group">
+            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
               <FontAwesomeIcon icon={faArrowsToEye} />
             </span>
             <select
@@ -86,11 +86,14 @@ function List(props: {
                 </option>
               ))}
             </select>
+            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+              <FontAwesomeIcon icon={faChevronDown} />
+            </span>
           </div>
 
           {/* Priority filter */}
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 pointer-events-none text-xs">
+          <div className="relative group">
+            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
               <FontAwesomeIcon icon={faBell} />
             </span>
             <select
@@ -108,11 +111,14 @@ function List(props: {
                 </option>
               ))}
             </select>
+            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+              <FontAwesomeIcon icon={faChevronDown} />
+            </span>
           </div>
 
           {/* Assignment filter */}
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 pointer-events-none text-xs">
+          <div className="relative group">
+            <span className="absolute inset-y-0 left-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
               <FontAwesomeIcon icon={faUserGroup} />
             </span>
             <select
@@ -127,12 +133,15 @@ function List(props: {
                 </option>
               ))}
             </select>
+            <span className="absolute inset-y-0 right-0 w-8 flex items-center justify-center text-fg-muted/50 group-hover:text-fg-muted group-focus-within:text-fg-muted pointer-events-none text-xs transition-colors">
+              <FontAwesomeIcon icon={faChevronDown} />
+            </span>
           </div>
 
           {showControls && (
-            <Button type="button" variant="light" size="sm" rounded onClick={() => handlePrint()}>
+            <Button type="button" variant="primary"  size="xs" className="ml-auto" onClick={() => handlePrint()}>
               <FontAwesomeIcon icon={faPrint} />
-              <span>{t("print")}</span>
+              <span className="ml-1.5">{t("print")}</span>
             </Button>
           )}
         </div>
