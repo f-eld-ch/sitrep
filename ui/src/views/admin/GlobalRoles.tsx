@@ -117,81 +117,81 @@ function GlobalRoles() {
           <p className="text-sm text-fg-muted">{t("adminGlobalRoles.noRolesGranted")}</p>
         ) : (
           <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-2 pr-4 text-left font-semibold">
-                  {t("adminGlobalRoles.userLabel")}
-                </th>
-                <th className="py-2 pr-4 text-left font-semibold">
-                  {t("adminGlobalRoles.roleLabel")}
-                </th>
-                <th aria-label={t("actions")} />
-              </tr>
-            </thead>
-            <tbody>
-              {rolesResult.data.grants.map((grantRow) => {
-                const key = `${grantRow.subject}:${grantRow.role}`;
-                const isPending = pendingRevokes.has(key);
-                const isConfirming = confirmingRevoke === key;
-                return (
-                  <tr key={key} className="border-b border-border last:border-0">
-                    <td className="py-2 pr-4">
-                      {grantRow.name || t("adminGlobalRoles.unnamedUser")} (
-                      {grantRow.email || grantRow.subject})
-                    </td>
-                    <td className="py-2 pr-4">
-                      {grantRow.role === "SYSTEM_ADMIN"
-                        ? t("adminGlobalRoles.systemAdmin")
-                        : t("adminGlobalRoles.groupAdmin")}
-                    </td>
-                    <td className="py-2 text-right">
-                      {isConfirming ? (
-                        <span className="flex items-center justify-end gap-2">
-                          <span className="text-xs text-fg-muted">
-                            {t("adminGlobalRoles.revokeConfirm")}
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-2 pr-4 text-left font-semibold">
+                    {t("adminGlobalRoles.userLabel")}
+                  </th>
+                  <th className="py-2 pr-4 text-left font-semibold">
+                    {t("adminGlobalRoles.roleLabel")}
+                  </th>
+                  <th aria-label={t("actions")} />
+                </tr>
+              </thead>
+              <tbody>
+                {rolesResult.data.grants.map((grantRow) => {
+                  const key = `${grantRow.subject}:${grantRow.role}`;
+                  const isPending = pendingRevokes.has(key);
+                  const isConfirming = confirmingRevoke === key;
+                  return (
+                    <tr key={key} className="border-b border-border last:border-0">
+                      <td className="py-2 pr-4">
+                        {grantRow.name || t("adminGlobalRoles.unnamedUser")} (
+                        {grantRow.email || grantRow.subject})
+                      </td>
+                      <td className="py-2 pr-4">
+                        {grantRow.role === "SYSTEM_ADMIN"
+                          ? t("adminGlobalRoles.systemAdmin")
+                          : t("adminGlobalRoles.groupAdmin")}
+                      </td>
+                      <td className="py-2 text-right">
+                        {isConfirming ? (
+                          <span className="flex items-center justify-end gap-2">
+                            <span className="text-xs text-fg-muted">
+                              {t("adminGlobalRoles.revokeConfirm")}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              disabled={isPending}
+                              onClick={() => revoke(grantRow.subject, grantRow.role)}
+                            >
+                              {isPending ? (
+                                <FontAwesomeIcon icon={faSpinner} spin />
+                              ) : (
+                                t("adminGlobalRoles.confirm")
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="light"
+                              onClick={() => setConfirmingRevoke(null)}
+                            >
+                              {t("adminGlobalRoles.cancel")}
+                            </Button>
                           </span>
+                        ) : (
                           <Button
                             size="sm"
                             variant="danger"
+                            light
                             disabled={isPending}
-                            onClick={() => revoke(grantRow.subject, grantRow.role)}
+                            onClick={() => setConfirmingRevoke(key)}
                           >
                             {isPending ? (
                               <FontAwesomeIcon icon={faSpinner} spin />
                             ) : (
-                              t("adminGlobalRoles.confirm")
+                              t("adminGlobalRoles.revoke")
                             )}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="light"
-                            onClick={() => setConfirmingRevoke(null)}
-                          >
-                            {t("adminGlobalRoles.cancel")}
-                          </Button>
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          light
-                          disabled={isPending}
-                          onClick={() => setConfirmingRevoke(key)}
-                        >
-                          {isPending ? (
-                            <FontAwesomeIcon icon={faSpinner} spin />
-                          ) : (
-                            t("adminGlobalRoles.revoke")
-                          )}
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

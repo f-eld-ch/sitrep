@@ -14,7 +14,10 @@ export function MapPanel({ title, onClose, children, className }: MapPanelProps)
   return (
     <nav
       data-theme="light"
-      className={clsx("maplibregl-ctrl pointer-events-auto self-end overflow-hidden rounded border border-gray-200 bg-paper text-gray-700 shadow-lg", className)}
+      className={clsx(
+        "maplibregl-ctrl pointer-events-auto self-end overflow-hidden rounded border border-gray-200 bg-paper text-gray-700 shadow-lg",
+        className,
+      )}
     >
       <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2 text-sm font-semibold">
         <span>{title}</span>

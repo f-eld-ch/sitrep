@@ -256,7 +256,10 @@ const WMSLayerMenu = () => {
               <button
                 className="leading-none transition-colors hover:text-primary"
                 type="button"
-                onClick={(e) => { e.stopPropagation(); handleInfoToggle(layer.name); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleInfoToggle(layer.name);
+                }}
               >
                 <FontAwesomeIcon icon={faInfoCircle} />
               </button>
@@ -264,7 +267,10 @@ const WMSLayerMenu = () => {
             <button
               className="leading-none transition-colors hover:text-primary"
               type="button"
-              onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(layer.name, !layer.isVisible); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleVisibilityToggle(layer.name, !layer.isVisible);
+              }}
             >
               <FontAwesomeIcon icon={layer.isVisible ? faEye : faEyeSlash} />
             </button>
@@ -283,7 +289,10 @@ const WMSLayerMenu = () => {
             <button
               className="leading-none transition-colors hover:text-danger"
               type="button"
-              onClick={(e) => { e.stopPropagation(); handleDeleteLayer(layer.name); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteLayer(layer.name);
+              }}
             >
               <FontAwesomeIcon icon={faTrash} />
             </button>
@@ -338,7 +347,10 @@ const WMSLayerMenu = () => {
             {state.wms.currentServer && (
               <div className="min-w-0 flex-1">
                 <select
-                  className={clsx("w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none", isLoading && "cursor-wait opacity-50")}
+                  className={clsx(
+                    "w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none",
+                    isLoading && "cursor-wait opacity-50",
+                  )}
                   onChange={handleLayerSelect}
                   value={selectedLayer || ""}
                 >

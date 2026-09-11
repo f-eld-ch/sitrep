@@ -258,7 +258,10 @@ const MessageContainer = ({
         </nav>
 
         {/* Content */}
-        <div className="mt-6 text-left text-sm wrap-break-word" data-testid={`content-${message.id}`}>
+        <div
+          className="mt-6 text-left text-sm wrap-break-word"
+          data-testid={`content-${message.id}`}
+        >
           <ReactPreview content={message.content} />
         </div>
 

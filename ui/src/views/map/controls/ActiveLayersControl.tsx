@@ -136,7 +136,9 @@ const ActiveLayersControl: React.FC = () => {
                 className={`flex cursor-pointer items-center justify-between border-b border-gray-200 px-3 py-2 text-xs transition-colors last:border-b-0 hover:bg-gray-100 ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
                 onClick={() => handleLayerClick(s.layer.id)}
               >
-                <div className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}>
+                <div
+                  className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}
+                >
                   <span className="mr-3 inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center">
                     <FontAwesomeIcon
                       icon={
@@ -156,7 +158,10 @@ const ActiveLayersControl: React.FC = () => {
                     <button
                       className="leading-none transition-colors hover:text-primary"
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); handleVisibilityToggle(s.layer.id, !s.isVisible); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVisibilityToggle(s.layer.id, !s.isVisible);
+                      }}
                     >
                       <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
                     </button>
@@ -164,7 +169,10 @@ const ActiveLayersControl: React.FC = () => {
                       <button
                         className="leading-none transition-colors hover:text-primary"
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleLayerClick(s.layer.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLayerClick(s.layer.id);
+                        }}
                       >
                         <FontAwesomeIcon icon={faEdit} />
                       </button>

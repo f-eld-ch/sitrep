@@ -39,9 +39,7 @@ const MessageTable = (
         priorityFilter={priorityFilter}
         triageFilter={triageFilter}
       />
-      <table
-        className="w-full border-collapse break-inside-auto text-sm print:text-xs [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:text-left"
-      >
+      <table className="w-full border-collapse break-inside-auto text-sm print:text-xs [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:text-left">
         <thead>
           <tr>
             <th className="capitalize">{t("message.time")}</th>
@@ -53,7 +51,9 @@ const MessageTable = (
         <tbody>
           {props.messages?.map((message) => (
             <tr key={message.id}>
-              <td className="text-nowrap print:text-[10px]" >{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
+              <td className="text-nowrap print:text-[10px]">
+                {dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}
+              </td>
               <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
                 {message.senderDetail ? (
                   <>

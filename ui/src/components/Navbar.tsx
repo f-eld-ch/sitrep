@@ -161,27 +161,21 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         >
           {/* Incident */}
           <NavLink
-            className={({ isActive }) =>
-              clsx(mobileItem, isActive && "bg-primary text-white!")
-            }
+            className={({ isActive }) => clsx(mobileItem, isActive && "bg-primary text-white!")}
             to={incidentId ? `/incident/${incidentId}/edit` : "/"}
           >
             <FontAwesomeIcon icon={faExplosion} />
             <span>{t("incident")}</span>
           </NavLink>
           <NavLink
-            className={({ isActive }) =>
-              clsx(mobileSubItem, isActive && "bg-primary text-white!")
-            }
+            className={({ isActive }) => clsx(mobileSubItem, isActive && "bg-primary text-white!")}
             to="/incident/list"
           >
             <FontAwesomeIcon icon={faRectangleList} />
             <span>{t("overview")}</span>
           </NavLink>
           <NavLink
-            className={({ isActive }) =>
-              clsx(mobileSubItem, isActive && "bg-primary text-white!")
-            }
+            className={({ isActive }) => clsx(mobileSubItem, isActive && "bg-primary text-white!")}
             to="/incident/new"
           >
             <FontAwesomeIcon icon={faCirclePlus} />
@@ -202,9 +196,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {incidentId && (
             <>
               <NavLink
-                className={({ isActive }) =>
-                  clsx(mobileItem, isActive && "bg-primary text-white!")
-                }
+                className={({ isActive }) => clsx(mobileItem, isActive && "bg-primary text-white!")}
                 to={`/incident/${incidentId}/journal/messages`}
               >
                 <FontAwesomeIcon icon={faBars} />
@@ -233,9 +225,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {/* Map */}
           {incidentId && (
             <NavLink
-              className={({ isActive }) =>
-                clsx(mobileItem, isActive && "bg-primary text-white!")
-              }
+              className={({ isActive }) => clsx(mobileItem, isActive && "bg-primary text-white!")}
               to={`/incident/${incidentId}/map`}
             >
               <FontAwesomeIcon icon={faMapLocationDot} />

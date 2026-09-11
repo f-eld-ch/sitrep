@@ -76,10 +76,7 @@ const baseFeatureCollection: FeatureCollection = {
 function renderWithMap(children: React.ReactNode) {
   const mapStyle = MapStyles[0].style;
   return render(
-    <MapLibre
-      initialViewState={{ longitude: 0, latitude: 0, zoom: 1 }}
-      mapStyle={mapStyle}
-    >
+    <MapLibre initialViewState={{ longitude: 0, latitude: 0, zoom: 1 }} mapStyle={mapStyle}>
       {children}
     </MapLibre>,
   );

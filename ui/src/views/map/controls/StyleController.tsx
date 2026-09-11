@@ -108,7 +108,9 @@ function StyleController() {
     <MapPanel title={t("styleController.maps")} onClose={() => setActive(false)}>
       {MapStyles.map((s) => (
         <MapPanelBlock key={s.name} active={style.name === s.name} onClick={() => onClick(s)}>
-          <span className={`capitalize ${style.name === s.name ? "text-primary font-semibold" : ""}`}>
+          <span
+            className={`capitalize ${style.name === s.name ? "text-primary font-semibold" : ""}`}
+          >
             {t(`styleController.${s.name}`)}
           </span>
         </MapPanelBlock>

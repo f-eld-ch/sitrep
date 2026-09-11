@@ -562,7 +562,10 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
       {options.map((opt) => (
         <label
           key={opt}
-          className={clsx("inline-flex min-w-[5.5rem] items-center gap-1.5 whitespace-nowrap", disabled ? "cursor-default" : "cursor-pointer")}
+          className={clsx(
+            "inline-flex min-w-[5.5rem] items-center gap-1.5 whitespace-nowrap",
+            disabled ? "cursor-default" : "cursor-pointer",
+          )}
           title={descriptions[opt]}
         >
           <input

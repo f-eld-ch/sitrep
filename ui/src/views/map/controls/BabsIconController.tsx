@@ -168,9 +168,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
   // First level of a drill-down category: the selector icons (for Formationen, 47xx).
   if (expanded && drillDown && openEntry === null) {
     return (
-      <div
-        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
-      >
+      <div className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}>
         <BackButton title={categoryLabel} onClick={collapse} />
         {drillDown.map((entry) => {
           // The group's name, not the selector icon's: "Polizei" reads better than "P".
@@ -200,9 +198,7 @@ function IconCategoryMenu(props: CategoryMenuProps) {
 
   if (expanded) {
     return (
-      <div
-        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}
-      >
+      <div className={clsx("maplibregl-ctrl maplibregl-ctrl-group", rowWrapClass)}>
         {/* Back to the group list for a drill-down category, otherwise straight to collapsed. */}
         <BackButton
           title={categoryLabel}
@@ -308,9 +304,7 @@ const LineController = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
-      <div
-        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
-      >
+      <div className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}>
         {byColor(LineTypes).map((l) => (
           <button
             type="button"
@@ -369,9 +363,7 @@ const ZoneController = memo((props: BabsIconControllerProps) => {
 
   return (
     <div className={clsx("maplibregl-ctrl-top-right", overlayClass)}>
-      <div
-        className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}
-      >
+      <div className={clsx("maplibregl-ctrl maplibregl-ctrl-group", colWrapClass)}>
         {byColor(ZoneTypes).map((l) => (
           <button
             type="button"
