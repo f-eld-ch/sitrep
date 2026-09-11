@@ -85,7 +85,6 @@ function SearchControl() {
     try {
       const coord = coordinateFromString(input);
       if (coord) {
-        console.log("Flying to coordinate:", coord);
         // reproject the coordinate to WGS84 for maplibre
         const transformed = proj4(coord.coordinateSystem.epsg, "EPSG:4326", coord.coordinate);
 

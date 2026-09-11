@@ -24,23 +24,19 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log(`SW Registered: ${r}`);
       if (r === undefined) return;
-
       setInterval(() => {
         r.update();
       }, intervalMS);
       setOfflineReady(true);
     },
     onRegisterError(error) {
-      console.log("SW registration error:", error);
+      console.error("SW registration error:", error);
     },
     onNeedRefresh() {
-      console.log("SW needs refresh");
       setNeedRefresh(true);
     },
     onOfflineReady() {
-      console.log("SW offline ready");
       setOfflineReady(true);
     },
   });
@@ -103,7 +99,7 @@ export function ReloadPrompt() {
           }
         }
       } catch (e) {
-        console.log("Error handling sw-update-available event:", e);
+        console.error("Error handling sw-update-available event:", e);
       }
     };
 
@@ -120,11 +116,9 @@ export function ReloadPrompt() {
     async function checkRegistration() {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
-        console.log("SW registration (fallback check):", reg);
         if (!mounted || !reg) return;
 
         if (reg.waiting) {
-          console.log("SW fallback: found waiting worker");
           setNeedRefresh(true);
           setOfflineReady(true);
         }
@@ -132,9 +126,7 @@ export function ReloadPrompt() {
         // If there's an installing worker already, listen to its state changes immediately
         if (reg.installing) {
           const inst = reg.installing;
-          console.log("SW fallback: found installing worker, state:", inst.state);
           const onStateChange = () => {
-            console.log("SW fallback: installing state ->", inst.state);
             if (inst.state === "installed") {
               // new SW installed and waiting
               setNeedRefresh(true);
@@ -147,11 +139,9 @@ export function ReloadPrompt() {
         }
 
         reg.addEventListener("updatefound", () => {
-          console.log("SW fallback: updatefound event");
           const installing = reg.installing;
           if (installing) {
             installing.addEventListener("statechange", () => {
-              console.log("SW fallback: installing state ->", installing.state);
               if (installing.state === "installed") {
                 // new SW installed and waiting
                 setNeedRefresh(true);
@@ -160,13 +150,8 @@ export function ReloadPrompt() {
             });
           }
         });
-
-        // also listen for controlling change
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          console.log("SW fallback: controllerchange");
-        });
       } catch (e) {
-        console.log("SW fallback check failed:", e);
+        console.error("SW registration check failed:", e);
       }
     }
 
@@ -181,14 +166,13 @@ export function ReloadPrompt() {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg?.waiting) {
-          console.log("SW poll: found waiting worker");
           setNeedRefresh(true);
           setOfflineReady(true);
           clearInterval(pollId);
           return;
         }
       } catch (e) {
-        console.log("SW poll failed:", e);
+        console.error("SW poll failed:", e);
       }
       polls += 1;
       if (polls >= maxPolls) clearInterval(pollId);
@@ -199,7 +183,7 @@ export function ReloadPrompt() {
       try {
         clearInterval(pollId);
       } catch (e) {
-        console.log("Error clearing SW poll interval:", e);
+        console.error("Error clearing SW poll interval:", e);
       }
     };
   }, [setNeedRefresh, setOfflineReady]);
@@ -216,7 +200,7 @@ export function ReloadPrompt() {
     } else {
       channelRef.current?.post({ type: "apply-later", tabId });
       updateServiceWorker(false).catch((e) => {
-        console.log("Error applying SW update for later:", e);
+        console.error("Error applying SW update for later:", e);
       });
     }
   };
@@ -233,15 +217,6 @@ export function ReloadPrompt() {
     const until = Date.now() + hours * 60 * 60 * 1000;
     close(until);
   };
-
-  // Debugging: log render-time state to help diagnose why the prompt isn't shown
-  // eslint-disable-next-line no-console
-  console.log("ReloadPrompt render state:", {
-    visible,
-    needRefresh,
-    offlineReady,
-    dismissUntil,
-  });
 
   return (
     <>

@@ -627,17 +627,13 @@ function isDrawLike(obj: unknown): obj is DrawLike {
 // Returns true if invocation happened, false otherwise.
 function safeDrawInvoke(draw: unknown, fn: (d: DrawLike) => void): boolean {
   if (!isDrawLike(draw)) {
-    // eslint-disable-next-line no-console
-    console.debug("Draw control missing expected methods; skipping operation.");
     return false;
   }
   try {
     fn(draw);
     return true;
-  } catch (e) {
+  } catch {
     // swallow errors coming from an invalid draw instance (e.g., transient state in Strict Mode)
-    // eslint-disable-next-line no-console
-    console.debug("Draw control operation failed:", e);
     return false;
   }
 }
