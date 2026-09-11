@@ -15,7 +15,8 @@ oidc-client-secret: "ds8LCRW4jhB58nWdMgZHeVISqx3O3e1o3g0LEr9H8tM="  # generate w
 oidc-redirect-url: "http://localhost:3000/oauth2/callback"
 cookie-key: "0123456789abcdef0123456789abcdef"                        # generate with: openssl rand -hex 16
 
-database-url: "postgres://postgres:postgrespassword@localhost:5432/postgres?sslmode=disable"
+database-url: "postgres://postgres:postgrespassword@localhost:15432/postgres?sslmode=disable"
+migrate-on-startup: true  # required on first run; the database schema does not exist until migrations have run
 
 graphql-introspection: true  # enables /api/v2/graphql/play
 ```
@@ -40,7 +41,15 @@ On SELinux machines use the selinux compose file:
 docker compose -f docker-compose.selinux.yml --env-file .env.local up -d
 ```
 
-5. Start the Go backend server (by default, reads `config.yaml` from the working directory):
+5. Build the UI once so the Go binary can embed it:
+
+```
+cd ui && yarn install && yarn build && cd ..
+```
+
+The Go server embeds `ui/build` via `go:embed` at compile time, so this directory must exist and contain a build before `go run .` will even compile.
+
+6. Start the Go backend server (by default, reads `config.yaml` from the working directory):
 
 ```
 go run .
@@ -59,13 +68,13 @@ Or build and run the binary:
 go build -o sitrep . && ./sitrep serve
 ```
 
-6. Start the UI dev server:
+7. Start the UI dev server:
 
 ```
 cd ui && yarn start
 ```
 
-7. Open [localhost:3000](http://localhost:3000/). The Vite dev server proxies `/api/v2/graphql` and `/oauth2` to the Go server at `:4180`. Authentication is handled by the local Dex IDP — click **Log in with Example**.
+8. Open [localhost:3000](http://localhost:3000/). The Vite dev server proxies `/api/v2/graphql` and `/oauth2` to the Go server at `:4180`. Authentication is handled by the local Dex IDP — click **Log in with Example**.
 
 The GraphQL playground is available at [localhost:4180/api/v2/graphql/play](http://localhost:4180/api/v2/graphql/play) when `graphql-introspection: true` is set in `config.yaml`.
 
