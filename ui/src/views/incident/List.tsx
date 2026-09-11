@@ -51,7 +51,7 @@ function List() {
         <Button
           type="button"
           variant="success"
-          size="sm"
+          size="xs"
           rounded
           light
           capitalized
@@ -63,7 +63,7 @@ function List() {
         <Button
           type="button"
           variant="warning"
-          size="sm"
+          size="xs"
           rounded
           light
           onClick={() => setFilterClosed(!filterClosed)}
@@ -204,7 +204,7 @@ export function IncidentCard(props: {
               light={true}
               size="sm"
               variant="gray"
-              className="ml-2 p-1 align-middle"
+              className="ml-2 px-1 py-1 align-middle"
               title={
                 incident.accessMode === "RESTRICTED"
                   ? t("incidentAccess.restricted")
