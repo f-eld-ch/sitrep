@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { faPaperclip, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -377,9 +378,10 @@ function AttachmentUpload({
           )}
           <div
             {...getRootProps()}
-            className={`flex w-full cursor-pointer items-center gap-2 rounded border-2 border-dashed px-3 py-2 text-sm transition-colors ${
-              isDragActive ? "border-info bg-info/10" : "border-border"
-            }`}
+            className={clsx(
+              "flex w-full cursor-pointer items-center gap-2 rounded border-2 border-dashed px-3 py-2 text-sm transition-colors",
+              isDragActive ? "border-info bg-info/10" : "border-border",
+            )}
           >
             <input {...getInputProps()} aria-label={t("message.attachments.add")} />
             {loading ? (
@@ -451,7 +453,7 @@ function InputBox() {
 
   const mediumId = useId();
   return (
-    <div className="rounded border border-border bg-bg-elevated p-5 shadow-sm">
+    <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">
       <div className="mb-2 flex justify-end">
         <button
           type="button"

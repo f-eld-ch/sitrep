@@ -206,7 +206,7 @@ const MessageContainer = ({
   return (
     <div
       className={clsx(
-        "rounded border-0 border-solid shadow-sm",
+        "rounded border-0 border-solid shadow-xl",
         accentSide === "right" ? "border-r-4" : "border-l-4",
         accentSide === "right" ? borderR[accent] : borderL[accent],
         bgTint[accent],
