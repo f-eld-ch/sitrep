@@ -31,10 +31,7 @@ function Triage(props: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50"
-        onClick={() => setMessage(undefined)}
-      />
+      <div className="fixed inset-0 bg-black/50" onClick={() => setMessage(undefined)} />
       {/* Card */}
       <div className="relative bg-bg-elevated border border-border rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
@@ -130,9 +127,9 @@ function TriageForm(props: {
           />
         </div>
 
-        <div className="flex flex-wrap gap-6">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-6">
           {/* Division assignment */}
-          <div className="flex-1 min-w-0">
+          <div className="sm:flex-1 min-w-0">
             <h3 className="text-base font-bold mb-3">{t("messageFlow")}</h3>
             <div className="flex flex-wrap gap-2">
               {data.incidentDivisions.map((d) => {
@@ -195,7 +192,7 @@ function TriageForm(props: {
           </div>
 
           {showTasks && (
-            <div className="flex-1 min-w-0">
+            <div className="sm:flex-1 min-w-0">
               <h3 className="text-base font-bold mb-3">{t("createNewTask")}</h3>
               <TaskNew />
             </div>

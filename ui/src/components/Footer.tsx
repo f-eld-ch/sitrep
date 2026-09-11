@@ -49,7 +49,7 @@ function FooterManaged() {
     return;
   }
   return (
-    <div className="hidden md:inline-flex items-center ml-1">
+    <div className="hidden md:inline-flex items-center ml-1 self-end">
       and hosted by
       <a
         className="text-current self-center ml-1"
@@ -57,7 +57,7 @@ function FooterManaged() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img src={VSHN} alt="VSHN" className="self-center" style={{ minHeight: "0.7rem" }} />
+        <img src={VSHN} alt="VSHN" className="self-center h-3" />
       </a>
     </div>
   );

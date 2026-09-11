@@ -30,7 +30,7 @@ export const Layout = (props: LayoutProps) => {
     <>
       <Navbar />
       <ReloadPrompt />
-      <div className="flex flex-col min-h-[calc(100vh-2.75rem)]">
+      <div className="mt-[2.75rem] flex flex-col min-h-[calc(100vh-2.75rem)]">
         <div className="flex-1">
           <div className="p-6">{props.children}</div>
         </div>
@@ -59,7 +59,7 @@ export const LayoutMarginLess = (props: LayoutProps) => {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col min-h-[calc(100vh-2.75rem)]">
+      <div className="flex flex-col min-h-screen">
         <div className="flex flex-1">{props.children}</div>
         <div className="shrink-0 print:hidden">
           <Footer />

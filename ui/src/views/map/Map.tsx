@@ -1,5 +1,5 @@
 import "./control-panel.css";
-import "./Map.scss";
+import "./Map.css";
 import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
@@ -109,7 +109,7 @@ function MapView() {
   );
 
   return (
-    <div className="flex-grow mt-5" data-theme="light">
+    <div className="flex-grow mt-[2.75rem]" data-theme="light">
       <MapClass
         mapLib={maplibre}
         initialViewState={{

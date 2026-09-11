@@ -1,0 +1,154 @@
+@import url("assets/b612-mono/b612-mono.css");
+@import url("assets/b612/b612.css");
+
+/* Apply theme surface tokens to the document root so dark mode affects the page background */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+/*
+ * Markdown content styling — used by Markdown.tsx via prefixCls="content".
+ * Replaces Bulma's elements/content module; scoped to .content so it only
+ * affects the markdown renderer, not the rest of the UI.
+ */
+.content p:not(:last-child) {
+  margin-bottom: 1em;
+}
+
+.content ul {
+  list-style: disc outside;
+  margin-left: 2em;
+  margin-top: 1em;
+}
+.content ol {
+  list-style: decimal outside;
+  margin-left: 2em;
+  margin-top: 1em;
+}
+.content ul ul {
+  list-style-type: circle;
+  margin-top: 0.5em;
+}
+.content ul ul ul {
+  list-style-type: square;
+}
+.content li + li {
+  margin-top: 0.25em;
+}
+
+.content h1 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5em;
+}
+.content h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5em;
+}
+.content h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5em;
+}
+.content h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.5em;
+}
+
+.content blockquote {
+  background-color: var(--color-bg-subtle, #f5f5f5);
+  border-left: 5px solid var(--color-border, #e1e1e1);
+  padding: 1.25em 1.5em;
+  margin-bottom: 1em;
+}
+
+.content code {
+  background-color: var(--color-bg-subtle, #f5f5f5);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.875em;
+  padding: 0.1em 0.3em;
+}
+.content pre {
+  background-color: var(--color-bg-subtle, #f5f5f5);
+  font-family: var(--font-mono, monospace);
+  overflow-x: auto;
+  padding: 1.25em 1.5em;
+  white-space: pre;
+  margin-bottom: 1em;
+}
+.content pre code {
+  padding: 0;
+  background: none;
+}
+
+.content a:not(.button) {
+  color: var(--color-primary, #2077cc);
+}
+.content a:not(.button):hover {
+  text-decoration: underline;
+}
+
+.content table {
+  width: 100%;
+  margin-bottom: 1em;
+}
+.content td,
+.content th {
+  border: 1px solid var(--color-border, #e1e1e1);
+  padding: 0.5em 0.75em;
+  vertical-align: top;
+}
+
+.content.is-normal {
+  font-size: 0.9rem;
+}
+
+@media print {
+  html,
+  body {
+    height: initial !important;
+    overflow: initial !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 10mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+    font-family: "B612";
+    font-size: 11px;
+
+    @bottom-right {
+      content: counter(page);
+      font-family: "B612";
+      font-size: 9px;
+    }
+
+    @bottom-center {
+      content: "SitRep";
+      font-family: "B612";
+      font-size: 9px;
+    }
+  }
+
+  .table {
+    font-size: 10px;
+  }
+
+  .content.is-normal {
+    font-size: 10px;
+  }
+
+  .content h1 {
+    font-size: 13px;
+  }
+  .content h2 {
+    font-size: 12px;
+  }
+  .content h3 {
+    font-size: 11px;
+  }
+  .content h4 {
+    font-size: 11px;
+  }
+}

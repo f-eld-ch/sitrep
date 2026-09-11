@@ -1,15 +1,20 @@
-import { faArrowsToEye, faBell, faChevronDown, faPrint, faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faBell,
+  faChevronDown,
+  faPrint,
+  faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Spinner } from "components";
-import { Notification } from "components/ui";
-import { Button } from "components/ui";
+import { Button, Notification, PageTitle } from "components/ui";
 import { memo, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
-import { useIncidentMessages } from "api";
+import { useIncidentDetails, useIncidentMessages } from "api";
 import { buildMessageList } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -36,6 +41,9 @@ function List(props: {
   });
 
   const result = useIncidentMessages(incidentId ?? "");
+  const incidentDetails = useIncidentDetails(incidentId);
+  const incidentName =
+    incidentDetails.status === "ready" ? incidentDetails.data.incident.name : undefined;
 
   useEffect(() => {
     if (autoScroll) {
@@ -64,7 +72,7 @@ function List(props: {
   return (
     <>
       <div className="print:hidden">
-        <h3 className="text-3xl font-bold capitalize mb-3">{t("journal")}</h3>
+        <PageTitle className="mb-3">{t("journal")}</PageTitle>
         <div className="flex flex-wrap gap-2 mb-3 items-center">
           {/* Triage filter */}
           <div className="relative group">
@@ -74,7 +82,10 @@ function List(props: {
             <select
               className={selectWithIcon}
               value={triageFilter}
-              onChange={(e) => { e.preventDefault(); setTriageFilter(e.target.value); }}
+              onChange={(e) => {
+                e.preventDefault();
+                setTriageFilter(e.target.value);
+              }}
             >
               <option label={t("all") as string}>all</option>
               {Object.values(TriageStatus).map((status: TriageStatus) => (
@@ -99,7 +110,10 @@ function List(props: {
             <select
               className={selectWithIcon}
               value={priorityFilter}
-              onChange={(e) => { e.preventDefault(); setPriorityFilter(e.target.value); }}
+              onChange={(e) => {
+                e.preventDefault();
+                setPriorityFilter(e.target.value);
+              }}
             >
               <option label={t("all") as string}>all</option>
               {Object.values(PriorityStatus).map((prio: PriorityStatus) => (
@@ -124,7 +138,10 @@ function List(props: {
             <select
               className={selectWithIcon}
               value={assignmentFilter}
-              onChange={(e) => { e.preventDefault(); setAssignmentFilter(e.target.value); }}
+              onChange={(e) => {
+                e.preventDefault();
+                setAssignmentFilter(e.target.value);
+              }}
             >
               <option label={t("all") as string}>all</option>
               {divisions.map((element) => (
@@ -139,7 +156,13 @@ function List(props: {
           </div>
 
           {showControls && (
-            <Button type="button" variant="primary"  size="xs" className="ml-auto" onClick={() => handlePrint()}>
+            <Button
+              type="button"
+              variant="primary"
+              size="xs"
+              className="ml-auto"
+              onClick={() => handlePrint()}
+            >
               <FontAwesomeIcon icon={faPrint} />
               <span className="ml-1.5">{t("print")}</span>
             </Button>
@@ -165,6 +188,7 @@ function List(props: {
           triageFilter={triageFilter}
           priorityFilter={priorityFilter}
           assignmentFilter={assignmentFilter}
+          incidentName={incidentName}
         />
       </div>
     </>

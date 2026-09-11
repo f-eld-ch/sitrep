@@ -116,11 +116,16 @@ function GlobalRoles() {
         {rolesResult.data.grants.length === 0 ? (
           <p className="text-fg-muted text-sm">{t("adminGlobalRoles.noRolesGranted")}</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 pr-4 font-semibold">{t("adminGlobalRoles.userLabel")}</th>
-                <th className="text-left py-2 pr-4 font-semibold">{t("adminGlobalRoles.roleLabel")}</th>
+                <th className="text-left py-2 pr-4 font-semibold">
+                  {t("adminGlobalRoles.userLabel")}
+                </th>
+                <th className="text-left py-2 pr-4 font-semibold">
+                  {t("adminGlobalRoles.roleLabel")}
+                </th>
                 <th aria-label={t("actions")} />
               </tr>
             </thead>
@@ -187,6 +192,7 @@ function GlobalRoles() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </>

@@ -13,18 +13,19 @@ function AdminLayout() {
   const activeGroups =
     groupsResult.status === "ready" ? groupsResult.data.groups.filter((g) => !g.archivedAt) : [];
 
-  const linkClass = "flex items-center px-3 py-1.5 rounded text-sm text-fg hover:bg-bg-subtle transition-colors";
+  const linkClass =
+    "flex items-center px-3 py-1.5 rounded text-sm text-fg hover:bg-bg-subtle transition-colors";
   const activeLinkClass = "flex items-center px-3 py-1.5 rounded text-sm bg-primary text-white";
 
   return (
     <div className="mx-auto max-w-7xl px-4">
       <PageTitle>{t("adminLayout.title")}</PageTitle>
-      <div className="flex gap-8">
-        <aside className="w-48 shrink-0">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        <aside className="md:w-48 md:shrink-0">
           <p className="text-xs uppercase tracking-wider font-semibold text-fg-muted mb-2">
             {t("adminLayout.accessControl")}
           </p>
-          <ul className="space-y-0.5">
+          <ul className="flex flex-row flex-wrap gap-1 md:flex-col md:gap-0 md:space-y-0.5">
             <li>
               <NavLink
                 to="groups"
@@ -34,7 +35,7 @@ function AdminLayout() {
                 {t("adminLayout.groups")}
               </NavLink>
               {groupsResult.status === "ready" && activeGroups.length > 0 && (
-                <ul className="ml-3 mt-0.5 space-y-0.5">
+                <ul className="hidden md:block ml-3 mt-0.5 space-y-0.5">
                   {activeGroups.map((group) => (
                     <li key={group.id}>
                       <NavLink
