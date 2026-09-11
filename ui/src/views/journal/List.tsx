@@ -164,7 +164,7 @@ function List(props: {
               onClick={() => handlePrint()}
             >
               <FontAwesomeIcon icon={faPrint} />
-              <span className="ml-1.5">{t("print")}</span>
+              <span>{t("print")}</span>
             </Button>
           )}
         </div>
