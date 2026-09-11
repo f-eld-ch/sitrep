@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types";
 import { useDate } from "utils/useDate";
+import { PageTitle } from "components/ui";
 import { ReactPreview } from "./Markdown";
 
 const MessageTable = (
@@ -29,27 +30,30 @@ const MessageTable = (
     assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all";
 
   return (
-    <div ref={ref} className="is-clearfix is-block" style={{ overflow: "visible" }}>
-      <h3 className="title is-3">
+    <div ref={ref} style={{ overflow: "visible" }}>
+      <PageTitle>
         {t("journal")}
         {isFiltered && ` (${t("filtered")})`}
-      </h3>
+      </PageTitle>
 
-      <h5 className="subtitle is-7 mt-4">
+      <p className="text-xs text-fg-muted mt-4">
         {t("state")}: {dayjs(now).format("DD.MM.YYYY HH:mm")}
-      </h5>
+      </p>
       <FilterState
         assignmentFilter={assignmentFilter}
         priorityFilter={priorityFilter}
         triageFilter={triageFilter}
       />
-      <table className="table is-fullwidth is-narrow" style={{ pageBreakInside: "auto" }}>
+      <table
+        className="w-full text-sm border-collapse [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5"
+        style={{ pageBreakInside: "auto" }}
+      >
         <thead>
           <tr>
-            <th className="is-capitalized">{t("message.time")}</th>
-            <th className="is-capitalized">{t("message.sender")}</th>
-            <th className="is-capitalized">{t("message.receiver")}</th>
-            <th className="is-capitalized">{t("message.content")}</th>
+            <th className="capitalize">{t("message.time")}</th>
+            <th className="capitalize">{t("message.sender")}</th>
+            <th className="capitalize">{t("message.receiver")}</th>
+            <th className="capitalize">{t("message.content")}</th>
           </tr>
         </thead>
         <tbody>
@@ -77,10 +81,7 @@ const MessageTable = (
                 )}
               </td>
               <td style={cellStyle}>
-                <div
-                  className="content is-normal has-text-left"
-                  style={{ pageBreakInside: "avoid" }}
-                >
+                <div className="text-left" style={{ pageBreakInside: "avoid" }}>
                   <ReactPreview content={message.content} />
                 </div>
               </td>
@@ -105,7 +106,7 @@ function FilterState(props: {
   }
 
   return (
-    <h5 className="subtitle is-7">
+    <p className="text-xs text-fg-muted">
       <b>{t("filter")}:</b>
       {assignmentFilter !== "all" && (
         <p>
@@ -122,7 +123,7 @@ function FilterState(props: {
           {t("message.triage")}: {t(`triage.${triageFilter}`)}
         </p>
       )}
-    </h5>
+    </p>
   );
 }
 

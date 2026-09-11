@@ -31,11 +31,11 @@ const MessageSheet = (
 
   return (
     <div ref={ref}>
-      <h3 className="title is-size-6 is-capitalized">{t("messageSheet")}</h3>
-      <table className="table is-bordered is-fullwidth message-sheet">
+      <h3 className="text-base font-bold capitalize mb-2">{t("messageSheet")}</h3>
+      <table className="w-full text-sm border-collapse border border-border [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5">
         <tbody>
           <tr>
-            <th rowSpan={6} className="firstRow">
+            <th rowSpan={6} className="w-[150px]">
               {t("message.name")}
             </th>
             <th>{t("message.sender")}</th>
@@ -89,12 +89,10 @@ const MessageSheet = (
             <th>{t("message.priority")}</th>
             <td>{t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}</td>
           </tr>
-          <tr className="contentBox">
+          <tr className="h-[400px]">
             <th>{t("message.content")}</th>
             <td colSpan={4} style={cellStyle}>
-              <div className="content">
-                <ReactPreview content={message.content} />
-              </div>
+              <ReactPreview content={message.content} />
             </td>
           </tr>
           {message.attachments && message.attachments.length > 0 && (
@@ -111,15 +109,15 @@ const MessageSheet = (
           )}
         </tbody>
       </table>
-      <table className="table is-bordered is-fullwidth mt-2 is-fixed message-sheet">
+      <table className="w-full table-fixed text-sm border-collapse border border-border mt-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1.5">
         <tbody>
           <tr>
-            <th rowSpan={2} className="firstRow">
+            <th rowSpan={2} className="w-[150px]">
               {t("messageFlow")}
             </th>
             {divisions?.map((d) => {
               return (
-                <td key={message.id + d.id} className="has-text-centered">
+                <td key={message.id + d.id} className="text-center">
                   {d.name && d.name.trim() !== "" ? d.name : d.description}
                 </td>
               );
@@ -130,7 +128,7 @@ const MessageSheet = (
               const assignments = message.divisions.map((e) => e.division.id);
               const isPresent = assignments.some((e) => e === d.id);
               return (
-                <td key={message.id + d.id} className="has-text-centered">
+                <td key={message.id + d.id} className="text-center">
                   {isPresent ? (
                     <FontAwesomeIcon icon={faSquareCheck} />
                   ) : (
