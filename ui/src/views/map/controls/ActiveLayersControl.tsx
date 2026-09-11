@@ -88,24 +88,20 @@ const ActiveLayersControl: React.FC = () => {
       />
       <Button
         variant="primary"
-        size="sm"
+        size="xs"
         disabled={layerName.trim() === ""}
         onClick={() => handleAddLayer(layerName)}
       >
-        <span className="mr-1">
-          <FontAwesomeIcon icon={faPlus} />
-        </span>
-        <span>{t("layerControl.addLayer")}</span>
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        {t("layerControl.addLayer")}
       </Button>
     </div>
   ) : (
     <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 text-xs">
-      <button type="button" onClick={() => setShowAddLayer(true)}>
-        <span className="mr-1">
-          <FontAwesomeIcon icon={faPlus} />
-        </span>
-        <span>{t("layerControl.addLayer")}</span>
-      </button>
+      <Button size="xs" variant="primary" onClick={() => setShowAddLayer(true)}>
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        {t("layerControl.addLayer")}
+      </Button>
     </div>
   );
 

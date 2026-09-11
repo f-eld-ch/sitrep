@@ -307,7 +307,7 @@ const WMSLayerMenu = () => {
       ))}
       <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 last:border-b-0">
         {!showAddLayer && (
-          <Button size="sm" variant="primary" onClick={() => setShowAddLayer(true)}>
+          <Button size="xs" variant="primary" onClick={() => setShowAddLayer(true)}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
             {t("layerControl.addWMSLayer")}
           </Button>
