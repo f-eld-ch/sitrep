@@ -68,8 +68,11 @@ func WithRetention(run func(context.Context) (bool, error)) Option {
 }
 
 // Projector reads the global event stream and applies handlers.
-// Unlike the Postgres projector there is no leader-election loop: SQLite is
-// single-process and the OS flock in the stack constructor enforces that.
+// Unlike the Postgres projector there is no leader-election loop: SQLite's
+// MaxOpenConns(1) on the write handle serialises all write transactions,
+// which provides the same single-writer guarantee without a distributed lock.
+// Running two server processes against the same file is unsupported but not
+// currently enforced at the OS level; the second process will see busy errors.
 type Projector struct {
 	read     *sql.DB
 	write    *sql.DB

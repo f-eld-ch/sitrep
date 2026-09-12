@@ -10,10 +10,16 @@ import (
 var _ outbound.ProjectorLock = (*ProjectorLock)(nil)
 
 // ProjectorLock is the SQLite implementation of outbound.ProjectorLock.
-// It uses an in-process sync.Mutex because SQLite's single-writer model
-// means there is exactly one process owning the database (enforced by the
-// OS-level flock in the stack constructor). No LockLivenessChecker is
-// implemented: an in-process mutex cannot be silently lost.
+// It uses an in-process sync.Mutex. SQLite's MaxOpenConns(1) on the write
+// handle already serialises all write transactions, so this lock is only
+// needed to satisfy the conformance suite's lock sub-tests; production
+// wiring does not call WithLock on the SQLite projector.
+//
+// Running two server processes against the same database file is unsupported:
+// the second process will contend on SQLite's file-level write lock and log
+// busy errors, but no OS-level guard is currently enforced at startup.
+// No LockLivenessChecker is implemented: an in-process mutex cannot be
+// silently lost.
 type ProjectorLock struct {
 	mu   sync.Mutex
 	held map[string]struct{}

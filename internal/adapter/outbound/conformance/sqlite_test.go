@@ -29,15 +29,20 @@ func sqliteFactory(t *testing.T) *conformance.Backend {
 
 	dbPath := filepath.Join(t.TempDir(), "test.db")
 
+	// DSN mirrors sqlitex.openHandle so the test environment matches production.
+	// synchronous(NORMAL) is deliberately included: FULL would hide timing-dependent
+	// data-loss scenarios that NORMAL exposes under a power-loss scenario.
 	writeDSN := "file:" + dbPath +
 		"?_pragma=journal_mode(WAL)" +
 		"&_pragma=busy_timeout(10000)" +
+		"&_pragma=synchronous(NORMAL)" +
 		"&_pragma=foreign_keys(1)" +
 		"&_pragma=temp_store(MEMORY)" +
 		"&_txlock=immediate"
 	readDSN := "file:" + dbPath +
 		"?_pragma=journal_mode(WAL)" +
 		"&_pragma=busy_timeout(10000)" +
+		"&_pragma=synchronous(NORMAL)" +
 		"&_pragma=foreign_keys(1)" +
 		"&_pragma=temp_store(MEMORY)" +
 		"&_pragma=query_only(1)"
