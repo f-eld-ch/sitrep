@@ -349,10 +349,22 @@ type WallClock struct{}
 
 func (WallClock) Now() time.Time { return time.Now().UTC() }
 
-// UUIDGen implements outbound.IDs using the random UUID generator.
+// UUIDGen implements outbound.IDs using the time-ordered UUID v7 generator.
+// v7 ids sort chronologically, which reduces B-tree page splits on time-ordered
+// insertions — a meaningful benefit on SD-card-backed storage.
 type UUIDGen struct{}
 
-func (UUIDGen) New() uuid.UUID { return uuid.New() }
+func (UUIDGen) New() uuid.UUID {
+	id, err := uuid.NewV7()
+	if err != nil {
+		// NewV7 can fail only on an entropy exhaustion error that is itself
+		// extremely rare. Fall back to v4 rather than propagating the error
+		// through the outbound.IDs interface, which has no error return.
+		return uuid.New()
+	}
+
+	return id
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
