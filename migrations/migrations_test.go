@@ -52,16 +52,24 @@ func TestForDSN(t *testing.T) {
 			expectDialect: goose.DialectPostgres,
 		},
 		{
-			name:        "sqlite URL",
-			dsn:         "sqlite://sitrep.db",
-			expectErr:   true,
-			errContains: "sqlite migrations are not yet supported",
+			name:          "sqlite URL",
+			dsn:           "sqlite://sitrep.db",
+			expectDialect: goose.DialectSQLite3,
 		},
 		{
-			name:        "sqlite db file",
-			dsn:         "sitrep.db",
-			expectErr:   true,
-			errContains: "sqlite migrations are not yet supported",
+			name:          "sqlite db file",
+			dsn:           "sitrep.db",
+			expectDialect: goose.DialectSQLite3,
+		},
+		{
+			name:          "sqlite file: prefix",
+			dsn:           "file:/var/lib/sitrep/sitrep.db",
+			expectDialect: goose.DialectSQLite3,
+		},
+		{
+			name:          "sqlite .sqlite3 suffix",
+			dsn:           "/var/lib/sitrep/sitrep.sqlite3",
+			expectDialect: goose.DialectSQLite3,
 		},
 		{
 			name:        "unsupported scheme with credentials",

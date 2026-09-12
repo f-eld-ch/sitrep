@@ -11,6 +11,7 @@ import (
 	"github.com/pressly/goose/v3"
 
 	"github.com/f-eld-ch/sitrep/migrations/postgres"
+	sqlitemig "github.com/f-eld-ch/sitrep/migrations/sqlite"
 )
 
 // MigrationSet holds the goose Dialect, embedded file system, and Go migrations for a driver.
@@ -24,7 +25,7 @@ type MigrationSet struct {
 // Format / dialect rules:
 //   - empty / "inmem" / "inmem://" -> error (or handled by caller if skipping)
 //   - "postgres://", "postgresql://", or key-value postgres DSN -> returns Postgres MigrationSet
-//   - "sqlite://", "file:", or ".db" / "sqlite" DSN -> errors with unsupported dialect for now
+//   - "sqlite://", "file:", or ".db" / ".sqlite" / ".sqlite3" suffix -> returns SQLite MigrationSet
 //   - any other scheme -> errors with unsupported database URL format
 func ForDSN(dsn string) (*MigrationSet, error) {
 	s := strings.TrimSpace(dsn)
@@ -44,16 +45,26 @@ func ForDSN(dsn string) (*MigrationSet, error) {
 		}, nil
 	}
 
-	if isSQLiteDSN(s) {
-		return nil, fmt.Errorf("sqlite migrations are not yet supported")
+	if IsSQLiteDSN(s) {
+		return &MigrationSet{
+			Dialect:      goose.DialectSQLite3,
+			FS:           sqlitemig.FS,
+			GoMigrations: sqlitemig.GoMigrations(),
+		}, nil
 	}
 
 	return nil, fmt.Errorf("unsupported database URL format")
 }
 
-// RunPreflight delegates preflight data checks to the dialect handler (currently Postgres).
+// RunPreflight delegates preflight data checks to the dialect handler.
+// It only applies to Postgres; call it only when the DSN is a Postgres URL.
 func RunPreflight(ctx context.Context, db *sql.DB) ([]string, error) {
 	return postgres.RunPreflight(ctx, db)
+}
+
+// IsSQLiteDSN reports whether dsn points to a SQLite database.
+func IsSQLiteDSN(dsn string) bool {
+	return isSQLiteDSN(dsn)
 }
 
 func isPostgresDSN(dsn string) bool {
