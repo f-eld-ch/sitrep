@@ -221,7 +221,7 @@ export function ReloadPrompt() {
   return (
     <>
       {visible && offlineReady && (
-        <div className="px-4 pt-4">
+        <div className="mt-[2.75rem] px-4 pt-4">
           <Notification variant="success" light className="relative mt-2">
             <button
               type="button"
