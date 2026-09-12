@@ -61,3 +61,11 @@ config.yaml
 config.dev.yaml
 key.pem
 cert.pem
+
+# local dev artifacts
+.attachments/
+backup.*.sql
+dataloaders.md
+helm/
+sitrep
+plan-*.prompt.md
