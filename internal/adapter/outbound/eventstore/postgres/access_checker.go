@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -99,12 +98,6 @@ func enforce(pool *pgxpool.Pool, ctx context.Context, subject, domain, action st
 	if err != nil {
 		return false, fmt.Errorf("access policies: %w", err)
 	}
-
-	slog.DebugContext(ctx, "evaluated access policy",
-		slog.String("subject", subject),
-		slog.String("domain", domain),
-		slog.String("action", action),
-		slog.Bool("allowed", allowed))
 
 	return allowed, nil
 }

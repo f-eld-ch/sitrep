@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -108,12 +107,6 @@ func enforce(db *sql.DB, ctx context.Context, subject, domain, action string) (b
 	if err != nil {
 		return false, fmt.Errorf("access policies: %w", err)
 	}
-
-	slog.DebugContext(ctx, "evaluated access policy",
-		slog.String("subject", subject),
-		slog.String("domain", domain),
-		slog.String("action", action),
-		slog.Bool("allowed", allowed))
 
 	return allowed, nil
 }
