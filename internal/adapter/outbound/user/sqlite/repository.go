@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/google/uuid"
+
 	sqlite "github.com/f-eld-ch/sitrep/internal/adapter/outbound/helpers/sqlite"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
@@ -29,13 +31,14 @@ func NewRepository(write *sql.DB, clock outbound.Clock) *Repository {
 }
 
 func (r *Repository) Upsert(ctx context.Context, sub, email, name string) error {
+	id := uuid.New().String()
 	now := sqlite.FormatTime(r.clock.Now())
 
 	_, err := r.write.ExecContext(ctx, `
-		INSERT INTO users (sub, email, name)
-		VALUES (?, ?, ?)
+		INSERT INTO users (id, sub, email, name, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
 		ON CONFLICT (sub) DO UPDATE SET email = excluded.email, name = excluded.name, updated_at = ?`,
-		sub, email, name, now)
+		id, sub, email, name, now, now, now)
 
 	return err
 }
@@ -52,13 +55,14 @@ func (r *Repository) UpsertAndReportFirst(ctx context.Context, sub, email, name 
 		return false, err
 	}
 
+	id := uuid.New().String()
 	now := sqlite.FormatTime(r.clock.Now())
 
 	if _, err := tx.ExecContext(ctx, `
-		INSERT INTO users (sub, email, name)
-		VALUES (?, ?, ?)
+		INSERT INTO users (id, sub, email, name, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
 		ON CONFLICT (sub) DO UPDATE SET email = excluded.email, name = excluded.name, updated_at = ?`,
-		sub, email, name, now); err != nil {
+		id, sub, email, name, now, now, now); err != nil {
 		return false, err
 	}
 

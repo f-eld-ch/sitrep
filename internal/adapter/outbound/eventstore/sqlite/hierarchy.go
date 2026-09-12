@@ -34,7 +34,16 @@ func (g *IncidentHierarchyGuard) LockForUpdate(ctx context.Context) (func(), err
 
 	g.mu.Lock()
 
-	return g.mu.Unlock, nil
+	var released bool
+
+	release := func() {
+		if !released {
+			released = true
+			g.mu.Unlock()
+		}
+	}
+
+	return release, nil
 }
 
 func (g *IncidentHierarchyGuard) HasChildren(ctx context.Context, incidentID shared.IncidentID) (bool, error) {

@@ -12,7 +12,6 @@ package projection
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -137,6 +136,42 @@ func NewProjector(
 }
 
 // Run drives the projection loop. It never steps down — SQLite is
+// CatchUp reads all events appended since each handler's last checkpoint and applies
+// them synchronously. initCheckpoints is called first so that checkpoint rows
+// exist before catchUp tries to read them; it is idempotent (ON CONFLICT DO NOTHING).
+func (p *Projector) CatchUp(ctx context.Context) error {
+	if err := p.initCheckpoints(ctx); err != nil {
+		return err
+	}
+
+	return p.catchUp(ctx)
+}
+
+// ApplySingle applies one event to the named handler in its own transaction,
+// bypassing the projector's checkpoint. Used by the conformance suite's
+// ApplyEvent hook to verify per-event idempotency without advancing the cursor.
+func (p *Projector) ApplySingle(ctx context.Context, handlerName string, e eventsourcing.Event) error {
+	for _, h := range p.handlers {
+		if h.Name() == handlerName {
+			return p.applyInTx(ctx, h, e)
+		}
+	}
+
+	return fmt.Errorf("no handler named %q", handlerName)
+}
+
+// ResetAll resets every handler and clears its checkpoint, then runs a full catch-up.
+// Used by the conformance suite's ResetProjections hook.
+func (p *Projector) ResetAll(ctx context.Context) error {
+	for _, h := range p.handlers {
+		if err := p.resetProjection(ctx, h); err != nil {
+			return err
+		}
+	}
+
+	return p.catchUp(ctx)
+}
+
 // single-process, so there is nothing to yield to. Transient catch-up failures
 // are logged and retried forever: a Pi in a field deployment must not give up.
 // Run returns only when ctx is cancelled.
@@ -493,12 +528,10 @@ func (p *Projector) parkDeadLetter(
 	e eventsourcing.Event,
 	cause error,
 ) error {
-	data, err := json.Marshal(e.Data)
-	if err != nil {
-		return fmt.Errorf("marshal dead-letter event data: %w", err)
-	}
-
-	_, err = p.write.ExecContext(ctx, `
+	// Store only the error message. Event identity (stream_type, stream_id,
+	// version) is already in the dead-letter row; embedding the full event
+	// payload would expose PII contained in access events.
+	_, err := p.write.ExecContext(ctx, `
 		INSERT INTO eventsourcing_projection_dead_letter
 		  (projection, cursor, stream_type, stream_id, version, error, attempts, parked_at)
 		VALUES (?, ?, ?, ?, ?, ?, 3, ?)
@@ -507,7 +540,7 @@ func (p *Projector) parkDeadLetter(
 		      attempts = eventsourcing_projection_dead_letter.attempts + 1,
 		      parked_at = excluded.parked_at`,
 		projection, []byte(cursor), e.StreamType, e.StreamID.String(), e.Version,
-		fmt.Sprintf("%v | data: %s", cause, data),
+		cause.Error(),
 		sqlite.FormatTime(time.Now().UTC()),
 	)
 

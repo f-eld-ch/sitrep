@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -72,8 +73,14 @@ func Open(ctx context.Context, path string) (read, write *sql.DB, err error) {
 
 // openHandle builds a DSN for path and returns an open *sql.DB.
 // readOnly sets query_only(1) and omits _txlock=immediate.
+//
+// The path is URL-encoded before embedding in the file: URI so that a path
+// containing a literal '?' cannot inject additional URI parameters and
+// override application-controlled pragmas such as foreign_keys or query_only.
 func openHandle(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
-	dsn := "file:" + path +
+	encoded := url.PathEscape(path)
+
+	dsn := "file:" + encoded +
 		"?_pragma=journal_mode(WAL)" +
 		"&_pragma=busy_timeout(10000)" +
 		"&_pragma=synchronous(NORMAL)" +
@@ -89,12 +96,12 @@ func openHandle(ctx context.Context, path string, readOnly bool) (*sql.DB, error
 
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("sqlitex: open %s: %w", path, err)
+		return nil, fmt.Errorf("sqlitex: could not open database: %w", err)
 	}
 
 	if err = db.PingContext(ctx); err != nil {
 		_ = db.Close()
-		return nil, fmt.Errorf("sqlitex: ping %s: %w", path, err)
+		return nil, fmt.Errorf("sqlitex: could not connect to database: %w", err)
 	}
 
 	return db, nil

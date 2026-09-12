@@ -2,7 +2,8 @@ package projection
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"maps"
 	"sync"
@@ -17,8 +18,8 @@ var _ Handler = (*LayerFeaturesHandler)(nil)
 
 // featureItem holds the raw geometry and properties for one GeoJSON Feature.
 type featureItem struct {
-	Geometry   json.RawMessage
-	Properties json.RawMessage
+	Geometry   jsontext.Value
+	Properties jsontext.Value
 }
 
 // LayerRow mirrors readmodel.layer_features.
@@ -34,12 +35,12 @@ type LayerRow struct {
 }
 
 // GeoJSON builds a GeoJSON FeatureCollection from the current feature map.
-func (r *LayerRow) GeoJSON() json.RawMessage {
+func (r *LayerRow) GeoJSON() jsontext.Value {
 	type feature struct {
-		Type       string          `json:"type"`
-		ID         string          `json:"id"`
-		Geometry   json.RawMessage `json:"geometry"`
-		Properties json.RawMessage `json:"properties"`
+		Type       string         `json:"type"`
+		ID         string         `json:"id"`
+		Geometry   jsontext.Value `json:"geometry"`
+		Properties jsontext.Value `json:"properties"`
 	}
 
 	features := make([]feature, 0, len(r.Features))
@@ -168,9 +169,9 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 	switch e.EventType {
 	case "Placed", "Imported":
 		var d struct {
-			LayerID    string          `json:"layerId"`
-			Geometry   json.RawMessage `json:"geometry"`
-			Properties json.RawMessage `json:"properties"`
+			LayerID    string         `json:"layerId"`
+			Geometry   jsontext.Value `json:"geometry"`
+			Properties jsontext.Value `json:"properties"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -191,7 +192,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 
 	case "Moved":
 		var d struct {
-			Geometry json.RawMessage `json:"geometry"`
+			Geometry jsontext.Value `json:"geometry"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -208,7 +209,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
 
 	case "Restyled":
 		var d struct {
-			Properties json.RawMessage `json:"properties"`
+			Properties jsontext.Value `json:"properties"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err

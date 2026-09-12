@@ -3,7 +3,8 @@ package projection
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 )
 
@@ -26,7 +27,7 @@ func exec(tx *sql.Tx, ctx context.Context, query string, args ...any) error {
 
 // remarshal round-trips event data through JSON so handlers can decode it
 // into the struct they expect regardless of whether it arrived as a concrete
-// type or as json.RawMessage.
+// type or as jsontext.Value.
 func remarshal(data any, dst any) error {
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -42,7 +43,7 @@ func remarshal(data any, dst any) error {
 
 // nullableJSON returns nil for empty or "null" JSON; otherwise returns the raw bytes.
 // In SQLite TEXT columns, nil binds as NULL.
-func nullableJSON(raw json.RawMessage) any {
+func nullableJSON(raw jsontext.Value) any {
 	if len(raw) == 0 || string(raw) == "null" {
 		return nil
 	}

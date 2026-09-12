@@ -1,7 +1,7 @@
 package graphql
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
 	"testing"
 
 	"github.com/google/uuid"
@@ -23,7 +23,7 @@ func TestFeaturesFromGeoJSON_Empty(t *testing.T) {
 }
 
 func TestFeaturesFromGeoJSON_ValidCollection(t *testing.T) {
-	raw := json.RawMessage(`{
+	raw := jsontext.Value(`{
 		"type": "FeatureCollection",
 		"features": [
 			{
@@ -44,7 +44,7 @@ func TestFeaturesFromGeoJSON_ValidCollection(t *testing.T) {
 }
 
 func TestFeaturesFromGeoJSON_MultipleFeatures(t *testing.T) {
-	raw := json.RawMessage(`{
+	raw := jsontext.Value(`{
 		"type": "FeatureCollection",
 		"features": [
 			{"type":"Feature","id":"f1","geometry":{"type":"Point","coordinates":[0,0]},"properties":{}},
@@ -58,7 +58,7 @@ func TestFeaturesFromGeoJSON_MultipleFeatures(t *testing.T) {
 }
 
 func TestFeaturesFromGeoJSON_NullGeometry(t *testing.T) {
-	raw := json.RawMessage(`{
+	raw := jsontext.Value(`{
 		"type": "FeatureCollection",
 		"features": [{"type":"Feature","id":"f1","geometry":null,"properties":null}]
 	}`)
@@ -72,7 +72,7 @@ func TestFeaturesFromGeoJSON_NullGeometry(t *testing.T) {
 }
 
 func TestFeaturesFromGeoJSON_InvalidJSON_ReturnsError(t *testing.T) {
-	_, err := featuresFromGeoJSON(json.RawMessage(`{not valid json`))
+	_, err := featuresFromGeoJSON(jsontext.Value(`{not valid json`))
 	require.Error(t, err)
 }
 
@@ -84,7 +84,7 @@ func TestLayerRMToModel_WithFeatures(t *testing.T) {
 	rm := &outbound.LayerRM{
 		ID:   uuid.New(),
 		Name: "Ops Map",
-		GeoJSON: json.RawMessage(`{
+		GeoJSON: jsontext.Value(`{
 			"type": "FeatureCollection",
 			"features": [
 				{"type":"Feature","id":"feat-1","geometry":{"type":"Point","coordinates":[0,0]},"properties":{"x":1}}
@@ -106,7 +106,7 @@ func TestLayerRMToModel_EmptyGeoJSON(t *testing.T) {
 	rm := &outbound.LayerRM{
 		ID:      uuid.New(),
 		Name:    "Empty",
-		GeoJSON: json.RawMessage(`{"type":"FeatureCollection","features":[]}`),
+		GeoJSON: jsontext.Value(`{"type":"FeatureCollection","features":[]}`),
 	}
 
 	layer, err := layerRMToModel(rm)
@@ -118,7 +118,7 @@ func TestLayerRMToModel_InvalidGeoJSON_ReturnsError(t *testing.T) {
 	rm := &outbound.LayerRM{
 		ID:      uuid.New(),
 		Name:    "Bad",
-		GeoJSON: json.RawMessage(`{bad`),
+		GeoJSON: jsontext.Value(`{bad`),
 	}
 
 	_, err := layerRMToModel(rm)

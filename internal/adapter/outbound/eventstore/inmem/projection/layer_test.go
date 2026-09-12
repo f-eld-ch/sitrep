@@ -1,7 +1,7 @@
 package projection_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/google/uuid"

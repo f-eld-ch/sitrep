@@ -9,7 +9,7 @@ package projection
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -31,7 +31,7 @@ type Handler interface {
 
 // remarshal round-trips data through JSON so handlers can decode it into a
 // concrete struct regardless of whether it arrived as a typed value or as
-// json.RawMessage (the inmem store round-trips through JSON on Append).
+// jsontext.Value (the inmem store round-trips through JSON on Append).
 func remarshal(data any, dst any) error {
 	b, err := json.Marshal(data)
 	if err != nil {

@@ -5,7 +5,8 @@
 package eventsourcing
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"reflect"
 	"time"
@@ -20,7 +21,7 @@ type Event struct {
 	Version    int
 
 	EventType string
-	Data      any // concrete domain type after decoding; json.RawMessage before
+	Data      any // concrete domain type after decoding; jsontext.Value before
 	Metadata  map[string]any
 
 	OccurredAt time.Time
@@ -102,7 +103,7 @@ func TrackChange(a Aggregate, data any, occurredAt time.Time, metadata map[strin
 		OccurredAt: occurredAt,
 	}
 	// Apply immediately so subsequent commands see the updated state.
-	// The Data is already the concrete type here (not json.RawMessage), so
+	// The Data is already the concrete type here (not jsontext.Value), so
 	// Transition handles it directly without decoding.
 	_ = a.Transition(e) // Transition must be total — never returns an error for a valid event
 	root.pending = append(root.pending, e)
@@ -116,8 +117,8 @@ func TrackChange(a Aggregate, data any, occurredAt time.Time, metadata map[strin
 func Apply(a Aggregate, e Event) error {
 	root := a.Root()
 
-	// Decode json.RawMessage into the concrete type registered for this event.
-	if raw, ok := e.Data.(json.RawMessage); ok {
+	// Decode jsontext.Value into the concrete type registered for this event.
+	if raw, ok := e.Data.(jsontext.Value); ok {
 		t, registered := TypeFor(a, e.EventType)
 		if !registered {
 			return fmt.Errorf("eventsourcing: unknown event type %q for aggregate %s", e.EventType, a.AggregateType())

@@ -5,7 +5,8 @@ package postgres
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -553,9 +554,19 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 func (q *Queries) GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error) {
 	var incidentID uuid.UUID
 
-	err := q.pool.QueryRow(ctx,
-		`SELECT incident_id FROM readmodel.layer_features WHERE id = $1 AND removed = false`,
-		featureID,
+	// Scan the geojson features array to find the layer that owns featureID.
+	// The previous WHERE id = $1 was wrong: id is the layer's UUID, not a
+	// feature UUID, so it always returned ErrNotFound.
+	err := q.pool.QueryRow(ctx, `
+		SELECT l.incident_id
+		  FROM readmodel.layer_features l
+		 WHERE l.removed = false
+		   AND EXISTS (
+		       SELECT 1 FROM jsonb_array_elements(l.geojson->'features') f
+		        WHERE f->>'id' = $1::text
+		   )
+		 LIMIT 1`,
+		featureID.String(),
 	).Scan(&incidentID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -592,7 +603,7 @@ func collectLayers(rows pgx.Rows) ([]*outbound.LayerRM, error) {
 			incID              uuid.UUID
 			sourceIncidentName string
 			name               string
-			geojson            json.RawMessage
+			geojson            jsontext.Value
 			revision           int
 		)
 		if err := rows.Scan(&id, &incID, &sourceIncidentName, &name, &geojson, &revision); err != nil {

@@ -1,7 +1,8 @@
 package access
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"testing"
 	"time"
 
@@ -116,11 +117,11 @@ func TestAccessGroupReplayAndArchive(t *testing.T) {
 	assert.Error(t, replayed.AddMember("user-2", "admin", at))
 }
 
-func mustJSON(t *testing.T, value any) json.RawMessage {
+func mustJSON(t *testing.T, value any) jsontext.Value {
 	t.Helper()
 
 	data, err := json.Marshal(value)
 	require.NoError(t, err)
 
-	return json.RawMessage(data)
+	return jsontext.Value(data)
 }

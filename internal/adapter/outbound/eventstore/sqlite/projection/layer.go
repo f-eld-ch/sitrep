@@ -3,7 +3,8 @@ package projection
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 
@@ -73,10 +74,10 @@ type featureCollection struct {
 }
 
 type feature struct {
-	Type       string          `json:"type"`
-	ID         string          `json:"id"`
-	Geometry   json.RawMessage `json:"geometry"`
-	Properties json.RawMessage `json:"properties"`
+	Type       string         `json:"type"`
+	ID         string         `json:"id"`
+	Geometry   jsontext.Value `json:"geometry"`
+	Properties jsontext.Value `json:"properties"`
 }
 
 const emptyCollection = `{"type":"FeatureCollection","features":[]}`
@@ -127,9 +128,9 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 	switch e.EventType {
 	case "Placed", "Imported":
 		type placed struct {
-			LayerID    string          `json:"layerId"`
-			Geometry   json.RawMessage `json:"geometry"`
-			Properties json.RawMessage `json:"properties"`
+			LayerID    string         `json:"layerId"`
+			Geometry   jsontext.Value `json:"geometry"`
+			Properties jsontext.Value `json:"properties"`
 		}
 
 		var d placed
@@ -138,16 +139,12 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 		}
 
 		layerID, fc, err := loadLayerByID(ctx, tx, d.LayerID)
-		if errors.Is(err, sql.ErrNoRows) {
-			// Missing layer: no-op, mirroring Postgres behaviour (HaltOnError is false).
-			return nil
-		}
-
 		if err != nil {
 			return err
 		}
 
 		if layerID == "" {
+			// Missing layer: no-op, mirroring Postgres behaviour (HaltOnError is false).
 			return nil
 		}
 
@@ -164,7 +161,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 
 	case "Moved":
 		type moved struct {
-			Geometry json.RawMessage `json:"geometry"`
+			Geometry jsontext.Value `json:"geometry"`
 		}
 
 		var d moved
@@ -173,19 +170,24 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 		}
 
 		// Mutation: update geometry in place when it differs (idempotency guard).
-		return mutateSingleFeature(ctx, tx, featureID, func(f *feature) bool {
-			if sqlitehelpers.Equal(f.Geometry, d.Geometry) {
-				return false
+		return mutateSingleFeature(ctx, tx, featureID, func(f *feature) (bool, error) {
+			equal, err := sqlitehelpers.Equal(f.Geometry, d.Geometry)
+			if err != nil {
+				return false, err
+			}
+
+			if equal {
+				return false, nil
 			}
 
 			f.Geometry = d.Geometry
 
-			return true
+			return true, nil
 		})
 
 	case "Restyled":
 		type restyled struct {
-			Properties json.RawMessage `json:"properties"`
+			Properties jsontext.Value `json:"properties"`
 		}
 
 		var d restyled
@@ -194,14 +196,19 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 		}
 
 		// Mutation: update properties in place when they differ (idempotency guard).
-		return mutateSingleFeature(ctx, tx, featureID, func(f *feature) bool {
-			if sqlitehelpers.Equal(f.Properties, d.Properties) {
-				return false
+		return mutateSingleFeature(ctx, tx, featureID, func(f *feature) (bool, error) {
+			equal, err := sqlitehelpers.Equal(f.Properties, d.Properties)
+			if err != nil {
+				return false, err
+			}
+
+			if equal {
+				return false, nil
 			}
 
 			f.Properties = d.Properties
 
-			return true
+			return true, nil
 		})
 
 	case "Removed":
@@ -215,11 +222,14 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 // mutateSingleFeature finds the layer owning featureID, calls fn on the matching
 // feature in place, and writes the collection back when fn returns changed=true.
 // Returns nil when the feature is not found (no-op, mirrors Postgres @> guard).
+// fn may return an error (e.g. malformed JSON in idempotency comparison), which
+// is propagated to the caller so the event goes to dead-letter rather than
+// silently corrupting the read model.
 func mutateSingleFeature(
 	ctx context.Context,
 	tx *sql.Tx,
 	featureID uuid.UUID,
-	fn func(*feature) (changed bool),
+	fn func(*feature) (changed bool, err error),
 ) error {
 	layerID, fc, err := loadLayerByFeature(ctx, tx, featureID)
 	if err != nil {
@@ -235,7 +245,12 @@ func mutateSingleFeature(
 		return nil
 	}
 
-	if !fn(&fc.Features[idx]) {
+	changed, err := fn(&fc.Features[idx])
+	if err != nil {
+		return err
+	}
+
+	if !changed {
 		return nil
 	}
 
@@ -298,7 +313,8 @@ func loadLayerByFeature(ctx context.Context, tx *sql.Tx, featureID uuid.UUID) (s
 }
 
 // loadLayerByID loads the layer with the given ID directly.
-// Returns empty layerID when the layer does not exist.
+// Returns ("", empty, nil) when the layer does not exist, matching the
+// convention of loadLayerByFeature so callers check layerID == "" uniformly.
 func loadLayerByID(ctx context.Context, tx *sql.Tx, layerID string) (string, featureCollection, error) {
 	var geojsonStr string
 
@@ -306,7 +322,7 @@ func loadLayerByID(ctx context.Context, tx *sql.Tx, layerID string) (string, fea
 		`SELECT geojson FROM readmodel_layer_features WHERE id = ?`, layerID,
 	).Scan(&geojsonStr)
 	if errors.Is(err, sql.ErrNoRows) {
-		return "", featureCollection{}, sql.ErrNoRows
+		return "", featureCollection{}, nil
 	}
 
 	if err != nil {

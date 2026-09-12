@@ -3,7 +3,7 @@ package projection
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 	"time"
 
@@ -56,8 +56,8 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 	switch e.EventType {
 	case "Opened":
 		type opened struct {
-			Name     string          `json:"name"`
-			Location json.RawMessage `json:"location"`
+			Name     string         `json:"name"`
+			Location jsontext.Value `json:"location"`
 		}
 
 		var d opened
@@ -77,11 +77,11 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "Imported":
 		type imported struct {
-			Name      string          `json:"name"`
-			Location  json.RawMessage `json:"location"`
-			ClosedAt  *string         `json:"closedAt"`
-			DeletedAt *string         `json:"deletedAt"`
-			UpdatedAt *time.Time      `json:"updatedAt,omitempty"`
+			Name      string         `json:"name"`
+			Location  jsontext.Value `json:"location"`
+			ClosedAt  *string        `json:"closedAt"`
+			DeletedAt *string        `json:"deletedAt"`
+			UpdatedAt *time.Time     `json:"updatedAt,omitempty"`
 		}
 
 		var d imported
@@ -133,7 +133,7 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "LocationChanged":
 		type locationChanged struct {
-			Location json.RawMessage `json:"location"`
+			Location jsontext.Value `json:"location"`
 		}
 
 		var d locationChanged

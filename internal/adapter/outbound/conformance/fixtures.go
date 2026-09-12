@@ -1,7 +1,8 @@
 package conformance
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"time"
 
 	"github.com/google/uuid"
@@ -61,7 +62,7 @@ func rawEvent(streamType string, streamID uuid.UUID, eventType string, version i
 		StreamID:   streamID,
 		Version:    version,
 		EventType:  eventType,
-		Data:       json.RawMessage(raw),
+		Data:       jsontext.Value(raw),
 		OccurredAt: time.Now().UTC(),
 		RecordedAt: time.Now().UTC(),
 	}

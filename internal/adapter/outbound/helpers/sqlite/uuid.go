@@ -2,7 +2,7 @@ package sqlite
 
 import (
 	"database/sql/driver"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/google/uuid"

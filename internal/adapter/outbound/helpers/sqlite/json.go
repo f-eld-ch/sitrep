@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"fmt"
 	"reflect"
 )
 
@@ -20,20 +22,24 @@ import (
 //   - Numbers decode as float64, so 1 and 1.0 compare equal — matching jsonb.
 //   - Duplicate keys collapse to the last value — matching jsonb.
 //
-// If either value fails to unmarshal (malformed JSON), the function falls back
-// to a plain bytes.Equal comparison. This preserves correctness for well-formed
-// inputs while preventing a panic on bad data.
-func Equal(a, b json.RawMessage) bool {
+// If either value fails to unmarshal, an error is returned. This mirrors
+// Postgres' behaviour, which raises an error on malformed jsonb rather than
+// silently treating the values as different and overwriting corrupt data.
+func Equal(a, b jsontext.Value) (bool, error) {
 	if bytes.Equal(a, b) {
-		return true // fast path: identical bytes
+		return true, nil // fast path: identical bytes
 	}
 
 	var x, y any
-	if json.Unmarshal(a, &x) != nil || json.Unmarshal(b, &y) != nil {
-		return bytes.Equal(a, b)
+	if err := json.Unmarshal(a, &x); err != nil {
+		return false, fmt.Errorf("sqlite.Equal: malformed JSON in stored value: %w", err)
 	}
 
-	return reflect.DeepEqual(x, y)
+	if err := json.Unmarshal(b, &y); err != nil {
+		return false, fmt.Errorf("sqlite.Equal: malformed JSON in incoming value: %w", err)
+	}
+
+	return reflect.DeepEqual(x, y), nil
 }
 
 // JSONArg marshals ids to a JSON array string suitable as a single bind

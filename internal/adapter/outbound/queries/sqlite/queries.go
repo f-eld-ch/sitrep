@@ -6,7 +6,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -729,7 +730,7 @@ func collectLayers(rows *sql.Rows) ([]*outbound.LayerRM, error) {
 			SourceIncidentID:   incID,
 			SourceIncidentName: srcName,
 			Name:               name,
-			GeoJSON:            json.RawMessage(geojsonStr),
+			GeoJSON:            jsontext.Value(geojsonStr),
 			Revision:           revision,
 		})
 	}

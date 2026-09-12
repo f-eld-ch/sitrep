@@ -1,7 +1,8 @@
 package eventsourcing_test
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"testing"
 	"time"
 
@@ -144,7 +145,7 @@ func TestApply_DecodesJSONAndTransitions(t *testing.T) {
 		StreamID:   a.Root().ID(),
 		Version:    1,
 		EventType:  "ThingCreated",
-		Data:       json.RawMessage(raw),
+		Data:       jsontext.Value(raw),
 		OccurredAt: now,
 	}
 
@@ -162,7 +163,7 @@ func TestApply_AdvancesVersion(t *testing.T) {
 
 		e := eventsourcing.Event{
 			Version: i, EventType: "ThingRenamed",
-			Data: json.RawMessage(raw),
+			Data: jsontext.Value(raw),
 		}
 		require.NoError(t, eventsourcing.Apply(a, e))
 		assert.Equal(t, i, a.Root().Version())
@@ -177,7 +178,7 @@ func TestApply_ConcreteDataSkipsDecoding(t *testing.T) {
 	e := eventsourcing.Event{
 		Version:   1,
 		EventType: "ThingDeleted",
-		Data:      ThingDeleted{}, // concrete, not json.RawMessage
+		Data:      ThingDeleted{}, // concrete, not jsontext.Value
 	}
 
 	require.NoError(t, eventsourcing.Apply(a, e))
@@ -193,7 +194,7 @@ func TestApply_UnknownEventType_ReturnsError(t *testing.T) {
 	e := eventsourcing.Event{
 		Version:   1,
 		EventType: "Unregistered",
-		Data:      json.RawMessage(raw),
+		Data:      jsontext.Value(raw),
 	}
 
 	err = eventsourcing.Apply(a, e)
@@ -207,7 +208,7 @@ func TestApply_MalformedJSON_ReturnsError(t *testing.T) {
 	e := eventsourcing.Event{
 		Version:   1,
 		EventType: "ThingCreated",
-		Data:      json.RawMessage(`{bad json`),
+		Data:      jsontext.Value(`{bad json`),
 	}
 
 	err := eventsourcing.Apply(a, e)

@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/binary"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"strings"
@@ -183,7 +184,7 @@ func (s *EventStore) Read(
 		}
 
 		e.StreamID = id
-		e.Data = json.RawMessage(rawData)
+		e.Data = jsontext.Value(rawData)
 
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal([]byte(rawMeta), &e.Metadata)
@@ -206,13 +207,17 @@ func (s *EventStore) Read(
 	return events, cursor, nil
 }
 
-// readHandle returns a sql.DB suitable for queries: the transaction's
-// underlying connection when inside a WithinTx call (read-your-own-writes),
-// or the read pool otherwise.
-func (s *EventStore) readHandle(ctx context.Context) *sql.DB {
+// dbQuerier is the subset of *sql.DB and *sql.Tx used by Load.
+type dbQuerier interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}
+
+// readHandle returns the active *sql.Tx when inside a WithinTx call so that
+// Load sees events appended earlier in the same transaction (read-your-own-
+// writes). Outside a transaction it returns the read pool.
+func (s *EventStore) readHandle(ctx context.Context) dbQuerier {
 	if tx, ok := ctx.Value(txKey{}).(*sql.Tx); ok && tx != nil {
-		_ = tx // tx is already associated with a connection; use read pool for
-		// reads outside the write path to avoid serialisation
+		return tx
 	}
 
 	return s.read
@@ -245,7 +250,7 @@ func scanEvents(rows *sql.Rows) ([]eventsourcing.Event, error) {
 		}
 
 		e.StreamID = id
-		e.Data = json.RawMessage(rawData)
+		e.Data = jsontext.Value(rawData)
 
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal([]byte(rawMeta), &e.Metadata)
