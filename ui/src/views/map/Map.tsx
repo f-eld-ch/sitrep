@@ -150,7 +150,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col">
+      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
         <LayerControl />
         <StyleController />
       </div>
