@@ -113,7 +113,12 @@ func stringSliceOption(name string, defaultValue []string, description string, l
 
 var rootConfigOptions = []configOption{
 	stringOption("log-level", "info", "Log level (debug, info, warn, error)", "LOG_LEVEL"),
-	stringOption("database-url", "", "PostgreSQL connection string (DSN or URL)", "DATABASE_URL"),
+	stringOption(
+		"database-url",
+		"",
+		"PostgreSQL or SQLite connection string (DSN or URL; sqlite:///path.db for SQLite)",
+		"DATABASE_URL",
+	),
 }
 
 func Execute() {

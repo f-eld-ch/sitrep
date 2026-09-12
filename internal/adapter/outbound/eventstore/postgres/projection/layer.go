@@ -2,7 +2,7 @@ package projection
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -114,9 +114,9 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 	switch e.EventType {
 	case "Placed", "Imported":
 		type placed struct {
-			LayerID    string          `json:"layerId"`
-			Geometry   json.RawMessage `json:"geometry"`
-			Properties json.RawMessage `json:"properties"`
+			LayerID    string         `json:"layerId"`
+			Geometry   jsontext.Value `json:"geometry"`
+			Properties jsontext.Value `json:"properties"`
 		}
 
 		var d placed
@@ -146,7 +146,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 
 	case "Moved":
 		type moved struct {
-			Geometry json.RawMessage `json:"geometry"`
+			Geometry jsontext.Value `json:"geometry"`
 		}
 
 		var d moved
@@ -176,7 +176,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 
 	case "Restyled":
 		type restyled struct {
-			Properties json.RawMessage `json:"properties"`
+			Properties jsontext.Value `json:"properties"`
 		}
 
 		var d restyled

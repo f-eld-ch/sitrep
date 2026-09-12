@@ -2,7 +2,7 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"sort"
@@ -117,7 +117,7 @@ func queryAccessUsers(ctx context.Context, dsn, email, name string) ([]accessUse
 func printAccessUsers(cmd *cobra.Command, users []accessUser, format string) error {
 	switch format {
 	case "json":
-		return json.NewEncoder(cmd.OutOrStdout()).Encode(users)
+		return json.MarshalWrite(cmd.OutOrStdout(), users)
 	case "table":
 		w := cmd.OutOrStdout()
 

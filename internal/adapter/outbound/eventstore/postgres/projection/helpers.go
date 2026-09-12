@@ -2,7 +2,8 @@ package projection
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -16,7 +17,7 @@ func pgxTxFromCtx(ctx context.Context) (pgx.Tx, bool) {
 
 // remarshal round-trips the event data through JSON so handlers can decode
 // it into the struct they expect, regardless of whether it arrived as a
-// concrete type or as json.RawMessage.
+// concrete type or as jsontext.Value.
 func remarshal(data any, dst any) error {
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -31,7 +32,7 @@ func remarshal(data any, dst any) error {
 }
 
 // nullableJSON returns nil if raw is empty or "null", otherwise the raw bytes.
-func nullableJSON(raw json.RawMessage) any {
+func nullableJSON(raw jsontext.Value) any {
 	if len(raw) == 0 || string(raw) == "null" {
 		return nil
 	}

@@ -18,12 +18,18 @@ import (
 	pgstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres"
 	pgprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/postgres/projection"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/projection"
+	sqstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/sqlite"
+	sqprojection "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/sqlite/projection"
+	sqlitex "github.com/f-eld-ch/sitrep/internal/adapter/outbound/helpers/sqlite"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	pgqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/postgres"
+	sqqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/sqlite"
 	pguser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/postgres"
+	squser "github.com/f-eld-ch/sitrep/internal/adapter/outbound/user/sqlite"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
+	"github.com/f-eld-ch/sitrep/migrations"
 )
 
 // attachmentConfig carries blob-storage configuration derived from viper flags.
@@ -87,6 +93,10 @@ func buildStack(ctx context.Context, opts ...stackOption) (*stack, error) {
 	if cfg.dsn == "" {
 		slog.WarnContext(ctx, "no database_url set, using in-memory stores (data will not persist)")
 		return buildInmemStack(ctx, cfg.attCfg)
+	}
+
+	if migrations.IsSQLiteDSN(cfg.dsn) {
+		return buildSQLiteStack(ctx, cfg.dsn, cfg.autoCloseDays, cfg.autoArchiveDays, cfg.attCfg)
 	}
 
 	return buildPostgresStack(ctx, cfg.dsn, cfg.autoCloseDays, cfg.autoArchiveDays, cfg.attCfg)
@@ -371,6 +381,138 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 			<-projDone
 			proj.Unregister()
 			blobsTeardown()
+		},
+	}, nil
+}
+
+// ── SQLite ────────────────────────────────────────────────────────────────────
+
+func buildSQLiteStack(
+	ctx context.Context, dsn string, autoCloseDays, autoArchiveDays uint, attCfg attachmentConfig,
+) (*stack, error) {
+	path := sqlitePathFromDSN(dsn)
+
+	read, write, err := sqlitex.Open(ctx, path)
+	if err != nil {
+		return nil, fmt.Errorf("open SQLite database: %w", err)
+	}
+
+	clock := sqstore.WallClock{}
+
+	store := sqstore.NewEventStore(read, write, clock)
+	tx := sqstore.NewTransactor(write)
+	notifier := sqstore.NewNotifier()
+
+	repos := eventstore.NewIncidentRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
+	messages := eventstore.NewMessageRepository(store)
+	layers := eventstore.NewLayerRepository(store)
+	features := eventstore.NewFeatureRepository(store)
+
+	accessChecker := sqstore.NewIncidentAccessChecker(read)
+	globalChecker := sqstore.NewGlobalAccessChecker(read)
+	retention := sqstore.NewIncidentRetention(read)
+
+	queries := sqqueries.NewQueries(read, accessChecker)
+
+	// SQLite does not support the database blob backend.
+	if attCfg.backend == "database" {
+		_ = read.Close()
+		_ = write.Close()
+
+		return nil, fmt.Errorf("attachment backend=database is not supported with SQLite; use filesystem or ephemeral")
+	}
+
+	if attCfg.enabled && attCfg.backend == "" {
+		attCfg.backend = "filesystem"
+	}
+
+	blobs, blobsTeardown, err := buildBlobStore(ctx, nil, attCfg)
+	if err != nil {
+		_ = read.Close()
+		_ = write.Close()
+
+		return nil, err
+	}
+
+	factoryOpts := []service.FactoryOption{
+		service.WithTransactor(tx),
+		service.WithClock(clock),
+		service.WithIDs(sqstore.UUIDGen{}),
+		service.WithNotifier(notifier),
+		service.WithMessageCounter(sqstore.NewMessageCounter()),
+		service.WithIncidentHierarchyGuard(sqstore.NewIncidentHierarchyGuard()),
+		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGuard(sqstore.NewAccessGuard()),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
+	}
+
+	if blobs != nil {
+		factoryOpts = append(factoryOpts,
+			service.WithBlobStore(blobs),
+			service.WithQueries(queries),
+		)
+	}
+
+	factory := service.NewFactory(factoryOpts...)
+
+	handlers := []sqprojection.Handler{
+		sqprojection.NewIncidentHandler(write),
+		sqprojection.NewIncidentDivisionHandler(write),
+		sqprojection.NewMessageHandler(write),
+		sqprojection.NewLayerFeaturesHandler(write),
+		sqprojection.NewAccessHandler(write),
+	}
+
+	retentionSvc := service.NewRetentionService(tx, repos, retention, clock, notifier)
+	if blobs != nil {
+		retentionSvc.WithBlobStore(blobs)
+	}
+
+	proj := projection.NewInstrumentedProjector(sqprojection.NewProjector(read, write, store, notifier, handlers,
+		sqprojection.WithRetention(func(ctx context.Context) (bool, error) {
+			result, err := retentionSvc.Run(ctx, autoCloseDays, autoArchiveDays)
+			return result.Archived > 0, err
+		})), "sqlite")
+
+	projCtx, cancelProj := context.WithCancel(ctx)
+
+	projDone := make(chan struct{})
+	go func() {
+		defer close(projDone)
+
+		if err := proj.Run(projCtx); err != nil && !errors.Is(err, context.Canceled) {
+			slog.ErrorContext(projCtx, "projector stopped unexpectedly", slog.String("error", err.Error()))
+		}
+	}()
+
+	return &stack{
+		IncidentSvc:           factory.IncidentService(repos, layers),
+		MessageSvc:            factory.MessageService(messages, repos),
+		LayerSvc:              factory.LayerService(layers, repos),
+		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		AccessSvc:             factory.AccessService(),
+		Queries:               queries,
+		AccessQueries:         sqqueries.NewAccessQueries(read),
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+		UserRepo:              squser.NewRepository(write, clock),
+		//nolint:contextcheck // ctx is cancelled before teardown runs; checkpoint needs a fresh context.
+		Teardown: func() {
+			cancelProj()
+			<-projDone
+			proj.Unregister()
+			blobsTeardown()
+
+			checkpointCtx := context.Background()
+			_ = sqlitex.CheckpointTruncate(checkpointCtx, write)
+			_ = write.Close()
+			_ = read.Close()
 		},
 	}, nil
 }

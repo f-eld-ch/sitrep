@@ -30,7 +30,7 @@ func (r *Repository) Upsert(ctx context.Context, sub, email, name string) error 
 	_, err := r.pool.Exec(ctx,
 		`INSERT INTO users (sub, email, name)
 		 VALUES ($1, $2, $3)
-		 ON CONFLICT ON CONSTRAINT users_name_key
+		 ON CONFLICT (sub)
 		 DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()`,
 		sub, email, name)
 
@@ -56,7 +56,7 @@ func (r *Repository) UpsertAndReportFirst(ctx context.Context, sub, email, name 
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO users (sub, email, name)
 		 VALUES ($1, $2, $3)
-		 ON CONFLICT ON CONSTRAINT users_name_key
+		 ON CONFLICT (sub)
 		 DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()`,
 		sub, email, name,
 	); err != nil {

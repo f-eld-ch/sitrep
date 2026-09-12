@@ -8,7 +8,8 @@ package inmem
 import (
 	"context"
 	"encoding/binary"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -97,7 +98,7 @@ func (s *EventStore) Append(_ context.Context, a eventsourcing.Aggregate) (outbo
 			return nil, fmt.Errorf("inmem: marshal event data: %w", err)
 		}
 
-		e.Data = json.RawMessage(data)
+		e.Data = jsontext.Value(data)
 		e.RecordedAt = time.Now().UTC()
 
 		lastSeq = s.seq.Add(1)

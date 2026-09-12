@@ -2,7 +2,7 @@ package projection
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"sync"
 	"time"
 
@@ -29,7 +29,7 @@ type IncidentRow struct {
 	IsDeleted bool
 	ClosedAt  *time.Time
 	DeletedAt *time.Time
-	Location  json.RawMessage
+	Location  jsontext.Value
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -86,8 +86,8 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 	switch e.EventType {
 	case "Opened":
 		var d struct {
-			Name     string          `json:"name"`
-			Location json.RawMessage `json:"location"`
+			Name     string         `json:"name"`
+			Location jsontext.Value `json:"location"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -103,10 +103,10 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 	case "Imported":
 		var d struct {
-			Name      string          `json:"name"`
-			Location  json.RawMessage `json:"location"`
-			ClosedAt  *time.Time      `json:"closedAt"`
-			DeletedAt *time.Time      `json:"deletedAt"`
+			Name      string         `json:"name"`
+			Location  jsontext.Value `json:"location"`
+			ClosedAt  *time.Time     `json:"closedAt"`
+			DeletedAt *time.Time     `json:"deletedAt"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -140,7 +140,7 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 	case "LocationChanged":
 		var d struct {
-			Location json.RawMessage `json:"location"`
+			Location jsontext.Value `json:"location"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err

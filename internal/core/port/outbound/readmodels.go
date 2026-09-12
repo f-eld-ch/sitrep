@@ -2,7 +2,7 @@ package outbound
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,7 +80,7 @@ type LayerRM struct {
 	SourceIncidentID   uuid.UUID
 	SourceIncidentName string
 	Name               string
-	GeoJSON            json.RawMessage
+	GeoJSON            jsontext.Value
 	Revision           int
 }
 

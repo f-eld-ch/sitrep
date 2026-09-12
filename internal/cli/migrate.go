@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
+
+	_ "modernc.org/sqlite" // register the "sqlite" driver for goose
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -71,9 +74,38 @@ func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 			},
 		)
 
+	case goose.DialectSQLite3:
+		path := sqlitePathFromDSN(dsn)
+
+		db, err := sql.Open("sqlite", path)
+		if err != nil {
+			return nil, fmt.Errorf("open SQLite database: %w", err)
+		}
+
+		if err := db.PingContext(ctx); err != nil {
+			_ = db.Close()
+
+			return nil, fmt.Errorf("ping SQLite database: %w", err)
+		}
+
+		return db, nil
+
 	default:
 		return nil, fmt.Errorf("unsupported database dialect: %s", set.Dialect)
 	}
+}
+
+// sqlitePathFromDSN strips the SQLite scheme prefix from a DSN, returning a
+// path suitable for sql.Open or the helpers/sqlite.Open function.
+// "sqlite:///abs/path" → "/abs/path"; "sqlite://./rel" → "./rel"; bare path unchanged.
+func sqlitePathFromDSN(dsn string) string {
+	for _, prefix := range []string{"sqlite3://", "sqlite://"} {
+		if p, ok := strings.CutPrefix(dsn, prefix); ok {
+			return p
+		}
+	}
+
+	return dsn
 }
 
 func openGooseDBWithRetry(

@@ -16,6 +16,8 @@ oidc-redirect-url: "http://localhost:3000/oauth2/callback"
 cookie-key: "0123456789abcdef0123456789abcdef"                        # generate with: openssl rand -hex 16
 
 database-url: "postgres://postgres:postgrespassword@localhost:15432/postgres?sslmode=disable"
+# Or use the embedded SQLite backend (no Docker needed):
+# database-url: "sqlite://sitrep.db"
 migrate-on-startup: true  # required on first run; the database schema does not exist until migrations have run
 
 graphql-introspection: true  # enables /api/v2/graphql/play
@@ -77,6 +79,29 @@ cd ui && yarn start
 8. Open [localhost:3000](http://localhost:3000/). The Vite dev server proxies `/api/v2/graphql` and `/oauth2` to the Go server at `:4180`. Authentication is handled by the local Dex IDP — click **Log in with Example**.
 
 The GraphQL playground is available at [localhost:4180/api/v2/graphql/play](http://localhost:4180/api/v2/graphql/play) when `graphql-introspection: true` is set in `config.yaml`.
+
+### SQLite backend (no Docker required)
+
+The server supports an embedded SQLite backend suitable for single-machine deployments and
+local development without Docker:
+
+```yaml
+database-url: "sqlite://sitrep.db"   # relative path — file created next to config.yaml
+# database-url: "sqlite:///abs/path/to/sitrep.db"  # absolute path
+```
+
+Run migrations then start the server as usual:
+
+```bash
+go run . migrate up --database-url sqlite://sitrep.db
+go run .
+```
+
+**Constraints:**
+- Only one server process may open the database at a time. A second process will see busy errors.
+- The file attachment backend defaults to `filesystem` (the `database` backend requires Postgres).
+- `config.dev.yaml` (used by `go run .` without an explicit `--config`) is pre-configured to use
+  `sqlite://dev.sqlite3` in the working directory so that routine local runs require no Docker.
 
 ### Server Configuration
 

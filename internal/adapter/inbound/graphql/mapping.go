@@ -1,7 +1,8 @@
 package graphql
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -229,16 +230,16 @@ func layerRMToModel(r *outbound.LayerRM) (*model.Layer, error) {
 }
 
 // featuresFromGeoJSON extracts Feature objects from a GeoJSON FeatureCollection blob.
-func featuresFromGeoJSON(raw json.RawMessage) ([]*model.Feature, error) {
+func featuresFromGeoJSON(raw jsontext.Value) ([]*model.Feature, error) {
 	if len(raw) == 0 {
 		return []*model.Feature{}, nil
 	}
 
 	var fc struct {
 		Features []struct {
-			ID         string          `json:"id"`
-			Geometry   json.RawMessage `json:"geometry"`
-			Properties json.RawMessage `json:"properties"`
+			ID         string         `json:"id"`
+			Geometry   jsontext.Value `json:"geometry"`
+			Properties jsontext.Value `json:"properties"`
 		} `json:"features"`
 	}
 	if err := json.Unmarshal(raw, &fc); err != nil {

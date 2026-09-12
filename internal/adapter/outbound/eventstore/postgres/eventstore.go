@@ -6,7 +6,8 @@ package postgres
 import (
 	"context"
 	"encoding/binary"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"sync"
@@ -74,7 +75,7 @@ func (s *EventStore) Load(ctx context.Context, streamType string, id uuid.UUID) 
 			return nil, fmt.Errorf("eventstore.Load scan: %w", err)
 		}
 
-		e.Data = json.RawMessage(rawData)
+		e.Data = jsontext.Value(rawData)
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal(rawMeta, &e.Metadata)
 		}
@@ -192,7 +193,7 @@ func (s *EventStore) Read(
 			return nil, nil, fmt.Errorf("eventstore.Read scan: %w", err)
 		}
 
-		e.Data = json.RawMessage(rawData)
+		e.Data = jsontext.Value(rawData)
 		if len(rawMeta) > 0 {
 			_ = json.Unmarshal(rawMeta, &e.Metadata)
 		}

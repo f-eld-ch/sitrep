@@ -3,21 +3,21 @@ package postgres
 import (
 	"testing"
 
-	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestPolicyOnlyCasbinModel(t *testing.T) {
-	m, err := model.NewModelFromString(policyModel)
-	require.NoError(t, err)
+func TestObjectForAction(t *testing.T) {
+	cases := []struct {
+		action string
+		want   string
+	}{
+		{"incident.read", "incident"},
+		{"incident.delete", "incident"},
+		{"global.admin", "global"},
+		{"noDot", "noDot"},
+	}
 
-	enforcer, err := casbin.NewEnforcer(m)
-	require.NoError(t, err)
-	_, err = enforcer.AddPolicy("user:one", "incident:test", "incident", "incident.read", "allow")
-	require.NoError(t, err)
-
-	allowed, err := enforcer.Enforce("user:one", "incident:test", "incident", "incident.read")
-	require.NoError(t, err)
-	require.True(t, allowed)
+	for _, tc := range cases {
+		assert.Equal(t, tc.want, objectForAction(tc.action), "action=%s", tc.action)
+	}
 }

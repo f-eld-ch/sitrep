@@ -18,8 +18,13 @@ log-level: info
 
 # ── Database ─────────────────────────────────────────────────────────────────
 
-# PostgreSQL connection string. Leave empty only for a throwaway run: the
-# server then falls back to in-memory stores and nothing is persisted.
+# SQLite database file (default for single-machine deployments).
+# The path is relative to the process working directory or absolute.
+# systemd sets StateDirectory=sitrep, so /var/lib/sitrep is created and
+# chowned to the service user before the process starts.
+database-url: "sqlite:///var/lib/sitrep/sitrep.sqlite"
+
+# PostgreSQL alternative — comment out the sqlite line above and uncomment:
 #database-url: "postgres://sitrep@/sitrep?host=/var/run/postgresql"
 
 # Run pending migrations inside the server process. The packaged systemd unit
@@ -53,28 +58,23 @@ auto-archive-incidents: 0
 
 # ── Attachments ──────────────────────────────────────────────────────────────
 
-# Enable file attachments on messages (default: true).
-# Env: SITREP_STORAGE_ATTACHMENTS_ENABLED
-#storage:
-#  attachments:
-#    enabled: true
-
 # Blob backend: database | ephemeral | filesystem
-# - database  store blobs in the PostgreSQL database (default when database-url is set)
-# - ephemeral store blobs in a temp directory; lost on restart (default without database-url)
-# - filesystem store blobs on disk at the path set by filesystem.dir below
-# Env: SITREP_STORAGE_ATTACHMENTS_BACKEND
-#    backend: database
-
-# Maximum upload size per file. Accepts a plain byte count or a kb/mb/gb suffix.
-# Env: SITREP_STORAGE_ATTACHMENTS_MAX_SIZE
-#    max-size: 25mb
-
-# Root directory for attachment blobs (backend=filesystem only).
-# The directory must exist and be writable by the sitrep process.
-# Env: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
-#    filesystem:
-#      dir: "/var/lib/sitrep/attachments"
+# - database   store blobs in the PostgreSQL database (not supported with SQLite)
+# - ephemeral  store blobs in a temp directory; lost on restart
+# - filesystem store blobs on disk at filesystem.dir (default with SQLite)
+# Env: SITREP_STORAGE_ATTACHMENTS_BACKEND, SITREP_STORAGE_ATTACHMENTS_ENABLED
+storage:
+  attachments:
+    enabled: true
+    backend: filesystem
+    # Maximum upload size per file. Accepts a plain byte count or a kb/mb/gb suffix.
+    # Env: SITREP_STORAGE_ATTACHMENTS_MAX_SIZE
+    #max-size: 25mb
+    filesystem:
+      # Root directory for attachment blobs. Must exist and be writable by the sitrep process.
+      # systemd creates /var/lib/sitrep via StateDirectory=sitrep before the process starts.
+      # Env: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
+      dir: "/var/lib/sitrep/attachments"
 
 # ── Development ──────────────────────────────────────────────────────────────
 

@@ -2,7 +2,8 @@ package service_test
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"testing"
 	"time"
@@ -104,8 +105,10 @@ func TestRetentionService_Run(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, events)
 
-	var closedEvent struct{ Reason shared.CloseReason }
-	require.NoError(t, json.Unmarshal(events[len(events)-1].Data.(json.RawMessage), &closedEvent))
+	var closedEvent struct {
+		Reason shared.CloseReason `json:"reason"`
+	}
+	require.NoError(t, json.Unmarshal(events[len(events)-1].Data.(jsontext.Value), &closedEvent))
 	assert.Equal(t, shared.ReasonAutoTimeout, closedEvent.Reason)
 	assert.Equal(t, testAt.AddDate(0, 0, -30), retention.openBefore)
 	assert.Equal(t, testAt.AddDate(0, 0, -365), retention.closedBefore)
