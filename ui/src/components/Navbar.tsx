@@ -56,7 +56,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         <NavLink
           to="/"
           className={({ isActive }) =>
-            clsx("flex shrink-0 items-center px-3", isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+            clsx(
+              "flex shrink-0 items-center px-3",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
           }
         >
           <img src={logo} alt="Logo" className="h-6 w-auto" />
@@ -160,21 +163,36 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         >
           {/* Incident */}
           <NavLink
-            className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            className={({ isActive }) =>
+              clsx(
+                mobileItem,
+                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+              )
+            }
             to={incidentId ? `/incident/${incidentId}/edit` : "/"}
           >
             <FontAwesomeIcon icon={faExplosion} />
             <span>{t("incident")}</span>
           </NavLink>
           <NavLink
-            className={({ isActive }) => clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            className={({ isActive }) =>
+              clsx(
+                mobileSubItem,
+                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+              )
+            }
             to="/incident/list"
           >
             <FontAwesomeIcon icon={faRectangleList} />
             <span>{t("overview")}</span>
           </NavLink>
           <NavLink
-            className={({ isActive }) => clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            className={({ isActive }) =>
+              clsx(
+                mobileSubItem,
+                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+              )
+            }
             to="/incident/new"
           >
             <FontAwesomeIcon icon={faCirclePlus} />
@@ -183,7 +201,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {incidentState.incident && (
             <NavLink
               className={({ isActive }) =>
-                clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+                clsx(
+                  mobileSubItem,
+                  isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                )
               }
               to={`/incident/${incidentId}/edit`}
             >
@@ -195,7 +216,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {incidentId && (
             <>
               <NavLink
-                className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+                className={({ isActive }) =>
+                  clsx(
+                    mobileItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
                 to={`/incident/${incidentId}/journal/messages`}
               >
                 <FontAwesomeIcon icon={faBars} />
@@ -203,7 +229,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
                 }
                 to={`/incident/${incidentId}/journal/messages`}
               >
@@ -212,7 +241,10 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
                 }
                 to={`/incident/${incidentId}/journal/edit`}
               >
@@ -224,7 +256,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           {/* Map */}
           {incidentId && (
             <NavLink
-              className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+              className={({ isActive }) =>
+                clsx(
+                  mobileItem,
+                  isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                )
+              }
               to={`/incident/${incidentId}/map`}
             >
               <FontAwesomeIcon icon={faMapLocationDot} />
@@ -294,12 +331,8 @@ function VersionNavBar() {
 function UserNavBar() {
   const { state: userState } = useContext(UserContext);
   const { t } = useTranslation();
-  const showRbacEditors = useBooleanFlagValue("show-rbac-editors", false);
-  const myRolesResult = useMyGlobalRoles(!showRbacEditors || !userState.isLoggedin);
-  const isAdmin =
-    showRbacEditors &&
-    myRolesResult.status === "ready" &&
-    (myRolesResult.data?.grants ?? []).length > 0;
+  const myRolesResult = useMyGlobalRoles(!userState.isLoggedin);
+  const isAdmin = myRolesResult.status === "ready" && (myRolesResult.data?.grants ?? []).length > 0;
 
   if (!userState.isLoggedin) return;
 
