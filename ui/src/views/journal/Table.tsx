@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types";
 import { useDate } from "utils/useDate";
+import { PageTitle } from "components/ui";
 import { ReactPreview } from "./Markdown";
 
 const MessageTable = (
@@ -11,6 +12,7 @@ const MessageTable = (
     assignmentFilter: string;
     triageFilter: string;
     priorityFilter: string;
+    incidentName?: string;
   },
   ref: React.Ref<HTMLDivElement>,
 ) => {
@@ -18,45 +20,41 @@ const MessageTable = (
   const { assignmentFilter, priorityFilter, triageFilter } = props;
   const { now } = useDate();
 
-  const cellStyle = {
-    wordWrap: "break-word" as const,
-    wordBreak: "break-all" as const,
-    whiteSpace: "normal" as const,
-    overflowWrap: "break-word" as const,
-  };
-
   const isFiltered =
     assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all";
 
   return (
-    <div ref={ref} className="is-clearfix is-block" style={{ overflow: "visible" }}>
-      <h3 className="title is-3">
+    <div ref={ref} className="overflow-visible">
+      <PageTitle className="print:mb-2 print:text-base">
         {t("journal")}
+        {props.incidentName && ` — ${props.incidentName}`}
         {isFiltered && ` (${t("filtered")})`}
-      </h3>
+      </PageTitle>
 
-      <h5 className="subtitle is-7 mt-4">
+      <p className="mt-4 text-xs text-fg-muted print:mt-1">
         {t("state")}: {dayjs(now).format("DD.MM.YYYY HH:mm")}
-      </h5>
+      </p>
       <FilterState
         assignmentFilter={assignmentFilter}
         priorityFilter={priorityFilter}
         triageFilter={triageFilter}
       />
-      <table className="table is-fullwidth is-narrow" style={{ pageBreakInside: "auto" }}>
+      <table className="w-full border-collapse break-inside-auto text-sm print:text-xs [&_td]:border-b [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_th]:border-b [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:text-left">
         <thead>
           <tr>
-            <th className="is-capitalized">{t("message.time")}</th>
-            <th className="is-capitalized">{t("message.sender")}</th>
-            <th className="is-capitalized">{t("message.receiver")}</th>
-            <th className="is-capitalized">{t("message.content")}</th>
+            <th className="capitalize">{t("message.time")}</th>
+            <th className="capitalize">{t("message.sender")}</th>
+            <th className="capitalize">{t("message.receiver")}</th>
+            <th className="capitalize">{t("message.content")}</th>
           </tr>
         </thead>
         <tbody>
           {props.messages?.map((message) => (
             <tr key={message.id}>
-              <td>{dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}</td>
-              <td style={cellStyle}>
+              <td className="text-nowrap print:text-[10px]">
+                {dayjs(message.time).format("DD.MM.YYYY HH:mm:ss")}
+              </td>
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
                 {message.senderDetail ? (
                   <>
                     {message.sender}
@@ -66,7 +64,7 @@ const MessageTable = (
                   message.sender
                 )}
               </td>
-              <td style={cellStyle}>
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
                 {message.receiverDetail ? (
                   <>
                     {message.receiver}
@@ -76,11 +74,8 @@ const MessageTable = (
                   message.receiver
                 )}
               </td>
-              <td style={cellStyle}>
-                <div
-                  className="content is-normal has-text-left"
-                  style={{ pageBreakInside: "avoid" }}
-                >
+              <td className="wrap-break-word break-all whitespace-normal print:text-[10px]">
+                <div className="break-inside-avoid text-left">
                   <ReactPreview content={message.content} />
                 </div>
               </td>
@@ -105,7 +100,7 @@ function FilterState(props: {
   }
 
   return (
-    <h5 className="subtitle is-7">
+    <p className="text-xs text-fg-muted">
       <b>{t("filter")}:</b>
       {assignmentFilter !== "all" && (
         <p>
@@ -122,7 +117,7 @@ function FilterState(props: {
           {t("message.triage")}: {t(`triage.${triageFilter}`)}
         </p>
       )}
-    </h5>
+    </p>
   );
 }
 

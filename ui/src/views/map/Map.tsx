@@ -1,9 +1,8 @@
 import "./control-panel.css";
-import "./Map.scss";
+import "./Map.css";
 import { setBabsSpriteLang, withBabsSprite } from "@f-eld-ch/babs-sprites";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import bbox from "@turf/bbox";
-import classNames from "classnames";
 import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
@@ -109,16 +108,8 @@ function MapView() {
     [mapStyle.style, i18n.resolvedLanguage, i18n.language],
   );
 
-  const mapClass = classNames({
-    "is-flex-grow-1": true,
-    "is-align-items-stretch": true,
-    "is-align-self-strech": true,
-    "mt-5": true,
-    "theme-light": true,
-  });
-
   return (
-    <div className={mapClass} data-theme="light">
+    <div className="mt-[2.75rem] grow" data-theme="light">
       <MapClass
         mapLib={maplibre}
         initialViewState={{
@@ -159,7 +150,7 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right is-flex is-flex-direction-column mx-2 my-2">
+      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col">
         <LayerControl />
         <StyleController />
       </div>
@@ -636,17 +627,13 @@ function isDrawLike(obj: unknown): obj is DrawLike {
 // Returns true if invocation happened, false otherwise.
 function safeDrawInvoke(draw: unknown, fn: (d: DrawLike) => void): boolean {
   if (!isDrawLike(draw)) {
-    // eslint-disable-next-line no-console
-    console.debug("Draw control missing expected methods; skipping operation.");
     return false;
   }
   try {
     fn(draw);
     return true;
-  } catch (e) {
+  } catch {
     // swallow errors coming from an invalid draw instance (e.g., transient state in Strict Mode)
-    // eslint-disable-next-line no-console
-    console.debug("Draw control operation failed:", e);
     return false;
   }
 }

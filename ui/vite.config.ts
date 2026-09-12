@@ -3,6 +3,7 @@
 import { babsSprites } from "@f-eld-ch/babs-sprites/vite";
 import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
@@ -128,6 +129,7 @@ export default defineConfig({
     "import.meta.env.VITE_VERSION": JSON.stringify(buildVersion),
   },
   plugins: [
+    tailwindcss(),
     react(),
     svgrPlugin(),
     // Serves the BABS sprite atlases from node_modules in dev, and emits them at build
@@ -262,13 +264,6 @@ export default defineConfig({
       "/version": {
         target: "http://localhost:4180",
         changeOrigin: true,
-      },
-    },
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        silenceDeprecations: ["if-function"],
       },
     },
   },

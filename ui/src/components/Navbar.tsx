@@ -2,6 +2,7 @@ import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import {
   faBars,
   faCaretDown,
+  faChevronDown,
   faCirclePlus,
   faClipboard,
   faClipboardCheck,
@@ -24,9 +25,9 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import logo from "assets/lockup-blue.svg";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { useMyGlobalRoles } from "api";
-import { type FunctionComponent, useContext, useEffect, useState } from "react";
+import { type FunctionComponent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
@@ -41,41 +42,106 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
 
   const { state: incidentState } = useContext(IncidentContext);
 
-  const navbarMenuClass = classNames({
-    "navbar-menu": true,
-    "is-active": isMenuActive,
-  });
-
   const showResources = useBooleanFlagValue("show-resources", false);
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
-  // Reserves space for the fixed navbar — only relevant while Navbar is actually mounted
-  // (not on the pre-login screen, which has no navbar).
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add("has-navbar-fixed-top");
-    return () => root.classList.remove("has-navbar-fixed-top");
-  }, []);
+  const incidentId = incidentState.incident?.id;
+  const mobileItem = "flex items-center px-4 py-2 gap-2 capitalize w-full";
+  const mobileSubItem = "flex items-center px-8 py-1.5 gap-2 text-sm capitalize w-full";
 
   return (
-    <nav className="navbar is-fixed-top is-hidden-print">
-      <div className="navbar-brand">
+    <nav className="fixed inset-x-0 top-0 z-30 bg-bg text-base text-text print:hidden [&_a]:text-inherit">
+      {/* Brand row — always visible, fixed height */}
+      <div className="flex h-[2.75rem] items-stretch">
         <NavLink
           to="/"
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
+          className={({ isActive }) =>
+            clsx("flex shrink-0 items-center px-3", isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+          }
         >
-          <figure className="image">
-            {/* lockup-blue.svg is a 393x96 wordmark, not square — size by height only */}
-            <img src={logo} alt="Logo" style={{ height: "1.5rem", width: "auto" }} />
-          </figure>
+          <img src={logo} alt="Logo" className="h-6 w-auto" />
         </NavLink>
+
+        {/* Desktop menu — inline in brand row */}
+        <div className="hidden flex-1 flex-row items-stretch lg:flex">
+          {/* start */}
+          <div className="flex flex-1 flex-row items-stretch">
+            <div className="group relative flex items-stretch">
+              <NavLink
+                to={incidentId ? `/incident/${incidentId}/edit` : "/"}
+                className={({ isActive }) =>
+                  clsx(
+                    "flex items-center gap-2 px-3",
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
+              >
+                <FontAwesomeIcon icon={faExplosion} />
+                <span>
+                  {incidentState.incident
+                    ? `${t("incident")} ${incidentState.incident.name}`
+                    : t("incident")}
+                </span>
+              </NavLink>
+              <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
+                <NavLink
+                  className={({ isActive }) =>
+                    clsx(
+                      "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                      isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                    )
+                  }
+                  to="/incident/list"
+                >
+                  <FontAwesomeIcon icon={faRectangleList} />
+                  <span>{t("overview")}</span>
+                </NavLink>
+                <NavLink
+                  className={({ isActive }) =>
+                    clsx(
+                      "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                      isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                    )
+                  }
+                  to="/incident/new"
+                >
+                  <FontAwesomeIcon icon={faCirclePlus} />
+                  <span>{t("createIncident")}</span>
+                </NavLink>
+                {incidentState.incident && (
+                  <NavLink
+                    className={({ isActive }) =>
+                      clsx(
+                        "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                        isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                      )
+                    }
+                    to={`/incident/${incidentId}/edit`}
+                  >
+                    <FontAwesomeIcon icon={faPen} />
+                    <span>{t("editIncident")}</span>
+                  </NavLink>
+                )}
+              </div>
+            </div>
+            <JournalNavBar />
+            {showResources && <ResourcesNavBar />}
+            {showTasks && <TasksNavBar />}
+            <MapNavBar />
+          </div>
+          {/* end */}
+          <div className="flex flex-row items-stretch lg:ml-auto">
+            <CurrentTime />
+            <UserNavBar />
+          </div>
+        </div>
+
+        {/* Burger */}
         <button
           type="button"
-          className="navbar-burger burger"
-          data-target="navbarBasic"
+          className="ml-auto flex items-center px-3 lg:hidden"
           aria-label="Toggle menu"
           aria-expanded={isMenuActive}
-          aria-controls="navbarBasic"
           onClick={(e) => {
             e.preventDefault();
             setIsMenuActive(!isMenuActive);
@@ -85,83 +151,90 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
         </button>
       </div>
 
-      <div id="navbarBasic" className={navbarMenuClass} data-testid="navbar-menu">
-        <div className="navbar-start">
-          <div className="navbar-item has-dropdown is-hoverable">
+      {/* Mobile menu — drops below brand row */}
+      {isMenuActive && (
+        <div
+          id="navbarBasic"
+          className="border-t border-border bg-bg py-1 text-sm shadow-lg lg:hidden"
+          data-testid="navbar-menu"
+        >
+          {/* Incident */}
+          <NavLink
+            className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            to={incidentId ? `/incident/${incidentId}/edit` : "/"}
+          >
+            <FontAwesomeIcon icon={faExplosion} />
+            <span>{t("incident")}</span>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) => clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            to="/incident/list"
+          >
+            <FontAwesomeIcon icon={faRectangleList} />
+            <span>{t("overview")}</span>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) => clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+            to="/incident/new"
+          >
+            <FontAwesomeIcon icon={faCirclePlus} />
+            <span>{t("createIncident")}</span>
+          </NavLink>
+          {incidentState.incident && (
             <NavLink
-              to={incidentState.incident ? `/incident/${incidentState.incident.id}/edit` : "/"}
               className={({ isActive }) =>
-                `navbar-item${isActive ? " is-active has-text-white" : ""}`
+                clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
               }
+              to={`/incident/${incidentId}/edit`}
             >
-              <span className="icon-text">
-                <span className="icon">
-                  <FontAwesomeIcon icon={faExplosion} />
-                </span>
-                {incidentState.incident ? (
-                  <span>
-                    {t("incident")} {incidentState.incident.name}
-                  </span>
-                ) : (
-                  <span>{t("incident")}</span>
-                )}
-              </span>
+              <FontAwesomeIcon icon={faPen} />
+              <span>{t("editIncident")}</span>
             </NavLink>
-            <div className="navbar-dropdown">
+          )}
+          {/* Journal */}
+          {incidentId && (
+            <>
               <NavLink
-                className={({ isActive }) =>
-                  `navbar-item${isActive ? " is-active has-text-white" : ""}`
-                }
-                to="/incident/list"
+                className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+                to={`/incident/${incidentId}/journal/messages`}
               >
-                <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-                  <span className="icon">
-                    <FontAwesomeIcon icon={faRectangleList} />
-                  </span>
-                  <span>{t("overview")}</span>
-                </span>
+                <FontAwesomeIcon icon={faBars} />
+                <span className="capitalize">{t("journal")}</span>
               </NavLink>
               <NavLink
                 className={({ isActive }) =>
-                  `navbar-item${isActive ? " is-active has-text-white" : ""}`
+                  clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
                 }
-                to="/incident/new"
+                to={`/incident/${incidentId}/journal/messages`}
               >
-                <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-                  <span className="icon">
-                    <FontAwesomeIcon icon={faCirclePlus} />
-                  </span>
-                  <span>{t("createIncident")}</span>
-                </span>
+                <FontAwesomeIcon icon={faFeed} />
+                <span>{t("journalFeed")}</span>
               </NavLink>
-              {incidentState.incident && (
-                <NavLink
-                  className={({ isActive }) =>
-                    `navbar-item${isActive ? " is-active has-text-white" : ""}`
-                  }
-                  to={`/incident/${incidentState.incident.id}/edit`}
-                >
-                  <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-                    <span className="icon">
-                      <FontAwesomeIcon icon={faPen} />
-                    </span>
-                    <span>{t("editIncident")}</span>
-                  </span>
-                </NavLink>
-              )}
-            </div>
-          </div>
-          <JournalNavBar />
-          {showResources && <ResourcesNavBar />}
-          {showTasks && <TasksNavBar />}
-          <MapNavBar />
-        </div>
-        <div className="navbar-end">
-          <CurrentTime />
-          <hr className="navbar-divider" />
+              <NavLink
+                className={({ isActive }) =>
+                  clsx(mobileSubItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")
+                }
+                to={`/incident/${incidentId}/journal/edit`}
+              >
+                <FontAwesomeIcon icon={faPen} />
+                <span>{t("editor")}</span>
+              </NavLink>
+            </>
+          )}
+          {/* Map */}
+          {incidentId && (
+            <NavLink
+              className={({ isActive }) => clsx(mobileItem, isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle")}
+              to={`/incident/${incidentId}/map`}
+            >
+              <FontAwesomeIcon icon={faMapLocationDot} />
+              <span className="capitalize">{t("map")}</span>
+            </NavLink>
+          )}
+          {/* User settings */}
           <UserNavBar />
         </div>
-      </div>
+      )}
     </nav>
   );
 };
@@ -170,20 +243,15 @@ function DarkModeSwitcher() {
   const { isDarkMode, toggle } = useDarkMode();
 
   return (
-    <div className="navbar-item">
-      <button
-        type="button"
-        aria-label={isDarkMode ? "Switch to light mode (Dark)" : "Switch to dark mode (Light)"}
-        onClick={toggle}
-      >
-        <span className="icon-text is-flex-wrap-nowrap">
-          <span className="icon">
-            <FontAwesomeIcon icon={isDarkMode ? faMoon : faSun} />
-          </span>
-          <span>{isDarkMode ? "Dark" : "Light"}</span>
-        </span>
-      </button>
-    </div>
+    <button
+      type="button"
+      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-bg-subtle"
+      aria-label={isDarkMode ? "Switch to light mode (Dark)" : "Switch to dark mode (Light)"}
+      onClick={toggle}
+    >
+      <FontAwesomeIcon icon={isDarkMode ? faMoon : faSun} />
+      <span>{isDarkMode ? "Dark" : "Light"}</span>
+    </button>
   );
 }
 
@@ -192,21 +260,13 @@ function CurrentTime() {
 
   return (
     <>
-      <div className="navbar-item is-right is-hidden-touch">
-        <span className="icon-text">
-          <span className="icon">
-            <FontAwesomeIcon icon={faCalendar} />
-          </span>
-          <span>{date}</span>
-        </span>
+      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
+        <FontAwesomeIcon icon={faCalendar} />
+        <span>{date}</span>
       </div>
-      <div className="navbar-item is-right is-hidden-touch">
-        <span className="icon-text">
-          <span className="icon">
-            <FontAwesomeIcon icon={faClock} />
-          </span>
-          <span>{time}</span>
-        </span>
+      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
+        <FontAwesomeIcon icon={faClock} />
+        <span>{time}</span>
       </div>
     </>
   );
@@ -214,22 +274,18 @@ function CurrentTime() {
 
 function VersionNavBar() {
   return (
-    <div className="navbar-item is-left">
-      <span className="icon-text is-flex-wrap-nowrap">
-        <span className="icon">
-          <FontAwesomeIcon icon={faCodeBranch} />
-        </span>
-        <span>
-          <a
-            /* Deliberately the running build, not the deployed one: this element labels
-               the version the user is currently on. */
-            href={changelogUrl(CURRENT_SHA)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {CURRENT_VERSION}
-          </a>
-        </span>
+    <div className="flex items-center gap-2 px-4 py-2">
+      <FontAwesomeIcon icon={faCodeBranch} />
+      <span>
+        <a
+          /* Deliberately the running build, not the deployed one: this element labels
+             the version the user is currently on. */
+          href={changelogUrl(CURRENT_SHA)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {CURRENT_VERSION}
+        </a>
       </span>
     </div>
   );
@@ -248,43 +304,74 @@ function UserNavBar() {
   if (!userState.isLoggedin) return;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable is-left ml-3">
-      <div className="navbar-link">
-        <FontAwesomeIcon icon={faCog} />
-      </div>
-      <div className="navbar-dropdown is-right">
-        <VersionNavBar />
-        <div className="navbar-item">
-          <span className="icon-text is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faUser} />
-            </span>
+    <>
+      {/* Desktop: hover dropdown */}
+      <div className="group relative hidden items-stretch lg:ml-3 lg:flex">
+        <div className="flex cursor-pointer items-center gap-1.5 px-3">
+          <FontAwesomeIcon icon={faCog} />
+          <FontAwesomeIcon icon={faChevronDown} className="text-xs opacity-60" />
+        </div>
+        <div className="absolute top-full right-0 z-50 hidden min-w-52 rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
+          <VersionNavBar />
+          <div className="flex items-center gap-2 px-4 py-2">
+            <FontAwesomeIcon icon={faUser} />
             <span>{userState.email || userState.username}</span>
-          </span>
+          </div>
+          <DarkModeSwitcher />
+          <LanguageSwitcher />
+          <hr className="my-1 border-t border-border" />
+          {isAdmin && (
+            <NavLink
+              className={({ isActive }) =>
+                clsx(
+                  "flex w-full items-center gap-2 px-4 py-2",
+                  isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                )
+              }
+              to="/admin/access"
+            >
+              <FontAwesomeIcon icon={faUserShield} />
+              <span>Administration</span>
+            </NavLink>
+          )}
+          <a
+            className="flex w-full items-center gap-2 px-4 py-2 capitalize hover:bg-bg-subtle"
+            href="/oauth2/sign_out"
+            aria-label={t("logout")}
+          >
+            <FontAwesomeIcon icon={faRightFromBracket} />
+            <span>{t("logout")}</span>
+          </a>
+        </div>
+      </div>
+      {/* Mobile: inline items */}
+      <div className="mt-1 flex flex-col border-t border-border pt-1 text-sm lg:hidden">
+        <VersionNavBar />
+        <div className="flex items-center gap-2 px-3 py-2">
+          <FontAwesomeIcon icon={faUser} />
+          <span>{userState.email || userState.username}</span>
         </div>
         <DarkModeSwitcher />
         <LanguageSwitcher />
-        <hr className="navbar-divider" />
         {isAdmin && (
-          <NavLink className="navbar-item" to="/admin/access">
-            <span className="icon-text is-flex-wrap-nowrap">
-              <span className="icon">
-                <FontAwesomeIcon icon={faUserShield} />
-              </span>
-              <span>Administration</span>
-            </span>
+          <NavLink
+            className="flex items-center gap-2 px-3 py-2 hover:bg-bg-subtle"
+            to="/admin/access"
+          >
+            <FontAwesomeIcon icon={faUserShield} />
+            <span>Administration</span>
           </NavLink>
         )}
-        <a className="navbar-item" href="/oauth2/sign_out" aria-label={t("logout")}>
-          <span className="icon-text is-flex-wrap-nowrap is-capitalized">
-            <span className="icon">
-              <FontAwesomeIcon icon={faRightFromBracket} />
-            </span>
-            <span>{t("logout")}</span>
-          </span>
+        <a
+          className="flex items-center gap-2 px-3 py-2 capitalize hover:bg-bg-subtle"
+          href="/oauth2/sign_out"
+          aria-label={t("logout")}
+        >
+          <FontAwesomeIcon icon={faRightFromBracket} />
+          <span>{t("logout")}</span>
         </a>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -297,46 +384,43 @@ const JournalNavBar: FunctionComponent = () => {
   const incidentId = incidentState.incident.id;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable">
+    <div className="group relative flex items-stretch">
       <NavLink
         className={({ isActive }) =>
-          `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
+          clsx(
+            "flex items-center gap-2 px-3 capitalize",
+            isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+          )
         }
         to={`/incident/${incidentId}/journal/messages`}
       >
-        <span className="icon-text is-capitalized">
-          <span className="icon">
-            <FontAwesomeIcon icon={faBars} />
-          </span>
-          <span>{t("journal")}</span>
-        </span>
+        <FontAwesomeIcon icon={faBars} />
+        <span>{t("journal")}</span>
       </NavLink>
-      <div className="navbar-dropdown">
+      <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
           className={({ isActive }) =>
-            `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
           }
           to={`/incident/${incidentId}/journal/messages`}
         >
-          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faFeed} />
-            </span>
-            <span>{t("journalFeed")}</span>
-          </span>
+          <FontAwesomeIcon icon={faFeed} />
+          <span>{t("journalFeed")}</span>
         </NavLink>
         <NavLink
           className={({ isActive }) =>
-            `navbar-item is-capitalized${isActive ? " is-active has-text-white" : ""}`
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
           }
           to={`/incident/${incidentId}/journal/edit`}
         >
-          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faPen} />
-            </span>
-            <span>{t("editor")}</span>
-          </span>
+          <FontAwesomeIcon icon={faPen} />
+          <span>{t("editor")}</span>
         </NavLink>
       </div>
     </div>
@@ -350,51 +434,55 @@ const TasksNavBar: FunctionComponent = () => {
   if (!incidentId) return;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable">
+    <div className="group relative flex items-stretch">
       <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
+        className={({ isActive }) =>
+          clsx(
+            "flex items-center gap-2 px-3 capitalize",
+            isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+          )
+        }
         to={`/incident/${incidentId}/tasks`}
       >
-        <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-          <span className="icon">
-            <FontAwesomeIcon icon={faClipboard} />
-          </span>
-          <span>{t("tasksRequestOrders")}</span>
-        </span>
+        <FontAwesomeIcon icon={faClipboard} />
+        <span>{t("tasksRequestOrders")}</span>
       </NavLink>
-      <div className="navbar-dropdown">
+      <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
+          className={({ isActive }) =>
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
+          }
           to={`/incident/${incidentId}/tasks`}
         >
-          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faClipboardCheck} />
-            </span>
-            <span>{t("tasksOrders")}</span>
-          </span>
+          <FontAwesomeIcon icon={faClipboardCheck} />
+          <span>{t("tasksOrders")}</span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
+          className={({ isActive }) =>
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
+          }
           to={`/incident/${incidentId}/requests`}
         >
-          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faClipboardQuestion} />
-            </span>
-            <span>{t("requestsNeeds")}</span>
-          </span>
+          <FontAwesomeIcon icon={faClipboardQuestion} />
+          <span>{t("requestsNeeds")}</span>
         </NavLink>
         <NavLink
-          className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
+          className={({ isActive }) =>
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
+          }
           to={`/incident/${incidentId}/soma`}
         >
-          <span className="icon-text is-capitalized is-flex-wrap-nowrap">
-            <span className="icon">
-              <FontAwesomeIcon icon={faClipboardList} />
-            </span>
-            <span>{t("immediateMeasures")}</span>
-          </span>
+          <FontAwesomeIcon icon={faClipboardList} />
+          <span>{t("immediateMeasures")}</span>
         </NavLink>
       </div>
     </div>
@@ -408,19 +496,18 @@ const ResourcesNavBar: FunctionComponent = () => {
   if (!incidentId) return;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable">
-      <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
-        to={`/incident/${incidentId}/resources`}
-      >
-        <span className="icon-text is-capitalized">
-          <span className="icon">
-            <FontAwesomeIcon icon={faTruckMedical} />{" "}
-          </span>
-          <span>{t("resources")}</span>
-        </span>
-      </NavLink>
-    </div>
+    <NavLink
+      className={({ isActive }) =>
+        clsx(
+          "flex items-center gap-2 px-3 capitalize",
+          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+        )
+      }
+      to={`/incident/${incidentId}/resources`}
+    >
+      <FontAwesomeIcon icon={faTruckMedical} />
+      <span>{t("resources")}</span>
+    </NavLink>
   );
 };
 
@@ -431,19 +518,18 @@ const MapNavBar: FunctionComponent = () => {
   if (!incidentId) return;
 
   return (
-    <div className="navbar-item has-dropdown is-hoverable">
-      <NavLink
-        className={({ isActive }) => `navbar-item${isActive ? " is-active has-text-white" : ""}`}
-        to={`/incident/${incidentId}/map`}
-      >
-        <span className="icon-text is-capitalized">
-          <span className="icon">
-            <FontAwesomeIcon icon={faMapLocationDot} />
-          </span>
-          <span>{t("map")}</span>
-        </span>
-      </NavLink>
-    </div>
+    <NavLink
+      className={({ isActive }) =>
+        clsx(
+          "flex items-center gap-2 px-3 capitalize",
+          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+        )
+      }
+      to={`/incident/${incidentId}/map`}
+    >
+      <FontAwesomeIcon icon={faMapLocationDot} />
+      <span>{t("map")}</span>
+    </NavLink>
   );
 };
 

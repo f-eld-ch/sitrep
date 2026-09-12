@@ -11,8 +11,26 @@
     "typescript",
     "vitest",
   ],
+  "jsPlugins": ["oxlint-tailwindcss"],
   "categories": {},
   "rules": {
+    // Correctness — catch real bugs
+    "tailwindcss/no-unknown-classes": [
+      "error",
+      {
+        "ignorePrefixes": ["maplibregl-", "mapboxgl-"],
+      },
+    ],
+    "tailwindcss/no-conflicting-classes": "error",
+    "tailwindcss/no-deprecated-classes": "error",
+    "tailwindcss/no-duplicate-classes": "warn",
+    // Style and modernization
+    "tailwindcss/enforce-canonical": "warn",
+    "tailwindcss/no-unnecessary-arbitrary-value": "warn",
+    "tailwindcss/enforce-sort-order": "warn",
+    "tailwindcss/consistent-variant-order": "warn",
+    "tailwindcss/enforce-consistent-important-position": "warn",
+    "tailwindcss/no-unnecessary-whitespace": "warn",
     "jsx-a11y/anchor-is-valid": "off",
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/click-events-have-key-events": "off",
@@ -48,6 +66,9 @@
     "typeCheck": false,
   },
   "settings": {
+    "tailwindcss": {
+      "entryPoint": "src/tailwind.css",
+    },
     "jsx-a11y": {
       "components": {},
       "attributes": {},

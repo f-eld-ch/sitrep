@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { clsx } from "clsx";
 import { faSpinner, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
@@ -12,10 +13,16 @@ import {
   useRevokeIncidentRole,
 } from "api";
 import { Spinner } from "components";
+import { Button, Notification, Tag } from "components/ui";
 import { useRedirectIfForbidden } from "utils";
 import type { AccessPrincipalKind, IncidentRole } from "types";
 
 const ALL_PRINCIPAL_ID = "*";
+
+const inputSm =
+  "w-full rounded border border-border px-2 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
+
+const box = "bg-bg-elevated border border-border rounded p-5 mb-4 shadow-sm";
 
 /** RBAC section of the incident editor: access mode toggle and per-principal grants. */
 function IncidentAccessSection({ incidentId }: { incidentId: string }) {
@@ -32,7 +39,6 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
   const [pendingRevokes, setPendingRevokes] = useState<Set<string>>(new Set());
   const [mutationError, setMutationError] = useState<string | null>(null);
 
-  // Grant form state
   const canListUsers = usersResult.status === "ready" || usersResult.status === "loading";
   const [principalKind, setPrincipalKind] = useState<"USER" | "GROUP">("GROUP");
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,67 +174,62 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
     <>
       {/* Access mode */}
       {modeResult.status === "ready" && (
-        <div className="box mb-4">
-          <h4 className="title is-5 mb-4">{t("incidentAccess.accessMode")}</h4>
-          <div className="field">
-            <div className="control">
-              <label
-                className="radio"
-                aria-label={t("incidentAccess.openAccess")}
-                style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}
-              >
-                <input
-                  type="radio"
-                  name={`access-mode-${incidentId}`}
-                  checked={!isRestricted}
-                  disabled={modeState.loading}
-                  style={{ marginTop: "0.2rem", flexShrink: 0 }}
-                  onChange={() => {
-                    if (isRestricted) {
-                      void changeMode({ incidentId, mode: "OPEN_OPERATIONAL" });
-                    }
-                  }}
-                />
-                <div>
-                  <strong>{t("incidentAccess.openAccess")}</strong>
-                  <p className="help mt-0">{t("incidentAccess.openAccessHelp")}</p>
-                </div>
-              </label>
-            </div>
-            <div className="control mt-3">
-              <label
-                className="radio"
-                aria-label={t("incidentAccess.restricted")}
-                style={{ alignItems: "flex-start", display: "flex", gap: "0.5rem" }}
-              >
-                <input
-                  type="radio"
-                  name={`access-mode-${incidentId}`}
-                  checked={isRestricted}
-                  disabled={modeState.loading}
-                  style={{ marginTop: "0.2rem", flexShrink: 0 }}
-                  onChange={() => {
-                    if (!isRestricted) {
-                      setConfirmingRestrict(true);
-                    }
-                  }}
-                />
-                <div>
-                  <strong>{t("incidentAccess.restricted")}</strong>
-                  <p className="help mt-0">{t("incidentAccess.restrictedHelp")}</p>
-                </div>
-              </label>
-            </div>
+        <div className={box}>
+          <h4 className="mb-4 text-xl font-bold">{t("incidentAccess.accessMode")}</h4>
+          <div className="space-y-3">
+            <label
+              className="flex cursor-pointer items-start gap-2"
+              aria-label={t("incidentAccess.openAccess")}
+            >
+              <input
+                type="radio"
+                name={`access-mode-${incidentId}`}
+                checked={!isRestricted}
+                disabled={modeState.loading}
+                className="mt-0.5 shrink-0"
+                onChange={() => {
+                  if (isRestricted) {
+                    void changeMode({ incidentId, mode: "OPEN_OPERATIONAL" });
+                  }
+                }}
+              />
+              <div>
+                <strong>{t("incidentAccess.openAccess")}</strong>
+                <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.openAccessHelp")}</p>
+              </div>
+            </label>
+            <label
+              className="flex cursor-pointer items-start gap-2"
+              aria-label={t("incidentAccess.restricted")}
+            >
+              <input
+                type="radio"
+                name={`access-mode-${incidentId}`}
+                checked={isRestricted}
+                disabled={modeState.loading}
+                className="mt-0.5 shrink-0"
+                onChange={() => {
+                  if (!isRestricted) {
+                    setConfirmingRestrict(true);
+                  }
+                }}
+              />
+              <div>
+                <strong>{t("incidentAccess.restricted")}</strong>
+                <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.restrictedHelp")}</p>
+              </div>
+            </label>
           </div>
 
           {confirmingRestrict && (
-            <div className="notification is-warning is-light mt-3 py-3">
+            <Notification variant="warning" light className="mt-3">
               <strong>{t("incidentAccess.headsUp")}</strong>{" "}
               {t("incidentAccess.confirmRestrictWarning")}
-              <div className="mt-2" style={{ display: "flex", gap: "0.5rem" }}>
-                <button
+              <div className="mt-2 flex gap-2">
+                <Button
                   type="button"
-                  className="button is-danger is-small"
+                  variant="danger"
+                  size="sm"
                   disabled={modeState.loading}
                   onClick={() => {
                     setConfirmingRestrict(false);
@@ -240,65 +241,72 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                   ) : (
                     t("incidentAccess.confirmRestrict")
                   )}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="button is-small"
+                  variant="light"
+                  size="sm"
                   onClick={() => setConfirmingRestrict(false)}
                 >
                   {t("incidentAccess.cancel")}
-                </button>
+                </Button>
               </div>
-            </div>
+            </Notification>
           )}
 
           {modeState.error && (
-            <div className="notification is-danger mt-3">{modeState.error.message}</div>
+            <Notification variant="danger" className="mt-3">
+              {modeState.error.message}
+            </Notification>
           )}
         </div>
       )}
 
       {/* Grants box */}
-      <div className="box">
-        <h4 className="title is-5 mb-4">{t("incidentAccess.title")}</h4>
+      <div className={box}>
+        <h4 className="mb-4 text-xl font-bold">{t("incidentAccess.title")}</h4>
 
         {accessResult.status === "error" && accessResult.error.code !== "FORBIDDEN" && (
-          <div className="notification is-danger">{accessResult.error.message}</div>
+          <Notification variant="danger" className="mb-3">
+            {accessResult.error.message}
+          </Notification>
         )}
         {mutationError && (
-          <div className="notification is-danger is-light">
+          <Notification variant="danger" light className="mb-3 flex items-start justify-between">
+            <span>{mutationError}</span>
             <button
-              className="delete"
+              className="ml-3 leading-none font-bold text-danger"
               aria-label={t("close")}
               onClick={() => setMutationError(null)}
-            />
-            {mutationError}
-          </div>
+            >
+              ×
+            </button>
+          </Notification>
         )}
 
         {accessResult.status === "ready" && (
           <>
             {(isRestricted || grants.length > 0) && (
-              <div className="table-container mb-5">
-                <table className="table is-fullwidth">
+              <div className="mb-5 overflow-x-auto">
+                <table className="w-full text-sm">
                   <thead>
-                    <tr>
-                      <th>{t("incidentAccess.principal")}</th>
-                      <th>{t("incidentAccess.role")}</th>
-                      <th aria-label={t("actions")} />
+                    <tr className="border-b border-border text-left">
+                      <th className="pb-2 font-semibold">{t("incidentAccess.principal")}</th>
+                      <th className="pb-2 font-semibold">{t("incidentAccess.role")}</th>
+                      <th className="w-12 pb-2" aria-label={t("actions")} />
                     </tr>
                   </thead>
                   <tbody>
                     {/* All-users row — only shown on restricted incidents */}
                     {isRestricted && (
-                      <tr>
-                        <td>
-                          <span className="has-text-weight-medium">
-                            {t("incidentAccess.allUsers")}
-                          </span>
-                          <p className="help mt-0">{t("incidentAccess.allUsersHelp")}</p>
+                      <tr className="border-b border-border">
+                        <td className="py-2 pr-4">
+                          <span className="font-medium">{t("incidentAccess.allUsers")}</span>
+                          <p className="mt-0 text-xs text-fg-muted">
+                            {t("incidentAccess.allUsersHelp")}
+                          </p>
                         </td>
-                        <td>
+                        <td className="py-2">
                           <RoleRadios
                             name="all-users-role"
                             options={["NONE", "VIEWER", "EDITOR"]}
@@ -324,7 +332,6 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                       </tr>
                     )}
 
-                    {/* Group grants (alpha) then user grants (alpha) */}
                     {[...grants]
                       .map((grant) => {
                         const user =
@@ -354,8 +361,8 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                         const isBusy = isRevoking || isChangingRole;
 
                         return (
-                          <tr key={principalKey}>
-                            <td>
+                          <tr key={principalKey} className="border-b border-border">
+                            <td className="py-2 pr-4">
                               <span
                                 title={
                                   grant.principalKind === "USER"
@@ -368,23 +375,25 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 {displayName}
                               </span>
                               {grant.principalKind === "USER" && user?.email && user.name && (
-                                <span className="has-text-grey ml-2 is-size-7">{user.email}</span>
+                                <span className="ml-2 text-xs text-fg-muted">{user.email}</span>
                               )}
                               {grant.principalKind === "USER" && !user && (
-                                <span
-                                  className="tag is-light is-small ml-2"
+                                <Tag
+                                  size="sm"
+                                  light
+                                  className="ml-2"
                                   title={t("incidentAccess.userDetailsRestricted")}
                                 >
                                   {t("incidentAccess.user")}
-                                </span>
+                                </Tag>
                               )}
                               {grant.principalKind === "GROUP" && (
-                                <span className="tag is-light is-small ml-2">
+                                <Tag size="sm" light className="ml-2">
                                   {t("incidentAccess.groupTag")}
-                                </span>
+                                </Tag>
                               )}
                             </td>
-                            <td>
+                            <td className="py-2">
                               <RoleRadios
                                 options={ROLE_OPTIONS}
                                 value={grant.role}
@@ -401,10 +410,12 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 }}
                               />
                             </td>
-                            <td className="has-text-right" style={{ width: "3rem" }}>
-                              <button
+                            <td className="w-12 py-2 text-right">
+                              <Button
                                 type="button"
-                                className="button is-ghost is-small has-text-danger"
+                                variant="ghost"
+                                size="sm"
+                                className="text-danger!"
                                 disabled={isBusy}
                                 onClick={() =>
                                   doRevoke(
@@ -421,7 +432,7 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
                                 ) : (
                                   <FontAwesomeIcon icon={faTrash} />
                                 )}
-                              </button>
+                              </Button>
                             </td>
                           </tr>
                         );
@@ -432,58 +443,58 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
             )}
 
             {/* Add grant */}
-            <h5 className="title is-6 mb-3">{t("incidentAccess.addGrant")}</h5>
-            <div className="field is-grouped mb-3">
-              <div className="control">
-                <div className="buttons has-addons">
-                  {canListUsers && (
-                    <button
-                      type="button"
-                      className={`button is-small ${principalKind === "USER" ? "is-primary is-selected" : ""}`}
-                      onClick={() => {
-                        setPrincipalKind("USER");
-                        setSearchQuery("");
-                      }}
-                    >
-                      {t("incidentAccess.user")}
-                    </button>
-                  )}
-                  <button
+            <h5 className="mb-3 text-lg font-bold">{t("incidentAccess.addGrant")}</h5>
+            <div className="mb-3 flex gap-2">
+              <div className="flex overflow-hidden rounded border border-border">
+                {canListUsers && (
+                  <Button
                     type="button"
-                    className={`button is-small ${principalKind === "GROUP" ? "is-primary is-selected" : ""}`}
+                    variant={principalKind === "USER" ? "primary" : "ghost"}
+                    size="sm"
+                    className="rounded-none border-0"
                     onClick={() => {
-                      setPrincipalKind("GROUP");
+                      setPrincipalKind("USER");
                       setSearchQuery("");
                     }}
                   >
-                    {t("incidentAccess.group")}
-                  </button>
-                </div>
+                    {t("incidentAccess.user")}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant={principalKind === "GROUP" ? "primary" : "ghost"}
+                  size="sm"
+                  className="rounded-none border-0"
+                  onClick={() => {
+                    setPrincipalKind("GROUP");
+                    setSearchQuery("");
+                  }}
+                >
+                  {t("incidentAccess.group")}
+                </Button>
               </div>
-              <div className="control is-expanded">
-                <input
-                  className="input is-small"
-                  placeholder={
-                    principalKind === "USER"
-                      ? t("incidentAccess.searchByNameOrEmail")
-                      : t("incidentAccess.searchByName")
-                  }
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <input
+                className={inputSm + " flex-1"}
+                placeholder={
+                  principalKind === "USER"
+                    ? t("incidentAccess.searchByNameOrEmail")
+                    : t("incidentAccess.searchByName")
+                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
             {(principalKind === "USER" ? usersResult.status : groupsResult.status) ===
               "loading" && <Spinner />}
 
             {availablePrincipals.length === 0 && query && (
-              <p className="has-text-grey is-size-7">{t("incidentAccess.noMatches")}</p>
+              <p className="text-xs text-fg-muted">{t("incidentAccess.noMatches")}</p>
             )}
             {availablePrincipals.length === 0 &&
               !query &&
               (principalKind === "USER" ? usersResult.status : groupsResult.status) === "ready" && (
-                <p className="has-text-grey is-size-7">
+                <p className="text-xs text-fg-muted">
                   {principalKind === "USER"
                     ? t("incidentAccess.allUsersHaveGrants")
                     : t("incidentAccess.noActiveGroups")}
@@ -491,8 +502,8 @@ function IncidentAccessSection({ incidentId }: { incidentId: string }) {
               )}
 
             {availablePrincipals.length > 0 && (
-              <div className="table-container">
-                <table className="table is-hoverable is-narrow">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
                   <tbody>
                     {availablePrincipals.map((p) => {
                       const id = "sub" in p ? p.sub : p.id;
@@ -547,20 +558,15 @@ function RoleRadios({ options, value, name = "role", disabled, onChange }: RoleR
     OWNER: t("incidentAccess.roleDescriptions.OWNER"),
   };
   return (
-    <div className="is-flex" style={{ gap: "1.25rem", flexWrap: "nowrap" }}>
+    <div className="flex flex-nowrap gap-5">
       {options.map((opt) => (
         <label
           key={opt}
-          className="radio"
+          className={clsx(
+            "inline-flex min-w-[5.5rem] items-center gap-1.5 whitespace-nowrap",
+            disabled ? "cursor-default" : "cursor-pointer",
+          )}
           title={descriptions[opt]}
-          style={{
-            cursor: disabled ? "default" : "pointer",
-            minWidth: "5.5rem",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.4rem",
-            whiteSpace: "nowrap",
-          }}
         >
           <input
             type="radio"
@@ -605,41 +611,37 @@ function GrantRow({ label, sublabel, tooltip, loading, onGrant }: GrantRowProps)
   };
 
   return (
-    <tr>
-      <td>
+    <tr className="border-b border-border hover:bg-bg-subtle">
+      <td className="py-1.5 pr-4">
         <span title={tooltip}>{label}</span>
-        {sublabel && <span className="has-text-grey ml-2 is-size-7">{sublabel}</span>}
+        {sublabel && <span className="ml-2 text-xs text-fg-muted">{sublabel}</span>}
       </td>
-      <td aria-label={label}>
-        <div className="field has-addons mb-0">
-          <div className="control is-expanded">
-            <div className="select is-small is-fullwidth">
-              <select
-                value={role}
-                disabled={loading}
-                aria-label={label}
-                title={roleDescriptions[role]}
-                onChange={(e) => setRole(e.target.value as IncidentRole)}
-              >
-                {ROLE_OPTIONS.map((r) => (
-                  <option key={r} value={r}>
-                    {roleLabels[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="control">
-            <button
-              type="button"
-              className="button is-success is-small"
-              disabled={loading}
-              aria-label={t("incidentAccess.grant")}
-              onClick={() => onGrant(role)}
-            >
-              {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("incidentAccess.grant")}
-            </button>
-          </div>
+      <td className="py-1.5" aria-label={label}>
+        <div className="flex justify-end gap-1">
+          <select
+            className="w-32 rounded border border-border bg-bg px-2 py-0.5 text-sm text-fg focus:ring-1 focus:ring-primary focus:outline-none disabled:opacity-50"
+            value={role}
+            disabled={loading}
+            aria-label={label}
+            title={roleDescriptions[role]}
+            onChange={(e) => setRole(e.target.value as IncidentRole)}
+          >
+            {ROLE_OPTIONS.map((r) => (
+              <option key={r} value={r}>
+                {roleLabels[r]}
+              </option>
+            ))}
+          </select>
+          <Button
+            type="button"
+            variant="success"
+            size="sm"
+            disabled={loading}
+            aria-label={t("incidentAccess.grant")}
+            onClick={() => onGrant(role)}
+          >
+            {loading ? <FontAwesomeIcon icon={faSpinner} spin /> : t("incidentAccess.grant")}
+          </Button>
         </div>
       </td>
     </tr>

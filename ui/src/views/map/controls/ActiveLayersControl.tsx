@@ -7,12 +7,12 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
 import type React from "react";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useAddLayer } from "api";
+import { Button } from "components/ui";
 import { LayerContext, type DrawingLayerState } from "../LayerContext";
 
 interface LayerGroup {
@@ -78,34 +78,30 @@ const ActiveLayersControl: React.FC = () => {
   };
 
   const addLayerControl = showAddLayer ? (
-    <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
+    <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 text-xs">
       <input
         type="text"
         placeholder={t("layerControl.layerName")}
         value={layerName}
         onChange={(e) => setLayerName(e.target.value)}
-        className="input is-small mb-2"
+        className="mb-2 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none"
       />
-      <button
-        type="submit"
+      <Button
+        variant="primary"
+        size="xs"
         disabled={layerName.trim() === ""}
-        className="button is-primary is-small is-rounded"
         onClick={() => handleAddLayer(layerName)}
       >
-        <span className="icon is-small">
-          <FontAwesomeIcon icon={faPlus} />
-        </span>
-        <span>{t("layerControl.addLayer")}</span>
-      </button>
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        {t("layerControl.addLayer")}
+      </Button>
     </div>
   ) : (
-    <div className="panel-block is-align-items-flex-start is-justify-content-space-between is-flex-direction-column is-size-7">
-      <button type="button" onClick={() => setShowAddLayer(true)}>
-        <span className="icon is-small">
-          <FontAwesomeIcon icon={faPlus} />
-        </span>
-        <span>{t("layerControl.addLayer")}</span>
-      </button>
+    <div className="flex flex-col items-start border-b border-gray-200 px-3 py-2 text-xs">
+      <Button size="xs" variant="primary" onClick={() => setShowAddLayer(true)}>
+        <FontAwesomeIcon icon={faPlus} className="mr-2" />
+        {t("layerControl.addLayer")}
+      </Button>
     </div>
   );
 
@@ -113,10 +109,10 @@ const ActiveLayersControl: React.FC = () => {
   const hasOwnGroup = hasOwnLayerGroup(layerGroups);
 
   return (
-    <div className="active-layers-control is-size-7">
+    <div className="text-xs">
       {!hasOwnGroup && (
         <div>
-          <div className="panel-block py-1 has-text-weight-semibold has-text-grey is-size-7">
+          <div className="flex items-center border-b border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 last:border-b-0">
             {t("layerControl.currentIncidentLayers")}
           </div>
           {addLayerControl}
@@ -124,7 +120,7 @@ const ActiveLayersControl: React.FC = () => {
       )}
       {layerGroups.map((group) => (
         <div key={group.sourceIncidentId}>
-          <div className="panel-block py-1 has-text-weight-semibold has-text-grey is-size-7">
+          <div className="flex items-center border-b border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 last:border-b-0">
             {group.isInherited ? group.sourceIncidentName : t("layerControl.currentIncidentLayers")}
           </div>
           {group.layers.map((s) => {
@@ -133,15 +129,13 @@ const ActiveLayersControl: React.FC = () => {
             return (
               <div
                 key={s.layer.id}
-                className={classNames({
-                  "panel-block": true,
-                  "is-align-items-flex-start": true,
-                  "is-justify-content-space-between": true,
-                  "is-active": state.activeLayer === s.layer.id,
-                })}
+                className={`flex cursor-pointer items-center justify-between border-b border-gray-200 px-3 py-2 text-xs transition-colors last:border-b-0 hover:bg-gray-100 ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
+                onClick={() => handleLayerClick(s.layer.id)}
               >
-                <div className="mr-3 is-align-items-flex-start is-align-content-center">
-                  <span className="panel-icon" style={{ verticalAlign: "center" }}>
+                <div
+                  className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}
+                >
+                  <span className="mr-3 inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center">
                     <FontAwesomeIcon
                       icon={
                         isInherited
@@ -153,30 +147,28 @@ const ActiveLayersControl: React.FC = () => {
                       size="lg"
                     />
                   </span>
-                  <button
-                    type="button"
-                    className={classNames({
-                      "has-text-weight-bold": state.activeLayer === s.layer.id,
-                    })}
-                    onClick={() => handleLayerClick(s.layer.id)}
-                  >
-                    {s.layer.name}
-                  </button>
+                  {s.layer.name}
                 </div>
                 {s.layer.id !== state.activeLayer && (
-                  <div className="is-align-items-flex-end is-flex-shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
                     <button
-                      className="mr-2 is-align-self-center"
+                      className="leading-none transition-colors hover:text-primary"
                       type="button"
-                      onClick={() => handleVisibilityToggle(s.layer.id, !s.isVisible)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVisibilityToggle(s.layer.id, !s.isVisible);
+                      }}
                     >
                       <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
                     </button>
                     {!isInherited && (
                       <button
-                        className="mr-2 is-align-self-center"
+                        className="leading-none transition-colors hover:text-primary"
                         type="button"
-                        onClick={() => handleLayerClick(s.layer.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLayerClick(s.layer.id);
+                        }}
                       >
                         <FontAwesomeIcon icon={faEdit} />
                       </button>

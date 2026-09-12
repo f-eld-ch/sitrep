@@ -1,5 +1,6 @@
+import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
-import { faPaperclip, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faPaperclip, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import uniq from "lodash/uniq";
 import React, {
@@ -15,7 +16,7 @@ import { useDropzone } from "react-dropzone";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
 import { type Attachment, Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { Spinner } from "components";
-import Notification from "utils/Notification";
+import { Button, Notification, PageTitle, Tag } from "components/ui";
 import useDebounce from "utils/useDebounce";
 import {
   useCreateMessage,
@@ -221,50 +222,55 @@ function Editor() {
 
   return (
     <EditorContext.Provider value={contextValue}>
-      <div>
-        <div className="columns is-tablet">
-          <div className="column is-half">
-            <h3 className="title is-3 is-capitalized">{t("editor")}</h3>
-            {blocker.state === "blocked" && (
-              <div className="notification is-danger is-light">
-                <button
-                  className="delete is-pulled-right is-small mb-2"
-                  aria-label={t("cancel") as string}
-                  onClick={() => blocker.reset()}
-                />
-                <p className="mb-2">{t("unsavedChanges")}</p>
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="min-w-0 flex-1">
+          <PageTitle level={1} className="mb-4">
+            {t("editor")}
+          </PageTitle>
+          {blocker.state === "blocked" && (
+            <div className="mb-4 rounded border border-danger/30 bg-danger/10 p-4">
+              <div className="mb-2 flex items-start justify-between">
+                <p className="text-sm">{t("unsavedChanges")}</p>
                 <button
                   type="button"
-                  className="button is-primary"
-                  onClick={() => blocker.proceed()}
+                  className="-mt-1 -mr-1 p-1 text-sm leading-none text-fg-muted hover:text-fg"
+                  aria-label={t("cancel") as string}
+                  onClick={() => blocker.reset()}
                 >
-                  {t("discard")}
+                  <FontAwesomeIcon icon={faXmark} />
                 </button>
               </div>
-            )}
-            {saveError && <Notification type="error">{saveError.message}</Notification>}
-            {incidentIsClosed ? (
-              <output className="notification is-warning is-light">
-                {t("incidentClosedNoEdits")}
-              </output>
-            ) : (
-              <InputBox />
-            )}
-          </div>
-          <div className="column is-half">
-            <List
-              showControls={!incidentIsClosed}
-              setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
-              setTriageMessage={incidentIsClosed ? undefined : setTriageMessage}
-            />
-          </div>
-          <TriageModal
-            message={state.messageToTriage}
-            setMessage={(message: Message | undefined) =>
-              dispatch({ type: "set_triage_message", message })
-            }
+              <Button type="button" variant="primary" size="sm" onClick={() => blocker.proceed()}>
+                {t("discard")}
+              </Button>
+            </div>
+          )}
+          {saveError && (
+            <Notification variant="danger" className="mb-4">
+              {saveError.message}
+            </Notification>
+          )}
+          {incidentIsClosed ? (
+            <Notification variant="warning" light>
+              {t("incidentClosedNoEdits")}
+            </Notification>
+          ) : (
+            <InputBox />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <List
+            showControls={!incidentIsClosed}
+            setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
+            setTriageMessage={incidentIsClosed ? undefined : setTriageMessage}
           />
         </div>
+        <TriageModal
+          message={state.messageToTriage}
+          setMessage={(message: Message | undefined) =>
+            dispatch({ type: "set_triage_message", message })
+          }
+        />
       </div>
     </EditorContext.Provider>
   );
@@ -281,7 +287,6 @@ function AttachmentUpload({
   const { state, dispatch, pendingFiles, addPendingFile, removePendingFile } = useEditorContext();
   const [uploadAttachment, { loading, error }] = useUploadAttachment();
   const [removeAttachment] = useRemoveAttachment();
-  // Track files uploaded during this edit session so the editor shows feedback immediately.
   const [justUploaded, setJustUploaded] = useState<Attachment[]>([]);
 
   const onDrop = useCallback(
@@ -311,106 +316,85 @@ function AttachmentUpload({
     },
   });
 
-  // In edit mode, show existing attachments + just-uploaded ones for visual confirmation.
   const existingAttachments = messageId ? (state.messageToEdit?.attachments ?? []) : [];
   const justUploadedNew = justUploaded.filter(
     (u) => !existingAttachments.some((a) => a.id === u.id),
+  );
+
+  const removeBtn = (onClick: () => void) => (
+    <button
+      type="button"
+      className="ml-1 leading-none text-fg-muted hover:text-fg"
+      aria-label={t("message.attachments.remove")}
+      onClick={onClick}
+    >
+      <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
+    </button>
   );
 
   return (
     <FormRow label={t("message.attachments.title") as string}>
       {() => (
         <div>
-          {/* Staged files for new message */}
           {!messageId && pendingFiles.length > 0 && (
-            <div className="tags mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {pendingFiles.map((f, i) => (
-                <span key={i} className="tag is-light">
-                  <span className="icon is-small mr-1">
-                    <FontAwesomeIcon icon={faPaperclip} />
-                  </span>
+                <Tag key={i} size="sm" light>
+                  <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
                   {f.name}
-                  <button
-                    type="button"
-                    className="delete is-small"
-                    aria-label={t("message.attachments.remove")}
-                    onClick={() => removePendingFile(i)}
-                  />
-                </span>
+                  {removeBtn(() => removePendingFile(i))}
+                </Tag>
               ))}
             </div>
           )}
-          {/* Current attachments for edit mode — removable */}
           {messageId && (existingAttachments.length > 0 || justUploadedNew.length > 0) && (
-            <div className="tags mb-2">
+            <div className="mb-2 flex flex-wrap gap-1.5">
               {existingAttachments.map((a) => (
-                <span key={a.id} className="tag is-light">
-                  <span className="icon is-small mr-1">
-                    <FontAwesomeIcon icon={faPaperclip} />
-                  </span>
+                <Tag key={a.id} size="sm" light>
+                  <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
                   {a.filename}
-                  <button
-                    type="button"
-                    className="delete is-small"
-                    aria-label={t("message.attachments.remove")}
-                    onClick={() => {
-                      dispatch({ type: "remove_attachment", attachmentId: a.id });
-                      void removeAttachment({ incidentId, messageId, attachmentId: a.id });
-                    }}
-                  />
-                </span>
+                  {removeBtn(() => {
+                    dispatch({ type: "remove_attachment", attachmentId: a.id });
+                    void removeAttachment({ incidentId, messageId, attachmentId: a.id });
+                  })}
+                </Tag>
               ))}
               {justUploadedNew.map((u) => (
-                <span key={u.id} className="tag is-light">
-                  <span className="icon is-small mr-1">
-                    <FontAwesomeIcon icon={faPaperclip} />
-                  </span>
+                <Tag key={u.id} size="sm" light>
+                  <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
                   {u.filename}
-                  <button
-                    type="button"
-                    className="delete is-small"
-                    aria-label={t("message.attachments.remove")}
-                    onClick={() => {
-                      dispatch({ type: "remove_attachment", attachmentId: u.id });
-                      void removeAttachment({ incidentId, messageId: messageId!, attachmentId: u.id });
-                      setJustUploaded((prev) => prev.filter((j) => j.id !== u.id));
-                    }}
-                  />
-                </span>
+                  {removeBtn(() => {
+                    dispatch({ type: "remove_attachment", attachmentId: u.id });
+                    void removeAttachment({
+                      incidentId,
+                      messageId: messageId!,
+                      attachmentId: u.id,
+                    });
+                    setJustUploaded((prev) => prev.filter((j) => j.id !== u.id));
+                  })}
+                </Tag>
               ))}
             </div>
           )}
-          {/* Drop zone */}
           <div
             {...getRootProps()}
-            className={`file is-small${isDragActive ? " has-background-info-light" : ""}`}
-            style={{
-              border: "2px dashed #dbdbdb",
-              borderRadius: "4px",
-              padding: "8px 12px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              width: "100%",
-            }}
+            className={clsx(
+              "flex w-full cursor-pointer items-center gap-2 rounded border-2 border-dashed px-3 py-2 text-sm transition-colors",
+              isDragActive ? "border-info bg-info/10" : "border-border",
+            )}
           >
             <input {...getInputProps()} aria-label={t("message.attachments.add")} />
             {loading ? (
-              <span className="icon is-small">
-                <FontAwesomeIcon icon={faSpinner} spin />
-              </span>
+              <FontAwesomeIcon icon={faSpinner} spin className="text-sm text-fg-muted" />
             ) : (
-              <span className="icon is-small">
-                <FontAwesomeIcon icon={faPaperclip} />
-              </span>
+              <FontAwesomeIcon icon={faPaperclip} className="text-sm text-fg-muted" />
             )}
-            <span className="is-size-7">
+            <span className="text-xs text-fg-muted">
               {isDragActive ? t("message.attachments.dropHere") : t("message.attachments.add")}
             </span>
           </div>
           {error && (
-            <p className="help is-danger mt-1">
+            <p className="mt-1 text-xs text-danger">
               {error.code === "ATTACHMENT_TOO_LARGE"
                 ? t("message.attachments.tooLarge")
                 : error.code === "ATTACHMENT_DISABLED"
@@ -423,6 +407,9 @@ function AttachmentUpload({
     </FormRow>
   );
 }
+
+const selectClass =
+  "w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
 
 function InputBox() {
   const { t } = useTranslation();
@@ -447,7 +434,6 @@ function InputBox() {
 
   const message: Message = {
     id: state.messageToEdit?.id || "",
-    // 0 is the not-yet-assigned sentinel — this is a live preview, not a saved message.
     number: state.messageToEdit?.number ?? 0,
     content: messageContentDebounced,
     sender: state.sender,
@@ -467,40 +453,48 @@ function InputBox() {
 
   const mediumId = useId();
   return (
-    <div className="box">
-      <button
-        type="button"
-        className="delete is-pulled-right is-small mb-2"
-        aria-label={t("close")}
-        onClick={() => navigate(`/incident/${incidentId}/journal/messages`)}
-      />
+    <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">
+      <div className="mb-2 flex justify-end">
+        <button
+          type="button"
+          className="p-1 text-sm leading-none text-fg-muted hover:text-fg"
+          aria-label={t("close")}
+          onClick={() => navigate(`/incident/${incidentId}/journal/messages`)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      </div>
 
-      <div className="mt-5 field is-horizontal">
-        <div className="field-label is-normal is-flex-shrink-0">
-          <label htmlFor={mediumId} className="label is-capitalized">
+      <div className="mb-3 flex flex-col items-start xl:flex-row xl:gap-4">
+        <div className="mb-1 w-full xl:mb-0 xl:w-32 xl:shrink-0 xl:pt-1.5 xl:text-right">
+          <label htmlFor={mediumId} className="text-sm font-bold capitalize">
             {t("mediumName")}
           </label>
         </div>
-        <div className="field-body">
-          <div className="field is-grouped is-grouped-multiline">
-            <div className="control is-normal is-flex-shrink-2 is-flex-wrap-wrap">
-              <div className="select is-fullwidth">
-                <select id={mediumId} value={state.media} onChange={handleMediumChange}>
-                  {Object.values(Medium).map((medium: Medium) => (
-                    <option
-                      key={medium}
-                      label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}
-                    >
-                      {medium}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <div className="w-full min-w-0 flex-1">
+          <div className="flex flex-wrap gap-2">
+            <div className="min-w-0 flex-1">
+              <select
+                id={mediumId}
+                value={state.media}
+                onChange={handleMediumChange}
+                className={selectClass}
+              >
+                {Object.values(Medium).map((medium: Medium) => (
+                  <option
+                    key={medium}
+                    label={t([`medium.${medium}`, `medium.${Medium.Other}`]) as string}
+                  >
+                    {medium}
+                  </option>
+                ))}
+              </select>
             </div>
             {state.media === Medium.Radio && <RadioChannelDetailInput />}
           </div>
         </div>
       </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -517,7 +511,7 @@ function InputBox() {
       </form>
       {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
-          <div className="title is-size-4 is-capitalized">{t("preview")}</div>
+          <div className="mt-4 mb-3 text-xl font-bold capitalize">{t("preview")}</div>
           <JournalMessage
             id={undefined}
             incidentId={incidentId ?? ""}

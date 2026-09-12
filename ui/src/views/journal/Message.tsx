@@ -7,12 +7,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { memo, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
+import { Tag } from "components/ui";
+import type { TagVariant } from "components/ui";
 import { ReactPreview } from "./Markdown";
 import MessageSheet from "./MessageSheet";
 
@@ -22,12 +24,71 @@ export interface MessageProps {
   message: Message;
   divisions: Division[];
   showControls: boolean;
+  accentSide?: "left" | "right";
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }
 
 const MAX_IMG_RETRIES = 3;
 const IMG_RETRY_DELAYS = [300, 800, 2000];
+
+/** Derive the accent key from message state — used to pick border, bg, tag and action bar colors. */
+function accentKey(message: Message): "warning" | "success" | "dark" | "danger" | "none" {
+  if (message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset)
+    return "warning";
+  if (message.priorityId === PriorityStatus.High) return "danger";
+  if (message.triageId === TriageStatus.MoreInfo) return "success";
+  if (message.triageId === TriageStatus.Triaged) return "dark";
+  return "none";
+}
+
+const borderL: Record<string, string> = {
+  warning: "border-l-warning",
+  success: "border-l-success",
+  dark: "border-l-fg",
+  danger: "border-l-danger",
+  none: "border-l-border",
+};
+
+const borderR: Record<string, string> = {
+  warning: "border-r-warning",
+  success: "border-r-success",
+  dark: "border-r-fg",
+  danger: "border-r-danger",
+  none: "border-r-border",
+};
+
+const accentTextColor: Record<string, string> = {
+  warning: "!text-warning",
+  success: "!text-success",
+  dark: "!text-fg",
+  danger: "!text-danger",
+  none: "!text-fg",
+};
+
+const accentHoverBg: Record<string, string> = {
+  warning: "hover:bg-warning/15",
+  success: "hover:bg-success/15",
+  dark: "hover:bg-fg/10",
+  danger: "hover:bg-danger/15",
+  none: "hover:bg-bg-subtle",
+};
+
+const bgTint: Record<string, string> = {
+  warning: "bg-[var(--color-msg-warning-bg)]",
+  success: "bg-[var(--color-msg-success-bg)]",
+  dark: "bg-[var(--color-msg-dark-bg)]",
+  danger: "bg-[var(--color-msg-danger-bg)]",
+  none: "",
+};
+
+const tagVariantMap: Record<string, TagVariant> = {
+  warning: "warning",
+  success: "success",
+  dark: "gray",
+  danger: "danger",
+  none: "light",
+};
 
 const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
   const isImage = attachment.contentType.startsWith("image/");
@@ -56,21 +117,14 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
         href={attachment.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="mr-2 mb-1"
         title={attachment.filename}
-        style={{ display: "inline-block", lineHeight: 0 }}
+        className="inline-block leading-none"
       >
         <img
           src={attachment.url}
           alt={attachment.filename}
           onError={handleImgError}
-          style={{
-            height: "64px",
-            width: "64px",
-            objectFit: "cover",
-            borderRadius: "4px",
-            border: "1px solid #ededed",
-          }}
+          className="h-16 w-16 rounded border border-border object-cover"
         />
       </a>
     );
@@ -79,25 +133,55 @@ const AttachmentChip = ({ attachment }: { attachment: Attachment }) => {
   const isPdf = attachment.contentType === "application/pdf";
 
   return (
-    <a
+    <Tag
+      as="a"
       href={attachment.url}
-      className="tag is-light mr-1 mb-1"
+      size="sm"
+      light
       {...(isPdf
         ? { target: "_blank", rel: "noopener noreferrer" }
         : { download: attachment.filename })}
     >
-      <span className="icon is-small mr-1">
-        <FontAwesomeIcon icon={faPaperclip} />
-      </span>
+      <FontAwesomeIcon icon={faPaperclip} className="mr-1" />
       {attachment.filename}
-    </a>
+    </Tag>
   );
 };
+
+/** One label+value cell in the message header level bar. */
+const LevelItem = ({
+  label,
+  children,
+  shrink = 0,
+  "data-testid": testId,
+}: {
+  label: string;
+  children: React.ReactNode;
+  shrink?: 0 | 1 | 2;
+  "data-testid"?: string;
+}) => (
+  <div
+    className={clsx(
+      "flex min-w-0 flex-col items-center text-center",
+      shrink === 0 && "shrink-0",
+      shrink === 1 && "shrink",
+      shrink === 2 && "shrink-2",
+    )}
+  >
+    <div className="mb-0.5 text-[11px] leading-tight font-bold tracking-wider uppercase">
+      {label}
+    </div>
+    <div className="w-full text-xs wrap-anywhere" data-testid={testId}>
+      {children}
+    </div>
+  </div>
+);
 
 const MessageContainer = ({
   id,
   message,
   showControls = false,
+  accentSide = "left",
   setEditorMessage,
   setTriageMessage,
   divisions,
@@ -110,229 +194,168 @@ const MessageContainer = ({
     pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
   });
 
-  const colorClassNames = classNames({
-    "is-danger":
-      !(message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset) &&
-      message.priorityId === PriorityStatus.High,
-    "is-warning":
-      message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset,
-    "is-success": message.triageId === TriageStatus.MoreInfo,
-    "is-dark": message.triageId === TriageStatus.Triaged,
-  });
-
-  const messageClassNames = classNames(colorClassNames, {
-    message: true,
-    "mb-3": !showControls,
-  });
-
-  const assigmentsClassNames = classNames({
-    column: true,
-    "is-full": true,
-    "is-flex-shrink-0": true,
-    "is-flex-grow-0": true,
-    "is-justify-content-flex-start": true,
-    "is-hidden": !message.divisions || message.divisions.length === 0,
-  });
-
-  const tabClassNames = classNames(colorClassNames, {
-    tabs: true,
-    "mb-0": true,
-    "is-small": true,
-    "is-right": true,
-    "is-justify-content-flex-end": true,
-  });
-
-  const tagClassNames = classNames(colorClassNames, {
-    tag: true,
-  });
+  const accent = accentKey(message);
+  const hasDivisions = message.divisions && message.divisions.length > 0;
+  const tagVariant = tagVariantMap[accent];
+  const actionLinkClass = clsx(
+    "flex cursor-pointer items-center gap-1.5 px-4 py-2 text-xs font-semibold transition-colors select-none",
+    accentTextColor[accent],
+    accentHoverBg[accent],
+  );
 
   return (
-    <div className={messageClassNames}>
-      <div className="message-body px-0">
-        <div className="columns px-3 is-multiline is-mobile">
-          <div className="column is-full">
-            <nav className="level is-align-items-baseline">
-              <div className="level-item has-text-centered is-flex-shrink-2">
-                <div className="mb-0">
-                  <div className="heading is-size-7 has-text-weight-bold">
-                    {t("message.sender")}
-                  </div>
-                  <div className="subtitle is-size-7">
-                    <div className="columns is-gapless is-multiline">
-                      <div className="column is-full" data-testid={`sender-${message.id}`}>
-                        {message.sender}
-                      </div>
-                      <div
-                        className="column is-full is-italic"
-                        data-testid={`sender-detail-${message.id}`}
-                      >
-                        {message.senderDetail ? `(${message.senderDetail})` : ""}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="level-item has-text-centered is-flex-shrink-2">
-                <div className="mb-0">
-                  <div className="heading is-size-7 has-text-weight-bold">
-                    {t("message.receiver")}
-                  </div>
-                  <div className="subtitle is-size-7">
-                    <div className="columns is-gapless is-multiline">
-                      <div className="column is-full" data-testid={`receiver-${message.id}`}>
-                        {message.receiver}
-                      </div>
-                      <div
-                        className="column is-full is-italic"
-                        data-testid={`receiver-detail-${message.id}`}
-                      >
-                        {message.receiverDetail ? `(${message.receiverDetail})` : ""}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="level-item has-text-centered is-flex-shrink-1">
-                <div className="mb-0">
-                  <div className="heading is-size-7 has-text-weight-bold">{t("message.time")}</div>
-                  <div className="subtitle is-size-7">
-                    {dayjs(message.time).locale(i18n.language).format("LLL")}
-                  </div>
-                </div>
-              </div>
-              <div className="level-item has-text-centered is-flex-shrink-0">
-                <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">{t("message.priority")}</p>
-                  <p className="subtitle is-size-7">
-                    {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
-                  </p>
-                </div>
-              </div>
+    <div
+      className={clsx(
+        "rounded border-0 border-solid shadow-xl",
+        accentSide === "right" ? "border-r-4" : "border-l-4",
+        accentSide === "right" ? borderR[accent] : borderL[accent],
+        bgTint[accent],
+        !showControls && "mb-3",
+      )}
+    >
+      {/* Message body */}
+      <div className="px-3 pt-3 pb-2">
+        {/* Level bar — sender / receiver / time / number / priority / triage
+            Mobile: 2-col grid (3 rows). Desktop sm+: single flex row. */}
+        <nav className="mb-3 grid grid-cols-1 justify-items-center gap-y-3 px-0 sm:grid-cols-2 sm:gap-x-4 md:flex md:flex-wrap md:items-baseline md:justify-between md:gap-x-4 md:gap-y-2">
+          <LevelItem label={t("message.sender")} shrink={2}>
+            <div className="flex flex-col items-center gap-0">
+              <span data-testid={`sender-${message.id}`}>{message.sender}</span>
+              <span className="italic" data-testid={`sender-detail-${message.id}`}>
+                {message.senderDetail ? `(${message.senderDetail})` : ""}
+              </span>
+            </div>
+          </LevelItem>
 
-              <div className="level-item has-text-centered is-flex-shrink-0">
-                <div className="mb-0">
-                  <p className="heading is-size-7 has-text-weight-bold">{t("message.triage")}</p>
-                  <p className="subtitle is-size-7">
-                    {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
-                  </p>
-                </div>
-              </div>
-              {message.number > 0 && (
-                <div className="level-item has-text-centered is-flex-shrink-0">
-                  <div className="mb-0">
-                    <p className="heading is-size-7 has-text-weight-bold">{t("message.id")}</p>
-                    <p className="subtitle is-size-7" data-testid={`number-${message.id}`}>
-                      # {message.number}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </nav>
-          </div>
-          <div className="column is-full" style={{ wordBreak: "break-word" }}>
-            <div className="content is-normal has-text-left" data-testid={`content-${message.id}`}>
-              <ReactPreview content={message.content} />
+          <LevelItem label={t("message.receiver")} shrink={2}>
+            <div className="flex flex-col items-center gap-0">
+              <span data-testid={`receiver-${message.id}`}>{message.receiver}</span>
+              <span className="italic" data-testid={`receiver-detail-${message.id}`}>
+                {message.receiverDetail ? `(${message.receiverDetail})` : ""}
+              </span>
             </div>
-          </div>
-          <div className={assigmentsClassNames}>
-            <div className="tags is-multiline">
-              {message.divisions?.map((d) => (
-                <span key={d.division.id} className={tagClassNames}>
-                  {d.division.name && d.division.name.trim() !== ""
-                    ? d.division.name
-                    : d.division.description}
-                </span>
-              ))}
-            </div>
-          </div>
-          {message.attachments && message.attachments.length > 0 && (
-            <div className="column is-full is-flex-shrink-0 is-flex-grow-0">
-              <p
-                className="heading is-size-7 has-text-weight-bold has-text-grey mb-2"
-                style={{ borderTop: "1px solid #ededed", paddingTop: "8px" }}
-              >
-                {t("message.attachments.title")}
-              </p>
-              {message.attachments.some((a) => a.contentType.startsWith("image/")) && (
-                <div className="is-flex is-flex-wrap-wrap mb-2" style={{ gap: "6px" }}>
-                  {message.attachments
-                    .filter((a) => a.contentType.startsWith("image/"))
-                    .map((a) => (
-                      <AttachmentChip key={a.id} attachment={a} />
-                    ))}
-                </div>
-              )}
-              {message.attachments.some((a) => !a.contentType.startsWith("image/")) && (
-                <div className="tags is-multiline mb-0">
-                  {message.attachments
-                    .filter((a) => !a.contentType.startsWith("image/"))
-                    .map((a) => (
-                      <AttachmentChip key={a.id} attachment={a} />
-                    ))}
-                </div>
-              )}
-            </div>
+          </LevelItem>
+
+          <LevelItem label={t("message.time")} shrink={1}>
+            {dayjs(message.time).locale(i18n.language).format("LLL")}
+          </LevelItem>
+
+          {message.number > 0 ? (
+            <LevelItem label={t("message.id")}>
+              <span data-testid={`number-${message.id}`}># {message.number}</span>
+            </LevelItem>
+          ) : (
+            <div className="sm:hidden" />
           )}
+
+          <LevelItem label={t("message.priority")}>
+            {t([`priority.${message.priorityId}`, `priority.${PriorityStatus.Normal}`])}
+          </LevelItem>
+
+          <LevelItem label={t("message.triage")}>
+            {t([`triage.${message.triageId}`, `triage.${TriageStatus.Pending}`])}
+          </LevelItem>
+        </nav>
+
+        {/* Content */}
+        <div
+          className="mt-6 text-left text-sm wrap-break-word"
+          data-testid={`content-${message.id}`}
+        >
+          <ReactPreview content={message.content} />
         </div>
-        {showControls === true && id !== undefined && (
-          <div className={tabClassNames} style={{ borderBottomRightRadius: "4px" }}>
-            <ul>
-              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
-                <li>
-                  <a
-                    className="has-text-weight-bold"
-                    data-testid="edit-button"
-                    onClick={() => setEditorMessage(message)}
-                  >
-                    <span className="icon is-small">
-                      <FontAwesomeIcon icon={faEdit} />
-                    </span>
-                    <span>{t("edit")}</span>
-                  </a>
-                </li>
-              ) : (
-                <a
-                  className="has-text-weight-bold"
-                  data-testid="print-button"
-                  onClick={() => handlePrint()}
-                >
-                  <span className="icon is-small">
-                    <FontAwesomeIcon icon={faPrint} />
-                  </span>
-                  <span>{t("messageSheet")}</span>
-                </a>
-              )}
-              {setTriageMessage && message && (
-                <li>
-                  <a
-                    className="has-text-weight-bold"
-                    data-testid="save-triage-button"
-                    onClick={() => setTriageMessage(message)}
-                  >
-                    <span className="icon is-small">
-                      <FontAwesomeIcon icon={faArrowsToEye} />
-                    </span>
-                    <span>{t("saveTriage")}</span>
-                  </a>
-                </li>
-              )}
-              {showTasks && (
-                <li>
-                  <a className="has-text-weight-bold" data-testid="create-task-button">
-                    <span className="icon is-small">
-                      <FontAwesomeIcon icon={faSquareCheck} />
-                    </span>
-                    <span>{t("createNewTask")}</span>
-                  </a>
-                </li>
-              )}
-            </ul>
-            <div style={{ display: "none" }}>
-              <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
-            </div>
+
+        {/* Attachments */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="mt-3 pt-2">
+            <p className="mb-2 text-[11px] font-bold tracking-wider text-fg-muted uppercase">
+              {t("message.attachments.title")}
+            </p>
+            {message.attachments.some((a) => a.contentType.startsWith("image/")) && (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {message.attachments
+                  .filter((a) => a.contentType.startsWith("image/"))
+                  .map((a) => (
+                    <AttachmentChip key={a.id} attachment={a} />
+                  ))}
+              </div>
+            )}
+            {message.attachments.some((a) => !a.contentType.startsWith("image/")) && (
+              <div className="mb-0 flex flex-wrap gap-1">
+                {message.attachments
+                  .filter((a) => !a.contentType.startsWith("image/"))
+                  .map((a) => (
+                    <AttachmentChip key={a.id} attachment={a} />
+                  ))}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Action bar — division tags left, edit/triage buttons right */}
+      {(hasDivisions || (showControls === true && id !== undefined)) && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-b pt-1.5">
+          {/* Left — division tags (full-width on mobile so buttons wrap below) */}
+          <div className="flex w-full flex-wrap gap-1.5 px-2 py-4 sm:w-auto sm:flex-1">
+            {message.divisions?.map((d) => (
+              <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
+                {d.division.name && d.division.name.trim() !== ""
+                  ? d.division.name
+                  : d.division.description}
+              </Tag>
+            ))}
+          </div>
+
+          {/* Right — action buttons */}
+          {showControls === true && id !== undefined && (
+            <div className="flex w-full flex-col sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
+              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="edit-button"
+                  onClick={() => setEditorMessage(message)}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                  <span>{t("edit")}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="print-button"
+                  onClick={() => handlePrint()}
+                >
+                  <FontAwesomeIcon icon={faPrint} />
+                  <span>{t("messageSheet")}</span>
+                </button>
+              )}
+              {setTriageMessage && message && (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="save-triage-button"
+                  onClick={() => setTriageMessage(message)}
+                >
+                  <FontAwesomeIcon icon={faArrowsToEye} />
+                  <span>{t("saveTriage")}</span>
+                </button>
+              )}
+              {showTasks && (
+                <button type="button" className={actionLinkClass} data-testid="create-task-button">
+                  <FontAwesomeIcon icon={faSquareCheck} />
+                  <span>{t("createNewTask")}</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="hidden">
+            <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { PageTitle } from "components/ui";
 import IncidentAccessSection from "./Access";
 
 /** Standalone incident access page — reachable by direct URL only, not linked from the navbar. */
@@ -11,7 +12,7 @@ function AccessPage() {
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">{t("incidentAccess.title")}</h3>
+      <PageTitle>{t("incidentAccess.title")}</PageTitle>
       <IncidentAccessSection incidentId={incidentId} />
     </>
   );

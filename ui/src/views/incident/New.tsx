@@ -20,14 +20,20 @@ import {
   useUnlinkIncidentParent,
   useUpdateIncident,
 } from "api";
+import { Button, Notification, PageTitle } from "components/ui";
+
+const inputWithIcon =
+  "w-full rounded border border-border pl-10 pr-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
+const inputSmBase =
+  "rounded border border-border px-2 py-0.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
 
 function New() {
   const { t } = useTranslation();
 
   return (
     <>
-      <h3 className="title is-size-3 is-capitalized">{t("createIncident")}</h3>
-      <div className="box">
+      <PageTitle>{t("createIncident")}</PageTitle>
+      <div className="rounded border border-border bg-bg-elevated p-5 shadow-sm">
         <IncidentForm incident={undefined} />
       </div>
     </>
@@ -118,222 +124,207 @@ function IncidentForm(props: { incident: Incident | undefined }) {
   return (
     <>
       {createState.error && (
-        <div className="notification is-danger">{t(`errors.${createState.error.code}`)}</div>
+        <Notification variant="danger" className="mb-3">
+          {t(`errors.${createState.error.code}`)}
+        </Notification>
       )}
       {updateState.error && (
-        <div className="notification is-danger">{t(`errors.${updateState.error.code}`)}</div>
+        <Notification variant="danger" className="mb-3">
+          {t(`errors.${updateState.error.code}`)}
+        </Notification>
       )}
       {relationshipError && (
-        <div className="notification is-danger">{t(`errors.${relationshipError.code}`)}</div>
+        <Notification variant="danger" className="mb-3">
+          {t(`errors.${relationshipError.code}`)}
+        </Notification>
       )}
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label htmlFor={nameID} className="label is-capitalized">
-            {t("incidentName")}
-          </label>
-        </div>
-        <div className="field-body">
-          <div className="field is-grouped is-normal">
-            <p className="control has-icons-left has-icons-right is-expanded">
-              <input
-                id={nameID}
-                className="input"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t("name") as string}
-              />
-              <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faClipboard} />
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-      {showParentSelector && (
-        <div className="field is-horizontal">
-          <div className="field-label is-normal">
-            <label htmlFor={parentID} className="label is-capitalized">
-              {t("parentIncident")}
-            </label>
-          </div>
-          <div className="field-body">
-            <div className="field is-normal">
-              <div className="control has-icons-left">
-                <div className="select is-fullwidth">
-                  <select
-                    id={parentID}
-                    value={parentId}
-                    onChange={(e) => setParentId(e.target.value)}
-                  >
-                    <option value="">{t("noParentIncident")}</option>
-                    {parentCandidates.map((candidate) => (
-                      <option key={candidate.id} value={candidate.id}>
-                        {candidate.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <span className="icon is-small is-left">
-                  <FontAwesomeIcon icon={faSitemap} />
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label htmlFor={locationID} className="label is-capitalized">
-            {t("location")}
-          </label>
-        </div>
-        <div className="field-body">
-          <div className="field is-grouped is-normal">
-            <p className="control has-icons-left has-icons-right is-expanded">
-              <input
-                id={locationID}
-                className="input"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder={t("location") as string}
-              />
-              <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faLocationDot} />
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-      <hr className="my-5" />
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label htmlFor={divisionsID} className="label is-capitalized">
-            {t("divisions")}
-          </label>
-        </div>
-        <div className="field-body">
-          <div className="field is-normal is-flex-grow-1">
-            {assignments.map((d, index) => (
-              <div key={d.id || `new-${index}`} className="field is-grouped mb-2">
-                <p className="control is-expanded">
-                  <input
-                    className="input is-small"
-                    type="text"
-                    value={d.description}
-                    onChange={(e) =>
-                      setAssignments(
-                        updateDivision(assignments, index, { description: e.target.value }),
-                      )
-                    }
-                    placeholder={t("name") as string}
-                  />
-                </p>
-                <p className="control">
-                  <input
-                    className="input is-small"
-                    value={d.name}
-                    type="text"
-                    onChange={(e) =>
-                      setAssignments(updateDivision(assignments, index, { name: e.target.value }))
-                    }
-                    placeholder={t("short") as string}
-                  />
-                </p>
-                <p className="control">
-                  {canRemoveDivision(d) ? (
-                    <button
-                      type="button"
-                      className="button is-small is-danger is-light px-3"
-                      onClick={() => setAssignments(assignments.filter((_, i) => i !== index))}
-                      aria-label={t("removeDivision") as string}
-                    >
-                      <span className="icon is-small">
-                        <FontAwesomeIcon icon={faDeleteLeft} />
-                      </span>
-                    </button>
-                  ) : (
-                    <span className="button is-small is-invisible is-light px-3">
-                      <span className="icon is-small">
-                        <FontAwesomeIcon icon={faDeleteLeft} />
-                      </span>
-                    </span>
-                  )}
-                </p>
-              </div>
-            ))}
-          </div>
+
+      {/* Incident name */}
+      <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
+        <label
+          htmlFor={nameID}
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
+        >
+          {t("incidentName")}
+        </label>
+        <div className="relative w-full flex-1">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
+            <FontAwesomeIcon icon={faClipboard} />
+          </span>
+          <input
+            id={nameID}
+            className={inputWithIcon}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("name") as string}
+          />
         </div>
       </div>
 
-      <div className="field is-horizontal">
-        <div className="field-label is-small">
-          <label htmlFor={divisionsID} className="label">
-            {t("devisionAdd")}
+      {/* Parent incident */}
+      {showParentSelector && (
+        <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
+          <label
+            htmlFor={parentID}
+            className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
+          >
+            {t("parentIncident")}
           </label>
-        </div>
-        <div className="field-body">
-          <div className="field is-grouped is-flex-grow-1">
-            <p className="control is-expanded">
-              <input
-                className="input is-small"
-                type="text"
-                value={assignmentDescription}
-                onChange={(e) => setAssignmentDescription(e.target.value)}
-                placeholder={t("name") as string}
-              />
-            </p>
-            <p className="control">
-              <input
-                id={divisionsID}
-                className="input is-small"
-                value={assignmentName}
-                type="text"
-                onChange={(e) => setAssignmentName(e.target.value)}
-                placeholder={t("short") as string}
-              />
-            </p>
-            <p className="control">
-              <button
-                type="submit"
-                className="button is-success is-small px-3"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (assignmentName.trim() === "" || assignmentDescription.trim() === "") return;
-                  setAssignments(
-                    unionBy(
-                      assignments,
-                      [{ id: "", name: assignmentName, description: assignmentDescription }],
-                      iteratee("name"),
-                    ),
-                  );
-                  setAssignmentName("");
-                  setAssignmentDescription("");
-                }}
-                disabled={assignmentName.trim() === "" || assignmentDescription.trim() === ""}
-                aria-label={t("add") as string}
-              >
-                <span className="icon is-small">
-                  <FontAwesomeIcon icon={faPlus} />
-                </span>
-              </button>
-            </p>
+          <div className="relative w-full flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
+              <FontAwesomeIcon icon={faSitemap} />
+            </span>
+            <select
+              id={parentID}
+              className={inputWithIcon}
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+            >
+              <option value="">{t("noParentIncident")}</option>
+              {parentCandidates.map((candidate) => (
+                <option key={candidate.id} value={candidate.id}>
+                  {candidate.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+      )}
+
+      {/* Location */}
+      <div className="mb-4 flex flex-col items-start xl:flex-row xl:gap-4">
+        <label
+          htmlFor={locationID}
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
+        >
+          {t("location")}
+        </label>
+        <div className="relative w-full flex-1">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center text-sm text-fg-muted/50">
+            <FontAwesomeIcon icon={faLocationDot} />
+          </span>
+          <input
+            id={locationID}
+            className={inputWithIcon}
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={t("location") as string}
+          />
+        </div>
       </div>
-      <div className="field">
-        <p className="control">
-          <button
+
+      <hr className="my-5 border-border" />
+
+      {/* Existing divisions */}
+      <div className="mb-2 flex flex-col items-start xl:flex-row xl:gap-4">
+        <label className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right">
+          {t("divisions")}
+        </label>
+        <div className="w-full flex-1 space-y-2">
+          {assignments.map((d, index) => (
+            <div key={d.id || `new-${index}`} className="flex gap-2">
+              <input
+                className={inputSmBase + " flex-1 min-w-0"}
+                type="text"
+                value={d.description}
+                onChange={(e) =>
+                  setAssignments(
+                    updateDivision(assignments, index, { description: e.target.value }),
+                  )
+                }
+                placeholder={t("name") as string}
+              />
+              <input
+                className={inputSmBase + " w-20"}
+                value={d.name}
+                type="text"
+                onChange={(e) =>
+                  setAssignments(updateDivision(assignments, index, { name: e.target.value }))
+                }
+                placeholder={t("short") as string}
+              />
+              {canRemoveDivision(d) ? (
+                <Button
+                  type="button"
+                  variant="danger"
+                  light
+                  size="xs"
+                  onClick={() => setAssignments(assignments.filter((_, i) => i !== index))}
+                  aria-label={t("removeDivision") as string}
+                >
+                  <FontAwesomeIcon icon={faDeleteLeft} />
+                </Button>
+              ) : (
+                <Button type="button" variant="danger" light size="xs" invisible>
+                  <FontAwesomeIcon icon={faDeleteLeft} />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add division */}
+      <div className="mb-5 flex flex-col items-start xl:flex-row xl:gap-4">
+        <label
+          htmlFor={divisionsID}
+          className="mb-1 w-full text-sm font-bold capitalize xl:mb-0 xl:w-64 xl:shrink-0 xl:pt-1.5 xl:text-right"
+        >
+          {t("devisionAdd")}
+        </label>
+        <div className="flex w-full flex-1 gap-2">
+          <input
+            className={inputSmBase + " flex-1 min-w-0"}
+            type="text"
+            value={assignmentDescription}
+            onChange={(e) => setAssignmentDescription(e.target.value)}
+            placeholder={t("name") as string}
+          />
+          <input
+            id={divisionsID}
+            className={inputSmBase + " w-20"}
+            value={assignmentName}
+            type="text"
+            onChange={(e) => setAssignmentName(e.target.value)}
+            placeholder={t("short") as string}
+          />
+          <Button
             type="submit"
-            className="button is-primary is-rounded is-capitalized"
-            onClick={() => void handleSave()}
-            disabled={name.trim() === ""}
+            variant="success"
+            size="xs"
+            onClick={(e) => {
+              e.preventDefault();
+              if (assignmentName.trim() === "" || assignmentDescription.trim() === "") return;
+              setAssignments(
+                unionBy(
+                  assignments,
+                  [{ id: "", name: assignmentName, description: assignmentDescription }],
+                  iteratee("name"),
+                ),
+              );
+              setAssignmentName("");
+              setAssignmentDescription("");
+            }}
+            disabled={assignmentName.trim() === "" || assignmentDescription.trim() === ""}
+            aria-label={t("add") as string}
           >
-            {t("save")}
-          </button>
-        </p>
+            <FontAwesomeIcon icon={faPlus} />
+          </Button>
+        </div>
       </div>
+
+      <Button
+        className="xl:ml-[272px]"
+        type="submit"
+        variant="primary"
+        capitalized
+        onClick={() => void handleSave()}
+        disabled={name.trim() === ""}
+      >
+        {t("save")}
+      </Button>
     </>
   );
 }

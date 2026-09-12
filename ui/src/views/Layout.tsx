@@ -30,14 +30,14 @@ export const Layout = (props: LayoutProps) => {
     <>
       <Navbar />
       <ReloadPrompt />
-      <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
-        <div className="column">
-          <section className="section">{props.children}</section>
+      <div className="mt-[2.75rem] flex min-h-[calc(100vh-2.75rem)] flex-col">
+        <div className="flex-1">
+          <div className="p-6">{props.children}</div>
         </div>
-        <div className="column is-narrow is-hidden-print">
+        <div className="shrink-0 print:hidden">
           <Footer />
         </div>
-      </section>
+      </div>
     </>
   );
 };
@@ -59,12 +59,12 @@ export const LayoutMarginLess = (props: LayoutProps) => {
   return (
     <>
       <Navbar />
-      <section className="columns is-mobile is-flex-direction-column is-gapless is-fullheight-with-navbar">
-        <div className="column is-flex">{props.children}</div>
-        <div className="column is-narrow is-hidden-print">
+      <div className="flex min-h-screen flex-col">
+        <div className="flex flex-1">{props.children}</div>
+        <div className="shrink-0 print:hidden">
           <Footer />
         </div>
-      </section>
+      </div>
     </>
   );
 };

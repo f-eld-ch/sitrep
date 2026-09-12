@@ -15,12 +15,12 @@ describe("FormRow", () => {
     expect(container.querySelector("label")).toBeNull();
   });
 
-  it("adds is-grouped class when grouped=true", () => {
+  it("renders children in a flex row wrapper when grouped=true", () => {
     const { container } = render(
       <FormRow label="x" grouped>
         {(id) => <input id={id} type="text" />}
       </FormRow>,
     );
-    expect(container.querySelector(".field.is-grouped")).not.toBeNull();
+    expect(container.querySelector(".flex.flex-col.gap-2")).not.toBeNull();
   });
 });

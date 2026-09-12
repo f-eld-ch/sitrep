@@ -1,6 +1,7 @@
 import { faSignIn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logo from "assets/lockup-white.svg";
+import { Button } from "components/ui";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
@@ -15,27 +16,27 @@ export const Login = () => {
   }, [lang, i18n]);
 
   return (
-    <div className="columns is-gapless login-split m-0">
-      <div className="column is-half login-brand is-flex is-justify-content-center is-align-items-center">
-        <div className="is-flex is-flex-direction-column is-align-items-flex-start">
-          <img src={logo} alt="sitrep" style={{ height: "6rem", width: "auto" }} />
-          <p className="mt-4 is-size-5 ml-3">{t("loginTagline")}</p>
+    <div className="flex min-h-screen flex-col md:flex-row">
+      {/* Brand panel — deliberately ignores light/dark toggle, always dark */}
+      <div className="flex w-full items-center justify-center bg-dark-elevated text-paper md:w-1/2">
+        <div className="flex flex-col items-start">
+          <img src={logo} alt="sitrep" className="h-24 w-auto" />
+          <p className="mt-4 ml-3 text-xl">{t("loginTagline")}</p>
         </div>
       </div>
-      <div className="column is-half login-actions is-flex is-justify-content-center is-align-items-center mt-6">
-        <button
+      <div className="mt-8 flex w-full items-center justify-center md:mt-0 md:w-1/2">
+        <Button
           type="button"
-          className="button is-primary is-large is-capitalized"
+          variant="primary"
+          size="lg"
+          capitalized
           onClick={() => {
-            // forward to oauth2 login
             window.location.replace("/oauth2/sign_in");
           }}
         >
-          <span className="icon">
-            <FontAwesomeIcon icon={faSignIn} />
-          </span>
-          <span>{t("login")}</span>
-        </button>
+          <FontAwesomeIcon icon={faSignIn} className="mr-2" />
+          {t("login")}
+        </Button>
       </div>
     </div>
   );

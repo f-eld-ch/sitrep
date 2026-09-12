@@ -1,6 +1,6 @@
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -33,43 +33,33 @@ function LanguageSwitcher() {
   const active = i18n.resolvedLanguage ?? i18n.language;
 
   return (
-    <div className="navbar-item">
-      <span className="icon-text is-flex-wrap-nowrap">
-        <span className="icon">
-          <FontAwesomeIcon icon={faGlobe} />
-        </span>
-        {/* `mb-0` because Bulma's .buttons carries a bottom margin meant for standalone
-            groups, which misaligns it against the icon inside a navbar item. */}
-        <span className="buttons has-addons are-small mb-0">
-          {LANGUAGES.map((language) => {
-            const isActive = active === language.code;
-            return (
-              <button
-                key={language.code}
-                type="button"
-                className={classNames("button", "is-small", {
-                  "is-primary is-selected": isActive,
-                })}
-                // The autonym is the accessible name; the visible label is an abbreviation.
-                title={language.name}
-                aria-label={language.name}
-                // aria-pressed rather than aria-current: these are toggle buttons, not
-                // navigation. Screen readers then announce which language is in effect.
-                aria-pressed={isActive}
-                lang={language.code}
-                onClick={() => {
-                  if (isActive) return;
-                  // Persisted by i18next-browser-languagedetector, which caches to
-                  // session and local storage on change (see i18n/index.ts detection).
-                  void i18n.changeLanguage(language.code);
-                }}
-              >
-                {language.short}
-              </button>
-            );
-          })}
-        </span>
-      </span>
+    <div className="flex items-center gap-2 px-4 py-2">
+      <FontAwesomeIcon icon={faGlobe} />
+      <div className="flex overflow-hidden rounded border border-border">
+        {LANGUAGES.map((language) => {
+          const isActive = active === language.code;
+          return (
+            <button
+              key={language.code}
+              type="button"
+              className={clsx(
+                "px-2 py-0.5 text-xs font-medium transition-colors",
+                isActive ? "bg-primary text-white" : "bg-bg text-fg hover:bg-bg-subtle",
+              )}
+              title={language.name}
+              aria-label={language.name}
+              aria-pressed={isActive}
+              lang={language.code}
+              onClick={() => {
+                if (isActive) return;
+                void i18n.changeLanguage(language.code);
+              }}
+            >
+              {language.short}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

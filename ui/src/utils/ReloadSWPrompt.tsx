@@ -1,8 +1,9 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { t } from "i18next";
 import { useEffect, useId, useRef, useState } from "react";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, Notification } from "components/ui";
 import { createSWChannel, now, type SWMessage } from "./swUpdateChannel";
 import {
   CURRENT_SHA,
@@ -23,23 +24,19 @@ export function ReloadPrompt() {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log(`SW Registered: ${r}`);
       if (r === undefined) return;
-
       setInterval(() => {
         r.update();
       }, intervalMS);
       setOfflineReady(true);
     },
     onRegisterError(error) {
-      console.log("SW registration error:", error);
+      console.error("SW registration error:", error);
     },
     onNeedRefresh() {
-      console.log("SW needs refresh");
       setNeedRefresh(true);
     },
     onOfflineReady() {
-      console.log("SW offline ready");
       setOfflineReady(true);
     },
   });
@@ -102,7 +99,7 @@ export function ReloadPrompt() {
           }
         }
       } catch (e) {
-        console.log("Error handling sw-update-available event:", e);
+        console.error("Error handling sw-update-available event:", e);
       }
     };
 
@@ -119,11 +116,9 @@ export function ReloadPrompt() {
     async function checkRegistration() {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
-        console.log("SW registration (fallback check):", reg);
         if (!mounted || !reg) return;
 
         if (reg.waiting) {
-          console.log("SW fallback: found waiting worker");
           setNeedRefresh(true);
           setOfflineReady(true);
         }
@@ -131,9 +126,7 @@ export function ReloadPrompt() {
         // If there's an installing worker already, listen to its state changes immediately
         if (reg.installing) {
           const inst = reg.installing;
-          console.log("SW fallback: found installing worker, state:", inst.state);
           const onStateChange = () => {
-            console.log("SW fallback: installing state ->", inst.state);
             if (inst.state === "installed") {
               // new SW installed and waiting
               setNeedRefresh(true);
@@ -146,11 +139,9 @@ export function ReloadPrompt() {
         }
 
         reg.addEventListener("updatefound", () => {
-          console.log("SW fallback: updatefound event");
           const installing = reg.installing;
           if (installing) {
             installing.addEventListener("statechange", () => {
-              console.log("SW fallback: installing state ->", installing.state);
               if (installing.state === "installed") {
                 // new SW installed and waiting
                 setNeedRefresh(true);
@@ -159,13 +150,8 @@ export function ReloadPrompt() {
             });
           }
         });
-
-        // also listen for controlling change
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          console.log("SW fallback: controllerchange");
-        });
       } catch (e) {
-        console.log("SW fallback check failed:", e);
+        console.error("SW registration check failed:", e);
       }
     }
 
@@ -180,14 +166,13 @@ export function ReloadPrompt() {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg?.waiting) {
-          console.log("SW poll: found waiting worker");
           setNeedRefresh(true);
           setOfflineReady(true);
           clearInterval(pollId);
           return;
         }
       } catch (e) {
-        console.log("SW poll failed:", e);
+        console.error("SW poll failed:", e);
       }
       polls += 1;
       if (polls >= maxPolls) clearInterval(pollId);
@@ -198,7 +183,7 @@ export function ReloadPrompt() {
       try {
         clearInterval(pollId);
       } catch (e) {
-        console.log("Error clearing SW poll interval:", e);
+        console.error("Error clearing SW poll interval:", e);
       }
     };
   }, [setNeedRefresh, setOfflineReady]);
@@ -215,7 +200,7 @@ export function ReloadPrompt() {
     } else {
       channelRef.current?.post({ type: "apply-later", tabId });
       updateServiceWorker(false).catch((e) => {
-        console.log("Error applying SW update for later:", e);
+        console.error("Error applying SW update for later:", e);
       });
     }
   };
@@ -233,62 +218,40 @@ export function ReloadPrompt() {
     close(until);
   };
 
-  // Debugging: log render-time state to help diagnose why the prompt isn't shown
-  // eslint-disable-next-line no-console
-  console.log("ReloadPrompt render state:", {
-    visible,
-    needRefresh,
-    offlineReady,
-    dismissUntil,
-  });
-
   return (
     <>
       {visible && offlineReady && (
-        <div className="container is-fluid pt-4">
-          <div className="notification is-light is-success mt-2">
+        <div className="px-4 pt-4">
+          <Notification variant="success" light className="relative mt-2">
             <button
               type="button"
-              className="delete"
+              className="absolute top-2 right-2 opacity-60 hover:opacity-100"
               aria-label={t("close")}
               onClick={() => handleLater(4)}
-            />
-            <div>
-              <div>
-                <strong>{t("updateNotification")}</strong>
-                <div className="mt-2">
-                  <a
-                    href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t("viewChangelog")}
-                  </a>
-                  <span className="ml-3 has-text-weight-semibold">
-                    {deployed?.version ?? CURRENT_VERSION}
-                  </span>
-                </div>
-              </div>
-              <div className="buttons pt-2">
-                <button
-                  type="button"
-                  className="button is-success is-small"
-                  onClick={handleReloadNow}
-                  disabled={reloading}
-                >
-                  {reloading && <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />}
-                  {t("reloadNow")}
-                </button>
-                <button
-                  type="button"
-                  className="button is-warning is-small"
-                  onClick={() => handleLater(4)}
-                >
-                  {t("later")}
-                </button>
-              </div>
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+            <strong>{t("updateNotification")}</strong>
+            <div className="mt-2">
+              <a
+                href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("viewChangelog")}
+              </a>
+              <span className="ml-3 font-semibold">{deployed?.version ?? CURRENT_VERSION}</span>
             </div>
-          </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="success" size="sm" onClick={handleReloadNow} disabled={reloading}>
+                {reloading && <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />}
+                {t("reloadNow")}
+              </Button>
+              <Button variant="warning" size="sm" onClick={() => handleLater(4)}>
+                {t("later")}
+              </Button>
+            </div>
+          </Notification>
         </div>
       )}
     </>

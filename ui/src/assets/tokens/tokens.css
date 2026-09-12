@@ -1,0 +1,94 @@
+/* sitrep design tokens, GENERATED from brand/tokens.json by brand/generate.sh
+   Do not edit by hand; edit tokens.json and re-run ./generate.sh
+   Verein F-ELD · AGPL-3.0 · v1.0.0 */
+
+:root {
+  /* Brand */
+  --sitrep-color-dodger-blue: #2077cc;
+  --sitrep-color-alert-red: #ff3b30;
+  --sitrep-color-ink: #111111;
+  --sitrep-color-paper: #ffffff;
+
+  /* Interaction: hover lifts up, pressed drops down */
+  --sitrep-color-interactive: var(--sitrep-color-dodger-blue);
+  --sitrep-color-interactive-hover: #3e93e0;
+  --sitrep-color-interactive-pressed: #12508f;
+
+  /* Neutral ramp */
+  --sitrep-color-surface: #f5f5f5;
+  --sitrep-color-border: #e1e1e1;
+  --sitrep-color-disabled: #a4a4a4;
+  --sitrep-color-muted: #555555;
+  --sitrep-color-dark-elevated: #242424;
+  --sitrep-color-dark-border: #3a3a3a;
+
+  /* Semantic: success is separated from error by luminance, not hue */
+  --sitrep-color-info: var(--sitrep-color-dodger-blue);
+  --sitrep-color-success: #006b30;
+  --sitrep-color-warning: #e3ae28;
+  --sitrep-color-error: var(--sitrep-color-alert-red);
+
+  /* Type */
+  --sitrep-font-sans: B612, sans-serif;
+  --sitrep-font-mono: "B612 Mono", monospace;
+  --sitrep-weight-regular: 400;
+  --sitrep-weight-bold: 700;
+  --sitrep-size-h1: 44px;
+  --sitrep-size-h2: 30px;
+  --sitrep-size-h3: 20px;
+  --sitrep-size-body: 16px;
+  --sitrep-size-small: 14px;
+  --sitrep-size-mono: 15px;
+  --sitrep-size-min: 11px;
+
+  /* Logo */
+  --sitrep-logo-clearspace: 0.333;
+  --sitrep-logo-lockup-gap: 0.5;
+  --sitrep-logo-min-symbol: 24px;
+  --sitrep-logo-min-lockup: 32px;
+
+  /* Accessibility */
+  --sitrep-min-touch-target: 44px;
+
+  /* Semantic surface roles light */
+  --sitrep-bg: var(--sitrep-color-paper);
+  --sitrep-bg-subtle: var(--sitrep-color-surface);
+  --sitrep-bg-elevated: var(--sitrep-color-paper);
+  --sitrep-fg: var(--sitrep-color-ink);
+  --sitrep-fg-muted: var(--sitrep-color-muted);
+  --sitrep-line: var(--sitrep-color-border);
+}
+
+/* Dark is a first-class surface, not an inversion filter.
+   On ink, the lowest legible neutral is #A4A4A4 (disabled step), never #555555. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sitrep-bg: var(--sitrep-color-ink);
+    --sitrep-bg-subtle: var(--sitrep-color-ink);
+    --sitrep-bg-elevated: var(--sitrep-color-dark-elevated);
+    --sitrep-fg: var(--sitrep-color-paper);
+    --sitrep-fg-muted: var(--sitrep-color-disabled);
+    --sitrep-line: var(--sitrep-color-dark-border);
+    --sitrep-color-text: var(--sitrep-color-disabled);
+  }
+}
+
+[data-theme="dark"] {
+  --sitrep-bg: var(--sitrep-color-ink);
+  --sitrep-bg-subtle: var(--sitrep-color-ink);
+  --sitrep-bg-elevated: var(--sitrep-color-dark-elevated);
+  --sitrep-fg: var(--sitrep-color-paper);
+  --sitrep-fg-muted: var(--sitrep-color-disabled);
+  --sitrep-line: var(--sitrep-color-dark-border);
+  --sitrep-color-text: var(--sitrep-color-surface);
+}
+
+[data-theme="light"] {
+  --sitrep-bg: var(--sitrep-color-paper);
+  --sitrep-bg-subtle: var(--sitrep-color-surface);
+  --sitrep-bg-elevated: var(--sitrep-color-paper);
+  --sitrep-fg: var(--sitrep-color-ink);
+  --sitrep-fg-muted: var(--sitrep-color-muted);
+  --sitrep-line: var(--sitrep-color-border);
+  --sitrep-color-text: var(--sitrep-color-muted);
+}

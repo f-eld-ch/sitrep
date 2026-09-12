@@ -79,7 +79,7 @@ describe("Navbar Component", () => {
       expect(screen.getByText("incident")).toBeInTheDocument();
 
       // Check if the user email is rendered
-      expect(screen.getByText(userState.email)).toBeInTheDocument();
+      expect(screen.getAllByText(userState.email)[0]).toBeInTheDocument();
     });
   });
 
@@ -96,15 +96,14 @@ describe("Navbar Component", () => {
       );
 
       const burgerButton = screen.getByRole("button", { name: /Toggle menu/i });
-      expect(burgerButton).toHaveAttribute("aria-controls", "navbarBasic");
       expect(burgerButton).toHaveAttribute("aria-expanded", "false");
       fireEvent.click(burgerButton);
       expect(burgerButton).toHaveAttribute("aria-expanded", "true");
 
-      // Check if the menu is active
+      // Check if the menu is visible (conditionally rendered, not toggled via class)
       const navbarMenu = screen.getByTestId("navbar-menu");
       expect(navbarMenu).toHaveAttribute("id", "navbarBasic");
-      expect(navbarMenu).toHaveClass("is-active");
+      expect(navbarMenu).toBeInTheDocument();
     });
   });
 
@@ -121,7 +120,7 @@ describe("Navbar Component", () => {
       );
 
       // Check if the user email is rendered
-      expect(screen.getByText(userState.email)).toBeInTheDocument();
+      expect(screen.getAllByText(userState.email)[0]).toBeInTheDocument();
     });
 
     it("does not display user email when not logged in", () => {
@@ -158,7 +157,8 @@ describe("Navbar Component", () => {
         </UserContext.Provider>,
       );
 
-      const darkModeButton = screen.getByRole("button", { name: /Light/i });
+      // DarkModeSwitcher renders in both desktop and mobile nav — pick the first
+      const darkModeButton = screen.getAllByRole("button", { name: /Light/i })[0];
       fireEvent.click(darkModeButton);
 
       // Check if the toggle function is called

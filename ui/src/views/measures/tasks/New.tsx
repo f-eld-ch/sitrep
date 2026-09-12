@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
+import { PageTitle } from "components/ui";
 
 function New() {
   const { t } = useTranslation();
 
-  return <h3 className="title is-size-5 is-capitalized">{t("createNewTask")}</h3>;
+  return <PageTitle level={3}>{t("createNewTask")}</PageTitle>;
 }
 
 function NewForm() {

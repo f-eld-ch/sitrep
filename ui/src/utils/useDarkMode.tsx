@@ -40,8 +40,8 @@ export function useDarkMode(
   // preference applies even on screens rendered without the Navbar (e.g. the login screen).
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("theme-dark", isDarkMode);
-    root.classList.toggle("theme-light", !isDarkMode);
+    root.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+    // @uiw/react-md-editor reads data-color-mode from the nearest ancestor to choose its theme.
     root.setAttribute("data-color-mode", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 

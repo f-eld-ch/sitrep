@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
+import { PageTitle } from "components/ui";
 
 function List() {
   const { t } = useTranslation();
 
-  return <h3 className="title is-size-3 is-capitalized">{t("requests")}</h3>;
+  return <PageTitle>{t("requests")}</PageTitle>;
 }
 
 export default List;

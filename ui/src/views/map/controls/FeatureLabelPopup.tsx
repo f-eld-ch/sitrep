@@ -1,6 +1,6 @@
 import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { faArrowsRotate, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faLock, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import bbox from "@turf/bbox";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
@@ -8,6 +8,7 @@ import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/lab
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { isUndefined, omitBy } from "lodash";
+import { Button } from "components/ui";
 import { useCallback, useContext, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type MapRef, Popup, useMap } from "react-map-gl/maplibre";
@@ -297,7 +298,7 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       // Measure the rendered popup and pan only as far as needed, without changing zoom.
       const frame = requestAnimationFrame(() => {
         const mapRect = map.getContainer().getBoundingClientRect();
-        const popup = map.getContainer().querySelector<HTMLElement>(".feature-label-popup");
+        const popup = map.getContainer().querySelector<HTMLElement>("[data-popup='feature-label']");
         if (!popup) return;
 
         const popupRect = popup.getBoundingClientRect();
@@ -378,53 +379,53 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
       focusAfterOpen
       anchor={anchor}
       offset={30}
-      className="feature-label-popup"
+      data-popup="feature-label"
     >
-      <div className="p-3" style={{ minWidth: "220px" }}>
-        <div className="is-flex is-justify-content-space-between is-align-items-center mb-3">
-          {title ? <p className="title is-6 mb-0">{title}</p> : <span />}
+      <div className="min-w-[220px] p-3">
+        <div className="mb-3 flex items-center justify-between">
+          {title ? <p className="text-sm font-bold">{title}</p> : <span />}
           <button
             type="button"
-            className="delete is-small"
-            style={{ flexShrink: 0, marginLeft: "0.5rem" }}
+            className="ml-2 shrink-0 p-1 leading-none text-gray-400 hover:text-gray-600"
             aria-label={t("close")}
             onClick={close}
-          />
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
         </div>
         {popupFields.map((field) => {
           const inputId = `${baseId}-${field.key}`;
           const isKemler = field.key === UN_SIGN_FIELDS.kemler;
           const isUnNumber = field.key === UN_SIGN_FIELDS.unNumber;
           return (
-            <div key={field.key} className="field mb-2 has-text-dark">
-              <label className="label is-small mb-1 has-text-dark" htmlFor={inputId}>
+            <div key={field.key} className="mb-2">
+              <label className="mb-1 block text-xs font-semibold text-gray-800" htmlFor={inputId}>
                 {field.label}
               </label>
-              <div className="control has-text-dark">
+              <div>
                 {isKemler ? (
-                  <div className="select is-small is-fullwidth">
-                    <select
-                      id={inputId}
-                      value={values[field.key] ?? ""}
-                      onChange={(e) =>
-                        setValues((prev) => ({
-                          ...prev,
-                          [field.key]: e.target.value,
-                        }))
-                      }
-                    >
-                      <option value="">{t("mapview.labels.kemlerPlaceholder")}</option>
-                      {KEMLER_CODES.map((code) => (
-                        <option key={code} value={code}>
-                          {code}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    id={inputId}
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
+                    value={values[field.key] ?? ""}
+                    onChange={(e) =>
+                      setValues((prev) => ({
+                        ...prev,
+                        [field.key]: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">{t("mapview.labels.kemlerPlaceholder")}</option>
+                    {KEMLER_CODES.map((code) => (
+                      <option key={code} value={code}>
+                        {code}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <input
                     id={inputId}
-                    className="input is-small"
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
                     type="text"
                     inputMode={isUnNumber ? "numeric" : undefined}
                     maxLength={isUnNumber ? 4 : undefined}
@@ -449,19 +450,22 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           );
         })}
         {canRotate && (
-          <div className="field mb-2 has-text-dark">
+          <div className="mb-2">
             {rotationFixed ? (
               <>
-                <label className="label is-small mb-1 has-text-dark" htmlFor={`${baseId}-rotation`}>
-                  <span className="icon is-small mr-1">
+                <label
+                  className="mb-1 block text-xs font-semibold text-gray-800"
+                  htmlFor={`${baseId}-rotation`}
+                >
+                  <span className="mr-1">
                     <FontAwesomeIcon icon={faArrowsRotate} />
                   </span>
-                  {t("mapview.rotation")} <span className="has-text-grey">({rotation}°)</span>
+                  {t("mapview.rotation")} <span className="text-gray-500">({rotation}°)</span>
                 </label>
-                <div className="control">
+                <div>
                   <input
                     id={`${baseId}-rotation`}
-                    className="slider is-fullwidth"
+                    className="w-full"
                     type="range"
                     min="0"
                     max="360"
@@ -471,58 +475,47 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
                     onChange={(e) => onRotationChange(Number(e.target.value))}
                   />
                 </div>
-                <button
-                  type="button"
-                  className="button is-small is-fullwidth is-light mt-2"
+                <Button
+                  variant="light"
+                  size="sm"
+                  className="mt-2 w-full"
                   onClick={onRotationUnlock}
                 >
-                  <span className="icon is-small">
+                  <span>
                     <FontAwesomeIcon icon={faLock} />
                   </span>
                   <span>{t("mapview.unlock")}</span>
-                </button>
+                </Button>
               </>
             ) : (
-              <div className="control">
-                <button
-                  type="button"
-                  className="button is-small is-fullwidth is-light"
-                  onClick={onRotationFix}
-                >
-                  <span className="icon is-small">
+              <div>
+                <Button variant="light" size="sm" className="w-full" onClick={onRotationFix}>
+                  <span>
                     <FontAwesomeIcon icon={faLock} />
                   </span>
                   <span>{t("mapview.lock")}</span>
-                </button>
+                </Button>
               </div>
             )}
           </div>
         )}
         {isDirectionalLine && (
-          <div className="field mb-2 has-text-dark">
-            <div className="control">
-              <button
-                type="button"
-                className="button is-small is-fullwidth is-light"
-                onClick={onReverseDirection}
-              >
-                <span className="icon is-small">
+          <div className="mb-2">
+            <div>
+              <Button variant="light" size="sm" className="w-full" onClick={onReverseDirection}>
+                <span>
                   <FontAwesomeIcon icon={faArrowsRotate} />
                 </span>
                 <span>{t("mapview.rotate")}</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
-        <div className="field">
-          <div className="control has-text-dark">
-            <button
-              type="button"
-              className="button is-primary is-small is-fullwidth"
-              onClick={saveAndClose}
-            >
+        <div>
+          <div>
+            <Button variant="primary" size="sm" className="w-full" onClick={saveAndClose}>
               {t("save")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

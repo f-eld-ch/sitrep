@@ -6,17 +6,25 @@ import { useTranslation } from "react-i18next";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { useDate } from "utils/useDate";
+import { Button } from "components/ui";
 import { ReactEditor } from "../Markdown";
 import { canSave, hasValidMessageTime, useEditorContext } from "../editorState";
 
 type NonRadioMedium = Exclude<Medium, Medium.Radio>;
+
+const inputBase =
+  "w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
+const inputWithIcon =
+  "w-full rounded border border-border pl-10 pr-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
+const iconSpan =
+  "absolute inset-y-0 left-0 w-10 flex items-center justify-center text-fg-muted/50 pointer-events-none text-sm";
 
 const SenderInput = ({ id }: { id: string }) => {
   const { t } = useTranslation();
   const { state, dispatch, autocompleteDetails } = useEditorContext();
 
   return (
-    <div className="control is-expanded has-icons-left is-flex-shrink-1">
+    <div className="relative min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
@@ -24,7 +32,7 @@ const SenderInput = ({ id }: { id: string }) => {
       >
         <input
           id={id}
-          className="input"
+          className={inputWithIcon}
           type="text"
           value={state.sender}
           autoComplete="on"
@@ -34,7 +42,7 @@ const SenderInput = ({ id }: { id: string }) => {
           }}
         />
       </Hint>
-      <span className="icon is-small is-left">
+      <span className={iconSpan}>
         <FontAwesomeIcon icon={faCircleArrowLeft} />
       </span>
     </div>
@@ -46,7 +54,7 @@ const ReceiverInput = ({ id }: { id: string }) => {
   const { state, dispatch, autocompleteDetails } = useEditorContext();
 
   return (
-    <div className="control is-expanded has-icons-left is-flex-shrink-1">
+    <div className="relative min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverNames}
         allowTabFill={true}
@@ -54,7 +62,7 @@ const ReceiverInput = ({ id }: { id: string }) => {
       >
         <input
           id={id}
-          className="input"
+          className={inputWithIcon}
           type="text"
           value={state.receiver}
           autoComplete="on"
@@ -64,7 +72,7 @@ const ReceiverInput = ({ id }: { id: string }) => {
           }}
         />
       </Hint>
-      <span className="icon is-small is-left">
+      <span className={iconSpan}>
         <FontAwesomeIcon icon={faCircleArrowRight} />
       </span>
     </div>
@@ -73,7 +81,7 @@ const ReceiverInput = ({ id }: { id: string }) => {
 
 const ContentInput = ({ id }: { id: string }) => {
   return (
-    <div className="control">
+    <div>
       <ReactEditor id={id} />
     </div>
   );
@@ -85,11 +93,11 @@ const TimeInput = ({ id }: { id: string }) => {
   const { now } = useDate();
   const invalidTime = !hasValidMessageTime(state.time, now);
   return (
-    <div>
-      <div className="control is-expanded has-icons-left is-flex-shrink-1">
+    <div className="min-w-0 flex-1">
+      <div className="relative">
         <input
           id={id}
-          className="input"
+          className={inputWithIcon}
           value={dayjs(state.time ?? now).format("YYYY-MM-DDTHH:mm")}
           type="datetime-local"
           max={dayjs(now).add(5, "minute").format("YYYY-MM-DDTHH:mm")}
@@ -102,12 +110,12 @@ const TimeInput = ({ id }: { id: string }) => {
             });
           }}
         />
-        <span className="icon is-small is-left">
+        <span className={iconSpan}>
           <FontAwesomeIcon icon={faClock} />
         </span>
       </div>
       {invalidTime && (
-        <p id={`${id}-error`} className="help is-danger" role="alert">
+        <p id={`${id}-error`} className="mt-1 text-xs text-danger" role="alert">
           {t("messageTimeTooFarInFuture")}
         </p>
       )}
@@ -125,7 +133,7 @@ const SenderDetailInput = ({
   const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
-    <div className="control is-expanded is-flex-shrink-3">
+    <div className="min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}
@@ -134,7 +142,7 @@ const SenderDetailInput = ({
         <input
           id={id}
           aria-label={placeholder}
-          className="input"
+          className={inputBase}
           value={state.senderDetail}
           type="text"
           onChange={(e) => {
@@ -160,7 +168,7 @@ const ReceiverDetailInput = ({
   const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
-    <div className="control is-expanded is-flex-shrink-3">
+    <div className="min-w-0 flex-1">
       <Hint
         options={autocompleteDetails.senderReceiverDetails}
         allowTabFill={true}
@@ -169,7 +177,7 @@ const ReceiverDetailInput = ({
         <input
           id={id}
           aria-label={placeholder}
-          className="input"
+          className={inputBase}
           value={state.receiverDetail}
           type="text"
           onChange={(e) => {
@@ -190,12 +198,12 @@ const RadioChannelDetailInput = () => {
   const { state, dispatch, autocompleteDetails } = useEditorContext();
   const id = useId();
   return (
-    <div className="control is-narrow is-flex-shrink-4">
+    <div className="w-32 shrink-0">
       <Hint options={autocompleteDetails.channelList} allowTabFill={true} allowEnterFill={true}>
         <input
           id={id}
           aria-label={t("radioChannel") as string}
-          className="input"
+          className={inputBase}
           value={state.radioChannel || ""}
           type="text"
           onChange={(e) => {
@@ -215,15 +223,9 @@ const SaveButton = () => {
   const { t } = useTranslation();
   const { state, saving } = useEditorContext();
   return (
-    <div className="control">
-      <button
-        type="submit"
-        className="button is-primary is-rounded is-capitalized"
-        disabled={!canSave(state) || saving}
-      >
-        {t("save")}
-      </button>
-    </div>
+    <Button type="submit" variant="primary" disabled={!canSave(state) || saving}>
+      {t("save")}
+    </Button>
   );
 };
 
