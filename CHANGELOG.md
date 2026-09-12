@@ -3,7 +3,19 @@
 ### ⛰️  Features
 
 - *(attachments)* Message attachments (upload, download, remove) ([#1842](https://github.com/f-eld-ch/sitrep/issues/1842)) - ([cdd0375](https://github.com/f-eld-ch/sitrep/commit/cdd03759fb0d34428299e0b5c448e2777d4f8046))
+- *(map)* Add scrim layer for satellite basemap dimming ([#1845](https://github.com/f-eld-ch/sitrep/issues/1845)) - ([b2daa19](https://github.com/f-eld-ch/sitrep/commit/b2daa1926f40177a83f9c8a96d2a0f8eede2f2f4))
 
+### 📚 Documentation
+
+- *(development)* Fix GettingStarted local setup steps ([#1846](https://github.com/f-eld-ch/sitrep/issues/1846)) - ([c75f625](https://github.com/f-eld-ch/sitrep/commit/c75f625b2d1d1d23e2200ecd9b8ffb46af9662c1))
+
+### ⚙️  Other
+
+- *(deps)* Bump maplibre-gl from 6.7.0 to 6.9.0 in /ui ([#1844](https://github.com/f-eld-ch/sitrep/issues/1844)) - ([61d16b2](https://github.com/f-eld-ch/sitrep/commit/61d16b278951aabd4b23b7b9d7f7f284b3b8b7ae))
+
+## New Contributors ❤️
+
+* @raphaelthomas made their first contribution in [#1846](https://github.com/f-eld-ch/sitrep/pull/1846)
 
 ## [26.9.4](https://github.com/f-eld-ch/sitrep/compare/v26.9.3..v26.9.4) - 2026-09-10
 
