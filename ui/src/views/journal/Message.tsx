@@ -295,7 +295,7 @@ const MessageContainer = ({
 
       {/* Action bar — division tags left, edit/triage buttons right */}
       {(hasDivisions || (showControls === true && id !== undefined)) && (
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-b pt-1.5">
+        <div className="flex flex-wrap items-end gap-x-2 gap-y-1 rounded-b pt-1.5">
           {/* Left — division tags (full-width on mobile so buttons wrap below) */}
           <div className="flex w-full flex-wrap gap-1.5 px-2 py-4 sm:w-auto sm:flex-1">
             {message.divisions?.map((d) => (
