@@ -67,7 +67,16 @@ func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGr
 		})
 	}
 
-	sort.Slice(out, func(i, j int) bool { return out[i].ID.String() < out[j].ID.String() })
+	// Sort by name then id to match the Postgres adapter's ORDER BY name, id.
+	// Previously sorted by id-only; aligning now that ids are v7 and therefore
+	// creation-ordered, which would have made the order meaningful but wrong.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Name != out[j].Name {
+			return out[i].Name < out[j].Name
+		}
+
+		return out[i].ID.String() < out[j].ID.String()
+	})
 
 	return out, nil
 }

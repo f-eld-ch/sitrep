@@ -226,7 +226,14 @@ func (SnapshotStore) Save(_ context.Context, _ eventsourcing.Aggregate) error { 
 
 type UUIDGen struct{}
 
-func (UUIDGen) New() uuid.UUID { return uuid.New() }
+func (UUIDGen) New() uuid.UUID {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return uuid.New()
+	}
+
+	return id
+}
 
 type WallClock struct{}
 
