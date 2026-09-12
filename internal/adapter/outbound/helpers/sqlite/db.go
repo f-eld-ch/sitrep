@@ -34,12 +34,12 @@ import (
 // Open fails if the parent directory cannot be created, or if journal_mode
 // does not become WAL after the pragma is applied (which can happen silently
 // on NFS/CIFS mounts or on filesystems without shared-memory support).
-func Open(path string) (read, write *sql.DB, err error) {
+func Open(ctx context.Context, path string) (read, write *sql.DB, err error) {
 	if err = os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return nil, nil, fmt.Errorf("sqlitex: create parent directory: %w", err)
 	}
 
-	write, err = openHandle(path, false)
+	write, err = openHandle(ctx, path, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +49,7 @@ func Open(path string) (read, write *sql.DB, err error) {
 	write.SetConnMaxLifetime(0)
 	write.SetConnMaxIdleTime(0)
 
-	read, err = openHandle(path, true)
+	read, err = openHandle(ctx, path, true)
 	if err != nil {
 		_ = write.Close()
 		return nil, nil, err
@@ -60,7 +60,7 @@ func Open(path string) (read, write *sql.DB, err error) {
 	read.SetConnMaxLifetime(0)
 	read.SetConnMaxIdleTime(0)
 
-	if err = assertWAL(write); err != nil {
+	if err = assertWAL(ctx, write); err != nil {
 		_ = read.Close()
 		_ = write.Close()
 
@@ -72,7 +72,7 @@ func Open(path string) (read, write *sql.DB, err error) {
 
 // openHandle builds a DSN for path and returns an open *sql.DB.
 // readOnly sets query_only(1) and omits _txlock=immediate.
-func openHandle(path string, readOnly bool) (*sql.DB, error) {
+func openHandle(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 	dsn := "file:" + path +
 		"?_pragma=journal_mode(WAL)" +
 		"&_pragma=busy_timeout(10000)" +
@@ -92,7 +92,7 @@ func openHandle(path string, readOnly bool) (*sql.DB, error) {
 		return nil, fmt.Errorf("sqlitex: open %s: %w", path, err)
 	}
 
-	if err = db.PingContext(context.Background()); err != nil {
+	if err = db.PingContext(ctx); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("sqlitex: ping %s: %w", path, err)
 	}
@@ -105,9 +105,9 @@ func openHandle(path string, readOnly bool) (*sql.DB, error) {
 // not support the shared-memory mapping required by WAL (NFS, CIFS, some
 // tmpfs configurations). This would destroy the concurrent-reader guarantee
 // and is worth a loud startup failure rather than silent degradation.
-func assertWAL(db *sql.DB) error {
+func assertWAL(ctx context.Context, db *sql.DB) error {
 	var mode string
-	if err := db.QueryRowContext(context.Background(),
+	if err := db.QueryRowContext(ctx,
 		`SELECT journal_mode FROM pragma_journal_mode`,
 	).Scan(&mode); err != nil {
 		return fmt.Errorf("sqlitex: could not verify journal_mode: %w", err)
