@@ -3,7 +3,18 @@
 ### ⛰️  Features
 
 - *(attachments)* Message attachments (upload, download, remove) ([#1842](https://github.com/f-eld-ch/sitrep/issues/1842)) - ([cdd0375](https://github.com/f-eld-ch/sitrep/commit/cdd03759fb0d34428299e0b5c448e2777d4f8046))
+- *(db)* Cleanup hasura and other legacy left-overs in database ([#1853](https://github.com/f-eld-ch/sitrep/issues/1853)) - ([cd7cd50](https://github.com/f-eld-ch/sitrep/commit/cd7cd50a43e109b6ddb3e0ff8d571888e893d940))
 - *(map)* Add scrim layer for satellite basemap dimming ([#1845](https://github.com/f-eld-ch/sitrep/issues/1845)) - ([b2daa19](https://github.com/f-eld-ch/sitrep/commit/b2daa1926f40177a83f9c8a96d2a0f8eede2f2f4))
+- *(sqlite)* SQLite storage backend — full event store, projections, queries, and read models ([#1858](https://github.com/f-eld-ch/sitrep/issues/1858)) - ([cc25fbb](https://github.com/f-eld-ch/sitrep/commit/cc25fbb85ae1824666bd2ea6e459c670400c90e7))
+- *(ui)* Make RBAC editors generally available ([#1854](https://github.com/f-eld-ch/sitrep/issues/1854)) - ([e442f4a](https://github.com/f-eld-ch/sitrep/commit/e442f4a54d34d6ea5031a5b3e026b0654dc0d818))
+- *(ui)* Migrate UI from Bulma to Tailwind CSS ([#1850](https://github.com/f-eld-ch/sitrep/issues/1850)) - ([f6a7aa8](https://github.com/f-eld-ch/sitrep/commit/f6a7aa8edc105c4819b117155dc387a629e9606a))
+- Switch ID generation from UUIDv4 to UUIDv7 ([#1855](https://github.com/f-eld-ch/sitrep/issues/1855)) - ([9c371ee](https://github.com/f-eld-ch/sitrep/commit/9c371ee21c25984b627ae9b4a46540961dc1eae8))
+
+### 🐛 Bug Fixes
+
+- *(ui)* Reduce gap between Layer and Style control buttons ([#1859](https://github.com/f-eld-ch/sitrep/issues/1859)) - ([e947b27](https://github.com/f-eld-ch/sitrep/commit/e947b2701a78b144bab388200b27cbecdfd4c3db))
+- *(ui)* Push down offline-ready reload prompt below navbar ([#1857](https://github.com/f-eld-ch/sitrep/issues/1857)) - ([a33595d](https://github.com/f-eld-ch/sitrep/commit/a33595dd8a5498565aae04cff12b90b66ced9ed3))
+- *(ui)* Align message action buttons to bottom of action bar ([#1856](https://github.com/f-eld-ch/sitrep/issues/1856)) - ([91619ab](https://github.com/f-eld-ch/sitrep/commit/91619ab10ab08bac11b33012f86e6331aa5f1f4f))
 
 ### 📚 Documentation
 
@@ -11,6 +22,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/jackc/pgx/v5 from 5.10.0 to 5.11.0 ([#1847](https://github.com/f-eld-ch/sitrep/issues/1847)) - ([e075032](https://github.com/f-eld-ch/sitrep/commit/e075032b7243514b7b90947da31b432342753419))
 - *(deps)* Bump maplibre-gl from 6.7.0 to 6.9.0 in /ui ([#1844](https://github.com/f-eld-ch/sitrep/issues/1844)) - ([61d16b2](https://github.com/f-eld-ch/sitrep/commit/61d16b278951aabd4b23b7b9d7f7f284b3b8b7ae))
 
 ## New Contributors ❤️
