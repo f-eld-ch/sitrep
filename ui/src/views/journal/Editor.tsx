@@ -6,7 +6,9 @@ import uniq from "lodash/uniq";
 import React, {
   useCallback,
   useContext,
+  useEffect,
   useId,
+  useImperativeHandle,
   useMemo,
   useReducer,
   useRef,
@@ -53,6 +55,7 @@ const EMPTY_MESSAGES: Message[] = [];
 function Editor() {
   const { t } = useTranslation();
   const { incidentId } = useParams();
+  const navigate = useNavigate();
   const {
     state: { incident, loadedForId },
   } = useContext(IncidentContext);
@@ -255,7 +258,10 @@ function Editor() {
               {t("incidentClosedNoEdits")}
             </Notification>
           ) : (
-            <InputBox />
+            <InputBox
+              incidentId={incidentId ?? ""}
+              onClose={() => navigate(`/incident/${incidentId}/journal/messages`)}
+            />
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -411,9 +417,22 @@ function AttachmentUpload({
 const selectClass =
   "w-full rounded border border-border px-3 py-1.5 text-sm bg-bg text-fg focus:outline-none focus:ring-1 focus:ring-primary";
 
-function InputBox() {
+function InputBox({
+  incidentId,
+  onClose,
+  showPreview = true,
+  showBox = true,
+  hideSave = false,
+  title,
+}: {
+  incidentId: string;
+  onClose?: () => void;
+  showPreview?: boolean;
+  showBox?: boolean;
+  hideSave?: boolean;
+  title?: string;
+}) {
   const { t } = useTranslation();
-  const { incidentId } = useParams();
   const { state, dispatch, onSave } = useEditorContext();
 
   const messageContentDebounced: string = useDebounce(state.content, 250);
@@ -429,8 +448,6 @@ function InputBox() {
       dispatch({ type: "set_media_detail", detail: { type: selectMedium } as MediaDetail });
     }
   };
-
-  const navigate = useNavigate();
 
   const message: Message = {
     id: state.messageToEdit?.id || "",
@@ -452,18 +469,21 @@ function InputBox() {
   };
 
   const mediumId = useId();
-  return (
-    <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">
-      <div className="mb-2 flex justify-end">
-        <button
-          type="button"
-          className="p-1 text-sm leading-none text-fg-muted hover:text-fg"
-          aria-label={t("close")}
-          onClick={() => navigate(`/incident/${incidentId}/journal/messages`)}
-        >
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
-      </div>
+  const inner = (
+    <>
+      {title && <h3 className="mb-4 text-base font-bold">{title}</h3>}
+      {onClose && (
+        <div className="mb-2 flex justify-end">
+          <button
+            type="button"
+            className="p-1 text-sm leading-none text-fg-muted hover:text-fg"
+            aria-label={t("close")}
+            onClick={onClose}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
+      )}
 
       <div className="mb-3 flex flex-col items-start xl:flex-row xl:gap-4">
         <div className="mb-1 w-full xl:mb-0 xl:w-32 xl:shrink-0 xl:pt-1.5 xl:text-right">
@@ -504,17 +524,18 @@ function InputBox() {
       >
         <MediumForm
           medium={state.media}
+          hideSave={hideSave}
           afterContent={
-            <AttachmentUpload messageId={state.messageToEdit?.id} incidentId={incidentId ?? ""} />
+            <AttachmentUpload messageId={state.messageToEdit?.id} incidentId={incidentId} />
           }
         />
       </form>
-      {(state.content !== "" || state.sender !== "" || state.receiver !== "") && (
+      {showPreview && (state.content !== "" || state.sender !== "" || state.receiver !== "") && (
         <>
           <div className="mt-4 mb-3 text-xl font-bold capitalize">{t("preview")}</div>
           <JournalMessage
             id={undefined}
-            incidentId={incidentId ?? ""}
+            incidentId={incidentId}
             message={message}
             showControls={false}
             divisions={[]}
@@ -523,8 +544,125 @@ function InputBox() {
           />
         </>
       )}
-    </div>
+    </>
   );
+  return showBox ? (
+    <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">{inner}</div>
+  ) : inner;
 }
+
+export interface MessageEditorFormHandle {
+  save: () => Promise<void>;
+}
+
+export const MessageEditorForm = React.forwardRef<
+  MessageEditorFormHandle,
+  {
+    message: Message;
+    incidentId: string;
+    onSaved?: () => void;
+    onLiveMessage?: (msg: Message) => void;
+    title?: string;
+  }
+>(function MessageEditorForm({
+  message,
+  incidentId,
+  onSaved,
+  onLiveMessage,
+  title,
+}, ref) {
+  const [updateMessage, updateState] = useUpdateMessage();
+  const [state, dispatch] = useReducer(editorReducer, initEditorState());
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const savingRef = useRef(false);
+
+  useEffect(() => {
+    dispatch({ type: "set_edit_message", message });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message.id]);
+
+  useEffect(() => {
+    if (!onLiveMessage) return;
+    const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
+    const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
+    onLiveMessage({
+      id: state.messageToEdit?.id ?? message.id,
+      number: state.messageToEdit?.number ?? message.number,
+      content: state.content,
+      sender: state.sender,
+      senderDetail,
+      receiver: state.receiver,
+      receiverDetail,
+      medium: state.media,
+      time: state.time ?? message.time,
+      priorityId: state.messageToEdit?.priorityId ?? message.priorityId,
+      triageId: state.messageToEdit?.triageId ?? message.triageId,
+      divisions: state.messageToEdit?.divisions ?? message.divisions,
+      attachments: state.messageToEdit?.attachments ?? message.attachments,
+      createdAt: state.messageToEdit?.createdAt ?? message.createdAt,
+      updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
+      deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  const addPendingFile = useCallback((file: File) => {
+    setPendingFiles((prev) => [...prev, file]);
+  }, []);
+
+  const removePendingFile = useCallback((index: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!canSave(state)) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
+    const time = state.time ?? new Date();
+    const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
+    const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
+    try {
+      await updateMessage({
+        incidentId,
+        messageId: message.id,
+        time,
+        content: state.content,
+        medium: state.media,
+        sender: state.sender,
+        senderDetail,
+        receiver: state.receiver,
+        receiverDetail,
+      });
+      savingRef.current = false;
+      onSaved?.();
+    } catch {
+      savingRef.current = false;
+    }
+  }, [state, updateMessage, incidentId, message.id, onSaved]);
+
+  const autocompleteDetails = useMemo<AutofillDetail>(
+    () => ({ senderReceiverNames: [], senderReceiverDetails: [], channelList: [] }),
+    [],
+  );
+
+  useImperativeHandle(ref, () => ({ save: handleSave }), [handleSave]);
+
+  const contextValue: EditorContextValue = {
+    state,
+    dispatch,
+    onSave: handleSave,
+    saving: updateState.loading,
+    autocompleteDetails,
+    pendingFiles,
+    addPendingFile,
+    removePendingFile,
+  };
+
+  return (
+    <EditorContext.Provider value={contextValue}>
+      <InputBox incidentId={incidentId} showPreview={false} showBox={false} hideSave title={title} />
+    </EditorContext.Provider>
+  );
+});
 
 export default Editor;

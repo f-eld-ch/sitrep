@@ -38,9 +38,11 @@ const PARTY_INPUTS = {
 export function MediumForm({
   medium,
   afterContent,
+  hideSave = false,
 }: {
   medium: Medium;
   afterContent?: React.ReactNode;
+  hideSave?: boolean;
 }) {
   const { t } = useTranslation();
   const { order, detailPlaceholderKey } = MEDIUM_FORM_CONFIG[medium];
@@ -69,7 +71,7 @@ export function MediumForm({
       <FormRow label={t("message.time") as string}>{(id) => <TimeInput id={id} />}</FormRow>
       <FormRow label={t("message.content") as string}>{(id) => <ContentInput id={id} />}</FormRow>
       {afterContent}
-      <FormRow>{() => <SaveButton />}</FormRow>
+      {!hideSave && <FormRow>{() => <SaveButton />}</FormRow>}
     </div>
   );
 }

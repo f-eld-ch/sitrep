@@ -1,0 +1,468 @@
+import { faCheck, faMinus, faPrint, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import { clsx } from "clsx";
+import reject from "lodash/reject";
+import union from "lodash/union";
+import { Fragment, ViewTransition, useTransition, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useReactToPrint } from "react-to-print";
+import { useParams } from "react-router";
+import { type Division, PriorityStatus, TriageStatus } from "types";
+import type { Message } from "types/journal";
+import { Button, Notification } from "components/ui";
+import { Spinner } from "components";
+import { type MessageForTriageData, useIncidentMessages, useMessageForTriage, useTriageMessage } from "api";
+import { type MessageEditorFormHandle } from "./Editor";
+import { type MessageFilters } from "./listUtils";
+import { NewForm as TaskNew } from "../measures/tasks";
+import { MessageEditorForm } from "./Editor";
+import { default as JournalMessage } from "./Message";
+import MessageSheet from "./MessageSheet";
+import { buildMessageList } from "./listUtils";
+import { MessageStack } from "./MessageStack";
+import { TriageCanvas } from "./TriageCanvas";
+
+
+export type InitialStrategy = "oldest-pending" | "newest" | "none";
+
+type StepDef = { key: string; label: string };
+
+function Stepper({ steps, current, onChange }: {
+  steps: StepDef[];
+  current: number;
+  onChange: (idx: number) => void;
+}) {
+  return (
+    <nav aria-label="steps" className="flex items-center gap-1 px-5 py-3 overflow-x-auto scrollbar-none">
+      {steps.map((step, idx) => {
+        const done = idx < current;
+        const active = idx === current;
+        return (
+          <Fragment key={step.key}>
+            {idx > 0 && (
+              <div className={clsx("h-px flex-1 min-w-2", done ? "bg-primary/40" : "bg-border")} />
+            )}
+            <button
+              type="button"
+              onClick={() => onChange(idx)}
+              className={clsx(
+                "flex items-center gap-1.5 text-sm shrink-0 transition-colors",
+                active ? "text-primary font-semibold" :
+                done ? "text-fg-muted hover:text-fg" :
+                "text-fg-muted/50 hover:text-fg-muted",
+              )}
+            >
+              <span className={clsx(
+                "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
+                active ? "bg-primary text-white" :
+                done ? "bg-primary/20 text-primary" :
+                "bg-border text-fg-muted",
+              )}>
+                {done
+                  ? <FontAwesomeIcon icon={faCheck} className="text-[11px]" />
+                  : <span className="text-xs font-bold leading-none translate-y-px">{idx + 1}</span>
+                }
+              </span>
+              {step.label}
+            </button>
+          </Fragment>
+        );
+      })}
+    </nav>
+  );
+}
+
+
+function PrintSheetButton({ message, divisions, variant = "footer" }: {
+  message: Message;
+  divisions: Division[];
+  variant?: "footer" | "inline";
+}) {
+  const { t } = useTranslation();
+  const sheetRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: sheetRef,
+    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
+  });
+  return (
+    <>
+      {variant === "footer" ? (
+        <Button type="button" variant="light" size="sm" onClick={() => handlePrint()}>
+          <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
+          {t("messageSheet")}
+        </Button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => handlePrint()}
+          className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors"
+        >
+          <FontAwesomeIcon icon={faPrint} />
+          <span>{t("messageSheet")}</span>
+        </button>
+      )}
+      <div className="hidden">
+        <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
+      </div>
+    </>
+  );
+}
+
+function TriagePanel(props: {
+  message: Message;
+  incidentId: string;
+  onSaved: () => void;
+}) {
+  const { message, incidentId, onSaved } = props;
+  const { t } = useTranslation();
+  const result = useMessageForTriage(message.id, incidentId);
+
+  if (result.status === "loading") {
+    return <div className="flex justify-center p-8"><Spinner /></div>;
+  }
+
+  if (result.status === "error") {
+    return (
+      <div className="p-4">
+        <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>
+      </div>
+    );
+  }
+
+  return <PanelForm key={message.id} message={message} data={result.data} incidentId={incidentId} onSaved={onSaved} />;
+}
+
+function PanelForm(props: {
+  message: Message;
+  data: MessageForTriageData;
+  incidentId: string;
+  onSaved: () => void;
+}) {
+  const { message, data, incidentId, onSaved } = props;
+  const { t } = useTranslation();
+  const showTasks = useBooleanFlagValue("show-tasks", false);
+
+  const [triageMessage, triageState] = useTriageMessage();
+  const [priority, setPriority] = useState<PriorityStatus>(data.message.priorityId);
+  const [assignments, setAssignments] = useState<Division[]>(
+    data.message.divisions.map((d) => d.division),
+  );
+  const [stepIndex, setStepIndex] = useState(0);
+  const [liveMessage, setLiveMessage] = useState<Message>(message);
+  const editorRef = useRef<MessageEditorFormHandle>(null);
+  const savedAssignments = useRef<Division[] | null>(null);
+
+  const isPending = message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
+
+  const steps: StepDef[] = [
+    ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
+    { key: "meldefluss", label: t("messageFlow") },
+    ...(showTasks ? [{ key: "pendenzen", label: t("tasks") }] : []),
+    { key: "personen", label: t("stepPersonen") },
+    { key: "mittel", label: t("stepMittel") },
+  ];
+
+  const safeIndex = Math.min(stepIndex, steps.length - 1);
+  const currentStep = steps[safeIndex];
+  const isLast = safeIndex === steps.length - 1;
+
+  const previewMessage: Message = {
+    ...liveMessage,
+    priorityId: priority,
+    triageId: priority === PriorityStatus.High ? TriageStatus.Triaged : liveMessage.triageId,
+    divisions: assignments.map((division) => ({ division })),
+  };
+
+  const handleSave = (triage: TriageStatus) => {
+    onSaved();
+    triageMessage({
+      incidentId,
+      messageId: message.id,
+      priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+      triage,
+      divisionIds: assignments.map((d) => d.id),
+      divisions: assignments,
+    }).catch(() => {});
+  };
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Message context — always visible at top */}
+      <div className="shrink-0 px-5 pt-4 pb-3">
+        {!isPending && (
+          <div className="flex justify-end mb-2">
+            <PrintSheetButton message={message} divisions={data.incidentDivisions} variant="inline" />
+          </div>
+        )}
+        <JournalMessage
+          showControls={false}
+          stabilizeActionBar
+          id={message.id}
+          incidentId={incidentId}
+          message={previewMessage}
+          divisions={assignments}
+          setEditorMessage={undefined}
+          setTriageMessage={undefined}
+        />
+      </div>
+
+      {/* Step navigator */}
+      <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
+
+      {/* Step content */}
+      <div className="flex-1 overflow-y-auto p-5">
+        {triageState.error && (
+          <Notification variant="danger" className="mb-4">
+            {t(`errors.${triageState.error.code}`)}
+          </Notification>
+        )}
+
+        {currentStep.key === "meldung" && (
+          <MessageEditorForm
+            ref={editorRef}
+            message={message}
+            incidentId={incidentId}
+            onLiveMessage={setLiveMessage}
+            title={t("stepMeldungReview")}
+          />
+        )}
+
+        {currentStep.key === "meldefluss" && (
+          <div className="flex flex-col gap-6">
+            <div>
+              <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
+              <div className="flex flex-wrap gap-2">
+                {data.incidentDivisions.map((d) => {
+                  const isPresent = assignments.some((e) => e.name === d.name);
+                  return (
+                    <div key={d.name} className="flex overflow-hidden rounded text-xs font-semibold">
+                      <span className={isPresent ? "bg-primary px-3 py-0.5 text-white" : "bg-fg px-3 py-0.5 text-bg"}>
+                        {d.description || d.name}
+                      </span>
+                      {isPresent ? (
+                        <button
+                          type="button"
+                          className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
+                          onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
+                        >
+                          <FontAwesomeIcon icon={faMinus} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
+                          onClick={() => setAssignments(union(assignments, [d]))}
+                        >
+                          <FontAwesomeIcon icon={faPlus} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={priority === PriorityStatus.High}
+                onClick={() => {
+                  if (priority === PriorityStatus.High) {
+                    setPriority(PriorityStatus.Normal);
+                    setAssignments(savedAssignments.current ?? []);
+                    savedAssignments.current = null;
+                  } else {
+                    savedAssignments.current = assignments;
+                    setPriority(PriorityStatus.High);
+                    setAssignments(data.incidentDivisions);
+                  }
+                }}
+                className={clsx(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2",
+                  priority === PriorityStatus.High ? "bg-danger" : "bg-border",
+                )}
+              >
+                <span
+                  className={clsx(
+                    "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
+                    priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {currentStep.key === "pendenzen" && (
+          <>
+            <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
+            <TaskNew />
+          </>
+        )}
+
+        {currentStep.key === "personen" && (
+          <h3 className="mb-3 text-base font-bold">{t("stepPersonen")}</h3>
+        )}
+
+        {currentStep.key === "mittel" && (
+          <h3 className="mb-3 text-base font-bold">{t("stepMittel")}</h3>
+        )}
+      </div>
+
+      {/* Footer: back / next / triage actions */}
+      <footer className="flex shrink-0 items-center gap-2 border-t border-border px-5 py-4">
+        {safeIndex > 0 && (
+          <Button type="button" variant="light" size="sm" onClick={() => setStepIndex((i) => i - 1)}>
+            {t("back")}
+          </Button>
+        )}
+        {currentStep.key === "meldung" && (
+          <Button type="button" variant="light" size="sm" disabled={triageState.loading} onClick={() => handleSave(TriageStatus.MoreInfo)}>
+            {t("saveMoreInfo")}
+          </Button>
+        )}
+        <div className="flex-1" />
+        {!isLast ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              if (currentStep.key === "meldung") {
+                void editorRef.current?.save();
+              }
+              setStepIndex((i) => i + 1);
+            }}
+          >
+            {t("next")}
+          </Button>
+        ) : (
+          <>
+            <PrintSheetButton message={previewMessage} divisions={data.incidentDivisions} />
+            <Button type="submit" variant="primary" size="sm" disabled={triageState.loading} onClick={() => handleSave(TriageStatus.Triaged)}>
+              {t("saveTriage")}
+            </Button>
+          </>
+        )}
+      </footer>
+    </div>
+  );
+}
+
+export interface TriageViewProps {
+  /** Pre-filter the message stack. Defaults to showing all messages. */
+  filters?: Partial<MessageFilters>;
+  /** Which message to highlight on first load. Defaults to "oldest-pending". */
+  initialStrategy?: InitialStrategy;
+}
+
+function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewProps) {
+  const { incidentId } = useParams();
+  const { t } = useTranslation();
+  const [, startTransition] = useTransition();
+  // undefined = no explicit selection; a string locks the view against polling changes
+  const [selectedId, setSelectedId] = useState<string | undefined>();
+  const [caughtUp, setCaughtUp] = useState(false);
+  // Captures the first defaultId we see while selectedId is undefined, so that a
+  // subsequent polling cycle delivering an older message doesn't silently switch the view.
+  // Cleared whenever selectedId becomes a string (explicit choice), allowing a fresh
+  // auto-selection after the next reset to undefined (e.g. caught-up → new arrivals).
+  const autoLockedId = useRef<string | undefined>(undefined);
+  // ID of the most-recently saved message. Auto-lock skips this ID so the cache's
+  // stale pending status doesn't immediately re-lock to the just-triaged message.
+  const justSavedId = useRef<string | undefined>(undefined);
+
+  const result = useIncidentMessages(incidentId ?? "");
+
+  const resolvedFilters: MessageFilters = { triage: "all", priority: "all", assignment: "all", ...filters };
+
+  const messages =
+    result.status === "ready"
+      ? buildMessageList(result.data.messages, resolvedFilters)
+      : [];
+
+  const pendingMessages = messages.filter(
+    (m) => m.triageId === TriageStatus.Pending || m.triageId === TriageStatus.Reset,
+  );
+
+  const defaultId = (() => {
+    switch (initialStrategy) {
+      case "oldest-pending": return pendingMessages[pendingMessages.length - 1]?.id;
+      case "newest": return messages[0]?.id;
+      case "none": return undefined;
+    }
+  })();
+
+  // When selectedId is an explicit string, clear the lock so a future reset to
+  // undefined (caught-up) picks a fresh defaultId rather than the stale one.
+  if (selectedId !== undefined) {
+    autoLockedId.current = undefined;
+    justSavedId.current = undefined;
+  } else if (autoLockedId.current === undefined && defaultId !== undefined && defaultId !== justSavedId.current) {
+    // First time a new defaultId resolves while in auto-mode: lock it in.
+    // Skip the just-saved ID so the stale cache doesn't re-lock to it before the mutation lands.
+    autoLockedId.current = defaultId;
+  }
+
+  const effectiveId = selectedId ?? autoLockedId.current;
+
+  if (result.status === "loading") {
+    return (
+      <div className="mt-[2.75rem] flex grow items-center justify-center bg-bg">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (result.status === "error") {
+    return (
+      <div className="mt-[2.75rem] grow p-6 bg-bg">
+        <Notification variant="danger" light>{t(`errors.${result.error.code}`)}</Notification>
+      </div>
+    );
+  }
+
+  // Oldest untriaged excluding the one being triaged (list is newest-first, so oldest is last).
+  const getNextUntriaged = (currentId: string): string | undefined => {
+    const next = pendingMessages.filter((m) => m.id !== currentId);
+    return next[next.length - 1]?.id;
+  };
+
+  const handleSaved = (currentId: string) => {
+    justSavedId.current = currentId;
+    autoLockedId.current = undefined; // evict immediately so the stale cache can't keep it locked
+    startTransition(() => {
+      const nextId = getNextUntriaged(currentId);
+      setSelectedId(nextId); // undefined → auto-selects new oldest pending via defaultId
+      setCaughtUp(nextId === undefined);
+    });
+  };
+
+  const selectedMessage = messages.find((m) => m.id === effectiveId);
+
+  return (
+    <div className="mt-[2.75rem] flex grow overflow-hidden bg-bg">
+      <MessageStack
+        messages={messages}
+        effectiveId={effectiveId}
+        onSelect={(id) => startTransition(() => { setCaughtUp(false); setSelectedId(id); })}
+      />
+      <TriageCanvas>
+        {selectedMessage && !caughtUp && (
+          <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
+            <TriagePanel
+              message={selectedMessage}
+              incidentId={incidentId ?? ""}
+              onSaved={() => handleSaved(selectedMessage.id)}
+            />
+          </ViewTransition>
+        )}
+      </TriageCanvas>
+    </div>
+  );
+}
+
+export default TriageView;

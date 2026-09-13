@@ -1,5 +1,6 @@
 import { faCalendar, faClock } from "@fortawesome/free-regular-svg-icons";
 import {
+  faArrowsToEye,
   faBars,
   faCaretDown,
   faChevronDown,
@@ -251,6 +252,18 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                 <FontAwesomeIcon icon={faPen} />
                 <span>{t("editor")}</span>
               </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
+                to={`/incident/${incidentId}/journal/triage`}
+              >
+                <FontAwesomeIcon icon={faArrowsToEye} />
+                <span>{t("triageView")}</span>
+              </NavLink>
             </>
           )}
           {/* Map */}
@@ -454,6 +467,18 @@ const JournalNavBar: FunctionComponent = () => {
         >
           <FontAwesomeIcon icon={faPen} />
           <span>{t("editor")}</span>
+        </NavLink>
+        <NavLink
+          className={({ isActive }) =>
+            clsx(
+              "flex w-full items-center gap-2 px-4 py-2 capitalize",
+              isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+            )
+          }
+          to={`/incident/${incidentId}/journal/triage`}
+        >
+          <FontAwesomeIcon icon={faArrowsToEye} />
+          <span>{t("triageView")}</span>
         </NavLink>
       </div>
     </div>

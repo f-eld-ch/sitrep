@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "react/canary"],
     "paths": {
       "gql/next": ["./src/gql/next/graphql.ts"],
       "types": ["./src/types/index.ts"],

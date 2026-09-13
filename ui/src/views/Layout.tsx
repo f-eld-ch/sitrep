@@ -59,8 +59,8 @@ export const LayoutMarginLess = (props: LayoutProps) => {
   return (
     <>
       <Navbar />
-      <div className="flex min-h-screen flex-col">
-        <div className="flex flex-1">{props.children}</div>
+      <div className="flex h-screen flex-col">
+        <div className="flex flex-1 overflow-hidden">{props.children}</div>
         <div className="shrink-0 print:hidden">
           <Footer />
         </div>
