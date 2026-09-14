@@ -25,7 +25,7 @@
     "codegen:check": "graphql-codegen --config codegen.ts --check"
   },
   "dependencies": {
-    "@apollo/client": "^4.2.12",
+    "@apollo/client": "^4.3.0",
     "@f-eld-ch/babs-assets": "^0.6.0",
     "@f-eld-ch/babs-core": "^0.6.0",
     "@f-eld-ch/babs-react": "^0.6.0",
