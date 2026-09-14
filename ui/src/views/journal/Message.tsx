@@ -350,7 +350,7 @@ const MessageContainer = ({
                   <span>{t("saveTriage")}</span>
                 </button>
               )}
-              {!newTriageView && showTasks && (
+              {showTasks && (
                 <button type="button" className={actionLinkClass} data-testid="create-task-button">
                   <FontAwesomeIcon icon={faSquareCheck} />
                   <span>{t("createNewTask")}</span>
