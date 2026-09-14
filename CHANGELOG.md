@@ -1,3 +1,14 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(flags)* Add new-triage-view feature flag and earlyadopter segment ([#1860](https://github.com/f-eld-ch/sitrep/issues/1860)) - ([83c2830](https://github.com/f-eld-ch/sitrep/commit/83c28301e25325f1620ea344b2852d3b12bcafbe))
+
+### 🐛 Bug Fixes
+
+- *(ui)* Properly order tailwindcss classes - ([3149df9](https://github.com/f-eld-ch/sitrep/commit/3149df9bce71597ecaa31a21dee4e61295642e3f))
+
+
 ## [26.9.5](https://github.com/f-eld-ch/sitrep/compare/v26.9.4..v26.9.5) - 2026-09-13
 
 ### ⛰️  Features
