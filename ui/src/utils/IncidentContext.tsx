@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
 } from "react";
 import { useParams } from "react-router";
@@ -39,9 +40,8 @@ const IncidentContext = createContext<{
 
 const IncidentContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(incidentReducer, initialState);
-  return (
-    <IncidentContext.Provider value={{ state, dispatch }}>{children}</IncidentContext.Provider>
-  );
+  const value = useMemo(() => ({ state, dispatch }), [state]);
+  return <IncidentContext.Provider value={value}>{children}</IncidentContext.Provider>;
 };
 
 /**
@@ -58,22 +58,25 @@ export function useIncidentSync() {
   const { state, dispatch } = useContext(IncidentContext);
   const result = useIncidentDetails(incidentId);
 
+  const currentIncidentId = state.incident?.id ?? null;
+  const resultIncident = result.status === "ready" ? result.data.incident : null;
+  const resultErrorCode = result.status === "error" ? result.error.code : null;
+
   useEffect(() => {
     if (!incidentId) {
       dispatch({ type: "SET_INCIDENT", payload: null, forId: null });
       return;
     }
 
-    if (result.status === "ready") {
-      const { incident } = result.data;
-      if (state.incident?.id !== incident.id) {
-        dispatch({ type: "SET_INCIDENT", payload: incident, forId: incidentId });
+    if (resultIncident) {
+      if (currentIncidentId !== resultIncident.id) {
+        dispatch({ type: "SET_INCIDENT", payload: resultIncident, forId: incidentId });
       }
-    } else if (result.status === "error" && result.error.code === "NOT_FOUND") {
+    } else if (resultErrorCode === "NOT_FOUND") {
       // Only clear on definitive absence — transient failures retain current state.
       dispatch({ type: "SET_INCIDENT", payload: null, forId: incidentId });
     }
-  }, [incidentId, result.status, result.data, result.error, state.incident, dispatch]);
+  }, [incidentId, resultIncident, resultErrorCode, currentIncidentId, dispatch]);
 }
 
 /** @deprecated Use useIncidentSync() directly in the layout component instead. */

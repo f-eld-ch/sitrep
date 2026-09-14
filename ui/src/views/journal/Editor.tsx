@@ -1,3 +1,4 @@
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { faPaperclip, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -75,6 +76,8 @@ function Editor() {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
   const incidentIsClosed = incident?.closedAt != null;
+  const showTasks = useBooleanFlagValue("show-tasks", false);
+  const newTriageView = useBooleanFlagValue("new-triage-view", false);
 
   const isDirty =
     state.content !== "" ||
@@ -267,8 +270,9 @@ function Editor() {
         <div className="min-w-0 flex-1">
           <List
             showControls={!incidentIsClosed}
+            showTasksButton={showTasks}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
-            setTriageMessage={incidentIsClosed ? undefined : setTriageMessage}
+            setTriageMessage={incidentIsClosed || newTriageView ? undefined : setTriageMessage}
           />
         </div>
         <TriageModal
@@ -578,7 +582,7 @@ export const MessageEditorForm = React.forwardRef<
   }, [message.id]);
 
   useEffect(() => {
-    if (!onLiveMessage) return;
+    if (!onLiveMessage || !state.messageToEdit) return;
     const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
     const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
     onLiveMessage({

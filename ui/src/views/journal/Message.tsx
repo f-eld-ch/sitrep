@@ -6,10 +6,54 @@ import {
   faSquareCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+
+function PrintSheetAction({
+  message,
+  divisions,
+  className,
+}: {
+  message: Message;
+  divisions: Division[];
+  className: string;
+}) {
+  const { t } = useTranslation();
+  const [showForPrint, setShowForPrint] = useState(false);
+  const sheetRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: sheetRef,
+    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
+    onAfterPrint: () => setShowForPrint(false),
+  });
+  const handlePrintRef = useRef(handlePrint);
+  useLayoutEffect(() => {
+    handlePrintRef.current = handlePrint;
+  });
+  useEffect(() => {
+    if (showForPrint) handlePrintRef.current();
+  }, [showForPrint]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className={className}
+        data-testid="print-button"
+        onClick={() => setShowForPrint(true)}
+      >
+        <FontAwesomeIcon icon={faPrint} />
+        <span>{t("messageSheet")}</span>
+      </button>
+      {showForPrint && (
+        <div className="hidden">
+          <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
+        </div>
+      )}
+    </>
+  );
+}
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
@@ -26,6 +70,7 @@ export interface MessageProps {
   showControls: boolean;
   accentSide?: "left" | "right";
   stabilizeActionBar?: boolean;
+  showTasksButton?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }
@@ -184,19 +229,12 @@ const MessageContainer = ({
   showControls = false,
   accentSide = "left",
   stabilizeActionBar = false,
+  showTasksButton = false,
   setEditorMessage,
   setTriageMessage,
   divisions,
 }: MessageProps) => {
   const { t, i18n } = useTranslation();
-  const showTasks = useBooleanFlagValue("show-tasks", false);
-  const newTriageView = useBooleanFlagValue("new-triage-view", false);
-  const messageSheetRef = useRef(null);
-  const handlePrint = useReactToPrint({
-    contentRef: messageSheetRef,
-    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
-  });
-
   const accent = accentKey(message);
   const hasDivisions = message.divisions && message.divisions.length > 0;
   const tagVariant = tagVariantMap[accent];
@@ -318,7 +356,7 @@ const MessageContainer = ({
           {/* Right — action buttons */}
           {showControls === true && id !== undefined && (
             <div className="flex w-full flex-col sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
-              {setEditorMessage && message.triageId !== TriageStatus.Triaged ? (
+              {setEditorMessage && message.triageId !== TriageStatus.Triaged && (
                 <button
                   type="button"
                   className={actionLinkClass}
@@ -328,18 +366,11 @@ const MessageContainer = ({
                   <FontAwesomeIcon icon={faEdit} />
                   <span>{t("edit")}</span>
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  className={actionLinkClass}
-                  data-testid="print-button"
-                  onClick={() => handlePrint()}
-                >
-                  <FontAwesomeIcon icon={faPrint} />
-                  <span>{t("messageSheet")}</span>
-                </button>
               )}
-              {!newTriageView && setTriageMessage && message && (
+              {(!setEditorMessage || message.triageId === TriageStatus.Triaged) && (
+                <PrintSheetAction message={message} divisions={divisions} className={actionLinkClass} />
+              )}
+              {setTriageMessage && message && (
                 <button
                   type="button"
                   className={actionLinkClass}
@@ -350,7 +381,7 @@ const MessageContainer = ({
                   <span>{t("saveTriage")}</span>
                 </button>
               )}
-              {showTasks && (
+              {showTasksButton && (
                 <button type="button" className={actionLinkClass} data-testid="create-task-button">
                   <FontAwesomeIcon icon={faSquareCheck} />
                   <span>{t("createNewTask")}</span>
@@ -359,9 +390,6 @@ const MessageContainer = ({
             </div>
           )}
 
-          <div className="hidden">
-            <MessageSheet ref={messageSheetRef} message={message} divisions={divisions} />
-          </div>
         </div>
       )}
     </div>

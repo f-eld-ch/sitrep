@@ -4,7 +4,7 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { Fragment, ViewTransition, useTransition, useState, useRef, useContext, useEffect, useLayoutEffect, useCallback } from "react";
+import { Fragment, ViewTransition, useTransition, useState, useRef, useContext, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
@@ -97,27 +97,35 @@ function PrintSheetButton({
   variant?: "footer" | "inline";
 }) {
   const { t } = useTranslation();
+  const [showForPrint, setShowForPrint] = useState(false);
   const sheetRef = useRef(null);
   const handlePrint = useReactToPrint({
     contentRef: sheetRef,
     pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
+    onAfterPrint: () => setShowForPrint(false),
   });
+  const handlePrintRef = useRef(handlePrint);
+  useLayoutEffect(() => { handlePrintRef.current = handlePrint; });
+  useEffect(() => { if (showForPrint) handlePrintRef.current(); }, [showForPrint]);
+
   return (
     <>
       {variant === "footer" ? (
-        <Button type="button" variant="light" size="sm" onClick={() => handlePrint()}>
+        <Button type="button" variant="light" size="sm" onClick={() => setShowForPrint(true)}>
           <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
           {t("messageSheet")}
         </Button>
       ) : (
-        <Button type="button" variant="primary" size="sm" onClick={() => handlePrint()}>
+        <Button type="button" variant="primary" size="sm" onClick={() => setShowForPrint(true)}>
           <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
           {t("messageSheet")}
         </Button>
       )}
-      <div className="hidden">
-        <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
-      </div>
+      {showForPrint && (
+        <div className="hidden">
+          <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
+        </div>
+      )}
     </>
   );
 }
@@ -426,15 +434,17 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   const result = useIncidentMessages(incidentId ?? "");
 
-  const resolvedFilters: MessageFilters = {
-    triage: "all",
-    priority: "all",
-    assignment: "all",
-    ...filters,
-  };
+  const resolvedFilters = useMemo<MessageFilters>(
+    () => ({ triage: "all", priority: "all", assignment: "all", ...filters }),
+    // filters is a prop object; spread means we depend on its identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filters],
+  );
 
-  const messages =
-    result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : [];
+  const messages = useMemo(
+    () => (result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : []),
+    [result.status, result.data, resolvedFilters],
+  );
 
   const pendingMessages = messages.filter(
     (m) => m.triageId === TriageStatus.Pending || m.triageId === TriageStatus.Reset,
@@ -471,12 +481,6 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   const effectiveId = selectedId ?? autoLockedId;
 
-  // Keep a ref in sync after every render (useLayoutEffect = after render, not during).
-  const navStateRef = useRef({ messages, effectiveId });
-  useLayoutEffect(() => {
-    navStateRef.current = { messages, effectiveId };
-  });
-
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -485,9 +489,8 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       }
       if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
       e.preventDefault();
-      const { messages: msgs, effectiveId: curId } = navStateRef.current;
-      const idx = msgs.findIndex((m) => m.id === curId);
-      const next = e.key === "ArrowUp" ? msgs[idx - 1] : msgs[idx + 1];
+      const idx = messages.findIndex((m) => m.id === effectiveId);
+      const next = e.key === "ArrowUp" ? messages[idx - 1] : messages[idx + 1];
       if (!next) return;
       startTransition(() => {
         setCaughtUp(false);
@@ -496,6 +499,13 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
+  }, [messages, effectiveId, startTransition]);
+
+  const handleSelect = useCallback((id: string | undefined) => {
+    startTransition(() => {
+      setCaughtUp(false);
+      setSelectedId(id);
+    });
   }, [startTransition]);
 
   if (result.status === "loading") {
@@ -539,12 +549,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       <MessageStack
         messages={messages}
         effectiveId={effectiveId}
-        onSelect={(id) =>
-          startTransition(() => {
-            setCaughtUp(false);
-            setSelectedId(id);
-          })
-        }
+        onSelect={handleSelect}
       />
       <TriageCanvas incidentClosed={incidentIsClosed}>
         {selectedMessage && !caughtUp && (
