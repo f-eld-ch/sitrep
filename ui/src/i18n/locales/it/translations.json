@@ -53,6 +53,13 @@
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",
+  "keybindings": {
+    "title": "Scorciatoie da tastiera",
+    "nextStep": "Passo successivo / Salva triage",
+    "prevMessage": "Messaggio precedente",
+    "nextMessage": "Messaggio successivo",
+    "deselect": "Deseleziona messaggio"
+  },
   "location": "posizione",
   "login": "accesso",
   "loginTagline": "Condotta dell'intervento. Indipendente. Digitale.",

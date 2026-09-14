@@ -53,6 +53,13 @@
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
+  "keybindings": {
+    "title": "Keyboard shortcuts",
+    "nextStep": "Next step / Save triage",
+    "prevMessage": "Previous message",
+    "nextMessage": "Next message",
+    "deselect": "Deselect message"
+  },
   "location": "location",
   "login": "login",
   "loginTagline": "Incident command. Independent. Digital.",

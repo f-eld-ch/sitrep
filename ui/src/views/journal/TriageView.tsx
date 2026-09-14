@@ -4,7 +4,7 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { Fragment, ViewTransition, useTransition, useState, useRef, useContext } from "react";
+import { Fragment, ViewTransition, useTransition, useState, useRef, useContext, useEffect, useLayoutEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
@@ -170,7 +170,7 @@ function PanelForm(props: {
     divisions: assignments.map((division) => ({ division })),
   };
 
-  const handleSave = (triage: TriageStatus) => {
+  const handleSave = useCallback((triage: TriageStatus) => {
     onSaved();
     triageMessage({
       incidentId,
@@ -180,7 +180,27 @@ function PanelForm(props: {
       divisionIds: assignments.map((d) => d.id),
       divisions: assignments,
     }).catch(() => {});
-  };
+  }, [onSaved, triageMessage, incidentId, message.id, priority, assignments]);
+
+  const handleNext = useCallback(() => {
+    if (isLast) {
+      handleSave(TriageStatus.Triaged);
+    } else {
+      if (currentStep.key === "meldung") void editorRef.current?.save();
+      setStepIndex((i) => i + 1);
+    }
+  }, [isLast, currentStep.key, handleSave]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        handleNext();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [handleNext]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -450,6 +470,33 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   }
 
   const effectiveId = selectedId ?? autoLockedId;
+
+  // Keep a ref in sync after every render (useLayoutEffect = after render, not during).
+  const navStateRef = useRef({ messages, effectiveId });
+  useLayoutEffect(() => {
+    navStateRef.current = { messages, effectiveId };
+  });
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedId(undefined);
+        return;
+      }
+      if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+      e.preventDefault();
+      const { messages: msgs, effectiveId: curId } = navStateRef.current;
+      const idx = msgs.findIndex((m) => m.id === curId);
+      const next = e.key === "ArrowUp" ? msgs[idx - 1] : msgs[idx + 1];
+      if (!next) return;
+      startTransition(() => {
+        setCaughtUp(false);
+        setSelectedId(next.id);
+      });
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [startTransition]);
 
   if (result.status === "loading") {
     return (

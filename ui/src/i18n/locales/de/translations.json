@@ -53,6 +53,13 @@
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
+  "keybindings": {
+    "title": "Tastenkombinationen",
+    "nextStep": "Nächster Schritt / Triage abschliessen",
+    "prevMessage": "Vorherige Meldung",
+    "nextMessage": "Nächste Meldung",
+    "deselect": "Auswahl aufheben"
+  },
   "location": "Ort",
   "login": "anmelden",
   "loginTagline": "Einsatzführung. Unabhängig. Digital.",
