@@ -17,7 +17,7 @@ export function useIncidentMessages(incidentId: string): QueryResult<IncidentMes
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_MESSAGES, {
     variables: { incidentId },
     skip: !incidentId,
-    pollInterval: 10000,
+    pollInterval: 5000,
   });
 
   const refresh = () => void refetch();
@@ -71,6 +71,7 @@ export function useMessageForTriage(
     variables: { messageId: messageId ?? "", incidentId: incidentId ?? "" },
     skip: !messageId,
     fetchPolicy: "cache-and-network",
+    pollInterval: 10000,
   });
 
   const refresh = () => void refetch();

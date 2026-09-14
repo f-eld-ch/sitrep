@@ -16,7 +16,11 @@ import {
   New as IncidentNew,
   AccessPage as IncidentAccessPage,
 } from "views/incident";
-import { Editor as JournalEditor, List as JournalMessageList } from "views/journal";
+import {
+  Editor as JournalEditor,
+  List as JournalMessageList,
+  TriageView as JournalTriageView,
+} from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
@@ -148,6 +152,14 @@ const router = createBrowserRouter([
                   <Layout>
                     <JournalMessageList showControls={false} autoScroll={true} />
                   </Layout>
+                ),
+              },
+              {
+                path: "triage",
+                element: (
+                  <LayoutMarginLess>
+                    <JournalTriageView />
+                  </LayoutMarginLess>
                 ),
               },
             ],
