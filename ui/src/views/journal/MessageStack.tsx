@@ -2,7 +2,7 @@ import { faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-s
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
@@ -110,7 +110,7 @@ export interface MessageStackProps {
   onSelect: (id: string | undefined) => void;
 }
 
-export function MessageStack({ messages, effectiveId, onSelect }: MessageStackProps) {
+export const MessageStack = memo(function MessageStack({ messages, effectiveId, onSelect }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
@@ -196,4 +196,4 @@ export function MessageStack({ messages, effectiveId, onSelect }: MessageStackPr
       </div>
     </div>
   );
-}
+});

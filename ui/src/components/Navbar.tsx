@@ -28,12 +28,12 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import logo from "assets/lockup-blue.svg";
 import { clsx } from "clsx";
 import { useMyGlobalRoles } from "api";
-import { type FunctionComponent, useContext, useState } from "react";
+import dayjs from "dayjs";
+import { type FunctionComponent, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
-import { useDate } from "utils/useDate";
 import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -309,17 +309,30 @@ function DarkModeSwitcher() {
 }
 
 function CurrentTime() {
-  const { time, date } = useDate();
+  const { i18n } = useTranslation();
+  const dateRef = useRef<HTMLSpanElement>(null);
+  const timeRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const update = () => {
+      const now = dayjs().locale(i18n.language);
+      if (dateRef.current) dateRef.current.textContent = now.format("LL");
+      if (timeRef.current) timeRef.current.textContent = now.format("LT");
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [i18n.language]);
 
   return (
     <>
       <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
         <FontAwesomeIcon icon={faCalendar} />
-        <span>{date}</span>
+        <span ref={dateRef} />
       </div>
       <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
         <FontAwesomeIcon icon={faClock} />
-        <span>{time}</span>
+        <span ref={timeRef} />
       </div>
     </>
   );

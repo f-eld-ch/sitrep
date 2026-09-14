@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: required to test for ids */
 import { fc } from "@fast-check/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { vi } from "vitest";
 import type { Attachment, Division, Message } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
@@ -28,10 +27,6 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-// Mock useBooleanFlagValue — by default show-tasks is on, new-triage-view is off
-vi.mock("@openfeature/react-sdk", () => ({
-  useBooleanFlagValue: vi.fn((key: string) => key === "show-tasks"),
-}));
 
 // Mock dayjs
 vi.mock("dayjs", () => {
@@ -50,9 +45,6 @@ vi.mock("dayjs", () => {
 });
 
 describe("MessageContainer", () => {
-  afterEach(() => {
-    vi.mocked(useBooleanFlagValue).mockImplementation((key: string) => key === "show-tasks");
-  });
   const baseMessage: Message = {
     id: "msg1",
     number: 0,
@@ -133,7 +125,7 @@ describe("MessageContainer", () => {
     expect(setTriageMessage).toHaveBeenCalledWith(baseMessage);
   });
 
-  it("renders create new task button if showTasks is true", () => {
+  it("renders create new task button if showTasksButton is true", () => {
     render(
       <MessageContainer
         id="msg1"
@@ -141,14 +133,13 @@ describe("MessageContainer", () => {
         message={baseMessage}
         divisions={divisions}
         showControls={true}
+        showTasksButton={true}
       />,
     );
     expect(screen.getByTestId("create-task-button")).toBeInTheDocument();
   });
 
-  it("hides triage button when new-triage-view flag is enabled", () => {
-    vi.mocked(useBooleanFlagValue).mockImplementation((key: string) => key === "new-triage-view");
-    const setTriageMessage = vi.fn();
+  it("hides triage button when setTriageMessage is not provided", () => {
     render(
       <MessageContainer
         id="msg1"
@@ -156,14 +147,12 @@ describe("MessageContainer", () => {
         message={baseMessage}
         divisions={divisions}
         showControls={true}
-        setTriageMessage={setTriageMessage}
       />,
     );
     expect(screen.queryByTestId("save-triage-button")).not.toBeInTheDocument();
   });
 
-  it("shows task button regardless of new-triage-view flag", () => {
-    vi.mocked(useBooleanFlagValue).mockImplementation(() => true);
+  it("shows task button even when setTriageMessage is not provided", () => {
     render(
       <MessageContainer
         id="msg1"
@@ -171,6 +160,7 @@ describe("MessageContainer", () => {
         message={baseMessage}
         divisions={divisions}
         showControls={true}
+        showTasksButton={true}
       />,
     );
     expect(screen.getByTestId("create-task-button")).toBeInTheDocument();

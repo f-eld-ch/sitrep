@@ -1,8 +1,7 @@
 import dayjs from "dayjs";
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types";
-import { useDate } from "utils/useDate";
 import { PageTitle } from "components/ui";
 import { ReactPreview } from "./Markdown";
 
@@ -18,7 +17,8 @@ const MessageTable = (
 ) => {
   const { t } = useTranslation();
   const { assignmentFilter, priorityFilter, triageFilter } = props;
-  const { now } = useDate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const now = useMemo(() => new Date(), []);
 
   const isFiltered =
     assignmentFilter !== "all" || triageFilter !== "all" || priorityFilter !== "all";
