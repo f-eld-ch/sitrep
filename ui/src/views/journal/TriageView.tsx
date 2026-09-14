@@ -110,14 +110,10 @@ function PrintSheetButton({
           {t("messageSheet")}
         </Button>
       ) : (
-        <button
-          type="button"
-          onClick={() => handlePrint()}
-          className="flex items-center gap-1.5 text-xs text-fg-muted transition-colors hover:text-fg"
-        >
-          <FontAwesomeIcon icon={faPrint} />
-          <span>{t("messageSheet")}</span>
-        </button>
+        <Button type="button" variant="primary" size="sm" onClick={() => handlePrint()}>
+          <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
+          {t("messageSheet")}
+        </Button>
       )}
       <div className="hidden">
         <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
@@ -188,8 +184,8 @@ function PanelForm(props: {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Message context — always visible at top */}
-      <div className="shrink-0 px-5 pt-4 pb-3">
+      {/* Message context — scrollable so tall content doesn't hide the stepper */}
+      <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
         {!isPending && (
           <div className="mb-2 flex justify-end">
             <PrintSheetButton
