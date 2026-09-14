@@ -52,6 +52,7 @@
   "stepMittel": "Resources",
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
+  "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
   "location": "location",
   "login": "login",
   "loginTagline": "Incident command. Independent. Digital.",

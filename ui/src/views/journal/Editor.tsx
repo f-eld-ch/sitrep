@@ -548,7 +548,9 @@ function InputBox({
   );
   return showBox ? (
     <div className="rounded-xl border border-border bg-bg-elevated p-5 shadow-xl">{inner}</div>
-  ) : inner;
+  ) : (
+    inner
+  );
 }
 
 export interface MessageEditorFormHandle {
@@ -564,13 +566,7 @@ export const MessageEditorForm = React.forwardRef<
     onLiveMessage?: (msg: Message) => void;
     title?: string;
   }
->(function MessageEditorForm({
-  message,
-  incidentId,
-  onSaved,
-  onLiveMessage,
-  title,
-}, ref) {
+>(function MessageEditorForm({ message, incidentId, onSaved, onLiveMessage, title }, ref) {
   const [updateMessage, updateState] = useUpdateMessage();
   const [state, dispatch] = useReducer(editorReducer, initEditorState());
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -578,7 +574,7 @@ export const MessageEditorForm = React.forwardRef<
 
   useEffect(() => {
     dispatch({ type: "set_edit_message", message });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message.id]);
 
   useEffect(() => {
@@ -603,7 +599,7 @@ export const MessageEditorForm = React.forwardRef<
       updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
       deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const addPendingFile = useCallback((file: File) => {
@@ -660,7 +656,13 @@ export const MessageEditorForm = React.forwardRef<
 
   return (
     <EditorContext.Provider value={contextValue}>
-      <InputBox incidentId={incidentId} showPreview={false} showBox={false} hideSave title={title} />
+      <InputBox
+        incidentId={incidentId}
+        showPreview={false}
+        showBox={false}
+        hideSave
+        title={title}
+      />
     </EditorContext.Provider>
   );
 });

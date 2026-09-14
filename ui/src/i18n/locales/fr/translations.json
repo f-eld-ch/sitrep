@@ -52,6 +52,7 @@
   "stepMittel": "Moyens",
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
+  "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
   "location": "emplacement",
   "login": "connexion",
   "loginTagline": "Conduite d'intervention. Indépendante. Digitale.",

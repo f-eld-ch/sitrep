@@ -52,6 +52,7 @@
   "stepMittel": "Mittel",
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
+  "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
   "location": "Ort",
   "login": "anmelden",
   "loginTagline": "Einsatzführung. Unabhängig. Digital.",

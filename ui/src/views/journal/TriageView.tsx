@@ -4,7 +4,7 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { Fragment, ViewTransition, useTransition, useState, useRef } from "react";
+import { Fragment, ViewTransition, useTransition, useState, useRef, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
@@ -12,7 +12,7 @@ import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
 import { Button, Notification } from "components/ui";
 import { Spinner } from "components";
-import { type MessageForTriageData, useIncidentMessages, useMessageForTriage, useTriageMessage } from "api";
+import { useIncidentMessages, useTriageMessage } from "api";
 import { type MessageEditorFormHandle } from "./Editor";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
@@ -22,47 +22,61 @@ import MessageSheet from "./MessageSheet";
 import { buildMessageList } from "./listUtils";
 import { MessageStack } from "./MessageStack";
 import { TriageCanvas } from "./TriageCanvas";
-
+import { IncidentContext } from "utils";
 
 export type InitialStrategy = "oldest-pending" | "newest" | "none";
 
 type StepDef = { key: string; label: string };
 
-function Stepper({ steps, current, onChange }: {
+function Stepper({
+  steps,
+  current,
+  onChange,
+}: {
   steps: StepDef[];
   current: number;
   onChange: (idx: number) => void;
 }) {
   return (
-    <nav aria-label="steps" className="flex items-center gap-1 px-5 py-3 overflow-x-auto scrollbar-none">
+    <nav
+      aria-label="steps"
+      className="scrollbar-none flex items-center gap-1 overflow-x-auto px-5 py-3"
+    >
       {steps.map((step, idx) => {
         const done = idx < current;
         const active = idx === current;
         return (
           <Fragment key={step.key}>
             {idx > 0 && (
-              <div className={clsx("h-px flex-1 min-w-2", done ? "bg-primary/40" : "bg-border")} />
+              <div className={clsx("h-px min-w-2 flex-1", done ? "bg-primary/40" : "bg-border")} />
             )}
             <button
               type="button"
               onClick={() => onChange(idx)}
               className={clsx(
-                "flex items-center gap-1.5 text-sm shrink-0 transition-colors",
-                active ? "text-primary font-semibold" :
-                done ? "text-fg-muted hover:text-fg" :
-                "text-fg-muted/50 hover:text-fg-muted",
+                "flex shrink-0 items-center gap-1.5 text-sm transition-colors",
+                active
+                  ? "font-semibold text-primary"
+                  : done
+                    ? "text-fg-muted hover:text-fg"
+                    : "text-fg-muted/50 hover:text-fg-muted",
               )}
             >
-              <span className={clsx(
-                "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
-                active ? "bg-primary text-white" :
-                done ? "bg-primary/20 text-primary" :
-                "bg-border text-fg-muted",
-              )}>
-                {done
-                  ? <FontAwesomeIcon icon={faCheck} className="text-[11px]" />
-                  : <span className="text-xs font-bold leading-none translate-y-px">{idx + 1}</span>
-                }
+              <span
+                className={clsx(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                  active
+                    ? "bg-primary text-white"
+                    : done
+                      ? "bg-primary/20 text-primary"
+                      : "bg-border text-fg-muted",
+                )}
+              >
+                {done ? (
+                  <FontAwesomeIcon icon={faCheck} className="text-[11px]" />
+                ) : (
+                  <span className="translate-y-px text-xs leading-none font-bold">{idx + 1}</span>
+                )}
               </span>
               {step.label}
             </button>
@@ -73,8 +87,11 @@ function Stepper({ steps, current, onChange }: {
   );
 }
 
-
-function PrintSheetButton({ message, divisions, variant = "footer" }: {
+function PrintSheetButton({
+  message,
+  divisions,
+  variant = "footer",
+}: {
   message: Message;
   divisions: Division[];
   variant?: "footer" | "inline";
@@ -96,7 +113,7 @@ function PrintSheetButton({ message, divisions, variant = "footer" }: {
         <button
           type="button"
           onClick={() => handlePrint()}
-          className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors"
+          className="flex items-center gap-1.5 text-xs text-fg-muted transition-colors hover:text-fg"
         >
           <FontAwesomeIcon icon={faPrint} />
           <span>{t("messageSheet")}</span>
@@ -109,51 +126,34 @@ function PrintSheetButton({ message, divisions, variant = "footer" }: {
   );
 }
 
-function TriagePanel(props: {
+function TriagePanel(props: { message: Message; incidentId: string; onSaved: () => void }) {
+  const { message, incidentId, onSaved } = props;
+  return <PanelForm key={message.id} message={message} incidentId={incidentId} onSaved={onSaved} />;
+}
+
+function PanelForm(props: {
   message: Message;
   incidentId: string;
   onSaved: () => void;
 }) {
   const { message, incidentId, onSaved } = props;
   const { t } = useTranslation();
-  const result = useMessageForTriage(message.id, incidentId);
-
-  if (result.status === "loading") {
-    return <div className="flex justify-center p-8"><Spinner /></div>;
-  }
-
-  if (result.status === "error") {
-    return (
-      <div className="p-4">
-        <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>
-      </div>
-    );
-  }
-
-  return <PanelForm key={message.id} message={message} data={result.data} incidentId={incidentId} onSaved={onSaved} />;
-}
-
-function PanelForm(props: {
-  message: Message;
-  data: MessageForTriageData;
-  incidentId: string;
-  onSaved: () => void;
-}) {
-  const { message, data, incidentId, onSaved } = props;
-  const { t } = useTranslation();
+  const { state: incidentState } = useContext(IncidentContext);
+  const incidentDivisions = incidentState.incident?.divisions ?? [];
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
   const [triageMessage, triageState] = useTriageMessage();
-  const [priority, setPriority] = useState<PriorityStatus>(data.message.priorityId);
+  const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
   const [assignments, setAssignments] = useState<Division[]>(
-    data.message.divisions.map((d) => d.division),
+    message.divisions.map((d) => d.division),
   );
   const [stepIndex, setStepIndex] = useState(0);
   const [liveMessage, setLiveMessage] = useState<Message>(message);
   const editorRef = useRef<MessageEditorFormHandle>(null);
   const savedAssignments = useRef<Division[] | null>(null);
 
-  const isPending = message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
+  const isPending =
+    message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
 
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
@@ -187,12 +187,16 @@ function PanelForm(props: {
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden">
       {/* Message context — always visible at top */}
       <div className="shrink-0 px-5 pt-4 pb-3">
         {!isPending && (
-          <div className="flex justify-end mb-2">
-            <PrintSheetButton message={message} divisions={data.incidentDivisions} variant="inline" />
+          <div className="mb-2 flex justify-end">
+            <PrintSheetButton
+              message={message}
+              divisions={incidentDivisions}
+              variant="inline"
+            />
           </div>
         )}
         <JournalMessage
@@ -233,11 +237,20 @@ function PanelForm(props: {
             <div>
               <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
               <div className="flex flex-wrap gap-2">
-                {data.incidentDivisions.map((d) => {
+                {incidentDivisions.map((d) => {
                   const isPresent = assignments.some((e) => e.name === d.name);
                   return (
-                    <div key={d.name} className="flex overflow-hidden rounded text-xs font-semibold">
-                      <span className={isPresent ? "bg-primary px-3 py-0.5 text-white" : "bg-fg px-3 py-0.5 text-bg"}>
+                    <div
+                      key={d.name}
+                      className="flex overflow-hidden rounded text-xs font-semibold"
+                    >
+                      <span
+                        className={
+                          isPresent
+                            ? "bg-primary px-3 py-0.5 text-white"
+                            : "bg-fg px-3 py-0.5 text-bg"
+                        }
+                      >
                         {d.description || d.name}
                       </span>
                       {isPresent ? (
@@ -268,6 +281,7 @@ function PanelForm(props: {
               <button
                 type="button"
                 role="switch"
+                aria-label={t("keyMessage")}
                 aria-checked={priority === PriorityStatus.High}
                 onClick={() => {
                   if (priority === PriorityStatus.High) {
@@ -277,11 +291,11 @@ function PanelForm(props: {
                   } else {
                     savedAssignments.current = assignments;
                     setPriority(PriorityStatus.High);
-                    setAssignments(data.incidentDivisions);
+                    setAssignments(incidentDivisions);
                   }
                 }}
                 className={clsx(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
                   priority === PriorityStatus.High ? "bg-danger" : "bg-border",
                 )}
               >
@@ -315,12 +329,23 @@ function PanelForm(props: {
       {/* Footer: back / next / triage actions */}
       <footer className="flex shrink-0 items-center gap-2 border-t border-border px-5 py-4">
         {safeIndex > 0 && (
-          <Button type="button" variant="light" size="sm" onClick={() => setStepIndex((i) => i - 1)}>
+          <Button
+            type="button"
+            variant="light"
+            size="sm"
+            onClick={() => setStepIndex((i) => i - 1)}
+          >
             {t("back")}
           </Button>
         )}
         {currentStep.key === "meldung" && (
-          <Button type="button" variant="light" size="sm" disabled={triageState.loading} onClick={() => handleSave(TriageStatus.MoreInfo)}>
+          <Button
+            type="button"
+            variant="light"
+            size="sm"
+            disabled={triageState.loading}
+            onClick={() => handleSave(TriageStatus.MoreInfo)}
+          >
             {t("saveMoreInfo")}
           </Button>
         )}
@@ -341,8 +366,14 @@ function PanelForm(props: {
           </Button>
         ) : (
           <>
-            <PrintSheetButton message={previewMessage} divisions={data.incidentDivisions} />
-            <Button type="submit" variant="primary" size="sm" disabled={triageState.loading} onClick={() => handleSave(TriageStatus.Triaged)}>
+            <PrintSheetButton message={previewMessage} divisions={incidentDivisions} />
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={triageState.loading}
+              onClick={() => handleSave(TriageStatus.Triaged)}
+            >
               {t("saveTriage")}
             </Button>
           </>
@@ -362,6 +393,8 @@ export interface TriageViewProps {
 function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewProps) {
   const { incidentId } = useParams();
   const { t } = useTranslation();
+  const { state: incidentState } = useContext(IncidentContext);
+  const incidentIsClosed = incidentState.incident?.closedAt != null;
   const [, startTransition] = useTransition();
   // undefined = no explicit selection; a string locks the view against polling changes
   const [selectedId, setSelectedId] = useState<string | undefined>();
@@ -370,19 +403,22 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   // subsequent polling cycle delivering an older message doesn't silently switch the view.
   // Cleared whenever selectedId becomes a string (explicit choice), allowing a fresh
   // auto-selection after the next reset to undefined (e.g. caught-up → new arrivals).
-  const autoLockedId = useRef<string | undefined>(undefined);
+  const [autoLockedId, setAutoLockedId] = useState<string | undefined>(undefined);
   // ID of the most-recently saved message. Auto-lock skips this ID so the cache's
   // stale pending status doesn't immediately re-lock to the just-triaged message.
-  const justSavedId = useRef<string | undefined>(undefined);
+  const [justSavedId, setJustSavedId] = useState<string | undefined>(undefined);
 
   const result = useIncidentMessages(incidentId ?? "");
 
-  const resolvedFilters: MessageFilters = { triage: "all", priority: "all", assignment: "all", ...filters };
+  const resolvedFilters: MessageFilters = {
+    triage: "all",
+    priority: "all",
+    assignment: "all",
+    ...filters,
+  };
 
   const messages =
-    result.status === "ready"
-      ? buildMessageList(result.data.messages, resolvedFilters)
-      : [];
+    result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : [];
 
   const pendingMessages = messages.filter(
     (m) => m.triageId === TriageStatus.Pending || m.triageId === TriageStatus.Reset,
@@ -390,24 +426,34 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   const defaultId = (() => {
     switch (initialStrategy) {
-      case "oldest-pending": return pendingMessages[pendingMessages.length - 1]?.id;
-      case "newest": return messages[0]?.id;
-      case "none": return undefined;
+      case "oldest-pending":
+        return pendingMessages[pendingMessages.length - 1]?.id;
+      case "newest":
+        return messages[0]?.id;
+      case "none":
+        return undefined;
     }
   })();
 
   // When selectedId is an explicit string, clear the lock so a future reset to
   // undefined (caught-up) picks a fresh defaultId rather than the stale one.
-  if (selectedId !== undefined) {
-    autoLockedId.current = undefined;
-    justSavedId.current = undefined;
-  } else if (autoLockedId.current === undefined && defaultId !== undefined && defaultId !== justSavedId.current) {
-    // First time a new defaultId resolves while in auto-mode: lock it in.
-    // Skip the just-saved ID so the stale cache doesn't re-lock to it before the mutation lands.
-    autoLockedId.current = defaultId;
+  // React's derived-state pattern: setState during render triggers an immediate synchronous re-render.
+  const [prevSelectedId, setPrevSelectedId] = useState<string | undefined>(undefined);
+  const [prevDefaultId, setPrevDefaultId] = useState<string | undefined>(undefined);
+  if (selectedId !== prevSelectedId || defaultId !== prevDefaultId) {
+    setPrevSelectedId(selectedId);
+    setPrevDefaultId(defaultId);
+    if (selectedId !== undefined) {
+      if (autoLockedId !== undefined) setAutoLockedId(undefined);
+      if (justSavedId !== undefined) setJustSavedId(undefined);
+    } else if (autoLockedId === undefined && defaultId !== undefined && defaultId !== justSavedId) {
+      // First time a new defaultId resolves while in auto-mode: lock it in.
+      // Skip the just-saved ID so the stale cache doesn't re-lock to it before the mutation lands.
+      setAutoLockedId(defaultId);
+    }
   }
 
-  const effectiveId = selectedId ?? autoLockedId.current;
+  const effectiveId = selectedId ?? autoLockedId;
 
   if (result.status === "loading") {
     return (
@@ -419,8 +465,10 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   if (result.status === "error") {
     return (
-      <div className="mt-[2.75rem] grow p-6 bg-bg">
-        <Notification variant="danger" light>{t(`errors.${result.error.code}`)}</Notification>
+      <div className="mt-[2.75rem] grow bg-bg p-6">
+        <Notification variant="danger" light>
+          {t(`errors.${result.error.code}`)}
+        </Notification>
       </div>
     );
   }
@@ -432,8 +480,8 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   };
 
   const handleSaved = (currentId: string) => {
-    justSavedId.current = currentId;
-    autoLockedId.current = undefined; // evict immediately so the stale cache can't keep it locked
+    setJustSavedId(currentId);
+    setAutoLockedId(undefined); // evict immediately so the stale cache can't keep it locked
     startTransition(() => {
       const nextId = getNextUntriaged(currentId);
       setSelectedId(nextId); // undefined → auto-selects new oldest pending via defaultId
@@ -448,9 +496,14 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       <MessageStack
         messages={messages}
         effectiveId={effectiveId}
-        onSelect={(id) => startTransition(() => { setCaughtUp(false); setSelectedId(id); })}
+        onSelect={(id) =>
+          startTransition(() => {
+            setCaughtUp(false);
+            setSelectedId(id);
+          })
+        }
       />
-      <TriageCanvas>
+      <TriageCanvas incidentClosed={incidentIsClosed}>
         {selectedMessage && !caughtUp && (
           <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
             <TriagePanel

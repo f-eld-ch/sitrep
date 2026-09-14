@@ -164,7 +164,6 @@ body {
   font-size: 0.9rem;
 }
 
-
 @utility scrollbar-none {
   scrollbar-width: none;
   &::-webkit-scrollbar {

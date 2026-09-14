@@ -1,4 +1,4 @@
-import { faArrowsRotate, faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -29,9 +29,9 @@ const rowBorderR: Record<AccentKey, string> = {
 const rowHoverShadow: Record<AccentKey, string> = {
   warning: "hover:shadow-[inset_0_1px_0_var(--color-warning),inset_0_-1px_0_var(--color-warning)]",
   success: "hover:shadow-[inset_0_1px_0_var(--color-success),inset_0_-1px_0_var(--color-success)]",
-  dark:    "hover:shadow-[inset_0_1px_0_var(--color-fg),inset_0_-1px_0_var(--color-fg)]",
-  danger:  "hover:shadow-[inset_0_1px_0_var(--color-danger),inset_0_-1px_0_var(--color-danger)]",
-  none:    "hover:shadow-[inset_0_1px_0_var(--color-border),inset_0_-1px_0_var(--color-border)]",
+  dark: "hover:shadow-[inset_0_1px_0_var(--color-fg),inset_0_-1px_0_var(--color-fg)]",
+  danger: "hover:shadow-[inset_0_1px_0_var(--color-danger),inset_0_-1px_0_var(--color-danger)]",
+  none: "hover:shadow-[inset_0_1px_0_var(--color-border),inset_0_-1px_0_var(--color-border)]",
 };
 
 const rowBgTint: Record<AccentKey, string> = {
@@ -57,7 +57,7 @@ function MessageRow(props: {
       type="button"
       onClick={onClick}
       className={clsx(
-        "border-r-4 text-left px-3 py-2.5",
+        "border-r-4 px-3 py-2.5 text-left",
         "transition-all duration-100 focus:outline-none",
         rowBorderR[accent],
         rowBgTint[accent],
@@ -68,26 +68,28 @@ function MessageRow(props: {
       )}
     >
       <div className="flex gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-fg truncate mb-0.5">
+        <div className="min-w-0 flex-1">
+          <p className="mb-0.5 truncate text-xs font-semibold text-fg">
             {message.sender || "—"}
             {message.receiver ? ` → ${message.receiver}` : ""}
           </p>
-          <p className="text-xs text-fg-muted line-clamp-2 leading-snug">
+          <p className="line-clamp-2 text-xs leading-snug text-fg-muted">
             {message.content || "…"}
           </p>
         </div>
-        <div className="flex flex-col items-end shrink-0">
+        <div className="flex shrink-0 flex-col items-end">
           <span className="text-xs text-fg-muted">{dayjs(message.time).format("HH:mm")}</span>
-          <span className="text-[10px] text-fg-muted/60">{dayjs(message.time).format("DD.MM.YY")}</span>
+          <span className="text-[10px] text-fg-muted/60">
+            {dayjs(message.time).format("DD.MM.YY")}
+          </span>
         </div>
       </div>
       {message.divisions.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1.5">
+        <div className="mt-1.5 flex flex-wrap gap-1">
           {message.divisions.slice(0, 3).map((d) => (
             <span
               key={d.division.id}
-              className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium"
+              className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
             >
               {d.division.name || d.division.description}
             </span>
@@ -141,12 +143,12 @@ export function MessageStack({ messages, effectiveId, onSelect }: MessageStackPr
   }, [effectiveId]);
 
   return (
-    <div className="flex flex-col w-72 lg:w-[36rem] flex-shrink-0">
+    <div className="flex w-72 shrink-0 flex-col lg:w-[36rem]">
       <div className={clsx("flex justify-center py-1", showScrollUp ? "visible" : "invisible")}>
         <button
           type="button"
           onClick={() => topSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm hover:text-fg transition-colors"
+          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
         >
           <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
         </button>
@@ -154,7 +156,7 @@ export function MessageStack({ messages, effectiveId, onSelect }: MessageStackPr
 
       <div
         ref={listRef}
-        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden scrollbar-none"
+        className="scrollbar-none flex flex-1 flex-col overflow-x-hidden overflow-y-auto"
       >
         <div className="flex items-center justify-center gap-1.5 py-2 text-fg-muted/50">
           <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
@@ -168,7 +170,9 @@ export function MessageStack({ messages, effectiveId, onSelect }: MessageStackPr
             message={msg}
             selected={msg.id === effectiveId}
             onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
-            setRef={(el) => { rowRefs.current[msg.id] = el; }}
+            setRef={(el) => {
+              rowRefs.current[msg.id] = el;
+            }}
           />
         ))}
 
@@ -185,7 +189,7 @@ export function MessageStack({ messages, effectiveId, onSelect }: MessageStackPr
         <button
           type="button"
           onClick={() => bottomSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm hover:text-fg transition-colors"
+          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
         >
           <FontAwesomeIcon icon={faChevronDown} className="text-[10px]" />
         </button>

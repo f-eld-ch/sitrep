@@ -1,9 +1,12 @@
 import {
+  faArrowsToEye,
   faEdit,
   faPaperclip,
   faPrint,
+  faSquareCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { memo, useCallback, useRef, useState } from "react";
@@ -182,9 +185,12 @@ const MessageContainer = ({
   accentSide = "left",
   stabilizeActionBar = false,
   setEditorMessage,
+  setTriageMessage,
   divisions,
 }: MessageProps) => {
   const { t, i18n } = useTranslation();
+  const showTasks = useBooleanFlagValue("show-tasks", false);
+  const newTriageView = useBooleanFlagValue("new-triage-view", false);
   const messageSheetRef = useRef(null);
   const handlePrint = useReactToPrint({
     contentRef: messageSheetRef,
@@ -294,7 +300,12 @@ const MessageContainer = ({
       {(stabilizeActionBar || hasDivisions || (showControls === true && id !== undefined)) && (
         <div className="flex flex-wrap items-end gap-x-2 gap-y-1 rounded-b pt-1.5">
           {/* Left — division tags (full-width on mobile so buttons wrap below) */}
-          <div className={clsx("flex w-full flex-wrap gap-1.5 px-2 py-4 sm:w-auto sm:flex-1", stabilizeActionBar && "min-h-[3.5rem]")}>
+          <div
+            className={clsx(
+              "flex w-full flex-wrap gap-1.5 px-2 py-4 sm:w-auto sm:flex-1",
+              stabilizeActionBar && "min-h-[3.5rem]",
+            )}
+          >
             {message.divisions?.map((d) => (
               <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
                 {d.division.name && d.division.name.trim() !== ""
@@ -326,6 +337,23 @@ const MessageContainer = ({
                 >
                   <FontAwesomeIcon icon={faPrint} />
                   <span>{t("messageSheet")}</span>
+                </button>
+              )}
+              {!newTriageView && setTriageMessage && message && (
+                <button
+                  type="button"
+                  className={actionLinkClass}
+                  data-testid="save-triage-button"
+                  onClick={() => setTriageMessage(message)}
+                >
+                  <FontAwesomeIcon icon={faArrowsToEye} />
+                  <span>{t("saveTriage")}</span>
+                </button>
+              )}
+              {!newTriageView && showTasks && (
+                <button type="button" className={actionLinkClass} data-testid="create-task-button">
+                  <FontAwesomeIcon icon={faSquareCheck} />
+                  <span>{t("createNewTask")}</span>
                 </button>
               )}
             </div>
