@@ -53,6 +53,13 @@
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
+  "keybindings": {
+    "title": "Raccourcis clavier",
+    "nextStep": "Étape suivante / Enregistrer le triage",
+    "prevMessage": "Message précédent",
+    "nextMessage": "Message suivant",
+    "deselect": "Désélectionner le message"
+  },
   "location": "emplacement",
   "login": "connexion",
   "loginTagline": "Conduite d'intervention. Indépendante. Digitale.",
