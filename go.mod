@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/99designs/gqlgen v0.17.95
-	github.com/exaring/otelpgx v0.11.1
+	github.com/exaring/otelpgx v0.12.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.11.0
