@@ -1,11 +1,10 @@
 import { faCircleArrowLeft, faCircleArrowRight, faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
-import { useDate } from "utils/useDate";
 import { Button } from "components/ui";
 import { ReactEditor } from "../Markdown";
 import { canSave, hasValidMessageTime, useEditorContext } from "../editorState";
@@ -87,10 +86,24 @@ const ContentInput = ({ id }: { id: string }) => {
   );
 };
 
+function useNow() {
+  const [now, setNow] = useState(() => new Date());
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    const schedule = () => {
+      const ms = 60_000 - (Date.now() % 60_000);
+      timerRef.current = setTimeout(() => { setNow(new Date()); schedule(); }, ms);
+    };
+    schedule();
+    return () => clearTimeout(timerRef.current);
+  }, []);
+  return now;
+}
+
 const TimeInput = ({ id }: { id: string }) => {
   const { t } = useTranslation();
   const { state, dispatch } = useEditorContext();
-  const { now } = useDate();
+  const now = useNow();
   const invalidTime = !hasValidMessageTime(state.time, now);
   return (
     <div className="min-w-0 flex-1">

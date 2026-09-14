@@ -25,6 +25,7 @@ const selectWithIcon =
 function List(props: {
   showControls: boolean;
   autoScroll?: boolean;
+  showTasksButton?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }) {
@@ -176,6 +177,7 @@ function List(props: {
           divisions={divisions}
           incidentId={incidentId ?? ""}
           showControls={props.showControls}
+          showTasksButton={props.showTasksButton}
           setTriageMessage={props.setTriageMessage}
           setEditorMessage={props.setEditorMessage}
         />
@@ -199,6 +201,7 @@ const MemoMessages = memo(Messages);
 
 function Messages(props: {
   showControls: boolean;
+  showTasksButton?: boolean;
   incidentId: string;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
@@ -215,6 +218,7 @@ function Messages(props: {
           message={message}
           divisions={props.divisions}
           showControls={props.showControls}
+          showTasksButton={props.showTasksButton}
           setEditorMessage={props.setEditorMessage}
           setTriageMessage={props.setTriageMessage}
         />
