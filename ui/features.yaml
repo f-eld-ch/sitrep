@@ -21,6 +21,19 @@ flags:
       - segment:
           key: Development
           value: true
+  # nimdanitro: flag for rolling out new triage view, remove after triage view is GA
+  - key: new-triage-view
+    name: New Triage View
+    type: BOOLEAN_FLAG_TYPE
+    description: Show the new dedicated triage view (hides the triage action buttons on messages)
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
+      - segment:
+          key: earlyadopter
+          value: true
   # nimdanitro: flag for indicating that it is a sitrep managed instances
   - key: is-sitrep-managed
     name: Sitrep Managed
@@ -40,6 +53,14 @@ segments:
         operator: isoneof
         value: '["dev.sitrep.ch","localhost","127.0.0.1"]'
     match_type: ALL_MATCH_TYPE
+  - key: earlyadopter
+    name: Early Adopter
+    constraints:
+      - type: STRING_COMPARISON_TYPE
+        property: domain
+        operator: suffix
+        value: ".ur.ch"
+    match_type: ANY_MATCH_TYPE
   - key: SitrepManaged
     name: SitrepManaged
     constraints:
