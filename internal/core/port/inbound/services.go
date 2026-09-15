@@ -12,6 +12,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
@@ -280,4 +281,54 @@ type FeatureService interface {
 		actor identity.Actor,
 	) (FeatureState, error)
 	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
+}
+
+// SchadenplatzState carries the command result for Schadenplatz write operations.
+type SchadenplatzState struct {
+	ID         shared.SchadenplatzID
+	IncidentID shared.IncidentID
+	Name       string
+	IsDefault  bool
+	GeoJSON    []byte
+	Casualties schadenplatz.CasualtyTotals
+	IsMerged   bool
+	MergedInto *shared.SchadenplatzID
+}
+
+// SchadenplatzService is the driving port for Schadenplatz commands.
+type SchadenplatzService interface {
+	CreateSchadenplatz(
+		ctx context.Context,
+		incidentID shared.IncidentID,
+		name string,
+		actor identity.Actor,
+	) (SchadenplatzState, error)
+
+	RenameSchadenplatz(
+		ctx context.Context,
+		id shared.SchadenplatzID,
+		name string,
+		actor identity.Actor,
+	) (SchadenplatzState, error)
+
+	SetSchadenplatzGeometry(
+		ctx context.Context,
+		id shared.SchadenplatzID,
+		geoJSON []byte,
+		actor identity.Actor,
+	) (SchadenplatzState, error)
+
+	RecordCasualties(
+		ctx context.Context,
+		schadenplatzID shared.SchadenplatzID,
+		sourceMessageID shared.MessageID,
+		deltas schadenplatz.CasualtyDeltas,
+		actor identity.Actor,
+	) (SchadenplatzState, error)
+
+	MergeSchadenplatz(
+		ctx context.Context,
+		id shared.SchadenplatzID,
+		actor identity.Actor,
+	) error
 }

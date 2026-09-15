@@ -107,6 +107,22 @@ func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbo
 	)
 }
 
+// SchadenplatzService creates a ready-to-use SchadenplatzService.
+func (f *Factory) SchadenplatzService(
+	repo outbound.SchadenplatzRepository,
+	incidents outbound.IncidentRepository,
+) *SchadenplatzService {
+	return NewSchadenplatzService(
+		f.tx,
+		repo,
+		incidents,
+		f.accessChecker,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
+}
+
 func (f *Factory) AccessService() *AccessService {
 	return NewAccessService(
 		f.tx,
