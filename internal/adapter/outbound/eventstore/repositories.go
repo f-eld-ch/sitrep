@@ -31,8 +31,8 @@ var (
 	_ outbound.IncidentAccessRepository = (*IncidentAccessRepository)(nil)
 	_ outbound.AccessGroupRepository    = (*AccessGroupRepository)(nil)
 	_ outbound.GlobalAccessRepository   = (*GlobalAccessRepository)(nil)
-	_ outbound.SchadenplatzRepository = (*SchadenplatzRepository)(nil)
-	_ outbound.ResourceRepository     = (*ResourceRepository)(nil)
+	_ outbound.SchadenplatzRepository   = (*SchadenplatzRepository)(nil)
+	_ outbound.ResourceRepository       = (*ResourceRepository)(nil)
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -229,7 +229,10 @@ func NewSchadenplatzRepository(store outbound.EventStore) *SchadenplatzRepositor
 	return &SchadenplatzRepository{store: store}
 }
 
-func (r *SchadenplatzRepository) Load(ctx context.Context, id shared.SchadenplatzID) (*schadenplatz.Schadenplatz, error) {
+func (r *SchadenplatzRepository) Load(
+	ctx context.Context,
+	id shared.SchadenplatzID,
+) (*schadenplatz.Schadenplatz, error) {
 	s := schadenplatz.New(id)
 	if err := loadAggregate(ctx, r.store, s, uuid.UUID(id)); err != nil {
 		return nil, fmt.Errorf("schadenplatz repository load %s: %w", id, err)

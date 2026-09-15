@@ -47,9 +47,9 @@ type stack struct {
 	LayerSvc              inbound.LayerService
 	FeatureSvc            inbound.FeatureService
 	AccessSvc             inbound.AccessService
-	SchadenplatzSvc inbound.SchadenplatzService
-	ResourceSvc     inbound.ResourceService
-	Queries         outbound.Queries
+	SchadenplatzSvc       inbound.SchadenplatzService
+	ResourceSvc           inbound.ResourceService
+	Queries               outbound.Queries
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker
@@ -334,7 +334,15 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		attCfg.backend = "ephemeral"
 	}
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler, accessChecker)
+	queries := inmemqueries.NewQueries(
+		incHandler,
+		divHandler,
+		msgHandler,
+		layerHandler,
+		spHandler,
+		resourceHandler,
+		accessChecker,
+	)
 
 	blobs, blobsTeardown, err := buildBlobStore(ctx, nil, attCfg)
 	if err != nil {

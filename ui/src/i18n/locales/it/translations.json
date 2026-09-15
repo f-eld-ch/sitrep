@@ -53,6 +53,8 @@
   "stepSchadenplatz": "Luogo sinistro",
   "schadenplatz": {
     "select": "Seleziona luogo",
+    "selectHint": "Questo messaggio riguarda un luogo sinistro specifico?",
+    "defaultHint": "Generale (nessuna attribuzione specifica)",
     "new": "Crea nuovo",
     "namePlaceholder": "Nome luogo sinistro",
     "create": "Crea",

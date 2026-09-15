@@ -104,6 +104,7 @@ func (s *SchadenplatzService) CreateSchadenplatz(
 	}
 
 	span.SetAttributes(attribute.String("schadenplatz.id", id.String()))
+
 	_ = s.notifier.Notify(ctx)
 
 	return stateFromSchadenplatz(sp), nil
@@ -131,6 +132,7 @@ func (s *SchadenplatzService) RenameSchadenplatz(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		var err error
+
 		sp, err = s.repo.Load(ctx, id)
 		if err != nil {
 			return err
@@ -186,6 +188,7 @@ func (s *SchadenplatzService) SetSchadenplatzGeometry(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		var err error
+
 		sp, err = s.repo.Load(ctx, id)
 		if err != nil {
 			return err
@@ -245,6 +248,7 @@ func (s *SchadenplatzService) RecordCasualties(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		var err error
+
 		sp, err = s.repo.Load(ctx, schadenplatzID)
 		if err != nil {
 			return err
@@ -322,7 +326,10 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 		defaultID := inc.DefaultSchadenplatzID()
 		if defaultID == nil {
 			// Should never happen on a valid incident, but guard defensively.
-			return shared.ValidationError{Field: "defaultSchadenplatzId", Message: "incident has no default Schadenplatz"}
+			return shared.ValidationError{
+				Field:   "defaultSchadenplatzId",
+				Message: "incident has no default Schadenplatz",
+			}
 		}
 
 		if err := sp.MergeIntoDefault(*defaultID, actor.Sub, at); err != nil {

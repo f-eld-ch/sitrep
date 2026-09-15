@@ -395,7 +395,10 @@ func (q *Queries) GetResource(_ context.Context, id uuid.UUID) (*outbound.Resour
 	return resourceRowToRM(row), nil
 }
 
-func (q *Queries) ListResourcesForSchadenplatz(_ context.Context, schadenplatzID uuid.UUID) ([]*outbound.ResourceRM, error) {
+func (q *Queries) ListResourcesForSchadenplatz(
+	_ context.Context,
+	schadenplatzID uuid.UUID,
+) ([]*outbound.ResourceRM, error) {
 	rows := q.resources.ForSchadenplatz(schadenplatzID)
 
 	out := make([]*outbound.ResourceRM, 0, len(rows))
@@ -419,28 +422,28 @@ func (q *Queries) ListResourcesForIncident(_ context.Context, incidentID uuid.UU
 
 func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
 	rm := &outbound.ResourceRM{
-		ID:              row.ID,
-		IncidentID:      row.IncidentID,
-		SchadenplatzID:  row.SchadenplatzID,
-		Formation:       row.Formation,
-		Name:            row.Name,
-		Size:            row.Size,
-		PersonnelCount:  row.PersonnelCount,
-		Hauptaufgabe:    row.Hauptaufgabe,
-		ContactMedium:   row.ContactMedium,
-		ContactDetail:   row.ContactDetail,
+		ID:               row.ID,
+		IncidentID:       row.IncidentID,
+		SchadenplatzID:   row.SchadenplatzID,
+		Formation:        row.Formation,
+		Name:             row.Name,
+		Size:             row.Size,
+		PersonnelCount:   row.PersonnelCount,
+		Hauptaufgabe:     row.Hauptaufgabe,
+		ContactMedium:    row.ContactMedium,
+		ContactDetail:    row.ContactDetail,
 		HomeLocationName: row.HomeLocationName,
-		HomeLocationLat: row.HomeLocationLat,
-		HomeLocationLng: row.HomeLocationLng,
-		Status:          row.Status,
-		StatusAt:        row.StatusAt,
-		EinsatzBeginn:   row.EinsatzBeginn,
-		EinsatzEnde:     row.EinsatzEnde,
-		PredecessorID:   row.PredecessorID,
-		SuccessorID:     row.SuccessorID,
-		SourceMessageID: row.SourceMessageID,
-		CreatedAt:       row.CreatedAt,
-		UpdatedAt:       row.UpdatedAt,
+		HomeLocationLat:  row.HomeLocationLat,
+		HomeLocationLng:  row.HomeLocationLng,
+		Status:           row.Status,
+		StatusAt:         row.StatusAt,
+		EinsatzBeginn:    row.EinsatzBeginn,
+		EinsatzEnde:      row.EinsatzEnde,
+		PredecessorID:    row.PredecessorID,
+		SuccessorID:      row.SuccessorID,
+		SourceMessageID:  row.SourceMessageID,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
 	}
 
 	if row.DeploymentLat != nil && row.DeploymentLng != nil {
@@ -448,6 +451,7 @@ func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
 		if row.DeploymentLabel != nil {
 			label = *row.DeploymentLabel
 		}
+
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
 			Lat:   *row.DeploymentLat,
 			Lng:   *row.DeploymentLng,

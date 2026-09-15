@@ -53,6 +53,8 @@ func TestMigrationsUpDownUp(t *testing.T) {
 		"readmodel_layer_features",
 		"readmodel_message",
 		"readmodel_message_attachment",
+		"readmodel_resource",
+		"readmodel_schadenplatz",
 		"users",
 	}
 	assertTables(t, db, wantTables)

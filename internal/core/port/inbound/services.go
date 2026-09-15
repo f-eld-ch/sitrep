@@ -371,16 +371,54 @@ type AlertResourceInput struct {
 }
 
 // ResourceService is the driving port for Resource commands.
+//
+//nolint:interfacebloat // Resource commands are intentionally exposed through one driving port.
 type ResourceService interface {
 	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
 	MarkResourceReady(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
 	DeployResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
 	StandDownResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
-	RelieveResource(ctx context.Context, id shared.ResourceID, successorID *shared.ResourceID, actor identity.Actor) (ResourceState, error)
-	ReassignResource(ctx context.Context, id shared.ResourceID, schadenplatzID shared.SchadenplatzID, actor identity.Actor) (ResourceState, error)
-	UpdateDeploymentLocation(ctx context.Context, id shared.ResourceID, loc *resource.DeploymentLocation, actor identity.Actor) (ResourceState, error)
-	ChangeHauptaufgabe(ctx context.Context, id shared.ResourceID, hauptaufgabe string, actor identity.Actor) (ResourceState, error)
-	UpdateContact(ctx context.Context, id shared.ResourceID, contact resource.Contact, actor identity.Actor) (ResourceState, error)
-	UpdatePersonnelCount(ctx context.Context, id shared.ResourceID, count int, actor identity.Actor) (ResourceState, error)
-	RecordEinsatzDauer(ctx context.Context, id shared.ResourceID, beginn time.Time, ende *time.Time, actor identity.Actor) (ResourceState, error)
+	RelieveResource(
+		ctx context.Context,
+		id shared.ResourceID,
+		successorID *shared.ResourceID,
+		actor identity.Actor,
+	) (ResourceState, error)
+	ReassignResource(
+		ctx context.Context,
+		id shared.ResourceID,
+		schadenplatzID shared.SchadenplatzID,
+		actor identity.Actor,
+	) (ResourceState, error)
+	UpdateDeploymentLocation(
+		ctx context.Context,
+		id shared.ResourceID,
+		loc *resource.DeploymentLocation,
+		actor identity.Actor,
+	) (ResourceState, error)
+	ChangeHauptaufgabe(
+		ctx context.Context,
+		id shared.ResourceID,
+		hauptaufgabe string,
+		actor identity.Actor,
+	) (ResourceState, error)
+	UpdateContact(
+		ctx context.Context,
+		id shared.ResourceID,
+		contact resource.Contact,
+		actor identity.Actor,
+	) (ResourceState, error)
+	UpdatePersonnelCount(
+		ctx context.Context,
+		id shared.ResourceID,
+		count int,
+		actor identity.Actor,
+	) (ResourceState, error)
+	RecordEinsatzDauer(
+		ctx context.Context,
+		id shared.ResourceID,
+		beginn time.Time,
+		ende *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
 }

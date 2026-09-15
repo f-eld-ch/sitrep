@@ -23,22 +23,26 @@ var (
 // replay rebuilds an aggregate from a slice of persisted events.
 func replay(t *testing.T, id shared.ResourceID, events []eventsourcing.Event) *resource.Resource {
 	t.Helper()
+
 	r := resource.New(id)
 	for _, e := range events {
 		require.NoError(t, eventsourcing.Apply(r, e))
 	}
+
 	return r
 }
 
 // alerted returns an Alerted event for a resource with sane defaults.
 func alerted(id shared.ResourceID) eventsourcing.Event {
 	r := resource.New(id)
+
 	err := r.Alert(incidentID, schadenplatzID,
 		resource.FormationFW, "Gruppe Alpha", resource.UnitSizeGruppe, 9,
 		"Brandbekämpfung", nil, nil, nil, actor, at)
 	if err != nil {
 		panic(err)
 	}
+
 	return r.Root().PendingEvents()[0]
 }
 
@@ -207,6 +211,7 @@ func TestResource_Reassign(t *testing.T) {
 	t.Run("reassign a relieved resource is rejected", func(t *testing.T) {
 		r := replay(t, id, []eventsourcing.Event{alerted(id)})
 		require.NoError(t, r.Relieve(nil, actor, at))
+
 		newSP := shared.SchadenplatzID(uuid.New())
 		err := r.Reassign(newSP, actor, at)
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
@@ -249,6 +254,7 @@ func TestResource_UpdatesRejectedWhenRelieved(t *testing.T) {
 			resource.FormationFW, "Alpha", resource.UnitSizeGruppe, 9,
 			"", nil, nil, nil, actor, at)
 		_ = r.Relieve(nil, actor, at)
+
 		return r.Root().PendingEvents()
 	}()
 

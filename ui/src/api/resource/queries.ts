@@ -1,46 +1,13 @@
 import { useQuery } from "@apollo/client/react";
-import type { ResourceFormation, ResourceStatus, ResourceUnitSize, ContactMedium } from "../../gql/next/graphql";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_INCIDENT_RESOURCES } from "./documents";
+import { toResource } from "./mapper";
+import type { Resource } from "./mapper";
 
-export interface ResourceContact {
-  medium: ContactMedium;
-  detail: string;
-}
-
-export interface ResourceHomeLocation {
-  name: string;
-  lat: number | null;
-  lng: number | null;
-}
-
-export interface ResourceDeploymentLocation {
-  lat: number;
-  lng: number;
-  label: string;
-}
-
-export interface Resource {
-  id: string;
-  incidentId: string;
-  schadenplatzId: string;
-  formation: ResourceFormation;
-  name: string;
-  size: ResourceUnitSize;
-  personnelCount: number;
-  hauptaufgabe: string;
-  contact: ResourceContact | null;
-  homeLocation: ResourceHomeLocation | null;
-  deploymentLocation: ResourceDeploymentLocation | null;
-  status: ResourceStatus;
-  statusAt: string;
-  einsatzBeginn: string | null;
-  einsatzEnde: string | null;
-  predecessorId: string | null;
-  successorId: string | null;
-  sourceMessageId: string | null;
-}
+export type { Resource } from "./mapper";
+export type { ResourceContact, ResourceDeploymentLocation, ResourceHomeLocation } from "./mapper";
+export type { ResourceFormation, ResourceStatus, ResourceUnitSize, ContactMedium } from "./mapper";
 
 export interface SchadenplatzWithResources {
   id: string;
@@ -110,7 +77,7 @@ export function useIncidentResources(incidentId: string | undefined): QueryResul
         isMerged: sp.isMerged,
         mergedInto: sp.mergedInto,
         casualties: sp.casualties,
-        resources: sp.resources,
+        resources: sp.resources.map(toResource),
       })),
     },
     error: undefined,

@@ -19,15 +19,15 @@ import (
 
 // ResourceService handles write-side operations for the Resource aggregate.
 type ResourceService struct {
-	tx           outbound.Transactor
-	repo         outbound.ResourceRepository
-	incidents    outbound.IncidentRepository
+	tx             outbound.Transactor
+	repo           outbound.ResourceRepository
+	incidents      outbound.IncidentRepository
 	schadenplaetze outbound.SchadenplatzRepository
-	access       outbound.IncidentAccessChecker
-	clock        outbound.Clock
-	ids          outbound.IDs
-	notifier     outbound.EventNotifier
-	tracer       trace.Tracer
+	access         outbound.IncidentAccessChecker
+	clock          outbound.Clock
+	ids            outbound.IDs
+	notifier       outbound.EventNotifier
+	tracer         trace.Tracer
 }
 
 var _ inbound.ResourceService = (*ResourceService)(nil)
@@ -43,15 +43,15 @@ func NewResourceService(
 	notifier outbound.EventNotifier,
 ) *ResourceService {
 	return &ResourceService{
-		tx:           tx,
-		repo:         repo,
-		incidents:    incidents,
+		tx:             tx,
+		repo:           repo,
+		incidents:      incidents,
 		schadenplaetze: schadenplaetze,
-		access:       access,
-		clock:        clock,
-		ids:          ids,
-		notifier:     notifier,
-		tracer:       otel.Tracer("github.com/f-eld-ch/sitrep/service"),
+		access:         access,
+		clock:          clock,
+		ids:            ids,
+		notifier:       notifier,
+		tracer:         otel.Tracer("github.com/f-eld-ch/sitrep/service"),
 	}
 }
 
@@ -92,7 +92,7 @@ func (s *ResourceService) AlertResource(
 				return shared.ValidationError{Field: "schadenplatzId", Message: "incident has no default Schadenplatz"}
 			}
 
-			schadenplatzID = (*shared.SchadenplatzID)(defID)
+			schadenplatzID = defID
 		}
 
 		res = resource.New(id)
@@ -125,6 +125,7 @@ func (s *ResourceService) AlertResource(
 	}
 
 	span.SetAttributes(attribute.String("resource.id", id.String()))
+
 	_ = s.notifier.Notify(ctx)
 
 	return stateFromResource(res), nil
@@ -136,9 +137,15 @@ func (s *ResourceService) MarkResourceReady(
 	id shared.ResourceID,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.MarkResourceReady", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.MarkReady(actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.MarkResourceReady",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.MarkReady(actor.Sub, at)
+		},
+	)
 }
 
 // DeployResource transitions the resource from EINSATZBEREIT to EINGESETZT.
@@ -147,9 +154,15 @@ func (s *ResourceService) DeployResource(
 	id shared.ResourceID,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.DeployResource", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.Deploy(actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.DeployResource",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.Deploy(actor.Sub, at)
+		},
+	)
 }
 
 // StandDownResource transitions the resource from EINGESETZT back to EINSATZBEREIT.
@@ -158,9 +171,15 @@ func (s *ResourceService) StandDownResource(
 	id shared.ResourceID,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.StandDownResource", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.StandDown(actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.StandDownResource",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.StandDown(actor.Sub, at)
+		},
+	)
 }
 
 // RelieveResource permanently terminates the resource's assignment.
@@ -180,6 +199,7 @@ func (s *ResourceService) RelieveResource(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		var err error
+
 		res, err = s.repo.Load(ctx, id)
 		if err != nil {
 			return err
@@ -213,7 +233,7 @@ func (s *ResourceService) RelieveResource(
 				return err
 			}
 
-			if err := successor.LinkSuccession(shared.ResourceID(id), actor.Sub, at); err != nil {
+			if err := successor.LinkSuccession(id, actor.Sub, at); err != nil {
 				return err
 			}
 
@@ -243,9 +263,15 @@ func (s *ResourceService) ReassignResource(
 	schadenplatzID shared.SchadenplatzID,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.ReassignResource", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.Reassign(schadenplatzID, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.ReassignResource",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.Reassign(schadenplatzID, actor.Sub, at)
+		},
+	)
 }
 
 // UpdateDeploymentLocation sets or clears the precise operational position.
@@ -255,9 +281,15 @@ func (s *ResourceService) UpdateDeploymentLocation(
 	loc *resource.DeploymentLocation,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.UpdateDeploymentLocation", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.UpdateDeploymentLocation(loc, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.UpdateDeploymentLocation",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.UpdateDeploymentLocation(loc, actor.Sub, at)
+		},
+	)
 }
 
 // ChangeHauptaufgabe updates the primary task description.
@@ -267,9 +299,15 @@ func (s *ResourceService) ChangeHauptaufgabe(
 	hauptaufgabe string,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.ChangeHauptaufgabe", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.ChangeHauptaufgabe(hauptaufgabe, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.ChangeHauptaufgabe",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.ChangeHauptaufgabe(hauptaufgabe, actor.Sub, at)
+		},
+	)
 }
 
 // UpdateContact changes the resource's communication details.
@@ -279,9 +317,15 @@ func (s *ResourceService) UpdateContact(
 	contact resource.Contact,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.UpdateContact", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.UpdateContact(contact, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.UpdateContact",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.UpdateContact(contact, actor.Sub, at)
+		},
+	)
 }
 
 // UpdatePersonnelCount corrects the resource's headcount.
@@ -291,9 +335,15 @@ func (s *ResourceService) UpdatePersonnelCount(
 	count int,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.UpdatePersonnelCount", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.UpdatePersonnelCount(count, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.UpdatePersonnelCount",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.UpdatePersonnelCount(count, actor.Sub, at)
+		},
+	)
 }
 
 // RecordEinsatzDauer records the operational period for this resource.
@@ -304,9 +354,15 @@ func (s *ResourceService) RecordEinsatzDauer(
 	ende *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(ctx, "ResourceService.RecordEinsatzDauer", id, actor, func(res *resource.Resource, at time.Time) error {
-		return res.RecordEinsatzDauer(beginn, ende, actor.Sub, at)
-	})
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.RecordEinsatzDauer",
+		id,
+		actor,
+		func(res *resource.Resource, at time.Time) error {
+			return res.RecordEinsatzDauer(beginn, ende, actor.Sub, at)
+		},
+	)
 }
 
 // simpleTransition handles the common load-access-mutate-save pattern for resource commands.
@@ -327,6 +383,7 @@ func (s *ResourceService) simpleTransition(
 
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		var err error
+
 		res, err = s.repo.Load(ctx, id)
 		if err != nil {
 			return err

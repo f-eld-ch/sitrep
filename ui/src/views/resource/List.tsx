@@ -3,7 +3,7 @@ import { Button, Notification, PageTitle, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import type { Resource, SchadenplatzWithResources } from "api";
+import type { Resource, ResourceStatus, SchadenplatzWithResources } from "api";
 import {
   useDeployResource,
   useIncidentResources,
@@ -11,7 +11,6 @@ import {
   useRelieveResource,
   useStandDownResource,
 } from "api";
-import type { ResourceStatus } from "../../gql/next/graphql";
 
 const statusVariant: Record<ResourceStatus, TagVariant> = {
   AUFGEBOTEN: "warning",

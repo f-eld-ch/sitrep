@@ -1,9 +1,5 @@
 import { useMutation } from "@apollo/client/react";
-import type {
-  ResourceFormation,
-  ResourceUnitSize,
-  ContactMedium,
-} from "../../gql/next/graphql";
+import type { ResourceFormation, ResourceUnitSize, ContactMedium } from "./mapper";
 import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {

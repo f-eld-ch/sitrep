@@ -10,7 +10,7 @@ import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
-import type { ResourceStatus } from "../../gql/next/graphql";
+import type { ResourceStatus } from "api";
 import { Button, Notification, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { Spinner } from "components";
@@ -167,15 +167,10 @@ function PanelForm(props: {
   const [recordCasualties] = useRecordCasualties();
 
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
-  const [selectedSchadenplatzId, setSelectedSchadenplatzId] = useState<string | undefined>();
-  const [newSpName, setNewSpName] = useState("");
-  const [casualties, setCasualties] = useState<CasualtyDeltas>({
-    vermisste: 0,
-    tote: 0,
-    verletzte: 0,
-    obdachlose: 0,
-    eingeschlossene: 0,
-  });
+  // Multi-select: IDs of named Schadenplätz chosen by the operator. Default is never in this list.
+  const [selectedSpIds, setSelectedSpIds] = useState<string[]>([]);
+  // Per-Schadenplatz casualty deltas. Key = schadenplatz ID (or defaultSp.id for the implicit entry).
+  const [casualtiesBySpId, setCasualtiesBySpId] = useState<Record<string, CasualtyDeltas>>({});
   const [assignments, setAssignments] = useState<Division[]>(
     message.divisions.map((d) => d.division),
   );
@@ -188,8 +183,21 @@ function PanelForm(props: {
     message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
 
   const schadenplaetze = resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : [];
-  const effectiveSpId = selectedSchadenplatzId ?? schadenplaetze.find((s) => s.isDefault)?.id ?? schadenplaetze[0]?.id;
-  const selectedSp = schadenplaetze.find((s) => s.id === effectiveSpId);
+  const defaultSp = schadenplaetze.find((s) => s.isDefault);
+  const namedSchadenplaetze = schadenplaetze.filter((s) => !s.isDefault);
+
+  // When operator selects nothing, casualties/resources go to the default SP implicitly.
+  const effectiveSpIds: string[] =
+    selectedSpIds.length > 0 ? selectedSpIds : defaultSp ? [defaultSp.id] : [];
+
+  const toggleSpId = (id: string) =>
+    setSelectedSpIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+  const getSpCasualties = (spId: string): CasualtyDeltas =>
+    casualtiesBySpId[spId] ?? { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 };
+
+  const setSpCasualties = (spId: string, deltas: CasualtyDeltas) =>
+    setCasualtiesBySpId((prev) => ({ ...prev, [spId]: deltas }));
 
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
@@ -213,13 +221,11 @@ function PanelForm(props: {
 
   const handleSave = useCallback((triage: TriageStatus) => {
     onSaved();
-    const hasDeltas = Object.values(casualties).some((v) => v !== 0);
-    if (hasDeltas && effectiveSpId) {
-      void recordCasualties({
-        schadenplatzId: effectiveSpId,
-        messageId: message.id,
-        deltas: casualties,
-      });
+    for (const spId of effectiveSpIds) {
+      const deltas = casualtiesBySpId[spId];
+      if (deltas && Object.values(deltas).some((v) => v !== 0)) {
+        void recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas });
+      }
     }
     triageMessage({
       incidentId,
@@ -229,7 +235,9 @@ function PanelForm(props: {
       divisionIds: assignments.map((d) => d.id),
       divisions: assignments,
     }).catch(() => {});
-  }, [onSaved, recordCasualties, casualties, effectiveSpId, triageMessage, incidentId, message.id, priority, assignments]);
+  // effectiveSpIds is derived state — include its dependencies instead
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onSaved, recordCasualties, casualtiesBySpId, selectedSpIds, defaultSp?.id, triageMessage, incidentId, message.id, priority, assignments]);
 
   const handleNext = useCallback(() => {
     if (isLast) {
@@ -384,39 +392,52 @@ function PanelForm(props: {
 
         {currentStep.key === "schadenplatz" && (
           <SchadenplatzStep
-            schadenplaetze={schadenplaetze}
-            selectedId={effectiveSpId}
-            onSelect={setSelectedSchadenplatzId}
+            namedSchadenplaetze={namedSchadenplaetze}
+            selectedIds={selectedSpIds}
+            onToggle={toggleSpId}
             incidentId={incidentId}
-            newSpName={newSpName}
-            onNewSpNameChange={setNewSpName}
-            onCreated={(id) => {
-              setSelectedSchadenplatzId(id);
-              setNewSpName("");
-            }}
+            onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
             createSchadenplatz={createSchadenplatz}
           />
         )}
 
         {currentStep.key === "personen" && (
-          <div>
-            {selectedSp && (
-              <p className="mb-3 text-sm text-fg-muted">{selectedSp.name}</p>
-            )}
-            <h3 className="mb-4 text-base font-bold">{t("stepPersonen")}</h3>
-            <CasualtySection value={casualties} onChange={setCasualties} />
+          <div className="space-y-6">
+            {effectiveSpIds.map((spId) => {
+              const sp = schadenplaetze.find((s) => s.id === spId);
+              const label = selectedSpIds.length === 0
+                ? t("schadenplatz.defaultHint")
+                : (sp?.name ?? spId);
+              return (
+                <div key={spId}>
+                  <h3 className="mb-3 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
+                  <CasualtySection
+                    value={getSpCasualties(spId)}
+                    onChange={(d) => setSpCasualties(spId, d)}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 
         {currentStep.key === "mittel" && (
-          <div>
-            <h3 className="mb-3 text-base font-bold">{t("stepMittel")}</h3>
+          <div className="space-y-6">
             {resourcesResult.status === "loading" ? (
               <Spinner />
-            ) : selectedSp ? (
-              <ResourceActionList resources={selectedSp.resources} />
             ) : (
-              <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
+              effectiveSpIds.map((spId) => {
+                const sp = schadenplaetze.find((s) => s.id === spId);
+                const label = selectedSpIds.length === 0
+                  ? t("schadenplatz.defaultHint")
+                  : (sp?.name ?? spId);
+                return (
+                  <div key={spId}>
+                    <h3 className="mb-2 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
+                    <ResourceActionList resources={sp?.resources ?? []} />
+                  </div>
+                );
+              })
             )}
           </div>
         )}
@@ -786,26 +807,23 @@ function CasualtyRow({
 // ── SchadenplatzStep ──────────────────────────────────────────────────────────
 
 function SchadenplatzStep({
-  schadenplaetze,
-  selectedId,
-  onSelect,
+  namedSchadenplaetze,
+  selectedIds,
+  onToggle,
   incidentId,
-  newSpName,
-  onNewSpNameChange,
   onCreated,
   createSchadenplatz,
 }: {
-  schadenplaetze: SchadenplatzWithResources[];
-  selectedId: string | undefined;
-  onSelect: (id: string) => void;
+  namedSchadenplaetze: SchadenplatzWithResources[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
   incidentId: string;
-  newSpName: string;
-  onNewSpNameChange: (name: string) => void;
   onCreated: (id: string) => void;
   createSchadenplatz: (args: { incidentId: string; name: string }) => Promise<{ id: string }>;
 }) {
   const { t } = useTranslation();
   const [showNew, setShowNew] = useState(false);
+  const [newSpName, setNewSpName] = useState("");
   const [creating, setCreating] = useState(false);
 
   const handleCreate = async () => {
@@ -814,6 +832,7 @@ function SchadenplatzStep({
     try {
       const result = await createSchadenplatz({ incidentId, name: newSpName.trim() });
       onCreated(result.id);
+      setNewSpName("");
       setShowNew(false);
     } finally {
       setCreating(false);
@@ -822,40 +841,43 @@ function SchadenplatzStep({
 
   return (
     <div className="space-y-3">
-      <h3 className="mb-3 text-base font-bold">{t("schadenplatz.select")}</h3>
-      <div className="space-y-2">
-        {schadenplaetze.map((sp) => {
-          const isSelected = sp.id === selectedId;
-          return (
-            <button
-              key={sp.id}
-              type="button"
-              onClick={() => onSelect(sp.id)}
-              className={clsx(
-                "w-full rounded border px-3 py-2 text-left text-sm transition-colors",
-                isSelected
-                  ? "border-primary bg-primary/10 text-fg"
-                  : "border-border bg-bg-elevated hover:border-primary/40 text-fg",
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <span className="flex-1 font-medium">{sp.name}</span>
-                {sp.isDefault && (
-                  <Tag variant="primary" light size="sm">
-                    {t("schadenplatz.defaultLabel")}
-                  </Tag>
-                )}
-                {isSelected && (
-                  <FontAwesomeIcon icon={faCheck} className="text-primary text-xs shrink-0" />
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <p className="text-sm text-fg-muted">{t("schadenplatz.selectHint")}</p>
 
-      {/* Create new section */}
-      <div className="pt-2 border-t border-border">
+      {/* Named Schadenplätz — checkboxes. Hidden when only default exists. */}
+      {namedSchadenplaetze.length > 0 && (
+        <div className="space-y-2">
+          {namedSchadenplaetze.map((sp) => {
+            const isChecked = selectedIds.includes(sp.id);
+            return (
+              <label
+                key={sp.id}
+                className={clsx(
+                  "flex cursor-pointer items-center gap-3 rounded border px-3 py-2 text-sm transition-colors",
+                  isChecked
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-bg-elevated hover:border-primary/40",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => onToggle(sp.id)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span className="flex-1 font-medium text-fg">{sp.name}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Implicit-default hint */}
+      <p className="text-xs text-fg-muted/70 italic">
+        {t("schadenplatz.defaultHint")}
+      </p>
+
+      {/* Create new */}
+      <div className={clsx("pt-2", namedSchadenplaetze.length > 0 && "border-t border-border")}>
         {!showNew ? (
           <button
             type="button"
@@ -869,7 +891,7 @@ function SchadenplatzStep({
             <input
               type="text"
               value={newSpName}
-              onChange={(e) => onNewSpNameChange(e.target.value)}
+              onChange={(e) => setNewSpName(e.target.value)}
               placeholder={t("schadenplatz.namePlaceholder")}
               className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               onKeyDown={(e) => {
@@ -893,7 +915,7 @@ function SchadenplatzStep({
               size="xs"
               onClick={() => setShowNew(false)}
             >
-              {t("back")}
+              {t("cancel")}
             </Button>
           </div>
         )}

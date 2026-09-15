@@ -9,11 +9,15 @@ export {
   useUpdatePersonnelCount,
 } from "./commands";
 export type {
+  ContactMedium,
   IncidentResourcesData,
   Resource,
   ResourceContact,
   ResourceDeploymentLocation,
+  ResourceFormation,
   ResourceHomeLocation,
+  ResourceStatus,
+  ResourceUnitSize,
   SchadenplatzWithResources,
 } from "./queries";
 export { useIncidentResources } from "./queries";

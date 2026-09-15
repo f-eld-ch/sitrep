@@ -77,25 +77,25 @@ func (r *Resource) OwnerIncidentID() uuid.UUID { return uuid.UUID(r.incidentID) 
 // Queries
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (r *Resource) ID() shared.ResourceID               { return shared.ResourceID(r.root.ID()) }
-func (r *Resource) IncidentID() shared.IncidentID       { return r.incidentID }
-func (r *Resource) SchadenplatzID() shared.SchadenplatzID { return r.schadenplatzID }
-func (r *Resource) Formation() Formation                { return r.formation }
-func (r *Resource) Name() string                        { return r.name }
-func (r *Resource) Size() UnitSize                      { return r.size }
-func (r *Resource) PersonnelCount() int                 { return r.personnelCount }
-func (r *Resource) Hauptaufgabe() string                { return r.hauptaufgabe }
-func (r *Resource) Contact() *Contact                   { return r.contact }
-func (r *Resource) HomeLocation() *Location             { return r.homeLocation }
+func (r *Resource) ID() shared.ResourceID                   { return shared.ResourceID(r.root.ID()) }
+func (r *Resource) IncidentID() shared.IncidentID           { return r.incidentID }
+func (r *Resource) SchadenplatzID() shared.SchadenplatzID   { return r.schadenplatzID }
+func (r *Resource) Formation() Formation                    { return r.formation }
+func (r *Resource) Name() string                            { return r.name }
+func (r *Resource) Size() UnitSize                          { return r.size }
+func (r *Resource) PersonnelCount() int                     { return r.personnelCount }
+func (r *Resource) Hauptaufgabe() string                    { return r.hauptaufgabe }
+func (r *Resource) Contact() *Contact                       { return r.contact }
+func (r *Resource) HomeLocation() *Location                 { return r.homeLocation }
 func (r *Resource) DeploymentLocation() *DeploymentLocation { return r.deploymentLocation }
-func (r *Resource) Status() ResourceStatus              { return r.status }
-func (r *Resource) StatusAt() time.Time                 { return r.statusAt }
-func (r *Resource) EinsatzBeginn() *time.Time           { return r.einsatzBeginn }
-func (r *Resource) EinsatzEnde() *time.Time             { return r.einsatzEnde }
-func (r *Resource) PredecessorID() *shared.ResourceID   { return r.predecessorID }
-func (r *Resource) SuccessorID() *shared.ResourceID     { return r.successorID }
-func (r *Resource) SourceMessageID() *shared.MessageID  { return r.sourceMessageID }
-func (r *Resource) IsRelieved() bool                    { return r.status == StatusAbgeloest }
+func (r *Resource) Status() ResourceStatus                  { return r.status }
+func (r *Resource) StatusAt() time.Time                     { return r.statusAt }
+func (r *Resource) EinsatzBeginn() *time.Time               { return r.einsatzBeginn }
+func (r *Resource) EinsatzEnde() *time.Time                 { return r.einsatzEnde }
+func (r *Resource) PredecessorID() *shared.ResourceID       { return r.predecessorID }
+func (r *Resource) SuccessorID() *shared.ResourceID         { return r.successorID }
+func (r *Resource) SourceMessageID() *shared.MessageID      { return r.sourceMessageID }
+func (r *Resource) IsRelieved() bool                        { return r.status == StatusAbgeloest }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Commands
@@ -220,7 +220,10 @@ func (r *Resource) Reassign(schadenplatzID shared.SchadenplatzID, actor string, 
 	}
 
 	if r.schadenplatzID == schadenplatzID {
-		return shared.ValidationError{Field: "schadenplatzId", Message: "resource is already assigned to this Schadenplatz"}
+		return shared.ValidationError{
+			Field:   "schadenplatzId",
+			Message: "resource is already assigned to this Schadenplatz",
+		}
 	}
 
 	eventsourcing.TrackChange(r, ReassignedToSchadenplatz{SchadenplatzID: schadenplatzID}, at, baseMeta(actor))
@@ -293,8 +296,9 @@ func (r *Resource) RecordEinsatzDauer(beginn time.Time, ende *time.Time, actor s
 func UnitSizeForCount(count int) UnitSize {
 	for _, size := range []UnitSize{UnitSizeTrupp, UnitSizeGruppe, UnitSizeZug, UnitSizeKompanie, UnitSizeBataillon} {
 		r := personnelRanges[size]
-		max := r[1]
-		if count >= r[0] && (max == 0 || count <= max) {
+
+		upperBound := r[1]
+		if count >= r[0] && (upperBound == 0 || count <= upperBound) {
 			return size
 		}
 	}

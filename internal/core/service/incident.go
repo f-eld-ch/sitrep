@@ -27,17 +27,17 @@ import (
 
 // IncidentService handles all write-side operations for the Incident aggregate.
 type IncidentService struct {
-	tx              outbound.Transactor
-	repo            outbound.IncidentRepository
-	layers          outbound.LayerRepository
-	schadenplaetze  outbound.SchadenplatzRepository
-	hierarchy       outbound.IncidentHierarchyGuard
-	access          outbound.IncidentAccessChecker
-	accessRepo      outbound.IncidentAccessRepository
-	clock           outbound.Clock
-	ids             outbound.IDs
-	notifier        outbound.EventNotifier
-	tracer          trace.Tracer
+	tx             outbound.Transactor
+	repo           outbound.IncidentRepository
+	layers         outbound.LayerRepository
+	schadenplaetze outbound.SchadenplatzRepository
+	hierarchy      outbound.IncidentHierarchyGuard
+	access         outbound.IncidentAccessChecker
+	accessRepo     outbound.IncidentAccessRepository
+	clock          outbound.Clock
+	ids            outbound.IDs
+	notifier       outbound.EventNotifier
+	tracer         trace.Tracer
 }
 
 func NewIncidentService(
@@ -198,6 +198,7 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 		// 2. Auto-create the default Schadenplatz and link it to the incident.
 		if s.schadenplaetze != nil {
 			spID := shared.SchadenplatzID(s.ids.New())
+
 			sp := schadenplatz.New(spID)
 			if err := sp.Create(incID, "Allgemein", true, at, actor.Sub); err != nil {
 				return fmt.Errorf("create default schadenplatz: %w", err)

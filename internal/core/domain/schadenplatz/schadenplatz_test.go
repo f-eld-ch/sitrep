@@ -22,10 +22,12 @@ var (
 // replay rebuilds an aggregate from a slice of persisted events.
 func replay(t *testing.T, id shared.SchadenplatzID, events []eventsourcing.Event) *schadenplatz.Schadenplatz {
 	t.Helper()
+
 	s := schadenplatz.New(id)
 	for _, e := range events {
 		require.NoError(t, eventsourcing.Apply(s, e))
 	}
+
 	return s
 }
 
@@ -35,6 +37,7 @@ func created(id shared.SchadenplatzID, name string, isDefault bool) eventsourcin
 	if err := s.Create(incidentID, name, isDefault, at, actor); err != nil {
 		panic(err)
 	}
+
 	return s.Root().PendingEvents()[0]
 }
 
@@ -65,10 +68,12 @@ func TestSchadenplatz_Create(t *testing.T) {
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)
 				assert.Empty(t, s.Root().PendingEvents())
+
 				return
 			}
 
 			require.NoError(t, err)
+
 			events := s.Root().PendingEvents()
 			require.Len(t, events, 1)
 			assert.Equal(t, "Created", events[0].EventType)
@@ -127,6 +132,7 @@ func TestSchadenplatz_Rename(t *testing.T) {
 			}
 
 			require.NoError(t, err)
+
 			pending := s.Root().PendingEvents()
 			require.Len(t, pending, 1)
 			assert.Equal(t, tt.wantEvt, pending[0].EventType)
@@ -161,7 +167,7 @@ func TestSchadenplatz_SetGeometry(t *testing.T) {
 	pending := s.Root().PendingEvents()
 	require.Len(t, pending, 1)
 	assert.Equal(t, "GeometrySet", pending[0].EventType)
-	assert.Equal(t, geoJSON, s.GeoJSON())
+	assert.JSONEq(t, string(geoJSON), string(s.GeoJSON()))
 }
 
 func TestSchadenplatz_SetGeometry_ClearWithNil(t *testing.T) {
@@ -366,7 +372,7 @@ func TestSchadenplatz_ReplayFromEvents(t *testing.T) {
 	// Replay from scratch and verify final state matches.
 	s2 := replay(t, id, events)
 	assert.Equal(t, "Chemieunfall Zone A", s2.Name())
-	assert.Equal(t, geoJSON, s2.GeoJSON())
+	assert.JSONEq(t, string(geoJSON), string(s2.GeoJSON()))
 	assert.Equal(t, schadenplatz.CasualtyTotals{
 		Vermisste: 2, Tote: 1, Verletzte: 5, Obdachlose: 3, Eingeschlossene: 1,
 	}, s2.Casualties())

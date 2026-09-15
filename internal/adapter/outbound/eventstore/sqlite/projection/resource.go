@@ -54,13 +54,13 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 	switch e.EventType {
 	case "Alerted":
 		var d struct {
-			IncidentID     string  `json:"incidentId"`
-			SchadenplatzID string  `json:"schadenplatzId"`
-			Formation      string  `json:"formation"`
-			Name           string  `json:"name"`
-			Size           string  `json:"size"`
-			PersonnelCount int     `json:"personnelCount"`
-			Hauptaufgabe   string  `json:"hauptaufgabe"`
+			IncidentID     string `json:"incidentId"`
+			SchadenplatzID string `json:"schadenplatzId"`
+			Formation      string `json:"formation"`
+			Name           string `json:"name"`
+			Size           string `json:"size"`
+			PersonnelCount int    `json:"personnelCount"`
+			Hauptaufgabe   string `json:"hauptaufgabe"`
 			Contact        *struct {
 				Medium string `json:"medium"`
 				Detail string `json:"detail"`
@@ -81,8 +81,11 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			contactDetail = d.Contact.Detail
 		}
 
-		var homeName any
-		var homeLat, homeLng any
+		var (
+			homeName         any
+			homeLat, homeLng any
+		)
+
 		if d.HomeLocation != nil {
 			homeName = d.HomeLocation.Name
 			if d.HomeLocation.Coordinates != nil {
@@ -109,13 +112,34 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			now, d.SourceMessageID, now, now)
 
 	case "MarkedReady":
-		return exec(tx, ctx, `UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, updated_at=? WHERE id=?`, now, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, updated_at=? WHERE id=?`,
+			now,
+			now,
+			id,
+		)
 
 	case "Deployed":
-		return exec(tx, ctx, `UPDATE readmodel_resource SET status='EINGESETZT', status_at=?, updated_at=? WHERE id=?`, now, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET status='EINGESETZT', status_at=?, updated_at=? WHERE id=?`,
+			now,
+			now,
+			id,
+		)
 
 	case "StoodDown":
-		return exec(tx, ctx, `UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, updated_at=? WHERE id=?`, now, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, updated_at=? WHERE id=?`,
+			now,
+			now,
+			id,
+		)
 
 	case "Relieved":
 		var d struct {
@@ -137,7 +161,14 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(tx, ctx, `UPDATE readmodel_resource SET predecessor_id=?, updated_at=? WHERE id=?`, d.PredecessorID, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET predecessor_id=?, updated_at=? WHERE id=?`,
+			d.PredecessorID,
+			now,
+			id,
+		)
 
 	case "ReassignedToSchadenplatz":
 		var d struct {
@@ -147,7 +178,14 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(tx, ctx, `UPDATE readmodel_resource SET schadenplatz_id=?, updated_at=? WHERE id=?`, d.SchadenplatzID, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET schadenplatz_id=?, updated_at=? WHERE id=?`,
+			d.SchadenplatzID,
+			now,
+			id,
+		)
 
 	case "DeploymentLocationUpdated":
 		var d struct {
@@ -161,8 +199,11 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		var lat, lng any
-		var label any
+		var (
+			lat, lng any
+			label    any
+		)
+
 		if d.Location != nil {
 			lat = d.Location.Lat
 			lng = d.Location.Lng
@@ -181,7 +222,14 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(tx, ctx, `UPDATE readmodel_resource SET hauptaufgabe=?, updated_at=? WHERE id=?`, d.Hauptaufgabe, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET hauptaufgabe=?, updated_at=? WHERE id=?`,
+			d.Hauptaufgabe,
+			now,
+			id,
+		)
 
 	case "ContactUpdated":
 		var d struct {
@@ -194,8 +242,15 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(tx, ctx, `UPDATE readmodel_resource SET contact_medium=?, contact_detail=?, updated_at=? WHERE id=?`,
-			d.Contact.Medium, d.Contact.Detail, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET contact_medium=?, contact_detail=?, updated_at=? WHERE id=?`,
+			d.Contact.Medium,
+			d.Contact.Detail,
+			now,
+			id,
+		)
 
 	case "PersonnelCountUpdated":
 		var d struct {
@@ -205,7 +260,14 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(tx, ctx, `UPDATE readmodel_resource SET personnel_count=?, updated_at=? WHERE id=?`, d.Count, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET personnel_count=?, updated_at=? WHERE id=?`,
+			d.Count,
+			now,
+			id,
+		)
 
 	case "EinsatzDauerRecorded":
 		var d struct {

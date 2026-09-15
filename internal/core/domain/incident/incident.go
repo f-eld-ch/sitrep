@@ -74,15 +74,16 @@ func (i *Incident) AggregateType() string { return "Incident" }
 
 func (i *Incident) OwnerIncidentID() uuid.UUID { return i.root.ID() }
 
-func (i *Incident) Name() string                          { return i.name }
+func (i *Incident) Name() string                                  { return i.name }
 func (i *Incident) DefaultSchadenplatzID() *shared.SchadenplatzID { return i.defaultSchadenplatzID }
-func (i *Incident) Location() *Location          { return i.location }
-func (i *Incident) ParentID() *shared.IncidentID { return i.parentID }
-func (i *Incident) CreatedAt() time.Time         { return i.createdAt }
-func (i *Incident) ClosedAt() *time.Time         { return i.closedAt }
-func (i *Incident) IsOpen() bool                 { return i.closedAt == nil && i.deletedAt == nil }
-func (i *Incident) IsClosed() bool               { return i.closedAt != nil && i.deletedAt == nil }
-func (i *Incident) IsDeleted() bool              { return i.deletedAt != nil }
+func (i *Incident) Location() *Location                           { return i.location }
+func (i *Incident) ParentID() *shared.IncidentID                  { return i.parentID }
+func (i *Incident) CreatedAt() time.Time                          { return i.createdAt }
+func (i *Incident) ClosedAt() *time.Time                          { return i.closedAt }
+func (i *Incident) IsOpen() bool                                  { return i.closedAt == nil && i.deletedAt == nil }
+
+func (i *Incident) IsClosed() bool  { return i.closedAt != nil && i.deletedAt == nil }
+func (i *Incident) IsDeleted() bool { return i.deletedAt != nil }
 
 func (i *Incident) Divisions() []Division {
 	out := make([]Division, 0, len(i.divisions))

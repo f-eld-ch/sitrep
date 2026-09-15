@@ -12,10 +12,10 @@ import (
 // A positive value means more people reported in that category for this message.
 // Zero means no change. Negatives are rejected by the aggregate invariant check.
 type CasualtyDeltas struct {
-	Vermisste     int `json:"vermisste"`
-	Tote          int `json:"tote"`
-	Verletzte     int `json:"verletzte"`
-	Obdachlose    int `json:"obdachlose"`
+	Vermisste       int `json:"vermisste"`
+	Tote            int `json:"tote"`
+	Verletzte       int `json:"verletzte"`
+	Obdachlose      int `json:"obdachlose"`
 	Eingeschlossene int `json:"eingeschlossene"`
 }
 

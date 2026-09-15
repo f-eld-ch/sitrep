@@ -39,7 +39,7 @@ func (q *Queries) ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []*outbound.SchadenplatzRM
 
@@ -55,12 +55,7 @@ func (q *Queries) ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) 
 	return out, rows.Err()
 }
 
-// spScanner is satisfied by both *sql.Row and *sql.Rows.
-type spScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanSchadenplatz(s spScanner) (*outbound.SchadenplatzRM, error) {
+func scanSchadenplatz(s incidentScanner) (*outbound.SchadenplatzRM, error) {
 	var (
 		rm            outbound.SchadenplatzRM
 		idStr         string

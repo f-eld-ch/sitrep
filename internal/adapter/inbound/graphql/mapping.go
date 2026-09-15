@@ -370,10 +370,10 @@ func modelPriorityToDomain(p model.PriorityStatus) (shared.PriorityStatus, error
 
 func schadenplatzRMToModel(r *outbound.SchadenplatzRM) *model.Schadenplatz {
 	sp := &model.Schadenplatz{
-		ID:        r.ID.String(),
+		ID:         r.ID.String(),
 		IncidentID: r.IncidentID.String(),
-		Name:      r.Name,
-		IsDefault: r.IsDefault,
+		Name:       r.Name,
+		IsDefault:  r.IsDefault,
 		Casualties: &model.Casualties{
 			Vermisste:       r.Casualties.Vermisste,
 			Tote:            r.Casualties.Tote,
@@ -399,10 +399,10 @@ func schadenplatzRMToModel(r *outbound.SchadenplatzRM) *model.Schadenplatz {
 
 func schadenplatzStateToModel(s inbound.SchadenplatzState) *model.Schadenplatz {
 	sp := &model.Schadenplatz{
-		ID:        s.ID.String(),
+		ID:         s.ID.String(),
 		IncidentID: s.IncidentID.String(),
-		Name:      s.Name,
-		IsDefault: s.IsDefault,
+		Name:       s.Name,
+		IsDefault:  s.IsDefault,
 		Casualties: &model.Casualties{
 			Vermisste:       s.Casualties.Vermisste,
 			Tote:            s.Casualties.Tote,
@@ -453,6 +453,7 @@ func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
 				if r.ContactDetail != nil {
 					return *r.ContactDetail
 				}
+
 				return ""
 			}(),
 		}
@@ -567,6 +568,8 @@ func mapResourceFormation(s string) model.ResourceFormation {
 		return model.ResourceFormationTechnb
 	case resource.FormationSAN:
 		return model.ResourceFormationSan
+	case resource.FormationOTHER:
+		return model.ResourceFormationOther
 	default:
 		return model.ResourceFormationOther
 	}
@@ -610,6 +613,8 @@ func mapContactMedium(s string) model.ContactMedium {
 		return model.ContactMediumRadio
 	case resource.ContactMediumPhone:
 		return model.ContactMediumPhone
+	case resource.ContactMediumOther:
+		return model.ContactMediumOther
 	default:
 		return model.ContactMediumOther
 	}
@@ -629,6 +634,8 @@ func modelFormationToDomain(f model.ResourceFormation) resource.Formation {
 		return resource.FormationTECHNB
 	case model.ResourceFormationSan:
 		return resource.FormationSAN
+	case model.ResourceFormationOther:
+		return resource.FormationOTHER
 	default:
 		return resource.FormationOTHER
 	}
@@ -657,6 +664,8 @@ func modelContactMediumToDomain(m model.ContactMedium) resource.ContactMedium {
 		return resource.ContactMediumRadio
 	case model.ContactMediumPhone:
 		return resource.ContactMediumPhone
+	case model.ContactMediumOther:
+		return resource.ContactMediumOther
 	default:
 		return resource.ContactMediumOther
 	}

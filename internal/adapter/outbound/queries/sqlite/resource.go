@@ -29,26 +29,41 @@ func (q *Queries) GetResource(ctx context.Context, id uuid.UUID) (*outbound.Reso
 	return rm, err
 }
 
-func (q *Queries) ListResourcesForSchadenplatz(ctx context.Context, schadenplatzID uuid.UUID) ([]*outbound.ResourceRM, error) {
-	return q.listResources(ctx, `WHERE schadenplatz_id = ? AND status != 'ABGELOEST' ORDER BY created_at ASC`, schadenplatzID.String())
-}
-
-func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
-	return q.listResources(ctx, `WHERE incident_id = ? ORDER BY created_at ASC`, incidentID.String())
-}
-
-func (q *Queries) listResources(ctx context.Context, where string, arg string) ([]*outbound.ResourceRM, error) {
-	rows, err := q.db.QueryContext(ctx, `
-		SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
+func (q *Queries) ListResourcesForSchadenplatz(
+	ctx context.Context,
+	schadenplatzID uuid.UUID,
+) ([]*outbound.ResourceRM, error) {
+	return q.listResources(
+		ctx,
+		`SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
 		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, einsatz_beginn, einsatz_ende,
 		       predecessor_id, successor_id, source_message_id, created_at, updated_at
-		FROM readmodel_resource `+where, arg)
+		FROM readmodel_resource WHERE schadenplatz_id = ? AND status != 'ABGELOEST' ORDER BY created_at ASC`,
+		schadenplatzID.String(),
+	)
+}
+
+func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
+	return q.listResources(
+		ctx,
+		`SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
+		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
+		       deployment_lat, deployment_lng, deployment_label,
+		       status, status_at, einsatz_beginn, einsatz_ende,
+		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+		FROM readmodel_resource WHERE incident_id = ? ORDER BY created_at ASC`,
+		incidentID.String(),
+	)
+}
+
+func (q *Queries) listResources(ctx context.Context, query string, arg string) ([]*outbound.ResourceRM, error) {
+	rows, err := q.db.QueryContext(ctx, query, arg)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var out []*outbound.ResourceRM
 
@@ -64,33 +79,28 @@ func (q *Queries) listResources(ctx context.Context, where string, arg string) (
 	return out, rows.Err()
 }
 
-// resourceScanner is satisfied by both *sql.Row and *sql.Rows.
-type resourceScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanSQLiteResource(s resourceScanner) (*outbound.ResourceRM, error) {
+func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	var (
-		idStr            string
-		incidentIDStr    string
-		schadenplatzIDStr string
-		contactMedium    sql.NullString
-		contactDetail    sql.NullString
-		homeName         sql.NullString
-		homeLat          sql.NullFloat64
-		homeLng          sql.NullFloat64
-		deployLat        sql.NullFloat64
-		deployLng        sql.NullFloat64
-		deployLabel      sql.NullString
-		statusAt         sqliteh.Time
-		einsatzBeginn    sqliteh.NullTime
-		einsatzEnde      sqliteh.NullTime
-		predecessorIDStr sql.NullString
-		successorIDStr   sql.NullString
+		idStr              string
+		incidentIDStr      string
+		schadenplatzIDStr  string
+		contactMedium      sql.NullString
+		contactDetail      sql.NullString
+		homeName           sql.NullString
+		homeLat            sql.NullFloat64
+		homeLng            sql.NullFloat64
+		deployLat          sql.NullFloat64
+		deployLng          sql.NullFloat64
+		deployLabel        sql.NullString
+		statusAt           sqliteh.Time
+		einsatzBeginn      sqliteh.NullTime
+		einsatzEnde        sqliteh.NullTime
+		predecessorIDStr   sql.NullString
+		successorIDStr     sql.NullString
 		sourceMessageIDStr sql.NullString
-		createdAt        sqliteh.Time
-		updatedAt        sqliteh.Time
-		rm               outbound.ResourceRM
+		createdAt          sqliteh.Time
+		updatedAt          sqliteh.Time
+		rm                 outbound.ResourceRM
 	)
 
 	if err := s.Scan(
@@ -186,6 +196,7 @@ func scanSQLiteResource(s resourceScanner) (*outbound.ResourceRM, error) {
 		if deployLabel.Valid {
 			label = deployLabel.String
 		}
+
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
 			Lat:   deployLat.Float64,
 			Lng:   deployLng.Float64,

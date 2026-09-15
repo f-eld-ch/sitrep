@@ -29,7 +29,10 @@ func (q *Queries) GetResource(ctx context.Context, id uuid.UUID) (*outbound.Reso
 	return rm, err
 }
 
-func (q *Queries) ListResourcesForSchadenplatz(ctx context.Context, schadenplatzID uuid.UUID) ([]*outbound.ResourceRM, error) {
+func (q *Queries) ListResourcesForSchadenplatz(
+	ctx context.Context,
+	schadenplatzID uuid.UUID,
+) ([]*outbound.ResourceRM, error) {
 	return q.listResources(ctx, `WHERE schadenplatz_id = $1 AND status != 'ABGELOEST'`, schadenplatzID)
 }
 
@@ -64,20 +67,20 @@ func (q *Queries) listResources(ctx context.Context, where string, arg uuid.UUID
 	return out, rows.Err()
 }
 
-func scanPgResource(s pgScanner) (*outbound.ResourceRM, error) {
+func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	var (
-		rm              outbound.ResourceRM
-		contactMedium   *string
-		contactDetail   *string
-		homeName        *string
-		homeLat         *float64
-		homeLng         *float64
-		deployLat       *float64
-		deployLng       *float64
-		deployLabel     *string
-		statusAt        time.Time
-		einsatzBeginn   *time.Time
-		einsatzEnde     *time.Time
+		rm            outbound.ResourceRM
+		contactMedium *string
+		contactDetail *string
+		homeName      *string
+		homeLat       *float64
+		homeLng       *float64
+		deployLat     *float64
+		deployLng     *float64
+		deployLabel   *string
+		statusAt      time.Time
+		einsatzBeginn *time.Time
+		einsatzEnde   *time.Time
 	)
 
 	if err := s.Scan(
@@ -117,6 +120,7 @@ func scanPgResource(s pgScanner) (*outbound.ResourceRM, error) {
 		if deployLabel != nil {
 			label = *deployLabel
 		}
+
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
 			Lat:   *deployLat,
 			Lng:   *deployLng,

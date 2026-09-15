@@ -53,6 +53,8 @@
   "stepSchadenplatz": "Schadenplatz",
   "schadenplatz": {
     "select": "Schadenplatz wählen",
+    "selectHint": "Betrifft diese Meldung einen spezifischen Schadenplatz?",
+    "defaultHint": "Allgemein (keine spezifische Zuordnung)",
     "new": "Neu anlegen",
     "namePlaceholder": "Name des Schadenplatzes",
     "create": "Anlegen",

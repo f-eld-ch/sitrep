@@ -65,13 +65,13 @@ func (s *Schadenplatz) OwnerIncidentID() uuid.UUID { return uuid.UUID(s.incident
 // Queries
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (s *Schadenplatz) ID() shared.SchadenplatzID   { return shared.SchadenplatzID(s.root.ID()) }
-func (s *Schadenplatz) IncidentID() shared.IncidentID { return s.incidentID }
-func (s *Schadenplatz) Name() string                 { return s.name }
-func (s *Schadenplatz) IsDefault() bool              { return s.isDefault }
-func (s *Schadenplatz) GeoJSON() []byte              { return s.geoJSON }
-func (s *Schadenplatz) Casualties() CasualtyTotals   { return s.casualties }
-func (s *Schadenplatz) IsMerged() bool               { return s.mergedInto != nil }
+func (s *Schadenplatz) ID() shared.SchadenplatzID          { return shared.SchadenplatzID(s.root.ID()) }
+func (s *Schadenplatz) IncidentID() shared.IncidentID      { return s.incidentID }
+func (s *Schadenplatz) Name() string                       { return s.name }
+func (s *Schadenplatz) IsDefault() bool                    { return s.isDefault }
+func (s *Schadenplatz) GeoJSON() []byte                    { return s.geoJSON }
+func (s *Schadenplatz) Casualties() CasualtyTotals         { return s.casualties }
+func (s *Schadenplatz) IsMerged() bool                     { return s.mergedInto != nil }
 func (s *Schadenplatz) MergedInto() *shared.SchadenplatzID { return s.mergedInto }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -159,7 +159,10 @@ func (s *Schadenplatz) MergeIntoDefault(defaultID shared.SchadenplatzID, actor s
 	}
 
 	if s.isDefault {
-		return shared.ValidationError{Field: "schadenplatz", Message: "cannot merge the default Schadenplatz into itself"}
+		return shared.ValidationError{
+			Field:   "schadenplatz",
+			Message: "cannot merge the default Schadenplatz into itself",
+		}
 	}
 
 	eventsourcing.TrackChange(s, MergedIntoDefault{DefaultSchadenplatzID: defaultID}, at, baseMeta(actor))

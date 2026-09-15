@@ -53,6 +53,8 @@
   "stepSchadenplatz": "Location",
   "schadenplatz": {
     "select": "Select location",
+    "selectHint": "Does this message concern a specific location?",
+    "defaultHint": "General (no specific location)",
     "new": "Create new",
     "namePlaceholder": "Location name",
     "create": "Create",

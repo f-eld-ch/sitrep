@@ -15,31 +15,31 @@ var _ Handler = (*ResourceHandler)(nil)
 
 // ResourceRow mirrors the resource read model.
 type ResourceRow struct {
-	ID                 uuid.UUID
-	IncidentID         uuid.UUID
-	SchadenplatzID     uuid.UUID
-	Formation          string
-	Name               string
-	Size               string
-	PersonnelCount     int
-	Hauptaufgabe       string
-	ContactMedium      *string
-	ContactDetail      *string
-	HomeLocationName   *string
-	HomeLocationLat    *float64
-	HomeLocationLng    *float64
-	DeploymentLat      *float64
-	DeploymentLng      *float64
-	DeploymentLabel    *string
-	Status             string
-	StatusAt           time.Time
-	EinsatzBeginn      *time.Time
-	EinsatzEnde        *time.Time
-	PredecessorID      *uuid.UUID
-	SuccessorID        *uuid.UUID
-	SourceMessageID    *uuid.UUID
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	ID               uuid.UUID
+	IncidentID       uuid.UUID
+	SchadenplatzID   uuid.UUID
+	Formation        string
+	Name             string
+	Size             string
+	PersonnelCount   int
+	Hauptaufgabe     string
+	ContactMedium    *string
+	ContactDetail    *string
+	HomeLocationName *string
+	HomeLocationLat  *float64
+	HomeLocationLng  *float64
+	DeploymentLat    *float64
+	DeploymentLng    *float64
+	DeploymentLabel  *string
+	Status           string
+	StatusAt         time.Time
+	EinsatzBeginn    *time.Time
+	EinsatzEnde      *time.Time
+	PredecessorID    *uuid.UUID
+	SuccessorID      *uuid.UUID
+	SourceMessageID  *uuid.UUID
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // ResourceHandler maintains an in-memory projection of the Resource read model.
@@ -89,14 +89,14 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 	switch e.EventType {
 	case "Alerted":
 		var d struct {
-			IncidentID      string  `json:"incidentId"`
-			SchadenplatzID  string  `json:"schadenplatzId"`
-			Formation       string  `json:"formation"`
-			Name            string  `json:"name"`
-			Size            string  `json:"size"`
-			PersonnelCount  int     `json:"personnelCount"`
-			Hauptaufgabe    string  `json:"hauptaufgabe"`
-			Contact         *struct {
+			IncidentID     string `json:"incidentId"`
+			SchadenplatzID string `json:"schadenplatzId"`
+			Formation      string `json:"formation"`
+			Name           string `json:"name"`
+			Size           string `json:"size"`
+			PersonnelCount int    `json:"personnelCount"`
+			Hauptaufgabe   string `json:"hauptaufgabe"`
+			Contact        *struct {
 				Medium string `json:"medium"`
 				Detail string `json:"detail"`
 			} `json:"contact"`
@@ -153,6 +153,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			if err != nil {
 				return err
 			}
+
 			row.SourceMessageID = &msgID
 		}
 
@@ -197,6 +198,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 				if err != nil {
 					return err
 				}
+
 				row.SuccessorID = &succID
 			}
 		}
@@ -259,6 +261,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 				row.DeploymentLng = nil
 				row.DeploymentLabel = nil
 			}
+
 			row.UpdatedAt = e.OccurredAt
 		}
 
@@ -319,6 +322,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			if t, err := time.Parse(time.RFC3339, d.Beginn); err == nil {
 				beginn = t
 			}
+
 			row.EinsatzBeginn = &beginn
 
 			if d.Ende != nil {

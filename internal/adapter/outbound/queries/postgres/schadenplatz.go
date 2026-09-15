@@ -55,12 +55,7 @@ func (q *Queries) ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) 
 	return out, rows.Err()
 }
 
-// pgScanner is satisfied by both pgx.Row and pgx.Rows.
-type pgScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanPgSchadenplatz(s pgScanner) (*outbound.SchadenplatzRM, error) {
+func scanPgSchadenplatz(s incidentScanner) (*outbound.SchadenplatzRM, error) {
 	var (
 		rm         outbound.SchadenplatzRM
 		geojson    []byte

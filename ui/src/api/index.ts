@@ -90,11 +90,15 @@ export {
 // Resource aggregate
 export type {
   AlertResourceArgs,
+  ContactMedium,
   IncidentResourcesData,
   Resource,
   ResourceContact,
   ResourceDeploymentLocation,
+  ResourceFormation,
   ResourceHomeLocation,
+  ResourceStatus,
+  ResourceUnitSize,
   SchadenplatzWithResources,
 } from "./resource";
 export {
