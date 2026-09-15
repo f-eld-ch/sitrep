@@ -46,4 +46,8 @@ models:
         resolver: true
       schadenplaetze:
         resolver: true
+  Schadenplatz:
+    fields:
+      resources:
+        resolver: true
 

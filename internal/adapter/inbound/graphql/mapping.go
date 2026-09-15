@@ -9,6 +9,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -423,6 +424,242 @@ func schadenplatzStateToModel(s inbound.SchadenplatzState) *model.Schadenplatz {
 	}
 
 	return sp
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource mapping
+// ──────────────────────────────────────────────────────────────────────────────
+
+func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
+	res := &model.Resource{
+		ID:             r.ID.String(),
+		IncidentID:     r.IncidentID.String(),
+		SchadenplatzID: r.SchadenplatzID.String(),
+		Formation:      mapResourceFormation(r.Formation),
+		Name:           r.Name,
+		Size:           mapResourceUnitSize(r.Size),
+		PersonnelCount: r.PersonnelCount,
+		Hauptaufgabe:   r.Hauptaufgabe,
+		Status:         mapResourceStatus(r.Status),
+		StatusAt:       r.StatusAt,
+		EinsatzBeginn:  r.EinsatzBeginn,
+		EinsatzEnde:    r.EinsatzEnde,
+	}
+
+	if r.ContactMedium != nil {
+		res.Contact = &model.ResourceContact{
+			Medium: mapContactMedium(*r.ContactMedium),
+			Detail: func() string {
+				if r.ContactDetail != nil {
+					return *r.ContactDetail
+				}
+				return ""
+			}(),
+		}
+	}
+
+	if r.HomeLocationName != nil {
+		res.HomeLocation = &model.ResourceHomeLocation{
+			Name: *r.HomeLocationName,
+			Lat:  r.HomeLocationLat,
+			Lng:  r.HomeLocationLng,
+		}
+	}
+
+	if r.DeploymentLocation != nil {
+		res.DeploymentLocation = &model.DeploymentLocation{
+			Lat:   r.DeploymentLocation.Lat,
+			Lng:   r.DeploymentLocation.Lng,
+			Label: r.DeploymentLocation.Label,
+		}
+	}
+
+	if r.PredecessorID != nil {
+		s := r.PredecessorID.String()
+		res.PredecessorID = &s
+	}
+
+	if r.SuccessorID != nil {
+		s := r.SuccessorID.String()
+		res.SuccessorID = &s
+	}
+
+	if r.SourceMessageID != nil {
+		s := r.SourceMessageID.String()
+		res.SourceMessageID = &s
+	}
+
+	return res
+}
+
+func resourceStateToModel(s inbound.ResourceState) *model.Resource {
+	res := &model.Resource{
+		ID:             s.ID.String(),
+		IncidentID:     s.IncidentID.String(),
+		SchadenplatzID: s.SchadenplatzID.String(),
+		Formation:      mapResourceFormation(string(s.Formation)),
+		Name:           s.Name,
+		Size:           mapResourceUnitSize(string(s.Size)),
+		PersonnelCount: s.PersonnelCount,
+		Hauptaufgabe:   s.Hauptaufgabe,
+		Status:         mapResourceStatus(string(s.Status)),
+		StatusAt:       s.StatusAt,
+		EinsatzBeginn:  s.EinsatzBeginn,
+		EinsatzEnde:    s.EinsatzEnde,
+	}
+
+	if s.Contact != nil {
+		res.Contact = &model.ResourceContact{
+			Medium: mapContactMedium(string(s.Contact.Medium)),
+			Detail: s.Contact.Detail,
+		}
+	}
+
+	if s.HomeLocation != nil {
+		hl := &model.ResourceHomeLocation{Name: s.HomeLocation.Name}
+		if s.HomeLocation.Coordinates != nil {
+			lat := s.HomeLocation.Coordinates[0]
+			lng := s.HomeLocation.Coordinates[1]
+			hl.Lat = &lat
+			hl.Lng = &lng
+		}
+
+		res.HomeLocation = hl
+	}
+
+	if s.DeploymentLocation != nil {
+		res.DeploymentLocation = &model.DeploymentLocation{
+			Lat:   s.DeploymentLocation.Lat,
+			Lng:   s.DeploymentLocation.Lng,
+			Label: s.DeploymentLocation.Label,
+		}
+	}
+
+	if s.PredecessorID != nil {
+		str := s.PredecessorID.String()
+		res.PredecessorID = &str
+	}
+
+	if s.SuccessorID != nil {
+		str := s.SuccessorID.String()
+		res.SuccessorID = &str
+	}
+
+	if s.SourceMessageID != nil {
+		str := s.SourceMessageID.String()
+		res.SourceMessageID = &str
+	}
+
+	return res
+}
+
+func mapResourceFormation(s string) model.ResourceFormation {
+	switch resource.Formation(s) {
+	case resource.FormationFW:
+		return model.ResourceFormationFw
+	case resource.FormationPOL:
+		return model.ResourceFormationPol
+	case resource.FormationARMEE:
+		return model.ResourceFormationArmee
+	case resource.FormationZS:
+		return model.ResourceFormationZs
+	case resource.FormationTECHNB:
+		return model.ResourceFormationTechnb
+	case resource.FormationSAN:
+		return model.ResourceFormationSan
+	default:
+		return model.ResourceFormationOther
+	}
+}
+
+func mapResourceUnitSize(s string) model.ResourceUnitSize {
+	switch resource.UnitSize(s) {
+	case resource.UnitSizeTrupp:
+		return model.ResourceUnitSizeTrupp
+	case resource.UnitSizeGruppe:
+		return model.ResourceUnitSizeGruppe
+	case resource.UnitSizeZug:
+		return model.ResourceUnitSizeZug
+	case resource.UnitSizeKompanie:
+		return model.ResourceUnitSizeKompanie
+	case resource.UnitSizeBataillon:
+		return model.ResourceUnitSizeBataillon
+	default:
+		return model.ResourceUnitSizeTrupp
+	}
+}
+
+func mapResourceStatus(s string) model.ResourceStatus {
+	switch resource.ResourceStatus(s) {
+	case resource.StatusAufgeboten:
+		return model.ResourceStatusAufgeboten
+	case resource.StatusEinsatzbereit:
+		return model.ResourceStatusEinsatzbereit
+	case resource.StatusEingesetzt:
+		return model.ResourceStatusEingesetzt
+	case resource.StatusAbgeloest:
+		return model.ResourceStatusAbgeloest
+	default:
+		return model.ResourceStatusAufgeboten
+	}
+}
+
+func mapContactMedium(s string) model.ContactMedium {
+	switch resource.ContactMedium(s) {
+	case resource.ContactMediumRadio:
+		return model.ContactMediumRadio
+	case resource.ContactMediumPhone:
+		return model.ContactMediumPhone
+	default:
+		return model.ContactMediumOther
+	}
+}
+
+func modelFormationToDomain(f model.ResourceFormation) resource.Formation {
+	switch f {
+	case model.ResourceFormationFw:
+		return resource.FormationFW
+	case model.ResourceFormationPol:
+		return resource.FormationPOL
+	case model.ResourceFormationArmee:
+		return resource.FormationARMEE
+	case model.ResourceFormationZs:
+		return resource.FormationZS
+	case model.ResourceFormationTechnb:
+		return resource.FormationTECHNB
+	case model.ResourceFormationSan:
+		return resource.FormationSAN
+	default:
+		return resource.FormationOTHER
+	}
+}
+
+func modelUnitSizeToDomain(s model.ResourceUnitSize) resource.UnitSize {
+	switch s {
+	case model.ResourceUnitSizeTrupp:
+		return resource.UnitSizeTrupp
+	case model.ResourceUnitSizeGruppe:
+		return resource.UnitSizeGruppe
+	case model.ResourceUnitSizeZug:
+		return resource.UnitSizeZug
+	case model.ResourceUnitSizeKompanie:
+		return resource.UnitSizeKompanie
+	case model.ResourceUnitSizeBataillon:
+		return resource.UnitSizeBataillon
+	default:
+		return resource.UnitSizeTrupp
+	}
+}
+
+func modelContactMediumToDomain(m model.ContactMedium) resource.ContactMedium {
+	switch m {
+	case model.ContactMediumRadio:
+		return resource.ContactMediumRadio
+	case model.ContactMediumPhone:
+		return resource.ContactMediumPhone
+	default:
+		return resource.ContactMediumOther
+	}
 }
 
 func parseUUID(id string) (uuid.UUID, error) {
