@@ -30,6 +30,7 @@ type Queries struct {
 	messages     *projection.MessageHandler
 	layers       *projection.LayerFeaturesHandler
 	schadenplatz *projection.SchadenplatzHandler
+	resources    *projection.ResourceHandler
 	access       outbound.IncidentAccessChecker
 }
 
@@ -39,6 +40,7 @@ func NewQueries(
 	messages *projection.MessageHandler,
 	layers *projection.LayerFeaturesHandler,
 	schadenplatz *projection.SchadenplatzHandler,
+	resourceHandler *projection.ResourceHandler,
 	accessCheckers ...outbound.IncidentAccessChecker,
 ) *Queries {
 	var accessChecker outbound.IncidentAccessChecker
@@ -52,6 +54,7 @@ func NewQueries(
 		messages:     messages,
 		layers:       layers,
 		schadenplatz: schadenplatz,
+		resources:    resourceHandler,
 		access:       accessChecker,
 	}
 }
@@ -377,6 +380,82 @@ func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([
 	}
 
 	return out, nil
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource
+// ──────────────────────────────────────────────────────────────────────────────
+
+func (q *Queries) GetResource(_ context.Context, id uuid.UUID) (*outbound.ResourceRM, error) {
+	row := q.resources.Get(id)
+	if row == nil {
+		return nil, shared.ErrNotFound
+	}
+
+	return resourceRowToRM(row), nil
+}
+
+func (q *Queries) ListResourcesForSchadenplatz(_ context.Context, schadenplatzID uuid.UUID) ([]*outbound.ResourceRM, error) {
+	rows := q.resources.ForSchadenplatz(schadenplatzID)
+
+	out := make([]*outbound.ResourceRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListResourcesForIncident(_ context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
+	rows := q.resources.ForIncident(incidentID)
+
+	out := make([]*outbound.ResourceRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
+	rm := &outbound.ResourceRM{
+		ID:              row.ID,
+		IncidentID:      row.IncidentID,
+		SchadenplatzID:  row.SchadenplatzID,
+		Formation:       row.Formation,
+		Name:            row.Name,
+		Size:            row.Size,
+		PersonnelCount:  row.PersonnelCount,
+		Hauptaufgabe:    row.Hauptaufgabe,
+		ContactMedium:   row.ContactMedium,
+		ContactDetail:   row.ContactDetail,
+		HomeLocationName: row.HomeLocationName,
+		HomeLocationLat: row.HomeLocationLat,
+		HomeLocationLng: row.HomeLocationLng,
+		Status:          row.Status,
+		StatusAt:        row.StatusAt,
+		EinsatzBeginn:   row.EinsatzBeginn,
+		EinsatzEnde:     row.EinsatzEnde,
+		PredecessorID:   row.PredecessorID,
+		SuccessorID:     row.SuccessorID,
+		SourceMessageID: row.SourceMessageID,
+		CreatedAt:       row.CreatedAt,
+		UpdatedAt:       row.UpdatedAt,
+	}
+
+	if row.DeploymentLat != nil && row.DeploymentLng != nil {
+		label := ""
+		if row.DeploymentLabel != nil {
+			label = *row.DeploymentLabel
+		}
+		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
+			Lat:   *row.DeploymentLat,
+			Lng:   *row.DeploymentLng,
+			Label: label,
+		}
+	}
+
+	return rm
 }
 
 func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {

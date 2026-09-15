@@ -139,11 +139,62 @@ type SchadenplatzQueries interface {
 
 // Queries is the driven port for read-model access. Implementations query
 // projection tables and never touch the event store or aggregates.
-// Sub-interfaces (IncidentQueries, SchadenplatzQueries, …) can be used
-// independently where only a subset of queries is needed.
+// Sub-interfaces can be used independently where only a subset is needed.
 type Queries interface {
 	IncidentQueries
 	SchadenplatzQueries
+	ResourceQueries
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource read-model types
+// ──────────────────────────────────────────────────────────────────────────────
+
+// DeploymentLocationRM holds a precise operational point within a Schadenplatz.
+type DeploymentLocationRM struct {
+	Lat   float64
+	Lng   float64
+	Label string
+}
+
+// ResourceRM is the read-model row for one Resource.
+type ResourceRM struct {
+	ID                 uuid.UUID
+	IncidentID         uuid.UUID
+	SchadenplatzID     uuid.UUID
+	Formation          string
+	Name               string
+	Size               string
+	PersonnelCount     int
+	Hauptaufgabe       string
+	ContactMedium      *string
+	ContactDetail      *string
+	HomeLocationName   *string
+	HomeLocationLat    *float64
+	HomeLocationLng    *float64
+	DeploymentLocation *DeploymentLocationRM
+	Status             string
+	StatusAt           time.Time
+	EinsatzBeginn      *time.Time
+	EinsatzEnde        *time.Time
+	PredecessorID      *uuid.UUID
+	SuccessorID        *uuid.UUID
+	SourceMessageID    *uuid.UUID
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+}
+
+// ResourceQueries is the driven port for Resource read-model access.
+type ResourceQueries interface {
+	// GetResource returns one Resource by ID.
+	// Returns ErrNotFound when it does not exist.
+	GetResource(ctx context.Context, id uuid.UUID) (*ResourceRM, error)
+
+	// ListResourcesForSchadenplatz returns all non-relieved resources for a Schadenplatz.
+	ListResourcesForSchadenplatz(ctx context.Context, schadenplatzID uuid.UUID) ([]*ResourceRM, error)
+
+	// ListResourcesForIncident returns all resources for an incident (including relieved).
+	ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*ResourceRM, error)
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

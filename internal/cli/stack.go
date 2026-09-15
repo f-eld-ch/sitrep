@@ -246,6 +246,7 @@ func buildPostgresStack(
 		pgprojection.NewLayerFeaturesHandler(pool),
 		pgprojection.NewAccessHandler(pool),
 		pgprojection.NewSchadenplatzHandler(pool),
+		pgprojection.NewResourceHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
 
@@ -322,13 +323,14 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
 	spHandler := inprojection.NewSchadenplatzHandler()
+	resourceHandler := inprojection.NewResourceHandler()
 
 	// For the no-DSN dev path, default to ephemeral if no backend is configured.
 	if attCfg.enabled && attCfg.backend == "" {
 		attCfg.backend = "ephemeral"
 	}
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, accessChecker)
+	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler, accessChecker)
 
 	blobs, blobsTeardown, err := buildBlobStore(ctx, nil, attCfg)
 	if err != nil {
@@ -360,7 +362,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	factory := service.NewFactory(inmemFactoryOpts...)
 
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler, accessHandler, spHandler,
+		incHandler, divHandler, msgHandler, layerHandler, accessHandler, spHandler, resourceHandler,
 	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
@@ -482,6 +484,7 @@ func buildSQLiteStack(
 		sqprojection.NewLayerFeaturesHandler(write),
 		sqprojection.NewAccessHandler(write),
 		sqprojection.NewSchadenplatzHandler(write),
+		sqprojection.NewResourceHandler(write),
 	}
 
 	retentionSvc := service.NewRetentionService(tx, repos, retention, clock, notifier)
