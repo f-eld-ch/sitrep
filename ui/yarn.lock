@@ -8585,8 +8585,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^6.3.0":
-  version: 6.9.0
-  resolution: "maplibre-gl@npm:6.9.0"
+  version: 6.9.1
+  resolution: "maplibre-gl@npm:6.9.1"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
@@ -8606,7 +8606,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/5b5727d80244b3553610fe7d5d9c58c9ddea9f971b978c06a6ddbac3156530bdde33be2b2f3bca1c5c8745cd13376b2be42b23b8e9f9520ef0e5e1ea9f584287
+  checksum: 10/1ac48cb3f784ab65fdc17ee3d1491145c3f3e7864728ecf7c1943e668a682e25b523181a7b2edb1119fd205a78a6d03d9ed016c340cac9ca0513ba42303c0785
   languageName: node
   linkType: hard
 
