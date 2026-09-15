@@ -25,11 +25,12 @@ var _ outbound.Queries = (*Queries)(nil)
 // projection handlers. It must be constructed with the same handler instances
 // that the Projector is writing to.
 type Queries struct {
-	incidents *projection.IncidentHandler
-	divisions *projection.IncidentDivisionHandler
-	messages  *projection.MessageHandler
-	layers    *projection.LayerFeaturesHandler
-	access    outbound.IncidentAccessChecker
+	incidents    *projection.IncidentHandler
+	divisions    *projection.IncidentDivisionHandler
+	messages     *projection.MessageHandler
+	layers       *projection.LayerFeaturesHandler
+	schadenplatz *projection.SchadenplatzHandler
+	access       outbound.IncidentAccessChecker
 }
 
 func NewQueries(
@@ -37,6 +38,7 @@ func NewQueries(
 	divisions *projection.IncidentDivisionHandler,
 	messages *projection.MessageHandler,
 	layers *projection.LayerFeaturesHandler,
+	schadenplatz *projection.SchadenplatzHandler,
 	accessCheckers ...outbound.IncidentAccessChecker,
 ) *Queries {
 	var accessChecker outbound.IncidentAccessChecker
@@ -45,11 +47,12 @@ func NewQueries(
 	}
 
 	return &Queries{
-		incidents: incidents,
-		divisions: divisions,
-		messages:  messages,
-		layers:    layers,
-		access:    accessChecker,
+		incidents:    incidents,
+		divisions:    divisions,
+		messages:     messages,
+		layers:       layers,
+		schadenplatz: schadenplatz,
+		access:       accessChecker,
 	}
 }
 
@@ -350,4 +353,49 @@ func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *u
 	})
 
 	return out
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz
+// ──────────────────────────────────────────────────────────────────────────────
+
+func (q *Queries) GetSchadenplatz(_ context.Context, id uuid.UUID) (*outbound.SchadenplatzRM, error) {
+	row := q.schadenplatz.Get(id)
+	if row == nil {
+		return nil, shared.ErrNotFound
+	}
+
+	return spRowToRM(row), nil
+}
+
+func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([]*outbound.SchadenplatzRM, error) {
+	rows := q.schadenplatz.ForIncident(incidentID)
+
+	out := make([]*outbound.SchadenplatzRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, spRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
+	return &outbound.SchadenplatzRM{
+		ID:         row.ID,
+		IncidentID: row.IncidentID,
+		Name:       row.Name,
+		IsDefault:  row.IsDefault,
+		GeoJSON:    row.GeoJSON,
+		Casualties: outbound.CasualtiesRM{
+			Vermisste:       row.Vermisste,
+			Tote:            row.Tote,
+			Verletzte:       row.Verletzte,
+			Obdachlose:      row.Obdachlose,
+			Eingeschlossene: row.Eingeschlossene,
+		},
+		IsMerged:   row.IsMerged,
+		MergedInto: row.MergedInto,
+		CreatedAt:  row.CreatedAt,
+		UpdatedAt:  row.UpdatedAt,
+	}
 }

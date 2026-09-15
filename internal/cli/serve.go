@@ -209,8 +209,8 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Access:                s.AccessSvc,
 			IncidentAccessChecker: s.IncidentAccessChecker,
 			GlobalAccessChecker:   s.GlobalAccessChecker,
-			AccessQueries:         s.AccessQueries,
-			Queries:               s.Queries,
+			AccessQueries: s.AccessQueries,
+			Queries:       s.Queries,
 			//nolint:gosec // viper returns uint64 safely bounded by config validation
 			MaxAttachmentSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
 		}, apiOpts...),

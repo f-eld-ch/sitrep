@@ -88,9 +88,8 @@ type LayerRM struct {
 // Queries port
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Queries is the driven port for read-model access. Implementations query
-// projection tables and never touch the event store or aggregates.
-type Queries interface {
+// IncidentQueries is the driven port for incident and message read-model access.
+type IncidentQueries interface {
 	// ListIncidents returns all non-deleted incidents, newest first.
 	ListIncidents(ctx context.Context) ([]*IncidentRM, error)
 
@@ -127,3 +126,50 @@ type Queries interface {
 	// Returns ErrNotFound when the attachment does not exist.
 	GetAttachment(ctx context.Context, id uuid.UUID) (*AttachmentRM, error)
 }
+
+// SchadenplatzQueries is the driven port for Schadenplatz read-model access.
+type SchadenplatzQueries interface {
+	// GetSchadenplatz returns one Schadenplatz by ID.
+	// Returns ErrNotFound when it does not exist.
+	GetSchadenplatz(ctx context.Context, id uuid.UUID) (*SchadenplatzRM, error)
+
+	// ListSchadenplaetze returns all non-merged Schadenplatz for an incident.
+	ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
+}
+
+// Queries is the driven port for read-model access. Implementations query
+// projection tables and never touch the event store or aggregates.
+// Sub-interfaces (IncidentQueries, SchadenplatzQueries, …) can be used
+// independently where only a subset of queries is needed.
+type Queries interface {
+	IncidentQueries
+	SchadenplatzQueries
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz read-model types
+// ──────────────────────────────────────────────────────────────────────────────
+
+// CasualtiesRM carries the accumulated casualty totals.
+type CasualtiesRM struct {
+	Vermisste       int
+	Tote            int
+	Verletzte       int
+	Obdachlose      int
+	Eingeschlossene int
+}
+
+// SchadenplatzRM is the read-model row for one Schadenplatz.
+type SchadenplatzRM struct {
+	ID         uuid.UUID
+	IncidentID uuid.UUID
+	Name       string
+	IsDefault  bool
+	GeoJSON    []byte
+	Casualties CasualtiesRM
+	IsMerged   bool
+	MergedInto *uuid.UUID
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+

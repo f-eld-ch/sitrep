@@ -125,9 +125,10 @@ func newAttachStack(t *testing.T, maxBlobSize int64) *attachStack {
 	divH := projection.NewIncidentDivisionHandler()
 	msgH := projection.NewMessageHandler()
 	layerH := projection.NewLayerFeaturesHandler()
+	spH := projection.NewSchadenplatzHandler()
 
-	proj := projection.NewProjector(store, []projection.Handler{incH, divH, msgH, layerH})
-	queries := inmemqueries.NewQueries(incH, divH, msgH, layerH)
+	proj := projection.NewProjector(store, []projection.Handler{incH, divH, msgH, layerH, spH})
+	queries := inmemqueries.NewQueries(incH, divH, msgH, layerH, spH)
 	blobs := newMemBlobStore(maxBlobSize)
 
 	factory := service.NewFactory(

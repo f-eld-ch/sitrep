@@ -62,7 +62,8 @@ func newTestStack(t *testing.T) *testStack {
 		incHandler, divHandler, msgHandler, layerHandler,
 	})
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler)
+	spHandler := projection.NewSchadenplatzHandler()
+	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler)
 
 	r := &gqlresolver.Resolver{
 		Incidents: incidentSvc,

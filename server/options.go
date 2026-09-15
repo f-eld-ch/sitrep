@@ -50,8 +50,8 @@ type Stack struct {
 	Access                inbound.AccessService
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker
-	AccessQueries         outbound.AccessQueries
-	Queries               outbound.Queries
+	AccessQueries outbound.AccessQueries
+	Queries       outbound.Queries
 	// MaxAttachmentSize is the maximum allowed size in bytes for file attachments.
 	// Zero means no server-side limit (domain validation still applies).
 	MaxAttachmentSize int64
@@ -133,8 +133,8 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 		Access:                stack.Access,
 		IncidentAccessChecker: stack.IncidentAccessChecker,
 		GlobalAccessChecker:   stack.GlobalAccessChecker,
-		AccessQueries:         stack.AccessQueries,
-		Queries:               stack.Queries,
+		AccessQueries: stack.AccessQueries,
+		Queries:       stack.Queries,
 	}}
 	// Flat cost per list-resolver call to penalise N+1 patterns
 	// (e.g. fetching messages for every incident in a list query)
