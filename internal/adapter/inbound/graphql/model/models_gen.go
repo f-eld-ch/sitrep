@@ -33,6 +33,23 @@ type Attachment struct {
 	URL string `json:"url"`
 }
 
+// Accumulated casualty counts for a Schadenplatz.
+type Casualties struct {
+	Vermisste       int `json:"vermisste"`
+	Tote            int `json:"tote"`
+	Verletzte       int `json:"verletzte"`
+	Obdachlose      int `json:"obdachlose"`
+	Eingeschlossene int `json:"eingeschlossene"`
+}
+
+type CasualtyDeltasInput struct {
+	Vermisste       int `json:"vermisste"`
+	Tote            int `json:"tote"`
+	Verletzte       int `json:"verletzte"`
+	Obdachlose      int `json:"obdachlose"`
+	Eingeschlossene int `json:"eingeschlossene"`
+}
+
 type CreateIncidentInput struct {
 	Name string `json:"name"`
 	// Access mode for the incident; omitted defaults to OPEN_OPERATIONAL.
@@ -108,6 +125,8 @@ type Incident struct {
 	CanManageAccess bool `json:"canManageAccess"`
 	// Access mode of this incident.
 	AccessMode IncidentAccessMode `json:"accessMode"`
+	// All non-merged Schadenplätze for this incident.
+	Schadenplaetze []*Schadenplatz `json:"schadenplaetze"`
 }
 
 type IncidentAccessGrant struct {
@@ -164,6 +183,20 @@ type Mutation struct {
 }
 
 type Query struct {
+}
+
+// A geographic damage site owned by an incident.
+type Schadenplatz struct {
+	ID         string `json:"id"`
+	IncidentID string `json:"incidentId"`
+	Name       string `json:"name"`
+	IsDefault  bool   `json:"isDefault"`
+	// Raw GeoJSON for this site's boundary / marker, if set.
+	GeoJSON    *string     `json:"geoJson,omitempty"`
+	Casualties *Casualties `json:"casualties"`
+	IsMerged   bool        `json:"isMerged"`
+	// ID of the default Schadenplatz this was merged into, if merged.
+	MergedInto *string `json:"mergedInto,omitempty"`
 }
 
 type TriageMessageInput struct {

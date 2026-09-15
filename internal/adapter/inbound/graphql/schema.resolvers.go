@@ -10,15 +10,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
-
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
+	"github.com/google/uuid"
 )
 
 // ChildIncidents is the resolver for the childIncidents field.
@@ -168,6 +168,26 @@ func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) 
 	return incidentModeFromDomain(mode), nil
 }
 
+// Schadenplaetze is the resolver for the schadenplaetze field.
+func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListSchadenplaetze(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Schadenplatz, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, schadenplatzRMToModel(row))
+	}
+
+	return out, nil
+}
+
 // Attachments is the resolver for the attachments field.
 func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error) {
 	msgID, err := parseUUID(obj.ID)
@@ -189,10 +209,7 @@ func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) (
 }
 
 // CreateIncident is the resolver for the createIncident field.
-func (r *mutationResolver) CreateIncident(
-	ctx context.Context,
-	input model.CreateIncidentInput,
-) (*model.Incident, error) {
+func (r *mutationResolver) CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -241,11 +258,7 @@ func (r *mutationResolver) CreateIncident(
 }
 
 // ChangeIncidentAccessMode is the resolver for the changeIncidentAccessMode field.
-func (r *mutationResolver) ChangeIncidentAccessMode(
-	ctx context.Context,
-	incidentID string,
-	mode model.IncidentAccessMode,
-) (*model.IncidentAccessGrant, error) {
+func (r *mutationResolver) ChangeIncidentAccessMode(ctx context.Context, incidentID string, mode model.IncidentAccessMode) (*model.IncidentAccessGrant, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -278,13 +291,7 @@ func (r *mutationResolver) ChangeIncidentAccessMode(
 }
 
 // GrantIncidentRole is the resolver for the grantIncidentRole field.
-func (r *mutationResolver) GrantIncidentRole(
-	ctx context.Context,
-	incidentID string,
-	principalKind model.AccessPrincipalKind,
-	principalID string,
-	role model.IncidentRole,
-) (*model.IncidentAccessGrant, error) {
+func (r *mutationResolver) GrantIncidentRole(ctx context.Context, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (*model.IncidentAccessGrant, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -319,13 +326,7 @@ func (r *mutationResolver) GrantIncidentRole(
 }
 
 // RevokeIncidentRole is the resolver for the revokeIncidentRole field.
-func (r *mutationResolver) RevokeIncidentRole(
-	ctx context.Context,
-	incidentID string,
-	principalKind model.AccessPrincipalKind,
-	principalID string,
-	role model.IncidentRole,
-) (string, error) {
+func (r *mutationResolver) RevokeIncidentRole(ctx context.Context, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -354,11 +355,7 @@ func (r *mutationResolver) RevokeIncidentRole(
 }
 
 // CreateAccessGroup is the resolver for the createAccessGroup field.
-func (r *mutationResolver) CreateAccessGroup(
-	ctx context.Context,
-	name string,
-	description string,
-) (*model.AccessGroup, error) {
+func (r *mutationResolver) CreateAccessGroup(ctx context.Context, name string, description string) (*model.AccessGroup, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -377,11 +374,7 @@ func (r *mutationResolver) CreateAccessGroup(
 }
 
 // RenameAccessGroup is the resolver for the renameAccessGroup field.
-func (r *mutationResolver) RenameAccessGroup(
-	ctx context.Context,
-	groupID string,
-	name string,
-) (*model.AccessGroup, error) {
+func (r *mutationResolver) RenameAccessGroup(ctx context.Context, groupID string, name string) (*model.AccessGroup, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -404,11 +397,7 @@ func (r *mutationResolver) RenameAccessGroup(
 }
 
 // UpdateAccessGroupDescription is the resolver for the updateAccessGroupDescription field.
-func (r *mutationResolver) UpdateAccessGroupDescription(
-	ctx context.Context,
-	groupID string,
-	description string,
-) (*model.AccessGroup, error) {
+func (r *mutationResolver) UpdateAccessGroupDescription(ctx context.Context, groupID string, description string) (*model.AccessGroup, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -517,11 +506,7 @@ func (r *mutationResolver) GrantGlobalRole(ctx context.Context, subject string, 
 }
 
 // RevokeGlobalRole is the resolver for the revokeGlobalRole field.
-func (r *mutationResolver) RevokeGlobalRole(
-	ctx context.Context,
-	subject string,
-	role model.GlobalRole,
-) (string, error) {
+func (r *mutationResolver) RevokeGlobalRole(ctx context.Context, subject string, role model.GlobalRole) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -538,11 +523,7 @@ func (r *mutationResolver) RevokeGlobalRole(
 }
 
 // UpdateIncident is the resolver for the updateIncident field.
-func (r *mutationResolver) UpdateIncident(
-	ctx context.Context,
-	id string,
-	input model.UpdateIncidentInput,
-) (*model.Incident, error) {
+func (r *mutationResolver) UpdateIncident(ctx context.Context, id string, input model.UpdateIncidentInput) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -650,11 +631,7 @@ func (r *mutationResolver) DeleteIncident(ctx context.Context, id string) (strin
 }
 
 // LinkIncidentParent is the resolver for the linkIncidentParent field.
-func (r *mutationResolver) LinkIncidentParent(
-	ctx context.Context,
-	childID string,
-	parentID string,
-) (*model.Incident, error) {
+func (r *mutationResolver) LinkIncidentParent(ctx context.Context, childID string, parentID string) (*model.Incident, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -733,11 +710,7 @@ func (r *mutationResolver) CreateMessage(ctx context.Context, input model.Create
 }
 
 // UpdateMessage is the resolver for the updateMessage field.
-func (r *mutationResolver) UpdateMessage(
-	ctx context.Context,
-	id string,
-	input model.UpdateMessageInput,
-) (*model.Message, error) {
+func (r *mutationResolver) UpdateMessage(ctx context.Context, id string, input model.UpdateMessageInput) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -773,11 +746,7 @@ func (r *mutationResolver) UpdateMessage(
 }
 
 // TriageMessage is the resolver for the triageMessage field.
-func (r *mutationResolver) TriageMessage(
-	ctx context.Context,
-	id string,
-	input model.TriageMessageInput,
-) (*model.Message, error) {
+func (r *mutationResolver) TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -862,11 +831,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, id string) (string
 }
 
 // RemoveAttachment is the resolver for the removeAttachment field.
-func (r *mutationResolver) RemoveAttachment(
-	ctx context.Context,
-	messageID string,
-	attachmentID string,
-) (string, error) {
+func (r *mutationResolver) RemoveAttachment(ctx context.Context, messageID string, attachmentID string) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -887,6 +852,126 @@ func (r *mutationResolver) RemoveAttachment(
 	}
 
 	return attachmentID, nil
+}
+
+// CreateSchadenplatz is the resolver for the createSchadenplatz field.
+func (r *mutationResolver) CreateSchadenplatz(ctx context.Context, incidentID string, name string) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.CreateSchadenplatz(ctx, shared.IncidentID(incID), name, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// RenameSchadenplatz is the resolver for the renameSchadenplatz field.
+func (r *mutationResolver) RenameSchadenplatz(ctx context.Context, id string, name string) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.RenameSchadenplatz(ctx, shared.SchadenplatzID(spID), name, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// SetSchadenplatzGeometry is the resolver for the setSchadenplatzGeometry field.
+func (r *mutationResolver) SetSchadenplatzGeometry(ctx context.Context, id string, geoJSON *string) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var rawGeoJSON []byte
+	if geoJSON != nil {
+		rawGeoJSON = []byte(*geoJSON)
+	}
+
+	state, err := r.Schadenplaetze.SetSchadenplatzGeometry(ctx, shared.SchadenplatzID(spID), rawGeoJSON, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// RecordCasualties is the resolver for the recordCasualties field.
+func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sourceMessageID string, input model.CasualtyDeltasInput) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	msgID, err := parseUUID(sourceMessageID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.RecordCasualties(ctx,
+		shared.SchadenplatzID(spID),
+		shared.MessageID(msgID),
+		schadenplatz.CasualtyDeltas{
+			Vermisste:       input.Vermisste,
+			Tote:            input.Tote,
+			Verletzte:       input.Verletzte,
+			Obdachlose:      input.Obdachlose,
+			Eingeschlossene: input.Eingeschlossene,
+		},
+		actor,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// MergeSchadenplatz is the resolver for the mergeSchadenplatz field.
+func (r *mutationResolver) MergeSchadenplatz(ctx context.Context, id string) (string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return "", err
+	}
+
+	if err := r.Schadenplaetze.MergeSchadenplatz(ctx, shared.SchadenplatzID(spID), actor); err != nil {
+		return "", err
+	}
+
+	return id, nil
 }
 
 // CreateLayer is the resolver for the createLayer field.
@@ -922,14 +1007,7 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 }
 
 // AddFeature is the resolver for the addFeature field.
-func (r *mutationResolver) AddFeature(
-	ctx context.Context,
-	incidentID string,
-	layerID string,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -960,12 +1038,7 @@ func (r *mutationResolver) AddFeature(
 }
 
 // ModifyFeature is the resolver for the modifyFeature field.
-func (r *mutationResolver) ModifyFeature(
-	ctx context.Context,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1287,6 +1360,21 @@ func (r *queryResolver) MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleG
 	}
 
 	return out, nil
+}
+
+// Schadenplatz is the resolver for the schadenplatz field.
+func (r *queryResolver) Schadenplatz(ctx context.Context, id string) (*model.Schadenplatz, error) {
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.Queries.GetSchadenplatz(ctx, spID)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzRMToModel(row), nil
 }
 
 // Incident returns generated.IncidentResolver implementation.

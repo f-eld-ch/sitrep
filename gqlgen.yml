@@ -44,4 +44,6 @@ models:
         resolver: true
       accessMode:
         resolver: true
+      schadenplaetze:
+        resolver: true
 

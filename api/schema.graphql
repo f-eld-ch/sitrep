@@ -127,6 +127,29 @@ type Attachment {
   url: String!
 }
 
+"""Accumulated casualty counts for a Schadenplatz."""
+type Casualties {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+"""A geographic damage site owned by an incident."""
+type Schadenplatz {
+  id: ID!
+  incidentId: ID!
+  name: String!
+  isDefault: Boolean!
+  """Raw GeoJSON for this site's boundary / marker, if set."""
+  geoJson: String
+  casualties: Casualties!
+  isMerged: Boolean!
+  """ID of the default Schadenplatz this was merged into, if merged."""
+  mergedInto: ID
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -173,6 +196,8 @@ type Incident {
   canManageAccess: Boolean!
   """Access mode of this incident."""
   accessMode: IncidentAccessMode!
+  """All non-merged Schadenplätze for this incident."""
+  schadenplaetze: [Schadenplatz!]!
 }
 
 type Feature {
@@ -214,6 +239,9 @@ type Query {
   users: [User!]!
   globalRoles: [GlobalRoleGrant!]!
   myGlobalRoles: [GlobalRoleGrant!]!
+
+  """Single Schadenplatz by ID."""
+  schadenplatz(id: ID!): Schadenplatz
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -277,6 +305,14 @@ input TriageMessageInput {
   divisionIds: [ID!]!
 }
 
+input CasualtyDeltasInput {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
 # ─── Mutations ────────────────────────────────────────────────────────────────
 
 type Mutation {
@@ -336,6 +372,23 @@ type Mutation {
   deleteMessage(id: ID!): ID!
 
   removeAttachment(messageId: ID!, attachmentId: ID!): ID!
+
+  # ── Schadenplatz ─────────────────────────────────────────────────────────────
+
+  """Create a new Schadenplatz for an incident."""
+  createSchadenplatz(incidentId: ID!, name: String!): Schadenplatz!
+
+  """Rename a Schadenplatz."""
+  renameSchadenplatz(id: ID!, name: String!): Schadenplatz!
+
+  """Set or clear the GeoJSON geometry of a Schadenplatz."""
+  setSchadenplatzGeometry(id: ID!, geoJson: String): Schadenplatz!
+
+  """Record casualty deltas (positive or negative) for a Schadenplatz."""
+  recordCasualties(id: ID!, sourceMessageId: ID!, input: CasualtyDeltasInput!): Schadenplatz!
+
+  """Merge a Schadenplatz into the incident's default Schadenplatz."""
+  mergeSchadenplatz(id: ID!): ID!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

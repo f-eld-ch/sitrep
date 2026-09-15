@@ -363,6 +363,68 @@ func modelPriorityToDomain(p model.PriorityStatus) (shared.PriorityStatus, error
 	return "", fmt.Errorf("unknown priority %q", p)
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz mapping
+// ──────────────────────────────────────────────────────────────────────────────
+
+func schadenplatzRMToModel(r *outbound.SchadenplatzRM) *model.Schadenplatz {
+	sp := &model.Schadenplatz{
+		ID:        r.ID.String(),
+		IncidentID: r.IncidentID.String(),
+		Name:      r.Name,
+		IsDefault: r.IsDefault,
+		Casualties: &model.Casualties{
+			Vermisste:       r.Casualties.Vermisste,
+			Tote:            r.Casualties.Tote,
+			Verletzte:       r.Casualties.Verletzte,
+			Obdachlose:      r.Casualties.Obdachlose,
+			Eingeschlossene: r.Casualties.Eingeschlossene,
+		},
+		IsMerged: r.IsMerged,
+	}
+
+	if len(r.GeoJSON) > 0 {
+		gj := string(r.GeoJSON)
+		sp.GeoJSON = &gj
+	}
+
+	if r.MergedInto != nil {
+		mid := r.MergedInto.String()
+		sp.MergedInto = &mid
+	}
+
+	return sp
+}
+
+func schadenplatzStateToModel(s inbound.SchadenplatzState) *model.Schadenplatz {
+	sp := &model.Schadenplatz{
+		ID:        s.ID.String(),
+		IncidentID: s.IncidentID.String(),
+		Name:      s.Name,
+		IsDefault: s.IsDefault,
+		Casualties: &model.Casualties{
+			Vermisste:       s.Casualties.Vermisste,
+			Tote:            s.Casualties.Tote,
+			Verletzte:       s.Casualties.Verletzte,
+			Obdachlose:      s.Casualties.Obdachlose,
+			Eingeschlossene: s.Casualties.Eingeschlossene,
+		},
+		IsMerged: s.IsMerged,
+	}
+
+	if len(s.GeoJSON) > 0 {
+		gj := string(s.GeoJSON)
+		sp.GeoJSON = &gj
+	}
+
+	if s.MergedInto != nil {
+		mid := s.MergedInto.String()
+		sp.MergedInto = &mid
+	}
+
+	return sp
+}
+
 func parseUUID(id string) (uuid.UUID, error) {
 	u, err := uuid.Parse(id)
 	if err != nil {
