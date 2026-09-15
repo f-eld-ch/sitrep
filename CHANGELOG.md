@@ -3,10 +3,24 @@
 ### ⛰️  Features
 
 - *(flags)* Add new-triage-view feature flag and earlyadopter segment ([#1860](https://github.com/f-eld-ch/sitrep/issues/1860)) - ([83c2830](https://github.com/f-eld-ch/sitrep/commit/83c28301e25325f1620ea344b2852d3b12bcafbe))
+- *(ui)* New triage view (feature-flagged) ([#1861](https://github.com/f-eld-ch/sitrep/issues/1861)) - ([64af16f](https://github.com/f-eld-ch/sitrep/commit/64af16f405fbd5a61153273dda8fd853426dcfbd))
 
 ### 🐛 Bug Fixes
 
+- *(ui)* Remove visials ([#1874](https://github.com/f-eld-ch/sitrep/issues/1874)) - ([3de2cf7](https://github.com/f-eld-ch/sitrep/commit/3de2cf7b1106f6622569dfbe9faa7f659b0e4c28))
+- *(ui)* Triage view UX polish — scrollable preview, keyboard shortcuts, keybinding help ([#1863](https://github.com/f-eld-ch/sitrep/issues/1863)) - ([a3f693d](https://github.com/f-eld-ch/sitrep/commit/a3f693d91f545b481193fb83c288c860e52a46cd))
+- *(ui)* Visual improvements for the triage view ([#1862](https://github.com/f-eld-ch/sitrep/issues/1862)) - ([31ef72d](https://github.com/f-eld-ch/sitrep/commit/31ef72db44396b8ed7c9ddefd08a061b03a75f8a))
 - *(ui)* Properly order tailwindcss classes - ([3149df9](https://github.com/f-eld-ch/sitrep/commit/3149df9bce71597ecaa31a21dee4e61295642e3f))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 17.0.13 to 17.0.14 in /ui ([#1868](https://github.com/f-eld-ch/sitrep/issues/1868)) - ([8848c93](https://github.com/f-eld-ch/sitrep/commit/8848c9340b185d788e3d267f9a3e7ff6a4dee8bf))
+- *(deps)* Bump @apollo/client from 4.2.12 to 4.3.0 in /ui ([#1867](https://github.com/f-eld-ch/sitrep/issues/1867)) - ([65bdd19](https://github.com/f-eld-ch/sitrep/commit/65bdd190b7a7262918aa9c71b2623848d4a4dde9))
+- *(deps)* Bump golang.org/x/crypto from 0.56.0 to 0.57.0 ([#1864](https://github.com/f-eld-ch/sitrep/issues/1864)) - ([1d2497e](https://github.com/f-eld-ch/sitrep/commit/1d2497e6e4f30a57b453080353b9bbd52c600452))
+- *(deps)* Bump github.com/exaring/otelpgx from 0.11.1 to 0.12.0 ([#1865](https://github.com/f-eld-ch/sitrep/issues/1865)) - ([858c553](https://github.com/f-eld-ch/sitrep/commit/858c553ea01cd5909dffef26e65e0aa57d72dce6))
+- *(deps)* Bump react-dropzone from 20.1.1 to 20.1.2 in /ui ([#1869](https://github.com/f-eld-ch/sitrep/issues/1869)) - ([852fbc3](https://github.com/f-eld-ch/sitrep/commit/852fbc388e01b0c30bed2d9dd1dd179644a035c1))
+- *(deps)* Bump @mapbox/mapbox-gl-draw from 1.5.1 to 1.5.2 in /ui ([#1870](https://github.com/f-eld-ch/sitrep/issues/1870)) - ([c35ce91](https://github.com/f-eld-ch/sitrep/commit/c35ce91e48da7f549382e8842cd23de65a177bf9))
+- *(deps)* Bump maplibre-gl from 6.9.0 to 6.9.1 in /ui ([#1872](https://github.com/f-eld-ch/sitrep/issues/1872)) - ([1618352](https://github.com/f-eld-ch/sitrep/commit/161835228d55b1b1adf94e5a6a4873f71c39a4be))
 
 
 ## [26.9.5](https://github.com/f-eld-ch/sitrep/compare/v26.9.4..v26.9.5) - 2026-09-13
