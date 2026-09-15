@@ -50,6 +50,14 @@
   "keyMessage": "Notizie chiave",
   "stepPersonen": "Persone",
   "stepMittel": "Mezzi",
+  "stepSchadenplatz": "Luogo sinistro",
+  "schadenplatz": {
+    "select": "Seleziona luogo",
+    "new": "Crea nuovo",
+    "namePlaceholder": "Nome luogo sinistro",
+    "create": "Crea",
+    "defaultLabel": "Predefinito"
+  },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",

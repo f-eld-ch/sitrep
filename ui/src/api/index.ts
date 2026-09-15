@@ -108,6 +108,10 @@ export {
   useUpdatePersonnelCount,
 } from "./resource";
 
+// Schadenplatz aggregate
+export type { CasualtyDeltas as SchadenplatzCasualtyDeltas } from "./schadenplatz";
+export { useCreateSchadenplatz, useRecordCasualties } from "./schadenplatz";
+
 // Layer aggregate
 export type {
   AddFeatureArgs,

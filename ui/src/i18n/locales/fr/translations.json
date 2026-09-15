@@ -50,6 +50,14 @@
   "keyMessage": "Renseignements-clés",
   "stepPersonen": "Personnes",
   "stepMittel": "Moyens",
+  "stepSchadenplatz": "Lieu sinistre",
+  "schadenplatz": {
+    "select": "Choisir le lieu",
+    "new": "Créer nouveau",
+    "namePlaceholder": "Nom du lieu sinistre",
+    "create": "Créer",
+    "defaultLabel": "Par défaut"
+  },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",

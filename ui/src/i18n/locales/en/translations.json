@@ -50,6 +50,14 @@
   "keyMessage": "Key message",
   "stepPersonen": "People",
   "stepMittel": "Resources",
+  "stepSchadenplatz": "Location",
+  "schadenplatz": {
+    "select": "Select location",
+    "new": "Create new",
+    "namePlaceholder": "Location name",
+    "create": "Create",
+    "defaultLabel": "Default"
+  },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",

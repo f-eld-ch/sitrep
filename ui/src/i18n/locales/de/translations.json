@@ -50,6 +50,14 @@
   "keyMessage": "Schlüsselnachricht",
   "stepPersonen": "Personen",
   "stepMittel": "Mittel",
+  "stepSchadenplatz": "Schadenplatz",
+  "schadenplatz": {
+    "select": "Schadenplatz wählen",
+    "new": "Neu anlegen",
+    "namePlaceholder": "Name des Schadenplatzes",
+    "create": "Anlegen",
+    "defaultLabel": "Standard"
+  },
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",

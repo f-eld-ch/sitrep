@@ -63,6 +63,9 @@ type Documents = {
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n": typeof types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ChangeHauptaufgabeDocument,
     "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n": typeof types.UpdatePersonnelCountDocument,
+    "\n  fragment SchadenplatzFields2 on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    isMerged\n    mergedInto\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n  }\n": typeof types.SchadenplatzFields2FragmentDoc,
+    "\n  \n  mutation CreateSchadenplatz($incidentId: ID!, $name: String!) {\n    createSchadenplatz(incidentId: $incidentId, name: $name) {\n      ...SchadenplatzFields2\n    }\n  }\n": typeof types.CreateSchadenplatzDocument,
+    "\n  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $input: CasualtyDeltasInput!) {\n    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, input: $input) {\n      id\n      casualties {\n        vermisste\n        tote\n        verletzte\n        obdachlose\n        eingeschlossene\n      }\n    }\n  }\n": typeof types.RecordCasualtiesDocument,
 };
 const documents: Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      principalName\n      role\n    }\n  }\n": types.ListIncidentAccessDocument,
@@ -114,6 +117,9 @@ const documents: Documents = {
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n": types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n": types.ChangeHauptaufgabeDocument,
     "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n": types.UpdatePersonnelCountDocument,
+    "\n  fragment SchadenplatzFields2 on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    isMerged\n    mergedInto\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n  }\n": types.SchadenplatzFields2FragmentDoc,
+    "\n  \n  mutation CreateSchadenplatz($incidentId: ID!, $name: String!) {\n    createSchadenplatz(incidentId: $incidentId, name: $name) {\n      ...SchadenplatzFields2\n    }\n  }\n": types.CreateSchadenplatzDocument,
+    "\n  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $input: CasualtyDeltasInput!) {\n    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, input: $input) {\n      id\n      casualties {\n        vermisste\n        tote\n        verletzte\n        obdachlose\n        eingeschlossene\n      }\n    }\n  }\n": types.RecordCasualtiesDocument,
 };
 
 /**
@@ -326,6 +332,18 @@ export function graphql(source: "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment SchadenplatzFields2 on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    isMerged\n    mergedInto\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n  }\n"): (typeof documents)["\n  fragment SchadenplatzFields2 on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    isMerged\n    mergedInto\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation CreateSchadenplatz($incidentId: ID!, $name: String!) {\n    createSchadenplatz(incidentId: $incidentId, name: $name) {\n      ...SchadenplatzFields2\n    }\n  }\n"): (typeof documents)["\n  \n  mutation CreateSchadenplatz($incidentId: ID!, $name: String!) {\n    createSchadenplatz(incidentId: $incidentId, name: $name) {\n      ...SchadenplatzFields2\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $input: CasualtyDeltasInput!) {\n    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, input: $input) {\n      id\n      casualties {\n        vermisste\n        tote\n        verletzte\n        obdachlose\n        eingeschlossene\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $input: CasualtyDeltasInput!) {\n    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, input: $input) {\n      id\n      casualties {\n        vermisste\n        tote\n        verletzte\n        obdachlose\n        eingeschlossene\n      }\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

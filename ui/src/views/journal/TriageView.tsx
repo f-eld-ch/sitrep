@@ -10,9 +10,22 @@ import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
-import { Button, Notification } from "components/ui";
+import type { ResourceStatus } from "../../gql/next/graphql";
+import { Button, Notification, Tag } from "components/ui";
+import type { TagVariant } from "components/ui/Tag";
 import { Spinner } from "components";
-import { useIncidentMessages, useTriageMessage } from "api";
+import {
+  useIncidentMessages,
+  useTriageMessage,
+  useIncidentResources,
+  useCreateSchadenplatz,
+  useRecordCasualties,
+  useMarkResourceReady,
+  useDeployResource,
+  useStandDownResource,
+  useRelieveResource,
+} from "api";
+import type { SchadenplatzWithResources, Resource } from "api";
 import { type MessageEditorFormHandle } from "./Editor";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
@@ -149,7 +162,13 @@ function PanelForm(props: {
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
   const [triageMessage, triageState] = useTriageMessage();
+  const resourcesResult = useIncidentResources(incidentId);
+  const [createSchadenplatz] = useCreateSchadenplatz();
+  const [recordCasualties] = useRecordCasualties();
+
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
+  const [selectedSchadenplatzId, setSelectedSchadenplatzId] = useState<string | undefined>();
+  const [newSpName, setNewSpName] = useState("");
   const [casualties, setCasualties] = useState<CasualtyDeltas>({
     vermisste: 0,
     tote: 0,
@@ -168,10 +187,15 @@ function PanelForm(props: {
   const isPending =
     message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
 
+  const schadenplaetze = resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : [];
+  const effectiveSpId = selectedSchadenplatzId ?? schadenplaetze.find((s) => s.isDefault)?.id ?? schadenplaetze[0]?.id;
+  const selectedSp = schadenplaetze.find((s) => s.id === effectiveSpId);
+
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
     { key: "meldefluss", label: t("messageFlow") },
     ...(showTasks ? [{ key: "pendenzen", label: t("tasks") }] : []),
+    { key: "schadenplatz", label: t("stepSchadenplatz") },
     { key: "personen", label: t("stepPersonen") },
     { key: "mittel", label: t("stepMittel") },
   ];
@@ -189,6 +213,14 @@ function PanelForm(props: {
 
   const handleSave = useCallback((triage: TriageStatus) => {
     onSaved();
+    const hasDeltas = Object.values(casualties).some((v) => v !== 0);
+    if (hasDeltas && effectiveSpId) {
+      void recordCasualties({
+        schadenplatzId: effectiveSpId,
+        messageId: message.id,
+        deltas: casualties,
+      });
+    }
     triageMessage({
       incidentId,
       messageId: message.id,
@@ -197,7 +229,7 @@ function PanelForm(props: {
       divisionIds: assignments.map((d) => d.id),
       divisions: assignments,
     }).catch(() => {});
-  }, [onSaved, triageMessage, incidentId, message.id, priority, assignments]);
+  }, [onSaved, recordCasualties, casualties, effectiveSpId, triageMessage, incidentId, message.id, priority, assignments]);
 
   const handleNext = useCallback(() => {
     if (isLast) {
@@ -350,15 +382,43 @@ function PanelForm(props: {
           </>
         )}
 
+        {currentStep.key === "schadenplatz" && (
+          <SchadenplatzStep
+            schadenplaetze={schadenplaetze}
+            selectedId={effectiveSpId}
+            onSelect={setSelectedSchadenplatzId}
+            incidentId={incidentId}
+            newSpName={newSpName}
+            onNewSpNameChange={setNewSpName}
+            onCreated={(id) => {
+              setSelectedSchadenplatzId(id);
+              setNewSpName("");
+            }}
+            createSchadenplatz={createSchadenplatz}
+          />
+        )}
+
         {currentStep.key === "personen" && (
           <div>
+            {selectedSp && (
+              <p className="mb-3 text-sm text-fg-muted">{selectedSp.name}</p>
+            )}
             <h3 className="mb-4 text-base font-bold">{t("stepPersonen")}</h3>
             <CasualtySection value={casualties} onChange={setCasualties} />
           </div>
         )}
 
         {currentStep.key === "mittel" && (
-          <h3 className="mb-3 text-base font-bold">{t("stepMittel")}</h3>
+          <div>
+            <h3 className="mb-3 text-base font-bold">{t("stepMittel")}</h3>
+            {resourcesResult.status === "loading" ? (
+              <Spinner />
+            ) : selectedSp ? (
+              <ResourceActionList resources={selectedSp.resources} />
+            ) : (
+              <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
+            )}
+          </div>
         )}
       </div>
 
@@ -719,6 +779,241 @@ function CasualtyRow({
           <FontAwesomeIcon icon={faPlus} className="text-[10px]" />
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── SchadenplatzStep ──────────────────────────────────────────────────────────
+
+function SchadenplatzStep({
+  schadenplaetze,
+  selectedId,
+  onSelect,
+  incidentId,
+  newSpName,
+  onNewSpNameChange,
+  onCreated,
+  createSchadenplatz,
+}: {
+  schadenplaetze: SchadenplatzWithResources[];
+  selectedId: string | undefined;
+  onSelect: (id: string) => void;
+  incidentId: string;
+  newSpName: string;
+  onNewSpNameChange: (name: string) => void;
+  onCreated: (id: string) => void;
+  createSchadenplatz: (args: { incidentId: string; name: string }) => Promise<{ id: string }>;
+}) {
+  const { t } = useTranslation();
+  const [showNew, setShowNew] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async () => {
+    if (!newSpName.trim()) return;
+    setCreating(true);
+    try {
+      const result = await createSchadenplatz({ incidentId, name: newSpName.trim() });
+      onCreated(result.id);
+      setShowNew(false);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <h3 className="mb-3 text-base font-bold">{t("schadenplatz.select")}</h3>
+      <div className="space-y-2">
+        {schadenplaetze.map((sp) => {
+          const isSelected = sp.id === selectedId;
+          return (
+            <button
+              key={sp.id}
+              type="button"
+              onClick={() => onSelect(sp.id)}
+              className={clsx(
+                "w-full rounded border px-3 py-2 text-left text-sm transition-colors",
+                isSelected
+                  ? "border-primary bg-primary/10 text-fg"
+                  : "border-border bg-bg-elevated hover:border-primary/40 text-fg",
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex-1 font-medium">{sp.name}</span>
+                {sp.isDefault && (
+                  <Tag variant="primary" light size="sm">
+                    {t("schadenplatz.defaultLabel")}
+                  </Tag>
+                )}
+                {isSelected && (
+                  <FontAwesomeIcon icon={faCheck} className="text-primary text-xs shrink-0" />
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Create new section */}
+      <div className="pt-2 border-t border-border">
+        {!showNew ? (
+          <button
+            type="button"
+            className="text-sm text-primary hover:underline"
+            onClick={() => setShowNew(true)}
+          >
+            + {t("schadenplatz.new")}
+          </button>
+        ) : (
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={newSpName}
+              onChange={(e) => onNewSpNameChange(e.target.value)}
+              placeholder={t("schadenplatz.namePlaceholder")}
+              className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void handleCreate();
+                if (e.key === "Escape") setShowNew(false);
+              }}
+              autoFocus
+            />
+            <Button
+              type="button"
+              variant="primary"
+              size="xs"
+              disabled={creating || !newSpName.trim()}
+              onClick={() => void handleCreate()}
+            >
+              {t("schadenplatz.create")}
+            </Button>
+            <Button
+              type="button"
+              variant="light"
+              size="xs"
+              onClick={() => setShowNew(false)}
+            >
+              {t("back")}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── TriageResourceCard ────────────────────────────────────────────────────────
+
+const resourceStatusVariant: Record<ResourceStatus, TagVariant> = {
+  AUFGEBOTEN: "warning",
+  EINSATZBEREIT: "primary",
+  EINGESETZT: "success",
+  ABGELOEST: "gray",
+};
+
+function TriageResourceCard({ resource }: { resource: Resource }) {
+  const { t } = useTranslation();
+  const [markReady, markReadyState] = useMarkResourceReady();
+  const [deploy, deployState] = useDeployResource();
+  const [standDown, standDownState] = useStandDownResource();
+  const [relieve, relieveState] = useRelieveResource();
+
+  const busy =
+    markReadyState.loading ||
+    deployState.loading ||
+    standDownState.loading ||
+    relieveState.loading;
+
+  const actionError =
+    markReadyState.error ??
+    deployState.error ??
+    standDownState.error ??
+    relieveState.error;
+
+  return (
+    <div className="rounded border border-border bg-bg-elevated p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="font-medium text-fg text-sm">{resource.name}</p>
+          <p className="text-xs text-fg-muted">
+            {t(`resource.formation.${resource.formation}`)}
+            {" · "}
+            {resource.personnelCount} {t("resource.fields.personnelCount")}
+          </p>
+          {resource.hauptaufgabe && (
+            <p className="text-xs text-fg-muted mt-0.5">{resource.hauptaufgabe}</p>
+          )}
+        </div>
+        <Tag variant={resourceStatusVariant[resource.status]} light size="sm">
+          {t(`resource.status.${resource.status}`)}
+        </Tag>
+      </div>
+
+      {actionError && (
+        <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>
+      )}
+
+      <div className="flex flex-wrap gap-1.5">
+        {resource.status === "AUFGEBOTEN" && (
+          <Button
+            size="xs"
+            variant="primary"
+            light
+            disabled={busy}
+            onClick={() => void markReady({ id: resource.id })}
+          >
+            {t("resource.actions.markReady")}
+          </Button>
+        )}
+        {resource.status === "EINSATZBEREIT" && (
+          <Button
+            size="xs"
+            variant="success"
+            light
+            disabled={busy}
+            onClick={() => void deploy({ id: resource.id })}
+          >
+            {t("resource.actions.deploy")}
+          </Button>
+        )}
+        {resource.status === "EINGESETZT" && (
+          <>
+            <Button
+              size="xs"
+              variant="warning"
+              light
+              disabled={busy}
+              onClick={() => void standDown({ id: resource.id })}
+            >
+              {t("resource.actions.standDown")}
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              disabled={busy}
+              onClick={() => void relieve({ id: resource.id })}
+            >
+              {t("resource.actions.relieve")}
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ResourceActionList({ resources }: { resources: Resource[] }) {
+  const { t } = useTranslation();
+
+  if (resources.length === 0) {
+    return <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {resources.map((r) => (
+        <TriageResourceCard key={r.id} resource={r} />
+      ))}
     </div>
   );
 }
