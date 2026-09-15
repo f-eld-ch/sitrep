@@ -23,6 +23,8 @@ import { buildMessageList } from "./listUtils";
 import { MessageStack } from "./MessageStack";
 import { TriageCanvas } from "./TriageCanvas";
 import { IncidentContext } from "utils";
+import { useBabsIcons } from "components/babs/useBabsIcons";
+import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 
 export type InitialStrategy = "oldest-pending" | "newest" | "none";
 
@@ -148,6 +150,13 @@ function PanelForm(props: {
 
   const [triageMessage, triageState] = useTriageMessage();
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
+  const [casualties, setCasualties] = useState<CasualtyDeltas>({
+    vermisste: 0,
+    tote: 0,
+    verletzte: 0,
+    obdachlose: 0,
+    eingeschlossene: 0,
+  });
   const [assignments, setAssignments] = useState<Division[]>(
     message.divisions.map((d) => d.division),
   );
@@ -342,7 +351,10 @@ function PanelForm(props: {
         )}
 
         {currentStep.key === "personen" && (
-          <h3 className="mb-3 text-base font-bold">{t("stepPersonen")}</h3>
+          <div>
+            <h3 className="mb-4 text-base font-bold">{t("stepPersonen")}</h3>
+            <CasualtySection value={casualties} onChange={setCasualties} />
+          </div>
         )}
 
         {currentStep.key === "mittel" && (
@@ -562,6 +574,151 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
           </ViewTransition>
         )}
       </TriageCanvas>
+    </div>
+  );
+}
+
+export type CasualtyDeltas = {
+  vermisste: number;
+  tote: number;
+  verletzte: number;
+  obdachlose: number;
+  eingeschlossene: number;
+};
+
+type CasualtyCategory = {
+  key: keyof CasualtyDeltas;
+  labelKey: string;
+  babsId?: string;
+  faIcon?: import("@fortawesome/fontawesome-svg-core").IconDefinition;
+};
+
+const CASUALTY_CATEGORIES: CasualtyCategory[] = [
+  { key: "vermisste",      labelKey: "casualties.vermisste",      babsId: "1302" },
+  { key: "tote",           labelKey: "casualties.tote",           babsId: "1305" },
+  { key: "verletzte",      labelKey: "casualties.verletzte",      babsId: "1301" },
+  { key: "obdachlose",     labelKey: "casualties.obdachlose",     babsId: "1303" },
+  { key: "eingeschlossene",labelKey: "casualties.eingeschlossene",babsId: "1304" },
+];
+
+function CasualtySection({
+  value,
+  onChange,
+}: {
+  value: CasualtyDeltas;
+  onChange: (v: CasualtyDeltas) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const iconsLoaded = useBabsIcons();
+
+  const set = (key: keyof CasualtyDeltas, delta: number) =>
+    onChange({ ...value, [key]: delta });
+
+  const nonZero = CASUALTY_CATEGORIES.filter((cat) => value[cat.key] !== 0);
+
+  return (
+    <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+      <div className="flex gap-3">
+        {/* Counter list */}
+        <div className="w-1/2 divide-y divide-border">
+          {CASUALTY_CATEGORIES.map((cat) => (
+            <CasualtyRow
+              key={cat.key}
+              category={cat}
+              delta={value[cat.key]}
+              iconsLoaded={iconsLoaded}
+              onChange={(d) => set(cat.key, d)}
+            />
+          ))}
+        </div>
+
+        {/* Summary */}
+        <div className="w-1/2 rounded-lg border border-border bg-bg p-3">
+          <p className="mb-2 text-sm font-semibold text-danger uppercase tracking-wide">{t("casualties.summary")}</p>
+          {nonZero.length === 0 ? (
+            <p className="text-center text-sm text-fg-muted/50 mt-2">–</p>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              {nonZero.map((cat) => {
+                const delta = value[cat.key];
+                return (
+                  <div key={cat.key} className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                      {cat.babsId && iconsLoaded ? (
+                        <BabsIcon icon={cat.babsId} size={30} fallback={null} />
+                      ) : cat.faIcon ? (
+                        <FontAwesomeIcon icon={cat.faIcon} className="text-lg text-fg-muted" />
+                      ) : null}
+                    </span>
+                    <span
+                      className={clsx(
+                        "text-xl font-bold tabular-nums",
+                        delta > 0 ? "text-danger" : "text-success",
+                      )}
+                    >
+                      {delta}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </BabsIconProvider>
+  );
+}
+
+function CasualtyRow({
+  category,
+  delta,
+  iconsLoaded,
+  onChange,
+}: {
+  category: CasualtyCategory;
+  delta: number;
+  iconsLoaded: boolean;
+  onChange: (delta: number) => void;
+}) {
+  const { t } = useTranslation();
+  const label = t(category.labelKey);
+  const adjust = (n: number) => onChange(delta + n);
+
+  return (
+    <div className="flex items-center gap-2 px-2 py-1.5">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+        {category.babsId && iconsLoaded ? (
+          <BabsIcon icon={category.babsId} size={18} fallback={null} />
+        ) : category.faIcon ? (
+          <FontAwesomeIcon icon={category.faIcon} className="text-xs text-fg-muted" />
+        ) : null}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          aria-label={`${label} −1`}
+          onClick={() => adjust(-1)}
+          className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs hover:bg-bg-elevated"
+        >
+          <FontAwesomeIcon icon={faMinus} className="text-[10px]" />
+        </button>
+        <input
+          type="number"
+          value={delta}
+          onChange={(e) => onChange(Number(e.target.value))}
+          aria-label={label}
+          className="w-10 rounded border border-border bg-bg-elevated px-1 py-0.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <button
+          type="button"
+          aria-label={`${label} +1`}
+          onClick={() => adjust(1)}
+          className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs hover:bg-bg-elevated"
+        >
+          <FontAwesomeIcon icon={faPlus} className="text-[10px]" />
+        </button>
+      </div>
     </div>
   );
 }

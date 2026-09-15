@@ -203,6 +203,14 @@
       "description": "C Lage"
     }
   },
+  "casualties": {
+    "vermisste": "Vermisste",
+    "tote": "Tote",
+    "verletzte": "Verletzte",
+    "obdachlose": "Obdachlose",
+    "eingeschlossene": "Eingeschlossene",
+    "summary": "Personenübersicht"
+  },
   "errorPage": {
 "title": "Unerwarteter Fehler",
     "notFoundTitle": "Ziel nicht erreichbar",

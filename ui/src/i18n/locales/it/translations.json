@@ -203,6 +203,14 @@
       "description": "Capo ANSIT "
     }
   },
+  "casualties": {
+    "vermisste": "Dispersi",
+    "tote": "Deceduti",
+    "verletzte": "Feriti",
+    "obdachlose": "Senzatetto",
+    "eingeschlossene": "Intrappolati",
+    "summary": "Riepilogo persone"
+  },
   "errorPage": {
 "title": "Errore inatteso",
     "notFoundTitle": "Obiettivo non trovato",

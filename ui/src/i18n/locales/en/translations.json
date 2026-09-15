@@ -203,6 +203,14 @@
       "description": "Situation Desk Officer"
     }
   },
+  "casualties": {
+    "vermisste": "Missing",
+    "tote": "Dead",
+    "verletzte": "Injured",
+    "obdachlose": "Homeless",
+    "eingeschlossene": "Trapped",
+    "summary": "Person Summary"
+  },
   "errorPage": {
 "title": "Unexpected Error",
     "notFoundTitle": "Objective Not Found",

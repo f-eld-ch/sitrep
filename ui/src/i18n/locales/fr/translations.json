@@ -203,6 +203,14 @@
       "description": "Chef du suivi de la situation"
     }
   },
+  "casualties": {
+    "vermisste": "Disparus",
+    "tote": "Décédés",
+    "verletzte": "Blessés",
+    "obdachlose": "Sans-abri",
+    "eingeschlossene": "Bloqués",
+    "summary": "Aperçu des personnes"
+  },
   "errorPage": {
 "title": "Erreur inattendue",
     "notFoundTitle": "Objectif introuvable",
