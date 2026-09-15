@@ -42,6 +42,7 @@ var (
 	_ inbound.LayerService       = (*LayerService)(nil)
 	_ inbound.FeatureService     = (*FeatureService)(nil)
 	_ inbound.SchadenplatzService = (*SchadenplatzService)(nil)
+	_ inbound.ResourceService    = (*ResourceService)(nil)
 )
 
 // logIfUnexpected logs err at error level when it is an infrastructure/unexpected

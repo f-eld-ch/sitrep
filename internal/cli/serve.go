@@ -208,6 +208,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Features:              s.FeatureSvc,
 			Access:                s.AccessSvc,
 			Schadenplaetze:        s.SchadenplatzSvc,
+			Resources:             s.ResourceSvc,
 			IncidentAccessChecker: s.IncidentAccessChecker,
 			GlobalAccessChecker:   s.GlobalAccessChecker,
 			AccessQueries:         s.AccessQueries,

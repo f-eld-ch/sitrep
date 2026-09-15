@@ -107,6 +107,24 @@ func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbo
 	)
 }
 
+// ResourceService creates a ready-to-use ResourceService.
+func (f *Factory) ResourceService(
+	repo outbound.ResourceRepository,
+	incidents outbound.IncidentRepository,
+	schadenplaetze outbound.SchadenplatzRepository,
+) *ResourceService {
+	return NewResourceService(
+		f.tx,
+		repo,
+		incidents,
+		schadenplaetze,
+		f.accessChecker,
+		f.clock,
+		f.ids,
+		f.notifier,
+	)
+}
+
 // SchadenplatzService creates a ready-to-use SchadenplatzService.
 func (f *Factory) SchadenplatzService(
 	repo outbound.SchadenplatzRepository,

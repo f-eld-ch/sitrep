@@ -48,6 +48,7 @@ type stack struct {
 	FeatureSvc            inbound.FeatureService
 	AccessSvc             inbound.AccessService
 	SchadenplatzSvc inbound.SchadenplatzService
+	ResourceSvc     inbound.ResourceService
 	Queries         outbound.Queries
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
@@ -201,6 +202,7 @@ func buildPostgresStack(
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	schadenplaetze := eventstore.NewSchadenplatzRepository(store)
+	resources := eventstore.NewResourceRepository(store)
 	accessChecker := pgstore.NewIncidentAccessChecker(pool)
 	globalChecker := pgstore.NewGlobalAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
@@ -283,6 +285,7 @@ func buildPostgresStack(
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetze, repos),
+		ResourceSvc:           factory.ResourceService(resources, repos, schadenplaetze),
 		Queries:               queries,
 		AccessQueries:         pgqueries.NewAccessQueries(pool),
 		IncidentAccessChecker: accessChecker,
@@ -314,6 +317,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	schadenplaetzeInmem := eventstore.NewSchadenplatzRepository(store)
+	resourcesInmem := eventstore.NewResourceRepository(store)
 	accessHandler := inprojection.NewAccessHandler()
 	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
 	globalChecker := inmem.NewGlobalAccessChecker(accessHandler)
@@ -386,6 +390,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeInmem, repos),
+		ResourceSvc:           factory.ResourceService(resourcesInmem, repos, schadenplaetzeInmem),
 		Queries:               queries,
 		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
 		IncidentAccessChecker: accessChecker,
@@ -426,6 +431,7 @@ func buildSQLiteStack(
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
 	schadenplaetzeSq := eventstore.NewSchadenplatzRepository(store)
+	resourcesSq := eventstore.NewResourceRepository(store)
 
 	accessChecker := sqstore.NewIncidentAccessChecker(read)
 	globalChecker := sqstore.NewGlobalAccessChecker(read)
@@ -519,6 +525,7 @@ func buildSQLiteStack(
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeSq, repos),
+		ResourceSvc:           factory.ResourceService(resourcesSq, repos, schadenplaetzeSq),
 		Queries:               queries,
 		AccessQueries:         sqqueries.NewAccessQueries(read),
 		IncidentAccessChecker: accessChecker,

@@ -12,6 +12,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -331,4 +332,55 @@ type SchadenplatzService interface {
 		id shared.SchadenplatzID,
 		actor identity.Actor,
 	) error
+}
+
+// ResourceState carries the command result for Resource write operations.
+type ResourceState struct {
+	ID                 shared.ResourceID
+	IncidentID         shared.IncidentID
+	SchadenplatzID     shared.SchadenplatzID
+	Formation          resource.Formation
+	Name               string
+	Size               resource.UnitSize
+	PersonnelCount     int
+	Hauptaufgabe       string
+	Contact            *resource.Contact
+	HomeLocation       *resource.Location
+	DeploymentLocation *resource.DeploymentLocation
+	Status             resource.ResourceStatus
+	StatusAt           time.Time
+	EinsatzBeginn      *time.Time
+	EinsatzEnde        *time.Time
+	PredecessorID      *shared.ResourceID
+	SuccessorID        *shared.ResourceID
+	SourceMessageID    *shared.MessageID
+}
+
+// AlertResourceInput groups parameters for AlertResource to avoid a long positional list.
+type AlertResourceInput struct {
+	IncidentID      shared.IncidentID
+	SchadenplatzID  *shared.SchadenplatzID
+	Formation       resource.Formation
+	Name            string
+	Size            resource.UnitSize
+	PersonnelCount  int
+	Hauptaufgabe    string
+	Contact         *resource.Contact
+	HomeLocation    *resource.Location
+	SourceMessageID *shared.MessageID
+}
+
+// ResourceService is the driving port for Resource commands.
+type ResourceService interface {
+	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
+	MarkResourceReady(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
+	DeployResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
+	StandDownResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
+	RelieveResource(ctx context.Context, id shared.ResourceID, successorID *shared.ResourceID, actor identity.Actor) (ResourceState, error)
+	ReassignResource(ctx context.Context, id shared.ResourceID, schadenplatzID shared.SchadenplatzID, actor identity.Actor) (ResourceState, error)
+	UpdateDeploymentLocation(ctx context.Context, id shared.ResourceID, loc *resource.DeploymentLocation, actor identity.Actor) (ResourceState, error)
+	ChangeHauptaufgabe(ctx context.Context, id shared.ResourceID, hauptaufgabe string, actor identity.Actor) (ResourceState, error)
+	UpdateContact(ctx context.Context, id shared.ResourceID, contact resource.Contact, actor identity.Actor) (ResourceState, error)
+	UpdatePersonnelCount(ctx context.Context, id shared.ResourceID, count int, actor identity.Actor) (ResourceState, error)
+	RecordEinsatzDauer(ctx context.Context, id shared.ResourceID, beginn time.Time, ende *time.Time, actor identity.Actor) (ResourceState, error)
 }

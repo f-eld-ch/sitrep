@@ -17,6 +17,7 @@ type Resolver struct {
 	Features              inbound.FeatureService
 	Access                inbound.AccessService
 	Schadenplaetze        inbound.SchadenplatzService
+	Resources             inbound.ResourceService
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker
