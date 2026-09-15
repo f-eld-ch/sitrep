@@ -72,8 +72,9 @@ export function useIncidentSync() {
       if (currentIncidentId !== resultIncident.id) {
         dispatch({ type: "SET_INCIDENT", payload: resultIncident, forId: incidentId });
       }
-    } else if (resultErrorCode === "NOT_FOUND") {
-      // Only clear on definitive absence — transient failures retain current state.
+    } else if (resultErrorCode !== null && currentIncidentId !== incidentId) {
+      // Any error loading a *new* incident marks it as absent so pages can surface an error.
+      // For the already-loaded incident we retain current state on transient failures.
       dispatch({ type: "SET_INCIDENT", payload: null, forId: incidentId });
     }
   }, [incidentId, resultIncident, resultErrorCode, currentIncidentId, dispatch]);

@@ -125,20 +125,6 @@ describe("MessageContainer", () => {
     expect(setTriageMessage).toHaveBeenCalledWith(baseMessage);
   });
 
-  it("renders create new task button if showTasksButton is true", () => {
-    render(
-      <MessageContainer
-        id="msg1"
-        incidentId="incident1"
-        message={baseMessage}
-        divisions={divisions}
-        showControls={true}
-        showTasksButton={true}
-      />,
-    );
-    expect(screen.getByTestId("create-task-button")).toBeInTheDocument();
-  });
-
   it("hides triage button when setTriageMessage is not provided", () => {
     render(
       <MessageContainer
@@ -150,20 +136,6 @@ describe("MessageContainer", () => {
       />,
     );
     expect(screen.queryByTestId("save-triage-button")).not.toBeInTheDocument();
-  });
-
-  it("shows task button even when setTriageMessage is not provided", () => {
-    render(
-      <MessageContainer
-        id="msg1"
-        incidentId="incident1"
-        message={baseMessage}
-        divisions={divisions}
-        showControls={true}
-        showTasksButton={true}
-      />,
-    );
-    expect(screen.getByTestId("create-task-button")).toBeInTheDocument();
   });
 
   it("does not render message number when number is 0 (not yet assigned)", () => {

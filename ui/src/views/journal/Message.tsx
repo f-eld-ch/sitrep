@@ -3,7 +3,6 @@ import {
   faEdit,
   faPaperclip,
   faPrint,
-  faSquareCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
@@ -70,7 +69,6 @@ export interface MessageProps {
   showControls: boolean;
   accentSide?: "left" | "right";
   stabilizeActionBar?: boolean;
-  showTasksButton?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
   setTriageMessage?: (message: Message | undefined) => void;
 }
@@ -229,7 +227,6 @@ const MessageContainer = ({
   showControls = false,
   accentSide = "left",
   stabilizeActionBar = false,
-  showTasksButton = false,
   setEditorMessage,
   setTriageMessage,
   divisions,
@@ -378,15 +375,10 @@ const MessageContainer = ({
                   onClick={() => setTriageMessage(message)}
                 >
                   <FontAwesomeIcon icon={faArrowsToEye} />
-                  <span>{t("saveTriage")}</span>
+                  <span>{t("triageMessage")}</span>
                 </button>
               )}
-              {showTasksButton && (
-                <button type="button" className={actionLinkClass} data-testid="create-task-button">
-                  <FontAwesomeIcon icon={faSquareCheck} />
-                  <span>{t("createNewTask")}</span>
-                </button>
-              )}
+
             </div>
           )}
 

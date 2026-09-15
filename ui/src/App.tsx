@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router";
+import { ErrorBoundary } from "components/ErrorBoundary";
+import { ErrorPage } from "views/ErrorPage";
 
 import "./tailwind.css";
 
@@ -22,6 +24,7 @@ import {
   TriageView as JournalTriageView,
 } from "views/journal";
 import { Layout, LayoutMarginLess } from "views/Layout";
+import { IncidentRoute } from "views/IncidentRoute";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
@@ -39,136 +42,143 @@ const MapView = lazy(() => import("views/map"));
 
 const router = createBrowserRouter([
   {
-    path: "/admin/access",
-    element: (
-      <Layout>
-        <AdminLayout />
-      </Layout>
-    ),
-    children: [
-      { index: true, element: <Navigate to="groups" replace /> },
-      { path: "groups", element: <Groups /> },
-      { path: "groups/:groupId", element: <GroupDetail /> },
-      { path: "global-roles", element: <GlobalRoles /> },
-    ],
-  },
-  {
-    path: "/incident",
+    errorElement: <ErrorPage />,
     children: [
       {
-        path: "list",
+        path: "/admin/access",
         element: (
           <Layout>
-            <IncidentList />
+            <AdminLayout />
           </Layout>
         ),
+        children: [
+          { index: true, element: <Navigate to="groups" replace /> },
+          { path: "groups", element: <Groups /> },
+          { path: "groups/:groupId", element: <GroupDetail /> },
+          { path: "global-roles", element: <GlobalRoles /> },
+        ],
       },
       {
-        path: "new",
-        element: (
-          <Layout>
-            <IncidentNew />
-          </Layout>
-        ),
-      },
-      {
-        path: ":incidentId",
+        path: "/incident",
         children: [
           {
-            path: "edit",
+            path: "list",
             element: (
               <Layout>
-                <IncidentEditor />
+                <IncidentList />
               </Layout>
             ),
           },
           {
-            // Not linked from the navbar; reachable only by direct URL.
-            path: "access",
+            path: "new",
             element: (
               <Layout>
-                <IncidentAccessPage />
+                <IncidentNew />
               </Layout>
             ),
           },
           {
-            path: "resources",
-            element: (
-              <Layout>
-                <ResourcesList />
-              </Layout>
-            ),
-          },
-          {
-            path: "map",
-            element: (
-              <LayoutMarginLess>
-                <Suspense fallback={<Spinner />}>
-                  <MapView />
-                </Suspense>
-              </LayoutMarginLess>
-            ),
-          },
-          {
-            path: "tasks",
-            element: (
-              <Layout>
-                <TaskList />
-              </Layout>
-            ),
-          },
-          {
-            path: "requests",
-            element: (
-              <Layout>
-                <RequestList />
-              </Layout>
-            ),
-          },
-          {
-            path: "soma",
-            element: (
-              <Layout>
-                <ImmediateMeasuresList />
-              </Layout>
-            ),
-          },
-          {
-            path: "journal",
+            path: ":incidentId",
+            element: <IncidentRoute />,
             children: [
-              { index: true, element: <Navigate to="edit" replace /> },
-              { path: "view", element: <Navigate to="../edit" replace /> },
+              { index: true, element: <Navigate to="journal/edit" replace /> },
               {
                 path: "edit",
                 element: (
                   <Layout>
-                    <JournalEditor />
+                    <IncidentEditor />
                   </Layout>
                 ),
               },
               {
-                path: "messages",
+                // Not linked from the navbar; reachable only by direct URL.
+                path: "access",
                 element: (
                   <Layout>
-                    <JournalMessageList showControls={false} autoScroll={true} />
+                    <IncidentAccessPage />
                   </Layout>
                 ),
               },
               {
-                path: "triage",
+                path: "resources",
+                element: (
+                  <Layout>
+                    <ResourcesList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "map",
                 element: (
                   <LayoutMarginLess>
-                    <JournalTriageView />
+                    <Suspense fallback={<Spinner />}>
+                      <MapView />
+                    </Suspense>
                   </LayoutMarginLess>
                 ),
+              },
+              {
+                path: "tasks",
+                element: (
+                  <Layout>
+                    <TaskList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "requests",
+                element: (
+                  <Layout>
+                    <RequestList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "soma",
+                element: (
+                  <Layout>
+                    <ImmediateMeasuresList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "journal",
+                children: [
+                  { index: true, element: <Navigate to="edit" replace /> },
+                  { path: "view", element: <Navigate to="../edit" replace /> },
+                  {
+                    path: "edit",
+                    element: (
+                      <Layout>
+                        <JournalEditor />
+                      </Layout>
+                    ),
+                  },
+                  {
+                    path: "messages",
+                    element: (
+                      <Layout>
+                        <JournalMessageList showControls={false} autoScroll={true} />
+                      </Layout>
+                    ),
+                  },
+                  {
+                    path: "triage",
+                    element: (
+                      <LayoutMarginLess>
+                        <JournalTriageView />
+                      </LayoutMarginLess>
+                    ),
+                  },
+                ],
               },
             ],
           },
         ],
       },
+      { path: "/", element: <Navigate to="/incident/list" /> },
     ],
   },
-  { path: "/", element: <Navigate to="/incident/list" /> },
 ]);
 
 function App() {
@@ -200,15 +210,17 @@ function App() {
   }, [i18n.language, i18n]);
 
   return (
-    <UserProvider>
-      <ApolloProvider client={client}>
-        <FeatureFlagProvider>
-          <IncidentContextProvider>
-            <RouterProvider router={router} />
-          </IncidentContextProvider>
-        </FeatureFlagProvider>
-      </ApolloProvider>
-    </UserProvider>
+    <ErrorBoundary>
+      <UserProvider>
+        <ApolloProvider client={client}>
+          <FeatureFlagProvider>
+            <IncidentContextProvider>
+              <RouterProvider router={router} />
+            </IncidentContextProvider>
+          </FeatureFlagProvider>
+        </ApolloProvider>
+      </UserProvider>
+    </ErrorBoundary>
   );
 }
 

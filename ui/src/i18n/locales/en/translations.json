@@ -149,6 +149,7 @@
   "save": "save",
   "saveMoreInfo": "Needs more information",
   "saveTriage": "Complete triage",
+  "triageMessage": "Triage",
   "short": "short",
   "showClosed": "show closed",
   "state": "state at",
@@ -201,6 +202,21 @@
       "name": "Situation",
       "description": "Situation Desk Officer"
     }
+  },
+  "errorPage": {
+"title": "Unexpected Error",
+    "notFoundTitle": "Objective Not Found",
+    "notFoundDesc": "The requested page could not be located. Please verify the address and try again.",
+    "priority": "Priority",
+    "priorityHigh": "HIGH",
+    "fieldLocation": "Location",
+    "fieldStatus": "Status",
+    "fieldAction": "Action",
+    "fieldActionValue": "Navigate to a known location",
+    "goBack": "Go back",
+    "goHome": "Go home",
+    "footer": "All incidents are logged.",
+    "unknown": "An unknown error occurred."
   },
   "errors": {
     "NOT_FOUND": "The requested item could not be found.",
