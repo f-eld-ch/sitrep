@@ -53,6 +53,16 @@ type Documents = {
     "\n  mutation UpdateMessage(\n    $id: ID!\n    $sender: String\n    $receiver: String\n    $senderDetail: String\n    $receiverDetail: String\n    $content: String\n    $medium: Medium\n    $time: DateTime\n  ) {\n    updateMessage(\n      id: $id\n      input: {\n        sender: $sender\n        receiver: $receiver\n        senderDetail: $senderDetail\n        receiverDetail: $receiverDetail\n        content: $content\n        medium: $medium\n        time: $time\n      }\n    ) {\n      id\n      number\n      sender\n      receiver\n      senderDetail\n      receiverDetail\n      content\n      medium\n      time\n      createdAt\n      updatedAt\n      triage\n      priority\n    }\n  }\n": typeof types.UpdateMessageDocument,
     "\n  mutation TriageMessage(\n    $id: ID!\n    $triage: TriageStatus!\n    $priority: PriorityStatus!\n    $divisionIds: [ID!]!\n  ) {\n    triageMessage(\n      id: $id\n      input: { triage: $triage, priority: $priority, divisionIds: $divisionIds }\n    ) {\n      id\n      triage\n      priority\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": typeof types.TriageMessageDocument,
     "\n  mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {\n    removeAttachment(messageId: $messageId, attachmentId: $attachmentId)\n  }\n": typeof types.RemoveAttachmentDocument,
+    "\n  fragment ResourceFields on Resource {\n    id\n    incidentId\n    schadenplatzId\n    formation\n    name\n    size\n    personnelCount\n    hauptaufgabe\n    contact {\n      medium\n      detail\n    }\n    homeLocation {\n      name\n      lat\n      lng\n    }\n    deploymentLocation {\n      lat\n      lng\n      label\n    }\n    status\n    statusAt\n    einsatzBeginn\n    einsatzEnde\n    predecessorId\n    successorId\n    sourceMessageId\n  }\n": typeof types.ResourceFieldsFragmentDoc,
+    "\n  fragment SchadenplatzFields on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n    isMerged\n    mergedInto\n  }\n": typeof types.SchadenplatzFieldsFragmentDoc,
+    "\n  \n  \n  query GetIncidentResources($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      schadenplaetze {\n        ...SchadenplatzFields\n        resources {\n          ...ResourceFields\n        }\n      }\n    }\n  }\n": typeof types.GetIncidentResourcesDocument,
+    "\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n": typeof types.AlertResourceDocument,
+    "\n  \n  mutation MarkResourceReady($id: ID!) {\n    markResourceReady(id: $id) {\n      ...ResourceFields\n    }\n  }\n": typeof types.MarkResourceReadyDocument,
+    "\n  \n  mutation DeployResource($id: ID!) {\n    deployResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n": typeof types.DeployResourceDocument,
+    "\n  \n  mutation StandDownResource($id: ID!) {\n    standDownResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n": typeof types.StandDownResourceDocument,
+    "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n": typeof types.RelieveResourceDocument,
+    "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ChangeHauptaufgabeDocument,
+    "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n": typeof types.UpdatePersonnelCountDocument,
 };
 const documents: Documents = {
     "\n  query ListIncidentAccess($incidentId: ID!) {\n    incidentAccess(incidentId: $incidentId) {\n      incidentId\n      principalKind\n      principalId\n      principalName\n      role\n    }\n  }\n": types.ListIncidentAccessDocument,
@@ -94,6 +104,16 @@ const documents: Documents = {
     "\n  mutation UpdateMessage(\n    $id: ID!\n    $sender: String\n    $receiver: String\n    $senderDetail: String\n    $receiverDetail: String\n    $content: String\n    $medium: Medium\n    $time: DateTime\n  ) {\n    updateMessage(\n      id: $id\n      input: {\n        sender: $sender\n        receiver: $receiver\n        senderDetail: $senderDetail\n        receiverDetail: $receiverDetail\n        content: $content\n        medium: $medium\n        time: $time\n      }\n    ) {\n      id\n      number\n      sender\n      receiver\n      senderDetail\n      receiverDetail\n      content\n      medium\n      time\n      createdAt\n      updatedAt\n      triage\n      priority\n    }\n  }\n": types.UpdateMessageDocument,
     "\n  mutation TriageMessage(\n    $id: ID!\n    $triage: TriageStatus!\n    $priority: PriorityStatus!\n    $divisionIds: [ID!]!\n  ) {\n    triageMessage(\n      id: $id\n      input: { triage: $triage, priority: $priority, divisionIds: $divisionIds }\n    ) {\n      id\n      triage\n      priority\n      divisions {\n        id\n        name\n        description\n      }\n    }\n  }\n": types.TriageMessageDocument,
     "\n  mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {\n    removeAttachment(messageId: $messageId, attachmentId: $attachmentId)\n  }\n": types.RemoveAttachmentDocument,
+    "\n  fragment ResourceFields on Resource {\n    id\n    incidentId\n    schadenplatzId\n    formation\n    name\n    size\n    personnelCount\n    hauptaufgabe\n    contact {\n      medium\n      detail\n    }\n    homeLocation {\n      name\n      lat\n      lng\n    }\n    deploymentLocation {\n      lat\n      lng\n      label\n    }\n    status\n    statusAt\n    einsatzBeginn\n    einsatzEnde\n    predecessorId\n    successorId\n    sourceMessageId\n  }\n": types.ResourceFieldsFragmentDoc,
+    "\n  fragment SchadenplatzFields on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n    isMerged\n    mergedInto\n  }\n": types.SchadenplatzFieldsFragmentDoc,
+    "\n  \n  \n  query GetIncidentResources($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      schadenplaetze {\n        ...SchadenplatzFields\n        resources {\n          ...ResourceFields\n        }\n      }\n    }\n  }\n": types.GetIncidentResourcesDocument,
+    "\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n": types.AlertResourceDocument,
+    "\n  \n  mutation MarkResourceReady($id: ID!) {\n    markResourceReady(id: $id) {\n      ...ResourceFields\n    }\n  }\n": types.MarkResourceReadyDocument,
+    "\n  \n  mutation DeployResource($id: ID!) {\n    deployResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n": types.DeployResourceDocument,
+    "\n  \n  mutation StandDownResource($id: ID!) {\n    standDownResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n": types.StandDownResourceDocument,
+    "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n": types.RelieveResourceDocument,
+    "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n": types.ChangeHauptaufgabeDocument,
+    "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n": types.UpdatePersonnelCountDocument,
 };
 
 /**
@@ -266,6 +286,46 @@ export function graphql(source: "\n  mutation TriageMessage(\n    $id: ID!\n    
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {\n    removeAttachment(messageId: $messageId, attachmentId: $attachmentId)\n  }\n"): (typeof documents)["\n  mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {\n    removeAttachment(messageId: $messageId, attachmentId: $attachmentId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment ResourceFields on Resource {\n    id\n    incidentId\n    schadenplatzId\n    formation\n    name\n    size\n    personnelCount\n    hauptaufgabe\n    contact {\n      medium\n      detail\n    }\n    homeLocation {\n      name\n      lat\n      lng\n    }\n    deploymentLocation {\n      lat\n      lng\n      label\n    }\n    status\n    statusAt\n    einsatzBeginn\n    einsatzEnde\n    predecessorId\n    successorId\n    sourceMessageId\n  }\n"): (typeof documents)["\n  fragment ResourceFields on Resource {\n    id\n    incidentId\n    schadenplatzId\n    formation\n    name\n    size\n    personnelCount\n    hauptaufgabe\n    contact {\n      medium\n      detail\n    }\n    homeLocation {\n      name\n      lat\n      lng\n    }\n    deploymentLocation {\n      lat\n      lng\n      label\n    }\n    status\n    statusAt\n    einsatzBeginn\n    einsatzEnde\n    predecessorId\n    successorId\n    sourceMessageId\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment SchadenplatzFields on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n    isMerged\n    mergedInto\n  }\n"): (typeof documents)["\n  fragment SchadenplatzFields on Schadenplatz {\n    id\n    incidentId\n    name\n    isDefault\n    casualties {\n      vermisste\n      tote\n      verletzte\n      obdachlose\n      eingeschlossene\n    }\n    isMerged\n    mergedInto\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  \n  query GetIncidentResources($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      schadenplaetze {\n        ...SchadenplatzFields\n        resources {\n          ...ResourceFields\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  \n  \n  query GetIncidentResources($incidentId: ID!) {\n    incident(id: $incidentId) {\n      id\n      schadenplaetze {\n        ...SchadenplatzFields\n        resources {\n          ...ResourceFields\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation MarkResourceReady($id: ID!) {\n    markResourceReady(id: $id) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation MarkResourceReady($id: ID!) {\n    markResourceReady(id: $id) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation DeployResource($id: ID!) {\n    deployResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation DeployResource($id: ID!) {\n    deployResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation StandDownResource($id: ID!) {\n    standDownResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation StandDownResource($id: ID!) {\n    standDownResource(id: $id) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation RelieveResource($id: ID!, $successorId: ID) {\n    relieveResource(id: $id, successorId: $successorId) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {\n    updatePersonnelCount(id: $id, count: $count) {\n      ...ResourceFields\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

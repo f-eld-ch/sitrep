@@ -344,5 +344,51 @@
     "accessControl": "Controllo accessi",
     "groups": "Gruppi",
     "globalRoles": "Ruoli globali"
+  },
+  "resource": {
+    "formation": {
+      "FW": "Pompieri",
+      "POL": "Polizia",
+      "ARMEE": "Esercito",
+      "ZS": "Protezione civile",
+      "TECHNB": "Servizi tecnici",
+      "SAN": "Servizi sanitari",
+      "OTHER": "Altro"
+    },
+    "size": {
+      "TRUPP": "Sezione",
+      "GRUPPE": "Gruppo",
+      "ZUG": "Plotone",
+      "KOMPANIE": "Compagnia",
+      "BATAILLON": "Battaglione"
+    },
+    "status": {
+      "AUFGEBOTEN": "Allertato",
+      "EINSATZBEREIT": "Pronto",
+      "EINGESETZT": "Impiegato",
+      "ABGELOEST": "Avvicendato"
+    },
+    "actions": {
+      "markReady": "Segnala pronto",
+      "deploy": "Impiegare",
+      "standDown": "Ritirare",
+      "relieve": "Avvicendare",
+      "alert": "Allertare"
+    },
+    "fields": {
+      "name": "Denominazione",
+      "formation": "Formazione",
+      "size": "Dimensione unità",
+      "personnelCount": "Personale",
+      "hauptaufgabe": "Compito principale",
+      "contact": "Contatto",
+      "homeLocation": "Sede",
+      "deploymentLocation": "Luogo d'impiego",
+      "einsatzBeginn": "Inizio impiego",
+      "einsatzEnde": "Fine impiego",
+      "status": "Stato"
+    },
+    "noResources": "Nessun mezzo registrato",
+    "addResource": "Allertare mezzo"
   }
 }

@@ -87,6 +87,27 @@ export {
   useUploadAttachment,
 } from "./message";
 
+// Resource aggregate
+export type {
+  AlertResourceArgs,
+  IncidentResourcesData,
+  Resource,
+  ResourceContact,
+  ResourceDeploymentLocation,
+  ResourceHomeLocation,
+  SchadenplatzWithResources,
+} from "./resource";
+export {
+  useAlertResource,
+  useChangeHauptaufgabe,
+  useDeployResource,
+  useIncidentResources,
+  useMarkResourceReady,
+  useRelieveResource,
+  useStandDownResource,
+  useUpdatePersonnelCount,
+} from "./resource";
+
 // Layer aggregate
 export type {
   AddFeatureArgs,

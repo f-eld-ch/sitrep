@@ -344,5 +344,51 @@
     "accessControl": "Access control",
     "groups": "Groups",
     "globalRoles": "Global roles"
+  },
+  "resource": {
+    "formation": {
+      "FW": "Fire Brigade",
+      "POL": "Police",
+      "ARMEE": "Army",
+      "ZS": "Civil Protection",
+      "TECHNB": "Technical Services",
+      "SAN": "Medical Services",
+      "OTHER": "Other"
+    },
+    "size": {
+      "TRUPP": "Section",
+      "GRUPPE": "Group",
+      "ZUG": "Platoon",
+      "KOMPANIE": "Company",
+      "BATAILLON": "Battalion"
+    },
+    "status": {
+      "AUFGEBOTEN": "Alerted",
+      "EINSATZBEREIT": "Ready",
+      "EINGESETZT": "Deployed",
+      "ABGELOEST": "Relieved"
+    },
+    "actions": {
+      "markReady": "Mark ready",
+      "deploy": "Deploy",
+      "standDown": "Stand down",
+      "relieve": "Relieve",
+      "alert": "Alert"
+    },
+    "fields": {
+      "name": "Name",
+      "formation": "Formation",
+      "size": "Unit size",
+      "personnelCount": "Personnel",
+      "hauptaufgabe": "Main task",
+      "contact": "Contact",
+      "homeLocation": "Home location",
+      "deploymentLocation": "Deployment location",
+      "einsatzBeginn": "Deployment start",
+      "einsatzEnde": "Deployment end",
+      "status": "Status"
+    },
+    "noResources": "No resources recorded",
+    "addResource": "Alert resource"
   }
 }

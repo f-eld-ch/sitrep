@@ -344,5 +344,51 @@
     "accessControl": "Zugangskontrolle",
     "groups": "Gruppen",
     "globalRoles": "Globale Rollen"
+  },
+  "resource": {
+    "formation": {
+      "FW": "Feuerwehr",
+      "POL": "Polizei",
+      "ARMEE": "Armee",
+      "ZS": "Zivilschutz",
+      "TECHNB": "Technische Betriebe",
+      "SAN": "Sanität",
+      "OTHER": "Andere"
+    },
+    "size": {
+      "TRUPP": "Trupp",
+      "GRUPPE": "Gruppe",
+      "ZUG": "Zug",
+      "KOMPANIE": "Kompanie",
+      "BATAILLON": "Bataillon"
+    },
+    "status": {
+      "AUFGEBOTEN": "Aufgeboten",
+      "EINSATZBEREIT": "Einsatzbereit",
+      "EINGESETZT": "Eingesetzt",
+      "ABGELOEST": "Abgelöst"
+    },
+    "actions": {
+      "markReady": "Einsatzbereit melden",
+      "deploy": "Einsetzen",
+      "standDown": "Zurückstellen",
+      "relieve": "Ablösen",
+      "alert": "Aufbieten"
+    },
+    "fields": {
+      "name": "Bezeichnung",
+      "formation": "Verband",
+      "size": "Truppenstärke",
+      "personnelCount": "Personen",
+      "hauptaufgabe": "Hauptaufgabe",
+      "contact": "Kontakt",
+      "homeLocation": "Standort",
+      "deploymentLocation": "Einsatzort",
+      "einsatzBeginn": "Einsatzbeginn",
+      "einsatzEnde": "Einsatzende",
+      "status": "Status"
+    },
+    "noResources": "Keine Mittel erfasst",
+    "addResource": "Mittel aufbieten"
   }
 }
