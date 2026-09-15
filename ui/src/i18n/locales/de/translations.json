@@ -149,6 +149,7 @@
   "save": "speichern",
   "saveMoreInfo": "Benötigt mehr Informationen",
   "saveTriage": "Triage abschliessen",
+  "triageMessage": "Triagieren",
   "short": "Kürzel",
   "showClosed": "Zeige geschlossene",
   "state": "Stand",
@@ -201,6 +202,21 @@
       "name": "Lage",
       "description": "C Lage"
     }
+  },
+  "errorPage": {
+"title": "Unerwarteter Fehler",
+    "notFoundTitle": "Ziel nicht erreichbar",
+    "notFoundDesc": "Die angeforderte Seite konnte nicht gefunden werden. Bitte überprüfen Sie die Adresse.",
+    "priority": "Priorität",
+    "priorityHigh": "HOCH",
+    "fieldLocation": "Ort",
+    "fieldStatus": "Status",
+    "fieldAction": "Massnahme",
+    "fieldActionValue": "Navigation zu einem bekannten Standort",
+    "goBack": "Zurück",
+    "goHome": "Zur Startseite",
+    "footer": "Alle Ereignisse werden protokolliert.",
+    "unknown": "Ein unbekannter Fehler ist aufgetreten."
   },
   "errors": {
     "NOT_FOUND": "Der angeforderte Eintrag wurde nicht gefunden.",

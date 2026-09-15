@@ -47,7 +47,7 @@
   "next": "Avanti",
   "stepMeldung": "Messaggio",
   "stepMeldungReview": "Verifica messaggio",
-  "keyMessage": "Messaggio chiave",
+  "keyMessage": "Notizie chiave",
   "stepPersonen": "Persone",
   "stepMittel": "Mezzi",
   "noNewMessagesAbove": "Nessun nuovo messaggio",
@@ -149,6 +149,7 @@
   "save": "salvare",
   "saveMoreInfo": "Ha bisogno di più informazioni",
   "saveTriage": "Completare il triage",
+  "triageMessage": "Triage",
   "short": "abbreviazione",
   "showClosed": "mostra chiusa",
   "state": "stava in piedi",
@@ -201,6 +202,21 @@
       "name": "ANSIT ",
       "description": "Capo ANSIT "
     }
+  },
+  "errorPage": {
+"title": "Errore inatteso",
+    "notFoundTitle": "Obiettivo non trovato",
+    "notFoundDesc": "La pagina richiesta non è stata trovata. Verificare l'indirizzo e riprovare.",
+    "priority": "Priorità",
+    "priorityHigh": "ALTA",
+    "fieldLocation": "Posizione",
+    "fieldStatus": "Stato",
+    "fieldAction": "Azione",
+    "fieldActionValue": "Navigare verso una posizione nota",
+    "goBack": "Indietro",
+    "goHome": "Home",
+    "footer": "Tutti gli incidenti vengono registrati.",
+    "unknown": "Si è verificato un errore sconosciuto."
   },
   "errors": {
     "NOT_FOUND": "L'elemento richiesto non è stato trovato.",

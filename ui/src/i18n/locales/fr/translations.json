@@ -47,7 +47,7 @@
   "next": "Suivant",
   "stepMeldung": "Message",
   "stepMeldungReview": "Vérifier le message",
-  "keyMessage": "Message clé",
+  "keyMessage": "Renseignements-clés",
   "stepPersonen": "Personnes",
   "stepMittel": "Moyens",
   "noNewMessagesAbove": "Pas de nouveaux messages",
@@ -149,6 +149,7 @@
   "save": "enregistrer",
   "saveMoreInfo": "Besoin de plus d'informations",
   "saveTriage": "Terminer le triage",
+  "triageMessage": "Trier",
   "short": "abréviation",
   "showClosed": "Afficher fermé",
   "state": "était debout",
@@ -201,6 +202,21 @@
       "name": "C suivi",
       "description": "Chef du suivi de la situation"
     }
+  },
+  "errorPage": {
+"title": "Erreur inattendue",
+    "notFoundTitle": "Objectif introuvable",
+    "notFoundDesc": "La page demandée est introuvable. Veuillez vérifier l'adresse et réessayer.",
+    "priority": "Priorité",
+    "priorityHigh": "HAUTE",
+    "fieldLocation": "Emplacement",
+    "fieldStatus": "Statut",
+    "fieldAction": "Action",
+    "fieldActionValue": "Naviguer vers un emplacement connu",
+    "goBack": "Retour",
+    "goHome": "Accueil",
+    "footer": "Tous les incidents sont consignés.",
+    "unknown": "Une erreur inconnue s'est produite."
   },
   "errors": {
     "NOT_FOUND": "L'élément demandé est introuvable.",

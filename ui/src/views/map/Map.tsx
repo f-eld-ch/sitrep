@@ -23,7 +23,7 @@ import {
   Source,
   useMap,
 } from "react-map-gl/maplibre";
-import { Navigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import type { Layer } from "types/layer";
 import {
   cleanFeature,
@@ -568,15 +568,6 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
 }
 
 function MapWithProvder() {
-  const { incidentId } = useParams();
-  const {
-    state: { incident, loadedForId },
-  } = useContext(IncidentContext);
-
-  if (loadedForId === incidentId && incident === null) {
-    return <Navigate to="/incident/list" replace />;
-  }
-
   return (
     <MapStyleProvider>
       <MapProvider>

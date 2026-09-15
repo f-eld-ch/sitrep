@@ -16,9 +16,8 @@ import React, {
   useState,
 } from "react";
 import { useDropzone } from "react-dropzone";
-import { Navigate, useBlocker, useNavigate, useParams } from "react-router";
+import { useBlocker, useNavigate, useParams } from "react-router";
 import { type Attachment, Medium, type Message, PriorityStatus, TriageStatus } from "types";
-import { Spinner } from "components";
 import { Button, Notification, PageTitle, Tag } from "components/ui";
 import useDebounce from "utils/useDebounce";
 import {
@@ -58,7 +57,7 @@ function Editor() {
   const { incidentId } = useParams();
   const navigate = useNavigate();
   const {
-    state: { incident, loadedForId },
+    state: { incident },
   } = useContext(IncidentContext);
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const [createMessage, createState] = useCreateMessage();
@@ -76,7 +75,6 @@ function Editor() {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
   const incidentIsClosed = incident?.closedAt != null;
-  const showTasks = useBooleanFlagValue("show-tasks", false);
   const newTriageView = useBooleanFlagValue("new-triage-view", false);
 
   const isDirty =
@@ -208,12 +206,6 @@ function Editor() {
     [],
   );
 
-  if (loadedForId === incidentId && incident === null) {
-    return <Navigate to="/incident/list" replace />;
-  }
-  if (loadedForId !== incidentId) {
-    return <Spinner />;
-  }
 
   const contextValue: EditorContextValue = {
     state,
@@ -270,7 +262,6 @@ function Editor() {
         <div className="min-w-0 flex-1">
           <List
             showControls={!incidentIsClosed}
-            showTasksButton={showTasks}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
             setTriageMessage={incidentIsClosed || newTriageView ? undefined : setTriageMessage}
           />
