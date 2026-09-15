@@ -14,34 +14,42 @@ import (
 // ──────────────────────────────────────────────────────────────────────────────
 
 type (
-	IncidentID   uuid.UUID
-	MessageID    uuid.UUID
-	LayerID      uuid.UUID
-	FeatureID    uuid.UUID
-	DivisionID   uuid.UUID
-	AttachmentID uuid.UUID
+	IncidentID     uuid.UUID
+	MessageID      uuid.UUID
+	LayerID        uuid.UUID
+	FeatureID      uuid.UUID
+	DivisionID     uuid.UUID
+	AttachmentID   uuid.UUID
+	SchadenplatzID uuid.UUID
+	ResourceID     uuid.UUID
 )
 
-func (id IncidentID) String() string   { return uuid.UUID(id).String() }
-func (id MessageID) String() string    { return uuid.UUID(id).String() }
-func (id LayerID) String() string      { return uuid.UUID(id).String() }
-func (id FeatureID) String() string    { return uuid.UUID(id).String() }
-func (id DivisionID) String() string   { return uuid.UUID(id).String() }
-func (id AttachmentID) String() string { return uuid.UUID(id).String() }
+func (id IncidentID) String() string     { return uuid.UUID(id).String() }
+func (id MessageID) String() string      { return uuid.UUID(id).String() }
+func (id LayerID) String() string        { return uuid.UUID(id).String() }
+func (id FeatureID) String() string      { return uuid.UUID(id).String() }
+func (id DivisionID) String() string     { return uuid.UUID(id).String() }
+func (id AttachmentID) String() string   { return uuid.UUID(id).String() }
+func (id SchadenplatzID) String() string { return uuid.UUID(id).String() }
+func (id ResourceID) String() string     { return uuid.UUID(id).String() }
 
-func (id IncidentID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
-func (id MessageID) MarshalText() ([]byte, error)    { return uuid.UUID(id).MarshalText() }
-func (id LayerID) MarshalText() ([]byte, error)      { return uuid.UUID(id).MarshalText() }
-func (id FeatureID) MarshalText() ([]byte, error)    { return uuid.UUID(id).MarshalText() }
-func (id DivisionID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
-func (id AttachmentID) MarshalText() ([]byte, error) { return uuid.UUID(id).MarshalText() }
+func (id IncidentID) MarshalText() ([]byte, error)     { return uuid.UUID(id).MarshalText() }
+func (id MessageID) MarshalText() ([]byte, error)      { return uuid.UUID(id).MarshalText() }
+func (id LayerID) MarshalText() ([]byte, error)        { return uuid.UUID(id).MarshalText() }
+func (id FeatureID) MarshalText() ([]byte, error)      { return uuid.UUID(id).MarshalText() }
+func (id DivisionID) MarshalText() ([]byte, error)     { return uuid.UUID(id).MarshalText() }
+func (id AttachmentID) MarshalText() ([]byte, error)   { return uuid.UUID(id).MarshalText() }
+func (id SchadenplatzID) MarshalText() ([]byte, error) { return uuid.UUID(id).MarshalText() }
+func (id ResourceID) MarshalText() ([]byte, error)     { return uuid.UUID(id).MarshalText() }
 
-func (id *IncidentID) UnmarshalText(b []byte) error   { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *MessageID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *LayerID) UnmarshalText(b []byte) error      { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *FeatureID) UnmarshalText(b []byte) error    { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *DivisionID) UnmarshalText(b []byte) error   { return (*uuid.UUID)(id).UnmarshalText(b) }
-func (id *AttachmentID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *IncidentID) UnmarshalText(b []byte) error     { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *MessageID) UnmarshalText(b []byte) error      { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *LayerID) UnmarshalText(b []byte) error        { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *FeatureID) UnmarshalText(b []byte) error      { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *DivisionID) UnmarshalText(b []byte) error     { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *AttachmentID) UnmarshalText(b []byte) error   { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *SchadenplatzID) UnmarshalText(b []byte) error { return (*uuid.UUID)(id).UnmarshalText(b) }
+func (id *ResourceID) UnmarshalText(b []byte) error     { return (*uuid.UUID)(id).UnmarshalText(b) }
 
 func ParseIncidentID(s string) (IncidentID, error) {
 	id, err := uuid.Parse(s)
@@ -71,6 +79,16 @@ func ParseDivisionID(s string) (DivisionID, error) {
 func ParseAttachmentID(s string) (AttachmentID, error) {
 	id, err := uuid.Parse(s)
 	return AttachmentID(id), err
+}
+
+func ParseSchadenplatzID(s string) (SchadenplatzID, error) {
+	id, err := uuid.Parse(s)
+	return SchadenplatzID(id), err
+}
+
+func ParseResourceID(s string) (ResourceID, error) {
+	id, err := uuid.Parse(s)
+	return ResourceID(id), err
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -138,6 +156,14 @@ var (
 	// ErrNotSupported is returned when the requested operation is not enabled
 	// in this deployment (e.g. attachments storage is not configured).
 	ErrNotSupported = errors.New("NOT_SUPPORTED")
+
+	// ErrSchadenplatzMerged is returned when an operation targets a Schadenplatz
+	// that has already been merged into the default one.
+	ErrSchadenplatzMerged = errors.New("SCHADENPLATZ_MERGED")
+
+	// ErrCasualtyBelowZero is returned when a casualty delta would make a total
+	// go negative.
+	ErrCasualtyBelowZero = errors.New("CASUALTY_BELOW_ZERO")
 )
 
 // ValidationError carries a field-level message suitable for the API response.

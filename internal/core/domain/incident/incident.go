@@ -37,6 +37,8 @@ type Incident struct {
 	divisions map[shared.DivisionID]Division
 	parentID  *shared.IncidentID
 
+	defaultSchadenplatzID *shared.SchadenplatzID
+
 	createdAt time.Time
 	closedAt  *time.Time
 	deletedAt *time.Time
@@ -54,6 +56,7 @@ func New(id shared.IncidentID) *Incident {
 		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{},
 		ParentLinked{}, ParentUnlinked{},
 		Closed{}, Reopened{}, Deleted{}, Imported{},
+		DefaultSchadenplatzLinked{},
 	)
 
 	return inc
@@ -71,7 +74,8 @@ func (i *Incident) AggregateType() string { return "Incident" }
 
 func (i *Incident) OwnerIncidentID() uuid.UUID { return i.root.ID() }
 
-func (i *Incident) Name() string                 { return i.name }
+func (i *Incident) Name() string                          { return i.name }
+func (i *Incident) DefaultSchadenplatzID() *shared.SchadenplatzID { return i.defaultSchadenplatzID }
 func (i *Incident) Location() *Location          { return i.location }
 func (i *Incident) ParentID() *shared.IncidentID { return i.parentID }
 func (i *Incident) CreatedAt() time.Time         { return i.createdAt }
@@ -307,6 +311,18 @@ func (i *Incident) UnlinkParent(actor string, at time.Time) error {
 	return nil
 }
 
+// LinkDefaultSchadenplatz records the ID of the auto-created default Schadenplatz.
+// Must be called exactly once, immediately after the incident is opened.
+func (i *Incident) LinkDefaultSchadenplatz(id shared.SchadenplatzID, actor string, at time.Time) error {
+	if i.defaultSchadenplatzID != nil {
+		return shared.ValidationError{Field: "defaultSchadenplatzId", Message: "already set"}
+	}
+
+	eventsourcing.TrackChange(i, DefaultSchadenplatzLinked{SchadenplatzID: id}, at, baseMeta(actor))
+
+	return nil
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Transition — applies one event to update in-memory state
 // ──────────────────────────────────────────────────────────────────────────────
@@ -377,6 +393,9 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 		if d.DeletedAt != nil {
 			i.deletedAt = d.DeletedAt
 		}
+	case DefaultSchadenplatzLinked:
+		id := d.SchadenplatzID
+		i.defaultSchadenplatzID = &id
 	default:
 		return fmt.Errorf("incident.Transition: unhandled event type %T", e.Data)
 	}
