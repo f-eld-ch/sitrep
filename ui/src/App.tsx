@@ -83,8 +83,9 @@ const router = createBrowserRouter([
             path: ":incidentId",
             element: <IncidentRoute />,
             children: [
+              { index: true, element: <Navigate to="dashboard" replace /> },
               {
-                index: true,
+                path: "dashboard",
                 element: (
                   <LayoutMarginLess>
                     <Suspense fallback={<Spinner />}>

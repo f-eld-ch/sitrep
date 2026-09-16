@@ -74,7 +74,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <div className="flex flex-1 flex-row items-stretch">
             <div className="group relative flex items-stretch">
               <NavLink
-                to={incidentId ? `/incident/${incidentId}` : "/"}
+                to={incidentId ? `/incident/${incidentId}/dashboard` : "/"}
                 title={
                   incidentState.incident
                     ? `${t("incident")} ${incidentState.incident.name}`
