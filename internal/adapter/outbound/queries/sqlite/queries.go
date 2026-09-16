@@ -335,7 +335,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
 		FROM readmodel_message
 		WHERE incident_id = ?
 		ORDER BY msg_time DESC, created_at DESC`, incidentID.String())
@@ -353,7 +353,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
 		FROM readmodel_message
 		WHERE id = ?`, id.String())
 	if err != nil {
@@ -384,27 +384,28 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 
 	for rows.Next() {
 		var (
-			idStr          string
-			number         int
-			incIDStr       string
-			content        string
-			sender         string
-			senderDetail   string
-			receiver       string
-			receiverDetail string
-			medium         string
-			msgTime        sqlite.Time
-			createdAt      sqlite.Time
-			updatedAt      sqlite.Time
-			triage         string
-			priority       string
-			divisionIDsStr string
+			idStr              string
+			number             int
+			incIDStr           string
+			content            string
+			sender             string
+			senderDetail       string
+			receiver           string
+			receiverDetail     string
+			medium             string
+			msgTime            sqlite.Time
+			createdAt          sqlite.Time
+			updatedAt          sqlite.Time
+			triage             string
+			priority           string
+			divisionIDsStr     string
+			linkedResourcesStr string
 		)
 
 		if err := rows.Scan(
 			&idStr, &number, &incIDStr, &content, &sender, &senderDetail,
 			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr,
+			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr, &linkedResourcesStr,
 		); err != nil {
 			return nil, err
 		}
@@ -423,27 +424,37 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 		if err := json.Unmarshal([]byte(divisionIDsStr), &divisionIDs); err != nil {
 			return nil, fmt.Errorf("unmarshal division_ids: %w", err)
 		}
-
 		if divisionIDs == nil {
 			divisionIDs = []uuid.UUID{}
 		}
 
+		var linkedResourceIDs []uuid.UUID
+		if linkedResourcesStr != "" {
+			if err := json.Unmarshal([]byte(linkedResourcesStr), &linkedResourceIDs); err != nil {
+				return nil, fmt.Errorf("unmarshal linked_resource_ids: %w", err)
+			}
+		}
+		if linkedResourceIDs == nil {
+			linkedResourceIDs = []uuid.UUID{}
+		}
+
 		out = append(out, &outbound.MessageRM{
-			ID:             id,
-			Number:         number,
-			IncidentID:     incID,
-			Content:        content,
-			Sender:         sender,
-			SenderDetail:   senderDetail,
-			Receiver:       receiver,
-			ReceiverDetail: receiverDetail,
-			Medium:         medium,
-			Time:           msgTime.V,
-			CreatedAt:      createdAt.V,
-			UpdatedAt:      updatedAt.V,
-			Triage:         triage,
-			Priority:       priority,
-			DivisionIDs:    divisionIDs,
+			ID:                id,
+			Number:            number,
+			IncidentID:        incID,
+			Content:           content,
+			Sender:            sender,
+			SenderDetail:      senderDetail,
+			Receiver:          receiver,
+			ReceiverDetail:    receiverDetail,
+			Medium:            medium,
+			Time:              msgTime.V,
+			CreatedAt:         createdAt.V,
+			UpdatedAt:         updatedAt.V,
+			Triage:            triage,
+			Priority:          priority,
+			DivisionIDs:       divisionIDs,
+			LinkedResourceIDs: linkedResourceIDs,
 		})
 	}
 

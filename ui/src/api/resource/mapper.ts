@@ -49,8 +49,8 @@ export interface ResourceHomeLocation {
 }
 
 export interface ResourceDeploymentLocation {
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   label: string;
 }
 
@@ -68,6 +68,11 @@ export interface Resource {
   deploymentLocation: ResourceDeploymentLocation | null;
   status: ResourceStatus;
   statusAt: string;
+  alertedAt: string;
+  readyAt: string | null;
+  deployedAt: string | null;
+  stoodDownAt: string | null;
+  relievedAt: string | null;
   einsatzBeginn: string | null;
   einsatzEnde: string | null;
   predecessorId: string | null;
@@ -92,6 +97,11 @@ export function toResource(w: WireResource): Resource {
     deploymentLocation: w.deploymentLocation ?? null,
     status: toResourceStatus(w.status),
     statusAt: w.statusAt,
+    alertedAt: w.alertedAt,
+    readyAt: w.readyAt,
+    deployedAt: w.deployedAt,
+    stoodDownAt: w.stoodDownAt,
+    relievedAt: w.relievedAt,
     einsatzBeginn: w.einsatzBeginn,
     einsatzEnde: w.einsatzEnde,
     predecessorId: w.predecessorId,

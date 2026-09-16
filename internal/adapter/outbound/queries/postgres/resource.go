@@ -17,7 +17,8 @@ func (q *Queries) GetResource(ctx context.Context, id uuid.UUID) (*outbound.Reso
 		SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
 		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
 		       deployment_lat, deployment_lng, deployment_label,
-		       status, status_at, einsatz_beginn, einsatz_ende,
+		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
+		       einsatz_beginn, einsatz_ende,
 		       predecessor_id, successor_id, source_message_id, created_at, updated_at
 		FROM readmodel.resource WHERE id = $1`, id)
 
@@ -37,7 +38,41 @@ func (q *Queries) ListResourcesForSchadenplatz(
 }
 
 func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
-	return q.listResources(ctx, `WHERE incident_id = $1`, incidentID)
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
+		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
+		       deployment_lat, deployment_lng, deployment_label,
+		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
+		       einsatz_beginn, einsatz_ende,
+		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+		FROM readmodel.resource
+		WHERE incident_id = $1
+		   OR incident_id IN (
+		       SELECT id FROM readmodel.incident WHERE parent_id = $1 AND is_deleted = false
+		   )
+		ORDER BY created_at ASC`, incidentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := []*outbound.ResourceRM{}
+	for rows.Next() {
+		rm, err := scanPgResource(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		if q.canRead(ctx, rm.IncidentID) {
+			out = append(out, rm)
+		}
+	}
+
+	return out, rows.Err()
 }
 
 func (q *Queries) listResources(ctx context.Context, where string, arg uuid.UUID) ([]*outbound.ResourceRM, error) {
@@ -45,7 +80,8 @@ func (q *Queries) listResources(ctx context.Context, where string, arg uuid.UUID
 		SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
 		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
 		       deployment_lat, deployment_lng, deployment_label,
-		       status, status_at, einsatz_beginn, einsatz_ende,
+		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
+		       einsatz_beginn, einsatz_ende,
 		       predecessor_id, successor_id, source_message_id, created_at, updated_at
 		FROM readmodel.resource `+where+` ORDER BY created_at ASC`, arg)
 	if err != nil {
@@ -79,6 +115,11 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		deployLng     *float64
 		deployLabel   *string
 		statusAt      time.Time
+		alertedAt     time.Time
+		readyAt       *time.Time
+		deployedAt    *time.Time
+		stoodDownAt   *time.Time
+		relievedAt    *time.Time
 		einsatzBeginn *time.Time
 		einsatzEnde   *time.Time
 	)
@@ -88,7 +129,8 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		&rm.PersonnelCount, &rm.Hauptaufgabe,
 		&contactMedium, &contactDetail, &homeName, &homeLat, &homeLng,
 		&deployLat, &deployLng, &deployLabel,
-		&rm.Status, &statusAt, &einsatzBeginn, &einsatzEnde,
+		&rm.Status, &statusAt, &alertedAt, &readyAt, &deployedAt, &stoodDownAt, &relievedAt,
+		&einsatzBeginn, &einsatzEnde,
 		&rm.PredecessorID, &rm.SuccessorID, &rm.SourceMessageID, &rm.CreatedAt, &rm.UpdatedAt,
 	); err != nil {
 		return nil, err
@@ -100,10 +142,31 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	rm.HomeLocationLat = homeLat
 	rm.HomeLocationLng = homeLng
 	rm.StatusAt = statusAt.UTC()
+	rm.AlertedAt = alertedAt.UTC()
 	rm.CreatedAt = rm.CreatedAt.UTC()
 	rm.UpdatedAt = rm.UpdatedAt.UTC()
 	rm.EinsatzBeginn = einsatzBeginn
 	rm.EinsatzEnde = einsatzEnde
+
+	if readyAt != nil {
+		t := readyAt.UTC()
+		rm.ReadyAt = &t
+	}
+
+	if deployedAt != nil {
+		t := deployedAt.UTC()
+		rm.DeployedAt = &t
+	}
+
+	if stoodDownAt != nil {
+		t := stoodDownAt.UTC()
+		rm.StoodDownAt = &t
+	}
+
+	if relievedAt != nil {
+		t := relievedAt.UTC()
+		rm.RelievedAt = &t
+	}
 
 	if einsatzBeginn != nil {
 		t := einsatzBeginn.UTC()
@@ -122,8 +185,8 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		}
 
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
-			Lat:   *deployLat,
-			Lng:   *deployLng,
+			Lat:   deployLat,
+			Lng:   deployLng,
 			Label: label,
 		}
 	}

@@ -4,12 +4,16 @@ export {
   useChangeHauptaufgabe,
   useDeployResource,
   useMarkResourceReady,
+  useReassignResource,
   useRelieveResource,
   useStandDownResource,
+  useUpdateContact,
+  useUpdateDeploymentLocation,
   useUpdatePersonnelCount,
 } from "./commands";
 export type {
   ContactMedium,
+  ChildIncidentCasualties,
   IncidentResourcesData,
   Resource,
   ResourceContact,

@@ -54,7 +54,7 @@
   "schadenplatz": {
     "select": "Schadenplatz wählen",
     "selectHint": "Betrifft diese Meldung einen spezifischen Schadenplatz?",
-    "defaultHint": "Allgemein (keine spezifische Zuordnung)",
+    "defaultHint": "kein spezifischer Schadenplatz",
     "new": "Neu anlegen",
     "namePlaceholder": "Name des Schadenplatzes",
     "create": "Anlegen",
@@ -159,6 +159,7 @@
   "save": "speichern",
   "saveMoreInfo": "Benötigt mehr Informationen",
   "saveTriage": "Triage abschliessen",
+  "triageAdjust": "Triage anpassen",
   "triageMessage": "Triagieren",
   "short": "Kürzel",
   "showClosed": "Zeige geschlossene",
@@ -214,15 +215,24 @@
     }
   },
   "casualties": {
+    "childIncidents": "Untergeordnete Ereignisse",
     "vermisste": "Vermisste",
     "tote": "Tote",
     "verletzte": "Verletzte",
     "obdachlose": "Obdachlose",
     "eingeschlossene": "Eingeschlossene",
-    "summary": "Personenübersicht"
+    "summary": "Personenübersicht",
+    "overview": "Personenübersicht",
+    "none": "Keine Personen erfasst",
+    "byLocation": "Nach Schadenplatz"
+  },
+  "dashboard": {
+    "title": "Ereignis-Dashboard",
+    "priorityMessages": "Wichtige Meldungen",
+    "noPriorityMessages": "Keine wichtigen Meldungen"
   },
   "errorPage": {
-"title": "Unerwarteter Fehler",
+    "title": "Unerwarteter Fehler",
     "notFoundTitle": "Ziel nicht erreichbar",
     "notFoundDesc": "Die angeforderte Seite konnte nicht gefunden werden. Bitte überprüfen Sie die Adresse.",
     "priority": "Priorität",
@@ -356,6 +366,7 @@
     "globalRoles": "Globale Rollen"
   },
   "resource": {
+    "childIncident": "Untergeordnetes Ereignis",
     "formation": {
       "FW": "Feuerwehr",
       "POL": "Polizei",
@@ -386,19 +397,37 @@
       "alert": "Aufbieten"
     },
     "fields": {
-      "name": "Bezeichnung",
+      "name": "Untereinheit",
       "formation": "Verband",
       "size": "Truppenstärke",
       "personnelCount": "Personen",
       "hauptaufgabe": "Hauptaufgabe",
       "contact": "Kontakt",
-      "homeLocation": "Standort",
+      "homeLocation": "Formationsbezeichnung",
       "deploymentLocation": "Einsatzort",
       "einsatzBeginn": "Einsatzbeginn",
       "einsatzEnde": "Einsatzende",
       "status": "Status"
     },
     "noResources": "Keine Mittel erfasst",
-    "addResource": "Mittel aufbieten"
+    "search": "Mittel suchen…",
+    "noResults": "Keine Mittel gefunden",
+    "addResource": "Mittel aufbieten",
+    "count_one": "{{count}} Mittel",
+    "count_other": "{{count}} Mittel",
+    "selectFormation": "Formation",
+    "selectSize": "Grösse",
+    "newResource": "Neues Mittel aufbieten",
+    "alerting": "Wird aufgeboten…",
+    "mitteltabelle": "Mitteltabelle",
+    "nr": "Nr.",
+    "alertedAt": "Aufgeboten",
+    "readyAt": "Einsatzbereit",
+    "deployedAt": "Im Einsatz",
+    "relievedAt": "Abgelöst",
+    "validation": {
+      "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
+      "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz"
+    }
   }
 }

@@ -100,13 +100,13 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			INSERT INTO readmodel.resource
 			  (id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
 			   contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
-			   status, status_at, source_message_id, created_at, updated_at)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'AUFGEBOTEN',$14,$15,$14,$14)
+			   status, status_at, alerted_at, source_message_id, created_at, updated_at)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'AUFGEBOTEN',$14,$14,$15,$14,$14)
 			ON CONFLICT (id) DO UPDATE
 			  SET incident_id=$2, schadenplatz_id=$3, formation=$4, name=$5, size=$6,
 			      personnel_count=$7, hauptaufgabe=$8, contact_medium=$9, contact_detail=$10,
 			      home_location_name=$11, home_location_lat=$12, home_location_lng=$13,
-			      updated_at=$14`,
+			      alerted_at=$14, updated_at=$14`,
 			id, d.IncidentID, d.SchadenplatzID, d.Formation, d.Name, d.Size, d.PersonnelCount, d.Hauptaufgabe,
 			contactMedium, contactDetail, homeName, homeLat, homeLng,
 			now, d.SourceMessageID)
@@ -115,7 +115,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			db,
 			ctx,
-			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, updated_at=$1 WHERE id=$2`,
+			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, ready_at=$1, updated_at=$1 WHERE id=$2`,
 			now,
 			id,
 		)
@@ -124,7 +124,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			db,
 			ctx,
-			`UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1, updated_at=$1 WHERE id=$2`,
+			`UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1, deployed_at=$1, updated_at=$1 WHERE id=$2`,
 			now,
 			id,
 		)
@@ -133,7 +133,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			db,
 			ctx,
-			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, updated_at=$1 WHERE id=$2`,
+			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, stood_down_at=$1, updated_at=$1 WHERE id=$2`,
 			now,
 			id,
 		)
@@ -147,7 +147,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(db, ctx, `
-			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, successor_id=$2, updated_at=$1 WHERE id=$3`,
+			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2, updated_at=$1 WHERE id=$3`,
 			now, d.SuccessorID, id)
 
 	case "SuccessionLinked":

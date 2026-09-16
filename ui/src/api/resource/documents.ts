@@ -53,6 +53,11 @@ export const RESOURCE_FIELDS = gql`
     }
     status
     statusAt
+    alertedAt
+    readyAt
+    deployedAt
+    stoodDownAt
+    relievedAt
     einsatzBeginn
     einsatzEnde
     predecessorId
@@ -90,6 +95,17 @@ export const GET_INCIDENT_RESOURCES: TypedDocumentNode<
   query GetIncidentResources($incidentId: ID!) {
     incident(id: $incidentId) {
       id
+      name
+      childIncidents {
+        id
+        name
+        schadenplaetze {
+          ...SchadenplatzFields
+        }
+      }
+      resources {
+        ...ResourceFields
+      }
       schadenplaetze {
         ...SchadenplatzFields
         resources {
@@ -119,8 +135,8 @@ export const MARK_RESOURCE_READY: TypedDocumentNode<
   MarkResourceReadyMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation MarkResourceReady($id: ID!) {
-    markResourceReady(id: $id) {
+  mutation MarkResourceReady($id: ID!, $at: DateTime) {
+    markResourceReady(id: $id, at: $at) {
       ...ResourceFields
     }
   }
@@ -131,8 +147,8 @@ export const DEPLOY_RESOURCE: TypedDocumentNode<
   DeployResourceMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation DeployResource($id: ID!) {
-    deployResource(id: $id) {
+  mutation DeployResource($id: ID!, $at: DateTime) {
+    deployResource(id: $id, at: $at) {
       ...ResourceFields
     }
   }
@@ -143,8 +159,8 @@ export const STAND_DOWN_RESOURCE: TypedDocumentNode<
   StandDownResourceMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation StandDownResource($id: ID!) {
-    standDownResource(id: $id) {
+  mutation StandDownResource($id: ID!, $at: DateTime) {
+    standDownResource(id: $id, at: $at) {
       ...ResourceFields
     }
   }
@@ -155,8 +171,8 @@ export const RELIEVE_RESOURCE: TypedDocumentNode<
   RelieveResourceMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation RelieveResource($id: ID!, $successorId: ID) {
-    relieveResource(id: $id, successorId: $successorId) {
+  mutation RelieveResource($id: ID!, $successorId: ID, $at: DateTime) {
+    relieveResource(id: $id, successorId: $successorId, at: $at) {
       ...ResourceFields
     }
   }
@@ -181,6 +197,33 @@ export const UPDATE_PERSONNEL_COUNT: TypedDocumentNode<
   ${RESOURCE_FIELDS}
   mutation UpdatePersonnelCount($id: ID!, $count: Int!) {
     updatePersonnelCount(id: $id, count: $count) {
+      ...ResourceFields
+    }
+  }
+`;
+
+export const REASSIGN_RESOURCE = gql`
+  ${RESOURCE_FIELDS}
+  mutation ReassignResource($id: ID!, $schadenplatzId: ID!) {
+    reassignResource(id: $id, schadenplatzId: $schadenplatzId) {
+      ...ResourceFields
+    }
+  }
+`;
+
+export const UPDATE_DEPLOYMENT_LOCATION = gql`
+  ${RESOURCE_FIELDS}
+  mutation UpdateDeploymentLocation($id: ID!, $label: String!) {
+    updateDeploymentLocation(id: $id, location: { label: $label }) {
+      ...ResourceFields
+    }
+  }
+`;
+
+export const UPDATE_CONTACT = gql`
+  ${RESOURCE_FIELDS}
+  mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!) {
+    updateContact(id: $id, contact: { medium: $medium, detail: $detail }) {
       ...ResourceFields
     }
   }

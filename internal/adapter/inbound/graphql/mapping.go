@@ -91,22 +91,28 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 // messageStateToModel builds a Message response from a MessageState DTO
 // returned by a service command — no projection read required.
 func messageStateToModel(s inbound.MessageState) *model.Message {
+	linkedIDs := make([]string, len(s.LinkedResourceIDs))
+	for i, id := range s.LinkedResourceIDs {
+		linkedIDs[i] = id.String()
+	}
+
 	msg := &model.Message{
-		ID:             s.ID.String(),
-		Number:         s.Number,
-		Content:        s.Content,
-		Sender:         s.Sender,
-		SenderDetail:   s.SenderDetail,
-		Receiver:       s.Receiver,
-		ReceiverDetail: s.ReceiverDetail,
-		Medium:         mapMedium(string(s.Medium)),
-		Time:           s.Time,
-		CreatedAt:      s.CreatedAt,
-		UpdatedAt:      s.UpdatedAt,
-		Triage:         mapTriageStatus(string(s.Triage)),
-		Priority:       mapPriorityStatus(string(s.Priority)),
-		Divisions:      []*model.Division{},
-		Attachments:    []*model.Attachment{},
+		ID:                s.ID.String(),
+		Number:            s.Number,
+		Content:           s.Content,
+		Sender:            s.Sender,
+		SenderDetail:      s.SenderDetail,
+		Receiver:          s.Receiver,
+		ReceiverDetail:    s.ReceiverDetail,
+		Medium:            mapMedium(string(s.Medium)),
+		Time:              s.Time,
+		CreatedAt:         s.CreatedAt,
+		UpdatedAt:         s.UpdatedAt,
+		Triage:            mapTriageStatus(string(s.Triage)),
+		Priority:          mapPriorityStatus(string(s.Priority)),
+		Divisions:         []*model.Division{},
+		Attachments:       []*model.Attachment{},
+		LinkedResourceIds: linkedIDs,
 	}
 
 	return msg
@@ -202,6 +208,11 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 		msg.Divisions = []*model.Division{}
 	}
 
+	linkedIDs := make([]string, len(r.LinkedResourceIDs))
+	for i, id := range r.LinkedResourceIDs {
+		linkedIDs[i] = id.String()
+	}
+	msg.LinkedResourceIds = linkedIDs
 	msg.Attachments = []*model.Attachment{}
 
 	return msg
@@ -442,6 +453,11 @@ func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
 		Hauptaufgabe:   r.Hauptaufgabe,
 		Status:         mapResourceStatus(r.Status),
 		StatusAt:       r.StatusAt,
+		AlertedAt:      r.AlertedAt,
+		ReadyAt:        r.ReadyAt,
+		DeployedAt:     r.DeployedAt,
+		StoodDownAt:    r.StoodDownAt,
+		RelievedAt:     r.RelievedAt,
 		EinsatzBeginn:  r.EinsatzBeginn,
 		EinsatzEnde:    r.EinsatzEnde,
 	}
@@ -505,6 +521,11 @@ func resourceStateToModel(s inbound.ResourceState) *model.Resource {
 		Hauptaufgabe:   s.Hauptaufgabe,
 		Status:         mapResourceStatus(string(s.Status)),
 		StatusAt:       s.StatusAt,
+		AlertedAt:      s.AlertedAt,
+		ReadyAt:        s.ReadyAt,
+		DeployedAt:     s.DeployedAt,
+		StoodDownAt:    s.StoodDownAt,
+		RelievedAt:     s.RelievedAt,
 		EinsatzBeginn:  s.EinsatzBeginn,
 		EinsatzEnde:    s.EinsatzEnde,
 	}

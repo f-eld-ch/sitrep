@@ -33,6 +33,11 @@ type ResourceRow struct {
 	DeploymentLabel  *string
 	Status           string
 	StatusAt         time.Time
+	AlertedAt        time.Time
+	ReadyAt          *time.Time
+	DeployedAt       *time.Time
+	StoodDownAt      *time.Time
+	RelievedAt       *time.Time
 	EinsatzBeginn    *time.Time
 	EinsatzEnde      *time.Time
 	PredecessorID    *uuid.UUID
@@ -131,6 +136,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			Hauptaufgabe:   d.Hauptaufgabe,
 			Status:         "AUFGEBOTEN",
 			StatusAt:       e.OccurredAt,
+			AlertedAt:      e.OccurredAt,
 			CreatedAt:      e.OccurredAt,
 			UpdatedAt:      e.OccurredAt,
 		}
@@ -163,6 +169,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if row := h.rows[id]; row != nil {
 			row.Status = "EINSATZBEREIT"
 			row.StatusAt = e.OccurredAt
+			row.ReadyAt = &e.OccurredAt
 			row.UpdatedAt = e.OccurredAt
 		}
 
@@ -170,6 +177,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if row := h.rows[id]; row != nil {
 			row.Status = "EINGESETZT"
 			row.StatusAt = e.OccurredAt
+			row.DeployedAt = &e.OccurredAt
 			row.UpdatedAt = e.OccurredAt
 		}
 
@@ -177,6 +185,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if row := h.rows[id]; row != nil {
 			row.Status = "EINSATZBEREIT"
 			row.StatusAt = e.OccurredAt
+			row.StoodDownAt = &e.OccurredAt
 			row.UpdatedAt = e.OccurredAt
 		}
 
@@ -191,6 +200,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		if row := h.rows[id]; row != nil {
 			row.Status = "ABGELOEST"
 			row.StatusAt = e.OccurredAt
+			row.RelievedAt = &e.OccurredAt
 			row.UpdatedAt = e.OccurredAt
 
 			if d.SuccessorID != nil {

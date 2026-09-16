@@ -91,15 +91,15 @@ type CreateMessageInput struct {
 
 // Precise operational deployment point within a Schadenplatz.
 type DeploymentLocation struct {
-	Lat   float64 `json:"lat"`
-	Lng   float64 `json:"lng"`
-	Label string  `json:"label"`
+	Lat   *float64 `json:"lat,omitempty"`
+	Lng   *float64 `json:"lng,omitempty"`
+	Label string   `json:"label"`
 }
 
 type DeploymentLocationInput struct {
-	Lat   float64 `json:"lat"`
-	Lng   float64 `json:"lng"`
-	Label string  `json:"label"`
+	Lat   *float64 `json:"lat,omitempty"`
+	Lng   *float64 `json:"lng,omitempty"`
+	Label string   `json:"label"`
 }
 
 type Division struct {
@@ -154,6 +154,8 @@ type Incident struct {
 	AccessMode IncidentAccessMode `json:"accessMode"`
 	// All non-merged Schadenplätze for this incident.
 	Schadenplaetze []*Schadenplatz `json:"schadenplaetze"`
+	// All resources for this incident, including resources owned by direct child incidents.
+	Resources []*Resource `json:"resources"`
 }
 
 type IncidentAccessGrant struct {
@@ -204,6 +206,10 @@ type Message struct {
 	Divisions []*Division `json:"divisions"`
 	// Files attached to this message, oldest first.
 	Attachments []*Attachment `json:"attachments"`
+	// Casualty deltas recorded for each Schadenplatz as part of this message's triage.
+	SchadenplatzCasualties []*SchadenplatzCasualtyEntry `json:"schadenplatzCasualties"`
+	// Resource IDs linked to this message during triage.
+	LinkedResourceIds []string `json:"linkedResourceIds"`
 }
 
 type Mutation struct {
@@ -227,6 +233,11 @@ type Resource struct {
 	DeploymentLocation *DeploymentLocation   `json:"deploymentLocation,omitempty"`
 	Status             ResourceStatus        `json:"status"`
 	StatusAt           time.Time             `json:"statusAt"`
+	AlertedAt          time.Time             `json:"alertedAt"`
+	ReadyAt            *time.Time            `json:"readyAt,omitempty"`
+	DeployedAt         *time.Time            `json:"deployedAt,omitempty"`
+	StoodDownAt        *time.Time            `json:"stoodDownAt,omitempty"`
+	RelievedAt         *time.Time            `json:"relievedAt,omitempty"`
 	EinsatzBeginn      *time.Time            `json:"einsatzBeginn,omitempty"`
 	EinsatzEnde        *time.Time            `json:"einsatzEnde,omitempty"`
 	PredecessorID      *string               `json:"predecessorId,omitempty"`
@@ -274,11 +285,33 @@ type Schadenplatz struct {
 	Resources []*Resource `json:"resources"`
 }
 
+type SchadenplatzCasualtyEntry struct {
+	SchadenplatzID  string `json:"schadenplatzId"`
+	Vermisste       int    `json:"vermisste"`
+	Tote            int    `json:"tote"`
+	Verletzte       int    `json:"verletzte"`
+	Obdachlose      int    `json:"obdachlose"`
+	Eingeschlossene int    `json:"eingeschlossene"`
+}
+
+type SchadenplatzCasualtyInput struct {
+	SchadenplatzID  string `json:"schadenplatzId"`
+	Vermisste       int    `json:"vermisste"`
+	Tote            int    `json:"tote"`
+	Verletzte       int    `json:"verletzte"`
+	Obdachlose      int    `json:"obdachlose"`
+	Eingeschlossene int    `json:"eingeschlossene"`
+}
+
 type TriageMessageInput struct {
 	Triage   TriageStatus   `json:"triage"`
 	Priority PriorityStatus `json:"priority"`
 	// IDs of divisions to assign to this message (replaces current set).
 	DivisionIds []string `json:"divisionIds"`
+	// Casualty deltas to record for each Schadenplatz as part of this triage.
+	SchadenplatzCasualties []*SchadenplatzCasualtyInput `json:"schadenplatzCasualties"`
+	// Resource IDs to link to this message (replaces current set).
+	LinkedResourceIds []string `json:"linkedResourceIds"`
 }
 
 type UpdateIncidentInput struct {

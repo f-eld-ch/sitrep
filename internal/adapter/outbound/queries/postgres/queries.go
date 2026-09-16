@@ -297,7 +297,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
 		FROM readmodel.message
 		WHERE incident_id = $1
 		ORDER BY msg_time DESC, created_at DESC`, incidentID)
@@ -315,7 +315,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
 		FROM readmodel.message
 		WHERE id = $1`, id)
 	if err != nil {
@@ -422,46 +422,48 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 
 	for rows.Next() {
 		var (
-			id             uuid.UUID
-			number         int
-			incidentID     uuid.UUID
-			content        string
-			sender         string
-			senderDetail   string
-			receiver       string
-			receiverDetail string
-			medium         string
-			msgTime        time.Time
-			createdAt      time.Time
-			updatedAt      time.Time
-			triage         string
-			priority       string
-			divisionIDs    []uuid.UUID
+			id                uuid.UUID
+			number            int
+			incidentID        uuid.UUID
+			content           string
+			sender            string
+			senderDetail      string
+			receiver          string
+			receiverDetail    string
+			medium            string
+			msgTime           time.Time
+			createdAt         time.Time
+			updatedAt         time.Time
+			triage            string
+			priority          string
+			divisionIDs       []uuid.UUID
+			linkedResourceIDs []uuid.UUID
 		)
 		if err := rows.Scan(
 			&id, &number, &incidentID, &content, &sender, &senderDetail,
 			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDs,
+			&createdAt, &updatedAt, &triage, &priority, &divisionIDs, &linkedResourceIDs,
 		); err != nil {
 			return nil, err
 		}
 
 		out = append(out, &outbound.MessageRM{
-			ID:             id,
-			Number:         number,
-			IncidentID:     incidentID,
-			Content:        content,
-			Sender:         sender,
-			SenderDetail:   senderDetail,
-			Receiver:       receiver,
-			ReceiverDetail: receiverDetail,
-			Medium:         medium,
-			Time:           msgTime,
-			CreatedAt:      createdAt,
-			UpdatedAt:      updatedAt,
-			Triage:         triage,
-			Priority:       priority,
-			DivisionIDs:    divisionIDs,
+			ID:                id,
+			Number:            number,
+			IncidentID:        incidentID,
+			Content:           content,
+			Sender:            sender,
+			SenderDetail:      senderDetail,
+			Receiver:          receiver,
+			ReceiverDetail:    receiverDetail,
+			Medium:            medium,
+			Time:              msgTime,
+			CreatedAt:         createdAt,
+			UpdatedAt:         updatedAt,
+			Triage:            triage,
+			Priority:          priority,
+			DivisionIDs:       divisionIDs,
+			LinkedResourceIDs: linkedResourceIDs,
 		})
 	}
 

@@ -19,13 +19,22 @@ import {
   useTriageMessage,
   useIncidentResources,
   useCreateSchadenplatz,
+  useMessageCasualties,
+  useMessageForTriage,
   useRecordCasualties,
+  useAlertResource,
   useMarkResourceReady,
   useDeployResource,
   useStandDownResource,
   useRelieveResource,
+  useUpdatePersonnelCount,
+  useReassignResource,
+  useUpdateDeploymentLocation,
+  useUpdateContact,
+  useChangeHauptaufgabe,
 } from "api";
-import type { SchadenplatzWithResources, Resource } from "api";
+import { ApiError, isApiError } from "api";
+import type { SchadenplatzWithResources, Resource, ResourceFormation, ResourceUnitSize, ContactMedium, SchadenplatzCasualtyInput } from "api";
 import { type MessageEditorFormHandle } from "./Editor";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
@@ -145,6 +154,145 @@ function PrintSheetButton({
   );
 }
 
+function TriageSummary(props: {
+  message: Message;
+  incidentId: string;
+  incidentDivisions: Division[];
+  casualties: SchadenplatzCasualtyInput[];
+  linkedResourceIds: string[];
+  schadenplaetze: SchadenplatzWithResources[];
+  iconsLoaded: boolean;
+  onAdjust: () => void;
+}) {
+  const { message, incidentDivisions, casualties, linkedResourceIds, schadenplaetze, iconsLoaded, onAdjust } = props;
+  const { t, i18n } = useTranslation();
+
+  const allResources = schadenplaetze.flatMap((sp) => sp.resources);
+  const linkedResources = linkedResourceIds
+    .map((id) => allResources.find((r) => r.id === id))
+    .filter(Boolean) as Resource[];
+
+  const totalCasualties = casualties.reduce(
+    (acc, c) => ({
+      vermisste: acc.vermisste + c.vermisste,
+      tote: acc.tote + c.tote,
+      verletzte: acc.verletzte + c.verletzte,
+      obdachlose: acc.obdachlose + c.obdachlose,
+      eingeschlossene: acc.eingeschlossene + c.eingeschlossene,
+    }),
+    { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 },
+  );
+  const hasCasualties = Object.values(totalCasualties).some((v) => v !== 0);
+
+  const assignedDivisions = message.divisions.map((d) => d.division);
+
+  return (
+    <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Message card */}
+      <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
+        <div className="mb-2 flex justify-end">
+          <PrintSheetButton message={message} divisions={incidentDivisions} variant="inline" />
+        </div>
+        <JournalMessage
+          showControls={false}
+          stabilizeActionBar
+          id={message.id}
+          incidentId={props.incidentId}
+          message={message}
+          divisions={assignedDivisions}
+          setEditorMessage={undefined}
+          setTriageMessage={undefined}
+        />
+      </div>
+
+      {/* Summary body */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        {/* Meldefluss */}
+        {assignedDivisions.length > 0 && (
+          <section>
+            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("messageFlow")}</h3>
+            <div className="flex flex-wrap gap-1.5">
+              {assignedDivisions.map((d) => (
+                <span key={d.id} className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
+                  {d.description || d.name}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Casualties */}
+        {hasCasualties && (
+          <section>
+            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("stepPersonen")}</h3>
+            <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+              <div className="divide-y divide-border rounded-lg border border-border bg-bg-elevated px-3">
+                {CASUALTY_CATEGORIES.filter((cat) => totalCasualties[cat.key] !== 0).map((cat) => (
+                  <div key={cat.key} className="flex items-center gap-2 py-1.5">
+                    {cat.babsId && iconsLoaded ? (
+                      <BabsIcon icon={cat.babsId} size={20} fallback={null} />
+                    ) : cat.faIcon ? (
+                      <FontAwesomeIcon icon={cat.faIcon} className="text-sm text-fg-muted" />
+                    ) : null}
+                    <span className="w-6 text-right text-base font-bold tabular-nums text-danger">
+                      {totalCasualties[cat.key]}
+                    </span>
+                    <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
+                  </div>
+                ))}
+              </div>
+            </BabsIconProvider>
+          </section>
+        )}
+
+        {/* Linked resources */}
+        {linkedResources.length > 0 && (
+          <section>
+            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("stepMittel")}</h3>
+            <div className="divide-y divide-border rounded-lg border border-border">
+              {linkedResources.map((r) => {
+                const babsId = combinedBabsId(r.formation, r.size);
+                return (
+                  <div key={r.id} className="flex items-center gap-3 px-3 py-2">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-bg">
+                      {babsId && iconsLoaded ? (
+                        <BabsIcon icon={babsId} size={28} fallback={null} />
+                      ) : (
+                        <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+                      </span>
+                      {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+                      <span className="block truncate text-xs text-fg-muted/70">
+                        {r.personnelCount} {t("resource.fields.personnelCount")} · {t(`resource.status.${r.status}`)}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {!hasCasualties && linkedResources.length === 0 && assignedDivisions.length === 0 && (
+          <p className="text-sm text-fg-muted/60 text-center mt-8">–</p>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4">
+        <PrintSheetButton message={message} divisions={incidentDivisions} />
+        <Button type="button" variant="primary" size="sm" onClick={onAdjust}>
+          {t("triageAdjust")}
+        </Button>
+      </footer>
+    </div>
+  );
+}
+
 function TriagePanel(props: { message: Message; incidentId: string; onSaved: () => void }) {
   const { message, incidentId, onSaved } = props;
   return <PanelForm key={message.id} message={message} incidentId={incidentId} onSaved={onSaved} />;
@@ -162,20 +310,44 @@ function PanelForm(props: {
   const showTasks = useBooleanFlagValue("show-tasks", false);
 
   const [triageMessage, triageState] = useTriageMessage();
+  const [recordCasualties] = useRecordCasualties();
   const resourcesResult = useIncidentResources(incidentId);
   const [createSchadenplatz] = useCreateSchadenplatz();
-  const [recordCasualties] = useRecordCasualties();
+  const iconsLoaded = useBabsIcons();
+  const previousCasualties = useMessageCasualties(message.id);
+  const [stepError, setStepError] = useState<ApiError | undefined>(undefined);
+
+  const isTriaged =
+    message.triageId !== TriageStatus.Pending && message.triageId !== TriageStatus.Reset;
+  const [editing, setEditing] = useState(!isTriaged);
 
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
   // Multi-select: IDs of named Schadenplätz chosen by the operator. Default is never in this list.
   const [selectedSpIds, setSelectedSpIds] = useState<string[]>([]);
-  // Per-Schadenplatz casualty deltas. Key = schadenplatz ID (or defaultSp.id for the implicit entry).
+  // Per-Schadenplatz casualty deltas — pre-populated from previous triage when available.
   const [casualtiesBySpId, setCasualtiesBySpId] = useState<Record<string, CasualtyDeltas>>({});
+  const casualtiesInitialized = useRef(false);
   const [assignments, setAssignments] = useState<Division[]>(
     message.divisions.map((d) => d.division),
   );
   const [stepIndex, setStepIndex] = useState(0);
   const [liveMessage, setLiveMessage] = useState<Message>(message);
+  const messageForTriageResult = useMessageForTriage(message.id, incidentId);
+  const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
+  const resourcesInitialized = useRef(false);
+  useEffect(() => {
+    if (resourcesInitialized.current || messageForTriageResult.status !== "ready") return;
+    resourcesInitialized.current = true;
+    const linked = messageForTriageResult.data.linkedResourceIds;
+    if (linked.length > 0) setSelectedResourceIds(new Set(linked));
+  }, [messageForTriageResult]);
+
+  const toggleResourceId = (id: string) =>
+    setSelectedResourceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   const editorRef = useRef<MessageEditorFormHandle>(null);
   const savedAssignments = useRef<Division[] | null>(null);
 
@@ -186,7 +358,37 @@ function PanelForm(props: {
   const defaultSp = schadenplaetze.find((s) => s.isDefault);
   const namedSchadenplaetze = schadenplaetze.filter((s) => !s.isDefault);
 
+  // Pre-populate casualties and SP selection from previous triage (once per mount).
+  // Waits for both previousCasualties and defaultSp so we can exclude the default from selectedSpIds.
+  useEffect(() => {
+    if (casualtiesInitialized.current || previousCasualties.length === 0 || !defaultSp) return;
+    casualtiesInitialized.current = true;
+
+    const initial: Record<string, CasualtyDeltas> = {};
+    for (const entry of previousCasualties) {
+      initial[entry.schadenplatzId] = {
+        vermisste: entry.vermisste,
+        tote: entry.tote,
+        verletzte: entry.verletzte,
+        obdachlose: entry.obdachlose,
+        eingeschlossene: entry.eingeschlossene,
+      };
+    }
+    setCasualtiesBySpId(initial);
+
+    const namedSpIds = previousCasualties
+      .map((e) => e.schadenplatzId)
+      .filter((id) => id !== defaultSp.id);
+    if (namedSpIds.length > 0) setSelectedSpIds(namedSpIds);
+  }, [previousCasualties, defaultSp]);
+
   // When operator selects nothing, casualties/resources go to the default SP implicitly.
+  // Personen step: always show default SP + any selected named SPs
+  const personenSpIds: string[] = [
+    ...(defaultSp ? [defaultSp.id] : []),
+    ...selectedSpIds.filter((id) => id !== defaultSp?.id),
+  ];
+  // Mittel step: selected named SPs only, falling back to default if nothing selected
   const effectiveSpIds: string[] =
     selectedSpIds.length > 0 ? selectedSpIds : defaultSp ? [defaultSp.id] : [];
 
@@ -219,34 +421,55 @@ function PanelForm(props: {
     divisions: assignments.map((division) => ({ division })),
   };
 
-  const handleSave = useCallback((triage: TriageStatus) => {
-    onSaved();
-    for (const spId of effectiveSpIds) {
-      const deltas = casualtiesBySpId[spId];
-      if (deltas && Object.values(deltas).some((v) => v !== 0)) {
-        void recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas });
+  const handleSave = useCallback(async (triage: TriageStatus) => {
+    try {
+      await triageMessage({
+        incidentId,
+        messageId: message.id,
+        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+        triage,
+        divisionIds: assignments.map((d) => d.id),
+        divisions: assignments,
+        schadenplatzCasualties: personenSpIds.map((spId) => ({
+          schadenplatzId: spId,
+          ...(casualtiesBySpId[spId] ?? { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 }),
+        })),
+        linkedResourceIds: Array.from(selectedResourceIds),
+      });
+      onSaved();
+    } catch {
+      // triageState.error is set by useMutation and displayed in the step notification
+    }
+  // personenSpIds is derived state — include its dependencies instead
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onSaved, casualtiesBySpId, selectedSpIds, defaultSp?.id, triageMessage, incidentId, message.id, priority, assignments, selectedResourceIds]);
+
+  const handleNext = useCallback(async () => {
+    setStepError(undefined);
+    if (isLast) {
+      void handleSave(TriageStatus.Triaged);
+      return;
+    }
+    // Save casualties when leaving the Personen step — show errors in-place.
+    if (currentStep.key === "personen") {
+      try {
+        for (const spId of personenSpIds) {
+          await recordCasualties({
+            schadenplatzId: spId,
+            messageId: message.id,
+            deltas: getSpCasualties(spId),
+          });
+        }
+      } catch (e) {
+        setStepError(isApiError(e) ? e : new ApiError("UNKNOWN"));
+        return;
       }
     }
-    triageMessage({
-      incidentId,
-      messageId: message.id,
-      priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
-      triage,
-      divisionIds: assignments.map((d) => d.id),
-      divisions: assignments,
-    }).catch(() => {});
-  // effectiveSpIds is derived state — include its dependencies instead
+    if (currentStep.key === "meldung") void editorRef.current?.save();
+    setStepIndex((i) => i + 1);
+  // personenSpIds is derived — include its deps instead
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onSaved, recordCasualties, casualtiesBySpId, selectedSpIds, defaultSp?.id, triageMessage, incidentId, message.id, priority, assignments]);
-
-  const handleNext = useCallback(() => {
-    if (isLast) {
-      handleSave(TriageStatus.Triaged);
-    } else {
-      if (currentStep.key === "meldung") void editorRef.current?.save();
-      setStepIndex((i) => i + 1);
-    }
-  }, [isLast, currentStep.key, handleSave]);
+  }, [isLast, currentStep.key, handleSave, recordCasualties, message.id, getSpCasualties, selectedSpIds, defaultSp?.id]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -258,6 +481,21 @@ function PanelForm(props: {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [handleNext]);
+
+  if (isTriaged && !editing) {
+    return (
+      <TriageSummary
+        message={message}
+        incidentId={incidentId}
+        incidentDivisions={incidentDivisions}
+        casualties={previousCasualties}
+        linkedResourceIds={messageForTriageResult.status === "ready" ? messageForTriageResult.data.linkedResourceIds : []}
+        schadenplaetze={resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : []}
+        iconsLoaded={iconsLoaded}
+        onAdjust={() => setEditing(true)}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -289,11 +527,15 @@ function PanelForm(props: {
 
       {/* Step content */}
       <div className="flex-1 overflow-y-auto p-5">
-        {triageState.error && (
-          <Notification variant="danger" className="mb-4">
-            {t(`errors.${triageState.error.code}`)}
-          </Notification>
-        )}
+        {(triageState.error ?? stepError) && (() => {
+          const err = triageState.error ?? stepError!;
+          return (
+            <Notification variant="danger" className="mb-4">
+              <p>{t(`errors.${err.code}`)}</p>
+              {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
+            </Notification>
+          );
+        })()}
 
         {currentStep.key === "meldung" && (
           <MessageEditorForm
@@ -397,15 +639,21 @@ function PanelForm(props: {
             onToggle={toggleSpId}
             incidentId={incidentId}
             onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
+            onReplaced={(tempId, realId) =>
+              setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
+            }
+            onCancelled={(tempId) =>
+              setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
+            }
             createSchadenplatz={createSchadenplatz}
           />
         )}
 
         {currentStep.key === "personen" && (
           <div className="space-y-6">
-            {effectiveSpIds.map((spId) => {
+            {personenSpIds.map((spId) => {
               const sp = schadenplaetze.find((s) => s.id === spId);
-              const label = selectedSpIds.length === 0
+              const label = sp?.isDefault
                 ? t("schadenplatz.defaultHint")
                 : (sp?.name ?? spId);
               return (
@@ -413,6 +661,7 @@ function PanelForm(props: {
                   <h3 className="mb-3 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
                   <CasualtySection
                     value={getSpCasualties(spId)}
+                    spCasualties={sp?.casualties}
                     onChange={(d) => setSpCasualties(spId, d)}
                   />
                 </div>
@@ -422,22 +671,26 @@ function PanelForm(props: {
         )}
 
         {currentStep.key === "mittel" && (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {resourcesResult.status === "loading" ? (
               <Spinner />
             ) : (
-              effectiveSpIds.map((spId) => {
-                const sp = schadenplaetze.find((s) => s.id === spId);
-                const label = selectedSpIds.length === 0
-                  ? t("schadenplatz.defaultHint")
-                  : (sp?.name ?? spId);
-                return (
-                  <div key={spId}>
-                    <h3 className="mb-2 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
-                    <ResourceActionList resources={sp?.resources ?? []} />
-                  </div>
-                );
-              })
+              <>
+                <ResourcePicker
+                  schadenplaetze={schadenplaetze}
+                  selectedIds={selectedResourceIds}
+                  onToggle={toggleResourceId}
+                  iconsLoaded={iconsLoaded}
+                  messageTime={message.time}
+                />
+                <AlertResourceForm
+                  incidentId={incidentId}
+                  schadenplatzId={effectiveSpIds[0] ?? ""}
+                  sourceMessageId={message.id}
+                  iconsLoaded={iconsLoaded}
+                  onAlerted={(id) => setSelectedResourceIds((prev) => new Set([...prev, id]))}
+                />
+              </>
             )}
           </div>
         )}
@@ -684,9 +937,11 @@ const CASUALTY_CATEGORIES: CasualtyCategory[] = [
 
 function CasualtySection({
   value,
+  spCasualties,
   onChange,
 }: {
   value: CasualtyDeltas;
+  spCasualties?: SchadenplatzWithResources["casualties"];
   onChange: (v: CasualtyDeltas) => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -707,6 +962,7 @@ function CasualtySection({
               key={cat.key}
               category={cat}
               delta={value[cat.key]}
+              currentTotal={spCasualties?.[cat.key] ?? 0}
               iconsLoaded={iconsLoaded}
               onChange={(d) => set(cat.key, d)}
             />
@@ -753,17 +1009,21 @@ function CasualtySection({
 function CasualtyRow({
   category,
   delta,
+  currentTotal,
   iconsLoaded,
   onChange,
 }: {
   category: CasualtyCategory;
   delta: number;
+  currentTotal: number;
   iconsLoaded: boolean;
   onChange: (delta: number) => void;
 }) {
   const { t } = useTranslation();
   const label = t(category.labelKey);
-  const adjust = (n: number) => onChange(delta + n);
+  // minDelta is the most-negative delta that keeps the SP total ≥ 0
+  const minDelta = -currentTotal;
+  const adjust = (n: number) => onChange(Math.max(minDelta, delta + n));
 
   return (
     <div className="flex items-center gap-2 px-2 py-1.5">
@@ -780,14 +1040,16 @@ function CasualtyRow({
           type="button"
           aria-label={`${label} −1`}
           onClick={() => adjust(-1)}
-          className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs hover:bg-bg-elevated"
+          disabled={delta <= minDelta}
+          className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs hover:bg-bg-elevated disabled:opacity-40"
         >
           <FontAwesomeIcon icon={faMinus} className="text-[10px]" />
         </button>
         <input
           type="number"
           value={delta}
-          onChange={(e) => onChange(Number(e.target.value))}
+          min={minDelta}
+          onChange={(e) => onChange(Math.max(minDelta, Number(e.target.value)))}
           aria-label={label}
           className="w-10 rounded border border-border bg-bg-elevated px-1 py-0.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-primary"
         />
@@ -812,6 +1074,8 @@ function SchadenplatzStep({
   onToggle,
   incidentId,
   onCreated,
+  onReplaced,
+  onCancelled,
   createSchadenplatz,
 }: {
   namedSchadenplaetze: SchadenplatzWithResources[];
@@ -819,7 +1083,9 @@ function SchadenplatzStep({
   onToggle: (id: string) => void;
   incidentId: string;
   onCreated: (id: string) => void;
-  createSchadenplatz: (args: { incidentId: string; name: string }) => Promise<{ id: string }>;
+  onReplaced: (tempId: string, realId: string) => void;
+  onCancelled: (tempId: string) => void;
+  createSchadenplatz: (args: { incidentId: string; name: string; tempId?: string }) => Promise<{ id: string; tempId: string }>;
 }) {
   const { t } = useTranslation();
   const [showNew, setShowNew] = useState(false);
@@ -829,11 +1095,19 @@ function SchadenplatzStep({
   const handleCreate = async () => {
     if (!newSpName.trim()) return;
     setCreating(true);
+    // Generate tempId here so we can select the SP optimistically before awaiting
+    const tempId = `__optimistic_sp_${Date.now()}`;
+    onCreated(tempId);
     try {
-      const result = await createSchadenplatz({ incidentId, name: newSpName.trim() });
-      onCreated(result.id);
+      const result = await createSchadenplatz({ incidentId, name: newSpName.trim(), tempId });
+      if (result.id !== tempId) {
+        onReplaced(tempId, result.id);
+      }
       setNewSpName("");
       setShowNew(false);
+    } catch (e) {
+      onCancelled(tempId);
+      throw e;
     } finally {
       setCreating(false);
     }
@@ -924,7 +1198,30 @@ function SchadenplatzStep({
   );
 }
 
-// ── TriageResourceCard ────────────────────────────────────────────────────────
+// ── Resource display helpers ──────────────────────────────────────────────────
+
+/**
+ * "Feuerwehr Altdorf" — formation type + organisation qualifier.
+ * Used as the primary identifier for a resource.
+ */
+export function qualifiedFormation(
+  formationLabel: string,
+  homeLocationName: string | null | undefined,
+): string {
+  return homeLocationName ? `${formationLabel} ${homeLocationName}` : formationLabel;
+}
+
+/**
+ * "Feuerwehr Altdorf – Gruppe 3" — full display name with sub-unit description.
+ */
+export function resourceDisplayName(
+  formationLabel: string,
+  homeLocationName: string | null | undefined,
+  name: string,
+): string {
+  const qf = qualifiedFormation(formationLabel, homeLocationName);
+  return name ? `${qf} – ${name}` : qf;
+}
 
 const resourceStatusVariant: Record<ResourceStatus, TagVariant> = {
   AUFGEBOTEN: "warning",
@@ -933,109 +1230,567 @@ const resourceStatusVariant: Record<ResourceStatus, TagVariant> = {
   ABGELOEST: "gray",
 };
 
-function TriageResourceCard({ resource }: { resource: Resource }) {
+
+function ResourcePicker({
+  schadenplaetze,
+  selectedIds,
+  onToggle,
+  iconsLoaded,
+  messageTime,
+}: {
+  schadenplaetze: SchadenplatzWithResources[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  iconsLoaded: boolean;
+  messageTime: Date;
+}) {
+  const { t } = useTranslation();
+  const [search, setSearch] = useState("");
+
+  const allResources = schadenplaetze.flatMap((sp) =>
+    sp.resources.map((r) => ({ ...r, _spId: sp.id, _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name }))
+  );
+
+  const selectedResources = allResources.filter((r) => selectedIds.has(r.id));
+
+  const q = search.trim().toLowerCase();
+  const searchResults = q
+    ? allResources.filter((r) => {
+        if (selectedIds.has(r.id)) return false;
+        const qf = qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name).toLowerCase();
+        return qf.includes(q) || r.name.toLowerCase().includes(q) || r._spName.toLowerCase().includes(q);
+      })
+    : [];
+
+  return (
+    <div className="space-y-2">
+      {/* Selected resources */}
+      {selectedResources.length > 0 && (
+        <div className="divide-y divide-border rounded border border-border">
+          {selectedResources.map((r) => (
+            <ResourcePickerRow
+              key={r.id}
+              resource={r}
+              currentSpName={r._spName}
+              schadenplaetze={schadenplaetze}
+              checked={true}
+              onToggle={() => onToggle(r.id)}
+              iconsLoaded={iconsLoaded}
+              messageTime={messageTime}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Search to add more */}
+      <input
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder={t("resource.search")}
+        className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+      {q && (
+        searchResults.length === 0 ? (
+          <p className="text-sm text-fg-muted italic px-1">{t("resource.noResults")}</p>
+        ) : (
+          <div className="divide-y divide-border rounded border border-border">
+            {searchResults.map((r) => (
+              <ResourcePickerRow
+                key={r.id}
+                resource={r}
+                currentSpName={r._spName}
+                schadenplaetze={schadenplaetze}
+                checked={false}
+                onToggle={() => { onToggle(r.id); setSearch(""); }}
+                iconsLoaded={iconsLoaded}
+                messageTime={messageTime}
+              />
+            ))}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+function ResourcePickerRow({
+  resource: r,
+  currentSpName,
+  schadenplaetze,
+  checked,
+  onToggle,
+  iconsLoaded,
+  messageTime,
+}: {
+  resource: Resource;
+  currentSpName: string;
+  schadenplaetze: SchadenplatzWithResources[];
+  checked: boolean;
+  onToggle: () => void;
+  iconsLoaded: boolean;
+  messageTime: Date;
+}) {
   const { t } = useTranslation();
   const [markReady, markReadyState] = useMarkResourceReady();
   const [deploy, deployState] = useDeployResource();
   const [standDown, standDownState] = useStandDownResource();
   const [relieve, relieveState] = useRelieveResource();
+  const [reassign, reassignState] = useReassignResource();
+  const [updateLocation, locationState] = useUpdateDeploymentLocation();
+  const [updateContact, contactState] = useUpdateContact();
+  const [changeHauptaufgabe, hauptaufgabeState] = useChangeHauptaufgabe();
+  const [updatePersonnelCount, personnelCountState] = useUpdatePersonnelCount();
+
+  const [einsatzort, setEinsatzort] = useState(r.deploymentLocation?.label ?? "");
+  const [contactMedium, setContactMedium] = useState<ContactMedium>(r.contact?.medium ?? "PHONE");
+  const [contactDetail, setContactDetail] = useState(r.contact?.detail ?? "");
+  const [hauptaufgabe, setHauptaufgabe] = useState(r.hauptaufgabe);
+  const [targetSpId, setTargetSpId] = useState(r.schadenplatzId);
+  const [personnelCount, setPersonnelCount] = useState(String(r.personnelCount));
+  const [deployAttempted, setDeployAttempted] = useState(false);
 
   const busy =
-    markReadyState.loading ||
-    deployState.loading ||
-    standDownState.loading ||
-    relieveState.loading;
+    markReadyState.loading || deployState.loading ||
+    standDownState.loading || relieveState.loading ||
+    reassignState.loading ||
+    locationState.loading || contactState.loading || hauptaufgabeState.loading ||
+    personnelCountState.loading;
 
   const actionError =
-    markReadyState.error ??
-    deployState.error ??
-    standDownState.error ??
-    relieveState.error;
+    markReadyState.error ?? deployState.error ??
+    standDownState.error ?? relieveState.error ??
+    reassignState.error ??
+    locationState.error ?? contactState.error ?? hauptaufgabeState.error ??
+    personnelCountState.error;
+
+  const babsId = combinedBabsId(r.formation, r.size);
 
   return (
-    <div className="rounded border border-border bg-bg-elevated p-3 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-medium text-fg text-sm">{resource.name}</p>
-          <p className="text-xs text-fg-muted">
-            {t(`resource.formation.${resource.formation}`)}
-            {" · "}
-            {resource.personnelCount} {t("resource.fields.personnelCount")}
-          </p>
-          {resource.hauptaufgabe && (
-            <p className="text-xs text-fg-muted mt-0.5">{resource.hauptaufgabe}</p>
+    <div className={clsx(checked ? "bg-primary/5" : "")}>
+      {/* Header row — click to toggle */}
+      <label className="flex items-center gap-3 px-3 py-2.5 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onToggle}
+          className="h-4 w-4 shrink-0 rounded border-border accent-primary"
+        />
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-bg border border-border">
+          {babsId && iconsLoaded ? (
+            <BabsIcon icon={babsId} size={36} fallback={null} />
+          ) : (
+            <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
           )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium">
+              {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+            </span>
+            <Tag variant={resourceStatusVariant[r.status]} light size="sm">
+              {t(`resource.status.${r.status}`)}
+            </Tag>
+          </span>
+          {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+          <span className="block truncate text-xs text-fg-muted/70">
+            {r.personnelCount} {t("resource.fields.personnelCount")}
+            {r.hauptaufgabe && ` · ${r.hauptaufgabe}`}
+          </span>
+          <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
+        </span>
+      </label>
+
+      {/* Expansion panel — shown only when checked */}
+      {checked && (
+        <div className="border-t border-border/60 bg-bg px-3 pb-3 pt-2 space-y-2">
+          {/* Schadenplatz reassign */}
+          {schadenplaetze.length > 1 && (
+            <label className="block">
+              <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("schadenplatz.select")}</span>
+              <select
+                value={targetSpId}
+                disabled={busy}
+                onChange={async (e) => {
+                  const newSpId = e.target.value;
+                  setTargetSpId(newSpId);
+                  await reassign({ id: r.id, schadenplatzId: newSpId });
+                }}
+                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {schadenplaetze.map((sp) => (
+                  <option key={sp.id} value={sp.id}>
+                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {/* Personnel count */}
+          <label className="block">
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("resource.fields.personnelCount")}</span>
+            <input
+              type="number"
+              min={0}
+              value={personnelCount}
+              onChange={(e) => setPersonnelCount(e.target.value)}
+              onBlur={() => {
+                const n = parseInt(personnelCount, 10);
+                if (!isNaN(n) && n !== r.personnelCount) void updatePersonnelCount({ id: r.id, count: n });
+              }}
+              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </label>
+
+          {/* Hauptaufgabe — only relevant from EINSATZBEREIT onwards */}
+          {r.status !== "AUFGEBOTEN" && (() => {
+            const required = r.status === "EINSATZBEREIT";
+            const invalid = deployAttempted && !hauptaufgabe.trim();
+            return (
+              <label className="block">
+                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                  {t("resource.fields.hauptaufgabe")}
+                  {required && <span className="text-danger">*</span>}
+                </span>
+                <input
+                  type="text"
+                  value={hauptaufgabe}
+                  onChange={(e) => { setHauptaufgabe(e.target.value); if (deployAttempted) setDeployAttempted(false); }}
+                  onBlur={() => { if (hauptaufgabe.trim() !== r.hauptaufgabe) void changeHauptaufgabe({ id: r.id, hauptaufgabe: hauptaufgabe.trim() }); }}
+                  className={clsx(
+                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1",
+                    invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
+                  )}
+                />
+                {invalid && <span className="mt-0.5 block text-xs text-danger">{t("resource.validation.hauptaufgabeRequired")}</span>}
+              </label>
+            );
+          })()}
+
+          {/* Einsatzort — only relevant from EINSATZBEREIT onwards */}
+          {r.status !== "AUFGEBOTEN" && (() => {
+            const required = r.status === "EINSATZBEREIT";
+            const invalid = deployAttempted && !einsatzort.trim();
+            return (
+              <label className="block">
+                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                  {t("resource.fields.deploymentLocation")}
+                  {required && <span className="text-danger">*</span>}
+                </span>
+                <input
+                  type="text"
+                  value={einsatzort}
+                  onChange={(e) => { setEinsatzort(e.target.value); if (deployAttempted) setDeployAttempted(false); }}
+                  onBlur={() => { if (einsatzort.trim()) void updateLocation({ id: r.id, label: einsatzort.trim() }); }}
+                  className={clsx(
+                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1",
+                    invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
+                  )}
+                />
+                {invalid && <span className="mt-0.5 block text-xs text-danger">{t("resource.validation.einsatzortRequired")}</span>}
+              </label>
+            );
+          })()}
+
+          {/* Contact */}
+          <div>
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("resource.fields.contact")}</span>
+            <div className="flex gap-2">
+              <select
+                value={contactMedium}
+                onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
+                className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="PHONE">{t("medium.PHONE")}</option>
+                <option value="RADIO">{t("medium.RADIO")}</option>
+                <option value="OTHER">{t("medium.OTHER")}</option>
+              </select>
+              <input
+                type="text"
+                value={contactDetail}
+                onChange={(e) => setContactDetail(e.target.value)}
+                onBlur={() => { if (contactDetail.trim()) void updateContact({ id: r.id, medium: contactMedium, detail: contactDetail.trim() }); }}
+                placeholder={t("resource.fields.contact")}
+                className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          {actionError && (
+            <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>
+          )}
+
+          {/* Transition buttons */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {r.status === "AUFGEBOTEN" && (
+              <Button
+                type="button" size="xs" variant="primary" light disabled={busy}
+                onClick={() => void markReady({ id: r.id, at: messageTime })}
+              >
+                {t("resource.actions.markReady")}
+              </Button>
+            )}
+            {r.status === "EINSATZBEREIT" && (
+              <>
+                <Button
+                  type="button" size="xs" variant="success" light disabled={busy}
+                  onClick={() => {
+                    if (!hauptaufgabe.trim() || !einsatzort.trim()) {
+                      setDeployAttempted(true);
+                      return;
+                    }
+                    void deploy({ id: r.id, at: messageTime });
+                  }}
+                >
+                  {t("resource.actions.deploy")}
+                </Button>
+                <Button
+                  type="button" size="xs" variant="warning" light disabled={busy}
+                  onClick={() => void standDown({ id: r.id, at: messageTime })}
+                >
+                  {t("resource.actions.standDown")}
+                </Button>
+              </>
+            )}
+            {r.status === "EINGESETZT" && (
+              <>
+                <Button
+                  type="button" size="xs" variant="warning" light disabled={busy}
+                  onClick={() => void standDown({ id: r.id, at: messageTime })}
+                >
+                  {t("resource.actions.standDown")}
+                </Button>
+                <Button
+                  type="button" size="xs" variant="light" disabled={busy}
+                  onClick={() => void relieve({ id: r.id, at: messageTime })}
+                >
+                  {t("resource.actions.relieve")}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-        <Tag variant={resourceStatusVariant[resource.status]} light size="sm">
-          {t(`resource.status.${resource.status}`)}
-        </Tag>
-      </div>
-
-      {actionError && (
-        <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>
       )}
-
-      <div className="flex flex-wrap gap-1.5">
-        {resource.status === "AUFGEBOTEN" && (
-          <Button
-            size="xs"
-            variant="primary"
-            light
-            disabled={busy}
-            onClick={() => void markReady({ id: resource.id })}
-          >
-            {t("resource.actions.markReady")}
-          </Button>
-        )}
-        {resource.status === "EINSATZBEREIT" && (
-          <Button
-            size="xs"
-            variant="success"
-            light
-            disabled={busy}
-            onClick={() => void deploy({ id: resource.id })}
-          >
-            {t("resource.actions.deploy")}
-          </Button>
-        )}
-        {resource.status === "EINGESETZT" && (
-          <>
-            <Button
-              size="xs"
-              variant="warning"
-              light
-              disabled={busy}
-              onClick={() => void standDown({ id: resource.id })}
-            >
-              {t("resource.actions.standDown")}
-            </Button>
-            <Button
-              size="xs"
-              variant="light"
-              disabled={busy}
-              onClick={() => void relieve({ id: resource.id })}
-            >
-              {t("resource.actions.relieve")}
-            </Button>
-          </>
-        )}
-      </div>
     </div>
   );
 }
 
-function ResourceActionList({ resources }: { resources: Resource[] }) {
-  const { t } = useTranslation();
+// ── AlertResourceForm ─────────────────────────────────────────────────────────
 
-  if (resources.length === 0) {
-    return <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>;
+type FormationMeta = { key: ResourceFormation; babsId: string };
+type SizeMeta = { key: ResourceUnitSize; babsId: string; min: number; max: number };
+
+const FORMATIONS: FormationMeta[] = [
+  { key: "FW",     babsId: "4702" },
+  { key: "SAN",    babsId: "4703" },
+  { key: "ZS",     babsId: "4704" },
+  { key: "POL",    babsId: "4701" },
+  { key: "TECHNB", babsId: "4705" },
+  { key: "ARMEE",  babsId: "4706" },
+  { key: "OTHER",  babsId: "4802" }, // neutral Gruppe icon
+];
+
+const SIZES: SizeMeta[] = [
+  { key: "TRUPP",     babsId: "4801", min: 1,   max: 2   },
+  { key: "GRUPPE",    babsId: "4802", min: 3,   max: 12  },
+  { key: "ZUG",       babsId: "4803", min: 13,  max: 60  },
+  { key: "KOMPANIE",  babsId: "4804", min: 61,  max: 300 },
+  { key: "BATAILLON", babsId: "4805", min: 301, max: Infinity },
+];
+
+// formation → hundreds prefix for combined BABS icon
+const FORMATION_PREFIX: Record<ResourceFormation, string> = {
+  POL:    "41", FW:     "42", SAN:    "43",
+  ZS:     "44", TECHNB: "45", ARMEE:  "46", OTHER: "48",
+};
+// size → unit offset (01–05)
+const SIZE_OFFSET: Record<ResourceUnitSize, string> = {
+  TRUPP: "01", GRUPPE: "02", ZUG: "03", KOMPANIE: "04", BATAILLON: "05",
+};
+
+function combinedBabsId(formation: ResourceFormation | null, size: ResourceUnitSize | null): string | null {
+  if (!formation || !size) return null;
+  return FORMATION_PREFIX[formation] + SIZE_OFFSET[size];
+}
+
+function suggestSize(count: number): ResourceUnitSize | null {
+  const match = SIZES.find((s) => count >= s.min && count <= s.max);
+  return match?.key ?? null;
+}
+
+function AlertResourceForm({
+  incidentId,
+  schadenplatzId,
+  sourceMessageId,
+  iconsLoaded,
+  onAlerted,
+}: {
+  incidentId: string;
+  schadenplatzId: string;
+  sourceMessageId?: string;
+  iconsLoaded: boolean;
+  onAlerted?: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [alertResource, alertState] = useAlertResource();
+
+  const [open, setOpen] = useState(false);
+  const [formation, setFormation] = useState<ResourceFormation | null>(null);
+  const [name, setName] = useState("");
+  const [personnelCount, setPersonnelCount] = useState("");
+  const [hauptaufgabe, setHauptaufgabe] = useState("");
+  const [homeLocation, setHomeLocation] = useState("");
+
+  const derivedSize = personnelCount ? suggestSize(Number(personnelCount)) : null;
+  const previewBabsId = combinedBabsId(formation, derivedSize) ??
+    (formation ? FORMATIONS.find((f) => f.key === formation)?.babsId ?? null : null);
+
+  const canSubmit = !!formation && !!derivedSize && !!name.trim() && !!homeLocation.trim();
+
+  const handleSubmit = async () => {
+    if (!formation || !derivedSize) return;
+    try {
+      const result = await alertResource({
+        incidentId,
+        schadenplatzId,
+        formation,
+        name: name.trim(),
+        size: derivedSize,
+        personnelCount: Number(personnelCount) || 0,
+        hauptaufgabe: hauptaufgabe.trim(),
+        homeLocation: { name: homeLocation.trim() },
+        sourceMessageId,
+      });
+      onAlerted?.(result.resourceId);
+      setOpen(false);
+      setFormation(null);
+      setName("");
+      setPersonnelCount("");
+      setHauptaufgabe("");
+      setHomeLocation("");
+    } catch {
+      // error shown via alertState.error
+    }
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="mt-2 text-sm text-primary hover:underline"
+        onClick={() => setOpen(true)}
+      >
+        + {t("resource.newResource")}
+      </button>
+    );
   }
 
   return (
-    <div className="grid gap-2">
-      {resources.map((r) => (
-        <TriageResourceCard key={r.id} resource={r} />
-      ))}
+    <div className="mt-3 rounded border border-border bg-bg p-3 space-y-3">
+      {/* Formation picker */}
+      <div>
+        <p className="mb-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wide">
+          {t("resource.selectFormation")}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {FORMATIONS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              title={t(`resource.formation.${f.key}`)}
+              onClick={() => setFormation(f.key)}
+              className={clsx(
+                "flex h-10 w-10 items-center justify-center rounded border transition-colors",
+                formation === f.key
+                  ? "border-primary bg-primary/10 ring-1 ring-primary"
+                  : "border-border bg-bg-elevated hover:border-primary/40",
+              )}
+            >
+              {iconsLoaded ? (
+                <BabsIcon icon={f.babsId} size={28} fallback={null} />
+              ) : (
+                <span className="text-xs font-bold">{f.key}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Fields + large icon preview */}
+      <div className="flex gap-4 items-start">
+        <div className="flex-1 grid grid-cols-2 gap-2">
+          {/* homeLocation = organisation qualifier: "Altdorf" → "Feuerwehr Altdorf" */}
+          <input
+            type="text"
+            value={homeLocation}
+            onChange={(e) => setHomeLocation(e.target.value)}
+            placeholder={t("resource.fields.homeLocation")}
+            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          {/* name = sub-unit description: "Gruppe 3" → "Feuerwehr Altdorf – Gruppe 3" */}
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("resource.fields.name")}
+            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <input
+            type="number"
+            value={personnelCount}
+            min={0}
+            onChange={(e) => setPersonnelCount(e.target.value)}
+            placeholder={t("resource.fields.personnelCount")}
+            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+
+        {/* Large icon preview — distinct from the small picker buttons */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-1">
+          <div className="flex items-center justify-center w-24 h-24 rounded-lg border-2 border-dashed border-border bg-bg-elevated">
+            {previewBabsId && iconsLoaded ? (
+              <BabsIcon icon={previewBabsId} size={72} fallback={null} />
+            ) : (
+              <span className="text-[10px] text-fg-muted/50 text-center leading-tight px-1">
+                {t("resource.selectFormation")}
+              </span>
+            )}
+          </div>
+          {formation && (
+            <p className="text-[10px] text-center text-fg-muted leading-tight">
+              {qualifiedFormation(t(`resource.formation.${formation}`), homeLocation || null)}
+              {name && <><br /><span className="text-fg-muted/70">{name}</span></>}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {derivedSize && (
+        <p className="text-xs text-fg-muted">
+          {t(`resource.size.${derivedSize}`)}
+          {Number(personnelCount) > 0 && ` · ${personnelCount} ${t("resource.fields.personnelCount")}`}
+        </p>
+      )}
+
+      {alertState.error && (
+        <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
+      )}
+
+      <div className="flex gap-2 justify-end">
+        <Button type="button" variant="light" size="xs" onClick={() => setOpen(false)}>
+          {t("close")}
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          size="xs"
+          disabled={!canSubmit || alertState.loading}
+          onClick={() => void handleSubmit()}
+        >
+          {alertState.loading ? t("resource.alerting") : t("resource.addResource")}
+        </Button>
+      </div>
     </div>
   );
 }

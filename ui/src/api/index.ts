@@ -2,8 +2,8 @@
 // Components and views import ONLY from this module (via the "api" path alias).
 // @apollo/client must never be imported outside src/api/.
 
-export type { ApiError, ApiErrorCode } from "./errors";
-export { isApiError } from "./errors";
+export type { ApiErrorCode } from "./errors";
+export { ApiError, isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
 // Access control
@@ -73,6 +73,7 @@ export type {
   IncidentMessagesData,
   JournalMessagesData,
   MessageForTriageData,
+  SchadenplatzCasualtyInput,
   TriageMessageArgs,
   UpdateMessageArgs,
 } from "./message";
@@ -80,6 +81,7 @@ export {
   useCreateMessage,
   useIncidentMessages,
   useJournalMessages,
+  useMessageCasualties,
   useMessageForTriage,
   useRemoveAttachment,
   useTriageMessage,
@@ -90,6 +92,7 @@ export {
 // Resource aggregate
 export type {
   AlertResourceArgs,
+  ChildIncidentCasualties,
   ContactMedium,
   IncidentResourcesData,
   Resource,
@@ -107,8 +110,11 @@ export {
   useDeployResource,
   useIncidentResources,
   useMarkResourceReady,
+  useReassignResource,
   useRelieveResource,
   useStandDownResource,
+  useUpdateContact,
+  useUpdateDeploymentLocation,
   useUpdatePersonnelCount,
 } from "./resource";
 

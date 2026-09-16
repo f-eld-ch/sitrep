@@ -202,8 +202,8 @@ type ResourceHomeLocation {
 
 """Precise operational deployment point within a Schadenplatz."""
 type DeploymentLocation {
-  lat: Float!
-  lng: Float!
+  lat: Float
+  lng: Float
   label: String!
 }
 
@@ -222,6 +222,11 @@ type Resource {
   deploymentLocation: DeploymentLocation
   status: ResourceStatus!
   statusAt: DateTime!
+  alertedAt: DateTime!
+  readyAt: DateTime
+  deployedAt: DateTime
+  stoodDownAt: DateTime
+  relievedAt: DateTime
   einsatzBeginn: DateTime
   einsatzEnde: DateTime
   predecessorId: ID
@@ -249,6 +254,10 @@ type Message {
   divisions: [Division!]!
   """Files attached to this message, oldest first."""
   attachments: [Attachment!]!
+  """Casualty deltas recorded for each Schadenplatz as part of this message's triage."""
+  schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
+  """Resource IDs linked to this message during triage."""
+  linkedResourceIds: [ID!]!
 }
 
 type Incident {
@@ -277,6 +286,8 @@ type Incident {
   accessMode: IncidentAccessMode!
   """All non-merged Schadenplätze for this incident."""
   schadenplaetze: [Schadenplatz!]!
+  """All resources for this incident, including resources owned by direct child incidents."""
+  resources: [Resource!]!
 }
 
 type Feature {
@@ -385,6 +396,10 @@ input TriageMessageInput {
   priority: PriorityStatus!
   """IDs of divisions to assign to this message (replaces current set)."""
   divisionIds: [ID!]!
+  """Casualty deltas to record for each Schadenplatz as part of this triage."""
+  schadenplatzCasualties: [SchadenplatzCasualtyInput!]!
+  """Resource IDs to link to this message (replaces current set)."""
+  linkedResourceIds: [ID!]!
 }
 
 input ResourceContactInput {
@@ -399,8 +414,8 @@ input ResourceHomeLocationInput {
 }
 
 input DeploymentLocationInput {
-  lat: Float!
-  lng: Float!
+  lat: Float
+  lng: Float
   label: String!
 }
 
@@ -419,6 +434,24 @@ input AlertResourceInput {
 }
 
 input CasualtyDeltasInput {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+type SchadenplatzCasualtyEntry {
+  schadenplatzId: ID!
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+input SchadenplatzCasualtyInput {
+  schadenplatzId: ID!
   vermisste: Int!
   tote: Int!
   verletzte: Int!
@@ -509,16 +542,16 @@ type Mutation {
   alertResource(input: AlertResourceInput!): Resource!
 
   """Mark a resource as ready for deployment (AUFGEBOTEN → EINSATZBEREIT)."""
-  markResourceReady(id: ID!): Resource!
+  markResourceReady(id: ID!, at: DateTime): Resource!
 
   """Deploy a resource (EINSATZBEREIT → EINGESETZT)."""
-  deployResource(id: ID!): Resource!
+  deployResource(id: ID!, at: DateTime): Resource!
 
   """Stand a resource down temporarily (EINGESETZT → EINSATZBEREIT)."""
-  standDownResource(id: ID!): Resource!
+  standDownResource(id: ID!, at: DateTime): Resource!
 
   """Permanently relieve a resource. successorId links the replacing resource."""
-  relieveResource(id: ID!, successorId: ID): Resource!
+  relieveResource(id: ID!, successorId: ID, at: DateTime): Resource!
 
   """Move a resource to a different Schadenplatz."""
   reassignResource(id: ID!, schadenplatzId: ID!): Resource!

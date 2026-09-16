@@ -108,9 +108,15 @@ export interface MessageStackProps {
   /** The ID that should be highlighted and scrolled into center. */
   effectiveId: string | undefined;
   onSelect: (id: string | undefined) => void;
+  className?: string;
 }
 
-export const MessageStack = memo(function MessageStack({ messages, effectiveId, onSelect }: MessageStackProps) {
+export const MessageStack = memo(function MessageStack({
+  messages,
+  effectiveId,
+  onSelect,
+  className,
+}: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
@@ -143,7 +149,7 @@ export const MessageStack = memo(function MessageStack({ messages, effectiveId, 
   }, [effectiveId]);
 
   return (
-    <div className="flex w-72 shrink-0 flex-col lg:w-[36rem]">
+    <div className={clsx("flex w-72 shrink-0 flex-col lg:w-[36rem]", className)}>
       <div className={clsx("flex justify-center py-1", showScrollUp ? "visible" : "invisible")}>
         <button
           type="button"

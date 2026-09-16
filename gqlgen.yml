@@ -28,6 +28,8 @@ models:
     fields:
       attachments:
         resolver: true
+      schadenplatzCasualties:
+        resolver: true
   Incident:
     fields:
       childIncidents:
@@ -45,6 +47,8 @@ models:
       accessMode:
         resolver: true
       schadenplaetze:
+        resolver: true
+      resources:
         resolver: true
   Schadenplatz:
     fields:

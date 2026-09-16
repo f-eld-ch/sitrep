@@ -43,6 +43,11 @@ type Resource struct {
 	deploymentLocation *DeploymentLocation
 	status             ResourceStatus
 	statusAt           time.Time
+	alertedAt          time.Time
+	readyAt            *time.Time
+	deployedAt         *time.Time
+	stoodDownAt        *time.Time
+	relievedAt         *time.Time
 	einsatzBeginn      *time.Time
 	einsatzEnde        *time.Time
 	predecessorID      *shared.ResourceID
@@ -90,6 +95,11 @@ func (r *Resource) HomeLocation() *Location                 { return r.homeLocat
 func (r *Resource) DeploymentLocation() *DeploymentLocation { return r.deploymentLocation }
 func (r *Resource) Status() ResourceStatus                  { return r.status }
 func (r *Resource) StatusAt() time.Time                     { return r.statusAt }
+func (r *Resource) AlertedAt() time.Time                    { return r.alertedAt }
+func (r *Resource) ReadyAt() *time.Time                     { return r.readyAt }
+func (r *Resource) DeployedAt() *time.Time                  { return r.deployedAt }
+func (r *Resource) StoodDownAt() *time.Time                 { return r.stoodDownAt }
+func (r *Resource) RelievedAt() *time.Time                  { return r.relievedAt }
 func (r *Resource) EinsatzBeginn() *time.Time               { return r.einsatzBeginn }
 func (r *Resource) EinsatzEnde() *time.Time                 { return r.einsatzEnde }
 func (r *Resource) PredecessorID() *shared.ResourceID       { return r.predecessorID }
@@ -346,18 +356,23 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.sourceMessageID = d.SourceMessageID
 		r.status = StatusAufgeboten
 		r.statusAt = e.OccurredAt
+		r.alertedAt = e.OccurredAt
 	case MarkedReady:
 		r.status = StatusEinsatzbereit
 		r.statusAt = d.At
+		r.readyAt = &d.At
 	case Deployed:
 		r.status = StatusEingesetzt
 		r.statusAt = d.At
+		r.deployedAt = &d.At
 	case StoodDown:
 		r.status = StatusEinsatzbereit
 		r.statusAt = d.At
+		r.stoodDownAt = &d.At
 	case Relieved:
 		r.status = StatusAbgeloest
 		r.statusAt = d.At
+		r.relievedAt = &d.At
 		r.successorID = d.SuccessorID
 	case SuccessionLinked:
 		id := d.PredecessorID

@@ -34,10 +34,11 @@ type Corrected struct {
 
 // Triaged replaces the triage state and the entire division set atomically.
 type Triaged struct {
-	Triage      shared.TriageStatus   `json:"triage"`
-	Priority    shared.PriorityStatus `json:"priority"`
-	DivisionIDs []shared.DivisionID   `json:"divisionIds"`
-	TriagedBy   string                `json:"triagedBy"`
+	Triage              shared.TriageStatus   `json:"triage"`
+	Priority            shared.PriorityStatus `json:"priority"`
+	DivisionIDs         []shared.DivisionID   `json:"divisionIds"`
+	LinkedResourceIDs   []shared.ResourceID   `json:"linkedResourceIds,omitempty"`
+	TriagedBy           string                `json:"triagedBy"`
 }
 
 // Deleted marks the message as soft-deleted.
@@ -68,20 +69,21 @@ type AttachmentRemoved struct {
 // Imported is the one-shot import event — see migration design.
 // AuthorSub may be empty if the author is ambiguous (was last editor in Hasura).
 type Imported struct {
-	IncidentID     shared.IncidentID     `json:"incidentId"`
-	Number         int                   `json:"number"`
-	Content        string                `json:"content"`
-	Sender         string                `json:"sender"`
-	SenderDetail   string                `json:"senderDetail"`
-	Receiver       string                `json:"receiver"`
-	ReceiverDetail string                `json:"receiverDetail"`
-	Medium         shared.Medium         `json:"medium"`
-	Time           time.Time             `json:"time"`
-	Triage         shared.TriageStatus   `json:"triage"`
-	Priority       shared.PriorityStatus `json:"priority"`
-	DivisionIDs    []shared.DivisionID   `json:"divisionIds"`
-	AuthorSub      *string               `json:"authorSub,omitempty"`
-	LastEditorSub  *string               `json:"lastEditorSub,omitempty"`
-	RecordedAt     time.Time             `json:"recordedAt"`
-	LastUpdatedAt  time.Time             `json:"lastUpdatedAt"`
+	IncidentID        shared.IncidentID     `json:"incidentId"`
+	Number            int                   `json:"number"`
+	Content           string                `json:"content"`
+	Sender            string                `json:"sender"`
+	SenderDetail      string                `json:"senderDetail"`
+	Receiver          string                `json:"receiver"`
+	ReceiverDetail    string                `json:"receiverDetail"`
+	Medium            shared.Medium         `json:"medium"`
+	Time              time.Time             `json:"time"`
+	Triage            shared.TriageStatus   `json:"triage"`
+	Priority          shared.PriorityStatus `json:"priority"`
+	DivisionIDs       []shared.DivisionID   `json:"divisionIds"`
+	LinkedResourceIDs []shared.ResourceID   `json:"linkedResourceIds,omitempty"`
+	AuthorSub         *string               `json:"authorSub,omitempty"`
+	LastEditorSub     *string               `json:"lastEditorSub,omitempty"`
+	RecordedAt        time.Time             `json:"recordedAt"`
+	LastUpdatedAt     time.Time             `json:"lastUpdatedAt"`
 }

@@ -107,6 +107,7 @@ type ComplexityRoot struct {
 		Messages        func(childComplexity int) int
 		Name            func(childComplexity int) int
 		ParentID        func(childComplexity int) int
+		Resources       func(childComplexity int) int
 		Schadenplaetze  func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
 	}
@@ -134,21 +135,23 @@ type ComplexityRoot struct {
 	}
 
 	Message struct {
-		Attachments    func(childComplexity int) int
-		Content        func(childComplexity int) int
-		CreatedAt      func(childComplexity int) int
-		Divisions      func(childComplexity int) int
-		ID             func(childComplexity int) int
-		Medium         func(childComplexity int) int
-		Number         func(childComplexity int) int
-		Priority       func(childComplexity int) int
-		Receiver       func(childComplexity int) int
-		ReceiverDetail func(childComplexity int) int
-		Sender         func(childComplexity int) int
-		SenderDetail   func(childComplexity int) int
-		Time           func(childComplexity int) int
-		Triage         func(childComplexity int) int
-		UpdatedAt      func(childComplexity int) int
+		Attachments            func(childComplexity int) int
+		Content                func(childComplexity int) int
+		CreatedAt              func(childComplexity int) int
+		Divisions              func(childComplexity int) int
+		ID                     func(childComplexity int) int
+		LinkedResourceIds      func(childComplexity int) int
+		Medium                 func(childComplexity int) int
+		Number                 func(childComplexity int) int
+		Priority               func(childComplexity int) int
+		Receiver               func(childComplexity int) int
+		ReceiverDetail         func(childComplexity int) int
+		SchadenplatzCasualties func(childComplexity int) int
+		Sender                 func(childComplexity int) int
+		SenderDetail           func(childComplexity int) int
+		Time                   func(childComplexity int) int
+		Triage                 func(childComplexity int) int
+		UpdatedAt              func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -167,17 +170,17 @@ type ComplexityRoot struct {
 		DeleteFeature                func(childComplexity int, id string) int
 		DeleteIncident               func(childComplexity int, id string) int
 		DeleteMessage                func(childComplexity int, id string) int
-		DeployResource               func(childComplexity int, id string) int
+		DeployResource               func(childComplexity int, id string, at *time.Time) int
 		GrantGlobalRole              func(childComplexity int, subject string, role model.GlobalRole) int
 		GrantIncidentRole            func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
-		MarkResourceReady            func(childComplexity int, id string) int
+		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
 		MergeSchadenplatz            func(childComplexity int, id string) int
 		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
 		ReassignResource             func(childComplexity int, id string, schadenplatzID string) int
 		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, input model.CasualtyDeltasInput) int
 		RecordEinsatzDauer           func(childComplexity int, id string, beginn time.Time, ende *time.Time) int
-		RelieveResource              func(childComplexity int, id string, successorID *string) int
+		RelieveResource              func(childComplexity int, id string, successorID *string, at *time.Time) int
 		RemoveAttachment             func(childComplexity int, messageID string, attachmentID string) int
 		RemoveGroupMember            func(childComplexity int, groupID string, subject string) int
 		RenameAccessGroup            func(childComplexity int, groupID string, name string) int
@@ -186,7 +189,7 @@ type ComplexityRoot struct {
 		RevokeGlobalRole             func(childComplexity int, subject string, role model.GlobalRole) int
 		RevokeIncidentRole           func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		SetSchadenplatzGeometry      func(childComplexity int, id string, geoJSON *string) int
-		StandDownResource            func(childComplexity int, id string) int
+		StandDownResource            func(childComplexity int, id string, at *time.Time) int
 		TriageMessage                func(childComplexity int, id string, input model.TriageMessageInput) int
 		UnlinkIncidentParent         func(childComplexity int, childID string) int
 		UpdateAccessGroupDescription func(childComplexity int, groupID string, description string) int
@@ -214,7 +217,9 @@ type ComplexityRoot struct {
 	}
 
 	Resource struct {
+		AlertedAt          func(childComplexity int) int
 		Contact            func(childComplexity int) int
+		DeployedAt         func(childComplexity int) int
 		DeploymentLocation func(childComplexity int) int
 		EinsatzBeginn      func(childComplexity int) int
 		EinsatzEnde        func(childComplexity int) int
@@ -226,11 +231,14 @@ type ComplexityRoot struct {
 		Name               func(childComplexity int) int
 		PersonnelCount     func(childComplexity int) int
 		PredecessorID      func(childComplexity int) int
+		ReadyAt            func(childComplexity int) int
+		RelievedAt         func(childComplexity int) int
 		SchadenplatzID     func(childComplexity int) int
 		Size               func(childComplexity int) int
 		SourceMessageID    func(childComplexity int) int
 		Status             func(childComplexity int) int
 		StatusAt           func(childComplexity int) int
+		StoodDownAt        func(childComplexity int) int
 		SuccessorID        func(childComplexity int) int
 	}
 
@@ -257,6 +265,15 @@ type ComplexityRoot struct {
 		Resources  func(childComplexity int) int
 	}
 
+	SchadenplatzCasualtyEntry struct {
+		Eingeschlossene func(childComplexity int) int
+		Obdachlose      func(childComplexity int) int
+		SchadenplatzID  func(childComplexity int) int
+		Tote            func(childComplexity int) int
+		Verletzte       func(childComplexity int) int
+		Vermisste       func(childComplexity int) int
+	}
+
 	User struct {
 		Email func(childComplexity int) int
 		Name  func(childComplexity int) int
@@ -277,9 +294,11 @@ type IncidentResolver interface {
 	CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error)
 	AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error)
 	Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error)
+	Resources(ctx context.Context, obj *model.Incident) ([]*model.Resource, error)
 }
 type MessageResolver interface {
 	Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error)
+	SchadenplatzCasualties(ctx context.Context, obj *model.Message) ([]*model.SchadenplatzCasualtyEntry, error)
 }
 type MutationResolver interface {
 	CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error)
@@ -311,10 +330,10 @@ type MutationResolver interface {
 	RecordCasualties(ctx context.Context, id string, sourceMessageID string, input model.CasualtyDeltasInput) (*model.Schadenplatz, error)
 	MergeSchadenplatz(ctx context.Context, id string) (string, error)
 	AlertResource(ctx context.Context, input model.AlertResourceInput) (*model.Resource, error)
-	MarkResourceReady(ctx context.Context, id string) (*model.Resource, error)
-	DeployResource(ctx context.Context, id string) (*model.Resource, error)
-	StandDownResource(ctx context.Context, id string) (*model.Resource, error)
-	RelieveResource(ctx context.Context, id string, successorID *string) (*model.Resource, error)
+	MarkResourceReady(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
+	DeployResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
+	StandDownResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
+	RelieveResource(ctx context.Context, id string, successorID *string, at *time.Time) (*model.Resource, error)
 	ReassignResource(ctx context.Context, id string, schadenplatzID string) (*model.Resource, error)
 	UpdateDeploymentLocation(ctx context.Context, id string, location *model.DeploymentLocationInput) (*model.Resource, error)
 	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string) (*model.Resource, error)
@@ -634,6 +653,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Incident.ParentID(childComplexity), true
+	case "Incident.resources":
+		if e.ComplexityRoot.Incident.Resources == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.Resources(childComplexity), true
 	case "Incident.schadenplaetze":
 		if e.ComplexityRoot.Incident.Schadenplaetze == nil {
 			break
@@ -758,6 +783,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Message.ID(childComplexity), true
+	case "Message.linkedResourceIds":
+		if e.ComplexityRoot.Message.LinkedResourceIds == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Message.LinkedResourceIds(childComplexity), true
 	case "Message.medium":
 		if e.ComplexityRoot.Message.Medium == nil {
 			break
@@ -788,6 +819,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Message.ReceiverDetail(childComplexity), true
+	case "Message.schadenplatzCasualties":
+		if e.ComplexityRoot.Message.SchadenplatzCasualties == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Message.SchadenplatzCasualties(childComplexity), true
 	case "Message.sender":
 		if e.ComplexityRoot.Message.Sender == nil {
 			break
@@ -994,7 +1031,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.DeployResource(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Mutation.DeployResource(childComplexity, args["id"].(string), args["at"].(*time.Time)), true
 	case "Mutation.grantGlobalRole":
 		if e.ComplexityRoot.Mutation.GrantGlobalRole == nil {
 			break
@@ -1038,7 +1075,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.MarkResourceReady(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Mutation.MarkResourceReady(childComplexity, args["id"].(string), args["at"].(*time.Time)), true
 	case "Mutation.mergeSchadenplatz":
 		if e.ComplexityRoot.Mutation.MergeSchadenplatz == nil {
 			break
@@ -1104,7 +1141,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.RelieveResource(childComplexity, args["id"].(string), args["successorId"].(*string)), true
+		return e.ComplexityRoot.Mutation.RelieveResource(childComplexity, args["id"].(string), args["successorId"].(*string), args["at"].(*time.Time)), true
 	case "Mutation.removeAttachment":
 		if e.ComplexityRoot.Mutation.RemoveAttachment == nil {
 			break
@@ -1203,7 +1240,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.StandDownResource(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Mutation.StandDownResource(childComplexity, args["id"].(string), args["at"].(*time.Time)), true
 	case "Mutation.triageMessage":
 		if e.ComplexityRoot.Mutation.TriageMessage == nil {
 			break
@@ -1413,12 +1450,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Users(childComplexity), true
 
+	case "Resource.alertedAt":
+		if e.ComplexityRoot.Resource.AlertedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.AlertedAt(childComplexity), true
 	case "Resource.contact":
 		if e.ComplexityRoot.Resource.Contact == nil {
 			break
 		}
 
 		return e.ComplexityRoot.Resource.Contact(childComplexity), true
+	case "Resource.deployedAt":
+		if e.ComplexityRoot.Resource.DeployedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.DeployedAt(childComplexity), true
 	case "Resource.deploymentLocation":
 		if e.ComplexityRoot.Resource.DeploymentLocation == nil {
 			break
@@ -1485,6 +1534,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Resource.PredecessorID(childComplexity), true
+	case "Resource.readyAt":
+		if e.ComplexityRoot.Resource.ReadyAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.ReadyAt(childComplexity), true
+	case "Resource.relievedAt":
+		if e.ComplexityRoot.Resource.RelievedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.RelievedAt(childComplexity), true
 	case "Resource.schadenplatzId":
 		if e.ComplexityRoot.Resource.SchadenplatzID == nil {
 			break
@@ -1515,6 +1576,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Resource.StatusAt(childComplexity), true
+	case "Resource.stoodDownAt":
+		if e.ComplexityRoot.Resource.StoodDownAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.StoodDownAt(childComplexity), true
 	case "Resource.successorId":
 		if e.ComplexityRoot.Resource.SuccessorID == nil {
 			break
@@ -1609,6 +1676,43 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Schadenplatz.Resources(childComplexity), true
 
+	case "SchadenplatzCasualtyEntry.eingeschlossene":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.Eingeschlossene == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.Eingeschlossene(childComplexity), true
+	case "SchadenplatzCasualtyEntry.obdachlose":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.Obdachlose == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.Obdachlose(childComplexity), true
+	case "SchadenplatzCasualtyEntry.schadenplatzId":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.SchadenplatzID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.SchadenplatzID(childComplexity), true
+	case "SchadenplatzCasualtyEntry.tote":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.Tote == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.Tote(childComplexity), true
+	case "SchadenplatzCasualtyEntry.verletzte":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.Verletzte == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.Verletzte(childComplexity), true
+	case "SchadenplatzCasualtyEntry.vermisste":
+		if e.ComplexityRoot.SchadenplatzCasualtyEntry.Vermisste == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SchadenplatzCasualtyEntry.Vermisste(childComplexity), true
+
 	case "User.email":
 		if e.ComplexityRoot.User.Email == nil {
 			break
@@ -1645,6 +1749,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLayerInput,
 		ec.unmarshalInputResourceContactInput,
 		ec.unmarshalInputResourceHomeLocationInput,
+		ec.unmarshalInputSchadenplatzCasualtyInput,
 		ec.unmarshalInputTriageMessageInput,
 		ec.unmarshalInputUpdateIncidentInput,
 		ec.unmarshalInputUpdateMessageInput,
@@ -1927,8 +2032,8 @@ type ResourceHomeLocation {
 
 """Precise operational deployment point within a Schadenplatz."""
 type DeploymentLocation {
-  lat: Float!
-  lng: Float!
+  lat: Float
+  lng: Float
   label: String!
 }
 
@@ -1947,6 +2052,11 @@ type Resource {
   deploymentLocation: DeploymentLocation
   status: ResourceStatus!
   statusAt: DateTime!
+  alertedAt: DateTime!
+  readyAt: DateTime
+  deployedAt: DateTime
+  stoodDownAt: DateTime
+  relievedAt: DateTime
   einsatzBeginn: DateTime
   einsatzEnde: DateTime
   predecessorId: ID
@@ -1974,6 +2084,10 @@ type Message {
   divisions: [Division!]!
   """Files attached to this message, oldest first."""
   attachments: [Attachment!]!
+  """Casualty deltas recorded for each Schadenplatz as part of this message's triage."""
+  schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
+  """Resource IDs linked to this message during triage."""
+  linkedResourceIds: [ID!]!
 }
 
 type Incident {
@@ -2002,6 +2116,8 @@ type Incident {
   accessMode: IncidentAccessMode!
   """All non-merged Schadenplätze for this incident."""
   schadenplaetze: [Schadenplatz!]!
+  """All resources for this incident, including resources owned by direct child incidents."""
+  resources: [Resource!]!
 }
 
 type Feature {
@@ -2110,6 +2226,10 @@ input TriageMessageInput {
   priority: PriorityStatus!
   """IDs of divisions to assign to this message (replaces current set)."""
   divisionIds: [ID!]!
+  """Casualty deltas to record for each Schadenplatz as part of this triage."""
+  schadenplatzCasualties: [SchadenplatzCasualtyInput!]!
+  """Resource IDs to link to this message (replaces current set)."""
+  linkedResourceIds: [ID!]!
 }
 
 input ResourceContactInput {
@@ -2124,8 +2244,8 @@ input ResourceHomeLocationInput {
 }
 
 input DeploymentLocationInput {
-  lat: Float!
-  lng: Float!
+  lat: Float
+  lng: Float
   label: String!
 }
 
@@ -2144,6 +2264,24 @@ input AlertResourceInput {
 }
 
 input CasualtyDeltasInput {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+type SchadenplatzCasualtyEntry {
+  schadenplatzId: ID!
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+input SchadenplatzCasualtyInput {
+  schadenplatzId: ID!
   vermisste: Int!
   tote: Int!
   verletzte: Int!
@@ -2234,16 +2372,16 @@ type Mutation {
   alertResource(input: AlertResourceInput!): Resource!
 
   """Mark a resource as ready for deployment (AUFGEBOTEN → EINSATZBEREIT)."""
-  markResourceReady(id: ID!): Resource!
+  markResourceReady(id: ID!, at: DateTime): Resource!
 
   """Deploy a resource (EINSATZBEREIT → EINGESETZT)."""
-  deployResource(id: ID!): Resource!
+  deployResource(id: ID!, at: DateTime): Resource!
 
   """Stand a resource down temporarily (EINGESETZT → EINSATZBEREIT)."""
-  standDownResource(id: ID!): Resource!
+  standDownResource(id: ID!, at: DateTime): Resource!
 
   """Permanently relieve a resource. successorId links the replacing resource."""
-  relieveResource(id: ID!, successorId: ID): Resource!
+  relieveResource(id: ID!, successorId: ID, at: DateTime): Resource!
 
   """Move a resource to a different Schadenplatz."""
   reassignResource(id: ID!, schadenplatzId: ID!): Resource!
@@ -2427,6 +2565,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_accessMode(ctx, field)
 	case "schadenplaetze":
 		return ec.fieldContext_Incident_schadenplaetze(ctx, field)
+	case "resources":
+		return ec.fieldContext_Incident_resources(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Incident", field.Name)
 }
@@ -2507,6 +2647,10 @@ func (ec *executionContext) childFields_Message(ctx context.Context, field graph
 		return ec.fieldContext_Message_divisions(ctx, field)
 	case "attachments":
 		return ec.fieldContext_Message_attachments(ctx, field)
+	case "schadenplatzCasualties":
+		return ec.fieldContext_Message_schadenplatzCasualties(ctx, field)
+	case "linkedResourceIds":
+		return ec.fieldContext_Message_linkedResourceIds(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 }
@@ -2539,6 +2683,16 @@ func (ec *executionContext) childFields_Resource(ctx context.Context, field grap
 		return ec.fieldContext_Resource_status(ctx, field)
 	case "statusAt":
 		return ec.fieldContext_Resource_statusAt(ctx, field)
+	case "alertedAt":
+		return ec.fieldContext_Resource_alertedAt(ctx, field)
+	case "readyAt":
+		return ec.fieldContext_Resource_readyAt(ctx, field)
+	case "deployedAt":
+		return ec.fieldContext_Resource_deployedAt(ctx, field)
+	case "stoodDownAt":
+		return ec.fieldContext_Resource_stoodDownAt(ctx, field)
+	case "relievedAt":
+		return ec.fieldContext_Resource_relievedAt(ctx, field)
 	case "einsatzBeginn":
 		return ec.fieldContext_Resource_einsatzBeginn(ctx, field)
 	case "einsatzEnde":
@@ -2597,6 +2751,24 @@ func (ec *executionContext) childFields_Schadenplatz(ctx context.Context, field 
 		return ec.fieldContext_Schadenplatz_resources(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Schadenplatz", field.Name)
+}
+
+func (ec *executionContext) childFields_SchadenplatzCasualtyEntry(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "schadenplatzId":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_schadenplatzId(ctx, field)
+	case "vermisste":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_vermisste(ctx, field)
+	case "tote":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_tote(ctx, field)
+	case "verletzte":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_verletzte(ctx, field)
+	case "obdachlose":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_obdachlose(ctx, field)
+	case "eingeschlossene":
+		return ec.fieldContext_SchadenplatzCasualtyEntry_eingeschlossene(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type SchadenplatzCasualtyEntry", field.Name)
 }
 
 func (ec *executionContext) childFields_User(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -3028,6 +3200,14 @@ func (ec *executionContext) field_Mutation_deployResource_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg1
 	return args, nil
 }
 
@@ -3124,6 +3304,14 @@ func (ec *executionContext) field_Mutation_markResourceReady_args(ctx context.Co
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg1
 	return args, nil
 }
 
@@ -3272,6 +3460,14 @@ func (ec *executionContext) field_Mutation_relieveResource_args(ctx context.Cont
 		return nil, err
 	}
 	args["successorId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -3470,6 +3666,14 @@ func (ec *executionContext) field_Mutation_standDownResource_args(ctx context.Co
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg1
 	return args, nil
 }
 
@@ -4207,11 +4411,11 @@ func (ec *executionContext) _DeploymentLocation_lat(ctx context.Context, field g
 			return obj.Lat, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
-			return ec.marshalNFloat2float64(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
 		},
 		true,
-		true,
+		false,
 	)
 }
 func (ec *executionContext) fieldContext_DeploymentLocation_lat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4230,11 +4434,11 @@ func (ec *executionContext) _DeploymentLocation_lng(ctx context.Context, field g
 			return obj.Lng, nil
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
-			return ec.marshalNFloat2float64(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
 		},
 		true,
-		true,
+		false,
 	)
 }
 func (ec *executionContext) fieldContext_DeploymentLocation_lng(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4930,6 +5134,38 @@ func (ec *executionContext) fieldContext_Incident_schadenplaetze(_ context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Incident_resources(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_resources(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().Resources(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Resource) graphql.Marshaler {
+			return ec.marshalNResource2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_resources(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Incident",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Resource(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _IncidentAccessGrant_incidentId(ctx context.Context, field graphql.CollectedField, obj *model.IncidentAccessGrant) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -5599,6 +5835,61 @@ func (ec *executionContext) fieldContext_Message_attachments(_ context.Context, 
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Message_schadenplatzCasualties(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Message_schadenplatzCasualties(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Message().SchadenplatzCasualties(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.SchadenplatzCasualtyEntry) graphql.Marshaler {
+			return ec.marshalNSchadenplatzCasualtyEntry2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyEntryᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Message_schadenplatzCasualties(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_SchadenplatzCasualtyEntry(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Message_linkedResourceIds(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Message_linkedResourceIds(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LinkedResourceIds, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalNID2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Message_linkedResourceIds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
 func (ec *executionContext) _Mutation_createIncident(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6887,7 +7178,7 @@ func (ec *executionContext) _Mutation_markResourceReady(ctx context.Context, fie
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().MarkResourceReady(ctx, fc.Args["id"].(string))
+			return ec.Resolvers.Mutation().MarkResourceReady(ctx, fc.Args["id"].(string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -6931,7 +7222,7 @@ func (ec *executionContext) _Mutation_deployResource(ctx context.Context, field 
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().DeployResource(ctx, fc.Args["id"].(string))
+			return ec.Resolvers.Mutation().DeployResource(ctx, fc.Args["id"].(string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -6975,7 +7266,7 @@ func (ec *executionContext) _Mutation_standDownResource(ctx context.Context, fie
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().StandDownResource(ctx, fc.Args["id"].(string))
+			return ec.Resolvers.Mutation().StandDownResource(ctx, fc.Args["id"].(string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -7019,7 +7310,7 @@ func (ec *executionContext) _Mutation_relieveResource(ctx context.Context, field
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RelieveResource(ctx, fc.Args["id"].(string), fc.Args["successorId"].(*string))
+			return ec.Resolvers.Mutation().RelieveResource(ctx, fc.Args["id"].(string), fc.Args["successorId"].(*string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -8407,6 +8698,121 @@ func (ec *executionContext) fieldContext_Resource_statusAt(_ context.Context, fi
 	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
 }
 
+func (ec *executionContext) _Resource_alertedAt(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_alertedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AlertedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_alertedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _Resource_readyAt(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_readyAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ReadyAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_readyAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _Resource_deployedAt(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_deployedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DeployedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_deployedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _Resource_stoodDownAt(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_stoodDownAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.StoodDownAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_stoodDownAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _Resource_relievedAt(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_relievedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RelievedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_relievedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
 func (ec *executionContext) _Resource_einsatzBeginn(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -8860,6 +9266,144 @@ func (ec *executionContext) fieldContext_Schadenplatz_resources(_ context.Contex
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_schadenplatzId(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_schadenplatzId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SchadenplatzID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_schadenplatzId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_vermisste(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_vermisste(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Vermisste, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_vermisste(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_tote(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_tote(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Tote, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_tote(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_verletzte(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_verletzte(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Verletzte, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_verletzte(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_obdachlose(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_obdachlose(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Obdachlose, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_obdachlose(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry_eingeschlossene(ctx context.Context, field graphql.CollectedField, obj *model.SchadenplatzCasualtyEntry) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_SchadenplatzCasualtyEntry_eingeschlossene(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Eingeschlossene, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_SchadenplatzCasualtyEntry_eingeschlossene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("SchadenplatzCasualtyEntry", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _User_sub(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -10305,14 +10849,14 @@ func (ec *executionContext) unmarshalInputDeploymentLocationInput(ctx context.Co
 		switch k {
 		case "lat":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
-			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Lat = data
 		case "lng":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lng"))
-			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10484,6 +11028,71 @@ func (ec *executionContext) unmarshalInputResourceHomeLocationInput(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSchadenplatzCasualtyInput(ctx context.Context, obj any) (model.SchadenplatzCasualtyInput, error) {
+	var it model.SchadenplatzCasualtyInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"schadenplatzId", "vermisste", "tote", "verletzte", "obdachlose", "eingeschlossene"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "schadenplatzId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schadenplatzId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SchadenplatzID = data
+		case "vermisste":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vermisste"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Vermisste = data
+		case "tote":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tote"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tote = data
+		case "verletzte":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("verletzte"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Verletzte = data
+		case "obdachlose":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("obdachlose"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Obdachlose = data
+		case "eingeschlossene":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("eingeschlossene"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Eingeschlossene = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context, obj any) (model.TriageMessageInput, error) {
 	var it model.TriageMessageInput
 	if obj == nil {
@@ -10495,7 +11104,7 @@ func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"triage", "priority", "divisionIds"}
+	fieldsInOrder := [...]string{"triage", "priority", "divisionIds", "schadenplatzCasualties", "linkedResourceIds"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10523,6 +11132,20 @@ func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context
 				return it, err
 			}
 			it.DivisionIds = data
+		case "schadenplatzCasualties":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schadenplatzCasualties"))
+			data, err := ec.unmarshalNSchadenplatzCasualtyInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SchadenplatzCasualties = data
+		case "linkedResourceIds":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("linkedResourceIds"))
+			data, err := ec.unmarshalNID2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LinkedResourceIds = data
 		}
 	}
 	return it, nil
@@ -10845,12 +11468,12 @@ func (ec *executionContext) _DeploymentLocation(ctx context.Context, sel ast.Sel
 			out.Values[i] = graphql.MarshalString("DeploymentLocation")
 		case "lat":
 			out.Values[i] = ec._DeploymentLocation_lat(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		case "lng":
 			out.Values[i] = ec._DeploymentLocation_lng(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
+			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
 		case "label":
@@ -11389,6 +12012,44 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "resources":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_resources(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11694,6 +12355,49 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "schadenplatzCasualties":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Message_schadenplatzCasualties(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "linkedResourceIds":
+			out.Values[i] = ec._Message_linkedResourceIds(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12475,6 +13179,31 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "alertedAt":
+			out.Values[i] = ec._Resource_alertedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "readyAt":
+			out.Values[i] = ec._Resource_readyAt(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "deployedAt":
+			out.Values[i] = ec._Resource_deployedAt(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "stoodDownAt":
+			out.Values[i] = ec._Resource_stoodDownAt(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "relievedAt":
+			out.Values[i] = ec._Resource_relievedAt(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
 		case "einsatzBeginn":
 			out.Values[i] = ec._Resource_einsatzBeginn(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
@@ -12702,6 +13431,69 @@ func (ec *executionContext) _Schadenplatz(ctx context.Context, sel ast.Selection
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var schadenplatzCasualtyEntryImplementors = []string{"SchadenplatzCasualtyEntry"}
+
+func (ec *executionContext) _SchadenplatzCasualtyEntry(ctx context.Context, sel ast.SelectionSet, obj *model.SchadenplatzCasualtyEntry) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, schadenplatzCasualtyEntryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SchadenplatzCasualtyEntry")
+		case "schadenplatzId":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_schadenplatzId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "vermisste":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_vermisste(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tote":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_tote(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "verletzte":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_verletzte(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "obdachlose":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_obdachlose(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eingeschlossene":
+			out.Values[i] = ec._SchadenplatzCasualtyEntry_eingeschlossene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13368,22 +14160,6 @@ func (ec *executionContext) marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsit
 	return ec._Feature(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	_ = sel
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx context.Context, v any) (model.GlobalRole, error) {
 	var res model.GlobalRole
 	err := res.UnmarshalGQL(v)
@@ -13729,6 +14505,51 @@ func (ec *executionContext) marshalNSchadenplatz2ᚖgithubᚗcomᚋfᚑeldᚑch�
 		return graphql.Null
 	}
 	return ec._Schadenplatz(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSchadenplatzCasualtyEntry2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyEntryᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SchadenplatzCasualtyEntry) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNSchadenplatzCasualtyEntry2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyEntry(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSchadenplatzCasualtyEntry2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyEntry(ctx context.Context, sel ast.SelectionSet, v *model.SchadenplatzCasualtyEntry) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SchadenplatzCasualtyEntry(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSchadenplatzCasualtyInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInputᚄ(ctx context.Context, v any) ([]*model.SchadenplatzCasualtyInput, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]*model.SchadenplatzCasualtyInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNSchadenplatzCasualtyInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNSchadenplatzCasualtyInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInput(ctx context.Context, v any) (*model.SchadenplatzCasualtyInput, error) {
+	res, err := ec.unmarshalInputSchadenplatzCasualtyInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

@@ -124,8 +124,9 @@ type MessageState struct {
 	UpdatedAt      time.Time
 	Triage         shared.TriageStatus
 	Priority       shared.PriorityStatus
-	DivisionIDs    []shared.DivisionID
-	Attachments    []AttachmentState
+	DivisionIDs       []shared.DivisionID
+	LinkedResourceIDs []shared.ResourceID
+	Attachments       []AttachmentState
 }
 
 // FeatureState is returned from ModifyFeature so the resolver can build the
@@ -216,6 +217,7 @@ type MessageService interface {
 		triage shared.TriageStatus,
 		priority shared.PriorityStatus,
 		divisionIDs []shared.DivisionID,
+		linkedResourceIDs []shared.ResourceID,
 		actor identity.Actor,
 	) (MessageState, error)
 
@@ -324,6 +326,7 @@ type SchadenplatzService interface {
 		schadenplatzID shared.SchadenplatzID,
 		sourceMessageID shared.MessageID,
 		deltas schadenplatz.CasualtyDeltas,
+		occurredAt time.Time,
 		actor identity.Actor,
 	) (SchadenplatzState, error)
 
@@ -349,6 +352,11 @@ type ResourceState struct {
 	DeploymentLocation *resource.DeploymentLocation
 	Status             resource.ResourceStatus
 	StatusAt           time.Time
+	AlertedAt          time.Time
+	ReadyAt            *time.Time
+	DeployedAt         *time.Time
+	StoodDownAt        *time.Time
+	RelievedAt         *time.Time
 	EinsatzBeginn      *time.Time
 	EinsatzEnde        *time.Time
 	PredecessorID      *shared.ResourceID
@@ -368,6 +376,8 @@ type AlertResourceInput struct {
 	Contact         *resource.Contact
 	HomeLocation    *resource.Location
 	SourceMessageID *shared.MessageID
+	// OccurredAt overrides the service clock when set (e.g. message timestamp during triage).
+	OccurredAt *time.Time
 }
 
 // ResourceService is the driving port for Resource commands.
@@ -375,13 +385,14 @@ type AlertResourceInput struct {
 //nolint:interfacebloat // Resource commands are intentionally exposed through one driving port.
 type ResourceService interface {
 	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
-	MarkResourceReady(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
-	DeployResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
-	StandDownResource(ctx context.Context, id shared.ResourceID, actor identity.Actor) (ResourceState, error)
+	MarkResourceReady(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
+	DeployResource(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
+	StandDownResource(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
 	RelieveResource(
 		ctx context.Context,
 		id shared.ResourceID,
 		successorID *shared.ResourceID,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 	ReassignResource(

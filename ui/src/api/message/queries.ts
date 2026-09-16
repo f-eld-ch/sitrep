@@ -61,6 +61,7 @@ export function useJournalMessages(incidentId: string): QueryResult<IncidentMess
 export interface MessageForTriageData {
   message: Message;
   incidentDivisions: Division[];
+  linkedResourceIds: string[];
 }
 
 export function useMessageForTriage(
@@ -106,6 +107,7 @@ export function useMessageForTriage(
     data: {
       message: toMessage(wireMessage),
       incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
+      linkedResourceIds: wireMessage.linkedResourceIds ?? [],
     },
     error: undefined,
     isRefreshing: loading,

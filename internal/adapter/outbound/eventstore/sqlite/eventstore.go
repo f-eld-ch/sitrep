@@ -128,7 +128,7 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 		}
 	}
 
-	a.Root().ClearPending()
+	a.Root().CommitPending()
 
 	return encodeCursor(lastSeq), nil
 }

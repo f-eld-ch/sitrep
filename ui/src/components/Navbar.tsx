@@ -16,6 +16,7 @@ import {
   faMapLocationDot,
   faMoon,
   faPen,
+  faPersonFallingBurst,
   faRectangleList,
   faRightFromBracket,
   faSun,
@@ -73,16 +74,17 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
           <div className="flex flex-1 flex-row items-stretch">
             <div className="group relative flex items-stretch">
               <NavLink
-                to={incidentId ? `/incident/${incidentId}/edit` : "/"}
+                to={incidentId ? `/incident/${incidentId}` : "/"}
+                title={incidentState.incident ? `${t("incident")} ${incidentState.incident.name}` : t("incident")}
                 className={({ isActive }) =>
                   clsx(
-                    "flex items-center gap-2 px-3",
+                    "flex items-center gap-2 px-3 whitespace-nowrap",
                     isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
                   )
                 }
               >
                 <FontAwesomeIcon icon={faExplosion} />
-                <span>
+                <span className="hidden xl:inline">
                   {incidentState.incident
                     ? `${t("incident")} ${incidentState.incident.name}`
                     : t("incident")}
@@ -131,11 +133,12 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             </div>
             <JournalNavBar />
             {showResources && <ResourcesNavBar />}
+            {showResources && <CasualtiesNavBar />}
             {showTasks && <TasksNavBar />}
             <MapNavBar />
           </div>
           {/* end */}
-          <div className="flex flex-row items-stretch lg:ml-auto">
+          <div className="flex shrink-0 flex-row items-stretch lg:ml-auto">
             <CurrentTime />
             <UserNavBar />
           </div>
@@ -326,11 +329,11 @@ function CurrentTime() {
 
   return (
     <>
-      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
+      <div className="hidden items-center gap-2 px-3 text-sm whitespace-nowrap lg:flex">
         <FontAwesomeIcon icon={faCalendar} />
         <span ref={dateRef} />
       </div>
-      <div className="hidden items-center gap-2 px-3 text-sm lg:flex">
+      <div className="hidden items-center gap-2 px-3 text-sm whitespace-nowrap lg:flex">
         <FontAwesomeIcon icon={faClock} />
         <span ref={timeRef} />
       </div>
@@ -368,7 +371,7 @@ function UserNavBar() {
   return (
     <>
       {/* Desktop: hover dropdown */}
-      <div className="group relative hidden items-stretch lg:ml-3 lg:flex">
+      <div className="group relative hidden shrink-0 items-stretch lg:ml-3 lg:flex">
         <div className="flex cursor-pointer items-center gap-1.5 px-3">
           <FontAwesomeIcon icon={faCog} />
           <FontAwesomeIcon icon={faChevronDown} className="text-xs opacity-60" />
@@ -451,14 +454,15 @@ const JournalNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center gap-2 px-3 capitalize",
+            "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
             isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
           )
         }
         to={`/incident/${incidentId}/journal/messages`}
+        title={t("journal")}
       >
         <FontAwesomeIcon icon={faBars} />
-        <span>{t("journal")}</span>
+        <span className="hidden xl:inline">{t("journal")}</span>
       </NavLink>
       <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
@@ -515,14 +519,15 @@ const TasksNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center gap-2 px-3 capitalize",
+            "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
             isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
           )
         }
         to={`/incident/${incidentId}/tasks`}
+        title={t("tasksRequestOrders")}
       >
         <FontAwesomeIcon icon={faClipboard} />
-        <span>{t("tasksRequestOrders")}</span>
+        <span className="hidden xl:inline">{t("tasksRequestOrders")}</span>
       </NavLink>
       <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
         <NavLink
@@ -576,14 +581,15 @@ const ResourcesNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center gap-2 px-3 capitalize",
+          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
           isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
         )
       }
       to={`/incident/${incidentId}/resources`}
+      title={t("resources")}
     >
       <FontAwesomeIcon icon={faTruckMedical} />
-      <span>{t("resources")}</span>
+      <span className="hidden xl:inline">{t("resources")}</span>
     </NavLink>
   );
 };
@@ -598,18 +604,42 @@ const MapNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center gap-2 px-3 capitalize",
+          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
           isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
         )
       }
       to={`/incident/${incidentId}/map`}
+      title={t("map")}
     >
       <FontAwesomeIcon icon={faMapLocationDot} />
-      <span>{t("map")}</span>
+      <span className="hidden xl:inline">{t("map")}</span>
     </NavLink>
   );
 };
 
-export { ResourcesNavBar, TasksNavBar };
+const CasualtiesNavBar: FunctionComponent = () => {
+  const { incidentId } = useParams();
+  const { t } = useTranslation();
+
+  if (!incidentId) return;
+
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        clsx(
+          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+        )
+      }
+      to={`/incident/${incidentId}/casualties`}
+      title={t("casualties.overview")}
+    >
+      <FontAwesomeIcon icon={faPersonFallingBurst} />
+      <span className="hidden xl:inline">{t("casualties.overview")}</span>
+    </NavLink>
+  );
+};
+
+export { ResourcesNavBar, CasualtiesNavBar, TasksNavBar };
 
 export default Navbar;

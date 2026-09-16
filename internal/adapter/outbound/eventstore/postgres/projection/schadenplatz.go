@@ -2,8 +2,10 @@ package projection
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -24,7 +26,12 @@ func NewSchadenplatzHandler(pool *pgxpool.Pool) *SchadenplatzHandler {
 func (h *SchadenplatzHandler) Name() string { return "readmodel.schadenplatz" }
 func (h *SchadenplatzHandler) Version() int { return 1 }
 func (h *SchadenplatzHandler) Reset(ctx context.Context) error {
+	if _, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message_casualties`); err != nil {
+		return err
+	}
+
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.schadenplatz`)
+
 	return err
 }
 
@@ -100,7 +107,8 @@ func (h *SchadenplatzHandler) Apply(ctx context.Context, e eventsourcing.Event) 
 
 	case "CasualtiesRecorded":
 		var d struct {
-			Deltas struct {
+			SourceMessageID string `json:"sourceMessageId"`
+			Deltas          struct {
 				Vermisste       int `json:"vermisste"`
 				Tote            int `json:"tote"`
 				Verletzte       int `json:"verletzte"`
@@ -112,7 +120,25 @@ func (h *SchadenplatzHandler) Apply(ctx context.Context, e eventsourcing.Event) 
 			return err
 		}
 
-		return exec(db, ctx, `
+		// Read existing per-message record to compute net delta.
+		var oldV, oldT, oldVl, oldO, oldE int
+
+		scanErr := db.QueryRow(ctx, `
+			SELECT vermisste, tote, verletzte, obdachlose, eingeschlossene
+			FROM readmodel.message_casualties
+			WHERE message_id = $1 AND schadenplatz_id = $2`,
+			d.SourceMessageID, id).Scan(&oldV, &oldT, &oldVl, &oldO, &oldE)
+		if scanErr != nil && !errors.Is(scanErr, pgx.ErrNoRows) {
+			return scanErr
+		}
+
+		netV := d.Deltas.Vermisste - oldV
+		netT := d.Deltas.Tote - oldT
+		netVl := d.Deltas.Verletzte - oldVl
+		netO := d.Deltas.Obdachlose - oldO
+		netE := d.Deltas.Eingeschlossene - oldE
+
+		if err := exec(db, ctx, `
 			UPDATE readmodel.schadenplatz SET
 			  vermisste        = vermisste        + $1,
 			  tote             = tote             + $2,
@@ -121,9 +147,21 @@ func (h *SchadenplatzHandler) Apply(ctx context.Context, e eventsourcing.Event) 
 			  eingeschlossene  = eingeschlossene  + $5,
 			  updated_at       = $6
 			WHERE id = $7`,
+			netV, netT, netVl, netO, netE, e.OccurredAt, id); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `
+			INSERT INTO readmodel.message_casualties
+			  (message_id, schadenplatz_id, vermisste, tote, verletzte, obdachlose, eingeschlossene, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			ON CONFLICT (message_id, schadenplatz_id) DO UPDATE SET
+			  vermisste = EXCLUDED.vermisste, tote = EXCLUDED.tote,
+			  verletzte = EXCLUDED.verletzte, obdachlose = EXCLUDED.obdachlose,
+			  eingeschlossene = EXCLUDED.eingeschlossene, updated_at = EXCLUDED.updated_at`,
+			d.SourceMessageID, id,
 			d.Deltas.Vermisste, d.Deltas.Tote, d.Deltas.Verletzte,
-			d.Deltas.Obdachlose, d.Deltas.Eingeschlossene,
-			e.OccurredAt, id)
+			d.Deltas.Obdachlose, d.Deltas.Eingeschlossene, e.OccurredAt)
 
 	case "MergedIntoDefault":
 		var d struct {

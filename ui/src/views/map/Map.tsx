@@ -86,7 +86,12 @@ function BabsSpriteLanguage() {
   return null;
 }
 
-function MapView() {
+interface MapViewOptions {
+  embedded?: boolean;
+  readOnly?: boolean;
+}
+
+function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
   const { i18n } = useTranslation();
 
@@ -109,9 +114,10 @@ function MapView() {
   );
 
   return (
-    <div className="mt-[2.75rem] grow" data-theme="light">
+    <div className={embedded ? "h-full min-h-0" : "mt-[2.75rem] grow"} data-theme="light">
       <MapClass
         mapLib={maplibre}
+        style={{ width: "100%", height: "100%" }}
         initialViewState={{
           latitude: 46.87148,
           longitude: 8.62994,
@@ -122,26 +128,24 @@ function MapView() {
         minZoom={9}
         maxZoom={19}
         mapStyle={styleWithBabsSprite}
-        scrollZoom={true}
+        scrollZoom={!readOnly}
         reuseMaps={false}
         RTLTextPlugin={undefined}
       >
         <BabsSpriteLanguage />
-        <SearchControl />
+        {!readOnly && <SearchControl />}
         <AttributionControl position="bottom-left" compact={true} />
-        {/* All Map Controls */}
-        <FullscreenControl position={"top-left"} />
-        <NavigationControl position={"top-left"} visualizePitch={true} />
+        {!readOnly && <FullscreenControl position={"top-left"} />}
+        {!readOnly && <NavigationControl position={"top-left"} visualizePitch={true} />}
         <ScaleControl unit={"metric"} position={"bottom-left"} />
-        <ExportControl position="bottom-left" />
-        {/* Layersprovider and Draw */}
-        <Layers />
+        {!readOnly && <ExportControl position="bottom-left" />}
+        <Layers readOnly={readOnly} />
       </MapClass>
     </div>
   );
 }
 
-function Layers() {
+function Layers({ readOnly = false }: { readOnly?: boolean }) {
   const { state } = useContext(LayerContext);
   const {
     state: { incident },
@@ -150,27 +154,118 @@ function Layers() {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
-        <LayerControl />
-        <StyleController />
-      </div>
+      {!readOnly && (
+        <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
+          <LayerControl />
+          <StyleController />
+        </div>
+      )}
 
       {/* Active Layer */}
-      {activeLayer !== undefined && <ActiveLayer />}
-      <BabsIconController />
+      {activeLayer !== undefined && !readOnly && <ActiveLayer />}
+      {!readOnly && <BabsIconController />}
 
-      {/* Inactive Layers */}
-      <InactiveLayers
-        layers={
-          state.layers
-            .filter((l) => l.layer?.id !== activeLayer)
-            .filter((l) => l.isVisible)
-            .map((l) => l.layer) || []
-        }
-      />
-      <ActiveWMSLayers />
+      {readOnly ? (
+        <ReadOnlyLayers />
+      ) : (
+        <InactiveLayers
+          layers={
+            state.layers
+              .filter((l) => l.layer?.id !== activeLayer)
+              .filter((l) => l.isVisible)
+              .map((l) => l.layer) || []
+          }
+        />
+      )}
+      {!readOnly && <ActiveWMSLayers />}
     </>
   );
+}
+
+function ReadOnlyLayers() {
+  const { state, dispatch } = useContext(LayerContext);
+  const { current: map } = useMap();
+  const visibleLayers = useMemo(
+    () => state.layers.filter((entry) => entry.isVisible).map((entry) => entry.layer),
+    [state.layers],
+  );
+  const activeLayer = visibleLayers.find((layer) => layer.id === state.activeLayer) ?? visibleLayers[0];
+
+  useEffect(() => {
+    if (visibleLayers.length === 0 || activeLayer === undefined) return;
+    if (state.activeLayer === activeLayer.id) return;
+
+    dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: activeLayer.id } });
+  }, [activeLayer, dispatch, state.activeLayer, visibleLayers]);
+
+  useEffect(() => {
+    if (visibleLayers.length < 2) return;
+
+    const timer = setInterval(() => {
+      dispatch({
+        type: "SET_ACTIVE_LAYER",
+        payload: { layerId: nextReadOnlyLayerID(visibleLayers, state.activeLayer) },
+      });
+    }, READ_ONLY_LAYER_INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  }, [dispatch, state.activeLayer, visibleLayers]);
+
+  useEffect(() => {
+    if (map === undefined || activeLayer === undefined) return;
+
+    const featureCollection = layerToFeatureCollection(activeLayer);
+    if (featureCollection.features.length === 0) return;
+
+    const fit = () => {
+      const bboxArray = bbox(featureCollection);
+      map.fitBounds(
+        [
+          [bboxArray[0], bboxArray[1]],
+          [bboxArray[2], bboxArray[3]],
+        ],
+        {
+          animate: true,
+          padding: { top: 40, bottom: 40, left: 40, right: 40 },
+        },
+      );
+    };
+
+    if (map.loaded()) {
+      fit();
+      return;
+    }
+
+    map.once("load", fit);
+    return () => {
+      map.off("load", fit);
+    };
+  }, [activeLayer, map]);
+
+  return (
+    <>
+      {activeLayer && (
+        <div className="maplibregl-ctrl-top-right pointer-events-none m-2">
+          <div className="max-w-64 rounded border border-border bg-bg/95 px-3 py-2 text-sm text-fg shadow-lg backdrop-blur">
+            <p className="truncate font-semibold">{activeLayer.name}</p>
+            {activeLayer.sourceIncidentName && (
+              <p className="mt-0.5 truncate text-xs text-fg-muted">
+                {activeLayer.sourceIncidentName}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      <InactiveLayers layers={visibleLayers} />
+    </>
+  );
+}
+
+function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined): string {
+  const currentIndex = layers.findIndex((layer) => layer.id === activeLayerID);
+  const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % layers.length;
+
+  return layers[nextIndex].id;
 }
 
 // LayerFetcher polls from the layers and sets the layers from remote
@@ -206,6 +301,7 @@ function LayerFetcher() {
  * a frame budget, and still fast enough that the indicator reads as following the cursor.
  */
 const LIVE_GEOMETRY_INTERVAL_MS = 80;
+const READ_ONLY_LAYER_INTERVAL_MS = 5_000;
 
 /**
  * Fired by mapbox-gl-draw on every one of its renders, including mid-drag — unlike
@@ -567,12 +663,12 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   );
 }
 
-function MapWithProvder() {
+function MapWithProvder(options: MapViewOptions) {
   return (
     <MapStyleProvider>
       <MapProvider>
         <LayersProvider>
-          <MapView />
+          <MapView {...options} />
           <LayerFetcher />
         </LayersProvider>
       </MapProvider>

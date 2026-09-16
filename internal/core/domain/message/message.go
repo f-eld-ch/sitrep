@@ -43,8 +43,9 @@ type Message struct {
 	createdAt      time.Time
 	triage         shared.TriageStatus
 	priority       shared.PriorityStatus
-	divisionIDs    []shared.DivisionID
-	authorSub      *string
+	divisionIDs         []shared.DivisionID
+	linkedResourceIDs   []shared.ResourceID
+	authorSub           *string
 	lastEditorSub  *string
 	deleted        bool
 	attachments    []Attachment
@@ -79,7 +80,8 @@ func (m *Message) Time() time.Time                       { return m.time }
 func (m *Message) CreatedAt() time.Time                  { return m.createdAt }
 func (m *Message) TriageStatus() shared.TriageStatus     { return m.triage }
 func (m *Message) PriorityStatus() shared.PriorityStatus { return m.priority }
-func (m *Message) DivisionIDs() []shared.DivisionID      { return m.divisionIDs }
+func (m *Message) DivisionIDs() []shared.DivisionID           { return m.divisionIDs }
+func (m *Message) LinkedResourceIDs() []shared.ResourceID     { return m.linkedResourceIDs }
 func (m *Message) AuthorSub() *string                    { return m.authorSub }
 func (m *Message) IsDeleted() bool                       { return m.deleted }
 
@@ -204,11 +206,12 @@ func (m *Message) Correct(
 	return nil
 }
 
-// Triage updates the triage state and division set atomically.
+// Triage updates the triage state, division set, and linked resources atomically.
 func (m *Message) Triage(
 	triage shared.TriageStatus,
 	priority shared.PriorityStatus,
 	divisionIDs []shared.DivisionID,
+	linkedResourceIDs []shared.ResourceID,
 	triagedBy string,
 	at time.Time,
 	actor string,
@@ -222,10 +225,11 @@ func (m *Message) Triage(
 	}
 
 	eventsourcing.TrackChange(m, Triaged{
-		Triage:      triage,
-		Priority:    priority,
-		DivisionIDs: divisionIDs,
-		TriagedBy:   triagedBy,
+		Triage:            triage,
+		Priority:          priority,
+		DivisionIDs:       divisionIDs,
+		LinkedResourceIDs: linkedResourceIDs,
+		TriagedBy:         triagedBy,
 	}, at, baseMeta(actor))
 
 	return nil
@@ -359,6 +363,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.triage = d.Triage
 		m.priority = d.Priority
 		m.divisionIDs = d.DivisionIDs
+		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.lastEditorSub = &d.TriagedBy
 	case Deleted:
 		m.deleted = true
@@ -376,6 +381,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.triage = d.Triage
 		m.priority = d.Priority
 		m.divisionIDs = d.DivisionIDs
+		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.authorSub = d.AuthorSub
 		m.lastEditorSub = d.LastEditorSub
 	case AttachmentAdded:

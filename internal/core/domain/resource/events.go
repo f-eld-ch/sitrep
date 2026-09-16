@@ -67,9 +67,9 @@ type Location struct {
 
 // DeploymentLocation is the precise operational point within a Schadenplatz.
 type DeploymentLocation struct {
-	Lat   float64 `json:"lat"`
-	Lng   float64 `json:"lng"`
-	Label string  `json:"label"`
+	Lat   *float64 `json:"lat,omitempty"`
+	Lng   *float64 `json:"lng,omitempty"`
+	Label string   `json:"label"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -149,3 +149,4 @@ type EinsatzDauerRecorded struct {
 	Beginn time.Time  `json:"beginn"`
 	Ende   *time.Time `json:"ende,omitempty"`
 }
+

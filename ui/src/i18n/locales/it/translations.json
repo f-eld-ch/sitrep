@@ -54,7 +54,7 @@
   "schadenplatz": {
     "select": "Seleziona luogo",
     "selectHint": "Questo messaggio riguarda un luogo sinistro specifico?",
-    "defaultHint": "Generale (nessuna attribuzione specifica)",
+    "defaultHint": "Nessun luogo sinistro specifico",
     "new": "Crea nuovo",
     "namePlaceholder": "Nome luogo sinistro",
     "create": "Crea",
@@ -159,6 +159,7 @@
   "save": "salvare",
   "saveMoreInfo": "Ha bisogno di più informazioni",
   "saveTriage": "Completare il triage",
+  "triageAdjust": "Modificare il triage",
   "triageMessage": "Triage",
   "short": "abbreviazione",
   "showClosed": "mostra chiusa",
@@ -214,15 +215,24 @@
     }
   },
   "casualties": {
+    "childIncidents": "Incidenti secondari",
     "vermisste": "Dispersi",
     "tote": "Deceduti",
     "verletzte": "Feriti",
     "obdachlose": "Senzatetto",
     "eingeschlossene": "Intrappolati",
-    "summary": "Riepilogo persone"
+    "summary": "Riepilogo persone",
+    "overview": "Vittime",
+    "none": "Nessuna vittima registrata",
+    "byLocation": "Per luogo"
+  },
+  "dashboard": {
+    "title": "Dashboard incidente",
+    "priorityMessages": "Messaggi prioritari",
+    "noPriorityMessages": "Nessun messaggio prioritario"
   },
   "errorPage": {
-"title": "Errore inatteso",
+    "title": "Errore inatteso",
     "notFoundTitle": "Obiettivo non trovato",
     "notFoundDesc": "La pagina richiesta non è stata trovata. Verificare l'indirizzo e riprovare.",
     "priority": "Priorità",
@@ -356,6 +366,7 @@
     "globalRoles": "Ruoli globali"
   },
   "resource": {
+    "childIncident": "Incidente secondario",
     "formation": {
       "FW": "Pompieri",
       "POL": "Polizia",
@@ -392,13 +403,31 @@
       "personnelCount": "Personale",
       "hauptaufgabe": "Compito principale",
       "contact": "Contatto",
-      "homeLocation": "Sede",
+      "homeLocation": "Organizzazione",
       "deploymentLocation": "Luogo d'impiego",
       "einsatzBeginn": "Inizio impiego",
       "einsatzEnde": "Fine impiego",
       "status": "Stato"
     },
     "noResources": "Nessun mezzo registrato",
-    "addResource": "Allertare mezzo"
+    "search": "Cerca mezzi…",
+    "noResults": "Nessun mezzo trovato",
+    "addResource": "Allertare mezzo",
+    "count_one": "{{count}} mezzo",
+    "count_other": "{{count}} mezzi",
+    "selectFormation": "Formazione",
+    "selectSize": "Dimensione unità",
+    "newResource": "Allertare nuovo mezzo",
+    "alerting": "Allertando…",
+    "mitteltabelle": "Tabella dei mezzi",
+    "nr": "N.",
+    "alertedAt": "Allertato",
+    "readyAt": "Pronto",
+    "deployedAt": "Impiegato",
+    "relievedAt": "Avvicendato",
+    "validation": {
+      "hauptaufgabeRequired": "Il compito principale è obbligatorio per l'impiego",
+      "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego"
+    }
   }
 }

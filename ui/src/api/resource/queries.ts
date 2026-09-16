@@ -28,14 +28,24 @@ export interface SchadenplatzWithResources {
 
 export interface IncidentResourcesData {
   incidentId: string;
+  incidentName: string;
   schadenplaetze: SchadenplatzWithResources[];
+  childIncidents: ChildIncidentCasualties[];
+  resources: Resource[];
+}
+
+export interface ChildIncidentCasualties {
+  id: string;
+  name: string;
+  casualties: SchadenplatzWithResources["casualties"];
 }
 
 export function useIncidentResources(incidentId: string | undefined): QueryResult<IncidentResourcesData> {
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_RESOURCES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId,
-    pollInterval: 15000,
+    fetchPolicy: "network-only",
+    pollInterval: 5000,
   });
 
   const refresh = () => void refetch();
@@ -69,19 +79,57 @@ export function useIncidentResources(incidentId: string | undefined): QueryResul
     status: "ready",
     data: {
       incidentId: inc.id,
-      schadenplaetze: inc.schadenplaetze.map((sp) => ({
-        id: sp.id,
-        incidentId: sp.incidentId,
-        name: sp.name,
-        isDefault: sp.isDefault,
-        isMerged: sp.isMerged,
-        mergedInto: sp.mergedInto,
-        casualties: sp.casualties,
-        resources: sp.resources.map(toResource),
+      incidentName: inc.name,
+      childIncidents: inc.childIncidents.map((child) => ({
+        id: child.id,
+        name: child.name,
+        casualties: sumCasualties(child.schadenplaetze),
       })),
+      resources: inc.resources.map(toResource),
+      schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),
     },
     error: undefined,
     isRefreshing: loading,
     refresh,
   };
+}
+
+function toSchadenplatzWithResources(sp: {
+  id: string;
+  incidentId: string;
+  name: string;
+  isDefault: boolean;
+  isMerged: boolean;
+  mergedInto: string | null;
+  casualties: SchadenplatzWithResources["casualties"];
+  resources: Parameters<typeof toResource>[0][];
+}): SchadenplatzWithResources {
+  return {
+    id: sp.id,
+    incidentId: sp.incidentId,
+    name: sp.name,
+    isDefault: sp.isDefault,
+    isMerged: sp.isMerged,
+    mergedInto: sp.mergedInto,
+    casualties: sp.casualties,
+    resources: sp.resources.map(toResource),
+  };
+}
+
+function sumCasualties(
+  sps: Array<{
+    isMerged: boolean;
+    casualties: SchadenplatzWithResources["casualties"];
+  }>,
+): SchadenplatzWithResources["casualties"] {
+  return sps.filter((sp) => !sp.isMerged).reduce(
+    (acc, sp) => ({
+      vermisste: acc.vermisste + sp.casualties.vermisste,
+      tote: acc.tote + sp.casualties.tote,
+      verletzte: acc.verletzte + sp.casualties.verletzte,
+      obdachlose: acc.obdachlose + sp.casualties.obdachlose,
+      eingeschlossene: acc.eingeschlossene + sp.casualties.eingeschlossene,
+    }),
+    { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 },
+  );
 }

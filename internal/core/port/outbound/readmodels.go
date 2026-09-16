@@ -55,7 +55,8 @@ type MessageRM struct {
 	UpdatedAt      time.Time
 	Triage         string
 	Priority       string
-	DivisionIDs    []uuid.UUID
+	DivisionIDs       []uuid.UUID
+	LinkedResourceIDs []uuid.UUID
 }
 
 type AttachmentRM struct {
@@ -135,6 +136,9 @@ type SchadenplatzQueries interface {
 
 	// ListSchadenplaetze returns all non-merged Schadenplatz for an incident.
 	ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
+
+	// ListMessageCasualties returns the casualty deltas recorded for a message across all Schadenplätze.
+	ListMessageCasualties(ctx context.Context, messageID uuid.UUID) ([]*MessageCasualtyRM, error)
 }
 
 // Queries is the driven port for read-model access. Implementations query
@@ -152,8 +156,8 @@ type Queries interface {
 
 // DeploymentLocationRM holds a precise operational point within a Schadenplatz.
 type DeploymentLocationRM struct {
-	Lat   float64
-	Lng   float64
+	Lat   *float64
+	Lng   *float64
 	Label string
 }
 
@@ -175,6 +179,11 @@ type ResourceRM struct {
 	DeploymentLocation *DeploymentLocationRM
 	Status             string
 	StatusAt           time.Time
+	AlertedAt          time.Time
+	ReadyAt            *time.Time
+	DeployedAt         *time.Time
+	StoodDownAt        *time.Time
+	RelievedAt         *time.Time
 	EinsatzBeginn      *time.Time
 	EinsatzEnde        *time.Time
 	PredecessorID      *uuid.UUID
@@ -193,7 +202,7 @@ type ResourceQueries interface {
 	// ListResourcesForSchadenplatz returns all non-relieved resources for a Schadenplatz.
 	ListResourcesForSchadenplatz(ctx context.Context, schadenplatzID uuid.UUID) ([]*ResourceRM, error)
 
-	// ListResourcesForIncident returns all resources for an incident (including relieved).
+	// ListResourcesForIncident returns all resources for an incident and its direct children (including relieved).
 	ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*ResourceRM, error)
 }
 
@@ -203,6 +212,17 @@ type ResourceQueries interface {
 
 // CasualtiesRM carries the accumulated casualty totals.
 type CasualtiesRM struct {
+	Vermisste       int
+	Tote            int
+	Verletzte       int
+	Obdachlose      int
+	Eingeschlossene int
+}
+
+// MessageCasualtyRM carries the per-message casualty deltas for one (message, Schadenplatz) pair.
+type MessageCasualtyRM struct {
+	MessageID       uuid.UUID
+	SchadenplatzID  uuid.UUID
 	Vermisste       int
 	Tote            int
 	Verletzte       int

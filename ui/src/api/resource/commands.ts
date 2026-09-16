@@ -6,9 +6,13 @@ import {
   ALERT_RESOURCE,
   CHANGE_HAUPTAUFGABE,
   DEPLOY_RESOURCE,
+  GET_INCIDENT_RESOURCES,
   MARK_RESOURCE_READY,
+  REASSIGN_RESOURCE,
   RELIEVE_RESOURCE,
   STAND_DOWN_RESOURCE,
+  UPDATE_CONTACT,
+  UPDATE_DEPLOYMENT_LOCATION,
   UPDATE_PERSONNEL_COUNT,
 } from "./documents";
 
@@ -34,6 +38,8 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
   };
 
   const alertResource = async (args: AlertResourceArgs): Promise<{ resourceId: string }> => {
+    const tempId = `temp-${Date.now()}`;
+    const now = new Date().toISOString();
     const result = await mutate({
       variables: {
         input: {
@@ -49,6 +55,62 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
           sourceMessageId: args.sourceMessageId,
         },
       },
+      optimisticResponse: {
+        alertResource: {
+          id: tempId,
+          incidentId: args.incidentId,
+          schadenplatzId: args.schadenplatzId ?? "",
+          formation: args.formation,
+          name: args.name,
+          size: args.size,
+          personnelCount: args.personnelCount,
+          hauptaufgabe: args.hauptaufgabe,
+          contact: args.contact
+            ? { medium: args.contact.medium, detail: args.contact.detail }
+            : null,
+          homeLocation: args.homeLocation
+            ? { name: args.homeLocation.name, lat: args.homeLocation.lat ?? null, lng: args.homeLocation.lng ?? null }
+            : null,
+          deploymentLocation: null,
+          status: "AUFGEBOTEN" as const,
+          statusAt: now,
+          alertedAt: now,
+          readyAt: null,
+          deployedAt: null,
+          stoodDownAt: null,
+          relievedAt: null,
+          einsatzBeginn: null,
+          einsatzEnde: null,
+          predecessorId: null,
+          successorId: null,
+          sourceMessageId: args.sourceMessageId ?? null,
+        },
+      },
+      update(cache, { data }) {
+        const resource = data?.alertResource;
+        if (!resource) return;
+        const cached = cache.readQuery({
+          query: GET_INCIDENT_RESOURCES,
+          variables: { incidentId: args.incidentId },
+        });
+        if (!cached?.incident) return;
+        const schadenplatzId = resource.schadenplatzId;
+        cache.writeQuery({
+          query: GET_INCIDENT_RESOURCES,
+          variables: { incidentId: args.incidentId },
+          data: {
+            ...cached,
+            incident: {
+              ...cached.incident,
+              schadenplaetze: cached.incident.schadenplaetze.map((sp) =>
+                sp.id === schadenplatzId
+                  ? { ...sp, resources: [...sp.resources, resource] }
+                  : sp,
+              ),
+            },
+          },
+        });
+      },
     });
     const id = result.data?.alertResource?.id;
     if (!id) throw Object.assign(new Error("Alert resource failed"), { code: "UNKNOWN" as const });
@@ -58,7 +120,7 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
   return [alertResource, state];
 }
 
-export function useMarkResourceReady(): CommandHook<{ id: string }> {
+export function useMarkResourceReady(): CommandHook<{ id: string; at?: Date }> {
   const [mutate, { loading, error }] = useMutation(MARK_RESOURCE_READY);
 
   const state: CommandState = {
@@ -66,14 +128,14 @@ export function useMarkResourceReady(): CommandHook<{ id: string }> {
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const markReady = async ({ id }: { id: string }): Promise<void> => {
-    await mutate({ variables: { id } });
+  const markReady = async (args: { id: string; at?: Date }): Promise<void> => {
+    await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
   };
 
   return [markReady, state];
 }
 
-export function useDeployResource(): CommandHook<{ id: string }> {
+export function useDeployResource(): CommandHook<{ id: string; at?: Date }> {
   const [mutate, { loading, error }] = useMutation(DEPLOY_RESOURCE);
 
   const state: CommandState = {
@@ -81,14 +143,14 @@ export function useDeployResource(): CommandHook<{ id: string }> {
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const deploy = async ({ id }: { id: string }): Promise<void> => {
-    await mutate({ variables: { id } });
+  const deploy = async (args: { id: string; at?: Date }): Promise<void> => {
+    await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
   };
 
   return [deploy, state];
 }
 
-export function useStandDownResource(): CommandHook<{ id: string }> {
+export function useStandDownResource(): CommandHook<{ id: string; at?: Date }> {
   const [mutate, { loading, error }] = useMutation(STAND_DOWN_RESOURCE);
 
   const state: CommandState = {
@@ -96,14 +158,14 @@ export function useStandDownResource(): CommandHook<{ id: string }> {
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const standDown = async ({ id }: { id: string }): Promise<void> => {
-    await mutate({ variables: { id } });
+  const standDown = async (args: { id: string; at?: Date }): Promise<void> => {
+    await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
   };
 
   return [standDown, state];
 }
 
-export function useRelieveResource(): CommandHook<{ id: string; successorId?: string | null }> {
+export function useRelieveResource(): CommandHook<{ id: string; successorId?: string | null; at?: Date }> {
   const [mutate, { loading, error }] = useMutation(RELIEVE_RESOURCE);
 
   const state: CommandState = {
@@ -111,8 +173,8 @@ export function useRelieveResource(): CommandHook<{ id: string; successorId?: st
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const relieve = async (args: { id: string; successorId?: string | null }): Promise<void> => {
-    await mutate({ variables: { id: args.id, successorId: args.successorId } });
+  const relieve = async (args: { id: string; successorId?: string | null; at?: Date }): Promise<void> => {
+    await mutate({ variables: { id: args.id, successorId: args.successorId, at: args.at?.toISOString() } });
   };
 
   return [relieve, state];
@@ -146,4 +208,43 @@ export function useUpdatePersonnelCount(): CommandHook<{ id: string; count: numb
   };
 
   return [updateCount, state];
+}
+
+export function useReassignResource(): CommandHook<{ id: string; schadenplatzId: string }> {
+  const [mutate, { loading, error }] = useMutation(REASSIGN_RESOURCE);
+  const state: CommandState = { loading, error: error ? apiErrorFromApolloError(error) : undefined };
+  const reassign = async (args: { id: string; schadenplatzId: string }): Promise<void> => {
+    await mutate({ variables: { id: args.id, schadenplatzId: args.schadenplatzId } });
+  };
+  return [reassign, state];
+}
+
+export function useUpdateDeploymentLocation(): CommandHook<{ id: string; label: string }> {
+  const [mutate, { loading, error }] = useMutation(UPDATE_DEPLOYMENT_LOCATION);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const update = async (args: { id: string; label: string }): Promise<void> => {
+    await mutate({ variables: { id: args.id, label: args.label } });
+  };
+
+  return [update, state];
+}
+
+export function useUpdateContact(): CommandHook<{ id: string; medium: ContactMedium; detail: string }> {
+  const [mutate, { loading, error }] = useMutation(UPDATE_CONTACT);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const update = async (args: { id: string; medium: ContactMedium; detail: string }): Promise<void> => {
+    await mutate({ variables: { id: args.id, medium: args.medium, detail: args.detail } });
+  };
+
+  return [update, state];
 }

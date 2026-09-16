@@ -68,6 +68,9 @@ func (s *ResourceService) AlertResource(
 
 	id := shared.ResourceID(s.ids.New())
 	at := s.clock.Now()
+	if input.OccurredAt != nil {
+		at = *input.OccurredAt
+	}
 
 	var res *resource.Resource
 
@@ -135,15 +138,17 @@ func (s *ResourceService) AlertResource(
 func (s *ResourceService) MarkResourceReady(
 	ctx context.Context,
 	id shared.ResourceID,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.MarkResourceReady",
 		id,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.MarkReady(actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.MarkReady(actor.Sub, t)
 		},
 	)
 }
@@ -152,15 +157,17 @@ func (s *ResourceService) MarkResourceReady(
 func (s *ResourceService) DeployResource(
 	ctx context.Context,
 	id shared.ResourceID,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.DeployResource",
 		id,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.Deploy(actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.Deploy(actor.Sub, t)
 		},
 	)
 }
@@ -169,15 +176,17 @@ func (s *ResourceService) DeployResource(
 func (s *ResourceService) StandDownResource(
 	ctx context.Context,
 	id shared.ResourceID,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.StandDownResource",
 		id,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.StandDown(actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.StandDown(actor.Sub, t)
 		},
 	)
 }
@@ -187,13 +196,14 @@ func (s *ResourceService) RelieveResource(
 	ctx context.Context,
 	id shared.ResourceID,
 	successorID *shared.ResourceID,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	ctx, span := s.tracer.Start(ctx, "ResourceService.RelieveResource",
 		trace.WithAttributes(attribute.String("resource.id", id.String())))
 	defer span.End()
 
-	at := s.clock.Now()
+	resolvedAt := s.resolveAt(at)
 
 	var res *resource.Resource
 
@@ -218,7 +228,7 @@ func (s *ResourceService) RelieveResource(
 			return shared.ErrIncidentNotOpen
 		}
 
-		if err := res.Relieve(successorID, actor.Sub, at); err != nil {
+		if err := res.Relieve(successorID, actor.Sub, resolvedAt); err != nil {
 			return err
 		}
 
@@ -233,7 +243,7 @@ func (s *ResourceService) RelieveResource(
 				return err
 			}
 
-			if err := successor.LinkSuccession(id, actor.Sub, at); err != nil {
+			if err := successor.LinkSuccession(id, actor.Sub, resolvedAt); err != nil {
 				return err
 			}
 
@@ -267,6 +277,7 @@ func (s *ResourceService) ReassignResource(
 		ctx,
 		"ResourceService.ReassignResource",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.Reassign(schadenplatzID, actor.Sub, at)
@@ -285,6 +296,7 @@ func (s *ResourceService) UpdateDeploymentLocation(
 		ctx,
 		"ResourceService.UpdateDeploymentLocation",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.UpdateDeploymentLocation(loc, actor.Sub, at)
@@ -303,6 +315,7 @@ func (s *ResourceService) ChangeHauptaufgabe(
 		ctx,
 		"ResourceService.ChangeHauptaufgabe",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.ChangeHauptaufgabe(hauptaufgabe, actor.Sub, at)
@@ -321,6 +334,7 @@ func (s *ResourceService) UpdateContact(
 		ctx,
 		"ResourceService.UpdateContact",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.UpdateContact(contact, actor.Sub, at)
@@ -339,6 +353,7 @@ func (s *ResourceService) UpdatePersonnelCount(
 		ctx,
 		"ResourceService.UpdatePersonnelCount",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.UpdatePersonnelCount(count, actor.Sub, at)
@@ -358,6 +373,7 @@ func (s *ResourceService) RecordEinsatzDauer(
 		ctx,
 		"ResourceService.RecordEinsatzDauer",
 		id,
+		nil,
 		actor,
 		func(res *resource.Resource, at time.Time) error {
 			return res.RecordEinsatzDauer(beginn, ende, actor.Sub, at)
@@ -365,11 +381,19 @@ func (s *ResourceService) RecordEinsatzDauer(
 	)
 }
 
+func (s *ResourceService) resolveAt(at *time.Time) time.Time {
+	if at != nil {
+		return *at
+	}
+	return s.clock.Now()
+}
+
 // simpleTransition handles the common load-access-mutate-save pattern for resource commands.
 func (s *ResourceService) simpleTransition(
 	ctx context.Context,
 	spanName string,
 	id shared.ResourceID,
+	at *time.Time,
 	actor identity.Actor,
 	fn func(*resource.Resource, time.Time) error,
 ) (inbound.ResourceState, error) {
@@ -377,7 +401,7 @@ func (s *ResourceService) simpleTransition(
 		trace.WithAttributes(attribute.String("resource.id", id.String())))
 	defer span.End()
 
-	at := s.clock.Now()
+	resolvedAt := s.resolveAt(at)
 
 	var res *resource.Resource
 
@@ -402,7 +426,7 @@ func (s *ResourceService) simpleTransition(
 			return shared.ErrIncidentNotOpen
 		}
 
-		if err := fn(res, at); err != nil {
+		if err := fn(res, resolvedAt); err != nil {
 			return err
 		}
 
@@ -437,6 +461,11 @@ func stateFromResource(res *resource.Resource) inbound.ResourceState {
 		DeploymentLocation: res.DeploymentLocation(),
 		Status:             res.Status(),
 		StatusAt:           res.StatusAt(),
+		AlertedAt:          res.AlertedAt(),
+		ReadyAt:            res.ReadyAt(),
+		DeployedAt:         res.DeployedAt(),
+		StoodDownAt:        res.StoodDownAt(),
+		RelievedAt:         res.RelievedAt(),
 		EinsatzBeginn:      res.EinsatzBeginn(),
 		EinsatzEnde:        res.EinsatzEnde(),
 		PredecessorID:      res.PredecessorID(),

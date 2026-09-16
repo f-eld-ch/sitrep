@@ -211,21 +211,22 @@ func toAttachmentRM(row *projection.AttachmentRow) *outbound.AttachmentRM {
 
 func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 	return &outbound.MessageRM{
-		ID:             row.ID,
-		Number:         row.Number,
-		IncidentID:     row.IncidentID,
-		Content:        row.Content,
-		Sender:         row.Sender,
-		SenderDetail:   row.SenderDetail,
-		Receiver:       row.Receiver,
-		ReceiverDetail: row.ReceiverDetail,
-		Medium:         row.Medium,
-		Time:           row.MsgTime,
-		CreatedAt:      row.CreatedAt,
-		UpdatedAt:      row.UpdatedAt,
-		Triage:         row.Triage,
-		Priority:       row.Priority,
-		DivisionIDs:    row.DivisionIDs,
+		ID:                row.ID,
+		Number:            row.Number,
+		IncidentID:        row.IncidentID,
+		Content:           row.Content,
+		Sender:            row.Sender,
+		SenderDetail:      row.SenderDetail,
+		Receiver:          row.Receiver,
+		ReceiverDetail:    row.ReceiverDetail,
+		Medium:            row.Medium,
+		Time:              row.MsgTime,
+		CreatedAt:         row.CreatedAt,
+		UpdatedAt:         row.UpdatedAt,
+		Triage:            row.Triage,
+		Priority:          row.Priority,
+		DivisionIDs:       row.DivisionIDs,
+		LinkedResourceIDs: row.LinkedResourceIDs,
 	}
 }
 
@@ -382,6 +383,25 @@ func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([
 	return out, nil
 }
 
+func (q *Queries) ListMessageCasualties(_ context.Context, messageID uuid.UUID) ([]*outbound.MessageCasualtyRM, error) {
+	rows := q.schadenplatz.GetMessageCasualties(messageID)
+
+	out := make([]*outbound.MessageCasualtyRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, &outbound.MessageCasualtyRM{
+			MessageID:       row.MessageID,
+			SchadenplatzID:  row.SchadenplatzID,
+			Vermisste:       row.Vermisste,
+			Tote:            row.Tote,
+			Verletzte:       row.Verletzte,
+			Obdachlose:      row.Obdachlose,
+			Eingeschlossene: row.Eingeschlossene,
+		})
+	}
+
+	return out, nil
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Resource
 // ──────────────────────────────────────────────────────────────────────────────
@@ -409,8 +429,21 @@ func (q *Queries) ListResourcesForSchadenplatz(
 	return out, nil
 }
 
-func (q *Queries) ListResourcesForIncident(_ context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
+func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
 	rows := q.resources.ForIncident(incidentID)
+	for _, incidentRow := range q.incidents.All() {
+		if incidentRow.IsDeleted || incidentRow.ParentID == nil || *incidentRow.ParentID != incidentID {
+			continue
+		}
+
+		if q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
+			rows = append(rows, q.resources.ForIncident(incidentRow.ID)...)
+		}
+	}
 
 	out := make([]*outbound.ResourceRM, 0, len(rows))
 	for _, row := range rows {
@@ -437,6 +470,11 @@ func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
 		HomeLocationLng:  row.HomeLocationLng,
 		Status:           row.Status,
 		StatusAt:         row.StatusAt,
+		AlertedAt:        row.AlertedAt,
+		ReadyAt:          row.ReadyAt,
+		DeployedAt:       row.DeployedAt,
+		StoodDownAt:      row.StoodDownAt,
+		RelievedAt:       row.RelievedAt,
 		EinsatzBeginn:    row.EinsatzBeginn,
 		EinsatzEnde:      row.EinsatzEnde,
 		PredecessorID:    row.PredecessorID,
@@ -453,8 +491,8 @@ func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
 		}
 
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
-			Lat:   *row.DeploymentLat,
-			Lng:   *row.DeploymentLng,
+			Lat:   row.DeploymentLat,
+			Lng:   row.DeploymentLng,
 			Label: label,
 		}
 	}

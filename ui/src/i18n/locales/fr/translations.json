@@ -54,7 +54,7 @@
   "schadenplatz": {
     "select": "Choisir le lieu",
     "selectHint": "Ce message concerne-t-il un lieu sinistre spécifique ?",
-    "defaultHint": "Général (sans attribution spécifique)",
+    "defaultHint": "Aucun lieu sinistre spécifique",
     "new": "Créer nouveau",
     "namePlaceholder": "Nom du lieu sinistre",
     "create": "Créer",
@@ -159,6 +159,7 @@
   "save": "enregistrer",
   "saveMoreInfo": "Besoin de plus d'informations",
   "saveTriage": "Terminer le triage",
+  "triageAdjust": "Ajuster le triage",
   "triageMessage": "Trier",
   "short": "abréviation",
   "showClosed": "Afficher fermé",
@@ -214,15 +215,24 @@
     }
   },
   "casualties": {
+    "childIncidents": "Incidents enfants",
     "vermisste": "Disparus",
     "tote": "Décédés",
     "verletzte": "Blessés",
     "obdachlose": "Sans-abri",
     "eingeschlossene": "Bloqués",
-    "summary": "Aperçu des personnes"
+    "summary": "Aperçu des personnes",
+    "overview": "Victimes",
+    "none": "Aucune victime enregistrée",
+    "byLocation": "Par lieu"
+  },
+  "dashboard": {
+    "title": "Tableau de bord de l'incident",
+    "priorityMessages": "Messages prioritaires",
+    "noPriorityMessages": "Aucun message prioritaire"
   },
   "errorPage": {
-"title": "Erreur inattendue",
+    "title": "Erreur inattendue",
     "notFoundTitle": "Objectif introuvable",
     "notFoundDesc": "La page demandée est introuvable. Veuillez vérifier l'adresse et réessayer.",
     "priority": "Priorité",
@@ -356,6 +366,7 @@
     "globalRoles": "Rôles globaux"
   },
   "resource": {
+    "childIncident": "Incident enfant",
     "formation": {
       "FW": "Sapeurs-pompiers",
       "POL": "Police",
@@ -392,13 +403,31 @@
       "personnelCount": "Personnel",
       "hauptaufgabe": "Tâche principale",
       "contact": "Contact",
-      "homeLocation": "Lieu de stationnement",
+      "homeLocation": "Organisation",
       "deploymentLocation": "Lieu d'engagement",
       "einsatzBeginn": "Début d'engagement",
       "einsatzEnde": "Fin d'engagement",
       "status": "Statut"
     },
     "noResources": "Aucun moyen enregistré",
-    "addResource": "Alerter un moyen"
+    "search": "Rechercher des moyens…",
+    "noResults": "Aucun moyen trouvé",
+    "addResource": "Alerter un moyen",
+    "count_one": "{{count}} moyen",
+    "count_other": "{{count}} moyens",
+    "selectFormation": "Formation",
+    "selectSize": "Taille d'unité",
+    "newResource": "Alerter un nouveau moyen",
+    "alerting": "En cours…",
+    "mitteltabelle": "Tableau des moyens",
+    "nr": "No.",
+    "alertedAt": "Alerté",
+    "readyAt": "Prêt",
+    "deployedAt": "Engagé",
+    "relievedAt": "Relévé",
+    "validation": {
+      "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
+      "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement"
+    }
   }
 }

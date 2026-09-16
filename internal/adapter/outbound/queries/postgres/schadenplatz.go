@@ -55,6 +55,41 @@ func (q *Queries) ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) 
 	return out, rows.Err()
 }
 
+func (q *Queries) ListMessageCasualties(
+	ctx context.Context,
+	messageID uuid.UUID,
+) ([]*outbound.MessageCasualtyRM, error) {
+	rows, err := q.pool.Query(ctx, `
+		SELECT message_id, schadenplatz_id, vermisste, tote, verletzte, obdachlose, eingeschlossene
+		FROM readmodel.message_casualties
+		WHERE message_id = $1`, messageID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*outbound.MessageCasualtyRM
+
+	for rows.Next() {
+		var rm outbound.MessageCasualtyRM
+		if err := rows.Scan(
+			&rm.MessageID,
+			&rm.SchadenplatzID,
+			&rm.Vermisste,
+			&rm.Tote,
+			&rm.Verletzte,
+			&rm.Obdachlose,
+			&rm.Eingeschlossene,
+		); err != nil {
+			return nil, err
+		}
+
+		out = append(out, &rm)
+	}
+
+	return out, rows.Err()
+}
+
 func scanPgSchadenplatz(s incidentScanner) (*outbound.SchadenplatzRM, error) {
 	var (
 		rm         outbound.SchadenplatzRM

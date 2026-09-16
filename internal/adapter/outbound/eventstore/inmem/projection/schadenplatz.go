@@ -31,15 +31,30 @@ type SchadenplatzRow struct {
 	UpdatedAt       time.Time
 }
 
+// MessageCasualtyRow holds per-message casualty deltas for one (message, Schadenplatz) pair.
+type MessageCasualtyRow struct {
+	MessageID       uuid.UUID
+	SchadenplatzID  uuid.UUID
+	Vermisste       int
+	Tote            int
+	Verletzte       int
+	Obdachlose      int
+	Eingeschlossene int
+}
+
 // SchadenplatzHandler maintains an in-memory projection of the Schadenplatz
 // read model. It is the source of truth for query adapters in the inmem stack.
 type SchadenplatzHandler struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*SchadenplatzRow
+	mu                sync.RWMutex
+	rows              map[uuid.UUID]*SchadenplatzRow
+	messageCasualties map[[2]uuid.UUID]*MessageCasualtyRow
 }
 
 func NewSchadenplatzHandler() *SchadenplatzHandler {
-	return &SchadenplatzHandler{rows: make(map[uuid.UUID]*SchadenplatzRow)}
+	return &SchadenplatzHandler{
+		rows:              make(map[uuid.UUID]*SchadenplatzRow),
+		messageCasualties: make(map[[2]uuid.UUID]*MessageCasualtyRow),
+	}
 }
 
 func (h *SchadenplatzHandler) Name() string { return "readmodel.schadenplatz" }
@@ -50,6 +65,7 @@ func (h *SchadenplatzHandler) Reset(_ context.Context) error {
 	defer h.mu.Unlock()
 
 	h.rows = make(map[uuid.UUID]*SchadenplatzRow)
+	h.messageCasualties = make(map[[2]uuid.UUID]*MessageCasualtyRow)
 
 	return nil
 }
@@ -126,7 +142,8 @@ func (h *SchadenplatzHandler) Apply(_ context.Context, e eventsourcing.Event) er
 
 	case "CasualtiesRecorded":
 		var d struct {
-			Deltas struct {
+			SourceMessageID string `json:"sourceMessageId"`
+			Deltas          struct {
 				Vermisste       int `json:"vermisste"`
 				Tote            int `json:"tote"`
 				Verletzte       int `json:"verletzte"`
@@ -138,13 +155,36 @@ func (h *SchadenplatzHandler) Apply(_ context.Context, e eventsourcing.Event) er
 			return err
 		}
 
+		msgID, err := uuid.Parse(d.SourceMessageID)
+		if err != nil {
+			return err
+		}
+
+		key := [2]uuid.UUID{msgID, id}
+		old := h.messageCasualties[key]
+
+		var oldV, oldT, oldVl, oldO, oldE int
+		if old != nil {
+			oldV, oldT, oldVl, oldO, oldE = old.Vermisste, old.Tote, old.Verletzte, old.Obdachlose, old.Eingeschlossene
+		}
+
 		if row := h.rows[id]; row != nil {
-			row.Vermisste += d.Deltas.Vermisste
-			row.Tote += d.Deltas.Tote
-			row.Verletzte += d.Deltas.Verletzte
-			row.Obdachlose += d.Deltas.Obdachlose
-			row.Eingeschlossene += d.Deltas.Eingeschlossene
+			row.Vermisste += d.Deltas.Vermisste - oldV
+			row.Tote += d.Deltas.Tote - oldT
+			row.Verletzte += d.Deltas.Verletzte - oldVl
+			row.Obdachlose += d.Deltas.Obdachlose - oldO
+			row.Eingeschlossene += d.Deltas.Eingeschlossene - oldE
 			row.UpdatedAt = e.OccurredAt
+		}
+
+		h.messageCasualties[key] = &MessageCasualtyRow{
+			MessageID:       msgID,
+			SchadenplatzID:  id,
+			Vermisste:       d.Deltas.Vermisste,
+			Tote:            d.Deltas.Tote,
+			Verletzte:       d.Deltas.Verletzte,
+			Obdachlose:      d.Deltas.Obdachlose,
+			Eingeschlossene: d.Deltas.Eingeschlossene,
 		}
 
 	case "MergedIntoDefault":
@@ -194,6 +234,23 @@ func (h *SchadenplatzHandler) ForIncident(incidentID uuid.UUID) []*SchadenplatzR
 
 	for _, row := range h.rows {
 		if row.IncidentID == incidentID && !row.IsMerged {
+			cp := *row
+			out = append(out, &cp)
+		}
+	}
+
+	return out
+}
+
+// GetMessageCasualties returns all per-message casualty rows for the given message ID.
+func (h *SchadenplatzHandler) GetMessageCasualties(messageID uuid.UUID) []*MessageCasualtyRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var out []*MessageCasualtyRow
+
+	for key, row := range h.messageCasualties {
+		if key[0] == messageID {
 			cp := *row
 			out = append(out, &cp)
 		}

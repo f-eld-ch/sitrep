@@ -223,13 +223,14 @@ func (s *MessageService) CorrectMessage(
 	return state, nil
 }
 
-// TriageMessage updates triage state and divisions atomically.
+// TriageMessage updates triage state, divisions, and linked resources atomically.
 func (s *MessageService) TriageMessage(
 	ctx context.Context,
 	id shared.MessageID,
 	triage shared.TriageStatus,
 	priority shared.PriorityStatus,
 	divisionIDs []shared.DivisionID,
+	linkedResourceIDs []shared.ResourceID,
 	actor identity.Actor,
 ) (inbound.MessageState, error) {
 	ctx, span := s.tracer.Start(ctx, "MessageService.TriageMessage",
@@ -275,7 +276,7 @@ func (s *MessageService) TriageMessage(
 			}
 		}
 
-		if err := msg.Triage(triage, priority, divisionIDs, actor.Sub, at, actor.Sub); err != nil {
+		if err := msg.Triage(triage, priority, divisionIDs, linkedResourceIDs, actor.Sub, at, actor.Sub); err != nil {
 			return err
 		}
 
@@ -772,7 +773,8 @@ func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageSt
 		UpdatedAt:      updatedAt,
 		Triage:         msg.TriageStatus(),
 		Priority:       msg.PriorityStatus(),
-		DivisionIDs:    msg.DivisionIDs(),
-		Attachments:    attStates,
+		DivisionIDs:       msg.DivisionIDs(),
+		LinkedResourceIDs: msg.LinkedResourceIDs(),
+		Attachments:       attStates,
 	}
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -233,6 +234,7 @@ func (s *SchadenplatzService) RecordCasualties(
 	schadenplatzID shared.SchadenplatzID,
 	sourceMessageID shared.MessageID,
 	deltas schadenplatz.CasualtyDeltas,
+	occurredAt time.Time,
 	actor identity.Actor,
 ) (inbound.SchadenplatzState, error) {
 	ctx, span := s.tracer.Start(ctx, "SchadenplatzService.RecordCasualties",
@@ -242,7 +244,7 @@ func (s *SchadenplatzService) RecordCasualties(
 		))
 	defer span.End()
 
-	at := s.clock.Now()
+	at := occurredAt
 
 	var sp *schadenplatz.Schadenplatz
 
