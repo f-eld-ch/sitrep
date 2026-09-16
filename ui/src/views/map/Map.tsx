@@ -302,7 +302,7 @@ function LayerFetcher() {
  * a frame budget, and still fast enough that the indicator reads as following the cursor.
  */
 const LIVE_GEOMETRY_INTERVAL_MS = 80;
-const READ_ONLY_LAYER_INTERVAL_MS = 5_000;
+const READ_ONLY_LAYER_INTERVAL_MS = 30_000;
 
 /**
  * Fired by mapbox-gl-draw on every one of its renders, including mid-drag — unlike

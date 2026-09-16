@@ -6,9 +6,11 @@ import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { Map as IncidentMap } from "views/map";
 import { MessageStack } from "views/journal/MessageStack";
+import JournalMessage from "views/journal/Message";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus } from "types";
+import type { Message } from "types/journal";
 import { useState } from "react";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
@@ -96,29 +98,24 @@ function totalPersonnel(resources: Resource[]) {
   return resources.reduce((sum, resource) => sum + resource.personnelCount, 0);
 }
 
-function PriorityMessageStack({ incidentId }: { incidentId: string }) {
+function PriorityMessageStack({
+  messages,
+  selectedMessageId,
+  onSelect,
+}: {
+  messages: Message[];
+  selectedMessageId: string | undefined;
+  onSelect: (id: string | undefined) => void;
+}) {
   const { t } = useTranslation();
-  const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>(undefined);
-  const result = useIncidentMessages(incidentId);
-
-  if (result.status === "loading") return <Spinner />;
-  if (result.status === "error") {
-    return <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>;
-  }
-
-  const messages = result.data.messages.filter(
-    (message) => message.priorityId === PriorityStatus.High,
-  );
 
   return (
-    <section className="flex min-h-0 flex-col rounded border border-border bg-bg-elevated">
-      <header className="border-b border-border px-3 py-2">
-        <h2 className="text-sm font-semibold text-fg">{t("dashboard.priorityMessages")}</h2>
-      </header>
+    <section className="flex min-h-0 flex-col">
+      <h2 className="px-3 py-2 text-sm font-semibold text-fg">{t("dashboard.priorityMessages")}</h2>
       <MessageStack
         messages={messages}
         effectiveId={selectedMessageId}
-        onSelect={setSelectedMessageId}
+        onSelect={onSelect}
         className="min-h-0 w-full flex-1 shrink lg:w-full"
       />
     </section>
@@ -209,18 +206,54 @@ export default function Dashboard() {
   const { incidentId } = useParams();
   const { t, i18n } = useTranslation();
   const resourcesResult = useIncidentResources(incidentId);
+  const messagesResult = useIncidentMessages(incidentId ?? "");
   const iconsLoaded = useBabsIcons();
+  const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>(undefined);
+  const title =
+    resourcesResult.status === "ready"
+      ? `${t("incident")} ${resourcesResult.data.incidentName}`
+      : t("dashboard.title");
 
   if (!incidentId) return <Spinner />;
 
+  const highPriorityMessages =
+    messagesResult.status === "ready"
+      ? messagesResult.data.messages.filter((message) => message.priorityId === PriorityStatus.High)
+      : [];
+  const selectedMessage = highPriorityMessages.find((message) => message.id === selectedMessageId);
+
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
-        <PageTitle className="shrink-0">{t("dashboard.title")}</PageTitle>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 px-3 pt-[3.5rem] pb-3">
+        <PageTitle className="shrink-0">{title}</PageTitle>
         <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[22rem_minmax(0,1fr)_18rem]">
-          <PriorityMessageStack incidentId={incidentId} />
-          <section className="min-h-[24rem] overflow-hidden rounded border border-border bg-bg-elevated xl:min-h-0">
-            <IncidentMap embedded readOnly />
+          {messagesResult.status === "loading" ? (
+            <Spinner />
+          ) : messagesResult.status === "error" ? (
+            <Notification variant="danger">{t(`errors.${messagesResult.error.code}`)}</Notification>
+          ) : (
+            <PriorityMessageStack
+              messages={highPriorityMessages}
+              selectedMessageId={selectedMessageId}
+              onSelect={setSelectedMessageId}
+            />
+          )}
+          <section className="flex min-h-[24rem] min-w-0 flex-col gap-3 xl:min-h-0">
+            {selectedMessage && (
+              <div className="max-h-[38vh] shrink-0 overflow-y-auto rounded bg-bg-elevated">
+                <JournalMessage
+                  id={selectedMessage.id}
+                  incidentId={incidentId}
+                  message={selectedMessage}
+                  divisions={selectedMessage.divisions.map((entry) => entry.division)}
+                  showControls={false}
+                  stabilizeActionBar
+                />
+              </div>
+            )}
+            <div className="min-h-[18rem] flex-1 overflow-hidden rounded border border-border bg-bg-elevated">
+              <IncidentMap embedded readOnly />
+            </div>
           </section>
           <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
         </div>
