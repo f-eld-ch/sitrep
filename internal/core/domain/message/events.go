@@ -34,11 +34,11 @@ type Corrected struct {
 
 // Triaged replaces the triage state and the entire division set atomically.
 type Triaged struct {
-	Triage              shared.TriageStatus   `json:"triage"`
-	Priority            shared.PriorityStatus `json:"priority"`
-	DivisionIDs         []shared.DivisionID   `json:"divisionIds"`
-	LinkedResourceIDs   []shared.ResourceID   `json:"linkedResourceIds,omitempty"`
-	TriagedBy           string                `json:"triagedBy"`
+	Triage            shared.TriageStatus   `json:"triage"`
+	Priority          shared.PriorityStatus `json:"priority"`
+	DivisionIDs       []shared.DivisionID   `json:"divisionIds"`
+	LinkedResourceIDs []shared.ResourceID   `json:"linkedResourceIds,omitempty"`
+	TriagedBy         string                `json:"triagedBy"`
 }
 
 // Deleted marks the message as soft-deleted.

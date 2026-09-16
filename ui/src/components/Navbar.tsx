@@ -75,7 +75,11 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             <div className="group relative flex items-stretch">
               <NavLink
                 to={incidentId ? `/incident/${incidentId}` : "/"}
-                title={incidentState.incident ? `${t("incident")} ${incidentState.incident.name}` : t("incident")}
+                title={
+                  incidentState.incident
+                    ? `${t("incident")} ${incidentState.incident.name}`
+                    : t("incident")
+                }
                 className={({ isActive }) =>
                   clsx(
                     "flex items-center gap-2 px-3 whitespace-nowrap",
@@ -454,7 +458,7 @@ const JournalNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+            "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
             isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
           )
         }
@@ -519,7 +523,7 @@ const TasksNavBar: FunctionComponent = () => {
       <NavLink
         className={({ isActive }) =>
           clsx(
-            "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+            "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
             isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
           )
         }
@@ -581,7 +585,7 @@ const ResourcesNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+          "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
           isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
         )
       }
@@ -604,7 +608,7 @@ const MapNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+          "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
           isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
         )
       }
@@ -627,7 +631,7 @@ const CasualtiesNavBar: FunctionComponent = () => {
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "flex items-center gap-2 px-3 capitalize whitespace-nowrap",
+          "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
           isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
         )
       }

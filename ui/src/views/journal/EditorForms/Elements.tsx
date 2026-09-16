@@ -92,7 +92,10 @@ function useNow() {
   useEffect(() => {
     const schedule = () => {
       const ms = 60_000 - (Date.now() % 60_000);
-      timerRef.current = setTimeout(() => { setNow(new Date()); schedule(); }, ms);
+      timerRef.current = setTimeout(() => {
+        setNow(new Date());
+        schedule();
+      }, ms);
     };
     schedule();
     return () => clearTimeout(timerRef.current);

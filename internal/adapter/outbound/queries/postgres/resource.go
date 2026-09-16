@@ -61,6 +61,7 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 	defer rows.Close()
 
 	out := []*outbound.ResourceRM{}
+
 	for rows.Next() {
 		rm, err := scanPgResource(rows)
 		if err != nil {

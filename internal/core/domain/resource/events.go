@@ -149,4 +149,3 @@ type EinsatzDauerRecorded struct {
 	Beginn time.Time  `json:"beginn"`
 	Ende   *time.Time `json:"ende,omitempty"`
 }
-

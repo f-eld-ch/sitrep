@@ -53,6 +53,7 @@ func TestMigrationsUpDownUp(t *testing.T) {
 		"readmodel_layer_features",
 		"readmodel_message",
 		"readmodel_message_attachment",
+		"readmodel_message_casualties",
 		"readmodel_resource",
 		"readmodel_schadenplatz",
 		"users",

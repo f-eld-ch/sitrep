@@ -115,12 +115,15 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
+
 		var dl importedLinked
+
 		_ = remarshal(e.Data, &dl)
 
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
 		}
+
 		if dl.LinkedResourceIDs == nil {
 			dl.LinkedResourceIDs = []uuid.UUID{}
 		}
@@ -222,6 +225,7 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
 		}
+
 		if d.LinkedResourceIDs == nil {
 			d.LinkedResourceIDs = []uuid.UUID{}
 		}

@@ -10,9 +10,22 @@ export type ResourceUnitSize = "TRUPP" | "GRUPPE" | "ZUG" | "KOMPANIE" | "BATAIL
 export type ResourceStatus = "AUFGEBOTEN" | "EINSATZBEREIT" | "EINGESETZT" | "ABGELOEST";
 export type ContactMedium = "PHONE" | "RADIO" | "OTHER";
 
-const FORMATIONS: readonly ResourceFormation[] = ["FW", "POL", "ARMEE", "ZS", "TECHNB", "SAN", "OTHER"];
+const FORMATIONS: readonly ResourceFormation[] = [
+  "FW",
+  "POL",
+  "ARMEE",
+  "ZS",
+  "TECHNB",
+  "SAN",
+  "OTHER",
+];
 const SIZES: readonly ResourceUnitSize[] = ["TRUPP", "GRUPPE", "ZUG", "KOMPANIE", "BATAILLON"];
-const STATUSES: readonly ResourceStatus[] = ["AUFGEBOTEN", "EINSATZBEREIT", "EINGESETZT", "ABGELOEST"];
+const STATUSES: readonly ResourceStatus[] = [
+  "AUFGEBOTEN",
+  "EINSATZBEREIT",
+  "EINGESETZT",
+  "ABGELOEST",
+];
 const MEDIUMS: readonly ContactMedium[] = ["PHONE", "RADIO", "OTHER"];
 
 export function toResourceFormation(raw: string): ResourceFormation {

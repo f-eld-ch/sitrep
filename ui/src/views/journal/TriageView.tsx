@@ -4,7 +4,18 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { Fragment, ViewTransition, useTransition, useState, useRef, useContext, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
+import {
+  Fragment,
+  ViewTransition,
+  useTransition,
+  useState,
+  useRef,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
@@ -34,7 +45,14 @@ import {
   useChangeHauptaufgabe,
 } from "api";
 import { ApiError, isApiError } from "api";
-import type { SchadenplatzWithResources, Resource, ResourceFormation, ResourceUnitSize, ContactMedium, SchadenplatzCasualtyInput } from "api";
+import type {
+  SchadenplatzWithResources,
+  Resource,
+  ResourceFormation,
+  ResourceUnitSize,
+  ContactMedium,
+  SchadenplatzCasualtyInput,
+} from "api";
 import { type MessageEditorFormHandle } from "./Editor";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
@@ -129,8 +147,12 @@ function PrintSheetButton({
     onAfterPrint: () => setShowForPrint(false),
   });
   const handlePrintRef = useRef(handlePrint);
-  useLayoutEffect(() => { handlePrintRef.current = handlePrint; });
-  useEffect(() => { if (showForPrint) handlePrintRef.current(); }, [showForPrint]);
+  useLayoutEffect(() => {
+    handlePrintRef.current = handlePrint;
+  });
+  useEffect(() => {
+    if (showForPrint) handlePrintRef.current();
+  }, [showForPrint]);
 
   return (
     <>
@@ -164,7 +186,15 @@ function TriageSummary(props: {
   iconsLoaded: boolean;
   onAdjust: () => void;
 }) {
-  const { message, incidentDivisions, casualties, linkedResourceIds, schadenplaetze, iconsLoaded, onAdjust } = props;
+  const {
+    message,
+    incidentDivisions,
+    casualties,
+    linkedResourceIds,
+    schadenplaetze,
+    iconsLoaded,
+    onAdjust,
+  } = props;
   const { t, i18n } = useTranslation();
 
   const allResources = schadenplaetze.flatMap((sp) => sp.resources);
@@ -206,14 +236,19 @@ function TriageSummary(props: {
       </div>
 
       {/* Summary body */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5">
+      <div className="flex-1 space-y-5 overflow-y-auto p-5">
         {/* Meldefluss */}
         {assignedDivisions.length > 0 && (
           <section>
-            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("messageFlow")}</h3>
+            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+              {t("messageFlow")}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {assignedDivisions.map((d) => (
-                <span key={d.id} className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
+                <span
+                  key={d.id}
+                  className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
+                >
                   {d.description || d.name}
                 </span>
               ))}
@@ -224,7 +259,9 @@ function TriageSummary(props: {
         {/* Casualties */}
         {hasCasualties && (
           <section>
-            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("stepPersonen")}</h3>
+            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+              {t("stepPersonen")}
+            </h3>
             <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
               <div className="divide-y divide-border rounded-lg border border-border bg-bg-elevated px-3">
                 {CASUALTY_CATEGORIES.filter((cat) => totalCasualties[cat.key] !== 0).map((cat) => (
@@ -234,7 +271,7 @@ function TriageSummary(props: {
                     ) : cat.faIcon ? (
                       <FontAwesomeIcon icon={cat.faIcon} className="text-sm text-fg-muted" />
                     ) : null}
-                    <span className="w-6 text-right text-base font-bold tabular-nums text-danger">
+                    <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
                       {totalCasualties[cat.key]}
                     </span>
                     <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
@@ -248,7 +285,9 @@ function TriageSummary(props: {
         {/* Linked resources */}
         {linkedResources.length > 0 && (
           <section>
-            <h3 className="mb-2 text-xs font-semibold text-fg-muted uppercase tracking-wide">{t("stepMittel")}</h3>
+            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+              {t("stepMittel")}
+            </h3>
             <div className="divide-y divide-border rounded-lg border border-border">
               {linkedResources.map((r) => {
                 const babsId = combinedBabsId(r.formation, r.size);
@@ -263,11 +302,17 @@ function TriageSummary(props: {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">
-                        {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+                        {qualifiedFormation(
+                          t(`resource.formation.${r.formation}`),
+                          r.homeLocation?.name,
+                        )}
                       </span>
-                      {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+                      {r.name && (
+                        <span className="block truncate text-xs text-fg-muted">{r.name}</span>
+                      )}
                       <span className="block truncate text-xs text-fg-muted/70">
-                        {r.personnelCount} {t("resource.fields.personnelCount")} · {t(`resource.status.${r.status}`)}
+                        {r.personnelCount} {t("resource.fields.personnelCount")} ·{" "}
+                        {t(`resource.status.${r.status}`)}
                       </span>
                     </span>
                   </div>
@@ -278,7 +323,7 @@ function TriageSummary(props: {
         )}
 
         {!hasCasualties && linkedResources.length === 0 && assignedDivisions.length === 0 && (
-          <p className="text-sm text-fg-muted/60 text-center mt-8">–</p>
+          <p className="mt-8 text-center text-sm text-fg-muted/60">–</p>
         )}
       </div>
 
@@ -298,11 +343,7 @@ function TriagePanel(props: { message: Message; incidentId: string; onSaved: () 
   return <PanelForm key={message.id} message={message} incidentId={incidentId} onSaved={onSaved} />;
 }
 
-function PanelForm(props: {
-  message: Message;
-  incidentId: string;
-  onSaved: () => void;
-}) {
+function PanelForm(props: { message: Message; incidentId: string; onSaved: () => void }) {
   const { message, incidentId, onSaved } = props;
   const { t } = useTranslation();
   const { state: incidentState } = useContext(IncidentContext);
@@ -339,13 +380,15 @@ function PanelForm(props: {
     if (resourcesInitialized.current || messageForTriageResult.status !== "ready") return;
     resourcesInitialized.current = true;
     const linked = messageForTriageResult.data.linkedResourceIds;
+    // eslint-disable-next-line react/set-state-in-effect -- initializes local edit state from async query data once.
     if (linked.length > 0) setSelectedResourceIds(new Set(linked));
   }, [messageForTriageResult]);
 
   const toggleResourceId = (id: string) =>
     setSelectedResourceIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   const editorRef = useRef<MessageEditorFormHandle>(null);
@@ -354,7 +397,8 @@ function PanelForm(props: {
   const isPending =
     message.triageId === TriageStatus.Pending || message.triageId === TriageStatus.Reset;
 
-  const schadenplaetze = resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : [];
+  const schadenplaetze =
+    resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : [];
   const defaultSp = schadenplaetze.find((s) => s.isDefault);
   const namedSchadenplaetze = schadenplaetze.filter((s) => !s.isDefault);
 
@@ -374,29 +418,43 @@ function PanelForm(props: {
         eingeschlossene: entry.eingeschlossene,
       };
     }
+    // eslint-disable-next-line react/set-state-in-effect -- initializes local edit state from previous triage query data once.
     setCasualtiesBySpId(initial);
 
     const namedSpIds = previousCasualties
       .map((e) => e.schadenplatzId)
       .filter((id) => id !== defaultSp.id);
+    // eslint-disable-next-line react/set-state-in-effect -- initializes local edit state from previous triage query data once.
     if (namedSpIds.length > 0) setSelectedSpIds(namedSpIds);
   }, [previousCasualties, defaultSp]);
 
   // When operator selects nothing, casualties/resources go to the default SP implicitly.
   // Personen step: always show default SP + any selected named SPs
-  const personenSpIds: string[] = [
-    ...(defaultSp ? [defaultSp.id] : []),
-    ...selectedSpIds.filter((id) => id !== defaultSp?.id),
-  ];
+  const personenSpIds: string[] = useMemo(
+    () => [
+      ...(defaultSp ? [defaultSp.id] : []),
+      ...selectedSpIds.filter((id) => id !== defaultSp?.id),
+    ],
+    [defaultSp, selectedSpIds],
+  );
   // Mittel step: selected named SPs only, falling back to default if nothing selected
   const effectiveSpIds: string[] =
     selectedSpIds.length > 0 ? selectedSpIds : defaultSp ? [defaultSp.id] : [];
 
   const toggleSpId = (id: string) =>
-    setSelectedSpIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+    setSelectedSpIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const getSpCasualties = (spId: string): CasualtyDeltas =>
-    casualtiesBySpId[spId] ?? { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 };
+  const getSpCasualties = useCallback(
+    (spId: string): CasualtyDeltas =>
+      casualtiesBySpId[spId] ?? {
+        vermisste: 0,
+        tote: 0,
+        verletzte: 0,
+        obdachlose: 0,
+        eingeschlossene: 0,
+      },
+    [casualtiesBySpId],
+  );
 
   const setSpCasualties = (spId: string, deltas: CasualtyDeltas) =>
     setCasualtiesBySpId((prev) => ({ ...prev, [spId]: deltas }));
@@ -421,28 +479,39 @@ function PanelForm(props: {
     divisions: assignments.map((division) => ({ division })),
   };
 
-  const handleSave = useCallback(async (triage: TriageStatus) => {
-    try {
-      await triageMessage({
-        incidentId,
-        messageId: message.id,
-        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
-        triage,
-        divisionIds: assignments.map((d) => d.id),
-        divisions: assignments,
-        schadenplatzCasualties: personenSpIds.map((spId) => ({
-          schadenplatzId: spId,
-          ...(casualtiesBySpId[spId] ?? { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 }),
-        })),
-        linkedResourceIds: Array.from(selectedResourceIds),
-      });
-      onSaved();
-    } catch {
-      // triageState.error is set by useMutation and displayed in the step notification
-    }
-  // personenSpIds is derived state — include its dependencies instead
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onSaved, casualtiesBySpId, selectedSpIds, defaultSp?.id, triageMessage, incidentId, message.id, priority, assignments, selectedResourceIds]);
+  const handleSave = useCallback(
+    async (triage: TriageStatus) => {
+      try {
+        await triageMessage({
+          incidentId,
+          messageId: message.id,
+          priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+          triage,
+          divisionIds: assignments.map((d) => d.id),
+          divisions: assignments,
+          schadenplatzCasualties: personenSpIds.map((spId) => ({
+            schadenplatzId: spId,
+            ...getSpCasualties(spId),
+          })),
+          linkedResourceIds: Array.from(selectedResourceIds),
+        });
+        onSaved();
+      } catch {
+        // triageState.error is set by useMutation and displayed in the step notification
+      }
+    },
+    [
+      onSaved,
+      getSpCasualties,
+      personenSpIds,
+      triageMessage,
+      incidentId,
+      message.id,
+      priority,
+      assignments,
+      selectedResourceIds,
+    ],
+  );
 
   const handleNext = useCallback(async () => {
     setStepError(undefined);
@@ -467,9 +536,15 @@ function PanelForm(props: {
     }
     if (currentStep.key === "meldung") void editorRef.current?.save();
     setStepIndex((i) => i + 1);
-  // personenSpIds is derived — include its deps instead
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLast, currentStep.key, handleSave, recordCasualties, message.id, getSpCasualties, selectedSpIds, defaultSp?.id]);
+  }, [
+    isLast,
+    currentStep.key,
+    handleSave,
+    recordCasualties,
+    message.id,
+    getSpCasualties,
+    personenSpIds,
+  ]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -489,8 +564,14 @@ function PanelForm(props: {
         incidentId={incidentId}
         incidentDivisions={incidentDivisions}
         casualties={previousCasualties}
-        linkedResourceIds={messageForTriageResult.status === "ready" ? messageForTriageResult.data.linkedResourceIds : []}
-        schadenplaetze={resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : []}
+        linkedResourceIds={
+          messageForTriageResult.status === "ready"
+            ? messageForTriageResult.data.linkedResourceIds
+            : []
+        }
+        schadenplaetze={
+          resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : []
+        }
         iconsLoaded={iconsLoaded}
         onAdjust={() => setEditing(true)}
       />
@@ -503,11 +584,7 @@ function PanelForm(props: {
       <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
         {!isPending && (
           <div className="mb-2 flex justify-end">
-            <PrintSheetButton
-              message={message}
-              divisions={incidentDivisions}
-              variant="inline"
-            />
+            <PrintSheetButton message={message} divisions={incidentDivisions} variant="inline" />
           </div>
         )}
         <JournalMessage
@@ -527,15 +604,16 @@ function PanelForm(props: {
 
       {/* Step content */}
       <div className="flex-1 overflow-y-auto p-5">
-        {(triageState.error ?? stepError) && (() => {
-          const err = triageState.error ?? stepError!;
-          return (
-            <Notification variant="danger" className="mb-4">
-              <p>{t(`errors.${err.code}`)}</p>
-              {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
-            </Notification>
-          );
-        })()}
+        {(triageState.error ?? stepError) &&
+          (() => {
+            const err = triageState.error ?? stepError!;
+            return (
+              <Notification variant="danger" className="mb-4">
+                <p>{t(`errors.${err.code}`)}</p>
+                {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
+              </Notification>
+            );
+          })()}
 
         {currentStep.key === "meldung" && (
           <MessageEditorForm
@@ -642,9 +720,7 @@ function PanelForm(props: {
             onReplaced={(tempId, realId) =>
               setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
             }
-            onCancelled={(tempId) =>
-              setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
-            }
+            onCancelled={(tempId) => setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))}
             createSchadenplatz={createSchadenplatz}
           />
         )}
@@ -653,12 +729,12 @@ function PanelForm(props: {
           <div className="space-y-6">
             {personenSpIds.map((spId) => {
               const sp = schadenplaetze.find((s) => s.id === spId);
-              const label = sp?.isDefault
-                ? t("schadenplatz.defaultHint")
-                : (sp?.name ?? spId);
+              const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
               return (
                 <div key={spId}>
-                  <h3 className="mb-3 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
+                  <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+                    {label}
+                  </h3>
                   <CasualtySection
                     value={getSpCasualties(spId)}
                     spCasualties={sp?.casualties}
@@ -788,7 +864,8 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   );
 
   const messages = useMemo(
-    () => (result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : []),
+    () =>
+      result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : [],
     [result.status, result.data, resolvedFilters],
   );
 
@@ -847,12 +924,15 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [messages, effectiveId, startTransition]);
 
-  const handleSelect = useCallback((id: string | undefined) => {
-    startTransition(() => {
-      setCaughtUp(false);
-      setSelectedId(id);
-    });
-  }, [startTransition]);
+  const handleSelect = useCallback(
+    (id: string | undefined) => {
+      startTransition(() => {
+        setCaughtUp(false);
+        setSelectedId(id);
+      });
+    },
+    [startTransition],
+  );
 
   if (result.status === "loading") {
     return (
@@ -892,11 +972,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   return (
     <div className="mt-[2.75rem] flex grow overflow-hidden bg-bg">
-      <MessageStack
-        messages={messages}
-        effectiveId={effectiveId}
-        onSelect={handleSelect}
-      />
+      <MessageStack messages={messages} effectiveId={effectiveId} onSelect={handleSelect} />
       <TriageCanvas incidentClosed={incidentIsClosed}>
         {selectedMessage && !caughtUp && (
           <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
@@ -928,11 +1004,11 @@ type CasualtyCategory = {
 };
 
 const CASUALTY_CATEGORIES: CasualtyCategory[] = [
-  { key: "vermisste",      labelKey: "casualties.vermisste",      babsId: "1302" },
-  { key: "tote",           labelKey: "casualties.tote",           babsId: "1305" },
-  { key: "verletzte",      labelKey: "casualties.verletzte",      babsId: "1301" },
-  { key: "obdachlose",     labelKey: "casualties.obdachlose",     babsId: "1303" },
-  { key: "eingeschlossene",labelKey: "casualties.eingeschlossene",babsId: "1304" },
+  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
+  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
+  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
+  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
+  { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
 ];
 
 function CasualtySection({
@@ -947,8 +1023,7 @@ function CasualtySection({
   const { t, i18n } = useTranslation();
   const iconsLoaded = useBabsIcons();
 
-  const set = (key: keyof CasualtyDeltas, delta: number) =>
-    onChange({ ...value, [key]: delta });
+  const set = (key: keyof CasualtyDeltas, delta: number) => onChange({ ...value, [key]: delta });
 
   const nonZero = CASUALTY_CATEGORIES.filter((cat) => value[cat.key] !== 0);
 
@@ -971,9 +1046,11 @@ function CasualtySection({
 
         {/* Summary */}
         <div className="w-1/2 rounded-lg border border-border bg-bg p-3">
-          <p className="mb-2 text-sm font-semibold text-danger uppercase tracking-wide">{t("casualties.summary")}</p>
+          <p className="mb-2 text-sm font-semibold tracking-wide text-danger uppercase">
+            {t("casualties.summary")}
+          </p>
           {nonZero.length === 0 ? (
-            <p className="text-center text-sm text-fg-muted/50 mt-2">–</p>
+            <p className="mt-2 text-center text-sm text-fg-muted/50">–</p>
           ) : (
             <div className="flex flex-col items-center gap-3">
               {nonZero.map((cat) => {
@@ -1035,7 +1112,7 @@ function CasualtyRow({
         ) : null}
       </span>
       <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex shrink-0 items-center gap-1">
         <button
           type="button"
           aria-label={`${label} −1`}
@@ -1051,7 +1128,7 @@ function CasualtyRow({
           min={minDelta}
           onChange={(e) => onChange(Math.max(minDelta, Number(e.target.value)))}
           aria-label={label}
-          className="w-10 rounded border border-border bg-bg-elevated px-1 py-0.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-10 rounded border border-border bg-bg-elevated px-1 py-0.5 text-center text-xs focus:ring-1 focus:ring-primary focus:outline-none"
         />
         <button
           type="button"
@@ -1085,7 +1162,11 @@ function SchadenplatzStep({
   onCreated: (id: string) => void;
   onReplaced: (tempId: string, realId: string) => void;
   onCancelled: (tempId: string) => void;
-  createSchadenplatz: (args: { incidentId: string; name: string; tempId?: string }) => Promise<{ id: string; tempId: string }>;
+  createSchadenplatz: (args: {
+    incidentId: string;
+    name: string;
+    tempId?: string;
+  }) => Promise<{ id: string; tempId: string }>;
 }) {
   const { t } = useTranslation();
   const [showNew, setShowNew] = useState(false);
@@ -1146,9 +1227,7 @@ function SchadenplatzStep({
       )}
 
       {/* Implicit-default hint */}
-      <p className="text-xs text-fg-muted/70 italic">
-        {t("schadenplatz.defaultHint")}
-      </p>
+      <p className="text-xs text-fg-muted/70 italic">{t("schadenplatz.defaultHint")}</p>
 
       {/* Create new */}
       <div className={clsx("pt-2", namedSchadenplaetze.length > 0 && "border-t border-border")}>
@@ -1161,18 +1240,17 @@ function SchadenplatzStep({
             + {t("schadenplatz.new")}
           </button>
         ) : (
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <input
               type="text"
               value={newSpName}
               onChange={(e) => setNewSpName(e.target.value)}
               placeholder={t("schadenplatz.namePlaceholder")}
-              className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter") void handleCreate();
                 if (e.key === "Escape") setShowNew(false);
               }}
-              autoFocus
             />
             <Button
               type="button"
@@ -1183,12 +1261,7 @@ function SchadenplatzStep({
             >
               {t("schadenplatz.create")}
             </Button>
-            <Button
-              type="button"
-              variant="light"
-              size="xs"
-              onClick={() => setShowNew(false)}
-            >
+            <Button type="button" variant="light" size="xs" onClick={() => setShowNew(false)}>
               {t("cancel")}
             </Button>
           </div>
@@ -1230,7 +1303,6 @@ const resourceStatusVariant: Record<ResourceStatus, TagVariant> = {
   ABGELOEST: "gray",
 };
 
-
 function ResourcePicker({
   schadenplaetze,
   selectedIds,
@@ -1248,7 +1320,11 @@ function ResourcePicker({
   const [search, setSearch] = useState("");
 
   const allResources = schadenplaetze.flatMap((sp) =>
-    sp.resources.map((r) => ({ ...r, _spId: sp.id, _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name }))
+    sp.resources.map((r) => ({
+      ...r,
+      _spId: sp.id,
+      _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
+    })),
   );
 
   const selectedResources = allResources.filter((r) => selectedIds.has(r.id));
@@ -1257,8 +1333,13 @@ function ResourcePicker({
   const searchResults = q
     ? allResources.filter((r) => {
         if (selectedIds.has(r.id)) return false;
-        const qf = qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name).toLowerCase();
-        return qf.includes(q) || r.name.toLowerCase().includes(q) || r._spName.toLowerCase().includes(q);
+        const qf = qualifiedFormation(
+          t(`resource.formation.${r.formation}`),
+          r.homeLocation?.name,
+        ).toLowerCase();
+        return (
+          qf.includes(q) || r.name.toLowerCase().includes(q) || r._spName.toLowerCase().includes(q)
+        );
       })
     : [];
 
@@ -1288,11 +1369,11 @@ function ResourcePicker({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t("resource.search")}
-        className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+        className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
       />
-      {q && (
-        searchResults.length === 0 ? (
-          <p className="text-sm text-fg-muted italic px-1">{t("resource.noResults")}</p>
+      {q &&
+        (searchResults.length === 0 ? (
+          <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
         ) : (
           <div className="divide-y divide-border rounded border border-border">
             {searchResults.map((r) => (
@@ -1302,14 +1383,16 @@ function ResourcePicker({
                 currentSpName={r._spName}
                 schadenplaetze={schadenplaetze}
                 checked={false}
-                onToggle={() => { onToggle(r.id); setSearch(""); }}
+                onToggle={() => {
+                  onToggle(r.id);
+                  setSearch("");
+                }}
                 iconsLoaded={iconsLoaded}
                 messageTime={messageTime}
               />
             ))}
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 }
@@ -1351,17 +1434,25 @@ function ResourcePickerRow({
   const [deployAttempted, setDeployAttempted] = useState(false);
 
   const busy =
-    markReadyState.loading || deployState.loading ||
-    standDownState.loading || relieveState.loading ||
+    markReadyState.loading ||
+    deployState.loading ||
+    standDownState.loading ||
+    relieveState.loading ||
     reassignState.loading ||
-    locationState.loading || contactState.loading || hauptaufgabeState.loading ||
+    locationState.loading ||
+    contactState.loading ||
+    hauptaufgabeState.loading ||
     personnelCountState.loading;
 
   const actionError =
-    markReadyState.error ?? deployState.error ??
-    standDownState.error ?? relieveState.error ??
+    markReadyState.error ??
+    deployState.error ??
+    standDownState.error ??
+    relieveState.error ??
     reassignState.error ??
-    locationState.error ?? contactState.error ?? hauptaufgabeState.error ??
+    locationState.error ??
+    contactState.error ??
+    hauptaufgabeState.error ??
     personnelCountState.error;
 
   const babsId = combinedBabsId(r.formation, r.size);
@@ -1369,14 +1460,14 @@ function ResourcePickerRow({
   return (
     <div className={clsx(checked ? "bg-primary/5" : "")}>
       {/* Header row — click to toggle */}
-      <label className="flex items-center gap-3 px-3 py-2.5 cursor-pointer select-none">
+      <label className="flex cursor-pointer items-center gap-3 px-3 py-2.5 select-none">
         <input
           type="checkbox"
           checked={checked}
           onChange={onToggle}
           className="h-4 w-4 shrink-0 rounded border-border accent-primary"
         />
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-bg border border-border">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border bg-bg">
           {babsId && iconsLoaded ? (
             <BabsIcon icon={babsId} size={36} fallback={null} />
           ) : (
@@ -1403,11 +1494,13 @@ function ResourcePickerRow({
 
       {/* Expansion panel — shown only when checked */}
       {checked && (
-        <div className="border-t border-border/60 bg-bg px-3 pb-3 pt-2 space-y-2">
+        <div className="space-y-2 border-t border-border/60 bg-bg px-3 pt-2 pb-3">
           {/* Schadenplatz reassign */}
           {schadenplaetze.length > 1 && (
             <label className="block">
-              <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("schadenplatz.select")}</span>
+              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+                {t("schadenplatz.select")}
+              </span>
               <select
                 value={targetSpId}
                 disabled={busy}
@@ -1416,7 +1509,7 @@ function ResourcePickerRow({
                   setTargetSpId(newSpId);
                   await reassign({ id: r.id, schadenplatzId: newSpId });
                 }}
-                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 {schadenplaetze.map((sp) => (
                   <option key={sp.id} value={sp.id}>
@@ -1429,7 +1522,9 @@ function ResourcePickerRow({
 
           {/* Personnel count */}
           <label className="block">
-            <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("resource.fields.personnelCount")}</span>
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+              {t("resource.fields.personnelCount")}
+            </span>
             <input
               type="number"
               min={0}
@@ -1437,70 +1532,99 @@ function ResourcePickerRow({
               onChange={(e) => setPersonnelCount(e.target.value)}
               onBlur={() => {
                 const n = parseInt(personnelCount, 10);
-                if (!isNaN(n) && n !== r.personnelCount) void updatePersonnelCount({ id: r.id, count: n });
+                if (!isNaN(n) && n !== r.personnelCount)
+                  void updatePersonnelCount({ id: r.id, count: n });
               }}
-              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
             />
           </label>
 
           {/* Hauptaufgabe — only relevant from EINSATZBEREIT onwards */}
-          {r.status !== "AUFGEBOTEN" && (() => {
-            const required = r.status === "EINSATZBEREIT";
-            const invalid = deployAttempted && !hauptaufgabe.trim();
-            return (
-              <label className="block">
-                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                  {t("resource.fields.hauptaufgabe")}
-                  {required && <span className="text-danger">*</span>}
-                </span>
-                <input
-                  type="text"
-                  value={hauptaufgabe}
-                  onChange={(e) => { setHauptaufgabe(e.target.value); if (deployAttempted) setDeployAttempted(false); }}
-                  onBlur={() => { if (hauptaufgabe.trim() !== r.hauptaufgabe) void changeHauptaufgabe({ id: r.id, hauptaufgabe: hauptaufgabe.trim() }); }}
-                  className={clsx(
-                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1",
-                    invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
+          {r.status !== "AUFGEBOTEN" &&
+            (() => {
+              const required = r.status === "EINSATZBEREIT";
+              const invalid = deployAttempted && !hauptaufgabe.trim();
+              return (
+                <label className="block">
+                  <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                    {t("resource.fields.hauptaufgabe")}
+                    {required && <span className="text-danger">*</span>}
+                  </span>
+                  <input
+                    type="text"
+                    value={hauptaufgabe}
+                    onChange={(e) => {
+                      setHauptaufgabe(e.target.value);
+                      if (deployAttempted) setDeployAttempted(false);
+                    }}
+                    onBlur={() => {
+                      if (hauptaufgabe.trim() !== r.hauptaufgabe)
+                        void changeHauptaufgabe({ id: r.id, hauptaufgabe: hauptaufgabe.trim() });
+                    }}
+                    className={clsx(
+                      "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                      invalid
+                        ? "border-danger focus:ring-danger"
+                        : "border-border focus:ring-primary",
+                    )}
+                  />
+                  {invalid && (
+                    <span className="mt-0.5 block text-xs text-danger">
+                      {t("resource.validation.hauptaufgabeRequired")}
+                    </span>
                   )}
-                />
-                {invalid && <span className="mt-0.5 block text-xs text-danger">{t("resource.validation.hauptaufgabeRequired")}</span>}
-              </label>
-            );
-          })()}
+                </label>
+              );
+            })()}
 
           {/* Einsatzort — only relevant from EINSATZBEREIT onwards */}
-          {r.status !== "AUFGEBOTEN" && (() => {
-            const required = r.status === "EINSATZBEREIT";
-            const invalid = deployAttempted && !einsatzort.trim();
-            return (
-              <label className="block">
-                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                  {t("resource.fields.deploymentLocation")}
-                  {required && <span className="text-danger">*</span>}
-                </span>
-                <input
-                  type="text"
-                  value={einsatzort}
-                  onChange={(e) => { setEinsatzort(e.target.value); if (deployAttempted) setDeployAttempted(false); }}
-                  onBlur={() => { if (einsatzort.trim()) void updateLocation({ id: r.id, label: einsatzort.trim() }); }}
-                  className={clsx(
-                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1",
-                    invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
+          {r.status !== "AUFGEBOTEN" &&
+            (() => {
+              const required = r.status === "EINSATZBEREIT";
+              const invalid = deployAttempted && !einsatzort.trim();
+              return (
+                <label className="block">
+                  <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                    {t("resource.fields.deploymentLocation")}
+                    {required && <span className="text-danger">*</span>}
+                  </span>
+                  <input
+                    type="text"
+                    value={einsatzort}
+                    onChange={(e) => {
+                      setEinsatzort(e.target.value);
+                      if (deployAttempted) setDeployAttempted(false);
+                    }}
+                    onBlur={() => {
+                      if (einsatzort.trim())
+                        void updateLocation({ id: r.id, label: einsatzort.trim() });
+                    }}
+                    className={clsx(
+                      "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                      invalid
+                        ? "border-danger focus:ring-danger"
+                        : "border-border focus:ring-primary",
+                    )}
+                  />
+                  {invalid && (
+                    <span className="mt-0.5 block text-xs text-danger">
+                      {t("resource.validation.einsatzortRequired")}
+                    </span>
                   )}
-                />
-                {invalid && <span className="mt-0.5 block text-xs text-danger">{t("resource.validation.einsatzortRequired")}</span>}
-              </label>
-            );
-          })()}
+                </label>
+              );
+            })()}
 
           {/* Contact */}
           <div>
-            <span className="mb-0.5 block text-xs font-medium text-fg-muted">{t("resource.fields.contact")}</span>
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+              {t("resource.fields.contact")}
+            </span>
             <div className="flex gap-2">
               <select
                 value={contactMedium}
                 onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
-                className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 <option value="PHONE">{t("medium.PHONE")}</option>
                 <option value="RADIO">{t("medium.RADIO")}</option>
@@ -1510,22 +1634,31 @@ function ResourcePickerRow({
                 type="text"
                 value={contactDetail}
                 onChange={(e) => setContactDetail(e.target.value)}
-                onBlur={() => { if (contactDetail.trim()) void updateContact({ id: r.id, medium: contactMedium, detail: contactDetail.trim() }); }}
+                onBlur={() => {
+                  if (contactDetail.trim())
+                    void updateContact({
+                      id: r.id,
+                      medium: contactMedium,
+                      detail: contactDetail.trim(),
+                    });
+                }}
                 placeholder={t("resource.fields.contact")}
-                className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
 
-          {actionError && (
-            <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>
-          )}
+          {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
 
           {/* Transition buttons */}
           <div className="flex flex-wrap gap-2 pt-1">
             {r.status === "AUFGEBOTEN" && (
               <Button
-                type="button" size="xs" variant="primary" light disabled={busy}
+                type="button"
+                size="xs"
+                variant="primary"
+                light
+                disabled={busy}
                 onClick={() => void markReady({ id: r.id, at: messageTime })}
               >
                 {t("resource.actions.markReady")}
@@ -1534,7 +1667,11 @@ function ResourcePickerRow({
             {r.status === "EINSATZBEREIT" && (
               <>
                 <Button
-                  type="button" size="xs" variant="success" light disabled={busy}
+                  type="button"
+                  size="xs"
+                  variant="success"
+                  light
+                  disabled={busy}
                   onClick={() => {
                     if (!hauptaufgabe.trim() || !einsatzort.trim()) {
                       setDeployAttempted(true);
@@ -1546,7 +1683,11 @@ function ResourcePickerRow({
                   {t("resource.actions.deploy")}
                 </Button>
                 <Button
-                  type="button" size="xs" variant="warning" light disabled={busy}
+                  type="button"
+                  size="xs"
+                  variant="warning"
+                  light
+                  disabled={busy}
                   onClick={() => void standDown({ id: r.id, at: messageTime })}
                 >
                   {t("resource.actions.standDown")}
@@ -1556,13 +1697,20 @@ function ResourcePickerRow({
             {r.status === "EINGESETZT" && (
               <>
                 <Button
-                  type="button" size="xs" variant="warning" light disabled={busy}
+                  type="button"
+                  size="xs"
+                  variant="warning"
+                  light
+                  disabled={busy}
                   onClick={() => void standDown({ id: r.id, at: messageTime })}
                 >
                   {t("resource.actions.standDown")}
                 </Button>
                 <Button
-                  type="button" size="xs" variant="light" disabled={busy}
+                  type="button"
+                  size="xs"
+                  variant="light"
+                  disabled={busy}
                   onClick={() => void relieve({ id: r.id, at: messageTime })}
                 >
                   {t("resource.actions.relieve")}
@@ -1582,34 +1730,46 @@ type FormationMeta = { key: ResourceFormation; babsId: string };
 type SizeMeta = { key: ResourceUnitSize; babsId: string; min: number; max: number };
 
 const FORMATIONS: FormationMeta[] = [
-  { key: "FW",     babsId: "4702" },
-  { key: "SAN",    babsId: "4703" },
-  { key: "ZS",     babsId: "4704" },
-  { key: "POL",    babsId: "4701" },
+  { key: "FW", babsId: "4702" },
+  { key: "SAN", babsId: "4703" },
+  { key: "ZS", babsId: "4704" },
+  { key: "POL", babsId: "4701" },
   { key: "TECHNB", babsId: "4705" },
-  { key: "ARMEE",  babsId: "4706" },
-  { key: "OTHER",  babsId: "4802" }, // neutral Gruppe icon
+  { key: "ARMEE", babsId: "4706" },
+  { key: "OTHER", babsId: "4802" }, // neutral Gruppe icon
 ];
 
 const SIZES: SizeMeta[] = [
-  { key: "TRUPP",     babsId: "4801", min: 1,   max: 2   },
-  { key: "GRUPPE",    babsId: "4802", min: 3,   max: 12  },
-  { key: "ZUG",       babsId: "4803", min: 13,  max: 60  },
-  { key: "KOMPANIE",  babsId: "4804", min: 61,  max: 300 },
+  { key: "TRUPP", babsId: "4801", min: 1, max: 2 },
+  { key: "GRUPPE", babsId: "4802", min: 3, max: 12 },
+  { key: "ZUG", babsId: "4803", min: 13, max: 60 },
+  { key: "KOMPANIE", babsId: "4804", min: 61, max: 300 },
   { key: "BATAILLON", babsId: "4805", min: 301, max: Infinity },
 ];
 
 // formation → hundreds prefix for combined BABS icon
 const FORMATION_PREFIX: Record<ResourceFormation, string> = {
-  POL:    "41", FW:     "42", SAN:    "43",
-  ZS:     "44", TECHNB: "45", ARMEE:  "46", OTHER: "48",
+  POL: "41",
+  FW: "42",
+  SAN: "43",
+  ZS: "44",
+  TECHNB: "45",
+  ARMEE: "46",
+  OTHER: "48",
 };
 // size → unit offset (01–05)
 const SIZE_OFFSET: Record<ResourceUnitSize, string> = {
-  TRUPP: "01", GRUPPE: "02", ZUG: "03", KOMPANIE: "04", BATAILLON: "05",
+  TRUPP: "01",
+  GRUPPE: "02",
+  ZUG: "03",
+  KOMPANIE: "04",
+  BATAILLON: "05",
 };
 
-function combinedBabsId(formation: ResourceFormation | null, size: ResourceUnitSize | null): string | null {
+function combinedBabsId(
+  formation: ResourceFormation | null,
+  size: ResourceUnitSize | null,
+): string | null {
   if (!formation || !size) return null;
   return FORMATION_PREFIX[formation] + SIZE_OFFSET[size];
 }
@@ -1643,8 +1803,9 @@ function AlertResourceForm({
   const [homeLocation, setHomeLocation] = useState("");
 
   const derivedSize = personnelCount ? suggestSize(Number(personnelCount)) : null;
-  const previewBabsId = combinedBabsId(formation, derivedSize) ??
-    (formation ? FORMATIONS.find((f) => f.key === formation)?.babsId ?? null : null);
+  const previewBabsId =
+    combinedBabsId(formation, derivedSize) ??
+    (formation ? (FORMATIONS.find((f) => f.key === formation)?.babsId ?? null) : null);
 
   const canSubmit = !!formation && !!derivedSize && !!name.trim() && !!homeLocation.trim();
 
@@ -1687,10 +1848,10 @@ function AlertResourceForm({
   }
 
   return (
-    <div className="mt-3 rounded border border-border bg-bg p-3 space-y-3">
+    <div className="mt-3 space-y-3 rounded border border-border bg-bg p-3">
       {/* Formation picker */}
       <div>
-        <p className="mb-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wide">
+        <p className="mb-1.5 text-xs font-semibold tracking-wide text-fg-muted uppercase">
           {t("resource.selectFormation")}
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -1718,15 +1879,15 @@ function AlertResourceForm({
       </div>
 
       {/* Fields + large icon preview */}
-      <div className="flex gap-4 items-start">
-        <div className="flex-1 grid grid-cols-2 gap-2">
+      <div className="flex items-start gap-4">
+        <div className="grid flex-1 grid-cols-2 gap-2">
           {/* homeLocation = organisation qualifier: "Altdorf" → "Feuerwehr Altdorf" */}
           <input
             type="text"
             value={homeLocation}
             onChange={(e) => setHomeLocation(e.target.value)}
             placeholder={t("resource.fields.homeLocation")}
-            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
           />
           {/* name = sub-unit description: "Gruppe 3" → "Feuerwehr Altdorf – Gruppe 3" */}
           <input
@@ -1734,7 +1895,7 @@ function AlertResourceForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("resource.fields.name")}
-            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
           />
           <input
             type="number"
@@ -1742,25 +1903,30 @@ function AlertResourceForm({
             min={0}
             onChange={(e) => setPersonnelCount(e.target.value)}
             placeholder={t("resource.fields.personnelCount")}
-            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
           />
         </div>
 
         {/* Large icon preview — distinct from the small picker buttons */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-1">
-          <div className="flex items-center justify-center w-24 h-24 rounded-lg border-2 border-dashed border-border bg-bg-elevated">
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <div className="flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-border bg-bg-elevated">
             {previewBabsId && iconsLoaded ? (
               <BabsIcon icon={previewBabsId} size={72} fallback={null} />
             ) : (
-              <span className="text-[10px] text-fg-muted/50 text-center leading-tight px-1">
+              <span className="px-1 text-center text-[10px] leading-tight text-fg-muted/50">
                 {t("resource.selectFormation")}
               </span>
             )}
           </div>
           {formation && (
-            <p className="text-[10px] text-center text-fg-muted leading-tight">
+            <p className="text-center text-[10px] leading-tight text-fg-muted">
               {qualifiedFormation(t(`resource.formation.${formation}`), homeLocation || null)}
-              {name && <><br /><span className="text-fg-muted/70">{name}</span></>}
+              {name && (
+                <>
+                  <br />
+                  <span className="text-fg-muted/70">{name}</span>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -1769,7 +1935,8 @@ function AlertResourceForm({
       {derivedSize && (
         <p className="text-xs text-fg-muted">
           {t(`resource.size.${derivedSize}`)}
-          {Number(personnelCount) > 0 && ` · ${personnelCount} ${t("resource.fields.personnelCount")}`}
+          {Number(personnelCount) > 0 &&
+            ` · ${personnelCount} ${t("resource.fields.personnelCount")}`}
         </p>
       )}
 
@@ -1777,7 +1944,7 @@ function AlertResourceForm({
         <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
       )}
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex justify-end gap-2">
         <Button type="button" variant="light" size="xs" onClick={() => setOpen(false)}>
           {t("close")}
         </Button>

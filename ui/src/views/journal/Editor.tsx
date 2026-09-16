@@ -206,7 +206,6 @@ function Editor() {
     [],
   );
 
-
   const contextValue: EditorContextValue = {
     state,
     dispatch,

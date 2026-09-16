@@ -110,20 +110,20 @@ type AttachFileInput struct {
 // MessageState is returned from message mutation services so resolvers can
 // build responses from aggregate state without a projection read.
 type MessageState struct {
-	ID             shared.MessageID
-	IncidentID     shared.IncidentID
-	Number         int
-	Content        string
-	Sender         string
-	SenderDetail   string
-	Receiver       string
-	ReceiverDetail string
-	Medium         shared.Medium
-	Time           time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	Triage         shared.TriageStatus
-	Priority       shared.PriorityStatus
+	ID                shared.MessageID
+	IncidentID        shared.IncidentID
+	Number            int
+	Content           string
+	Sender            string
+	SenderDetail      string
+	Receiver          string
+	ReceiverDetail    string
+	Medium            shared.Medium
+	Time              time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Triage            shared.TriageStatus
+	Priority          shared.PriorityStatus
 	DivisionIDs       []shared.DivisionID
 	LinkedResourceIDs []shared.ResourceID
 	Attachments       []AttachmentState
@@ -385,9 +385,24 @@ type AlertResourceInput struct {
 //nolint:interfacebloat // Resource commands are intentionally exposed through one driving port.
 type ResourceService interface {
 	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
-	MarkResourceReady(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
-	DeployResource(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
-	StandDownResource(ctx context.Context, id shared.ResourceID, at *time.Time, actor identity.Actor) (ResourceState, error)
+	MarkResourceReady(
+		ctx context.Context,
+		id shared.ResourceID,
+		at *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
+	DeployResource(
+		ctx context.Context,
+		id shared.ResourceID,
+		at *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
+	StandDownResource(
+		ctx context.Context,
+		id shared.ResourceID,
+		at *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
 	RelieveResource(
 		ctx context.Context,
 		id shared.ResourceID,

@@ -19,11 +19,7 @@ import type {
   UpdatePersonnelCountMutationVariables,
 } from "../../gql/next/graphql";
 
-export type {
-  AlertResourceInput,
-  GetIncidentResourcesQuery,
-  GetIncidentResourcesQueryVariables,
-};
+export type { AlertResourceInput, GetIncidentResourcesQuery, GetIncidentResourcesQueryVariables };
 
 // ── Fragments ─────────────────────────────────────────────────────────────────
 
@@ -228,4 +224,3 @@ export const UPDATE_CONTACT = gql`
     }
   }
 `;
-

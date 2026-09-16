@@ -11,11 +11,21 @@ import { useTranslation } from "react-i18next";
 import { PriorityStatus } from "types";
 import { useState } from "react";
 
-const RESOURCE_STATUS_ORDER: ResourceStatus[] = ["AUFGEBOTEN", "EINSATZBEREIT", "EINGESETZT", "ABGELOEST"];
+const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
+  "AUFGEBOTEN",
+  "EINSATZBEREIT",
+  "EINGESETZT",
+  "ABGELOEST",
+];
 const FORMATION_ORDER: ResourceFormation[] = ["FW", "SAN", "POL", "ZS", "TECHNB", "ARMEE", "OTHER"];
 const FORMATION_ICON: Record<ResourceFormation, string> = {
-  FW: "4702", SAN: "4703", ZS: "4704", POL: "4701",
-  TECHNB: "4705", ARMEE: "4706", OTHER: "4802",
+  FW: "4702",
+  SAN: "4703",
+  ZS: "4704",
+  POL: "4701",
+  TECHNB: "4705",
+  ARMEE: "4706",
+  OTHER: "4802",
 };
 
 type CasualtyTotals = SchadenplatzWithResources["casualties"];
@@ -27,11 +37,11 @@ type CasualtyCategory = {
 };
 
 const CASUALTY_CATEGORIES: CasualtyCategory[] = [
-  { key: "tote",            labelKey: "casualties.tote",            babsId: "1305" },
-  { key: "verletzte",       labelKey: "casualties.verletzte",       babsId: "1301" },
-  { key: "vermisste",       labelKey: "casualties.vermisste",       babsId: "1302" },
+  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
+  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
+  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
   { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
-  { key: "obdachlose",      labelKey: "casualties.obdachlose",      babsId: "1303" },
+  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
 ];
 
 const ZERO_CASUALTIES: CasualtyTotals = {
@@ -96,7 +106,9 @@ function PriorityMessageStack({ incidentId }: { incidentId: string }) {
     return <Notification variant="danger">{t(`errors.${result.error.code}`)}</Notification>;
   }
 
-  const messages = result.data.messages.filter((message) => message.priorityId === PriorityStatus.High);
+  const messages = result.data.messages.filter(
+    (message) => message.priorityId === PriorityStatus.High,
+  );
 
   return (
     <section className="flex min-h-0 flex-col rounded border border-border bg-bg-elevated">
@@ -113,7 +125,10 @@ function PriorityMessageStack({ incidentId }: { incidentId: string }) {
   );
 }
 
-function DashboardKpis({ resourcesResult, iconsLoaded }: {
+function DashboardKpis({
+  resourcesResult,
+  iconsLoaded,
+}: {
   resourcesResult: ReturnType<typeof useIncidentResources>;
   iconsLoaded: boolean;
 }) {
@@ -121,7 +136,9 @@ function DashboardKpis({ resourcesResult, iconsLoaded }: {
 
   if (resourcesResult.status === "loading") return <Spinner />;
   if (resourcesResult.status === "error") {
-    return <Notification variant="danger">{t(`errors.${resourcesResult.error.code}`)}</Notification>;
+    return (
+      <Notification variant="danger">{t(`errors.${resourcesResult.error.code}`)}</Notification>
+    );
   }
 
   const casualties = casualtyTotals(resourcesResult);
@@ -133,12 +150,19 @@ function DashboardKpis({ resourcesResult, iconsLoaded }: {
         <h2 className="mb-3 text-sm font-semibold text-fg">{t("casualties.overview")}</h2>
         <div className="space-y-2">
           {CASUALTY_CATEGORIES.map((cat) => (
-            <div key={cat.key} className="flex items-center gap-2 rounded border border-border bg-bg px-2 py-1.5">
+            <div
+              key={cat.key}
+              className="flex items-center gap-2 rounded border border-border bg-bg px-2 py-1.5"
+            >
               <span className="flex h-7 w-7 shrink-0 items-center justify-center">
                 {iconsLoaded ? <BabsIcon icon={cat.babsId} size={24} fallback={null} /> : null}
               </span>
-              <span className="min-w-0 flex-1 truncate text-xs text-fg-muted">{t(cat.labelKey)}</span>
-              <span className="text-lg font-bold tabular-nums text-danger">{casualties[cat.key]}</span>
+              <span className="min-w-0 flex-1 truncate text-xs text-fg-muted">
+                {t(cat.labelKey)}
+              </span>
+              <span className="text-lg font-bold text-danger tabular-nums">
+                {casualties[cat.key]}
+              </span>
             </div>
           ))}
         </div>
@@ -161,7 +185,7 @@ function DashboardKpis({ resourcesResult, iconsLoaded }: {
                   <span className="min-w-0 flex-1 truncate text-xs font-semibold text-fg">
                     {t(`resource.formation.${group.formation}`)}
                   </span>
-                  <span className="text-lg font-bold tabular-nums text-fg">
+                  <span className="text-lg font-bold text-fg tabular-nums">
                     {totalPersonnel(group.resources)}
                   </span>
                 </div>

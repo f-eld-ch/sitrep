@@ -40,7 +40,9 @@ export interface ChildIncidentCasualties {
   casualties: SchadenplatzWithResources["casualties"];
 }
 
-export function useIncidentResources(incidentId: string | undefined): QueryResult<IncidentResourcesData> {
+export function useIncidentResources(
+  incidentId: string | undefined,
+): QueryResult<IncidentResourcesData> {
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_RESOURCES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId,
@@ -122,14 +124,16 @@ function sumCasualties(
     casualties: SchadenplatzWithResources["casualties"];
   }>,
 ): SchadenplatzWithResources["casualties"] {
-  return sps.filter((sp) => !sp.isMerged).reduce(
-    (acc, sp) => ({
-      vermisste: acc.vermisste + sp.casualties.vermisste,
-      tote: acc.tote + sp.casualties.tote,
-      verletzte: acc.verletzte + sp.casualties.verletzte,
-      obdachlose: acc.obdachlose + sp.casualties.obdachlose,
-      eingeschlossene: acc.eingeschlossene + sp.casualties.eingeschlossene,
-    }),
-    { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 },
-  );
+  return sps
+    .filter((sp) => !sp.isMerged)
+    .reduce(
+      (acc, sp) => ({
+        vermisste: acc.vermisste + sp.casualties.vermisste,
+        tote: acc.tote + sp.casualties.tote,
+        verletzte: acc.verletzte + sp.casualties.verletzte,
+        obdachlose: acc.obdachlose + sp.casualties.obdachlose,
+        eingeschlossene: acc.eingeschlossene + sp.casualties.eingeschlossene,
+      }),
+      { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 },
+    );
 }

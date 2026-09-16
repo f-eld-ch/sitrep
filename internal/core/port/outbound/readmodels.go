@@ -41,20 +41,20 @@ type IncidentRM struct {
 }
 
 type MessageRM struct {
-	ID             uuid.UUID
-	Number         int
-	IncidentID     uuid.UUID
-	Content        string
-	Sender         string
-	SenderDetail   string
-	Receiver       string
-	ReceiverDetail string
-	Medium         string
-	Time           time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	Triage         string
-	Priority       string
+	ID                uuid.UUID
+	Number            int
+	IncidentID        uuid.UUID
+	Content           string
+	Sender            string
+	SenderDetail      string
+	Receiver          string
+	ReceiverDetail    string
+	Medium            string
+	Time              time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Triage            string
+	Priority          string
 	DivisionIDs       []uuid.UUID
 	LinkedResourceIDs []uuid.UUID
 }

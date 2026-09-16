@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label -- expandable table buttons are labelled; oxlint flags filler/detail table cells. */
 import { Fragment, useState } from "react";
 import dayjs from "dayjs";
 import { Spinner } from "components";
@@ -22,21 +23,38 @@ const statusVariant: Record<ResourceStatus, TagVariant> = {
 const STATUS_ORDER: ResourceStatus[] = ["AUFGEBOTEN", "EINSATZBEREIT", "EINGESETZT", "ABGELOEST"];
 
 const FORMATION_PREFIX: Record<ResourceFormation, string> = {
-  POL: "41", FW: "42", SAN: "43",
-  ZS: "44", TECHNB: "45", ARMEE: "46", OTHER: "48",
+  POL: "41",
+  FW: "42",
+  SAN: "43",
+  ZS: "44",
+  TECHNB: "45",
+  ARMEE: "46",
+  OTHER: "48",
 };
 const SIZE_OFFSET: Record<ResourceUnitSize, string> = {
-  TRUPP: "01", GRUPPE: "02", ZUG: "03", KOMPANIE: "04", BATAILLON: "05",
+  TRUPP: "01",
+  GRUPPE: "02",
+  ZUG: "03",
+  KOMPANIE: "04",
+  BATAILLON: "05",
 };
 const FORMATION_ORDER: ResourceFormation[] = ["FW", "SAN", "POL", "ZS", "TECHNB", "ARMEE", "OTHER"];
 
 // Generic partner-level BABS icon (no unit size)
 const FORMATION_ICON: Record<ResourceFormation, string> = {
-  FW: "4702", SAN: "4703", ZS: "4704", POL: "4701",
-  TECHNB: "4705", ARMEE: "4706", OTHER: "4802",
+  FW: "4702",
+  SAN: "4703",
+  ZS: "4704",
+  POL: "4701",
+  TECHNB: "4705",
+  ARMEE: "4706",
+  OTHER: "4802",
 };
 
-function combinedBabsId(formation: ResourceFormation | null, size: ResourceUnitSize | null): string | null {
+function combinedBabsId(
+  formation: ResourceFormation | null,
+  size: ResourceUnitSize | null,
+): string | null {
   if (!formation || !size) return null;
   return FORMATION_PREFIX[formation] + SIZE_OFFSET[size];
 }
@@ -87,7 +105,13 @@ function StatusBadges({ totals }: { totals: StatusPersonnel }) {
   );
 }
 
-function FormationKpis({ resources, iconsLoaded }: { resources: Resource[]; iconsLoaded: boolean }) {
+function FormationKpis({
+  resources,
+  iconsLoaded,
+}: {
+  resources: Resource[];
+  iconsLoaded: boolean;
+}) {
   const { t } = useTranslation();
   const formationGroups = FORMATION_ORDER.map((formation) => ({
     formation,
@@ -95,13 +119,16 @@ function FormationKpis({ resources, iconsLoaded }: { resources: Resource[]; icon
   })).filter((group) => group.resources.length > 0);
 
   return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))]">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-3">
       {formationGroups.map((group) => {
         const partnerIcon = FORMATION_ICON[group.formation];
         return (
-          <section key={group.formation} className="rounded border border-border bg-bg-elevated p-3">
+          <section
+            key={group.formation}
+            className="rounded border border-border bg-bg-elevated p-3"
+          >
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-bg border border-border">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-bg">
                 {iconsLoaded ? (
                   <BabsIcon icon={partnerIcon} size={30} fallback={null} />
                 ) : (
@@ -112,7 +139,7 @@ function FormationKpis({ resources, iconsLoaded }: { resources: Resource[]; icon
                 <h2 className="truncate text-sm font-semibold text-fg">
                   {t(`resource.formation.${group.formation}`)}
                 </h2>
-                <p className="text-2xl font-bold tabular-nums text-fg">
+                <p className="text-2xl font-bold text-fg tabular-nums">
                   {totalPersonnel(group.resources)}
                 </p>
               </div>
@@ -149,42 +176,46 @@ function buildIncidentResourceGroups({
 
   const incidentOrder = [incidentId, ...Object.keys(sourceLabels)];
 
-  return incidentOrder.filter((id) => byIncident.has(id)).map((id) => {
-    const incidentResources = byIncident.get(id)!;
-    const formationGroups = FORMATION_ORDER.filter((formation) =>
-      incidentResources.some((resource) => resource.formation === formation),
-    ).map((formation) => {
-      const formationResources = incidentResources.filter((resource) => resource.formation === formation);
-      const byHomeLocation = new Map<string, ResourceHomeLocationGroup>();
+  return incidentOrder
+    .filter((id) => byIncident.has(id))
+    .map((id) => {
+      const incidentResources = byIncident.get(id)!;
+      const formationGroups = FORMATION_ORDER.filter((formation) =>
+        incidentResources.some((resource) => resource.formation === formation),
+      ).map((formation) => {
+        const formationResources = incidentResources.filter(
+          (resource) => resource.formation === formation,
+        );
+        const byHomeLocation = new Map<string, ResourceHomeLocationGroup>();
 
-      for (const resource of formationResources) {
-        const key = resource.homeLocation?.name ?? "__none__";
-        const group = byHomeLocation.get(key) ?? {
-          homeLocation: resource.homeLocation?.name ?? null,
-          resources: [],
+        for (const resource of formationResources) {
+          const key = resource.homeLocation?.name ?? "__none__";
+          const group = byHomeLocation.get(key) ?? {
+            homeLocation: resource.homeLocation?.name ?? null,
+            resources: [],
+          };
+          group.resources.push(resource);
+          byHomeLocation.set(key, group);
+        }
+
+        const homeLocationGroups = [...byHomeLocation.values()].sort((a, b) =>
+          (a.homeLocation ?? "").localeCompare(b.homeLocation ?? ""),
+        );
+
+        return {
+          formation,
+          resources: formationResources,
+          homeLocationGroups,
         };
-        group.resources.push(resource);
-        byHomeLocation.set(key, group);
-      }
-
-      const homeLocationGroups = [...byHomeLocation.values()].sort((a, b) =>
-        (a.homeLocation ?? "").localeCompare(b.homeLocation ?? ""),
-      );
+      });
 
       return {
-        formation,
-        resources: formationResources,
-        homeLocationGroups,
+        incidentId: id,
+        incidentName: incidentNames[id] ?? id,
+        resources: incidentResources,
+        formationGroups,
       };
     });
-
-    return {
-      incidentId: id,
-      incidentName: incidentNames[id] ?? id,
-      resources: incidentResources,
-      formationGroups,
-    };
-  });
 }
 
 function formatDateTime(iso: string | null | undefined): string {
@@ -246,14 +277,30 @@ function Mitteltabelle({
         <thead className="bg-bg-elevated">
           <tr>
             <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">{t("resources")}</th>
-            <th className="px-2 py-1.5 text-right font-semibold text-fg-muted">{t("resource.fields.personnelCount")}</th>
-            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">{t("resource.fields.status")}</th>
-            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">{t("resource.alertedAt")}</th>
-            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">{t("resource.readyAt")}</th>
-            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">{t("resource.deployedAt")}</th>
-            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">{t("resource.relievedAt")}</th>
-            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">{t("resource.fields.hauptaufgabe")}</th>
-            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">{t("resource.fields.deploymentLocation")}</th>
+            <th className="px-2 py-1.5 text-right font-semibold text-fg-muted">
+              {t("resource.fields.personnelCount")}
+            </th>
+            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
+              {t("resource.fields.status")}
+            </th>
+            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
+              {t("resource.alertedAt")}
+            </th>
+            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
+              {t("resource.readyAt")}
+            </th>
+            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
+              {t("resource.deployedAt")}
+            </th>
+            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
+              {t("resource.relievedAt")}
+            </th>
+            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
+              {t("resource.fields.hauptaufgabe")}
+            </th>
+            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
+              {t("resource.fields.deploymentLocation")}
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -267,11 +314,12 @@ function Mitteltabelle({
                     <button
                       type="button"
                       className="flex w-full items-center gap-2 text-left"
+                      aria-label={group.incidentName}
                       onClick={() => toggleIncident(group.incidentId)}
                     >
                       <FontAwesomeIcon
                         icon={incidentOpen ? faChevronDown : faChevronRight}
-                        className="text-xs text-fg-muted/60 w-3 shrink-0"
+                        className="w-3 shrink-0 text-xs text-fg-muted/60"
                       />
                       <span className="font-semibold text-fg">{group.incidentName}</span>
                       {sourceLabels[group.incidentId] && (
@@ -281,7 +329,7 @@ function Mitteltabelle({
                       )}
                     </button>
                   </td>
-                  <td className="px-2 py-1.5 text-right font-semibold tabular-nums text-fg">
+                  <td className="px-2 py-1.5 text-right font-semibold text-fg tabular-nums">
                     {totalPersonnel(group.resources)}
                   </td>
                   <td className="px-2 py-1.5">
@@ -290,121 +338,146 @@ function Mitteltabelle({
                   <td className="px-2 py-1.5" colSpan={6} />
                 </tr>
 
-                {incidentOpen && group.formationGroups.map((formationGroup) => {
-                  const formationKey = `${group.incidentId}:${formationGroup.formation}`;
-                  const formationOpen = openFormationIds.has(formationKey);
-                  const partnerIcon = FORMATION_ICON[formationGroup.formation];
+                {incidentOpen &&
+                  group.formationGroups.map((formationGroup) => {
+                    const formationKey = `${group.incidentId}:${formationGroup.formation}`;
+                    const formationOpen = openFormationIds.has(formationKey);
+                    const partnerIcon = FORMATION_ICON[formationGroup.formation];
 
-                  return (
-                    <Fragment key={formationKey}>
-                      <tr className="hover:bg-bg-elevated/40">
-                        <td className="px-2 py-1.5 pl-6">
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-2 text-left"
-                            onClick={() => toggleFormation(formationKey)}
-                          >
-                            <FontAwesomeIcon
-                              icon={formationOpen ? faChevronDown : faChevronRight}
-                              className="text-xs text-fg-muted/60 w-3 shrink-0"
-                            />
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-bg border border-border">
-                              {iconsLoaded ? (
-                                <BabsIcon icon={partnerIcon} size={20} fallback={null} />
-                              ) : (
-                                <span className="text-[10px] font-bold text-fg-muted">
-                                  {formationGroup.formation}
-                                </span>
-                              )}
-                            </span>
-                            <span className="font-medium text-fg">
-                              {t(`resource.formation.${formationGroup.formation}`)}
-                            </span>
-                          </button>
-                        </td>
-                        <td className="px-2 py-1.5 text-right font-medium tabular-nums text-fg">
-                          {totalPersonnel(formationGroup.resources)}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <StatusBadges totals={personnelByStatus(formationGroup.resources)} />
-                        </td>
-                        <td className="px-2 py-1.5" colSpan={6} />
-                      </tr>
-
-                      {formationOpen && formationGroup.homeLocationGroups.map((homeLocationGroup) => {
-                        const homeLocationKey = `${formationKey}:${homeLocationGroup.homeLocation ?? "__none__"}`;
-                        const homeLocationOpen = openHomeLocationIds.has(homeLocationKey);
-
-                        return (
-                          <Fragment key={homeLocationKey}>
-                            <tr className="hover:bg-bg-elevated/40">
-                              <td className="px-2 py-1.5 pl-12">
-                                <button
-                                  type="button"
-                                  className="flex w-full items-center gap-2 text-left"
-                                  onClick={() => toggleHomeLocation(homeLocationKey)}
-                                >
-                                  <FontAwesomeIcon
-                                    icon={homeLocationOpen ? faChevronDown : faChevronRight}
-                                    className="text-xs text-fg-muted/60 w-3 shrink-0"
-                                  />
-                                  <span className="font-medium text-fg">
-                                    {homeLocationGroup.homeLocation ?? "–"}
+                    return (
+                      <Fragment key={formationKey}>
+                        <tr className="hover:bg-bg-elevated/40">
+                          <td className="px-2 py-1.5 pl-6">
+                            <button
+                              type="button"
+                              className="flex w-full items-center gap-2 text-left"
+                              aria-label={t(`resource.formation.${formationGroup.formation}`)}
+                              onClick={() => toggleFormation(formationKey)}
+                            >
+                              <FontAwesomeIcon
+                                icon={formationOpen ? faChevronDown : faChevronRight}
+                                className="w-3 shrink-0 text-xs text-fg-muted/60"
+                              />
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
+                                {iconsLoaded ? (
+                                  <BabsIcon icon={partnerIcon} size={20} fallback={null} />
+                                ) : (
+                                  <span className="text-[10px] font-bold text-fg-muted">
+                                    {formationGroup.formation}
                                   </span>
-                                </button>
-                              </td>
-                              <td className="px-2 py-1.5 text-right font-medium tabular-nums text-fg">
-                                {totalPersonnel(homeLocationGroup.resources)}
-                              </td>
-                              <td className="px-2 py-1.5">
-                                <StatusBadges totals={personnelByStatus(homeLocationGroup.resources)} />
-                              </td>
-                              <td className="px-2 py-1.5" colSpan={6} />
-                            </tr>
+                                )}
+                              </span>
+                              <span className="font-medium text-fg">
+                                {t(`resource.formation.${formationGroup.formation}`)}
+                              </span>
+                            </button>
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
+                            {totalPersonnel(formationGroup.resources)}
+                          </td>
+                          <td className="px-2 py-1.5">
+                            <StatusBadges totals={personnelByStatus(formationGroup.resources)} />
+                          </td>
+                          <td className="px-2 py-1.5" colSpan={6} />
+                        </tr>
 
-                            {homeLocationOpen && [...homeLocationGroup.resources].sort((a, b) =>
-                              a.alertedAt.localeCompare(b.alertedAt)
-                            ).map((r) => {
-                              const babsId = combinedBabsId(r.formation, r.size);
-                              return (
-                                <tr key={r.id} className="hover:bg-bg-elevated/40">
-                                  <td className="px-2 py-1.5 pl-18">
-                                    <span className="flex items-center gap-2">
-                                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-bg border border-border">
-                                        {babsId && iconsLoaded ? (
-                                          <BabsIcon icon={babsId} size={20} fallback={null} />
-                                        ) : (
-                                          <span className="text-[10px] font-bold text-fg-muted">{r.formation}</span>
-                                        )}
-                                      </span>
+                        {formationOpen &&
+                          formationGroup.homeLocationGroups.map((homeLocationGroup) => {
+                            const homeLocationKey = `${formationKey}:${homeLocationGroup.homeLocation ?? "__none__"}`;
+                            const homeLocationOpen = openHomeLocationIds.has(homeLocationKey);
+
+                            return (
+                              <Fragment key={homeLocationKey}>
+                                <tr className="hover:bg-bg-elevated/40">
+                                  <td className="px-2 py-1.5 pl-12">
+                                    <button
+                                      type="button"
+                                      className="flex w-full items-center gap-2 text-left"
+                                      aria-label={homeLocationGroup.homeLocation ?? "–"}
+                                      onClick={() => toggleHomeLocation(homeLocationKey)}
+                                    >
+                                      <FontAwesomeIcon
+                                        icon={homeLocationOpen ? faChevronDown : faChevronRight}
+                                        className="w-3 shrink-0 text-xs text-fg-muted/60"
+                                      />
                                       <span className="font-medium text-fg">
-                                        {r.name || t(`resource.size.${r.size}`)}
+                                        {homeLocationGroup.homeLocation ?? "–"}
                                       </span>
-                                    </span>
+                                    </button>
                                   </td>
-                                  <td className="px-2 py-1.5 text-right tabular-nums text-fg">{r.personnelCount}</td>
+                                  <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
+                                    {totalPersonnel(homeLocationGroup.resources)}
+                                  </td>
                                   <td className="px-2 py-1.5">
-                                    <Tag variant={statusVariant[r.status]} light size="sm">
-                                      {t(`resource.status.${r.status}`)}
-                                    </Tag>
+                                    <StatusBadges
+                                      totals={personnelByStatus(homeLocationGroup.resources)}
+                                    />
                                   </td>
-                                  <td className="px-2 py-1.5 text-center tabular-nums text-fg">{formatDateTime(r.alertedAt)}</td>
-                                  <td className="px-2 py-1.5 text-center tabular-nums text-fg">{formatDateTime(r.readyAt)}</td>
-                                  <td className="px-2 py-1.5 text-center tabular-nums text-fg">{formatDateTime(r.deployedAt)}</td>
-                                  <td className="px-2 py-1.5 text-center tabular-nums text-fg">{formatDateTime(r.relievedAt)}</td>
-                                  <td className="px-2 py-1.5 text-fg truncate max-w-[12rem]">{r.hauptaufgabe || "–"}</td>
-                                  <td className="px-2 py-1.5 text-fg truncate max-w-[10rem]">
-                                    {r.deploymentLocation?.label || "–"}
-                                  </td>
+                                  <td className="px-2 py-1.5" colSpan={6} />
                                 </tr>
-                              );
-                            })}
-                          </Fragment>
-                        );
-                      })}
-                    </Fragment>
-                  );
-                })}
+
+                                {homeLocationOpen &&
+                                  [...homeLocationGroup.resources]
+                                    .sort((a, b) => a.alertedAt.localeCompare(b.alertedAt))
+                                    .map((r) => {
+                                      const babsId = combinedBabsId(r.formation, r.size);
+                                      return (
+                                        <tr key={r.id} className="hover:bg-bg-elevated/40">
+                                          <td className="px-2 py-1.5 pl-18">
+                                            <span className="flex items-center gap-2">
+                                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
+                                                {babsId && iconsLoaded ? (
+                                                  <BabsIcon
+                                                    icon={babsId}
+                                                    size={20}
+                                                    fallback={null}
+                                                  />
+                                                ) : (
+                                                  <span className="text-[10px] font-bold text-fg-muted">
+                                                    {r.formation}
+                                                  </span>
+                                                )}
+                                              </span>
+                                              <span className="font-medium text-fg">
+                                                {r.name || t(`resource.size.${r.size}`)}
+                                              </span>
+                                            </span>
+                                          </td>
+                                          <td className="px-2 py-1.5 text-right text-fg tabular-nums">
+                                            {r.personnelCount}
+                                          </td>
+                                          <td className="px-2 py-1.5">
+                                            <Tag variant={statusVariant[r.status]} light size="sm">
+                                              {t(`resource.status.${r.status}`)}
+                                            </Tag>
+                                          </td>
+                                          <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+                                            {formatDateTime(r.alertedAt)}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+                                            {formatDateTime(r.readyAt)}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+                                            {formatDateTime(r.deployedAt)}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+                                            {formatDateTime(r.relievedAt)}
+                                          </td>
+                                          <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
+                                            {r.hauptaufgabe || "–"}
+                                          </td>
+                                          <td className="max-w-[10rem] truncate px-2 py-1.5 text-fg">
+                                            {r.deploymentLocation?.label || "–"}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                              </Fragment>
+                            );
+                          })}
+                      </Fragment>
+                    );
+                  })}
               </Fragment>
             );
           })}

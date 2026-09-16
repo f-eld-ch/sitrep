@@ -71,6 +71,7 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 	defer func() { _ = rows.Close() }()
 
 	out := []*outbound.ResourceRM{}
+
 	for rows.Next() {
 		rm, err := scanSQLiteResource(rows)
 		if err != nil {

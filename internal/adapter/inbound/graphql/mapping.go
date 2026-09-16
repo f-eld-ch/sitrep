@@ -212,6 +212,7 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 	for i, id := range r.LinkedResourceIDs {
 		linkedIDs[i] = id.String()
 	}
+
 	msg.LinkedResourceIds = linkedIDs
 	msg.Attachments = []*model.Attachment{}
 

@@ -289,7 +289,7 @@ func TestProjector_MessageTriaged(t *testing.T) {
 		"Fahrzeug umgekippt", "Streife", "", "Leitstelle", "", shared.MediumRadio, nil, testActor)
 
 	_, err := msgSvc.TriageMessage(ctx(), msg.ID,
-		shared.TriageDone, shared.PriorityHigh, nil, testActor)
+		shared.TriageDone, shared.PriorityHigh, nil, nil, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 

@@ -22,14 +22,20 @@ type CasualtyCategory = {
 };
 
 const CATEGORIES: CasualtyCategory[] = [
-  { key: "tote",            labelKey: "casualties.tote",            babsId: "1305" },
-  { key: "verletzte",       labelKey: "casualties.verletzte",       babsId: "1301" },
-  { key: "vermisste",       labelKey: "casualties.vermisste",       babsId: "1302" },
+  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
+  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
+  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
   { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
-  { key: "obdachlose",      labelKey: "casualties.obdachlose",      babsId: "1303" },
+  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
 ];
 
-const ZERO: CasualtyTotals = { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 };
+const ZERO: CasualtyTotals = {
+  vermisste: 0,
+  tote: 0,
+  verletzte: 0,
+  obdachlose: 0,
+  eingeschlossene: 0,
+};
 
 function add(a: CasualtyTotals, b: CasualtyTotals): CasualtyTotals {
   return {
@@ -62,12 +68,12 @@ function CasualtyRows({ totals, iconsLoaded }: { totals: CasualtyTotals; iconsLo
       {visible.map((cat) => (
         <div key={cat.key} className="flex items-center gap-2 py-1">
           <div className="flex items-center gap-1">
-            {iconsLoaded ? (
-              <BabsIcon icon={cat.babsId} size={20} fallback={null} />
-            ) : null}
-            <span className="text-base font-bold tabular-nums text-danger w-6 text-right">{totals[cat.key]}</span>
+            {iconsLoaded ? <BabsIcon icon={cat.babsId} size={20} fallback={null} /> : null}
+            <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
+              {totals[cat.key]}
+            </span>
           </div>
-          <span className="text-sm text-fg-muted ml-2">{t(cat.labelKey)}</span>
+          <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
         </div>
       ))}
     </div>
@@ -85,7 +91,7 @@ function CasualtySummaryCard({
 }) {
   return (
     <div className="rounded border border-border bg-bg-elevated p-4">
-      <h3 className="mb-3 text-sm font-semibold text-fg-muted uppercase tracking-wide">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">{title}</h3>
       <CasualtyRows totals={totals} iconsLoaded={iconsLoaded} />
     </div>
   );
@@ -95,20 +101,16 @@ function CasualtyKpis({ totals, iconsLoaded }: { totals: CasualtyTotals; iconsLo
   const { t } = useTranslation();
 
   return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))]">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] gap-3">
       {CATEGORIES.map((cat) => (
         <section key={cat.key} className="rounded border border-border bg-bg-elevated p-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-bg border border-border">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-bg">
               {iconsLoaded ? <BabsIcon icon={cat.babsId} size={30} fallback={null} /> : null}
             </span>
             <div className="min-w-0">
-              <h2 className="truncate text-sm font-semibold text-fg-muted">
-                {t(cat.labelKey)}
-              </h2>
-              <p className="text-2xl font-bold tabular-nums text-danger">
-                {totals[cat.key]}
-              </p>
+              <h2 className="truncate text-sm font-semibold text-fg-muted">{t(cat.labelKey)}</h2>
+              <p className="text-2xl font-bold text-danger tabular-nums">{totals[cat.key]}</p>
             </div>
           </div>
         </section>
@@ -128,7 +130,7 @@ function CasualtySpCard({
 }) {
   return (
     <div className="rounded border border-border bg-bg-elevated p-4">
-      <h3 className="mb-2 text-sm font-semibold text-fg-muted uppercase tracking-wide">{label}</h3>
+      <h3 className="mb-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">{label}</h3>
       <CasualtyRows totals={sp.casualties} iconsLoaded={iconsLoaded} />
     </div>
   );
@@ -163,7 +165,7 @@ export function List() {
         {result.data.childIncidents.length > 0 && (
           <section className="space-y-3">
             <h2 className="text-base font-bold text-fg">{t("casualties.childIncidents")}</h2>
-            <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
               {result.data.childIncidents.map((child) => (
                 <CasualtySummaryCard
                   key={child.id}
@@ -180,7 +182,7 @@ export function List() {
         {namedSps.length > 0 && (
           <section className="space-y-3">
             <h2 className="text-base font-bold text-fg">{t("casualties.byLocation")}</h2>
-            <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
               {locationSps.map((sp) => (
                 <CasualtySpCard
                   key={sp.id}

@@ -424,6 +424,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 		if err := json.Unmarshal([]byte(divisionIDsStr), &divisionIDs); err != nil {
 			return nil, fmt.Errorf("unmarshal division_ids: %w", err)
 		}
+
 		if divisionIDs == nil {
 			divisionIDs = []uuid.UUID{}
 		}
@@ -434,6 +435,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 				return nil, fmt.Errorf("unmarshal linked_resource_ids: %w", err)
 			}
 		}
+
 		if linkedResourceIDs == nil {
 			linkedResourceIDs = []uuid.UUID{}
 		}

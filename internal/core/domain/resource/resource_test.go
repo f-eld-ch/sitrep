@@ -397,7 +397,8 @@ func TestResource_FullReplay(t *testing.T) {
 	id := shared.ResourceID(uuid.New())
 	predID := shared.ResourceID(uuid.New())
 	newSP := shared.SchadenplatzID(uuid.New())
-	loc := &resource.DeploymentLocation{Lat: 46.8, Lng: 8.2, Label: "Nordzugang"}
+	lat, lng := 46.8, 8.2
+	loc := &resource.DeploymentLocation{Lat: &lat, Lng: &lng, Label: "Nordzugang"}
 	contact := resource.Contact{Medium: resource.ContactMediumRadio, Detail: "CH-1"}
 	ende := at.Add(4 * time.Hour)
 

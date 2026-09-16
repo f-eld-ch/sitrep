@@ -189,7 +189,8 @@ function ReadOnlyLayers() {
     () => state.layers.filter((entry) => entry.isVisible).map((entry) => entry.layer),
     [state.layers],
   );
-  const activeLayer = visibleLayers.find((layer) => layer.id === state.activeLayer) ?? visibleLayers[0];
+  const activeLayer =
+    visibleLayers.find((layer) => layer.id === state.activeLayer) ?? visibleLayers[0];
 
   useEffect(() => {
     if (visibleLayers.length === 0 || activeLayer === undefined) return;

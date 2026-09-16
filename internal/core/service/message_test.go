@@ -86,7 +86,7 @@ func TestMessageService_TriageMessage(t *testing.T) {
 		"Status Update", "Koordinator", "555-1111", "Führung", "555-2222", shared.MediumPhone, nil, testActor)
 	require.NoError(t, err)
 
-	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
+	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityHigh, nil, nil, testActor)
 	require.NoError(t, err)
 }
 
@@ -132,7 +132,7 @@ func TestMessageService_RejectsWritesOnClosedIncident(t *testing.T) {
 	content := "Corrected"
 	_, err = messageSvc.CorrectMessage(ctx(), msg.ID, &content, nil, nil, nil, nil, nil, nil, testActor)
 	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
-	_, err = messageSvc.TriageMessage(ctx(), msg.ID, shared.TriageDone, shared.PriorityHigh, nil, testActor)
+	_, err = messageSvc.TriageMessage(ctx(), msg.ID, shared.TriageDone, shared.PriorityHigh, nil, nil, testActor)
 	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	err = messageSvc.DeleteMessage(ctx(), msg.ID, testActor)
 	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)

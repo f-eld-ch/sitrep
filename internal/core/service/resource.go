@@ -67,6 +67,7 @@ func (s *ResourceService) AlertResource(
 	defer span.End()
 
 	id := shared.ResourceID(s.ids.New())
+
 	at := s.clock.Now()
 	if input.OccurredAt != nil {
 		at = *input.OccurredAt
@@ -385,6 +386,7 @@ func (s *ResourceService) resolveAt(at *time.Time) time.Time {
 	if at != nil {
 		return *at
 	}
+
 	return s.clock.Now()
 }
 

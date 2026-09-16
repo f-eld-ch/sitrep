@@ -1,4 +1,4 @@
-export type { AlertResourceArgs, } from "./commands";
+export type { AlertResourceArgs } from "./commands";
 export {
   useAlertResource,
   useChangeHauptaufgabe,
