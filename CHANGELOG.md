@@ -3,6 +3,7 @@
 ### ⛰️  Features
 
 - *(flags)* Add new-triage-view feature flag and earlyadopter segment ([#1860](https://github.com/f-eld-ch/sitrep/issues/1860)) - ([83c2830](https://github.com/f-eld-ch/sitrep/commit/83c28301e25325f1620ea344b2852d3b12bcafbe))
+- *(ui)* Error pages, incident guard, and editor UX fixes ([#1876](https://github.com/f-eld-ch/sitrep/issues/1876)) - ([7b03e21](https://github.com/f-eld-ch/sitrep/commit/7b03e2122e13a2d12deff80cde1d87c27e9e5ce0))
 - *(ui)* New triage view (feature-flagged) ([#1861](https://github.com/f-eld-ch/sitrep/issues/1861)) - ([64af16f](https://github.com/f-eld-ch/sitrep/commit/64af16f405fbd5a61153273dda8fd853426dcfbd))
 
 ### 🐛 Bug Fixes
