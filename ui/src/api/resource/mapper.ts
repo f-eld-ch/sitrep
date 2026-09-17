@@ -91,6 +91,18 @@ export interface Resource {
   predecessorId: string | null;
   successorId: string | null;
   sourceMessageId: string | null;
+  deploymentHistory: ResourceDeploymentPeriod[];
+}
+
+export interface ResourceDeploymentPeriod {
+  startedAt: string;
+  endedAt: string | null;
+  schadenplatzId: string;
+  formation: ResourceFormation;
+  name: string;
+  homeLocationName: string | null;
+  hauptaufgabe: string;
+  personnelCount: number;
 }
 
 export function toResource(w: WireResource): Resource {
@@ -120,5 +132,9 @@ export function toResource(w: WireResource): Resource {
     predecessorId: w.predecessorId,
     successorId: w.successorId,
     sourceMessageId: w.sourceMessageId,
+    deploymentHistory: w.deploymentHistory.map((period) => ({
+      ...period,
+      formation: toResourceFormation(period.formation),
+    })),
   };
 }

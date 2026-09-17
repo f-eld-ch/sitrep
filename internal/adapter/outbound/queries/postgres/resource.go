@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json/v2"
 	"errors"
 	"time"
 
@@ -19,7 +20,7 @@ func (q *Queries) GetResource(ctx context.Context, id uuid.UUID) (*outbound.Reso
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+		       predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel.resource WHERE id = $1`, id)
 
 	rm, err := scanPgResource(row)
@@ -48,7 +49,7 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+		       predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel.resource
 		WHERE incident_id = $1
 		   OR incident_id IN (
@@ -83,7 +84,7 @@ func (q *Queries) listResources(ctx context.Context, where string, arg uuid.UUID
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+		       predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel.resource `+where+` ORDER BY created_at ASC`, arg)
 	if err != nil {
 		return nil, err
@@ -106,23 +107,24 @@ func (q *Queries) listResources(ctx context.Context, where string, arg uuid.UUID
 
 func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	var (
-		rm            outbound.ResourceRM
-		contactMedium *string
-		contactDetail *string
-		homeName      *string
-		homeLat       *float64
-		homeLng       *float64
-		deployLat     *float64
-		deployLng     *float64
-		deployLabel   *string
-		statusAt      time.Time
-		alertedAt     time.Time
-		readyAt       *time.Time
-		deployedAt    *time.Time
-		stoodDownAt   *time.Time
-		relievedAt    *time.Time
-		einsatzBeginn *time.Time
-		einsatzEnde   *time.Time
+		rm                outbound.ResourceRM
+		contactMedium     *string
+		contactDetail     *string
+		homeName          *string
+		homeLat           *float64
+		homeLng           *float64
+		deployLat         *float64
+		deployLng         *float64
+		deployLabel       *string
+		statusAt          time.Time
+		alertedAt         time.Time
+		readyAt           *time.Time
+		deployedAt        *time.Time
+		stoodDownAt       *time.Time
+		relievedAt        *time.Time
+		einsatzBeginn     *time.Time
+		einsatzEnde       *time.Time
+		deploymentHistory []byte
 	)
 
 	if err := s.Scan(
@@ -133,6 +135,7 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		&rm.Status, &statusAt, &alertedAt, &readyAt, &deployedAt, &stoodDownAt, &relievedAt,
 		&einsatzBeginn, &einsatzEnde,
 		&rm.PredecessorID, &rm.SuccessorID, &rm.SourceMessageID, &rm.CreatedAt, &rm.UpdatedAt,
+		&deploymentHistory,
 	); err != nil {
 		return nil, err
 	}
@@ -148,6 +151,28 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	rm.UpdatedAt = rm.UpdatedAt.UTC()
 	rm.EinsatzBeginn = einsatzBeginn
 	rm.EinsatzEnde = einsatzEnde
+	if len(deploymentHistory) > 0 {
+		var periods []struct {
+			StartedAt        time.Time  `json:"startedAt"`
+			EndedAt          *time.Time `json:"endedAt"`
+			SchadenplatzID   uuid.UUID  `json:"schadenplatzId"`
+			Formation        string     `json:"formation"`
+			Name             string     `json:"name"`
+			HomeLocationName *string    `json:"homeLocationName"`
+			Hauptaufgabe     string     `json:"hauptaufgabe"`
+			PersonnelCount   int        `json:"personnelCount"`
+		}
+		if err := json.Unmarshal(deploymentHistory, &periods); err != nil {
+			return nil, err
+		}
+		for _, period := range periods {
+			rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
+				StartedAt: period.StartedAt, EndedAt: period.EndedAt, SchadenplatzID: period.SchadenplatzID,
+				Formation: period.Formation, Name: period.Name, HomeLocationName: period.HomeLocationName,
+				Hauptaufgabe: period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
+			})
+		}
+	}
 
 	if readyAt != nil {
 		t := readyAt.UTC()

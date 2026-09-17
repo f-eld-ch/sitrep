@@ -1,4 +1,4 @@
-import { faCheck, faMinus, faPrint, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faMinus, faPrint, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
@@ -756,6 +756,9 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                   schadenplaetze={schadenplaetze}
                   selectedIds={selectedResourceIds}
                   onToggle={toggleResourceId}
+                  onAttach={(ids) =>
+                    setSelectedResourceIds((previous) => new Set([...previous, ...ids]))
+                  }
                   iconsLoaded={iconsLoaded}
                   messageTime={message.time}
                 />
@@ -764,7 +767,11 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                   schadenplatzId={effectiveSpIds[0] ?? ""}
                   sourceMessageId={message.id}
                   iconsLoaded={iconsLoaded}
-                  onAlerted={(id) => setSelectedResourceIds((prev) => new Set([...prev, id]))}
+                  existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
+                  onAlerted={(id) => {
+                    setSelectedResourceIds((prev) => new Set([...prev, id]));
+                    void resourcesResult.refresh();
+                  }}
                 />
               </>
             )}
@@ -1307,12 +1314,14 @@ function ResourcePicker({
   schadenplaetze,
   selectedIds,
   onToggle,
+  onAttach,
   iconsLoaded,
   messageTime,
 }: {
   schadenplaetze: SchadenplatzWithResources[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
+  onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
 }) {
@@ -1320,11 +1329,13 @@ function ResourcePicker({
   const [search, setSearch] = useState("");
 
   const allResources = schadenplaetze.flatMap((sp) =>
-    sp.resources.map((r) => ({
-      ...r,
-      _spId: sp.id,
-      _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
-    })),
+    sp.resources
+      .filter((r) => new Date(r.statusAt).getTime() <= messageTime.getTime())
+      .map((r) => ({
+        ...r,
+        _spId: sp.id,
+        _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
+      })),
   );
 
   const selectedResources = allResources.filter((r) => selectedIds.has(r.id));
@@ -1356,6 +1367,7 @@ function ResourcePicker({
               schadenplaetze={schadenplaetze}
               checked={true}
               onToggle={() => onToggle(r.id)}
+              onAttach={onAttach}
               iconsLoaded={iconsLoaded}
               messageTime={messageTime}
             />
@@ -1387,6 +1399,7 @@ function ResourcePicker({
                   onToggle(r.id);
                   setSearch("");
                 }}
+                onAttach={onAttach}
                 iconsLoaded={iconsLoaded}
                 messageTime={messageTime}
               />
@@ -1403,6 +1416,7 @@ function ResourcePickerRow({
   schadenplaetze,
   checked,
   onToggle,
+  onAttach,
   iconsLoaded,
   messageTime,
 }: {
@@ -1411,6 +1425,7 @@ function ResourcePickerRow({
   schadenplaetze: SchadenplatzWithResources[];
   checked: boolean;
   onToggle: () => void;
+  onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
 }) {
@@ -1430,8 +1445,21 @@ function ResourcePickerRow({
   const [contactDetail, setContactDetail] = useState(r.contact?.detail ?? "");
   const [hauptaufgabe, setHauptaufgabe] = useState(r.hauptaufgabe);
   const [targetSpId, setTargetSpId] = useState(r.schadenplatzId);
+  const [successorId, setSuccessorId] = useState("");
   const [personnelCount, setPersonnelCount] = useState(String(r.personnelCount));
   const [deployAttempted, setDeployAttempted] = useState(false);
+  const successorCandidates = schadenplaetze
+    .flatMap((sp) => sp.resources)
+    .filter((candidate) => candidate.id !== r.id && candidate.status !== "ABGELOEST");
+  const successor = r.successorId
+    ? schadenplaetze
+        .flatMap((sp) => sp.resources)
+        .find((candidate) => candidate.id === r.successorId)
+    : undefined;
+  const relieveAndAttach = async (successorId: string | null) => {
+    await relieve({ id: r.id, successorId, at: messageTime });
+    onAttach(successorId ? [r.id, successorId] : [r.id]);
+  };
 
   const busy =
     markReadyState.loading ||
@@ -1484,6 +1512,20 @@ function ResourcePickerRow({
             </Tag>
           </span>
           {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+          {r.contact && (
+            <span className="block truncate text-xs text-fg-muted">
+              {t(`medium.${r.contact.medium}`)}
+              {r.contact.detail ? `: ${r.contact.detail}` : ""}
+            </span>
+          )}
+          {r.status === "ABGELOEST" && successor && (
+            <span className="block truncate text-xs text-fg-muted">
+              {t("resource.fields.relievedThrough")}:{" "}
+              {successor.name || t(`resource.size.${successor.size}`)}
+              {successor.contact &&
+                ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
+            </span>
+          )}
           <span className="block truncate text-xs text-fg-muted/70">
             {r.personnelCount} {t("resource.fields.personnelCount")}
             {r.hauptaufgabe && ` · ${r.hauptaufgabe}`}
@@ -1650,6 +1692,37 @@ function ResourcePickerRow({
 
           {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
 
+          {(r.status === "EINSATZBEREIT" || r.status === "EINGESETZT") && (
+            <label className="block">
+              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+                {t("resource.fields.successor")}
+              </span>
+              <select
+                value={successorId}
+                disabled={busy || successorCandidates.length === 0}
+                onChange={(e) => setSuccessorId(e.target.value)}
+                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                {successorCandidates.length === 0 ? (
+                  <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
+                ) : (
+                  <>
+                    <option value="">{t("resource.fields.selectSuccessor")}</option>
+                    {successorCandidates.map((candidate) => (
+                      <option key={candidate.id} value={candidate.id}>
+                        {qualifiedFormation(
+                          t(`resource.formation.${candidate.formation}`),
+                          candidate.homeLocation?.name,
+                        )}
+                        {candidate.name ? ` — ${candidate.name}` : ""}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
+            </label>
+          )}
+
           {/* Transition buttons */}
           <div className="flex flex-wrap gap-2 pt-1">
             {r.status === "AUFGEBOTEN" && (
@@ -1685,12 +1758,20 @@ function ResourcePickerRow({
                 <Button
                   type="button"
                   size="xs"
-                  variant="warning"
-                  light
-                  disabled={busy}
-                  onClick={() => void standDown({ id: r.id, at: messageTime })}
+                  variant="light"
+                  disabled={busy || !successorId}
+                  onClick={() => void relieveAndAttach(successorId)}
                 >
-                  {t("resource.actions.standDown")}
+                  {t("resource.actions.relieve")}
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="light"
+                  disabled={busy}
+                  onClick={() => void relieveAndAttach(null)}
+                >
+                  {t("resource.actions.dismiss")}
                 </Button>
               </>
             )}
@@ -1710,10 +1791,19 @@ function ResourcePickerRow({
                   type="button"
                   size="xs"
                   variant="light"
-                  disabled={busy}
-                  onClick={() => void relieve({ id: r.id, at: messageTime })}
+                  disabled={busy || !successorId}
+                  onClick={() => void relieveAndAttach(successorId)}
                 >
                   {t("resource.actions.relieve")}
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="light"
+                  disabled={busy}
+                  onClick={() => void relieveAndAttach(null)}
+                >
+                  {t("resource.actions.dismiss")}
                 </Button>
               </>
             )}
@@ -1784,12 +1874,14 @@ function AlertResourceForm({
   schadenplatzId,
   sourceMessageId,
   iconsLoaded,
+  existingResources,
   onAlerted,
 }: {
   incidentId: string;
   schadenplatzId: string;
   sourceMessageId?: string;
   iconsLoaded: boolean;
+  existingResources: Resource[];
   onAlerted?: (id: string) => void;
 }) {
   const { t } = useTranslation();
@@ -1808,8 +1900,17 @@ function AlertResourceForm({
     (formation ? (FORMATIONS.find((f) => f.key === formation)?.babsId ?? null) : null);
 
   const canSubmit = !!formation && !!derivedSize && !!name.trim() && !!homeLocation.trim();
+  const identityConflict = existingResources.some(
+    (resource) =>
+      resource.status !== "ABGELOEST" &&
+      resource.formation === formation &&
+      resource.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase() &&
+      (resource.homeLocation?.name ?? "").trim().toLocaleLowerCase() ===
+        homeLocation.trim().toLocaleLowerCase(),
+  );
 
   const handleSubmit = async () => {
+    if (identityConflict) return;
     if (!formation || !derivedSize) return;
     try {
       const result = await alertResource({
@@ -1848,7 +1949,16 @@ function AlertResourceForm({
   }
 
   return (
-    <div className="mt-3 space-y-3 rounded border border-border bg-bg p-3">
+    <div className="relative mt-3 space-y-3 rounded border border-border bg-bg p-3">
+      <button
+        type="button"
+        className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded text-fg-muted hover:bg-bg-elevated hover:text-fg"
+        aria-label="Close resource form"
+        title="Close resource form"
+        onClick={() => setOpen(false)}
+      >
+        <FontAwesomeIcon icon={faXmark} />
+      </button>
       {/* Formation picker */}
       <div>
         <p className="mb-1.5 text-xs font-semibold tracking-wide text-fg-muted uppercase">
@@ -1882,29 +1992,41 @@ function AlertResourceForm({
       <div className="flex items-start gap-4">
         <div className="grid flex-1 grid-cols-2 gap-2">
           {/* homeLocation = organisation qualifier: "Altdorf" → "Feuerwehr Altdorf" */}
-          <input
-            type="text"
-            value={homeLocation}
-            onChange={(e) => setHomeLocation(e.target.value)}
-            placeholder={t("resource.fields.homeLocation")}
-            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          />
+          <label className="col-span-2 text-xs font-semibold text-fg-muted">
+            {t("resource.fields.homeLocation")}
+            <input
+              id="resource-home-location"
+              type="text"
+              value={homeLocation}
+              onChange={(e) => setHomeLocation(e.target.value)}
+              placeholder={t("resource.fields.homeLocationPlaceholder")}
+              className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </label>
           {/* name = sub-unit description: "Gruppe 3" → "Feuerwehr Altdorf – Gruppe 3" */}
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("resource.fields.name")}
-            className="col-span-2 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          />
-          <input
-            type="number"
-            value={personnelCount}
-            min={0}
-            onChange={(e) => setPersonnelCount(e.target.value)}
-            placeholder={t("resource.fields.personnelCount")}
-            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          />
+          <label className="col-span-2 text-xs font-semibold text-fg-muted">
+            {t("resource.fields.name")}
+            <input
+              id="resource-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("resource.fields.namePlaceholder")}
+              className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-semibold text-fg-muted">
+            {t("resource.fields.personnelCount")}
+            <input
+              id="resource-personnel-count"
+              type="number"
+              value={personnelCount}
+              min={0}
+              onChange={(e) => setPersonnelCount(e.target.value)}
+              placeholder={t("resource.fields.personnelCount")}
+              className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </label>
         </div>
 
         {/* Large icon preview — distinct from the small picker buttons */}
@@ -1943,16 +2065,16 @@ function AlertResourceForm({
       {alertState.error && (
         <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
       )}
+      {identityConflict && (
+        <p className="text-xs text-danger">{t("resource.validation.duplicateIdentity")}</p>
+      )}
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="light" size="xs" onClick={() => setOpen(false)}>
-          {t("close")}
-        </Button>
         <Button
           type="button"
           variant="primary"
           size="xs"
-          disabled={!canSubmit || alertState.loading}
+          disabled={!canSubmit || identityConflict || alertState.loading}
           onClick={() => void handleSubmit()}
         >
           {alertState.loading ? t("resource.alerting") : t("resource.addResource")}

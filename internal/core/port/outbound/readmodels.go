@@ -161,6 +161,17 @@ type DeploymentLocationRM struct {
 	Label string
 }
 
+type DeploymentPeriodRM struct {
+	StartedAt        time.Time
+	EndedAt          *time.Time
+	SchadenplatzID   uuid.UUID
+	Formation        string
+	Name             string
+	HomeLocationName *string
+	Hauptaufgabe     string
+	PersonnelCount   int
+}
+
 // ResourceRM is the read-model row for one Resource.
 type ResourceRM struct {
 	ID                 uuid.UUID
@@ -191,6 +202,7 @@ type ResourceRM struct {
 	SourceMessageID    *uuid.UUID
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+	DeploymentHistory  []DeploymentPeriodRM
 }
 
 // ResourceQueries is the driven port for Resource read-model access.

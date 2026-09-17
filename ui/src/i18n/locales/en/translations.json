@@ -392,22 +392,31 @@
     "actions": {
       "markReady": "Mark ready",
       "deploy": "Deploy",
-      "standDown": "Stand down",
+      "standDown": "Operation complete",
       "relieve": "Relieve",
+      "dismiss": "Dismiss",
       "alert": "Alert"
     },
     "fields": {
-      "name": "Name",
+      "name": "Resource name",
+      "namePlaceholder": "Resource name",
       "formation": "Formation",
       "size": "Unit size",
       "personnelCount": "Personnel",
+      "successor": "Relieved by",
+      "selectSuccessor": "Select replacement formation",
+      "relievedThrough": "Relieved by",
+      "successorMarker": "Replacement",
+      "noSuccessorAvailable": "No other formation available",
       "hauptaufgabe": "Main task",
       "contact": "Contact",
-      "homeLocation": "Organisation",
+      "homeLocation": "Formation / location",
+      "homeLocationPlaceholder": "e.g. Altdorf",
       "deploymentLocation": "Deployment location",
       "einsatzBeginn": "Deployment start",
       "einsatzEnde": "Deployment end",
-      "status": "Status"
+      "status": "Status",
+      "reachability": "Contact"
     },
     "noResources": "No resources recorded",
     "search": "Search resources…",
@@ -427,7 +436,8 @@
     "relievedAt": "Relieved",
     "validation": {
       "hauptaufgabeRequired": "Main task is required before deploying",
-      "einsatzortRequired": "Deployment location is required before deploying"
+      "einsatzortRequired": "Deployment location is required before deploying",
+      "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists."
     }
   }
 }

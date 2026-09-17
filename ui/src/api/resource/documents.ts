@@ -59,6 +59,16 @@ export const RESOURCE_FIELDS = gql`
     predecessorId
     successorId
     sourceMessageId
+    deploymentHistory {
+      startedAt
+      endedAt
+      schadenplatzId
+      formation
+      name
+      homeLocationName
+      hauptaufgabe
+      personnelCount
+    }
   }
 `;
 

@@ -309,7 +309,8 @@
   "adminGroups": {
     "title": "Gruppi",
     "newGroup": "Nuovo gruppo",
-    "name": "Nome",
+    "name": "Nome della risorsa",
+    "namePlaceholder": "Nome della risorsa",
     "description": "Descrizione",
     "create": "Crea",
     "cancel": "Annulla",
@@ -392,8 +393,9 @@
     "actions": {
       "markReady": "Segnala pronto",
       "deploy": "Impiegare",
-      "standDown": "Ritirare",
+      "standDown": "Intervento concluso",
       "relieve": "Avvicendare",
+      "dismiss": "Congedare",
       "alert": "Allertare"
     },
     "fields": {
@@ -401,13 +403,20 @@
       "formation": "Formazione",
       "size": "Dimensione unità",
       "personnelCount": "Personale",
+      "successor": "Sostituito da",
+      "selectSuccessor": "Seleziona la formazione sostitutiva",
+      "relievedThrough": "Sostituito da",
+      "successorMarker": "Sostituzione",
+      "noSuccessorAvailable": "Nessun'altra formazione disponibile",
       "hauptaufgabe": "Compito principale",
       "contact": "Contatto",
-      "homeLocation": "Organizzazione",
+      "homeLocation": "Formazione / luogo",
+      "homeLocationPlaceholder": "es. Altdorf",
       "deploymentLocation": "Luogo d'impiego",
       "einsatzBeginn": "Inizio impiego",
       "einsatzEnde": "Fine impiego",
-      "status": "Stato"
+      "status": "Stato",
+      "reachability": "Recapito"
     },
     "noResources": "Nessun mezzo registrato",
     "search": "Cerca mezzi…",
@@ -427,7 +436,8 @@
     "relievedAt": "Avvicendato",
     "validation": {
       "hauptaufgabeRequired": "Il compito principale è obbligatorio per l'impiego",
-      "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego"
+      "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego",
+      "duplicateIdentity": "Esiste già una risorsa attiva con la stessa formazione/luogo, tipo di formazione e nome."
     }
   }
 }

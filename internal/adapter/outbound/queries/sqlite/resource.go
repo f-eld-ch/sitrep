@@ -3,7 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -19,7 +21,7 @@ func (q *Queries) GetResource(ctx context.Context, id uuid.UUID) (*outbound.Reso
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+			predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel_resource WHERE id = ?`, id.String())
 
 	rm, err := scanSQLiteResource(row)
@@ -41,7 +43,7 @@ func (q *Queries) ListResourcesForSchadenplatz(
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+			predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel_resource WHERE schadenplatz_id = ? AND status != 'ABGELOEST' ORDER BY created_at ASC`,
 		schadenplatzID.String(),
 	)
@@ -58,7 +60,7 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 		       deployment_lat, deployment_lng, deployment_label,
 		       status, status_at, alerted_at, ready_at, deployed_at, stood_down_at, relieved_at,
 		       einsatz_beginn, einsatz_ende,
-		       predecessor_id, successor_id, source_message_id, created_at, updated_at
+			predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel_resource
 		WHERE incident_id = ?
 		   OR incident_id IN (
@@ -133,6 +135,7 @@ func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		sourceMessageIDStr sql.NullString
 		createdAt          sqliteh.Time
 		updatedAt          sqliteh.Time
+		deploymentHistory  string
 		rm                 outbound.ResourceRM
 	)
 
@@ -144,6 +147,7 @@ func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		&rm.Status, &statusAt, &alertedAt, &readyAt, &deployedAt, &stoodDownAt, &relievedAt,
 		&einsatzBeginn, &einsatzEnde,
 		&predecessorIDStr, &successorIDStr, &sourceMessageIDStr, &createdAt, &updatedAt,
+		&deploymentHistory,
 	); err != nil {
 		return nil, err
 	}
@@ -257,5 +261,31 @@ func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		}
 	}
 
+	if deploymentHistory != "" {
+		var periods []struct {
+			StartedAt        time.Time  `json:"startedAt"`
+			EndedAt          *time.Time `json:"endedAt"`
+			SchadenplatzID   string     `json:"schadenplatzId"`
+			Formation        string     `json:"formation"`
+			Name             string     `json:"name"`
+			HomeLocationName *string    `json:"homeLocationName"`
+			Hauptaufgabe     string     `json:"hauptaufgabe"`
+			PersonnelCount   int        `json:"personnelCount"`
+		}
+		if err := json.Unmarshal([]byte(deploymentHistory), &periods); err != nil {
+			return nil, err
+		}
+		for _, period := range periods {
+			periodID, err := uuid.Parse(period.SchadenplatzID)
+			if err != nil {
+				return nil, err
+			}
+			rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
+				StartedAt: period.StartedAt, EndedAt: period.EndedAt, SchadenplatzID: periodID,
+				Formation: period.Formation, Name: period.Name, HomeLocationName: period.HomeLocationName,
+				Hauptaufgabe: period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
+			})
+		}
+	}
 	return &rm, nil
 }

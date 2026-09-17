@@ -207,6 +207,17 @@ type DeploymentLocation {
   label: String!
 }
 
+type ResourceDeploymentPeriod {
+  startedAt: DateTime!
+  endedAt: DateTime
+  schadenplatzId: ID!
+  formation: ResourceFormation!
+  name: String!
+  homeLocationName: String
+  hauptaufgabe: String!
+  personnelCount: Int!
+}
+
 """An operational unit assigned to a Schadenplatz."""
 type Resource {
   id: ID!
@@ -232,6 +243,7 @@ type Resource {
   predecessorId: ID
   successorId: ID
   sourceMessageId: ID
+  deploymentHistory: [ResourceDeploymentPeriod!]!
 }
 
 type Message {

@@ -88,6 +88,7 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
           predecessorId: null,
           successorId: null,
           sourceMessageId: args.sourceMessageId ?? null,
+          deploymentHistory: [],
         },
       },
       update(cache, { data }) {

@@ -121,22 +121,21 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		)
 
 	case "Deployed":
-		return exec(
-			db,
-			ctx,
-			`UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1, deployed_at=$1, updated_at=$1 WHERE id=$2`,
-			now,
-			id,
-		)
+		return exec(db, ctx, `
+			UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1, deployed_at=$1,
+				deployment_history = deployment_history || jsonb_build_array(jsonb_build_object(
+					'startedAt', $1, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
+					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
+					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
+				updated_at=$1 WHERE id=$2`, now, id)
 
 	case "StoodDown":
-		return exec(
-			db,
-			ctx,
-			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, stood_down_at=$1, updated_at=$1 WHERE id=$2`,
-			now,
-			id,
-		)
+		return exec(db, ctx, `
+			UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, stood_down_at=$1, hauptaufgabe='',
+				deployment_history = CASE WHEN jsonb_array_length(deployment_history) > 0
+					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1))
+					ELSE deployment_history END,
+				updated_at=$1 WHERE id=$2`, now, id)
 
 	case "Relieved":
 		var d struct {
@@ -147,7 +146,11 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(db, ctx, `
-			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2, updated_at=$1 WHERE id=$3`,
+			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2,
+				deployment_history = CASE WHEN jsonb_array_length(deployment_history) > 0
+					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1))
+					ELSE deployment_history END,
+				updated_at=$1 WHERE id=$3`,
 			now, d.SuccessorID, id)
 
 	case "SuccessionLinked":
@@ -175,14 +178,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(
-			db,
-			ctx,
+		return exec(db, ctx,
 			`UPDATE readmodel.resource SET schadenplatz_id=$1, updated_at=$2 WHERE id=$3`,
-			d.SchadenplatzID,
-			now,
-			id,
-		)
+			d.SchadenplatzID, now, id)
 
 	case "DeploymentLocationUpdated":
 		var d struct {

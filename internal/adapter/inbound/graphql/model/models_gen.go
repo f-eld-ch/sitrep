@@ -220,29 +220,30 @@ type Query struct {
 
 // An operational unit assigned to a Schadenplatz.
 type Resource struct {
-	ID                 string                `json:"id"`
-	IncidentID         string                `json:"incidentId"`
-	SchadenplatzID     string                `json:"schadenplatzId"`
-	Formation          ResourceFormation     `json:"formation"`
-	Name               string                `json:"name"`
-	Size               ResourceUnitSize      `json:"size"`
-	PersonnelCount     int                   `json:"personnelCount"`
-	Hauptaufgabe       string                `json:"hauptaufgabe"`
-	Contact            *ResourceContact      `json:"contact,omitempty"`
-	HomeLocation       *ResourceHomeLocation `json:"homeLocation,omitempty"`
-	DeploymentLocation *DeploymentLocation   `json:"deploymentLocation,omitempty"`
-	Status             ResourceStatus        `json:"status"`
-	StatusAt           time.Time             `json:"statusAt"`
-	AlertedAt          time.Time             `json:"alertedAt"`
-	ReadyAt            *time.Time            `json:"readyAt,omitempty"`
-	DeployedAt         *time.Time            `json:"deployedAt,omitempty"`
-	StoodDownAt        *time.Time            `json:"stoodDownAt,omitempty"`
-	RelievedAt         *time.Time            `json:"relievedAt,omitempty"`
-	EinsatzBeginn      *time.Time            `json:"einsatzBeginn,omitempty"`
-	EinsatzEnde        *time.Time            `json:"einsatzEnde,omitempty"`
-	PredecessorID      *string               `json:"predecessorId,omitempty"`
-	SuccessorID        *string               `json:"successorId,omitempty"`
-	SourceMessageID    *string               `json:"sourceMessageId,omitempty"`
+	ID                 string                      `json:"id"`
+	IncidentID         string                      `json:"incidentId"`
+	SchadenplatzID     string                      `json:"schadenplatzId"`
+	Formation          ResourceFormation           `json:"formation"`
+	Name               string                      `json:"name"`
+	Size               ResourceUnitSize            `json:"size"`
+	PersonnelCount     int                         `json:"personnelCount"`
+	Hauptaufgabe       string                      `json:"hauptaufgabe"`
+	Contact            *ResourceContact            `json:"contact,omitempty"`
+	HomeLocation       *ResourceHomeLocation       `json:"homeLocation,omitempty"`
+	DeploymentLocation *DeploymentLocation         `json:"deploymentLocation,omitempty"`
+	Status             ResourceStatus              `json:"status"`
+	StatusAt           time.Time                   `json:"statusAt"`
+	AlertedAt          time.Time                   `json:"alertedAt"`
+	ReadyAt            *time.Time                  `json:"readyAt,omitempty"`
+	DeployedAt         *time.Time                  `json:"deployedAt,omitempty"`
+	StoodDownAt        *time.Time                  `json:"stoodDownAt,omitempty"`
+	RelievedAt         *time.Time                  `json:"relievedAt,omitempty"`
+	EinsatzBeginn      *time.Time                  `json:"einsatzBeginn,omitempty"`
+	EinsatzEnde        *time.Time                  `json:"einsatzEnde,omitempty"`
+	PredecessorID      *string                     `json:"predecessorId,omitempty"`
+	SuccessorID        *string                     `json:"successorId,omitempty"`
+	SourceMessageID    *string                     `json:"sourceMessageId,omitempty"`
+	DeploymentHistory  []*ResourceDeploymentPeriod `json:"deploymentHistory"`
 }
 
 // Contact details for a resource.
@@ -254,6 +255,17 @@ type ResourceContact struct {
 type ResourceContactInput struct {
 	Medium ContactMedium `json:"medium"`
 	Detail string        `json:"detail"`
+}
+
+type ResourceDeploymentPeriod struct {
+	StartedAt        time.Time         `json:"startedAt"`
+	EndedAt          *time.Time        `json:"endedAt,omitempty"`
+	SchadenplatzID   string            `json:"schadenplatzId"`
+	Formation        ResourceFormation `json:"formation"`
+	Name             string            `json:"name"`
+	HomeLocationName *string           `json:"homeLocationName,omitempty"`
+	Hauptaufgabe     string            `json:"hauptaufgabe"`
+	PersonnelCount   int               `json:"personnelCount"`
 }
 
 // Named home location with optional coordinates.

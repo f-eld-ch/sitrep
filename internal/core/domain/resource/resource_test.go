@@ -173,6 +173,13 @@ func TestResource_StateMachine(t *testing.T) {
 		assert.Equal(t, resource.StatusAbgeloest, r.Status())
 	})
 
+	t.Run("Relieve from EINSATZBEREIT succeeds", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.MarkReady(actor, at))
+		require.NoError(t, r.Relieve(nil, actor, at))
+		assert.Equal(t, resource.StatusAbgeloest, r.Status())
+	})
+
 	t.Run("Relieve twice is rejected", func(t *testing.T) {
 		r := replay(t, id, []eventsourcing.Event{alerted(id)})
 		require.NoError(t, r.Relieve(nil, actor, at))

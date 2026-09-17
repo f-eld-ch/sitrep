@@ -220,6 +220,7 @@ type ComplexityRoot struct {
 		AlertedAt          func(childComplexity int) int
 		Contact            func(childComplexity int) int
 		DeployedAt         func(childComplexity int) int
+		DeploymentHistory  func(childComplexity int) int
 		DeploymentLocation func(childComplexity int) int
 		EinsatzBeginn      func(childComplexity int) int
 		EinsatzEnde        func(childComplexity int) int
@@ -245,6 +246,17 @@ type ComplexityRoot struct {
 	ResourceContact struct {
 		Detail func(childComplexity int) int
 		Medium func(childComplexity int) int
+	}
+
+	ResourceDeploymentPeriod struct {
+		EndedAt          func(childComplexity int) int
+		Formation        func(childComplexity int) int
+		Hauptaufgabe     func(childComplexity int) int
+		HomeLocationName func(childComplexity int) int
+		Name             func(childComplexity int) int
+		PersonnelCount   func(childComplexity int) int
+		SchadenplatzID   func(childComplexity int) int
+		StartedAt        func(childComplexity int) int
 	}
 
 	ResourceHomeLocation struct {
@@ -1468,6 +1480,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Resource.DeployedAt(childComplexity), true
+	case "Resource.deploymentHistory":
+		if e.ComplexityRoot.Resource.DeploymentHistory == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Resource.DeploymentHistory(childComplexity), true
 	case "Resource.deploymentLocation":
 		if e.ComplexityRoot.Resource.DeploymentLocation == nil {
 			break
@@ -1601,6 +1619,55 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ResourceContact.Medium(childComplexity), true
+
+	case "ResourceDeploymentPeriod.endedAt":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.EndedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.EndedAt(childComplexity), true
+	case "ResourceDeploymentPeriod.formation":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.Formation == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.Formation(childComplexity), true
+	case "ResourceDeploymentPeriod.hauptaufgabe":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.Hauptaufgabe == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.Hauptaufgabe(childComplexity), true
+	case "ResourceDeploymentPeriod.homeLocationName":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.HomeLocationName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.HomeLocationName(childComplexity), true
+	case "ResourceDeploymentPeriod.name":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.Name(childComplexity), true
+	case "ResourceDeploymentPeriod.personnelCount":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.PersonnelCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.PersonnelCount(childComplexity), true
+	case "ResourceDeploymentPeriod.schadenplatzId":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.SchadenplatzID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.SchadenplatzID(childComplexity), true
+	case "ResourceDeploymentPeriod.startedAt":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.StartedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.StartedAt(childComplexity), true
 
 	case "ResourceHomeLocation.lat":
 		if e.ComplexityRoot.ResourceHomeLocation.Lat == nil {
@@ -2037,6 +2104,17 @@ type DeploymentLocation {
   label: String!
 }
 
+type ResourceDeploymentPeriod {
+  startedAt: DateTime!
+  endedAt: DateTime
+  schadenplatzId: ID!
+  formation: ResourceFormation!
+  name: String!
+  homeLocationName: String
+  hauptaufgabe: String!
+  personnelCount: Int!
+}
+
 """An operational unit assigned to a Schadenplatz."""
 type Resource {
   id: ID!
@@ -2062,6 +2140,7 @@ type Resource {
   predecessorId: ID
   successorId: ID
   sourceMessageId: ID
+  deploymentHistory: [ResourceDeploymentPeriod!]!
 }
 
 type Message {
@@ -2703,6 +2782,8 @@ func (ec *executionContext) childFields_Resource(ctx context.Context, field grap
 		return ec.fieldContext_Resource_successorId(ctx, field)
 	case "sourceMessageId":
 		return ec.fieldContext_Resource_sourceMessageId(ctx, field)
+	case "deploymentHistory":
+		return ec.fieldContext_Resource_deploymentHistory(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Resource", field.Name)
 }
@@ -2715,6 +2796,28 @@ func (ec *executionContext) childFields_ResourceContact(ctx context.Context, fie
 		return ec.fieldContext_ResourceContact_detail(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ResourceContact", field.Name)
+}
+
+func (ec *executionContext) childFields_ResourceDeploymentPeriod(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "startedAt":
+		return ec.fieldContext_ResourceDeploymentPeriod_startedAt(ctx, field)
+	case "endedAt":
+		return ec.fieldContext_ResourceDeploymentPeriod_endedAt(ctx, field)
+	case "schadenplatzId":
+		return ec.fieldContext_ResourceDeploymentPeriod_schadenplatzId(ctx, field)
+	case "formation":
+		return ec.fieldContext_ResourceDeploymentPeriod_formation(ctx, field)
+	case "name":
+		return ec.fieldContext_ResourceDeploymentPeriod_name(ctx, field)
+	case "homeLocationName":
+		return ec.fieldContext_ResourceDeploymentPeriod_homeLocationName(ctx, field)
+	case "hauptaufgabe":
+		return ec.fieldContext_ResourceDeploymentPeriod_hauptaufgabe(ctx, field)
+	case "personnelCount":
+		return ec.fieldContext_ResourceDeploymentPeriod_personnelCount(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ResourceDeploymentPeriod", field.Name)
 }
 
 func (ec *executionContext) childFields_ResourceHomeLocation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -8928,6 +9031,38 @@ func (ec *executionContext) fieldContext_Resource_sourceMessageId(_ context.Cont
 	return graphql.NewScalarFieldContext("Resource", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Resource_deploymentHistory(ctx context.Context, field graphql.CollectedField, obj *model.Resource) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Resource_deploymentHistory(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DeploymentHistory, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.ResourceDeploymentPeriod) graphql.Marshaler {
+			return ec.marshalNResourceDeploymentPeriod2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceDeploymentPeriodᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Resource_deploymentHistory(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Resource",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ResourceDeploymentPeriod(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ResourceContact_medium(ctx context.Context, field graphql.CollectedField, obj *model.ResourceContact) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -8972,6 +9107,190 @@ func (ec *executionContext) _ResourceContact_detail(ctx context.Context, field g
 }
 func (ec *executionContext) fieldContext_ResourceContact_detail(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("ResourceContact", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_startedAt(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_startedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.StartedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_startedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_endedAt(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_endedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.EndedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_endedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_schadenplatzId(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_schadenplatzId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SchadenplatzID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_schadenplatzId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_formation(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_formation(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Formation, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.ResourceFormation) graphql.Marshaler {
+			return ec.marshalNResourceFormation2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceFormation(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_formation(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type ResourceFormation does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_name(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_homeLocationName(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_homeLocationName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.HomeLocationName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_homeLocationName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_hauptaufgabe(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_hauptaufgabe(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Hauptaufgabe, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_hauptaufgabe(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ResourceDeploymentPeriod_personnelCount(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_personnelCount(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PersonnelCount, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_personnelCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _ResourceHomeLocation_name(ctx context.Context, field graphql.CollectedField, obj *model.ResourceHomeLocation) (ret graphql.Marshaler) {
@@ -13229,6 +13548,11 @@ func (ec *executionContext) _Resource(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
+		case "deploymentHistory":
+			out.Values[i] = ec._Resource_deploymentHistory(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13269,6 +13593,79 @@ func (ec *executionContext) _ResourceContact(ctx context.Context, sel ast.Select
 			}
 		case "detail":
 			out.Values[i] = ec._ResourceContact_detail(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var resourceDeploymentPeriodImplementors = []string{"ResourceDeploymentPeriod"}
+
+func (ec *executionContext) _ResourceDeploymentPeriod(ctx context.Context, sel ast.SelectionSet, obj *model.ResourceDeploymentPeriod) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, resourceDeploymentPeriodImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ResourceDeploymentPeriod")
+		case "startedAt":
+			out.Values[i] = ec._ResourceDeploymentPeriod_startedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "endedAt":
+			out.Values[i] = ec._ResourceDeploymentPeriod_endedAt(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "schadenplatzId":
+			out.Values[i] = ec._ResourceDeploymentPeriod_schadenplatzId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "formation":
+			out.Values[i] = ec._ResourceDeploymentPeriod_formation(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ResourceDeploymentPeriod_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "homeLocationName":
+			out.Values[i] = ec._ResourceDeploymentPeriod_homeLocationName(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "hauptaufgabe":
+			out.Values[i] = ec._ResourceDeploymentPeriod_hauptaufgabe(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "personnelCount":
+			out.Values[i] = ec._ResourceDeploymentPeriod_personnelCount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14449,6 +14846,32 @@ func (ec *executionContext) marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsi
 func (ec *executionContext) unmarshalNResourceContactInput2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceContactInput(ctx context.Context, v any) (model.ResourceContactInput, error) {
 	res, err := ec.unmarshalInputResourceContactInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNResourceDeploymentPeriod2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceDeploymentPeriodᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ResourceDeploymentPeriod) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNResourceDeploymentPeriod2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceDeploymentPeriod(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNResourceDeploymentPeriod2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceDeploymentPeriod(ctx context.Context, sel ast.SelectionSet, v *model.ResourceDeploymentPeriod) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ResourceDeploymentPeriod(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNResourceFormation2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceFormation(ctx context.Context, v any) (model.ResourceFormation, error) {

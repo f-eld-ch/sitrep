@@ -200,7 +200,8 @@ func (r *Resource) StandDown(actor string, at time.Time) error {
 	return nil
 }
 
-// Relieve permanently terminates the resource's assignment.
+// Relieve permanently terminates the resource's assignment from any active
+// status, including EINSATZBEREIT when the resource has reached its work-time limit.
 // successorID is optional; set it when a replacement resource is known.
 func (r *Resource) Relieve(successorID *shared.ResourceID, actor string, at time.Time) error {
 	if r.status == StatusAbgeloest {
@@ -369,6 +370,7 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.status = StatusEinsatzbereit
 		r.statusAt = d.At
 		r.stoodDownAt = &d.At
+		r.hauptaufgabe = ""
 	case Relieved:
 		r.status = StatusAbgeloest
 		r.statusAt = d.At

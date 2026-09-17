@@ -105,11 +105,13 @@ function CasualtyKpis({ totals, iconsLoaded }: { totals: CasualtyTotals; iconsLo
       {CATEGORIES.map((cat) => (
         <section key={cat.key} className="rounded border border-border bg-bg-elevated p-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-bg">
-              {iconsLoaded ? <BabsIcon icon={cat.babsId} size={30} fallback={null} /> : null}
-            </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2 className="truncate text-sm font-semibold text-fg-muted">{t(cat.labelKey)}</h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="flex h-10 w-10 items-center justify-center">
+                {iconsLoaded ? <BabsIcon icon={cat.babsId} size={30} fallback={null} /> : null}
+              </span>
               <p className="text-2xl font-bold text-danger tabular-nums">{totals[cat.key]}</p>
             </div>
           </div>

@@ -7,7 +7,13 @@ import type { TagVariant } from "components/ui/Tag";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useIncidentResources } from "api";
-import type { Resource, ResourceFormation, ResourceStatus, ResourceUnitSize } from "api";
+import type {
+  Resource,
+  ResourceDeploymentPeriod,
+  ResourceFormation,
+  ResourceStatus,
+  ResourceUnitSize,
+} from "api";
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -82,23 +88,23 @@ interface ResourceHomeLocationGroup {
 
 function personnelByStatus(resources: Resource[]): StatusPersonnel {
   const totals: StatusPersonnel = {};
-  for (const r of resources) {
-    totals[r.status] = (totals[r.status] ?? 0) + r.personnelCount;
+  for (const resource of resources) {
+    totals[resource.status] = (totals[resource.status] ?? 0) + resource.personnelCount;
   }
   return totals;
 }
 
 function totalPersonnel(resources: Resource[]): number {
-  return resources.reduce((total, r) => total + r.personnelCount, 0);
+  return resources.reduce((total, resource) => total + resource.personnelCount, 0);
 }
 
 function StatusBadges({ totals }: { totals: StatusPersonnel }) {
   const { t } = useTranslation();
   return (
     <span className="flex flex-wrap gap-1">
-      {STATUS_ORDER.filter((s) => totals[s]).map((s) => (
-        <Tag key={s} variant={statusVariant[s]} light size="sm">
-          {totals[s]} {t(`resource.status.${s}`)}
+      {STATUS_ORDER.filter((status) => totals[status]).map((status) => (
+        <Tag key={status} variant={statusVariant[status]} light size="sm">
+          {totals[status]} {t(`resource.status.${status}`)}
         </Tag>
       ))}
     </span>
@@ -115,41 +121,39 @@ function FormationKpis({
   const { t } = useTranslation();
   const formationGroups = FORMATION_ORDER.map((formation) => ({
     formation,
-    resources: resources.filter((resource) => resource.formation === formation),
+    resources: resources.filter(
+      (resource) => resource.formation === formation && resource.status !== "ABGELOEST",
+    ),
   })).filter((group) => group.resources.length > 0);
 
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-3">
-      {formationGroups.map((group) => {
-        const partnerIcon = FORMATION_ICON[group.formation];
-        return (
-          <section
-            key={group.formation}
-            className="rounded border border-border bg-bg-elevated p-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-bg">
+      {formationGroups.map((group) => (
+        <section key={group.formation} className="rounded border border-border bg-bg-elevated p-3">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-sm font-semibold text-fg">
+                {t(`resource.formation.${group.formation}`)}
+              </h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="flex h-10 w-10 items-center justify-center">
                 {iconsLoaded ? (
-                  <BabsIcon icon={partnerIcon} size={30} fallback={null} />
+                  <BabsIcon icon={FORMATION_ICON[group.formation]} size={30} fallback={null} />
                 ) : (
-                  <span className="text-xs font-bold text-fg-muted">{group.formation}</span>
+                  group.formation
                 )}
               </span>
-              <div className="min-w-0">
-                <h2 className="truncate text-sm font-semibold text-fg">
-                  {t(`resource.formation.${group.formation}`)}
-                </h2>
-                <p className="text-2xl font-bold text-fg tabular-nums">
-                  {totalPersonnel(group.resources)}
-                </p>
-              </div>
+              <p className="text-2xl font-bold text-fg tabular-nums">
+                {totalPersonnel(group.resources)}
+              </p>
             </div>
-            <div className="mt-3">
-              <StatusBadges totals={personnelByStatus(group.resources)} />
-            </div>
-          </section>
-        );
-      })}
+          </div>
+          <div className="mt-3">
+            <StatusBadges totals={personnelByStatus(group.resources)} />
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -223,6 +227,97 @@ function formatDateTime(iso: string | null | undefined): string {
   return dayjs(iso).format("DD.MM.YYYY HH:mm");
 }
 
+function ResourceTableRow({
+  resource,
+  period,
+  iconsLoaded,
+  successor,
+  historyOpen,
+  onToggleHistory,
+}: {
+  resource: Resource;
+  period?: ResourceDeploymentPeriod;
+  iconsLoaded: boolean;
+  successor?: Resource;
+  historyOpen?: boolean;
+  onToggleHistory?: () => void;
+}) {
+  const { t } = useTranslation();
+  const formation = period?.formation ?? resource.formation;
+  const size = period ? resource.size : resource.size;
+  const babsId = combinedBabsId(formation, size);
+  const isHistory = period !== undefined;
+  const status = isHistory ? "EINGESETZT" : resource.status;
+  const name = period?.name || resource.name || t(`resource.size.${size}`);
+
+  return (
+    <tr className="hover:bg-bg-elevated/40">
+      <td className={isHistory ? "px-2 py-1.5 pl-24" : "px-2 py-1.5 pl-18"}>
+        <span className="flex items-center gap-2">
+          {!isHistory && resource.deploymentHistory.length > 0 && onToggleHistory && (
+            <button
+              type="button"
+              className="shrink-0 text-fg-muted/60"
+              aria-label={name}
+              onClick={onToggleHistory}
+            >
+              <FontAwesomeIcon
+                icon={historyOpen ? faChevronDown : faChevronRight}
+                className="w-3"
+              />
+            </button>
+          )}
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
+            {babsId && iconsLoaded ? (
+              <BabsIcon icon={babsId} size={20} fallback={null} />
+            ) : (
+              <span className="text-[10px] font-bold text-fg-muted">{formation}</span>
+            )}
+          </span>
+          <span className="font-medium text-fg">{name}</span>
+        </span>
+      </td>
+      <td className="px-2 py-1.5 text-right text-fg tabular-nums">
+        {period?.personnelCount ?? resource.personnelCount}
+      </td>
+      <td className="px-2 py-1.5">
+        <Tag variant={statusVariant[status]} light size="sm">
+          {t(`resource.status.${status}`)}
+        </Tag>
+      </td>
+      <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
+        {!isHistory && resource.contact
+          ? `${t(`medium.${resource.contact.medium}`)}${resource.contact.detail ? `: ${resource.contact.detail}` : ""}`
+          : "–"}
+      </td>
+      <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+        {formatDateTime(isHistory ? null : resource.alertedAt)}
+      </td>
+      <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+        {formatDateTime(isHistory ? null : resource.readyAt)}
+      </td>
+      <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+        {formatDateTime(isHistory ? period.startedAt : resource.deployedAt)}
+      </td>
+      <td className="px-2 py-1.5 text-left text-fg tabular-nums">
+        {formatDateTime(isHistory ? period.endedAt : resource.relievedAt)}
+        {!isHistory && resource.status === "ABGELOEST" && successor && (
+          <span className="block text-left text-xs font-normal text-fg-muted">
+            {t("resource.fields.relievedThrough")}:{" "}
+            {successor.name || t(`resource.size.${successor.size}`)}
+          </span>
+        )}
+      </td>
+      <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
+        {period?.hauptaufgabe || resource.hauptaufgabe || "–"}
+      </td>
+      <td className="max-w-[10rem] truncate px-2 py-1.5 text-fg">
+        {isHistory ? "–" : resource.deploymentLocation?.label || "–"}
+      </td>
+    </tr>
+  );
+}
+
 function Mitteltabelle({
   resources,
   iconsLoaded,
@@ -240,6 +335,9 @@ function Mitteltabelle({
   const [openIncidentIds, setOpenIncidentIds] = useState<Set<string>>(new Set());
   const [openFormationIds, setOpenFormationIds] = useState<Set<string>>(new Set());
   const [openHomeLocationIds, setOpenHomeLocationIds] = useState<Set<string>>(new Set());
+  const [openResourceIds, setOpenResourceIds] = useState<Set<string>>(new Set());
+  const resourceById = new Map(resources.map((resource) => [resource.id, resource]));
+
   const incidentGroups = buildIncidentResourceGroups({
     resources,
     incidentId,
@@ -271,6 +369,14 @@ function Mitteltabelle({
       return next;
     });
 
+  const toggleResource = (id: string) =>
+    setOpenResourceIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   return (
     <div className="overflow-x-auto rounded border border-border">
       <table className="min-w-full text-xs">
@@ -282,6 +388,9 @@ function Mitteltabelle({
             </th>
             <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
               {t("resource.fields.status")}
+            </th>
+            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
+              {t("resource.fields.reachability")}
             </th>
             <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
               {t("resource.alertedAt")}
@@ -305,7 +414,8 @@ function Mitteltabelle({
         </thead>
         <tbody className="divide-y divide-border">
           {incidentGroups.map((group) => {
-            const incidentOpen = openIncidentIds.has(group.incidentId);
+            const incidentOpen =
+              group.incidentId === incidentId || openIncidentIds.has(group.incidentId);
 
             return (
               <Fragment key={group.incidentId}>
@@ -335,7 +445,7 @@ function Mitteltabelle({
                   <td className="px-2 py-1.5">
                     <StatusBadges totals={personnelByStatus(group.resources)} />
                   </td>
-                  <td className="px-2 py-1.5" colSpan={6} />
+                  <td className="px-2 py-1.5" colSpan={7} />
                 </tr>
 
                 {incidentOpen &&
@@ -378,7 +488,7 @@ function Mitteltabelle({
                           <td className="px-2 py-1.5">
                             <StatusBadges totals={personnelByStatus(formationGroup.resources)} />
                           </td>
-                          <td className="px-2 py-1.5" colSpan={6} />
+                          <td className="px-2 py-1.5" colSpan={7} />
                         </tr>
 
                         {formationOpen &&
@@ -413,18 +523,39 @@ function Mitteltabelle({
                                       totals={personnelByStatus(homeLocationGroup.resources)}
                                     />
                                   </td>
-                                  <td className="px-2 py-1.5" colSpan={6} />
+                                  <td className="px-2 py-1.5" colSpan={7} />
                                 </tr>
 
                                 {homeLocationOpen &&
                                   [...homeLocationGroup.resources]
                                     .sort((a, b) => a.alertedAt.localeCompare(b.alertedAt))
-                                    .map((r) => {
+                                    .flatMap((r) => {
                                       const babsId = combinedBabsId(r.formation, r.size);
-                                      return (
+                                      const successor = r.successorId
+                                        ? resourceById.get(r.successorId)
+                                        : undefined;
+                                      const historyOpen = openResourceIds.has(r.id);
+                                      return [
                                         <tr key={r.id} className="hover:bg-bg-elevated/40">
                                           <td className="px-2 py-1.5 pl-18">
                                             <span className="flex items-center gap-2">
+                                              {r.deploymentHistory.length > 0 && (
+                                                <button
+                                                  type="button"
+                                                  className="shrink-0 text-fg-muted/60"
+                                                  aria-label={
+                                                    r.name || t(`resource.size.${r.size}`)
+                                                  }
+                                                  onClick={() => toggleResource(r.id)}
+                                                >
+                                                  <FontAwesomeIcon
+                                                    icon={
+                                                      historyOpen ? faChevronDown : faChevronRight
+                                                    }
+                                                    className="w-3"
+                                                  />
+                                                </button>
+                                              )}
                                               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
                                                 {babsId && iconsLoaded ? (
                                                   <BabsIcon
@@ -447,9 +578,20 @@ function Mitteltabelle({
                                             {r.personnelCount}
                                           </td>
                                           <td className="px-2 py-1.5">
-                                            <Tag variant={statusVariant[r.status]} light size="sm">
-                                              {t(`resource.status.${r.status}`)}
-                                            </Tag>
+                                            <div className="flex flex-wrap gap-1">
+                                              <Tag
+                                                variant={statusVariant[r.status]}
+                                                light
+                                                size="sm"
+                                              >
+                                                {t(`resource.status.${r.status}`)}
+                                              </Tag>
+                                            </div>
+                                          </td>
+                                          <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
+                                            {r.contact
+                                              ? `${t(`medium.${r.contact.medium}`)}${r.contact.detail ? `: ${r.contact.detail}` : ""}`
+                                              : "–"}
                                           </td>
                                           <td className="px-2 py-1.5 text-center text-fg tabular-nums">
                                             {formatDateTime(r.alertedAt)}
@@ -460,8 +602,25 @@ function Mitteltabelle({
                                           <td className="px-2 py-1.5 text-center text-fg tabular-nums">
                                             {formatDateTime(r.deployedAt)}
                                           </td>
-                                          <td className="px-2 py-1.5 text-center text-fg tabular-nums">
+                                          <td className="px-2 py-1.5 text-left text-fg tabular-nums">
                                             {formatDateTime(r.relievedAt)}
+                                            {r.status === "ABGELOEST" && successor && (
+                                              <span className="block text-left text-xs font-normal text-fg-muted">
+                                                {t("resource.fields.relievedThrough")}:{" "}
+                                                {[
+                                                  [
+                                                    t(`resource.formation.${successor.formation}`),
+                                                    successor.homeLocation?.name,
+                                                  ]
+                                                    .filter(Boolean)
+                                                    .join(" "),
+                                                  successor.name ||
+                                                    t(`resource.size.${successor.size}`),
+                                                ]
+                                                  .filter(Boolean)
+                                                  .join(", ")}
+                                              </span>
+                                            )}
                                           </td>
                                           <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
                                             {r.hauptaufgabe || "–"}
@@ -469,8 +628,18 @@ function Mitteltabelle({
                                           <td className="max-w-[10rem] truncate px-2 py-1.5 text-fg">
                                             {r.deploymentLocation?.label || "–"}
                                           </td>
-                                        </tr>
-                                      );
+                                        </tr>,
+                                        ...(historyOpen ? r.deploymentHistory : []).map(
+                                          (period, index) => (
+                                            <ResourceTableRow
+                                              key={`${r.id}-${period.startedAt}-${index}`}
+                                              resource={r}
+                                              period={period}
+                                              iconsLoaded={iconsLoaded}
+                                            />
+                                          ),
+                                        ),
+                                      ];
                                     })}
                               </Fragment>
                             );

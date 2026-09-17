@@ -6,7 +6,12 @@ import { toResource } from "./mapper";
 import type { Resource } from "./mapper";
 
 export type { Resource } from "./mapper";
-export type { ResourceContact, ResourceDeploymentLocation, ResourceHomeLocation } from "./mapper";
+export type {
+  ResourceContact,
+  ResourceDeploymentLocation,
+  ResourceDeploymentPeriod,
+  ResourceHomeLocation,
+} from "./mapper";
 export type { ResourceFormation, ResourceStatus, ResourceUnitSize, ContactMedium } from "./mapper";
 
 export interface SchadenplatzWithResources {

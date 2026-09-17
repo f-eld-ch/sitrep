@@ -113,37 +113,26 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			now, now, d.SourceMessageID, now, now)
 
 	case "MarkedReady":
-		return exec(
-			tx,
-			ctx,
+		return exec(tx, ctx,
 			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, ready_at=?, updated_at=? WHERE id=?`,
-			now,
-			now,
-			now,
-			id,
-		)
+			now, now, now, id)
 
 	case "Deployed":
-		return exec(
-			tx,
-			ctx,
-			`UPDATE readmodel_resource SET status='EINGESETZT', status_at=?, deployed_at=?, updated_at=? WHERE id=?`,
-			now,
-			now,
-			now,
-			id,
-		)
+		return exec(tx, ctx, `
+			UPDATE readmodel_resource SET status='EINGESETZT', status_at=?, deployed_at=?,
+				deployment_history = json_insert(deployment_history, '$[#]', json_object(
+					'startedAt', ?, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
+					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
+					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
+				updated_at=? WHERE id=?`, now, now, now, now, id)
 
 	case "StoodDown":
-		return exec(
-			tx,
-			ctx,
-			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, stood_down_at=?, updated_at=? WHERE id=?`,
-			now,
-			now,
-			now,
-			id,
-		)
+		return exec(tx, ctx, `
+			UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, stood_down_at=?, hauptaufgabe='',
+				deployment_history = CASE WHEN json_array_length(deployment_history) > 0
+					THEN json_set(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt', ?)
+					ELSE deployment_history END,
+				updated_at=? WHERE id=?`, now, now, now, id)
 
 	case "Relieved":
 		var d struct {
@@ -154,8 +143,11 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(tx, ctx, `
-			UPDATE readmodel_resource SET status='ABGELOEST', status_at=?, relieved_at=?, successor_id=?, updated_at=? WHERE id=?`,
-			now, now, d.SuccessorID, now, id)
+			UPDATE readmodel_resource SET status='ABGELOEST', status_at=?, relieved_at=?, successor_id=?,
+				deployment_history = CASE WHEN json_array_length(deployment_history) > 0
+					THEN json_set(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt', ?)
+					ELSE deployment_history END,
+				updated_at=? WHERE id=?`, now, now, d.SuccessorID, now, now, id)
 
 	case "SuccessionLinked":
 		var d struct {
@@ -182,14 +174,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			return err
 		}
 
-		return exec(
-			tx,
-			ctx,
+		return exec(tx, ctx,
 			`UPDATE readmodel_resource SET schadenplatz_id=?, updated_at=? WHERE id=?`,
-			d.SchadenplatzID,
-			now,
-			id,
-		)
+			d.SchadenplatzID, now, id)
 
 	case "DeploymentLocationUpdated":
 		var d struct {

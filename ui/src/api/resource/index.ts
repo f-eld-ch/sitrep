@@ -18,6 +18,7 @@ export type {
   Resource,
   ResourceContact,
   ResourceDeploymentLocation,
+  ResourceDeploymentPeriod,
   ResourceFormation,
   ResourceHomeLocation,
   ResourceStatus,

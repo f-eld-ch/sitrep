@@ -309,7 +309,8 @@
   "adminGroups": {
     "title": "Groupes",
     "newGroup": "Nouveau groupe",
-    "name": "Nom",
+    "name": "Nom du moyen",
+    "namePlaceholder": "Nom du moyen",
     "description": "Description",
     "create": "Créer",
     "cancel": "Annuler",
@@ -392,8 +393,9 @@
     "actions": {
       "markReady": "Marquer prêt",
       "deploy": "Engager",
-      "standDown": "Retirer",
+      "standDown": "Intervention terminée",
       "relieve": "Relever",
+      "dismiss": "Libérer",
       "alert": "Alerter"
     },
     "fields": {
@@ -401,13 +403,20 @@
       "formation": "Formation",
       "size": "Taille de l'unité",
       "personnelCount": "Personnel",
+      "successor": "Remplacé par",
+      "selectSuccessor": "Sélectionner une formation de remplacement",
+      "relievedThrough": "Remplacé par",
+      "successorMarker": "Remplacement",
+      "noSuccessorAvailable": "Aucune autre formation disponible",
       "hauptaufgabe": "Tâche principale",
       "contact": "Contact",
-      "homeLocation": "Organisation",
+      "homeLocation": "Formation / lieu",
+      "homeLocationPlaceholder": "p. ex. Altdorf",
       "deploymentLocation": "Lieu d'engagement",
       "einsatzBeginn": "Début d'engagement",
       "einsatzEnde": "Fin d'engagement",
-      "status": "Statut"
+      "status": "Statut",
+      "reachability": "Coordonnées"
     },
     "noResources": "Aucun moyen enregistré",
     "search": "Rechercher des moyens…",
@@ -427,7 +436,8 @@
     "relievedAt": "Relévé",
     "validation": {
       "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
-      "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement"
+      "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",
+      "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà."
     }
   }
 }

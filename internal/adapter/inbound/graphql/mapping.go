@@ -506,6 +506,19 @@ func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
 		s := r.SourceMessageID.String()
 		res.SourceMessageID = &s
 	}
+	res.DeploymentHistory = make([]*model.ResourceDeploymentPeriod, len(r.DeploymentHistory))
+	for i, period := range r.DeploymentHistory {
+		res.DeploymentHistory[i] = &model.ResourceDeploymentPeriod{
+			StartedAt:        period.StartedAt,
+			EndedAt:          period.EndedAt,
+			SchadenplatzID:   period.SchadenplatzID.String(),
+			Formation:        mapResourceFormation(period.Formation),
+			Name:             period.Name,
+			HomeLocationName: period.HomeLocationName,
+			Hauptaufgabe:     period.Hauptaufgabe,
+			PersonnelCount:   period.PersonnelCount,
+		}
+	}
 
 	return res
 }

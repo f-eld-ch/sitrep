@@ -81,7 +81,9 @@ function casualtyTotals(resourcesResult: ReturnType<typeof useIncidentResources>
 function resourcesByFormation(resources: Resource[]) {
   return FORMATION_ORDER.map((formation) => ({
     formation,
-    resources: resources.filter((resource) => resource.formation === formation),
+    resources: resources.filter(
+      (resource) => resource.formation === formation && resource.status !== "ABGELOEST",
+    ),
   })).filter((group) => group.resources.length > 0);
 }
 
@@ -149,16 +151,18 @@ function DashboardKpis({
           {CASUALTY_CATEGORIES.map((cat) => (
             <div
               key={cat.key}
-              className="flex items-center gap-2 rounded border border-border bg-bg px-2 py-1.5"
+              className="flex items-center gap-2 rounded border border-border px-2 py-1.5"
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                {iconsLoaded ? <BabsIcon icon={cat.babsId} size={24} fallback={null} /> : null}
-              </span>
               <span className="min-w-0 flex-1 truncate text-xs text-fg-muted">
                 {t(cat.labelKey)}
               </span>
-              <span className="text-lg font-bold text-danger tabular-nums">
-                {casualties[cat.key]}
+              <span className="flex shrink-0 items-center gap-1.5">
+                <span className="flex h-8 w-8 items-center justify-center">
+                  {iconsLoaded ? <BabsIcon icon={cat.babsId} size={24} fallback={null} /> : null}
+                </span>
+                <span className="text-lg font-bold text-danger tabular-nums">
+                  {casualties[cat.key]}
+                </span>
               </span>
             </div>
           ))}
@@ -172,18 +176,24 @@ function DashboardKpis({
             <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
           ) : (
             formationGroups.map((group) => (
-              <div key={group.formation} className="rounded border border-border bg-bg p-2">
+              <div key={group.formation} className="rounded border border-border p-2">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                    {iconsLoaded ? (
-                      <BabsIcon icon={FORMATION_ICON[group.formation]} size={24} fallback={null} />
-                    ) : null}
-                  </span>
                   <span className="min-w-0 flex-1 truncate text-xs font-semibold text-fg">
                     {t(`resource.formation.${group.formation}`)}
                   </span>
-                  <span className="text-lg font-bold text-fg tabular-nums">
-                    {totalPersonnel(group.resources)}
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className="flex h-8 w-8 items-center justify-center">
+                      {iconsLoaded ? (
+                        <BabsIcon
+                          icon={FORMATION_ICON[group.formation]}
+                          size={24}
+                          fallback={null}
+                        />
+                      ) : null}
+                    </span>
+                    <span className="text-lg font-bold text-fg tabular-nums">
+                      {totalPersonnel(group.resources)}
+                    </span>
                   </span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1">

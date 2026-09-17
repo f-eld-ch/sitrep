@@ -392,22 +392,31 @@
     "actions": {
       "markReady": "Einsatzbereit melden",
       "deploy": "Einsetzen",
-      "standDown": "Zurückstellen",
+      "standDown": "Einsatz abgeschlossen",
       "relieve": "Ablösen",
+      "dismiss": "Entlassen",
       "alert": "Aufbieten"
     },
     "fields": {
-      "name": "Untereinheit",
+      "name": "Name des Mittels",
+      "namePlaceholder": "Name des Mittels",
       "formation": "Verband",
       "size": "Truppenstärke",
       "personnelCount": "Personen",
+      "successor": "Ablösung durch",
+      "selectSuccessor": "Formation für Ablösung auswählen",
+      "relievedThrough": "Abgelöst durch",
+      "successorMarker": "Ablösung",
+      "noSuccessorAvailable": "Keine andere Formation verfügbar",
       "hauptaufgabe": "Hauptaufgabe",
       "contact": "Kontakt",
-      "homeLocation": "Formationsbezeichnung",
+      "homeLocation": "Formations- oder Ortsbezeichnung",
+      "homeLocationPlaceholder": "z. B. Altdorf",
       "deploymentLocation": "Einsatzort",
       "einsatzBeginn": "Einsatzbeginn",
       "einsatzEnde": "Einsatzende",
-      "status": "Status"
+      "status": "Status",
+      "reachability": "Erreichbarkeit"
     },
     "noResources": "Keine Mittel erfasst",
     "search": "Mittel suchen…",
@@ -427,7 +436,8 @@
     "relievedAt": "Abgelöst",
     "validation": {
       "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
-      "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz"
+      "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",
+      "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits."
     }
   }
 }
