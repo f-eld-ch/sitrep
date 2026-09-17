@@ -269,23 +269,28 @@ func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 			Formation        string     `json:"formation"`
 			Name             string     `json:"name"`
 			HomeLocationName *string    `json:"homeLocationName"`
+			DeploymentLabel  *string    `json:"deploymentLabel"`
 			Hauptaufgabe     string     `json:"hauptaufgabe"`
 			PersonnelCount   int        `json:"personnelCount"`
 		}
 		if err := json.Unmarshal([]byte(deploymentHistory), &periods); err != nil {
 			return nil, err
 		}
+
 		for _, period := range periods {
 			periodID, err := uuid.Parse(period.SchadenplatzID)
 			if err != nil {
 				return nil, err
 			}
+
 			rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
 				StartedAt: period.StartedAt, EndedAt: period.EndedAt, SchadenplatzID: periodID,
 				Formation: period.Formation, Name: period.Name, HomeLocationName: period.HomeLocationName,
-				Hauptaufgabe: period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
+				DeploymentLabel: period.DeploymentLabel,
+				Hauptaufgabe:    period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
 			})
 		}
 	}
+
 	return &rm, nil
 }

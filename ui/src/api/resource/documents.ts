@@ -66,6 +66,7 @@ export const RESOURCE_FIELDS = gql`
       formation
       name
       homeLocationName
+      deploymentLabel
       hauptaufgabe
       personnelCount
     }

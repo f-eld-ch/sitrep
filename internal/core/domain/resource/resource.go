@@ -28,6 +28,19 @@ var personnelRanges = map[UnitSize][2]int{
 }
 
 // Resource is the aggregate root for an operational unit assigned to an incident.
+// DeploymentPeriod records one deployment task (started at → ended at).
+type DeploymentPeriod struct {
+	StartedAt        time.Time
+	EndedAt          *time.Time
+	SchadenplatzID   shared.SchadenplatzID
+	Formation        Formation
+	Name             string
+	HomeLocationName *string
+	DeploymentLabel  *string
+	Hauptaufgabe     string
+	PersonnelCount   int
+}
+
 type Resource struct {
 	root eventsourcing.Root
 
@@ -53,6 +66,7 @@ type Resource struct {
 	predecessorID      *shared.ResourceID
 	successorID        *shared.ResourceID
 	sourceMessageID    *shared.MessageID
+	deploymentHistory  []DeploymentPeriod
 }
 
 // New creates a new (empty) Resource aggregate ready to receive commands.
@@ -105,6 +119,7 @@ func (r *Resource) EinsatzEnde() *time.Time                 { return r.einsatzEn
 func (r *Resource) PredecessorID() *shared.ResourceID       { return r.predecessorID }
 func (r *Resource) SuccessorID() *shared.ResourceID         { return r.successorID }
 func (r *Resource) SourceMessageID() *shared.MessageID      { return r.sourceMessageID }
+func (r *Resource) DeploymentHistory() []DeploymentPeriod   { return r.deploymentHistory }
 func (r *Resource) IsRelieved() bool                        { return r.status == StatusAbgeloest }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -181,13 +196,17 @@ func (r *Resource) Deploy(actor string, at time.Time) error {
 		}
 	}
 
-	eventsourcing.TrackChange(r, Deployed{At: at}, at, baseMeta(actor))
+	eventsourcing.TrackChange(r, Deployed{At: at, DeploymentLocation: r.deploymentLocation}, at, baseMeta(actor))
 
 	return nil
 }
 
 // StandDown transitions the resource from EINGESETZT back to EINSATZBEREIT.
 func (r *Resource) StandDown(actor string, at time.Time) error {
+	if r.status == StatusEinsatzbereit {
+		return nil
+	}
+
 	if r.status != StatusEingesetzt {
 		return shared.ValidationError{
 			Field:   "status",
@@ -363,15 +382,46 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.statusAt = d.At
 		r.readyAt = &d.At
 	case Deployed:
+		var deployLabel *string
+		if d.DeploymentLocation != nil {
+			deployLabel = &d.DeploymentLocation.Label
+		}
+
+		var homeName *string
+		if r.homeLocation != nil {
+			homeName = &r.homeLocation.Name
+		}
+
+		r.deploymentHistory = append(r.deploymentHistory, DeploymentPeriod{
+			StartedAt:        d.At,
+			SchadenplatzID:   r.schadenplatzID,
+			Formation:        r.formation,
+			Name:             r.name,
+			HomeLocationName: homeName,
+			DeploymentLabel:  deployLabel,
+			Hauptaufgabe:     r.hauptaufgabe,
+			PersonnelCount:   r.personnelCount,
+		})
 		r.status = StatusEingesetzt
+
 		r.statusAt = d.At
-		r.deployedAt = &d.At
+		if r.deployedAt == nil {
+			r.deployedAt = &d.At
+		}
 	case StoodDown:
+		if n := len(r.deploymentHistory); n > 0 {
+			r.deploymentHistory[n-1].EndedAt = &d.At
+		}
+
 		r.status = StatusEinsatzbereit
 		r.statusAt = d.At
 		r.stoodDownAt = &d.At
 		r.hauptaufgabe = ""
 	case Relieved:
+		if n := len(r.deploymentHistory); n > 0 && r.deploymentHistory[n-1].EndedAt == nil {
+			r.deploymentHistory[n-1].EndedAt = &d.At
+		}
+
 		r.status = StatusAbgeloest
 		r.statusAt = d.At
 		r.relievedAt = &d.At

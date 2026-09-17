@@ -506,6 +506,7 @@ func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
 		s := r.SourceMessageID.String()
 		res.SourceMessageID = &s
 	}
+
 	res.DeploymentHistory = make([]*model.ResourceDeploymentPeriod, len(r.DeploymentHistory))
 	for i, period := range r.DeploymentHistory {
 		res.DeploymentHistory[i] = &model.ResourceDeploymentPeriod{
@@ -515,6 +516,7 @@ func resourceRMToModel(r *outbound.ResourceRM) *model.Resource {
 			Formation:        mapResourceFormation(period.Formation),
 			Name:             period.Name,
 			HomeLocationName: period.HomeLocationName,
+			DeploymentLabel:  period.DeploymentLabel,
 			Hauptaufgabe:     period.Hauptaufgabe,
 			PersonnelCount:   period.PersonnelCount,
 		}
@@ -584,6 +586,22 @@ func resourceStateToModel(s inbound.ResourceState) *model.Resource {
 	if s.SourceMessageID != nil {
 		str := s.SourceMessageID.String()
 		res.SourceMessageID = &str
+	}
+
+	res.DeploymentHistory = make([]*model.ResourceDeploymentPeriod, len(s.DeploymentHistory))
+	for i, period := range s.DeploymentHistory {
+		spID := period.SchadenplatzID.String()
+		res.DeploymentHistory[i] = &model.ResourceDeploymentPeriod{
+			StartedAt:        period.StartedAt,
+			EndedAt:          period.EndedAt,
+			SchadenplatzID:   spID,
+			Formation:        mapResourceFormation(string(period.Formation)),
+			Name:             period.Name,
+			HomeLocationName: period.HomeLocationName,
+			DeploymentLabel:  period.DeploymentLabel,
+			Hauptaufgabe:     period.Hauptaufgabe,
+			PersonnelCount:   period.PersonnelCount,
+		}
 	}
 
 	return res

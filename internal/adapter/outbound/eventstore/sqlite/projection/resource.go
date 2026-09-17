@@ -20,7 +20,7 @@ func NewResourceHandler(db *sql.DB) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 1 }
+func (h *ResourceHandler) Version() int { return 4 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_resource`)
 	return err
@@ -118,13 +118,36 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			now, now, now, id)
 
 	case "Deployed":
+		var d struct {
+			DeploymentLocation *struct {
+				Label string  `json:"label"`
+				Lat   float64 `json:"lat"`
+				Lng   float64 `json:"lng"`
+			} `json:"deploymentLocation"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		var (
+			deploymentLabel              *string
+			deploymentLat, deploymentLng *float64
+		)
+		if d.DeploymentLocation != nil {
+			deploymentLabel = &d.DeploymentLocation.Label
+			deploymentLat = &d.DeploymentLocation.Lat
+			deploymentLng = &d.DeploymentLocation.Lng
+		}
+
 		return exec(tx, ctx, `
-			UPDATE readmodel_resource SET status='EINGESETZT', status_at=?, deployed_at=?,
+			UPDATE readmodel_resource SET status='EINGESETZT', status_at=?,
+				deployed_at = COALESCE(deployed_at, ?),
 				deployment_history = json_insert(deployment_history, '$[#]', json_object(
 					'startedAt', ?, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
 					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
+					'deploymentLabel', ?, 'deploymentLat', ?, 'deploymentLng', ?,
 					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
-				updated_at=? WHERE id=?`, now, now, now, now, id)
+				updated_at=? WHERE id=?`, now, now, now, deploymentLabel, deploymentLat, deploymentLng, now, id)
 
 	case "StoodDown":
 		return exec(tx, ctx, `
@@ -132,7 +155,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 				deployment_history = CASE WHEN json_array_length(deployment_history) > 0
 					THEN json_set(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt', ?)
 					ELSE deployment_history END,
-				updated_at=? WHERE id=?`, now, now, now, id)
+				updated_at=? WHERE id=?`, now, now, now, now, id)
 
 	case "Relieved":
 		var d struct {

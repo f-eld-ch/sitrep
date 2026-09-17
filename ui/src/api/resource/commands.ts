@@ -1,6 +1,7 @@
 import { useMutation } from "@apollo/client/react";
 import type { ResourceFormation, ResourceUnitSize, ContactMedium } from "./mapper";
 import { apiErrorFromApolloError } from "../errors";
+import { recordMutation } from "../mutationActivity";
 import type { CommandHook, CommandState } from "../result";
 import {
   ALERT_RESOURCE,
@@ -10,6 +11,7 @@ import {
   MARK_RESOURCE_READY,
   REASSIGN_RESOURCE,
   RELIEVE_RESOURCE,
+  RESOURCE_FIELDS,
   STAND_DOWN_RESOURCE,
   UPDATE_CONTACT,
   UPDATE_DEPLOYMENT_LOCATION,
@@ -132,6 +134,7 @@ export function useMarkResourceReady(): CommandHook<{ id: string; at?: Date }> {
   };
 
   const markReady = async (args: { id: string; at?: Date }): Promise<void> => {
+    recordMutation();
     await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
   };
 
@@ -147,6 +150,7 @@ export function useDeployResource(): CommandHook<{ id: string; at?: Date }> {
   };
 
   const deploy = async (args: { id: string; at?: Date }): Promise<void> => {
+    recordMutation();
     await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
   };
 
@@ -162,7 +166,19 @@ export function useStandDownResource(): CommandHook<{ id: string; at?: Date }> {
   };
 
   const standDown = async (args: { id: string; at?: Date }): Promise<void> => {
-    await mutate({ variables: { id: args.id, at: args.at?.toISOString() } });
+    recordMutation();
+    await mutate({
+      variables: { id: args.id, at: args.at?.toISOString() },
+      update(cache, { data }) {
+        const resource = data?.standDownResource;
+        if (!resource) return;
+        cache.writeFragment({
+          id: cache.identify(resource),
+          fragment: RESOURCE_FIELDS,
+          data: resource,
+        });
+      },
+    });
   };
 
   return [standDown, state];
@@ -185,6 +201,7 @@ export function useRelieveResource(): CommandHook<{
     successorId?: string | null;
     at?: Date;
   }): Promise<void> => {
+    recordMutation();
     await mutate({
       variables: { id: args.id, successorId: args.successorId, at: args.at?.toISOString() },
     });

@@ -98,7 +98,8 @@ type MarkedReady struct {
 
 // Deployed fires when the resource is sent to its assigned position.
 type Deployed struct {
-	At time.Time `json:"at"`
+	At                 time.Time           `json:"at"`
+	DeploymentLocation *DeploymentLocation `json:"deploymentLocation,omitempty"`
 }
 
 // StoodDown fires when the resource temporarily stands down (can be redeployed).

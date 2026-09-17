@@ -433,7 +433,7 @@
     "alertedAt": "Alerté",
     "readyAt": "Prêt",
     "deployedAt": "Engagé",
-    "relievedAt": "Relévé",
+    "relievedAt": "Terminé / Relévé",
     "validation": {
       "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
       "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",

@@ -433,7 +433,7 @@
     "alertedAt": "Alerted",
     "readyAt": "Ready",
     "deployedAt": "Deployed",
-    "relievedAt": "Relieved",
+    "relievedAt": "Ended / Relieved",
     "validation": {
       "hauptaufgabeRequired": "Main task is required before deploying",
       "einsatzortRequired": "Deployment location is required before deploying",

@@ -473,5 +473,6 @@ func stateFromResource(res *resource.Resource) inbound.ResourceState {
 		PredecessorID:      res.PredecessorID(),
 		SuccessorID:        res.SuccessorID(),
 		SourceMessageID:    res.SourceMessageID(),
+		DeploymentHistory:  res.DeploymentHistory(),
 	}
 }

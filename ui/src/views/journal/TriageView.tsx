@@ -176,6 +176,42 @@ function PrintSheetButton({
   );
 }
 
+interface ResourceSnapshot {
+  status: ResourceStatus;
+  personnelCount: number;
+  hauptaufgabe: string;
+  deploymentLabel: string | null;
+}
+
+function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
+  const ts = at.getTime();
+
+  // Check deployment history periods in chronological order
+  const activePeriod = r.deploymentHistory.find((p) => {
+    const start = new Date(p.startedAt).getTime();
+    const end = p.endedAt ? new Date(p.endedAt).getTime() : Infinity;
+    return ts >= start && ts < end;
+  });
+  if (activePeriod) {
+    return {
+      status: "EINGESETZT",
+      personnelCount: activePeriod.personnelCount,
+      hauptaufgabe: activePeriod.hauptaufgabe,
+      deploymentLabel: activePeriod.deploymentLabel ?? null,
+    };
+  }
+
+  if (r.relievedAt && ts >= new Date(r.relievedAt).getTime()) {
+    return { status: "ABGELOEST", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+  }
+
+  if (r.readyAt && ts >= new Date(r.readyAt).getTime()) {
+    return { status: "EINSATZBEREIT", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+  }
+
+  return { status: "AUFGEBOTEN", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+}
+
 function TriageSummary(props: {
   message: Message;
   incidentId: string;
@@ -291,6 +327,7 @@ function TriageSummary(props: {
             <div className="divide-y divide-border rounded-lg border border-border">
               {linkedResources.map((r) => {
                 const babsId = combinedBabsId(r.formation, r.size);
+                const snap = resourceStateAt(r, new Date(message.time));
                 return (
                   <div key={r.id} className="flex items-center gap-3 px-3 py-2">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-bg">
@@ -311,8 +348,10 @@ function TriageSummary(props: {
                         <span className="block truncate text-xs text-fg-muted">{r.name}</span>
                       )}
                       <span className="block truncate text-xs text-fg-muted/70">
-                        {r.personnelCount} {t("resource.fields.personnelCount")} ·{" "}
-                        {t(`resource.status.${r.status}`)}
+                        {snap.personnelCount} {t("resource.fields.personnelCount")} ·{" "}
+                        {t(`resource.status.${snap.status}`)}
+                        {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
+                        {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
                       </span>
                     </span>
                   </div>
@@ -1754,6 +1793,16 @@ function ResourcePickerRow({
                   }}
                 >
                   {t("resource.actions.deploy")}
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="warning"
+                  light
+                  disabled={busy}
+                  onClick={() => void standDown({ id: r.id, at: messageTime })}
+                >
+                  {t("resource.actions.standDown")}
                 </Button>
                 <Button
                   type="button"

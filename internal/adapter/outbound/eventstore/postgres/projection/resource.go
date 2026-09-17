@@ -20,7 +20,7 @@ func NewResourceHandler(pool *pgxpool.Pool) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 1 }
+func (h *ResourceHandler) Version() int { return 4 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.resource`)
 	return err
@@ -121,13 +121,36 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		)
 
 	case "Deployed":
+		var d struct {
+			DeploymentLocation *struct {
+				Label string  `json:"label"`
+				Lat   float64 `json:"lat"`
+				Lng   float64 `json:"lng"`
+			} `json:"deploymentLocation"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		var (
+			deploymentLabel              *string
+			deploymentLat, deploymentLng *float64
+		)
+		if d.DeploymentLocation != nil {
+			deploymentLabel = &d.DeploymentLocation.Label
+			deploymentLat = &d.DeploymentLocation.Lat
+			deploymentLng = &d.DeploymentLocation.Lng
+		}
+
 		return exec(db, ctx, `
-			UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1, deployed_at=$1,
+			UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1,
+				deployed_at = COALESCE(deployed_at, $1),
 				deployment_history = deployment_history || jsonb_build_array(jsonb_build_object(
 					'startedAt', $1, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
 					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
+					'deploymentLabel', $2, 'deploymentLat', $3, 'deploymentLng', $4,
 					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
-				updated_at=$1 WHERE id=$2`, now, id)
+				updated_at=$1 WHERE id=$5`, now, deploymentLabel, deploymentLat, deploymentLng, id)
 
 	case "StoodDown":
 		return exec(db, ctx, `

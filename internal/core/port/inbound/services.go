@@ -362,6 +362,7 @@ type ResourceState struct {
 	PredecessorID      *shared.ResourceID
 	SuccessorID        *shared.ResourceID
 	SourceMessageID    *shared.MessageID
+	DeploymentHistory  []resource.DeploymentPeriod
 }
 
 // AlertResourceInput groups parameters for AlertResource to avoid a long positional list.

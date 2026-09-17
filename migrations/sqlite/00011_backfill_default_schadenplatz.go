@@ -37,18 +37,22 @@ func upBackfillDefaultSchadenplatz(ctx context.Context, tx *sql.Tx) error {
 	defer func() { _ = rows.Close() }()
 
 	var incidents []incidentBackfillRow
+
 	for rows.Next() {
 		var row incidentBackfillRow
 		if err := rows.Scan(&row.id, &row.occurredAt); err != nil {
 			return fmt.Errorf("schadenplatz backfill: scan incident: %w", err)
 		}
+
 		incidents = append(incidents, row)
 	}
+
 	if err := rows.Err(); err != nil {
 		return fmt.Errorf("schadenplatz backfill: read incidents: %w", err)
 	}
 
 	metadata := `{"actor":"system:migration","source":"schadenplatz-backfill"}`
+
 	for _, inc := range incidents {
 		spID := uuid.New()
 		created := schadenplatz.Created{
@@ -70,6 +74,7 @@ func upBackfillDefaultSchadenplatz(ctx context.Context, tx *sql.Tx) error {
 		); err != nil {
 			return fmt.Errorf("schadenplatz backfill: create for incident %s: %w", inc.id, err)
 		}
+
 		if err := indexStream(ctx, tx, "Schadenplatz", spID.String(), inc.id); err != nil {
 			return fmt.Errorf("schadenplatz backfill: index for incident %s: %w", inc.id, err)
 		}
@@ -115,6 +120,7 @@ func downBackfillDefaultSchadenplatz(ctx context.Context, tx *sql.Tx) error {
 		  )`); err != nil {
 		return fmt.Errorf("schadenplatz backfill: remove indexes: %w", err)
 	}
+
 	if _, err := tx.ExecContext(ctx, `
 		DELETE FROM eventsourcing_events
 		WHERE json_extract(metadata, '$.source') = 'schadenplatz-backfill'`); err != nil {

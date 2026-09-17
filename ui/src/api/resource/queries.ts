@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { apiErrorFromApolloError } from "../errors";
+import { isMutationRecent } from "../mutationActivity";
 import type { QueryResult } from "../result";
 import { GET_INCIDENT_RESOURCES } from "./documents";
 import { toResource } from "./mapper";
@@ -53,6 +54,7 @@ export function useIncidentResources(
     skip: !incidentId,
     fetchPolicy: "network-only",
     pollInterval: 5000,
+    skipPollAttempt: isMutationRecent,
   });
 
   const refresh = () => void refetch();

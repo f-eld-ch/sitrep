@@ -433,7 +433,7 @@
     "alertedAt": "Aufgeboten",
     "readyAt": "Einsatzbereit",
     "deployedAt": "Im Einsatz",
-    "relievedAt": "Abgelöst",
+    "relievedAt": "Beendet / Abgelöst",
     "validation": {
       "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
       "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",

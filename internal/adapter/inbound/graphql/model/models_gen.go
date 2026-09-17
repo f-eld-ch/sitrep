@@ -264,6 +264,7 @@ type ResourceDeploymentPeriod struct {
 	Formation        ResourceFormation `json:"formation"`
 	Name             string            `json:"name"`
 	HomeLocationName *string           `json:"homeLocationName,omitempty"`
+	DeploymentLabel  *string           `json:"deploymentLabel,omitempty"`
 	Hauptaufgabe     string            `json:"hauptaufgabe"`
 	PersonnelCount   int               `json:"personnelCount"`
 }

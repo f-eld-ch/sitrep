@@ -497,6 +497,20 @@ func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
 		}
 	}
 
+	for _, p := range row.DeploymentHistory {
+		rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
+			StartedAt:        p.StartedAt,
+			EndedAt:          p.EndedAt,
+			SchadenplatzID:   p.SchadenplatzID,
+			Formation:        p.Formation,
+			Name:             p.Name,
+			HomeLocationName: p.HomeLocationName,
+			DeploymentLabel:  p.DeploymentLabel,
+			Hauptaufgabe:     p.Hauptaufgabe,
+			PersonnelCount:   p.PersonnelCount,
+		})
+	}
+
 	return rm
 }
 

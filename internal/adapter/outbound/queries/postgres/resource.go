@@ -151,6 +151,7 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 	rm.UpdatedAt = rm.UpdatedAt.UTC()
 	rm.EinsatzBeginn = einsatzBeginn
 	rm.EinsatzEnde = einsatzEnde
+
 	if len(deploymentHistory) > 0 {
 		var periods []struct {
 			StartedAt        time.Time  `json:"startedAt"`
@@ -159,17 +160,20 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 			Formation        string     `json:"formation"`
 			Name             string     `json:"name"`
 			HomeLocationName *string    `json:"homeLocationName"`
+			DeploymentLabel  *string    `json:"deploymentLabel"`
 			Hauptaufgabe     string     `json:"hauptaufgabe"`
 			PersonnelCount   int        `json:"personnelCount"`
 		}
 		if err := json.Unmarshal(deploymentHistory, &periods); err != nil {
 			return nil, err
 		}
+
 		for _, period := range periods {
 			rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
 				StartedAt: period.StartedAt, EndedAt: period.EndedAt, SchadenplatzID: period.SchadenplatzID,
 				Formation: period.Formation, Name: period.Name, HomeLocationName: period.HomeLocationName,
-				Hauptaufgabe: period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
+				DeploymentLabel: period.DeploymentLabel,
+				Hauptaufgabe:    period.Hauptaufgabe, PersonnelCount: period.PersonnelCount,
 			})
 		}
 	}

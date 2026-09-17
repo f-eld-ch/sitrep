@@ -168,6 +168,7 @@ type DeploymentPeriodRM struct {
 	Formation        string
 	Name             string
 	HomeLocationName *string
+	DeploymentLabel  *string
 	Hauptaufgabe     string
 	PersonnelCount   int
 }

@@ -249,6 +249,7 @@ type ComplexityRoot struct {
 	}
 
 	ResourceDeploymentPeriod struct {
+		DeploymentLabel  func(childComplexity int) int
 		EndedAt          func(childComplexity int) int
 		Formation        func(childComplexity int) int
 		Hauptaufgabe     func(childComplexity int) int
@@ -1620,6 +1621,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ResourceContact.Medium(childComplexity), true
 
+	case "ResourceDeploymentPeriod.deploymentLabel":
+		if e.ComplexityRoot.ResourceDeploymentPeriod.DeploymentLabel == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ResourceDeploymentPeriod.DeploymentLabel(childComplexity), true
 	case "ResourceDeploymentPeriod.endedAt":
 		if e.ComplexityRoot.ResourceDeploymentPeriod.EndedAt == nil {
 			break
@@ -2111,6 +2118,7 @@ type ResourceDeploymentPeriod {
   formation: ResourceFormation!
   name: String!
   homeLocationName: String
+  deploymentLabel: String
   hauptaufgabe: String!
   personnelCount: Int!
 }
@@ -2812,6 +2820,8 @@ func (ec *executionContext) childFields_ResourceDeploymentPeriod(ctx context.Con
 		return ec.fieldContext_ResourceDeploymentPeriod_name(ctx, field)
 	case "homeLocationName":
 		return ec.fieldContext_ResourceDeploymentPeriod_homeLocationName(ctx, field)
+	case "deploymentLabel":
+		return ec.fieldContext_ResourceDeploymentPeriod_deploymentLabel(ctx, field)
 	case "hauptaufgabe":
 		return ec.fieldContext_ResourceDeploymentPeriod_hauptaufgabe(ctx, field)
 	case "personnelCount":
@@ -9247,6 +9257,29 @@ func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_homeLocationNa
 	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _ResourceDeploymentPeriod_deploymentLabel(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ResourceDeploymentPeriod_deploymentLabel(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DeploymentLabel, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ResourceDeploymentPeriod_deploymentLabel(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ResourceDeploymentPeriod", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _ResourceDeploymentPeriod_hauptaufgabe(ctx context.Context, field graphql.CollectedField, obj *model.ResourceDeploymentPeriod) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -13656,6 +13689,11 @@ func (ec *executionContext) _ResourceDeploymentPeriod(ctx context.Context, sel a
 			}
 		case "homeLocationName":
 			out.Values[i] = ec._ResourceDeploymentPeriod_homeLocationName(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "deploymentLabel":
+			out.Values[i] = ec._ResourceDeploymentPeriod_deploymentLabel(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}

@@ -13,38 +13,52 @@ import (
 // Compile-time assertion.
 var _ Handler = (*ResourceHandler)(nil)
 
-// ResourceRow mirrors the resource read model.
-type ResourceRow struct {
-	ID               uuid.UUID
-	IncidentID       uuid.UUID
+// DeploymentPeriodRow is one entry in a resource's deployment history.
+type DeploymentPeriodRow struct {
+	StartedAt        time.Time
+	EndedAt          *time.Time
 	SchadenplatzID   uuid.UUID
 	Formation        string
 	Name             string
-	Size             string
-	PersonnelCount   int
-	Hauptaufgabe     string
-	ContactMedium    *string
-	ContactDetail    *string
 	HomeLocationName *string
-	HomeLocationLat  *float64
-	HomeLocationLng  *float64
-	DeploymentLat    *float64
-	DeploymentLng    *float64
 	DeploymentLabel  *string
-	Status           string
-	StatusAt         time.Time
-	AlertedAt        time.Time
-	ReadyAt          *time.Time
-	DeployedAt       *time.Time
-	StoodDownAt      *time.Time
-	RelievedAt       *time.Time
-	EinsatzBeginn    *time.Time
-	EinsatzEnde      *time.Time
-	PredecessorID    *uuid.UUID
-	SuccessorID      *uuid.UUID
-	SourceMessageID  *uuid.UUID
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	Hauptaufgabe     string
+	PersonnelCount   int
+}
+
+// ResourceRow mirrors the resource read model.
+type ResourceRow struct {
+	ID                uuid.UUID
+	IncidentID        uuid.UUID
+	SchadenplatzID    uuid.UUID
+	Formation         string
+	Name              string
+	Size              string
+	PersonnelCount    int
+	Hauptaufgabe      string
+	ContactMedium     *string
+	ContactDetail     *string
+	HomeLocationName  *string
+	HomeLocationLat   *float64
+	HomeLocationLng   *float64
+	DeploymentLat     *float64
+	DeploymentLng     *float64
+	DeploymentLabel   *string
+	Status            string
+	StatusAt          time.Time
+	AlertedAt         time.Time
+	ReadyAt           *time.Time
+	DeployedAt        *time.Time
+	StoodDownAt       *time.Time
+	RelievedAt        *time.Time
+	EinsatzBeginn     *time.Time
+	EinsatzEnde       *time.Time
+	PredecessorID     *uuid.UUID
+	SuccessorID       *uuid.UUID
+	SourceMessageID   *uuid.UUID
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	DeploymentHistory []DeploymentPeriodRow
 }
 
 // ResourceHandler maintains an in-memory projection of the Resource read model.
@@ -174,19 +188,57 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		}
 
 	case "Deployed":
+		var d struct {
+			DeploymentLocation *struct {
+				Label string  `json:"label"`
+				Lat   float64 `json:"lat"`
+				Lng   float64 `json:"lng"`
+			} `json:"deploymentLocation"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
 		if row := h.rows[id]; row != nil {
+			var deployLabel *string
+			if d.DeploymentLocation != nil {
+				deployLabel = &d.DeploymentLocation.Label
+			}
+
+			at := e.OccurredAt
+			row.DeploymentHistory = append(row.DeploymentHistory, DeploymentPeriodRow{
+				StartedAt:        at,
+				EndedAt:          nil,
+				SchadenplatzID:   row.SchadenplatzID,
+				Formation:        row.Formation,
+				Name:             row.Name,
+				HomeLocationName: row.HomeLocationName,
+				DeploymentLabel:  deployLabel,
+				Hauptaufgabe:     row.Hauptaufgabe,
+				PersonnelCount:   row.PersonnelCount,
+			})
 			row.Status = "EINGESETZT"
-			row.StatusAt = e.OccurredAt
-			row.DeployedAt = &e.OccurredAt
-			row.UpdatedAt = e.OccurredAt
+
+			row.StatusAt = at
+			if row.DeployedAt == nil {
+				row.DeployedAt = &at
+			}
+
+			row.UpdatedAt = at
 		}
 
 	case "StoodDown":
 		if row := h.rows[id]; row != nil {
+			at := e.OccurredAt
+			if n := len(row.DeploymentHistory); n > 0 {
+				row.DeploymentHistory[n-1].EndedAt = &at
+			}
+
+			row.Hauptaufgabe = ""
 			row.Status = "EINSATZBEREIT"
-			row.StatusAt = e.OccurredAt
-			row.StoodDownAt = &e.OccurredAt
-			row.UpdatedAt = e.OccurredAt
+			row.StatusAt = at
+			row.StoodDownAt = &at
+			row.UpdatedAt = at
 		}
 
 	case "Relieved":
@@ -198,10 +250,15 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 		}
 
 		if row := h.rows[id]; row != nil {
+			at := e.OccurredAt
+			if n := len(row.DeploymentHistory); n > 0 && row.DeploymentHistory[n-1].EndedAt == nil {
+				row.DeploymentHistory[n-1].EndedAt = &at
+			}
+
 			row.Status = "ABGELOEST"
-			row.StatusAt = e.OccurredAt
-			row.RelievedAt = &e.OccurredAt
-			row.UpdatedAt = e.OccurredAt
+			row.StatusAt = at
+			row.RelievedAt = &at
+			row.UpdatedAt = at
 
 			if d.SuccessorID != nil {
 				succID, err := uuid.Parse(*d.SuccessorID)

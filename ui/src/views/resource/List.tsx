@@ -253,48 +253,52 @@ function ResourceTableRow({
   return (
     <tr className="hover:bg-bg-elevated/40">
       <td className={isHistory ? "px-2 py-1.5 pl-24" : "px-2 py-1.5 pl-18"}>
-        <span className="flex items-center gap-2">
-          {!isHistory && resource.deploymentHistory.length > 0 && onToggleHistory && (
-            <button
-              type="button"
-              className="shrink-0 text-fg-muted/60"
-              aria-label={name}
-              onClick={onToggleHistory}
-            >
-              <FontAwesomeIcon
-                icon={historyOpen ? faChevronDown : faChevronRight}
-                className="w-3"
-              />
-            </button>
-          )}
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
-            {babsId && iconsLoaded ? (
-              <BabsIcon icon={babsId} size={20} fallback={null} />
-            ) : (
-              <span className="text-[10px] font-bold text-fg-muted">{formation}</span>
+        {!isHistory && (
+          <span className="flex items-center gap-2">
+            {resource.deploymentHistory.length > 0 && onToggleHistory && (
+              <button
+                type="button"
+                className="shrink-0 text-fg-muted/60"
+                aria-label={name}
+                onClick={onToggleHistory}
+              >
+                <FontAwesomeIcon
+                  icon={historyOpen ? faChevronDown : faChevronRight}
+                  className="w-3"
+                />
+              </button>
             )}
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
+              {babsId && iconsLoaded ? (
+                <BabsIcon icon={babsId} size={20} fallback={null} />
+              ) : (
+                <span className="text-[10px] font-bold text-fg-muted">{formation}</span>
+              )}
+            </span>
+            <span className="font-medium text-fg">{name}</span>
           </span>
-          <span className="font-medium text-fg">{name}</span>
-        </span>
+        )}
       </td>
       <td className="px-2 py-1.5 text-right text-fg tabular-nums">
-        {period?.personnelCount ?? resource.personnelCount}
+        {!isHistory && resource.personnelCount}
       </td>
       <td className="px-2 py-1.5">
-        <Tag variant={statusVariant[status]} light size="sm">
-          {t(`resource.status.${status}`)}
-        </Tag>
+        {!isHistory && (
+          <Tag variant={statusVariant[status]} light size="sm">
+            {t(`resource.status.${status}`)}
+          </Tag>
+        )}
       </td>
       <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
         {!isHistory && resource.contact
           ? `${t(`medium.${resource.contact.medium}`)}${resource.contact.detail ? `: ${resource.contact.detail}` : ""}`
-          : "–"}
+          : !isHistory ? "–" : null}
       </td>
       <td className="px-2 py-1.5 text-center text-fg tabular-nums">
-        {formatDateTime(isHistory ? null : resource.alertedAt)}
+        {!isHistory && formatDateTime(resource.alertedAt)}
       </td>
       <td className="px-2 py-1.5 text-center text-fg tabular-nums">
-        {formatDateTime(isHistory ? null : resource.readyAt)}
+        {!isHistory && formatDateTime(resource.readyAt)}
       </td>
       <td className="px-2 py-1.5 text-center text-fg tabular-nums">
         {formatDateTime(isHistory ? period.startedAt : resource.deployedAt)}
@@ -312,7 +316,7 @@ function ResourceTableRow({
         {period?.hauptaufgabe || resource.hauptaufgabe || "–"}
       </td>
       <td className="max-w-[10rem] truncate px-2 py-1.5 text-fg">
-        {isHistory ? "–" : resource.deploymentLocation?.label || "–"}
+        {isHistory ? (period.deploymentLabel || "–") : (resource.deploymentLocation?.label || "–")}
       </td>
     </tr>
   );
@@ -401,7 +405,7 @@ function Mitteltabelle({
             <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
               {t("resource.deployedAt")}
             </th>
-            <th className="px-2 py-1.5 text-center font-semibold text-fg-muted">
+            <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">
               {t("resource.relievedAt")}
             </th>
             <th className="px-2 py-1.5 text-left font-semibold text-fg-muted">

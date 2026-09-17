@@ -158,6 +158,14 @@ func TestResource_StateMachine(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
 
+	t.Run("StandDown from EINSATZBEREIT is idempotent", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.MarkReady(actor, at))
+		require.NoError(t, r.StandDown(actor, at))
+		assert.Equal(t, resource.StatusEinsatzbereit, r.Status())
+		assert.Equal(t, 1, r.Root().Version())
+	})
+
 	t.Run("Relieve from AUFGEBOTEN succeeds", func(t *testing.T) {
 		r := replay(t, id, []eventsourcing.Event{alerted(id)})
 		require.NoError(t, r.Relieve(nil, actor, at))

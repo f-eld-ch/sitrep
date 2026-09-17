@@ -214,6 +214,7 @@ type ResourceDeploymentPeriod {
   formation: ResourceFormation!
   name: String!
   homeLocationName: String
+  deploymentLabel: String
   hauptaufgabe: String!
   personnelCount: Int!
 }

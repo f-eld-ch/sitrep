@@ -101,6 +101,7 @@ export interface ResourceDeploymentPeriod {
   formation: ResourceFormation;
   name: string;
   homeLocationName: string | null;
+  deploymentLabel: string | null;
   hauptaufgabe: string;
   personnelCount: number;
 }
