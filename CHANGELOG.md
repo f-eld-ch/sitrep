@@ -3,6 +3,7 @@
 ### ⛰️  Features
 
 - *(flags)* Add new-triage-view feature flag and earlyadopter segment ([#1860](https://github.com/f-eld-ch/sitrep/issues/1860)) - ([83c2830](https://github.com/f-eld-ch/sitrep/commit/83c28301e25325f1620ea344b2852d3b12bcafbe))
+- *(ui)* Error pages, incident guard, and editor UX fixes ([#1876](https://github.com/f-eld-ch/sitrep/issues/1876)) - ([7b03e21](https://github.com/f-eld-ch/sitrep/commit/7b03e2122e13a2d12deff80cde1d87c27e9e5ce0))
 - *(ui)* New triage view (feature-flagged) ([#1861](https://github.com/f-eld-ch/sitrep/issues/1861)) - ([64af16f](https://github.com/f-eld-ch/sitrep/commit/64af16f405fbd5a61153273dda8fd853426dcfbd))
 
 ### 🐛 Bug Fixes
@@ -14,6 +15,9 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.9.1 to 6.10.0 in /ui ([#1882](https://github.com/f-eld-ch/sitrep/issues/1882)) - ([7b7c7e0](https://github.com/f-eld-ch/sitrep/commit/7b7c7e07155b50f727255e94794abff1f246f5a4))
+- *(deps)* Bump maplibre-gl from 6.9.0 to 6.9.1 in /ui ([#1880](https://github.com/f-eld-ch/sitrep/issues/1880)) - ([f00085a](https://github.com/f-eld-ch/sitrep/commit/f00085a0d3676e34cc4d02e702137e3667a6e166))
+- *(deps)* Bump react-router from 8.3.1 to 8.4.0 in /ui ([#1879](https://github.com/f-eld-ch/sitrep/issues/1879)) - ([768455c](https://github.com/f-eld-ch/sitrep/commit/768455c2120fbe7db1be9d204eb4a2a3df6593ed))
 - *(deps)* Bump react-i18next from 17.0.13 to 17.0.14 in /ui ([#1868](https://github.com/f-eld-ch/sitrep/issues/1868)) - ([8848c93](https://github.com/f-eld-ch/sitrep/commit/8848c9340b185d788e3d267f9a3e7ff6a4dee8bf))
 - *(deps)* Bump @apollo/client from 4.2.12 to 4.3.0 in /ui ([#1867](https://github.com/f-eld-ch/sitrep/issues/1867)) - ([65bdd19](https://github.com/f-eld-ch/sitrep/commit/65bdd190b7a7262918aa9c71b2623848d4a4dde9))
 - *(deps)* Bump golang.org/x/crypto from 0.56.0 to 0.57.0 ([#1864](https://github.com/f-eld-ch/sitrep/issues/1864)) - ([1d2497e](https://github.com/f-eld-ch/sitrep/commit/1d2497e6e4f30a57b453080353b9bbd52c600452))

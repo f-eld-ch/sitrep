@@ -3078,9 +3078,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.4.3":
-  version: 26.4.3
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.3"
+"@maplibre/maplibre-gl-style-spec@npm:^26.4.4":
+  version: 26.4.4
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.4"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
     "@mapbox/unitbezier": "npm:^1.0.0"
@@ -3092,7 +3092,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/da243f0dca45eb48fbea69b2a81a711f83cd57c002e795fdc704da84c05959f384ad484a84accf362a9f84f26f8ffe266f564d2b5aec0ce8fdaf8a01d3159c6a
+  checksum: 10/c049485af7654f7ffef63cb0ba7afbae231225151fcf0de173f03815e5b3edac5182c94287b0871a77afef0c95537b8d06da6142aa04eecb541430016e368972
   languageName: node
   linkType: hard
 
@@ -3541,6 +3541,13 @@ __metadata:
   dependencies:
     quansync: "npm:^1.0.0"
   checksum: 10/8a27892b1330c01e1312e09e9fd92f676fa89d13fa5a201cb5b9b2f99347ef6bac67a2f6f69fe3e64612427eabf45f88b4294cc5d5d33e0031bb5263b5cd37c9
+  languageName: node
+  linkType: hard
+
+"@remix-run/route-pattern@npm:^0.22.1":
+  version: 0.22.1
+  resolution: "@remix-run/route-pattern@npm:0.22.1"
+  checksum: 10/fed750fab46bf5cc541c333bb248f9c56a59dd1e06a64f5496b2122d89a7eefd7f59d6cdc7939f132fc65f0b8027020777f29c9e54dbe28b0234994e582073bb
   languageName: node
   linkType: hard
 
@@ -5036,9 +5043,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-v8@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/coverage-v8@npm:5.0.0"
+"@vitest/coverage-v8@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/coverage-v8@npm:5.0.1"
   dependencies:
     "@bcoe/v8-coverage": "npm:^1.0.2"
     "@vitest/istanbul-lib-coverage": "npm:^1.0.0"
@@ -5049,12 +5056,12 @@ __metadata:
     std-env: "npm:^4.2.0"
     tinyrainbow: "npm:^3.1.1"
   peerDependencies:
-    "@vitest/browser": 5.0.0
-    vitest: 5.0.0
+    "@vitest/browser": 5.0.1
+    vitest: 5.0.1
   peerDependenciesMeta:
     "@vitest/browser":
       optional: true
-  checksum: 10/4c2354618f74c4375ac5e73a548155b9d9e19b1a01b7de3b3ab403986c10f77cad9ec677f1b9e283bdc4844fd34ed17ee8661afd8e52d1d8999ed72e2fb55e00
+  checksum: 10/38f043fe3ce255ea42ad85c89ab58f27b393238b136c5e5048966c3a47b182645df904cf0e96aa4cf49727990048e8c855fca8cee58a3376e73b235dcc1c0197
   languageName: node
   linkType: hard
 
@@ -5074,12 +5081,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/mocker@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/mocker@npm:5.0.0"
+"@vitest/mocker@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/mocker@npm:5.0.1"
   dependencies:
     "@jridgewell/trace-mapping": "npm:0.3.31"
-    "@vitest/spy": "npm:5.0.0"
+    "@vitest/spy": "npm:5.0.1"
     estree-walker: "npm:^3.0.3"
     magic-string: "npm:^1.2.3"
   peerDependencies:
@@ -5090,14 +5097,14 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10/57a1e55c18946c8977d304dfc8a1b5551331c7fc240a97034e497708d1d9520305193346ff96ff629e951c7c538ee649bba71bf074b29f53e0b95419126896af
+  checksum: 10/0afae20082a525eb8105ad9bf6534dbfd3aaec679b0258bfb33a89667a218a1e579dea2858dd47d798f086f4ae25915ddda73e4583304c5f505ac3d72b11566a
   languageName: node
   linkType: hard
 
-"@vitest/spy@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/spy@npm:5.0.0"
-  checksum: 10/71ab66f41517078d25af58b60d3792c0ba3d4bece080f496994662e803cd0a2d8c56b073165bf8028f3970d388704e5f1d869378bcfd99a5a17664cfb2f24355
+"@vitest/spy@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/spy@npm:5.0.1"
+  checksum: 10/12f882632c0d7a0f2516a3580947dde5513007155fabadc231ec8076d6994cb515a8e6a62b72c74a90e64d9bb5055eced4f112d6ee1613be514b05376c4b14c2
   languageName: node
   linkType: hard
 
@@ -8585,8 +8592,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^6.3.0":
-  version: 6.9.0
-  resolution: "maplibre-gl@npm:6.9.0"
+  version: 6.9.1
+  resolution: "maplibre-gl@npm:6.9.1"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
@@ -8606,7 +8613,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/5b5727d80244b3553610fe7d5d9c58c9ddea9f971b978c06a6ddbac3156530bdde33be2b2f3bca1c5c8745cd13376b2be42b23b8e9f9520ef0e5e1ea9f584287
+  checksum: 10/1ac48cb3f784ab65fdc17ee3d1491145c3f3e7864728ecf7c1943e668a682e25b523181a7b2edb1119fd205a78a6d03d9ed016c340cac9ca0513ba42303c0785
   languageName: node
   linkType: hard
 
@@ -10196,10 +10203,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:^8.3.1":
-  version: 8.3.1
-  resolution: "react-router@npm:8.3.1"
+"react-router@npm:^8.4.0":
+  version: 8.4.0
+  resolution: "react-router@npm:8.4.0"
   dependencies:
+    "@remix-run/route-pattern": "npm:^0.22.1"
     cookie-es: "npm:^3.1.1"
   peerDependencies:
     react: ">=19.2.7"
@@ -10207,7 +10215,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/87c1a84ce7caca74a087076a98a52867985eb0102f3c0a678e4a1357a646e2fb72384d9351574e02386b2e9156a829c18745af0640e827da73e66409c2393ab4
+  checksum: 10/1a20f8d991b54e959d1deaf865fc9d701f289026d3aa1160b5292b4f03a3697ddc43971408e3df926cb4f240f7d266ab3c1157113b59610899c474a98244c610
   languageName: node
   linkType: hard
 
@@ -11163,7 +11171,7 @@ __metadata:
     "@graphql-codegen/client-preset": "npm:^6.2.0"
     "@graphql-codegen/schema-ast": "npm:^6.1.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.2"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.4.3"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.4.4"
     "@openfeature/core": "npm:^1.12.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.1"
@@ -11191,7 +11199,7 @@ __metadata:
     "@uiw/react-md-editor": "npm:^4.1.2"
     "@vite-pwa/assets-generator": "npm:^2.0.0"
     "@vitejs/plugin-react": "npm:^6.1.1"
-    "@vitest/coverage-v8": "npm:^5.0.0"
+    "@vitest/coverage-v8": "npm:^5.0.1"
     "@watergis/maplibre-gl-export": "npm:~4.1.2"
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.23"
@@ -11202,7 +11210,7 @@ __metadata:
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^30.0.1"
     lodash: "npm:^4.18.1"
-    maplibre-gl: "npm:6.9.1"
+    maplibre-gl: "npm:6.10.0"
     ol: "npm:^10.10.0"
     oxfmt: "npm:^0.68.0"
     oxlint: "npm:^1.83.0"
@@ -11215,7 +11223,7 @@ __metadata:
     react-dropzone: "npm:^20.1.2"
     react-i18next: "npm:^17.0.14"
     react-map-gl: "npm:~8.1.3"
-    react-router: "npm:^8.3.1"
+    react-router: "npm:^8.4.0"
     react-to-print: "npm:^3.3.0"
     rehype-sanitize: "npm:^6.0.0"
     rxjs: "npm:^7.8.2"
@@ -11227,7 +11235,7 @@ __metadata:
     vite-bundle-analyzer: "npm:^1.3.9"
     vite-plugin-pwa: "npm:^1.3.0"
     vite-plugin-svgr: "npm:^5.2.0"
-    vitest: "npm:^5.0.0"
+    vitest: "npm:^5.0.1"
   languageName: unknown
   linkType: soft
 
@@ -12477,12 +12485,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "vitest@npm:5.0.0"
+"vitest@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "vitest@npm:5.0.1"
   dependencies:
     "@types/chai": "npm:^5.2.2"
-    "@vitest/mocker": "npm:5.0.0"
+    "@vitest/mocker": "npm:5.0.1"
     chai: "npm:^6.2.2"
     es-module-lexer: "npm:^2.3.2"
     expect-type: "npm:^1.4.0"
@@ -12498,12 +12506,12 @@ __metadata:
     "@edge-runtime/vm": "*"
     "@opentelemetry/api": ^1.9.0
     "@types/node": ^22.0.0 || >=24.0.0
-    "@vitest/browser-playwright": 5.0.0
-    "@vitest/browser-preview": 5.0.0
+    "@vitest/browser-playwright": 5.0.1
+    "@vitest/browser-preview": 5.0.1
     "@vitest/browser-webdriverio": ^5.0.0-beta.5 || >=5.0.0
-    "@vitest/coverage-istanbul": 5.0.0
-    "@vitest/coverage-v8": 5.0.0
-    "@vitest/ui": 5.0.0
+    "@vitest/coverage-istanbul": 5.0.1
+    "@vitest/coverage-v8": 5.0.1
+    "@vitest/ui": 5.0.1
     happy-dom: "*"
     jsdom: "*"
     vite: ^6.4.0 || ^7.0.0 || ^8.0.0
@@ -12534,7 +12542,7 @@ __metadata:
       optional: false
   bin:
     vitest: ./vitest.mjs
-  checksum: 10/66a8272ba5d102c97954e54c048a105e27d061729511a8a21e0189b38858058264c02835d6fa4aaa674455b58cfd74c798c04bc70e4072f3126559054696a9ee
+  checksum: 10/c17cfa6c93426b3880b7c7067158093b6b5377b9cf38748ba7bf388c1b75eb41b213267aee3709ca77e39ed711c8acb696d69003e7b4c978fa8b4a54e6f0d950
   languageName: node
   linkType: hard
 
