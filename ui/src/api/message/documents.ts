@@ -4,7 +4,7 @@ import type {
   CreateMessageMutationVariables,
   GetIncidentMessagesQuery,
   GetIncidentMessagesQueryVariables,
-GetMessageForTriageQuery,
+  GetMessageForTriageQuery,
   GetMessageForTriageQueryVariables,
   RemoveAttachmentMutation,
   RemoveAttachmentMutationVariables,

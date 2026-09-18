@@ -10,10 +10,20 @@
 import { Medium, PriorityStatus, TriageStatus } from "types";
 import { describe, expect, it } from "vitest";
 import type {
+  ContactMedium as ContactMediumEnum,
   Medium as MediumEnum,
   PriorityStatus as PriorityStatusEnum,
+  ResourceFormation as ResourceFormationEnum,
+  ResourceStatus as ResourceStatusEnum,
+  ResourceUnitSize as ResourceUnitSizeEnum,
   TriageStatus as TriageStatusEnum,
 } from "gql/next";
+import {
+  toContactMedium,
+  toResourceFormation,
+  toResourceStatus,
+  toResourceUnitSize,
+} from "../resource/mapper";
 
 // --- Direction 2: schema → domain (runtime) ---
 // Keep these arrays in sync with the generated union types above.
@@ -22,6 +32,33 @@ import type {
 const ALL_MEDIUM_SCHEMA: MediumEnum[] = ["EMAIL", "OTHER", "PHONE", "RADIO"];
 const ALL_TRIAGE_SCHEMA: TriageStatusEnum[] = ["DONE", "MOREINFO", "PENDING", "RESET"];
 const ALL_PRIORITY_SCHEMA: PriorityStatusEnum[] = ["HIGH", "NORMAL"];
+
+// Resource enums: the domain types are string-literal unions (not runtime enum objects),
+// so Direction 1 uses typed array assignments (compile errors catch renames/removals)
+// and Direction 2 uses the mapper functions (unknown values return the fallback, not the value).
+const ALL_RESOURCE_FORMATION_SCHEMA: ResourceFormationEnum[] = [
+  "ARMEE",
+  "FW",
+  "OTHER",
+  "POL",
+  "SAN",
+  "TECHNB",
+  "ZS",
+];
+const ALL_RESOURCE_UNIT_SIZE_SCHEMA: ResourceUnitSizeEnum[] = [
+  "BATAILLON",
+  "GRUPPE",
+  "KOMPANIE",
+  "TRUPP",
+  "ZUG",
+];
+const ALL_RESOURCE_STATUS_SCHEMA: ResourceStatusEnum[] = [
+  "ABGELOEST",
+  "AUFGEBOTEN",
+  "EINGESETZT",
+  "EINSATZBEREIT",
+];
+const ALL_CONTACT_MEDIUM_SCHEMA: ContactMediumEnum[] = ["OTHER", "PHONE", "RADIO"];
 
 /**
  * Schema values the UI deliberately does not expose.
@@ -70,5 +107,50 @@ describe("enum conformance: schema values are all represented in domain enums", 
     const domain = new Set<string>(Object.values(PriorityStatus));
     const leaked = INTENTIONALLY_UNEXPOSED.filter((v) => domain.has(v));
     expect(leaked).toEqual([]);
+  });
+});
+
+describe("enum conformance: resource schema values are all handled by mapper functions", () => {
+  // Resource domain types are string literal unions (not runtime enum objects), so
+  // Direction 1 is enforced by the typed array declarations at the top of this file
+  // (a renamed schema value causes a TypeScript compile error there), and Direction 2
+  // is enforced by verifying that each schema value is returned unchanged by the
+  // corresponding mapper function — a schema value missing from the mapper would
+  // cause the function to return its fallback instead.
+
+  it("every ResourceFormation schema value is recognized by toResourceFormation", () => {
+    const unrecognized = ALL_RESOURCE_FORMATION_SCHEMA.filter((v) => toResourceFormation(v) !== v);
+    expect(unrecognized).toEqual([]);
+  });
+
+  it("every ResourceUnitSize schema value is recognized by toResourceUnitSize", () => {
+    const unrecognized = ALL_RESOURCE_UNIT_SIZE_SCHEMA.filter((v) => toResourceUnitSize(v) !== v);
+    expect(unrecognized).toEqual([]);
+  });
+
+  it("every ResourceStatus schema value is recognized by toResourceStatus", () => {
+    const unrecognized = ALL_RESOURCE_STATUS_SCHEMA.filter((v) => toResourceStatus(v) !== v);
+    expect(unrecognized).toEqual([]);
+  });
+
+  it("every ContactMedium schema value is recognized by toContactMedium", () => {
+    const unrecognized = ALL_CONTACT_MEDIUM_SCHEMA.filter((v) => toContactMedium(v) !== v);
+    expect(unrecognized).toEqual([]);
+  });
+
+  it("unrecognized ResourceFormation falls back to OTHER", () => {
+    expect(toResourceFormation("UNKNOWN_FORMATION")).toBe("OTHER");
+  });
+
+  it("unrecognized ResourceUnitSize falls back to GRUPPE", () => {
+    expect(toResourceUnitSize("UNKNOWN_SIZE")).toBe("GRUPPE");
+  });
+
+  it("unrecognized ResourceStatus falls back to AUFGEBOTEN", () => {
+    expect(toResourceStatus("UNKNOWN_STATUS")).toBe("AUFGEBOTEN");
+  });
+
+  it("unrecognized ContactMedium falls back to OTHER", () => {
+    expect(toContactMedium("UNKNOWN_MEDIUM")).toBe("OTHER");
   });
 });

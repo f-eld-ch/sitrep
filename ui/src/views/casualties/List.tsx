@@ -164,26 +164,10 @@ export function List() {
 
         <CasualtyKpis totals={grandTotal} iconsLoaded={iconsLoaded} />
 
-        {result.data.childIncidents.length > 0 && (
+        {/* This incident's own casualty breakdown comes first. */}
+        {(namedSps.length > 0 || (defaultSp && isNonZero(defaultSp.casualties))) && (
           <section className="space-y-3">
-            <h2 className="text-base font-bold text-fg">{t("casualties.childIncidents")}</h2>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
-              {result.data.childIncidents.map((child) => (
-                <CasualtySummaryCard
-                  key={child.id}
-                  totals={child.casualties}
-                  title={child.name}
-                  iconsLoaded={iconsLoaded}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Per-SP breakdown — only shown when named SPs exist */}
-        {namedSps.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="text-base font-bold text-fg">{t("casualties.byLocation")}</h2>
+            <h2 className="text-base font-bold text-fg">{t("casualties.thisIncident")}</h2>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
               {locationSps.map((sp) => (
                 <CasualtySpCard
@@ -197,17 +181,25 @@ export function List() {
           </section>
         )}
 
-        {/* When no named SPs, show default only if it has data */}
-        {namedSps.length === 0 && defaultSp && isNonZero(defaultSp.casualties) && (
+        {result.data.childIncidents.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-base font-bold text-fg">{t("casualties.byLocation")}</h2>
-            <CasualtySpCard
-              sp={defaultSp}
-              label={t("schadenplatz.defaultHint")}
-              iconsLoaded={iconsLoaded}
-            />
+            <h2 className="border-t border-border pt-5 text-base font-bold text-fg">
+              {t("casualties.childIncidents")}
+            </h2>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
+              {result.data.childIncidents.map((child) => (
+                <CasualtySummaryCard
+                  key={child.id}
+                  totals={child.casualties}
+                  title={child.name}
+                  iconsLoaded={iconsLoaded}
+                />
+              ))}
+            </div>
           </section>
         )}
+
+        {/* When no named SPs, show default only if it has data */}
       </div>
     </BabsIconProvider>
   );

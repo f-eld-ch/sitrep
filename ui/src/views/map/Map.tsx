@@ -136,7 +136,7 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         {!readOnly && <SearchControl />}
         <AttributionControl position="bottom-left" compact={true} />
         {!readOnly && <FullscreenControl position={"top-left"} />}
-        {!readOnly && <NavigationControl position={"top-left"} visualizePitch={true} />}
+        <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} />
@@ -154,12 +154,10 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
 
   return (
     <>
-      {!readOnly && (
-        <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
-          <LayerControl />
-          <StyleController />
-        </div>
-      )}
+      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
+        {!readOnly && <LayerControl />}
+        <StyleController />
+      </div>
 
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}

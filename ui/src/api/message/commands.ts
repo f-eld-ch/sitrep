@@ -325,4 +325,3 @@ export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachm
 
   return [uploadAttachment, state];
 }
-

@@ -201,14 +201,29 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
   }
 
   if (r.relievedAt && ts >= new Date(r.relievedAt).getTime()) {
-    return { status: "ABGELOEST", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+    return {
+      status: "ABGELOEST",
+      personnelCount: r.personnelCount,
+      hauptaufgabe: "",
+      deploymentLabel: null,
+    };
   }
 
   if (r.readyAt && ts >= new Date(r.readyAt).getTime()) {
-    return { status: "EINSATZBEREIT", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+    return {
+      status: "EINSATZBEREIT",
+      personnelCount: r.personnelCount,
+      hauptaufgabe: "",
+      deploymentLabel: null,
+    };
   }
 
-  return { status: "AUFGEBOTEN", personnelCount: r.personnelCount, hauptaufgabe: "", deploymentLabel: null };
+  return {
+    status: "AUFGEBOTEN",
+    personnelCount: r.personnelCount,
+    hauptaufgabe: "",
+    deploymentLabel: null,
+  };
 }
 
 function TriageSummary(props: {
@@ -246,7 +261,14 @@ function TriageSummary(props: {
         name: sp?.name ?? "–",
       };
     })
-    .filter((c) => c.vermisste !== 0 || c.tote !== 0 || c.verletzte !== 0 || c.obdachlose !== 0 || c.eingeschlossene !== 0);
+    .filter(
+      (c) =>
+        c.vermisste !== 0 ||
+        c.tote !== 0 ||
+        c.verletzte !== 0 ||
+        c.obdachlose !== 0 ||
+        c.eingeschlossene !== 0,
+    );
   const hasCasualties = spCasualties.length > 0;
 
   const assignedDivisions = message.divisions.map((d) => d.division);
@@ -300,9 +322,14 @@ function TriageSummary(props: {
             <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
               <div className="flex flex-wrap gap-3">
                 {spCasualties.map((sp) => (
-                  <div key={sp.schadenplatzId} className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated">
+                  <div
+                    key={sp.schadenplatzId}
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated"
+                  >
                     <div className="border-b border-border px-3 py-1">
-                      <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">Schadenplatz</p>
+                      <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">
+                        Schadenplatz
+                      </p>
                       <p className="truncate text-xs font-semibold text-fg-muted">
                         {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
                       </p>
@@ -518,8 +545,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
     { key: "meldefluss", label: t("messageFlow") },
-    ...(showTasks ? [{ key: "pendenzen", label: t("tasks") }] : []),
-    { key: "schadenplatz", label: t("stepSchadenplatz") },
     { key: "personen", label: t("stepPersonen") },
     { key: "mittel", label: t("stepMittel") },
   ];
@@ -540,7 +565,11 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
       const effectivePriority = triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority;
       const originalDivisionIds = message.divisions.map((d) => d.division.id).sort();
       const currentDivisionIds = assignments.map((d) => d.id).sort();
-      const originalResourceIds = [...(messageForTriageResult.status === "ready" ? messageForTriageResult.data.linkedResourceIds : [])].sort();
+      const originalResourceIds = [
+        ...(messageForTriageResult.status === "ready"
+          ? messageForTriageResult.data.linkedResourceIds
+          : []),
+      ].sort();
       const currentResourceIds = Array.from(selectedResourceIds).sort();
       const unchanged =
         triage === message.triageId &&
@@ -693,106 +722,109 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
 
         {currentStep.key === "meldefluss" && (
           <div className="flex flex-col gap-6">
-            <div>
-              <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
-              <div className="flex flex-wrap gap-2">
-                {incidentDivisions.map((d) => {
-                  const isPresent = assignments.some((e) => e.name === d.name);
-                  return (
-                    <div
-                      key={d.name}
-                      className="flex overflow-hidden rounded text-xs font-semibold"
-                    >
-                      <span
-                        className={
-                          isPresent
-                            ? "bg-primary px-3 py-0.5 text-white"
-                            : "bg-fg px-3 py-0.5 text-bg"
-                        }
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start">
+              <div className="shrink-0">
+                <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-label={t("keyMessage")}
+                  aria-checked={priority === PriorityStatus.High}
+                  onClick={() => {
+                    if (priority === PriorityStatus.High) {
+                      setPriority(PriorityStatus.Normal);
+                      setAssignments(savedAssignments.current ?? []);
+                      savedAssignments.current = null;
+                    } else {
+                      savedAssignments.current = assignments;
+                      setPriority(PriorityStatus.High);
+                      setAssignments(incidentDivisions);
+                    }
+                  }}
+                  className={clsx(
+                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
+                    priority === PriorityStatus.High ? "bg-danger" : "bg-border",
+                  )}
+                >
+                  <span
+                    className={clsx(
+                      "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
+                      priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {incidentDivisions.map((d) => {
+                    const isPresent = assignments.some((e) => e.name === d.name);
+                    return (
+                      <div
+                        key={d.name}
+                        className="flex overflow-hidden rounded text-xs font-semibold"
                       >
-                        {d.description || d.name}
-                      </span>
-                      {isPresent ? (
-                        <button
-                          type="button"
-                          className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
-                          onClick={() => setAssignments(reject(assignments, (e) => e.id === d.id))}
+                        <span
+                          className={
+                            isPresent
+                              ? "bg-primary px-3 py-0.5 text-white"
+                              : "bg-fg px-3 py-0.5 text-bg"
+                          }
                         >
-                          <FontAwesomeIcon icon={faMinus} />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
-                          onClick={() => setAssignments(union(assignments, [d]))}
-                        >
-                          <FontAwesomeIcon icon={faPlus} />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+                          {d.description || d.name}
+                        </span>
+                        {isPresent ? (
+                          <button
+                            type="button"
+                            className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
+                            onClick={() =>
+                              setAssignments(reject(assignments, (e) => e.id === d.id))
+                            }
+                          >
+                            <FontAwesomeIcon icon={faMinus} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
+                            onClick={() => setAssignments(union(assignments, [d]))}
+                          >
+                            <FontAwesomeIcon icon={faPlus} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            <div>
-              <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
-              <button
-                type="button"
-                role="switch"
-                aria-label={t("keyMessage")}
-                aria-checked={priority === PriorityStatus.High}
-                onClick={() => {
-                  if (priority === PriorityStatus.High) {
-                    setPriority(PriorityStatus.Normal);
-                    setAssignments(savedAssignments.current ?? []);
-                    savedAssignments.current = null;
-                  } else {
-                    savedAssignments.current = assignments;
-                    setPriority(PriorityStatus.High);
-                    setAssignments(incidentDivisions);
-                  }
-                }}
-                className={clsx(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
-                  priority === PriorityStatus.High ? "bg-danger" : "bg-border",
-                )}
-              >
-                <span
-                  className={clsx(
-                    "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
-                    priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
-                  )}
-                />
-              </button>
-            </div>
+            {showTasks && (
+              <div>
+                <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
+                <TaskNew />
+              </div>
+            )}
           </div>
-        )}
-
-        {currentStep.key === "pendenzen" && (
-          <>
-            <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
-            <TaskNew />
-          </>
-        )}
-
-        {currentStep.key === "schadenplatz" && (
-          <SchadenplatzStep
-            namedSchadenplaetze={namedSchadenplaetze}
-            selectedIds={selectedSpIds}
-            onToggle={toggleSpId}
-            incidentId={incidentId}
-            onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
-            onReplaced={(tempId, realId) =>
-              setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
-            }
-            onCancelled={(tempId) => setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))}
-            createSchadenplatz={createSchadenplatz}
-          />
         )}
 
         {currentStep.key === "personen" && (
           <div className="space-y-6">
+            <SchadenplatzStep
+              namedSchadenplaetze={namedSchadenplaetze}
+              selectedIds={selectedSpIds}
+              onToggle={toggleSpId}
+              incidentId={incidentId}
+              onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
+              onReplaced={(tempId, realId) =>
+                setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
+              }
+              onCancelled={(tempId) =>
+                setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
+              }
+              createSchadenplatz={createSchadenplatz}
+            />
             {personenSpIds.map((spId) => {
               const sp = schadenplaetze.find((s) => s.id === spId);
               const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
@@ -871,17 +903,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
         )}
         <div className="flex-1" />
         {!isLast ? (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              if (currentStep.key === "meldung") {
-                void editorRef.current?.save();
-              }
-              setStepIndex((i) => i + 1);
-            }}
-          >
+          <Button type="button" variant="primary" size="sm" onClick={() => void handleNext()}>
             {t("next")}
           </Button>
         ) : (
@@ -1299,9 +1321,6 @@ function SchadenplatzStep({
           })}
         </div>
       )}
-
-      {/* Implicit-default hint */}
-      <p className="text-xs text-fg-muted/70 italic">{t("schadenplatz.defaultHint")}</p>
 
       {/* Create new */}
       <div className={clsx("pt-2", namedSchadenplaetze.length > 0 && "border-t border-border")}>

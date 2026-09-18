@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { PriorityStatus } from "types";
 import type { Message } from "types/journal";
 import { useState } from "react";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
   "AUFGEBOTEN",
@@ -218,6 +219,7 @@ export default function Dashboard() {
   const resourcesResult = useIncidentResources(incidentId);
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const iconsLoaded = useBabsIcons();
+  const showResources = useBooleanFlagValue("show-resources", false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>(undefined);
   const title =
     resourcesResult.status === "ready"
@@ -265,7 +267,9 @@ export default function Dashboard() {
               <IncidentMap embedded readOnly />
             </div>
           </section>
-          <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
+          {showResources && (
+            <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
+          )}
         </div>
       </div>
     </BabsIconProvider>

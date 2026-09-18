@@ -223,6 +223,7 @@
     "eingeschlossene": "Trapped",
     "summary": "Person Summary",
     "overview": "Casualties",
+    "thisIncident": "This incident",
     "none": "No casualties recorded",
     "byLocation": "By location"
   },

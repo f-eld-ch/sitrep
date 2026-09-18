@@ -292,7 +292,9 @@ function ResourceTableRow({
       <td className="max-w-[12rem] truncate px-2 py-1.5 text-fg">
         {!isHistory && resource.contact
           ? `${t(`medium.${resource.contact.medium}`)}${resource.contact.detail ? `: ${resource.contact.detail}` : ""}`
-          : !isHistory ? "–" : null}
+          : !isHistory
+            ? "–"
+            : null}
       </td>
       <td className="px-2 py-1.5 text-center text-fg tabular-nums">
         {!isHistory && formatDateTime(resource.alertedAt)}
@@ -316,7 +318,7 @@ function ResourceTableRow({
         {period?.hauptaufgabe || resource.hauptaufgabe || "–"}
       </td>
       <td className="max-w-[10rem] truncate px-2 py-1.5 text-fg">
-        {isHistory ? (period.deploymentLabel || "–") : (resource.deploymentLocation?.label || "–")}
+        {isHistory ? period.deploymentLabel || "–" : resource.deploymentLocation?.label || "–"}
       </td>
     </tr>
   );

@@ -62,7 +62,14 @@ export interface MessageForTriageData {
   message: Message;
   incidentDivisions: Division[];
   linkedResourceIds: string[];
-  schadenplatzCasualties: { schadenplatzId: string; vermisste: number; tote: number; verletzte: number; obdachlose: number; eingeschlossene: number }[];
+  schadenplatzCasualties: {
+    schadenplatzId: string;
+    vermisste: number;
+    tote: number;
+    verletzte: number;
+    obdachlose: number;
+    eingeschlossene: number;
+  }[];
 }
 
 export function useMessageForTriage(
