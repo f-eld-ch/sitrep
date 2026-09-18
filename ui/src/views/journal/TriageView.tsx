@@ -30,7 +30,6 @@ import {
   useTriageMessage,
   useIncidentResources,
   useCreateSchadenplatz,
-  useMessageCasualties,
   useMessageForTriage,
   useRecordCasualties,
   useAlertResource,
@@ -238,17 +237,17 @@ function TriageSummary(props: {
     .map((id) => allResources.find((r) => r.id === id))
     .filter(Boolean) as Resource[];
 
-  const totalCasualties = casualties.reduce(
-    (acc, c) => ({
-      vermisste: acc.vermisste + c.vermisste,
-      tote: acc.tote + c.tote,
-      verletzte: acc.verletzte + c.verletzte,
-      obdachlose: acc.obdachlose + c.obdachlose,
-      eingeschlossene: acc.eingeschlossene + c.eingeschlossene,
-    }),
-    { vermisste: 0, tote: 0, verletzte: 0, obdachlose: 0, eingeschlossene: 0 },
-  );
-  const hasCasualties = Object.values(totalCasualties).some((v) => v !== 0);
+  const spCasualties = casualties
+    .map((c) => {
+      const sp = schadenplaetze.find((s) => s.id === c.schadenplatzId);
+      return {
+        ...c,
+        isDefault: sp?.isDefault ?? false,
+        name: sp?.name ?? "–",
+      };
+    })
+    .filter((c) => c.vermisste !== 0 || c.tote !== 0 || c.verletzte !== 0 || c.obdachlose !== 0 || c.eingeschlossene !== 0);
+  const hasCasualties = spCasualties.length > 0;
 
   const assignedDivisions = message.divisions.map((d) => d.division);
 
@@ -299,18 +298,30 @@ function TriageSummary(props: {
               {t("stepPersonen")}
             </h3>
             <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-              <div className="divide-y divide-border rounded-lg border border-border bg-bg-elevated px-3">
-                {CASUALTY_CATEGORIES.filter((cat) => totalCasualties[cat.key] !== 0).map((cat) => (
-                  <div key={cat.key} className="flex items-center gap-2 py-1.5">
-                    {cat.babsId && iconsLoaded ? (
-                      <BabsIcon icon={cat.babsId} size={20} fallback={null} />
-                    ) : cat.faIcon ? (
-                      <FontAwesomeIcon icon={cat.faIcon} className="text-sm text-fg-muted" />
-                    ) : null}
-                    <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
-                      {totalCasualties[cat.key]}
-                    </span>
-                    <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
+              <div className="flex flex-wrap gap-3">
+                {spCasualties.map((sp) => (
+                  <div key={sp.schadenplatzId} className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated">
+                    <div className="border-b border-border px-3 py-1">
+                      <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">Schadenplatz</p>
+                      <p className="truncate text-xs font-semibold text-fg-muted">
+                        {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                      </p>
+                    </div>
+                    <div className="divide-y divide-border px-3">
+                      {CASUALTY_CATEGORIES.filter((cat) => sp[cat.key] !== 0).map((cat) => (
+                        <div key={cat.key} className="flex items-center gap-2 py-1.5">
+                          {cat.babsId && iconsLoaded ? (
+                            <BabsIcon icon={cat.babsId} size={20} fallback={null} />
+                          ) : cat.faIcon ? (
+                            <FontAwesomeIcon icon={cat.faIcon} className="text-sm text-fg-muted" />
+                          ) : null}
+                          <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
+                            {sp[cat.key]}
+                          </span>
+                          <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -394,7 +405,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const resourcesResult = useIncidentResources(incidentId);
   const [createSchadenplatz] = useCreateSchadenplatz();
   const iconsLoaded = useBabsIcons();
-  const previousCasualties = useMessageCasualties(message.id);
   const [stepError, setStepError] = useState<ApiError | undefined>(undefined);
 
   const isTriaged =
@@ -413,6 +423,13 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const [stepIndex, setStepIndex] = useState(0);
   const [liveMessage, setLiveMessage] = useState<Message>(message);
   const messageForTriageResult = useMessageForTriage(message.id, incidentId);
+  const previousCasualties = useMemo(
+    () =>
+      messageForTriageResult.status === "ready"
+        ? messageForTriageResult.data.schadenplatzCasualties
+        : [],
+    [messageForTriageResult],
+  );
   const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
   const resourcesInitialized = useRef(false);
   useEffect(() => {
@@ -542,10 +559,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
           triage,
           divisionIds: assignments.map((d) => d.id),
           divisions: assignments,
-          schadenplatzCasualties: personenSpIds.map((spId) => ({
-            schadenplatzId: spId,
-            ...getSpCasualties(spId),
-          })),
           linkedResourceIds: Array.from(selectedResourceIds),
         });
         onSaved();
@@ -555,8 +568,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     },
     [
       onSaved,
-      getSpCasualties,
-      personenSpIds,
       triageMessage,
       incidentId,
       message.id,
@@ -816,6 +827,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                   }
                   iconsLoaded={iconsLoaded}
                   messageTime={message.time}
+                  incidentId={incidentId}
                 />
                 <AlertResourceForm
                   incidentId={incidentId}
@@ -1372,6 +1384,7 @@ function ResourcePicker({
   onAttach,
   iconsLoaded,
   messageTime,
+  incidentId,
 }: {
   schadenplaetze: SchadenplatzWithResources[];
   selectedIds: Set<string>;
@@ -1379,6 +1392,7 @@ function ResourcePicker({
   onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
+  incidentId: string;
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -1425,6 +1439,7 @@ function ResourcePicker({
               onAttach={onAttach}
               iconsLoaded={iconsLoaded}
               messageTime={messageTime}
+              incidentId={incidentId}
             />
           ))}
         </div>
@@ -1457,6 +1472,7 @@ function ResourcePicker({
                 onAttach={onAttach}
                 iconsLoaded={iconsLoaded}
                 messageTime={messageTime}
+                incidentId={incidentId}
               />
             ))}
           </div>
@@ -1474,6 +1490,7 @@ function ResourcePickerRow({
   onAttach,
   iconsLoaded,
   messageTime,
+  incidentId,
 }: {
   resource: Resource;
   currentSpName: string;
@@ -1483,6 +1500,7 @@ function ResourcePickerRow({
   onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
+  incidentId: string;
 }) {
   const { t } = useTranslation();
   const [markReady, markReadyState] = useMarkResourceReady();
@@ -1512,7 +1530,7 @@ function ResourcePickerRow({
         .find((candidate) => candidate.id === r.successorId)
     : undefined;
   const relieveAndAttach = async (successorId: string | null) => {
-    await relieve({ id: r.id, successorId, at: messageTime });
+    await relieve({ id: r.id, successorId, at: messageTime, incidentId });
     onAttach(successorId ? [r.id, successorId] : [r.id]);
   };
 

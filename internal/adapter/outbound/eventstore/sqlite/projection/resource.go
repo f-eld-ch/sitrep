@@ -20,7 +20,7 @@ func NewResourceHandler(db *sql.DB) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 4 }
+func (h *ResourceHandler) Version() int { return 5 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_resource`)
 	return err
@@ -34,8 +34,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated",
-		"EinsatzDauerRecorded":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
 		return true
 	}
 
@@ -113,9 +112,16 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			now, now, d.SourceMessageID, now, now)
 
 	case "MarkedReady":
-		return exec(tx, ctx,
-			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, ready_at=?, updated_at=? WHERE id=?`,
-			now, now, now, id)
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET status='EINSATZBEREIT', status_at=?, ready_at=?, einsatz_beginn=COALESCE(einsatz_beginn,?), updated_at=? WHERE id=?`,
+			now,
+			now,
+			now,
+			now,
+			id,
+		)
 
 	case "Deployed":
 		var d struct {
@@ -167,10 +173,11 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 		return exec(tx, ctx, `
 			UPDATE readmodel_resource SET status='ABGELOEST', status_at=?, relieved_at=?, successor_id=?,
+				einsatz_ende=?,
 				deployment_history = CASE WHEN json_array_length(deployment_history) > 0
 					THEN json_set(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt', ?)
 					ELSE deployment_history END,
-				updated_at=? WHERE id=?`, now, now, d.SuccessorID, now, now, id)
+				updated_at=? WHERE id=?`, now, now, d.SuccessorID, now, now, now, id)
 
 	case "SuccessionLinked":
 		var d struct {
@@ -282,18 +289,6 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			now,
 			id,
 		)
-
-	case "EinsatzDauerRecorded":
-		var d struct {
-			Beginn string  `json:"beginn"`
-			Ende   *string `json:"ende"`
-		}
-		if err := remarshal(e.Data, &d); err != nil {
-			return err
-		}
-
-		return exec(tx, ctx, `UPDATE readmodel_resource SET einsatz_beginn=?, einsatz_ende=?, updated_at=? WHERE id=?`,
-			d.Beginn, d.Ende, now, id)
 	}
 
 	return nil

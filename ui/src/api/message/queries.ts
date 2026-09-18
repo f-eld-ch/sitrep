@@ -62,6 +62,7 @@ export interface MessageForTriageData {
   message: Message;
   incidentDivisions: Division[];
   linkedResourceIds: string[];
+  schadenplatzCasualties: { schadenplatzId: string; vermisste: number; tote: number; verletzte: number; obdachlose: number; eingeschlossene: number }[];
 }
 
 export function useMessageForTriage(
@@ -108,6 +109,7 @@ export function useMessageForTriage(
       message: toMessage(wireMessage),
       incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
       linkedResourceIds: wireMessage.linkedResourceIds ?? [],
+      schadenplatzCasualties: wireMessage.schadenplatzCasualties ?? [],
     },
     error: undefined,
     isRefreshing: loading,

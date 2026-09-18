@@ -890,7 +890,6 @@ func (r *mutationResolver) TriageMessage(
 		if err != nil {
 			return nil, err
 		}
-
 		linkedResourceIDs[i] = shared.ResourceID(u)
 	}
 
@@ -905,33 +904,6 @@ func (r *mutationResolver) TriageMessage(
 	)
 	if err != nil {
 		return nil, err
-	}
-
-	// Record casualties for each Schadenplatz listed in the triage input.
-	for _, sc := range input.SchadenplatzCasualties {
-		spID, err := parseUUID(sc.SchadenplatzID)
-		if err != nil {
-			return nil, err
-		}
-
-		deltas := schadenplatz.CasualtyDeltas{
-			Vermisste:       sc.Vermisste,
-			Tote:            sc.Tote,
-			Verletzte:       sc.Verletzte,
-			Obdachlose:      sc.Obdachlose,
-			Eingeschlossene: sc.Eingeschlossene,
-		}
-
-		if _, err := r.Schadenplaetze.RecordCasualties(
-			ctx,
-			shared.SchadenplatzID(spID),
-			shared.MessageID(msgID),
-			deltas,
-			state.Time,
-			actor,
-		); err != nil {
-			return nil, err
-		}
 	}
 
 	msg := messageStateToModel(state)
@@ -1438,31 +1410,6 @@ func (r *mutationResolver) UpdatePersonnelCount(ctx context.Context, id string, 
 	}
 
 	state, err := r.Resources.UpdatePersonnelCount(ctx, shared.ResourceID(resID), count, actor)
-	if err != nil {
-		return nil, err
-	}
-
-	return resourceStateToModel(state), nil
-}
-
-// RecordEinsatzDauer is the resolver for the recordEinsatzDauer field.
-func (r *mutationResolver) RecordEinsatzDauer(
-	ctx context.Context,
-	id string,
-	beginn time.Time,
-	ende *time.Time,
-) (*model.Resource, error) {
-	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resID, err := parseUUID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	state, err := r.Resources.RecordEinsatzDauer(ctx, shared.ResourceID(resID), beginn, ende, actor)
 	if err != nil {
 		return nil, err
 	}

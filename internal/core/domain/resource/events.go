@@ -143,10 +143,3 @@ type ContactUpdated struct {
 type PersonnelCountUpdated struct {
 	Count int `json:"count"`
 }
-
-// EinsatzDauerRecorded fires when the operational period is recorded.
-// Ende is nil when only the start is known.
-type EinsatzDauerRecorded struct {
-	Beginn time.Time  `json:"beginn"`
-	Ende   *time.Time `json:"ende,omitempty"`
-}

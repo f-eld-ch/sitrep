@@ -319,36 +319,6 @@ func TestResource_UpdatePersonnelCount(t *testing.T) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// EinsatzDauer
-// ──────────────────────────────────────────────────────────────────────────────
-
-func TestResource_EinsatzDauer(t *testing.T) {
-	id := shared.ResourceID(uuid.New())
-	beginn := at
-	ende := at.Add(2 * time.Hour)
-
-	t.Run("records beginn and ende", func(t *testing.T) {
-		r := replay(t, id, []eventsourcing.Event{alerted(id)})
-		require.NoError(t, r.RecordEinsatzDauer(beginn, &ende, actor, at))
-		assert.Equal(t, &beginn, r.EinsatzBeginn())
-		assert.Equal(t, &ende, r.EinsatzEnde())
-	})
-
-	t.Run("records beginn without ende", func(t *testing.T) {
-		r := replay(t, id, []eventsourcing.Event{alerted(id)})
-		require.NoError(t, r.RecordEinsatzDauer(beginn, nil, actor, at))
-		assert.Nil(t, r.EinsatzEnde())
-	})
-
-	t.Run("ende before beginn is rejected", func(t *testing.T) {
-		r := replay(t, id, []eventsourcing.Event{alerted(id)})
-		before := beginn.Add(-1 * time.Hour)
-		err := r.RecordEinsatzDauer(beginn, &before, actor, at)
-		require.ErrorIs(t, err, shared.ErrInvalidInput)
-	})
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 // UnitSize helpers
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -415,7 +385,6 @@ func TestResource_FullReplay(t *testing.T) {
 	lat, lng := 46.8, 8.2
 	loc := &resource.DeploymentLocation{Lat: &lat, Lng: &lng, Label: "Nordzugang"}
 	contact := resource.Contact{Medium: resource.ContactMediumRadio, Detail: "CH-1"}
-	ende := at.Add(4 * time.Hour)
 
 	r := resource.New(id)
 	require.NoError(t, r.Alert(incidentID, schadenplatzID,
@@ -429,7 +398,6 @@ func TestResource_FullReplay(t *testing.T) {
 	require.NoError(t, r.Reassign(newSP, actor, at))
 	require.NoError(t, r.ChangeHauptaufgabe("Folgeversorgung", actor, at))
 	require.NoError(t, r.UpdatePersonnelCount(1, actor, at))
-	require.NoError(t, r.RecordEinsatzDauer(at, &ende, actor, at))
 
 	events := r.Root().PendingEvents()
 

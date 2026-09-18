@@ -8,7 +8,6 @@ export type {
 } from "./commands";
 export {
   useCreateMessage,
-  useMessageCasualties,
   useRemoveAttachment,
   useTriageMessage,
   useUpdateMessage,

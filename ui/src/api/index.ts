@@ -81,7 +81,6 @@ export {
   useCreateMessage,
   useIncidentMessages,
   useJournalMessages,
-  useMessageCasualties,
   useMessageForTriage,
   useRemoveAttachment,
   useTriageMessage,

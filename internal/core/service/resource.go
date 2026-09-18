@@ -362,26 +362,6 @@ func (s *ResourceService) UpdatePersonnelCount(
 	)
 }
 
-// RecordEinsatzDauer records the operational period for this resource.
-func (s *ResourceService) RecordEinsatzDauer(
-	ctx context.Context,
-	id shared.ResourceID,
-	beginn time.Time,
-	ende *time.Time,
-	actor identity.Actor,
-) (inbound.ResourceState, error) {
-	return s.simpleTransition(
-		ctx,
-		"ResourceService.RecordEinsatzDauer",
-		id,
-		nil,
-		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.RecordEinsatzDauer(beginn, ende, actor.Sub, at)
-		},
-	)
-}
-
 func (s *ResourceService) resolveAt(at *time.Time) time.Time {
 	if at != nil {
 		return *at

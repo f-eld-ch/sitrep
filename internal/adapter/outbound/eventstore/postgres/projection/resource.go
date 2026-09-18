@@ -20,7 +20,7 @@ func NewResourceHandler(pool *pgxpool.Pool) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 4 }
+func (h *ResourceHandler) Version() int { return 5 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.resource`)
 	return err
@@ -34,8 +34,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated",
-		"EinsatzDauerRecorded":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
 		return true
 	}
 
@@ -115,7 +114,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			db,
 			ctx,
-			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, ready_at=$1, updated_at=$1 WHERE id=$2`,
+			`UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, ready_at=$1, einsatz_beginn=COALESCE(einsatz_beginn,$1), updated_at=$1 WHERE id=$2`,
 			now,
 			id,
 		)
@@ -156,7 +155,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(db, ctx, `
 			UPDATE readmodel.resource SET status='EINSATZBEREIT', status_at=$1, stood_down_at=$1, hauptaufgabe='',
 				deployment_history = CASE WHEN jsonb_array_length(deployment_history) > 0
-					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1))
+					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1::timestamptz))
 					ELSE deployment_history END,
 				updated_at=$1 WHERE id=$2`, now, id)
 
@@ -170,8 +169,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 		return exec(db, ctx, `
 			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2::uuid,
+				einsatz_ende=$1,
 				deployment_history = CASE WHEN jsonb_array_length(deployment_history) > 0
-					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1))
+					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1::timestamptz))
 					ELSE deployment_history END,
 				updated_at=$1 WHERE id=$3`,
 			now, d.SuccessorID, id)
@@ -283,25 +283,6 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			ctx,
 			`UPDATE readmodel.resource SET personnel_count=$1, updated_at=$2 WHERE id=$3`,
 			d.Count,
-			now,
-			id,
-		)
-
-	case "EinsatzDauerRecorded":
-		var d struct {
-			Beginn string  `json:"beginn"`
-			Ende   *string `json:"ende"`
-		}
-		if err := remarshal(e.Data, &d); err != nil {
-			return err
-		}
-
-		return exec(
-			db,
-			ctx,
-			`UPDATE readmodel.resource SET einsatz_beginn=$1, einsatz_ende=$2, updated_at=$3 WHERE id=$4`,
-			d.Beginn,
-			d.Ende,
 			now,
 			id,
 		)

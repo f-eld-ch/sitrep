@@ -1,4 +1,4 @@
-import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { useState } from "react";
 import { Medium, PriorityStatus, TriageStatus, type Attachment, type Division } from "types";
 import { ApiError, apiErrorFromApolloError } from "../errors";
@@ -6,7 +6,6 @@ import type { CommandHook, CommandState } from "../result";
 import {
   CREATE_MESSAGE,
   GET_INCIDENT_MESSAGES,
-  GET_MESSAGE_CASUALTIES,
   REMOVE_ATTACHMENT,
   TRIAGE_MESSAGE,
   UPDATE_MESSAGE,
@@ -43,7 +42,6 @@ export interface TriageMessageArgs {
   triage: TriageStatus;
   divisionIds: string[];
   divisions: Division[];
-  schadenplatzCasualties: SchadenplatzCasualtyInput[];
   linkedResourceIds: string[];
 }
 
@@ -135,7 +133,6 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
         priority: args.priority,
         triage: args.triage,
         divisionIds: args.divisionIds,
-        schadenplatzCasualties: args.schadenplatzCasualties,
         linkedResourceIds: args.linkedResourceIds,
       },
       optimisticResponse: {
@@ -144,7 +141,6 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
           triage: args.triage,
           priority: args.triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : args.priority,
           divisions: args.divisions,
-          schadenplatzCasualties: args.schadenplatzCasualties,
           linkedResourceIds: args.linkedResourceIds,
         },
       },
@@ -330,18 +326,3 @@ export function useUploadAttachment(): CommandHook<UploadAttachmentArgs, Attachm
   return [uploadAttachment, state];
 }
 
-export function useMessageCasualties(messageId: string): SchadenplatzCasualtyInput[] {
-  const { data } = useQuery(GET_MESSAGE_CASUALTIES, {
-    variables: { id: messageId },
-    skip: !messageId,
-    fetchPolicy: "cache-and-network",
-  });
-  return (data?.message?.schadenplatzCasualties ?? []).map((e) => ({
-    schadenplatzId: e.schadenplatzId,
-    vermisste: e.vermisste,
-    tote: e.tote,
-    verletzte: e.verletzte,
-    obdachlose: e.obdachlose,
-    eingeschlossene: e.eingeschlossene,
-  }));
-}

@@ -74,7 +74,7 @@ function MessageRow(props: {
             {message.sender || "—"}
             {message.receiver ? ` → ${message.receiver}` : ""}
           </p>
-          <div className={clsx("text-xs leading-snug text-fg-muted [&_*]:text-xs [&_p]:m-0 [&_ul]:m-0 [&_ol]:m-0 [&_li]:m-0", (message.content?.length ?? 0) > 120 && "line-clamp-4")}>
+          <div className={clsx("text-xs leading-snug text-fg-muted [&_*]:text-xs [&_li]:m-0 [&_ol]:m-0 [&_p]:m-0 [&_ul]:m-0", (message.content?.length ?? 0) > 120 && "line-clamp-4")}>
             {message.content ? <ReactPreview content={message.content} /> : "…"}
           </div>
         </div>

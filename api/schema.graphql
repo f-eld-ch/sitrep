@@ -409,8 +409,6 @@ input TriageMessageInput {
   priority: PriorityStatus!
   """IDs of divisions to assign to this message (replaces current set)."""
   divisionIds: [ID!]!
-  """Casualty deltas to record for each Schadenplatz as part of this triage."""
-  schadenplatzCasualties: [SchadenplatzCasualtyInput!]!
   """Resource IDs to link to this message (replaces current set)."""
   linkedResourceIds: [ID!]!
 }
@@ -455,15 +453,6 @@ input CasualtyDeltasInput {
 }
 
 type SchadenplatzCasualtyEntry {
-  schadenplatzId: ID!
-  vermisste: Int!
-  tote: Int!
-  verletzte: Int!
-  obdachlose: Int!
-  eingeschlossene: Int!
-}
-
-input SchadenplatzCasualtyInput {
   schadenplatzId: ID!
   vermisste: Int!
   tote: Int!
@@ -580,9 +569,6 @@ type Mutation {
 
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!): Resource!
-
-  """Record the operational period (Einsatzdauer) for a resource."""
-  recordEinsatzDauer(id: ID!, beginn: DateTime!, ende: DateTime): Resource!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

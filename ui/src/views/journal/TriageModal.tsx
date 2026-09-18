@@ -101,7 +101,6 @@ function TriageForm(props: {
       triage,
       divisionIds: assignments.map((d) => d.id),
       divisions: assignments,
-      schadenplatzCasualties: [],
       linkedResourceIds: [],
     }).catch(() => {});
   };

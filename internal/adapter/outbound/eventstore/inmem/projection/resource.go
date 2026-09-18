@@ -91,8 +91,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated",
-		"EinsatzDauerRecorded":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
 		return true
 	}
 
@@ -181,10 +180,16 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 	case "MarkedReady":
 		if row := h.rows[id]; row != nil {
+			at := e.OccurredAt
 			row.Status = "EINSATZBEREIT"
-			row.StatusAt = e.OccurredAt
-			row.ReadyAt = &e.OccurredAt
-			row.UpdatedAt = e.OccurredAt
+			row.StatusAt = at
+
+			row.ReadyAt = &at
+			if row.EinsatzBeginn == nil {
+				row.EinsatzBeginn = &at
+			}
+
+			row.UpdatedAt = at
 		}
 
 	case "Deployed":
@@ -258,6 +263,7 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			row.Status = "ABGELOEST"
 			row.StatusAt = at
 			row.RelievedAt = &at
+			row.EinsatzEnde = &at
 			row.UpdatedAt = at
 
 			if d.SuccessorID != nil {
@@ -372,32 +378,6 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 		if row := h.rows[id]; row != nil {
 			row.PersonnelCount = d.Count
-			row.UpdatedAt = e.OccurredAt
-		}
-
-	case "EinsatzDauerRecorded":
-		var d struct {
-			Beginn string  `json:"beginn"`
-			Ende   *string `json:"ende"`
-		}
-		if err := remarshal(e.Data, &d); err != nil {
-			return err
-		}
-
-		if row := h.rows[id]; row != nil {
-			beginn := e.OccurredAt // fallback; overwritten below
-			if t, err := time.Parse(time.RFC3339, d.Beginn); err == nil {
-				beginn = t
-			}
-
-			row.EinsatzBeginn = &beginn
-
-			if d.Ende != nil {
-				if t, err := time.Parse(time.RFC3339, *d.Ende); err == nil {
-					row.EinsatzEnde = &t
-				}
-			}
-
 			row.UpdatedAt = e.OccurredAt
 		}
 	}

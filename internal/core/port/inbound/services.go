@@ -383,7 +383,7 @@ type AlertResourceInput struct {
 
 // ResourceService is the driving port for Resource commands.
 //
-//nolint:interfacebloat // Resource commands are intentionally exposed through one driving port.
+
 type ResourceService interface {
 	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
 	MarkResourceReady(
@@ -439,13 +439,6 @@ type ResourceService interface {
 		ctx context.Context,
 		id shared.ResourceID,
 		count int,
-		actor identity.Actor,
-	) (ResourceState, error)
-	RecordEinsatzDauer(
-		ctx context.Context,
-		id shared.ResourceID,
-		beginn time.Time,
-		ende *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 }

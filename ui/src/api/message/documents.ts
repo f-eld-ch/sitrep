@@ -4,9 +4,7 @@ import type {
   CreateMessageMutationVariables,
   GetIncidentMessagesQuery,
   GetIncidentMessagesQueryVariables,
-  GetMessageCasualtiesQuery,
-  GetMessageCasualtiesQueryVariables,
-  GetMessageForTriageQuery,
+GetMessageForTriageQuery,
   GetMessageForTriageQueryVariables,
   RemoveAttachmentMutation,
   RemoveAttachmentMutationVariables,
@@ -218,7 +216,6 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
     $triage: TriageStatus!
     $priority: PriorityStatus!
     $divisionIds: [ID!]!
-    $schadenplatzCasualties: [SchadenplatzCasualtyInput!]!
     $linkedResourceIds: [ID!]!
   ) {
     triageMessage(
@@ -227,7 +224,6 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         triage: $triage
         priority: $priority
         divisionIds: $divisionIds
-        schadenplatzCasualties: $schadenplatzCasualties
         linkedResourceIds: $linkedResourceIds
       }
     ) {
@@ -239,34 +235,7 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         name
         description
       }
-      schadenplatzCasualties {
-        schadenplatzId
-        vermisste
-        tote
-        verletzte
-        obdachlose
-        eingeschlossene
-      }
       linkedResourceIds
-    }
-  }
-`;
-
-export const GET_MESSAGE_CASUALTIES: TypedDocumentNode<
-  GetMessageCasualtiesQuery,
-  GetMessageCasualtiesQueryVariables
-> = gql`
-  query GetMessageCasualties($id: ID!) {
-    message(id: $id) {
-      id
-      schadenplatzCasualties {
-        schadenplatzId
-        vermisste
-        tote
-        verletzte
-        obdachlose
-        eingeschlossene
-      }
     }
   }
 `;

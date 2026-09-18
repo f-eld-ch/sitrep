@@ -179,7 +179,6 @@ type ComplexityRoot struct {
 		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
 		ReassignResource             func(childComplexity int, id string, schadenplatzID string) int
 		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, input model.CasualtyDeltasInput) int
-		RecordEinsatzDauer           func(childComplexity int, id string, beginn time.Time, ende *time.Time) int
 		RelieveResource              func(childComplexity int, id string, successorID *string, at *time.Time) int
 		RemoveAttachment             func(childComplexity int, messageID string, attachmentID string) int
 		RemoveGroupMember            func(childComplexity int, groupID string, subject string) int
@@ -352,7 +351,6 @@ type MutationResolver interface {
 	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string) (*model.Resource, error)
 	UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput) (*model.Resource, error)
 	UpdatePersonnelCount(ctx context.Context, id string, count int) (*model.Resource, error)
-	RecordEinsatzDauer(ctx context.Context, id string, beginn time.Time, ende *time.Time) (*model.Resource, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
 	AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
 	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
@@ -1133,17 +1131,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RecordCasualties(childComplexity, args["id"].(string), args["sourceMessageId"].(string), args["input"].(model.CasualtyDeltasInput)), true
-	case "Mutation.recordEinsatzDauer":
-		if e.ComplexityRoot.Mutation.RecordEinsatzDauer == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_recordEinsatzDauer_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.ComplexityRoot.Mutation.RecordEinsatzDauer(childComplexity, args["id"].(string), args["beginn"].(time.Time), args["ende"].(*time.Time)), true
 	case "Mutation.relieveResource":
 		if e.ComplexityRoot.Mutation.RelieveResource == nil {
 			break
@@ -1823,7 +1810,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLayerInput,
 		ec.unmarshalInputResourceContactInput,
 		ec.unmarshalInputResourceHomeLocationInput,
-		ec.unmarshalInputSchadenplatzCasualtyInput,
 		ec.unmarshalInputTriageMessageInput,
 		ec.unmarshalInputUpdateIncidentInput,
 		ec.unmarshalInputUpdateMessageInput,
@@ -2313,8 +2299,6 @@ input TriageMessageInput {
   priority: PriorityStatus!
   """IDs of divisions to assign to this message (replaces current set)."""
   divisionIds: [ID!]!
-  """Casualty deltas to record for each Schadenplatz as part of this triage."""
-  schadenplatzCasualties: [SchadenplatzCasualtyInput!]!
   """Resource IDs to link to this message (replaces current set)."""
   linkedResourceIds: [ID!]!
 }
@@ -2359,15 +2343,6 @@ input CasualtyDeltasInput {
 }
 
 type SchadenplatzCasualtyEntry {
-  schadenplatzId: ID!
-  vermisste: Int!
-  tote: Int!
-  verletzte: Int!
-  obdachlose: Int!
-  eingeschlossene: Int!
-}
-
-input SchadenplatzCasualtyInput {
   schadenplatzId: ID!
   vermisste: Int!
   tote: Int!
@@ -2484,9 +2459,6 @@ type Mutation {
 
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!): Resource!
-
-  """Record the operational period (Einsatzdauer) for a resource."""
-  recordEinsatzDauer(id: ID!, beginn: DateTime!, ende: DateTime): Resource!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 
@@ -3521,36 +3493,6 @@ func (ec *executionContext) field_Mutation_recordCasualties_args(ctx context.Con
 		return nil, err
 	}
 	args["input"] = arg2
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_recordEinsatzDauer_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
-		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "beginn",
-		func(ctx context.Context, v any) (time.Time, error) {
-			return ec.unmarshalNDateTime2timeᚐTime(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["beginn"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "ende",
-		func(ctx context.Context, v any) (*time.Time, error) {
-			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
-		})
-	if err != nil {
-		return nil, err
-	}
-	args["ende"] = arg2
 	return args, nil
 }
 
@@ -7677,50 +7619,6 @@ func (ec *executionContext) fieldContext_Mutation_updatePersonnelCount(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_recordEinsatzDauer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Mutation_recordEinsatzDauer(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RecordEinsatzDauer(ctx, fc.Args["id"].(string), fc.Args["beginn"].(time.Time), fc.Args["ende"].(*time.Time))
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
-			return ec.marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResource(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Mutation_recordEinsatzDauer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Resource(ctx, field)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_recordEinsatzDauer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createLayer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -11380,71 +11278,6 @@ func (ec *executionContext) unmarshalInputResourceHomeLocationInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSchadenplatzCasualtyInput(ctx context.Context, obj any) (model.SchadenplatzCasualtyInput, error) {
-	var it model.SchadenplatzCasualtyInput
-	if obj == nil {
-		return it, nil
-	}
-
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"schadenplatzId", "vermisste", "tote", "verletzte", "obdachlose", "eingeschlossene"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "schadenplatzId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schadenplatzId"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SchadenplatzID = data
-		case "vermisste":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("vermisste"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Vermisste = data
-		case "tote":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tote"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Tote = data
-		case "verletzte":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("verletzte"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Verletzte = data
-		case "obdachlose":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("obdachlose"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Obdachlose = data
-		case "eingeschlossene":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("eingeschlossene"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Eingeschlossene = data
-		}
-	}
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context, obj any) (model.TriageMessageInput, error) {
 	var it model.TriageMessageInput
 	if obj == nil {
@@ -11456,7 +11289,7 @@ func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"triage", "priority", "divisionIds", "schadenplatzCasualties", "linkedResourceIds"}
+	fieldsInOrder := [...]string{"triage", "priority", "divisionIds", "linkedResourceIds"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11484,13 +11317,6 @@ func (ec *executionContext) unmarshalInputTriageMessageInput(ctx context.Context
 				return it, err
 			}
 			it.DivisionIds = data
-		case "schadenplatzCasualties":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schadenplatzCasualties"))
-			data, err := ec.unmarshalNSchadenplatzCasualtyInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SchadenplatzCasualties = data
 		case "linkedResourceIds":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("linkedResourceIds"))
 			data, err := ec.unmarshalNID2ᚕstringᚄ(ctx, v)
@@ -13053,13 +12879,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updatePersonnelCount":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePersonnelCount(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "recordEinsatzDauer":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_recordEinsatzDauer(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -14992,25 +14811,6 @@ func (ec *executionContext) marshalNSchadenplatzCasualtyEntry2ᚖgithubᚗcomᚋ
 		return graphql.Null
 	}
 	return ec._SchadenplatzCasualtyEntry(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNSchadenplatzCasualtyInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInputᚄ(ctx context.Context, v any) ([]*model.SchadenplatzCasualtyInput, error) {
-	vSlice := graphql.CoerceList(v)
-	var err error
-	res := make([]*model.SchadenplatzCasualtyInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNSchadenplatzCasualtyInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNSchadenplatzCasualtyInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐSchadenplatzCasualtyInput(ctx context.Context, v any) (*model.SchadenplatzCasualtyInput, error) {
-	res, err := ec.unmarshalInputSchadenplatzCasualtyInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {

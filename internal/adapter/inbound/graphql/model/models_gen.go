@@ -307,22 +307,11 @@ type SchadenplatzCasualtyEntry struct {
 	Eingeschlossene int    `json:"eingeschlossene"`
 }
 
-type SchadenplatzCasualtyInput struct {
-	SchadenplatzID  string `json:"schadenplatzId"`
-	Vermisste       int    `json:"vermisste"`
-	Tote            int    `json:"tote"`
-	Verletzte       int    `json:"verletzte"`
-	Obdachlose      int    `json:"obdachlose"`
-	Eingeschlossene int    `json:"eingeschlossene"`
-}
-
 type TriageMessageInput struct {
 	Triage   TriageStatus   `json:"triage"`
 	Priority PriorityStatus `json:"priority"`
 	// IDs of divisions to assign to this message (replaces current set).
 	DivisionIds []string `json:"divisionIds"`
-	// Casualty deltas to record for each Schadenplatz as part of this triage.
-	SchadenplatzCasualties []*SchadenplatzCasualtyInput `json:"schadenplatzCasualties"`
 	// Resource IDs to link to this message (replaces current set).
 	LinkedResourceIds []string `json:"linkedResourceIds"`
 }

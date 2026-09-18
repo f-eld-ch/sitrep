@@ -77,7 +77,6 @@ func New(id shared.ResourceID) *Resource {
 		Alerted{}, MarkedReady{}, Deployed{}, StoodDown{}, Relieved{},
 		SuccessionLinked{}, ReassignedToSchadenplatz{}, DeploymentLocationUpdated{},
 		HauptaufgabeChanged{}, ContactUpdated{}, PersonnelCountUpdated{},
-		EinsatzDauerRecorded{},
 	)
 
 	return r
@@ -310,17 +309,6 @@ func (r *Resource) UpdatePersonnelCount(count int, actor string, at time.Time) e
 	return nil
 }
 
-// RecordEinsatzDauer records the operational period for this resource.
-func (r *Resource) RecordEinsatzDauer(beginn time.Time, ende *time.Time, actor string, at time.Time) error {
-	if ende != nil && !ende.After(beginn) {
-		return shared.ValidationError{Field: "ende", Message: "must be after beginn"}
-	}
-
-	eventsourcing.TrackChange(r, EinsatzDauerRecorded{Beginn: beginn, Ende: ende}, at, baseMeta(actor))
-
-	return nil
-}
-
 // UnitSizeForCount returns the expected UnitSize for a given headcount.
 // Returns empty string when the count matches no known size.
 func UnitSizeForCount(count int) UnitSize {
@@ -380,7 +368,11 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 	case MarkedReady:
 		r.status = StatusEinsatzbereit
 		r.statusAt = d.At
+
 		r.readyAt = &d.At
+		if r.einsatzBeginn == nil {
+			r.einsatzBeginn = &d.At
+		}
 	case Deployed:
 		var deployLabel *string
 		if d.DeploymentLocation != nil {
@@ -425,6 +417,7 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.status = StatusAbgeloest
 		r.statusAt = d.At
 		r.relievedAt = &d.At
+		r.einsatzEnde = &d.At
 		r.successorID = d.SuccessorID
 	case SuccessionLinked:
 		id := d.PredecessorID
@@ -440,9 +433,6 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.contact = &c
 	case PersonnelCountUpdated:
 		r.personnelCount = d.Count
-	case EinsatzDauerRecorded:
-		r.einsatzBeginn = &d.Beginn
-		r.einsatzEnde = d.Ende
 	default:
 		return fmt.Errorf("resource.Transition: unhandled event type %T", e.Data)
 	}
