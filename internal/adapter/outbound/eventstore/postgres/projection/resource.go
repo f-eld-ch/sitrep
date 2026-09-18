@@ -148,7 +148,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 				deployment_history = deployment_history || jsonb_build_array(jsonb_build_object(
 					'startedAt', $1, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
 					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
-					'deploymentLabel', $2, 'deploymentLat', $3, 'deploymentLng', $4,
+					'deploymentLabel', $2::text, 'deploymentLat', $3::float8, 'deploymentLng', $4::float8,
 					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
 				updated_at=$1 WHERE id=$5`, now, deploymentLabel, deploymentLat, deploymentLng, id)
 
@@ -169,7 +169,7 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		}
 
 		return exec(db, ctx, `
-			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2,
+			UPDATE readmodel.resource SET status='ABGELOEST', status_at=$1, relieved_at=$1, successor_id=$2::uuid,
 				deployment_history = CASE WHEN jsonb_array_length(deployment_history) > 0
 					THEN jsonb_set(deployment_history, ARRAY[(jsonb_array_length(deployment_history)-1)::text, 'endedAt'], to_jsonb($1))
 					ELSE deployment_history END,

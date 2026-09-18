@@ -520,11 +520,25 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
 
   const handleSave = useCallback(
     async (triage: TriageStatus) => {
+      const effectivePriority = triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority;
+      const originalDivisionIds = message.divisions.map((d) => d.division.id).sort();
+      const currentDivisionIds = assignments.map((d) => d.id).sort();
+      const originalResourceIds = [...(messageForTriageResult.status === "ready" ? messageForTriageResult.data.linkedResourceIds : [])].sort();
+      const currentResourceIds = Array.from(selectedResourceIds).sort();
+      const unchanged =
+        triage === message.triageId &&
+        effectivePriority === message.priorityId &&
+        originalDivisionIds.join() === currentDivisionIds.join() &&
+        originalResourceIds.join() === currentResourceIds.join();
+      if (unchanged) {
+        onSaved();
+        return;
+      }
       try {
         await triageMessage({
           incidentId,
           messageId: message.id,
-          priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+          priority: effectivePriority,
           triage,
           divisionIds: assignments.map((d) => d.id),
           divisions: assignments,
@@ -546,6 +560,10 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
       triageMessage,
       incidentId,
       message.id,
+      message.triageId,
+      message.priorityId,
+      message.divisions,
+      messageForTriageResult,
       priority,
       assignments,
       selectedResourceIds,
@@ -562,11 +580,9 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     if (currentStep.key === "personen") {
       try {
         for (const spId of personenSpIds) {
-          await recordCasualties({
-            schadenplatzId: spId,
-            messageId: message.id,
-            deltas: getSpCasualties(spId),
-          });
+          const deltas = getSpCasualties(spId);
+          if (Object.values(deltas).every((v) => v === 0)) continue;
+          await recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas });
         }
       } catch (e) {
         setStepError(isApiError(e) ? e : new ApiError("UNKNOWN"));

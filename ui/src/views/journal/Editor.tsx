@@ -607,10 +607,22 @@ export const MessageEditorForm = React.forwardRef<
   const handleSave = useCallback(async () => {
     if (!canSave(state)) return;
     if (savingRef.current) return;
-    savingRef.current = true;
-    const time = state.time ?? new Date();
     const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
     const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
+    const unchanged =
+      state.content === message.content &&
+      state.sender === message.sender &&
+      state.receiver === message.receiver &&
+      state.media === message.medium &&
+      senderDetail === message.senderDetail &&
+      receiverDetail === message.receiverDetail &&
+      (state.time === undefined || state.time.getTime() === new Date(message.time).getTime());
+    if (unchanged) {
+      onSaved?.();
+      return;
+    }
+    savingRef.current = true;
+    const time = state.time ?? new Date();
     try {
       await updateMessage({
         incidentId,
@@ -628,7 +640,7 @@ export const MessageEditorForm = React.forwardRef<
     } catch {
       savingRef.current = false;
     }
-  }, [state, updateMessage, incidentId, message.id, onSaved]);
+  }, [state, updateMessage, incidentId, message, onSaved]);
 
   const autocompleteDetails = useMemo<AutofillDetail>(
     () => ({ senderReceiverNames: [], senderReceiverDetails: [], channelList: [] }),

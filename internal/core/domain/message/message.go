@@ -6,6 +6,7 @@ package message
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -222,6 +223,12 @@ func (m *Message) Triage(
 
 	if triage == shared.TriageMoreInfo {
 		priority = shared.PriorityNormal
+	}
+
+	if triage == m.triage && priority == m.priority &&
+		slices.Equal(divisionIDs, m.divisionIDs) &&
+		slices.Equal(linkedResourceIDs, m.linkedResourceIDs) {
+		return nil
 	}
 
 	eventsourcing.TrackChange(m, Triaged{
