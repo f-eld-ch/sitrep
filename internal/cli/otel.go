@@ -24,11 +24,17 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
-func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) error, err error) {
+func setupOpenTelemetry(ctx context.Context, disabled bool) (shutdown func(context.Context) error, err error) {
 	noop := func(context.Context) error { return nil }
 
-	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") == "" {
-		slog.InfoContext(ctx, "OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OpenTelemetry setup")
+	if disabled {
+		slog.InfoContext(ctx, "telemetry disabled, skipping OpenTelemetry setup")
+		return noop, nil
+	}
+
+	endpoint := firstNonEmpty(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), OtelEndpoint)
+	if endpoint == "" {
+		slog.InfoContext(ctx, "no OTLP endpoint configured, skipping OpenTelemetry setup")
 		return noop, nil
 	}
 
@@ -47,10 +53,14 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 
 	res, err := resource.New(
 		context.Background(),
+		resource.WithAttributes( // should come first, so it can be overridden by later options
+			semconv.DeploymentEnvironmentNameKey.String(OtelEnvironment),
+		),
 		resource.WithFromEnv(),
 		resource.WithTelemetrySDK(),
 		resource.WithProcess(),
 		resource.WithOS(),
+		resource.WithOSDescription(),
 		resource.WithContainer(),
 		resource.WithHost(),
 		resource.WithAttributes(
@@ -62,10 +72,22 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 		return shutdown, err
 	}
 
+	environment := OtelEnvironment
+	for _, attr := range res.Attributes() {
+		if attr.Key == semconv.DeploymentEnvironmentNameKey {
+			environment = attr.Value.AsString()
+			break
+		}
+	}
+	slog.DebugContext(ctx, "OpenTelemetry configured",
+		slog.String("endpoint", endpoint),
+		slog.String("environment", environment),
+	)
+
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
 
-	tracerProvider, err := newTracerProvider(ctx, res)
+	tracerProvider, err := newTracerProvider(ctx, res, endpoint)
 	if err != nil {
 		return shutdown, err
 	}
@@ -73,7 +95,7 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	shutdownFuncs = append(shutdownFuncs, tracerProvider.Shutdown)
 	otel.SetTracerProvider(tracerProvider)
 
-	meterProvider, err := newMeterProvider(ctx, res)
+	meterProvider, err := newMeterProvider(ctx, res, endpoint)
 	if err != nil {
 		return shutdown, err
 	}
@@ -81,7 +103,7 @@ func setupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
 	otel.SetMeterProvider(meterProvider)
 
-	loggerProvider, err := newLoggerProvider(ctx, res)
+	loggerProvider, err := newLoggerProvider(ctx, res, endpoint)
 	if err != nil {
 		return shutdown, err
 	}
@@ -107,8 +129,8 @@ func newPropagator() propagation.TextMapPropagator {
 	)
 }
 
-func newTracerProvider(ctx context.Context, res *resource.Resource) (*trace.TracerProvider, error) {
-	traceExporter, err := otlptracegrpc.New(ctx)
+func newTracerProvider(ctx context.Context, res *resource.Resource, endpoint string) (*trace.TracerProvider, error) {
+	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithEndpointURL(endpoint))
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +141,8 @@ func newTracerProvider(ctx context.Context, res *resource.Resource) (*trace.Trac
 	), nil
 }
 
-func newMeterProvider(ctx context.Context, res *resource.Resource) (*metric.MeterProvider, error) {
-	metricExporter, err := otlpmetricgrpc.New(ctx)
+func newMeterProvider(ctx context.Context, res *resource.Resource, endpoint string) (*metric.MeterProvider, error) {
+	metricExporter, err := otlpmetricgrpc.New(ctx, otlpmetricgrpc.WithEndpointURL(endpoint))
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +153,8 @@ func newMeterProvider(ctx context.Context, res *resource.Resource) (*metric.Mete
 	), nil
 }
 
-func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.LoggerProvider, error) {
-	logExporter, err := otlploggrpc.New(ctx)
+func newLoggerProvider(ctx context.Context, res *resource.Resource, endpoint string) (*log.LoggerProvider, error) {
+	logExporter, err := otlploggrpc.New(ctx, otlploggrpc.WithEndpointURL(endpoint))
 	if err != nil {
 		return nil, err
 	}
@@ -163,4 +185,13 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource) (*log.Logger
 	slog.SetDefault(logger)
 
 	return loggerProvider, nil
+}
+
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }

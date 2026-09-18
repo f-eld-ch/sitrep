@@ -5,11 +5,13 @@ import "github.com/f-eld-ch/sitrep/internal/cli"
 // Build identity — set at link time via -ldflags (see .ko.yaml).
 // Defaults apply to local `go build` / `go run`.
 var (
-	version = "dev"
-	sha     = "dev"
+	version         = "dev"
+	sha             = "dev"
+	otelEndpoint    = ""
+	otelEnvironment = "self-hosted"
 )
 
 func main() {
-	cli.SetBuildInfo(version, sha)
+	cli.SetBuildInfo(version, sha, otelEndpoint, otelEnvironment)
 	cli.Execute()
 }
