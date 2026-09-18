@@ -73,13 +73,15 @@ func setupOpenTelemetry(ctx context.Context, disabled bool) (shutdown func(conte
 	}
 
 	environment := OtelEnvironment
+
 	for _, attr := range res.Attributes() {
 		if attr.Key == semconv.DeploymentEnvironmentNameKey {
 			environment = attr.Value.AsString()
 			break
 		}
 	}
-	slog.DebugContext(ctx, "OpenTelemetry configured",
+
+	slog.DebugContext(ctx, "opentelemetry configured",
 		slog.String("endpoint", endpoint),
 		slog.String("environment", environment),
 	)
@@ -193,5 +195,6 @@ func firstNonEmpty(vals ...string) string {
 			return v
 		}
 	}
+
 	return ""
 }
