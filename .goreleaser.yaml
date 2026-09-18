@@ -16,7 +16,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X main.version={{ .Version }} -X main.sha={{ .FullCommit }}
+      - -s -w -X main.version={{ .Version }} -X main.sha={{ .FullCommit }} -X main.otelEndpoint=https://telemetry.sitrep.ch -X main.otelEnvironment=self-hosted
 
 archives:
   - formats: tar.gz
