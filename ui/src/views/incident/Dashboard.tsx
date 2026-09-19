@@ -224,14 +224,15 @@ export default function Dashboard() {
   // Tracks a user's explicit selection together with the key message that was
   // active when they made it. If a new key message arrives (keyId changes),
   // the override is invalidated and we fall back to the latest key message.
+  // selectedId === null means the user explicitly deselected.
   const [userOverride, setUserOverride] = useState<{
     keyId: string | undefined;
-    selectedId: string;
+    selectedId: string | null;
   } | null>(null);
 
   const allMessages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
 
-  const latestKeyMessageId = useMemo(() => {
+  const latestKeyMessage = useMemo(() => {
     const messages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
     const keyMessages = buildMessageList(messages, {
       triage: "triaged_only",
@@ -239,16 +240,28 @@ export default function Dashboard() {
       assignment: "all",
       author: "all",
     });
-    return keyMessages[0]?.id;
+    return keyMessages[0];
   }, [messagesResult]);
 
-  const effectiveSelectedId =
-    userOverride !== null && userOverride.keyId === latestKeyMessageId
-      ? userOverride.selectedId
-      : latestKeyMessageId;
+  const latestKeyMessageId = latestKeyMessage?.id;
+
+  // Auto-select only if the latest key message arrived within the last 30 minutes.
+  // Date.now() is evaluated on each render; messagesResult updates keep this fresh.
+  const isLatestStale =
+    latestKeyMessage != null &&
+    Date.now() - new Date(latestKeyMessage.time).getTime() > 30 * 60 * 1000;
+
+  const effectiveSelectedId = (() => {
+    if (userOverride !== null && userOverride.keyId === latestKeyMessageId) {
+      // Honour explicit user selection or explicit deselection (null).
+      return userOverride.selectedId ?? undefined;
+    }
+    // Auto-select: skip if the message is older than 30 minutes.
+    return isLatestStale ? undefined : latestKeyMessageId;
+  })();
 
   const handleSelect = (id: string | undefined) =>
-    setUserOverride(id != null ? { keyId: latestKeyMessageId, selectedId: id } : null);
+    setUserOverride({ keyId: latestKeyMessageId, selectedId: id ?? null });
 
   const title =
     resourcesResult.status === "ready"
