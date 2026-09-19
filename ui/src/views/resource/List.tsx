@@ -255,7 +255,7 @@ function ResourceTableRow({
       <td className={isHistory ? "px-2 py-1.5 pl-24" : "px-2 py-1.5 pl-18"}>
         {!isHistory && (
           <span className="flex items-center gap-2">
-            {resource.deploymentHistory.length > 0 && onToggleHistory && (
+            {resource.deploymentHistory.length > 1 && onToggleHistory && (
               <button
                 type="button"
                 className="shrink-0 text-fg-muted/60"
@@ -545,7 +545,7 @@ function Mitteltabelle({
                                         <tr key={r.id} className="hover:bg-bg-elevated/40">
                                           <td className="px-2 py-1.5 pl-18">
                                             <span className="flex items-center gap-2">
-                                              {r.deploymentHistory.length > 0 && (
+                                              {r.deploymentHistory.length > 1 && (
                                                 <button
                                                   type="button"
                                                   className="shrink-0 text-fg-muted/60"
