@@ -173,6 +173,11 @@
     "PENDING": "pendent",
     "RESET": "zurückgesetzt"
   },
+  "messageStack": {
+    "filterUntriaged": "Nicht triagiert",
+    "filterKeyMessage": "Schlüsselmeldungen",
+    "filterMine": "Meine"
+  },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
   "viewChangelog": "Changelog anzeigen",

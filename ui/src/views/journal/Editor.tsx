@@ -178,6 +178,7 @@ function Editor() {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: new Date(0),
+                author: "",
               },
             });
             savingRef.current = false;
@@ -460,6 +461,7 @@ function InputBox({
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     attachments: state.messageToEdit?.attachments ?? [],
+    author: state.messageToEdit?.author ?? "",
   };
 
   const mediumId = useId();
@@ -592,6 +594,7 @@ export const MessageEditorForm = React.forwardRef<
       createdAt: state.messageToEdit?.createdAt ?? message.createdAt,
       updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
       deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,
+      author: state.messageToEdit?.author ?? message.author,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);

@@ -155,7 +155,7 @@ export const MessageStack = memo(function MessageStack({
   }, [effectiveId]);
 
   return (
-    <div className={clsx("flex w-72 shrink-0 flex-col lg:w-[36rem]", className)}>
+    <div className={clsx("flex flex-col", className)}>
       <div className={clsx("flex justify-center py-1", showScrollUp ? "visible" : "invisible")}>
         <button
           type="button"

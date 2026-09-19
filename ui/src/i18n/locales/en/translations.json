@@ -173,6 +173,11 @@
     "PENDING": "pending",
     "RESET": "reset"
   },
+  "messageStack": {
+    "filterUntriaged": "Untriaged",
+    "filterKeyMessage": "Key messages",
+    "filterMine": "Mine"
+  },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "viewChangelog": "Show changelog",

@@ -67,6 +67,7 @@ function List(props: {
     triage: triageFilter,
     priority: priorityFilter,
     assignment: assignmentFilter,
+    author: "all",
   });
 
   return (

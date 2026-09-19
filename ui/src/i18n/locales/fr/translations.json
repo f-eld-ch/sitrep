@@ -173,6 +173,11 @@
     "PENDING": "en attente",
     "RESET": "réinitialiser"
   },
+  "messageStack": {
+    "filterUntriaged": "Non trié",
+    "filterKeyMessage": "Messages clés",
+    "filterMine": "Les miens"
+  },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "viewChangelog": "Afficher le journal des modifications",

@@ -10,11 +10,11 @@ import {
 import type { UserState } from "types";
 
 // Define the initial state
-const initialState: UserState = { isLoggedin: false, username: "", email: "" };
+const initialState: UserState = { isLoggedin: false, username: "", email: "", sub: "" };
 
 // Define action types
 type UserAction =
-  | { type: "LOGIN"; payload: { username: string; email: string } }
+  | { type: "LOGIN"; payload: { username: string; email: string; sub: string } }
   | { type: "LOGOUT" };
 
 // Define the reducer function
@@ -25,12 +25,14 @@ const userReducer = (state: UserState, action: UserAction): UserState => {
         isLoggedin: true,
         username: action.payload.username,
         email: action.payload.email,
+        sub: action.payload.sub,
       };
     case "LOGOUT":
       return {
         isLoggedin: false,
         username: "",
         email: "",
+        sub: "",
       };
     default:
       return state;
@@ -73,13 +75,15 @@ const UserInfoFetcher = () => {
           isLoggedin: true,
           email: userInfo.email,
           username: userInfo.user || userInfo.preferredUsername,
+          sub: userInfo.sub ?? userInfo.user ?? "",
         };
 
         // Only update state if it has changed
         if (
           newUserState.isLoggedin !== userState.isLoggedin ||
           newUserState.email !== userState.email ||
-          newUserState.username !== userState.username
+          newUserState.username !== userState.username ||
+          newUserState.sub !== userState.sub
         ) {
           dispatch({ type: "LOGIN", payload: newUserState });
         }

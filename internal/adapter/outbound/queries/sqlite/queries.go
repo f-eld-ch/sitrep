@@ -335,7 +335,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
 		FROM readmodel_message
 		WHERE incident_id = ?
 		ORDER BY msg_time DESC, created_at DESC`, incidentID.String())
@@ -353,7 +353,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
 		FROM readmodel_message
 		WHERE id = ?`, id.String())
 	if err != nil {
@@ -400,12 +400,13 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			priority           string
 			divisionIDsStr     string
 			linkedResourcesStr string
+			authorSub          *string
 		)
 
 		if err := rows.Scan(
 			&idStr, &number, &incIDStr, &content, &sender, &senderDetail,
 			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr, &linkedResourcesStr,
+			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr, &linkedResourcesStr, &authorSub,
 		); err != nil {
 			return nil, err
 		}
@@ -440,7 +441,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			linkedResourceIDs = []uuid.UUID{}
 		}
 
-		out = append(out, &outbound.MessageRM{
+		rm := &outbound.MessageRM{
 			ID:                id,
 			Number:            number,
 			IncidentID:        incID,
@@ -457,7 +458,11 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			Priority:          priority,
 			DivisionIDs:       divisionIDs,
 			LinkedResourceIDs: linkedResourceIDs,
-		})
+		}
+		if authorSub != nil {
+			rm.AuthorSub = *authorSub
+		}
+		out = append(out, rm)
 	}
 
 	return out, rows.Err()

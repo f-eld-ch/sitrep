@@ -57,6 +57,7 @@ const userState = {
   isLoggedin: true,
   email: "test@example.com",
   username: "testuser",
+  sub: "",
 };
 
 describe("Navbar Component", () => {
@@ -128,6 +129,7 @@ describe("Navbar Component", () => {
         isLoggedin: false,
         email: "",
         username: "",
+        sub: "",
       };
 
       render(

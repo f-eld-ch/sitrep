@@ -42,6 +42,7 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
         updatedAt
         triage
         priority
+        author
         divisions {
           id
           name
@@ -80,6 +81,7 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
       updatedAt
       triage
       priority
+      author
       divisions {
         id
         name
@@ -155,6 +157,7 @@ export const CREATE_MESSAGE: TypedDocumentNode<
       updatedAt
       triage
       priority
+      author
       divisions {
         id
         name

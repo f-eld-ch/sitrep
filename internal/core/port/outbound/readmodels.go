@@ -57,6 +57,7 @@ type MessageRM struct {
 	Priority          string
 	DivisionIDs       []uuid.UUID
 	LinkedResourceIDs []uuid.UUID
+	AuthorSub         string
 }
 
 type AttachmentRM struct {

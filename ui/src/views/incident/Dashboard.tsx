@@ -5,11 +5,10 @@ import type { Resource, ResourceFormation, ResourceStatus, SchadenplatzWithResou
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { Map as IncidentMap } from "views/map";
-import { MessageStack } from "views/journal/MessageStack";
+import { FilterableMessageStack } from "views/journal/FilterableMessageStack";
 import JournalMessage from "views/journal/Message";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { PriorityStatus } from "types";
 import type { Message } from "types/journal";
 import { useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
@@ -110,15 +109,15 @@ function PriorityMessageStack({
   selectedMessageId: string | undefined;
   onSelect: (id: string | undefined) => void;
 }) {
-  const { t } = useTranslation();
-
   return (
-    <section className="flex min-h-0 flex-col">
-      <h2 className="px-3 py-2 text-sm font-semibold text-fg">{t("dashboard.priorityMessages")}</h2>
-      <MessageStack
+    <section className="flex min-h-0 flex-col overflow-hidden">
+<FilterableMessageStack
         messages={messages}
         effectiveId={selectedMessageId}
         onSelect={onSelect}
+        initialFilters={{ highPriority: true }}
+        enabledFilters={{ untriaged: false, mine: false }}
+        baseFilter={{ triage: "triaged_only" }}
         className="min-h-0 w-full flex-1 shrink lg:w-full"
       />
     </section>
@@ -228,24 +227,21 @@ export default function Dashboard() {
 
   if (!incidentId) return <Spinner />;
 
-  const highPriorityMessages =
-    messagesResult.status === "ready"
-      ? messagesResult.data.messages.filter((message) => message.priorityId === PriorityStatus.High)
-      : [];
-  const selectedMessage = highPriorityMessages.find((message) => message.id === selectedMessageId);
+  const allMessages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
+  const selectedMessage = allMessages.find((message) => message.id === selectedMessageId);
 
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 px-3 pt-[3.5rem] pb-3">
-        <PageTitle className="shrink-0">{title}</PageTitle>
-        <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[22rem_minmax(0,1fr)_18rem]">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 pt-[3.5rem] pr-3 pb-3">
+        <PageTitle className="shrink-0 pl-3">{title}</PageTitle>
+        <div className="grid min-h-0 flex-1 gap-1 xl:grid-cols-[28rem_minmax(0,1fr)_18rem]">
           {messagesResult.status === "loading" ? (
             <Spinner />
           ) : messagesResult.status === "error" ? (
             <Notification variant="danger">{t(`errors.${messagesResult.error.code}`)}</Notification>
           ) : (
             <PriorityMessageStack
-              messages={highPriorityMessages}
+              messages={allMessages}
               selectedMessageId={selectedMessageId}
               onSelect={setSelectedMessageId}
             />

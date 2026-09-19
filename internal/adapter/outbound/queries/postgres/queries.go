@@ -297,7 +297,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
 		FROM readmodel.message
 		WHERE incident_id = $1
 		ORDER BY msg_time DESC, created_at DESC`, incidentID)
@@ -315,7 +315,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
 		FROM readmodel.message
 		WHERE id = $1`, id)
 	if err != nil {
@@ -438,16 +438,17 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 			priority          string
 			divisionIDs       []uuid.UUID
 			linkedResourceIDs []uuid.UUID
+			authorSub         *string
 		)
 		if err := rows.Scan(
 			&id, &number, &incidentID, &content, &sender, &senderDetail,
 			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDs, &linkedResourceIDs,
+			&createdAt, &updatedAt, &triage, &priority, &divisionIDs, &linkedResourceIDs, &authorSub,
 		); err != nil {
 			return nil, err
 		}
 
-		out = append(out, &outbound.MessageRM{
+		rm := &outbound.MessageRM{
 			ID:                id,
 			Number:            number,
 			IncidentID:        incidentID,
@@ -464,7 +465,11 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 			Priority:          priority,
 			DivisionIDs:       divisionIDs,
 			LinkedResourceIDs: linkedResourceIDs,
-		})
+		}
+		if authorSub != nil {
+			rm.AuthorSub = *authorSub
+		}
+		out = append(out, rm)
 	}
 
 	return out, rows.Err()

@@ -59,7 +59,7 @@ import { MessageEditorForm } from "./Editor";
 import { default as JournalMessage } from "./Message";
 import MessageSheet from "./MessageSheet";
 import { buildMessageList } from "./listUtils";
-import { MessageStack } from "./MessageStack";
+import { FilterableMessageStack } from "./FilterableMessageStack";
 import { TriageCanvas } from "./TriageCanvas";
 import { IncidentContext } from "utils";
 import { useBabsIcons } from "components/babs/useBabsIcons";
@@ -953,7 +953,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   const result = useIncidentMessages(incidentId ?? "");
 
   const resolvedFilters = useMemo<MessageFilters>(
-    () => ({ triage: "all", priority: "all", assignment: "all", ...filters }),
+    () => ({ triage: "all", priority: "all", assignment: "all", author: "all", ...filters }),
     // filters is a prop object; spread means we depend on its identity
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filters],
@@ -1068,7 +1068,13 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   return (
     <div className="mt-[2.75rem] flex grow overflow-hidden bg-bg">
-      <MessageStack messages={messages} effectiveId={effectiveId} onSelect={handleSelect} />
+      <FilterableMessageStack
+        messages={messages}
+        effectiveId={effectiveId}
+        onSelect={handleSelect}
+        initialFilters={{}}
+        className="w-72 shrink-0 lg:w-[36rem]"
+      />
       <TriageCanvas incidentClosed={incidentIsClosed}>
         {selectedMessage && !caughtUp && (
           <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">

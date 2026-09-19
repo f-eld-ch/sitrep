@@ -210,7 +210,7 @@ func toAttachmentRM(row *projection.AttachmentRow) *outbound.AttachmentRM {
 }
 
 func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
-	return &outbound.MessageRM{
+	rm := &outbound.MessageRM{
 		ID:                row.ID,
 		Number:            row.Number,
 		IncidentID:        row.IncidentID,
@@ -228,6 +228,10 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 		DivisionIDs:       row.DivisionIDs,
 		LinkedResourceIDs: row.LinkedResourceIDs,
 	}
+	if row.AuthorSub != nil {
+		rm.AuthorSub = *row.AuthorSub
+	}
+	return rm
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

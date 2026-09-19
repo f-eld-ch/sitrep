@@ -96,6 +96,11 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		linkedIDs[i] = id.String()
 	}
 
+	var author *string
+	if s.AuthorSub != "" {
+		author = &s.AuthorSub
+	}
+
 	msg := &model.Message{
 		ID:                s.ID.String(),
 		Number:            s.Number,
@@ -113,6 +118,7 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		Divisions:         []*model.Division{},
 		Attachments:       []*model.Attachment{},
 		LinkedResourceIds: linkedIDs,
+		Author:            author,
 	}
 
 	return msg
@@ -183,6 +189,11 @@ func divisionRMToModel(r *outbound.DivisionRM) *model.Division {
 // ──────────────────────────────────────────────────────────────────────────────
 
 func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.DivisionRM) *model.Message {
+	var author *string
+	if r.AuthorSub != "" {
+		author = &r.AuthorSub
+	}
+
 	msg := &model.Message{
 		ID:             r.ID.String(),
 		Number:         r.Number,
@@ -197,6 +208,7 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 		UpdatedAt:      r.UpdatedAt,
 		Triage:         mapTriageStatus(r.Triage),
 		Priority:       mapPriorityStatus(r.Priority),
+		Author:         author,
 	}
 	for _, divID := range r.DivisionIDs {
 		if d, ok := divsByID[divID]; ok {

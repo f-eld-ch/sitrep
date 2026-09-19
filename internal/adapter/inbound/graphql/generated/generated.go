@@ -136,6 +136,7 @@ type ComplexityRoot struct {
 
 	Message struct {
 		Attachments            func(childComplexity int) int
+		Author                 func(childComplexity int) int
 		Content                func(childComplexity int) int
 		CreatedAt              func(childComplexity int) int
 		Divisions              func(childComplexity int) int
@@ -770,6 +771,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Message.Attachments(childComplexity), true
+	case "Message.author":
+		if e.ComplexityRoot.Message.Author == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Message.Author(childComplexity), true
 	case "Message.content":
 		if e.ComplexityRoot.Message.Content == nil {
 			break
@@ -2161,6 +2168,8 @@ type Message {
   schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
   """Resource IDs linked to this message during triage."""
   linkedResourceIds: [ID!]!
+  """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
+  author: String
 }
 
 type Incident {
@@ -2710,6 +2719,8 @@ func (ec *executionContext) childFields_Message(ctx context.Context, field graph
 		return ec.fieldContext_Message_schadenplatzCasualties(ctx, field)
 	case "linkedResourceIds":
 		return ec.fieldContext_Message_linkedResourceIds(ctx, field)
+	case "author":
+		return ec.fieldContext_Message_author(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 }
@@ -5945,6 +5956,29 @@ func (ec *executionContext) _Message_linkedResourceIds(ctx context.Context, fiel
 }
 func (ec *executionContext) fieldContext_Message_linkedResourceIds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Message_author(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Message_author(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Author, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Message_author(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Mutation_createIncident(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12574,6 +12608,11 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 		case "linkedResourceIds":
 			out.Values[i] = ec._Message_linkedResourceIds(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "author":
+			out.Values[i] = ec._Message_author(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:

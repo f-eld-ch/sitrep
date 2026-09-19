@@ -271,6 +271,8 @@ type Message {
   schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
   """Resource IDs linked to this message during triage."""
   linkedResourceIds: [ID!]!
+  """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
+  author: String
 }
 
 type Incident {

@@ -127,6 +127,7 @@ type MessageState struct {
 	DivisionIDs       []shared.DivisionID
 	LinkedResourceIDs []shared.ResourceID
 	Attachments       []AttachmentState
+	AuthorSub         string
 }
 
 // FeatureState is returned from ModifyFeature so the resolver can build the

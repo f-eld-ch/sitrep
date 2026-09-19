@@ -210,6 +210,8 @@ type Message struct {
 	SchadenplatzCasualties []*SchadenplatzCasualtyEntry `json:"schadenplatzCasualties"`
 	// Resource IDs linked to this message during triage.
 	LinkedResourceIds []string `json:"linkedResourceIds"`
+	// OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced.
+	Author *string `json:"author,omitempty"`
 }
 
 type Mutation struct {
