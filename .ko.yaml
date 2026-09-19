@@ -22,3 +22,9 @@ builds:
       # Taken from ko's own git context rather than the workflow, so a local `ko build`
       # stamps correctly too and there is one less thing to plumb.
       - -X main.sha={{.Git.FullCommit}}
+      # OTLP endpoint for the telemetry proxy. Baked in so no runtime env var is required.
+      # Remove or leave empty to disable telemetry by default.
+      - -X main.otelEndpoint=https://telemetry.sitrep.ch
+      # deployment.environment.name attribute sent with every signal.
+      # Override at runtime via OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production.
+      - -X main.otelEnvironment=self-hosted

@@ -76,6 +76,20 @@ storage:
       # Env: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
       dir: "/var/lib/sitrep/attachments"
 
+# ── Telemetry ────────────────────────────────────────────────────────────────
+
+# Disable OpenTelemetry telemetry export. The OTLP endpoint is baked in at
+# compile time (https://telemetry.sitrep.ch). Set this to true to opt out,
+# or set OTEL_SDK_DISABLED=true as an environment variable.
+#telemetry-disabled: false
+
+# Override the deployment environment name sent with every signal.
+# The compile-time default is "self-hosted". Set via environment variable:
+# OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
+#
+# To disable telemetry entirely at runtime without a config change:
+# OTEL_EXPORTER_OTLP_ENDPOINT="" (overrides the baked-in endpoint)
+
 # ── Development ──────────────────────────────────────────────────────────────
 
 # Exposes the GraphQL playground and schema introspection. Keep disabled in

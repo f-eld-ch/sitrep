@@ -18,14 +18,18 @@ import (
 
 // Version and Sha are set by main.go via SetBuildInfo before Execute() is called.
 var (
-	Version = "dev"
-	Sha     = "dev"
+	Version         = "dev"
+	Sha             = "dev"
+	OtelEndpoint    = ""
+	OtelEnvironment = "self-hosted"
 )
 
 // SetBuildInfo injects the link-time build identity before Execute() is called.
-func SetBuildInfo(version, sha string) {
+func SetBuildInfo(version, sha, otelEndpoint, otelEnvironment string) {
 	Version = version
 	Sha = sha
+	OtelEndpoint = otelEndpoint
+	OtelEnvironment = otelEnvironment
 }
 
 var serveConfigOptions = []configOption{
@@ -66,6 +70,7 @@ var serveConfigOptions = []configOption{
 	stringOption("acme-email", "", "Contact address registered with the ACME CA for expiry notices"),
 	stringOption("acme-cache-dir", "/var/lib/sitrep/acme", "Directory persisting ACME account keys and certificates"),
 	stringOption("acme-directory-url", "", "ACME directory URL; empty uses Let's Encrypt production"),
+	boolOption("telemetry-disabled", false, "Disable OpenTelemetry telemetry export", "OTEL_SDK_DISABLED"),
 
 	// Attachment storage
 	boolOptionF(
@@ -153,7 +158,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	ctx := cmd.Context()
 	slog.InfoContext(ctx, "starting sitrep", slog.String("version", Version), slog.String("sha", Sha))
 
-	shutdown, err := setupOpenTelemetry(ctx)
+	shutdown, err := setupOpenTelemetry(ctx, v.GetBool("telemetry-disabled"))
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to configure OpenTelemetry", slog.String("error", err.Error()))
 		return err
