@@ -41,6 +41,18 @@ func (r *Root) Version() int           { return r.version }
 func (r *Root) PendingEvents() []Event { return r.pending }
 func (r *Root) ClearPending()          { r.pending = nil }
 
+// CommitPending marks the aggregate's pending events as durably appended.
+// Event stores call this after a successful append so additional commands on
+// the same in-memory aggregate continue at the next stream version.
+func (r *Root) CommitPending() {
+	if len(r.pending) == 0 {
+		return
+	}
+
+	r.version = r.pending[len(r.pending)-1].Version
+	r.pending = nil
+}
+
 // SetID is called once by the aggregate constructor.
 func (r *Root) SetID(id uuid.UUID) { r.id = id }
 
@@ -90,7 +102,7 @@ func TypeFor(a Aggregate, eventType string) (reflect.Type, bool) {
 
 // TrackChange records a new event and immediately applies it to update in-memory
 // state, so subsequent commands on the same aggregate see the current state.
-// The store calls ClearPending + updates version after a successful Append.
+// The store calls CommitPending after a successful Append.
 func TrackChange(a Aggregate, data any, occurredAt time.Time, metadata map[string]any) Event {
 	root := a.Root()
 	e := Event{

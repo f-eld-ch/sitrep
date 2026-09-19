@@ -19,6 +19,20 @@ type AccessGroup struct {
 	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
 }
 
+type AlertResourceInput struct {
+	IncidentID string `json:"incidentId"`
+	// Defaults to the incident's default Schadenplatz when omitted.
+	SchadenplatzID  *string                    `json:"schadenplatzId,omitempty"`
+	Formation       ResourceFormation          `json:"formation"`
+	Name            string                     `json:"name"`
+	Size            ResourceUnitSize           `json:"size"`
+	PersonnelCount  int                        `json:"personnelCount"`
+	Hauptaufgabe    string                     `json:"hauptaufgabe"`
+	Contact         *ResourceContactInput      `json:"contact,omitempty"`
+	HomeLocation    *ResourceHomeLocationInput `json:"homeLocation,omitempty"`
+	SourceMessageID *string                    `json:"sourceMessageId,omitempty"`
+}
+
 // A file attached to a message.
 type Attachment struct {
 	ID          string `json:"id"`
@@ -31,6 +45,23 @@ type Attachment struct {
 	UploadedBy string `json:"uploadedBy"`
 	// Server-rendered download URL — the UI must never construct this itself.
 	URL string `json:"url"`
+}
+
+// Accumulated casualty counts for a Schadenplatz.
+type Casualties struct {
+	Vermisste       int `json:"vermisste"`
+	Tote            int `json:"tote"`
+	Verletzte       int `json:"verletzte"`
+	Obdachlose      int `json:"obdachlose"`
+	Eingeschlossene int `json:"eingeschlossene"`
+}
+
+type CasualtyDeltasInput struct {
+	Vermisste       int `json:"vermisste"`
+	Tote            int `json:"tote"`
+	Verletzte       int `json:"verletzte"`
+	Obdachlose      int `json:"obdachlose"`
+	Eingeschlossene int `json:"eingeschlossene"`
 }
 
 type CreateIncidentInput struct {
@@ -56,6 +87,19 @@ type CreateMessageInput struct {
 	Medium         Medium `json:"medium"`
 	// Defaults to the server's current time when omitted.
 	Time *time.Time `json:"time,omitempty"`
+}
+
+// Precise operational deployment point within a Schadenplatz.
+type DeploymentLocation struct {
+	Lat   *float64 `json:"lat,omitempty"`
+	Lng   *float64 `json:"lng,omitempty"`
+	Label string   `json:"label"`
+}
+
+type DeploymentLocationInput struct {
+	Lat   *float64 `json:"lat,omitempty"`
+	Lng   *float64 `json:"lng,omitempty"`
+	Label string   `json:"label"`
 }
 
 type Division struct {
@@ -108,6 +152,10 @@ type Incident struct {
 	CanManageAccess bool `json:"canManageAccess"`
 	// Access mode of this incident.
 	AccessMode IncidentAccessMode `json:"accessMode"`
+	// All non-merged Schadenplätze for this incident.
+	Schadenplaetze []*Schadenplatz `json:"schadenplaetze"`
+	// All resources for this incident, including resources owned by direct child incidents.
+	Resources []*Resource `json:"resources"`
 }
 
 type IncidentAccessGrant struct {
@@ -158,6 +206,12 @@ type Message struct {
 	Divisions []*Division `json:"divisions"`
 	// Files attached to this message, oldest first.
 	Attachments []*Attachment `json:"attachments"`
+	// Casualty deltas recorded for each Schadenplatz as part of this message's triage.
+	SchadenplatzCasualties []*SchadenplatzCasualtyEntry `json:"schadenplatzCasualties"`
+	// Resource IDs linked to this message during triage.
+	LinkedResourceIds []string `json:"linkedResourceIds"`
+	// OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced.
+	Author *string `json:"author,omitempty"`
 }
 
 type Mutation struct {
@@ -166,11 +220,102 @@ type Mutation struct {
 type Query struct {
 }
 
+// An operational unit assigned to a Schadenplatz.
+type Resource struct {
+	ID                 string                      `json:"id"`
+	IncidentID         string                      `json:"incidentId"`
+	SchadenplatzID     string                      `json:"schadenplatzId"`
+	Formation          ResourceFormation           `json:"formation"`
+	Name               string                      `json:"name"`
+	Size               ResourceUnitSize            `json:"size"`
+	PersonnelCount     int                         `json:"personnelCount"`
+	Hauptaufgabe       string                      `json:"hauptaufgabe"`
+	Contact            *ResourceContact            `json:"contact,omitempty"`
+	HomeLocation       *ResourceHomeLocation       `json:"homeLocation,omitempty"`
+	DeploymentLocation *DeploymentLocation         `json:"deploymentLocation,omitempty"`
+	Status             ResourceStatus              `json:"status"`
+	StatusAt           time.Time                   `json:"statusAt"`
+	AlertedAt          time.Time                   `json:"alertedAt"`
+	ReadyAt            *time.Time                  `json:"readyAt,omitempty"`
+	DeployedAt         *time.Time                  `json:"deployedAt,omitempty"`
+	StoodDownAt        *time.Time                  `json:"stoodDownAt,omitempty"`
+	RelievedAt         *time.Time                  `json:"relievedAt,omitempty"`
+	EinsatzBeginn      *time.Time                  `json:"einsatzBeginn,omitempty"`
+	EinsatzEnde        *time.Time                  `json:"einsatzEnde,omitempty"`
+	PredecessorID      *string                     `json:"predecessorId,omitempty"`
+	SuccessorID        *string                     `json:"successorId,omitempty"`
+	SourceMessageID    *string                     `json:"sourceMessageId,omitempty"`
+	DeploymentHistory  []*ResourceDeploymentPeriod `json:"deploymentHistory"`
+}
+
+// Contact details for a resource.
+type ResourceContact struct {
+	Medium ContactMedium `json:"medium"`
+	Detail string        `json:"detail"`
+}
+
+type ResourceContactInput struct {
+	Medium ContactMedium `json:"medium"`
+	Detail string        `json:"detail"`
+}
+
+type ResourceDeploymentPeriod struct {
+	StartedAt        time.Time         `json:"startedAt"`
+	EndedAt          *time.Time        `json:"endedAt,omitempty"`
+	SchadenplatzID   string            `json:"schadenplatzId"`
+	Formation        ResourceFormation `json:"formation"`
+	Name             string            `json:"name"`
+	HomeLocationName *string           `json:"homeLocationName,omitempty"`
+	DeploymentLabel  *string           `json:"deploymentLabel,omitempty"`
+	Hauptaufgabe     string            `json:"hauptaufgabe"`
+	PersonnelCount   int               `json:"personnelCount"`
+}
+
+// Named home location with optional coordinates.
+type ResourceHomeLocation struct {
+	Name string   `json:"name"`
+	Lat  *float64 `json:"lat,omitempty"`
+	Lng  *float64 `json:"lng,omitempty"`
+}
+
+type ResourceHomeLocationInput struct {
+	Name string   `json:"name"`
+	Lat  *float64 `json:"lat,omitempty"`
+	Lng  *float64 `json:"lng,omitempty"`
+}
+
+// A geographic damage site owned by an incident.
+type Schadenplatz struct {
+	ID         string `json:"id"`
+	IncidentID string `json:"incidentId"`
+	Name       string `json:"name"`
+	IsDefault  bool   `json:"isDefault"`
+	// Raw GeoJSON for this site's boundary / marker, if set.
+	GeoJSON    *string     `json:"geoJson,omitempty"`
+	Casualties *Casualties `json:"casualties"`
+	IsMerged   bool        `json:"isMerged"`
+	// ID of the default Schadenplatz this was merged into, if merged.
+	MergedInto *string `json:"mergedInto,omitempty"`
+	// Active (non-relieved) resources assigned to this Schadenplatz.
+	Resources []*Resource `json:"resources"`
+}
+
+type SchadenplatzCasualtyEntry struct {
+	SchadenplatzID  string `json:"schadenplatzId"`
+	Vermisste       int    `json:"vermisste"`
+	Tote            int    `json:"tote"`
+	Verletzte       int    `json:"verletzte"`
+	Obdachlose      int    `json:"obdachlose"`
+	Eingeschlossene int    `json:"eingeschlossene"`
+}
+
 type TriageMessageInput struct {
 	Triage   TriageStatus   `json:"triage"`
 	Priority PriorityStatus `json:"priority"`
 	// IDs of divisions to assign to this message (replaces current set).
 	DivisionIds []string `json:"divisionIds"`
+	// Resource IDs to link to this message (replaces current set).
+	LinkedResourceIds []string `json:"linkedResourceIds"`
 }
 
 type UpdateIncidentInput struct {
@@ -247,6 +392,64 @@ func (e *AccessPrincipalKind) UnmarshalJSON(b []byte) error {
 }
 
 func (e AccessPrincipalKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Communication medium for reaching a resource.
+type ContactMedium string
+
+const (
+	ContactMediumRadio ContactMedium = "RADIO"
+	ContactMediumPhone ContactMedium = "PHONE"
+	ContactMediumOther ContactMedium = "OTHER"
+)
+
+var AllContactMedium = []ContactMedium{
+	ContactMediumRadio,
+	ContactMediumPhone,
+	ContactMediumOther,
+}
+
+func (e ContactMedium) IsValid() bool {
+	switch e {
+	case ContactMediumRadio, ContactMediumPhone, ContactMediumOther:
+		return true
+	}
+	return false
+}
+
+func (e ContactMedium) String() string {
+	return string(e)
+}
+
+func (e *ContactMedium) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContactMedium(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContactMedium", str)
+	}
+	return nil
+}
+
+func (e ContactMedium) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ContactMedium) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ContactMedium) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil
@@ -530,6 +733,194 @@ func (e *PriorityStatus) UnmarshalJSON(b []byte) error {
 }
 
 func (e PriorityStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// The organisational formation type of a resource unit.
+type ResourceFormation string
+
+const (
+	ResourceFormationFw     ResourceFormation = "FW"
+	ResourceFormationPol    ResourceFormation = "POL"
+	ResourceFormationArmee  ResourceFormation = "ARMEE"
+	ResourceFormationZs     ResourceFormation = "ZS"
+	ResourceFormationTechnb ResourceFormation = "TECHNB"
+	ResourceFormationSan    ResourceFormation = "SAN"
+	ResourceFormationOther  ResourceFormation = "OTHER"
+)
+
+var AllResourceFormation = []ResourceFormation{
+	ResourceFormationFw,
+	ResourceFormationPol,
+	ResourceFormationArmee,
+	ResourceFormationZs,
+	ResourceFormationTechnb,
+	ResourceFormationSan,
+	ResourceFormationOther,
+}
+
+func (e ResourceFormation) IsValid() bool {
+	switch e {
+	case ResourceFormationFw, ResourceFormationPol, ResourceFormationArmee, ResourceFormationZs, ResourceFormationTechnb, ResourceFormationSan, ResourceFormationOther:
+		return true
+	}
+	return false
+}
+
+func (e ResourceFormation) String() string {
+	return string(e)
+}
+
+func (e *ResourceFormation) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ResourceFormation(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ResourceFormation", str)
+	}
+	return nil
+}
+
+func (e ResourceFormation) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ResourceFormation) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ResourceFormation) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Operational state of a resource.
+type ResourceStatus string
+
+const (
+	ResourceStatusAufgeboten    ResourceStatus = "AUFGEBOTEN"
+	ResourceStatusEinsatzbereit ResourceStatus = "EINSATZBEREIT"
+	ResourceStatusEingesetzt    ResourceStatus = "EINGESETZT"
+	ResourceStatusAbgeloest     ResourceStatus = "ABGELOEST"
+)
+
+var AllResourceStatus = []ResourceStatus{
+	ResourceStatusAufgeboten,
+	ResourceStatusEinsatzbereit,
+	ResourceStatusEingesetzt,
+	ResourceStatusAbgeloest,
+}
+
+func (e ResourceStatus) IsValid() bool {
+	switch e {
+	case ResourceStatusAufgeboten, ResourceStatusEinsatzbereit, ResourceStatusEingesetzt, ResourceStatusAbgeloest:
+		return true
+	}
+	return false
+}
+
+func (e ResourceStatus) String() string {
+	return string(e)
+}
+
+func (e *ResourceStatus) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ResourceStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ResourceStatus", str)
+	}
+	return nil
+}
+
+func (e ResourceStatus) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ResourceStatus) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ResourceStatus) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Standard Swiss civil-protection unit sizes.
+type ResourceUnitSize string
+
+const (
+	ResourceUnitSizeTrupp     ResourceUnitSize = "TRUPP"
+	ResourceUnitSizeGruppe    ResourceUnitSize = "GRUPPE"
+	ResourceUnitSizeZug       ResourceUnitSize = "ZUG"
+	ResourceUnitSizeKompanie  ResourceUnitSize = "KOMPANIE"
+	ResourceUnitSizeBataillon ResourceUnitSize = "BATAILLON"
+)
+
+var AllResourceUnitSize = []ResourceUnitSize{
+	ResourceUnitSizeTrupp,
+	ResourceUnitSizeGruppe,
+	ResourceUnitSizeZug,
+	ResourceUnitSizeKompanie,
+	ResourceUnitSizeBataillon,
+}
+
+func (e ResourceUnitSize) IsValid() bool {
+	switch e {
+	case ResourceUnitSizeTrupp, ResourceUnitSizeGruppe, ResourceUnitSizeZug, ResourceUnitSizeKompanie, ResourceUnitSizeBataillon:
+		return true
+	}
+	return false
+}
+
+func (e ResourceUnitSize) String() string {
+	return string(e)
+}
+
+func (e *ResourceUnitSize) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ResourceUnitSize(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ResourceUnitSize", str)
+	}
+	return nil
+}
+
+func (e ResourceUnitSize) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ResourceUnitSize) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ResourceUnitSize) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

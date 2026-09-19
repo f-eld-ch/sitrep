@@ -1,9 +1,4 @@
-import {
-  faArrowsToEye,
-  faEdit,
-  faPaperclip,
-  faPrint,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowsToEye, faEdit, faPaperclip, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -365,7 +360,11 @@ const MessageContainer = ({
                 </button>
               )}
               {(!setEditorMessage || message.triageId === TriageStatus.Triaged) && (
-                <PrintSheetAction message={message} divisions={divisions} className={actionLinkClass} />
+                <PrintSheetAction
+                  message={message}
+                  divisions={divisions}
+                  className={actionLinkClass}
+                />
               )}
               {setTriageMessage && message && (
                 <button
@@ -378,10 +377,8 @@ const MessageContainer = ({
                   <span>{t("triageMessage")}</span>
                 </button>
               )}
-
             </div>
           )}
-
         </div>
       )}
     </div>

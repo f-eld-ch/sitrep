@@ -27,7 +27,6 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-
 // Mock dayjs
 vi.mock("dayjs", () => {
   const actual = vi.importActual("dayjs");
@@ -62,6 +61,7 @@ describe("MessageContainer", () => {
     deletedAt: new Date(0),
     medium: Medium.Email,
     attachments: [],
+    author: "",
   };
   const divisions: Division[] = [];
 
@@ -317,6 +317,7 @@ describe("MessageContainer", () => {
           medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
           number: fc.nat(),
           attachments: fc.constant([] as Attachment[]),
+          author: fc.constant(""),
         }),
         (msg) => {
           const { unmount } = render(

@@ -1,6 +1,7 @@
 export type {
   CreateMessageArgs,
   RemoveAttachmentArgs,
+  SchadenplatzCasualtyInput,
   TriageMessageArgs,
   UpdateMessageArgs,
   UploadAttachmentArgs,

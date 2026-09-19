@@ -27,6 +27,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     triageId: TriageStatus.Pending,
     priorityId: PriorityStatus.Normal,
     attachments: [],
+    author: "",
     ...overrides,
   };
 }

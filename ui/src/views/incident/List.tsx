@@ -239,7 +239,7 @@ export function IncidentCard(props: {
             data-testid="enter-button"
             className={footerItem}
             onClick={() => {
-              navigate(`../${props.incident.id}/journal/edit`);
+              navigate(`../${props.incident.id}/dashboard`);
               dispatch({ type: "SET_INCIDENT", payload: props.incident, forId: props.incident.id });
             }}
           >

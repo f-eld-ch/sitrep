@@ -393,3 +393,47 @@ func TestIncident_Reopen(t *testing.T) {
 		assert.True(t, inc.IsOpen())
 	})
 }
+
+func TestIncident_LinkDefaultSchadenplatz(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+	spID := shared.SchadenplatzID(uuid.New())
+
+	t.Run("links default Schadenplatz on open incident", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+
+		err := inc.LinkDefaultSchadenplatz(spID, actor, at)
+		require.NoError(t, err)
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "DefaultSchadenplatzLinked", pending[0].EventType)
+
+		require.NotNil(t, inc.DefaultSchadenplatzID())
+		assert.Equal(t, spID, *inc.DefaultSchadenplatzID())
+	})
+
+	t.Run("linking a second time is rejected", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+
+		require.NoError(t, inc.LinkDefaultSchadenplatz(spID, actor, at))
+		inc.Root().ClearPending()
+
+		err := inc.LinkDefaultSchadenplatz(spID, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("DefaultSchadenplatzID is nil before linking", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+		assert.Nil(t, inc.DefaultSchadenplatzID())
+	})
+
+	t.Run("DefaultSchadenplatzID survives replay", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+		require.NoError(t, inc.LinkDefaultSchadenplatz(spID, actor, at))
+
+		events := inc.Root().PendingEvents()
+		inc2 := replay(t, id, events)
+		require.NotNil(t, inc2.DefaultSchadenplatzID())
+		assert.Equal(t, spID, *inc2.DefaultSchadenplatzID())
+	})
+}

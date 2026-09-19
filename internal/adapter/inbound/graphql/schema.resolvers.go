@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -17,7 +18,10 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
@@ -168,6 +172,46 @@ func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) 
 	return incidentModeFromDomain(mode), nil
 }
 
+// Schadenplaetze is the resolver for the schadenplaetze field.
+func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListSchadenplaetze(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Schadenplatz, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, schadenplatzRMToModel(row))
+	}
+
+	return out, nil
+}
+
+// Resources is the resolver for the resources field.
+func (r *incidentResolver) Resources(ctx context.Context, obj *model.Incident) ([]*model.Resource, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListResourcesForIncident(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Resource, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRMToModel(row))
+	}
+
+	return out, nil
+}
+
 // Attachments is the resolver for the attachments field.
 func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error) {
 	msgID, err := parseUUID(obj.ID)
@@ -183,6 +227,36 @@ func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) (
 	out := make([]*model.Attachment, len(rows))
 	for i, row := range rows {
 		out[i] = attachmentRMToModel(row)
+	}
+
+	return out, nil
+}
+
+// SchadenplatzCasualties is the resolver for the schadenplatzCasualties field.
+func (r *messageResolver) SchadenplatzCasualties(
+	ctx context.Context,
+	obj *model.Message,
+) ([]*model.SchadenplatzCasualtyEntry, error) {
+	id, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListMessageCasualties(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.SchadenplatzCasualtyEntry, len(rows))
+	for i, row := range rows {
+		out[i] = &model.SchadenplatzCasualtyEntry{
+			SchadenplatzID:  row.SchadenplatzID.String(),
+			Vermisste:       row.Vermisste,
+			Tote:            row.Tote,
+			Verletzte:       row.Verletzte,
+			Obdachlose:      row.Obdachlose,
+			Eingeschlossene: row.Eingeschlossene,
+		}
 	}
 
 	return out, nil
@@ -810,12 +884,22 @@ func (r *mutationResolver) TriageMessage(
 		divisionIDs[i] = shared.DivisionID(u)
 	}
 
+	linkedResourceIDs := make([]shared.ResourceID, len(input.LinkedResourceIds))
+	for i, rawID := range input.LinkedResourceIds {
+		u, err := parseUUID(rawID)
+		if err != nil {
+			return nil, err
+		}
+		linkedResourceIDs[i] = shared.ResourceID(u)
+	}
+
 	state, err := r.Messages.TriageMessage(
 		ctx,
 		shared.MessageID(msgID),
 		triage,
 		priority,
 		divisionIDs,
+		linkedResourceIDs,
 		actor,
 	)
 	if err != nil {
@@ -887,6 +971,450 @@ func (r *mutationResolver) RemoveAttachment(
 	}
 
 	return attachmentID, nil
+}
+
+// CreateSchadenplatz is the resolver for the createSchadenplatz field.
+func (r *mutationResolver) CreateSchadenplatz(
+	ctx context.Context,
+	incidentID string,
+	name string,
+) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.CreateSchadenplatz(ctx, shared.IncidentID(incID), name, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// RenameSchadenplatz is the resolver for the renameSchadenplatz field.
+func (r *mutationResolver) RenameSchadenplatz(
+	ctx context.Context,
+	id string,
+	name string,
+) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.RenameSchadenplatz(ctx, shared.SchadenplatzID(spID), name, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// SetSchadenplatzGeometry is the resolver for the setSchadenplatzGeometry field.
+func (r *mutationResolver) SetSchadenplatzGeometry(
+	ctx context.Context,
+	id string,
+	geoJSON *string,
+) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var rawGeoJSON []byte
+	if geoJSON != nil {
+		rawGeoJSON = []byte(*geoJSON)
+	}
+
+	state, err := r.Schadenplaetze.SetSchadenplatzGeometry(ctx, shared.SchadenplatzID(spID), rawGeoJSON, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// RecordCasualties is the resolver for the recordCasualties field.
+func (r *mutationResolver) RecordCasualties(
+	ctx context.Context,
+	id string,
+	sourceMessageID string,
+	input model.CasualtyDeltasInput,
+) (*model.Schadenplatz, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	msgID, err := parseUUID(sourceMessageID)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err := r.Queries.GetMessage(ctx, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Schadenplaetze.RecordCasualties(ctx,
+		shared.SchadenplatzID(spID),
+		shared.MessageID(msgID),
+		schadenplatz.CasualtyDeltas{
+			Vermisste:       input.Vermisste,
+			Tote:            input.Tote,
+			Verletzte:       input.Verletzte,
+			Obdachlose:      input.Obdachlose,
+			Eingeschlossene: input.Eingeschlossene,
+		},
+		msg.Time,
+		actor,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzStateToModel(state), nil
+}
+
+// MergeSchadenplatz is the resolver for the mergeSchadenplatz field.
+func (r *mutationResolver) MergeSchadenplatz(ctx context.Context, id string) (string, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	spID, err := parseUUID(id)
+	if err != nil {
+		return "", err
+	}
+
+	if err := r.Schadenplaetze.MergeSchadenplatz(ctx, shared.SchadenplatzID(spID), actor); err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+// AlertResource is the resolver for the alertResource field.
+func (r *mutationResolver) AlertResource(ctx context.Context, input model.AlertResourceInput) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	incID, err := parseUUID(input.IncidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	svcInput := inbound.AlertResourceInput{
+		IncidentID:     shared.IncidentID(incID),
+		Formation:      modelFormationToDomain(input.Formation),
+		Name:           input.Name,
+		Size:           modelUnitSizeToDomain(input.Size),
+		PersonnelCount: input.PersonnelCount,
+		Hauptaufgabe:   input.Hauptaufgabe,
+	}
+
+	if input.SchadenplatzID != nil {
+		spID, err := parseUUID(*input.SchadenplatzID)
+		if err != nil {
+			return nil, err
+		}
+
+		id := shared.SchadenplatzID(spID)
+		svcInput.SchadenplatzID = &id
+	}
+
+	if input.Contact != nil {
+		svcInput.Contact = &resource.Contact{
+			Medium: modelContactMediumToDomain(input.Contact.Medium),
+			Detail: input.Contact.Detail,
+		}
+	}
+
+	if input.HomeLocation != nil {
+		loc := &resource.Location{Name: input.HomeLocation.Name}
+		if input.HomeLocation.Lat != nil && input.HomeLocation.Lng != nil {
+			coords := [2]float64{*input.HomeLocation.Lat, *input.HomeLocation.Lng}
+			loc.Coordinates = &coords
+		}
+
+		svcInput.HomeLocation = loc
+	}
+
+	if input.SourceMessageID != nil {
+		msgID, err := parseUUID(*input.SourceMessageID)
+		if err != nil {
+			return nil, err
+		}
+
+		id := shared.MessageID(msgID)
+		svcInput.SourceMessageID = &id
+
+		msg, err := r.Queries.GetMessage(ctx, msgID)
+		if err != nil {
+			return nil, err
+		}
+		svcInput.OccurredAt = &msg.Time
+	}
+
+	state, err := r.Resources.AlertResource(ctx, svcInput, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// MarkResourceReady is the resolver for the markResourceReady field.
+func (r *mutationResolver) MarkResourceReady(ctx context.Context, id string, at *time.Time) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.MarkResourceReady(ctx, shared.ResourceID(resID), at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// DeployResource is the resolver for the deployResource field.
+func (r *mutationResolver) DeployResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.DeployResource(ctx, shared.ResourceID(resID), at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// StandDownResource is the resolver for the standDownResource field.
+func (r *mutationResolver) StandDownResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.StandDownResource(ctx, shared.ResourceID(resID), at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// RelieveResource is the resolver for the relieveResource field.
+func (r *mutationResolver) RelieveResource(
+	ctx context.Context,
+	id string,
+	successorID *string,
+	at *time.Time,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var succID *shared.ResourceID
+	if successorID != nil {
+		sid, err := parseUUID(*successorID)
+		if err != nil {
+			return nil, err
+		}
+
+		id := shared.ResourceID(sid)
+		succID = &id
+	}
+
+	state, err := r.Resources.RelieveResource(ctx, shared.ResourceID(resID), succID, at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// ReassignResource is the resolver for the reassignResource field.
+func (r *mutationResolver) ReassignResource(
+	ctx context.Context,
+	id string,
+	schadenplatzID string,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	spID, err := parseUUID(schadenplatzID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.ReassignResource(ctx, shared.ResourceID(resID), shared.SchadenplatzID(spID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// UpdateDeploymentLocation is the resolver for the updateDeploymentLocation field.
+func (r *mutationResolver) UpdateDeploymentLocation(
+	ctx context.Context,
+	id string,
+	location *model.DeploymentLocationInput,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var loc *resource.DeploymentLocation
+	if location != nil {
+		loc = &resource.DeploymentLocation{
+			Lat:   location.Lat,
+			Lng:   location.Lng,
+			Label: location.Label,
+		}
+	}
+
+	state, err := r.Resources.UpdateDeploymentLocation(ctx, shared.ResourceID(resID), loc, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// ChangeHauptaufgabe is the resolver for the changeHauptaufgabe field.
+func (r *mutationResolver) ChangeHauptaufgabe(
+	ctx context.Context,
+	id string,
+	hauptaufgabe string,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.ChangeHauptaufgabe(ctx, shared.ResourceID(resID), hauptaufgabe, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// UpdateContact is the resolver for the updateContact field.
+func (r *mutationResolver) UpdateContact(
+	ctx context.Context,
+	id string,
+	contact model.ResourceContactInput,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.UpdateContact(ctx, shared.ResourceID(resID), resource.Contact{
+		Medium: modelContactMediumToDomain(contact.Medium),
+		Detail: contact.Detail,
+	}, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
+// UpdatePersonnelCount is the resolver for the updatePersonnelCount field.
+func (r *mutationResolver) UpdatePersonnelCount(ctx context.Context, id string, count int) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.UpdatePersonnelCount(ctx, shared.ResourceID(resID), count, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
 }
 
 // CreateLayer is the resolver for the createLayer field.
@@ -1289,6 +1817,56 @@ func (r *queryResolver) MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleG
 	return out, nil
 }
 
+// Schadenplatz is the resolver for the schadenplatz field.
+func (r *queryResolver) Schadenplatz(ctx context.Context, id string) (*model.Schadenplatz, error) {
+	spID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.Queries.GetSchadenplatz(ctx, spID)
+	if err != nil {
+		return nil, err
+	}
+
+	return schadenplatzRMToModel(row), nil
+}
+
+// Resource is the resolver for the resource field.
+func (r *queryResolver) Resource(ctx context.Context, id string) (*model.Resource, error) {
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.Queries.GetResource(ctx, resID)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceRMToModel(row), nil
+}
+
+// Resources is the resolver for the resources field.
+func (r *schadenplatzResolver) Resources(ctx context.Context, obj *model.Schadenplatz) ([]*model.Resource, error) {
+	spID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListResourcesForSchadenplatz(ctx, spID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.Resource, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRMToModel(row))
+	}
+
+	return out, nil
+}
+
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 
@@ -1301,9 +1879,13 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Schadenplatz returns generated.SchadenplatzResolver implementation.
+func (r *Resolver) Schadenplatz() generated.SchadenplatzResolver { return &schadenplatzResolver{r} }
+
 type (
-	incidentResolver struct{ *Resolver }
-	messageResolver  struct{ *Resolver }
-	mutationResolver struct{ *Resolver }
-	queryResolver    struct{ *Resolver }
+	incidentResolver     struct{ *Resolver }
+	messageResolver      struct{ *Resolver }
+	mutationResolver     struct{ *Resolver }
+	queryResolver        struct{ *Resolver }
+	schadenplatzResolver struct{ *Resolver }
 )

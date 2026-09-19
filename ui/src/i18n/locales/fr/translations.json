@@ -50,6 +50,16 @@
   "keyMessage": "Renseignements-clés",
   "stepPersonen": "Personnes",
   "stepMittel": "Moyens",
+  "stepSchadenplatz": "Lieu sinistre",
+  "schadenplatz": {
+    "select": "Choisir le lieu",
+    "selectHint": "Ce message concerne-t-il un lieu sinistre spécifique ?",
+    "defaultHint": "Aucun lieu sinistre spécifique",
+    "new": "Créer nouveau",
+    "namePlaceholder": "Nom du lieu sinistre",
+    "create": "Créer",
+    "defaultLabel": "Par défaut"
+  },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
@@ -149,6 +159,7 @@
   "save": "enregistrer",
   "saveMoreInfo": "Besoin de plus d'informations",
   "saveTriage": "Terminer le triage",
+  "triageAdjust": "Ajuster le triage",
   "triageMessage": "Trier",
   "short": "abréviation",
   "showClosed": "Afficher fermé",
@@ -161,6 +172,11 @@
     "MOREINFO": "besoin de plus d'informations",
     "PENDING": "en attente",
     "RESET": "réinitialiser"
+  },
+  "messageStack": {
+    "filterUntriaged": "Non trié",
+    "filterKeyMessage": "Messages clés",
+    "filterMine": "Les miens"
   },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
@@ -203,8 +219,26 @@
       "description": "Chef du suivi de la situation"
     }
   },
+  "casualties": {
+    "childIncidents": "Incidents enfants",
+    "vermisste": "Disparus",
+    "tote": "Décédés",
+    "verletzte": "Blessés",
+    "obdachlose": "Sans-abri",
+    "eingeschlossene": "Bloqués",
+    "summary": "Aperçu des personnes",
+    "overview": "Victimes",
+    "thisIncident": "Cet incident",
+    "none": "Aucune victime enregistrée",
+    "byLocation": "Par lieu"
+  },
+  "dashboard": {
+    "title": "Tableau de bord de l'incident",
+    "priorityMessages": "Messages prioritaires",
+    "noPriorityMessages": "Aucun message prioritaire"
+  },
   "errorPage": {
-"title": "Erreur inattendue",
+    "title": "Erreur inattendue",
     "notFoundTitle": "Objectif introuvable",
     "notFoundDesc": "La page demandée est introuvable. Veuillez vérifier l'adresse et réessayer.",
     "priority": "Priorité",
@@ -281,7 +315,8 @@
   "adminGroups": {
     "title": "Groupes",
     "newGroup": "Nouveau groupe",
-    "name": "Nom",
+    "name": "Nom du moyen",
+    "namePlaceholder": "Nom du moyen",
     "description": "Description",
     "create": "Créer",
     "cancel": "Annuler",
@@ -336,5 +371,79 @@
     "accessControl": "Contrôle d'accès",
     "groups": "Groupes",
     "globalRoles": "Rôles globaux"
+  },
+  "resource": {
+    "childIncident": "Incident enfant",
+    "formation": {
+      "FW": "Sapeurs-pompiers",
+      "POL": "Police",
+      "ARMEE": "Armée",
+      "ZS": "Protection civile",
+      "TECHNB": "Services techniques",
+      "SAN": "Services sanitaires",
+      "OTHER": "Autre"
+    },
+    "size": {
+      "TRUPP": "Section",
+      "GRUPPE": "Groupe",
+      "ZUG": "Peloton",
+      "KOMPANIE": "Compagnie",
+      "BATAILLON": "Bataillon"
+    },
+    "status": {
+      "AUFGEBOTEN": "Alerté",
+      "EINSATZBEREIT": "Prêt",
+      "EINGESETZT": "Engagé",
+      "ABGELOEST": "Relevé"
+    },
+    "actions": {
+      "markReady": "Marquer prêt",
+      "deploy": "Engager",
+      "standDown": "Intervention terminée",
+      "relieve": "Relever",
+      "dismiss": "Libérer",
+      "alert": "Alerter"
+    },
+    "fields": {
+      "name": "Désignation",
+      "formation": "Formation",
+      "size": "Taille de l'unité",
+      "personnelCount": "Personnel",
+      "successor": "Remplacé par",
+      "selectSuccessor": "Sélectionner une formation de remplacement",
+      "relievedThrough": "Remplacé par",
+      "successorMarker": "Remplacement",
+      "noSuccessorAvailable": "Aucune autre formation disponible",
+      "hauptaufgabe": "Tâche principale",
+      "contact": "Contact",
+      "homeLocation": "Formation / lieu",
+      "homeLocationPlaceholder": "p. ex. Altdorf",
+      "deploymentLocation": "Lieu d'engagement",
+      "einsatzBeginn": "Début d'engagement",
+      "einsatzEnde": "Fin d'engagement",
+      "status": "Statut",
+      "reachability": "Coordonnées"
+    },
+    "noResources": "Aucun moyen enregistré",
+    "search": "Rechercher des moyens…",
+    "noResults": "Aucun moyen trouvé",
+    "addResource": "Alerter un moyen",
+    "count_one": "{{count}} moyen",
+    "count_other": "{{count}} moyens",
+    "selectFormation": "Formation",
+    "selectSize": "Taille d'unité",
+    "newResource": "Alerter un nouveau moyen",
+    "alerting": "En cours…",
+    "mitteltabelle": "Tableau des moyens",
+    "nr": "No.",
+    "alertedAt": "Alerté",
+    "readyAt": "Prêt",
+    "deployedAt": "Engagé",
+    "relievedAt": "Terminé / Relévé",
+    "validation": {
+      "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
+      "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",
+      "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà."
+    }
   }
 }

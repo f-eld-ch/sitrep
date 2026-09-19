@@ -3,6 +3,7 @@ export interface UserState {
   isLoggedin: boolean;
   username: string;
   email: string;
+  sub: string;
 }
 
 export interface IncidentContext {

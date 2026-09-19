@@ -1,10 +1,14 @@
 import { Medium, PriorityStatus, TriageStatus, type Attachment, type Message } from "types";
 import type { Division } from "types";
 import { toDate, toEnum } from "../common/mapper";
-import type { GetIncidentMessagesQuery } from "gql/next";
+import type { GetIncidentMessagesQuery, GetMessageForTriageQuery } from "gql/next";
 
 type WireMessage = NonNullable<GetIncidentMessagesQuery["incident"]>["messages"][0];
+type WireMessageForTriage = NonNullable<GetMessageForTriageQuery["message"]>;
 type WireAttachment = WireMessage["attachments"][0];
+
+// Shared minimal shape accepted by toMessage
+type AnyWireMessage = WireMessage | WireMessageForTriage;
 
 const ALL_MEDIA = Object.values(Medium) as string[];
 const ALL_TRIAGE = Object.values(TriageStatus) as string[];
@@ -30,7 +34,7 @@ export function toDivision(w: { id: string; name: string; description: string })
   };
 }
 
-export function toMessage(w: WireMessage): Message {
+export function toMessage(w: AnyWireMessage): Message {
   return {
     id: w.id,
     number: w.number,
@@ -50,5 +54,6 @@ export function toMessage(w: WireMessage): Message {
     triageId: toEnum(ALL_TRIAGE, w.triage, TriageStatus.Pending) as TriageStatus,
     priorityId: toEnum(ALL_PRIORITY, w.priority, PriorityStatus.Normal) as PriorityStatus,
     attachments: (w.attachments ?? []).map(toAttachment),
+    author: w.author ?? "",
   };
 }

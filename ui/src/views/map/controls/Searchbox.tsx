@@ -69,11 +69,7 @@ function SearchControl() {
     )
       .then((response) => response.json())
       .then((data) => {
-        const searchResult: SearchResult = {
-          bbox: data.bbox,
-          features: data.features,
-        };
-        setSearchResults(searchResult.features);
+        setSearchResults(Array.isArray(data.features) ? data.features : []);
       })
       .catch((error) => {
         console.error("Error:", error);

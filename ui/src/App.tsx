@@ -14,6 +14,7 @@ import { useDarkMode } from "utils/useDarkMode";
 import { AdminLayout, GlobalRoles, GroupDetail, Groups } from "./views/admin";
 import {
   Editor as IncidentEditor,
+  Dashboard as IncidentDashboard,
   List as IncidentList,
   New as IncidentNew,
   AccessPage as IncidentAccessPage,
@@ -29,6 +30,7 @@ import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures"
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
+import { List as CasualtiesList } from "views/casualties";
 import { Provider as FeatureFlagProvider } from "./FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
@@ -81,7 +83,17 @@ const router = createBrowserRouter([
             path: ":incidentId",
             element: <IncidentRoute />,
             children: [
-              { index: true, element: <Navigate to="journal/edit" replace /> },
+              { index: true, element: <Navigate to="dashboard" replace /> },
+              {
+                path: "dashboard",
+                element: (
+                  <LayoutMarginLess>
+                    <Suspense fallback={<Spinner />}>
+                      <IncidentDashboard />
+                    </Suspense>
+                  </LayoutMarginLess>
+                ),
+              },
               {
                 path: "edit",
                 element: (
@@ -104,6 +116,14 @@ const router = createBrowserRouter([
                 element: (
                   <Layout>
                     <ResourcesList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "casualties",
+                element: (
+                  <Layout>
+                    <CasualtiesList />
                   </Layout>
                 ),
               },

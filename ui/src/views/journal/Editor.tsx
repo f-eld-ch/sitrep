@@ -178,6 +178,7 @@ function Editor() {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: new Date(0),
+                author: "",
               },
             });
             savingRef.current = false;
@@ -205,7 +206,6 @@ function Editor() {
     (message: Message | undefined) => dispatch({ type: "set_triage_message", message }),
     [],
   );
-
 
   const contextValue: EditorContextValue = {
     state,
@@ -461,6 +461,7 @@ function InputBox({
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     attachments: state.messageToEdit?.attachments ?? [],
+    author: state.messageToEdit?.author ?? "",
   };
 
   const mediumId = useId();
@@ -593,6 +594,7 @@ export const MessageEditorForm = React.forwardRef<
       createdAt: state.messageToEdit?.createdAt ?? message.createdAt,
       updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
       deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,
+      author: state.messageToEdit?.author ?? message.author,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
@@ -608,10 +610,22 @@ export const MessageEditorForm = React.forwardRef<
   const handleSave = useCallback(async () => {
     if (!canSave(state)) return;
     if (savingRef.current) return;
-    savingRef.current = true;
-    const time = state.time ?? new Date();
     const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
     const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
+    const unchanged =
+      state.content === message.content &&
+      state.sender === message.sender &&
+      state.receiver === message.receiver &&
+      state.media === message.medium &&
+      senderDetail === message.senderDetail &&
+      receiverDetail === message.receiverDetail &&
+      (state.time === undefined || state.time.getTime() === new Date(message.time).getTime());
+    if (unchanged) {
+      onSaved?.();
+      return;
+    }
+    savingRef.current = true;
+    const time = state.time ?? new Date();
     try {
       await updateMessage({
         incidentId,
@@ -629,7 +643,7 @@ export const MessageEditorForm = React.forwardRef<
     } catch {
       savingRef.current = false;
     }
-  }, [state, updateMessage, incidentId, message.id, onSaved]);
+  }, [state, updateMessage, incidentId, message, onSaved]);
 
   const autocompleteDetails = useMemo<AutofillDetail>(
     () => ({ senderReceiverNames: [], senderReceiverDetails: [], channelList: [] }),

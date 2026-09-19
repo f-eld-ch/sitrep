@@ -25,11 +25,13 @@ var _ outbound.Queries = (*Queries)(nil)
 // projection handlers. It must be constructed with the same handler instances
 // that the Projector is writing to.
 type Queries struct {
-	incidents *projection.IncidentHandler
-	divisions *projection.IncidentDivisionHandler
-	messages  *projection.MessageHandler
-	layers    *projection.LayerFeaturesHandler
-	access    outbound.IncidentAccessChecker
+	incidents    *projection.IncidentHandler
+	divisions    *projection.IncidentDivisionHandler
+	messages     *projection.MessageHandler
+	layers       *projection.LayerFeaturesHandler
+	schadenplatz *projection.SchadenplatzHandler
+	resources    *projection.ResourceHandler
+	access       outbound.IncidentAccessChecker
 }
 
 func NewQueries(
@@ -37,6 +39,8 @@ func NewQueries(
 	divisions *projection.IncidentDivisionHandler,
 	messages *projection.MessageHandler,
 	layers *projection.LayerFeaturesHandler,
+	schadenplatz *projection.SchadenplatzHandler,
+	resourceHandler *projection.ResourceHandler,
 	accessCheckers ...outbound.IncidentAccessChecker,
 ) *Queries {
 	var accessChecker outbound.IncidentAccessChecker
@@ -45,11 +49,13 @@ func NewQueries(
 	}
 
 	return &Queries{
-		incidents: incidents,
-		divisions: divisions,
-		messages:  messages,
-		layers:    layers,
-		access:    accessChecker,
+		incidents:    incidents,
+		divisions:    divisions,
+		messages:     messages,
+		layers:       layers,
+		schadenplatz: schadenplatz,
+		resources:    resourceHandler,
+		access:       accessChecker,
 	}
 }
 
@@ -204,23 +210,29 @@ func toAttachmentRM(row *projection.AttachmentRow) *outbound.AttachmentRM {
 }
 
 func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
-	return &outbound.MessageRM{
-		ID:             row.ID,
-		Number:         row.Number,
-		IncidentID:     row.IncidentID,
-		Content:        row.Content,
-		Sender:         row.Sender,
-		SenderDetail:   row.SenderDetail,
-		Receiver:       row.Receiver,
-		ReceiverDetail: row.ReceiverDetail,
-		Medium:         row.Medium,
-		Time:           row.MsgTime,
-		CreatedAt:      row.CreatedAt,
-		UpdatedAt:      row.UpdatedAt,
-		Triage:         row.Triage,
-		Priority:       row.Priority,
-		DivisionIDs:    row.DivisionIDs,
+	rm := &outbound.MessageRM{
+		ID:                row.ID,
+		Number:            row.Number,
+		IncidentID:        row.IncidentID,
+		Content:           row.Content,
+		Sender:            row.Sender,
+		SenderDetail:      row.SenderDetail,
+		Receiver:          row.Receiver,
+		ReceiverDetail:    row.ReceiverDetail,
+		Medium:            row.Medium,
+		Time:              row.MsgTime,
+		CreatedAt:         row.CreatedAt,
+		UpdatedAt:         row.UpdatedAt,
+		Triage:            row.Triage,
+		Priority:          row.Priority,
+		DivisionIDs:       row.DivisionIDs,
+		LinkedResourceIDs: row.LinkedResourceIDs,
 	}
+	if row.AuthorSub != nil {
+		rm.AuthorSub = *row.AuthorSub
+	}
+
+	return rm
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -350,4 +362,180 @@ func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *u
 	})
 
 	return out
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz
+// ──────────────────────────────────────────────────────────────────────────────
+
+func (q *Queries) GetSchadenplatz(_ context.Context, id uuid.UUID) (*outbound.SchadenplatzRM, error) {
+	row := q.schadenplatz.Get(id)
+	if row == nil {
+		return nil, shared.ErrNotFound
+	}
+
+	return spRowToRM(row), nil
+}
+
+func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([]*outbound.SchadenplatzRM, error) {
+	rows := q.schadenplatz.ForIncident(incidentID)
+
+	out := make([]*outbound.SchadenplatzRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, spRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListMessageCasualties(_ context.Context, messageID uuid.UUID) ([]*outbound.MessageCasualtyRM, error) {
+	rows := q.schadenplatz.GetMessageCasualties(messageID)
+
+	out := make([]*outbound.MessageCasualtyRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, &outbound.MessageCasualtyRM{
+			MessageID:       row.MessageID,
+			SchadenplatzID:  row.SchadenplatzID,
+			Vermisste:       row.Vermisste,
+			Tote:            row.Tote,
+			Verletzte:       row.Verletzte,
+			Obdachlose:      row.Obdachlose,
+			Eingeschlossene: row.Eingeschlossene,
+		})
+	}
+
+	return out, nil
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource
+// ──────────────────────────────────────────────────────────────────────────────
+
+func (q *Queries) GetResource(_ context.Context, id uuid.UUID) (*outbound.ResourceRM, error) {
+	row := q.resources.Get(id)
+	if row == nil {
+		return nil, shared.ErrNotFound
+	}
+
+	return resourceRowToRM(row), nil
+}
+
+func (q *Queries) ListResourcesForSchadenplatz(
+	_ context.Context,
+	schadenplatzID uuid.UUID,
+) ([]*outbound.ResourceRM, error) {
+	rows := q.resources.ForSchadenplatz(schadenplatzID)
+
+	out := make([]*outbound.ResourceRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*outbound.ResourceRM, error) {
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
+	rows := q.resources.ForIncident(incidentID)
+	for _, incidentRow := range q.incidents.All() {
+		if incidentRow.IsDeleted || incidentRow.ParentID == nil || *incidentRow.ParentID != incidentID {
+			continue
+		}
+
+		if q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
+			rows = append(rows, q.resources.ForIncident(incidentRow.ID)...)
+		}
+	}
+
+	out := make([]*outbound.ResourceRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, resourceRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func resourceRowToRM(row *projection.ResourceRow) *outbound.ResourceRM {
+	rm := &outbound.ResourceRM{
+		ID:               row.ID,
+		IncidentID:       row.IncidentID,
+		SchadenplatzID:   row.SchadenplatzID,
+		Formation:        row.Formation,
+		Name:             row.Name,
+		Size:             row.Size,
+		PersonnelCount:   row.PersonnelCount,
+		Hauptaufgabe:     row.Hauptaufgabe,
+		ContactMedium:    row.ContactMedium,
+		ContactDetail:    row.ContactDetail,
+		HomeLocationName: row.HomeLocationName,
+		HomeLocationLat:  row.HomeLocationLat,
+		HomeLocationLng:  row.HomeLocationLng,
+		Status:           row.Status,
+		StatusAt:         row.StatusAt,
+		AlertedAt:        row.AlertedAt,
+		ReadyAt:          row.ReadyAt,
+		DeployedAt:       row.DeployedAt,
+		StoodDownAt:      row.StoodDownAt,
+		RelievedAt:       row.RelievedAt,
+		EinsatzBeginn:    row.EinsatzBeginn,
+		EinsatzEnde:      row.EinsatzEnde,
+		PredecessorID:    row.PredecessorID,
+		SuccessorID:      row.SuccessorID,
+		SourceMessageID:  row.SourceMessageID,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}
+
+	if row.DeploymentLat != nil && row.DeploymentLng != nil {
+		label := ""
+		if row.DeploymentLabel != nil {
+			label = *row.DeploymentLabel
+		}
+
+		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
+			Lat:   row.DeploymentLat,
+			Lng:   row.DeploymentLng,
+			Label: label,
+		}
+	}
+
+	for _, p := range row.DeploymentHistory {
+		rm.DeploymentHistory = append(rm.DeploymentHistory, outbound.DeploymentPeriodRM{
+			StartedAt:        p.StartedAt,
+			EndedAt:          p.EndedAt,
+			SchadenplatzID:   p.SchadenplatzID,
+			Formation:        p.Formation,
+			Name:             p.Name,
+			HomeLocationName: p.HomeLocationName,
+			DeploymentLabel:  p.DeploymentLabel,
+			Hauptaufgabe:     p.Hauptaufgabe,
+			PersonnelCount:   p.PersonnelCount,
+		})
+	}
+
+	return rm
+}
+
+func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
+	return &outbound.SchadenplatzRM{
+		ID:         row.ID,
+		IncidentID: row.IncidentID,
+		Name:       row.Name,
+		IsDefault:  row.IsDefault,
+		GeoJSON:    row.GeoJSON,
+		Casualties: outbound.CasualtiesRM{
+			Vermisste:       row.Vermisste,
+			Tote:            row.Tote,
+			Verletzte:       row.Verletzte,
+			Obdachlose:      row.Obdachlose,
+			Eingeschlossene: row.Eingeschlossene,
+		},
+		IsMerged:   row.IsMerged,
+		MergedInto: row.MergedInto,
+		CreatedAt:  row.CreatedAt,
+		UpdatedAt:  row.UpdatedAt,
+	}
 }

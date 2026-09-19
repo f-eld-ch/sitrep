@@ -20,11 +20,12 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     triageId: TriageStatus.Pending,
     priorityId: PriorityStatus.Normal,
     attachments: [],
+    author: "",
     ...overrides,
   };
 }
 
-const ALL_FILTERS = { triage: "all", priority: "all", assignment: "all" };
+const ALL_FILTERS = { triage: "all", priority: "all", assignment: "all", author: "all" };
 
 describe("stableOrderByCreatedAt", () => {
   it("orders ascending by createdAt", () => {

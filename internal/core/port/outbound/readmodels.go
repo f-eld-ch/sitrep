@@ -41,21 +41,23 @@ type IncidentRM struct {
 }
 
 type MessageRM struct {
-	ID             uuid.UUID
-	Number         int
-	IncidentID     uuid.UUID
-	Content        string
-	Sender         string
-	SenderDetail   string
-	Receiver       string
-	ReceiverDetail string
-	Medium         string
-	Time           time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	Triage         string
-	Priority       string
-	DivisionIDs    []uuid.UUID
+	ID                uuid.UUID
+	Number            int
+	IncidentID        uuid.UUID
+	Content           string
+	Sender            string
+	SenderDetail      string
+	Receiver          string
+	ReceiverDetail    string
+	Medium            string
+	Time              time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Triage            string
+	Priority          string
+	DivisionIDs       []uuid.UUID
+	LinkedResourceIDs []uuid.UUID
+	AuthorSub         string
 }
 
 type AttachmentRM struct {
@@ -88,9 +90,8 @@ type LayerRM struct {
 // Queries port
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Queries is the driven port for read-model access. Implementations query
-// projection tables and never touch the event store or aggregates.
-type Queries interface {
+// IncidentQueries is the driven port for incident and message read-model access.
+type IncidentQueries interface {
 	// ListIncidents returns all non-deleted incidents, newest first.
 	ListIncidents(ctx context.Context) ([]*IncidentRM, error)
 
@@ -126,4 +127,133 @@ type Queries interface {
 	// GetAttachment returns one attachment by ID.
 	// Returns ErrNotFound when the attachment does not exist.
 	GetAttachment(ctx context.Context, id uuid.UUID) (*AttachmentRM, error)
+}
+
+// SchadenplatzQueries is the driven port for Schadenplatz read-model access.
+type SchadenplatzQueries interface {
+	// GetSchadenplatz returns one Schadenplatz by ID.
+	// Returns ErrNotFound when it does not exist.
+	GetSchadenplatz(ctx context.Context, id uuid.UUID) (*SchadenplatzRM, error)
+
+	// ListSchadenplaetze returns all non-merged Schadenplatz for an incident.
+	ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
+
+	// ListMessageCasualties returns the casualty deltas recorded for a message across all Schadenplätze.
+	ListMessageCasualties(ctx context.Context, messageID uuid.UUID) ([]*MessageCasualtyRM, error)
+}
+
+// Queries is the driven port for read-model access. Implementations query
+// projection tables and never touch the event store or aggregates.
+// Sub-interfaces can be used independently where only a subset is needed.
+type Queries interface {
+	IncidentQueries
+	SchadenplatzQueries
+	ResourceQueries
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource read-model types
+// ──────────────────────────────────────────────────────────────────────────────
+
+// DeploymentLocationRM holds a precise operational point within a Schadenplatz.
+type DeploymentLocationRM struct {
+	Lat   *float64
+	Lng   *float64
+	Label string
+}
+
+type DeploymentPeriodRM struct {
+	StartedAt        time.Time
+	EndedAt          *time.Time
+	SchadenplatzID   uuid.UUID
+	Formation        string
+	Name             string
+	HomeLocationName *string
+	DeploymentLabel  *string
+	Hauptaufgabe     string
+	PersonnelCount   int
+}
+
+// ResourceRM is the read-model row for one Resource.
+type ResourceRM struct {
+	ID                 uuid.UUID
+	IncidentID         uuid.UUID
+	SchadenplatzID     uuid.UUID
+	Formation          string
+	Name               string
+	Size               string
+	PersonnelCount     int
+	Hauptaufgabe       string
+	ContactMedium      *string
+	ContactDetail      *string
+	HomeLocationName   *string
+	HomeLocationLat    *float64
+	HomeLocationLng    *float64
+	DeploymentLocation *DeploymentLocationRM
+	Status             string
+	StatusAt           time.Time
+	AlertedAt          time.Time
+	ReadyAt            *time.Time
+	DeployedAt         *time.Time
+	StoodDownAt        *time.Time
+	RelievedAt         *time.Time
+	EinsatzBeginn      *time.Time
+	EinsatzEnde        *time.Time
+	PredecessorID      *uuid.UUID
+	SuccessorID        *uuid.UUID
+	SourceMessageID    *uuid.UUID
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	DeploymentHistory  []DeploymentPeriodRM
+}
+
+// ResourceQueries is the driven port for Resource read-model access.
+type ResourceQueries interface {
+	// GetResource returns one Resource by ID.
+	// Returns ErrNotFound when it does not exist.
+	GetResource(ctx context.Context, id uuid.UUID) (*ResourceRM, error)
+
+	// ListResourcesForSchadenplatz returns all non-relieved resources for a Schadenplatz.
+	ListResourcesForSchadenplatz(ctx context.Context, schadenplatzID uuid.UUID) ([]*ResourceRM, error)
+
+	// ListResourcesForIncident returns all resources for an incident and its direct children (including relieved).
+	ListResourcesForIncident(ctx context.Context, incidentID uuid.UUID) ([]*ResourceRM, error)
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz read-model types
+// ──────────────────────────────────────────────────────────────────────────────
+
+// CasualtiesRM carries the accumulated casualty totals.
+type CasualtiesRM struct {
+	Vermisste       int
+	Tote            int
+	Verletzte       int
+	Obdachlose      int
+	Eingeschlossene int
+}
+
+// MessageCasualtyRM carries the per-message casualty deltas for one (message, Schadenplatz) pair.
+type MessageCasualtyRM struct {
+	MessageID       uuid.UUID
+	SchadenplatzID  uuid.UUID
+	Vermisste       int
+	Tote            int
+	Verletzte       int
+	Obdachlose      int
+	Eingeschlossene int
+}
+
+// SchadenplatzRM is the read-model row for one Schadenplatz.
+type SchadenplatzRM struct {
+	ID         uuid.UUID
+	IncidentID uuid.UUID
+	Name       string
+	IsDefault  bool
+	GeoJSON    []byte
+	Casualties CasualtiesRM
+	IsMerged   bool
+	MergedInto *uuid.UUID
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }

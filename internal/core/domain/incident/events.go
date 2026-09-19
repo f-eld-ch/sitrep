@@ -76,6 +76,12 @@ type Deleted struct {
 	Reason shared.DeleteReason `json:"reason"`
 }
 
+// DefaultSchadenplatzLinked fires when the default Schadenplatz is created for
+// this incident. Stored on the Incident stream so LoadDefault is O(1).
+type DefaultSchadenplatzLinked struct {
+	SchadenplatzID shared.SchadenplatzID `json:"schadenplatzId"`
+}
+
 // Imported is the one-shot event written by the goose import migration.
 // After version 1, all further events on the stream are ordinary domain events.
 type Imported struct {

@@ -47,6 +47,8 @@ type stack struct {
 	LayerSvc              inbound.LayerService
 	FeatureSvc            inbound.FeatureService
 	AccessSvc             inbound.AccessService
+	SchadenplatzSvc       inbound.SchadenplatzService
+	ResourceSvc           inbound.ResourceService
 	Queries               outbound.Queries
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
@@ -199,6 +201,8 @@ func buildPostgresStack(
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	schadenplaetze := eventstore.NewSchadenplatzRepository(store)
+	resources := eventstore.NewResourceRepository(store)
 	accessChecker := pgstore.NewIncidentAccessChecker(pool)
 	globalChecker := pgstore.NewGlobalAccessChecker(pool)
 	retention := pgstore.NewIncidentRetention(pool)
@@ -243,8 +247,13 @@ func buildPostgresStack(
 		pgprojection.NewMessageHandler(pool),
 		pgprojection.NewLayerFeaturesHandler(pool),
 		pgprojection.NewAccessHandler(pool),
+		pgprojection.NewSchadenplatzHandler(pool),
+		pgprojection.NewResourceHandler(pool),
 	}
 	projLock := pgstore.NewProjectorLock(pool)
+
+	incidentSvcPg := factory.IncidentService(repos, layers)
+	incidentSvcPg.WithSchadenplatzRepository(schadenplaetze)
 
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
 	if blobs != nil {
@@ -270,11 +279,13 @@ func buildPostgresStack(
 	}()
 
 	return &stack{
-		IncidentSvc:           factory.IncidentService(repos, layers),
+		IncidentSvc:           incidentSvcPg,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
+		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetze, repos),
+		ResourceSvc:           factory.ResourceService(resources, repos, schadenplaetze),
 		Queries:               queries,
 		AccessQueries:         pgqueries.NewAccessQueries(pool),
 		IncidentAccessChecker: accessChecker,
@@ -305,6 +316,8 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	schadenplaetzeInmem := eventstore.NewSchadenplatzRepository(store)
+	resourcesInmem := eventstore.NewResourceRepository(store)
 	accessHandler := inprojection.NewAccessHandler()
 	accessChecker := inmem.NewIncidentAccessChecker(accessHandler)
 	globalChecker := inmem.NewGlobalAccessChecker(accessHandler)
@@ -313,13 +326,23 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	divHandler := inprojection.NewIncidentDivisionHandler()
 	msgHandler := inprojection.NewMessageHandler()
 	layerHandler := inprojection.NewLayerFeaturesHandler()
+	spHandler := inprojection.NewSchadenplatzHandler()
+	resourceHandler := inprojection.NewResourceHandler()
 
 	// For the no-DSN dev path, default to ephemeral if no backend is configured.
 	if attCfg.enabled && attCfg.backend == "" {
 		attCfg.backend = "ephemeral"
 	}
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker)
+	queries := inmemqueries.NewQueries(
+		incHandler,
+		divHandler,
+		msgHandler,
+		layerHandler,
+		spHandler,
+		resourceHandler,
+		accessChecker,
+	)
 
 	blobs, blobsTeardown, err := buildBlobStore(ctx, nil, attCfg)
 	if err != nil {
@@ -351,7 +374,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 	factory := service.NewFactory(inmemFactoryOpts...)
 
 	proj := projection.NewInstrumentedProjector(inprojection.NewProjector(store, []inprojection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
+		incHandler, divHandler, msgHandler, layerHandler, accessHandler, spHandler, resourceHandler,
 	}).WithNotifier(notifier), "inmem")
 
 	projCtx, cancelProj := context.WithCancel(ctx)
@@ -365,12 +388,17 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		}
 	}()
 
+	incidentSvcInmem := factory.IncidentService(repos, layers)
+	incidentSvcInmem.WithSchadenplatzRepository(schadenplaetzeInmem)
+
 	return &stack{
-		IncidentSvc:           factory.IncidentService(repos, layers),
+		IncidentSvc:           incidentSvcInmem,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
+		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeInmem, repos),
+		ResourceSvc:           factory.ResourceService(resourcesInmem, repos, schadenplaetzeInmem),
 		Queries:               queries,
 		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
 		IncidentAccessChecker: accessChecker,
@@ -410,6 +438,8 @@ func buildSQLiteStack(
 	messages := eventstore.NewMessageRepository(store)
 	layers := eventstore.NewLayerRepository(store)
 	features := eventstore.NewFeatureRepository(store)
+	schadenplaetzeSq := eventstore.NewSchadenplatzRepository(store)
+	resourcesSq := eventstore.NewResourceRepository(store)
 
 	accessChecker := sqstore.NewIncidentAccessChecker(read)
 	globalChecker := sqstore.NewGlobalAccessChecker(read)
@@ -467,6 +497,8 @@ func buildSQLiteStack(
 		sqprojection.NewMessageHandler(write),
 		sqprojection.NewLayerFeaturesHandler(write),
 		sqprojection.NewAccessHandler(write),
+		sqprojection.NewSchadenplatzHandler(write),
+		sqprojection.NewResourceHandler(write),
 	}
 
 	retentionSvc := service.NewRetentionService(tx, repos, retention, clock, notifier)
@@ -491,12 +523,17 @@ func buildSQLiteStack(
 		}
 	}()
 
+	incidentSvcSq := factory.IncidentService(repos, layers)
+	incidentSvcSq.WithSchadenplatzRepository(schadenplaetzeSq)
+
 	return &stack{
-		IncidentSvc:           factory.IncidentService(repos, layers),
+		IncidentSvc:           incidentSvcSq,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
 		FeatureSvc:            factory.FeatureService(features, repos, layers),
 		AccessSvc:             factory.AccessService(),
+		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeSq, repos),
+		ResourceSvc:           factory.ResourceService(resourcesSq, repos, schadenplaetzeSq),
 		Queries:               queries,
 		AccessQueries:         sqqueries.NewAccessQueries(read),
 		IncidentAccessChecker: accessChecker,

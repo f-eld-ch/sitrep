@@ -1,4 +1,8 @@
-import { faCheckCircle, faKeyboard, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faKeyboard,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -93,7 +97,9 @@ export function TriageCanvas({ children, incidentClosed = false }: TriageCanvasP
   return (
     <div className="ml-4 flex flex-1 flex-col overflow-hidden">
       <header className="flex shrink-0 items-center border-b border-border px-5 pt-5 pb-3">
-        <PageTitle level={1} className="flex-1">{t("triageView")}</PageTitle>
+        <PageTitle level={1} className="flex-1">
+          {t("triageView")}
+        </PageTitle>
         <KeybindingHelp />
       </header>
       {incidentClosed ? <ClosedWarning /> : (children ?? <EmptyState />)}

@@ -132,6 +132,21 @@ func TestClearPending_EmptiesQueue(t *testing.T) {
 	assert.Empty(t, a.Root().PendingEvents())
 }
 
+func TestCommitPending_AdvancesVersionAndEmptiesQueue(t *testing.T) {
+	a := newThing(uuid.New())
+	eventsourcing.TrackChange(a, ThingCreated{Name: "X"}, now, nil)
+	eventsourcing.TrackChange(a, ThingRenamed{Name: "Y"}, now, nil)
+	require.Len(t, a.Root().PendingEvents(), 2)
+
+	a.Root().CommitPending()
+
+	assert.Equal(t, 2, a.Root().Version())
+	assert.Empty(t, a.Root().PendingEvents())
+
+	next := eventsourcing.TrackChange(a, ThingRenamed{Name: "Z"}, now, nil)
+	assert.Equal(t, 3, next.Version)
+}
+
 // ── Apply ─────────────────────────────────────────────────────────────────────
 
 func TestApply_DecodesJSONAndTransitions(t *testing.T) {

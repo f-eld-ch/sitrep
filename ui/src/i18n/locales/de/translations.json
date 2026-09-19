@@ -50,6 +50,16 @@
   "keyMessage": "Schlüsselnachricht",
   "stepPersonen": "Personen",
   "stepMittel": "Mittel",
+  "stepSchadenplatz": "Schadenplatz",
+  "schadenplatz": {
+    "select": "Schadenplatz wählen",
+    "selectHint": "Betrifft diese Meldung einen spezifischen Schadenplatz?",
+    "defaultHint": "kein spezifischer Schadenplatz",
+    "new": "Neuen Schadenplatz anlegen",
+    "namePlaceholder": "Name des Schadenplatzes",
+    "create": "Anlegen",
+    "defaultLabel": "Standard"
+  },
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
@@ -149,6 +159,7 @@
   "save": "speichern",
   "saveMoreInfo": "Benötigt mehr Informationen",
   "saveTriage": "Triage abschliessen",
+  "triageAdjust": "Triage anpassen",
   "triageMessage": "Triagieren",
   "short": "Kürzel",
   "showClosed": "Zeige geschlossene",
@@ -161,6 +172,11 @@
     "MOREINFO": "mehr Informationen benötigt",
     "PENDING": "pendent",
     "RESET": "zurückgesetzt"
+  },
+  "messageStack": {
+    "filterUntriaged": "Nicht triagiert",
+    "filterKeyMessage": "Schlüsselmeldungen",
+    "filterMine": "Meine"
   },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
@@ -203,8 +219,26 @@
       "description": "C Lage"
     }
   },
+  "casualties": {
+    "childIncidents": "Untergeordnete Ereignisse",
+    "vermisste": "Vermisste",
+    "tote": "Tote",
+    "verletzte": "Verletzte",
+    "obdachlose": "Obdachlose",
+    "eingeschlossene": "Eingeschlossene",
+    "summary": "Personenübersicht",
+    "overview": "Personenübersicht",
+    "thisIncident": "Schadenplätze",
+    "none": "Keine Personen erfasst",
+    "byLocation": "Nach Schadenplatz"
+  },
+  "dashboard": {
+    "title": "Ereignis-Dashboard",
+    "priorityMessages": "Wichtige Meldungen",
+    "noPriorityMessages": "Keine wichtigen Meldungen"
+  },
   "errorPage": {
-"title": "Unerwarteter Fehler",
+    "title": "Unerwarteter Fehler",
     "notFoundTitle": "Ziel nicht erreichbar",
     "notFoundDesc": "Die angeforderte Seite konnte nicht gefunden werden. Bitte überprüfen Sie die Adresse.",
     "priority": "Priorität",
@@ -336,5 +370,80 @@
     "accessControl": "Zugangskontrolle",
     "groups": "Gruppen",
     "globalRoles": "Globale Rollen"
+  },
+  "resource": {
+    "childIncident": "Untergeordnetes Ereignis",
+    "formation": {
+      "FW": "Feuerwehr",
+      "POL": "Polizei",
+      "ARMEE": "Armee",
+      "ZS": "Zivilschutz",
+      "TECHNB": "Technische Betriebe",
+      "SAN": "Sanität",
+      "OTHER": "Andere"
+    },
+    "size": {
+      "TRUPP": "Trupp",
+      "GRUPPE": "Gruppe",
+      "ZUG": "Zug",
+      "KOMPANIE": "Kompanie",
+      "BATAILLON": "Bataillon"
+    },
+    "status": {
+      "AUFGEBOTEN": "Aufgeboten",
+      "EINSATZBEREIT": "Einsatzbereit",
+      "EINGESETZT": "Eingesetzt",
+      "ABGELOEST": "Abgelöst"
+    },
+    "actions": {
+      "markReady": "Einsatzbereit melden",
+      "deploy": "Einsetzen",
+      "standDown": "Einsatz abgeschlossen",
+      "relieve": "Ablösen",
+      "dismiss": "Entlassen",
+      "alert": "Aufbieten"
+    },
+    "fields": {
+      "name": "Name des Mittels",
+      "namePlaceholder": "Name des Mittels",
+      "formation": "Verband",
+      "size": "Truppenstärke",
+      "personnelCount": "Personen",
+      "successor": "Ablösung durch",
+      "selectSuccessor": "Formation für Ablösung auswählen",
+      "relievedThrough": "Abgelöst durch",
+      "successorMarker": "Ablösung",
+      "noSuccessorAvailable": "Keine andere Formation verfügbar",
+      "hauptaufgabe": "Hauptaufgabe",
+      "contact": "Kontakt",
+      "homeLocation": "Formations- oder Ortsbezeichnung",
+      "homeLocationPlaceholder": "z. B. Altdorf",
+      "deploymentLocation": "Einsatzort",
+      "einsatzBeginn": "Einsatzbeginn",
+      "einsatzEnde": "Einsatzende",
+      "status": "Status",
+      "reachability": "Erreichbarkeit"
+    },
+    "noResources": "Keine Mittel erfasst",
+    "search": "Mittel suchen…",
+    "noResults": "Keine Mittel gefunden",
+    "addResource": "Mittel aufbieten",
+    "count_one": "{{count}} Mittel",
+    "count_other": "{{count}} Mittel",
+    "selectFormation": "Formation",
+    "selectSize": "Grösse",
+    "newResource": "Neues Mittel aufbieten",
+    "alerting": "Wird aufgeboten…",
+    "mitteltabelle": "Mitteltabelle",
+    "nr": "Nr.",
+    "alertedAt": "Aufgeboten",
+    "readyAt": "Einsatzbereit",
+    "deployedAt": "Im Einsatz",
+    "relievedAt": "Beendet / Abgelöst",
+    "validation": {
+      "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
+      "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",
+      "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits."
+    }
   }
 }

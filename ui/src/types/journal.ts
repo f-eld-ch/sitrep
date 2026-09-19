@@ -44,6 +44,8 @@ export interface Message {
   triageId: TriageStatus;
   priorityId: PriorityStatus;
   attachments: Attachment[];
+  /** OAuth sub of the operator who recorded this message. Empty string for older messages. */
+  author: string;
 }
 
 export interface Triage {

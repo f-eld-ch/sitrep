@@ -29,15 +29,17 @@ func inmemFactory(t *testing.T) *conformance.Backend {
 	messageH := inmemproj.NewMessageHandler()
 	layerH := inmemproj.NewLayerFeaturesHandler()
 	accessH := inmemproj.NewAccessHandler()
+	spH := inmemproj.NewSchadenplatzHandler()
+	resourceH := inmemproj.NewResourceHandler()
 
-	handlers := []inmemproj.Handler{incidentH, divisionH, messageH, layerH, accessH}
+	handlers := []inmemproj.Handler{incidentH, divisionH, messageH, layerH, accessH, spH, resourceH}
 	projector := inmemproj.NewProjector(store, handlers)
 
 	incidentAccess := inmem.NewIncidentAccessChecker(accessH)
 	globalAccess := inmem.NewGlobalAccessChecker(accessH)
 
 	// No access checker: canRead always returns true, so tests don't need an actor in ctx.
-	queries := inmemqueries.NewQueries(incidentH, divisionH, messageH, layerH)
+	queries := inmemqueries.NewQueries(incidentH, divisionH, messageH, layerH, spH, resourceH)
 	accessQueries := inmemqueries.NewAccessQueries(accessH)
 
 	return &conformance.Backend{
