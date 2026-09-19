@@ -184,7 +184,11 @@ function ReadOnlyLayers() {
   const { state, dispatch } = useContext(LayerContext);
   const { current: map } = useMap();
   const visibleLayers = useMemo(
-    () => state.layers.filter((entry) => entry.isVisible).map((entry) => entry.layer),
+    () =>
+      state.layers
+        .filter((entry) => entry.isVisible)
+        .map((entry) => entry.layer)
+        .filter((layer) => layerToFeatureCollection(layer).features.length > 0),
     [state.layers],
   );
   const activeLayer =
