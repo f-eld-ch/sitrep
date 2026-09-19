@@ -462,6 +462,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 		if authorSub != nil {
 			rm.AuthorSub = *authorSub
 		}
+
 		out = append(out, rm)
 	}
 

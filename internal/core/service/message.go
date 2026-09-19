@@ -776,6 +776,11 @@ func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageSt
 		DivisionIDs:       msg.DivisionIDs(),
 		LinkedResourceIDs: msg.LinkedResourceIDs(),
 		Attachments:       attStates,
-		AuthorSub:         func() string { if s := msg.AuthorSub(); s != nil { return *s }; return "" }(),
+		AuthorSub: func() string {
+			if s := msg.AuthorSub(); s != nil {
+				return *s
+			}
+			return ""
+		}(),
 	}
 }

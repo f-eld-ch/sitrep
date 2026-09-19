@@ -231,6 +231,7 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 	if row.AuthorSub != nil {
 		rm.AuthorSub = *row.AuthorSub
 	}
+
 	return rm
 }
 
