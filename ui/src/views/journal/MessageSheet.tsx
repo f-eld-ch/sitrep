@@ -22,7 +22,7 @@ const MessageSheet = (
     return;
   }
 
-  const cellClass = "break-words break-all whitespace-normal";
+  const cellClass = "break-words whitespace-normal";
 
   return (
     <div ref={ref}>
