@@ -13,6 +13,7 @@ import {
   faCog,
   faExplosion,
   faFeed,
+  faGauge,
   faMapLocationDot,
   faMoon,
   faPen,
@@ -120,18 +121,32 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                   <span>{t("createIncident")}</span>
                 </NavLink>
                 {incidentState.incident && (
-                  <NavLink
-                    className={({ isActive }) =>
-                      clsx(
-                        "flex w-full items-center gap-2 px-4 py-2 capitalize",
-                        isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-                      )
-                    }
-                    to={`/incident/${incidentId}/edit`}
-                  >
-                    <FontAwesomeIcon icon={faPen} />
-                    <span>{t("editIncident")}</span>
-                  </NavLink>
+                  <>
+                    <NavLink
+                      className={({ isActive }) =>
+                        clsx(
+                          "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                        )
+                      }
+                      to={`/incident/${incidentId}/dashboard`}
+                    >
+                      <FontAwesomeIcon icon={faGauge} />
+                      <span>{t("dashboard.title")}</span>
+                    </NavLink>
+                    <NavLink
+                      className={({ isActive }) =>
+                        clsx(
+                          "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                        )
+                      }
+                      to={`/incident/${incidentId}/edit`}
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                      <span>{t("editIncident")}</span>
+                    </NavLink>
+                  </>
                 )}
               </div>
             </div>
@@ -208,18 +223,32 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             <span>{t("createIncident")}</span>
           </NavLink>
           {incidentState.incident && (
-            <NavLink
-              className={({ isActive }) =>
-                clsx(
-                  mobileSubItem,
-                  isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-                )
-              }
-              to={`/incident/${incidentId}/edit`}
-            >
-              <FontAwesomeIcon icon={faPen} />
-              <span>{t("editIncident")}</span>
-            </NavLink>
+            <>
+              <NavLink
+                className={({ isActive }) =>
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
+                to={`/incident/${incidentId}/dashboard`}
+              >
+                <FontAwesomeIcon icon={faGauge} />
+                <span>{t("dashboard.title")}</span>
+              </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
+                to={`/incident/${incidentId}/edit`}
+              >
+                <FontAwesomeIcon icon={faPen} />
+                <span>{t("editIncident")}</span>
+              </NavLink>
+            </>
           )}
           {/* Journal */}
           {incidentId && (
