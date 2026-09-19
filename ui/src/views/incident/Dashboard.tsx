@@ -10,6 +10,7 @@ import JournalMessage from "views/journal/Message";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
+import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
@@ -246,10 +247,9 @@ export default function Dashboard() {
   const latestKeyMessageId = latestKeyMessage?.id;
 
   // Auto-select only if the latest key message arrived within the last 30 minutes.
-  // Date.now() is evaluated on each render; messagesResult updates keep this fresh.
+  // dayjs() is evaluated on each render; messagesResult updates keep this fresh.
   const isLatestStale =
-    latestKeyMessage != null &&
-    Date.now() - new Date(latestKeyMessage.time).getTime() > 30 * 60 * 1000;
+    latestKeyMessage != null && dayjs().diff(dayjs(latestKeyMessage.time), "minute") > 30;
 
   const effectiveSelectedId = (() => {
     if (userOverride !== null && userOverride.keyId === latestKeyMessageId) {
