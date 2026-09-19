@@ -156,14 +156,20 @@ export const MessageStack = memo(function MessageStack({
 
   return (
     <div className={clsx("flex flex-col", className)}>
-      <div className={clsx("flex justify-center py-1", showScrollUp ? "visible" : "invisible")}>
-        <button
-          type="button"
-          onClick={() => topSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
-        >
-          <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
-        </button>
+      <div className="flex justify-center py-1">
+        {showScrollUp ? (
+          <button
+            type="button"
+            onClick={() => topSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
+            className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
+          >
+            <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
+          </button>
+        ) : (
+          <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
+            <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
+          </div>
+        )}
       </div>
 
       <div
@@ -177,10 +183,6 @@ export const MessageStack = memo(function MessageStack({
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-center gap-1.5 py-2 text-fg-muted/50">
-              <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
-              <span className="text-[11px]">{t("noNewMessagesAbove")}</span>
-            </div>
             <div ref={topSentinelRef} className="h-px shrink-0" aria-hidden />
 
             {messages.map((msg) => (

@@ -10,8 +10,10 @@ import JournalMessage from "views/journal/Message";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import { PriorityStatus } from "types";
+import { buildMessageList } from "views/journal/listUtils";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
   "AUFGEBOTEN",
@@ -111,14 +113,14 @@ function PriorityMessageStack({
 }) {
   return (
     <section className="flex min-h-0 flex-col overflow-hidden">
-<FilterableMessageStack
+      <FilterableMessageStack
         messages={messages}
         effectiveId={selectedMessageId}
         onSelect={onSelect}
         initialFilters={{ highPriority: true }}
         enabledFilters={{ untriaged: false, mine: false }}
         baseFilter={{ triage: "triaged_only" }}
-        className="min-h-0 w-full flex-1 shrink lg:w-full"
+        className="min-h-0 w-full flex-1 shrink"
       />
     </section>
   );
@@ -219,7 +221,35 @@ export default function Dashboard() {
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const iconsLoaded = useBabsIcons();
   const showResources = useBooleanFlagValue("show-resources", false);
-  const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>(undefined);
+  // Tracks a user's explicit selection together with the key message that was
+  // active when they made it. If a new key message arrives (keyId changes),
+  // the override is invalidated and we fall back to the latest key message.
+  const [userOverride, setUserOverride] = useState<{
+    keyId: string | undefined;
+    selectedId: string;
+  } | null>(null);
+
+  const allMessages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
+
+  const latestKeyMessageId = useMemo(() => {
+    const messages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
+    const keyMessages = buildMessageList(messages, {
+      triage: "triaged_only",
+      priority: PriorityStatus.High,
+      assignment: "all",
+      author: "all",
+    });
+    return keyMessages[0]?.id;
+  }, [messagesResult]);
+
+  const effectiveSelectedId =
+    userOverride !== null && userOverride.keyId === latestKeyMessageId
+      ? userOverride.selectedId
+      : latestKeyMessageId;
+
+  const handleSelect = (id: string | undefined) =>
+    setUserOverride(id != null ? { keyId: latestKeyMessageId, selectedId: id } : null);
+
   const title =
     resourcesResult.status === "ready"
       ? `${t("incident")} ${resourcesResult.data.incidentName}`
@@ -227,13 +257,12 @@ export default function Dashboard() {
 
   if (!incidentId) return <Spinner />;
 
-  const allMessages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
-  const selectedMessage = allMessages.find((message) => message.id === selectedMessageId);
+  const selectedMessage = allMessages.find((message) => message.id === effectiveSelectedId);
 
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 pt-[3.5rem] pr-3 pb-3">
-        <PageTitle className="shrink-0 pl-3">{title}</PageTitle>
+      <div className="flex min-h-0 flex-1 flex-col pt-[3.5rem] pr-3 pb-3">
+        <PageTitle className="mb-0 shrink-0 pl-3">{title}</PageTitle>
         <div className="grid min-h-0 flex-1 gap-1 xl:grid-cols-[28rem_minmax(0,1fr)_18rem]">
           {messagesResult.status === "loading" ? (
             <Spinner />
@@ -242,11 +271,11 @@ export default function Dashboard() {
           ) : (
             <PriorityMessageStack
               messages={allMessages}
-              selectedMessageId={selectedMessageId}
-              onSelect={setSelectedMessageId}
+              selectedMessageId={effectiveSelectedId}
+              onSelect={handleSelect}
             />
           )}
-          <section className="flex min-h-[24rem] min-w-0 flex-col gap-3 xl:min-h-0">
+          <section className="flex min-h-[24rem] min-w-0 flex-col gap-3 pt-[28px] xl:min-h-0">
             {selectedMessage && (
               <div className="max-h-[38vh] shrink-0 overflow-y-auto rounded bg-bg-elevated">
                 <JournalMessage
@@ -264,7 +293,9 @@ export default function Dashboard() {
             </div>
           </section>
           {showResources && (
-            <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
+            <div className="pt-[28px]">
+              <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
+            </div>
           )}
         </div>
       </div>
