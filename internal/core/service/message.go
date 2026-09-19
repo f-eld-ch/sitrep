@@ -780,6 +780,7 @@ func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageSt
 			if s := msg.AuthorSub(); s != nil {
 				return *s
 			}
+
 			return ""
 		}(),
 	}
