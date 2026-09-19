@@ -338,9 +338,15 @@ function Mitteltabelle({
   incidentName: string;
 }) {
   const { t } = useTranslation();
-  const [openIncidentIds, setOpenIncidentIds] = useState<Set<string>>(new Set());
+  const [openIncidentIds, setOpenIncidentIds] = useState<Set<string>>(() =>
+    new Set(resources.filter((r) => r.incidentId !== incidentId).map((r) => r.incidentId)),
+  );
   const [openFormationIds, setOpenFormationIds] = useState<Set<string>>(() =>
-    new Set(resources.map((r) => `${r.incidentId}:${r.formation}`)),
+    new Set(
+      resources
+        .filter((r) => r.incidentId === incidentId)
+        .map((r) => `${incidentId}:${r.formation}`),
+    ),
   );
   const [openHomeLocationIds, setOpenHomeLocationIds] = useState<Set<string>>(() =>
     new Set(
