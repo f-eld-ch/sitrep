@@ -426,6 +426,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const { state: incidentState } = useContext(IncidentContext);
   const incidentDivisions = incidentState.incident?.divisions ?? [];
   const showTasks = useBooleanFlagValue("show-tasks", false);
+  const showResources = useBooleanFlagValue("show-resources", false);
 
   const [triageMessage, triageState] = useTriageMessage();
   const [recordCasualties] = useRecordCasualties();
@@ -545,8 +546,9 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
     { key: "meldefluss", label: t("messageFlow") },
-    { key: "personen", label: t("stepPersonen") },
-    { key: "mittel", label: t("stepMittel") },
+    ...(showTasks ? [{ key: "pendenzen", label: t("tasks") }] : []),
+    ...(showResources ? [{ key: "personen", label: t("stepPersonen") }] : []),
+    ...(showResources ? [{ key: "mittel", label: t("stepMittel") }] : []),
   ];
 
   const safeIndex = Math.min(stepIndex, steps.length - 1);

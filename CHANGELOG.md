@@ -1,8 +1,16 @@
-## [unreleased]
+## [26.9.7](https://github.com/f-eld-ch/sitrep/compare/v26.9.6..v26.9.7) - 2026-09-19
+
+### 🐛 Bug Fixes
+
+- *(ui)* Properly feature-flag the resource and casualities in the new triage flow - ([e76616f](https://github.com/f-eld-ch/sitrep/commit/e76616fbe4cbf350c7efd1801b095b0404b2dc98))
+
+
+## [26.9.6](https://github.com/f-eld-ch/sitrep/compare/v26.9.5..v26.9.6) - 2026-09-19
 
 ### ⛰️  Features
 
 - *(flags)* Add new-triage-view feature flag and earlyadopter segment ([#1860](https://github.com/f-eld-ch/sitrep/issues/1860)) - ([83c2830](https://github.com/f-eld-ch/sitrep/commit/83c28301e25325f1620ea344b2852d3b12bcafbe))
+- *(telemetry)* Use telemetry.sitrep.ch as OTEL telemetry server ([#1886](https://github.com/f-eld-ch/sitrep/issues/1886)) - ([9cbfbae](https://github.com/f-eld-ch/sitrep/commit/9cbfbae3ab0ef155b91a785b999b99bc5b8c166c))
 - *(ui)* Error pages, incident guard, and editor UX fixes ([#1876](https://github.com/f-eld-ch/sitrep/issues/1876)) - ([7b03e21](https://github.com/f-eld-ch/sitrep/commit/7b03e2122e13a2d12deff80cde1d87c27e9e5ce0))
 - *(ui)* New triage view (feature-flagged) ([#1861](https://github.com/f-eld-ch/sitrep/issues/1861)) - ([64af16f](https://github.com/f-eld-ch/sitrep/commit/64af16f405fbd5a61153273dda8fd853426dcfbd))
 
@@ -15,6 +23,11 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @apollo/client from 4.3.0 to 4.3.1 in /ui ([#1890](https://github.com/f-eld-ch/sitrep/issues/1890)) - ([ab3df1a](https://github.com/f-eld-ch/sitrep/commit/ab3df1a2ee4051eb3ac6ee3d73668bf496dec5df))
+- *(deps)* Bump html-react-parser from 6.1.7 to 6.1.8 in /ui ([#1889](https://github.com/f-eld-ch/sitrep/issues/1889)) - ([eaf5c8b](https://github.com/f-eld-ch/sitrep/commit/eaf5c8b4f8dfb1fb06a1dce79df07f4c1c1e6547))
+- *(deps)* Bump modernc.org/sqlite from 1.58.0 to 1.59.0 ([#1887](https://github.com/f-eld-ch/sitrep/issues/1887)) - ([d93368c](https://github.com/f-eld-ch/sitrep/commit/d93368cb7e8bc75404575ac510af1107d0731167))
+- *(deps)* Bump maplibre-gl from 6.9.1 to 6.10.0 in /ui ([#1885](https://github.com/f-eld-ch/sitrep/issues/1885)) - ([c43d6ba](https://github.com/f-eld-ch/sitrep/commit/c43d6ba0225702377d66e50bdd01a0bb29ad933e))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.49.6 to 3.51.0 ([#1883](https://github.com/f-eld-ch/sitrep/issues/1883)) - ([0c0b8e0](https://github.com/f-eld-ch/sitrep/commit/0c0b8e07c6e567205f40662aa1ad94082b399495))
 - *(deps)* Bump maplibre-gl from 6.9.1 to 6.10.0 in /ui ([#1882](https://github.com/f-eld-ch/sitrep/issues/1882)) - ([7b7c7e0](https://github.com/f-eld-ch/sitrep/commit/7b7c7e07155b50f727255e94794abff1f246f5a4))
 - *(deps)* Bump maplibre-gl from 6.9.0 to 6.9.1 in /ui ([#1880](https://github.com/f-eld-ch/sitrep/issues/1880)) - ([f00085a](https://github.com/f-eld-ch/sitrep/commit/f00085a0d3676e34cc4d02e702137e3667a6e166))
 - *(deps)* Bump react-router from 8.3.1 to 8.4.0 in /ui ([#1879](https://github.com/f-eld-ch/sitrep/issues/1879)) - ([768455c](https://github.com/f-eld-ch/sitrep/commit/768455c2120fbe7db1be9d204eb4a2a3df6593ed))
