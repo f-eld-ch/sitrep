@@ -37,7 +37,7 @@ export function ErrorPage() {
       <div className="mt-[2.75rem] flex min-h-[calc(100vh-2.75rem)] flex-col items-center justify-center p-6">
         <div className="w-full max-w-lg">
           {/* Incident report header */}
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-fg-muted">
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold tracking-widest text-fg-muted uppercase">
             <FontAwesomeIcon icon={faTriangleExclamation} className="text-danger" />
             <span>{t("keyMessage")}</span>
             {status && (
@@ -49,7 +49,7 @@ export function ErrorPage() {
           <div className="rounded-xl border border-border bg-bg-elevated shadow-xl">
             {/* Status bar */}
             <div className="flex items-center gap-3 rounded-t-xl border-b border-border bg-danger/10 px-5 py-3">
-              <span className="text-xs font-bold uppercase text-danger">
+              <span className="text-xs font-bold text-danger uppercase">
                 {t("errorPage.priority")}: {t("errorPage.priorityHigh")}
               </span>
               <span className="ml-auto text-xs text-fg-muted">{now}</span>
