@@ -1,3 +1,10 @@
+## [26.9.7](https://github.com/f-eld-ch/sitrep/compare/v26.9.6..v26.9.7) - 2026-09-19
+
+### 🐛 Bug Fixes
+
+- *(ui)* Properly feature-flag the resource and casualities in the new triage flow - ([e76616f](https://github.com/f-eld-ch/sitrep/commit/e76616fbe4cbf350c7efd1801b095b0404b2dc98))
+
+
 ## [26.9.6](https://github.com/f-eld-ch/sitrep/compare/v26.9.5..v26.9.6) - 2026-09-19
 
 ### ⛰️  Features
