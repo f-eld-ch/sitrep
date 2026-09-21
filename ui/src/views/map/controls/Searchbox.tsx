@@ -2,15 +2,11 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
-import proj4 from "proj4";
 import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
 import { coordinateFromString } from "utils/coordinates";
-import { registerProj4 } from "utils/coordinates/register";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
-
-registerProj4(proj4);
 
 interface SearchResult {
   bbox?: number[];
