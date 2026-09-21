@@ -1,4 +1,4 @@
-import { faCheck, faMinus, faPrint, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faMinus, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
@@ -12,12 +12,11 @@ import {
   useRef,
   useContext,
   useEffect,
-  useLayoutEffect,
   useCallback,
   useMemo,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useReactToPrint } from "react-to-print";
+
 import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
@@ -57,7 +56,7 @@ import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
 import { MessageEditorForm } from "./Editor";
 import { default as JournalMessage } from "./Message";
-import MessageSheet from "./MessageSheet";
+
 import { buildMessageList } from "./listUtils";
 import { FilterableMessageStack } from "./FilterableMessageStack";
 import { TriageCanvas } from "./TriageCanvas";
@@ -128,52 +127,6 @@ function Stepper({
   );
 }
 
-function PrintSheetButton({
-  message,
-  divisions,
-  variant = "footer",
-}: {
-  message: Message;
-  divisions: Division[];
-  variant?: "footer" | "inline";
-}) {
-  const { t } = useTranslation();
-  const [showForPrint, setShowForPrint] = useState(false);
-  const sheetRef = useRef(null);
-  const handlePrint = useReactToPrint({
-    contentRef: sheetRef,
-    pageStyle: "@page { size: A4 portrait; margin: 1cm; }",
-    onAfterPrint: () => setShowForPrint(false),
-  });
-  const handlePrintRef = useRef(handlePrint);
-  useLayoutEffect(() => {
-    handlePrintRef.current = handlePrint;
-  });
-  useEffect(() => {
-    if (showForPrint) handlePrintRef.current();
-  }, [showForPrint]);
-
-  return (
-    <>
-      {variant === "footer" ? (
-        <Button type="button" variant="light" size="sm" onClick={() => setShowForPrint(true)}>
-          <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
-          {t("messageSheet")}
-        </Button>
-      ) : (
-        <Button type="button" variant="primary" size="sm" onClick={() => setShowForPrint(true)}>
-          <FontAwesomeIcon icon={faPrint} className="mr-1.5" />
-          {t("messageSheet")}
-        </Button>
-      )}
-      {showForPrint && (
-        <div className="hidden">
-          <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
-        </div>
-      )}
-    </>
-  );
-}
 
 interface ResourceSnapshot {
   status: ResourceStatus;
@@ -277,16 +230,13 @@ function TriageSummary(props: {
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Message card */}
       <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
-        <div className="mb-2 flex justify-end">
-          <PrintSheetButton message={message} divisions={incidentDivisions} variant="inline" />
-        </div>
         <JournalMessage
-          showControls={false}
+          showControls={true}
           stabilizeActionBar
           id={message.id}
           incidentId={props.incidentId}
           message={message}
-          divisions={assignedDivisions}
+          divisions={incidentDivisions}
           setEditorMessage={undefined}
           setTriageMessage={undefined}
         />
@@ -406,7 +356,6 @@ function TriageSummary(props: {
 
       {/* Footer */}
       <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4">
-        <PrintSheetButton message={message} divisions={incidentDivisions} />
         <Button type="button" variant="primary" size="sm" onClick={onAdjust}>
           {t("triageAdjust")}
         </Button>
@@ -679,18 +628,13 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Message context — scrollable so tall content doesn't hide the stepper */}
       <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
-        {!isPending && (
-          <div className="mb-2 flex justify-end">
-            <PrintSheetButton message={message} divisions={incidentDivisions} variant="inline" />
-          </div>
-        )}
         <JournalMessage
-          showControls={false}
+          showControls={!isPending}
           stabilizeActionBar
           id={message.id}
           incidentId={incidentId}
           message={previewMessage}
-          divisions={assignments}
+          divisions={incidentDivisions}
           setEditorMessage={undefined}
           setTriageMessage={undefined}
         />
@@ -909,18 +853,15 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             {t("next")}
           </Button>
         ) : (
-          <>
-            <PrintSheetButton message={previewMessage} divisions={incidentDivisions} />
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={triageState.loading}
-              onClick={() => handleSave(TriageStatus.Triaged)}
-            >
-              {t("saveTriage")}
-            </Button>
-          </>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={triageState.loading}
+            onClick={() => handleSave(TriageStatus.Triaged)}
+          >
+            {t("saveTriage")}
+          </Button>
         )}
       </footer>
     </div>
