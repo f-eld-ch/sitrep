@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Hint } from "react-autocomplete-hint";
 import { Medium } from "types";
 import { Button } from "components/ui";
-import { ReactEditor } from "../Markdown";
+import { ReactEditor } from "../MarkdownEditor";
 import { canSave, hasValidMessageTime, useEditorContext } from "../editorState";
 
 type NonRadioMedium = Exclude<Medium, Medium.Radio>;

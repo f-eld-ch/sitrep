@@ -6,7 +6,9 @@ import reject from "lodash/reject";
 import union from "lodash/union";
 import {
   Fragment,
+  Suspense,
   ViewTransition,
+  lazy,
   useTransition,
   useState,
   useRef,
@@ -51,10 +53,12 @@ import type {
   ContactMedium,
   SchadenplatzCasualtyInput,
 } from "api";
-import { type MessageEditorFormHandle } from "./Editor";
+import { type MessageEditorFormHandle } from "./editorState";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
-import { MessageEditorForm } from "./Editor";
+const MessageEditorForm = lazy(() =>
+  import("./Editor").then((m) => ({ default: m.MessageEditorForm })),
+);
 import { default as JournalMessage } from "./Message";
 
 import { buildMessageList } from "./listUtils";
@@ -657,13 +661,15 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
           })()}
 
         {currentStep.key === "meldung" && (
-          <MessageEditorForm
-            ref={editorRef}
-            message={message}
-            incidentId={incidentId}
-            onLiveMessage={setLiveMessage}
-            title={t("stepMeldungReview")}
-          />
+          <Suspense fallback={<Spinner />}>
+            <MessageEditorForm
+              ref={editorRef}
+              message={message}
+              incidentId={incidentId}
+              onLiveMessage={setLiveMessage}
+              title={t("stepMeldungReview")}
+            />
+          </Suspense>
         )}
 
         {currentStep.key === "meldefluss" && (

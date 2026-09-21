@@ -12,8 +12,11 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("../Markdown", () => ({
-  ReactEditor: ({ id }: { id?: string }) => <textarea data-testid="md-editor" id={id} />,
   ReactPreview: ({ content }: { content: string }) => <div>{content}</div>,
+}));
+
+vi.mock("../MarkdownEditor", () => ({
+  ReactEditor: ({ id }: { id?: string }) => <textarea data-testid="md-editor" id={id} />,
 }));
 
 function renderForm(ui: React.ReactElement, overrides?: Partial<EditorContextValue>) {

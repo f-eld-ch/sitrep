@@ -7,6 +7,8 @@ import tailwindcss from "@tailwindcss/vite";
 import * as git from "git-rev-sync";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
+import fs from "node:fs";
+import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import svgrPlugin from "vite-plugin-svgr";
 
@@ -37,6 +39,65 @@ function describeVersion(): string {
 }
 
 const buildVersion = process.env.VITE_VERSION || describeVersion() || git.tag(false) || "dev";
+
+function licensesPlugin() {
+  return {
+    name: "vite-licenses",
+    apply: "build" as const,
+    generateBundle(_options: unknown, bundle: Record<string, { type: string; modules?: Record<string, unknown> }>) {
+      // Collect every node_modules package referenced in the bundle.
+      const pkgNames = new Set<string>();
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type !== "chunk" || !chunk.modules) continue;
+        for (const id of Object.keys(chunk.modules)) {
+          const m = id.match(/node_modules[\\/](@[^\\/]+[\\/][^\\/]+|[^\\/]+)/);
+          if (m) pkgNames.add(m[1].replace(/\\/g, "/"));
+        }
+      }
+
+      const entries: { name: string; version: string; license: string; licenseText: string }[] = [];
+      for (const pkgName of [...pkgNames].sort()) {
+        try {
+          const pkgDir = path.join("node_modules", pkgName);
+          const pkg = JSON.parse(fs.readFileSync(path.join(pkgDir, "package.json"), "utf-8")) as {
+            name: string;
+            version: string;
+            license?: string;
+          };
+          let licenseText = "";
+          for (const candidate of ["LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE"]) {
+            try {
+              licenseText = fs.readFileSync(path.join(pkgDir, candidate), "utf-8");
+              break;
+            } catch {
+              // try next candidate
+            }
+          }
+          entries.push({
+            name: pkg.name ?? pkgName,
+            version: pkg.version ?? "unknown",
+            license: pkg.license ?? "unknown",
+            licenseText,
+          });
+        } catch {
+          // package.json unreadable — skip
+        }
+      }
+
+      const md =
+        "# Third-party licenses\n\n" +
+        entries
+          .map((e) => {
+            const body = e.licenseText.trim() || e.license;
+            return `## ${e.name}@${e.version}\n\nLicense: ${e.license}\n\n\`\`\`\n${body}\n\`\`\``;
+          })
+          .join("\n\n---\n\n");
+
+      fs.mkdirSync("build", { recursive: true });
+      fs.writeFileSync("build/licenses.md", md, "utf-8");
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -74,6 +135,11 @@ export default defineConfig({
               priority: 18,
             },
             {
+              name: "proj4",
+              test: /node_modules[\\/]proj4/,
+              priority: 18,
+            },
+            {
               name: "utils",
               test: /node_modules[\\/](?:@fortawesome[\\/](?:fontawesome-svg-core|free-solid-svg-icons|free-regular-svg-icons|free-brands-svg-icons|react-fontawesome)|lodash)/,
               priority: 17,
@@ -98,9 +164,12 @@ export default defineConfig({
               priority: 18,
             },
             {
-              // Small, eagerly imported: catalogue metadata and the sprite helpers.
+              // Small, eagerly imported: babs-react main entry (BabsIcon, BabsIconProvider),
+              // catalogue metadata and the sprite helpers. The large catalogue files
+              // (dist/all.js, dist/icons/*) are claimed by babs-catalogue above (priority 18)
+              // so only the small babs-react entry modules land here.
               name: "babs-icons",
-              test: /node_modules[\\/]@f-eld-ch[\\/]babs-(?:core|sprites)/,
+              test: /node_modules[\\/]@f-eld-ch[\\/]babs-(?:core|sprites|react)/,
               priority: 17,
             },
             {
@@ -136,7 +205,8 @@ export default defineConfig({
     // with exact unhashed filenames. Defaults to "map/sprites", which is where the
     // existing basemap/imagery sheets already live, so those are unaffected.
     babsSprites(),
-    analyzer({ analyzerMode: "static", enabled: false }),
+    analyzer({ analyzerMode: "static", enabled: process.env.ANALYZE === "true" }),
+    licensesPlugin(),
     VitePWA({
       registerType: "prompt",
       strategies: "generateSW",

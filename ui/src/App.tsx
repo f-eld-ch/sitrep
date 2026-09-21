@@ -20,10 +20,10 @@ import {
   AccessPage as IncidentAccessPage,
 } from "views/incident";
 import {
-  Editor as JournalEditor,
   List as JournalMessageList,
   TriageView as JournalTriageView,
 } from "views/journal";
+const JournalEditor = lazy(() => import("views/journal/Editor"));
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { IncidentRoute } from "views/IncidentRoute";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -170,7 +170,9 @@ const router = createBrowserRouter([
                     path: "edit",
                     element: (
                       <Layout>
-                        <JournalEditor />
+                        <Suspense fallback={<Spinner />}>
+                          <JournalEditor />
+                        </Suspense>
                       </Layout>
                     ),
                   },

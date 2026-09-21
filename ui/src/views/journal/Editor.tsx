@@ -38,6 +38,7 @@ import {
   EditorContext,
   type EditorContextValue,
   type MediaDetail,
+  type MessageEditorFormHandle,
   canSave,
   editorReducer,
   initEditorState,
@@ -46,9 +47,10 @@ import {
 } from "./editorState";
 
 // re-export types that Elements.tsx / sub-forms depend on via this path
-export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail } from "./editorState";
+export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail, MessageEditorFormHandle } from "./editorState";
 export { useEditorContext } from "./editorState";
-export { ReactEditor, ReactPreview } from "./Markdown";
+export { ReactEditor } from "./MarkdownEditor";
+export { ReactPreview } from "./Markdown";
 
 const EMPTY_MESSAGES: Message[] = [];
 
@@ -547,10 +549,6 @@ function InputBox({
   ) : (
     inner
   );
-}
-
-export interface MessageEditorFormHandle {
-  save: () => Promise<void>;
 }
 
 export const MessageEditorForm = React.forwardRef<
