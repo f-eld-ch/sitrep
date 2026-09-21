@@ -21,12 +21,14 @@ The sitrep backend is a Go application built around three interlocking principle
 ┌────────────────────▼────────────────────────────────────┐
 │                  Inbound Ports                           │
 │   IncidentService · MessageService · LayerService        │
-│   FeatureService  (internal/core/port/inbound)           │
+│   FeatureService · SchadenplatzService · ResourceService │
+│   (internal/core/port/inbound)                           │
 └────────────────────┬────────────────────────────────────┘
                      │ implemented by
 ┌────────────────────▼────────────────────────────────────┐
 │               Application Services                       │
-│   internal/core/service/{incident,message,layer,feature} │
+│   internal/core/service/{incident,message,layer,feature,  │
+│     schadenplatz,resource}                               │
 │   Own the transaction boundary. Orchestrate domain calls.│
 └────────────────────┬────────────────────────────────────┘
                      │ calls outbound ports
@@ -48,7 +50,7 @@ The sitrep backend is a Go application built around three interlocking principle
 
 | Layer | Package |
 |---|---|
-| Domain core | `internal/core/domain/{incident,message,layer,feature,shared}` |
+| Domain core | `internal/core/domain/{incident,message,layer,feature,schadenplatz,resource,shared}` |
 | Shared kernel | `internal/eventsourcing` |
 | Inbound ports | `internal/core/port/inbound` |
 | Outbound ports | `internal/core/port/outbound` |
@@ -99,7 +101,7 @@ Apply(aggregate, event)
 
 ### Aggregate structure
 
-Each aggregate (`Incident`, `Message`, `Layer`, `Feature`) follows the same pattern:
+Each aggregate (`Incident`, `Message`, `Layer`, `Feature`, `Schadenplatz`, `Resource`) follows the same pattern:
 
 ```
 domain/incident/
@@ -107,6 +109,32 @@ domain/incident/
   events.go      — plain structs with json tags: Opened, Renamed, Closed, …
   commands.go    — Open(), Rename(), Close(), … (validate → TrackChange)
 ```
+
+The `Schadenplatz` aggregate represents a geographic impact area within an incident. Every incident automatically gets one default Schadenplatz (`isDefault=true`) when it is opened. It tracks running casualty totals (`Vermisste`, `Tote`, `Verletzte`, `Obdachlose`, `Eingeschlossene`) which are updated by applying `CasualtyDeltas` — the invariant `ErrCasualtyBelowZero` prevents any total from going negative. Schadenplaetze can be merged into the default via `MergeSchadenplatz`; once merged the aggregate is permanently inactive.
+
+| Event | Carried data |
+|---|---|
+| `Created` | incidentID, name, isDefault, actor |
+| `Renamed` | name |
+| `GeometrySet` | geoJSON |
+| `CasualtiesRecorded` | deltas (five int fields), sourceMessageID |
+| `MergedIntoDefault` | targetID |
+
+The `Resource` aggregate represents an operational unit (fire brigade group, police squad, army detachment, etc.) assigned to a Schadenplatz. Its lifecycle flows through a fixed sequence of statuses — `AUFGEBOTEN → EINSATZBEREIT → EINGESETZT → ABGELOEST` — enforced as aggregate invariants; illegal transitions are rejected. Each deployment period is appended to an immutable `deploymentHistory` slice (start/end timestamps, Hauptaufgabe, Einsatzort label). When a resource is relieved it may nominate a successor, linking the two aggregates via `predecessorID`/`successorID`.
+
+| Event | Key carried data |
+|---|---|
+| `Alerted` | incidentID, schadenplatzID, formation, size, name, personnelCount, homeLocation, sourceMessageID |
+| `MarkedReady` | at |
+| `Deployed` | at, hauptaufgabe, einsatzort |
+| `StoodDown` | at |
+| `Relieved` | successorID, at |
+| `SuccessionLinked` | predecessorID |
+| `ReassignedToSchadenplatz` | newSchadenplatzID |
+| `DeploymentLocationUpdated` | label, lat, lng |
+| `HauptaufgabeChanged` | hauptaufgabe |
+| `ContactUpdated` | medium, detail |
+| `PersonnelCountUpdated` | count |
 
 A command method never writes to the database. It validates the invariant, calls `TrackChange` with the event data struct, which calls `Transition` to update in-memory state and appends to the pending list. The service then saves the aggregate via the repository.
 
@@ -229,6 +257,8 @@ Each handler has:
 | `IncidentDivisionHandler` | `Incident` stream | `readmodel.incident_division` |
 | `MessageHandler` | `Message` stream | `readmodel.message` |
 | `LayerFeaturesHandler` | `Layer` + `Feature` streams | `readmodel.layer_features` |
+| `SchadenplatzHandler` | `Schadenplatz` stream | `readmodel.schadenplatz` |
+| `ResourceHandler` | `Resource` stream | `readmodel.resource`, `readmodel.resource_deployment_history` |
 | `AccessHandler` | `IncidentAccess`, `AccessGroup`, `GlobalAccess` streams | `readmodel.incident_access`, `readmodel.incident_access_mode`, `readmodel.access_group`, `readmodel.access_group_member`, `readmodel.global_access`, `readmodel.access_policy` |
 
 ### Read-model tables
@@ -241,6 +271,13 @@ readmodel.incident_division     — one row per division per incident
 readmodel.message               — one row per message (content, sender, receiver, medium, msg_time, triage, …)
 readmodel.layer_features        — one row per layer; geojson holds the full FeatureCollection;
                                   revision increments on every feature change for client-side diffing
+readmodel.schadenplatz          — one row per schadenplatz (incidentID, name, isDefault, geoJSON,
+                                  casualty totals, mergedInto, timestamps)
+readmodel.resource              — one row per resource (incidentID, schadenplatzID, formation, size, name,
+                                  personnelCount, hauptaufgabe, status, contact, homeLocation,
+                                  deploymentLocation, predecessorID, successorID, timestamps)
+readmodel.resource_deployment_history — one row per deployment period per resource
+                                  (startedAt, endedAt, hauptaufgabe, deploymentLabel)
 readmodel.incident_access       — one row per (incident, principal, role) grant
 readmodel.incident_access_mode  — one row per incident; mode is open_operational or restricted
 readmodel.access_group          — one row per access group
@@ -265,7 +302,7 @@ Services return state DTOs (`IncidentState`, `MessageState`, defined in `interna
 
 Query resolvers (`incidents`, `incident`, `message`, `layersForIncident`) bypass the service layer entirely and call `outbound.Queries` directly. Queries are not part of the services because they have no invariants to enforce and no aggregate to load — mixing them into services would couple unrelated concerns and create a path where a read could be issued inside an open write transaction, returning stale results.
 
-The `outbound.Queries` port and its read-model row types (`IncidentRM`, `MessageRM`, `LayerRM`, `DivisionRM`) are defined in `internal/core/port/outbound/readmodels.go`. These types are plain data bags:
+The `outbound.Queries` port and its read-model row types (`IncidentRM`, `MessageRM`, `LayerRM`, `DivisionRM`, `SchadenplatzRM`, `ResourceRM`) are defined in `internal/core/port/outbound/readmodels.go`. These types are plain data bags:
 
 - They carry **denormalised** state read from the `rm_*` projection tables.
 - They are **never passed back** to the write side — no service method accepts or returns an `*RM` type.
@@ -277,11 +314,13 @@ The GraphQL `Resolver` struct holds both sides independently:
 
 ```go
 type Resolver struct {
-    Incidents inbound.IncidentService  // write
-    Messages  inbound.MessageService   // write
-    Layers    inbound.LayerService     // write
-    Features  inbound.FeatureService   // write
-    Queries   outbound.Queries         // read — bypasses services entirely
+    Incidents     inbound.IncidentService      // write
+    Messages      inbound.MessageService       // write
+    Layers        inbound.LayerService         // write
+    Features      inbound.FeatureService       // write
+    Schadenplaetze inbound.SchadenplatzService // write
+    Resources     inbound.ResourceService      // write
+    Queries       outbound.Queries             // read — bypasses services entirely
 }
 ```
 
@@ -457,6 +496,9 @@ Each `h.Apply` call runs inside its own database transaction so a handler failur
 | `readmodel.incident_division` | `IncidentDivisionHandler` | One row per division per incident; soft-deleted via `removed_at` |
 | `readmodel.message` | `MessageHandler` | One row per message — all fields including `msg_time`, `division_ids uuid[]`, author/editor subs |
 | `readmodel.layer_features` | `LayerFeaturesHandler` | One row per layer; `geojson jsonb` holds the full `FeatureCollection`; `revision int` increments on every feature change for client-side diff detection |
+| `readmodel.schadenplatz` | `SchadenplatzHandler` | One row per schadenplatz — incidentID, name, isDefault, geoJSON, running casualty totals (five int columns), mergedInto, timestamps |
+| `readmodel.resource` | `ResourceHandler` | One row per resource — incidentID, schadenplatzID, formation, size, name, personnelCount, hauptaufgabe, status, contact JSONB, homeLocation JSONB, deploymentLocation JSONB, predecessorID, successorID, timestamps |
+| `readmodel.resource_deployment_history` | `ResourceHandler` | One row per deployment period — resourceID, startedAt, endedAt, hauptaufgabe, deploymentLabel |
 | `readmodel.incident_access` | `AccessHandler` | One row per (incident, principal, role) grant |
 | `readmodel.incident_access_mode` | `AccessHandler` | One row per incident; mode is `open_operational` or `restricted` |
 | `readmodel.access_group` | `AccessHandler` | One row per access group |
@@ -526,8 +568,8 @@ An event is an immutable fact that something happened. It is the only thing writ
 
 | Concept | Convention | Examples |
 |---|---|---|
-| Aggregate type string | PascalCase, singular | `"Incident"`, `"Message"`, `"Layer"`, `"Feature"` |
-| Aggregate struct | PascalCase, same as type string | `Incident`, `Message` |
+| Aggregate type string | PascalCase, singular | `"Incident"`, `"Message"`, `"Layer"`, `"Feature"`, `"Schadenplatz"`, `"Resource"` |
+| Aggregate struct | PascalCase, same as type string | `Incident`, `Message`, `Schadenplatz`, `Resource` |
 | Command method | Imperative verb phrase, on the aggregate | `Open`, `Rename`, `Close`, `Reopen`, `Delete`, `Record`, `Correct`, `Triage` |
 | Event struct | Past-tense verb or noun phrase, no "Event" suffix | `Opened`, `Renamed`, `Closed`, `DivisionAdded`, `Recorded`, `Corrected` |
 | Event file | `events.go` in the aggregate package | `domain/incident/events.go` |
@@ -569,11 +611,13 @@ The `Resolver` struct holds only port interfaces:
 
 ```go
 type Resolver struct {
-    Incidents inbound.IncidentService
-    Messages  inbound.MessageService
-    Layers    inbound.LayerService
-    Features  inbound.FeatureService
-    Queries   outbound.Queries
+    Incidents      inbound.IncidentService
+    Messages       inbound.MessageService
+    Layers         inbound.LayerService
+    Features       inbound.FeatureService
+    Schadenplaetze inbound.SchadenplatzService
+    Resources      inbound.ResourceService
+    Queries        outbound.Queries
 }
 ```
 

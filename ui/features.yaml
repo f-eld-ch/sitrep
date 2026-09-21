@@ -21,6 +21,9 @@ flags:
       - segment:
           key: Development
           value: true
+      - segment:
+          key: earlyadopter
+          value: true
   # nimdanitro: flag for rolling out new triage view, remove after triage view is GA
   - key: new-triage-view
     name: New Triage View
@@ -52,7 +55,7 @@ segments:
         property: domain
         operator: isoneof
         value: '["dev.sitrep.ch","localhost","127.0.0.1"]'
-    match_type: ALL_MATCH_TYPE
+    match_type: ANY_MATCH_TYPE
   - key: earlyadopter
     name: Early Adopter
     constraints:
