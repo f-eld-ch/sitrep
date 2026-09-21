@@ -135,11 +135,6 @@ export default defineConfig({
               priority: 18,
             },
             {
-              name: "proj4",
-              test: /node_modules[\\/]proj4/,
-              priority: 18,
-            },
-            {
               name: "utils",
               test: /node_modules[\\/](?:@fortawesome[\\/](?:fontawesome-svg-core|free-solid-svg-icons|free-regular-svg-icons|free-brands-svg-icons|react-fontawesome)|lodash)/,
               priority: 17,
