@@ -5,6 +5,7 @@ import debounce from "lodash/debounce";
 import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
 import { coordinateFromString } from "utils/coordinates";
+import proj4 from "proj4";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
 
