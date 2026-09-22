@@ -1,3 +1,10 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.0 to 3.51.3 ([#1891](https://github.com/f-eld-ch/sitrep/issues/1891)) - ([4259ebc](https://github.com/f-eld-ch/sitrep/commit/4259ebc17539c5cec4875b015610faf11460cc6a))
+
+
 ## [26.9.7](https://github.com/f-eld-ch/sitrep/compare/v26.9.6..v26.9.7) - 2026-09-19
 
 ### 🐛 Bug Fixes
