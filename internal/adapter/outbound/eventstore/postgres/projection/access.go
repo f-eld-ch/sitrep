@@ -15,7 +15,7 @@ type AccessHandler struct{ pool *pgxpool.Pool }
 
 func NewAccessHandler(pool *pgxpool.Pool) *AccessHandler { return &AccessHandler{pool: pool} }
 func (h *AccessHandler) Name() string                    { return "readmodel.access" }
-func (h *AccessHandler) Version() int                    { return 4 }
+func (h *AccessHandler) Version() int                    { return 5 }
 func (h *AccessHandler) HaltOnError() bool               { return true }
 func (h *AccessHandler) Handles(streamType, _ string) bool {
 	return streamType == "IncidentAccess" || streamType == "AccessGroup" || streamType == "GlobalAccess"
@@ -68,12 +68,15 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx pgx.Tx, e eventsou
 			return err
 		}
 
+		isDefault := e.StreamID == access.DefaultAccessTemplateID
+
 		if err := exec(
 			tx,
 			ctx,
-			`INSERT INTO readmodel.incident_access_mode (incident_id, mode) VALUES ($1, $2) ON CONFLICT (incident_id) DO UPDATE SET mode = EXCLUDED.mode`,
+			`INSERT INTO readmodel.incident_access_mode (incident_id, mode, is_default) VALUES ($1, $2, $3) ON CONFLICT (incident_id) DO UPDATE SET mode = EXCLUDED.mode, is_default = EXCLUDED.is_default`,
 			e.StreamID,
 			d.Mode,
+			isDefault,
 		); err != nil {
 			return err
 		}
@@ -275,7 +278,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx pgx.Tx) error {
 INSERT INTO readmodel.access_policy (subject, domain, object, action)
 SELECT 'user:' || a.principal_id, 'incident:' || a.incident_id, p.object, p.action
 FROM readmodel.incident_access a
-JOIN readmodel.incident_access_mode m ON m.incident_id = a.incident_id
+JOIN readmodel.incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = FALSE
 JOIN (VALUES
  ('owner','incident','incident.read'), ('owner','incident','incident.write'), ('owner','incident','incident.delete'),
  ('owner','incident','incident.close'), ('owner','incident','incident.reopen'), ('owner','incident','incident.manage_access'),
@@ -301,7 +304,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO readmodel.access_policy (subject, domain, object, action)
 SELECT 'user:' || gm.subject, 'incident:' || a.incident_id, p.object, p.action
 FROM readmodel.incident_access a
-JOIN readmodel.incident_access_mode m ON m.incident_id = a.incident_id
+JOIN readmodel.incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = FALSE
 JOIN readmodel.access_group_member gm ON gm.group_id::text = a.principal_id AND gm.removed_at IS NULL
 JOIN readmodel.access_group g ON g.id = gm.group_id AND g.archived_at IS NULL
 JOIN (VALUES
@@ -327,6 +330,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO readmodel.access_policy (subject, domain, object, action)
 SELECT 'all', 'incident:' || a.incident_id, p.object, p.action
 FROM readmodel.incident_access a
+JOIN readmodel.incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = FALSE
 JOIN (VALUES
  ('viewer','incident','incident.read'), ('viewer','message','message.read'), ('viewer','layer','layer.read'),
  ('editor','incident','incident.read'), ('editor','incident','incident.write'), ('editor','message','message.read'),

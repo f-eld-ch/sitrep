@@ -26,12 +26,17 @@ type IncidentGrantRow struct {
 	Role          access.Role
 }
 
+type incidentModeEntry struct {
+	mode      access.IncidentMode
+	isDefault bool
+}
+
 type AccessHandler struct {
 	mu       sync.RWMutex
 	grants   map[string]access.Role
 	groups   map[uuid.UUID]*groupProjection
 	global   map[string]map[access.GlobalRole]bool
-	modes    map[uuid.UUID]access.IncidentMode
+	modes    map[uuid.UUID]incidentModeEntry
 	policies map[string]AccessPolicyRow
 }
 
@@ -47,13 +52,13 @@ func NewAccessHandler() *AccessHandler {
 		grants:   make(map[string]access.Role),
 		groups:   make(map[uuid.UUID]*groupProjection),
 		global:   make(map[string]map[access.GlobalRole]bool),
-		modes:    make(map[uuid.UUID]access.IncidentMode),
+		modes:    make(map[uuid.UUID]incidentModeEntry),
 		policies: make(map[string]AccessPolicyRow),
 	}
 }
 
 func (h *AccessHandler) Name() string { return "readmodel.access" }
-func (h *AccessHandler) Version() int { return 3 }
+func (h *AccessHandler) Version() int { return 4 }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
 }
@@ -65,7 +70,7 @@ func (h *AccessHandler) Reset(_ context.Context) error {
 	h.grants = make(map[string]access.Role)
 	h.groups = make(map[uuid.UUID]*groupProjection)
 	h.global = make(map[string]map[access.GlobalRole]bool)
-	h.modes = make(map[uuid.UUID]access.IncidentMode)
+	h.modes = make(map[uuid.UUID]incidentModeEntry)
 	h.policies = make(map[string]AccessPolicyRow)
 
 	return nil
@@ -95,7 +100,10 @@ func (h *AccessHandler) applyIncident(e eventsourcing.Event) error {
 			return err
 		}
 
-		h.modes[e.StreamID] = d.Mode
+		h.modes[e.StreamID] = incidentModeEntry{
+			mode:      d.Mode,
+			isDefault: e.StreamID == access.DefaultAccessTemplateID,
+		}
 		if d.OwnerSub != nil {
 			h.grants[grantKey(e.StreamID, access.UserPrincipal, *d.OwnerSub, access.Owner)] = access.Owner
 		}
@@ -119,7 +127,9 @@ func (h *AccessHandler) applyIncident(e eventsourcing.Event) error {
 			return err
 		}
 
-		h.modes[e.StreamID] = d.Mode
+		entry := h.modes[e.StreamID]
+		entry.mode = d.Mode
+		h.modes[e.StreamID] = entry
 	default:
 		return fmt.Errorf("access: unhandled incident event %q", e.EventType)
 	}
@@ -227,7 +237,14 @@ func (h *AccessHandler) recompute() {
 	h.policies = make(map[string]AccessPolicyRow)
 	for key, role := range h.grants {
 		incidentID, kind, subject, _ := parseGrantKey(key)
-		for _, action := range actionsForMode(role, h.modes[incidentID]) {
+
+		// The default-access template must never generate Casbin policy rows.
+		if entry := h.modes[incidentID]; entry.isDefault {
+			continue
+		}
+
+		modeEntry := h.modes[incidentID]
+		for _, action := range actionsForMode(role, modeEntry.mode) {
 			h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
 		}
 
@@ -239,7 +256,7 @@ func (h *AccessHandler) recompute() {
 
 			if group := h.groups[groupID]; group != nil && group.archivedAt == nil {
 				for member := range group.members {
-					for _, action := range actionsForMode(role, h.modes[incidentID]) {
+					for _, action := range actionsForMode(role, modeEntry.mode) {
 						h.addPolicy("user:"+member, "incident:"+incidentID.String(), string(action))
 					}
 				}
@@ -296,7 +313,43 @@ func (h *AccessHandler) Mode(incidentID uuid.UUID) access.IncidentMode {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	return h.modes[incidentID]
+	return h.modes[incidentID].mode
+}
+
+// DefaultIncidentMode returns the mode of the default-access template.
+// The second return value is false when no template has been initialized yet.
+func (h *AccessHandler) DefaultIncidentMode() (access.IncidentMode, bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	entry, ok := h.modes[access.DefaultAccessTemplateID]
+	if !ok {
+		return access.Restricted, false
+	}
+
+	return entry.mode, true
+}
+
+// DefaultGrants returns the grants currently held by the default-access template.
+func (h *AccessHandler) DefaultGrants() []access.Grant {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var grants []access.Grant
+
+	for key, role := range h.grants {
+		incidentID, kind, subject, _ := parseGrantKey(key)
+		if incidentID != access.DefaultAccessTemplateID {
+			continue
+		}
+
+		grants = append(grants, access.Grant{
+			Principal: access.Principal{Kind: kind, ID: subject},
+			Role:      role,
+		})
+	}
+
+	return grants
 }
 
 func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow {

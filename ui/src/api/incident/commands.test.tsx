@@ -27,9 +27,23 @@ async function setupMutationRejected(rejection: unknown) {
 
 async function setupCreateMutations() {
   const { useMutation } = await import("@apollo/client/react");
-  const mutate = vi.fn().mockResolvedValue({ data: { createIncident: { id: "inc-1" } } });
+  const mutate = vi.fn().mockResolvedValue({
+    data: {
+      createIncident: {
+        incident: { id: "inc-1", divisions: [] },
+        accessMode: "OPEN_OPERATIONAL",
+        accessGrants: [],
+      },
+    },
+  });
   const mutateWithParent = vi.fn().mockResolvedValue({
-    data: { createIncident: { id: "child-1", parentId: "parent-1" } },
+    data: {
+      createIncident: {
+        incident: { id: "child-1", parentId: "parent-1", divisions: [] },
+        accessMode: "OPEN_OPERATIONAL",
+        accessGrants: [],
+      },
+    },
   });
 
   vi.mocked(useMutation)

@@ -110,7 +110,11 @@ export interface MessageStackProps {
   onSelect: (id: string | undefined) => void;
 }
 
-export const MessageStack = memo(function MessageStack({ messages, effectiveId, onSelect }: MessageStackProps) {
+export const MessageStack = memo(function MessageStack({
+  messages,
+  effectiveId,
+  onSelect,
+}: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);

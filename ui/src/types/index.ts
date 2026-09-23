@@ -3,6 +3,7 @@ export type {
   AccessGroup,
   AccessUser,
   AccessPrincipalKind,
+  DefaultAccessGrant,
   GlobalRole,
   GlobalRoleGrant,
   IncidentAccessGrant,

@@ -204,6 +204,59 @@ func (q *AccessQueries) ListGlobalRoles(ctx context.Context) ([]outbound.GlobalR
 	return out, rows.Err()
 }
 
+func (q *AccessQueries) GetDefaultAccessTemplate(ctx context.Context) (outbound.DefaultAccessTemplateRM, error) {
+	// Query the mode.
+	var mode access.IncidentMode
+
+	err := q.db.QueryRowContext(ctx,
+		`SELECT mode FROM readmodel_incident_access_mode WHERE is_default = 1 LIMIT 1`,
+	).Scan(&mode)
+	if errors.Is(err, sql.ErrNoRows) {
+		return outbound.DefaultAccessTemplateRM{Mode: access.Restricted}, nil
+	}
+
+	if err != nil {
+		return outbound.DefaultAccessTemplateRM{}, err
+	}
+
+	// Query grants on the template stream.
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT a.principal_kind, a.principal_id, a.role
+		   FROM readmodel_incident_access_mode m
+		   JOIN readmodel_incident_access a ON a.incident_id = m.incident_id AND a.revoked_at IS NULL
+		  WHERE m.is_default = 1`,
+	)
+	if err != nil {
+		return outbound.DefaultAccessTemplateRM{}, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var grants []access.Grant
+
+	for rows.Next() {
+		var (
+			kind access.PrincipalKind
+			id   string
+			role access.Role
+		)
+
+		if err := rows.Scan(&kind, &id, &role); err != nil {
+			return outbound.DefaultAccessTemplateRM{}, err
+		}
+
+		grants = append(grants, access.Grant{
+			Principal: access.Principal{Kind: kind, ID: id},
+			Role:      role,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return outbound.DefaultAccessTemplateRM{}, err
+	}
+
+	return outbound.DefaultAccessTemplateRM{Mode: mode, Grants: grants}, nil
+}
+
 func (q *AccessQueries) MyGlobalRoles(ctx context.Context, subject string) ([]outbound.GlobalRoleGrantRM, error) {
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT a.subject, a.role, COALESCE(u.name, ''), COALESCE(u.email, '')

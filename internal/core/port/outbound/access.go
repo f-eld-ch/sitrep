@@ -55,6 +55,12 @@ type GlobalRoleGrantRM struct {
 	Email   string
 }
 
+// DefaultAccessTemplateRM is the read-model view of the default-access template.
+type DefaultAccessTemplateRM struct {
+	Mode   access.IncidentMode
+	Grants []access.Grant
+}
+
 type AccessQueries interface {
 	ListIncidentAccess(ctx context.Context, incidentID shared.IncidentID) ([]IncidentAccessGrantRM, error)
 	GetIncidentAccessMode(ctx context.Context, incidentID shared.IncidentID) (access.IncidentMode, error)
@@ -63,6 +69,9 @@ type AccessQueries interface {
 	ListUsers(ctx context.Context) ([]UserRM, error)
 	ListGlobalRoles(ctx context.Context) ([]GlobalRoleGrantRM, error)
 	MyGlobalRoles(ctx context.Context, subject string) ([]GlobalRoleGrantRM, error)
+	// GetDefaultAccessTemplate returns the current default-access template.
+	// If no template has been configured, it returns Restricted mode with no grants.
+	GetDefaultAccessTemplate(ctx context.Context) (DefaultAccessTemplateRM, error)
 }
 
 // AccessGuard serializes cross-stream ownership and group-grant invariants.

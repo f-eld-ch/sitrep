@@ -27,7 +27,6 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-
 // Mock dayjs
 vi.mock("dayjs", () => {
   const actual = vi.importActual("dayjs");

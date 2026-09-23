@@ -600,7 +600,7 @@ Local development uses `LocalEnforcer` which injects a static actor without any 
 
 ## Observability
 
-All three OTEL signals are exported via OTLP gRPC.
+All three OTEL signals are exported via OTLP/HTTP.
 
 | Signal | Instrumented at |
 |---|---|

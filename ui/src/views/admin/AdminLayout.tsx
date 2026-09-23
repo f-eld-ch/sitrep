@@ -59,6 +59,16 @@ function AdminLayout() {
                 </NavLink>
               </li>
             )}
+            {globalRolesResult.status === "ready" && (
+              <li>
+                <NavLink
+                  to="default-access"
+                  className={({ isActive }) => (isActive ? activeLinkClass : linkClass)}
+                >
+                  {t("adminLayout.defaultAccess")}
+                </NavLink>
+              </li>
+            )}
           </ul>
         </aside>
         <div className="min-w-0 flex-1">

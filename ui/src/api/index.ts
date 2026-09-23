@@ -9,6 +9,7 @@ export type { CommandHook, CommandState, QueryResult } from "./result";
 // Access control
 export type {
   AccessGroupsData,
+  DefaultAccessData,
   GroupMembersData,
   IncidentAccessData,
   IncidentAccessModeData,
@@ -18,6 +19,7 @@ export type {
 export type {
   ChangeIncidentAccessModeArgs,
   CreateAccessGroupArgs,
+  DefaultRoleArgs,
   GlobalRoleArgs,
   GroupMemberArgs,
   IncidentRoleArgs,
@@ -31,8 +33,10 @@ export {
   useArchiveAccessGroup,
   useChangeIncidentAccessMode,
   useCreateAccessGroup,
+  useDefaultAccess,
   useGlobalRoles,
   useMyGlobalRoles,
+  useGrantDefaultRole,
   useGrantGlobalRole,
   useGrantIncidentRole,
   useGroupMembers,
@@ -41,8 +45,10 @@ export {
   useRemoveGroupMember,
   useRenameAccessGroup,
   useUpdateAccessGroupDescription,
+  useRevokeDefaultRole,
   useRevokeGlobalRole,
   useRevokeIncidentRole,
+  useSetDefaultAccessMode,
 } from "./access";
 
 // Incident aggregate

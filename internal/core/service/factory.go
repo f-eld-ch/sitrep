@@ -21,6 +21,7 @@ type Factory struct {
 	globalChecker outbound.GlobalAccessChecker
 	blobs         outbound.BlobStore
 	queries       outbound.Queries
+	accessQueries outbound.AccessQueries
 }
 
 // FactoryOption configures a Factory.
@@ -82,6 +83,10 @@ func WithQueries(queries outbound.Queries) FactoryOption {
 	return func(f *Factory) { f.queries = queries }
 }
 
+func WithAccessQueries(accessQueries outbound.AccessQueries) FactoryOption {
+	return func(f *Factory) { f.accessQueries = accessQueries }
+}
+
 // NewFactory builds a Factory from the supplied options.
 func NewFactory(opts ...FactoryOption) *Factory {
 	f := &Factory{}
@@ -94,7 +99,7 @@ func NewFactory(opts ...FactoryOption) *Factory {
 
 // IncidentService creates a ready-to-use IncidentService.
 func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbound.LayerRepository) *IncidentService {
-	return NewIncidentService(
+	svc := NewIncidentService(
 		f.tx,
 		repo,
 		layers,
@@ -105,6 +110,9 @@ func (f *Factory) IncidentService(repo outbound.IncidentRepository, layers outbo
 		f.ids,
 		f.notifier,
 	)
+	svc.accessQueries = f.accessQueries
+
+	return svc
 }
 
 func (f *Factory) AccessService() *AccessService {
