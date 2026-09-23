@@ -18,6 +18,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
@@ -192,10 +193,10 @@ func (r *messageResolver) Attachments(ctx context.Context, obj *model.Message) (
 func (r *mutationResolver) CreateIncident(
 	ctx context.Context,
 	input model.CreateIncidentInput,
-) (*model.Incident, error) {
-	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
-		return nil, err
+) (*model.CreateIncidentPayload, error) {
+	actor, actorErr := identity.ActorFrom(ctx)
+	if actorErr != nil {
+		return nil, actorErr
 	}
 
 	var parentID *shared.IncidentID
@@ -225,19 +226,26 @@ func (r *mutationResolver) CreateIncident(
 		layerNames[i] = l.Name
 	}
 
-	mode := access.OpenOperational
+	var result inbound.CreateIncidentResult
+	var svcErr error
+
 	if input.Mode != nil {
-		mode = accessModeToDomain(*input.Mode)
+		// Explicit mode: use CreateIncidentWithParentMode directly.
+		result, svcErr = r.Incidents.CreateIncidentWithParentMode(
+			ctx, input.Name, loc, divisions, layerNames, parentID, accessModeToDomain(*input.Mode), actor,
+		)
+	} else {
+		// No explicit mode: let the service read the default-access template.
+		result, svcErr = r.Incidents.CreateIncidentWithParent(
+			ctx, input.Name, loc, divisions, layerNames, parentID, actor,
+		)
 	}
 
-	result, err := r.Incidents.CreateIncidentWithParentMode(
-		ctx, input.Name, loc, divisions, layerNames, parentID, mode, actor,
-	)
-	if err != nil {
-		return nil, err
+	if svcErr != nil {
+		return nil, svcErr
 	}
 
-	return incidentResultToModel(result), nil
+	return createIncidentPayloadFromResult(result), nil
 }
 
 // ChangeIncidentAccessMode is the resolver for the changeIncidentAccessMode field.
@@ -245,13 +253,40 @@ func (r *mutationResolver) ChangeIncidentAccessMode(
 	ctx context.Context,
 	incidentID string,
 	mode model.IncidentAccessMode,
-) (*model.IncidentAccessGrant, error) {
+) (model.IncidentAccessMode, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	id, err := parseUUID(incidentID)
+	if err != nil {
+		return "", err
+	}
+
+	if r.Access == nil {
+		return "", shared.ErrForbidden
+	}
+
+	resultMode, err := r.Access.ChangeIncidentAccessMode(
+		ctx,
+		shared.IncidentID(id),
+		accessModeToDomain(mode),
+		actor,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return incidentModeFromDomain(resultMode), nil
+}
+
+// SetDefaultAccessMode is the resolver for the setDefaultAccessMode field.
+func (r *mutationResolver) SetDefaultAccessMode(
+	ctx context.Context,
+	mode model.IncidentAccessMode,
+) (*model.DefaultAccess, error) {
+	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -260,21 +295,64 @@ func (r *mutationResolver) ChangeIncidentAccessMode(
 		return nil, shared.ErrForbidden
 	}
 
-	if err := r.Access.ChangeIncidentAccessMode(
-		ctx,
-		shared.IncidentID(id),
-		accessModeToDomain(mode),
-		actor,
-	); err != nil {
+	result, err := r.Access.SetDefaultAccessMode(ctx, accessModeToDomain(mode), actor)
+	if err != nil {
 		return nil, err
 	}
 
-	return &model.IncidentAccessGrant{
-		IncidentID:    incidentID,
-		PrincipalKind: model.AccessPrincipalKindUser,
-		PrincipalID:   actor.Sub,
-		Role:          model.IncidentRoleOwner,
-	}, nil
+	return defaultAccessResultToModel(result), nil
+}
+
+// GrantDefaultRole is the resolver for the grantDefaultRole field.
+func (r *mutationResolver) GrantDefaultRole(
+	ctx context.Context,
+	principalKind model.AccessPrincipalKind,
+	principalID string,
+	role model.IncidentRole,
+) (*model.DefaultAccess, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if r.Access == nil {
+		return nil, shared.ErrForbidden
+	}
+
+	principal := access.Principal{Kind: principalKindToDomain(principalKind), ID: principalID}
+
+	result, err := r.Access.GrantDefaultRole(ctx, principal, incidentRoleToDomain(role), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return defaultAccessResultToModel(result), nil
+}
+
+// RevokeDefaultRole is the resolver for the revokeDefaultRole field.
+func (r *mutationResolver) RevokeDefaultRole(
+	ctx context.Context,
+	principalKind model.AccessPrincipalKind,
+	principalID string,
+	role model.IncidentRole,
+) (*model.DefaultAccess, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if r.Access == nil {
+		return nil, shared.ErrForbidden
+	}
+
+	principal := access.Principal{Kind: principalKindToDomain(principalKind), ID: principalID}
+
+	result, err := r.Access.RevokeDefaultRole(ctx, principal, incidentRoleToDomain(role), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return defaultAccessResultToModel(result), nil
 }
 
 // GrantIncidentRole is the resolver for the grantIncidentRole field.
@@ -1289,6 +1367,36 @@ func (r *queryResolver) MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleG
 	return out, nil
 }
 
+// DefaultAccess is the resolver for the defaultAccess field.
+func (r *queryResolver) DefaultAccess(ctx context.Context) (*model.DefaultAccess, error) {
+	if r.AccessQueries == nil {
+		return &model.DefaultAccess{
+			Mode:   model.IncidentAccessModeOpenOperational,
+			Grants: []*model.DefaultAccessGrant{},
+		}, nil
+	}
+
+	tmpl, err := r.AccessQueries.GetDefaultAccessTemplate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	da := &model.DefaultAccess{
+		Mode:   incidentModeFromDomain(tmpl.Mode),
+		Grants: make([]*model.DefaultAccessGrant, 0, len(tmpl.Grants)),
+	}
+
+	for _, g := range tmpl.Grants {
+		da.Grants = append(da.Grants, &model.DefaultAccessGrant{
+			PrincipalKind: principalKindFromDomain(g.Principal.Kind),
+			PrincipalID:   g.Principal.ID,
+			Role:          incidentRoleFromDomain(g.Role),
+		})
+	}
+
+	return da, nil
+}
+
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 
@@ -1307,3 +1415,13 @@ type (
 	mutationResolver struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
 )
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	var _ = fmt.Errorf
+*/

@@ -124,6 +124,7 @@ export default defineConfig({
     // each threw an uncaught "window is not defined" on startup. In the main thread
     // globalThis *is* window, so nothing changes there.
     global: "globalThis",
+    "globalThis.__DEV__": JSON.stringify(process.env.NODE_ENV !== "production"),
     // Inject VITE_VERSION and VITE_SHA_VERSION at build time so import.meta.env is reliable
     "import.meta.env.VITE_SHA_VERSION": JSON.stringify(buildSha),
     "import.meta.env.VITE_VERSION": JSON.stringify(buildVersion),

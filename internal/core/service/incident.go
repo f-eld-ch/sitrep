@@ -26,16 +26,17 @@ import (
 
 // IncidentService handles all write-side operations for the Incident aggregate.
 type IncidentService struct {
-	tx         outbound.Transactor
-	repo       outbound.IncidentRepository
-	layers     outbound.LayerRepository
-	hierarchy  outbound.IncidentHierarchyGuard
-	access     outbound.IncidentAccessChecker
-	accessRepo outbound.IncidentAccessRepository
-	clock      outbound.Clock
-	ids        outbound.IDs
-	notifier   outbound.EventNotifier
-	tracer     trace.Tracer
+	tx            outbound.Transactor
+	repo          outbound.IncidentRepository
+	layers        outbound.LayerRepository
+	hierarchy     outbound.IncidentHierarchyGuard
+	access        outbound.IncidentAccessChecker
+	accessRepo    outbound.IncidentAccessRepository
+	accessQueries outbound.AccessQueries
+	clock         outbound.Clock
+	ids           outbound.IDs
+	notifier      outbound.EventNotifier
+	tracer        trace.Tracer
 }
 
 func NewIncidentService(
@@ -65,6 +66,8 @@ func NewIncidentService(
 
 // CreateIncident opens a new incident, creates its divisions, and creates the
 // requested layers (defaulting to one). All writes are in a single transaction.
+// The access mode defaults to the configured default-access template (Restricted
+// if no template has been set up).
 func (s *IncidentService) CreateIncident(
 	ctx context.Context,
 	name string,
@@ -80,7 +83,7 @@ func (s *IncidentService) CreateIncident(
 		divisions,
 		layerNames,
 		nil,
-		access.OpenOperational,
+		s.defaultTemplateMode(ctx),
 		actor,
 	)
 }
@@ -101,9 +104,24 @@ func (s *IncidentService) CreateIncidentWithParent(
 		divisions,
 		layerNames,
 		parentID,
-		access.OpenOperational,
+		s.defaultTemplateMode(ctx),
 		actor,
 	)
+}
+
+// defaultTemplateMode returns the access mode from the default-access template.
+// Falls back to OpenOperational when no template is configured or accessible.
+func (s *IncidentService) defaultTemplateMode(ctx context.Context) access.IncidentMode {
+	if s.accessQueries == nil {
+		return access.OpenOperational
+	}
+
+	tmpl, err := s.accessQueries.GetDefaultAccessTemplate(ctx)
+	if err != nil {
+		return access.OpenOperational
+	}
+
+	return tmpl.Mode
 }
 
 func (s *IncidentService) CreateIncidentWithParentMode(
@@ -147,6 +165,12 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 		layerIDs[i] = shared.LayerID(s.ids.New())
 	}
 
+	// Captured from inside the transaction to build the result.
+	var (
+		accessMode   access.IncidentMode
+		accessGrants []access.Grant
+	)
+
 	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		if parentID != nil {
 			release, err := s.lockHierarchy(ctx)
@@ -182,9 +206,25 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 				return err
 			}
 
+			// Apply default-access template grants (e.g. open-to-all viewer grant).
+			if s.accessQueries != nil {
+				if tmpl, err := s.accessQueries.GetDefaultAccessTemplate(ctx); err == nil {
+					for _, g := range tmpl.Grants {
+						// GrantRole is idempotent and skips no-ops; ignore non-fatal errors
+						// (e.g. trying to grant Owner to AllPrincipal).
+						_ = accessAggregate.GrantRole(g.Principal, g.Role, actor.Sub, at)
+					}
+				}
+			}
+
 			if _, err := s.accessRepo.Save(ctx, accessAggregate); err != nil {
 				return err
 			}
+
+			accessMode = accessAggregate.Mode()
+			accessGrants = accessAggregate.Grants()
+		} else {
+			accessMode = mode
 		}
 
 		// 2. Create each Layer.
@@ -215,13 +255,15 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 	_ = s.notifier.Notify(ctx)
 
 	return inbound.CreateIncidentResult{
-		IncidentID: incID,
-		ParentID:   parentID,
-		LayerIDs:   layerIDs,
-		Name:       name,
-		Location:   location,
-		Divisions:  divisions,
-		CreatedAt:  at,
+		IncidentID:   incID,
+		ParentID:     parentID,
+		LayerIDs:     layerIDs,
+		Name:         name,
+		Location:     location,
+		Divisions:    divisions,
+		CreatedAt:    at,
+		AccessMode:   accessMode,
+		AccessGrants: accessGrants,
 	}, nil
 }
 

@@ -15,6 +15,7 @@ import (
 	inmemstore "github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -100,10 +101,11 @@ func TestCreateIncident_ReturnsModel(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, "Test Incident", result.Name)
-	assert.False(t, result.IsClosed)
-	assert.NotEmpty(t, result.ID)
-	_, err = uuid.Parse(result.ID)
+	require.NotNil(t, result.Incident)
+	assert.Equal(t, "Test Incident", result.Incident.Name)
+	assert.False(t, result.Incident.IsClosed)
+	assert.NotEmpty(t, result.Incident.ID)
+	_, err = uuid.Parse(result.Incident.ID)
 	require.NoError(t, err, "ID must be a valid UUID")
 }
 
@@ -122,9 +124,10 @@ func TestCreateIncident_WithDivisionsAndLayers(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	assert.Equal(t, "Incident With Divisions", result.Name)
-	assert.Len(t, result.Divisions, 2)
-	assert.Equal(t, "Alpha", result.Divisions[0].Name)
+	require.NotNil(t, result.Incident)
+	assert.Equal(t, "Incident With Divisions", result.Incident.Name)
+	assert.Len(t, result.Incident.Divisions, 2)
+	assert.Equal(t, "Alpha", result.Incident.Divisions[0].Name)
 }
 
 func TestCreateIncident_NoActor_ReturnsError(t *testing.T) {
@@ -152,8 +155,9 @@ func TestCreateIncident_InvalidUUID_NotAnIssue(t *testing.T) {
 	})
 
 	require.NoError(t, err)
+	require.NotNil(t, result.Incident)
 
-	_, parseErr := uuid.Parse(result.ID)
+	_, parseErr := uuid.Parse(result.Incident.ID)
 	assert.NoError(t, parseErr)
 }
 
@@ -167,12 +171,13 @@ func TestCloseAndReopenIncident(t *testing.T) {
 		Layers:    []*model.LayerInput{},
 	})
 	require.NoError(t, err)
+	require.NotNil(t, created.Incident)
 
-	closed, err := s.resolver.Mutation().CloseIncident(ctx, created.ID)
+	closed, err := s.resolver.Mutation().CloseIncident(ctx, created.Incident.ID)
 	require.NoError(t, err)
 	// Only the closed state changes; identity and name must be preserved.
-	assert.Equal(t, created.ID, closed.ID)
-	assert.Equal(t, created.Name, closed.Name)
+	assert.Equal(t, created.Incident.ID, closed.ID)
+	assert.Equal(t, created.Incident.Name, closed.Name)
 	assert.True(t, closed.IsClosed)
 	require.NotNil(t, closed.ClosedAt)
 
@@ -197,15 +202,15 @@ func TestUpdateIncident(t *testing.T) {
 	require.NoError(t, err)
 
 	newName := "Updated Name"
-	updated, err := s.resolver.Mutation().UpdateIncident(ctx, created.ID, model.UpdateIncidentInput{
+	updated, err := s.resolver.Mutation().UpdateIncident(ctx, created.Incident.ID, model.UpdateIncidentInput{
 		Name: &newName,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Name", updated.Name)
 	// Fields not in the update input must be preserved unchanged.
-	assert.Equal(t, created.ID, updated.ID)
-	assert.Equal(t, created.IsClosed, updated.IsClosed)
-	assert.Equal(t, created.ClosedAt, updated.ClosedAt)
+	assert.Equal(t, created.Incident.ID, updated.ID)
+	assert.Equal(t, created.Incident.IsClosed, updated.IsClosed)
+	assert.Equal(t, created.Incident.ClosedAt, updated.ClosedAt)
 }
 
 func TestDeleteIncident(t *testing.T) {
@@ -219,12 +224,12 @@ func TestDeleteIncident(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = s.resolver.Mutation().CloseIncident(ctx, created.ID)
+	_, err = s.resolver.Mutation().CloseIncident(ctx, created.Incident.ID)
 	require.NoError(t, err)
 
-	deletedID, err := s.resolver.Mutation().DeleteIncident(ctx, created.ID)
+	deletedID, err := s.resolver.Mutation().DeleteIncident(ctx, created.Incident.ID)
 	require.NoError(t, err)
-	assert.Equal(t, created.ID, deletedID)
+	assert.Equal(t, created.Incident.ID, deletedID)
 }
 
 func TestUpdateIncident_InvalidID_ReturnsError(t *testing.T) {
@@ -277,10 +282,10 @@ func TestIncident_QueryByID(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	got, err := s.resolver.Query().Incident(ctx, created.ID)
+	got, err := s.resolver.Query().Incident(ctx, created.Incident.ID)
 	require.NoError(t, err)
 	require.NotNil(t, got)
-	assert.Equal(t, created.ID, got.ID)
+	assert.Equal(t, created.Incident.ID, got.ID)
 	assert.Equal(t, "Lookup Target", got.Name)
 }
 
@@ -304,9 +309,9 @@ func TestIncidents_DeletedNotVisible(t *testing.T) {
 		Layers:    []*model.LayerInput{},
 	})
 	require.NoError(t, err)
-	_, err = s.resolver.Mutation().CloseIncident(ctx, created.ID)
+	_, err = s.resolver.Mutation().CloseIncident(ctx, created.Incident.ID)
 	require.NoError(t, err)
-	_, err = s.resolver.Mutation().DeleteIncident(ctx, created.ID)
+	_, err = s.resolver.Mutation().DeleteIncident(ctx, created.Incident.ID)
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
@@ -333,7 +338,7 @@ func TestCreateMessage_ReturnsModel(t *testing.T) {
 
 	now := time.Now().UTC().Truncate(time.Second)
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "Alice",
 		Receiver:       "Bob",
 		SenderDetail:   "alpha",
@@ -367,7 +372,7 @@ func TestUpdateMessage_CorrectContent(t *testing.T) {
 	require.NoError(t, err)
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "Alice",
 		Receiver:       "Bob",
 		SenderDetail:   "555-1111",
@@ -406,7 +411,7 @@ func TestDeleteMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "X",
 		Receiver:       "Y",
 		SenderDetail:   "sender@example.test",
@@ -438,7 +443,7 @@ func TestMessage_QueryByID(t *testing.T) {
 	require.NoError(t, err)
 
 	created, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "S",
 		Receiver:       "R",
 		SenderDetail:   "",
@@ -468,7 +473,7 @@ func TestIncident_Messages_FieldResolver(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "A",
 		Receiver:       "B",
 		SenderDetail:   "",
@@ -478,7 +483,7 @@ func TestIncident_Messages_FieldResolver(t *testing.T) {
 	})
 	require.NoError(t, err)
 	_, err = s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID:     inc.ID,
+		IncidentID:     inc.Incident.ID,
 		Sender:         "A",
 		Receiver:       "B",
 		SenderDetail:   "",
@@ -490,7 +495,7 @@ func TestIncident_Messages_FieldResolver(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	msgs, err := s.resolver.Incident().Messages(ctx, inc)
+	msgs, err := s.resolver.Incident().Messages(ctx, inc.Incident)
 	require.NoError(t, err)
 	assert.Len(t, msgs, 2)
 }
@@ -509,24 +514,24 @@ func TestMessages_AcrossIncidents_Segregated(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID: incA.ID, Sender: "X", Receiver: "Y",
+		IncidentID: incA.Incident.ID, Sender: "X", Receiver: "Y",
 		SenderDetail: "", ReceiverDetail: "", Content: "For A", Medium: model.MediumRadio,
 	})
 	require.NoError(t, err)
 	_, err = s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID: incB.ID, Sender: "X", Receiver: "Y",
+		IncidentID: incB.Incident.ID, Sender: "X", Receiver: "Y",
 		SenderDetail: "", ReceiverDetail: "", Content: "For B", Medium: model.MediumRadio,
 	})
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	msgsA, err := s.resolver.Incident().Messages(ctx, incA)
+	msgsA, err := s.resolver.Incident().Messages(ctx, incA.Incident)
 	require.NoError(t, err)
 	assert.Len(t, msgsA, 1)
 	assert.Equal(t, "For A", msgsA[0].Content)
 
-	msgsB, err := s.resolver.Incident().Messages(ctx, incB)
+	msgsB, err := s.resolver.Incident().Messages(ctx, incB.Incident)
 	require.NoError(t, err)
 	assert.Len(t, msgsB, 1)
 	assert.Equal(t, "For B", msgsB[0].Content)
@@ -549,7 +554,7 @@ func TestLayersForIncident_AfterCreate(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 	require.Len(t, layers, 1)
 	assert.Equal(t, "Sector Map", layers[0].Name)
@@ -568,17 +573,17 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 
 	child, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
 		Name:      "GFS Altdorf",
-		ParentID:  &parent.ID,
+		ParentID:  &parent.Incident.ID,
 		Divisions: []*model.DivisionInput{},
 		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
 	})
 	require.NoError(t, err)
-	require.NotNil(t, child.ParentID)
-	assert.Equal(t, parent.ID, *child.ParentID)
+	require.NotNil(t, child.Incident.ParentID)
+	assert.Equal(t, parent.Incident.ID, *child.Incident.ParentID)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Nachrichtenkarte"}, []string{
 		layers[0].SourceIncidentName + ":" + layers[0].Name,
@@ -604,14 +609,14 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	linked, err := s.resolver.Mutation().LinkIncidentParent(ctx, child.ID, parent.ID)
+	linked, err := s.resolver.Mutation().LinkIncidentParent(ctx, child.Incident.ID, parent.Incident.ID)
 	require.NoError(t, err)
 	require.NotNil(t, linked.ParentID)
-	assert.Equal(t, parent.ID, *linked.ParentID)
+	assert.Equal(t, parent.Incident.ID, *linked.ParentID)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
 	require.Len(t, parentLayers, 2)
 	assert.ElementsMatch(
@@ -623,26 +628,26 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 	for _, layer := range parentLayers {
 		switch layer.Name {
 		case "Regional Map":
-			assert.Equal(t, parent.ID, layer.SourceIncidentID)
+			assert.Equal(t, parent.Incident.ID, layer.SourceIncidentID)
 			assert.Equal(t, "Regional", layer.SourceIncidentName)
 		case "Municipal Map":
-			assert.Equal(t, child.ID, layer.SourceIncidentID)
+			assert.Equal(t, child.Incident.ID, layer.SourceIncidentID)
 			assert.Equal(t, "Municipal", layer.SourceIncidentName)
 		}
 	}
 
-	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.ID)
+	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID)
 	require.NoError(t, err)
 	require.Len(t, childLayers, 1)
 	assert.Equal(t, "Municipal Map", childLayers[0].Name)
 
-	unlinked, err := s.resolver.Mutation().UnlinkIncidentParent(ctx, child.ID)
+	unlinked, err := s.resolver.Mutation().UnlinkIncidentParent(ctx, child.Incident.ID)
 	require.NoError(t, err)
 	assert.Nil(t, unlinked.ParentID)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
 	require.Len(t, parentLayers, 1)
 	assert.Equal(t, "Regional Map", parentLayers[0].Name)
@@ -679,13 +684,13 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 	})
 	require.NoError(t, err)
 
-	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, ahausen.ID, parent.ID)
+	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, ahausen.Incident.ID, parent.Incident.ID)
 	require.NoError(t, err)
-	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, altdorf.ID, parent.ID)
+	_, err = s.resolver.Mutation().LinkIncidentParent(ctx, altdorf.Incident.ID, parent.Incident.ID)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
 	require.Len(t, layers, 5)
 
@@ -718,7 +723,7 @@ func TestTriageMessage_SetsTriageAndPriority(t *testing.T) {
 	require.NoError(t, err)
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID: inc.ID, Sender: "A", Receiver: "B",
+		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B",
 		SenderDetail: "", ReceiverDetail: "", Content: "Urgent", Medium: model.MediumRadio,
 	})
 	require.NoError(t, err)
@@ -751,11 +756,11 @@ func TestTriageMessage_WithDivision_EnrichesResponse(t *testing.T) {
 		Layers:    []*model.LayerInput{},
 	})
 	require.NoError(t, err)
-	require.Len(t, inc.Divisions, 1)
-	divID := inc.Divisions[0].ID
+	require.Len(t, inc.Incident.Divisions, 1)
+	divID := inc.Incident.Divisions[0].ID
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
-		IncidentID: inc.ID, Sender: "A", Receiver: "B",
+		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B",
 		SenderDetail: "", ReceiverDetail: "", Content: "Check", Medium: model.MediumRadio,
 	})
 	require.NoError(t, err)
@@ -797,12 +802,12 @@ func TestCreateLayer_ReturnsModel(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	layer, err := s.resolver.Mutation().CreateLayer(ctx, inc.ID, "Ops Map")
+	layer, err := s.resolver.Mutation().CreateLayer(ctx, inc.Incident.ID, "Ops Map")
 
 	require.NoError(t, err)
 	require.NotNil(t, layer)
 	assert.Equal(t, "Ops Map", layer.Name)
-	assert.Equal(t, inc.ID, layer.SourceIncidentID)
+	assert.Equal(t, inc.Incident.ID, layer.SourceIncidentID)
 	assert.Equal(t, "Layer Mut", layer.SourceIncidentName)
 	assert.Equal(t, 0, layer.Revision)
 	assert.Empty(t, layer.Features)
@@ -819,12 +824,12 @@ func TestCreateLayer_AppearsInQuery(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	created, err := s.resolver.Mutation().CreateLayer(ctx, inc.ID, "New Layer")
+	created, err := s.resolver.Mutation().CreateLayer(ctx, inc.Incident.ID, "New Layer")
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 
 	var found bool
@@ -851,7 +856,7 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, layers)
 	layerID := layers[0].ID
@@ -860,7 +865,7 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 	geometry := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
 	props := map[string]any{"label": "HQ"}
 
-	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.ID, layerID, featureID, geometry, props)
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, geometry, props)
 
 	require.NoError(t, err)
 	require.NotNil(t, feat)
@@ -879,7 +884,7 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 
 	layerID := layers[0].ID
@@ -887,7 +892,7 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	featureID := uuid.NewString()
 	origGeom := map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}}
 	origProps := map[string]any{"label": "Old"}
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.ID, layerID, featureID, origGeom, origProps)
+	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, origGeom, origProps)
 	require.NoError(t, err)
 
 	newGeom := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
@@ -911,13 +916,13 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 
 	layerID := layers[0].ID
 
 	featureID := uuid.NewString()
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.ID, layerID, featureID,
+	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID,
 		map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}},
 		map[string]any{},
 	)
@@ -938,7 +943,7 @@ func TestAddFeature_InvalidLayerID_ReturnsError(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.ID, "not-a-uuid", uuid.NewString(),
+	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, "not-a-uuid", uuid.NewString(),
 		map[string]any{}, map[string]any{})
 	require.Error(t, err)
 }
@@ -976,4 +981,148 @@ func TestAccessGroups_AuthenticatedUser_ReturnsGroups(t *testing.T) {
 	groups, err := r.Query().AccessGroups(actorCtx())
 	require.NoError(t, err)
 	assert.NotNil(t, groups)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CreateIncident — access payload
+// ─────────────────────────────────────────────────────────────────────────────
+
+// newAccessTestStack extends the base test stack with the full access wiring:
+// incident-access repository, access projector, Casbin checkers, and the
+// AccessService. Use it in tests that need the mutation to return accurate
+// can* fields or to exercise default-template inheritance.
+func newAccessTestStack(t *testing.T) *testStack {
+	t.Helper()
+
+	store := inmemstore.NewEventStore()
+	tx := inmemstore.NewTransactor()
+	notifier := inmemstore.NewNotifier()
+	counter := inmemstore.NewMessageCounter()
+
+	incRepo := eventstore.NewIncidentRepository(store)
+	msgRepo := eventstore.NewMessageRepository(store)
+	layerRepo := eventstore.NewLayerRepository(store)
+	featureRepo := eventstore.NewFeatureRepository(store)
+	accessRepo := eventstore.NewIncidentAccessRepository(store)
+	groupRepo := eventstore.NewAccessGroupRepository(store)
+	globalRepo := eventstore.NewGlobalAccessRepository(store)
+
+	incHandler := projection.NewIncidentHandler()
+	divHandler := projection.NewIncidentDivisionHandler()
+	msgHandler := projection.NewMessageHandler()
+	layerHandler := projection.NewLayerFeaturesHandler()
+	accessHandler := projection.NewAccessHandler()
+
+	accessChecker := inmemstore.NewIncidentAccessChecker(accessHandler)
+	globalChecker := inmemstore.NewGlobalAccessChecker(accessHandler)
+	accessQueries := inmemqueries.NewAccessQueries(accessHandler)
+
+	factory := service.NewFactory(
+		service.WithTransactor(tx),
+		service.WithClock(inmemstore.WallClock{}),
+		service.WithIDs(inmemstore.UUIDGen{}),
+		service.WithNotifier(notifier),
+		service.WithMessageCounter(counter),
+		service.WithIncidentHierarchyGuard(inmemstore.NewIncidentHierarchyGuard(store)),
+		service.WithIncidentAccessRepository(accessRepo),
+		service.WithIncidentAccessChecker(accessChecker),
+		service.WithAccessGuard(inmemstore.NewAccessGuard()),
+		service.WithAccessGroupRepository(groupRepo),
+		service.WithGlobalAccessRepository(globalRepo),
+		service.WithGlobalAccessChecker(globalChecker),
+		service.WithAccessQueries(accessQueries),
+	)
+
+	incidentSvc := factory.IncidentService(incRepo, layerRepo)
+	messageSvc := factory.MessageService(msgRepo, incRepo)
+	layerSvc := factory.LayerService(layerRepo, incRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
+	accessSvc := factory.AccessService()
+
+	proj := projection.NewProjector(store, []projection.Handler{
+		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
+	})
+
+	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker)
+
+	r := &gqlresolver.Resolver{
+		Incidents:             incidentSvc,
+		Messages:              messageSvc,
+		Layers:                layerSvc,
+		Features:              featureSvc,
+		Access:                accessSvc,
+		Queries:               queries,
+		AccessQueries:         accessQueries,
+		IncidentAccessChecker: accessChecker,
+		GlobalAccessChecker:   globalChecker,
+	}
+
+	return &testStack{resolver: r, proj: proj}
+}
+
+func TestCreateIncident_ReturnsAccessPayload(t *testing.T) {
+	s := newAccessTestStack(t)
+	ctx := actorCtx()
+	actor, _ := identity.ActorFrom(ctx)
+
+	result, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "Access Test",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.NotNil(t, result.Incident)
+
+	// The mutation response must include an access mode.
+	assert.NotEmpty(t, result.AccessMode)
+
+	// The creator must appear in the returned grants with a management-level role.
+	require.NotEmpty(t, result.AccessGrants, "creator should receive an access grant")
+
+	var found bool
+
+	for _, g := range result.AccessGrants {
+		if g.PrincipalID == actor.Sub && (g.Role == model.IncidentRoleOwner || g.Role == model.IncidentRoleManager) {
+			found = true
+			break
+		}
+	}
+
+	assert.True(t, found, "creator %s should hold Owner or Manager role in AccessGrants", actor.Sub)
+}
+
+func TestCreateIncident_InheritsDefaultTemplateGrants(t *testing.T) {
+	s := newAccessTestStack(t)
+	ctx := actorCtx()
+	actor, _ := identity.ActorFrom(ctx)
+
+	// Bootstrap the test actor as SystemAdmin so GrantDefaultRole is permitted.
+	require.NoError(t, s.resolver.Access.BootstrapFirstSystemAdmin(ctx, actor.Sub, actor))
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	// Grant a default Viewer role to a second user via the access service.
+	viewer := access.Principal{Kind: access.UserPrincipal, ID: "viewer-user"}
+	_, err := s.resolver.Access.GrantDefaultRole(ctx, viewer, access.Viewer, actor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	// Create a new incident — it should inherit the default template grant.
+	result, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name:      "Inherits Template",
+		Divisions: []*model.DivisionInput{},
+		Layers:    []*model.LayerInput{},
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	grantedIDs := make(map[string]bool, len(result.AccessGrants))
+	for _, g := range result.AccessGrants {
+		grantedIDs[g.PrincipalID] = true
+	}
+
+	assert.True(t, grantedIDs[actor.Sub], "creator should be in grants")
+	assert.True(t, grantedIDs[viewer.ID], "default template viewer grant should be inherited")
 }

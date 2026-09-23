@@ -131,4 +131,16 @@ func (q *AccessQueries) MyGlobalRoles(_ context.Context, subject string) ([]outb
 	return out, nil
 }
 
+func (q *AccessQueries) GetDefaultAccessTemplate(_ context.Context) (outbound.DefaultAccessTemplateRM, error) {
+	mode, ok := q.handler.DefaultIncidentMode()
+	if !ok {
+		return outbound.DefaultAccessTemplateRM{Mode: access.Restricted}, nil
+	}
+
+	return outbound.DefaultAccessTemplateRM{
+		Mode:   mode,
+		Grants: q.handler.DefaultGrants(),
+	}, nil
+}
+
 var _ outbound.AccessQueries = (*AccessQueries)(nil)

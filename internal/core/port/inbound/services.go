@@ -36,7 +36,7 @@ type IncidentAccessService interface {
 		incidentID shared.IncidentID,
 		mode access.IncidentMode,
 		actor identity.Actor,
-	) error
+	) (access.IncidentMode, error)
 }
 
 type GroupAccessService interface {
@@ -50,22 +50,59 @@ type GroupAccessService interface {
 	RevokeGlobalRole(ctx context.Context, subject string, role access.GlobalRole, actor identity.Actor) error
 }
 
+// DefaultAccessResult is returned from default-access template mutations so
+// resolvers can build responses from aggregate state without a projection read.
+type DefaultAccessResult struct {
+	Mode   access.IncidentMode
+	Grants []access.Grant
+}
+
+// DefaultAccessService manages the default-access template applied to new incidents.
+type DefaultAccessService interface {
+	InitializeDefaultAccess(
+		ctx context.Context,
+		mode access.IncidentMode,
+		grants []access.Grant,
+		actor identity.Actor,
+	) (DefaultAccessResult, error)
+	SetDefaultAccessMode(
+		ctx context.Context,
+		mode access.IncidentMode,
+		actor identity.Actor,
+	) (DefaultAccessResult, error)
+	GrantDefaultRole(
+		ctx context.Context,
+		principal access.Principal,
+		role access.Role,
+		actor identity.Actor,
+	) (DefaultAccessResult, error)
+	RevokeDefaultRole(
+		ctx context.Context,
+		principal access.Principal,
+		role access.Role,
+		actor identity.Actor,
+	) (DefaultAccessResult, error)
+}
+
 type AccessService interface {
 	IncidentAccessService
 	GroupAccessService
+	DefaultAccessService
 	BootstrapFirstSystemAdmin(ctx context.Context, subject string, actor identity.Actor) error
 }
 
 // CreateIncidentResult is returned from CreateIncident so resolvers can build
 // the mutation response from aggregate state without a projection read.
 type CreateIncidentResult struct {
-	IncidentID shared.IncidentID
-	ParentID   *shared.IncidentID
-	LayerIDs   []shared.LayerID
-	Name       string
-	Location   *incident.LocationData
-	Divisions  []incident.DivisionData
-	CreatedAt  time.Time
+	IncidentID   shared.IncidentID
+	ParentID     *shared.IncidentID
+	LayerIDs     []shared.LayerID
+	Name         string
+	Location     *incident.LocationData
+	Divisions    []incident.DivisionData
+	CreatedAt    time.Time
+	AccessMode   access.IncidentMode
+	AccessGrants []access.Grant
 }
 
 // IncidentState is returned from incident mutation services so resolvers can

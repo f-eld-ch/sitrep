@@ -4,7 +4,18 @@ import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import reject from "lodash/reject";
 import union from "lodash/union";
-import { Fragment, ViewTransition, useTransition, useState, useRef, useContext, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
+import {
+  Fragment,
+  ViewTransition,
+  useTransition,
+  useState,
+  useRef,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useParams } from "react-router";
@@ -105,8 +116,12 @@ function PrintSheetButton({
     onAfterPrint: () => setShowForPrint(false),
   });
   const handlePrintRef = useRef(handlePrint);
-  useLayoutEffect(() => { handlePrintRef.current = handlePrint; });
-  useEffect(() => { if (showForPrint) handlePrintRef.current(); }, [showForPrint]);
+  useLayoutEffect(() => {
+    handlePrintRef.current = handlePrint;
+  });
+  useEffect(() => {
+    if (showForPrint) handlePrintRef.current();
+  }, [showForPrint]);
 
   return (
     <>
@@ -135,11 +150,7 @@ function TriagePanel(props: { message: Message; incidentId: string; onSaved: () 
   return <PanelForm key={message.id} message={message} incidentId={incidentId} onSaved={onSaved} />;
 }
 
-function PanelForm(props: {
-  message: Message;
-  incidentId: string;
-  onSaved: () => void;
-}) {
+function PanelForm(props: { message: Message; incidentId: string; onSaved: () => void }) {
   const { message, incidentId, onSaved } = props;
   const { t } = useTranslation();
   const { state: incidentState } = useContext(IncidentContext);
@@ -179,17 +190,20 @@ function PanelForm(props: {
     divisions: assignments.map((division) => ({ division })),
   };
 
-  const handleSave = useCallback((triage: TriageStatus) => {
-    onSaved();
-    triageMessage({
-      incidentId,
-      messageId: message.id,
-      priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
-      triage,
-      divisionIds: assignments.map((d) => d.id),
-      divisions: assignments,
-    }).catch(() => {});
-  }, [onSaved, triageMessage, incidentId, message.id, priority, assignments]);
+  const handleSave = useCallback(
+    (triage: TriageStatus) => {
+      onSaved();
+      triageMessage({
+        incidentId,
+        messageId: message.id,
+        priority: triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : priority,
+        triage,
+        divisionIds: assignments.map((d) => d.id),
+        divisions: assignments,
+      }).catch(() => {});
+    },
+    [onSaved, triageMessage, incidentId, message.id, priority, assignments],
+  );
 
   const handleNext = useCallback(() => {
     if (isLast) {
@@ -217,11 +231,7 @@ function PanelForm(props: {
       <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
         {!isPending && (
           <div className="mb-2 flex justify-end">
-            <PrintSheetButton
-              message={message}
-              divisions={incidentDivisions}
-              variant="inline"
-            />
+            <PrintSheetButton message={message} divisions={incidentDivisions} variant="inline" />
           </div>
         )}
         <JournalMessage
@@ -443,7 +453,8 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   );
 
   const messages = useMemo(
-    () => (result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : []),
+    () =>
+      result.status === "ready" ? buildMessageList(result.data.messages, resolvedFilters) : [],
     [result.status, result.data, resolvedFilters],
   );
 
@@ -502,12 +513,15 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [messages, effectiveId, startTransition]);
 
-  const handleSelect = useCallback((id: string | undefined) => {
-    startTransition(() => {
-      setCaughtUp(false);
-      setSelectedId(id);
-    });
-  }, [startTransition]);
+  const handleSelect = useCallback(
+    (id: string | undefined) => {
+      startTransition(() => {
+        setCaughtUp(false);
+        setSelectedId(id);
+      });
+    },
+    [startTransition],
+  );
 
   if (result.status === "loading") {
     return (
@@ -547,11 +561,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   return (
     <div className="mt-[2.75rem] flex grow overflow-hidden bg-bg">
-      <MessageStack
-        messages={messages}
-        effectiveId={effectiveId}
-        onSelect={handleSelect}
-      />
+      <MessageStack messages={messages} effectiveId={effectiveId} onSelect={handleSelect} />
       <TriageCanvas incidentClosed={incidentIsClosed}>
         {selectedMessage && !caughtUp && (
           <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">

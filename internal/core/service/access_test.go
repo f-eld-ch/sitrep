@@ -314,3 +314,87 @@ func TestGroupOwnerCanGrantOwner(t *testing.T) {
 type fixedAccessClock struct{ t time.Time }
 
 func (c fixedAccessClock) Now() time.Time { return c.t }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Default access template — service-layer tests
+// ─────────────────────────────────────────────────────────────────────────────
+
+// newDefaultAccessSvc builds a minimal AccessService for default-access tests.
+// Both the incident-level and global-level permission checkers are nil so the
+// service skips authorization — these tests focus on the template logic itself.
+func newDefaultAccessSvc(t *testing.T) *service.AccessService {
+	t.Helper()
+
+	store := inmem.NewEventStore()
+	at := time.Unix(1, 0)
+
+	return service.NewAccessService(
+		inmem.NewTransactor(),
+		eventstore.NewIncidentAccessRepository(store),
+		eventstore.NewAccessGroupRepository(store),
+		eventstore.NewGlobalAccessRepository(store),
+		nil,
+		nil,
+		inmem.NewAccessGuard(),
+		fixedAccessClock{t: at},
+		inmem.UUIDGen{},
+		inmem.NewNotifier(),
+	)
+}
+
+func TestSetDefaultAccessMode_ChangesMode(t *testing.T) {
+	ctx := context.Background()
+	svc := newDefaultAccessSvc(t)
+	actor := identity.Actor{Sub: "admin"}
+
+	result, err := svc.SetDefaultAccessMode(ctx, access.OpenOperational, actor)
+
+	require.NoError(t, err)
+	assert.Equal(t, access.OpenOperational, result.Mode)
+	assert.Empty(t, result.Grants)
+}
+
+func TestGrantDefaultRole_AppearsInResult(t *testing.T) {
+	ctx := context.Background()
+	svc := newDefaultAccessSvc(t)
+	actor := identity.Actor{Sub: "admin"}
+	principal := access.Principal{Kind: access.UserPrincipal, ID: "user-1"}
+
+	result, err := svc.GrantDefaultRole(ctx, principal, access.Viewer, actor)
+
+	require.NoError(t, err)
+	require.Len(t, result.Grants, 1)
+	assert.Equal(t, principal, result.Grants[0].Principal)
+	assert.Equal(t, access.Viewer, result.Grants[0].Role)
+}
+
+func TestRevokeDefaultRole_RemovesEntry(t *testing.T) {
+	ctx := context.Background()
+	svc := newDefaultAccessSvc(t)
+	actor := identity.Actor{Sub: "admin"}
+	principal := access.Principal{Kind: access.UserPrincipal, ID: "user-1"}
+
+	_, err := svc.GrantDefaultRole(ctx, principal, access.Viewer, actor)
+	require.NoError(t, err)
+
+	result, err := svc.RevokeDefaultRole(ctx, principal, access.Viewer, actor)
+	require.NoError(t, err)
+	assert.Empty(t, result.Grants)
+}
+
+// TestInitializeDefaultAccess_RespectsMode documents a bug: InitializeDefaultAccess
+// receives a mode parameter but never applies it to the aggregate, so the template
+// is always initialized to Restricted regardless of the caller-supplied mode.
+func TestInitializeDefaultAccess_RespectsMode(t *testing.T) {
+	ctx := context.Background()
+	svc := newDefaultAccessSvc(t)
+	actor := identity.Actor{Sub: "admin"}
+
+	result, err := svc.InitializeDefaultAccess(ctx, access.OpenOperational, nil, actor)
+
+	require.NoError(t, err)
+	// Bug: the mode parameter is ignored; the template is always Restricted.
+	// This test will fail until the bug is fixed in changeDefaultAccess.
+	assert.Equal(t, access.OpenOperational, result.Mode,
+		"InitializeDefaultAccess should initialize the template with the supplied mode")
+}

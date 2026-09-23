@@ -1,8 +1,15 @@
 import { useQuery } from "@apollo/client/react";
-import type { AccessGroup, AccessUser, GlobalRoleGrant, IncidentAccessGrant } from "types";
+import type {
+  AccessGroup,
+  AccessUser,
+  DefaultAccessGrant,
+  GlobalRoleGrant,
+  IncidentAccessGrant,
+} from "types";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import {
+  GET_DEFAULT_ACCESS,
   LIST_ACCESS_GROUPS,
   LIST_GLOBAL_ROLES,
   LIST_GROUP_MEMBERS,
@@ -12,6 +19,11 @@ import {
   MY_GLOBAL_ROLES,
 } from "./documents";
 import { toAccessGroup, toAccessUser, toGlobalRoleGrant, toIncidentAccessGrant } from "./mapper";
+
+export interface DefaultAccessData {
+  mode: "OPEN_OPERATIONAL" | "RESTRICTED";
+  grants: DefaultAccessGrant[];
+}
 
 export interface IncidentAccessData {
   grants: IncidentAccessGrant[];
@@ -217,6 +229,33 @@ export function useGlobalRoles(): QueryResult<GlobalRolesData> {
   return {
     status: "ready",
     data: { grants: (data?.globalRoles ?? []).map(toGlobalRoleGrant) },
+    error: undefined,
+    isRefreshing: loading,
+    refresh,
+  };
+}
+
+export function useDefaultAccess(): QueryResult<DefaultAccessData> {
+  const { loading, error, data, refetch } = useQuery(GET_DEFAULT_ACCESS);
+  const refresh = () => void refetch();
+  if (loading && !data) {
+    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+  }
+  if (error) {
+    return {
+      status: "error",
+      data: data ? { mode: data.defaultAccess.mode, grants: data.defaultAccess.grants } : undefined,
+      error: apiErrorFromApolloError(error),
+      isRefreshing: loading,
+      refresh,
+    };
+  }
+  return {
+    status: "ready",
+    data: {
+      mode: data?.defaultAccess.mode ?? "RESTRICTED",
+      grants: data?.defaultAccess.grants ?? [],
+    },
     error: undefined,
     isRefreshing: loading,
     refresh,

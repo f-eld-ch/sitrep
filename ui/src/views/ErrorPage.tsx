@@ -40,9 +40,7 @@ export function ErrorPage() {
           <div className="mb-1 flex items-center gap-2 text-xs font-bold tracking-widest text-fg-muted uppercase">
             <FontAwesomeIcon icon={faTriangleExclamation} className="text-danger" />
             <span>{t("keyMessage")}</span>
-            {status && (
-              <span className="ml-auto font-mono text-fg-muted/50">#{status}</span>
-            )}
+            {status && <span className="ml-auto font-mono text-fg-muted/50">#{status}</span>}
           </div>
 
           {/* Report card */}
@@ -63,15 +61,21 @@ export function ErrorPage() {
               {/* Report fields */}
               <dl className="mb-6 space-y-2 rounded-lg border border-border bg-bg p-4 text-sm">
                 <div className="flex gap-2">
-                  <dt className="w-32 shrink-0 font-bold text-fg-muted">{t("errorPage.fieldLocation")}</dt>
+                  <dt className="w-32 shrink-0 font-bold text-fg-muted">
+                    {t("errorPage.fieldLocation")}
+                  </dt>
                   <dd className="font-mono text-fg">{window.location.pathname}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-32 shrink-0 font-bold text-fg-muted">{t("errorPage.fieldStatus")}</dt>
+                  <dt className="w-32 shrink-0 font-bold text-fg-muted">
+                    {t("errorPage.fieldStatus")}
+                  </dt>
                   <dd className="font-mono text-fg">{statusText}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="w-32 shrink-0 font-bold text-fg-muted">{t("errorPage.fieldAction")}</dt>
+                  <dt className="w-32 shrink-0 font-bold text-fg-muted">
+                    {t("errorPage.fieldAction")}
+                  </dt>
                   <dd className="text-fg">{t("errorPage.fieldActionValue")}</dd>
                 </div>
               </dl>

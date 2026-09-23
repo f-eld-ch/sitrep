@@ -204,7 +204,7 @@
     }
   },
   "errorPage": {
-"title": "Unexpected Error",
+    "title": "Unexpected Error",
     "notFoundTitle": "Objective Not Found",
     "notFoundDesc": "The requested page could not be located. Please verify the address and try again.",
     "priority": "Priority",
@@ -335,6 +335,19 @@
     "title": "Administration",
     "accessControl": "Access control",
     "groups": "Groups",
-    "globalRoles": "Global roles"
+    "globalRoles": "Global roles",
+    "defaultAccess": "Default access"
+  },
+  "defaultAccess": {
+    "title": "Default incident access",
+    "description": "Configure the access mode and default role assignments applied to every new incident.",
+    "modeTitle": "Default access mode",
+    "modeHelp": "New incidents will be created with this access mode.",
+    "grantsTitle": "Default role assignments",
+    "grantsHelp": "These users and groups will be assigned the specified role on every new incident.",
+    "noGrants": "No default grants configured.",
+    "revokeFailed": "Failed to revoke default role.",
+    "grantFailed": "Failed to grant default role.",
+    "roleChangeFailed": "Failed to change default role."
   }
 }

@@ -6,6 +6,8 @@ import {
   ARCHIVE_ACCESS_GROUP,
   CHANGE_INCIDENT_ACCESS_MODE,
   CREATE_ACCESS_GROUP,
+  GET_DEFAULT_ACCESS,
+  GRANT_DEFAULT_ROLE,
   GRANT_GLOBAL_ROLE,
   GRANT_INCIDENT_ROLE,
   LIST_ACCESS_GROUPS,
@@ -16,9 +18,11 @@ import {
   LIST_USERS,
   REMOVE_GROUP_MEMBER,
   RENAME_ACCESS_GROUP,
+  REVOKE_DEFAULT_ROLE,
   UPDATE_ACCESS_GROUP_DESCRIPTION,
   REVOKE_GLOBAL_ROLE,
   REVOKE_INCIDENT_ROLE,
+  SET_DEFAULT_ACCESS_MODE,
 } from "./documents";
 
 export interface ChangeIncidentAccessModeArgs {
@@ -311,6 +315,118 @@ export function useRevokeGlobalRole(): CommandHook<GlobalRoleArgs> {
         });
       },
     });
+  };
+  return [revoke, commandState(result.loading, result.error)];
+}
+
+export interface DefaultRoleArgs {
+  principalKind: "USER" | "GROUP" | "ALL";
+  principalId: string;
+  role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER";
+}
+
+export function useSetDefaultAccessMode(): CommandHook<{
+  mode: "OPEN_OPERATIONAL" | "RESTRICTED";
+}> {
+  const [mutate, result] = useMutation(SET_DEFAULT_ACCESS_MODE);
+  const setMode = async (args: { mode: "OPEN_OPERATIONAL" | "RESTRICTED" }): Promise<void> => {
+    await mutate({
+      variables: { mode: args.mode },
+      optimisticResponse: {
+        setDefaultAccessMode: { mode: args.mode, grants: [] },
+      },
+      update(cache, { data }) {
+        const next = data?.setDefaultAccessMode;
+        if (!next) return;
+        const cached = cache.readQuery({ query: GET_DEFAULT_ACCESS });
+        cache.writeQuery({
+          query: GET_DEFAULT_ACCESS,
+          data: {
+            defaultAccess: {
+              mode: next.mode,
+              grants: cached?.defaultAccess.grants ?? [],
+            },
+          },
+        });
+      },
+    }).catch(rethrowAsApiError);
+  };
+  return [setMode, commandState(result.loading, result.error)];
+}
+
+export function useGrantDefaultRole(): CommandHook<DefaultRoleArgs> {
+  const [mutate, result] = useMutation(GRANT_DEFAULT_ROLE);
+  const grant = async (args: DefaultRoleArgs): Promise<void> => {
+    await mutate({
+      variables: args,
+      optimisticResponse: {
+        grantDefaultRole: {
+          mode: "RESTRICTED" as const,
+          grants: [
+            { principalKind: args.principalKind, principalId: args.principalId, role: args.role },
+          ],
+        },
+      },
+      update(cache, { data }) {
+        const next = data?.grantDefaultRole;
+        if (!next) return;
+        const cached = cache.readQuery({ query: GET_DEFAULT_ACCESS });
+        if (!cached) return;
+        // A principal holds at most one role; remove any existing grant for this principal.
+        const withoutExisting = cached.defaultAccess.grants.filter(
+          (g) => !(g.principalKind === args.principalKind && g.principalId === args.principalId),
+        );
+        cache.writeQuery({
+          query: GET_DEFAULT_ACCESS,
+          data: {
+            defaultAccess: {
+              mode: cached.defaultAccess.mode,
+              grants: [
+                ...withoutExisting,
+                {
+                  principalKind: args.principalKind,
+                  principalId: args.principalId,
+                  role: args.role,
+                },
+              ],
+            },
+          },
+        });
+      },
+    }).catch(rethrowAsApiError);
+  };
+  return [grant, commandState(result.loading, result.error)];
+}
+
+export function useRevokeDefaultRole(): CommandHook<DefaultRoleArgs> {
+  const [mutate, result] = useMutation(REVOKE_DEFAULT_ROLE);
+  const revoke = async (args: DefaultRoleArgs): Promise<void> => {
+    await mutate({
+      variables: args,
+      optimisticResponse: {
+        revokeDefaultRole: { mode: "RESTRICTED" as const, grants: [] },
+      },
+      update(cache) {
+        const cached = cache.readQuery({ query: GET_DEFAULT_ACCESS });
+        if (!cached) return;
+        cache.writeQuery({
+          query: GET_DEFAULT_ACCESS,
+          data: {
+            defaultAccess: {
+              mode: cached.defaultAccess.mode,
+              grants: cached.defaultAccess.grants.filter(
+                (g) =>
+                  !(
+                    g.principalKind === args.principalKind &&
+                    g.principalId === args.principalId &&
+                    g.role === args.role
+                  ),
+              ),
+            },
+          },
+        });
+      },
+    }).catch(rethrowAsApiError);
   };
   return [revoke, commandState(result.loading, result.error)];
 }

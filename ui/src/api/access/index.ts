@@ -1,5 +1,6 @@
 export type {
   AccessGroupsData,
+  DefaultAccessData,
   GroupMembersData,
   IncidentAccessData,
   IncidentAccessModeData,
@@ -9,6 +10,7 @@ export type {
 export {
   useAccessGroups,
   useAccessUsers,
+  useDefaultAccess,
   useGlobalRoles,
   useMyGlobalRoles,
   useGroupMembers,
@@ -18,6 +20,7 @@ export {
 export type {
   ChangeIncidentAccessModeArgs,
   CreateAccessGroupArgs,
+  DefaultRoleArgs,
   GlobalRoleArgs,
   GroupMemberArgs,
   IncidentRoleArgs,
@@ -29,11 +32,14 @@ export {
   useArchiveAccessGroup,
   useChangeIncidentAccessMode,
   useCreateAccessGroup,
+  useGrantDefaultRole,
   useGrantGlobalRole,
   useGrantIncidentRole,
   useRemoveGroupMember,
   useRenameAccessGroup,
   useUpdateAccessGroupDescription,
+  useRevokeDefaultRole,
   useRevokeGlobalRole,
   useRevokeIncidentRole,
+  useSetDefaultAccessMode,
 } from "./commands";

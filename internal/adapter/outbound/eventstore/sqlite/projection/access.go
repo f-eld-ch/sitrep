@@ -19,7 +19,7 @@ type AccessHandler struct{ db *sql.DB }
 func NewAccessHandler(db *sql.DB) *AccessHandler { return &AccessHandler{db: db} }
 
 func (h *AccessHandler) Name() string      { return "readmodel.access" }
-func (h *AccessHandler) Version() int      { return 4 }
+func (h *AccessHandler) Version() int      { return 5 }
 func (h *AccessHandler) HaltOnError() bool { return true }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
@@ -79,10 +79,15 @@ func (h *AccessHandler) applyIncident(ctx context.Context, tx *sql.Tx, e eventso
 			return err
 		}
 
+		isDefault := 0
+		if e.StreamID == access.DefaultAccessTemplateID {
+			isDefault = 1
+		}
+
 		if err := exec(tx, ctx, `
-			INSERT INTO readmodel_incident_access_mode (incident_id, mode) VALUES (?, ?)
-			ON CONFLICT (incident_id) DO UPDATE SET mode = excluded.mode`,
-			e.StreamID.String(), d.Mode,
+			INSERT INTO readmodel_incident_access_mode (incident_id, mode, is_default) VALUES (?, ?, ?)
+			ON CONFLICT (incident_id) DO UPDATE SET mode = excluded.mode, is_default = excluded.is_default`,
+			e.StreamID.String(), d.Mode, isDefault,
 		); err != nil {
 			return err
 		}
@@ -284,7 +289,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx *sql.Tx) error {
 		       p.obj,
 		       p.act
 		  FROM readmodel_incident_access a
-		  JOIN readmodel_incident_access_mode m ON m.incident_id = a.incident_id
+		  JOIN readmodel_incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = 0
 		  JOIN roles p ON p.role = a.role
 		 WHERE a.revoked_at IS NULL
 		   AND a.principal_kind = 'user'
@@ -326,7 +331,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx *sql.Tx) error {
 		       p.obj,
 		       p.act
 		  FROM readmodel_incident_access a
-		  JOIN readmodel_incident_access_mode m ON m.incident_id = a.incident_id
+		  JOIN readmodel_incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = 0
 		  JOIN readmodel_access_group_member gm ON gm.group_id = a.principal_id AND gm.removed_at IS NULL
 		  JOIN readmodel_access_group g ON g.id = gm.group_id AND g.archived_at IS NULL
 		  JOIN roles p ON p.role = a.role
@@ -371,6 +376,7 @@ func (h *AccessHandler) rebuildPolicies(ctx context.Context, tx *sql.Tx) error {
 		       p.obj,
 		       p.act
 		  FROM readmodel_incident_access a
+		  JOIN readmodel_incident_access_mode m ON m.incident_id = a.incident_id AND m.is_default = 0
 		  JOIN roles p ON p.role = a.role
 		 WHERE a.revoked_at IS NULL AND a.principal_kind = 'all'`)
 }

@@ -204,7 +204,7 @@
     }
   },
   "errorPage": {
-"title": "Errore inatteso",
+    "title": "Errore inatteso",
     "notFoundTitle": "Obiettivo non trovato",
     "notFoundDesc": "La pagina richiesta non è stata trovata. Verificare l'indirizzo e riprovare.",
     "priority": "Priorità",
@@ -335,6 +335,19 @@
     "title": "Amministrazione",
     "accessControl": "Controllo accessi",
     "groups": "Gruppi",
-    "globalRoles": "Ruoli globali"
+    "globalRoles": "Ruoli globali",
+    "defaultAccess": "Accesso predefinito"
+  },
+  "defaultAccess": {
+    "title": "Accesso predefinito agli eventi",
+    "description": "Configura la modalità di accesso e le assegnazioni di ruoli predefinite per ogni nuovo evento.",
+    "modeTitle": "Modalità di accesso predefinita",
+    "modeHelp": "I nuovi eventi verranno creati con questa modalità di accesso.",
+    "grantsTitle": "Assegnazioni di ruoli predefinite",
+    "grantsHelp": "Questi utenti e gruppi riceveranno il ruolo specificato per ogni nuovo evento.",
+    "noGrants": "Nessuna assegnazione di ruolo predefinita configurata.",
+    "revokeFailed": "Revoca del ruolo predefinito non riuscita.",
+    "grantFailed": "Assegnazione del ruolo predefinito non riuscita.",
+    "roleChangeFailed": "Modifica del ruolo predefinito non riuscita."
   }
 }
