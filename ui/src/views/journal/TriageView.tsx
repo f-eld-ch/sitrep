@@ -1887,7 +1887,7 @@ const FORMATIONS: FormationMeta[] = [
   { key: "POL", babsId: "4701" },
   { key: "TECHNB", babsId: "4705" },
   { key: "ARMEE", babsId: "4706" },
-  { key: "OTHER", babsId: "4802" }, // neutral Gruppe icon
+  { key: "OTHER", babsId: "4707" },
 ];
 
 const SIZES: SizeMeta[] = [
