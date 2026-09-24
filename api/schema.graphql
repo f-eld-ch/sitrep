@@ -471,6 +471,8 @@ input AlertResourceInput {
   contact: ResourceContactInput
   homeLocation: ResourceHomeLocationInput
   sourceMessageId: ID
+  """Timestamp for the alert event; defaults to the server clock when omitted."""
+  occurredAt: DateTime
 }
 
 input CasualtyDeltasInput {
@@ -565,10 +567,10 @@ type Mutation {
   setSchadenplatzGeometry(id: ID!, geoJson: String): Schadenplatz!
 
   """Record casualty deltas (positive or negative) for a Schadenplatz."""
-  recordCasualties(id: ID!, sourceMessageId: ID!, input: CasualtyDeltasInput!): Schadenplatz!
+  recordCasualties(id: ID!, sourceMessageId: ID!, occurredAt: DateTime, input: CasualtyDeltasInput!): Schadenplatz!
 
   """Merge a Schadenplatz into the incident's default Schadenplatz."""
-  mergeSchadenplatz(id: ID!): ID!
+  mergeSchadenplatz(id: ID!, messageTime: DateTime): ID!
 
   # ── Resources ────────────────────────────────────────────────────────────────
 

@@ -294,6 +294,7 @@ func (s *SchadenplatzService) RecordCasualties(
 func (s *SchadenplatzService) MergeSchadenplatz(
 	ctx context.Context,
 	id shared.SchadenplatzID,
+	messageTime *time.Time,
 	actor identity.Actor,
 ) error {
 	ctx, span := s.tracer.Start(ctx, "SchadenplatzService.MergeSchadenplatz",
@@ -331,6 +332,41 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 			return shared.ValidationError{
 				Field:   "defaultSchadenplatzId",
 				Message: "incident has no default Schadenplatz",
+			}
+		}
+
+		// Copy casualty totals to the default Schadenplatz before marking this one
+		// as merged, so the totals are not lost when the merged SP is filtered out.
+		// The SP's own ID doubles as a synthetic message ID — this makes the
+		// CasualtiesRecorded event idempotent on projection replay (ON CONFLICT
+		// on (message_id, schadenplatz_id)).
+		c := sp.Casualties()
+		if c.Vermisste != 0 || c.Tote != 0 || c.Verletzte != 0 ||
+			c.Obdachlose != 0 || c.Eingeschlossene != 0 {
+			defaultSp, err := s.repo.Load(ctx, *defaultID)
+			if err != nil {
+				return err
+			}
+
+			// Record at the message time so the totals are attributed to the
+			// correct moment; fall back to the service clock when not provided.
+			casualtyAt := at
+			if messageTime != nil {
+				casualtyAt = *messageTime
+			}
+
+			syntheticMsgID := shared.MessageID(id)
+			if err := defaultSp.RecordCasualties(
+				syntheticMsgID,
+				schadenplatz.CasualtyDeltas(c),
+				casualtyAt,
+				actor.Sub,
+			); err != nil {
+				return err
+			}
+
+			if _, err := s.repo.Save(ctx, defaultSp); err != nil {
+				return err
 			}
 		}
 

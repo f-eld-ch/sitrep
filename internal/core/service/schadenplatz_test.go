@@ -156,7 +156,7 @@ func TestSchadenplatzService_MergeSchadenplatz(t *testing.T) {
 	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt West", testActor)
 	require.NoError(t, err)
 
-	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, testActor)
+	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, nil, testActor)
 	require.NoError(t, err)
 }
 
@@ -170,6 +170,6 @@ func TestSchadenplatzService_MergeSchadenplatz_ClosedIncidentRejected(t *testing
 	_, err = incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)
 	require.NoError(t, err)
 
-	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, testActor)
+	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }

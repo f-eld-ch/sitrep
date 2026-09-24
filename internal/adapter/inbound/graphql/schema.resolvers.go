@@ -1045,7 +1045,7 @@ func (r *mutationResolver) SetSchadenplatzGeometry(ctx context.Context, id strin
 }
 
 // RecordCasualties is the resolver for the recordCasualties field.
-func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sourceMessageID string, input model.CasualtyDeltasInput) (*model.Schadenplatz, error) {
+func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) (*model.Schadenplatz, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1061,9 +1061,9 @@ func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sour
 		return nil, err
 	}
 
-	msg, err := r.Queries.GetMessage(ctx, msgID)
-	if err != nil {
-		return nil, err
+	at := time.Now()
+	if occurredAt != nil {
+		at = *occurredAt
 	}
 
 	state, err := r.Schadenplaetze.RecordCasualties(ctx,
@@ -1076,7 +1076,7 @@ func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sour
 			Obdachlose:      input.Obdachlose,
 			Eingeschlossene: input.Eingeschlossene,
 		},
-		msg.Time,
+		at,
 		actor,
 	)
 	if err != nil {
@@ -1087,7 +1087,7 @@ func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sour
 }
 
 // MergeSchadenplatz is the resolver for the mergeSchadenplatz field.
-func (r *mutationResolver) MergeSchadenplatz(ctx context.Context, id string) (string, error) {
+func (r *mutationResolver) MergeSchadenplatz(ctx context.Context, id string, messageTime *time.Time) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -1098,7 +1098,7 @@ func (r *mutationResolver) MergeSchadenplatz(ctx context.Context, id string) (st
 		return "", err
 	}
 
-	if err := r.Schadenplaetze.MergeSchadenplatz(ctx, shared.SchadenplatzID(spID), actor); err != nil {
+	if err := r.Schadenplaetze.MergeSchadenplatz(ctx, shared.SchadenplatzID(spID), messageTime, actor); err != nil {
 		return "", err
 	}
 
@@ -1161,12 +1161,10 @@ func (r *mutationResolver) AlertResource(ctx context.Context, input model.AlertR
 
 		id := shared.MessageID(msgID)
 		svcInput.SourceMessageID = &id
+	}
 
-		msg, err := r.Queries.GetMessage(ctx, msgID)
-		if err != nil {
-			return nil, err
-		}
-		svcInput.OccurredAt = &msg.Time
+	if input.OccurredAt != nil {
+		svcInput.OccurredAt = input.OccurredAt
 	}
 
 	state, err := r.Resources.AlertResource(ctx, svcInput, actor)

@@ -194,10 +194,10 @@ type ComplexityRoot struct {
 		GrantIncidentRole            func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
 		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
-		MergeSchadenplatz            func(childComplexity int, id string) int
+		MergeSchadenplatz            func(childComplexity int, id string, messageTime *time.Time) int
 		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
 		ReassignResource             func(childComplexity int, id string, schadenplatzID string) int
-		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, input model.CasualtyDeltasInput) int
+		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) int
 		RelieveResource              func(childComplexity int, id string, successorID *string, at *time.Time) int
 		RemoveAttachment             func(childComplexity int, messageID string, attachmentID string) int
 		RemoveGroupMember            func(childComplexity int, groupID string, subject string) int
@@ -364,8 +364,8 @@ type MutationResolver interface {
 	CreateSchadenplatz(ctx context.Context, incidentID string, name string) (*model.Schadenplatz, error)
 	RenameSchadenplatz(ctx context.Context, id string, name string) (*model.Schadenplatz, error)
 	SetSchadenplatzGeometry(ctx context.Context, id string, geoJSON *string) (*model.Schadenplatz, error)
-	RecordCasualties(ctx context.Context, id string, sourceMessageID string, input model.CasualtyDeltasInput) (*model.Schadenplatz, error)
-	MergeSchadenplatz(ctx context.Context, id string) (string, error)
+	RecordCasualties(ctx context.Context, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) (*model.Schadenplatz, error)
+	MergeSchadenplatz(ctx context.Context, id string, messageTime *time.Time) (string, error)
 	AlertResource(ctx context.Context, input model.AlertResourceInput) (*model.Resource, error)
 	MarkResourceReady(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	DeployResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
@@ -1191,7 +1191,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.MergeSchadenplatz(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Mutation.MergeSchadenplatz(childComplexity, args["id"].(string), args["messageTime"].(*time.Time)), true
 	case "Mutation.modifyFeature":
 		if e.ComplexityRoot.Mutation.ModifyFeature == nil {
 			break
@@ -1224,7 +1224,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.RecordCasualties(childComplexity, args["id"].(string), args["sourceMessageId"].(string), args["input"].(model.CasualtyDeltasInput)), true
+		return e.ComplexityRoot.Mutation.RecordCasualties(childComplexity, args["id"].(string), args["sourceMessageId"].(string), args["occurredAt"].(*time.Time), args["input"].(model.CasualtyDeltasInput)), true
 	case "Mutation.relieveResource":
 		if e.ComplexityRoot.Mutation.RelieveResource == nil {
 			break
@@ -2484,6 +2484,8 @@ input AlertResourceInput {
   contact: ResourceContactInput
   homeLocation: ResourceHomeLocationInput
   sourceMessageId: ID
+  """Timestamp for the alert event; defaults to the server clock when omitted."""
+  occurredAt: DateTime
 }
 
 input CasualtyDeltasInput {
@@ -2578,10 +2580,10 @@ type Mutation {
   setSchadenplatzGeometry(id: ID!, geoJson: String): Schadenplatz!
 
   """Record casualty deltas (positive or negative) for a Schadenplatz."""
-  recordCasualties(id: ID!, sourceMessageId: ID!, input: CasualtyDeltasInput!): Schadenplatz!
+  recordCasualties(id: ID!, sourceMessageId: ID!, occurredAt: DateTime, input: CasualtyDeltasInput!): Schadenplatz!
 
   """Merge a Schadenplatz into the incident's default Schadenplatz."""
-  mergeSchadenplatz(id: ID!): ID!
+  mergeSchadenplatz(id: ID!, messageTime: DateTime): ID!
 
   # ── Resources ────────────────────────────────────────────────────────────────
 
@@ -3632,6 +3634,14 @@ func (ec *executionContext) field_Mutation_mergeSchadenplatz_args(ctx context.Co
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "messageTime",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["messageTime"] = arg1
 	return args, nil
 }
 
@@ -3706,14 +3716,22 @@ func (ec *executionContext) field_Mutation_recordCasualties_args(ctx context.Con
 		return nil, err
 	}
 	args["sourceMessageId"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "occurredAt",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["occurredAt"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (model.CasualtyDeltasInput, error) {
 			return ec.unmarshalNCasualtyDeltasInput2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐCasualtyDeltasInput(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["input"] = arg2
+	args["input"] = arg3
 	return args, nil
 }
 
@@ -7732,7 +7750,7 @@ func (ec *executionContext) _Mutation_recordCasualties(ctx context.Context, fiel
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().RecordCasualties(ctx, fc.Args["id"].(string), fc.Args["sourceMessageId"].(string), fc.Args["input"].(model.CasualtyDeltasInput))
+			return ec.Resolvers.Mutation().RecordCasualties(ctx, fc.Args["id"].(string), fc.Args["sourceMessageId"].(string), fc.Args["occurredAt"].(*time.Time), fc.Args["input"].(model.CasualtyDeltasInput))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Schadenplatz) graphql.Marshaler {
@@ -7776,7 +7794,7 @@ func (ec *executionContext) _Mutation_mergeSchadenplatz(ctx context.Context, fie
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().MergeSchadenplatz(ctx, fc.Args["id"].(string))
+			return ec.Resolvers.Mutation().MergeSchadenplatz(ctx, fc.Args["id"].(string), fc.Args["messageTime"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
@@ -11458,7 +11476,7 @@ func (ec *executionContext) unmarshalInputAlertResourceInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"incidentId", "schadenplatzId", "formation", "name", "size", "personnelCount", "hauptaufgabe", "contact", "homeLocation", "sourceMessageId"}
+	fieldsInOrder := [...]string{"incidentId", "schadenplatzId", "formation", "name", "size", "personnelCount", "hauptaufgabe", "contact", "homeLocation", "sourceMessageId", "occurredAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11535,6 +11553,13 @@ func (ec *executionContext) unmarshalInputAlertResourceInput(ctx context.Context
 				return it, err
 			}
 			it.SourceMessageID = data
+		case "occurredAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAt"))
+			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAt = data
 		}
 	}
 	return it, nil

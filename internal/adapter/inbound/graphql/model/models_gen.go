@@ -31,6 +31,8 @@ type AlertResourceInput struct {
 	Contact         *ResourceContactInput      `json:"contact,omitempty"`
 	HomeLocation    *ResourceHomeLocationInput `json:"homeLocation,omitempty"`
 	SourceMessageID *string                    `json:"sourceMessageId,omitempty"`
+	// Timestamp for the alert event; defaults to the server clock when omitted.
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
 }
 
 // A file attached to a message.

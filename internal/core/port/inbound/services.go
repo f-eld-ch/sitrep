@@ -371,6 +371,7 @@ type SchadenplatzService interface {
 	MergeSchadenplatz(
 		ctx context.Context,
 		id shared.SchadenplatzID,
+		messageTime *time.Time,
 		actor identity.Actor,
 	) error
 }
