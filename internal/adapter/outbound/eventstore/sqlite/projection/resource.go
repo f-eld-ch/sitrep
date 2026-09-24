@@ -126,9 +126,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 	case "Deployed":
 		var d struct {
 			DeploymentLocation *struct {
-				Label string  `json:"label"`
-				Lat   float64 `json:"lat"`
-				Lng   float64 `json:"lng"`
+				Label string   `json:"label"`
+				Lat   *float64 `json:"lat"`
+				Lng   *float64 `json:"lng"`
 			} `json:"deploymentLocation"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
@@ -141,8 +141,8 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		)
 		if d.DeploymentLocation != nil {
 			deploymentLabel = &d.DeploymentLocation.Label
-			deploymentLat = &d.DeploymentLocation.Lat
-			deploymentLng = &d.DeploymentLocation.Lng
+			deploymentLat = d.DeploymentLocation.Lat
+			deploymentLng = d.DeploymentLocation.Lng
 		}
 
 		// Remove any existing entry for this deployment start before appending —
@@ -220,9 +220,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 	case "DeploymentLocationUpdated":
 		var d struct {
 			Location *struct {
-				Lat   float64 `json:"lat"`
-				Lng   float64 `json:"lng"`
-				Label string  `json:"label"`
+				Lat   *float64 `json:"lat"`
+				Lng   *float64 `json:"lng"`
+				Label string   `json:"label"`
 			} `json:"location"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {

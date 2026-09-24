@@ -83,8 +83,8 @@ func (s *Schadenplatz) Create(
 	incidentID shared.IncidentID,
 	name string,
 	isDefault bool,
-	at time.Time,
 	actor string,
+	at time.Time,
 ) error {
 	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
@@ -130,8 +130,8 @@ func (s *Schadenplatz) SetGeometry(geoJSON []byte, actor string, at time.Time) e
 func (s *Schadenplatz) RecordCasualties(
 	sourceMessageID shared.MessageID,
 	deltas CasualtyDeltas,
-	at time.Time,
 	actor string,
+	at time.Time,
 ) error {
 	if err := s.requireActive(); err != nil {
 		return err

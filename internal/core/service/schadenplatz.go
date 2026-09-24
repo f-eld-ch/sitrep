@@ -89,7 +89,7 @@ func (s *SchadenplatzService) CreateSchadenplatz(
 		}
 
 		sp = schadenplatz.New(id)
-		if err := sp.Create(incidentID, name, false, at, actor.Sub); err != nil {
+		if err := sp.Create(incidentID, name, false, actor.Sub, at); err != nil {
 			return err
 		}
 
@@ -234,7 +234,7 @@ func (s *SchadenplatzService) RecordCasualties(
 	schadenplatzID shared.SchadenplatzID,
 	sourceMessageID shared.MessageID,
 	deltas schadenplatz.CasualtyDeltas,
-	occurredAt time.Time,
+	occurredAt *time.Time,
 	actor identity.Actor,
 ) (inbound.SchadenplatzState, error) {
 	ctx, span := s.tracer.Start(ctx, "SchadenplatzService.RecordCasualties",
@@ -244,7 +244,10 @@ func (s *SchadenplatzService) RecordCasualties(
 		))
 	defer span.End()
 
-	at := occurredAt
+	at := s.clock.Now()
+	if occurredAt != nil {
+		at = *occurredAt
+	}
 
 	var sp *schadenplatz.Schadenplatz
 
@@ -269,7 +272,7 @@ func (s *SchadenplatzService) RecordCasualties(
 			return shared.ErrIncidentNotOpen
 		}
 
-		if err := sp.RecordCasualties(sourceMessageID, deltas, at, actor.Sub); err != nil {
+		if err := sp.RecordCasualties(sourceMessageID, deltas, actor.Sub, at); err != nil {
 			return err
 		}
 
@@ -359,8 +362,8 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 			if err := defaultSp.RecordCasualties(
 				syntheticMsgID,
 				schadenplatz.CasualtyDeltas(c),
-				casualtyAt,
 				actor.Sub,
+				casualtyAt,
 			); err != nil {
 				return err
 			}

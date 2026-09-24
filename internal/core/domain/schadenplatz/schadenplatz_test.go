@@ -34,7 +34,7 @@ func replay(t *testing.T, id shared.SchadenplatzID, events []eventsourcing.Event
 // created returns a Created event for use in Given clauses.
 func created(id shared.SchadenplatzID, name string, isDefault bool) eventsourcing.Event {
 	s := schadenplatz.New(id)
-	if err := s.Create(incidentID, name, isDefault, at, actor); err != nil {
+	if err := s.Create(incidentID, name, isDefault, actor, at); err != nil {
 		panic(err)
 	}
 
@@ -63,7 +63,7 @@ func TestSchadenplatz_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := schadenplatz.New(id)
-			err := s.Create(incidentID, tt.spName, tt.isDefault, at, actor)
+			err := s.Create(incidentID, tt.spName, tt.isDefault, actor, at)
 
 			if tt.wantErr != nil {
 				require.ErrorIs(t, err, tt.wantErr)
@@ -89,7 +89,7 @@ func TestSchadenplatz_Create(t *testing.T) {
 func TestSchadenplatz_Create_SetsOwnerIncidentID(t *testing.T) {
 	id := shared.SchadenplatzID(uuid.New())
 	s := schadenplatz.New(id)
-	require.NoError(t, s.Create(incidentID, "Test", false, at, actor))
+	require.NoError(t, s.Create(incidentID, "Test", false, actor, at))
 	assert.Equal(t, uuid.UUID(incidentID), s.OwnerIncidentID())
 }
 
@@ -207,12 +207,12 @@ func TestSchadenplatz_RecordCasualties_AccumulatesCorrectly(t *testing.T) {
 
 	require.NoError(t, s.RecordCasualties(msgID1, schadenplatz.CasualtyDeltas{
 		Vermisste: 3, Tote: 1, Verletzte: 5,
-	}, at, actor))
+	}, actor, at))
 	s.Root().ClearPending()
 
 	require.NoError(t, s.RecordCasualties(msgID2, schadenplatz.CasualtyDeltas{
 		Vermisste: 2, Obdachlose: 10, Eingeschlossene: 1,
-	}, at, actor))
+	}, actor, at))
 	s.Root().ClearPending()
 
 	totals := s.Casualties()
@@ -228,7 +228,7 @@ func TestSchadenplatz_RecordCasualties_EmitsEvent(t *testing.T) {
 	msgID := shared.MessageID(uuid.New())
 
 	s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
-	require.NoError(t, s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Tote: 2}, at, actor))
+	require.NoError(t, s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Tote: 2}, actor, at))
 
 	pending := s.Root().PendingEvents()
 	require.Len(t, pending, 1)
@@ -240,7 +240,7 @@ func TestSchadenplatz_RecordCasualties_ZeroDeltasAreAllowed(t *testing.T) {
 	msgID := shared.MessageID(uuid.New())
 
 	s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
-	err := s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{}, at, actor)
+	err := s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{}, actor, at)
 	require.NoError(t, err)
 }
 
@@ -250,11 +250,11 @@ func TestSchadenplatz_RecordCasualties_NegativeDeltasBelowTotalRejected(t *testi
 	msgID2 := shared.MessageID(uuid.New())
 
 	s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
-	require.NoError(t, s.RecordCasualties(msgID1, schadenplatz.CasualtyDeltas{Vermisste: 2}, at, actor))
+	require.NoError(t, s.RecordCasualties(msgID1, schadenplatz.CasualtyDeltas{Vermisste: 2}, actor, at))
 	s.Root().ClearPending()
 
 	// -3 would bring Vermisste to -1 (below zero).
-	err := s.RecordCasualties(msgID2, schadenplatz.CasualtyDeltas{Vermisste: -3}, at, actor)
+	err := s.RecordCasualties(msgID2, schadenplatz.CasualtyDeltas{Vermisste: -3}, actor, at)
 	require.ErrorIs(t, err, shared.ErrCasualtyBelowZero)
 }
 
@@ -264,11 +264,11 @@ func TestSchadenplatz_RecordCasualties_NegativeDeltaExactlyToZeroIsAllowed(t *te
 	msgID2 := shared.MessageID(uuid.New())
 
 	s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
-	require.NoError(t, s.RecordCasualties(msgID1, schadenplatz.CasualtyDeltas{Tote: 3}, at, actor))
+	require.NoError(t, s.RecordCasualties(msgID1, schadenplatz.CasualtyDeltas{Tote: 3}, actor, at))
 	s.Root().ClearPending()
 
 	// Exactly -3 brings Tote to 0 — this is allowed.
-	err := s.RecordCasualties(msgID2, schadenplatz.CasualtyDeltas{Tote: -3}, at, actor)
+	err := s.RecordCasualties(msgID2, schadenplatz.CasualtyDeltas{Tote: -3}, actor, at)
 	require.NoError(t, err)
 	assert.Equal(t, 0, s.Casualties().Tote)
 }
@@ -291,7 +291,7 @@ func TestSchadenplatz_RecordCasualties_AllCategoriesChecked(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
-			err := s.RecordCasualties(msgID, tt.deltas, at, actor)
+			err := s.RecordCasualties(msgID, tt.deltas, actor, at)
 			require.ErrorIs(t, err, shared.ErrCasualtyBelowZero)
 		})
 	}
@@ -306,7 +306,7 @@ func TestSchadenplatz_RecordCasualties_MergedIsRejected(t *testing.T) {
 	require.NoError(t, s.MergeIntoDefault(defaultID, actor, at))
 	s.Root().ClearPending()
 
-	err := s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Vermisste: 1}, at, actor)
+	err := s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Vermisste: 1}, actor, at)
 	require.ErrorIs(t, err, shared.ErrSchadenplatzMerged)
 }
 
@@ -360,12 +360,12 @@ func TestSchadenplatz_ReplayFromEvents(t *testing.T) {
 
 	// Build aggregate through commands to get canonical events.
 	s := schadenplatz.New(id)
-	require.NoError(t, s.Create(incidentID, "Hauptschadenplatz", false, at, actor))
+	require.NoError(t, s.Create(incidentID, "Hauptschadenplatz", false, actor, at))
 	require.NoError(t, s.Rename("Chemieunfall Zone A", actor, at))
 	require.NoError(t, s.SetGeometry(geoJSON, actor, at))
 	require.NoError(t, s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{
 		Vermisste: 2, Tote: 1, Verletzte: 5, Obdachlose: 3, Eingeschlossene: 1,
-	}, at, actor))
+	}, actor, at))
 
 	events := s.Root().PendingEvents()
 
@@ -384,7 +384,7 @@ func TestSchadenplatz_ReplayMergedState(t *testing.T) {
 	defaultID := shared.SchadenplatzID(uuid.New())
 
 	s := schadenplatz.New(id)
-	require.NoError(t, s.Create(incidentID, "SP1", false, at, actor))
+	require.NoError(t, s.Create(incidentID, "SP1", false, actor, at))
 	require.NoError(t, s.MergeIntoDefault(defaultID, actor, at))
 
 	events := s.Root().PendingEvents()
@@ -407,6 +407,6 @@ func TestSchadenplatz_AggregateType(t *testing.T) {
 func TestSchadenplatz_IDMatchesConstructorArg(t *testing.T) {
 	id := shared.SchadenplatzID(uuid.New())
 	s := schadenplatz.New(id)
-	require.NoError(t, s.Create(incidentID, "Test", false, at, actor))
+	require.NoError(t, s.Create(incidentID, "Test", false, actor, at))
 	assert.Equal(t, id, s.ID())
 }

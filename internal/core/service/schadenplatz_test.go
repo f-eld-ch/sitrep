@@ -115,15 +115,16 @@ func TestSchadenplatzService_RecordCasualties_AccumulatesDeltas(t *testing.T) {
 	// First recording from message 1.
 	state, err := spSvc.RecordCasualties(ctx(), sp.ID, msgID1,
 		schadenplatz.CasualtyDeltas{Verletzte: 3, Tote: 1},
-		at, testActor)
+		&at, testActor)
 	require.NoError(t, err)
 	assert.Equal(t, 3, state.Casualties.Verletzte)
 	assert.Equal(t, 1, state.Casualties.Tote)
 
 	// Second recording from a different message accumulates on top.
+	at2 := at.Add(time.Hour)
 	state, err = spSvc.RecordCasualties(ctx(), sp.ID, msgID2,
 		schadenplatz.CasualtyDeltas{Verletzte: 2, Vermisste: 1},
-		at.Add(time.Hour), testActor)
+		&at2, testActor)
 	require.NoError(t, err)
 	assert.Equal(t, 5, state.Casualties.Verletzte, "casualties must accumulate across messages")
 	assert.Equal(t, 1, state.Casualties.Tote)
@@ -143,7 +144,7 @@ func TestSchadenplatzService_RecordCasualties_ClosedIncidentRejected(t *testing.
 	msgID := shared.MessageID(newID())
 	_, err = spSvc.RecordCasualties(ctx(), sp.ID, msgID,
 		schadenplatz.CasualtyDeltas{Verletzte: 1},
-		testAt, testActor)
+		&testAt, testActor)
 	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 

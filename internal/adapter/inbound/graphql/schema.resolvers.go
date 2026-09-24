@@ -1061,11 +1061,6 @@ func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sour
 		return nil, err
 	}
 
-	at := time.Now()
-	if occurredAt != nil {
-		at = *occurredAt
-	}
-
 	state, err := r.Schadenplaetze.RecordCasualties(ctx,
 		shared.SchadenplatzID(spID),
 		shared.MessageID(msgID),
@@ -1076,7 +1071,7 @@ func (r *mutationResolver) RecordCasualties(ctx context.Context, id string, sour
 			Obdachlose:      input.Obdachlose,
 			Eingeschlossene: input.Eingeschlossene,
 		},
-		at,
+		occurredAt,
 		actor,
 	)
 	if err != nil {

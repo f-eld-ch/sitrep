@@ -240,7 +240,7 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 			spID := shared.SchadenplatzID(s.ids.New())
 
 			sp := schadenplatz.New(spID)
-			if err := sp.Create(incID, "Allgemein", true, at, actor.Sub); err != nil {
+			if err := sp.Create(incID, "Allgemein", true, actor.Sub, at); err != nil {
 				return fmt.Errorf("create default schadenplatz: %w", err)
 			}
 

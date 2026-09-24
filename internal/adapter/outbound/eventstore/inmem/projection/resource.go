@@ -72,7 +72,7 @@ func NewResourceHandler() *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 1 }
+func (h *ResourceHandler) Version() int { return 5 }
 
 func (h *ResourceHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -195,9 +195,9 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 	case "Deployed":
 		var d struct {
 			DeploymentLocation *struct {
-				Label string  `json:"label"`
-				Lat   float64 `json:"lat"`
-				Lng   float64 `json:"lng"`
+				Label string   `json:"label"`
+				Lat   *float64 `json:"lat"`
+				Lng   *float64 `json:"lng"`
 			} `json:"deploymentLocation"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
@@ -315,9 +315,9 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 	case "DeploymentLocationUpdated":
 		var d struct {
 			Location *struct {
-				Lat   float64 `json:"lat"`
-				Lng   float64 `json:"lng"`
-				Label string  `json:"label"`
+				Lat   *float64 `json:"lat"`
+				Lng   *float64 `json:"lng"`
+				Label string   `json:"label"`
 			} `json:"location"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
@@ -326,8 +326,8 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 		if row := h.rows[id]; row != nil {
 			if d.Location != nil {
-				row.DeploymentLat = &d.Location.Lat
-				row.DeploymentLng = &d.Location.Lng
+				row.DeploymentLat = d.Location.Lat
+				row.DeploymentLng = d.Location.Lng
 				row.DeploymentLabel = &d.Location.Label
 			} else {
 				row.DeploymentLat = nil

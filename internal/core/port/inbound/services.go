@@ -364,7 +364,7 @@ type SchadenplatzService interface {
 		schadenplatzID shared.SchadenplatzID,
 		sourceMessageID shared.MessageID,
 		deltas schadenplatz.CasualtyDeltas,
-		occurredAt time.Time,
+		occurredAt *time.Time,
 		actor identity.Actor,
 	) (SchadenplatzState, error)
 
