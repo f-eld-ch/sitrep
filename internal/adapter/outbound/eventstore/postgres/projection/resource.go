@@ -141,10 +141,16 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			deploymentLng = &d.DeploymentLocation.Lng
 		}
 
+		// Remove any existing entry for this deployment start before appending —
+		// makes the Deployed case idempotent when the projector replays a batch.
 		return exec(db, ctx, `
 			UPDATE readmodel.resource SET status='EINGESETZT', status_at=$1,
 				deployed_at = COALESCE(deployed_at, $1),
-				deployment_history = deployment_history || jsonb_build_array(jsonb_build_object(
+				deployment_history = (
+					SELECT COALESCE(jsonb_agg(elem), '[]'::jsonb)
+					FROM jsonb_array_elements(deployment_history) elem
+					WHERE (elem->>'startedAt')::timestamptz != $1::timestamptz
+				) || jsonb_build_array(jsonb_build_object(
 					'startedAt', $1, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
 					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
 					'deploymentLabel', $2::text, 'deploymentLat', $3::float8, 'deploymentLng', $4::float8,

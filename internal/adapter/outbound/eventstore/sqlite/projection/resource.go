@@ -145,15 +145,24 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			deploymentLng = &d.DeploymentLocation.Lng
 		}
 
+		// Remove any existing entry for this deployment start before appending —
+		// makes the Deployed case idempotent when the projector replays a batch.
 		return exec(tx, ctx, `
 			UPDATE readmodel_resource SET status='EINGESETZT', status_at=?,
 				deployed_at = COALESCE(deployed_at, ?),
-				deployment_history = json_insert(deployment_history, '$[#]', json_object(
-					'startedAt', ?, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
-					'formation', formation, 'name', name, 'homeLocationName', home_location_name,
-					'deploymentLabel', ?, 'deploymentLat', ?, 'deploymentLng', ?,
-					'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
-				updated_at=? WHERE id=?`, now, now, now, deploymentLabel, deploymentLat, deploymentLng, now, id)
+				deployment_history = json_insert(
+					COALESCE(
+						(SELECT json_group_array(json(value))
+						 FROM json_each(deployment_history)
+						 WHERE json_extract(value, '$.startedAt') != ?),
+						'[]'
+					),
+					'$[#]', json_object(
+						'startedAt', ?, 'endedAt', NULL, 'schadenplatzId', schadenplatz_id,
+						'formation', formation, 'name', name, 'homeLocationName', home_location_name,
+						'deploymentLabel', ?, 'deploymentLat', ?, 'deploymentLng', ?,
+						'hauptaufgabe', hauptaufgabe, 'personnelCount', personnel_count)),
+				updated_at=? WHERE id=?`, now, now, now, now, deploymentLabel, deploymentLat, deploymentLng, now, id)
 
 	case "StoodDown":
 		return exec(tx, ctx, `

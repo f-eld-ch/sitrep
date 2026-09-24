@@ -22,7 +22,7 @@ type MessageHandler struct{ db *sql.DB }
 func NewMessageHandler(db *sql.DB) *MessageHandler { return &MessageHandler{db: db} }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_message_attachment`); err != nil {
 		return err

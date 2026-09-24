@@ -25,7 +25,7 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message, readmodel.message_attachment`)
 	return err

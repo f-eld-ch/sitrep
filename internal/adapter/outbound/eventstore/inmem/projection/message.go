@@ -67,7 +67,7 @@ func NewMessageHandler() *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
