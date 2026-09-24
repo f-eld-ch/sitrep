@@ -101,6 +101,7 @@ describe("CATEGORY_DRILL_DOWN", () => {
       ["4704", "44"],
       ["4705", "45"],
       ["4706", "46"],
+      ["4707", "47"],
     ]);
     // Each selector's label should identify the partner it opens.
     expect(getGroup("41").labels.de).toBe("Polizei");
