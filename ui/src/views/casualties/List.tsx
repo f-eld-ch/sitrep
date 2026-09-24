@@ -144,6 +144,7 @@ export function List() {
   const result = useIncidentResources(incidentId);
   const iconsLoaded = useBabsIcons();
 
+  if (result.status === "error") return <p className="p-4 text-red-600">{t("errors.UNKNOWN")}</p>;
   if (result.status === "loading" || !result.data) return <Spinner />;
 
   const activeSps = result.data.schadenplaetze.filter((sp) => !sp.isMerged);

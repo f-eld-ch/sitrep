@@ -172,7 +172,10 @@ function DefaultAccess() {
         <h4 className="mb-4 text-xl font-bold">{t("defaultAccess.modeTitle")}</h4>
         <p className="mb-3 text-sm text-fg-muted">{t("defaultAccess.modeHelp")}</p>
         <div className="space-y-3">
-          <label className="flex cursor-pointer items-start gap-2">
+          <label
+            aria-labelledby="default-mode-open"
+            className="flex cursor-pointer items-start gap-2"
+          >
             <input
               type="radio"
               name="default-access-mode"
@@ -184,11 +187,14 @@ function DefaultAccess() {
               }}
             />
             <div>
-              <strong>{t("incidentAccess.openAccess")}</strong>
+              <strong id="default-mode-open">{t("incidentAccess.openAccess")}</strong>
               <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.openAccessHelp")}</p>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2">
+          <label
+            aria-labelledby="default-mode-restricted"
+            className="flex cursor-pointer items-start gap-2"
+          >
             <input
               type="radio"
               name="default-access-mode"
@@ -200,7 +206,7 @@ function DefaultAccess() {
               }}
             />
             <div>
-              <strong>{t("incidentAccess.restricted")}</strong>
+              <strong id="default-mode-restricted">{t("incidentAccess.restricted")}</strong>
               <p className="mt-0 text-xs text-fg-muted">{t("incidentAccess.restrictedHelp")}</p>
             </div>
           </label>
