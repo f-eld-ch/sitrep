@@ -47,7 +47,13 @@ import {
 } from "./editorState";
 
 // re-export types that Elements.tsx / sub-forms depend on via this path
-export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail, MessageEditorFormHandle } from "./editorState";
+export type {
+  PhoneDetail,
+  EmailDetail,
+  OtherDetail,
+  RadioDetail,
+  MessageEditorFormHandle,
+} from "./editorState";
 export { useEditorContext } from "./editorState";
 export { ReactEditor } from "./MarkdownEditor";
 export { ReactPreview } from "./Markdown";

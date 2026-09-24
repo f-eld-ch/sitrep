@@ -143,8 +143,10 @@ func (s *AccessService) ChangeIncidentAccessMode(
 	incidentID shared.IncidentID,
 	mode access.IncidentMode,
 	actor identity.Actor,
-) error {
-	return s.changeIncident(ctx, incidentID, actor, func(a *access.IncidentAccess, at time.Time) error {
+) (access.IncidentMode, error) {
+	var resultMode access.IncidentMode
+
+	err := s.changeIncident(ctx, incidentID, actor, func(a *access.IncidentAccess, at time.Time) error {
 		if err := requireIncidentAccess(
 			ctx,
 			s.incidentChecker,
@@ -157,8 +159,16 @@ func (s *AccessService) ChangeIncidentAccessMode(
 			}
 		}
 
-		return a.ChangeAccessMode(mode, actor.Sub, at)
+		if err := a.ChangeAccessMode(mode, actor.Sub, at); err != nil {
+			return err
+		}
+
+		resultMode = a.Mode()
+
+		return nil
 	})
+
+	return resultMode, err
 }
 
 func (s *AccessService) CreateAccessGroup(
@@ -429,6 +439,131 @@ func (s *AccessService) requireGlobal(ctx context.Context, actor identity.Actor,
 	}
 
 	return nil
+}
+
+func (s *AccessService) InitializeDefaultAccess(
+	ctx context.Context,
+	mode access.IncidentMode,
+	grants []access.Grant,
+	actor identity.Actor,
+) (inbound.DefaultAccessResult, error) {
+	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
+		return inbound.DefaultAccessResult{}, err
+	}
+
+	return s.changeDefaultAccess(ctx, actor, func(a *access.IncidentAccess, at time.Time) error {
+		if err := a.ChangeAccessMode(mode, actor.Sub, at); err != nil {
+			return err
+		}
+
+		for _, g := range grants {
+			if err := a.GrantRole(g.Principal, g.Role, actor.Sub, at); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s *AccessService) SetDefaultAccessMode(
+	ctx context.Context,
+	mode access.IncidentMode,
+	actor identity.Actor,
+) (inbound.DefaultAccessResult, error) {
+	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
+		return inbound.DefaultAccessResult{}, err
+	}
+
+	return s.changeDefaultAccess(ctx, actor, func(a *access.IncidentAccess, at time.Time) error {
+		return a.ChangeAccessMode(mode, actor.Sub, at)
+	})
+}
+
+func (s *AccessService) GrantDefaultRole(
+	ctx context.Context,
+	principal access.Principal,
+	role access.Role,
+	actor identity.Actor,
+) (inbound.DefaultAccessResult, error) {
+	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
+		return inbound.DefaultAccessResult{}, err
+	}
+
+	return s.changeDefaultAccess(ctx, actor, func(a *access.IncidentAccess, at time.Time) error {
+		return a.GrantRole(principal, role, actor.Sub, at)
+	})
+}
+
+func (s *AccessService) RevokeDefaultRole(
+	ctx context.Context,
+	principal access.Principal,
+	role access.Role,
+	actor identity.Actor,
+) (inbound.DefaultAccessResult, error) {
+	if err := s.requireGlobal(ctx, actor, access.SystemAdminManage); err != nil {
+		return inbound.DefaultAccessResult{}, err
+	}
+
+	return s.changeDefaultAccess(ctx, actor, func(a *access.IncidentAccess, at time.Time) error {
+		return a.RevokeRole(principal, role, actor.Sub, at)
+	})
+}
+
+// changeDefaultAccess loads (or initializes) the default-access template, applies fn,
+// saves it, and returns the resulting state. It mirrors changeGlobal's load-or-init pattern.
+func (s *AccessService) changeDefaultAccess(
+	ctx context.Context,
+	actor identity.Actor,
+	fn func(*access.IncidentAccess, time.Time) error,
+) (inbound.DefaultAccessResult, error) {
+	at := s.clock.Now()
+	templateID := shared.IncidentID(access.DefaultAccessTemplateID)
+
+	var result inbound.DefaultAccessResult
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		a, err := s.incRepo.Load(ctx, templateID)
+		if err != nil {
+			if !errors.Is(err, shared.ErrNotFound) {
+				return err
+			}
+
+			// Template does not exist yet — initialize it with Restricted mode (safe default).
+			a = access.NewIncidentAccess(templateID)
+			if err := a.InitializeTemplate(access.Restricted, actor.Sub, at); err != nil {
+				return err
+			}
+		}
+
+		if s.guard != nil {
+			release, err := s.guard.LockForUpdate(ctx)
+			if err != nil {
+				return err
+			}
+			defer release()
+		}
+
+		if err := fn(a, at); err != nil {
+			return err
+		}
+
+		if _, err = s.incRepo.Save(ctx, a); err != nil {
+			return err
+		}
+
+		result = inbound.DefaultAccessResult{
+			Mode:   a.Mode(),
+			Grants: a.Grants(),
+		}
+
+		return nil
+	})
+	if err == nil {
+		_ = s.notifier.Notify(ctx)
+	}
+
+	return result, err
 }
 
 var _ inbound.AccessService = (*AccessService)(nil)

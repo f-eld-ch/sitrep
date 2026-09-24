@@ -330,7 +330,7 @@ logIfUnexpected(ctx, "UpdateIncident", err, slog.String("id", id.String()))
 
 ## OpenTelemetry instrumentation
 
-All three signals (traces, metrics, logs) are exported via OTLP gRPC when
+All three signals (traces, metrics, logs) are exported via OTLP/HTTP when
 `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Without it, the SDK is skipped and the application runs
 with no-op providers — no code changes needed for local development.
 

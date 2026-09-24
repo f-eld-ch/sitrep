@@ -369,7 +369,8 @@
     "title": "Administration",
     "accessControl": "Zugangskontrolle",
     "groups": "Gruppen",
-    "globalRoles": "Globale Rollen"
+    "globalRoles": "Globale Rollen",
+    "defaultAccess": "Standard-Zugang"
   },
   "resource": {
     "childIncident": "Untergeordnetes Ereignis",
@@ -445,5 +446,17 @@
       "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",
       "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits."
     }
+  },
+  "defaultAccess": {
+    "title": "Standard-Zugangsmodus für Ereignisse",
+    "description": "Konfigurieren Sie den Zugangsmodus und die Standard-Rollenzuweisungen für neue Ereignisse.",
+    "modeTitle": "Standard-Zugangsmodus",
+    "modeHelp": "Neue Ereignisse werden mit diesem Zugangsmodus erstellt.",
+    "grantsTitle": "Standard-Rollenzuweisungen",
+    "grantsHelp": "Diese Benutzer und Gruppen erhalten die angegebene Rolle für jedes neue Ereignis.",
+    "noGrants": "Keine Standard-Rollenzuweisungen konfiguriert.",
+    "revokeFailed": "Standard-Rolle konnte nicht entzogen werden.",
+    "grantFailed": "Standard-Rolle konnte nicht vergeben werden.",
+    "roleChangeFailed": "Standard-Rolle konnte nicht geändert werden."
   }
 }

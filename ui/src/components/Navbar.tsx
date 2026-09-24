@@ -126,7 +126,9 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                       className={({ isActive }) =>
                         clsx(
                           "flex w-full items-center gap-2 px-4 py-2 capitalize",
-                          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                          isActive
+                            ? "bg-primary text-white! hover:bg-primary"
+                            : "hover:bg-bg-subtle",
                         )
                       }
                       to={`/incident/${incidentId}/dashboard`}
@@ -138,7 +140,9 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                       className={({ isActive }) =>
                         clsx(
                           "flex w-full items-center gap-2 px-4 py-2 capitalize",
-                          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                          isActive
+                            ? "bg-primary text-white! hover:bg-primary"
+                            : "hover:bg-bg-subtle",
                         )
                       }
                       to={`/incident/${incidentId}/edit`}

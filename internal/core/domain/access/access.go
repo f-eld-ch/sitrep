@@ -70,6 +70,25 @@ type Principal struct {
 	ID   string        `json:"id"`
 }
 
+// Grant is a value object pairing a principal with a role.
+type Grant struct {
+	Principal Principal `json:"principal"`
+	Role      Role      `json:"role"`
+}
+
+// ValidateGrant returns an error when the grant's principal or role is invalid.
+func ValidateGrant(g Grant) error {
+	if err := validatePrincipal(g.Principal); err != nil {
+		return err
+	}
+
+	if !validRole(g.Role) {
+		return fmt.Errorf("%w: invalid incident role", shared.ErrInvalidInput)
+	}
+
+	return validatePrincipalRole(g.Principal, g.Role)
+}
+
 type AccessInitialized struct {
 	Mode     IncidentMode `json:"mode"`
 	OwnerSub *string      `json:"ownerSub,omitempty"`
@@ -130,6 +149,41 @@ func (a *IncidentAccess) HasAnyOwner() bool {
 
 func (a *IncidentAccess) HasRole(p Principal, role Role) bool {
 	return a.roles[principalKey(p)][role]
+}
+
+// Grants returns all active (non-revoked) grants held by the aggregate.
+func (a *IncidentAccess) Grants() []Grant {
+	var grants []Grant
+
+	for key, roleMap := range a.roles {
+		kind, id, ok := parsePrincipalKey(key)
+		if !ok {
+			continue
+		}
+
+		p := Principal{Kind: kind, ID: id}
+
+		for role, active := range roleMap {
+			if active {
+				grants = append(grants, Grant{Principal: p, Role: role})
+			}
+		}
+	}
+
+	return grants
+}
+
+// InitializeTemplate initializes the access aggregate as the default-access template.
+// Unlike Initialize, it does not require an owner even in Restricted mode, because
+// the template has no real incident to protect.
+func (a *IncidentAccess) InitializeTemplate(mode IncidentMode, actor string, at time.Time) error {
+	if !validMode(mode) {
+		return fmt.Errorf("%w: invalid access mode", shared.ErrInvalidInput)
+	}
+
+	eventsourcing.TrackChange(a, AccessInitialized{Mode: mode, OwnerSub: nil}, at, meta(actor))
+
+	return nil
 }
 
 func (a *IncidentAccess) Initialize(ownerSub *string, mode IncidentMode, actor string, at time.Time) error {
@@ -285,7 +339,17 @@ func (a *IncidentAccess) addRole(p Principal, role Role) {
 	a.roles[key][role] = true
 }
 
-func principalKey(p Principal) string  { return string(p.Kind) + ":" + p.ID }
+func principalKey(p Principal) string { return string(p.Kind) + ":" + p.ID }
+
+// parsePrincipalKey is the inverse of principalKey.
+func parsePrincipalKey(key string) (PrincipalKind, string, bool) {
+	kindStr, id, ok := strings.Cut(key, ":")
+	if !ok {
+		return "", "", false
+	}
+
+	return PrincipalKind(kindStr), id, true
+}
 func validMode(mode IncidentMode) bool { return mode == OpenOperational || mode == Restricted }
 func validRole(role Role) bool {
 	return role == Owner || role == Manager || role == Editor || role == Viewer
@@ -342,6 +406,10 @@ type GlobalAccess struct {
 }
 
 var GlobalAccessID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
+// DefaultAccessTemplateID is the well-known stream ID for the default-access template.
+// It is a name-based UUID (SHA-1, DNS namespace) so it is stable across restarts.
+var DefaultAccessTemplateID = uuid.NewSHA1(uuid.NameSpaceDNS, []byte("sitrep.default-incident-access"))
 
 func NewGlobalAccess() *GlobalAccess {
 	a := &GlobalAccess{roles: make(map[string]map[GlobalRole]bool)}

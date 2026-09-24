@@ -338,22 +338,24 @@ function Mitteltabelle({
   incidentName: string;
 }) {
   const { t } = useTranslation();
-  const [openIncidentIds, setOpenIncidentIds] = useState<Set<string>>(() =>
-    new Set(resources.filter((r) => r.incidentId !== incidentId).map((r) => r.incidentId)),
+  const [openIncidentIds, setOpenIncidentIds] = useState<Set<string>>(
+    () => new Set(resources.filter((r) => r.incidentId !== incidentId).map((r) => r.incidentId)),
   );
-  const [openFormationIds, setOpenFormationIds] = useState<Set<string>>(() =>
-    new Set(
-      resources
-        .filter((r) => r.incidentId === incidentId)
-        .map((r) => `${incidentId}:${r.formation}`),
-    ),
+  const [openFormationIds, setOpenFormationIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        resources
+          .filter((r) => r.incidentId === incidentId)
+          .map((r) => `${incidentId}:${r.formation}`),
+      ),
   );
-  const [openHomeLocationIds, setOpenHomeLocationIds] = useState<Set<string>>(() =>
-    new Set(
-      resources
-        .filter((r) => r.incidentId === incidentId)
-        .map((r) => `${incidentId}:${r.formation}:${r.homeLocation?.name ?? "__none__"}`),
-    ),
+  const [openHomeLocationIds, setOpenHomeLocationIds] = useState<Set<string>>(
+    () =>
+      new Set(
+        resources
+          .filter((r) => r.incidentId === incidentId)
+          .map((r) => `${incidentId}:${r.formation}:${r.homeLocation?.name ?? "__none__"}`),
+      ),
   );
   const [openResourceIds, setOpenResourceIds] = useState<Set<string>>(new Set());
   const resourceById = new Map(resources.map((resource) => [resource.id, resource]));

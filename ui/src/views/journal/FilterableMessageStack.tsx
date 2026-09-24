@@ -15,8 +15,7 @@ interface FilterState {
   mine: boolean;
 }
 
-export interface FilterableMessageStackProps
-  extends Omit<MessageStackProps, "messages"> {
+export interface FilterableMessageStackProps extends Omit<MessageStackProps, "messages"> {
   messages: Message[];
   initialFilters?: Partial<FilterState>;
   enabledFilters?: Partial<Record<keyof FilterState, boolean>>;
@@ -71,8 +70,7 @@ export function FilterableMessageStack({
     ...initialFilters,
   });
 
-  const toggle = (key: keyof FilterState) =>
-    setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggle = (key: keyof FilterState) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const filtered = useMemo(() => {
     const chipFilters: MessageFilters = {

@@ -44,7 +44,10 @@ function licensesPlugin() {
   return {
     name: "vite-licenses",
     apply: "build" as const,
-    generateBundle(_options: unknown, bundle: Record<string, { type: string; modules?: Record<string, unknown> }>) {
+    generateBundle(
+      _options: unknown,
+      bundle: Record<string, { type: string; modules?: Record<string, unknown> }>,
+    ) {
       // Collect every node_modules package referenced in the bundle.
       const pkgNames = new Set<string>();
       for (const chunk of Object.values(bundle)) {
@@ -193,6 +196,7 @@ export default defineConfig({
     // each threw an uncaught "window is not defined" on startup. In the main thread
     // globalThis *is* window, so nothing changes there.
     global: "globalThis",
+    "globalThis.__DEV__": JSON.stringify(process.env.NODE_ENV !== "production"),
     // Inject VITE_VERSION and VITE_SHA_VERSION at build time so import.meta.env is reliable
     "import.meta.env.VITE_SHA_VERSION": JSON.stringify(buildSha),
     "import.meta.env.VITE_VERSION": JSON.stringify(buildVersion),

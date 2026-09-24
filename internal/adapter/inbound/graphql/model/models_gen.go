@@ -77,6 +77,13 @@ type CreateIncidentInput struct {
 	Layers []*LayerInput `json:"layers"`
 }
 
+// Payload returned by createIncident; carries authoritative access state from aggregate.
+type CreateIncidentPayload struct {
+	Incident     *Incident              `json:"incident"`
+	AccessMode   IncidentAccessMode     `json:"accessMode"`
+	AccessGrants []*IncidentAccessGrant `json:"accessGrants"`
+}
+
 type CreateMessageInput struct {
 	IncidentID     string `json:"incidentId"`
 	Sender         string `json:"sender"`
@@ -87,6 +94,23 @@ type CreateMessageInput struct {
 	Medium         Medium `json:"medium"`
 	// Defaults to the server's current time when omitted.
 	Time *time.Time `json:"time,omitempty"`
+}
+
+type DefaultAccess struct {
+	Mode   IncidentAccessMode    `json:"mode"`
+	Grants []*DefaultAccessGrant `json:"grants"`
+}
+
+type DefaultAccessGrant struct {
+	PrincipalKind AccessPrincipalKind `json:"principalKind"`
+	PrincipalID   string              `json:"principalId"`
+	Role          IncidentRole        `json:"role"`
+}
+
+type DefaultGrantInput struct {
+	PrincipalKind AccessPrincipalKind `json:"principalKind"`
+	PrincipalID   string              `json:"principalId"`
+	Role          IncidentRole        `json:"role"`
 }
 
 // Precise operational deployment point within a Schadenplatz.

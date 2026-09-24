@@ -66,6 +66,23 @@ type ComplexityRoot struct {
 		Vermisste       func(childComplexity int) int
 	}
 
+	CreateIncidentPayload struct {
+		AccessGrants func(childComplexity int) int
+		AccessMode   func(childComplexity int) int
+		Incident     func(childComplexity int) int
+	}
+
+	DefaultAccess struct {
+		Grants func(childComplexity int) int
+		Mode   func(childComplexity int) int
+	}
+
+	DefaultAccessGrant struct {
+		PrincipalID   func(childComplexity int) int
+		PrincipalKind func(childComplexity int) int
+		Role          func(childComplexity int) int
+	}
+
 	DeploymentLocation struct {
 		Label func(childComplexity int) int
 		Lat   func(childComplexity int) int
@@ -172,6 +189,7 @@ type ComplexityRoot struct {
 		DeleteIncident               func(childComplexity int, id string) int
 		DeleteMessage                func(childComplexity int, id string) int
 		DeployResource               func(childComplexity int, id string, at *time.Time) int
+		GrantDefaultRole             func(childComplexity int, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		GrantGlobalRole              func(childComplexity int, subject string, role model.GlobalRole) int
 		GrantIncidentRole            func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
@@ -186,8 +204,10 @@ type ComplexityRoot struct {
 		RenameAccessGroup            func(childComplexity int, groupID string, name string) int
 		RenameSchadenplatz           func(childComplexity int, id string, name string) int
 		ReopenIncident               func(childComplexity int, id string) int
+		RevokeDefaultRole            func(childComplexity int, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		RevokeGlobalRole             func(childComplexity int, subject string, role model.GlobalRole) int
 		RevokeIncidentRole           func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
+		SetDefaultAccessMode         func(childComplexity int, mode model.IncidentAccessMode) int
 		SetSchadenplatzGeometry      func(childComplexity int, id string, geoJSON *string) int
 		StandDownResource            func(childComplexity int, id string, at *time.Time) int
 		TriageMessage                func(childComplexity int, id string, input model.TriageMessageInput) int
@@ -202,6 +222,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AccessGroups       func(childComplexity int) int
+		DefaultAccess      func(childComplexity int) int
 		GlobalRoles        func(childComplexity int) int
 		GroupMembers       func(childComplexity int, groupID string) int
 		Incident           func(childComplexity int, id string) int
@@ -314,8 +335,11 @@ type MessageResolver interface {
 	SchadenplatzCasualties(ctx context.Context, obj *model.Message) ([]*model.SchadenplatzCasualtyEntry, error)
 }
 type MutationResolver interface {
-	CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.Incident, error)
-	ChangeIncidentAccessMode(ctx context.Context, incidentID string, mode model.IncidentAccessMode) (*model.IncidentAccessGrant, error)
+	CreateIncident(ctx context.Context, input model.CreateIncidentInput) (*model.CreateIncidentPayload, error)
+	ChangeIncidentAccessMode(ctx context.Context, incidentID string, mode model.IncidentAccessMode) (model.IncidentAccessMode, error)
+	SetDefaultAccessMode(ctx context.Context, mode model.IncidentAccessMode) (*model.DefaultAccess, error)
+	GrantDefaultRole(ctx context.Context, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (*model.DefaultAccess, error)
+	RevokeDefaultRole(ctx context.Context, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (*model.DefaultAccess, error)
 	GrantIncidentRole(ctx context.Context, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (*model.IncidentAccessGrant, error)
 	RevokeIncidentRole(ctx context.Context, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) (string, error)
 	CreateAccessGroup(ctx context.Context, name string, description string) (*model.AccessGroup, error)
@@ -371,6 +395,7 @@ type QueryResolver interface {
 	MyGlobalRoles(ctx context.Context) ([]*model.GlobalRoleGrant, error)
 	Schadenplatz(ctx context.Context, id string) (*model.Schadenplatz, error)
 	Resource(ctx context.Context, id string) (*model.Resource, error)
+	DefaultAccess(ctx context.Context) (*model.DefaultAccess, error)
 }
 type SchadenplatzResolver interface {
 	Resources(ctx context.Context, obj *model.Schadenplatz) ([]*model.Resource, error)
@@ -492,6 +517,57 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Casualties.Vermisste(childComplexity), true
+
+	case "CreateIncidentPayload.accessGrants":
+		if e.ComplexityRoot.CreateIncidentPayload.AccessGrants == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateIncidentPayload.AccessGrants(childComplexity), true
+	case "CreateIncidentPayload.accessMode":
+		if e.ComplexityRoot.CreateIncidentPayload.AccessMode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateIncidentPayload.AccessMode(childComplexity), true
+	case "CreateIncidentPayload.incident":
+		if e.ComplexityRoot.CreateIncidentPayload.Incident == nil {
+			break
+		}
+
+		return e.ComplexityRoot.CreateIncidentPayload.Incident(childComplexity), true
+
+	case "DefaultAccess.grants":
+		if e.ComplexityRoot.DefaultAccess.Grants == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DefaultAccess.Grants(childComplexity), true
+	case "DefaultAccess.mode":
+		if e.ComplexityRoot.DefaultAccess.Mode == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DefaultAccess.Mode(childComplexity), true
+
+	case "DefaultAccessGrant.principalId":
+		if e.ComplexityRoot.DefaultAccessGrant.PrincipalID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DefaultAccessGrant.PrincipalID(childComplexity), true
+	case "DefaultAccessGrant.principalKind":
+		if e.ComplexityRoot.DefaultAccessGrant.PrincipalKind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DefaultAccessGrant.PrincipalKind(childComplexity), true
+	case "DefaultAccessGrant.role":
+		if e.ComplexityRoot.DefaultAccessGrant.Role == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DefaultAccessGrant.Role(childComplexity), true
 
 	case "DeploymentLocation.label":
 		if e.ComplexityRoot.DeploymentLocation.Label == nil {
@@ -1050,6 +1126,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeployResource(childComplexity, args["id"].(string), args["at"].(*time.Time)), true
+	case "Mutation.grantDefaultRole":
+		if e.ComplexityRoot.Mutation.GrantDefaultRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_grantDefaultRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.GrantDefaultRole(childComplexity, args["principalKind"].(model.AccessPrincipalKind), args["principalId"].(string), args["role"].(model.IncidentRole)), true
 	case "Mutation.grantGlobalRole":
 		if e.ComplexityRoot.Mutation.GrantGlobalRole == nil {
 			break
@@ -1204,6 +1291,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ReopenIncident(childComplexity, args["id"].(string)), true
+	case "Mutation.revokeDefaultRole":
+		if e.ComplexityRoot.Mutation.RevokeDefaultRole == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokeDefaultRole_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokeDefaultRole(childComplexity, args["principalKind"].(model.AccessPrincipalKind), args["principalId"].(string), args["role"].(model.IncidentRole)), true
 	case "Mutation.revokeGlobalRole":
 		if e.ComplexityRoot.Mutation.RevokeGlobalRole == nil {
 			break
@@ -1226,6 +1324,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RevokeIncidentRole(childComplexity, args["incidentId"].(string), args["principalKind"].(model.AccessPrincipalKind), args["principalId"].(string), args["role"].(model.IncidentRole)), true
+	case "Mutation.setDefaultAccessMode":
+		if e.ComplexityRoot.Mutation.SetDefaultAccessMode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setDefaultAccessMode_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.SetDefaultAccessMode(childComplexity, args["mode"].(model.IncidentAccessMode)), true
 	case "Mutation.setSchadenplatzGeometry":
 		if e.ComplexityRoot.Mutation.SetSchadenplatzGeometry == nil {
 			break
@@ -1343,6 +1452,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.AccessGroups(childComplexity), true
+	case "Query.defaultAccess":
+		if e.ComplexityRoot.Query.DefaultAccess == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.DefaultAccess(childComplexity), true
 	case "Query.globalRoles":
 		if e.ComplexityRoot.Query.GlobalRoles == nil {
 			break
@@ -1812,6 +1927,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCasualtyDeltasInput,
 		ec.unmarshalInputCreateIncidentInput,
 		ec.unmarshalInputCreateMessageInput,
+		ec.unmarshalInputDefaultGrantInput,
 		ec.unmarshalInputDeploymentLocationInput,
 		ec.unmarshalInputDivisionInput,
 		ec.unmarshalInputLayerInput,
@@ -1995,6 +2111,30 @@ type IncidentAccessGrant {
   principalId: ID!
   principalName: String!
   role: IncidentRole!
+}
+
+type DefaultAccessGrant {
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  role: IncidentRole!
+}
+
+type DefaultAccess {
+  mode: IncidentAccessMode!
+  grants: [DefaultAccessGrant!]!
+}
+
+input DefaultGrantInput {
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  role: IncidentRole!
+}
+
+"""Payload returned by createIncident; carries authoritative access state from aggregate."""
+type CreateIncidentPayload {
+  incident: Incident!
+  accessMode: IncidentAccessMode!
+  accessGrants: [IncidentAccessGrant!]!
 }
 
 # ─── Domain types ─────────────────────────────────────────────────────────────
@@ -2247,6 +2387,9 @@ type Query {
 
   """Single Resource by ID."""
   resource(id: ID!): Resource
+
+  """Current default-access template applied to newly created incidents."""
+  defaultAccess: DefaultAccess!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -2366,9 +2509,12 @@ type Mutation {
   # ── Incidents ───────────────────────────────────────────────────────────────
 
   """Create an incident with optional divisions and map layers."""
-  createIncident(input: CreateIncidentInput!): Incident!
+  createIncident(input: CreateIncidentInput!): CreateIncidentPayload!
 
-  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessGrant!
+  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessMode!
+  setDefaultAccessMode(mode: IncidentAccessMode!): DefaultAccess!
+  grantDefaultRole(principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): DefaultAccess!
+  revokeDefaultRole(principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): DefaultAccess!
   grantIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): IncidentAccessGrant!
   revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
   createAccessGroup(name: String!, description: String!): AccessGroup!
@@ -2545,6 +2691,40 @@ func (ec *executionContext) childFields_Casualties(ctx context.Context, field gr
 		return ec.fieldContext_Casualties_eingeschlossene(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Casualties", field.Name)
+}
+
+func (ec *executionContext) childFields_CreateIncidentPayload(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "incident":
+		return ec.fieldContext_CreateIncidentPayload_incident(ctx, field)
+	case "accessMode":
+		return ec.fieldContext_CreateIncidentPayload_accessMode(ctx, field)
+	case "accessGrants":
+		return ec.fieldContext_CreateIncidentPayload_accessGrants(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type CreateIncidentPayload", field.Name)
+}
+
+func (ec *executionContext) childFields_DefaultAccess(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "mode":
+		return ec.fieldContext_DefaultAccess_mode(ctx, field)
+	case "grants":
+		return ec.fieldContext_DefaultAccess_grants(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DefaultAccess", field.Name)
+}
+
+func (ec *executionContext) childFields_DefaultAccessGrant(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "principalKind":
+		return ec.fieldContext_DefaultAccessGrant_principalKind(ctx, field)
+	case "principalId":
+		return ec.fieldContext_DefaultAccessGrant_principalId(ctx, field)
+	case "role":
+		return ec.fieldContext_DefaultAccessGrant_role(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DefaultAccessGrant", field.Name)
 }
 
 func (ec *executionContext) childFields_DeploymentLocation(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -3307,6 +3487,36 @@ func (ec *executionContext) field_Mutation_deployResource_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_grantDefaultRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "principalKind",
+		func(ctx context.Context, v any) (model.AccessPrincipalKind, error) {
+			return ec.unmarshalNAccessPrincipalKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessPrincipalKind(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["principalKind"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "principalId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["principalId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "role",
+		func(ctx context.Context, v any) (model.IncidentRole, error) {
+			return ec.unmarshalNIncidentRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentRole(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["role"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_grantGlobalRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3639,6 +3849,36 @@ func (ec *executionContext) field_Mutation_reopenIncident_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_revokeDefaultRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "principalKind",
+		func(ctx context.Context, v any) (model.AccessPrincipalKind, error) {
+			return ec.unmarshalNAccessPrincipalKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessPrincipalKind(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["principalKind"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "principalId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["principalId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "role",
+		func(ctx context.Context, v any) (model.IncidentRole, error) {
+			return ec.unmarshalNIncidentRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentRole(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["role"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_revokeGlobalRole_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3696,6 +3936,20 @@ func (ec *executionContext) field_Mutation_revokeIncidentRole_args(ctx context.C
 		return nil, err
 	}
 	args["role"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_setDefaultAccessMode_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "mode",
+		func(ctx context.Context, v any) (model.IncidentAccessMode, error) {
+			return ec.unmarshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["mode"] = arg0
 	return args, nil
 }
 
@@ -4463,6 +4717,217 @@ func (ec *executionContext) _Casualties_eingeschlossene(ctx context.Context, fie
 }
 func (ec *executionContext) fieldContext_Casualties_eingeschlossene(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Casualties", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _CreateIncidentPayload_incident(ctx context.Context, field graphql.CollectedField, obj *model.CreateIncidentPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreateIncidentPayload_incident(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Incident, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Incident) graphql.Marshaler {
+			return ec.marshalNIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncident(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreateIncidentPayload_incident(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateIncidentPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Incident(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateIncidentPayload_accessMode(ctx context.Context, field graphql.CollectedField, obj *model.CreateIncidentPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreateIncidentPayload_accessMode(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AccessMode, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentAccessMode) graphql.Marshaler {
+			return ec.marshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreateIncidentPayload_accessMode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("CreateIncidentPayload", field, false, false, errors.New("field of type IncidentAccessMode does not have child fields"))
+}
+
+func (ec *executionContext) _CreateIncidentPayload_accessGrants(ctx context.Context, field graphql.CollectedField, obj *model.CreateIncidentPayload) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_CreateIncidentPayload_accessGrants(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AccessGrants, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.IncidentAccessGrant) graphql.Marshaler {
+			return ec.marshalNIncidentAccessGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessGrantᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_CreateIncidentPayload_accessGrants(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateIncidentPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_IncidentAccessGrant(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DefaultAccess_mode(ctx context.Context, field graphql.CollectedField, obj *model.DefaultAccess) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DefaultAccess_mode(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Mode, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentAccessMode) graphql.Marshaler {
+			return ec.marshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DefaultAccess_mode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DefaultAccess", field, false, false, errors.New("field of type IncidentAccessMode does not have child fields"))
+}
+
+func (ec *executionContext) _DefaultAccess_grants(ctx context.Context, field graphql.CollectedField, obj *model.DefaultAccess) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DefaultAccess_grants(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Grants, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.DefaultAccessGrant) graphql.Marshaler {
+			return ec.marshalNDefaultAccessGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccessGrantᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DefaultAccess_grants(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DefaultAccess",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DefaultAccessGrant(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DefaultAccessGrant_principalKind(ctx context.Context, field graphql.CollectedField, obj *model.DefaultAccessGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DefaultAccessGrant_principalKind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PrincipalKind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.AccessPrincipalKind) graphql.Marshaler {
+			return ec.marshalNAccessPrincipalKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessPrincipalKind(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DefaultAccessGrant_principalKind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DefaultAccessGrant", field, false, false, errors.New("field of type AccessPrincipalKind does not have child fields"))
+}
+
+func (ec *executionContext) _DefaultAccessGrant_principalId(ctx context.Context, field graphql.CollectedField, obj *model.DefaultAccessGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DefaultAccessGrant_principalId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PrincipalID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DefaultAccessGrant_principalId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DefaultAccessGrant", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _DefaultAccessGrant_role(ctx context.Context, field graphql.CollectedField, obj *model.DefaultAccessGrant) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DefaultAccessGrant_role(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Role, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentRole) graphql.Marshaler {
+			return ec.marshalNIncidentRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentRole(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DefaultAccessGrant_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DefaultAccessGrant", field, false, false, errors.New("field of type IncidentRole does not have child fields"))
 }
 
 func (ec *executionContext) _DeploymentLocation_lat(ctx context.Context, field graphql.CollectedField, obj *model.DeploymentLocation) (ret graphql.Marshaler) {
@@ -5994,8 +6459,8 @@ func (ec *executionContext) _Mutation_createIncident(ctx context.Context, field 
 			return ec.Resolvers.Mutation().CreateIncident(ctx, fc.Args["input"].(model.CreateIncidentInput))
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.Incident) graphql.Marshaler {
-			return ec.marshalNIncident2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncident(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v *model.CreateIncidentPayload) graphql.Marshaler {
+			return ec.marshalNCreateIncidentPayload2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐCreateIncidentPayload(ctx, selections, v)
 		},
 		true,
 		true,
@@ -6008,7 +6473,7 @@ func (ec *executionContext) fieldContext_Mutation_createIncident(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Incident(ctx, field)
+			return ec.childFields_CreateIncidentPayload(ctx, field)
 		},
 	}
 	defer func() {
@@ -6038,8 +6503,8 @@ func (ec *executionContext) _Mutation_changeIncidentAccessMode(ctx context.Conte
 			return ec.Resolvers.Mutation().ChangeIncidentAccessMode(ctx, fc.Args["incidentId"].(string), fc.Args["mode"].(model.IncidentAccessMode))
 		},
 		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v *model.IncidentAccessGrant) graphql.Marshaler {
-			return ec.marshalNIncidentAccessGrant2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessGrant(ctx, selections, v)
+		func(ctx context.Context, selections ast.SelectionSet, v model.IncidentAccessMode) graphql.Marshaler {
+			return ec.marshalNIncidentAccessMode2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentAccessMode(ctx, selections, v)
 		},
 		true,
 		true,
@@ -6052,7 +6517,7 @@ func (ec *executionContext) fieldContext_Mutation_changeIncidentAccessMode(ctx c
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_IncidentAccessGrant(ctx, field)
+			return nil, errors.New("field of type IncidentAccessMode does not have child fields")
 		},
 	}
 	defer func() {
@@ -6063,6 +6528,138 @@ func (ec *executionContext) fieldContext_Mutation_changeIncidentAccessMode(ctx c
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_changeIncidentAccessMode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_setDefaultAccessMode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_setDefaultAccessMode(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().SetDefaultAccessMode(ctx, fc.Args["mode"].(model.IncidentAccessMode))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.DefaultAccess) graphql.Marshaler {
+			return ec.marshalNDefaultAccess2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccess(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_setDefaultAccessMode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DefaultAccess(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_setDefaultAccessMode_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_grantDefaultRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_grantDefaultRole(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().GrantDefaultRole(ctx, fc.Args["principalKind"].(model.AccessPrincipalKind), fc.Args["principalId"].(string), fc.Args["role"].(model.IncidentRole))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.DefaultAccess) graphql.Marshaler {
+			return ec.marshalNDefaultAccess2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccess(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_grantDefaultRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DefaultAccess(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_grantDefaultRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_revokeDefaultRole(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_revokeDefaultRole(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RevokeDefaultRole(ctx, fc.Args["principalKind"].(model.AccessPrincipalKind), fc.Args["principalId"].(string), fc.Args["role"].(model.IncidentRole))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.DefaultAccess) graphql.Marshaler {
+			return ec.marshalNDefaultAccess2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccess(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_revokeDefaultRole(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DefaultAccess(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_revokeDefaultRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8337,6 +8934,38 @@ func (ec *executionContext) fieldContext_Query_resource(ctx context.Context, fie
 	if fc.Args, err = ec.field_Query_resource_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_defaultAccess(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_defaultAccess(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().DefaultAccess(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.DefaultAccess) graphql.Marshaler {
+			return ec.marshalNDefaultAccess2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccess(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_defaultAccess(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DefaultAccess(ctx, field)
+		},
 	}
 	return fc, nil
 }
@@ -11113,6 +11742,50 @@ func (ec *executionContext) unmarshalInputCreateMessageInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDefaultGrantInput(ctx context.Context, obj any) (model.DefaultGrantInput, error) {
+	var it model.DefaultGrantInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"principalKind", "principalId", "role"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "principalKind":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("principalKind"))
+			data, err := ec.unmarshalNAccessPrincipalKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐAccessPrincipalKind(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrincipalKind = data
+		case "principalId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("principalId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrincipalID = data
+		case "role":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalNIncidentRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐIncidentRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDeploymentLocationInput(ctx context.Context, obj any) (model.DeploymentLocationInput, error) {
 	var it model.DeploymentLocationInput
 	if obj == nil {
@@ -11642,6 +12315,145 @@ func (ec *executionContext) _Casualties(ctx context.Context, sel ast.SelectionSe
 			}
 		case "eingeschlossene":
 			out.Values[i] = ec._Casualties_eingeschlossene(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var createIncidentPayloadImplementors = []string{"CreateIncidentPayload"}
+
+func (ec *executionContext) _CreateIncidentPayload(ctx context.Context, sel ast.SelectionSet, obj *model.CreateIncidentPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createIncidentPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateIncidentPayload")
+		case "incident":
+			out.Values[i] = ec._CreateIncidentPayload_incident(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "accessMode":
+			out.Values[i] = ec._CreateIncidentPayload_accessMode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "accessGrants":
+			out.Values[i] = ec._CreateIncidentPayload_accessGrants(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var defaultAccessImplementors = []string{"DefaultAccess"}
+
+func (ec *executionContext) _DefaultAccess(ctx context.Context, sel ast.SelectionSet, obj *model.DefaultAccess) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, defaultAccessImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DefaultAccess")
+		case "mode":
+			out.Values[i] = ec._DefaultAccess_mode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "grants":
+			out.Values[i] = ec._DefaultAccess_grants(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var defaultAccessGrantImplementors = []string{"DefaultAccessGrant"}
+
+func (ec *executionContext) _DefaultAccessGrant(ctx context.Context, sel ast.SelectionSet, obj *model.DefaultAccessGrant) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, defaultAccessGrantImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DefaultAccessGrant")
+		case "principalKind":
+			out.Values[i] = ec._DefaultAccessGrant_principalKind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "principalId":
+			out.Values[i] = ec._DefaultAccessGrant_principalId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			out.Values[i] = ec._DefaultAccessGrant_role(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -12670,6 +13482,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "setDefaultAccessMode":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_setDefaultAccessMode(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "grantDefaultRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_grantDefaultRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "revokeDefaultRole":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_revokeDefaultRole(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "grantIncidentRole":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_grantIncidentRole(ctx, field)
@@ -13266,6 +14099,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_resource(ctx, field)
 				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "defaultAccess":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_defaultAccess(ctx, field)
+				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
 				return res
@@ -14361,6 +15216,16 @@ func (ec *executionContext) unmarshalNCreateIncidentInput2githubᚗcomᚋfᚑeld
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNCreateIncidentPayload2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐCreateIncidentPayload(ctx context.Context, sel ast.SelectionSet, v *model.CreateIncidentPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CreateIncidentPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNCreateMessageInput2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐCreateMessageInput(ctx context.Context, v any) (model.CreateMessageInput, error) {
 	res, err := ec.unmarshalInputCreateMessageInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -14380,6 +15245,42 @@ func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNDefaultAccess2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccess(ctx context.Context, sel ast.SelectionSet, v *model.DefaultAccess) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DefaultAccess(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDefaultAccessGrant2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccessGrantᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.DefaultAccessGrant) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNDefaultAccessGrant2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccessGrant(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDefaultAccessGrant2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDefaultAccessGrant(ctx context.Context, sel ast.SelectionSet, v *model.DefaultAccessGrant) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DefaultAccessGrant(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNDivision2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Division) graphql.Marshaler {

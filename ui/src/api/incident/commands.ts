@@ -1,4 +1,5 @@
 import { useMutation } from "@apollo/client/react";
+import { GET_INCIDENT_MESSAGES } from "../message/documents";
 import { apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
@@ -6,6 +7,7 @@ import {
   CREATE_INCIDENT,
   CREATE_INCIDENT_WITH_PARENT,
   DELETE_INCIDENT,
+  GET_INCIDENT_DETAILS,
   GET_INCIDENTS,
   LINK_INCIDENT_PARENT,
   REOPEN_INCIDENT,
@@ -72,33 +74,70 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
         location: null,
       };
     };
+
+    // Seed the detail and messages caches so the editor and journal pages render
+    // immediately without a network round-trip that would race the projector.
+    const seedEditorCaches = (
+      cache: Parameters<NonNullable<Parameters<typeof mutate>[0]["update"]>>[0],
+      incident: NonNullable<
+        NonNullable<Awaited<ReturnType<typeof mutate>>["data"]>["createIncident"]
+      >["incident"],
+    ) => {
+      cache.writeQuery({
+        query: GET_INCIDENT_DETAILS,
+        variables: { incidentId: incident.id },
+        data: { incident },
+      });
+      // A brand-new incident has no messages — seed with an empty list so the
+      // journal page renders without waiting for the projector to index the incident.
+      cache.writeQuery({
+        query: GET_INCIDENT_MESSAGES,
+        variables: { incidentId: incident.id },
+        data: { incident: { id: incident.id, divisions: incident.divisions, messages: [] } },
+      });
+    };
+
     const result = args.parentId
       ? await mutateWithParent({
           variables: { ...variables, parentId: args.parentId },
           update(cache, { data }) {
-            if (!data?.createIncident) return;
+            if (!data?.createIncident?.incident) return;
             const cached = cache.readQuery({ query: GET_INCIDENTS });
-            if (!cached) return;
-            cache.writeQuery({
-              query: GET_INCIDENTS,
-              data: { incidents: [...cached.incidents, updateIncidentCache(data.createIncident)] },
-            });
+            if (cached) {
+              cache.writeQuery({
+                query: GET_INCIDENTS,
+                data: {
+                  incidents: [
+                    ...cached.incidents,
+                    updateIncidentCache(data.createIncident.incident),
+                  ],
+                },
+              });
+            }
+            seedEditorCaches(cache, data.createIncident.incident);
           },
         })
       : await mutate({
           variables,
           update(cache, { data }) {
-            if (!data?.createIncident) return;
+            if (!data?.createIncident?.incident) return;
             const cached = cache.readQuery({ query: GET_INCIDENTS });
-            if (!cached) return;
-            cache.writeQuery({
-              query: GET_INCIDENTS,
-              data: { incidents: [...cached.incidents, updateIncidentCache(data.createIncident)] },
-            });
+            if (cached) {
+              cache.writeQuery({
+                query: GET_INCIDENTS,
+                data: {
+                  incidents: [
+                    ...cached.incidents,
+                    updateIncidentCache(data.createIncident.incident),
+                  ],
+                },
+              });
+            }
+            seedEditorCaches(cache, data.createIncident.incident);
           },
         });
 
-    const incidentId = result.data?.createIncident?.id;
+    const incidentId = result.data?.createIncident?.incident?.id;
     if (!incidentId)
       throw Object.assign(new Error("Create incident failed"), { code: "UNKNOWN" as const });
     return { incidentId };

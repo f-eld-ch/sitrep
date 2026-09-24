@@ -131,7 +131,6 @@ function Stepper({
   );
 }
 
-
 interface ResourceSnapshot {
   status: ResourceStatus;
   personnelCount: number;
@@ -231,140 +230,145 @@ function TriageSummary(props: {
   const assignedDivisions = message.divisions.map((d) => d.division);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Message card */}
-      <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
-        <JournalMessage
-          showControls={true}
-          stabilizeActionBar
-          id={message.id}
-          incidentId={props.incidentId}
-          message={message}
-          divisions={incidentDivisions}
-          setEditorMessage={undefined}
-          setTriageMessage={undefined}
-        />
-      </div>
+    <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Message card */}
+        <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
+          <JournalMessage
+            showControls={true}
+            stabilizeActionBar
+            id={message.id}
+            incidentId={props.incidentId}
+            message={message}
+            divisions={incidentDivisions}
+            setEditorMessage={undefined}
+            setTriageMessage={undefined}
+          />
+        </div>
 
-      {/* Summary body */}
-      <div className="flex-1 space-y-5 overflow-y-auto p-5">
-        {/* Meldefluss */}
-        {assignedDivisions.length > 0 && (
-          <section>
-            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
-              {t("messageFlow")}
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {assignedDivisions.map((d) => (
-                <span
-                  key={d.id}
-                  className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
-                >
-                  {d.description || d.name}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Casualties */}
-        {hasCasualties && (
-          <section>
-            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
-              {t("stepPersonen")}
-            </h3>
-            <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-              <div className="flex flex-wrap gap-3">
-                {spCasualties.map((sp) => (
-                  <div
-                    key={sp.schadenplatzId}
-                    className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated"
+        {/* Summary body */}
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
+          {/* Meldefluss */}
+          {assignedDivisions.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+                {t("messageFlow")}
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {assignedDivisions.map((d) => (
+                  <span
+                    key={d.id}
+                    className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
                   >
-                    <div className="border-b border-border px-3 py-1">
-                      <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">
-                        Schadenplatz
-                      </p>
-                      <p className="truncate text-xs font-semibold text-fg-muted">
-                        {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
-                      </p>
-                    </div>
-                    <div className="divide-y divide-border px-3">
-                      {CASUALTY_CATEGORIES.filter((cat) => sp[cat.key] !== 0).map((cat) => (
-                        <div key={cat.key} className="flex items-center gap-2 py-1.5">
-                          {cat.babsId && iconsLoaded ? (
-                            <BabsIcon icon={cat.babsId} size={20} fallback={null} />
-                          ) : cat.faIcon ? (
-                            <FontAwesomeIcon icon={cat.faIcon} className="text-sm text-fg-muted" />
-                          ) : null}
-                          <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
-                            {sp[cat.key]}
-                          </span>
-                          <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                    {d.description || d.name}
+                  </span>
                 ))}
               </div>
-            </BabsIconProvider>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* Linked resources */}
-        {linkedResources.length > 0 && (
-          <section>
-            <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
-              {t("stepMittel")}
-            </h3>
-            <div className="divide-y divide-border rounded-lg border border-border">
-              {linkedResources.map((r) => {
-                const babsId = combinedBabsId(r.formation, r.size);
-                const snap = resourceStateAt(r, new Date(message.time));
-                return (
-                  <div key={r.id} className="flex items-center gap-3 px-3 py-2">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-bg">
-                      {babsId && iconsLoaded ? (
-                        <BabsIcon icon={babsId} size={28} fallback={null} />
-                      ) : (
-                        <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">
-                        {qualifiedFormation(
-                          t(`resource.formation.${r.formation}`),
-                          r.homeLocation?.name,
+          {/* Casualties */}
+          {hasCasualties && (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+                {t("stepPersonen")}
+              </h3>
+              <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+                <div className="flex flex-wrap gap-3">
+                  {spCasualties.map((sp) => (
+                    <div
+                      key={sp.schadenplatzId}
+                      className="min-w-0 flex-1 rounded-lg border border-border bg-bg-elevated"
+                    >
+                      <div className="border-b border-border px-3 py-1">
+                        <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">
+                          Schadenplatz
+                        </p>
+                        <p className="truncate text-xs font-semibold text-fg-muted">
+                          {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                        </p>
+                      </div>
+                      <div className="divide-y divide-border px-3">
+                        {CASUALTY_CATEGORIES.filter((cat) => sp[cat.key] !== 0).map((cat) => (
+                          <div key={cat.key} className="flex items-center gap-2 py-1.5">
+                            {cat.babsId && iconsLoaded ? (
+                              <BabsIcon icon={cat.babsId} size={20} fallback={null} />
+                            ) : cat.faIcon ? (
+                              <FontAwesomeIcon
+                                icon={cat.faIcon}
+                                className="text-sm text-fg-muted"
+                              />
+                            ) : null}
+                            <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
+                              {sp[cat.key]}
+                            </span>
+                            <span className="ml-2 text-sm text-fg-muted">{t(cat.labelKey)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </BabsIconProvider>
+            </section>
+          )}
+
+          {/* Linked resources */}
+          {linkedResources.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+                {t("stepMittel")}
+              </h3>
+              <div className="divide-y divide-border rounded-lg border border-border">
+                {linkedResources.map((r) => {
+                  const babsId = combinedBabsId(r.formation, r.size);
+                  const snap = resourceStateAt(r, new Date(message.time));
+                  return (
+                    <div key={r.id} className="flex items-center gap-3 px-3 py-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-bg">
+                        {babsId && iconsLoaded ? (
+                          <BabsIcon lang={i18n.language} icon={babsId} size={28} fallback={null} />
+                        ) : (
+                          <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
                         )}
                       </span>
-                      {r.name && (
-                        <span className="block truncate text-xs text-fg-muted">{r.name}</span>
-                      )}
-                      <span className="block truncate text-xs text-fg-muted/70">
-                        {snap.personnelCount} {t("resource.fields.personnelCount")} ·{" "}
-                        {t(`resource.status.${snap.status}`)}
-                        {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
-                        {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {qualifiedFormation(
+                            t(`resource.formation.${r.formation}`),
+                            r.homeLocation?.name,
+                          )}
+                        </span>
+                        {r.name && (
+                          <span className="block truncate text-xs text-fg-muted">{r.name}</span>
+                        )}
+                        <span className="block truncate text-xs text-fg-muted/70">
+                          {snap.personnelCount} {t("resource.fields.personnelCount")} ·{" "}
+                          {t(`resource.status.${snap.status}`)}
+                          {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
+                          {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
-        {!hasCasualties && linkedResources.length === 0 && assignedDivisions.length === 0 && (
-          <p className="mt-8 text-center text-sm text-fg-muted/60">–</p>
-        )}
+          {!hasCasualties && linkedResources.length === 0 && assignedDivisions.length === 0 && (
+            <p className="mt-8 text-center text-sm text-fg-muted/60">–</p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4">
+          <Button type="button" variant="primary" size="sm" onClick={onAdjust}>
+            {t("triageAdjust")}
+          </Button>
+        </footer>
       </div>
-
-      {/* Footer */}
-      <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-4">
-        <Button type="button" variant="primary" size="sm" onClick={onAdjust}>
-          {t("triageAdjust")}
-        </Button>
-      </footer>
-    </div>
+    </BabsIconProvider>
   );
 }
 
@@ -375,7 +379,7 @@ function TriagePanel(props: { message: Message; incidentId: string; onSaved: () 
 
 function PanelForm(props: { message: Message; incidentId: string; onSaved: () => void }) {
   const { message, incidentId, onSaved } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { state: incidentState } = useContext(IncidentContext);
   const incidentDivisions = incidentState.incident?.divisions ?? [];
   const showTasks = useBooleanFlagValue("show-tasks", false);
@@ -629,248 +633,250 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Message context — scrollable so tall content doesn't hide the stepper */}
-      <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
-        <JournalMessage
-          showControls={!isPending}
-          stabilizeActionBar
-          id={message.id}
-          incidentId={incidentId}
-          message={previewMessage}
-          divisions={incidentDivisions}
-          setEditorMessage={undefined}
-          setTriageMessage={undefined}
-        />
-      </div>
+    <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Message context — scrollable so tall content doesn't hide the stepper */}
+        <div className="max-h-[40%] overflow-y-auto px-5 pt-4 pb-3">
+          <JournalMessage
+            showControls={!isPending}
+            stabilizeActionBar
+            id={message.id}
+            incidentId={incidentId}
+            message={previewMessage}
+            divisions={incidentDivisions}
+            setEditorMessage={undefined}
+            setTriageMessage={undefined}
+          />
+        </div>
 
-      {/* Step navigator */}
-      <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
+        {/* Step navigator */}
+        <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
 
-      {/* Step content */}
-      <div className="flex-1 overflow-y-auto p-5">
-        {(triageState.error ?? stepError) &&
-          (() => {
-            const err = triageState.error ?? stepError!;
-            return (
-              <Notification variant="danger" className="mb-4">
-                <p>{t(`errors.${err.code}`)}</p>
-                {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
-              </Notification>
-            );
-          })()}
+        {/* Step content */}
+        <div className="flex-1 overflow-y-auto p-5">
+          {(triageState.error ?? stepError) &&
+            (() => {
+              const err = triageState.error ?? stepError!;
+              return (
+                <Notification variant="danger" className="mb-4">
+                  <p>{t(`errors.${err.code}`)}</p>
+                  {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
+                </Notification>
+              );
+            })()}
 
-        {currentStep.key === "meldung" && (
-          <Suspense fallback={<Spinner />}>
-            <MessageEditorForm
-              ref={editorRef}
-              message={message}
-              incidentId={incidentId}
-              onLiveMessage={setLiveMessage}
-              title={t("stepMeldungReview")}
-            />
-          </Suspense>
-        )}
+          {currentStep.key === "meldung" && (
+            <Suspense fallback={<Spinner />}>
+              <MessageEditorForm
+                ref={editorRef}
+                message={message}
+                incidentId={incidentId}
+                onLiveMessage={setLiveMessage}
+                title={t("stepMeldungReview")}
+              />
+            </Suspense>
+          )}
 
-        {currentStep.key === "meldefluss" && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start">
-              <div className="shrink-0">
-                <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-label={t("keyMessage")}
-                  aria-checked={priority === PriorityStatus.High}
-                  onClick={() => {
-                    if (priority === PriorityStatus.High) {
-                      setPriority(PriorityStatus.Normal);
-                      setAssignments(savedAssignments.current ?? []);
-                      savedAssignments.current = null;
-                    } else {
-                      savedAssignments.current = assignments;
-                      setPriority(PriorityStatus.High);
-                      setAssignments(incidentDivisions);
-                    }
-                  }}
-                  className={clsx(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
-                    priority === PriorityStatus.High ? "bg-danger" : "bg-border",
-                  )}
-                >
-                  <span
+          {currentStep.key === "meldefluss" && (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start">
+                <div className="shrink-0">
+                  <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label={t("keyMessage")}
+                    aria-checked={priority === PriorityStatus.High}
+                    onClick={() => {
+                      if (priority === PriorityStatus.High) {
+                        setPriority(PriorityStatus.Normal);
+                        setAssignments(savedAssignments.current ?? []);
+                        savedAssignments.current = null;
+                      } else {
+                        savedAssignments.current = assignments;
+                        setPriority(PriorityStatus.High);
+                        setAssignments(incidentDivisions);
+                      }
+                    }}
                     className={clsx(
-                      "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
-                      priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
+                      priority === PriorityStatus.High ? "bg-danger" : "bg-border",
                     )}
-                  />
-                </button>
-              </div>
+                  >
+                    <span
+                      className={clsx(
+                        "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
+                        priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                      )}
+                    />
+                  </button>
+                </div>
 
-              <div className="min-w-0 flex-1">
-                <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {incidentDivisions.map((d) => {
-                    const isPresent = assignments.some((e) => e.name === d.name);
-                    return (
-                      <div
-                        key={d.name}
-                        className="flex overflow-hidden rounded text-xs font-semibold"
-                      >
-                        <span
-                          className={
-                            isPresent
-                              ? "bg-primary px-3 py-0.5 text-white"
-                              : "bg-fg px-3 py-0.5 text-bg"
-                          }
+                <div className="min-w-0 flex-1">
+                  <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {incidentDivisions.map((d) => {
+                      const isPresent = assignments.some((e) => e.name === d.name);
+                      return (
+                        <div
+                          key={d.name}
+                          className="flex overflow-hidden rounded text-xs font-semibold"
                         >
-                          {d.description || d.name}
-                        </span>
-                        {isPresent ? (
-                          <button
-                            type="button"
-                            className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
-                            onClick={() =>
-                              setAssignments(reject(assignments, (e) => e.id === d.id))
+                          <span
+                            className={
+                              isPresent
+                                ? "bg-primary px-3 py-0.5 text-white"
+                                : "bg-fg px-3 py-0.5 text-bg"
                             }
                           >
-                            <FontAwesomeIcon icon={faMinus} />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
-                            onClick={() => setAssignments(union(assignments, [d]))}
-                          >
-                            <FontAwesomeIcon icon={faPlus} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                            {d.description || d.name}
+                          </span>
+                          {isPresent ? (
+                            <button
+                              type="button"
+                              className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
+                              onClick={() =>
+                                setAssignments(reject(assignments, (e) => e.id === d.id))
+                              }
+                            >
+                              <FontAwesomeIcon icon={faMinus} />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
+                              onClick={() => setAssignments(union(assignments, [d]))}
+                            >
+                              <FontAwesomeIcon icon={faPlus} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
+
+              {showTasks && (
+                <div>
+                  <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
+                  <TaskNew />
+                </div>
+              )}
             </div>
+          )}
 
-            {showTasks && (
-              <div>
-                <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
-                <TaskNew />
-              </div>
-            )}
-          </div>
-        )}
+          {currentStep.key === "personen" && (
+            <div className="space-y-6">
+              <SchadenplatzStep
+                namedSchadenplaetze={namedSchadenplaetze}
+                selectedIds={selectedSpIds}
+                onToggle={toggleSpId}
+                incidentId={incidentId}
+                onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
+                onReplaced={(tempId, realId) =>
+                  setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
+                }
+                onCancelled={(tempId) =>
+                  setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
+                }
+                createSchadenplatz={createSchadenplatz}
+              />
+              {personenSpIds.map((spId) => {
+                const sp = schadenplaetze.find((s) => s.id === spId);
+                const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
+                return (
+                  <div key={spId}>
+                    <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+                      {label}
+                    </h3>
+                    <CasualtySection
+                      value={getSpCasualties(spId)}
+                      spCasualties={sp?.casualties}
+                      onChange={(d) => setSpCasualties(spId, d)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-        {currentStep.key === "personen" && (
-          <div className="space-y-6">
-            <SchadenplatzStep
-              namedSchadenplaetze={namedSchadenplaetze}
-              selectedIds={selectedSpIds}
-              onToggle={toggleSpId}
-              incidentId={incidentId}
-              onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
-              onReplaced={(tempId, realId) =>
-                setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
-              }
-              onCancelled={(tempId) =>
-                setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
-              }
-              createSchadenplatz={createSchadenplatz}
-            />
-            {personenSpIds.map((spId) => {
-              const sp = schadenplaetze.find((s) => s.id === spId);
-              const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
-              return (
-                <div key={spId}>
-                  <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
-                    {label}
-                  </h3>
-                  <CasualtySection
-                    value={getSpCasualties(spId)}
-                    spCasualties={sp?.casualties}
-                    onChange={(d) => setSpCasualties(spId, d)}
+          {currentStep.key === "mittel" && (
+            <div className="space-y-3">
+              {resourcesResult.status === "loading" ? (
+                <Spinner />
+              ) : (
+                <>
+                  <ResourcePicker
+                    schadenplaetze={schadenplaetze}
+                    selectedIds={selectedResourceIds}
+                    onToggle={toggleResourceId}
+                    onAttach={(ids) =>
+                      setSelectedResourceIds((previous) => new Set([...previous, ...ids]))
+                    }
+                    iconsLoaded={iconsLoaded}
+                    messageTime={message.time}
+                    incidentId={incidentId}
                   />
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  <AlertResourceForm
+                    incidentId={incidentId}
+                    schadenplatzId={effectiveSpIds[0] ?? ""}
+                    sourceMessageId={message.id}
+                    iconsLoaded={iconsLoaded}
+                    existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
+                    onAlerted={(id) => {
+                      setSelectedResourceIds((prev) => new Set([...prev, id]));
+                      void resourcesResult.refresh();
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
-        {currentStep.key === "mittel" && (
-          <div className="space-y-3">
-            {resourcesResult.status === "loading" ? (
-              <Spinner />
-            ) : (
-              <>
-                <ResourcePicker
-                  schadenplaetze={schadenplaetze}
-                  selectedIds={selectedResourceIds}
-                  onToggle={toggleResourceId}
-                  onAttach={(ids) =>
-                    setSelectedResourceIds((previous) => new Set([...previous, ...ids]))
-                  }
-                  iconsLoaded={iconsLoaded}
-                  messageTime={message.time}
-                  incidentId={incidentId}
-                />
-                <AlertResourceForm
-                  incidentId={incidentId}
-                  schadenplatzId={effectiveSpIds[0] ?? ""}
-                  sourceMessageId={message.id}
-                  iconsLoaded={iconsLoaded}
-                  existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
-                  onAlerted={(id) => {
-                    setSelectedResourceIds((prev) => new Set([...prev, id]));
-                    void resourcesResult.refresh();
-                  }}
-                />
-              </>
-            )}
-          </div>
-        )}
+        {/* Footer: back / next / triage actions */}
+        <footer className="flex shrink-0 items-center gap-2 border-t border-border px-5 py-4">
+          {safeIndex > 0 && (
+            <Button
+              type="button"
+              variant="light"
+              size="sm"
+              onClick={() => setStepIndex((i) => i - 1)}
+            >
+              {t("back")}
+            </Button>
+          )}
+          {currentStep.key === "meldung" && (
+            <Button
+              type="button"
+              variant="light"
+              size="sm"
+              disabled={triageState.loading}
+              onClick={() => handleSave(TriageStatus.MoreInfo)}
+            >
+              {t("saveMoreInfo")}
+            </Button>
+          )}
+          <div className="flex-1" />
+          {!isLast ? (
+            <Button type="button" variant="primary" size="sm" onClick={() => void handleNext()}>
+              {t("next")}
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={triageState.loading}
+              onClick={() => handleSave(TriageStatus.Triaged)}
+            >
+              {t("saveTriage")}
+            </Button>
+          )}
+        </footer>
       </div>
-
-      {/* Footer: back / next / triage actions */}
-      <footer className="flex shrink-0 items-center gap-2 border-t border-border px-5 py-4">
-        {safeIndex > 0 && (
-          <Button
-            type="button"
-            variant="light"
-            size="sm"
-            onClick={() => setStepIndex((i) => i - 1)}
-          >
-            {t("back")}
-          </Button>
-        )}
-        {currentStep.key === "meldung" && (
-          <Button
-            type="button"
-            variant="light"
-            size="sm"
-            disabled={triageState.loading}
-            onClick={() => handleSave(TriageStatus.MoreInfo)}
-          >
-            {t("saveMoreInfo")}
-          </Button>
-        )}
-        <div className="flex-1" />
-        {!isLast ? (
-          <Button type="button" variant="primary" size="sm" onClick={() => void handleNext()}>
-            {t("next")}
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            variant="primary"
-            size="sm"
-            disabled={triageState.loading}
-            onClick={() => handleSave(TriageStatus.Triaged)}
-          >
-            {t("saveTriage")}
-          </Button>
-        )}
-      </footer>
-    </div>
+    </BabsIconProvider>
   );
 }
 
@@ -1071,7 +1077,7 @@ function CasualtySection({
   spCasualties?: SchadenplatzWithResources["casualties"];
   onChange: (v: CasualtyDeltas) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const iconsLoaded = useBabsIcons();
 
   const set = (key: keyof CasualtyDeltas, delta: number) => onChange({ ...value, [key]: delta });
@@ -1079,58 +1085,56 @@ function CasualtySection({
   const nonZero = CASUALTY_CATEGORIES.filter((cat) => value[cat.key] !== 0);
 
   return (
-    <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-      <div className="flex gap-3">
-        {/* Counter list */}
-        <div className="w-1/2 divide-y divide-border">
-          {CASUALTY_CATEGORIES.map((cat) => (
-            <CasualtyRow
-              key={cat.key}
-              category={cat}
-              delta={value[cat.key]}
-              currentTotal={spCasualties?.[cat.key] ?? 0}
-              iconsLoaded={iconsLoaded}
-              onChange={(d) => set(cat.key, d)}
-            />
-          ))}
-        </div>
-
-        {/* Summary */}
-        <div className="w-1/2 rounded-lg border border-border bg-bg p-3">
-          <p className="mb-2 text-sm font-semibold tracking-wide text-danger uppercase">
-            {t("casualties.summary")}
-          </p>
-          {nonZero.length === 0 ? (
-            <p className="mt-2 text-center text-sm text-fg-muted/50">–</p>
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              {nonZero.map((cat) => {
-                const delta = value[cat.key];
-                return (
-                  <div key={cat.key} className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                      {cat.babsId && iconsLoaded ? (
-                        <BabsIcon icon={cat.babsId} size={30} fallback={null} />
-                      ) : cat.faIcon ? (
-                        <FontAwesomeIcon icon={cat.faIcon} className="text-lg text-fg-muted" />
-                      ) : null}
-                    </span>
-                    <span
-                      className={clsx(
-                        "text-xl font-bold tabular-nums",
-                        delta > 0 ? "text-danger" : "text-success",
-                      )}
-                    >
-                      {delta}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+    <div className="flex gap-3">
+      {/* Counter list */}
+      <div className="w-1/2 divide-y divide-border">
+        {CASUALTY_CATEGORIES.map((cat) => (
+          <CasualtyRow
+            key={cat.key}
+            category={cat}
+            delta={value[cat.key]}
+            currentTotal={spCasualties?.[cat.key] ?? 0}
+            iconsLoaded={iconsLoaded}
+            onChange={(d) => set(cat.key, d)}
+          />
+        ))}
       </div>
-    </BabsIconProvider>
+
+      {/* Summary */}
+      <div className="w-1/2 rounded-lg border border-border bg-bg p-3">
+        <p className="mb-2 text-sm font-semibold tracking-wide text-danger uppercase">
+          {t("casualties.summary")}
+        </p>
+        {nonZero.length === 0 ? (
+          <p className="mt-2 text-center text-sm text-fg-muted/50">–</p>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            {nonZero.map((cat) => {
+              const delta = value[cat.key];
+              return (
+                <div key={cat.key} className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                    {cat.babsId && iconsLoaded ? (
+                      <BabsIcon icon={cat.babsId} size={30} fallback={null} />
+                    ) : cat.faIcon ? (
+                      <FontAwesomeIcon icon={cat.faIcon} className="text-lg text-fg-muted" />
+                    ) : null}
+                  </span>
+                  <span
+                    className={clsx(
+                      "text-xl font-bold tabular-nums",
+                      delta > 0 ? "text-danger" : "text-success",
+                    )}
+                  >
+                    {delta}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

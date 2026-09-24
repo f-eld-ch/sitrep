@@ -100,6 +100,30 @@ type IncidentAccessGrant {
   role: IncidentRole!
 }
 
+type DefaultAccessGrant {
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  role: IncidentRole!
+}
+
+type DefaultAccess {
+  mode: IncidentAccessMode!
+  grants: [DefaultAccessGrant!]!
+}
+
+input DefaultGrantInput {
+  principalKind: AccessPrincipalKind!
+  principalId: ID!
+  role: IncidentRole!
+}
+
+"""Payload returned by createIncident; carries authoritative access state from aggregate."""
+type CreateIncidentPayload {
+  incident: Incident!
+  accessMode: IncidentAccessMode!
+  accessGrants: [IncidentAccessGrant!]!
+}
+
 # ─── Domain types ─────────────────────────────────────────────────────────────
 
 type Location {
@@ -350,6 +374,9 @@ type Query {
 
   """Single Resource by ID."""
   resource(id: ID!): Resource
+
+  """Current default-access template applied to newly created incidents."""
+  defaultAccess: DefaultAccess!
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
@@ -469,9 +496,12 @@ type Mutation {
   # ── Incidents ───────────────────────────────────────────────────────────────
 
   """Create an incident with optional divisions and map layers."""
-  createIncident(input: CreateIncidentInput!): Incident!
+  createIncident(input: CreateIncidentInput!): CreateIncidentPayload!
 
-  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessGrant!
+  changeIncidentAccessMode(incidentId: ID!, mode: IncidentAccessMode!): IncidentAccessMode!
+  setDefaultAccessMode(mode: IncidentAccessMode!): DefaultAccess!
+  grantDefaultRole(principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): DefaultAccess!
+  revokeDefaultRole(principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): DefaultAccess!
   grantIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): IncidentAccessGrant!
   revokeIncidentRole(incidentId: ID!, principalKind: AccessPrincipalKind!, principalId: ID!, role: IncidentRole!): ID!
   createAccessGroup(name: String!, description: String!): AccessGroup!

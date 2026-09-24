@@ -33,3 +33,9 @@ export interface GlobalRoleGrant {
   name: string;
   email: string;
 }
+
+export interface DefaultAccessGrant {
+  principalKind: AccessPrincipalKind;
+  principalId: string;
+  role: IncidentRole;
+}

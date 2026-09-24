@@ -370,7 +370,8 @@
     "title": "Administration",
     "accessControl": "Contrôle d'accès",
     "groups": "Groupes",
-    "globalRoles": "Rôles globaux"
+    "globalRoles": "Rôles globaux",
+    "defaultAccess": "Accès par défaut"
   },
   "resource": {
     "childIncident": "Incident enfant",
@@ -445,5 +446,17 @@
       "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",
       "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà."
     }
+  },
+  "defaultAccess": {
+    "title": "Accès par défaut aux événements",
+    "description": "Configurez le mode d'accès et les attributions de rôles par défaut pour chaque nouvel événement.",
+    "modeTitle": "Mode d'accès par défaut",
+    "modeHelp": "Les nouveaux événements seront créés avec ce mode d'accès.",
+    "grantsTitle": "Attributions de rôles par défaut",
+    "grantsHelp": "Ces utilisateurs et groupes recevront le rôle spécifié pour chaque nouvel événement.",
+    "noGrants": "Aucune attribution de rôle par défaut configurée.",
+    "revokeFailed": "Échec de la révocation du rôle par défaut.",
+    "grantFailed": "Échec de l'attribution du rôle par défaut.",
+    "roleChangeFailed": "Échec de la modification du rôle par défaut."
   }
 }

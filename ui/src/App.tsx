@@ -11,7 +11,7 @@ import { Spinner } from "components";
 import { useTranslation } from "react-i18next";
 import { IncidentContextProvider, UserProvider } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
-import { AdminLayout, GlobalRoles, GroupDetail, Groups } from "./views/admin";
+import { AdminLayout, DefaultAccess, GlobalRoles, GroupDetail, Groups } from "./views/admin";
 import {
   Editor as IncidentEditor,
   Dashboard as IncidentDashboard,
@@ -19,10 +19,7 @@ import {
   New as IncidentNew,
   AccessPage as IncidentAccessPage,
 } from "views/incident";
-import {
-  List as JournalMessageList,
-  TriageView as JournalTriageView,
-} from "views/journal";
+import { List as JournalMessageList, TriageView as JournalTriageView } from "views/journal";
 const JournalEditor = lazy(() => import("views/journal/Editor"));
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { IncidentRoute } from "views/IncidentRoute";
@@ -58,6 +55,7 @@ const router = createBrowserRouter([
           { path: "groups", element: <Groups /> },
           { path: "groups/:groupId", element: <GroupDetail /> },
           { path: "global-roles", element: <GlobalRoles /> },
+          { path: "default-access", element: <DefaultAccess /> },
         ],
       },
       {

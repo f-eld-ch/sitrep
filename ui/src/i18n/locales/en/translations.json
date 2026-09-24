@@ -369,7 +369,8 @@
     "title": "Administration",
     "accessControl": "Access control",
     "groups": "Groups",
-    "globalRoles": "Global roles"
+    "globalRoles": "Global roles",
+    "defaultAccess": "Default access"
   },
   "resource": {
     "childIncident": "Child incident",
@@ -445,5 +446,17 @@
       "einsatzortRequired": "Deployment location is required before deploying",
       "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists."
     }
+  },
+  "defaultAccess": {
+    "title": "Default incident access",
+    "description": "Configure the access mode and default role assignments applied to every new incident.",
+    "modeTitle": "Default access mode",
+    "modeHelp": "New incidents will be created with this access mode.",
+    "grantsTitle": "Default role assignments",
+    "grantsHelp": "These users and groups will be assigned the specified role on every new incident.",
+    "noGrants": "No default grants configured.",
+    "revokeFailed": "Failed to revoke default role.",
+    "grantFailed": "Failed to grant default role.",
+    "roleChangeFailed": "Failed to change default role."
   }
 }

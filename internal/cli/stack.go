@@ -217,6 +217,8 @@ func buildPostgresStack(
 		return nil, err
 	}
 
+	pgAccessQueries := pgqueries.NewAccessQueries(pool)
+
 	factoryOpts := []service.FactoryOption{
 		service.WithTransactor(tx),
 		service.WithClock(pgstore.WallClock{}),
@@ -230,6 +232,7 @@ func buildPostgresStack(
 		service.WithAccessGroupRepository(groupRepo),
 		service.WithGlobalAccessRepository(globalRepo),
 		service.WithGlobalAccessChecker(globalChecker),
+		service.WithAccessQueries(pgAccessQueries),
 	}
 
 	if blobs != nil {
@@ -287,7 +290,7 @@ func buildPostgresStack(
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetze, repos),
 		ResourceSvc:           factory.ResourceService(resources, repos, schadenplaetze),
 		Queries:               queries,
-		AccessQueries:         pgqueries.NewAccessQueries(pool),
+		AccessQueries:         pgAccessQueries,
 		IncidentAccessChecker: accessChecker,
 		GlobalAccessChecker:   globalChecker,
 		UserRepo:              pguser.NewRepository(pool),
@@ -349,6 +352,8 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		return nil, err
 	}
 
+	inmemAccessQueries := inmemqueries.NewAccessQueries(accessHandler)
+
 	inmemFactoryOpts := []service.FactoryOption{
 		service.WithTransactor(tx),
 		service.WithClock(pgstore.WallClock{}),
@@ -362,6 +367,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		service.WithAccessGroupRepository(groupRepo),
 		service.WithGlobalAccessRepository(globalRepo),
 		service.WithGlobalAccessChecker(globalChecker),
+		service.WithAccessQueries(inmemAccessQueries),
 	}
 
 	if blobs != nil {
@@ -400,7 +406,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeInmem, repos),
 		ResourceSvc:           factory.ResourceService(resourcesInmem, repos, schadenplaetzeInmem),
 		Queries:               queries,
-		AccessQueries:         inmemqueries.NewAccessQueries(accessHandler),
+		AccessQueries:         inmemAccessQueries,
 		IncidentAccessChecker: accessChecker,
 		GlobalAccessChecker:   globalChecker,
 		UserRepo:              nil,
@@ -467,6 +473,8 @@ func buildSQLiteStack(
 		return nil, err
 	}
 
+	sqAccessQueries := sqqueries.NewAccessQueries(read)
+
 	factoryOpts := []service.FactoryOption{
 		service.WithTransactor(tx),
 		service.WithClock(clock),
@@ -480,6 +488,7 @@ func buildSQLiteStack(
 		service.WithAccessGroupRepository(groupRepo),
 		service.WithGlobalAccessRepository(globalRepo),
 		service.WithGlobalAccessChecker(globalChecker),
+		service.WithAccessQueries(sqAccessQueries),
 	}
 
 	if blobs != nil {
@@ -535,7 +544,7 @@ func buildSQLiteStack(
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeSq, repos),
 		ResourceSvc:           factory.ResourceService(resourcesSq, repos, schadenplaetzeSq),
 		Queries:               queries,
-		AccessQueries:         sqqueries.NewAccessQueries(read),
+		AccessQueries:         sqAccessQueries,
 		IncidentAccessChecker: accessChecker,
 		GlobalAccessChecker:   globalChecker,
 		UserRepo:              squser.NewRepository(write, clock),

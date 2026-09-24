@@ -754,3 +754,43 @@ func divisionsByID(divs []*outbound.DivisionRM) map[uuid.UUID]*outbound.Division
 
 	return m
 }
+
+// createIncidentPayloadFromResult builds a CreateIncidentPayload from the service result,
+// building the access grants from aggregate state — no read-model read.
+func createIncidentPayloadFromResult(r inbound.CreateIncidentResult) *model.CreateIncidentPayload {
+	grants := make([]*model.IncidentAccessGrant, 0, len(r.AccessGrants))
+
+	for _, g := range r.AccessGrants {
+		grants = append(grants, &model.IncidentAccessGrant{
+			IncidentID:    r.IncidentID.String(),
+			PrincipalKind: principalKindFromDomain(g.Principal.Kind),
+			PrincipalID:   g.Principal.ID,
+			PrincipalName: g.Principal.ID,
+			Role:          incidentRoleFromDomain(g.Role),
+		})
+	}
+
+	return &model.CreateIncidentPayload{
+		Incident:     incidentResultToModel(r),
+		AccessMode:   incidentModeFromDomain(r.AccessMode),
+		AccessGrants: grants,
+	}
+}
+
+// defaultAccessResultToModel converts a DefaultAccessResult to the GraphQL DefaultAccess type.
+func defaultAccessResultToModel(r inbound.DefaultAccessResult) *model.DefaultAccess {
+	grants := make([]*model.DefaultAccessGrant, 0, len(r.Grants))
+
+	for _, g := range r.Grants {
+		grants = append(grants, &model.DefaultAccessGrant{
+			PrincipalKind: principalKindFromDomain(g.Principal.Kind),
+			PrincipalID:   g.Principal.ID,
+			Role:          incidentRoleFromDomain(g.Role),
+		})
+	}
+
+	return &model.DefaultAccess{
+		Mode:   incidentModeFromDomain(r.Mode),
+		Grants: grants,
+	}
+}

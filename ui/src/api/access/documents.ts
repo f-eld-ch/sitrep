@@ -36,6 +36,14 @@ import type {
   RevokeGlobalRoleMutationVariables,
   RevokeIncidentRoleMutation,
   RevokeIncidentRoleMutationVariables,
+  GetDefaultAccessQuery,
+  GetDefaultAccessQueryVariables,
+  SetDefaultAccessModeMutation,
+  SetDefaultAccessModeMutationVariables,
+  GrantDefaultRoleMutation,
+  GrantDefaultRoleMutationVariables,
+  RevokeDefaultRoleMutation,
+  RevokeDefaultRoleMutationVariables,
 } from "gql/next";
 
 export const LIST_INCIDENT_ACCESS: TypedDocumentNode<
@@ -126,12 +134,7 @@ export const CHANGE_INCIDENT_ACCESS_MODE: TypedDocumentNode<
   ChangeIncidentAccessModeMutationVariables
 > = gql`
   mutation ChangeIncidentAccessMode($incidentId: ID!, $mode: IncidentAccessMode!) {
-    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode) {
-      incidentId
-      principalKind
-      principalId
-      role
-    }
+    changeIncidentAccessMode(incidentId: $incidentId, mode: $mode)
   }
 `;
 
@@ -263,5 +266,77 @@ export const REVOKE_GLOBAL_ROLE: TypedDocumentNode<
 > = gql`
   mutation RevokeGlobalRole($subject: ID!, $role: GlobalRole!) {
     revokeGlobalRole(subject: $subject, role: $role)
+  }
+`;
+
+export const GET_DEFAULT_ACCESS: TypedDocumentNode<
+  GetDefaultAccessQuery,
+  GetDefaultAccessQueryVariables
+> = gql`
+  query GetDefaultAccess {
+    defaultAccess {
+      mode
+      grants {
+        principalKind
+        principalId
+        role
+      }
+    }
+  }
+`;
+
+export const SET_DEFAULT_ACCESS_MODE: TypedDocumentNode<
+  SetDefaultAccessModeMutation,
+  SetDefaultAccessModeMutationVariables
+> = gql`
+  mutation SetDefaultAccessMode($mode: IncidentAccessMode!) {
+    setDefaultAccessMode(mode: $mode) {
+      mode
+      grants {
+        principalKind
+        principalId
+        role
+      }
+    }
+  }
+`;
+
+export const GRANT_DEFAULT_ROLE: TypedDocumentNode<
+  GrantDefaultRoleMutation,
+  GrantDefaultRoleMutationVariables
+> = gql`
+  mutation GrantDefaultRole(
+    $principalKind: AccessPrincipalKind!
+    $principalId: ID!
+    $role: IncidentRole!
+  ) {
+    grantDefaultRole(principalKind: $principalKind, principalId: $principalId, role: $role) {
+      mode
+      grants {
+        principalKind
+        principalId
+        role
+      }
+    }
+  }
+`;
+
+export const REVOKE_DEFAULT_ROLE: TypedDocumentNode<
+  RevokeDefaultRoleMutation,
+  RevokeDefaultRoleMutationVariables
+> = gql`
+  mutation RevokeDefaultRole(
+    $principalKind: AccessPrincipalKind!
+    $principalId: ID!
+    $role: IncidentRole!
+  ) {
+    revokeDefaultRole(principalKind: $principalKind, principalId: $principalId, role: $role) {
+      mode
+      grants {
+        principalKind
+        principalId
+        role
+      }
+    }
   }
 `;

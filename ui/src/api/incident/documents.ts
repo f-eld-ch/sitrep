@@ -91,21 +91,34 @@ export const CREATE_INCIDENT: TypedDocumentNode<
     createIncident(
       input: { name: $name, location: $location, divisions: $divisions, layers: $layers }
     ) {
-      id
-      parentId
-      name
-      createdAt
-      updatedAt
-      closedAt
-      isClosed
-      location {
-        name
-        coordinates
-      }
-      divisions {
+      incident {
         id
+        parentId
         name
-        description
+        createdAt
+        updatedAt
+        closedAt
+        isClosed
+        canManage
+        canDelete
+        canManageAccess
+        location {
+          name
+          coordinates
+        }
+        divisions {
+          id
+          name
+          description
+        }
+      }
+      accessMode
+      accessGrants {
+        incidentId
+        principalKind
+        principalId
+        principalName
+        role
       }
     }
   }
@@ -131,21 +144,34 @@ export const CREATE_INCIDENT_WITH_PARENT: TypedDocumentNode<
         layers: $layers
       }
     ) {
-      id
-      parentId
-      name
-      createdAt
-      updatedAt
-      closedAt
-      isClosed
-      location {
-        name
-        coordinates
-      }
-      divisions {
+      incident {
         id
+        parentId
         name
-        description
+        createdAt
+        updatedAt
+        closedAt
+        isClosed
+        canManage
+        canDelete
+        canManageAccess
+        location {
+          name
+          coordinates
+        }
+        divisions {
+          id
+          name
+          description
+        }
+      }
+      accessMode
+      accessGrants {
+        incidentId
+        principalKind
+        principalId
+        principalName
+        role
       }
     }
   }
