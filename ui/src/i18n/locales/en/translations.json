@@ -409,6 +409,7 @@
       "name": "Resource name",
       "namePlaceholder": "Resource name",
       "formation": "Formation",
+      "partner": "Partner",
       "size": "Unit size",
       "personnelCount": "Personnel",
       "successor": "Relieved by",

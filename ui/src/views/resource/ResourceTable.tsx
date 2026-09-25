@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Resource, ResourceDeploymentPeriod } from "api";
+import { qualifiedFormation } from "views/journal/TriageView";
 
 interface ResourceTableProps {
   resources: Resource[];
@@ -36,8 +37,8 @@ function ResourcePrimaryRow({
     : deploymentLabel(r);
   return (
     <tr>
-      <td className="py-0.5 pr-2 font-medium">{r.name || t(`resource.size.${r.size}`)}</td>
-      <td className="py-0.5 pr-2">{t(`resource.formation.${r.formation}`)}</td>
+      <td className="py-0.5 pr-2">{qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}</td>
+      <td className="py-0.5 pr-2 font-medium">{r.name || "–"}</td>
       <td className="py-0.5 pr-2 text-right tabular-nums">{r.personnelCount}</td>
       <td className="py-0.5 pr-2">{t(`resource.status.${r.status}`)}</td>
       <td className="py-0.5 pr-2 text-nowrap tabular-nums">{formatDate(r.alertedAt)}</td>
@@ -86,8 +87,8 @@ const ResourceTable = (props: ResourceTableProps, ref: React.Ref<HTMLDivElement>
       <table className="w-full border-collapse [&_td]:border-b [&_td]:border-gray-200 [&_th]:border-b [&_th]:border-gray-400 [&_th]:py-0.5 [&_th]:pr-2 [&_th]:text-left [&_th]:font-semibold">
         <thead>
           <tr>
+            <th>{t("resource.fields.partner")}</th>
             <th>{t("resource.fields.name")}</th>
-            <th>{t("resource.fields.formation")}</th>
             <th className="text-right">{t("resource.fields.personnelCount")}</th>
             <th>{t("resource.fields.status")}</th>
             <th>{t("resource.alertedAt")}</th>

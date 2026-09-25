@@ -409,6 +409,7 @@
     "fields": {
       "name": "Denominazione",
       "formation": "Formazione",
+      "partner": "Partner",
       "size": "Dimensione unità",
       "personnelCount": "Personale",
       "successor": "Sostituito da",

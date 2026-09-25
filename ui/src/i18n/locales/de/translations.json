@@ -409,6 +409,7 @@
       "name": "Name des Mittels",
       "namePlaceholder": "Name des Mittels",
       "formation": "Verband",
+      "partner": "Partner",
       "size": "Truppenstärke",
       "personnelCount": "Personen",
       "successor": "Ablösung durch",
