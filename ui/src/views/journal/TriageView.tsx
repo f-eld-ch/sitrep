@@ -147,11 +147,17 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
     return ts >= start && ts < end;
   });
   if (activePeriod) {
+    // For ongoing deployments (endedAt null) prefer the live resource fields —
+    // the history entry's deploymentLabel was captured at deploy time and may
+    // predate a subsequent updateDeploymentLocation call.
+    const ongoing = activePeriod.endedAt === null;
     return {
       status: "EINGESETZT",
       personnelCount: activePeriod.personnelCount,
-      hauptaufgabe: activePeriod.hauptaufgabe,
-      deploymentLabel: activePeriod.deploymentLabel ?? null,
+      hauptaufgabe: ongoing ? r.hauptaufgabe : activePeriod.hauptaufgabe,
+      deploymentLabel: ongoing
+        ? (r.deploymentLocation?.label ?? activePeriod.deploymentLabel ?? null)
+        : (activePeriod.deploymentLabel ?? null),
     };
   }
 
@@ -396,7 +402,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const [editing, setEditing] = useState(!isTriaged);
 
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
-  // Multi-select: IDs of named Schadenplätz chosen by the operator. Default is never in this list.
+  // Named Schadenplätz selected in the dedicated Schadenplatz step. Default is never in this list.
   const [selectedSpIds, setSelectedSpIds] = useState<string[]>([]);
   // Per-Schadenplatz casualty deltas — pre-populated from previous triage when available.
   const [casualtiesBySpId, setCasualtiesBySpId] = useState<Record<string, CasualtyDeltas>>({});
@@ -468,12 +474,11 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     if (namedSpIds.length > 0) setSelectedSpIds(namedSpIds);
   }, [previousCasualties, defaultSp]);
 
-  // When operator selects nothing, casualties/resources go to the default SP implicitly.
-  // Personen step: always show default SP + any selected named SPs
+  // Personen step: selected named SPs first (in selection order), then default SP.
   const personenSpIds: string[] = useMemo(
     () => [
-      ...(defaultSp ? [defaultSp.id] : []),
       ...selectedSpIds.filter((id) => id !== defaultSp?.id),
+      ...(defaultSp ? [defaultSp.id] : []),
     ],
     [defaultSp, selectedSpIds],
   );
@@ -498,10 +503,17 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
     { key: "meldefluss", label: t("messageFlow") },
-    ...(showTasks ? [{ key: "pendenzen", label: t("tasks") }] : []),
+    ...(showResources ? [{ key: "schadenplatz", label: t("stepSchadenplatz") }] : []),
     ...(showResources ? [{ key: "personen", label: t("stepPersonen") }] : []),
     ...(showResources ? [{ key: "mittel", label: t("stepMittel") }] : []),
   ];
+
+  // In the mittel step, restrict resource picker to selected named SPs plus the default SP.
+  // When nothing is selected all SPs are available.
+  const effectiveSchadenplaetze =
+    selectedSpIds.length > 0
+      ? schadenplaetze.filter((sp) => sp.isDefault || selectedSpIds.includes(sp.id))
+      : schadenplaetze;
 
   const safeIndex = Math.min(stepIndex, steps.length - 1);
   const currentStep = steps[safeIndex];
@@ -767,24 +779,27 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             </div>
           )}
 
+          {currentStep.key === "schadenplatz" && (
+            <SchadenplatzSelectStep
+              namedSchadenplaetze={namedSchadenplaetze}
+              selectedIds={selectedSpIds}
+              onToggle={toggleSpId}
+              incidentId={incidentId}
+              onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
+              onReplaced={(tempId, realId) =>
+                setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
+              }
+              onCancelled={(tempId) =>
+                setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
+              }
+              createSchadenplatz={(args) =>
+                createSchadenplatz({ ...args, occurredAt: message.time })
+              }
+            />
+          )}
+
           {currentStep.key === "personen" && (
             <div className="space-y-6">
-              <SchadenplatzStep
-                namedSchadenplaetze={namedSchadenplaetze}
-                selectedIds={selectedSpIds}
-                onToggle={toggleSpId}
-                incidentId={incidentId}
-                onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
-                onReplaced={(tempId, realId) =>
-                  setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
-                }
-                onCancelled={(tempId) =>
-                  setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
-                }
-                createSchadenplatz={(args) =>
-                  createSchadenplatz({ ...args, occurredAt: message.time })
-                }
-              />
               {personenSpIds.map((spId) => {
                 const sp = schadenplaetze.find((s) => s.id === spId);
                 const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
@@ -819,11 +834,11 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                     }
                     iconsLoaded={iconsLoaded}
                     messageTime={message.time}
-                    incidentId={incidentId}
+                    prioritySpIds={selectedSpIds}
                   />
                   <AlertResourceForm
                     incidentId={incidentId}
-                    schadenplaetze={schadenplaetze}
+                    schadenplaetze={effectiveSchadenplaetze}
                     sourceMessageId={message.id}
                     messageTime={message.time}
                     iconsLoaded={iconsLoaded}
@@ -1217,30 +1232,32 @@ function CasualtyRow({
   );
 }
 
-// ── SchadenplatzStep ──────────────────────────────────────────────────────────
+// ── SchadenplatzSelectStep ───────────────────────────────────────────────────
 
-function SchadenplatzStep({
+// Multi-select step for picking the Schadenplätz that this message concerns.
+// Newly created Schadenplätz are auto-selected. Shows an empty state when none exist yet.
+function SchadenplatzSelectStep({
   namedSchadenplaetze,
   selectedIds,
   onToggle,
   incidentId,
+  createSchadenplatz,
   onCreated,
   onReplaced,
   onCancelled,
-  createSchadenplatz,
 }: {
   namedSchadenplaetze: SchadenplatzWithResources[];
   selectedIds: string[];
   onToggle: (id: string) => void;
   incidentId: string;
-  onCreated: (id: string) => void;
-  onReplaced: (tempId: string, realId: string) => void;
-  onCancelled: (tempId: string) => void;
   createSchadenplatz: (args: {
     incidentId: string;
     name: string;
     tempId?: string;
   }) => Promise<{ id: string; tempId: string }>;
+  onCreated: (id: string) => void;
+  onReplaced: (tempId: string, realId: string) => void;
+  onCancelled: (tempId: string) => void;
 }) {
   const { t } = useTranslation();
   const [showNew, setShowNew] = useState(false);
@@ -1250,14 +1267,11 @@ function SchadenplatzStep({
   const handleCreate = async () => {
     if (!newSpName.trim()) return;
     setCreating(true);
-    // Generate tempId here so we can select the SP optimistically before awaiting
     const tempId = `__optimistic_sp_${Date.now()}`;
     onCreated(tempId);
     try {
       const result = await createSchadenplatz({ incidentId, name: newSpName.trim(), tempId });
-      if (result.id !== tempId) {
-        onReplaced(tempId, result.id);
-      }
+      if (result.id !== tempId) onReplaced(tempId, result.id);
       setNewSpName("");
       setShowNew(false);
     } catch (e) {
@@ -1272,24 +1286,25 @@ function SchadenplatzStep({
     <div className="space-y-3">
       <p className="text-sm text-fg-muted">{t("schadenplatz.selectHint")}</p>
 
-      {/* Named Schadenplätz — checkboxes. Hidden when only default exists. */}
-      {namedSchadenplaetze.length > 0 && (
+      {namedSchadenplaetze.length === 0 ? (
+        <p className="px-1 text-sm text-fg-muted italic">{t("schadenplatz.noneCreated")}</p>
+      ) : (
         <div className="space-y-2">
           {namedSchadenplaetze.map((sp) => {
-            const isChecked = selectedIds.includes(sp.id);
+            const isSelected = selectedIds.includes(sp.id);
             return (
               <label
                 key={sp.id}
                 className={clsx(
                   "flex cursor-pointer items-center gap-3 rounded border px-3 py-2 text-sm transition-colors",
-                  isChecked
+                  isSelected
                     ? "border-primary bg-primary/10"
                     : "border-border bg-bg-elevated hover:border-primary/40",
                 )}
               >
                 <input
                   type="checkbox"
-                  checked={isChecked}
+                  checked={isSelected}
                   onChange={() => onToggle(sp.id)}
                   className="h-4 w-4 accent-primary"
                 />
@@ -1300,7 +1315,6 @@ function SchadenplatzStep({
         </div>
       )}
 
-      {/* Create new */}
       <div className={clsx("pt-2", namedSchadenplaetze.length > 0 && "border-t border-border")}>
         {!showNew ? (
           <button
@@ -1374,6 +1388,8 @@ const resourceStatusVariant: Record<ResourceStatus, TagVariant> = {
   ABGELOEST: "gray",
 };
 
+const RESOURCE_PAGE_SIZE = 5;
+
 function ResourcePicker({
   schadenplaetze,
   selectedIds,
@@ -1381,7 +1397,7 @@ function ResourcePicker({
   onAttach,
   iconsLoaded,
   messageTime,
-  incidentId,
+  prioritySpIds,
 }: {
   schadenplaetze: SchadenplatzWithResources[];
   selectedIds: Set<string>;
@@ -1389,37 +1405,65 @@ function ResourcePicker({
   onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
-  incidentId: string;
+  prioritySpIds?: string[];
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(RESOURCE_PAGE_SIZE);
 
-  const allResources = schadenplaetze.flatMap((sp) =>
-    sp.resources
-      .filter((r) => new Date(r.statusAt).getTime() <= messageTime.getTime())
-      .map((r) => ({
-        ...r,
-        _spId: sp.id,
-        _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
-      })),
+  const allAnnotated = useMemo(
+    () =>
+      schadenplaetze.flatMap((sp) =>
+        sp.resources.map((r) => ({
+          ...r,
+          _spId: sp.id,
+          _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
+        })),
+      ),
+    [schadenplaetze, t],
   );
 
-  const selectedResources = allResources.filter((r) => selectedIds.has(r.id));
-  const availableResources = allResources.filter((r) => !selectedIds.has(r.id));
+  // Selected resources bypass the statusAt filter — the user explicitly chose them for this
+  // message, and their status may have changed during the triage session (e.g. ABGELOEST).
+  const selectedResources = allAnnotated.filter((r) => selectedIds.has(r.id));
+
+  // Available: not yet selected, not ABGELOEST, alerted before message time.
+  // Resources from the operator-selected Schadenplätze are sorted first.
+  const availableResources = useMemo(() => {
+    const unordered = allAnnotated.filter(
+      (r) =>
+        !selectedIds.has(r.id) &&
+        r.status !== "ABGELOEST" &&
+        new Date(r.statusAt).getTime() <= messageTime.getTime(),
+    );
+    if (!prioritySpIds?.length) return unordered;
+    const inPriority = unordered.filter((r) => prioritySpIds.includes(r._spId));
+    const rest = unordered.filter((r) => !prioritySpIds.includes(r._spId));
+    return [...inPriority, ...rest];
+  }, [allAnnotated, selectedIds, messageTime, prioritySpIds]);
 
   const q = search.trim().toLowerCase();
-  const filteredAvailable = q
-    ? availableResources.filter((r) => {
-        const qf = qualifiedFormation(
-          t(`resource.formation.${r.formation}`),
-          r.homeLocation?.name,
-        ).toLowerCase();
-        return (
-          qf.includes(q) || r.name.toLowerCase().includes(q) || r._spName.toLowerCase().includes(q)
-        );
-      })
-    : availableResources;
+  const filteredAvailable = useMemo(
+    () =>
+      q
+        ? availableResources.filter((r) => {
+            const qf = qualifiedFormation(
+              t(`resource.formation.${r.formation}`),
+              r.homeLocation?.name,
+            ).toLowerCase();
+            return (
+              qf.includes(q) ||
+              r.name.toLowerCase().includes(q) ||
+              r._spName.toLowerCase().includes(q)
+            );
+          })
+        : availableResources,
+    [availableResources, q, t],
+  );
+
+  const visibleResources = filteredAvailable.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredAvailable.length;
 
   const toggleEditing = (id: string) => setEditingId((prev) => (prev === id ? null : id));
 
@@ -1440,7 +1484,6 @@ function ResourcePicker({
               onAttach={onAttach}
               iconsLoaded={iconsLoaded}
               messageTime={messageTime}
-              incidentId={incidentId}
             />
           ))}
         </div>
@@ -1450,27 +1493,44 @@ function ResourcePicker({
       <input
         type="search"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setVisibleCount(RESOURCE_PAGE_SIZE);
+        }}
         placeholder={t("resource.search")}
         className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
       />
 
-      {/* Available resources list */}
-      {filteredAvailable.length > 0 ? (
-        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-          {filteredAvailable.map((r) => (
-            <AvailableResourceRow
-              key={r.id}
-              resource={r}
-              currentSpName={r._spName}
-              onSelect={() => {
-                onToggle(r.id);
-                setSearch("");
-              }}
-              iconsLoaded={iconsLoaded}
-              messageTime={messageTime}
-            />
-          ))}
+      {/* Available resources list with pagination */}
+      {visibleResources.length > 0 ? (
+        <div className="space-y-0">
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+            {visibleResources.map((r) => (
+              <AvailableResourceRow
+                key={r.id}
+                resource={r}
+                currentSpName={r._spName}
+                onSelect={() => {
+                  onToggle(r.id);
+                  setSearch("");
+                  setVisibleCount(RESOURCE_PAGE_SIZE);
+                }}
+                iconsLoaded={iconsLoaded}
+                messageTime={messageTime}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <button
+              type="button"
+              onClick={() => setVisibleCount((n) => n + RESOURCE_PAGE_SIZE)}
+              className="mt-2 w-full rounded border border-border py-1.5 text-sm text-fg-muted hover:bg-bg-elevated"
+            >
+              {t("resource.showMore", {
+                count: Math.min(RESOURCE_PAGE_SIZE, filteredAvailable.length - visibleCount),
+              })}
+            </button>
+          )}
         </div>
       ) : q ? (
         <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
@@ -1493,7 +1553,6 @@ function SelectedResourceRow({
   onAttach,
   iconsLoaded,
   messageTime,
-  incidentId,
 }: {
   resource: Resource;
   currentSpName: string;
@@ -1504,7 +1563,6 @@ function SelectedResourceRow({
   onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
   messageTime: Date;
-  incidentId: string;
 }) {
   const { t, i18n } = useTranslation();
   const snap = resourceStateAt(r, messageTime);
@@ -1568,7 +1626,7 @@ function SelectedResourceRow({
           schadenplaetze={schadenplaetze}
           onAttach={onAttach}
           messageTime={messageTime}
-          incidentId={incidentId}
+          onActionComplete={onToggleEdit}
         />
       )}
     </div>
@@ -1636,13 +1694,13 @@ function ResourceEditPanel({
   schadenplaetze,
   onAttach,
   messageTime,
-  incidentId,
+  onActionComplete,
 }: {
   resource: Resource;
   schadenplaetze: SchadenplatzWithResources[];
   onAttach: (ids: string[]) => void;
   messageTime: Date;
-  incidentId: string;
+  onActionComplete: () => void;
 }) {
   const { t } = useTranslation();
   const [markReady, markReadyState] = useMarkResourceReady();
@@ -1662,6 +1720,8 @@ function ResourceEditPanel({
   const [successorId, setSuccessorId] = useState("");
   const [deployAttempted, setDeployAttempted] = useState(false);
 
+  const defaultSp = schadenplaetze.find((sp) => sp.isDefault);
+
   const successorCandidates = schadenplaetze
     .flatMap((sp) => sp.resources)
     .filter((candidate) => candidate.id !== r.id && candidate.status !== "ABGELOEST");
@@ -1671,9 +1731,48 @@ function ResourceEditPanel({
         .find((candidate) => candidate.id === r.successorId)
     : undefined;
 
+  const clearSchadenplatz = async () => {
+    if (defaultSp && r.schadenplatzId !== defaultSp.id) {
+      await reassign({ id: r.id, schadenplatzId: defaultSp.id, at: messageTime });
+    }
+  };
+
+  const standDownAndClear = async () => {
+    await standDown({ id: r.id, at: messageTime });
+    await clearSchadenplatz();
+    onActionComplete();
+  };
+
   const relieveAndAttach = async (sid: string | null) => {
-    await relieve({ id: r.id, successorId: sid, at: messageTime, incidentId });
+    const successorResource = sid
+      ? schadenplaetze.flatMap((sp) => sp.resources).find((res) => res.id === sid)
+      : null;
+
+    await relieve({ id: r.id, successorId: sid, at: messageTime });
+    await clearSchadenplatz();
+
+    if (sid) {
+      // Copy task and location from relieved resource to successor in parallel.
+      await Promise.all([
+        r.hauptaufgabe
+          ? changeHauptaufgabe({ id: sid, hauptaufgabe: r.hauptaufgabe, at: messageTime })
+          : Promise.resolve(),
+        r.deploymentLocation?.label
+          ? updateLocation({ id: sid, label: r.deploymentLocation.label, at: messageTime })
+          : Promise.resolve(),
+      ]);
+
+      // Advance successor to EINGESETZT (mark ready first if still AUFGEBOTEN).
+      if (successorResource?.status === "AUFGEBOTEN") {
+        await markReady({ id: sid, at: messageTime });
+      }
+      if (successorResource?.status !== "EINGESETZT") {
+        await deploy({ id: sid, at: messageTime });
+      }
+    }
+
     onAttach(sid ? [r.id, sid] : [r.id]);
+    onActionComplete();
   };
 
   const busy =
@@ -1701,31 +1800,6 @@ function ResourceEditPanel({
       {/* ── AUFGEBOTEN ──────────────────────────────────────────── */}
       {r.status === "AUFGEBOTEN" && (
         <>
-          {/* Schadenplatz reassign */}
-          {schadenplaetze.length > 1 && (
-            <label className="block">
-              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-                {t("schadenplatz.select")}
-              </span>
-              <select
-                value={targetSpId}
-                disabled={busy}
-                onChange={async (e) => {
-                  const newSpId = e.target.value;
-                  setTargetSpId(newSpId);
-                  await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
-                }}
-                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              >
-                {schadenplaetze.map((sp) => (
-                  <option key={sp.id} value={sp.id}>
-                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
           {/* Contact */}
           <div>
             <span className="mb-0.5 block text-xs font-medium text-fg-muted">
@@ -1767,7 +1841,7 @@ function ResourceEditPanel({
             size="sm"
             variant="primary"
             disabled={busy}
-            onClick={() => void markReady({ id: r.id, at: messageTime })}
+            onClick={() => void markReady({ id: r.id, at: messageTime }).then(onActionComplete)}
           >
             {t("resource.actions.markReady")}
           </Button>
@@ -1882,36 +1956,6 @@ function ResourceEditPanel({
             );
           })()}
 
-          {/* Successor select — needed for relieve */}
-          <label className="block">
-            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-              {t("resource.fields.successor")}
-            </span>
-            <select
-              value={successorId}
-              disabled={busy || successorCandidates.length === 0}
-              onChange={(e) => setSuccessorId(e.target.value)}
-              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-            >
-              {successorCandidates.length === 0 ? (
-                <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
-              ) : (
-                <>
-                  <option value="">{t("resource.fields.selectSuccessor")}</option>
-                  {successorCandidates.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {qualifiedFormation(
-                        t(`resource.formation.${candidate.formation}`),
-                        candidate.homeLocation?.name,
-                      )}
-                      {candidate.name ? ` — ${candidate.name}` : ""}
-                    </option>
-                  ))}
-                </>
-              )}
-            </select>
-          </label>
-
           {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
 
           <div className="flex flex-wrap gap-2">
@@ -1925,29 +1969,10 @@ function ResourceEditPanel({
                   setDeployAttempted(true);
                   return;
                 }
-                void deploy({ id: r.id, at: messageTime });
+                void deploy({ id: r.id, at: messageTime }).then(onActionComplete);
               }}
             >
               {t("resource.actions.deploy")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="warning"
-              light
-              disabled={busy}
-              onClick={() => void standDown({ id: r.id, at: messageTime })}
-            >
-              {t("resource.actions.standDown")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="light"
-              disabled={busy || !successorId}
-              onClick={() => void relieveAndAttach(successorId)}
-            >
-              {t("resource.actions.relieve")}
             </Button>
             <Button
               type="button"
@@ -2003,7 +2028,7 @@ function ResourceEditPanel({
               size="sm"
               variant="warning"
               disabled={busy}
-              onClick={() => void standDown({ id: r.id, at: messageTime })}
+              onClick={() => void standDownAndClear()}
             >
               {t("resource.actions.standDown")}
             </Button>
@@ -2128,7 +2153,8 @@ function AlertResourceForm({
   const [personnelCount, setPersonnelCount] = useState("");
   const [hauptaufgabe, setHauptaufgabe] = useState("");
   const [homeLocation, setHomeLocation] = useState("");
-  const [schadenplatzId, setSchadenplatzId] = useState(defaultSp?.id ?? "");
+  // New resources always go to the default SP; Schadenplatz assignment happens at deploy time.
+  const schadenplatzId = defaultSp?.id ?? "";
 
   const derivedSize = personnelCount ? suggestSize(Number(personnelCount)) : null;
   const previewBabsId =
@@ -2308,24 +2334,6 @@ function AlertResourceForm({
           {Number(personnelCount) > 0 &&
             ` · ${personnelCount} ${t("resource.fields.personnelCount")}`}
         </p>
-      )}
-
-      {/* Schadenplatz selector — shown when multiple exist */}
-      {schadenplaetze.length > 1 && (
-        <label className="block text-xs font-semibold text-fg-muted">
-          {t("schadenplatz.select")}
-          <select
-            value={schadenplatzId}
-            onChange={(e) => setSchadenplatzId(e.target.value)}
-            className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
-          >
-            {schadenplaetze.map((sp) => (
-              <option key={sp.id} value={sp.id}>
-                {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
-              </option>
-            ))}
-          </select>
-        </label>
       )}
 
       {alertState.error && (

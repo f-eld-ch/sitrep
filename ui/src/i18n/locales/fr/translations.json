@@ -58,7 +58,8 @@
     "new": "Créer nouveau",
     "namePlaceholder": "Nom du lieu sinistre",
     "create": "Créer",
-    "defaultLabel": "Par défaut"
+    "defaultLabel": "Par défaut",
+    "noneCreated": "Aucun lieu sinistre créé"
   },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
@@ -428,6 +429,7 @@
     "noResources": "Aucun moyen enregistré",
     "search": "Rechercher des moyens…",
     "noResults": "Aucun moyen trouvé",
+    "showMore": "Afficher {{count}} de plus",
     "addResource": "Alerter un moyen",
     "count_one": "{{count}} moyen",
     "count_other": "{{count}} moyens",

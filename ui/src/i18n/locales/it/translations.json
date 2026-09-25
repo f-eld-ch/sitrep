@@ -58,7 +58,8 @@
     "new": "Crea nuovo",
     "namePlaceholder": "Nome luogo sinistro",
     "create": "Crea",
-    "defaultLabel": "Predefinito"
+    "defaultLabel": "Predefinito",
+    "noneCreated": "Nessun luogo sinistro creato"
   },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
@@ -428,6 +429,7 @@
     "noResources": "Nessun mezzo registrato",
     "search": "Cerca mezzi…",
     "noResults": "Nessun mezzo trovato",
+    "showMore": "Mostra altri {{count}}",
     "addResource": "Allertare mezzo",
     "count_one": "{{count}} mezzo",
     "count_other": "{{count}} mezzi",

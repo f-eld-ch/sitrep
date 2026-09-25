@@ -195,7 +195,6 @@ export function useRelieveResource(): CommandHook<{
   id: string;
   successorId?: string | null;
   at?: Date;
-  incidentId?: string;
 }> {
   const [mutate, { loading, error }] = useMutation(RELIEVE_RESOURCE);
 
@@ -208,7 +207,6 @@ export function useRelieveResource(): CommandHook<{
     id: string;
     successorId?: string | null;
     at?: Date;
-    incidentId?: string;
   }): Promise<void> => {
     recordMutation();
     await mutate({
@@ -216,30 +214,13 @@ export function useRelieveResource(): CommandHook<{
       update(cache, { data }) {
         const resource = data?.relieveResource;
         if (!resource) return;
+        // Update the relieved resource to ABGELOEST in the normalized cache.
+        // Keep it in the schadenplaetze list so the triage UI can still show it
+        // as part of the message.
         cache.writeFragment({
           id: cache.identify(resource),
           fragment: RESOURCE_FIELDS,
           data: resource,
-        });
-        if (!args.incidentId) return;
-        const cached = cache.readQuery({
-          query: GET_INCIDENT_RESOURCES,
-          variables: { incidentId: args.incidentId },
-        });
-        if (!cached?.incident) return;
-        cache.writeQuery({
-          query: GET_INCIDENT_RESOURCES,
-          variables: { incidentId: args.incidentId },
-          data: {
-            ...cached,
-            incident: {
-              ...cached.incident,
-              schadenplaetze: cached.incident.schadenplaetze.map((sp) => ({
-                ...sp,
-                resources: sp.resources.filter((r) => r.id !== args.id),
-              })),
-            },
-          },
         });
       },
     });

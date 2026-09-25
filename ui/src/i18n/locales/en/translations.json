@@ -58,7 +58,8 @@
     "new": "Create new",
     "namePlaceholder": "Location name",
     "create": "Create",
-    "defaultLabel": "Default"
+    "defaultLabel": "Default",
+    "noneCreated": "No location has been created yet"
   },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
@@ -428,6 +429,7 @@
     "noResources": "No resources recorded",
     "search": "Search resources…",
     "noResults": "No resources found",
+    "showMore": "Show {{count}} more",
     "addResource": "Alert resource",
     "count_one": "{{count}} resource",
     "count_other": "{{count}} resources",

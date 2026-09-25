@@ -52,7 +52,7 @@ export function useIncidentResources(
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_RESOURCES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId,
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-and-network",
     pollInterval: 5000,
     skipPollAttempt: isMutationRecent,
   });

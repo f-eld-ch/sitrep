@@ -246,17 +246,27 @@ func scanSQLiteResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		rm.SourceMessageID = &mid
 	}
 
-	if deployLat.Valid && deployLng.Valid {
+	if deployLat.Valid || deployLng.Valid || deployLabel.Valid {
 		label := ""
 		if deployLabel.Valid {
 			label = deployLabel.String
 		}
 
-		lat := deployLat.Float64
-		lng := deployLng.Float64
+		var lat, lng *float64
+
+		if deployLat.Valid {
+			v := deployLat.Float64
+			lat = &v
+		}
+
+		if deployLng.Valid {
+			v := deployLng.Float64
+			lng = &v
+		}
+
 		rm.DeploymentLocation = &outbound.DeploymentLocationRM{
-			Lat:   &lat,
-			Lng:   &lng,
+			Lat:   lat,
+			Lng:   lng,
 			Label: label,
 		}
 	}

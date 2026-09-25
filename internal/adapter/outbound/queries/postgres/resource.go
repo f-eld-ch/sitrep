@@ -208,7 +208,7 @@ func scanPgResource(s incidentScanner) (*outbound.ResourceRM, error) {
 		rm.EinsatzEnde = &t
 	}
 
-	if deployLat != nil && deployLng != nil {
+	if deployLat != nil || deployLng != nil || deployLabel != nil {
 		label := ""
 		if deployLabel != nil {
 			label = *deployLabel

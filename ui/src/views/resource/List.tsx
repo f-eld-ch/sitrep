@@ -1,12 +1,13 @@
 /* eslint-disable jsx-a11y/control-has-associated-label -- expandable table buttons are labelled; oxlint flags filler/detail table cells. */
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Spinner } from "components";
-import { Notification, PageTitle, Tag } from "components/ui";
+import { Button, Notification, PageTitle, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { useIncidentResources } from "api";
+import { useReactToPrint } from "react-to-print";
+import { useIncidentResources, useIncidentDetails } from "api";
 import type {
   Resource,
   ResourceDeploymentPeriod,
@@ -17,7 +18,8 @@ import type {
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronRight, faPrint } from "@fortawesome/free-solid-svg-icons";
+import ResourceTable from "./ResourceTable";
 
 const statusVariant: Record<ResourceStatus, TagVariant> = {
   AUFGEBOTEN: "warning",
@@ -255,10 +257,10 @@ function ResourceTableRow({
       <td className={isHistory ? "px-2 py-1.5 pl-24" : "px-2 py-1.5 pl-18"}>
         {!isHistory && (
           <span className="flex items-center gap-2">
-            {resource.deploymentHistory.length > 1 && onToggleHistory && (
+            {resource.deploymentHistory.length > 1 && onToggleHistory ? (
               <button
                 type="button"
-                className="shrink-0 text-fg-muted/60"
+                className="w-3 shrink-0 text-fg-muted/60"
                 aria-label={name}
                 onClick={onToggleHistory}
               >
@@ -267,6 +269,8 @@ function ResourceTableRow({
                   className="w-3"
                 />
               </button>
+            ) : (
+              <span className="w-3 shrink-0" />
             )}
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
               {babsId && iconsLoaded ? (
@@ -462,10 +466,10 @@ function Mitteltabelle({
                     </button>
                   </td>
                   <td className="px-2 py-1.5 text-right font-semibold text-fg tabular-nums">
-                    {totalPersonnel(group.resources)}
+                    {!incidentOpen && totalPersonnel(group.resources)}
                   </td>
                   <td className="px-2 py-1.5">
-                    <StatusBadges totals={personnelByStatus(group.resources)} />
+                    {!incidentOpen && <StatusBadges totals={personnelByStatus(group.resources)} />}
                   </td>
                   <td className="px-2 py-1.5" colSpan={7} />
                 </tr>
@@ -505,10 +509,12 @@ function Mitteltabelle({
                             </button>
                           </td>
                           <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
-                            {totalPersonnel(formationGroup.resources)}
+                            {!formationOpen && totalPersonnel(formationGroup.resources)}
                           </td>
                           <td className="px-2 py-1.5">
-                            <StatusBadges totals={personnelByStatus(formationGroup.resources)} />
+                            {!formationOpen && (
+                              <StatusBadges totals={personnelByStatus(formationGroup.resources)} />
+                            )}
                           </td>
                           <td className="px-2 py-1.5" colSpan={7} />
                         </tr>
@@ -538,19 +544,22 @@ function Mitteltabelle({
                                     </button>
                                   </td>
                                   <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
-                                    {totalPersonnel(homeLocationGroup.resources)}
+                                    {!homeLocationOpen &&
+                                      totalPersonnel(homeLocationGroup.resources)}
                                   </td>
                                   <td className="px-2 py-1.5">
-                                    <StatusBadges
-                                      totals={personnelByStatus(homeLocationGroup.resources)}
-                                    />
+                                    {!homeLocationOpen && (
+                                      <StatusBadges
+                                        totals={personnelByStatus(homeLocationGroup.resources)}
+                                      />
+                                    )}
                                   </td>
                                   <td className="px-2 py-1.5" colSpan={7} />
                                 </tr>
 
                                 {homeLocationOpen &&
                                   [...homeLocationGroup.resources]
-                                    .sort((a, b) => a.alertedAt.localeCompare(b.alertedAt))
+                                    .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
                                     .flatMap((r) => {
                                       const babsId = combinedBabsId(r.formation, r.size);
                                       const successor = r.successorId
@@ -561,10 +570,10 @@ function Mitteltabelle({
                                         <tr key={r.id} className="hover:bg-bg-elevated/40">
                                           <td className="px-2 py-1.5 pl-18">
                                             <span className="flex items-center gap-2">
-                                              {r.deploymentHistory.length > 1 && (
+                                              {r.deploymentHistory.length > 1 ? (
                                                 <button
                                                   type="button"
-                                                  className="shrink-0 text-fg-muted/60"
+                                                  className="w-3 shrink-0 text-fg-muted/60"
                                                   aria-label={
                                                     r.name || t(`resource.size.${r.size}`)
                                                   }
@@ -577,6 +586,8 @@ function Mitteltabelle({
                                                     className="w-3"
                                                   />
                                                 </button>
+                                              ) : (
+                                                <span className="w-3 shrink-0" />
                                               )}
                                               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border bg-bg">
                                                 {babsId && iconsLoaded ? (
@@ -683,6 +694,12 @@ function List() {
   const { t, i18n } = useTranslation();
   const iconsLoaded = useBabsIcons();
   const result = useIncidentResources(incidentId);
+  const incidentDetails = useIncidentDetails(incidentId);
+  const tableRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+    pageStyle: "@page { size: A4 landscape; margin: 1cm; }",
+  });
 
   if (result.status === "loading") return <Spinner />;
 
@@ -699,11 +716,21 @@ function List() {
   const sourceLabels = Object.fromEntries(
     result.data.childIncidents.map((child) => [child.id, child.name]),
   );
+  const incidentName =
+    incidentDetails.status === "ready" ? incidentDetails.data.incident.name : undefined;
 
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
       <div className="space-y-3">
-        <PageTitle>{t("resources")}</PageTitle>
+        <div className="flex items-center justify-between">
+          <PageTitle>{t("resources")}</PageTitle>
+          {allResources.length > 0 && (
+            <Button type="button" variant="primary" size="xs" onClick={() => handlePrint()}>
+              <FontAwesomeIcon icon={faPrint} />
+              <span>{t("print")}</span>
+            </Button>
+          )}
+        </div>
         {allResources.length === 0 ? (
           <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
         ) : (
@@ -721,6 +748,9 @@ function List() {
             </div>
           </>
         )}
+      </div>
+      <div className="hidden">
+        <ResourceTable ref={tableRef} resources={allResources} incidentName={incidentName} />
       </div>
     </BabsIconProvider>
   );

@@ -58,7 +58,8 @@
     "new": "Neuen Schadenplatz anlegen",
     "namePlaceholder": "Name des Schadenplatzes",
     "create": "Anlegen",
-    "defaultLabel": "Standard"
+    "defaultLabel": "Standard",
+    "noneCreated": "Noch kein Schadenplatz angelegt"
   },
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
@@ -428,6 +429,7 @@
     "noResources": "Keine Mittel erfasst",
     "search": "Mittel suchen…",
     "noResults": "Keine Mittel gefunden",
+    "showMore": "{{count}} weitere anzeigen",
     "addResource": "Mittel aufbieten",
     "count_one": "{{count}} Mittel",
     "count_other": "{{count}} Mittel",
