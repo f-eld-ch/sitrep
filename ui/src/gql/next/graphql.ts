@@ -16,6 +16,8 @@ export type AlertResourceInput = {
   homeLocation?: ResourceHomeLocationInput | null | undefined;
   incidentId: string | number;
   name: string;
+  /** Timestamp for the alert event; defaults to the server clock when omitted. */
+  occurredAt?: string | null | undefined;
   personnelCount: number;
   /** Defaults to the incident's default Schadenplatz when omitted. */
   schadenplatzId?: string | number | null | undefined;
