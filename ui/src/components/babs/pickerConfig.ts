@@ -65,6 +65,7 @@ export const CATEGORY_DRILL_DOWN: Partial<Record<BabsCategoryNumber, readonly Dr
     { selector: "4704", group: "44" }, // ZS      → Zivilschutz
     { selector: "4705", group: "45" }, // TechnB  → Techn B
     { selector: "4706", group: "46" }, // A       → Armee
+    { selector: "4707", group: "47" }, // Andere  → Andere
     // Not a 47xx partner symbol, but without it group 48 — the ranks with no partner —
     // would be unreachable from the picker. Remove this line to hide those 8 icons.
     { selector: "4801", group: "48" }, // Trupp   → Hierarchiestufe ohne Partner
