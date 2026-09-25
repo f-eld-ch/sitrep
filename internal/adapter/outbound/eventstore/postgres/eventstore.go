@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
@@ -124,8 +125,8 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 		).Scan(&xid, &seq)
 		if err != nil {
 			if isUniqueViolation(err) {
-				return nil, fmt.Errorf("%w: stream %s/%s version %d",
-					errOptimisticConflict, e.StreamType, e.StreamID, e.Version)
+				return nil, fmt.Errorf("%w: %w: stream %s/%s version %d",
+					shared.ErrConflict, errOptimisticConflict, e.StreamType, e.StreamID, e.Version)
 			}
 
 			return nil, fmt.Errorf("eventstore.Append insert: %w", err)
