@@ -85,8 +85,8 @@ func (s *EventStore) Append(_ context.Context, a eventsourcing.Aggregate) (outbo
 	existing := s.streams[key]
 
 	if len(existing) > 0 && pending[0].Version != len(existing)+1 {
-		return nil, fmt.Errorf("inmem: optimistic conflict on %s/%s: expected v%d, got v%d",
-			a.AggregateType(), a.Root().ID(), len(existing)+1, pending[0].Version)
+		return nil, fmt.Errorf("%w: inmem: optimistic conflict on %s/%s: expected v%d, got v%d",
+			shared.ErrConflict, a.AggregateType(), a.Root().ID(), len(existing)+1, pending[0].Version)
 	}
 
 	var lastSeq int64

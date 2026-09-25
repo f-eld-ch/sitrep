@@ -17,6 +17,8 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
 )
 
+const maxFeatureWriteRetries = 3
+
 // FeatureService handles write-side operations for the Feature aggregate.
 // The UI generates the feature UUID client-side for optimistic updates.
 type FeatureService struct {
@@ -186,30 +188,45 @@ func (s *FeatureService) writeFeature(
 	action access.Action,
 	fn func(*feature.Feature) error,
 ) error {
-	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
-		f, err := s.repo.Load(ctx, id)
-		if err != nil {
+	var txErr error
+
+	for attempt := range maxFeatureWriteRetries {
+		txErr = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+			f, err := s.repo.Load(ctx, id)
+			if err != nil {
+				return err
+			}
+
+			if err := requireIncidentAccess(ctx, s.access, actor, f.IncidentID(), action); err != nil {
+				return err
+			}
+
+			if err := s.requireIncidentOpen(ctx, f.IncidentID()); err != nil {
+				return err
+			}
+
+			if err := fn(f); err != nil {
+				return err
+			}
+
+			_, err = s.repo.Save(ctx, f)
+
 			return err
+		})
+		if txErr == nil {
+			break
 		}
 
-		if err := requireIncidentAccess(ctx, s.access, actor, f.IncidentID(), action); err != nil {
-			return err
+		if !isOptimisticConflict(txErr) || attempt == maxFeatureWriteRetries-1 {
+			break
 		}
 
-		if err := s.requireIncidentOpen(ctx, f.IncidentID()); err != nil {
-			return err
-		}
+		slog.DebugContext(ctx, "feature write optimistic conflict, retrying",
+			slog.Int("attempt", attempt+1), slog.String("feature_id", id.String()))
+	}
 
-		if err := fn(f); err != nil {
-			return err
-		}
-
-		_, err = s.repo.Save(ctx, f)
-
-		return err
-	})
-	if err != nil {
-		return err
+	if txErr != nil {
+		return txErr
 	}
 
 	_ = s.notifier.Notify(ctx)
