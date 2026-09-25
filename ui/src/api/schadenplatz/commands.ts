@@ -85,6 +85,7 @@ export function useRecordCasualties(): CommandHook<{
   schadenplatzId: string;
   messageId: string;
   deltas: CasualtyDeltas;
+  occurredAt?: Date | null;
 }> {
   const [mutate, { loading, error }] = useMutation(RECORD_CASUALTIES);
 
@@ -97,11 +98,13 @@ export function useRecordCasualties(): CommandHook<{
     schadenplatzId: string;
     messageId: string;
     deltas: CasualtyDeltas;
+    occurredAt?: Date | null;
   }): Promise<void> => {
     await mutate({
       variables: {
         id: args.schadenplatzId,
         sourceMessageId: args.messageId,
+        occurredAt: args.occurredAt?.toISOString() ?? null,
         input: args.deltas,
       },
     });

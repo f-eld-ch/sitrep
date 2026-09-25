@@ -581,7 +581,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
         for (const spId of personenSpIds) {
           const deltas = getSpCasualties(spId);
           if (Object.values(deltas).every((v) => v === 0)) continue;
-          await recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas });
+          await recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas, occurredAt: message.time });
         }
       } catch (e) {
         setStepError(isApiError(e) ? e : new ApiError("UNKNOWN"));

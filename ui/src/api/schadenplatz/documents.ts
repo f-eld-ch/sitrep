@@ -44,8 +44,8 @@ export const RECORD_CASUALTIES: TypedDocumentNode<
   RecordCasualtiesMutation,
   RecordCasualtiesMutationVariables
 > = gql`
-  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $input: CasualtyDeltasInput!) {
-    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, input: $input) {
+  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $occurredAt: DateTime, $input: CasualtyDeltasInput!) {
+    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, occurredAt: $occurredAt, input: $input) {
       id
       casualties {
         vermisste
