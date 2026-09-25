@@ -381,7 +381,7 @@ func TestResourceHandler_ReassignedToSchadenplatz(t *testing.T) {
 	inc, err := s.incidentSvc().CreateIncident(ctx(), "Unfall", nil, nil, nil, testActor)
 	require.NoError(t, err)
 
-	sp, err := s.schadenplatzSvc().CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", testActor)
+	sp, err := s.schadenplatzSvc().CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", nil, testActor)
 	require.NoError(t, err)
 
 	input := inbound.AlertResourceInput{
@@ -394,7 +394,7 @@ func TestResourceHandler_ReassignedToSchadenplatz(t *testing.T) {
 	res, err := s.resourceSvc().AlertResource(ctx(), input, testActor)
 	require.NoError(t, err)
 
-	_, err = s.resourceSvc().ReassignResource(ctx(), res.ID, sp.ID, testActor)
+	_, err = s.resourceSvc().ReassignResource(ctx(), res.ID, sp.ID, nil, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 

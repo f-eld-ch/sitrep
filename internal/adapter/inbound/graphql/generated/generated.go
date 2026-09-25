@@ -177,14 +177,14 @@ type ComplexityRoot struct {
 		AddGroupMember               func(childComplexity int, groupID string, subject string) int
 		AlertResource                func(childComplexity int, input model.AlertResourceInput) int
 		ArchiveAccessGroup           func(childComplexity int, groupID string) int
-		ChangeHauptaufgabe           func(childComplexity int, id string, hauptaufgabe string) int
+		ChangeHauptaufgabe           func(childComplexity int, id string, hauptaufgabe string, at *time.Time) int
 		ChangeIncidentAccessMode     func(childComplexity int, incidentID string, mode model.IncidentAccessMode) int
 		CloseIncident                func(childComplexity int, id string) int
 		CreateAccessGroup            func(childComplexity int, name string, description string) int
 		CreateIncident               func(childComplexity int, input model.CreateIncidentInput) int
 		CreateLayer                  func(childComplexity int, incidentID string, name string) int
 		CreateMessage                func(childComplexity int, input model.CreateMessageInput) int
-		CreateSchadenplatz           func(childComplexity int, incidentID string, name string) int
+		CreateSchadenplatz           func(childComplexity int, incidentID string, name string, occurredAt *time.Time) int
 		DeleteFeature                func(childComplexity int, id string) int
 		DeleteIncident               func(childComplexity int, id string) int
 		DeleteMessage                func(childComplexity int, id string) int
@@ -196,7 +196,7 @@ type ComplexityRoot struct {
 		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
 		MergeSchadenplatz            func(childComplexity int, id string, messageTime *time.Time) int
 		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
-		ReassignResource             func(childComplexity int, id string, schadenplatzID string) int
+		ReassignResource             func(childComplexity int, id string, schadenplatzID string, at *time.Time) int
 		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) int
 		RelieveResource              func(childComplexity int, id string, successorID *string, at *time.Time) int
 		RemoveAttachment             func(childComplexity int, messageID string, attachmentID string) int
@@ -213,11 +213,11 @@ type ComplexityRoot struct {
 		TriageMessage                func(childComplexity int, id string, input model.TriageMessageInput) int
 		UnlinkIncidentParent         func(childComplexity int, childID string) int
 		UpdateAccessGroupDescription func(childComplexity int, groupID string, description string) int
-		UpdateContact                func(childComplexity int, id string, contact model.ResourceContactInput) int
-		UpdateDeploymentLocation     func(childComplexity int, id string, location *model.DeploymentLocationInput) int
+		UpdateContact                func(childComplexity int, id string, contact model.ResourceContactInput, at *time.Time) int
+		UpdateDeploymentLocation     func(childComplexity int, id string, location *model.DeploymentLocationInput, at *time.Time) int
 		UpdateIncident               func(childComplexity int, id string, input model.UpdateIncidentInput) int
 		UpdateMessage                func(childComplexity int, id string, input model.UpdateMessageInput) int
-		UpdatePersonnelCount         func(childComplexity int, id string, count int) int
+		UpdatePersonnelCount         func(childComplexity int, id string, count int, at *time.Time) int
 	}
 
 	Query struct {
@@ -361,7 +361,7 @@ type MutationResolver interface {
 	TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error)
 	DeleteMessage(ctx context.Context, id string) (string, error)
 	RemoveAttachment(ctx context.Context, messageID string, attachmentID string) (string, error)
-	CreateSchadenplatz(ctx context.Context, incidentID string, name string) (*model.Schadenplatz, error)
+	CreateSchadenplatz(ctx context.Context, incidentID string, name string, occurredAt *time.Time) (*model.Schadenplatz, error)
 	RenameSchadenplatz(ctx context.Context, id string, name string) (*model.Schadenplatz, error)
 	SetSchadenplatzGeometry(ctx context.Context, id string, geoJSON *string) (*model.Schadenplatz, error)
 	RecordCasualties(ctx context.Context, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) (*model.Schadenplatz, error)
@@ -371,11 +371,11 @@ type MutationResolver interface {
 	DeployResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	StandDownResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	RelieveResource(ctx context.Context, id string, successorID *string, at *time.Time) (*model.Resource, error)
-	ReassignResource(ctx context.Context, id string, schadenplatzID string) (*model.Resource, error)
-	UpdateDeploymentLocation(ctx context.Context, id string, location *model.DeploymentLocationInput) (*model.Resource, error)
-	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string) (*model.Resource, error)
-	UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput) (*model.Resource, error)
-	UpdatePersonnelCount(ctx context.Context, id string, count int) (*model.Resource, error)
+	ReassignResource(ctx context.Context, id string, schadenplatzID string, at *time.Time) (*model.Resource, error)
+	UpdateDeploymentLocation(ctx context.Context, id string, location *model.DeploymentLocationInput, at *time.Time) (*model.Resource, error)
+	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string, at *time.Time) (*model.Resource, error)
+	UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput, at *time.Time) (*model.Resource, error)
+	UpdatePersonnelCount(ctx context.Context, id string, count int, at *time.Time) (*model.Resource, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
 	AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
 	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
@@ -1004,7 +1004,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.ChangeHauptaufgabe(childComplexity, args["id"].(string), args["hauptaufgabe"].(string)), true
+		return e.ComplexityRoot.Mutation.ChangeHauptaufgabe(childComplexity, args["id"].(string), args["hauptaufgabe"].(string), args["at"].(*time.Time)), true
 	case "Mutation.changeIncidentAccessMode":
 		if e.ComplexityRoot.Mutation.ChangeIncidentAccessMode == nil {
 			break
@@ -1081,7 +1081,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.CreateSchadenplatz(childComplexity, args["incidentId"].(string), args["name"].(string)), true
+		return e.ComplexityRoot.Mutation.CreateSchadenplatz(childComplexity, args["incidentId"].(string), args["name"].(string), args["occurredAt"].(*time.Time)), true
 	case "Mutation.deleteFeature":
 		if e.ComplexityRoot.Mutation.DeleteFeature == nil {
 			break
@@ -1213,7 +1213,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.ReassignResource(childComplexity, args["id"].(string), args["schadenplatzId"].(string)), true
+		return e.ComplexityRoot.Mutation.ReassignResource(childComplexity, args["id"].(string), args["schadenplatzId"].(string), args["at"].(*time.Time)), true
 	case "Mutation.recordCasualties":
 		if e.ComplexityRoot.Mutation.RecordCasualties == nil {
 			break
@@ -1400,7 +1400,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.UpdateContact(childComplexity, args["id"].(string), args["contact"].(model.ResourceContactInput)), true
+		return e.ComplexityRoot.Mutation.UpdateContact(childComplexity, args["id"].(string), args["contact"].(model.ResourceContactInput), args["at"].(*time.Time)), true
 	case "Mutation.updateDeploymentLocation":
 		if e.ComplexityRoot.Mutation.UpdateDeploymentLocation == nil {
 			break
@@ -1411,7 +1411,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.UpdateDeploymentLocation(childComplexity, args["id"].(string), args["location"].(*model.DeploymentLocationInput)), true
+		return e.ComplexityRoot.Mutation.UpdateDeploymentLocation(childComplexity, args["id"].(string), args["location"].(*model.DeploymentLocationInput), args["at"].(*time.Time)), true
 	case "Mutation.updateIncident":
 		if e.ComplexityRoot.Mutation.UpdateIncident == nil {
 			break
@@ -1444,7 +1444,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.UpdatePersonnelCount(childComplexity, args["id"].(string), args["count"].(int)), true
+		return e.ComplexityRoot.Mutation.UpdatePersonnelCount(childComplexity, args["id"].(string), args["count"].(int), args["at"].(*time.Time)), true
 
 	case "Query.accessGroups":
 		if e.ComplexityRoot.Query.AccessGroups == nil {
@@ -2571,7 +2571,7 @@ type Mutation {
   # ── Schadenplatz ─────────────────────────────────────────────────────────────
 
   """Create a new Schadenplatz for an incident."""
-  createSchadenplatz(incidentId: ID!, name: String!): Schadenplatz!
+  createSchadenplatz(incidentId: ID!, name: String!, occurredAt: DateTime): Schadenplatz!
 
   """Rename a Schadenplatz."""
   renameSchadenplatz(id: ID!, name: String!): Schadenplatz!
@@ -2603,19 +2603,19 @@ type Mutation {
   relieveResource(id: ID!, successorId: ID, at: DateTime): Resource!
 
   """Move a resource to a different Schadenplatz."""
-  reassignResource(id: ID!, schadenplatzId: ID!): Resource!
+  reassignResource(id: ID!, schadenplatzId: ID!, at: DateTime): Resource!
 
   """Set or clear the precise deployment position of a resource."""
-  updateDeploymentLocation(id: ID!, location: DeploymentLocationInput): Resource!
+  updateDeploymentLocation(id: ID!, location: DeploymentLocationInput, at: DateTime): Resource!
 
   """Update the primary task description of a resource."""
-  changeHauptaufgabe(id: ID!, hauptaufgabe: String!): Resource!
+  changeHauptaufgabe(id: ID!, hauptaufgabe: String!, at: DateTime): Resource!
 
   """Update the contact details of a resource."""
-  updateContact(id: ID!, contact: ResourceContactInput!): Resource!
+  updateContact(id: ID!, contact: ResourceContactInput!, at: DateTime): Resource!
 
   """Correct the headcount of a resource."""
-  updatePersonnelCount(id: ID!, count: Int!): Resource!
+  updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 
@@ -3292,6 +3292,14 @@ func (ec *executionContext) field_Mutation_changeHauptaufgabe_args(ctx context.C
 		return nil, err
 	}
 	args["hauptaufgabe"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -3422,6 +3430,14 @@ func (ec *executionContext) field_Mutation_createSchadenplatz_args(ctx context.C
 		return nil, err
 	}
 	args["name"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "occurredAt",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["occurredAt"] = arg2
 	return args, nil
 }
 
@@ -3694,6 +3710,14 @@ func (ec *executionContext) field_Mutation_reassignResource_args(ctx context.Con
 		return nil, err
 	}
 	args["schadenplatzId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -4092,6 +4116,14 @@ func (ec *executionContext) field_Mutation_updateContact_args(ctx context.Contex
 		return nil, err
 	}
 	args["contact"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -4114,6 +4146,14 @@ func (ec *executionContext) field_Mutation_updateDeploymentLocation_args(ctx con
 		return nil, err
 	}
 	args["location"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -4180,6 +4220,14 @@ func (ec *executionContext) field_Mutation_updatePersonnelCount_args(ctx context
 		return nil, err
 	}
 	args["count"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -7618,7 +7666,7 @@ func (ec *executionContext) _Mutation_createSchadenplatz(ctx context.Context, fi
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().CreateSchadenplatz(ctx, fc.Args["incidentId"].(string), fc.Args["name"].(string))
+			return ec.Resolvers.Mutation().CreateSchadenplatz(ctx, fc.Args["incidentId"].(string), fc.Args["name"].(string), fc.Args["occurredAt"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Schadenplatz) graphql.Marshaler {
@@ -8058,7 +8106,7 @@ func (ec *executionContext) _Mutation_reassignResource(ctx context.Context, fiel
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().ReassignResource(ctx, fc.Args["id"].(string), fc.Args["schadenplatzId"].(string))
+			return ec.Resolvers.Mutation().ReassignResource(ctx, fc.Args["id"].(string), fc.Args["schadenplatzId"].(string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -8102,7 +8150,7 @@ func (ec *executionContext) _Mutation_updateDeploymentLocation(ctx context.Conte
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdateDeploymentLocation(ctx, fc.Args["id"].(string), fc.Args["location"].(*model.DeploymentLocationInput))
+			return ec.Resolvers.Mutation().UpdateDeploymentLocation(ctx, fc.Args["id"].(string), fc.Args["location"].(*model.DeploymentLocationInput), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -8146,7 +8194,7 @@ func (ec *executionContext) _Mutation_changeHauptaufgabe(ctx context.Context, fi
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().ChangeHauptaufgabe(ctx, fc.Args["id"].(string), fc.Args["hauptaufgabe"].(string))
+			return ec.Resolvers.Mutation().ChangeHauptaufgabe(ctx, fc.Args["id"].(string), fc.Args["hauptaufgabe"].(string), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -8190,7 +8238,7 @@ func (ec *executionContext) _Mutation_updateContact(ctx context.Context, field g
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdateContact(ctx, fc.Args["id"].(string), fc.Args["contact"].(model.ResourceContactInput))
+			return ec.Resolvers.Mutation().UpdateContact(ctx, fc.Args["id"].(string), fc.Args["contact"].(model.ResourceContactInput), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
@@ -8234,7 +8282,7 @@ func (ec *executionContext) _Mutation_updatePersonnelCount(ctx context.Context, 
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().UpdatePersonnelCount(ctx, fc.Args["id"].(string), fc.Args["count"].(int))
+			return ec.Resolvers.Mutation().UpdatePersonnelCount(ctx, fc.Args["id"].(string), fc.Args["count"].(int), fc.Args["at"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {

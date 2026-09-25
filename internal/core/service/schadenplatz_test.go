@@ -42,7 +42,7 @@ func TestSchadenplatzService_CreateSchadenplatz_HappyPath(t *testing.T) {
 	inc, err := incSvc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
 	require.NoError(t, err)
 
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", nil, testActor)
 	require.NoError(t, err)
 
 	assert.NotEqual(t, shared.SchadenplatzID{}, sp.ID)
@@ -61,7 +61,7 @@ func TestSchadenplatzService_CreateSchadenplatz_DefaultCreatedByIncident(t *test
 	require.NoError(t, err)
 
 	// Create a non-default one.
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Sektor Ost", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Sektor Ost", nil, testActor)
 	require.NoError(t, err)
 	assert.False(t, sp.IsDefault)
 }
@@ -74,14 +74,14 @@ func TestSchadenplatzService_CreateSchadenplatz_ClosedIncidentRejected(t *testin
 	_, err = incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)
 	require.NoError(t, err)
 
-	_, err = spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zu spät", testActor)
+	_, err = spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zu spät", nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 
 func TestSchadenplatzService_CreateSchadenplatz_UnknownIncidentRejected(t *testing.T) {
 	_, spSvc := setupSchadenplatzServices(t)
 
-	_, err := spSvc.CreateSchadenplatz(ctx(), shared.IncidentID(newID()), "Ghost", testActor)
+	_, err := spSvc.CreateSchadenplatz(ctx(), shared.IncidentID(newID()), "Ghost", nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrNotFound)
 }
 
@@ -91,7 +91,7 @@ func TestSchadenplatzService_RenameSchadenplatz(t *testing.T) {
 	incSvc, spSvc := setupSchadenplatzServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Alt", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Alt", nil, testActor)
 	require.NoError(t, err)
 
 	renamed, err := spSvc.RenameSchadenplatz(ctx(), sp.ID, "Neu", testActor)
@@ -105,7 +105,7 @@ func TestSchadenplatzService_RecordCasualties_AccumulatesDeltas(t *testing.T) {
 	incSvc, spSvc := setupSchadenplatzServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Massenanfall", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Triage", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Triage", nil, testActor)
 	require.NoError(t, err)
 
 	msgID1 := shared.MessageID(newID())
@@ -135,7 +135,7 @@ func TestSchadenplatzService_RecordCasualties_ClosedIncidentRejected(t *testing.
 	incSvc, spSvc := setupSchadenplatzServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zone", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zone", nil, testActor)
 	require.NoError(t, err)
 
 	_, err = incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)
@@ -154,7 +154,7 @@ func TestSchadenplatzService_MergeSchadenplatz(t *testing.T) {
 	incSvc, spSvc := setupSchadenplatzServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Grossereignis", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt West", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt West", nil, testActor)
 	require.NoError(t, err)
 
 	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, nil, testActor)
@@ -165,7 +165,7 @@ func TestSchadenplatzService_MergeSchadenplatz_ClosedIncidentRejected(t *testing
 	incSvc, spSvc := setupSchadenplatzServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zone", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Zone", nil, testActor)
 	require.NoError(t, err)
 
 	_, err = incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)

@@ -581,7 +581,12 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
         for (const spId of personenSpIds) {
           const deltas = getSpCasualties(spId);
           if (Object.values(deltas).every((v) => v === 0)) continue;
-          await recordCasualties({ schadenplatzId: spId, messageId: message.id, deltas, occurredAt: message.time });
+          await recordCasualties({
+            schadenplatzId: spId,
+            messageId: message.id,
+            deltas,
+            occurredAt: message.time,
+          });
         }
       } catch (e) {
         setStepError(isApiError(e) ? e : new ApiError("UNKNOWN"));
@@ -596,6 +601,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     handleSave,
     recordCasualties,
     message.id,
+    message.time,
     getSpCasualties,
     personenSpIds,
   ]);
@@ -780,7 +786,9 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                 onCancelled={(tempId) =>
                   setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
                 }
-                createSchadenplatz={createSchadenplatz}
+                createSchadenplatz={(args) =>
+                  createSchadenplatz({ ...args, occurredAt: message.time })
+                }
               />
               {personenSpIds.map((spId) => {
                 const sp = schadenplaetze.find((s) => s.id === spId);
@@ -1601,7 +1609,7 @@ function ResourcePickerRow({
                 onChange={async (e) => {
                   const newSpId = e.target.value;
                   setTargetSpId(newSpId);
-                  await reassign({ id: r.id, schadenplatzId: newSpId });
+                  await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
                 }}
                 className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               >
@@ -1627,7 +1635,7 @@ function ResourcePickerRow({
               onBlur={() => {
                 const n = parseInt(personnelCount, 10);
                 if (!isNaN(n) && n !== r.personnelCount)
-                  void updatePersonnelCount({ id: r.id, count: n });
+                  void updatePersonnelCount({ id: r.id, count: n, at: messageTime });
               }}
               className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
             />
@@ -1653,7 +1661,11 @@ function ResourcePickerRow({
                     }}
                     onBlur={() => {
                       if (hauptaufgabe.trim() !== r.hauptaufgabe)
-                        void changeHauptaufgabe({ id: r.id, hauptaufgabe: hauptaufgabe.trim() });
+                        void changeHauptaufgabe({
+                          id: r.id,
+                          hauptaufgabe: hauptaufgabe.trim(),
+                          at: messageTime,
+                        });
                     }}
                     className={clsx(
                       "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
@@ -1691,7 +1703,11 @@ function ResourcePickerRow({
                     }}
                     onBlur={() => {
                       if (einsatzort.trim())
-                        void updateLocation({ id: r.id, label: einsatzort.trim() });
+                        void updateLocation({
+                          id: r.id,
+                          label: einsatzort.trim(),
+                          at: messageTime,
+                        });
                     }}
                     className={clsx(
                       "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
@@ -1734,6 +1750,7 @@ function ResourcePickerRow({
                       id: r.id,
                       medium: contactMedium,
                       detail: contactDetail.trim(),
+                      at: messageTime,
                     });
                 }}
                 placeholder={t("resource.fields.contact")}

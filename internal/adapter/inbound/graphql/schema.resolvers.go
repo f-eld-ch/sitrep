@@ -980,7 +980,7 @@ func (r *mutationResolver) RemoveAttachment(ctx context.Context, messageID strin
 }
 
 // CreateSchadenplatz is the resolver for the createSchadenplatz field.
-func (r *mutationResolver) CreateSchadenplatz(ctx context.Context, incidentID string, name string) (*model.Schadenplatz, error) {
+func (r *mutationResolver) CreateSchadenplatz(ctx context.Context, incidentID string, name string, occurredAt *time.Time) (*model.Schadenplatz, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -991,7 +991,7 @@ func (r *mutationResolver) CreateSchadenplatz(ctx context.Context, incidentID st
 		return nil, err
 	}
 
-	state, err := r.Schadenplaetze.CreateSchadenplatz(ctx, shared.IncidentID(incID), name, actor)
+	state, err := r.Schadenplaetze.CreateSchadenplatz(ctx, shared.IncidentID(incID), name, occurredAt, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -1262,7 +1262,7 @@ func (r *mutationResolver) RelieveResource(ctx context.Context, id string, succe
 }
 
 // ReassignResource is the resolver for the reassignResource field.
-func (r *mutationResolver) ReassignResource(ctx context.Context, id string, schadenplatzID string) (*model.Resource, error) {
+func (r *mutationResolver) ReassignResource(ctx context.Context, id string, schadenplatzID string, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1278,7 +1278,7 @@ func (r *mutationResolver) ReassignResource(ctx context.Context, id string, scha
 		return nil, err
 	}
 
-	state, err := r.Resources.ReassignResource(ctx, shared.ResourceID(resID), shared.SchadenplatzID(spID), actor)
+	state, err := r.Resources.ReassignResource(ctx, shared.ResourceID(resID), shared.SchadenplatzID(spID), at, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -1287,7 +1287,7 @@ func (r *mutationResolver) ReassignResource(ctx context.Context, id string, scha
 }
 
 // UpdateDeploymentLocation is the resolver for the updateDeploymentLocation field.
-func (r *mutationResolver) UpdateDeploymentLocation(ctx context.Context, id string, location *model.DeploymentLocationInput) (*model.Resource, error) {
+func (r *mutationResolver) UpdateDeploymentLocation(ctx context.Context, id string, location *model.DeploymentLocationInput, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1307,7 +1307,7 @@ func (r *mutationResolver) UpdateDeploymentLocation(ctx context.Context, id stri
 		}
 	}
 
-	state, err := r.Resources.UpdateDeploymentLocation(ctx, shared.ResourceID(resID), loc, actor)
+	state, err := r.Resources.UpdateDeploymentLocation(ctx, shared.ResourceID(resID), loc, at, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -1316,7 +1316,7 @@ func (r *mutationResolver) UpdateDeploymentLocation(ctx context.Context, id stri
 }
 
 // ChangeHauptaufgabe is the resolver for the changeHauptaufgabe field.
-func (r *mutationResolver) ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string) (*model.Resource, error) {
+func (r *mutationResolver) ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1327,7 +1327,7 @@ func (r *mutationResolver) ChangeHauptaufgabe(ctx context.Context, id string, ha
 		return nil, err
 	}
 
-	state, err := r.Resources.ChangeHauptaufgabe(ctx, shared.ResourceID(resID), hauptaufgabe, actor)
+	state, err := r.Resources.ChangeHauptaufgabe(ctx, shared.ResourceID(resID), hauptaufgabe, at, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -1336,7 +1336,7 @@ func (r *mutationResolver) ChangeHauptaufgabe(ctx context.Context, id string, ha
 }
 
 // UpdateContact is the resolver for the updateContact field.
-func (r *mutationResolver) UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput) (*model.Resource, error) {
+func (r *mutationResolver) UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1350,7 +1350,7 @@ func (r *mutationResolver) UpdateContact(ctx context.Context, id string, contact
 	state, err := r.Resources.UpdateContact(ctx, shared.ResourceID(resID), resource.Contact{
 		Medium: modelContactMediumToDomain(contact.Medium),
 		Detail: contact.Detail,
-	}, actor)
+	}, at, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -1359,7 +1359,7 @@ func (r *mutationResolver) UpdateContact(ctx context.Context, id string, contact
 }
 
 // UpdatePersonnelCount is the resolver for the updatePersonnelCount field.
-func (r *mutationResolver) UpdatePersonnelCount(ctx context.Context, id string, count int) (*model.Resource, error) {
+func (r *mutationResolver) UpdatePersonnelCount(ctx context.Context, id string, count int, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
@@ -1370,7 +1370,7 @@ func (r *mutationResolver) UpdatePersonnelCount(ctx context.Context, id string, 
 		return nil, err
 	}
 
-	state, err := r.Resources.UpdatePersonnelCount(ctx, shared.ResourceID(resID), count, actor)
+	state, err := r.Resources.UpdatePersonnelCount(ctx, shared.ResourceID(resID), count, at, actor)
 	if err != nil {
 		return nil, err
 	}

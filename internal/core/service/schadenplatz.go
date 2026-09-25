@@ -58,6 +58,7 @@ func (s *SchadenplatzService) CreateSchadenplatz(
 	ctx context.Context,
 	incidentID shared.IncidentID,
 	name string,
+	occurredAt *time.Time,
 	actor identity.Actor,
 ) (inbound.SchadenplatzState, error) {
 	ctx, span := s.tracer.Start(ctx, "SchadenplatzService.CreateSchadenplatz",
@@ -70,7 +71,11 @@ func (s *SchadenplatzService) CreateSchadenplatz(
 		slog.String("actor", actor.Sub))
 
 	id := shared.SchadenplatzID(s.ids.New())
+
 	at := s.clock.Now()
+	if occurredAt != nil {
+		at = *occurredAt
+	}
 
 	var sp *schadenplatz.Schadenplatz
 

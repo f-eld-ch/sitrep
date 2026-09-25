@@ -342,6 +342,7 @@ type SchadenplatzService interface {
 		ctx context.Context,
 		incidentID shared.IncidentID,
 		name string,
+		at *time.Time,
 		actor identity.Actor,
 	) (SchadenplatzState, error)
 
@@ -454,30 +455,35 @@ type ResourceService interface {
 		ctx context.Context,
 		id shared.ResourceID,
 		schadenplatzID shared.SchadenplatzID,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 	UpdateDeploymentLocation(
 		ctx context.Context,
 		id shared.ResourceID,
 		loc *resource.DeploymentLocation,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 	ChangeHauptaufgabe(
 		ctx context.Context,
 		id shared.ResourceID,
 		hauptaufgabe string,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 	UpdateContact(
 		ctx context.Context,
 		id shared.ResourceID,
 		contact resource.Contact,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 	UpdatePersonnelCount(
 		ctx context.Context,
 		id shared.ResourceID,
 		count int,
+		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
 }

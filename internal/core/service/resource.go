@@ -272,16 +272,17 @@ func (s *ResourceService) ReassignResource(
 	ctx context.Context,
 	id shared.ResourceID,
 	schadenplatzID shared.SchadenplatzID,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.ReassignResource",
 		id,
-		nil,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.Reassign(schadenplatzID, actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.Reassign(schadenplatzID, actor.Sub, t)
 		},
 	)
 }
@@ -291,16 +292,17 @@ func (s *ResourceService) UpdateDeploymentLocation(
 	ctx context.Context,
 	id shared.ResourceID,
 	loc *resource.DeploymentLocation,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.UpdateDeploymentLocation",
 		id,
-		nil,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.UpdateDeploymentLocation(loc, actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.UpdateDeploymentLocation(loc, actor.Sub, t)
 		},
 	)
 }
@@ -310,16 +312,17 @@ func (s *ResourceService) ChangeHauptaufgabe(
 	ctx context.Context,
 	id shared.ResourceID,
 	hauptaufgabe string,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.ChangeHauptaufgabe",
 		id,
-		nil,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.ChangeHauptaufgabe(hauptaufgabe, actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.ChangeHauptaufgabe(hauptaufgabe, actor.Sub, t)
 		},
 	)
 }
@@ -329,16 +332,17 @@ func (s *ResourceService) UpdateContact(
 	ctx context.Context,
 	id shared.ResourceID,
 	contact resource.Contact,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.UpdateContact",
 		id,
-		nil,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.UpdateContact(contact, actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.UpdateContact(contact, actor.Sub, t)
 		},
 	)
 }
@@ -348,16 +352,17 @@ func (s *ResourceService) UpdatePersonnelCount(
 	ctx context.Context,
 	id shared.ResourceID,
 	count int,
+	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
 	return s.simpleTransition(
 		ctx,
 		"ResourceService.UpdatePersonnelCount",
 		id,
-		nil,
+		at,
 		actor,
-		func(res *resource.Resource, at time.Time) error {
-			return res.UpdatePersonnelCount(count, actor.Sub, at)
+		func(res *resource.Resource, t time.Time) error {
+			return res.UpdatePersonnelCount(count, actor.Sub, t)
 		},
 	)
 }

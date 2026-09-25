@@ -243,7 +243,11 @@ export function useRelieveResource(): CommandHook<{
   return [relieve, state];
 }
 
-export function useChangeHauptaufgabe(): CommandHook<{ id: string; hauptaufgabe: string }> {
+export function useChangeHauptaufgabe(): CommandHook<{
+  id: string;
+  hauptaufgabe: string;
+  at?: Date | null;
+}> {
   const [mutate, { loading, error }] = useMutation(CHANGE_HAUPTAUFGABE);
 
   const state: CommandState = {
@@ -251,14 +255,28 @@ export function useChangeHauptaufgabe(): CommandHook<{ id: string; hauptaufgabe:
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const changeHauptaufgabe = async (args: { id: string; hauptaufgabe: string }): Promise<void> => {
-    await mutate({ variables: { id: args.id, hauptaufgabe: args.hauptaufgabe } });
+  const changeHauptaufgabe = async (args: {
+    id: string;
+    hauptaufgabe: string;
+    at?: Date | null;
+  }): Promise<void> => {
+    await mutate({
+      variables: {
+        id: args.id,
+        hauptaufgabe: args.hauptaufgabe,
+        at: args.at?.toISOString() ?? null,
+      },
+    });
   };
 
   return [changeHauptaufgabe, state];
 }
 
-export function useUpdatePersonnelCount(): CommandHook<{ id: string; count: number }> {
+export function useUpdatePersonnelCount(): CommandHook<{
+  id: string;
+  count: number;
+  at?: Date | null;
+}> {
   const [mutate, { loading, error }] = useMutation(UPDATE_PERSONNEL_COUNT);
 
   const state: CommandState = {
@@ -266,26 +284,50 @@ export function useUpdatePersonnelCount(): CommandHook<{ id: string; count: numb
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const updateCount = async (args: { id: string; count: number }): Promise<void> => {
-    await mutate({ variables: { id: args.id, count: args.count } });
+  const updateCount = async (args: {
+    id: string;
+    count: number;
+    at?: Date | null;
+  }): Promise<void> => {
+    await mutate({
+      variables: { id: args.id, count: args.count, at: args.at?.toISOString() ?? null },
+    });
   };
 
   return [updateCount, state];
 }
 
-export function useReassignResource(): CommandHook<{ id: string; schadenplatzId: string }> {
+export function useReassignResource(): CommandHook<{
+  id: string;
+  schadenplatzId: string;
+  at?: Date | null;
+}> {
   const [mutate, { loading, error }] = useMutation(REASSIGN_RESOURCE);
   const state: CommandState = {
     loading,
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
-  const reassign = async (args: { id: string; schadenplatzId: string }): Promise<void> => {
-    await mutate({ variables: { id: args.id, schadenplatzId: args.schadenplatzId } });
+  const reassign = async (args: {
+    id: string;
+    schadenplatzId: string;
+    at?: Date | null;
+  }): Promise<void> => {
+    await mutate({
+      variables: {
+        id: args.id,
+        schadenplatzId: args.schadenplatzId,
+        at: args.at?.toISOString() ?? null,
+      },
+    });
   };
   return [reassign, state];
 }
 
-export function useUpdateDeploymentLocation(): CommandHook<{ id: string; label: string }> {
+export function useUpdateDeploymentLocation(): CommandHook<{
+  id: string;
+  label: string;
+  at?: Date | null;
+}> {
   const [mutate, { loading, error }] = useMutation(UPDATE_DEPLOYMENT_LOCATION);
 
   const state: CommandState = {
@@ -293,8 +335,10 @@ export function useUpdateDeploymentLocation(): CommandHook<{ id: string; label: 
     error: error ? apiErrorFromApolloError(error) : undefined,
   };
 
-  const update = async (args: { id: string; label: string }): Promise<void> => {
-    await mutate({ variables: { id: args.id, label: args.label } });
+  const update = async (args: { id: string; label: string; at?: Date | null }): Promise<void> => {
+    await mutate({
+      variables: { id: args.id, label: args.label, at: args.at?.toISOString() ?? null },
+    });
   };
 
   return [update, state];
@@ -304,6 +348,7 @@ export function useUpdateContact(): CommandHook<{
   id: string;
   medium: ContactMedium;
   detail: string;
+  at?: Date | null;
 }> {
   const [mutate, { loading, error }] = useMutation(UPDATE_CONTACT);
 
@@ -316,8 +361,16 @@ export function useUpdateContact(): CommandHook<{
     id: string;
     medium: ContactMedium;
     detail: string;
+    at?: Date | null;
   }): Promise<void> => {
-    await mutate({ variables: { id: args.id, medium: args.medium, detail: args.detail } });
+    await mutate({
+      variables: {
+        id: args.id,
+        medium: args.medium,
+        detail: args.detail,
+        at: args.at?.toISOString() ?? null,
+      },
+    });
   };
 
   return [update, state];

@@ -13,7 +13,7 @@ export interface CasualtyDeltas {
 }
 
 export function useCreateSchadenplatz(): CommandHook<
-  { incidentId: string; name: string; tempId?: string },
+  { incidentId: string; name: string; tempId?: string; occurredAt?: Date | null },
   { id: string; tempId: string }
 > {
   const [mutate, { loading, error }] = useMutation(CREATE_SCHADENPLATZ);
@@ -27,10 +27,15 @@ export function useCreateSchadenplatz(): CommandHook<
     incidentId: string;
     name: string;
     tempId?: string;
+    occurredAt?: Date | null;
   }): Promise<{ id: string; tempId: string }> => {
     const tempId = args.tempId ?? `__optimistic_sp_${Date.now()}`;
     const result = await mutate({
-      variables: { incidentId: args.incidentId, name: args.name },
+      variables: {
+        incidentId: args.incidentId,
+        name: args.name,
+        occurredAt: args.occurredAt?.toISOString() ?? null,
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       optimisticResponse: {
         createSchadenplatz: {

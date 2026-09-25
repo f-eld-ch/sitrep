@@ -190,8 +190,8 @@ export const CHANGE_HAUPTAUFGABE: TypedDocumentNode<
   ChangeHauptaufgabeMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!) {
-    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe) {
+  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!, $at: DateTime) {
+    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe, at: $at) {
       ...ResourceFields
     }
   }
@@ -202,8 +202,8 @@ export const UPDATE_PERSONNEL_COUNT: TypedDocumentNode<
   UpdatePersonnelCountMutationVariables
 > = gql`
   ${RESOURCE_FIELDS}
-  mutation UpdatePersonnelCount($id: ID!, $count: Int!) {
-    updatePersonnelCount(id: $id, count: $count) {
+  mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {
+    updatePersonnelCount(id: $id, count: $count, at: $at) {
       ...ResourceFields
     }
   }
@@ -211,8 +211,8 @@ export const UPDATE_PERSONNEL_COUNT: TypedDocumentNode<
 
 export const REASSIGN_RESOURCE = gql`
   ${RESOURCE_FIELDS}
-  mutation ReassignResource($id: ID!, $schadenplatzId: ID!) {
-    reassignResource(id: $id, schadenplatzId: $schadenplatzId) {
+  mutation ReassignResource($id: ID!, $schadenplatzId: ID!, $at: DateTime) {
+    reassignResource(id: $id, schadenplatzId: $schadenplatzId, at: $at) {
       ...ResourceFields
     }
   }
@@ -220,8 +220,8 @@ export const REASSIGN_RESOURCE = gql`
 
 export const UPDATE_DEPLOYMENT_LOCATION = gql`
   ${RESOURCE_FIELDS}
-  mutation UpdateDeploymentLocation($id: ID!, $label: String!) {
-    updateDeploymentLocation(id: $id, location: { label: $label }) {
+  mutation UpdateDeploymentLocation($id: ID!, $label: String!, $at: DateTime) {
+    updateDeploymentLocation(id: $id, location: { label: $label }, at: $at) {
       ...ResourceFields
     }
   }
@@ -229,8 +229,8 @@ export const UPDATE_DEPLOYMENT_LOCATION = gql`
 
 export const UPDATE_CONTACT = gql`
   ${RESOURCE_FIELDS}
-  mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!) {
-    updateContact(id: $id, contact: { medium: $medium, detail: $detail }) {
+  mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!, $at: DateTime) {
+    updateContact(id: $id, contact: { medium: $medium, detail: $detail }, at: $at) {
       ...ResourceFields
     }
   }

@@ -558,7 +558,7 @@ type Mutation {
   # ── Schadenplatz ─────────────────────────────────────────────────────────────
 
   """Create a new Schadenplatz for an incident."""
-  createSchadenplatz(incidentId: ID!, name: String!): Schadenplatz!
+  createSchadenplatz(incidentId: ID!, name: String!, occurredAt: DateTime): Schadenplatz!
 
   """Rename a Schadenplatz."""
   renameSchadenplatz(id: ID!, name: String!): Schadenplatz!
@@ -590,19 +590,19 @@ type Mutation {
   relieveResource(id: ID!, successorId: ID, at: DateTime): Resource!
 
   """Move a resource to a different Schadenplatz."""
-  reassignResource(id: ID!, schadenplatzId: ID!): Resource!
+  reassignResource(id: ID!, schadenplatzId: ID!, at: DateTime): Resource!
 
   """Set or clear the precise deployment position of a resource."""
-  updateDeploymentLocation(id: ID!, location: DeploymentLocationInput): Resource!
+  updateDeploymentLocation(id: ID!, location: DeploymentLocationInput, at: DateTime): Resource!
 
   """Update the primary task description of a resource."""
-  changeHauptaufgabe(id: ID!, hauptaufgabe: String!): Resource!
+  changeHauptaufgabe(id: ID!, hauptaufgabe: String!, at: DateTime): Resource!
 
   """Update the contact details of a resource."""
-  updateContact(id: ID!, contact: ResourceContactInput!): Resource!
+  updateContact(id: ID!, contact: ResourceContactInput!, at: DateTime): Resource!
 
   """Correct the headcount of a resource."""
-  updatePersonnelCount(id: ID!, count: Int!): Resource!
+  updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

@@ -97,7 +97,7 @@ func TestResourceService_AlertResource_ExplicitSchadenplatz(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create an explicit extra Schadenplatz and supply it.
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", nil, testActor)
 	require.NoError(t, err)
 
 	input := alertInput(inc.IncidentID)
@@ -269,12 +269,12 @@ func TestResourceService_ReassignResource(t *testing.T) {
 	incSvc, spSvc, resSvc := setupResourceServices(t)
 
 	inc, _ := incSvc.CreateIncident(ctx(), "Einsatz", nil, nil, nil, testActor)
-	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Süd", testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Süd", nil, testActor)
 	require.NoError(t, err)
 
 	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
 
-	reassigned, err := resSvc.ReassignResource(ctx(), alerted.ID, sp.ID, testActor)
+	reassigned, err := resSvc.ReassignResource(ctx(), alerted.ID, sp.ID, nil, testActor)
 	require.NoError(t, err)
 	assert.Equal(t, sp.ID, reassigned.SchadenplatzID)
 }
@@ -286,6 +286,6 @@ func TestResourceService_ReassignResource_SameSchadenplatzRejected(t *testing.T)
 	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
 
 	// Reassign to the same Schadenplatz the resource is already on.
-	_, err := resSvc.ReassignResource(ctx(), alerted.ID, alerted.SchadenplatzID, testActor)
+	_, err := resSvc.ReassignResource(ctx(), alerted.ID, alerted.SchadenplatzID, nil, testActor)
 	assert.Error(t, err, "reassigning to the same Schadenplatz must be rejected")
 }

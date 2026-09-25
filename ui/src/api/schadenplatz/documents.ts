@@ -33,8 +33,8 @@ export const CREATE_SCHADENPLATZ: TypedDocumentNode<
   CreateSchadenplatzMutationVariables
 > = gql`
   ${SCHADENPLATZ_FRAGMENT2}
-  mutation CreateSchadenplatz($incidentId: ID!, $name: String!) {
-    createSchadenplatz(incidentId: $incidentId, name: $name) {
+  mutation CreateSchadenplatz($incidentId: ID!, $name: String!, $occurredAt: DateTime) {
+    createSchadenplatz(incidentId: $incidentId, name: $name, occurredAt: $occurredAt) {
       ...SchadenplatzFields2
     }
   }
@@ -44,8 +44,18 @@ export const RECORD_CASUALTIES: TypedDocumentNode<
   RecordCasualtiesMutation,
   RecordCasualtiesMutationVariables
 > = gql`
-  mutation RecordCasualties($id: ID!, $sourceMessageId: ID!, $occurredAt: DateTime, $input: CasualtyDeltasInput!) {
-    recordCasualties(id: $id, sourceMessageId: $sourceMessageId, occurredAt: $occurredAt, input: $input) {
+  mutation RecordCasualties(
+    $id: ID!
+    $sourceMessageId: ID!
+    $occurredAt: DateTime
+    $input: CasualtyDeltasInput!
+  ) {
+    recordCasualties(
+      id: $id
+      sourceMessageId: $sourceMessageId
+      occurredAt: $occurredAt
+      input: $input
+    ) {
       id
       casualties {
         vermisste
