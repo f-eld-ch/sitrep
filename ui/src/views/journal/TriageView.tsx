@@ -1,4 +1,4 @@
-import { faCheck, faMinus, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faMinus, faPen, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
@@ -1383,6 +1383,7 @@ function ResourcePicker({
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const allResources = schadenplaetze.flatMap((sp) =>
     sp.resources
@@ -1395,11 +1396,11 @@ function ResourcePicker({
   );
 
   const selectedResources = allResources.filter((r) => selectedIds.has(r.id));
+  const availableResources = allResources.filter((r) => !selectedIds.has(r.id));
 
   const q = search.trim().toLowerCase();
-  const searchResults = q
-    ? allResources.filter((r) => {
-        if (selectedIds.has(r.id)) return false;
+  const filteredAvailable = q
+    ? availableResources.filter((r) => {
         const qf = qualifiedFormation(
           t(`resource.formation.${r.formation}`),
           r.homeLocation?.name,
@@ -1408,21 +1409,24 @@ function ResourcePicker({
           qf.includes(q) || r.name.toLowerCase().includes(q) || r._spName.toLowerCase().includes(q)
         );
       })
-    : [];
+    : availableResources;
+
+  const toggleEditing = (id: string) => setEditingId((prev) => (prev === id ? null : id));
 
   return (
-    <div className="space-y-2">
-      {/* Selected resources */}
+    <div className="space-y-3">
+      {/* Selected resources — compact summary with optional edit panel */}
       {selectedResources.length > 0 && (
-        <div className="divide-y divide-border rounded border border-border">
+        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
           {selectedResources.map((r) => (
-            <ResourcePickerRow
+            <SelectedResourceRow
               key={r.id}
               resource={r}
               currentSpName={r._spName}
               schadenplaetze={schadenplaetze}
-              checked={true}
-              onToggle={() => onToggle(r.id)}
+              isEditing={editingId === r.id}
+              onToggleEdit={() => toggleEditing(r.id)}
+              onDeselect={() => onToggle(r.id)}
               onAttach={onAttach}
               iconsLoaded={iconsLoaded}
               messageTime={messageTime}
@@ -1432,7 +1436,7 @@ function ResourcePicker({
         </div>
       )}
 
-      {/* Search to add more */}
+      {/* Search to filter available resources */}
       <input
         type="search"
         value={search}
@@ -1440,40 +1444,42 @@ function ResourcePicker({
         placeholder={t("resource.search")}
         className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
       />
-      {q &&
-        (searchResults.length === 0 ? (
-          <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
-        ) : (
-          <div className="divide-y divide-border rounded border border-border">
-            {searchResults.map((r) => (
-              <ResourcePickerRow
-                key={r.id}
-                resource={r}
-                currentSpName={r._spName}
-                schadenplaetze={schadenplaetze}
-                checked={false}
-                onToggle={() => {
-                  onToggle(r.id);
-                  setSearch("");
-                }}
-                onAttach={onAttach}
-                iconsLoaded={iconsLoaded}
-                messageTime={messageTime}
-                incidentId={incidentId}
-              />
-            ))}
-          </div>
-        ))}
+
+      {/* Available resources list */}
+      {filteredAvailable.length > 0 ? (
+        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+          {filteredAvailable.map((r) => (
+            <AvailableResourceRow
+              key={r.id}
+              resource={r}
+              currentSpName={r._spName}
+              onSelect={() => {
+                onToggle(r.id);
+                setSearch("");
+              }}
+              iconsLoaded={iconsLoaded}
+              messageTime={messageTime}
+            />
+          ))}
+        </div>
+      ) : q ? (
+        <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
+      ) : availableResources.length === 0 && selectedResources.length === 0 ? (
+        <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResources")}</p>
+      ) : null}
     </div>
   );
 }
 
-function ResourcePickerRow({
+// Compact summary card for a selected resource — shows read-only snapshot at message time,
+// with a pencil icon to toggle the edit panel and an X to deselect.
+function SelectedResourceRow({
   resource: r,
   currentSpName,
   schadenplaetze,
-  checked,
-  onToggle,
+  isEditing,
+  onToggleEdit,
+  onDeselect,
   onAttach,
   iconsLoaded,
   messageTime,
@@ -1482,10 +1488,148 @@ function ResourcePickerRow({
   resource: Resource;
   currentSpName: string;
   schadenplaetze: SchadenplatzWithResources[];
-  checked: boolean;
-  onToggle: () => void;
+  isEditing: boolean;
+  onToggleEdit: () => void;
+  onDeselect: () => void;
   onAttach: (ids: string[]) => void;
   iconsLoaded: boolean;
+  messageTime: Date;
+  incidentId: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const snap = resourceStateAt(r, messageTime);
+  const babsId = combinedBabsId(r.formation, r.size);
+
+  return (
+    <div className="bg-primary/5">
+      {/* Compact summary row */}
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border bg-bg">
+          {babsId && iconsLoaded ? (
+            <BabsIcon lang={i18n.language} icon={babsId} size={36} fallback={null} />
+          ) : (
+            <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium">
+              {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+            </span>
+            <Tag variant={resourceStatusVariant[r.status]} light size="sm">
+              {t(`resource.status.${r.status}`)}
+            </Tag>
+          </span>
+          {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+          <span className="block truncate text-xs text-fg-muted/70">
+            {snap.personnelCount} {t("resource.fields.personnelCount")}
+            {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
+            {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
+          </span>
+          <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
+        </span>
+        <button
+          type="button"
+          aria-label={t("edit")}
+          title={t("edit")}
+          onClick={onToggleEdit}
+          className={clsx(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-primary",
+            isEditing && "bg-bg-elevated text-primary",
+          )}
+        >
+          <FontAwesomeIcon icon={faPen} className="text-xs" />
+        </button>
+        <button
+          type="button"
+          aria-label={t("close")}
+          title={t("close")}
+          onClick={onDeselect}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-danger"
+        >
+          <FontAwesomeIcon icon={faXmark} className="text-xs" />
+        </button>
+      </div>
+
+      {/* Edit panel — shown only when isEditing */}
+      {isEditing && (
+        <ResourceEditPanel
+          resource={r}
+          schadenplaetze={schadenplaetze}
+          onAttach={onAttach}
+          messageTime={messageTime}
+          incidentId={incidentId}
+        />
+      )}
+    </div>
+  );
+}
+
+// Clickable row for an unselected resource — tap to add it to the selection.
+function AvailableResourceRow({
+  resource: r,
+  currentSpName,
+  onSelect,
+  iconsLoaded,
+  messageTime,
+}: {
+  resource: Resource;
+  currentSpName: string;
+  onSelect: () => void;
+  iconsLoaded: boolean;
+  messageTime: Date;
+}) {
+  const { t, i18n } = useTranslation();
+  const snap = resourceStateAt(r, messageTime);
+  const babsId = combinedBabsId(r.formation, r.size);
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-bg-elevated"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border bg-bg">
+        {babsId && iconsLoaded ? (
+          <BabsIcon lang={i18n.language} icon={babsId} size={36} fallback={null} />
+        ) : (
+          <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="truncate text-sm font-medium">
+            {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+          </span>
+          <Tag variant={resourceStatusVariant[r.status]} light size="sm">
+            {t(`resource.status.${r.status}`)}
+          </Tag>
+        </span>
+        {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
+        <span className="block truncate text-xs text-fg-muted/70">
+          {snap.personnelCount} {t("resource.fields.personnelCount")}
+          {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
+          {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
+        </span>
+        <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
+      </span>
+      <FontAwesomeIcon icon={faPlus} className="shrink-0 text-sm text-primary/60" />
+    </button>
+  );
+}
+
+// Edit panel — all input fields and status-transition buttons for a selected resource.
+// Extracted so SelectedResourceRow can render it conditionally without re-mounting state.
+function ResourceEditPanel({
+  resource: r,
+  schadenplaetze,
+  onAttach,
+  messageTime,
+  incidentId,
+}: {
+  resource: Resource;
+  schadenplaetze: SchadenplatzWithResources[];
+  onAttach: (ids: string[]) => void;
   messageTime: Date;
   incidentId: string;
 }) {
@@ -1508,6 +1652,7 @@ function ResourcePickerRow({
   const [successorId, setSuccessorId] = useState("");
   const [personnelCount, setPersonnelCount] = useState(String(r.personnelCount));
   const [deployAttempted, setDeployAttempted] = useState(false);
+
   const successorCandidates = schadenplaetze
     .flatMap((sp) => sp.resources)
     .filter((candidate) => candidate.id !== r.id && candidate.status !== "ABGELOEST");
@@ -1516,9 +1661,10 @@ function ResourcePickerRow({
         .flatMap((sp) => sp.resources)
         .find((candidate) => candidate.id === r.successorId)
     : undefined;
-  const relieveAndAttach = async (successorId: string | null) => {
-    await relieve({ id: r.id, successorId, at: messageTime, incidentId });
-    onAttach(successorId ? [r.id, successorId] : [r.id]);
+
+  const relieveAndAttach = async (sid: string | null) => {
+    await relieve({ id: r.id, successorId: sid, at: messageTime, incidentId });
+    onAttach(sid ? [r.id, sid] : [r.id]);
   };
 
   const busy =
@@ -1543,352 +1689,304 @@ function ResourcePickerRow({
     hauptaufgabeState.error ??
     personnelCountState.error;
 
-  const babsId = combinedBabsId(r.formation, r.size);
-
   return (
-    <div className={clsx(checked ? "bg-primary/5" : "")}>
-      {/* Header row — click to toggle */}
-      <label className="flex cursor-pointer items-center gap-3 px-3 py-2.5 select-none">
+    <div className="space-y-2 border-t border-border/60 bg-bg px-3 pt-2 pb-3">
+      {/* Schadenplatz reassign */}
+      {schadenplaetze.length > 1 && (
+        <label className="block">
+          <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+            {t("schadenplatz.select")}
+          </span>
+          <select
+            value={targetSpId}
+            disabled={busy}
+            onChange={async (e) => {
+              const newSpId = e.target.value;
+              setTargetSpId(newSpId);
+              await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
+            }}
+            className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+          >
+            {schadenplaetze.map((sp) => (
+              <option key={sp.id} value={sp.id}>
+                {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {/* Personnel count */}
+      <label className="block">
+        <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+          {t("resource.fields.personnelCount")}
+        </span>
         <input
-          type="checkbox"
-          checked={checked}
-          onChange={onToggle}
-          className="h-4 w-4 shrink-0 rounded border-border accent-primary"
+          type="number"
+          min={0}
+          value={personnelCount}
+          onChange={(e) => setPersonnelCount(e.target.value)}
+          onBlur={() => {
+            const n = parseInt(personnelCount, 10);
+            if (!isNaN(n) && n !== r.personnelCount)
+              void updatePersonnelCount({ id: r.id, count: n, at: messageTime });
+          }}
+          className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
         />
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border bg-bg">
-          {babsId && iconsLoaded ? (
-            <BabsIcon icon={babsId} size={36} fallback={null} />
-          ) : (
-            <span className="text-xs font-bold text-fg-muted">{r.formation}</span>
-          )}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium">
-              {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
-            </span>
-            <Tag variant={resourceStatusVariant[r.status]} light size="sm">
-              {t(`resource.status.${r.status}`)}
-            </Tag>
-          </span>
-          {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
-          {r.contact && (
-            <span className="block truncate text-xs text-fg-muted">
-              {t(`medium.${r.contact.medium}`)}
-              {r.contact.detail ? `: ${r.contact.detail}` : ""}
-            </span>
-          )}
-          {r.status === "ABGELOEST" && successor && (
-            <span className="block truncate text-xs text-fg-muted">
-              {t("resource.fields.relievedThrough")}:{" "}
-              {successor.name || t(`resource.size.${successor.size}`)}
-              {successor.contact &&
-                ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
-            </span>
-          )}
-          <span className="block truncate text-xs text-fg-muted/70">
-            {r.personnelCount} {t("resource.fields.personnelCount")}
-            {r.hauptaufgabe && ` · ${r.hauptaufgabe}`}
-          </span>
-          <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
-        </span>
       </label>
 
-      {/* Expansion panel — shown only when checked */}
-      {checked && (
-        <div className="space-y-2 border-t border-border/60 bg-bg px-3 pt-2 pb-3">
-          {/* Schadenplatz reassign */}
-          {schadenplaetze.length > 1 && (
+      {/* Hauptaufgabe — only relevant from EINSATZBEREIT onwards */}
+      {r.status !== "AUFGEBOTEN" &&
+        (() => {
+          const required = r.status === "EINSATZBEREIT";
+          const invalid = deployAttempted && !hauptaufgabe.trim();
+          return (
             <label className="block">
-              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-                {t("schadenplatz.select")}
+              <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                {t("resource.fields.hauptaufgabe")}
+                {required && <span className="text-danger">*</span>}
               </span>
-              <select
-                value={targetSpId}
-                disabled={busy}
-                onChange={async (e) => {
-                  const newSpId = e.target.value;
-                  setTargetSpId(newSpId);
-                  await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
-                }}
-                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              >
-                {schadenplaetze.map((sp) => (
-                  <option key={sp.id} value={sp.id}>
-                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {/* Personnel count */}
-          <label className="block">
-            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-              {t("resource.fields.personnelCount")}
-            </span>
-            <input
-              type="number"
-              min={0}
-              value={personnelCount}
-              onChange={(e) => setPersonnelCount(e.target.value)}
-              onBlur={() => {
-                const n = parseInt(personnelCount, 10);
-                if (!isNaN(n) && n !== r.personnelCount)
-                  void updatePersonnelCount({ id: r.id, count: n, at: messageTime });
-              }}
-              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-            />
-          </label>
-
-          {/* Hauptaufgabe — only relevant from EINSATZBEREIT onwards */}
-          {r.status !== "AUFGEBOTEN" &&
-            (() => {
-              const required = r.status === "EINSATZBEREIT";
-              const invalid = deployAttempted && !hauptaufgabe.trim();
-              return (
-                <label className="block">
-                  <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                    {t("resource.fields.hauptaufgabe")}
-                    {required && <span className="text-danger">*</span>}
-                  </span>
-                  <input
-                    type="text"
-                    value={hauptaufgabe}
-                    onChange={(e) => {
-                      setHauptaufgabe(e.target.value);
-                      if (deployAttempted) setDeployAttempted(false);
-                    }}
-                    onBlur={() => {
-                      if (hauptaufgabe.trim() !== r.hauptaufgabe)
-                        void changeHauptaufgabe({
-                          id: r.id,
-                          hauptaufgabe: hauptaufgabe.trim(),
-                          at: messageTime,
-                        });
-                    }}
-                    className={clsx(
-                      "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
-                      invalid
-                        ? "border-danger focus:ring-danger"
-                        : "border-border focus:ring-primary",
-                    )}
-                  />
-                  {invalid && (
-                    <span className="mt-0.5 block text-xs text-danger">
-                      {t("resource.validation.hauptaufgabeRequired")}
-                    </span>
-                  )}
-                </label>
-              );
-            })()}
-
-          {/* Einsatzort — only relevant from EINSATZBEREIT onwards */}
-          {r.status !== "AUFGEBOTEN" &&
-            (() => {
-              const required = r.status === "EINSATZBEREIT";
-              const invalid = deployAttempted && !einsatzort.trim();
-              return (
-                <label className="block">
-                  <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                    {t("resource.fields.deploymentLocation")}
-                    {required && <span className="text-danger">*</span>}
-                  </span>
-                  <input
-                    type="text"
-                    value={einsatzort}
-                    onChange={(e) => {
-                      setEinsatzort(e.target.value);
-                      if (deployAttempted) setDeployAttempted(false);
-                    }}
-                    onBlur={() => {
-                      if (einsatzort.trim())
-                        void updateLocation({
-                          id: r.id,
-                          label: einsatzort.trim(),
-                          at: messageTime,
-                        });
-                    }}
-                    className={clsx(
-                      "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
-                      invalid
-                        ? "border-danger focus:ring-danger"
-                        : "border-border focus:ring-primary",
-                    )}
-                  />
-                  {invalid && (
-                    <span className="mt-0.5 block text-xs text-danger">
-                      {t("resource.validation.einsatzortRequired")}
-                    </span>
-                  )}
-                </label>
-              );
-            })()}
-
-          {/* Contact */}
-          <div>
-            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-              {t("resource.fields.contact")}
-            </span>
-            <div className="flex gap-2">
-              <select
-                value={contactMedium}
-                onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
-                className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              >
-                <option value="PHONE">{t("medium.PHONE")}</option>
-                <option value="RADIO">{t("medium.RADIO")}</option>
-                <option value="OTHER">{t("medium.OTHER")}</option>
-              </select>
               <input
                 type="text"
-                value={contactDetail}
-                onChange={(e) => setContactDetail(e.target.value)}
+                value={hauptaufgabe}
+                onChange={(e) => {
+                  setHauptaufgabe(e.target.value);
+                  if (deployAttempted) setDeployAttempted(false);
+                }}
                 onBlur={() => {
-                  if (contactDetail.trim())
-                    void updateContact({
+                  if (hauptaufgabe.trim() !== r.hauptaufgabe)
+                    void changeHauptaufgabe({
                       id: r.id,
-                      medium: contactMedium,
-                      detail: contactDetail.trim(),
+                      hauptaufgabe: hauptaufgabe.trim(),
                       at: messageTime,
                     });
                 }}
-                placeholder={t("resource.fields.contact")}
-                className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              />
-            </div>
-          </div>
-
-          {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
-
-          {(r.status === "EINSATZBEREIT" || r.status === "EINGESETZT") && (
-            <label className="block">
-              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-                {t("resource.fields.successor")}
-              </span>
-              <select
-                value={successorId}
-                disabled={busy || successorCandidates.length === 0}
-                onChange={(e) => setSuccessorId(e.target.value)}
-                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              >
-                {successorCandidates.length === 0 ? (
-                  <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
-                ) : (
-                  <>
-                    <option value="">{t("resource.fields.selectSuccessor")}</option>
-                    {successorCandidates.map((candidate) => (
-                      <option key={candidate.id} value={candidate.id}>
-                        {qualifiedFormation(
-                          t(`resource.formation.${candidate.formation}`),
-                          candidate.homeLocation?.name,
-                        )}
-                        {candidate.name ? ` — ${candidate.name}` : ""}
-                      </option>
-                    ))}
-                  </>
+                className={clsx(
+                  "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                  invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
                 )}
-              </select>
+              />
+              {invalid && (
+                <span className="mt-0.5 block text-xs text-danger">
+                  {t("resource.validation.hauptaufgabeRequired")}
+                </span>
+              )}
             </label>
-          )}
+          );
+        })()}
 
-          {/* Transition buttons */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {r.status === "AUFGEBOTEN" && (
-              <Button
-                type="button"
-                size="xs"
-                variant="primary"
-                light
-                disabled={busy}
-                onClick={() => void markReady({ id: r.id, at: messageTime })}
-              >
-                {t("resource.actions.markReady")}
-              </Button>
-            )}
-            {r.status === "EINSATZBEREIT" && (
-              <>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="success"
-                  light
-                  disabled={busy}
-                  onClick={() => {
-                    if (!hauptaufgabe.trim() || !einsatzort.trim()) {
-                      setDeployAttempted(true);
-                      return;
-                    }
-                    void deploy({ id: r.id, at: messageTime });
-                  }}
-                >
-                  {t("resource.actions.deploy")}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="warning"
-                  light
-                  disabled={busy}
-                  onClick={() => void standDown({ id: r.id, at: messageTime })}
-                >
-                  {t("resource.actions.standDown")}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="light"
-                  disabled={busy || !successorId}
-                  onClick={() => void relieveAndAttach(successorId)}
-                >
-                  {t("resource.actions.relieve")}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="light"
-                  disabled={busy}
-                  onClick={() => void relieveAndAttach(null)}
-                >
-                  {t("resource.actions.dismiss")}
-                </Button>
-              </>
-            )}
-            {r.status === "EINGESETZT" && (
-              <>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="warning"
-                  light
-                  disabled={busy}
-                  onClick={() => void standDown({ id: r.id, at: messageTime })}
-                >
-                  {t("resource.actions.standDown")}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="light"
-                  disabled={busy || !successorId}
-                  onClick={() => void relieveAndAttach(successorId)}
-                >
-                  {t("resource.actions.relieve")}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="light"
-                  disabled={busy}
-                  onClick={() => void relieveAndAttach(null)}
-                >
-                  {t("resource.actions.dismiss")}
-                </Button>
-              </>
-            )}
-          </div>
+      {/* Einsatzort — only relevant from EINSATZBEREIT onwards */}
+      {r.status !== "AUFGEBOTEN" &&
+        (() => {
+          const required = r.status === "EINSATZBEREIT";
+          const invalid = deployAttempted && !einsatzort.trim();
+          return (
+            <label className="block">
+              <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                {t("resource.fields.deploymentLocation")}
+                {required && <span className="text-danger">*</span>}
+              </span>
+              <input
+                type="text"
+                value={einsatzort}
+                onChange={(e) => {
+                  setEinsatzort(e.target.value);
+                  if (deployAttempted) setDeployAttempted(false);
+                }}
+                onBlur={() => {
+                  if (einsatzort.trim())
+                    void updateLocation({
+                      id: r.id,
+                      label: einsatzort.trim(),
+                      at: messageTime,
+                    });
+                }}
+                className={clsx(
+                  "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                  invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
+                )}
+              />
+              {invalid && (
+                <span className="mt-0.5 block text-xs text-danger">
+                  {t("resource.validation.einsatzortRequired")}
+                </span>
+              )}
+            </label>
+          );
+        })()}
+
+      {/* Contact */}
+      <div>
+        <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+          {t("resource.fields.contact")}
+        </span>
+        <div className="flex gap-2">
+          <select
+            value={contactMedium}
+            onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
+            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+          >
+            <option value="PHONE">{t("medium.PHONE")}</option>
+            <option value="RADIO">{t("medium.RADIO")}</option>
+            <option value="OTHER">{t("medium.OTHER")}</option>
+          </select>
+          <input
+            type="text"
+            value={contactDetail}
+            onChange={(e) => setContactDetail(e.target.value)}
+            onBlur={() => {
+              if (contactDetail.trim())
+                void updateContact({
+                  id: r.id,
+                  medium: contactMedium,
+                  detail: contactDetail.trim(),
+                  at: messageTime,
+                });
+            }}
+            placeholder={t("resource.fields.contact")}
+            className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+          />
         </div>
+      </div>
+
+      {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
+
+      {(r.status === "EINSATZBEREIT" || r.status === "EINGESETZT") && (
+        <label className="block">
+          <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+            {t("resource.fields.successor")}
+          </span>
+          <select
+            value={successorId}
+            disabled={busy || successorCandidates.length === 0}
+            onChange={(e) => setSuccessorId(e.target.value)}
+            className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+          >
+            {successorCandidates.length === 0 ? (
+              <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
+            ) : (
+              <>
+                <option value="">{t("resource.fields.selectSuccessor")}</option>
+                {successorCandidates.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {qualifiedFormation(
+                      t(`resource.formation.${candidate.formation}`),
+                      candidate.homeLocation?.name,
+                    )}
+                    {candidate.name ? ` — ${candidate.name}` : ""}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+        </label>
       )}
+
+      {/* Successor info when already relieved */}
+      {r.status === "ABGELOEST" && successor && (
+        <p className="text-xs text-fg-muted">
+          {t("resource.fields.relievedThrough")}:{" "}
+          {successor.name || t(`resource.size.${successor.size}`)}
+          {successor.contact &&
+            ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
+        </p>
+      )}
+
+      {/* Transition buttons */}
+      <div className="flex flex-wrap gap-2 pt-1">
+        {r.status === "AUFGEBOTEN" && (
+          <Button
+            type="button"
+            size="xs"
+            variant="primary"
+            light
+            disabled={busy}
+            onClick={() => void markReady({ id: r.id, at: messageTime })}
+          >
+            {t("resource.actions.markReady")}
+          </Button>
+        )}
+        {r.status === "EINSATZBEREIT" && (
+          <>
+            <Button
+              type="button"
+              size="xs"
+              variant="success"
+              light
+              disabled={busy}
+              onClick={() => {
+                if (!hauptaufgabe.trim() || !einsatzort.trim()) {
+                  setDeployAttempted(true);
+                  return;
+                }
+                void deploy({ id: r.id, at: messageTime });
+              }}
+            >
+              {t("resource.actions.deploy")}
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="warning"
+              light
+              disabled={busy}
+              onClick={() => void standDown({ id: r.id, at: messageTime })}
+            >
+              {t("resource.actions.standDown")}
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="light"
+              disabled={busy || !successorId}
+              onClick={() => void relieveAndAttach(successorId)}
+            >
+              {t("resource.actions.relieve")}
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="light"
+              disabled={busy}
+              onClick={() => void relieveAndAttach(null)}
+            >
+              {t("resource.actions.dismiss")}
+            </Button>
+          </>
+        )}
+        {r.status === "EINGESETZT" && (
+          <>
+            <Button
+              type="button"
+              size="xs"
+              variant="warning"
+              light
+              disabled={busy}
+              onClick={() => void standDown({ id: r.id, at: messageTime })}
+            >
+              {t("resource.actions.standDown")}
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="light"
+              disabled={busy || !successorId}
+              onClick={() => void relieveAndAttach(successorId)}
+            >
+              {t("resource.actions.relieve")}
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="light"
+              disabled={busy}
+              onClick={() => void relieveAndAttach(null)}
+            >
+              {t("resource.actions.dismiss")}
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
