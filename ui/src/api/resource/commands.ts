@@ -30,6 +30,9 @@ export interface AlertResourceArgs {
   homeLocation?: { name: string; lat?: number | null; lng?: number | null } | null;
   sourceMessageId?: string | null;
   occurredAt?: Date | null;
+  /** Caller-supplied optimistic ID. When provided, the optimistic response uses this id
+   *  so the caller can immediately add it to local selection state before awaiting. */
+  tempId?: string;
 }
 
 export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId: string }> {
@@ -41,8 +44,10 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
   };
 
   const alertResource = async (args: AlertResourceArgs): Promise<{ resourceId: string }> => {
-    const tempId = `temp-${Date.now()}`;
-    const now = new Date().toISOString();
+    const tempId = args.tempId ?? `temp-${Date.now()}`;
+    // Use occurredAt for the optimistic statusAt so the resource passes the
+    // message-time cutoff filter in the picker. Falls back to now when absent.
+    const optimisticAt = args.occurredAt?.toISOString() ?? new Date().toISOString();
     const result = await mutate({
       variables: {
         input: {
@@ -81,8 +86,8 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
             : null,
           deploymentLocation: null,
           status: "AUFGEBOTEN" as const,
-          statusAt: now,
-          alertedAt: now,
+          statusAt: optimisticAt,
+          alertedAt: optimisticAt,
           readyAt: null,
           deployedAt: null,
           stoodDownAt: null,

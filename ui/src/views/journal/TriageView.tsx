@@ -38,7 +38,6 @@ import {
   useDeployResource,
   useStandDownResource,
   useRelieveResource,
-  useUpdatePersonnelCount,
   useReassignResource,
   useUpdateDeploymentLocation,
   useUpdateContact,
@@ -478,10 +477,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     ],
     [defaultSp, selectedSpIds],
   );
-  // Mittel step: selected named SPs only, falling back to default if nothing selected
-  const effectiveSpIds: string[] =
-    selectedSpIds.length > 0 ? selectedSpIds : defaultSp ? [defaultSp.id] : [];
-
   const toggleSpId = (id: string) =>
     setSelectedSpIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
@@ -828,14 +823,29 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                   />
                   <AlertResourceForm
                     incidentId={incidentId}
-                    schadenplatzId={effectiveSpIds[0] ?? ""}
+                    schadenplaetze={schadenplaetze}
                     sourceMessageId={message.id}
                     messageTime={message.time}
                     iconsLoaded={iconsLoaded}
                     existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
-                    onAlerted={(id) => {
-                      setSelectedResourceIds((prev) => new Set([...prev, id]));
+                    onAlerted={(tempId) => {
+                      setSelectedResourceIds((prev) => new Set([...prev, tempId]));
+                    }}
+                    onReplaced={(tempId, realId) => {
+                      setSelectedResourceIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(tempId);
+                        next.add(realId);
+                        return next;
+                      });
                       void resourcesResult.refresh();
+                    }}
+                    onCancelled={(tempId) => {
+                      setSelectedResourceIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(tempId);
+                        return next;
+                      });
                     }}
                   />
                 </>
@@ -1618,8 +1628,9 @@ function AvailableResourceRow({
   );
 }
 
-// Edit panel — all input fields and status-transition buttons for a selected resource.
-// Extracted so SelectedResourceRow can render it conditionally without re-mounting state.
+// Edit panel — status-driven actions and contextual fields for a selected resource.
+// Fields shown depend on status; personnel count and name are not editable here
+// (they are set once in AlertResourceForm). Transition buttons are shown prominently.
 function ResourceEditPanel({
   resource: r,
   schadenplaetze,
@@ -1642,7 +1653,6 @@ function ResourceEditPanel({
   const [updateLocation, locationState] = useUpdateDeploymentLocation();
   const [updateContact, contactState] = useUpdateContact();
   const [changeHauptaufgabe, hauptaufgabeState] = useChangeHauptaufgabe();
-  const [updatePersonnelCount, personnelCountState] = useUpdatePersonnelCount();
 
   const [einsatzort, setEinsatzort] = useState(r.deploymentLocation?.label ?? "");
   const [contactMedium, setContactMedium] = useState<ContactMedium>(r.contact?.medium ?? "PHONE");
@@ -1650,7 +1660,6 @@ function ResourceEditPanel({
   const [hauptaufgabe, setHauptaufgabe] = useState(r.hauptaufgabe);
   const [targetSpId, setTargetSpId] = useState(r.schadenplatzId);
   const [successorId, setSuccessorId] = useState("");
-  const [personnelCount, setPersonnelCount] = useState(String(r.personnelCount));
   const [deployAttempted, setDeployAttempted] = useState(false);
 
   const successorCandidates = schadenplaetze
@@ -1675,8 +1684,7 @@ function ResourceEditPanel({
     reassignState.loading ||
     locationState.loading ||
     contactState.loading ||
-    hauptaufgabeState.loading ||
-    personnelCountState.loading;
+    hauptaufgabeState.loading;
 
   const actionError =
     markReadyState.error ??
@@ -1686,233 +1694,231 @@ function ResourceEditPanel({
     reassignState.error ??
     locationState.error ??
     contactState.error ??
-    hauptaufgabeState.error ??
-    personnelCountState.error;
+    hauptaufgabeState.error;
 
   return (
-    <div className="space-y-2 border-t border-border/60 bg-bg px-3 pt-2 pb-3">
-      {/* Schadenplatz reassign */}
-      {schadenplaetze.length > 1 && (
-        <label className="block">
-          <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-            {t("schadenplatz.select")}
-          </span>
-          <select
-            value={targetSpId}
-            disabled={busy}
-            onChange={async (e) => {
-              const newSpId = e.target.value;
-              setTargetSpId(newSpId);
-              await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
-            }}
-            className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          >
-            {schadenplaetze.map((sp) => (
-              <option key={sp.id} value={sp.id}>
-                {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      {/* Personnel count */}
-      <label className="block">
-        <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-          {t("resource.fields.personnelCount")}
-        </span>
-        <input
-          type="number"
-          min={0}
-          value={personnelCount}
-          onChange={(e) => setPersonnelCount(e.target.value)}
-          onBlur={() => {
-            const n = parseInt(personnelCount, 10);
-            if (!isNaN(n) && n !== r.personnelCount)
-              void updatePersonnelCount({ id: r.id, count: n, at: messageTime });
-          }}
-          className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-        />
-      </label>
-
-      {/* Hauptaufgabe — only relevant from EINSATZBEREIT onwards */}
-      {r.status !== "AUFGEBOTEN" &&
-        (() => {
-          const required = r.status === "EINSATZBEREIT";
-          const invalid = deployAttempted && !hauptaufgabe.trim();
-          return (
+    <div className="space-y-3 border-t border-border/60 bg-bg px-3 pt-3 pb-3">
+      {/* ── AUFGEBOTEN ──────────────────────────────────────────── */}
+      {r.status === "AUFGEBOTEN" && (
+        <>
+          {/* Schadenplatz reassign */}
+          {schadenplaetze.length > 1 && (
             <label className="block">
-              <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                {t("resource.fields.hauptaufgabe")}
-                {required && <span className="text-danger">*</span>}
+              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+                {t("schadenplatz.select")}
               </span>
-              <input
-                type="text"
-                value={hauptaufgabe}
-                onChange={(e) => {
-                  setHauptaufgabe(e.target.value);
-                  if (deployAttempted) setDeployAttempted(false);
+              <select
+                value={targetSpId}
+                disabled={busy}
+                onChange={async (e) => {
+                  const newSpId = e.target.value;
+                  setTargetSpId(newSpId);
+                  await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
                 }}
-                onBlur={() => {
-                  if (hauptaufgabe.trim() !== r.hauptaufgabe)
-                    void changeHauptaufgabe({
-                      id: r.id,
-                      hauptaufgabe: hauptaufgabe.trim(),
-                      at: messageTime,
-                    });
-                }}
-                className={clsx(
-                  "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
-                  invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
-                )}
-              />
-              {invalid && (
-                <span className="mt-0.5 block text-xs text-danger">
-                  {t("resource.validation.hauptaufgabeRequired")}
-                </span>
-              )}
-            </label>
-          );
-        })()}
-
-      {/* Einsatzort — only relevant from EINSATZBEREIT onwards */}
-      {r.status !== "AUFGEBOTEN" &&
-        (() => {
-          const required = r.status === "EINSATZBEREIT";
-          const invalid = deployAttempted && !einsatzort.trim();
-          return (
-            <label className="block">
-              <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
-                {t("resource.fields.deploymentLocation")}
-                {required && <span className="text-danger">*</span>}
-              </span>
-              <input
-                type="text"
-                value={einsatzort}
-                onChange={(e) => {
-                  setEinsatzort(e.target.value);
-                  if (deployAttempted) setDeployAttempted(false);
-                }}
-                onBlur={() => {
-                  if (einsatzort.trim())
-                    void updateLocation({
-                      id: r.id,
-                      label: einsatzort.trim(),
-                      at: messageTime,
-                    });
-                }}
-                className={clsx(
-                  "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
-                  invalid ? "border-danger focus:ring-danger" : "border-border focus:ring-primary",
-                )}
-              />
-              {invalid && (
-                <span className="mt-0.5 block text-xs text-danger">
-                  {t("resource.validation.einsatzortRequired")}
-                </span>
-              )}
-            </label>
-          );
-        })()}
-
-      {/* Contact */}
-      <div>
-        <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-          {t("resource.fields.contact")}
-        </span>
-        <div className="flex gap-2">
-          <select
-            value={contactMedium}
-            onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
-            className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          >
-            <option value="PHONE">{t("medium.PHONE")}</option>
-            <option value="RADIO">{t("medium.RADIO")}</option>
-            <option value="OTHER">{t("medium.OTHER")}</option>
-          </select>
-          <input
-            type="text"
-            value={contactDetail}
-            onChange={(e) => setContactDetail(e.target.value)}
-            onBlur={() => {
-              if (contactDetail.trim())
-                void updateContact({
-                  id: r.id,
-                  medium: contactMedium,
-                  detail: contactDetail.trim(),
-                  at: messageTime,
-                });
-            }}
-            placeholder={t("resource.fields.contact")}
-            className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          />
-        </div>
-      </div>
-
-      {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
-
-      {(r.status === "EINSATZBEREIT" || r.status === "EINGESETZT") && (
-        <label className="block">
-          <span className="mb-0.5 block text-xs font-medium text-fg-muted">
-            {t("resource.fields.successor")}
-          </span>
-          <select
-            value={successorId}
-            disabled={busy || successorCandidates.length === 0}
-            onChange={(e) => setSuccessorId(e.target.value)}
-            className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-          >
-            {successorCandidates.length === 0 ? (
-              <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
-            ) : (
-              <>
-                <option value="">{t("resource.fields.selectSuccessor")}</option>
-                {successorCandidates.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>
-                    {qualifiedFormation(
-                      t(`resource.formation.${candidate.formation}`),
-                      candidate.homeLocation?.name,
-                    )}
-                    {candidate.name ? ` — ${candidate.name}` : ""}
+                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                {schadenplaetze.map((sp) => (
+                  <option key={sp.id} value={sp.id}>
+                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
                   </option>
                 ))}
-              </>
-            )}
-          </select>
-        </label>
-      )}
+              </select>
+            </label>
+          )}
 
-      {/* Successor info when already relieved */}
-      {r.status === "ABGELOEST" && successor && (
-        <p className="text-xs text-fg-muted">
-          {t("resource.fields.relievedThrough")}:{" "}
-          {successor.name || t(`resource.size.${successor.size}`)}
-          {successor.contact &&
-            ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
-        </p>
-      )}
+          {/* Contact */}
+          <div>
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+              {t("resource.fields.contact")}
+            </span>
+            <div className="flex gap-2">
+              <select
+                value={contactMedium}
+                onChange={(e) => setContactMedium(e.target.value as ContactMedium)}
+                className="rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                <option value="PHONE">{t("medium.PHONE")}</option>
+                <option value="RADIO">{t("medium.RADIO")}</option>
+                <option value="OTHER">{t("medium.OTHER")}</option>
+              </select>
+              <input
+                type="text"
+                value={contactDetail}
+                onChange={(e) => setContactDetail(e.target.value)}
+                onBlur={() => {
+                  if (contactDetail.trim())
+                    void updateContact({
+                      id: r.id,
+                      medium: contactMedium,
+                      detail: contactDetail.trim(),
+                      at: messageTime,
+                    });
+                }}
+                placeholder={t("resource.fields.contact")}
+                className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
 
-      {/* Transition buttons */}
-      <div className="flex flex-wrap gap-2 pt-1">
-        {r.status === "AUFGEBOTEN" && (
+          {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
+
           <Button
             type="button"
-            size="xs"
+            size="sm"
             variant="primary"
-            light
             disabled={busy}
             onClick={() => void markReady({ id: r.id, at: messageTime })}
           >
             {t("resource.actions.markReady")}
           </Button>
-        )}
-        {r.status === "EINSATZBEREIT" && (
-          <>
+        </>
+      )}
+
+      {/* ── EINSATZBEREIT ───────────────────────────────────────── */}
+      {r.status === "EINSATZBEREIT" && (
+        <>
+          {/* Schadenplatz reassign */}
+          {schadenplaetze.length > 1 && (
+            <label className="block">
+              <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+                {t("schadenplatz.select")}
+              </span>
+              <select
+                value={targetSpId}
+                disabled={busy}
+                onChange={async (e) => {
+                  const newSpId = e.target.value;
+                  setTargetSpId(newSpId);
+                  await reassign({ id: r.id, schadenplatzId: newSpId, at: messageTime });
+                }}
+                className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                {schadenplaetze.map((sp) => (
+                  <option key={sp.id} value={sp.id}>
+                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {/* Hauptaufgabe — required before deploying */}
+          {(() => {
+            const invalid = deployAttempted && !hauptaufgabe.trim();
+            return (
+              <label className="block">
+                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                  {t("resource.fields.hauptaufgabe")}
+                  <span className="text-danger">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={hauptaufgabe}
+                  onChange={(e) => {
+                    setHauptaufgabe(e.target.value);
+                    if (deployAttempted) setDeployAttempted(false);
+                  }}
+                  onBlur={() => {
+                    if (hauptaufgabe.trim() !== r.hauptaufgabe)
+                      void changeHauptaufgabe({
+                        id: r.id,
+                        hauptaufgabe: hauptaufgabe.trim(),
+                        at: messageTime,
+                      });
+                  }}
+                  className={clsx(
+                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                    invalid
+                      ? "border-danger focus:ring-danger"
+                      : "border-border focus:ring-primary",
+                  )}
+                />
+                {invalid && (
+                  <span className="mt-0.5 block text-xs text-danger">
+                    {t("resource.validation.hauptaufgabeRequired")}
+                  </span>
+                )}
+              </label>
+            );
+          })()}
+
+          {/* Einsatzort — required before deploying */}
+          {(() => {
+            const invalid = deployAttempted && !einsatzort.trim();
+            return (
+              <label className="block">
+                <span className="mb-0.5 flex items-center gap-1 text-xs font-medium text-fg-muted">
+                  {t("resource.fields.deploymentLocation")}
+                  <span className="text-danger">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={einsatzort}
+                  onChange={(e) => {
+                    setEinsatzort(e.target.value);
+                    if (deployAttempted) setDeployAttempted(false);
+                  }}
+                  onBlur={() => {
+                    if (einsatzort.trim())
+                      void updateLocation({
+                        id: r.id,
+                        label: einsatzort.trim(),
+                        at: messageTime,
+                      });
+                  }}
+                  className={clsx(
+                    "w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:outline-none",
+                    invalid
+                      ? "border-danger focus:ring-danger"
+                      : "border-border focus:ring-primary",
+                  )}
+                />
+                {invalid && (
+                  <span className="mt-0.5 block text-xs text-danger">
+                    {t("resource.validation.einsatzortRequired")}
+                  </span>
+                )}
+              </label>
+            );
+          })()}
+
+          {/* Successor select — needed for relieve */}
+          <label className="block">
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+              {t("resource.fields.successor")}
+            </span>
+            <select
+              value={successorId}
+              disabled={busy || successorCandidates.length === 0}
+              onChange={(e) => setSuccessorId(e.target.value)}
+              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+            >
+              {successorCandidates.length === 0 ? (
+                <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
+              ) : (
+                <>
+                  <option value="">{t("resource.fields.selectSuccessor")}</option>
+                  {successorCandidates.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {qualifiedFormation(
+                        t(`resource.formation.${candidate.formation}`),
+                        candidate.homeLocation?.name,
+                      )}
+                      {candidate.name ? ` — ${candidate.name}` : ""}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+          </label>
+
+          {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
+
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="success"
-              light
               disabled={busy}
               onClick={() => {
                 if (!hauptaufgabe.trim() || !einsatzort.trim()) {
@@ -1926,7 +1932,7 @@ function ResourceEditPanel({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="warning"
               light
               disabled={busy}
@@ -1936,7 +1942,7 @@ function ResourceEditPanel({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="light"
               disabled={busy || !successorId}
               onClick={() => void relieveAndAttach(successorId)}
@@ -1945,22 +1951,57 @@ function ResourceEditPanel({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="light"
               disabled={busy}
               onClick={() => void relieveAndAttach(null)}
             >
               {t("resource.actions.dismiss")}
             </Button>
-          </>
-        )}
-        {r.status === "EINGESETZT" && (
-          <>
+          </div>
+        </>
+      )}
+
+      {/* ── EINGESETZT ──────────────────────────────────────────── */}
+      {r.status === "EINGESETZT" && (
+        <>
+          {/* Successor select — needed for relieve */}
+          <label className="block">
+            <span className="mb-0.5 block text-xs font-medium text-fg-muted">
+              {t("resource.fields.successor")}
+            </span>
+            <select
+              value={successorId}
+              disabled={busy || successorCandidates.length === 0}
+              onChange={(e) => setSuccessorId(e.target.value)}
+              className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+            >
+              {successorCandidates.length === 0 ? (
+                <option value="">{t("resource.fields.noSuccessorAvailable")}</option>
+              ) : (
+                <>
+                  <option value="">{t("resource.fields.selectSuccessor")}</option>
+                  {successorCandidates.map((candidate) => (
+                    <option key={candidate.id} value={candidate.id}>
+                      {qualifiedFormation(
+                        t(`resource.formation.${candidate.formation}`),
+                        candidate.homeLocation?.name,
+                      )}
+                      {candidate.name ? ` — ${candidate.name}` : ""}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+          </label>
+
+          {actionError && <p className="text-xs text-danger">{t(`errors.${actionError.code}`)}</p>}
+
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="warning"
-              light
               disabled={busy}
               onClick={() => void standDown({ id: r.id, at: messageTime })}
             >
@@ -1968,7 +2009,7 @@ function ResourceEditPanel({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="light"
               disabled={busy || !successorId}
               onClick={() => void relieveAndAttach(successorId)}
@@ -1977,16 +2018,26 @@ function ResourceEditPanel({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               variant="light"
               disabled={busy}
               onClick={() => void relieveAndAttach(null)}
             >
               {t("resource.actions.dismiss")}
             </Button>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
+
+      {/* ── ABGELOEST ───────────────────────────────────────────── */}
+      {r.status === "ABGELOEST" && successor && (
+        <p className="text-xs text-fg-muted">
+          {t("resource.fields.relievedThrough")}:{" "}
+          {successor.name || t(`resource.size.${successor.size}`)}
+          {successor.contact &&
+            ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
+        </p>
+      )}
     </div>
   );
 }
@@ -2048,30 +2099,36 @@ function suggestSize(count: number): ResourceUnitSize | null {
 
 function AlertResourceForm({
   incidentId,
-  schadenplatzId,
+  schadenplaetze,
   sourceMessageId,
   messageTime,
   iconsLoaded,
   existingResources,
   onAlerted,
+  onReplaced,
+  onCancelled,
 }: {
   incidentId: string;
-  schadenplatzId: string;
+  schadenplaetze: SchadenplatzWithResources[];
   sourceMessageId?: string;
   messageTime?: Date;
   iconsLoaded: boolean;
   existingResources: Resource[];
-  onAlerted?: (id: string) => void;
+  onAlerted?: (tempId: string) => void;
+  onReplaced?: (tempId: string, realId: string) => void;
+  onCancelled?: (tempId: string) => void;
 }) {
   const { t } = useTranslation();
   const [alertResource, alertState] = useAlertResource();
 
+  const defaultSp = schadenplaetze.find((sp) => sp.isDefault);
   const [open, setOpen] = useState(false);
   const [formation, setFormation] = useState<ResourceFormation | null>(null);
   const [name, setName] = useState("");
   const [personnelCount, setPersonnelCount] = useState("");
   const [hauptaufgabe, setHauptaufgabe] = useState("");
   const [homeLocation, setHomeLocation] = useState("");
+  const [schadenplatzId, setSchadenplatzId] = useState(defaultSp?.id ?? "");
 
   const derivedSize = personnelCount ? suggestSize(Number(personnelCount)) : null;
   const previewBabsId =
@@ -2088,32 +2145,43 @@ function AlertResourceForm({
         homeLocation.trim().toLocaleLowerCase(),
   );
 
-  const handleSubmit = async () => {
-    if (identityConflict) return;
-    if (!formation || !derivedSize) return;
-    try {
-      const result = await alertResource({
-        incidentId,
-        schadenplatzId,
-        formation,
-        name: name.trim(),
-        size: derivedSize,
-        personnelCount: Number(personnelCount) || 0,
-        hauptaufgabe: hauptaufgabe.trim(),
-        homeLocation: { name: homeLocation.trim() },
-        sourceMessageId,
-        occurredAt: messageTime,
-      });
-      onAlerted?.(result.resourceId);
-      setOpen(false);
-      setFormation(null);
-      setName("");
-      setPersonnelCount("");
-      setHauptaufgabe("");
-      setHomeLocation("");
-    } catch {
-      // error shown via alertState.error
-    }
+  const handleSubmit = () => {
+    if (identityConflict || !formation || !derivedSize) return;
+
+    const tempId = `temp-alert-${Date.now()}`;
+    // alertResource applies the optimistic update synchronously before its first await,
+    // so by the time we call onAlerted below the resource is already in the Apollo cache.
+    const mutationPromise = alertResource({
+      incidentId,
+      schadenplatzId,
+      formation,
+      name: name.trim(),
+      size: derivedSize,
+      personnelCount: Number(personnelCount) || 0,
+      hauptaufgabe: hauptaufgabe.trim(),
+      homeLocation: { name: homeLocation.trim() },
+      sourceMessageId,
+      occurredAt: messageTime,
+      tempId,
+    });
+
+    // Immediately select and close — the optimistic resource is already in cache.
+    onAlerted?.(tempId);
+    setOpen(false);
+    setFormation(null);
+    setName("");
+    setPersonnelCount("");
+    setHauptaufgabe("");
+    setHomeLocation("");
+
+    void mutationPromise.then(
+      (result) => {
+        if (result.resourceId !== tempId) onReplaced?.(tempId, result.resourceId);
+      },
+      () => {
+        onCancelled?.(tempId);
+      },
+    );
   };
 
   if (!open) {
@@ -2242,6 +2310,24 @@ function AlertResourceForm({
         </p>
       )}
 
+      {/* Schadenplatz selector — shown when multiple exist */}
+      {schadenplaetze.length > 1 && (
+        <label className="block text-xs font-semibold text-fg-muted">
+          {t("schadenplatz.select")}
+          <select
+            value={schadenplatzId}
+            onChange={(e) => setSchadenplatzId(e.target.value)}
+            className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
+          >
+            {schadenplaetze.map((sp) => (
+              <option key={sp.id} value={sp.id}>
+                {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       {alertState.error && (
         <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
       )}
@@ -2255,7 +2341,7 @@ function AlertResourceForm({
           variant="primary"
           size="xs"
           disabled={!canSubmit || identityConflict || alertState.loading}
-          onClick={() => void handleSubmit()}
+          onClick={handleSubmit}
         >
           {alertState.loading ? t("resource.alerting") : t("resource.addResource")}
         </Button>
