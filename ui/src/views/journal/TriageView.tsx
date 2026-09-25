@@ -822,6 +822,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                     incidentId={incidentId}
                     schadenplatzId={effectiveSpIds[0] ?? ""}
                     sourceMessageId={message.id}
+                    messageTime={message.time}
                     iconsLoaded={iconsLoaded}
                     existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
                     onAlerted={(id) => {
@@ -1934,6 +1935,7 @@ function AlertResourceForm({
   incidentId,
   schadenplatzId,
   sourceMessageId,
+  messageTime,
   iconsLoaded,
   existingResources,
   onAlerted,
@@ -1941,6 +1943,7 @@ function AlertResourceForm({
   incidentId: string;
   schadenplatzId: string;
   sourceMessageId?: string;
+  messageTime?: Date;
   iconsLoaded: boolean;
   existingResources: Resource[];
   onAlerted?: (id: string) => void;
@@ -1984,6 +1987,7 @@ function AlertResourceForm({
         hauptaufgabe: hauptaufgabe.trim(),
         homeLocation: { name: homeLocation.trim() },
         sourceMessageId,
+        occurredAt: messageTime,
       });
       onAlerted?.(result.resourceId);
       setOpen(false);

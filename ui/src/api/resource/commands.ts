@@ -29,6 +29,7 @@ export interface AlertResourceArgs {
   contact?: { medium: ContactMedium; detail: string } | null;
   homeLocation?: { name: string; lat?: number | null; lng?: number | null } | null;
   sourceMessageId?: string | null;
+  occurredAt?: Date | null;
 }
 
 export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId: string }> {
@@ -55,6 +56,7 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
           contact: args.contact,
           homeLocation: args.homeLocation,
           sourceMessageId: args.sourceMessageId,
+          occurredAt: args.occurredAt?.toISOString() ?? null,
         },
       },
       optimisticResponse: {
