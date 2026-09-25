@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/helpers/sqlite"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
@@ -106,8 +107,8 @@ func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (out
 		).Scan(&seq)
 		if err != nil {
 			if isUniqueViolation(err) {
-				return nil, fmt.Errorf("%w: stream %s/%s version %d",
-					errOptimisticConflict, e.StreamType, e.StreamID, e.Version)
+				return nil, fmt.Errorf("%w: %w: stream %s/%s version %d",
+					shared.ErrConflict, errOptimisticConflict, e.StreamType, e.StreamID, e.Version)
 			}
 
 			return nil, fmt.Errorf("eventstore.Append insert: %w", err)
