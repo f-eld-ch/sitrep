@@ -136,6 +136,7 @@ interface ResourceSnapshot {
   personnelCount: number;
   hauptaufgabe: string;
   deploymentLabel: string | null;
+  successorId: string | null;
 }
 
 function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
@@ -159,6 +160,7 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
       deploymentLabel: ongoing
         ? (r.deploymentLocation?.label ?? activePeriod.deploymentLabel ?? null)
         : (activePeriod.deploymentLabel ?? null),
+      successorId: null,
     };
   }
 
@@ -168,6 +170,7 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
       personnelCount: r.personnelCount,
       hauptaufgabe: "",
       deploymentLabel: null,
+      successorId: r.successorId ?? null,
     };
   }
 
@@ -177,6 +180,7 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
       personnelCount: r.personnelCount,
       hauptaufgabe: "",
       deploymentLabel: null,
+      successorId: null,
     };
   }
 
@@ -185,6 +189,7 @@ function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
     personnelCount: r.personnelCount,
     hauptaufgabe: "",
     deploymentLabel: null,
+    successorId: null,
   };
 }
 
@@ -359,8 +364,8 @@ function TriageSummary(props: {
                           {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
                           {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
                         </span>
-                        {r.status === "ABGELOEST" && r.successorId && (() => {
-                          const succ = allResourcesById.get(r.successorId);
+                        {snap.status === "ABGELOEST" && snap.successorId && (() => {
+                          const succ = allResourcesById.get(snap.successorId);
                           if (!succ) return null;
                           return (
                             <span className="block truncate text-xs text-fg-muted/50">
