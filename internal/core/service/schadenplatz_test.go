@@ -1,13 +1,16 @@
 package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -173,4 +176,45 @@ func TestSchadenplatzService_MergeSchadenplatz_ClosedIncidentRejected(t *testing
 
 	err = spSvc.MergeSchadenplatz(ctx(), sp.ID, nil, testActor)
 	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}
+
+// ── Timestamp propagation ─────────────────────────────────────────────────────
+
+func setupSchadenplatzServicesWithStore(t *testing.T) (
+	inbound.IncidentService,
+	inbound.SchadenplatzService,
+	*inmem.EventStore,
+) {
+	t.Helper()
+
+	factory, store := testStack(t)
+
+	incRepo := eventstore.NewIncidentRepository(store)
+	layerRepo := eventstore.NewLayerRepository(store)
+	spRepo := eventstore.NewSchadenplatzRepository(store)
+
+	incSvc := factory.IncidentService(incRepo, layerRepo)
+	incSvc.WithSchadenplatzRepository(spRepo)
+
+	spSvc := factory.SchadenplatzService(spRepo, incRepo)
+
+	return incSvc, spSvc, store
+}
+
+func TestSchadenplatzService_CreateSchadenplatz_UsesProvidedOccurredAt(t *testing.T) {
+	incSvc, spSvc, store := setupSchadenplatzServicesWithStore(t)
+
+	customAt := testAt.Add(2 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Sektor A", &customAt, testActor)
+	require.NoError(t, err)
+
+	events, err := store.Load(context.Background(), "Schadenplatz", uuid.UUID(sp.ID))
+	require.NoError(t, err)
+	require.NotEmpty(t, events)
+
+	assert.Equal(t, customAt, events[len(events)-1].OccurredAt,
+		"Created event must carry the provided occurredAt, not clock.Now()")
 }

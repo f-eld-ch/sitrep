@@ -1,12 +1,16 @@
 package service_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -288,4 +292,135 @@ func TestResourceService_ReassignResource_SameSchadenplatzRejected(t *testing.T)
 	// Reassign to the same Schadenplatz the resource is already on.
 	_, err := resSvc.ReassignResource(ctx(), alerted.ID, alerted.SchadenplatzID, nil, testActor)
 	assert.Error(t, err, "reassigning to the same Schadenplatz must be rejected")
+}
+
+// ── Timestamp propagation ─────────────────────────────────────────────────────
+//
+// Each test verifies that when an explicit at/occurredAt is provided, the
+// resulting event carries that timestamp rather than the frozen clock value.
+
+// setupResourceServicesWithStore is like setupResourceServices but also
+// returns the underlying event store so tests can inspect event OccurredAt.
+func setupResourceServicesWithStore(t *testing.T) (
+	inbound.IncidentService,
+	inbound.SchadenplatzService,
+	inbound.ResourceService,
+	*inmem.EventStore,
+) {
+	t.Helper()
+
+	factory, store := testStack(t)
+
+	incRepo := eventstore.NewIncidentRepository(store)
+	layerRepo := eventstore.NewLayerRepository(store)
+	spRepo := eventstore.NewSchadenplatzRepository(store)
+	resRepo := eventstore.NewResourceRepository(store)
+
+	incSvc := factory.IncidentService(incRepo, layerRepo)
+	incSvc.WithSchadenplatzRepository(spRepo)
+
+	spSvc := factory.SchadenplatzService(spRepo, incRepo)
+	resSvc := factory.ResourceService(resRepo, incRepo, spRepo)
+
+	return incSvc, spSvc, resSvc, store
+}
+
+// lastEventAt loads all events for a resource stream and returns the OccurredAt
+// of the most recent one.
+func lastEventAt(t *testing.T, store *inmem.EventStore, id shared.ResourceID) time.Time {
+	t.Helper()
+
+	events, err := store.Load(context.Background(), "Resource", uuid.UUID(id))
+	require.NoError(t, err)
+	require.NotEmpty(t, events)
+
+	return events[len(events)-1].OccurredAt
+}
+
+func TestResourceService_AlertResource_UsesProvidedOccurredAt(t *testing.T) {
+	incSvc, _, resSvc, _ := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(2 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	input := alertInput(inc.IncidentID)
+	input.OccurredAt = &customAt
+
+	res, err := resSvc.AlertResource(ctx(), input, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, res.AlertedAt, "AlertedAt must reflect the provided OccurredAt, not clock.Now()")
+}
+
+func TestResourceService_ReassignResource_UsesProvidedAt(t *testing.T) {
+	incSvc, spSvc, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(3 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	sp, _ := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Sektor B", nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.ReassignResource(ctx(), alerted.ID, sp.ID, &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"ReassignedToSchadenplatz event must carry the provided at, not clock.Now()")
+}
+
+func TestResourceService_ChangeHauptaufgabe_UsesProvidedAt(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(4 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.ChangeHauptaufgabe(ctx(), alerted.ID, "Evakuierung", &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"HauptaufgabeChanged event must carry the provided at, not clock.Now()")
+}
+
+func TestResourceService_UpdatePersonnelCount_UsesProvidedAt(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(5 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.UpdatePersonnelCount(ctx(), alerted.ID, 12, &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"PersonnelCountUpdated event must carry the provided at, not clock.Now()")
+}
+
+func TestResourceService_UpdateDeploymentLocation_UsesProvidedAt(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(6 * time.Hour)
+	lat, lng := 47.0, 8.5
+	loc := &resource.DeploymentLocation{Lat: &lat, Lng: &lng, Label: "Nordzugang"}
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.UpdateDeploymentLocation(ctx(), alerted.ID, loc, &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"DeploymentLocationUpdated event must carry the provided at, not clock.Now()")
+}
+
+func TestResourceService_UpdateContact_UsesProvidedAt(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(7 * time.Hour)
+	contact := resource.Contact{Medium: resource.ContactMediumRadio, Detail: "CH-3"}
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.UpdateContact(ctx(), alerted.ID, contact, &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"ContactUpdated event must carry the provided at, not clock.Now()")
 }
