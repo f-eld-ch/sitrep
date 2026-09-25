@@ -409,6 +409,7 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.statusAt = d.At
 		r.stoodDownAt = &d.At
 		r.hauptaufgabe = ""
+		r.deploymentLocation = nil
 	case Relieved:
 		if n := len(r.deploymentHistory); n > 0 && r.deploymentHistory[n-1].EndedAt == nil {
 			r.deploymentHistory[n-1].EndedAt = &d.At

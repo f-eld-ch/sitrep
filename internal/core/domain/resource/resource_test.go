@@ -407,7 +407,7 @@ func TestResource_FullReplay(t *testing.T) {
 	assert.Equal(t, newSP, r2.SchadenplatzID())
 	assert.Equal(t, "Folgeversorgung", r2.Hauptaufgabe())
 	assert.Equal(t, 1, r2.PersonnelCount())
-	assert.Equal(t, loc, r2.DeploymentLocation())
+	assert.Nil(t, r2.DeploymentLocation())
 	assert.NotNil(t, r2.EinsatzBeginn())
 	assert.Equal(t, &predID, r2.PredecessorID())
 }
