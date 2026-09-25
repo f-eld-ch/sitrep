@@ -242,6 +242,49 @@ func (r *Resource) LinkSuccession(predecessorID shared.ResourceID, actor string,
 	return nil
 }
 
+// TakeOver atomically links this resource as successor, inherits the predecessor's
+// task and location, and advances to EINGESETZT — all within a single command.
+// The predecessor's state (hauptaufgabe, deploymentLocation) is supplied by the
+// service layer, which reads it directly from the relieved aggregate.
+func (r *Resource) TakeOver(
+	predecessorID shared.ResourceID,
+	hauptaufgabe string,
+	deploymentLocation *DeploymentLocation,
+	actor string,
+	at time.Time,
+) error {
+	if r.status == StatusAbgeloest {
+		return shared.ValidationError{Field: "status", Message: "cannot take over: resource is already relieved"}
+	}
+
+	if r.status == StatusEingesetzt {
+		return shared.ValidationError{Field: "status", Message: "cannot take over: resource is already deployed"}
+	}
+
+	if r.predecessorID != nil {
+		return shared.ValidationError{Field: "predecessorId", Message: "succession already linked"}
+	}
+
+	eventsourcing.TrackChange(r, SuccessionLinked{PredecessorID: predecessorID}, at, baseMeta(actor))
+
+	if hauptaufgabe != "" {
+		eventsourcing.TrackChange(r, HauptaufgabeChanged{Hauptaufgabe: hauptaufgabe}, at, baseMeta(actor))
+	}
+
+	if deploymentLocation != nil {
+		eventsourcing.TrackChange(r, DeploymentLocationUpdated{Location: deploymentLocation}, at, baseMeta(actor))
+	}
+
+	// TrackChange calls Transition immediately, so r.status reflects each event as it is applied.
+	if r.status == StatusAufgeboten {
+		eventsourcing.TrackChange(r, MarkedReady{At: at}, at, baseMeta(actor))
+	}
+
+	eventsourcing.TrackChange(r, Deployed{At: at, DeploymentLocation: r.deploymentLocation}, at, baseMeta(actor))
+
+	return nil
+}
+
 // Reassign moves the resource to a different Schadenplatz.
 func (r *Resource) Reassign(schadenplatzID shared.SchadenplatzID, actor string, at time.Time) error {
 	if r.status == StatusAbgeloest {

@@ -114,6 +114,7 @@ export {
   useAlertResource,
   useChangeHauptaufgabe,
   useDeployResource,
+  useHandOver,
   useIncidentResources,
   useMarkResourceReady,
   useReassignResource,

@@ -375,6 +375,137 @@ func TestResource_OwnerIncidentID(t *testing.T) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// TakeOver
+// ──────────────────────────────────────────────────────────────────────────────
+
+func TestResource_TakeOver(t *testing.T) {
+	predID := shared.ResourceID(uuid.New())
+
+	lat, lng := 46.8, 8.2
+	loc := &resource.DeploymentLocation{Lat: &lat, Lng: &lng, Label: "Nordzugang"}
+
+	t.Run("AUFGEBOTEN successor advances to EINGESETZT via EINSATZBEREIT", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.Equal(t, resource.StatusAufgeboten, r.Status())
+
+		err := r.TakeOver(predID, "Brandbekämpfung", nil, actor, at)
+		require.NoError(t, err)
+
+		assert.Equal(t, resource.StatusEingesetzt, r.Status())
+		require.NotNil(t, r.PredecessorID())
+		assert.Equal(t, predID, *r.PredecessorID())
+	})
+
+	t.Run("EINSATZBEREIT successor advances to EINGESETZT without extra MarkedReady", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.MarkReady(actor, at))
+		require.Equal(t, resource.StatusEinsatzbereit, r.Status())
+
+		pendingBefore := len(r.Root().PendingEvents())
+
+		err := r.TakeOver(predID, "Brandbekämpfung", nil, actor, at)
+		require.NoError(t, err)
+
+		assert.Equal(t, resource.StatusEingesetzt, r.Status())
+
+		// TakeOver on EINSATZBEREIT must emit: SuccessionLinked, HauptaufgabeChanged, Deployed (3 events)
+		// Not MarkedReady — it was already ready.
+		pendingAdded := len(r.Root().PendingEvents()) - pendingBefore
+		assert.Equal(t, 3, pendingAdded, "EINSATZBEREIT successor must not re-emit MarkedReady")
+	})
+
+	t.Run("hauptaufgabe is inherited when non-empty", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+
+		require.NoError(t, r.TakeOver(predID, "Evakuierung", nil, actor, at))
+
+		assert.Equal(t, "Evakuierung", r.Hauptaufgabe())
+	})
+
+	t.Run("empty hauptaufgabe is not overwritten", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+
+		require.NoError(t, r.TakeOver(predID, "", nil, actor, at))
+
+		// The resource keeps its own alerted hauptaufgabe ("Brandbekämpfung" from alerted fixture).
+		// An empty predecessor hauptaufgabe must not emit HauptaufgabeChanged.
+		assert.Equal(t, "Brandbekämpfung", r.Hauptaufgabe())
+	})
+
+	t.Run("deployment location is inherited when non-nil", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+
+		require.NoError(t, r.TakeOver(predID, "Brandbekämpfung", loc, actor, at))
+
+		require.NotNil(t, r.DeploymentLocation())
+		assert.Equal(t, loc.Label, r.DeploymentLocation().Label)
+	})
+
+	t.Run("nil deployment location is not set", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+
+		require.NoError(t, r.TakeOver(predID, "Brandbekämpfung", nil, actor, at))
+
+		assert.Nil(t, r.DeploymentLocation())
+	})
+
+	t.Run("ABGELOEST successor is rejected", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.Relieve(nil, actor, at))
+
+		err := r.TakeOver(predID, "", nil, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("EINGESETZT successor is rejected", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.MarkReady(actor, at))
+		require.NoError(t, r.Deploy(actor, at))
+
+		err := r.TakeOver(predID, "", nil, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("successor already linked to a predecessor is rejected", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		existingPred := shared.ResourceID(uuid.New())
+		require.NoError(t, r.LinkSuccession(existingPred, actor, at))
+
+		err := r.TakeOver(predID, "", nil, actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("state survives full event round-trip", func(t *testing.T) {
+		id := shared.ResourceID(uuid.New())
+		r := resource.New(id)
+		require.NoError(t, r.Alert(incidentID, schadenplatzID,
+			resource.FormationFW, "Gruppe Alpha", resource.UnitSizeGruppe, 9,
+			"Brandbekämpfung", nil, nil, nil, actor, at))
+		require.NoError(t, r.TakeOver(predID, "Evakuierung", loc, actor, at))
+
+		events := r.Root().PendingEvents()
+		r2 := replay(t, id, events)
+
+		assert.Equal(t, resource.StatusEingesetzt, r2.Status())
+		require.NotNil(t, r2.PredecessorID())
+		assert.Equal(t, predID, *r2.PredecessorID())
+		assert.Equal(t, "Evakuierung", r2.Hauptaufgabe())
+		require.NotNil(t, r2.DeploymentLocation())
+		assert.Equal(t, loc.Label, r2.DeploymentLocation().Label)
+		assert.NotNil(t, r2.EinsatzBeginn(), "EinsatzBeginn must be recorded on first deploy")
+	})
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Full replay round-trip
 // ──────────────────────────────────────────────────────────────────────────────
 

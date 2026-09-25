@@ -36,6 +36,7 @@ import {
   useAlertResource,
   useMarkResourceReady,
   useDeployResource,
+  useHandOver,
   useStandDownResource,
   useRelieveResource,
   useReassignResource,
@@ -194,6 +195,7 @@ function TriageSummary(props: {
   casualties: SchadenplatzCasualtyInput[];
   linkedResourceIds: string[];
   schadenplaetze: SchadenplatzWithResources[];
+  allResources: Resource[];
   iconsLoaded: boolean;
   onAdjust: () => void;
 }) {
@@ -203,14 +205,18 @@ function TriageSummary(props: {
     casualties,
     linkedResourceIds,
     schadenplaetze,
+    allResources,
     iconsLoaded,
     onAdjust,
   } = props;
   const { t, i18n } = useTranslation();
 
-  const allResources = schadenplaetze.flatMap((sp) => sp.resources);
+  // allResources is the flat incident-level list that includes ABGELOEST units;
+  // fall back to schadenplaetze resources for any id not found there.
+  const allResourcesById = new Map(allResources.map((r) => [r.id, r]));
+  const spResources = schadenplaetze.flatMap((sp) => sp.resources);
   const linkedResources = linkedResourceIds
-    .map((id) => allResources.find((r) => r.id === id))
+    .map((id) => allResourcesById.get(id) ?? spResources.find((r) => r.id === id))
     .filter(Boolean) as Resource[];
 
   const spCasualties = casualties
@@ -353,6 +359,20 @@ function TriageSummary(props: {
                           {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
                           {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
                         </span>
+                        {r.status === "ABGELOEST" && r.successorId && (() => {
+                          const succ = allResourcesById.get(r.successorId);
+                          if (!succ) return null;
+                          return (
+                            <span className="block truncate text-xs text-fg-muted/50">
+                              {t("resource.fields.relievedThrough")}{" "}
+                              {qualifiedFormation(
+                                t(`resource.formation.${succ.formation}`),
+                                succ.homeLocation?.name,
+                              )}
+                              {succ.name ? ` — ${succ.name}` : ""}
+                            </span>
+                          );
+                        })()}
                       </span>
                     </div>
                   );
@@ -639,6 +659,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
         schadenplaetze={
           resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : []
         }
+        allResources={resourcesResult.status === "ready" ? resourcesResult.data.resources : []}
         iconsLoaded={iconsLoaded}
         onAdjust={() => setEditing(true)}
       />
@@ -827,6 +848,9 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                 <>
                   <ResourcePicker
                     schadenplaetze={schadenplaetze}
+                    allResources={
+                      resourcesResult.status === "ready" ? resourcesResult.data.resources : []
+                    }
                     selectedIds={selectedResourceIds}
                     onToggle={toggleResourceId}
                     onAttach={(ids) =>
@@ -1392,6 +1416,7 @@ const RESOURCE_PAGE_SIZE = 5;
 
 function ResourcePicker({
   schadenplaetze,
+  allResources,
   selectedIds,
   onToggle,
   onAttach,
@@ -1400,6 +1425,7 @@ function ResourcePicker({
   prioritySpIds,
 }: {
   schadenplaetze: SchadenplatzWithResources[];
+  allResources: Resource[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onAttach: (ids: string[]) => void;
@@ -1411,6 +1437,12 @@ function ResourcePicker({
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(RESOURCE_PAGE_SIZE);
+
+  // Flat lookup including ABGELOEST — used so relieved units don't vanish from the selected list.
+  const allResourcesById = useMemo(
+    () => new Map(allResources.map((r) => [r.id, r])),
+    [allResources],
+  );
 
   const allAnnotated = useMemo(
     () =>
@@ -1424,9 +1456,20 @@ function ResourcePicker({
     [schadenplaetze, t],
   );
 
-  // Selected resources bypass the statusAt filter — the user explicitly chose them for this
-  // message, and their status may have changed during the triage session (e.g. ABGELOEST).
-  const selectedResources = allAnnotated.filter((r) => selectedIds.has(r.id));
+  // Selected resources: look up in allResourcesById first so ABGELOEST units remain visible
+  // after the SP-scoped query drops them. Fall back to allAnnotated for any resource not yet
+  // in the flat list (e.g. optimistic entries added before the network response).
+  const selectedResources = useMemo(
+    () =>
+      Array.from(selectedIds).flatMap((id) => {
+        const r = allResourcesById.get(id) ?? allAnnotated.find((a) => a.id === id);
+        if (!r) return [];
+        const sp = schadenplaetze.find((s) => s.id === r.schadenplatzId);
+        const _spName = sp ? (sp.isDefault ? t("schadenplatz.defaultHint") : sp.name) : "";
+        return [{ ...r, _spId: r.schadenplatzId, _spName }];
+      }),
+    [selectedIds, allResourcesById, allAnnotated, schadenplaetze, t],
+  );
 
   // Available: not yet selected, not ABGELOEST, alerted before message time.
   // Resources from the operator-selected Schadenplätze are sorted first.
@@ -1707,6 +1750,7 @@ function ResourceEditPanel({
   const [deploy, deployState] = useDeployResource();
   const [standDown, standDownState] = useStandDownResource();
   const [relieve, relieveState] = useRelieveResource();
+  const [handOver, handOverState] = useHandOver();
   const [reassign, reassignState] = useReassignResource();
   const [updateLocation, locationState] = useUpdateDeploymentLocation();
   const [updateContact, contactState] = useUpdateContact();
@@ -1744,34 +1788,19 @@ function ResourceEditPanel({
   };
 
   const relieveAndAttach = async (sid: string | null) => {
-    const successorResource = sid
-      ? schadenplaetze.flatMap((sp) => sp.resources).find((res) => res.id === sid)
-      : null;
-
-    await relieve({ id: r.id, successorId: sid, at: messageTime });
-    await clearSchadenplatz();
-
     if (sid) {
-      // Copy task and location from relieved resource to successor in parallel.
-      await Promise.all([
-        r.hauptaufgabe
-          ? changeHauptaufgabe({ id: sid, hauptaufgabe: r.hauptaufgabe, at: messageTime })
-          : Promise.resolve(),
-        r.deploymentLocation?.label
-          ? updateLocation({ id: sid, label: r.deploymentLocation.label, at: messageTime })
-          : Promise.resolve(),
-      ]);
-
-      // Advance successor to EINGESETZT (mark ready first if still AUFGEBOTEN).
-      if (successorResource?.status === "AUFGEBOTEN") {
-        await markReady({ id: sid, at: messageTime });
-      }
-      if (successorResource?.status !== "EINGESETZT") {
-        await deploy({ id: sid, at: messageTime });
-      }
+      // Single atomic backend call: relieves predecessor, inherits task/location,
+      // and deploys successor — all in one transaction.
+      await handOver({ id: r.id, successorId: sid, at: messageTime });
+      // Select both units immediately after handOver succeeds. The predecessor
+      // is ABGELOEST (excluded from SP-filtered views anyway), so clearSchadenplatz
+      // is skipped here — it would only fail and block the selection update.
+      onAttach([r.id, sid]);
+    } else {
+      await relieve({ id: r.id, successorId: null, at: messageTime });
+      await clearSchadenplatz();
+      onAttach([r.id]);
     }
-
-    onAttach(sid ? [r.id, sid] : [r.id]);
     onActionComplete();
   };
 
@@ -1780,6 +1809,7 @@ function ResourceEditPanel({
     deployState.loading ||
     standDownState.loading ||
     relieveState.loading ||
+    handOverState.loading ||
     reassignState.loading ||
     locationState.loading ||
     contactState.loading ||
@@ -1790,6 +1820,7 @@ function ResourceEditPanel({
     deployState.error ??
     standDownState.error ??
     relieveState.error ??
+    handOverState.error ??
     reassignState.error ??
     locationState.error ??
     contactState.error ??

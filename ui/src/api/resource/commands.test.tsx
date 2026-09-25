@@ -12,6 +12,9 @@ import { useCreateSchadenplatz } from "../schadenplatz";
 
 vi.mock("@apollo/client/react", () => ({
   useMutation: vi.fn(),
+  useApolloClient: vi.fn(() => ({
+    cache: { readFragment: vi.fn(() => null), identify: vi.fn(() => "") },
+  })),
 }));
 
 async function setupMutation(resolvedValue: unknown) {

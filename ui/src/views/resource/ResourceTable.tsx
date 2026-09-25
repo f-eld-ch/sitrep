@@ -30,9 +30,9 @@ function ResourcePrimaryRow({
   const { t } = useTranslation();
   const deployedAt = primaryPeriod ? primaryPeriod.startedAt : r.deployedAt;
   const relievedAt = primaryPeriod?.endedAt ?? (primaryPeriod === null ? r.relievedAt : null);
-  const hauptaufgabe = primaryPeriod ? (primaryPeriod.hauptaufgabe || "–") : (r.hauptaufgabe || "–");
+  const hauptaufgabe = primaryPeriod ? primaryPeriod.hauptaufgabe || "–" : r.hauptaufgabe || "–";
   const location = primaryPeriod?.endedAt
-    ? (primaryPeriod.deploymentLabel || "–")
+    ? primaryPeriod.deploymentLabel || "–"
     : deploymentLabel(r);
   return (
     <tr>

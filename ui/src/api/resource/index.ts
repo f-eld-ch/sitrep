@@ -3,6 +3,7 @@ export {
   useAlertResource,
   useChangeHauptaufgabe,
   useDeployResource,
+  useHandOver,
   useMarkResourceReady,
   useReassignResource,
   useRelieveResource,

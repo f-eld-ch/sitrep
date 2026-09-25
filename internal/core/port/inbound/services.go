@@ -421,9 +421,15 @@ type AlertResourceInput struct {
 	OccurredAt *time.Time
 }
 
+// HandOverState carries the result of a HandOver operation.
+type HandOverState struct {
+	Relieved  ResourceState
+	Successor ResourceState
+}
+
 // ResourceService is the driving port for Resource commands.
 //
-
+//nolint:interfacebloat // All methods operate on the Resource aggregate and belong together as a single port.
 type ResourceService interface {
 	AlertResource(ctx context.Context, input AlertResourceInput, actor identity.Actor) (ResourceState, error)
 	MarkResourceReady(
@@ -486,4 +492,11 @@ type ResourceService interface {
 		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
+	HandOver(
+		ctx context.Context,
+		predecessorID shared.ResourceID,
+		successorID shared.ResourceID,
+		at *time.Time,
+		actor identity.Actor,
+	) (HandOverState, error)
 }

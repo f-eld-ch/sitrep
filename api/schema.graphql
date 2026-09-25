@@ -244,6 +244,11 @@ type ResourceDeploymentPeriod {
 }
 
 """An operational unit assigned to a Schadenplatz."""
+type HandOverResult {
+  relieved: Resource!
+  successor: Resource!
+}
+
 type Resource {
   id: ID!
   incidentId: ID!
@@ -603,6 +608,10 @@ type Mutation {
 
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
+
+  """Relieve a resource and deploy its successor in one atomic operation,
+  transferring the task and deployment location to the successor."""
+  handOver(id: ID!, successorId: ID!, at: DateTime): HandOverResult!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

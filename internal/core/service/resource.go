@@ -433,6 +433,107 @@ func (s *ResourceService) simpleTransition(
 	return stateFromResource(res), nil
 }
 
+// HandOver relieves the predecessor and deploys the successor in a single transaction,
+// transferring the predecessor's task and location to the successor.
+// State is read directly from the aggregate — no read-model access.
+func (s *ResourceService) HandOver(
+	ctx context.Context,
+	predecessorID shared.ResourceID,
+	successorID shared.ResourceID,
+	at *time.Time,
+	actor identity.Actor,
+) (inbound.HandOverState, error) {
+	ctx, span := s.tracer.Start(ctx, "ResourceService.HandOver",
+		trace.WithAttributes(
+			attribute.String("predecessor.id", predecessorID.String()),
+			attribute.String("successor.id", successorID.String()),
+		))
+	defer span.End()
+
+	resolvedAt := s.resolveAt(at)
+
+	var predecessor, successor *resource.Resource
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		var err error
+
+		predecessor, err = s.repo.Load(ctx, predecessorID)
+		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(
+			ctx,
+			s.access,
+			actor,
+			predecessor.IncidentID(),
+			access.IncidentWrite,
+		); err != nil {
+			return err
+		}
+
+		inc, err := s.incidents.Load(ctx, predecessor.IncidentID())
+		if err != nil {
+			return err
+		}
+
+		if !inc.IsOpen() {
+			return shared.ErrIncidentNotOpen
+		}
+
+		successor, err = s.repo.Load(ctx, successorID)
+		if err != nil {
+			return err
+		}
+
+		// Relieve the predecessor; its hauptaufgabe and deploymentLocation remain set
+		// in memory after this call — Relieve does not clear them.
+		succID := successorID
+		if err := predecessor.Relieve(&succID, actor.Sub, resolvedAt); err != nil {
+			return err
+		}
+
+		// Take over: link, inherit task/location, advance to EINGESETZT.
+		if err := successor.TakeOver(
+			predecessorID,
+			predecessor.Hauptaufgabe(),
+			predecessor.DeploymentLocation(),
+			actor.Sub,
+			resolvedAt,
+		); err != nil {
+			return err
+		}
+
+		if _, err = s.repo.Save(ctx, predecessor); err != nil {
+			return err
+		}
+
+		if _, err = s.repo.Save(ctx, successor); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return inbound.HandOverState{}, err
+	}
+
+	span.SetAttributes(
+		attribute.String("predecessor.status", string(predecessor.Status())),
+		attribute.String("successor.status", string(successor.Status())),
+	)
+
+	_ = s.notifier.Notify(ctx)
+
+	return inbound.HandOverState{
+		Relieved:  stateFromResource(predecessor),
+		Successor: stateFromResource(successor),
+	}, nil
+}
+
 func stateFromResource(res *resource.Resource) inbound.ResourceState {
 	return inbound.ResourceState{
 		ID:                 res.ID(),

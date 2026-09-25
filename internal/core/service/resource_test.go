@@ -424,3 +424,131 @@ func TestResourceService_UpdateContact_UsesProvidedAt(t *testing.T) {
 	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
 		"ContactUpdated event must carry the provided at, not clock.Now()")
 }
+
+// ── HandOver ──────────────────────────────────────────────────────────────────
+
+func TestResourceService_HandOver_AufgeboteneSuccessor(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Handover Test", nil, nil, nil, testActor)
+
+	predInput := alertInput(inc.IncidentID)
+	predInput.Name = "Löschzug 1"
+	predInput.Hauptaufgabe = "Löschangriff"
+	predecessor, _ := resSvc.AlertResource(ctx(), predInput, testActor)
+
+	succInput := alertInput(inc.IncidentID)
+	succInput.Name = "Löschzug 2"
+	succInput.Hauptaufgabe = "Bereitstellung"
+	successor, err := resSvc.AlertResource(ctx(), succInput, testActor)
+	require.NoError(t, err)
+
+	state, err := resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
+	require.NoError(t, err)
+
+	// Predecessor must be ABGELOEST with successorID set.
+	assert.Equal(t, resource.StatusAbgeloest, state.Relieved.Status)
+	require.NotNil(t, state.Relieved.SuccessorID)
+	assert.Equal(t, successor.ID, *state.Relieved.SuccessorID)
+
+	// Successor must be EINGESETZT with predecessorID set.
+	assert.Equal(t, resource.StatusEingesetzt, state.Successor.Status)
+	require.NotNil(t, state.Successor.PredecessorID)
+	assert.Equal(t, predecessor.ID, *state.Successor.PredecessorID)
+
+	// Successor must inherit the predecessor's hauptaufgabe.
+	assert.Equal(t, "Löschangriff", state.Successor.Hauptaufgabe)
+}
+
+func TestResourceService_HandOver_EinsatzbereitSuccessor(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Handover Ready", nil, nil, nil, testActor)
+
+	predecessor, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	succInput := alertInput(inc.IncidentID)
+	succInput.Name = "Löschzug 2"
+	successor, _ := resSvc.AlertResource(ctx(), succInput, testActor)
+	_, err := resSvc.MarkResourceReady(ctx(), successor.ID, nil, testActor)
+	require.NoError(t, err)
+
+	state, err := resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
+	require.NoError(t, err)
+
+	assert.Equal(t, resource.StatusAbgeloest, state.Relieved.Status)
+	assert.Equal(t, resource.StatusEingesetzt, state.Successor.Status)
+}
+
+func TestResourceService_HandOver_InheritsDeploymentLocation(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	lat, lng := 46.9, 8.3
+	loc := &resource.DeploymentLocation{Lat: &lat, Lng: &lng, Label: "Abschnitt Mitte"}
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Location Inherit", nil, nil, nil, testActor)
+
+	predecessor, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	// Give the predecessor a deployment location before handing over.
+	_, err := resSvc.UpdateDeploymentLocation(ctx(), predecessor.ID, loc, nil, testActor)
+	require.NoError(t, err)
+
+	succInput := alertInput(inc.IncidentID)
+	succInput.Name = "Löschzug 2"
+	successor, _ := resSvc.AlertResource(ctx(), succInput, testActor)
+
+	state, err := resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
+	require.NoError(t, err)
+
+	require.NotNil(t, state.Successor.DeploymentLocation)
+	assert.Equal(t, "Abschnitt Mitte", state.Successor.DeploymentLocation.Label)
+}
+
+func TestResourceService_HandOver_UnknownPredecessorRejected(t *testing.T) {
+	_, _, resSvc := setupResourceServices(t)
+
+	_, err := resSvc.HandOver(ctx(), shared.ResourceID(newID()), shared.ResourceID(newID()), nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrNotFound)
+}
+
+func TestResourceService_HandOver_UnknownSuccessorRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	predecessor, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.HandOver(ctx(), predecessor.ID, shared.ResourceID(newID()), nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrNotFound)
+}
+
+func TestResourceService_HandOver_ClosedIncidentRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Closed", nil, nil, nil, testActor)
+	predecessor, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	succInput := alertInput(inc.IncidentID)
+	succInput.Name = "Löschzug 2"
+	successor, _ := resSvc.AlertResource(ctx(), succInput, testActor)
+
+	_, err := incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)
+	require.NoError(t, err)
+
+	_, err = resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}
+
+func TestResourceService_HandOver_AlreadyRelievedPredecessorRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	predecessor, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	succInput := alertInput(inc.IncidentID)
+	succInput.Name = "Löschzug 2"
+	successor, _ := resSvc.AlertResource(ctx(), succInput, testActor)
+
+	_, err := resSvc.RelieveResource(ctx(), predecessor.ID, nil, nil, testActor)
+	require.NoError(t, err)
+
+	_, err = resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
+	assert.Error(t, err, "handing over an already-relieved predecessor must fail")
+}

@@ -154,6 +154,12 @@ type GlobalRoleGrant struct {
 	Email   string     `json:"email"`
 }
 
+// An operational unit assigned to a Schadenplatz.
+type HandOverResult struct {
+	Relieved  *Resource `json:"relieved"`
+	Successor *Resource `json:"successor"`
+}
+
 type Incident struct {
 	ID        string      `json:"id"`
 	ParentID  *string     `json:"parentId,omitempty"`
@@ -246,7 +252,6 @@ type Mutation struct {
 type Query struct {
 }
 
-// An operational unit assigned to a Schadenplatz.
 type Resource struct {
 	ID                 string                      `json:"id"`
 	IncidentID         string                      `json:"incidentId"`

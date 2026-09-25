@@ -108,6 +108,11 @@ type ComplexityRoot struct {
 		Subject func(childComplexity int) int
 	}
 
+	HandOverResult struct {
+		Relieved  func(childComplexity int) int
+		Successor func(childComplexity int) int
+	}
+
 	Incident struct {
 		AccessMode      func(childComplexity int) int
 		CanDelete       func(childComplexity int) int
@@ -192,6 +197,7 @@ type ComplexityRoot struct {
 		GrantDefaultRole             func(childComplexity int, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		GrantGlobalRole              func(childComplexity int, subject string, role model.GlobalRole) int
 		GrantIncidentRole            func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
+		HandOver                     func(childComplexity int, id string, successorID string, at *time.Time) int
 		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
 		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
 		MergeSchadenplatz            func(childComplexity int, id string, messageTime *time.Time) int
@@ -376,6 +382,7 @@ type MutationResolver interface {
 	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string, at *time.Time) (*model.Resource, error)
 	UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput, at *time.Time) (*model.Resource, error)
 	UpdatePersonnelCount(ctx context.Context, id string, count int, at *time.Time) (*model.Resource, error)
+	HandOver(ctx context.Context, id string, successorID string, at *time.Time) (*model.HandOverResult, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
 	AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
 	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
@@ -650,6 +657,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.GlobalRoleGrant.Subject(childComplexity), true
+
+	case "HandOverResult.relieved":
+		if e.ComplexityRoot.HandOverResult.Relieved == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HandOverResult.Relieved(childComplexity), true
+	case "HandOverResult.successor":
+		if e.ComplexityRoot.HandOverResult.Successor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.HandOverResult.Successor(childComplexity), true
 
 	case "Incident.accessMode":
 		if e.ComplexityRoot.Incident.AccessMode == nil {
@@ -1159,6 +1179,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.GrantIncidentRole(childComplexity, args["incidentId"].(string), args["principalKind"].(model.AccessPrincipalKind), args["principalId"].(string), args["role"].(model.IncidentRole)), true
+	case "Mutation.handOver":
+		if e.ComplexityRoot.Mutation.HandOver == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_handOver_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.HandOver(childComplexity, args["id"].(string), args["successorId"].(string), args["at"].(*time.Time)), true
 	case "Mutation.linkIncidentParent":
 		if e.ComplexityRoot.Mutation.LinkIncidentParent == nil {
 			break
@@ -2257,6 +2288,11 @@ type ResourceDeploymentPeriod {
 }
 
 """An operational unit assigned to a Schadenplatz."""
+type HandOverResult {
+  relieved: Resource!
+  successor: Resource!
+}
+
 type Resource {
   id: ID!
   incidentId: ID!
@@ -2617,6 +2653,10 @@ type Mutation {
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
 
+  """Relieve a resource and deploy its successor in one atomic operation,
+  transferring the task and deployment location to the successor."""
+  handOver(id: ID!, successorId: ID!, at: DateTime): HandOverResult!
+
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 
   createLayer(incidentId: ID!, name: String!): Layer!
@@ -2777,6 +2817,16 @@ func (ec *executionContext) childFields_GlobalRoleGrant(ctx context.Context, fie
 		return ec.fieldContext_GlobalRoleGrant_email(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type GlobalRoleGrant", field.Name)
+}
+
+func (ec *executionContext) childFields_HandOverResult(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "relieved":
+		return ec.fieldContext_HandOverResult_relieved(ctx, field)
+	case "successor":
+		return ec.fieldContext_HandOverResult_successor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type HandOverResult", field.Name)
 }
 
 func (ec *executionContext) childFields_Incident(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -3592,6 +3642,36 @@ func (ec *executionContext) field_Mutation_grantIncidentRole_args(ctx context.Co
 		return nil, err
 	}
 	args["role"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_handOver_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "successorId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["successorId"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -5293,6 +5373,70 @@ func (ec *executionContext) _GlobalRoleGrant_email(ctx context.Context, field gr
 }
 func (ec *executionContext) fieldContext_GlobalRoleGrant_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("GlobalRoleGrant", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _HandOverResult_relieved(ctx context.Context, field graphql.CollectedField, obj *model.HandOverResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HandOverResult_relieved(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Relieved, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
+			return ec.marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResource(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HandOverResult_relieved(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HandOverResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Resource(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _HandOverResult_successor(ctx context.Context, field graphql.CollectedField, obj *model.HandOverResult) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_HandOverResult_successor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Successor, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
+			return ec.marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResource(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_HandOverResult_successor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HandOverResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Resource(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Incident_id(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
@@ -8310,6 +8454,50 @@ func (ec *executionContext) fieldContext_Mutation_updatePersonnelCount(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updatePersonnelCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_handOver(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_handOver(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().HandOver(ctx, fc.Args["id"].(string), fc.Args["successorId"].(string), fc.Args["at"].(*time.Time))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.HandOverResult) graphql.Marshaler {
+			return ec.marshalNHandOverResult2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐHandOverResult(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_handOver(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_HandOverResult(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_handOver_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -12748,6 +12936,49 @@ func (ec *executionContext) _GlobalRoleGrant(ctx context.Context, sel ast.Select
 	return out
 }
 
+var handOverResultImplementors = []string{"HandOverResult"}
+
+func (ec *executionContext) _HandOverResult(ctx context.Context, sel ast.SelectionSet, obj *model.HandOverResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, handOverResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HandOverResult")
+		case "relieved":
+			out.Values[i] = ec._HandOverResult_relieved(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "successor":
+			out.Values[i] = ec._HandOverResult_successor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var incidentImplementors = []string{"Incident"}
 
 func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet, obj *model.Incident) graphql.Marshaler {
@@ -13824,6 +14055,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updatePersonnelCount":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePersonnelCount(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "handOver":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_handOver(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -15461,6 +15699,16 @@ func (ec *executionContext) marshalNGlobalRoleGrant2ᚖgithubᚗcomᚋfᚑeldᚑ
 		return graphql.Null
 	}
 	return ec._GlobalRoleGrant(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNHandOverResult2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐHandOverResult(ctx context.Context, sel ast.SelectionSet, v *model.HandOverResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HandOverResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {

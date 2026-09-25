@@ -9,17 +9,31 @@ import type {
   DeployResourceMutationVariables,
   GetIncidentResourcesQuery,
   GetIncidentResourcesQueryVariables,
+  HandOverMutation,
+  HandOverMutationVariables,
   MarkResourceReadyMutation,
   MarkResourceReadyMutationVariables,
+  ReassignResourceMutation,
+  ReassignResourceMutationVariables,
   RelieveResourceMutation,
   RelieveResourceMutationVariables,
   StandDownResourceMutation,
   StandDownResourceMutationVariables,
+  UpdateContactMutation,
+  UpdateContactMutationVariables,
+  UpdateDeploymentLocationMutation,
+  UpdateDeploymentLocationMutationVariables,
   UpdatePersonnelCountMutation,
   UpdatePersonnelCountMutationVariables,
 } from "../../gql/next/graphql";
 
-export type { AlertResourceInput, GetIncidentResourcesQuery, GetIncidentResourcesQueryVariables };
+export type {
+  AlertResourceInput,
+  GetIncidentResourcesQuery,
+  GetIncidentResourcesQueryVariables,
+  HandOverMutation,
+  HandOverMutationVariables,
+};
 
 // ── Fragments ─────────────────────────────────────────────────────────────────
 
@@ -209,7 +223,10 @@ export const UPDATE_PERSONNEL_COUNT: TypedDocumentNode<
   }
 `;
 
-export const REASSIGN_RESOURCE = gql`
+export const REASSIGN_RESOURCE: TypedDocumentNode<
+  ReassignResourceMutation,
+  ReassignResourceMutationVariables
+> = gql`
   ${RESOURCE_FIELDS}
   mutation ReassignResource($id: ID!, $schadenplatzId: ID!, $at: DateTime) {
     reassignResource(id: $id, schadenplatzId: $schadenplatzId, at: $at) {
@@ -218,7 +235,10 @@ export const REASSIGN_RESOURCE = gql`
   }
 `;
 
-export const UPDATE_DEPLOYMENT_LOCATION = gql`
+export const UPDATE_DEPLOYMENT_LOCATION: TypedDocumentNode<
+  UpdateDeploymentLocationMutation,
+  UpdateDeploymentLocationMutationVariables
+> = gql`
   ${RESOURCE_FIELDS}
   mutation UpdateDeploymentLocation($id: ID!, $label: String!, $at: DateTime) {
     updateDeploymentLocation(id: $id, location: { label: $label }, at: $at) {
@@ -227,11 +247,28 @@ export const UPDATE_DEPLOYMENT_LOCATION = gql`
   }
 `;
 
-export const UPDATE_CONTACT = gql`
+export const UPDATE_CONTACT: TypedDocumentNode<
+  UpdateContactMutation,
+  UpdateContactMutationVariables
+> = gql`
   ${RESOURCE_FIELDS}
   mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!, $at: DateTime) {
     updateContact(id: $id, contact: { medium: $medium, detail: $detail }, at: $at) {
       ...ResourceFields
+    }
+  }
+`;
+
+export const HAND_OVER: TypedDocumentNode<HandOverMutation, HandOverMutationVariables> = gql`
+  ${RESOURCE_FIELDS}
+  mutation HandOver($id: ID!, $successorId: ID!, $at: DateTime) {
+    handOver(id: $id, successorId: $successorId, at: $at) {
+      relieved {
+        ...ResourceFields
+      }
+      successor {
+        ...ResourceFields
+      }
     }
   }
 `;
