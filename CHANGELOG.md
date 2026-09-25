@@ -4,8 +4,13 @@
 
 - *(access)* Add default access template and admin UI ([#1896](https://github.com/f-eld-ch/sitrep/issues/1896)) - ([1466784](https://github.com/f-eld-ch/sitrep/commit/1466784e99dcf1ebc6eb22a206b1948fd5da77d9))
 
+### 🐛 Bug Fixes
+
+- *(feature)* Retry on optimistic concurrency conflict in writeFeature ([#1901](https://github.com/f-eld-ch/sitrep/issues/1901)) - ([70836e6](https://github.com/f-eld-ch/sitrep/commit/70836e62e0b834d18aae275f8f73a3b58972d8fd))
+
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.10.0 to 6.11.2 in /ui ([#1899](https://github.com/f-eld-ch/sitrep/issues/1899)) - ([691fcab](https://github.com/f-eld-ch/sitrep/commit/691fcab946e943f10b0a7943fafd4eecbd68cd35))
 - *(deps)* Upgrade @f-eld-ch/babs-icons to v0.7.0 - ([c7c31ea](https://github.com/f-eld-ch/sitrep/commit/c7c31ea18195eaf971f69feafc158818daabd421))
 - *(deps)* Bump react-i18next from 17.0.14 to 17.0.15 in /ui ([#1895](https://github.com/f-eld-ch/sitrep/issues/1895)) - ([b0aede7](https://github.com/f-eld-ch/sitrep/commit/b0aede73672db3064333b4088107e2ed9c50f90c))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.0 to 3.51.3 ([#1891](https://github.com/f-eld-ch/sitrep/issues/1891)) - ([4259ebc](https://github.com/f-eld-ch/sitrep/commit/4259ebc17539c5cec4875b015610faf11460cc6a))
