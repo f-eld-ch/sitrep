@@ -2,10 +2,10 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
-import proj4 from "proj4";
 import { useCallback, useId, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
 import { coordinateFromString } from "utils/coordinates";
+import proj4 from "proj4";
 
 const BASE_URL = "https://api3.geo.admin.ch/rest/services/api/SearchServer";
 
@@ -69,11 +69,7 @@ function SearchControl() {
     )
       .then((response) => response.json())
       .then((data) => {
-        const searchResult: SearchResult = {
-          bbox: data.bbox,
-          features: data.features,
-        };
-        setSearchResults(searchResult.features);
+        setSearchResults(Array.isArray(data.features) ? data.features : []);
       })
       .catch((error) => {
         console.error("Error:", error);

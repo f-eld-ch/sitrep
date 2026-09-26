@@ -6,6 +6,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
+import { ReactPreview } from "./Markdown";
 
 type AccentKey = "warning" | "success" | "dark" | "danger" | "none";
 
@@ -73,9 +74,14 @@ function MessageRow(props: {
             {message.sender || "—"}
             {message.receiver ? ` → ${message.receiver}` : ""}
           </p>
-          <p className="line-clamp-2 text-xs leading-snug text-fg-muted">
-            {message.content || "…"}
-          </p>
+          <div
+            className={clsx(
+              "text-xs leading-snug text-fg-muted [&_*]:text-xs [&_li]:m-0 [&_ol]:m-0 [&_p]:m-0 [&_ul]:m-0",
+              (message.content?.length ?? 0) > 120 && "line-clamp-4",
+            )}
+          >
+            {message.content ? <ReactPreview content={message.content} /> : "…"}
+          </div>
         </div>
         <div className="flex shrink-0 flex-col items-end">
           <span className="text-xs text-fg-muted">{dayjs(message.time).format("HH:mm")}</span>
@@ -108,12 +114,14 @@ export interface MessageStackProps {
   /** The ID that should be highlighted and scrolled into center. */
   effectiveId: string | undefined;
   onSelect: (id: string | undefined) => void;
+  className?: string;
 }
 
 export const MessageStack = memo(function MessageStack({
   messages,
   effectiveId,
   onSelect,
+  className,
 }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -147,46 +155,54 @@ export const MessageStack = memo(function MessageStack({
   }, [effectiveId]);
 
   return (
-    <div className="flex w-72 shrink-0 flex-col lg:w-[36rem]">
-      <div className={clsx("flex justify-center py-1", showScrollUp ? "visible" : "invisible")}>
-        <button
-          type="button"
-          onClick={() => topSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
-        >
-          <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
-        </button>
+    <div className={clsx("flex flex-col", className)}>
+      <div className="flex justify-center py-1">
+        {showScrollUp ? (
+          <button
+            type="button"
+            onClick={() => topSentinelRef.current?.scrollIntoView({ behavior: "smooth" })}
+            className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm transition-colors hover:text-fg"
+          >
+            <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
+          </button>
+        ) : (
+          <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
+            <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
+          </div>
+        )}
       </div>
 
       <div
         ref={listRef}
         className="scrollbar-none flex flex-1 flex-col overflow-x-hidden overflow-y-auto"
       >
-        <div className="flex items-center justify-center gap-1.5 py-2 text-fg-muted/50">
-          <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
-          <span className="text-[11px]">{t("noNewMessagesAbove")}</span>
-        </div>
-        <div ref={topSentinelRef} className="h-px shrink-0" aria-hidden />
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center gap-1.5 px-4 py-2 text-fg-muted">
+            <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
+            <p className="text-sm">{t("noNewMessagesAbove")}</p>
+          </div>
+        ) : (
+          <>
+            <div ref={topSentinelRef} className="h-px shrink-0" aria-hidden />
 
-        {messages.map((msg) => (
-          <MessageRow
-            key={msg.id}
-            message={msg}
-            selected={msg.id === effectiveId}
-            onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
-            setRef={(el) => {
-              rowRefs.current[msg.id] = el;
-            }}
-          />
-        ))}
+            {messages.map((msg) => (
+              <MessageRow
+                key={msg.id}
+                message={msg}
+                selected={msg.id === effectiveId}
+                onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
+                setRef={(el) => {
+                  rowRefs.current[msg.id] = el;
+                }}
+              />
+            ))}
 
-        {messages.length === 0 && (
-          <p className="px-4 py-2 text-sm text-fg-muted">{t("noMessages")}</p>
+            <div ref={bottomSentinelRef} className="h-px shrink-0" aria-hidden />
+            <div className="flex items-center justify-center py-2 text-fg-muted/50">
+              <span className="text-[11px]">{t("noOlderMessages")}</span>
+            </div>
+          </>
         )}
-        <div ref={bottomSentinelRef} className="h-px shrink-0" aria-hidden />
-        <div className="flex items-center justify-center py-2 text-fg-muted/50">
-          <span className="text-[11px]">{t("noOlderMessages")}</span>
-        </div>
       </div>
 
       <div className={clsx("flex justify-center py-1", showScrollDown ? "visible" : "invisible")}>

@@ -6,6 +6,7 @@ package message
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,23 +32,24 @@ type Attachment struct {
 type Message struct {
 	root eventsourcing.Root
 
-	incidentID     shared.IncidentID
-	number         int
-	content        string
-	sender         string
-	senderDetail   string
-	receiver       string
-	receiverDetail string
-	medium         shared.Medium
-	time           time.Time
-	createdAt      time.Time
-	triage         shared.TriageStatus
-	priority       shared.PriorityStatus
-	divisionIDs    []shared.DivisionID
-	authorSub      *string
-	lastEditorSub  *string
-	deleted        bool
-	attachments    []Attachment
+	incidentID        shared.IncidentID
+	number            int
+	content           string
+	sender            string
+	senderDetail      string
+	receiver          string
+	receiverDetail    string
+	medium            shared.Medium
+	time              time.Time
+	createdAt         time.Time
+	triage            shared.TriageStatus
+	priority          shared.PriorityStatus
+	divisionIDs       []shared.DivisionID
+	linkedResourceIDs []shared.ResourceID
+	authorSub         *string
+	lastEditorSub     *string
+	deleted           bool
+	attachments       []Attachment
 }
 
 func New(id shared.MessageID) *Message {
@@ -67,21 +69,22 @@ func (m *Message) OwnerIncidentID() uuid.UUID { return uuid.UUID(m.incidentID) }
 // Queries
 // ──────────────────────────────────────────────────────────────────────────────
 
-func (m *Message) IncidentID() shared.IncidentID         { return m.incidentID }
-func (m *Message) Number() int                           { return m.number }
-func (m *Message) Content() string                       { return m.content }
-func (m *Message) Sender() string                        { return m.sender }
-func (m *Message) SenderDetail() string                  { return m.senderDetail }
-func (m *Message) Receiver() string                      { return m.receiver }
-func (m *Message) ReceiverDetail() string                { return m.receiverDetail }
-func (m *Message) Medium() shared.Medium                 { return m.medium }
-func (m *Message) Time() time.Time                       { return m.time }
-func (m *Message) CreatedAt() time.Time                  { return m.createdAt }
-func (m *Message) TriageStatus() shared.TriageStatus     { return m.triage }
-func (m *Message) PriorityStatus() shared.PriorityStatus { return m.priority }
-func (m *Message) DivisionIDs() []shared.DivisionID      { return m.divisionIDs }
-func (m *Message) AuthorSub() *string                    { return m.authorSub }
-func (m *Message) IsDeleted() bool                       { return m.deleted }
+func (m *Message) IncidentID() shared.IncidentID          { return m.incidentID }
+func (m *Message) Number() int                            { return m.number }
+func (m *Message) Content() string                        { return m.content }
+func (m *Message) Sender() string                         { return m.sender }
+func (m *Message) SenderDetail() string                   { return m.senderDetail }
+func (m *Message) Receiver() string                       { return m.receiver }
+func (m *Message) ReceiverDetail() string                 { return m.receiverDetail }
+func (m *Message) Medium() shared.Medium                  { return m.medium }
+func (m *Message) Time() time.Time                        { return m.time }
+func (m *Message) CreatedAt() time.Time                   { return m.createdAt }
+func (m *Message) TriageStatus() shared.TriageStatus      { return m.triage }
+func (m *Message) PriorityStatus() shared.PriorityStatus  { return m.priority }
+func (m *Message) DivisionIDs() []shared.DivisionID       { return m.divisionIDs }
+func (m *Message) LinkedResourceIDs() []shared.ResourceID { return m.linkedResourceIDs }
+func (m *Message) AuthorSub() *string                     { return m.authorSub }
+func (m *Message) IsDeleted() bool                        { return m.deleted }
 
 // Attachments returns a copy of the attachment list so callers cannot mutate aggregate state.
 func (m *Message) Attachments() []Attachment {
@@ -204,11 +207,12 @@ func (m *Message) Correct(
 	return nil
 }
 
-// Triage updates the triage state and division set atomically.
+// Triage updates the triage state, division set, and linked resources atomically.
 func (m *Message) Triage(
 	triage shared.TriageStatus,
 	priority shared.PriorityStatus,
 	divisionIDs []shared.DivisionID,
+	linkedResourceIDs []shared.ResourceID,
 	triagedBy string,
 	at time.Time,
 	actor string,
@@ -221,11 +225,18 @@ func (m *Message) Triage(
 		priority = shared.PriorityNormal
 	}
 
+	if triage == m.triage && priority == m.priority &&
+		slices.Equal(divisionIDs, m.divisionIDs) &&
+		slices.Equal(linkedResourceIDs, m.linkedResourceIDs) {
+		return nil
+	}
+
 	eventsourcing.TrackChange(m, Triaged{
-		Triage:      triage,
-		Priority:    priority,
-		DivisionIDs: divisionIDs,
-		TriagedBy:   triagedBy,
+		Triage:            triage,
+		Priority:          priority,
+		DivisionIDs:       divisionIDs,
+		LinkedResourceIDs: linkedResourceIDs,
+		TriagedBy:         triagedBy,
 	}, at, baseMeta(actor))
 
 	return nil
@@ -359,6 +370,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.triage = d.Triage
 		m.priority = d.Priority
 		m.divisionIDs = d.DivisionIDs
+		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.lastEditorSub = &d.TriagedBy
 	case Deleted:
 		m.deleted = true
@@ -376,6 +388,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.triage = d.Triage
 		m.priority = d.Priority
 		m.divisionIDs = d.DivisionIDs
+		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.authorSub = d.AuthorSub
 		m.lastEditorSub = d.LastEditorSub
 	case AttachmentAdded:

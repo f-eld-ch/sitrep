@@ -22,7 +22,7 @@ type MessageHandler struct{ db *sql.DB }
 func NewMessageHandler(db *sql.DB) *MessageHandler { return &MessageHandler{db: db} }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_message_attachment`); err != nil {
 		return err
@@ -80,8 +80,8 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(tx, ctx, `
 			INSERT INTO readmodel_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
-			   medium, msg_time, triage, priority, division_ids, author_sub, created_at, updated_at)
-			VALUES (?,?,?,?,?,?,?,?,?,?,'PENDING','NORMAL','[]',?,?,?)
+			   medium, msg_time, triage, priority, division_ids, linked_resource_ids, author_sub, created_at, updated_at)
+			VALUES (?,?,?,?,?,?,?,?,?,?,'PENDING','NORMAL','[]','[]',?,?,?)
 			ON CONFLICT (id) DO NOTHING`,
 			id, d.IncidentID, d.Number, d.Content, d.Sender, d.SenderDetail,
 			d.Receiver, d.ReceiverDetail, d.Medium, sqlite.FormatTime(d.Time),
@@ -107,13 +107,25 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			LastUpdatedAt  time.Time   `json:"lastUpdatedAt"`
 		}
 
+		type importedLinked struct {
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+		}
+
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
 
+		var dl importedLinked
+
+		_ = remarshal(e.Data, &dl)
+
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
+		}
+
+		if dl.LinkedResourceIDs == nil {
+			dl.LinkedResourceIDs = []uuid.UUID{}
 		}
 
 		createdAt := d.RecordedAt
@@ -133,19 +145,25 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			return fmt.Errorf("marshal division_ids: %w", err)
 		}
 
+		linkedJSON, err := json.Marshal(dl.LinkedResourceIDs)
+		if err != nil {
+			return fmt.Errorf("marshal linked_resource_ids: %w", err)
+		}
+
 		return exec(tx, ctx, `
 			INSERT INTO readmodel_message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
-			   medium, msg_time, triage, priority, division_ids, author_sub, last_editor_sub,
+			   medium, msg_time, triage, priority, division_ids, linked_resource_ids, author_sub, last_editor_sub,
 			   created_at, updated_at)
-			VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 			ON CONFLICT (id) DO UPDATE
 			  SET content = excluded.content, triage = excluded.triage,
 			      priority = excluded.priority, division_ids = excluded.division_ids,
+			      linked_resource_ids = excluded.linked_resource_ids,
 			      updated_at = excluded.updated_at`,
 			id, d.IncidentID, d.Number, d.Content, d.Sender, d.SenderDetail,
 			d.Receiver, d.ReceiverDetail, d.Medium, sqlite.FormatTime(d.Time),
-			d.Triage, d.Priority, string(divJSON), d.AuthorSub, d.LastEditorSub,
+			d.Triage, d.Priority, string(divJSON), string(linkedJSON), d.AuthorSub, d.LastEditorSub,
 			sqlite.FormatTime(createdAt), sqlite.FormatTime(updatedAt))
 
 	case "Corrected":
@@ -190,10 +208,11 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 	case "Triaged":
 		type triaged struct {
-			Triage      string      `json:"triage"`
-			Priority    string      `json:"priority"`
-			DivisionIDs []uuid.UUID `json:"divisionIds"`
-			TriagedBy   string      `json:"triagedBy"`
+			Triage            string      `json:"triage"`
+			Priority          string      `json:"priority"`
+			DivisionIDs       []uuid.UUID `json:"divisionIds"`
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+			TriagedBy         string      `json:"triagedBy"`
 		}
 
 		var d triaged
@@ -203,16 +222,31 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
 
+		if d.DivisionIDs == nil {
+			d.DivisionIDs = []uuid.UUID{}
+		}
+
+		if d.LinkedResourceIDs == nil {
+			d.LinkedResourceIDs = []uuid.UUID{}
+		}
+
 		divJSON, err := json.Marshal(d.DivisionIDs)
 		if err != nil {
 			return fmt.Errorf("marshal division_ids: %w", err)
 		}
 
+		linkedJSON, err := json.Marshal(d.LinkedResourceIDs)
+		if err != nil {
+			return fmt.Errorf("marshal linked_resource_ids: %w", err)
+		}
+
 		return exec(tx, ctx, `
 			UPDATE readmodel_message
-			SET triage = ?, priority = ?, division_ids = ?, last_editor_sub = ?, updated_at = ?
+			SET triage = ?, priority = ?, division_ids = ?, linked_resource_ids = ?,
+			    last_editor_sub = ?, updated_at = ?
 			WHERE id = ?`,
-			d.Triage, d.Priority, string(divJSON), d.TriagedBy, sqlite.FormatTime(e.OccurredAt), id)
+			d.Triage, d.Priority, string(divJSON), string(linkedJSON),
+			d.TriagedBy, sqlite.FormatTime(e.OccurredAt), id)
 
 	case "Deleted":
 		if err := exec(tx, ctx, `DELETE FROM readmodel_message WHERE id = ?`, id); err != nil {

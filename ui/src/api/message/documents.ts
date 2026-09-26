@@ -42,6 +42,7 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
         updatedAt
         triage
         priority
+        author
         divisions {
           id
           name
@@ -80,6 +81,7 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
       updatedAt
       triage
       priority
+      author
       divisions {
         id
         name
@@ -94,6 +96,15 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
         uploadedBy
         url
       }
+      schadenplatzCasualties {
+        schadenplatzId
+        vermisste
+        tote
+        verletzte
+        obdachlose
+        eingeschlossene
+      }
+      linkedResourceIds
     }
     incident(id: $incidentId) {
       divisions {
@@ -146,6 +157,7 @@ export const CREATE_MESSAGE: TypedDocumentNode<
       updatedAt
       triage
       priority
+      author
       divisions {
         id
         name
@@ -207,10 +219,16 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
     $triage: TriageStatus!
     $priority: PriorityStatus!
     $divisionIds: [ID!]!
+    $linkedResourceIds: [ID!]!
   ) {
     triageMessage(
       id: $id
-      input: { triage: $triage, priority: $priority, divisionIds: $divisionIds }
+      input: {
+        triage: $triage
+        priority: $priority
+        divisionIds: $divisionIds
+        linkedResourceIds: $linkedResourceIds
+      }
     ) {
       id
       triage
@@ -220,6 +238,7 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         name
         description
       }
+      linkedResourceIds
     }
   }
 `;

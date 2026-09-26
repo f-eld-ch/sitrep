@@ -10,6 +10,8 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 )
 
@@ -56,6 +58,18 @@ type GlobalAccessRepository interface {
 // The counter row is locked for the duration of the calling transaction.
 type MessageCounter interface {
 	Next(ctx context.Context, incidentID shared.IncidentID) (int, error)
+}
+
+// SchadenplatzRepository loads and saves the Schadenplatz aggregate.
+type SchadenplatzRepository interface {
+	Load(ctx context.Context, id shared.SchadenplatzID) (*schadenplatz.Schadenplatz, error)
+	Save(ctx context.Context, a *schadenplatz.Schadenplatz) (Cursor, error)
+}
+
+// ResourceRepository loads and saves the Resource aggregate.
+type ResourceRepository interface {
+	Load(ctx context.Context, id shared.ResourceID) (*resource.Resource, error)
+	Save(ctx context.Context, a *resource.Resource) (Cursor, error)
 }
 
 // IncidentHierarchyGuard serializes hierarchy invariant checks and writes, and

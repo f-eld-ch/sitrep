@@ -57,6 +57,7 @@ const userState = {
   isLoggedin: true,
   email: "test@example.com",
   username: "testuser",
+  sub: "",
 };
 
 describe("Navbar Component", () => {
@@ -75,8 +76,7 @@ describe("Navbar Component", () => {
       // Check if the logo is rendered
       expect(screen.getByAltText("Logo")).toBeInTheDocument();
 
-      // Check if the incident link is rendered
-      expect(screen.getByText("incident")).toBeInTheDocument();
+      // The incident menu only appears when an incident is active — not rendered here.
 
       // Check if the user email is rendered
       expect(screen.getAllByText(userState.email)[0]).toBeInTheDocument();
@@ -128,6 +128,7 @@ describe("Navbar Component", () => {
         isLoggedin: false,
         email: "",
         username: "",
+        sub: "",
       };
 
       render(

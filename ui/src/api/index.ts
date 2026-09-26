@@ -2,8 +2,8 @@
 // Components and views import ONLY from this module (via the "api" path alias).
 // @apollo/client must never be imported outside src/api/.
 
-export type { ApiError, ApiErrorCode } from "./errors";
-export { isApiError } from "./errors";
+export type { ApiErrorCode } from "./errors";
+export { ApiError, isApiError } from "./errors";
 export type { CommandHook, CommandState, QueryResult } from "./result";
 
 // Access control
@@ -79,6 +79,7 @@ export type {
   IncidentMessagesData,
   JournalMessagesData,
   MessageForTriageData,
+  SchadenplatzCasualtyInput,
   TriageMessageArgs,
   UpdateMessageArgs,
 } from "./message";
@@ -92,6 +93,41 @@ export {
   useUpdateMessage,
   useUploadAttachment,
 } from "./message";
+
+// Resource aggregate
+export type {
+  AlertResourceArgs,
+  ChildIncidentCasualties,
+  ContactMedium,
+  IncidentResourcesData,
+  Resource,
+  ResourceContact,
+  ResourceDeploymentLocation,
+  ResourceDeploymentPeriod,
+  ResourceFormation,
+  ResourceHomeLocation,
+  ResourceStatus,
+  ResourceUnitSize,
+  SchadenplatzWithResources,
+} from "./resource";
+export {
+  useAlertResource,
+  useChangeHauptaufgabe,
+  useDeployResource,
+  useHandOver,
+  useIncidentResources,
+  useMarkResourceReady,
+  useReassignResource,
+  useRelieveResource,
+  useStandDownResource,
+  useUpdateContact,
+  useUpdateDeploymentLocation,
+  useUpdatePersonnelCount,
+} from "./resource";
+
+// Schadenplatz aggregate
+export type { CasualtyDeltas as SchadenplatzCasualtyDeltas } from "./schadenplatz";
+export { useCreateSchadenplatz, useRecordCasualties } from "./schadenplatz";
 
 // Layer aggregate
 export type {

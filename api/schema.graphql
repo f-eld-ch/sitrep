@@ -151,6 +151,131 @@ type Attachment {
   url: String!
 }
 
+"""Accumulated casualty counts for a Schadenplatz."""
+type Casualties {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+"""A geographic damage site owned by an incident."""
+type Schadenplatz {
+  id: ID!
+  incidentId: ID!
+  name: String!
+  isDefault: Boolean!
+  """Raw GeoJSON for this site's boundary / marker, if set."""
+  geoJson: String
+  casualties: Casualties!
+  isMerged: Boolean!
+  """ID of the default Schadenplatz this was merged into, if merged."""
+  mergedInto: ID
+  """Active (non-relieved) resources assigned to this Schadenplatz."""
+  resources: [Resource!]!
+}
+
+"""The organisational formation type of a resource unit."""
+enum ResourceFormation {
+  FW
+  POL
+  ARMEE
+  ZS
+  TECHNB
+  SAN
+  OTHER
+}
+
+"""Standard Swiss civil-protection unit sizes."""
+enum ResourceUnitSize {
+  TRUPP
+  GRUPPE
+  ZUG
+  KOMPANIE
+  BATAILLON
+}
+
+"""Operational state of a resource."""
+enum ResourceStatus {
+  AUFGEBOTEN
+  EINSATZBEREIT
+  EINGESETZT
+  ABGELOEST
+}
+
+"""Communication medium for reaching a resource."""
+enum ContactMedium {
+  RADIO
+  PHONE
+  OTHER
+}
+
+"""Contact details for a resource."""
+type ResourceContact {
+  medium: ContactMedium!
+  detail: String!
+}
+
+"""Named home location with optional coordinates."""
+type ResourceHomeLocation {
+  name: String!
+  lat: Float
+  lng: Float
+}
+
+"""Precise operational deployment point within a Schadenplatz."""
+type DeploymentLocation {
+  lat: Float
+  lng: Float
+  label: String!
+}
+
+type ResourceDeploymentPeriod {
+  startedAt: DateTime!
+  endedAt: DateTime
+  schadenplatzId: ID!
+  formation: ResourceFormation!
+  name: String!
+  homeLocationName: String
+  deploymentLabel: String
+  hauptaufgabe: String!
+  personnelCount: Int!
+}
+
+"""An operational unit assigned to a Schadenplatz."""
+type HandOverResult {
+  relieved: Resource!
+  successor: Resource!
+}
+
+type Resource {
+  id: ID!
+  incidentId: ID!
+  schadenplatzId: ID!
+  formation: ResourceFormation!
+  name: String!
+  size: ResourceUnitSize!
+  personnelCount: Int!
+  hauptaufgabe: String!
+  contact: ResourceContact
+  homeLocation: ResourceHomeLocation
+  deploymentLocation: DeploymentLocation
+  status: ResourceStatus!
+  statusAt: DateTime!
+  alertedAt: DateTime!
+  readyAt: DateTime
+  deployedAt: DateTime
+  stoodDownAt: DateTime
+  relievedAt: DateTime
+  einsatzBeginn: DateTime
+  einsatzEnde: DateTime
+  predecessorId: ID
+  successorId: ID
+  sourceMessageId: ID
+  deploymentHistory: [ResourceDeploymentPeriod!]!
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -171,6 +296,12 @@ type Message {
   divisions: [Division!]!
   """Files attached to this message, oldest first."""
   attachments: [Attachment!]!
+  """Casualty deltas recorded for each Schadenplatz as part of this message's triage."""
+  schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
+  """Resource IDs linked to this message during triage."""
+  linkedResourceIds: [ID!]!
+  """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
+  author: String
 }
 
 type Incident {
@@ -197,6 +328,10 @@ type Incident {
   canManageAccess: Boolean!
   """Access mode of this incident."""
   accessMode: IncidentAccessMode!
+  """All non-merged Schadenplätze for this incident."""
+  schadenplaetze: [Schadenplatz!]!
+  """All resources for this incident, including resources owned by direct child incidents."""
+  resources: [Resource!]!
 }
 
 type Feature {
@@ -238,6 +373,13 @@ type Query {
   users: [User!]!
   globalRoles: [GlobalRoleGrant!]!
   myGlobalRoles: [GlobalRoleGrant!]!
+
+  """Single Schadenplatz by ID."""
+  schadenplatz(id: ID!): Schadenplatz
+
+  """Single Resource by ID."""
+  resource(id: ID!): Resource
+
   """Current default-access template applied to newly created incidents."""
   defaultAccess: DefaultAccess!
 }
@@ -301,6 +443,58 @@ input TriageMessageInput {
   priority: PriorityStatus!
   """IDs of divisions to assign to this message (replaces current set)."""
   divisionIds: [ID!]!
+  """Resource IDs to link to this message (replaces current set)."""
+  linkedResourceIds: [ID!]!
+}
+
+input ResourceContactInput {
+  medium: ContactMedium!
+  detail: String!
+}
+
+input ResourceHomeLocationInput {
+  name: String!
+  lat: Float
+  lng: Float
+}
+
+input DeploymentLocationInput {
+  lat: Float
+  lng: Float
+  label: String!
+}
+
+input AlertResourceInput {
+  incidentId: ID!
+  """Defaults to the incident's default Schadenplatz when omitted."""
+  schadenplatzId: ID
+  formation: ResourceFormation!
+  name: String!
+  size: ResourceUnitSize!
+  personnelCount: Int!
+  hauptaufgabe: String!
+  contact: ResourceContactInput
+  homeLocation: ResourceHomeLocationInput
+  sourceMessageId: ID
+  """Timestamp for the alert event; defaults to the server clock when omitted."""
+  occurredAt: DateTime
+}
+
+input CasualtyDeltasInput {
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
+}
+
+type SchadenplatzCasualtyEntry {
+  schadenplatzId: ID!
+  vermisste: Int!
+  tote: Int!
+  verletzte: Int!
+  obdachlose: Int!
+  eingeschlossene: Int!
 }
 
 # ─── Mutations ────────────────────────────────────────────────────────────────
@@ -365,6 +559,59 @@ type Mutation {
   deleteMessage(id: ID!): ID!
 
   removeAttachment(messageId: ID!, attachmentId: ID!): ID!
+
+  # ── Schadenplatz ─────────────────────────────────────────────────────────────
+
+  """Create a new Schadenplatz for an incident."""
+  createSchadenplatz(incidentId: ID!, name: String!, occurredAt: DateTime): Schadenplatz!
+
+  """Rename a Schadenplatz."""
+  renameSchadenplatz(id: ID!, name: String!): Schadenplatz!
+
+  """Set or clear the GeoJSON geometry of a Schadenplatz."""
+  setSchadenplatzGeometry(id: ID!, geoJson: String): Schadenplatz!
+
+  """Record casualty deltas (positive or negative) for a Schadenplatz."""
+  recordCasualties(id: ID!, sourceMessageId: ID!, occurredAt: DateTime, input: CasualtyDeltasInput!): Schadenplatz!
+
+  """Merge a Schadenplatz into the incident's default Schadenplatz."""
+  mergeSchadenplatz(id: ID!, messageTime: DateTime): ID!
+
+  # ── Resources ────────────────────────────────────────────────────────────────
+
+  """Alert (create) a resource and assign it to a Schadenplatz."""
+  alertResource(input: AlertResourceInput!): Resource!
+
+  """Mark a resource as ready for deployment (AUFGEBOTEN → EINSATZBEREIT)."""
+  markResourceReady(id: ID!, at: DateTime): Resource!
+
+  """Deploy a resource (EINSATZBEREIT → EINGESETZT)."""
+  deployResource(id: ID!, at: DateTime): Resource!
+
+  """Stand a resource down temporarily (EINGESETZT → EINSATZBEREIT)."""
+  standDownResource(id: ID!, at: DateTime): Resource!
+
+  """Permanently relieve a resource. successorId links the replacing resource."""
+  relieveResource(id: ID!, successorId: ID, at: DateTime): Resource!
+
+  """Move a resource to a different Schadenplatz."""
+  reassignResource(id: ID!, schadenplatzId: ID!, at: DateTime): Resource!
+
+  """Set or clear the precise deployment position of a resource."""
+  updateDeploymentLocation(id: ID!, location: DeploymentLocationInput, at: DateTime): Resource!
+
+  """Update the primary task description of a resource."""
+  changeHauptaufgabe(id: ID!, hauptaufgabe: String!, at: DateTime): Resource!
+
+  """Update the contact details of a resource."""
+  updateContact(id: ID!, contact: ResourceContactInput!, at: DateTime): Resource!
+
+  """Correct the headcount of a resource."""
+  updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
+
+  """Relieve a resource and deploy its successor in one atomic operation,
+  transferring the task and deployment location to the successor."""
+  handOver(id: ID!, successorId: ID!, at: DateTime): HandOverResult!
 
   # ── Map / Layers ─────────────────────────────────────────────────────────────
 

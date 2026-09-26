@@ -175,7 +175,7 @@ func TestMessage_Triage(t *testing.T) {
 
 	t.Run("triage replaces division set atomically", func(t *testing.T) {
 		m := replay(t, id, []eventsourcing.Event{recorded(id)})
-		err := m.Triage(shared.TriageDone, shared.PriorityHigh, []shared.DivisionID{divID}, actor, at, actor)
+		err := m.Triage(shared.TriageDone, shared.PriorityHigh, []shared.DivisionID{divID}, nil, actor, at, actor)
 		require.NoError(t, err)
 		assert.Equal(t, shared.TriageDone, m.TriageStatus())
 		assert.Equal(t, shared.PriorityHigh, m.PriorityStatus())
@@ -185,7 +185,7 @@ func TestMessage_Triage(t *testing.T) {
 
 	t.Run("needs more information resets priority to normal", func(t *testing.T) {
 		m := replay(t, id, []eventsourcing.Event{recorded(id)})
-		err := m.Triage(shared.TriageMoreInfo, shared.PriorityHigh, nil, actor, at, actor)
+		err := m.Triage(shared.TriageMoreInfo, shared.PriorityHigh, nil, nil, actor, at, actor)
 		require.NoError(t, err)
 		assert.Equal(t, shared.PriorityNormal, m.PriorityStatus())
 	})
@@ -195,7 +195,7 @@ func TestMessage_Triage(t *testing.T) {
 		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))
 		m.Root().ClearPending()
 
-		err := m.Triage(shared.TriageDone, shared.PriorityHigh, nil, actor, at, actor)
+		err := m.Triage(shared.TriageDone, shared.PriorityHigh, nil, nil, actor, at, actor)
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
 }

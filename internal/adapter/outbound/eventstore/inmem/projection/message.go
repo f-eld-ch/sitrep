@@ -30,24 +30,25 @@ var _ Handler = (*MessageHandler)(nil)
 
 // MessageRow mirrors readmodel.message.
 type MessageRow struct {
-	ID             uuid.UUID
-	IncidentID     uuid.UUID
-	Number         int
-	Content        string
-	Sender         string
-	SenderDetail   string
-	Receiver       string
-	ReceiverDetail string
-	Medium         string
-	MsgTime        time.Time
-	Triage         string
-	Priority       string
-	DivisionIDs    []uuid.UUID
-	AuthorSub      *string
-	LastEditorSub  *string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	Deleted        bool
+	ID                uuid.UUID
+	IncidentID        uuid.UUID
+	Number            int
+	Content           string
+	Sender            string
+	SenderDetail      string
+	Receiver          string
+	ReceiverDetail    string
+	Medium            string
+	MsgTime           time.Time
+	Triage            string
+	Priority          string
+	DivisionIDs       []uuid.UUID
+	LinkedResourceIDs []uuid.UUID
+	AuthorSub         *string
+	LastEditorSub     *string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	Deleted           bool
 }
 
 // MessageHandler maintains an in-memory projection of the readmodel.message
@@ -66,7 +67,7 @@ func NewMessageHandler() *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -123,22 +124,23 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 
 		authorSub := d.AuthorSub
 		h.rows[id] = &MessageRow{
-			ID:             id,
-			IncidentID:     incidentID,
-			Number:         d.Number,
-			Content:        d.Content,
-			Sender:         d.Sender,
-			SenderDetail:   d.SenderDetail,
-			Receiver:       d.Receiver,
-			ReceiverDetail: d.ReceiverDetail,
-			Medium:         d.Medium,
-			MsgTime:        d.Time,
-			Triage:         "PENDING",
-			Priority:       "NORMAL",
-			DivisionIDs:    []uuid.UUID{},
-			AuthorSub:      &authorSub,
-			CreatedAt:      e.OccurredAt,
-			UpdatedAt:      e.OccurredAt,
+			ID:                id,
+			IncidentID:        incidentID,
+			Number:            d.Number,
+			Content:           d.Content,
+			Sender:            d.Sender,
+			SenderDetail:      d.SenderDetail,
+			Receiver:          d.Receiver,
+			ReceiverDetail:    d.ReceiverDetail,
+			Medium:            d.Medium,
+			MsgTime:           d.Time,
+			Triage:            "PENDING",
+			Priority:          "NORMAL",
+			DivisionIDs:       []uuid.UUID{},
+			LinkedResourceIDs: []uuid.UUID{},
+			AuthorSub:         &authorSub,
+			CreatedAt:         e.OccurredAt,
+			UpdatedAt:         e.OccurredAt,
 		}
 
 	case "Corrected":
@@ -194,10 +196,11 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 
 	case "Triaged":
 		var d struct {
-			Triage      string      `json:"triage"`
-			Priority    string      `json:"priority"`
-			DivisionIDs []uuid.UUID `json:"divisionIds"`
-			TriagedBy   string      `json:"triagedBy"`
+			Triage            string      `json:"triage"`
+			Priority          string      `json:"priority"`
+			DivisionIDs       []uuid.UUID `json:"divisionIds"`
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+			TriagedBy         string      `json:"triagedBy"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -208,9 +211,14 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			return nil
 		}
 
+		if d.LinkedResourceIDs == nil {
+			d.LinkedResourceIDs = []uuid.UUID{}
+		}
+
 		row.Triage = d.Triage
 		row.Priority = priorityForTriage(d.Triage, d.Priority)
 		row.DivisionIDs = d.DivisionIDs
+		row.LinkedResourceIDs = d.LinkedResourceIDs
 		row.LastEditorSub = &d.TriagedBy
 		row.UpdatedAt = e.OccurredAt
 

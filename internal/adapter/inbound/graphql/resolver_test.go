@@ -63,7 +63,9 @@ func newTestStack(t *testing.T) *testStack {
 		incHandler, divHandler, msgHandler, layerHandler,
 	})
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler)
+	spHandler := projection.NewSchadenplatzHandler()
+	resourceHandler := projection.NewResourceHandler()
+	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler)
 
 	r := &gqlresolver.Resolver{
 		Incidents: incidentSvc,
@@ -1011,6 +1013,8 @@ func newAccessTestStack(t *testing.T) *testStack {
 	divHandler := projection.NewIncidentDivisionHandler()
 	msgHandler := projection.NewMessageHandler()
 	layerHandler := projection.NewLayerFeaturesHandler()
+	spHandler := projection.NewSchadenplatzHandler()
+	resourceHandler := projection.NewResourceHandler()
 	accessHandler := projection.NewAccessHandler()
 
 	accessChecker := inmemstore.NewIncidentAccessChecker(accessHandler)
@@ -1040,10 +1044,18 @@ func newAccessTestStack(t *testing.T) *testStack {
 	accessSvc := factory.AccessService()
 
 	proj := projection.NewProjector(store, []projection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler, accessHandler,
+		incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler, accessHandler,
 	})
 
-	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, accessChecker)
+	queries := inmemqueries.NewQueries(
+		incHandler,
+		divHandler,
+		msgHandler,
+		layerHandler,
+		spHandler,
+		resourceHandler,
+		accessChecker,
+	)
 
 	r := &gqlresolver.Resolver{
 		Incidents:             incidentSvc,

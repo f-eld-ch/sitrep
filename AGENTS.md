@@ -547,6 +547,25 @@ Migrations live in `migrations/`. Use goose conventions:
   m.Source = "00004_import.go"
   ```
 
+### Postgres and SQLite parity
+
+SQLite was introduced with commit `cc25fbb8` on 2026-09-13. Before that boundary, Postgres-only
+historical migrations are expected: `00004_import.go` imports legacy Hasura data and
+`00013_backfill_incident_access.go` repairs pre-RBAC Postgres data. SQLite was introduced after
+RBAC and does not need either migration.
+
+From the SQLite introduction onward, migrations must be created and maintained for Postgres and
+SQLite in sync. This includes schema changes, read-model tables and columns, indexes, and data
+backfills. SQL syntax may differ between dialects, and migration numbers may differ, but the
+resulting schema and application-visible behavior must remain equivalent. A migration that adds
+or repairs data in one backend requires a corresponding migration in the other backend; document
+any deliberate exception here and in the migration source.
+
+When adding a migration, update both `migrations/postgres/` and `migrations/sqlite/`, register Go
+migrations in the matching `postgres.go` and `sqlite.go`, and test both migration sets with their
+respective migration tests. Do not assume a squashed SQLite schema makes a later Postgres
+migration unnecessary: existing SQLite databases still need an upgrade migration.
+
 Migrations run automatically on `go run . migrate up`. Never apply schema changes by hand against
 the dev database — they will be lost on the next `migrate up` run.
 

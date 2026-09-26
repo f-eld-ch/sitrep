@@ -35,10 +35,13 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
 
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
+  /** Server-provided detail message, distinct from the localised default. */
+  readonly detail?: string;
 
-  constructor(code: ApiErrorCode, message?: string) {
-    super(message ?? DEFAULT_MESSAGES[code]);
+  constructor(code: ApiErrorCode, detail?: string) {
+    super(detail ?? DEFAULT_MESSAGES[code]);
     this.code = code;
+    this.detail = detail;
     this.name = "ApiError";
   }
 }

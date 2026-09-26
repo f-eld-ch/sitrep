@@ -112,6 +112,23 @@ func TestEventStore_Append_ClearsPending(t *testing.T) {
 	assert.Empty(t, a.Root().PendingEvents())
 }
 
+func TestEventStore_Append_AdvancesAggregateVersion(t *testing.T) {
+	s := inmem.NewEventStore()
+	a := newWidget(uuid.New())
+	track(a, WidgetCreated{Name: "Y"})
+
+	_, err := s.Append(bg, a)
+	require.NoError(t, err)
+	assert.Equal(t, 1, a.Root().Version())
+
+	track(a, WidgetRenamed{Name: "Z"})
+	require.Len(t, a.Root().PendingEvents(), 1)
+	assert.Equal(t, 2, a.Root().PendingEvents()[0].Version)
+
+	_, err = s.Append(bg, a)
+	require.NoError(t, err)
+}
+
 func TestEventStore_Append_OptimisticConflict(t *testing.T) {
 	s := inmem.NewEventStore()
 

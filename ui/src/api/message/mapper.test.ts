@@ -38,6 +38,7 @@ const WIRE_MESSAGE: WireMessage = {
   priority: "NORMAL",
   divisions: [WIRE_DIVISION],
   attachments: [],
+  author: null,
 };
 
 describe("toAttachment", () => {

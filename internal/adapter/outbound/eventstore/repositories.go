@@ -15,6 +15,8 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -29,6 +31,8 @@ var (
 	_ outbound.IncidentAccessRepository = (*IncidentAccessRepository)(nil)
 	_ outbound.AccessGroupRepository    = (*AccessGroupRepository)(nil)
 	_ outbound.GlobalAccessRepository   = (*GlobalAccessRepository)(nil)
+	_ outbound.SchadenplatzRepository   = (*SchadenplatzRepository)(nil)
+	_ outbound.ResourceRepository       = (*ResourceRepository)(nil)
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -210,6 +214,65 @@ func (r *FeatureRepository) Save(ctx context.Context, a *feature.Feature) (outbo
 	cursor, err := r.store.Append(ctx, a)
 	if err != nil {
 		return nil, fmt.Errorf("feature repository save %s: %w", a.Root().ID(), err)
+	}
+
+	return cursor, nil
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Schadenplatz
+// ──────────────────────────────────────────────────────────────────────────────
+
+type SchadenplatzRepository struct{ store outbound.EventStore }
+
+func NewSchadenplatzRepository(store outbound.EventStore) *SchadenplatzRepository {
+	return &SchadenplatzRepository{store: store}
+}
+
+func (r *SchadenplatzRepository) Load(
+	ctx context.Context,
+	id shared.SchadenplatzID,
+) (*schadenplatz.Schadenplatz, error) {
+	s := schadenplatz.New(id)
+	if err := loadAggregate(ctx, r.store, s, uuid.UUID(id)); err != nil {
+		return nil, fmt.Errorf("schadenplatz repository load %s: %w", id, err)
+	}
+
+	return s, nil
+}
+
+func (r *SchadenplatzRepository) Save(ctx context.Context, a *schadenplatz.Schadenplatz) (outbound.Cursor, error) {
+	cursor, err := r.store.Append(ctx, a)
+	if err != nil {
+		return nil, fmt.Errorf("schadenplatz repository save %s: %w", a.Root().ID(), err)
+	}
+
+	return cursor, nil
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Resource
+// ──────────────────────────────────────────────────────────────────────────────
+
+type ResourceRepository struct{ store outbound.EventStore }
+
+func NewResourceRepository(store outbound.EventStore) *ResourceRepository {
+	return &ResourceRepository{store: store}
+}
+
+func (r *ResourceRepository) Load(ctx context.Context, id shared.ResourceID) (*resource.Resource, error) {
+	res := resource.New(id)
+	if err := loadAggregate(ctx, r.store, res, uuid.UUID(id)); err != nil {
+		return nil, fmt.Errorf("resource repository load %s: %w", id, err)
+	}
+
+	return res, nil
+}
+
+func (r *ResourceRepository) Save(ctx context.Context, a *resource.Resource) (outbound.Cursor, error) {
+	cursor, err := r.store.Append(ctx, a)
+	if err != nil {
+		return nil, fmt.Errorf("resource repository save %s: %w", a.Root().ID(), err)
 	}
 
 	return cursor, nil

@@ -5,6 +5,7 @@
   "all": "all",
   "assignPriority": "assign priority",
   "close": "close",
+  "cancel": "Cancel",
   "closedAt": "closed",
   "create": "create",
   "createIncident": "create new incident",
@@ -50,6 +51,17 @@
   "keyMessage": "Key message",
   "stepPersonen": "People",
   "stepMittel": "Resources",
+  "stepSchadenplatz": "Location",
+  "schadenplatz": {
+    "select": "Select location",
+    "selectHint": "Does this message concern a specific location?",
+    "defaultHint": "No specific Schadenplatz",
+    "new": "Create new",
+    "namePlaceholder": "Location name",
+    "create": "Create",
+    "defaultLabel": "Default",
+    "noneCreated": "No location has been created yet"
+  },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
@@ -149,6 +161,7 @@
   "save": "save",
   "saveMoreInfo": "Needs more information",
   "saveTriage": "Complete triage",
+  "triageAdjust": "Adjust triage",
   "triageMessage": "Triage",
   "short": "short",
   "showClosed": "show closed",
@@ -161,6 +174,11 @@
     "MOREINFO": "more information needed",
     "PENDING": "pending",
     "RESET": "reset"
+  },
+  "messageStack": {
+    "filterUntriaged": "Untriaged",
+    "filterKeyMessage": "Key messages",
+    "filterMine": "Mine"
   },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
@@ -202,6 +220,24 @@
       "name": "Situation",
       "description": "Situation Desk Officer"
     }
+  },
+  "casualties": {
+    "childIncidents": "Child incidents",
+    "vermisste": "Missing",
+    "tote": "Dead",
+    "verletzte": "Injured",
+    "obdachlose": "Homeless",
+    "eingeschlossene": "Trapped",
+    "summary": "Person Summary",
+    "overview": "Casualties",
+    "thisIncident": "This incident",
+    "none": "No casualties recorded",
+    "byLocation": "By location"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "priorityMessages": "High-priority messages",
+    "noPriorityMessages": "No high-priority messages"
   },
   "errorPage": {
     "title": "Unexpected Error",
@@ -337,6 +373,83 @@
     "groups": "Groups",
     "globalRoles": "Global roles",
     "defaultAccess": "Default access"
+  },
+  "resource": {
+    "childIncident": "Child incident",
+    "formation": {
+      "FW": "Fire Brigade",
+      "POL": "Police",
+      "ARMEE": "Army",
+      "ZS": "Civil Protection",
+      "TECHNB": "Technical Services",
+      "SAN": "Medical Services",
+      "OTHER": "Other"
+    },
+    "size": {
+      "TRUPP": "Section",
+      "GRUPPE": "Group",
+      "ZUG": "Platoon",
+      "KOMPANIE": "Company",
+      "BATAILLON": "Battalion"
+    },
+    "status": {
+      "AUFGEBOTEN": "Alerted",
+      "EINSATZBEREIT": "Ready",
+      "EINGESETZT": "Deployed",
+      "ABGELOEST": "Relieved"
+    },
+    "actions": {
+      "markReady": "Mark ready",
+      "deploy": "Deploy",
+      "standDown": "Operation complete",
+      "relieve": "Relieve",
+      "dismiss": "Dismiss",
+      "alert": "Alert"
+    },
+    "fields": {
+      "name": "Resource name",
+      "namePlaceholder": "Resource name",
+      "formation": "Formation",
+      "partner": "Partner",
+      "size": "Unit size",
+      "personnelCount": "Personnel",
+      "successor": "Relieved by",
+      "selectSuccessor": "Select replacement formation",
+      "relievedThrough": "Relieved by",
+      "successorMarker": "Replacement",
+      "noSuccessorAvailable": "No other formation available",
+      "hauptaufgabe": "Main task",
+      "contact": "Contact",
+      "homeLocation": "Formation / location",
+      "homeLocationPlaceholder": "e.g. Altdorf",
+      "deploymentLocation": "Deployment location",
+      "einsatzBeginn": "Deployment start",
+      "einsatzEnde": "Deployment end",
+      "status": "Status",
+      "reachability": "Contact"
+    },
+    "noResources": "No resources recorded",
+    "search": "Search resources…",
+    "noResults": "No resources found",
+    "showMore": "Show {{count}} more",
+    "addResource": "Alert resource",
+    "count_one": "{{count}} resource",
+    "count_other": "{{count}} resources",
+    "selectFormation": "Formation",
+    "selectSize": "Unit size",
+    "newResource": "Alert new resource",
+    "alerting": "Alerting…",
+    "mitteltabelle": "Resource Table",
+    "nr": "No.",
+    "alertedAt": "Alerted",
+    "readyAt": "Ready",
+    "deployedAt": "Deployed",
+    "relievedAt": "Ended / Relieved",
+    "validation": {
+      "hauptaufgabeRequired": "Main task is required before deploying",
+      "einsatzortRequired": "Deployment location is required before deploying",
+      "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists."
+    }
   },
   "defaultAccess": {
     "title": "Default incident access",

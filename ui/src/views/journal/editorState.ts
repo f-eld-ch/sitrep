@@ -194,3 +194,7 @@ export const editorReducer = (state: EditorState, action: EditorAction): EditorS
       throw new Error(`Unhandled action type: ${JSON.stringify(action)}`);
   }
 };
+
+export interface MessageEditorFormHandle {
+  save: () => Promise<void>;
+}

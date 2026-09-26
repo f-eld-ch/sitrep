@@ -38,6 +38,7 @@ import {
   EditorContext,
   type EditorContextValue,
   type MediaDetail,
+  type MessageEditorFormHandle,
   canSave,
   editorReducer,
   initEditorState,
@@ -46,9 +47,16 @@ import {
 } from "./editorState";
 
 // re-export types that Elements.tsx / sub-forms depend on via this path
-export type { PhoneDetail, EmailDetail, OtherDetail, RadioDetail } from "./editorState";
+export type {
+  PhoneDetail,
+  EmailDetail,
+  OtherDetail,
+  RadioDetail,
+  MessageEditorFormHandle,
+} from "./editorState";
 export { useEditorContext } from "./editorState";
-export { ReactEditor, ReactPreview } from "./Markdown";
+export { ReactEditor } from "./MarkdownEditor";
+export { ReactPreview } from "./Markdown";
 
 const EMPTY_MESSAGES: Message[] = [];
 
@@ -178,6 +186,7 @@ function Editor() {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: new Date(0),
+                author: "",
               },
             });
             savingRef.current = false;
@@ -460,6 +469,7 @@ function InputBox({
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     attachments: state.messageToEdit?.attachments ?? [],
+    author: state.messageToEdit?.author ?? "",
   };
 
   const mediumId = useId();
@@ -547,10 +557,6 @@ function InputBox({
   );
 }
 
-export interface MessageEditorFormHandle {
-  save: () => Promise<void>;
-}
-
 export const MessageEditorForm = React.forwardRef<
   MessageEditorFormHandle,
   {
@@ -592,6 +598,7 @@ export const MessageEditorForm = React.forwardRef<
       createdAt: state.messageToEdit?.createdAt ?? message.createdAt,
       updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
       deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,
+      author: state.messageToEdit?.author ?? message.author,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
@@ -607,10 +614,22 @@ export const MessageEditorForm = React.forwardRef<
   const handleSave = useCallback(async () => {
     if (!canSave(state)) return;
     if (savingRef.current) return;
-    savingRef.current = true;
-    const time = state.time ?? new Date();
     const senderDetail = state.media !== Medium.Radio ? state.senderDetail : state.radioChannel;
     const receiverDetail = state.media !== Medium.Radio ? state.receiverDetail : state.radioChannel;
+    const unchanged =
+      state.content === message.content &&
+      state.sender === message.sender &&
+      state.receiver === message.receiver &&
+      state.media === message.medium &&
+      senderDetail === message.senderDetail &&
+      receiverDetail === message.receiverDetail &&
+      (state.time === undefined || state.time.getTime() === new Date(message.time).getTime());
+    if (unchanged) {
+      onSaved?.();
+      return;
+    }
+    savingRef.current = true;
+    const time = state.time ?? new Date();
     try {
       await updateMessage({
         incidentId,
@@ -628,7 +647,7 @@ export const MessageEditorForm = React.forwardRef<
     } catch {
       savingRef.current = false;
     }
-  }, [state, updateMessage, incidentId, message.id, onSaved]);
+  }, [state, updateMessage, incidentId, message, onSaved]);
 
   const autocompleteDetails = useMemo<AutofillDetail>(
     () => ({ senderReceiverNames: [], senderReceiverDetails: [], channelList: [] }),

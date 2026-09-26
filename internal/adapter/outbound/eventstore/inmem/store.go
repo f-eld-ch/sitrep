@@ -109,7 +109,7 @@ func (s *EventStore) Append(_ context.Context, a eventsourcing.Aggregate) (outbo
 
 	s.streams[key] = existing
 
-	a.Root().ClearPending()
+	a.Root().CommitPending()
 
 	return encodeInmemCursor(lastSeq), nil
 }

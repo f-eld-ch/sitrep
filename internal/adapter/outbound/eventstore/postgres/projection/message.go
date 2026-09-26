@@ -25,7 +25,7 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 3 }
+func (h *MessageHandler) Version() int { return 4 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message, readmodel.message_attachment`)
 	return err
@@ -76,8 +76,8 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(db, ctx, `
 			INSERT INTO readmodel.message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
-			   medium, msg_time, triage, priority, division_ids, author_sub, created_at, updated_at)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'PENDING','NORMAL','{}',$11,$12,$12)
+			   medium, msg_time, triage, priority, division_ids, linked_resource_ids, author_sub, created_at, updated_at)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'PENDING','NORMAL','{}','{}', $11,$12,$12)
 			ON CONFLICT (id) DO NOTHING`,
 			id, d.IncidentID, d.Number, d.Content, d.Sender, d.SenderDetail,
 			d.Receiver, d.ReceiverDetail, d.Medium, d.Time, d.AuthorSub, e.OccurredAt)
@@ -102,13 +102,25 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			LastUpdatedAt  time.Time   `json:"lastUpdatedAt"`
 		}
 
+		type importedLinked struct {
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+		}
+
 		var d imported
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
 		}
 
+		var dl importedLinked
+
+		_ = remarshal(e.Data, &dl)
+
 		if d.DivisionIDs == nil {
 			d.DivisionIDs = []uuid.UUID{}
+		}
+
+		if dl.LinkedResourceIDs == nil {
+			dl.LinkedResourceIDs = []uuid.UUID{}
 		}
 
 		createdAt := d.RecordedAt
@@ -126,16 +138,17 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(db, ctx, `
 			INSERT INTO readmodel.message
 			  (id, incident_id, number, content, sender, sender_detail, receiver, receiver_detail,
-			   medium, msg_time, triage, priority, division_ids, author_sub, last_editor_sub,
+			   medium, msg_time, triage, priority, division_ids, linked_resource_ids, author_sub, last_editor_sub,
 			   created_at, updated_at)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
 			ON CONFLICT (id) DO UPDATE
 			  SET content = EXCLUDED.content, triage = EXCLUDED.triage,
 			      priority = EXCLUDED.priority, division_ids = EXCLUDED.division_ids,
+			      linked_resource_ids = EXCLUDED.linked_resource_ids,
 			      updated_at = EXCLUDED.updated_at`,
 			id, d.IncidentID, d.Number, d.Content, d.Sender, d.SenderDetail,
 			d.Receiver, d.ReceiverDetail, d.Medium, d.Time, d.Triage, d.Priority,
-			d.DivisionIDs, d.AuthorSub, d.LastEditorSub, createdAt, updatedAt)
+			d.DivisionIDs, dl.LinkedResourceIDs, d.AuthorSub, d.LastEditorSub, createdAt, updatedAt)
 
 	case "Corrected":
 		type corrected struct {
@@ -171,10 +184,11 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 
 	case "Triaged":
 		type triaged struct {
-			Triage      string      `json:"triage"`
-			Priority    string      `json:"priority"`
-			DivisionIDs []uuid.UUID `json:"divisionIds"`
-			TriagedBy   string      `json:"triagedBy"`
+			Triage            string      `json:"triage"`
+			Priority          string      `json:"priority"`
+			DivisionIDs       []uuid.UUID `json:"divisionIds"`
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+			TriagedBy         string      `json:"triagedBy"`
 		}
 
 		var d triaged
@@ -183,13 +197,16 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		}
 
 		d.Priority = priorityForTriage(d.Triage, d.Priority)
+		if d.LinkedResourceIDs == nil {
+			d.LinkedResourceIDs = []uuid.UUID{}
+		}
 
 		return exec(db, ctx, `
 			UPDATE readmodel.message
-			SET triage = $2, priority = $3, division_ids = $4, last_editor_sub = $5,
-			    updated_at = $6
+			SET triage = $2, priority = $3, division_ids = $4, linked_resource_ids = $5,
+			    last_editor_sub = $6, updated_at = $7
 			WHERE id = $1`,
-			id, d.Triage, d.Priority, d.DivisionIDs, d.TriagedBy, e.OccurredAt)
+			id, d.Triage, d.Priority, d.DivisionIDs, d.LinkedResourceIDs, d.TriagedBy, e.OccurredAt)
 
 	case "Deleted":
 		if err := exec(db, ctx, `DELETE FROM readmodel.message WHERE id = $1`, id); err != nil {

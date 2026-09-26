@@ -26,6 +26,15 @@ export interface UpdateMessageArgs extends CreateMessageArgs {
   messageId: string;
 }
 
+export interface SchadenplatzCasualtyInput {
+  schadenplatzId: string;
+  vermisste: number;
+  tote: number;
+  verletzte: number;
+  obdachlose: number;
+  eingeschlossene: number;
+}
+
 export interface TriageMessageArgs {
   incidentId: string;
   messageId: string;
@@ -33,6 +42,7 @@ export interface TriageMessageArgs {
   triage: TriageStatus;
   divisionIds: string[];
   divisions: Division[];
+  linkedResourceIds: string[];
 }
 
 export function useCreateMessage(): CommandHook<CreateMessageArgs, string> {
@@ -123,6 +133,7 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
         priority: args.priority,
         triage: args.triage,
         divisionIds: args.divisionIds,
+        linkedResourceIds: args.linkedResourceIds,
       },
       optimisticResponse: {
         triageMessage: {
@@ -130,6 +141,7 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
           triage: args.triage,
           priority: args.triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : args.priority,
           divisions: args.divisions,
+          linkedResourceIds: args.linkedResourceIds,
         },
       },
       update(cache, { data }) {

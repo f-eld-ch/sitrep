@@ -96,7 +96,7 @@ export function TriageCanvas({ children, incidentClosed = false }: TriageCanvasP
   const { t } = useTranslation();
   return (
     <div className="ml-4 flex flex-1 flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center border-b border-border px-5 pt-5 pb-3">
+      <header className="hidden shrink-0 items-center border-b border-border px-5 pt-5 pb-3 lg:flex">
         <PageTitle level={1} className="flex-1">
           {t("triageView")}
         </PageTitle>

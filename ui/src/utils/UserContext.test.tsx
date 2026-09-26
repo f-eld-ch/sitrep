@@ -15,7 +15,7 @@ function TestComponent() {
         onClick={() =>
           dispatch({
             type: "LOGIN",
-            payload: { username: "foo", email: "foo@bar.com" },
+            payload: { username: "foo", email: "foo@bar.com", sub: "" },
           })
         }
       >

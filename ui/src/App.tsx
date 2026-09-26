@@ -14,21 +14,20 @@ import { useDarkMode } from "utils/useDarkMode";
 import { AdminLayout, DefaultAccess, GlobalRoles, GroupDetail, Groups } from "./views/admin";
 import {
   Editor as IncidentEditor,
+  Dashboard as IncidentDashboard,
   List as IncidentList,
   New as IncidentNew,
   AccessPage as IncidentAccessPage,
 } from "views/incident";
-import {
-  Editor as JournalEditor,
-  List as JournalMessageList,
-  TriageView as JournalTriageView,
-} from "views/journal";
+import { List as JournalMessageList, TriageView as JournalTriageView } from "views/journal";
+const JournalEditor = lazy(() => import("views/journal/Editor"));
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { IncidentRoute } from "views/IncidentRoute";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
 import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
+import { List as CasualtiesList } from "views/casualties";
 import { Provider as FeatureFlagProvider } from "./FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
@@ -82,7 +81,17 @@ const router = createBrowserRouter([
             path: ":incidentId",
             element: <IncidentRoute />,
             children: [
-              { index: true, element: <Navigate to="journal/edit" replace /> },
+              { index: true, element: <Navigate to="dashboard" replace /> },
+              {
+                path: "dashboard",
+                element: (
+                  <LayoutMarginLess>
+                    <Suspense fallback={<Spinner />}>
+                      <IncidentDashboard />
+                    </Suspense>
+                  </LayoutMarginLess>
+                ),
+              },
               {
                 path: "edit",
                 element: (
@@ -105,6 +114,14 @@ const router = createBrowserRouter([
                 element: (
                   <Layout>
                     <ResourcesList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "casualties",
+                element: (
+                  <Layout>
+                    <CasualtiesList />
                   </Layout>
                 ),
               },
@@ -151,7 +168,9 @@ const router = createBrowserRouter([
                     path: "edit",
                     element: (
                       <Layout>
-                        <JournalEditor />
+                        <Suspense fallback={<Spinner />}>
+                          <JournalEditor />
+                        </Suspense>
                       </Layout>
                     ),
                   },
