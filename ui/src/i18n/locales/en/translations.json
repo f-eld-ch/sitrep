@@ -5,6 +5,7 @@
   "all": "all",
   "assignPriority": "assign priority",
   "close": "close",
+  "cancel": "Cancel",
   "closedAt": "closed",
   "create": "create",
   "createIncident": "create new incident",

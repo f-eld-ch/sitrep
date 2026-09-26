@@ -373,11 +373,11 @@ function CurrentTime() {
 
   return (
     <>
-      <div className="hidden 2xl:flex items-center gap-2 px-3 text-sm whitespace-nowrap">
+      <div className="hidden items-center gap-2 whitespace-nowrap px-3 text-sm 2xl:flex">
         <FontAwesomeIcon icon={faCalendar} />
         <span ref={dateRef} />
       </div>
-      <div className="hidden 2xl:flex items-center gap-2 px-3 text-sm whitespace-nowrap">
+      <div className="hidden items-center gap-2 whitespace-nowrap px-3 text-sm 2xl:flex">
         <FontAwesomeIcon icon={faClock} />
         <span ref={timeRef} />
       </div>

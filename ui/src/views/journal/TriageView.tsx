@@ -1,4 +1,11 @@
-import { faCheck, faMinus, faPen, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faChevronLeft,
+  faMinus,
+  faPen,
+  faPlus,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
@@ -84,7 +91,7 @@ function Stepper({
   return (
     <nav
       aria-label="steps"
-      className="scrollbar-none flex items-center gap-1 overflow-x-auto px-5 py-3"
+      className="scrollbar-none flex shrink-0 flex-col items-center border-r border-border px-3 py-4 lg:w-full lg:flex-row lg:items-center lg:gap-1 lg:overflow-x-auto lg:border-r-0 lg:px-5 lg:py-3"
     >
       {steps.map((step, idx) => {
         const done = idx < current;
@@ -92,7 +99,12 @@ function Stepper({
         return (
           <Fragment key={step.key}>
             {idx > 0 && (
-              <div className={clsx("h-px min-w-2 flex-1", done ? "bg-primary/40" : "bg-border")} />
+              <div
+                className={clsx(
+                  "flex-1 w-px lg:h-px lg:min-w-2 lg:w-auto",
+                  done ? "bg-primary/40" : "bg-border",
+                )}
+              />
             )}
             <button
               type="button"
@@ -122,7 +134,7 @@ function Stepper({
                   <span className="translate-y-px text-xs leading-none font-bold">{idx + 1}</span>
                 )}
               </span>
-              {step.label}
+              <span className="hidden lg:inline">{step.label}</span>
             </button>
           </Fragment>
         );
@@ -364,20 +376,22 @@ function TriageSummary(props: {
                           {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
                           {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
                         </span>
-                        {snap.status === "ABGELOEST" && snap.successorId && (() => {
-                          const succ = allResourcesById.get(snap.successorId);
-                          if (!succ) return null;
-                          return (
-                            <span className="block truncate text-xs text-fg-muted/50">
-                              {t("resource.fields.relievedThrough")}{" "}
-                              {qualifiedFormation(
-                                t(`resource.formation.${succ.formation}`),
-                                succ.homeLocation?.name,
-                              )}
-                              {succ.name ? ` — ${succ.name}` : ""}
-                            </span>
-                          );
-                        })()}
+                        {snap.status === "ABGELOEST" &&
+                          snap.successorId &&
+                          (() => {
+                            const succ = allResourcesById.get(snap.successorId);
+                            if (!succ) return null;
+                            return (
+                              <span className="block truncate text-xs text-fg-muted/50">
+                                {t("resource.fields.relievedThrough")}{" "}
+                                {qualifiedFormation(
+                                  t(`resource.formation.${succ.formation}`),
+                                  succ.homeLocation?.name,
+                                )}
+                                {succ.name ? ` — ${succ.name}` : ""}
+                              </span>
+                            );
+                          })()}
                       </span>
                     </div>
                   );
@@ -688,214 +702,216 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
           />
         </div>
 
-        {/* Step navigator */}
-        <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
+        {/* Step navigator (sidebar on mobile) + step content */}
+        <div className="flex flex-1 overflow-hidden lg:flex-col">
+          <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
 
-        {/* Step content */}
-        <div className="flex-1 overflow-y-auto p-5">
-          {(triageState.error ?? stepError) &&
-            (() => {
-              const err = triageState.error ?? stepError!;
-              return (
-                <Notification variant="danger" className="mb-4">
-                  <p>{t(`errors.${err.code}`)}</p>
-                  {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
-                </Notification>
-              );
-            })()}
+          {/* Step content */}
+          <div className="flex-1 overflow-y-auto p-5">
+            {(triageState.error ?? stepError) &&
+              (() => {
+                const err = triageState.error ?? stepError!;
+                return (
+                  <Notification variant="danger" className="mb-4">
+                    <p>{t(`errors.${err.code}`)}</p>
+                    {err.detail && <p className="mt-1 text-xs opacity-80">{err.detail}</p>}
+                  </Notification>
+                );
+              })()}
 
-          {currentStep.key === "meldung" && (
-            <Suspense fallback={<Spinner />}>
-              <MessageEditorForm
-                ref={editorRef}
-                message={message}
-                incidentId={incidentId}
-                onLiveMessage={setLiveMessage}
-                title={t("stepMeldungReview")}
-              />
-            </Suspense>
-          )}
+            {currentStep.key === "meldung" && (
+              <Suspense fallback={<Spinner />}>
+                <MessageEditorForm
+                  ref={editorRef}
+                  message={message}
+                  incidentId={incidentId}
+                  onLiveMessage={setLiveMessage}
+                  title={t("stepMeldungReview")}
+                />
+              </Suspense>
+            )}
 
-          {currentStep.key === "meldefluss" && (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start">
-                <div className="shrink-0">
-                  <h3 className="mb-3 text-base font-bold">{t("keyMessage")}</h3>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-label={t("keyMessage")}
-                    aria-checked={priority === PriorityStatus.High}
-                    onClick={() => {
-                      if (priority === PriorityStatus.High) {
-                        setPriority(PriorityStatus.Normal);
-                        setAssignments(savedAssignments.current ?? []);
-                        savedAssignments.current = null;
-                      } else {
-                        savedAssignments.current = assignments;
-                        setPriority(PriorityStatus.High);
-                        setAssignments(incidentDivisions);
-                      }
-                    }}
-                    className={clsx(
-                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
-                      priority === PriorityStatus.High ? "bg-danger" : "bg-border",
-                    )}
-                  >
-                    <span
+            {currentStep.key === "meldefluss" && (
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="min-w-0 truncate text-base font-bold">{t("keyMessage")}</h3>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-label={t("keyMessage")}
+                      aria-checked={priority === PriorityStatus.High}
+                      onClick={() => {
+                        if (priority === PriorityStatus.High) {
+                          setPriority(PriorityStatus.Normal);
+                          setAssignments(savedAssignments.current ?? []);
+                          savedAssignments.current = null;
+                        } else {
+                          savedAssignments.current = assignments;
+                          setPriority(PriorityStatus.High);
+                          setAssignments(incidentDivisions);
+                        }
+                      }}
                       className={clsx(
-                        "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
-                        priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:ring-2 focus:ring-danger focus:ring-offset-2 focus:outline-none",
+                        priority === PriorityStatus.High ? "bg-danger" : "bg-border",
                       )}
-                    />
-                  </button>
-                </div>
+                    >
+                      <span
+                        className={clsx(
+                          "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200",
+                          priority === PriorityStatus.High ? "translate-x-5" : "translate-x-0",
+                        )}
+                      />
+                    </button>
+                  </div>
 
-                <div className="min-w-0 flex-1">
-                  <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {incidentDivisions.map((d) => {
-                      const isPresent = assignments.some((e) => e.name === d.name);
-                      return (
-                        <div
-                          key={d.name}
-                          className="flex overflow-hidden rounded text-xs font-semibold"
-                        >
-                          <span
-                            className={
-                              isPresent
-                                ? "bg-primary px-3 py-0.5 text-white"
-                                : "bg-fg px-3 py-0.5 text-bg"
-                            }
+                  <div className="min-w-0">
+                    <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {incidentDivisions.map((d) => {
+                        const isPresent = assignments.some((e) => e.name === d.name);
+                        return (
+                          <div
+                            key={d.name}
+                            className="flex overflow-hidden rounded text-xs font-semibold"
                           >
-                            {d.description || d.name}
-                          </span>
-                          {isPresent ? (
-                            <button
-                              type="button"
-                              className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
-                              onClick={() =>
-                                setAssignments(reject(assignments, (e) => e.id === d.id))
+                            <span
+                              className={
+                                isPresent
+                                  ? "bg-primary px-3 py-0.5 text-white"
+                                  : "bg-fg px-3 py-0.5 text-bg"
                               }
                             >
-                              <FontAwesomeIcon icon={faMinus} />
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
-                              onClick={() => setAssignments(union(assignments, [d]))}
-                            >
-                              <FontAwesomeIcon icon={faPlus} />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                              {d.description || d.name}
+                            </span>
+                            {isPresent ? (
+                              <button
+                                type="button"
+                                className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
+                                onClick={() =>
+                                  setAssignments(reject(assignments, (e) => e.id === d.id))
+                                }
+                              >
+                                <FontAwesomeIcon icon={faMinus} />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
+                                onClick={() => setAssignments(union(assignments, [d]))}
+                              >
+                                <FontAwesomeIcon icon={faPlus} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
+
+                {showTasks && (
+                  <div>
+                    <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
+                    <TaskNew />
+                  </div>
+                )}
               </div>
+            )}
 
-              {showTasks && (
-                <div>
-                  <h3 className="mb-3 text-base font-bold">{t("tasks")}</h3>
-                  <TaskNew />
-                </div>
-              )}
-            </div>
-          )}
+            {currentStep.key === "schadenplatz" && (
+              <SchadenplatzSelectStep
+                namedSchadenplaetze={namedSchadenplaetze}
+                selectedIds={selectedSpIds}
+                onToggle={toggleSpId}
+                incidentId={incidentId}
+                onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
+                onReplaced={(tempId, realId) =>
+                  setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
+                }
+                onCancelled={(tempId) =>
+                  setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
+                }
+                createSchadenplatz={(args) =>
+                  createSchadenplatz({ ...args, occurredAt: message.time })
+                }
+              />
+            )}
 
-          {currentStep.key === "schadenplatz" && (
-            <SchadenplatzSelectStep
-              namedSchadenplaetze={namedSchadenplaetze}
-              selectedIds={selectedSpIds}
-              onToggle={toggleSpId}
-              incidentId={incidentId}
-              onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
-              onReplaced={(tempId, realId) =>
-                setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
-              }
-              onCancelled={(tempId) =>
-                setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
-              }
-              createSchadenplatz={(args) =>
-                createSchadenplatz({ ...args, occurredAt: message.time })
-              }
-            />
-          )}
+            {currentStep.key === "personen" && (
+              <div className="space-y-6">
+                {personenSpIds.map((spId) => {
+                  const sp = schadenplaetze.find((s) => s.id === spId);
+                  const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
+                  return (
+                    <div key={spId}>
+                      <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+                        {label}
+                      </h3>
+                      <CasualtySection
+                        value={getSpCasualties(spId)}
+                        spCasualties={sp?.casualties}
+                        onChange={(d) => setSpCasualties(spId, d)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-          {currentStep.key === "personen" && (
-            <div className="space-y-6">
-              {personenSpIds.map((spId) => {
-                const sp = schadenplaetze.find((s) => s.id === spId);
-                const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
-                return (
-                  <div key={spId}>
-                    <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
-                      {label}
-                    </h3>
-                    <CasualtySection
-                      value={getSpCasualties(spId)}
-                      spCasualties={sp?.casualties}
-                      onChange={(d) => setSpCasualties(spId, d)}
+            {currentStep.key === "mittel" && (
+              <div className="space-y-3">
+                {resourcesResult.status === "loading" ? (
+                  <Spinner />
+                ) : (
+                  <>
+                    <ResourcePicker
+                      schadenplaetze={schadenplaetze}
+                      allResources={
+                        resourcesResult.status === "ready" ? resourcesResult.data.resources : []
+                      }
+                      selectedIds={selectedResourceIds}
+                      onToggle={toggleResourceId}
+                      onAttach={(ids) =>
+                        setSelectedResourceIds((previous) => new Set([...previous, ...ids]))
+                      }
+                      iconsLoaded={iconsLoaded}
+                      messageTime={message.time}
+                      prioritySpIds={selectedSpIds}
                     />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {currentStep.key === "mittel" && (
-            <div className="space-y-3">
-              {resourcesResult.status === "loading" ? (
-                <Spinner />
-              ) : (
-                <>
-                  <ResourcePicker
-                    schadenplaetze={schadenplaetze}
-                    allResources={
-                      resourcesResult.status === "ready" ? resourcesResult.data.resources : []
-                    }
-                    selectedIds={selectedResourceIds}
-                    onToggle={toggleResourceId}
-                    onAttach={(ids) =>
-                      setSelectedResourceIds((previous) => new Set([...previous, ...ids]))
-                    }
-                    iconsLoaded={iconsLoaded}
-                    messageTime={message.time}
-                    prioritySpIds={selectedSpIds}
-                  />
-                  <AlertResourceForm
-                    incidentId={incidentId}
-                    schadenplaetze={effectiveSchadenplaetze}
-                    sourceMessageId={message.id}
-                    messageTime={message.time}
-                    iconsLoaded={iconsLoaded}
-                    existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
-                    onAlerted={(tempId) => {
-                      setSelectedResourceIds((prev) => new Set([...prev, tempId]));
-                    }}
-                    onReplaced={(tempId, realId) => {
-                      setSelectedResourceIds((prev) => {
-                        const next = new Set(prev);
-                        next.delete(tempId);
-                        next.add(realId);
-                        return next;
-                      });
-                      void resourcesResult.refresh();
-                    }}
-                    onCancelled={(tempId) => {
-                      setSelectedResourceIds((prev) => {
-                        const next = new Set(prev);
-                        next.delete(tempId);
-                        return next;
-                      });
-                    }}
-                  />
-                </>
-              )}
-            </div>
-          )}
+                    <AlertResourceForm
+                      incidentId={incidentId}
+                      schadenplaetze={effectiveSchadenplaetze}
+                      sourceMessageId={message.id}
+                      messageTime={message.time}
+                      iconsLoaded={iconsLoaded}
+                      existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
+                      onAlerted={(tempId) => {
+                        setSelectedResourceIds((prev) => new Set([...prev, tempId]));
+                      }}
+                      onReplaced={(tempId, realId) => {
+                        setSelectedResourceIds((prev) => {
+                          const next = new Set(prev);
+                          next.delete(tempId);
+                          next.add(realId);
+                          return next;
+                        });
+                        void resourcesResult.refresh();
+                      }}
+                      onCancelled={(tempId) => {
+                        setSelectedResourceIds((prev) => {
+                          const next = new Set(prev);
+                          next.delete(tempId);
+                          return next;
+                        });
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer: back / next / triage actions */}
@@ -1042,10 +1058,21 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     (id: string | undefined) => {
       startTransition(() => {
         setCaughtUp(false);
-        setSelectedId(id);
+        // On mobile: tapping the auto-locked row calls onSelect(undefined) because it
+        // already appears selected. Treat that as an explicit selection so the panel opens.
+        if (
+          id === undefined &&
+          selectedId === undefined &&
+          autoLockedId !== undefined &&
+          !window.matchMedia("(min-width: 1024px)").matches
+        ) {
+          setSelectedId(autoLockedId);
+        } else {
+          setSelectedId(id);
+        }
       });
     },
-    [startTransition],
+    [startTransition, selectedId, autoLockedId],
   );
 
   if (result.status === "loading") {
@@ -1086,24 +1113,44 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
 
   return (
     <div className="mt-[2.75rem] flex grow overflow-hidden bg-bg">
+      {/* Stack: full-width on mobile when nothing selected, sidebar on desktop */}
       <FilterableMessageStack
         messages={messages}
         effectiveId={effectiveId}
         onSelect={handleSelect}
         initialFilters={{}}
-        className="w-72 shrink-0 lg:w-[36rem]"
-      />
-      <TriageCanvas incidentClosed={incidentIsClosed}>
-        {selectedMessage && !caughtUp && (
-          <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
-            <TriagePanel
-              message={selectedMessage}
-              incidentId={incidentId ?? ""}
-              onSaved={() => handleSaved(selectedMessage.id)}
-            />
-          </ViewTransition>
+        className={clsx(
+          "shrink-0 lg:flex lg:w-[36rem]",
+          selectedId !== undefined ? "hidden" : "w-full",
         )}
-      </TriageCanvas>
+      />
+      {/* Triage canvas: full-width on mobile when selected, always visible on desktop */}
+      <div
+        className={clsx(
+          "min-w-0 flex-1 flex-col overflow-hidden",
+          selectedId !== undefined ? "flex" : "hidden lg:flex",
+        )}
+      >
+        <button
+          type="button"
+          className="flex shrink-0 items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-primary lg:hidden"
+          onClick={() => setSelectedId(undefined)}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+          {t("back")}
+        </button>
+        <TriageCanvas incidentClosed={incidentIsClosed}>
+          {selectedMessage && !caughtUp && (
+            <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
+              <TriagePanel
+                message={selectedMessage}
+                incidentId={incidentId ?? ""}
+                onSaved={() => handleSaved(selectedMessage.id)}
+              />
+            </ViewTransition>
+          )}
+        </TriageCanvas>
+      </div>
     </div>
   );
 }
@@ -1150,7 +1197,7 @@ function CasualtySection({
   return (
     <div className="flex gap-3">
       {/* Counter list */}
-      <div className="w-1/2 divide-y divide-border">
+      <div className="w-full divide-y divide-border lg:w-1/2">
         {CASUALTY_CATEGORIES.map((cat) => (
           <CasualtyRow
             key={cat.key}
@@ -1163,8 +1210,8 @@ function CasualtySection({
         ))}
       </div>
 
-      {/* Summary */}
-      <div className="w-1/2 rounded-lg border border-border bg-bg p-3">
+      {/* Summary — hidden on mobile, shown on desktop */}
+      <div className="hidden w-1/2 rounded-lg border border-border bg-bg p-3 lg:block">
         <p className="mb-2 text-sm font-semibold tracking-wide text-danger uppercase">
           {t("casualties.summary")}
         </p>
@@ -1354,30 +1401,32 @@ function SchadenplatzSelectStep({
             + {t("schadenplatz.new")}
           </button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2">
             <input
               type="text"
               value={newSpName}
               onChange={(e) => setNewSpName(e.target.value)}
               placeholder={t("schadenplatz.namePlaceholder")}
-              className="flex-1 rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+              className="w-full rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter") void handleCreate();
                 if (e.key === "Escape") setShowNew(false);
               }}
             />
-            <Button
-              type="button"
-              variant="primary"
-              size="xs"
-              disabled={creating || !newSpName.trim()}
-              onClick={() => void handleCreate()}
-            >
-              {t("schadenplatz.create")}
-            </Button>
-            <Button type="button" variant="light" size="xs" onClick={() => setShowNew(false)}>
-              {t("cancel")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="primary"
+                size="xs"
+                disabled={creating || !newSpName.trim()}
+                onClick={() => void handleCreate()}
+              >
+                {t("schadenplatz.create")}
+              </Button>
+              <Button type="button" variant="light" size="xs" onClick={() => setShowNew(false)}>
+                {t("cancel")}
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -1628,15 +1677,15 @@ function SelectedResourceRow({
           )}
         </span>
         <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">
+            {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+          </span>
           <span className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium">
-              {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
-            </span>
+            {r.name && <span className="min-w-0 truncate text-xs text-fg-muted">{r.name}</span>}
             <Tag variant={resourceStatusVariant[r.status]} light size="sm">
               {t(`resource.status.${r.status}`)}
             </Tag>
           </span>
-          {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
           <span className="block truncate text-xs text-fg-muted/70">
             {snap.personnelCount} {t("resource.fields.personnelCount")}
             {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
@@ -1644,27 +1693,29 @@ function SelectedResourceRow({
           </span>
           <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
         </span>
-        <button
-          type="button"
-          aria-label={t("edit")}
-          title={t("edit")}
-          onClick={onToggleEdit}
-          className={clsx(
-            "flex h-7 w-7 shrink-0 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-primary",
-            isEditing && "bg-bg-elevated text-primary",
-          )}
-        >
-          <FontAwesomeIcon icon={faPen} className="text-xs" />
-        </button>
-        <button
-          type="button"
-          aria-label={t("close")}
-          title={t("close")}
-          onClick={onDeselect}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-danger"
-        >
-          <FontAwesomeIcon icon={faXmark} className="text-xs" />
-        </button>
+        <div className="flex shrink-0 flex-col gap-4">
+          <button
+            type="button"
+            aria-label={t("edit")}
+            title={t("edit")}
+            onClick={onToggleEdit}
+            className={clsx(
+              "flex h-6 w-6 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-primary",
+              isEditing && "bg-bg-elevated text-primary",
+            )}
+          >
+            <FontAwesomeIcon icon={faPen} className="text-xs" />
+          </button>
+          <button
+            type="button"
+            aria-label={t("close")}
+            title={t("close")}
+            onClick={onDeselect}
+            className="flex h-6 w-6 items-center justify-center rounded text-fg-muted transition-colors hover:bg-bg-elevated hover:text-danger"
+          >
+            <FontAwesomeIcon icon={faXmark} className="text-xs" />
+          </button>
+        </div>
       </div>
 
       {/* Edit panel — shown only when isEditing */}
@@ -1713,15 +1764,15 @@ function AvailableResourceRow({
         )}
       </span>
       <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">
+          {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+        </span>
         <span className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium">
-            {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
-          </span>
+          {r.name && <span className="min-w-0 truncate text-xs text-fg-muted">{r.name}</span>}
           <Tag variant={resourceStatusVariant[r.status]} light size="sm">
             {t(`resource.status.${r.status}`)}
           </Tag>
         </span>
-        {r.name && <span className="block truncate text-xs text-fg-muted">{r.name}</span>}
         <span className="block truncate text-xs text-fg-muted/70">
           {snap.personnelCount} {t("resource.fields.personnelCount")}
           {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
