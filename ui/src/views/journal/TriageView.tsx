@@ -101,7 +101,7 @@ function Stepper({
             {idx > 0 && (
               <div
                 className={clsx(
-                  "flex-1 w-px lg:h-px lg:min-w-2 lg:w-auto",
+                  "w-px flex-1 lg:h-px lg:w-auto lg:min-w-2",
                   done ? "bg-primary/40" : "bg-border",
                 )}
               />

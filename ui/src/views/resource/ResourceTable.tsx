@@ -37,7 +37,9 @@ function ResourcePrimaryRow({
     : deploymentLabel(r);
   return (
     <tr>
-      <td className="py-0.5 pr-2">{qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}</td>
+      <td className="py-0.5 pr-2">
+        {qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)}
+      </td>
       <td className="py-0.5 pr-2 font-medium">{r.name || "–"}</td>
       <td className="py-0.5 pr-2 text-right tabular-nums">{r.personnelCount}</td>
       <td className="py-0.5 pr-2">{t(`resource.status.${r.status}`)}</td>
