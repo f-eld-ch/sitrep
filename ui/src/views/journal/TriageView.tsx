@@ -734,8 +734,8 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             {currentStep.key === "meldefluss" && (
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="min-w-0 truncate text-base font-bold">{t("keyMessage")}</h3>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-base font-bold">{t("keyMessage")}</h3>
                     <button
                       type="button"
                       role="switch"
