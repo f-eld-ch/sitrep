@@ -10,6 +10,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.10.0 to 6.11.2 in /ui ([#1904](https://github.com/f-eld-ch/sitrep/issues/1904)) - ([d10ed5b](https://github.com/f-eld-ch/sitrep/commit/d10ed5bc35550e8e33e8f74a757cf0060de51b1a))
 - *(deps)* Bump maplibre-gl from 6.10.0 to 6.11.2 in /ui ([#1899](https://github.com/f-eld-ch/sitrep/issues/1899)) - ([691fcab](https://github.com/f-eld-ch/sitrep/commit/691fcab946e943f10b0a7943fafd4eecbd68cd35))
 - *(deps)* Upgrade @f-eld-ch/babs-icons to v0.7.0 - ([c7c31ea](https://github.com/f-eld-ch/sitrep/commit/c7c31ea18195eaf971f69feafc158818daabd421))
 - *(deps)* Bump react-i18next from 17.0.14 to 17.0.15 in /ui ([#1895](https://github.com/f-eld-ch/sitrep/issues/1895)) - ([b0aede7](https://github.com/f-eld-ch/sitrep/commit/b0aede73672db3064333b4088107e2ed9c50f90c))
