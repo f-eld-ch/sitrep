@@ -274,21 +274,27 @@ export default function Dashboard() {
 
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-      <div className="flex min-h-0 flex-1 flex-col pt-[3.5rem] pr-3 pb-3">
+      <div className="flex flex-1 flex-col pt-[3.5rem] pr-3 pb-3 xl:min-h-0">
         <PageTitle className="mb-0 shrink-0 pl-3">{title}</PageTitle>
-        <div className="grid min-h-0 flex-1 gap-1 xl:grid-cols-[28rem_minmax(0,1fr)_18rem]">
-          {messagesResult.status === "loading" ? (
-            <Spinner />
-          ) : messagesResult.status === "error" ? (
-            <Notification variant="danger">{t(`errors.${messagesResult.error.code}`)}</Notification>
-          ) : (
-            <PriorityMessageStack
-              messages={allMessages}
-              selectedMessageId={effectiveSelectedId}
-              onSelect={handleSelect}
-            />
-          )}
-          <section className="flex min-h-[24rem] min-w-0 flex-col gap-3 pt-[28px] xl:min-h-0">
+        <div className="grid gap-1 xl:min-h-0 xl:flex-1 xl:grid-cols-[28rem_minmax(0,1fr)_18rem]">
+          {/* Message stack — last on mobile, first column on desktop */}
+          <div className="order-3 flex min-h-0 flex-col xl:order-1">
+            {messagesResult.status === "loading" ? (
+              <Spinner />
+            ) : messagesResult.status === "error" ? (
+              <Notification variant="danger">
+                {t(`errors.${messagesResult.error.code}`)}
+              </Notification>
+            ) : (
+              <PriorityMessageStack
+                messages={allMessages}
+                selectedMessageId={effectiveSelectedId}
+                onSelect={handleSelect}
+              />
+            )}
+          </div>
+          {/* Map — second on mobile, middle column on desktop */}
+          <section className="order-2 flex min-h-[24rem] min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0 xl:pt-[28px]">
             {selectedMessage && (
               <div className="max-h-[38vh] shrink-0 overflow-y-auto rounded bg-bg-elevated">
                 <JournalMessage
@@ -305,8 +311,9 @@ export default function Dashboard() {
               <IncidentMap embedded readOnly />
             </div>
           </section>
+          {/* KPIs — first on mobile, last column on desktop */}
           {showResources && (
-            <div className="pt-[28px]">
+            <div className="order-1 xl:order-3 xl:pt-[28px]">
               <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
             </div>
           )}

@@ -60,7 +60,7 @@ export const LayoutMarginLess = (props: LayoutProps) => {
     <>
       <Navbar />
       <div className="flex h-screen flex-col">
-        <div className="flex flex-1 overflow-hidden">{props.children}</div>
+        <div className="flex flex-1 overflow-y-auto xl:overflow-hidden">{props.children}</div>
         <div className="shrink-0 print:hidden">
           <Footer />
         </div>
