@@ -234,7 +234,7 @@
     "byLocation": "Nach Schadenplatz"
   },
   "dashboard": {
-    "title": "Ereignis-Dashboard",
+    "title": "Dashboard",
     "priorityMessages": "Wichtige Meldungen",
     "noPriorityMessages": "Keine wichtigen Meldungen"
   },

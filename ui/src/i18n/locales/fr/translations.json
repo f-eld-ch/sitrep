@@ -234,7 +234,7 @@
     "byLocation": "Par lieu"
   },
   "dashboard": {
-    "title": "Tableau de bord de l'incident",
+    "title": "Dashboard",
     "priorityMessages": "Messages prioritaires",
     "noPriorityMessages": "Aucun message prioritaire"
   },

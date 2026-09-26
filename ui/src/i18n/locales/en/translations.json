@@ -234,7 +234,7 @@
     "byLocation": "By location"
   },
   "dashboard": {
-    "title": "Incident Dashboard",
+    "title": "Dashboard",
     "priorityMessages": "High-priority messages",
     "noPriorityMessages": "No high-priority messages"
   },
