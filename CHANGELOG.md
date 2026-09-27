@@ -3,6 +3,7 @@
 ### ⛰️  Features
 
 - *(access)* Add default access template and admin UI ([#1896](https://github.com/f-eld-ch/sitrep/issues/1896)) - ([1466784](https://github.com/f-eld-ch/sitrep/commit/1466784e99dcf1ebc6eb22a206b1948fd5da77d9))
+- *(ui)* Add Personen und Mittelübersicht ([#1881](https://github.com/f-eld-ch/sitrep/issues/1881)) - ([83598d0](https://github.com/f-eld-ch/sitrep/commit/83598d0c70f30a08f4a94df7d5d8b349ca995b03))
 
 ### 🐛 Bug Fixes
 
