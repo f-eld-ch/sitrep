@@ -1,7 +1,8 @@
-## [unreleased]
+## [26.9.9](https://github.com/f-eld-ch/sitrep/compare/v26.9.8..v26.9.9) - 2026-09-29
 
 ### ⛰️  Features
 
+- *(ui)* Update earlyAdopter flags with new domainHash - ([4b07468](https://github.com/f-eld-ch/sitrep/commit/4b07468b8dbd691d9f9e05a9e50a46753b72c98a))
 - *(ui)* Move earlyAdopters flags to domainHash approach - ([436ce10](https://github.com/f-eld-ch/sitrep/commit/436ce10b55f1328dc9665b08bca6b3c48bf9c7cc))
 
 ### ⚙️  Other
