@@ -52,18 +52,19 @@ segments:
     name: Development
     constraints:
       - type: STRING_COMPARISON_TYPE
-        property: domain
+        property: domainHash
         operator: isoneof
-        value: '["dev.sitrep.ch","localhost","127.0.0.1"]'
+        value: '["b4c6e989ddba23746750f1954e7f03e87ca54bc28f8540d689b5aa24ea1af5d3","49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763", "12ca17b49af2289436f303e0166030a21e525d266e209267433801a8fd4071a0"]'
     match_type: ANY_MATCH_TYPE
   - key: earlyadopter
     name: Early Adopter
+    match_type: ANY_MATCH_TYPE
+    description: Early adopter segment for testing new features (add with echo "domain.tld.ch" | shasum -a 256)
     constraints:
       - type: STRING_COMPARISON_TYPE
-        property: domain
-        operator: suffix
-        value: ".ur.ch"
-    match_type: ANY_MATCH_TYPE
+        property: domainHash
+        operator: isoneof
+        value: '["457df9eea9833f53c7c758b73dd9ecc8b320fd9ef51f234892f1d8253960dba3"]'
   - key: SitrepManaged
     name: SitrepManaged
     constraints:

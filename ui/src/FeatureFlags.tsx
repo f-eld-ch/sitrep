@@ -4,6 +4,13 @@ import { type PropsWithChildren, useContext, useEffect } from "react";
 
 import { UserContext } from "utils";
 
+export async function hashDomain(domain: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(domain));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 const Provider = (props: PropsWithChildren) => {
   const { children } = props;
   const { state: userState } = useContext(UserContext);
@@ -21,12 +28,15 @@ const Provider = (props: PropsWithChildren) => {
 
   // sync the evaulation context here, so far only depends on domain and UserContext state
   useEffect(() => {
-    const context = {
-      targetingKey: userState.email,
-      domain: document.location.host.split(":")[0],
-      email: userState.email,
-    };
-    OpenFeature.setContext(context);
+    const domain = document.location.host.split(":")[0];
+    hashDomain(domain).then((domainHash) => {
+        OpenFeature.setContext({
+          targetingKey: userState.email,
+          domain,
+          domainHash,
+          email: userState.email,
+        });
+      });
   }, [userState]);
 
   return <OpenFeatureProvider>{children}</OpenFeatureProvider>;
