@@ -1,3 +1,16 @@
+## [unreleased]
+
+### ⛰️  Features
+
+- *(ui)* Move earlyAdopters flags to domainHash approach - ([436ce10](https://github.com/f-eld-ch/sitrep/commit/436ce10b55f1328dc9665b08bca6b3c48bf9c7cc))
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.37 to 2.5.58 ([#1905](https://github.com/f-eld-ch/sitrep/issues/1905)) - ([cbf46b0](https://github.com/f-eld-ch/sitrep/commit/cbf46b07c689003cd2071d066bbabbb830d73888))
+- *(deps)* Bump ip-address ([#1910](https://github.com/f-eld-ch/sitrep/issues/1910)) - ([710a63e](https://github.com/f-eld-ch/sitrep/commit/710a63e95e267395e526e3e4e0c67783cef29f23))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.3 to 3.51.6 ([#1906](https://github.com/f-eld-ch/sitrep/issues/1906)) - ([54d908c](https://github.com/f-eld-ch/sitrep/commit/54d908c4d7d63d13d1242c8eb70dbe5eaea1d91b))
+
+
 ## [26.9.8](https://github.com/f-eld-ch/sitrep/compare/v26.9.7..v26.9.8) - 2026-09-28
 
 ### ⛰️  Features
