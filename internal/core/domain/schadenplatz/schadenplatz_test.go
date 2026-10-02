@@ -223,6 +223,19 @@ func TestSchadenplatz_RecordCasualties_AccumulatesCorrectly(t *testing.T) {
 	assert.Equal(t, 1, totals.Eingeschlossene)
 }
 
+func TestSchadenplatz_RecordCasualties_SameMessageReplacesPreviousValues(t *testing.T) {
+	id := shared.SchadenplatzID(uuid.New())
+	msgID := shared.MessageID(uuid.New())
+	s := replay(t, id, []eventsourcing.Event{created(id, "SP1", false)})
+
+	require.NoError(t, s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Verletzte: 2}, actor, at))
+	require.NoError(t, s.RecordCasualties(msgID, schadenplatz.CasualtyDeltas{Vermisste: 2}, actor, at))
+
+	totals := s.Casualties()
+	assert.Equal(t, 0, totals.Verletzte)
+	assert.Equal(t, 2, totals.Vermisste)
+}
+
 func TestSchadenplatz_RecordCasualties_EmitsEvent(t *testing.T) {
 	id := shared.SchadenplatzID(uuid.New())
 	msgID := shared.MessageID(uuid.New())
