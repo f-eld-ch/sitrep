@@ -626,11 +626,14 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
       try {
         for (const spId of personenSpIds) {
           const deltas = getSpCasualties(spId);
-          if (Object.values(deltas).every((v) => v === 0)) continue;
+          // Skip all-zero entries unless an earlier triage recorded values that must be cleared.
+          const hadPrevious = previousCasualties.some((c) => c.schadenplatzId === spId);
+          if (!hadPrevious && Object.values(deltas).every((v) => v === 0)) continue;
           await recordCasualties({
             schadenplatzId: spId,
             messageId: message.id,
             deltas,
+            previous: previousCasualties.find((c) => c.schadenplatzId === spId),
             occurredAt: message.time,
           });
         }
@@ -650,6 +653,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     message.time,
     getSpCasualties,
     personenSpIds,
+    previousCasualties,
   ]);
 
   useEffect(() => {

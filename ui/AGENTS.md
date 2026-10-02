@@ -66,6 +66,12 @@ If you touched any GraphQL document or the schema, also run:
 yarn codegen && yarn codegen:check
 ```
 
+"GraphQL document" means **any** `gql` template literal anywhere under `src/`, not just the
+`documents.ts` files — including inline fragments or queries in `commands.ts`, hooks, or
+components. Codegen scans all of them, so a new or changed `gql` tag makes `src/gql/next/` stale.
+When in doubt, run it: it is a no-op if nothing changed. Commit the regenerated files with the
+change that caused them; CI's `codegen:check` fails otherwise.
+
 **`src/gql/` is excluded from `oxfmt`** — generated files use codegen's own quote style and
 formatting them makes `codegen:check` report stale output. Commit codegen output exactly as
 generated; never edit it by hand.

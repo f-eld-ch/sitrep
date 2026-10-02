@@ -37,6 +37,9 @@ type Schadenplatz struct {
 	isDefault  bool
 	geoJSON    []byte
 	casualties CasualtyTotals
+	// byMessage holds the latest values recorded per source message. Recording
+	// again for the same message replaces the earlier values (re-triage).
+	byMessage  map[shared.MessageID]CasualtyDeltas
 	mergedInto *shared.SchadenplatzID
 }
 
@@ -125,7 +128,8 @@ func (s *Schadenplatz) SetGeometry(geoJSON []byte, actor string, at time.Time) e
 	return nil
 }
 
-// RecordCasualties records casualty deltas from a message triage.
+// RecordCasualties records the casualties of a message triage. Recording again
+// for the same message replaces its previous values rather than adding to them.
 // All resulting totals must remain non-negative.
 func (s *Schadenplatz) RecordCasualties(
 	sourceMessageID shared.MessageID,
@@ -137,7 +141,7 @@ func (s *Schadenplatz) RecordCasualties(
 		return err
 	}
 
-	if err := s.validateCasualtyDeltas(deltas); err != nil {
+	if err := s.validateCasualtyDeltas(s.netDelta(sourceMessageID, deltas)); err != nil {
 		return err
 	}
 
@@ -186,11 +190,18 @@ func (s *Schadenplatz) Transition(e eventsourcing.Event) error {
 	case GeometrySet:
 		s.geoJSON = d.GeoJSON
 	case CasualtiesRecorded:
-		s.casualties.Vermisste += d.Deltas.Vermisste
-		s.casualties.Tote += d.Deltas.Tote
-		s.casualties.Verletzte += d.Deltas.Verletzte
-		s.casualties.Obdachlose += d.Deltas.Obdachlose
-		s.casualties.Eingeschlossene += d.Deltas.Eingeschlossene
+		net := s.netDelta(d.SourceMessageID, d.Deltas)
+		s.casualties.Vermisste += net.Vermisste
+		s.casualties.Tote += net.Tote
+		s.casualties.Verletzte += net.Verletzte
+		s.casualties.Obdachlose += net.Obdachlose
+		s.casualties.Eingeschlossene += net.Eingeschlossene
+
+		if s.byMessage == nil {
+			s.byMessage = map[shared.MessageID]CasualtyDeltas{}
+		}
+
+		s.byMessage[d.SourceMessageID] = d.Deltas
 	case MergedIntoDefault:
 		id := d.DefaultSchadenplatzID
 		s.mergedInto = &id
@@ -211,6 +222,20 @@ func (s *Schadenplatz) requireActive() error {
 	}
 
 	return nil
+}
+
+// netDelta returns the change to the totals when the given message records
+// deltas, i.e. the new values minus what that message recorded before.
+func (s *Schadenplatz) netDelta(msgID shared.MessageID, d CasualtyDeltas) CasualtyDeltas {
+	old := s.byMessage[msgID]
+
+	return CasualtyDeltas{
+		Vermisste:       d.Vermisste - old.Vermisste,
+		Tote:            d.Tote - old.Tote,
+		Verletzte:       d.Verletzte - old.Verletzte,
+		Obdachlose:      d.Obdachlose - old.Obdachlose,
+		Eingeschlossene: d.Eingeschlossene - old.Eingeschlossene,
+	}
 }
 
 func (s *Schadenplatz) validateCasualtyDeltas(d CasualtyDeltas) error {
