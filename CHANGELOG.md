@@ -1,3 +1,13 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/labstack/echo-opentelemetry ([#1913](https://github.com/f-eld-ch/sitrep/issues/1913)) - ([49dd2f8](https://github.com/f-eld-ch/sitrep/commit/49dd2f8d57900e907aa4be6a2ea7d7a54c4832c9))
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 3 updates ([#1917](https://github.com/f-eld-ch/sitrep/issues/1917)) - ([ccd9901](https://github.com/f-eld-ch/sitrep/commit/ccd990172c602634ba214ea394d203d9c4021040))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.3.1 to 5.4.0 ([#1914](https://github.com/f-eld-ch/sitrep/issues/1914)) - ([17f73e1](https://github.com/f-eld-ch/sitrep/commit/17f73e1b00f42e55720507c0a349b845262ce1ba))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.6 to 3.51.8 ([#1915](https://github.com/f-eld-ch/sitrep/issues/1915)) - ([03d0b79](https://github.com/f-eld-ch/sitrep/commit/03d0b79880e56ad9b81b67da7875008e8118b9a7))
+
+
 ## [26.9.9](https://github.com/f-eld-ch/sitrep/compare/v26.9.8..v26.9.9) - 2026-09-29
 
 ### ⛰️  Features
