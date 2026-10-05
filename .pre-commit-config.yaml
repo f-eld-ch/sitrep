@@ -1,25 +1,47 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+  - repo: local
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.1
-    hooks:
-      - id: go-fmt
-      - id: go-imports
-      - id: no-go-testing
-      - id: golangci-lint
-      - id: go-unit-tests
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v4.0.0-alpha.8"
-    hooks:
-      - id: prettier
+      # golangci-lint is the single formatter and linter (see AGENTS.md); fmt rewrites
+      # files, so it must run before the lint check.
+      - id: golangci-lint-fmt
+        name: golangci-lint fmt
+        entry: golangci-lint fmt ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+      - id: golangci-lint-run
+        name: golangci-lint run
+        entry: golangci-lint run ./...
+        language: system
+        types: [go]
+        pass_filenames: false
+      # UI gates from ui/AGENTS.md. fmt rewrites files, so it runs first.
+      - id: ui-fmt
+        name: ui yarn fmt
+        entry: bash -c 'cd ui && yarn fmt'
+        language: system
+        files: ^ui/
+        pass_filenames: false
+      - id: ui-lint
+        name: ui yarn lint
+        entry: bash -c 'cd ui && yarn lint'
+        language: system
+        files: ^(ui/|api/schema\.graphql$)
+        pass_filenames: false
+      - id: ui-typecheck
+        name: ui yarn typecheck
+        entry: bash -c 'cd ui && yarn typecheck'
+        language: system
+        files: ^(ui/|api/schema\.graphql$)
+        pass_filenames: false
+      - id: ui-codegen-check
+        name: ui yarn codegen:check
+        entry: bash -c 'cd ui && yarn codegen:check'
+        language: system
+        files: ^(ui/src/|api/schema\.graphql$)
+        pass_filenames: false
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
+    rev: v4.4.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]

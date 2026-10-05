@@ -452,6 +452,9 @@ function InputBox({
     }
   };
 
+  // Stable fallback timestamp so render stays pure.
+  const [fallbackDate] = useState(() => new Date());
+
   const message: Message = {
     id: state.messageToEdit?.id || "",
     number: state.messageToEdit?.number ?? 0,
@@ -461,11 +464,11 @@ function InputBox({
     receiver: state.receiver,
     receiverDetail: state.receiverDetail,
     medium: state.media,
-    createdAt: state.messageToEdit?.createdAt || new Date(),
-    updatedAt: state.messageToEdit?.updatedAt || new Date(),
+    createdAt: state.messageToEdit?.createdAt || fallbackDate,
+    updatedAt: state.messageToEdit?.updatedAt || fallbackDate,
     divisions: state.messageToEdit?.divisions || [],
-    deletedAt: state.messageToEdit?.deletedAt || new Date(),
-    time: state.time || new Date(),
+    deletedAt: state.messageToEdit?.deletedAt || fallbackDate,
+    time: state.time || fallbackDate,
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     attachments: state.messageToEdit?.attachments ?? [],

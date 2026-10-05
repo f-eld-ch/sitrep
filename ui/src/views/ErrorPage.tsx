@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { faHome, faRotateRight, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Navbar } from "components";
@@ -29,7 +30,7 @@ export function ErrorPage() {
   const isNotFound = status === 404;
   const incidentTitle = isNotFound ? t("errorPage.notFoundTitle") : t("errorPage.title");
   const incidentDesc = isNotFound ? t("errorPage.notFoundDesc") : detail;
-  const now = new Date().toLocaleString();
+  const [now] = useState(() => new Date().toLocaleString());
 
   return (
     <>

@@ -134,6 +134,36 @@ func TestSchadenplatzService_RecordCasualties_AccumulatesDeltas(t *testing.T) {
 	assert.Equal(t, 1, state.Casualties.Vermisste)
 }
 
+func TestSchadenplatzService_RecordCasualties_RetriageReplacesValues(t *testing.T) {
+	incSvc, spSvc := setupSchadenplatzServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Massenanfall", nil, nil, nil, testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Triage", nil, testActor)
+	require.NoError(t, err)
+
+	msgID := shared.MessageID(newID())
+	at := time.Date(2026, 1, 15, 11, 0, 0, 0, time.UTC)
+
+	// First triage: 2 injured.
+	_, err = spSvc.RecordCasualties(ctx(), sp.ID, msgID,
+		schadenplatz.CasualtyDeltas{Verletzte: 2}, &at, testActor)
+	require.NoError(t, err)
+
+	// Re-triage of the same message: 0 injured, 2 missing.
+	state, err := spSvc.RecordCasualties(ctx(), sp.ID, msgID,
+		schadenplatz.CasualtyDeltas{Vermisste: 2}, &at, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, 0, state.Casualties.Verletzte, "re-triage must replace, not add to, earlier values")
+	assert.Equal(t, 2, state.Casualties.Vermisste)
+
+	// Re-triage down to all zeros clears the message's contribution.
+	state, err = spSvc.RecordCasualties(ctx(), sp.ID, msgID,
+		schadenplatz.CasualtyDeltas{}, &at, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, 0, state.Casualties.Vermisste)
+	assert.Equal(t, 0, state.Casualties.Verletzte)
+}
+
 func TestSchadenplatzService_RecordCasualties_ClosedIncidentRejected(t *testing.T) {
 	incSvc, spSvc := setupSchadenplatzServices(t)
 

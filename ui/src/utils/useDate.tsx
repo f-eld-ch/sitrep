@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 export const useDate = () => {
   const { i18n } = useTranslation();
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(new Date());
