@@ -11186,7 +11186,7 @@ __metadata:
     i18next-browser-languagedetector: "npm:^8.2.1"
     jsdom: "npm:^30.1.2"
     lodash: "npm:^4.18.1"
-    maplibre-gl: "npm:6.11.2"
+    maplibre-gl: "npm:6.12.0"
     ol: "npm:^10.10.0"
     oxfmt: "npm:^0.72.0"
     oxlint: "npm:^1.87.0"
