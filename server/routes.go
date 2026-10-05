@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	echootel "github.com/labstack/echo-opentelemetry"
+	echootel "github.com/labstack/echo-otel/v5"
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
