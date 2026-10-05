@@ -1647,12 +1647,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@flipt-io/flipt-client-js@npm:0.5.1":
-  version: 0.5.1
-  resolution: "@flipt-io/flipt-client-js@npm:0.5.1"
+"@flipt-io/flipt-client-js@npm:0.6.0":
+  version: 0.6.0
+  resolution: "@flipt-io/flipt-client-js@npm:0.6.0"
   dependencies:
+    eventsource: "npm:^4.1.0"
     node-fetch: "npm:^3.3.0"
-  checksum: 10/65e9bf1dcb1382459d147110e0057ebf236d59daa5ef492509bfa0de0dac185efbda668741d21f2f4fc55919036e54bab31021dea811f74dbbd7bd27fbe8afd6
+  checksum: 10/20845d4da98f39d054dad5defb8b6ce2ec029ca0b265ecdbd01764d93f23b71b369e2b4e8b22b1604c80b1d49a86c3c99fb76d158531e74bbb561c39c2275c23
   languageName: node
   linkType: hard
 
@@ -6482,6 +6483,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eventsource-parser@npm:^3.0.1":
+  version: 3.1.1
+  resolution: "eventsource-parser@npm:3.1.1"
+  checksum: 10/4ed3fbd0ea5b7041c3d14e6ab686077bc1b93ce230839d50ca735a39754ee17be2402c02be9e6608b325aa7a1e151bfd341ce4c985cb0d0ac2898a0712ab4826
+  languageName: node
+  linkType: hard
+
+"eventsource@npm:^4.1.0":
+  version: 4.1.1
+  resolution: "eventsource@npm:4.1.1"
+  dependencies:
+    eventsource-parser: "npm:^3.0.1"
+  checksum: 10/fa1e55bd05c3ecf7768ae75ece4be9961e2b3104877b974eee10dd0eaafd0813b7d25a3ba1a7d72d16ab72abb3155a2c9156e9f0a20b1673dac95426fe12b768
+  languageName: node
+  linkType: hard
+
 "expect-type@npm:^1.4.0":
   version: 1.4.0
   resolution: "expect-type@npm:1.4.0"
@@ -11137,7 +11154,7 @@ __metadata:
     "@f-eld-ch/babs-react": "npm:^0.7.0"
     "@f-eld-ch/babs-sprites": "npm:^0.7.0"
     "@fast-check/vitest": "npm:^0.5.0"
-    "@flipt-io/flipt-client-js": "npm:0.5.1"
+    "@flipt-io/flipt-client-js": "npm:0.6.0"
     "@fortawesome/fontawesome-svg-core": "npm:^7.3.1"
     "@fortawesome/free-brands-svg-icons": "npm:^7.3.1"
     "@fortawesome/free-regular-svg-icons": "npm:^7.3.1"
