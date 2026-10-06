@@ -897,7 +897,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                           next.add(realId);
                           return next;
                         });
-                        void resourcesResult.refresh();
                       }}
                       onCancelled={(tempId) => {
                         setSelectedResourceIds((prev) => {

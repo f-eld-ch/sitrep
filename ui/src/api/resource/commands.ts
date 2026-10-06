@@ -63,6 +63,7 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
   };
 
   const alertResource = async (args: AlertResourceArgs): Promise<{ resourceId: string }> => {
+    recordMutation();
     const tempId = args.tempId ?? `temp-${Date.now()}`;
     // Use occurredAt for the optimistic statusAt so the resource passes the
     // message-time cutoff filter in the picker. Falls back to now when absent.
