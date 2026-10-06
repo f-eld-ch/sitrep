@@ -20,6 +20,7 @@ import { useBabsIcons } from "components/babs/useBabsIcons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronRight, faPrint } from "@fortawesome/free-solid-svg-icons";
 import ResourceTable from "./ResourceTable";
+import { deployedPersonnel } from "./personnel";
 
 const statusVariant: Record<ResourceStatus, TagVariant> = {
   AUFGEBOTEN: "warning",
@@ -96,10 +97,6 @@ function personnelByStatus(resources: Resource[]): StatusPersonnel {
   return totals;
 }
 
-function totalPersonnel(resources: Resource[]): number {
-  return resources.reduce((total, resource) => total + resource.personnelCount, 0);
-}
-
 function StatusBadges({ totals }: { totals: StatusPersonnel }) {
   const { t } = useTranslation();
   return (
@@ -147,7 +144,7 @@ function FormationKpis({
                 )}
               </span>
               <p className="text-2xl font-bold text-fg tabular-nums">
-                {totalPersonnel(group.resources)}
+                {deployedPersonnel(group.resources)}
               </p>
             </div>
           </div>
@@ -466,7 +463,7 @@ function Mitteltabelle({
                     </button>
                   </td>
                   <td className="px-2 py-1.5 text-right font-semibold text-fg tabular-nums">
-                    {!incidentOpen && totalPersonnel(group.resources)}
+                    {!incidentOpen && deployedPersonnel(group.resources)}
                   </td>
                   <td className="px-2 py-1.5">
                     {!incidentOpen && <StatusBadges totals={personnelByStatus(group.resources)} />}
@@ -509,7 +506,7 @@ function Mitteltabelle({
                             </button>
                           </td>
                           <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
-                            {!formationOpen && totalPersonnel(formationGroup.resources)}
+                            {!formationOpen && deployedPersonnel(formationGroup.resources)}
                           </td>
                           <td className="px-2 py-1.5">
                             {!formationOpen && (
@@ -545,7 +542,7 @@ function Mitteltabelle({
                                   </td>
                                   <td className="px-2 py-1.5 text-right font-medium text-fg tabular-nums">
                                     {!homeLocationOpen &&
-                                      totalPersonnel(homeLocationGroup.resources)}
+                                      deployedPersonnel(homeLocationGroup.resources)}
                                   </td>
                                   <td className="px-2 py-1.5">
                                     {!homeLocationOpen && (

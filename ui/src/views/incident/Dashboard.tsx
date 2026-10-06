@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
+import { deployedPersonnel } from "views/resource/personnel";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
   "AUFGEBOTEN",
@@ -65,10 +66,6 @@ function personnelByStatus(resources: Resource[]) {
       .filter((resource) => resource.status === status)
       .reduce((sum, resource) => sum + resource.personnelCount, 0),
   })).filter((row) => row.total > 0);
-}
-
-function totalPersonnel(resources: Resource[]) {
-  return resources.reduce((sum, resource) => sum + resource.personnelCount, 0);
 }
 
 function PriorityMessageStack({
@@ -144,7 +141,7 @@ function DashboardKpis({
                       ) : null}
                     </span>
                     <span className="text-lg font-bold text-fg tabular-nums">
-                      {totalPersonnel(group.resources)}
+                      {deployedPersonnel(group.resources)}
                     </span>
                   </span>
                 </div>
