@@ -322,6 +322,86 @@ describe("useReactivateResource", () => {
   });
 });
 
+describe("useReactivateResource cache update", () => {
+  it("puts the resource on its new Schadenplatz exactly once and removes it from the others", async () => {
+    const mutate = await setupMutation({ data: {} });
+
+    const { result } = renderHook(() => useReactivateResource());
+    await result.current[0]({ id: "res-1" });
+
+    const { update } = mutate.mock.calls[0][0] as {
+      update: (cache: unknown, result: { data: unknown }) => void;
+    };
+
+    const reactivated = {
+      __typename: "Resource",
+      id: "res-1",
+      incidentId: "inc-1",
+      schadenplatzId: "sp-default",
+    };
+    const other = {
+      __typename: "Resource",
+      id: "res-2",
+      incidentId: "inc-1",
+      schadenplatzId: "sp-default",
+    };
+    const cache = {
+      identify: vi.fn(() => "Resource:res-1"),
+      writeFragment: vi.fn(),
+      writeQuery: vi.fn(),
+      readQuery: vi.fn(() => ({
+        incident: {
+          id: "inc-1",
+          schadenplaetze: [
+            { id: "sp-default", isDefault: true, resources: [other] },
+            // A stale entry on another Schadenplatz must not survive the move.
+            {
+              id: "sp-named",
+              isDefault: false,
+              resources: [{ ...reactivated, schadenplatzId: "sp-named" }],
+            },
+          ],
+        },
+      })),
+    };
+
+    update(cache, { data: { reactivateResource: reactivated } });
+
+    expect(cache.writeFragment).toHaveBeenCalledWith(
+      expect.objectContaining({ data: reactivated }),
+    );
+    const written = cache.writeQuery.mock.calls[0][0] as {
+      data: { incident: { schadenplaetze: { id: string; resources: { id: string }[] }[] } };
+    };
+    const byId = Object.fromEntries(
+      written.data.incident.schadenplaetze.map((sp) => [sp.id, sp.resources.map((r) => r.id)]),
+    );
+    expect(byId).toEqual({ "sp-default": ["res-2", "res-1"], "sp-named": [] });
+  });
+
+  it("does nothing when the mutation returned no data", async () => {
+    const mutate = await setupMutation({ data: {} });
+
+    const { result } = renderHook(() => useReactivateResource());
+    await result.current[0]({ id: "res-1" });
+
+    const { update } = mutate.mock.calls[0][0] as {
+      update: (cache: unknown, result: { data: unknown }) => void;
+    };
+    const cache = {
+      identify: vi.fn(),
+      writeFragment: vi.fn(),
+      writeQuery: vi.fn(),
+      readQuery: vi.fn(),
+    };
+
+    update(cache, { data: undefined });
+
+    expect(cache.writeFragment).not.toHaveBeenCalled();
+    expect(cache.writeQuery).not.toHaveBeenCalled();
+  });
+});
+
 describe("useCreateSchadenplatz", () => {
   it("passes occurredAt as ISO string when provided", async () => {
     const mutate = await setupMutation({
