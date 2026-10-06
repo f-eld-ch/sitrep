@@ -30,6 +30,7 @@ import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
 import type { ResourceStatus } from "api";
+import { CASUALTY_CATEGORIES, type CasualtyCategory } from "views/casualties/categories";
 import { Button, Notification, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { Spinner } from "components";
@@ -319,13 +320,8 @@ function TriageSummary(props: {
                       <div className="divide-y divide-border px-3">
                         {CASUALTY_CATEGORIES.filter((cat) => sp[cat.key] !== 0).map((cat) => (
                           <div key={cat.key} className="flex items-center gap-2 py-1.5">
-                            {cat.babsId && iconsLoaded ? (
+                            {iconsLoaded ? (
                               <BabsIcon icon={cat.babsId} size={20} fallback={null} />
-                            ) : cat.faIcon ? (
-                              <FontAwesomeIcon
-                                icon={cat.faIcon}
-                                className="text-sm text-fg-muted"
-                              />
                             ) : null}
                             <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
                               {sp[cat.key]}
@@ -1167,21 +1163,6 @@ export type CasualtyDeltas = {
   eingeschlossene: number;
 };
 
-type CasualtyCategory = {
-  key: keyof CasualtyDeltas;
-  labelKey: string;
-  babsId?: string;
-  faIcon?: import("@fortawesome/fontawesome-svg-core").IconDefinition;
-};
-
-const CASUALTY_CATEGORIES: CasualtyCategory[] = [
-  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
-  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
-  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
-  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
-  { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
-];
-
 function CasualtySection({
   value,
   spCasualties,
@@ -1228,11 +1209,7 @@ function CasualtySection({
               return (
                 <div key={cat.key} className="flex items-center gap-2">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                    {cat.babsId && iconsLoaded ? (
-                      <BabsIcon icon={cat.babsId} size={30} fallback={null} />
-                    ) : cat.faIcon ? (
-                      <FontAwesomeIcon icon={cat.faIcon} className="text-lg text-fg-muted" />
-                    ) : null}
+                    {iconsLoaded ? <BabsIcon icon={cat.babsId} size={30} fallback={null} /> : null}
                   </span>
                   <span
                     className={clsx(
@@ -1274,11 +1251,7 @@ function CasualtyRow({
   return (
     <div className="flex items-center gap-2 px-2 py-1.5">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-        {category.babsId && iconsLoaded ? (
-          <BabsIcon icon={category.babsId} size={18} fallback={null} />
-        ) : category.faIcon ? (
-          <FontAwesomeIcon icon={category.faIcon} className="text-xs text-fg-muted" />
-        ) : null}
+        {iconsLoaded ? <BabsIcon icon={category.babsId} size={18} fallback={null} /> : null}
       </span>
       <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
       <div className="flex shrink-0 items-center gap-1">
