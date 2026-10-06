@@ -1,7 +1,16 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- Correct casualties when re-triaging a message ([#1918](https://github.com/f-eld-ch/sitrep/issues/1918)) - ([5e0b4fc](https://github.com/f-eld-ch/sitrep/commit/5e0b4fc9edb64080e14211e079639c7c8a5a5430))
+
 ### ⚙️  Other
 
+- *(deps)* Bump modernc.org/sqlite from 1.59.0 to 1.60.1 ([#1921](https://github.com/f-eld-ch/sitrep/issues/1921)) - ([c3a198f](https://github.com/f-eld-ch/sitrep/commit/c3a198f7ef84f5fe5f402a64f871868d0578b569))
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.5.1 to 0.6.0 in /ui ([#1928](https://github.com/f-eld-ch/sitrep/issues/1928)) - ([9369261](https://github.com/f-eld-ch/sitrep/commit/9369261e88568f9d69d810c1a01cee82f905f5d6))
+- *(deps)* Bump maplibre-gl from 6.11.2 to 6.12.0 in /ui ([#1926](https://github.com/f-eld-ch/sitrep/issues/1926)) - ([29b5a50](https://github.com/f-eld-ch/sitrep/commit/29b5a5060a923822519fbd9efc7ae5b7188a8b69))
+- *(deps)* Replace echo-opentelemetry with echo-otel/v5 ([#1919](https://github.com/f-eld-ch/sitrep/issues/1919)) - ([ced15b3](https://github.com/f-eld-ch/sitrep/commit/ced15b3cfba96ca0091c29949c7888cdd30fd616))
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.58 to 2.5.59 ([#1925](https://github.com/f-eld-ch/sitrep/issues/1925)) - ([1183006](https://github.com/f-eld-ch/sitrep/commit/1183006448da119c8ef9d6c2536d1cc5ede7af60))
 - *(deps)* Bump github.com/labstack/echo-opentelemetry ([#1913](https://github.com/f-eld-ch/sitrep/issues/1913)) - ([49dd2f8](https://github.com/f-eld-ch/sitrep/commit/49dd2f8d57900e907aa4be6a2ea7d7a54c4832c9))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 3 updates ([#1917](https://github.com/f-eld-ch/sitrep/issues/1917)) - ([ccd9901](https://github.com/f-eld-ch/sitrep/commit/ccd990172c602634ba214ea394d203d9c4021040))
 - *(deps)* Bump github.com/labstack/echo/v5 from 5.3.1 to 5.4.0 ([#1914](https://github.com/f-eld-ch/sitrep/issues/1914)) - ([17f73e1](https://github.com/f-eld-ch/sitrep/commit/17f73e1b00f42e55720507c0a349b845262ce1ba))
