@@ -72,7 +72,7 @@ func NewResourceHandler() *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 5 }
+func (h *ResourceHandler) Version() int { return 6 }
 
 func (h *ResourceHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -89,7 +89,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved",
+	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved", "Reactivated",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
 		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
 		return true
@@ -274,6 +274,41 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 				row.SuccessorID = &succID
 			}
+		}
+
+	case "Reactivated":
+		var d struct {
+			SchadenplatzID string `json:"schadenplatzId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		spID, err := uuid.Parse(d.SchadenplatzID)
+		if err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			at := e.OccurredAt
+
+			row.SchadenplatzID = spID
+			row.Status = "AUFGEBOTEN"
+			row.StatusAt = at
+			row.AlertedAt = at
+			row.Hauptaufgabe = ""
+			row.ReadyAt = nil
+			row.DeployedAt = nil
+			row.StoodDownAt = nil
+			row.RelievedAt = nil
+			row.EinsatzBeginn = nil
+			row.EinsatzEnde = nil
+			row.PredecessorID = nil
+			row.SuccessorID = nil
+			row.DeploymentLat = nil
+			row.DeploymentLng = nil
+			row.DeploymentLabel = nil
+			row.UpdatedAt = at
 		}
 
 	case "SuccessionLinked":

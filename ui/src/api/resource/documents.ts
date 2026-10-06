@@ -7,6 +7,8 @@ import type {
   ChangeHauptaufgabeMutationVariables,
   DeployResourceMutation,
   DeployResourceMutationVariables,
+  ReactivateResourceMutation,
+  ReactivateResourceMutationVariables,
   GetIncidentResourcesQuery,
   GetIncidentResourcesQueryVariables,
   HandOverMutation,
@@ -170,6 +172,18 @@ export const DEPLOY_RESOURCE: TypedDocumentNode<
   ${RESOURCE_FIELDS}
   mutation DeployResource($id: ID!, $at: DateTime) {
     deployResource(id: $id, at: $at) {
+      ...ResourceFields
+    }
+  }
+`;
+
+export const REACTIVATE_RESOURCE: TypedDocumentNode<
+  ReactivateResourceMutation,
+  ReactivateResourceMutationVariables
+> = gql`
+  ${RESOURCE_FIELDS}
+  mutation ReactivateResource($id: ID!, $at: DateTime) {
+    reactivateResource(id: $id, at: $at) {
       ...ResourceFields
     }
   }

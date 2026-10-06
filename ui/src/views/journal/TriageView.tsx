@@ -1,6 +1,8 @@
 import {
   faCheck,
+  faChevronDown,
   faChevronLeft,
+  faChevronRight,
   faMinus,
   faPen,
   faPlus,
@@ -30,6 +32,8 @@ import { useParams } from "react-router";
 import { type Division, PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
 import type { ResourceStatus } from "api";
+import { CASUALTY_CATEGORIES, type CasualtyCategory } from "views/casualties/categories";
+import { resourceStateAt } from "./resourceSnapshot";
 import { Button, Notification, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { Spinner } from "components";
@@ -42,6 +46,7 @@ import {
   useRecordCasualties,
   useAlertResource,
   useMarkResourceReady,
+  useReactivateResource,
   useDeployResource,
   useHandOver,
   useStandDownResource,
@@ -141,68 +146,6 @@ function Stepper({
       })}
     </nav>
   );
-}
-
-interface ResourceSnapshot {
-  status: ResourceStatus;
-  personnelCount: number;
-  hauptaufgabe: string;
-  deploymentLabel: string | null;
-  successorId: string | null;
-}
-
-function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
-  const ts = at.getTime();
-
-  // Check deployment history periods in chronological order
-  const activePeriod = r.deploymentHistory.find((p) => {
-    const start = new Date(p.startedAt).getTime();
-    const end = p.endedAt ? new Date(p.endedAt).getTime() : Infinity;
-    return ts >= start && ts < end;
-  });
-  if (activePeriod) {
-    // For ongoing deployments (endedAt null) prefer the live resource fields —
-    // the history entry's deploymentLabel was captured at deploy time and may
-    // predate a subsequent updateDeploymentLocation call.
-    const ongoing = activePeriod.endedAt === null;
-    return {
-      status: "EINGESETZT",
-      personnelCount: activePeriod.personnelCount,
-      hauptaufgabe: ongoing ? r.hauptaufgabe : activePeriod.hauptaufgabe,
-      deploymentLabel: ongoing
-        ? (r.deploymentLocation?.label ?? activePeriod.deploymentLabel ?? null)
-        : (activePeriod.deploymentLabel ?? null),
-      successorId: null,
-    };
-  }
-
-  if (r.relievedAt && ts >= new Date(r.relievedAt).getTime()) {
-    return {
-      status: "ABGELOEST",
-      personnelCount: r.personnelCount,
-      hauptaufgabe: "",
-      deploymentLabel: null,
-      successorId: r.successorId ?? null,
-    };
-  }
-
-  if (r.readyAt && ts >= new Date(r.readyAt).getTime()) {
-    return {
-      status: "EINSATZBEREIT",
-      personnelCount: r.personnelCount,
-      hauptaufgabe: "",
-      deploymentLabel: null,
-      successorId: null,
-    };
-  }
-
-  return {
-    status: "AUFGEBOTEN",
-    personnelCount: r.personnelCount,
-    hauptaufgabe: "",
-    deploymentLabel: null,
-    successorId: null,
-  };
 }
 
 function TriageSummary(props: {
@@ -319,13 +262,8 @@ function TriageSummary(props: {
                       <div className="divide-y divide-border px-3">
                         {CASUALTY_CATEGORIES.filter((cat) => sp[cat.key] !== 0).map((cat) => (
                           <div key={cat.key} className="flex items-center gap-2 py-1.5">
-                            {cat.babsId && iconsLoaded ? (
+                            {iconsLoaded ? (
                               <BabsIcon icon={cat.babsId} size={20} fallback={null} />
-                            ) : cat.faIcon ? (
-                              <FontAwesomeIcon
-                                icon={cat.faIcon}
-                                className="text-sm text-fg-muted"
-                              />
                             ) : null}
                             <span className="w-6 text-right text-base font-bold text-danger tabular-nums">
                               {sp[cat.key]}
@@ -431,6 +369,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
 
   const [triageMessage, triageState] = useTriageMessage();
   const [recordCasualties] = useRecordCasualties();
+  const [reactivateResource] = useReactivateResource();
   const resourcesResult = useIncidentResources(incidentId);
   const [createSchadenplatz] = useCreateSchadenplatz();
   const iconsLoaded = useBabsIcons();
@@ -476,6 +415,34 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
       else next.add(id);
       return next;
     });
+
+  // Relieved units of this incident that can come back into service (e.g. on day 2 of a
+  // multi-day operation). Units relieved only after this message was written are left out.
+  const relievedResources = useMemo(
+    () =>
+      resourcesResult.status === "ready"
+        ? resourcesResult.data.resources.filter(
+            (r) =>
+              r.incidentId === incidentId &&
+              r.status === "ABGELOEST" &&
+              (!r.relievedAt || new Date(r.relievedAt).getTime() <= message.time.getTime()),
+          )
+        : [],
+    [resourcesResult, incidentId, message.time],
+  );
+
+  // Reactivate a relieved unit as of the message time and select it right away; the
+  // optimistic update has already put it back on the default Schadenplatz.
+  const reactivateAndSelect = (id: string) => {
+    setSelectedResourceIds((prev) => new Set([...prev, id]));
+    void reactivateResource({ id, at: message.time }).catch(() =>
+      setSelectedResourceIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      }),
+    );
+  };
   const editorRef = useRef<MessageEditorFormHandle>(null);
   const savedAssignments = useRef<Division[] | null>(null);
 
@@ -875,6 +842,8 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                       allResources={
                         resourcesResult.status === "ready" ? resourcesResult.data.resources : []
                       }
+                      relievedResources={relievedResources}
+                      onReactivate={reactivateAndSelect}
                       selectedIds={selectedResourceIds}
                       onToggle={toggleResourceId}
                       onAttach={(ids) =>
@@ -891,6 +860,8 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                       messageTime={message.time}
                       iconsLoaded={iconsLoaded}
                       existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
+                      relievedResources={relievedResources}
+                      onReactivate={reactivateAndSelect}
                       onAlerted={(tempId) => {
                         setSelectedResourceIds((prev) => new Set([...prev, tempId]));
                       }}
@@ -901,7 +872,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                           next.add(realId);
                           return next;
                         });
-                        void resourcesResult.refresh();
                       }}
                       onCancelled={(tempId) => {
                         setSelectedResourceIds((prev) => {
@@ -1167,21 +1137,6 @@ export type CasualtyDeltas = {
   eingeschlossene: number;
 };
 
-type CasualtyCategory = {
-  key: keyof CasualtyDeltas;
-  labelKey: string;
-  babsId?: string;
-  faIcon?: import("@fortawesome/fontawesome-svg-core").IconDefinition;
-};
-
-const CASUALTY_CATEGORIES: CasualtyCategory[] = [
-  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
-  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
-  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
-  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
-  { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
-];
-
 function CasualtySection({
   value,
   spCasualties,
@@ -1228,11 +1183,7 @@ function CasualtySection({
               return (
                 <div key={cat.key} className="flex items-center gap-2">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                    {cat.babsId && iconsLoaded ? (
-                      <BabsIcon icon={cat.babsId} size={30} fallback={null} />
-                    ) : cat.faIcon ? (
-                      <FontAwesomeIcon icon={cat.faIcon} className="text-lg text-fg-muted" />
-                    ) : null}
+                    {iconsLoaded ? <BabsIcon icon={cat.babsId} size={30} fallback={null} /> : null}
                   </span>
                   <span
                     className={clsx(
@@ -1274,11 +1225,7 @@ function CasualtyRow({
   return (
     <div className="flex items-center gap-2 px-2 py-1.5">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-        {category.babsId && iconsLoaded ? (
-          <BabsIcon icon={category.babsId} size={18} fallback={null} />
-        ) : category.faIcon ? (
-          <FontAwesomeIcon icon={category.faIcon} className="text-xs text-fg-muted" />
-        ) : null}
+        {iconsLoaded ? <BabsIcon icon={category.babsId} size={18} fallback={null} /> : null}
       </span>
       <span className="min-w-0 flex-1 truncate text-xs">{label}</span>
       <div className="flex shrink-0 items-center gap-1">
@@ -1475,6 +1422,8 @@ const RESOURCE_PAGE_SIZE = 5;
 function ResourcePicker({
   schadenplaetze,
   allResources,
+  relievedResources,
+  onReactivate,
   selectedIds,
   onToggle,
   onAttach,
@@ -1484,6 +1433,8 @@ function ResourcePicker({
 }: {
   schadenplaetze: SchadenplatzWithResources[];
   allResources: Resource[];
+  relievedResources: Resource[];
+  onReactivate: (id: string) => void;
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onAttach: (ids: string[]) => void;
@@ -1495,6 +1446,7 @@ function ResourcePicker({
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(RESOURCE_PAGE_SIZE);
+  const [showRelieved, setShowRelieved] = useState(false);
 
   // Flat lookup including ABGELOEST — used so relieved units don't vanish from the selected list.
   const allResourcesById = useMemo(
@@ -1566,6 +1518,21 @@ function ResourcePicker({
   const visibleResources = filteredAvailable.slice(0, visibleCount);
   const hasMore = visibleCount < filteredAvailable.length;
 
+  // Relieved units that can be reactivated; the search applies to them as well.
+  const reactivatable = useMemo(
+    () =>
+      relievedResources.filter(
+        (r) =>
+          !selectedIds.has(r.id) &&
+          (!q ||
+            qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)
+              .toLowerCase()
+              .includes(q) ||
+            r.name.toLowerCase().includes(q)),
+      ),
+    [relievedResources, selectedIds, q, t],
+  );
+
   const toggleEditing = (id: string) => setEditingId((prev) => (prev === id ? null : id));
 
   return (
@@ -1635,9 +1602,47 @@ function ResourcePicker({
         </div>
       ) : q ? (
         <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
-      ) : availableResources.length === 0 && selectedResources.length === 0 ? (
+      ) : availableResources.length === 0 &&
+        selectedResources.length === 0 &&
+        relievedResources.length === 0 ? (
         <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResources")}</p>
       ) : null}
+
+      {/* Relieved units can be put back into service, e.g. on the next day */}
+      {reactivatable.length > 0 && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowRelieved((open) => !open)}
+            aria-expanded={showRelieved || !!q}
+            className="flex w-full items-center gap-2 px-1 py-1 text-left text-sm text-fg-muted hover:text-fg"
+          >
+            <FontAwesomeIcon
+              icon={showRelieved || q ? faChevronDown : faChevronRight}
+              className="text-xs"
+            />
+            {t("resource.relievedSection")} ({reactivatable.length})
+          </button>
+          {(showRelieved || q) && (
+            <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+              {reactivatable.map((r) => (
+                <AvailableResourceRow
+                  key={r.id}
+                  resource={r}
+                  currentSpName=""
+                  onSelect={() => {
+                    onReactivate(r.id);
+                    setSearch("");
+                  }}
+                  actionLabel={t("resource.actions.reactivate")}
+                  iconsLoaded={iconsLoaded}
+                  messageTime={messageTime}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1741,12 +1746,15 @@ function AvailableResourceRow({
   resource: r,
   currentSpName,
   onSelect,
+  actionLabel,
   iconsLoaded,
   messageTime,
 }: {
   resource: Resource;
   currentSpName: string;
   onSelect: () => void;
+  /** Text shown instead of the plus icon, for rows whose action is not "add". */
+  actionLabel?: string;
   iconsLoaded: boolean;
   messageTime: Date;
 }) {
@@ -1782,9 +1790,15 @@ function AvailableResourceRow({
           {snap.hauptaufgabe && ` · ${snap.hauptaufgabe}`}
           {snap.deploymentLabel && ` · ${snap.deploymentLabel}`}
         </span>
-        <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
+        {currentSpName && (
+          <span className="block truncate text-xs text-fg-muted/50">{currentSpName}</span>
+        )}
       </span>
-      <FontAwesomeIcon icon={faPlus} className="shrink-0 text-sm text-primary/60" />
+      {actionLabel ? (
+        <span className="shrink-0 text-xs font-medium text-primary">{actionLabel}</span>
+      ) : (
+        <FontAwesomeIcon icon={faPlus} className="shrink-0 text-sm text-primary/60" />
+      )}
     </button>
   );
 }
@@ -2174,9 +2188,9 @@ const FORMATIONS: FormationMeta[] = [
 ];
 
 const SIZES: SizeMeta[] = [
-  { key: "TRUPP", babsId: "4801", min: 1, max: 2 },
-  { key: "GRUPPE", babsId: "4802", min: 3, max: 12 },
-  { key: "ZUG", babsId: "4803", min: 13, max: 60 },
+  { key: "TRUPP", babsId: "4801", min: 1, max: 5 },
+  { key: "GRUPPE", babsId: "4802", min: 6, max: 19 },
+  { key: "ZUG", babsId: "4803", min: 20, max: 60 },
   { key: "KOMPANIE", babsId: "4804", min: 61, max: 300 },
   { key: "BATAILLON", babsId: "4805", min: 301, max: Infinity },
 ];
@@ -2220,6 +2234,8 @@ function AlertResourceForm({
   messageTime,
   iconsLoaded,
   existingResources,
+  relievedResources,
+  onReactivate,
   onAlerted,
   onReplaced,
   onCancelled,
@@ -2230,6 +2246,9 @@ function AlertResourceForm({
   messageTime?: Date;
   iconsLoaded: boolean;
   existingResources: Resource[];
+  /** Relieved units; a match is offered for reactivation instead of creating a duplicate. */
+  relievedResources: Resource[];
+  onReactivate: (id: string) => void;
   onAlerted?: (tempId: string) => void;
   onReplaced?: (tempId: string, realId: string) => void;
   onCancelled?: (tempId: string) => void;
@@ -2253,14 +2272,17 @@ function AlertResourceForm({
     (formation ? (FORMATIONS.find((f) => f.key === formation)?.babsId ?? null) : null);
 
   const canSubmit = !!formation && !!derivedSize && !!name.trim() && !!homeLocation.trim();
-  const identityConflict = existingResources.some(
-    (resource) =>
-      resource.status !== "ABGELOEST" &&
-      resource.formation === formation &&
-      resource.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase() &&
-      (resource.homeLocation?.name ?? "").trim().toLocaleLowerCase() ===
-        homeLocation.trim().toLocaleLowerCase(),
+  const sameIdentity = (resource: Resource) =>
+    resource.formation === formation &&
+    resource.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase() &&
+    (resource.homeLocation?.name ?? "").trim().toLocaleLowerCase() ===
+      homeLocation.trim().toLocaleLowerCase();
+  const activeConflict = existingResources.some(
+    (resource) => resource.status !== "ABGELOEST" && sameIdentity(resource),
   );
+  // A relieved unit with the same identity should be reactivated, not created a second time.
+  const relievedMatch = relievedResources.find(sameIdentity);
+  const identityConflict = activeConflict || !!relievedMatch;
 
   const handleSubmit = () => {
     if (identityConflict || !formation || !derivedSize) return;
@@ -2430,8 +2452,29 @@ function AlertResourceForm({
       {alertState.error && (
         <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
       )}
-      {identityConflict && (
+      {activeConflict && (
         <p className="text-xs text-danger">{t("resource.validation.duplicateIdentity")}</p>
+      )}
+      {!activeConflict && relievedMatch && (
+        <p className="flex flex-wrap items-center gap-2 text-xs text-danger">
+          {t("resource.validation.relievedIdentity")}
+          <Button
+            type="button"
+            variant="light"
+            size="xs"
+            onClick={() => {
+              onReactivate(relievedMatch.id);
+              setOpen(false);
+              setFormation(null);
+              setName("");
+              setPersonnelCount("");
+              setHauptaufgabe("");
+              setHomeLocation("");
+            }}
+          >
+            {t("resource.actions.reactivate")}
+          </Button>
+        </p>
       )}
 
       <div className="flex justify-end gap-2">

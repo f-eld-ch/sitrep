@@ -404,7 +404,8 @@
       "standDown": "Operation complete",
       "relieve": "Relieve",
       "dismiss": "Dismiss",
-      "alert": "Alert"
+      "alert": "Alert",
+      "reactivate": "Reactivate"
     },
     "fields": {
       "name": "Resource name",
@@ -448,8 +449,10 @@
     "validation": {
       "hauptaufgabeRequired": "Main task is required before deploying",
       "einsatzortRequired": "Deployment location is required before deploying",
-      "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists."
-    }
+      "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists.",
+      "relievedIdentity": "This unit is relieved – reactivate it instead of creating a new one."
+    },
+    "relievedSection": "Relieved"
   },
   "defaultAccess": {
     "title": "Default incident access",

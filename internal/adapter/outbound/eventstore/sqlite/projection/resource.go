@@ -20,7 +20,7 @@ func NewResourceHandler(db *sql.DB) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 5 }
+func (h *ResourceHandler) Version() int { return 6 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_resource`)
 	return err
@@ -32,7 +32,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved",
+	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved", "Reactivated",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
 		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
 		return true
@@ -184,9 +184,29 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			UPDATE readmodel_resource SET status='ABGELOEST', status_at=?, relieved_at=?, successor_id=?,
 				einsatz_ende=?,
 				deployment_history = CASE WHEN json_array_length(deployment_history) > 0
+						AND json_extract(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt') IS NULL
 					THEN json_set(deployment_history, '$[' || (json_array_length(deployment_history)-1) || '].endedAt', ?)
 					ELSE deployment_history END,
 				updated_at=? WHERE id=?`, now, now, d.SuccessorID, now, now, now, id)
+
+	case "Reactivated":
+		var d struct {
+			SchadenplatzID string `json:"schadenplatzId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		// Starts a new cycle: deployment_history is kept, everything else about the previous
+		// Einsatz is reset. Idempotent — replaying yields the same row.
+		return exec(tx, ctx, `
+			UPDATE readmodel_resource SET status='AUFGEBOTEN', status_at=?, alerted_at=?,
+				schadenplatz_id=?, hauptaufgabe='',
+				ready_at=NULL, deployed_at=NULL, stood_down_at=NULL, relieved_at=NULL,
+				einsatz_beginn=NULL, einsatz_ende=NULL, predecessor_id=NULL, successor_id=NULL,
+				deployment_lat=NULL, deployment_lng=NULL, deployment_label=NULL,
+				updated_at=? WHERE id=?`,
+			now, now, d.SchadenplatzID, now, id)
 
 	case "SuccessionLinked":
 		var d struct {

@@ -450,6 +450,14 @@ type ResourceService interface {
 		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
+	// ReactivateResource returns a relieved resource to AUFGEBOTEN on the incident's default
+	// Schadenplatz, keeping its deployment history.
+	ReactivateResource(
+		ctx context.Context,
+		id shared.ResourceID,
+		at *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
 	RelieveResource(
 		ctx context.Context,
 		id shared.ResourceID,

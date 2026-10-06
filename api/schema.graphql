@@ -587,6 +587,11 @@ type Mutation {
 
   """Deploy a resource (EINSATZBEREIT → EINGESETZT)."""
   deployResource(id: ID!, at: DateTime): Resource!
+  """
+  Returns a relieved resource to AUFGEBOTEN on the default Schadenplatz (e.g. next day of a
+  multi-day operation). Deployment history is kept; Einsatz start/end are reset.
+  """
+  reactivateResource(id: ID!, at: DateTime): Resource!
 
   """Stand a resource down temporarily (EINGESETZT → EINSATZBEREIT)."""
   standDownResource(id: ID!, at: DateTime): Resource!

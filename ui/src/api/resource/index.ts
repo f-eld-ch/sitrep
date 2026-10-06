@@ -5,6 +5,7 @@ export {
   useDeployResource,
   useHandOver,
   useMarkResourceReady,
+  useReactivateResource,
   useReassignResource,
   useRelieveResource,
   useStandDownResource,

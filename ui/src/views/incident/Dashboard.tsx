@@ -1,12 +1,14 @@
 import { Spinner } from "components";
 import { Notification, PageTitle, Tag } from "components/ui";
 import { useIncidentMessages, useIncidentResources } from "api";
-import type { Resource, ResourceFormation, ResourceStatus, SchadenplatzWithResources } from "api";
+import type { Resource, ResourceFormation, ResourceStatus } from "api";
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { Map as IncidentMap } from "views/map";
 import { FilterableMessageStack } from "views/journal/FilterableMessageStack";
 import JournalMessage from "views/journal/Message";
+import { CasualtyList } from "views/casualties/CasualtyList";
+import { ZERO_CASUALTIES, addCasualties, type CasualtyTotals } from "views/casualties/categories";
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
@@ -15,6 +17,7 @@ import { useMemo, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
+import { deployedPersonnel } from "views/resource/personnel";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
   "AUFGEBOTEN",
@@ -32,40 +35,6 @@ const FORMATION_ICON: Record<ResourceFormation, string> = {
   ARMEE: "4706",
   OTHER: "4802",
 };
-
-type CasualtyTotals = SchadenplatzWithResources["casualties"];
-
-type CasualtyCategory = {
-  key: keyof CasualtyTotals;
-  labelKey: string;
-  babsId: string;
-};
-
-const CASUALTY_CATEGORIES: CasualtyCategory[] = [
-  { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
-  { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
-  { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
-  { key: "eingeschlossene", labelKey: "casualties.eingeschlossene", babsId: "1304" },
-  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
-];
-
-const ZERO_CASUALTIES: CasualtyTotals = {
-  vermisste: 0,
-  tote: 0,
-  verletzte: 0,
-  obdachlose: 0,
-  eingeschlossene: 0,
-};
-
-function addCasualties(left: CasualtyTotals, right: CasualtyTotals): CasualtyTotals {
-  return {
-    vermisste: left.vermisste + right.vermisste,
-    tote: left.tote + right.tote,
-    verletzte: left.verletzte + right.verletzte,
-    obdachlose: left.obdachlose + right.obdachlose,
-    eingeschlossene: left.eingeschlossene + right.eingeschlossene,
-  };
-}
 
 function casualtyTotals(resourcesResult: ReturnType<typeof useIncidentResources>): CasualtyTotals {
   if (resourcesResult.status !== "ready") return ZERO_CASUALTIES;
@@ -97,10 +66,6 @@ function personnelByStatus(resources: Resource[]) {
       .filter((resource) => resource.status === status)
       .reduce((sum, resource) => sum + resource.personnelCount, 0),
   })).filter((row) => row.total > 0);
-}
-
-function totalPersonnel(resources: Resource[]) {
-  return resources.reduce((sum, resource) => sum + resource.personnelCount, 0);
 }
 
 function PriorityMessageStack({
@@ -150,26 +115,7 @@ function DashboardKpis({
     <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto">
       <section className="rounded border border-border bg-bg-elevated p-3">
         <h2 className="mb-3 text-sm font-semibold text-fg">{t("casualties.overview")}</h2>
-        <div className="space-y-2">
-          {CASUALTY_CATEGORIES.map((cat) => (
-            <div
-              key={cat.key}
-              className="flex items-center gap-2 rounded border border-border px-2 py-1.5"
-            >
-              <span className="min-w-0 flex-1 truncate text-xs text-fg-muted">
-                {t(cat.labelKey)}
-              </span>
-              <span className="flex shrink-0 items-center gap-1.5">
-                <span className="flex h-8 w-8 items-center justify-center">
-                  {iconsLoaded ? <BabsIcon icon={cat.babsId} size={24} fallback={null} /> : null}
-                </span>
-                <span className="text-lg font-bold text-danger tabular-nums">
-                  {casualties[cat.key]}
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
+        <CasualtyList totals={casualties} iconsLoaded={iconsLoaded} />
       </section>
 
       <section className="rounded border border-border bg-bg-elevated p-3">
@@ -195,7 +141,7 @@ function DashboardKpis({
                       ) : null}
                     </span>
                     <span className="text-lg font-bold text-fg tabular-nums">
-                      {totalPersonnel(group.resources)}
+                      {deployedPersonnel(group.resources)}
                     </span>
                   </span>
                 </div>

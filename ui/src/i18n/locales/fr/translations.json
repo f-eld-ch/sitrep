@@ -405,7 +405,8 @@
       "standDown": "Intervention terminée",
       "relieve": "Relever",
       "dismiss": "Libérer",
-      "alert": "Alerter"
+      "alert": "Alerter",
+      "reactivate": "Réactiver"
     },
     "fields": {
       "name": "Désignation",
@@ -448,8 +449,10 @@
     "validation": {
       "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
       "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",
-      "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà."
-    }
+      "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà.",
+      "relievedIdentity": "Cette unité est relevée – la réactiver plutôt que d'en créer une nouvelle."
+    },
+    "relievedSection": "Relevés"
   },
   "defaultAccess": {
     "title": "Accès par défaut aux événements",

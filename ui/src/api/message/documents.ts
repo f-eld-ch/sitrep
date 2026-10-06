@@ -107,6 +107,7 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
       linkedResourceIds
     }
     incident(id: $incidentId) {
+      id
       divisions {
         id
         name

@@ -542,3 +542,106 @@ func TestResource_FullReplay(t *testing.T) {
 	assert.NotNil(t, r2.EinsatzBeginn())
 	assert.Equal(t, &predID, r2.PredecessorID())
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Reactivate
+// ──────────────────────────────────────────────────────────────────────────────
+
+func TestResource_Reactivate(t *testing.T) {
+	id := shared.ResourceID(uuid.New())
+	day2 := at.Add(24 * time.Hour)
+	newSP := shared.SchadenplatzID(uuid.New())
+
+	// relievedOnDay1 returns a resource that was ready, deployed and relieved on day 1.
+	relievedOnDay1 := func(t *testing.T) *resource.Resource {
+		t.Helper()
+
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.MarkReady(actor, at.Add(time.Hour)))
+		require.NoError(t, r.Deploy(actor, at.Add(2*time.Hour)))
+
+		successorID := shared.ResourceID(uuid.New())
+		require.NoError(t, r.Relieve(&successorID, actor, at.Add(8*time.Hour)))
+
+		return r
+	}
+
+	t.Run("rejected unless relieved", func(t *testing.T) {
+		for name, setup := range map[string]func(*resource.Resource){
+			"aufgeboten":    func(*resource.Resource) {},
+			"einsatzbereit": func(r *resource.Resource) { require.NoError(t, r.MarkReady(actor, at)) },
+		} {
+			r := replay(t, id, []eventsourcing.Event{alerted(id)})
+			setup(r)
+
+			err := r.Reactivate(newSP, actor, day2)
+			require.ErrorIs(t, err, shared.ErrInvalidInput, name)
+		}
+	})
+
+	t.Run("re-enters aufgeboten and resets the cycle", func(t *testing.T) {
+		r := relievedOnDay1(t)
+		require.NoError(t, r.Reactivate(newSP, actor, day2))
+
+		assert.Equal(t, resource.StatusAufgeboten, r.Status())
+		assert.Equal(t, newSP, r.SchadenplatzID())
+		assert.Equal(t, day2, r.StatusAt())
+		assert.Equal(t, day2, r.AlertedAt())
+		assert.Nil(t, r.ReadyAt())
+		assert.Nil(t, r.DeployedAt())
+		assert.Nil(t, r.RelievedAt())
+		assert.Nil(t, r.EinsatzBeginn())
+		assert.Nil(t, r.EinsatzEnde())
+		assert.Nil(t, r.SuccessorID())
+		assert.Nil(t, r.PredecessorID())
+		assert.Empty(t, r.Hauptaufgabe())
+	})
+
+	t.Run("keeps deployment history and starts a new period on day 2", func(t *testing.T) {
+		r := relievedOnDay1(t)
+		require.Len(t, r.DeploymentHistory(), 1)
+
+		require.NoError(t, r.Reactivate(newSP, actor, day2))
+		require.Len(t, r.DeploymentHistory(), 1, "history survives reactivation")
+
+		ready := day2.Add(time.Hour)
+		require.NoError(t, r.MarkReady(actor, ready))
+		require.NoError(t, r.Deploy(actor, day2.Add(2*time.Hour)))
+
+		history := r.DeploymentHistory()
+		require.Len(t, history, 2)
+		assert.NotNil(t, history[0].EndedAt, "day-1 period stays closed")
+		assert.Nil(t, history[1].EndedAt)
+		require.NotNil(t, r.EinsatzBeginn())
+		assert.Equal(t, ready, *r.EinsatzBeginn(), "einsatzBeginn restarts on day 2")
+	})
+
+	t.Run("can be relieved again after reactivation", func(t *testing.T) {
+		r := relievedOnDay1(t)
+		require.NoError(t, r.Reactivate(newSP, actor, day2))
+		require.NoError(t, r.Relieve(nil, actor, day2.Add(time.Hour)))
+		assert.Equal(t, resource.StatusAbgeloest, r.Status())
+	})
+
+	t.Run("can take over after reactivation", func(t *testing.T) {
+		r := relievedOnDay1(t)
+		require.NoError(t, r.Reactivate(newSP, actor, day2))
+
+		predecessor := shared.ResourceID(uuid.New())
+		require.NoError(t, r.TakeOver(predecessor, "Aufgabe", nil, actor, day2.Add(time.Hour)))
+		assert.Equal(t, resource.StatusEingesetzt, r.Status())
+	})
+
+	t.Run("replays from persisted events", func(t *testing.T) {
+		r := relievedOnDay1(t)
+		require.NoError(t, r.Reactivate(newSP, actor, day2))
+		require.NoError(t, r.MarkReady(actor, day2.Add(time.Hour)))
+
+		replayed := replay(t, id, append([]eventsourcing.Event{alerted(id)}, r.Root().PendingEvents()...))
+		assert.Equal(t, r.Status(), replayed.Status())
+		assert.Equal(t, r.SchadenplatzID(), replayed.SchadenplatzID())
+		assert.Equal(t, r.EinsatzBeginn(), replayed.EinsatzBeginn())
+		assert.Len(t, replayed.DeploymentHistory(), 1)
+		assert.Equal(t, "Gruppe Alpha", replayed.Name())
+	})
+}

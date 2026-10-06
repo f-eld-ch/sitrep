@@ -1300,6 +1300,26 @@ func (r *mutationResolver) DeployResource(ctx context.Context, id string, at *ti
 	return resourceStateToModel(state), nil
 }
 
+// ReactivateResource is the resolver for the reactivateResource field.
+func (r *mutationResolver) ReactivateResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.ReactivateResource(ctx, shared.ResourceID(resID), at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
 // StandDownResource is the resolver for the standDownResource field.
 func (r *mutationResolver) StandDownResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error) {
 	actor, err := identity.ActorFrom(ctx)

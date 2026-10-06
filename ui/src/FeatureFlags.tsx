@@ -30,13 +30,13 @@ const Provider = (props: PropsWithChildren) => {
   useEffect(() => {
     const domain = document.location.host.split(":")[0];
     hashDomain(domain).then((domainHash) => {
-        OpenFeature.setContext({
-          targetingKey: userState.email,
-          domain,
-          domainHash,
-          email: userState.email,
-        });
+      OpenFeature.setContext({
+        targetingKey: userState.email,
+        domain,
+        domainHash,
+        email: userState.email,
       });
+    });
   }, [userState]);
 
   return <OpenFeatureProvider>{children}</OpenFeatureProvider>;
