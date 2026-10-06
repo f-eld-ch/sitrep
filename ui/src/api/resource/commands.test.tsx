@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   useAlertResource,
   useChangeHauptaufgabe,
+  useReactivateResource,
   useReassignResource,
   useUpdateContact,
   useUpdateDeploymentLocation,
@@ -234,6 +235,90 @@ describe("useUpdateContact", () => {
         variables: expect.objectContaining({ at: messageTime.toISOString() }),
       }),
     );
+  });
+});
+
+describe("useReactivateResource", () => {
+  const day1 = "2026-01-15T08:00:00.000Z";
+  const day2 = new Date("2026-01-16T07:00:00.000Z");
+  const relieved = {
+    __typename: "Resource",
+    id: "res-1",
+    incidentId: "inc-1",
+    schadenplatzId: "sp-named",
+    formation: "FW",
+    name: "Gruppe Alpha",
+    size: "GRUPPE",
+    personnelCount: 9,
+    hauptaufgabe: "Löschangriff",
+    contact: null,
+    homeLocation: null,
+    deploymentLocation: { lat: null, lng: null, label: "Brücke" },
+    status: "ABGELOEST",
+    statusAt: day1,
+    alertedAt: day1,
+    readyAt: day1,
+    deployedAt: day1,
+    stoodDownAt: null,
+    relievedAt: day1,
+    einsatzBeginn: day1,
+    einsatzEnde: day1,
+    predecessorId: null,
+    successorId: "res-2",
+    sourceMessageId: null,
+    deploymentHistory: [{ startedAt: day1, endedAt: day1 }],
+  };
+
+  it("passes at as ISO string when provided", async () => {
+    const mutate = await setupMutation({ data: {} });
+
+    const { result } = renderHook(() => useReactivateResource());
+    await result.current[0]({ id: "res-1", at: day2 });
+
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ variables: { id: "res-1", at: day2.toISOString() } }),
+    );
+  });
+
+  it("optimistically resets the cycle on the default Schadenplatz and keeps the history", async () => {
+    const mutate = await setupMutation({ data: {} });
+    const { useApolloClient } = await import("@apollo/client/react");
+    vi.mocked(useApolloClient).mockReturnValue({
+      cache: {
+        readFragment: vi.fn(() => relieved),
+        identify: vi.fn(() => "Resource:res-1"),
+        readQuery: vi.fn(() => ({
+          incident: { schadenplaetze: [{ id: "sp-default", isDefault: true }] },
+        })),
+      },
+    } as never);
+
+    const { result } = renderHook(() => useReactivateResource());
+    await result.current[0]({ id: "res-1", at: day2 });
+
+    // Restore the default client mock for the tests that follow.
+    vi.mocked(useApolloClient).mockReturnValue({
+      cache: { readFragment: vi.fn(() => null), identify: vi.fn(() => "") },
+    } as never);
+
+    const { optimisticResponse } = mutate.mock.calls[0][0] as {
+      optimisticResponse: { reactivateResource: Record<string, unknown> };
+    };
+    expect(optimisticResponse.reactivateResource).toMatchObject({
+      id: "res-1",
+      status: "AUFGEBOTEN",
+      schadenplatzId: "sp-default",
+      statusAt: day2.toISOString(),
+      alertedAt: day2.toISOString(),
+      readyAt: null,
+      relievedAt: null,
+      einsatzBeginn: null,
+      einsatzEnde: null,
+      successorId: null,
+      hauptaufgabe: "",
+      deploymentLocation: null,
+      deploymentHistory: relieved.deploymentHistory,
+    });
   });
 });
 

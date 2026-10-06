@@ -11,6 +11,7 @@ import {
   GET_INCIDENT_RESOURCES,
   HAND_OVER,
   MARK_RESOURCE_READY,
+  REACTIVATE_RESOURCE,
   REASSIGN_RESOURCE,
   RELIEVE_RESOURCE,
   RESOURCE_FIELDS,
@@ -214,6 +215,94 @@ export function useDeployResource(): CommandHook<{ id: string; at?: Date }> {
   };
 
   return [deploy, state];
+}
+
+/**
+ * Returns a relieved resource to AUFGEBOTEN on the incident's default Schadenplatz so it can be
+ * deployed again (e.g. the next day of a multi-day operation). Its deployment history is kept.
+ */
+export function useReactivateResource(): CommandHook<{ id: string; at?: Date }> {
+  const client = useApolloClient();
+  const readResource = useReadResource();
+  const [mutate, { loading, error }] = useMutation(REACTIVATE_RESOURCE);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const reactivate = async (args: { id: string; at?: Date }): Promise<void> => {
+    recordMutation();
+    const current = readResource(args.id);
+    const defaultSchadenplatzId = current
+      ? client.cache
+          .readQuery({
+            query: GET_INCIDENT_RESOURCES,
+            variables: { incidentId: current.incidentId },
+          })
+          ?.incident?.schadenplaetze.find((sp) => sp.isDefault)?.id
+      : undefined;
+    const at = (args.at ?? new Date()).toISOString();
+
+    await mutate({
+      variables: { id: args.id, at: args.at?.toISOString() },
+      optimisticResponse:
+        current && defaultSchadenplatzId
+          ? {
+              reactivateResource: {
+                ...current,
+                schadenplatzId: defaultSchadenplatzId,
+                status: "AUFGEBOTEN" as const,
+                statusAt: at,
+                alertedAt: at,
+                readyAt: null,
+                deployedAt: null,
+                stoodDownAt: null,
+                relievedAt: null,
+                einsatzBeginn: null,
+                einsatzEnde: null,
+                predecessorId: null,
+                successorId: null,
+                hauptaufgabe: "",
+                deploymentLocation: null,
+              },
+            }
+          : undefined,
+      update(cache, { data }) {
+        const resource = data?.reactivateResource;
+        if (!resource) return;
+        cache.writeFragment({
+          id: cache.identify(resource),
+          fragment: RESOURCE_FIELDS,
+          data: resource,
+        });
+        // Relieved resources are not part of any Schadenplatz list; put it back on its new one.
+        const cached = cache.readQuery({
+          query: GET_INCIDENT_RESOURCES,
+          variables: { incidentId: resource.incidentId },
+        });
+        if (!cached?.incident) return;
+        cache.writeQuery({
+          query: GET_INCIDENT_RESOURCES,
+          variables: { incidentId: resource.incidentId },
+          data: {
+            ...cached,
+            incident: {
+              ...cached.incident,
+              schadenplaetze: cached.incident.schadenplaetze.map((sp) => {
+                const others = sp.resources.filter((r) => r.id !== resource.id);
+                return sp.id === resource.schadenplatzId
+                  ? { ...sp, resources: [...others, resource] }
+                  : { ...sp, resources: others };
+              }),
+            },
+          },
+        });
+      },
+    });
+  };
+
+  return [reactivate, state];
 }
 
 export function useStandDownResource(): CommandHook<{ id: string; at?: Date }> {

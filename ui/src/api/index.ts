@@ -117,6 +117,7 @@ export {
   useHandOver,
   useIncidentResources,
   useMarkResourceReady,
+  useReactivateResource,
   useReassignResource,
   useRelieveResource,
   useStandDownResource,

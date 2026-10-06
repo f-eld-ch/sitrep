@@ -63,6 +63,7 @@ type Documents = {
     "\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n": typeof types.AlertResourceDocument,
     "\n  \n  mutation MarkResourceReady($id: ID!, $at: DateTime) {\n    markResourceReady(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.MarkResourceReadyDocument,
     "\n  \n  mutation DeployResource($id: ID!, $at: DateTime) {\n    deployResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.DeployResourceDocument,
+    "\n  \n  mutation ReactivateResource($id: ID!, $at: DateTime) {\n    reactivateResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ReactivateResourceDocument,
     "\n  \n  mutation StandDownResource($id: ID!, $at: DateTime) {\n    standDownResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.StandDownResourceDocument,
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID, $at: DateTime) {\n    relieveResource(id: $id, successorId: $successorId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!, $at: DateTime) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ChangeHauptaufgabeDocument,
@@ -126,6 +127,7 @@ const documents: Documents = {
     "\n  \n  mutation AlertResource($input: AlertResourceInput!) {\n    alertResource(input: $input) {\n      ...ResourceFields\n    }\n  }\n": types.AlertResourceDocument,
     "\n  \n  mutation MarkResourceReady($id: ID!, $at: DateTime) {\n    markResourceReady(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.MarkResourceReadyDocument,
     "\n  \n  mutation DeployResource($id: ID!, $at: DateTime) {\n    deployResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.DeployResourceDocument,
+    "\n  \n  mutation ReactivateResource($id: ID!, $at: DateTime) {\n    reactivateResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.ReactivateResourceDocument,
     "\n  \n  mutation StandDownResource($id: ID!, $at: DateTime) {\n    standDownResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.StandDownResourceDocument,
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID, $at: DateTime) {\n    relieveResource(id: $id, successorId: $successorId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!, $at: DateTime) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.ChangeHauptaufgabeDocument,
@@ -350,6 +352,10 @@ export function graphql(source: "\n  \n  mutation MarkResourceReady($id: ID!, $a
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  \n  mutation DeployResource($id: ID!, $at: DateTime) {\n    deployResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation DeployResource($id: ID!, $at: DateTime) {\n    deployResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation ReactivateResource($id: ID!, $at: DateTime) {\n    reactivateResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation ReactivateResource($id: ID!, $at: DateTime) {\n    reactivateResource(id: $id, at: $at) {\n      ...ResourceFields\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

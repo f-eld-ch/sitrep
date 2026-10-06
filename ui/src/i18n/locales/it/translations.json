@@ -405,7 +405,8 @@
       "standDown": "Intervento concluso",
       "relieve": "Avvicendare",
       "dismiss": "Congedare",
-      "alert": "Allertare"
+      "alert": "Allertare",
+      "reactivate": "Riattivare"
     },
     "fields": {
       "name": "Denominazione",
@@ -448,8 +449,10 @@
     "validation": {
       "hauptaufgabeRequired": "Il compito principale è obbligatorio per l'impiego",
       "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego",
-      "duplicateIdentity": "Esiste già una risorsa attiva con la stessa formazione/luogo, tipo di formazione e nome."
-    }
+      "duplicateIdentity": "Esiste già una risorsa attiva con la stessa formazione/luogo, tipo di formazione e nome.",
+      "relievedIdentity": "Questa unità è avvicendata – riattivarla invece di crearne una nuova."
+    },
+    "relievedSection": "Avvicendati"
   },
   "defaultAccess": {
     "title": "Accesso predefinito agli eventi",

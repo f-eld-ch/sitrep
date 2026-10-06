@@ -404,7 +404,8 @@
       "standDown": "Einsatz abgeschlossen",
       "relieve": "Ablösen",
       "dismiss": "Entlassen",
-      "alert": "Aufbieten"
+      "alert": "Aufbieten",
+      "reactivate": "Reaktivieren"
     },
     "fields": {
       "name": "Name des Mittels",
@@ -448,8 +449,10 @@
     "validation": {
       "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
       "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",
-      "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits."
-    }
+      "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits.",
+      "relievedIdentity": "Diese Einheit ist abgelöst – bitte reaktivieren statt neu erfassen."
+    },
+    "relievedSection": "Abgelöst"
   },
   "defaultAccess": {
     "title": "Standard-Zugangsmodus für Ereignisse",
