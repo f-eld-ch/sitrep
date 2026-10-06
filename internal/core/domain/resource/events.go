@@ -114,6 +114,14 @@ type Relieved struct {
 	SuccessorID *shared.ResourceID `json:"successorId,omitempty"`
 }
 
+// Reactivated fires when a relieved resource returns to service, e.g. on the next day of a
+// multi-day operation. The resource re-enters AUFGEBOTEN on the given Schadenplatz and keeps its
+// deployment history; the per-cycle timestamps and links are reset.
+type Reactivated struct {
+	At             time.Time             `json:"at"`
+	SchadenplatzID shared.SchadenplatzID `json:"schadenplatzId"`
+}
+
 // SuccessionLinked fires on the successor resource when it replaces a relieved one.
 type SuccessionLinked struct {
 	PredecessorID shared.ResourceID `json:"predecessorId"`

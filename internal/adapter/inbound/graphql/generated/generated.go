@@ -202,6 +202,7 @@ type ComplexityRoot struct {
 		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
 		MergeSchadenplatz            func(childComplexity int, id string, messageTime *time.Time) int
 		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		ReactivateResource           func(childComplexity int, id string, at *time.Time) int
 		ReassignResource             func(childComplexity int, id string, schadenplatzID string, at *time.Time) int
 		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) int
 		RelieveResource              func(childComplexity int, id string, successorID *string, at *time.Time) int
@@ -375,6 +376,7 @@ type MutationResolver interface {
 	AlertResource(ctx context.Context, input model.AlertResourceInput) (*model.Resource, error)
 	MarkResourceReady(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	DeployResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
+	ReactivateResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	StandDownResource(ctx context.Context, id string, at *time.Time) (*model.Resource, error)
 	RelieveResource(ctx context.Context, id string, successorID *string, at *time.Time) (*model.Resource, error)
 	ReassignResource(ctx context.Context, id string, schadenplatzID string, at *time.Time) (*model.Resource, error)
@@ -1234,6 +1236,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ModifyFeature(childComplexity, args["id"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap)), true
+	case "Mutation.reactivateResource":
+		if e.ComplexityRoot.Mutation.ReactivateResource == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_reactivateResource_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.ReactivateResource(childComplexity, args["id"].(string), args["at"].(*time.Time)), true
 	case "Mutation.reassignResource":
 		if e.ComplexityRoot.Mutation.ReassignResource == nil {
 			break
@@ -2631,6 +2644,11 @@ type Mutation {
 
   """Deploy a resource (EINSATZBEREIT → EINGESETZT)."""
   deployResource(id: ID!, at: DateTime): Resource!
+  """
+  Returns a relieved resource to AUFGEBOTEN on the default Schadenplatz (e.g. next day of a
+  multi-day operation). Deployment history is kept; Einsatz start/end are reset.
+  """
+  reactivateResource(id: ID!, at: DateTime): Resource!
 
   """Stand a resource down temporarily (EINGESETZT → EINSATZBEREIT)."""
   standDownResource(id: ID!, at: DateTime): Resource!
@@ -3768,6 +3786,28 @@ func (ec *executionContext) field_Mutation_modifyFeature_args(ctx context.Contex
 		return nil, err
 	}
 	args["properties"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_reactivateResource_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg1
 	return args, nil
 }
 
@@ -8146,6 +8186,50 @@ func (ec *executionContext) fieldContext_Mutation_deployResource(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deployResource_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_reactivateResource(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_reactivateResource(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().ReactivateResource(ctx, fc.Args["id"].(string), fc.Args["at"].(*time.Time))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
+			return ec.marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResource(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_reactivateResource(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Resource(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_reactivateResource_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -14006,6 +14090,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deployResource":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deployResource(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "reactivateResource":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_reactivateResource(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

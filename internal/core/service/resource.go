@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -188,6 +189,35 @@ func (s *ResourceService) StandDownResource(
 		actor,
 		func(res *resource.Resource, t time.Time) error {
 			return res.StandDown(actor.Sub, t)
+		},
+	)
+}
+
+// ReactivateResource returns a relieved resource to AUFGEBOTEN on the incident's default
+// Schadenplatz so it can be deployed again, e.g. on the next day of a multi-day operation.
+// The deployment history is kept.
+func (s *ResourceService) ReactivateResource(
+	ctx context.Context,
+	id shared.ResourceID,
+	at *time.Time,
+	actor identity.Actor,
+) (inbound.ResourceState, error) {
+	return s.transitionWithIncident(
+		ctx,
+		"ResourceService.ReactivateResource",
+		id,
+		at,
+		actor,
+		func(res *resource.Resource, inc *incident.Incident, t time.Time) error {
+			defID := inc.DefaultSchadenplatzID()
+			if defID == nil {
+				return shared.ValidationError{
+					Field:   "schadenplatzId",
+					Message: "incident has no default Schadenplatz",
+				}
+			}
+
+			return res.Reactivate(*defID, actor.Sub, t)
 		},
 	)
 }
@@ -384,6 +414,22 @@ func (s *ResourceService) simpleTransition(
 	actor identity.Actor,
 	fn func(*resource.Resource, time.Time) error,
 ) (inbound.ResourceState, error) {
+	return s.transitionWithIncident(ctx, spanName, id, at, actor,
+		func(res *resource.Resource, _ *incident.Incident, t time.Time) error {
+			return fn(res, t)
+		})
+}
+
+// transitionWithIncident is simpleTransition for commands that also need the owning incident,
+// e.g. to resolve its default Schadenplatz.
+func (s *ResourceService) transitionWithIncident(
+	ctx context.Context,
+	spanName string,
+	id shared.ResourceID,
+	at *time.Time,
+	actor identity.Actor,
+	fn func(*resource.Resource, *incident.Incident, time.Time) error,
+) (inbound.ResourceState, error) {
 	ctx, span := s.tracer.Start(ctx, spanName,
 		trace.WithAttributes(attribute.String("resource.id", id.String())))
 	defer span.End()
@@ -413,7 +459,7 @@ func (s *ResourceService) simpleTransition(
 			return shared.ErrIncidentNotOpen
 		}
 
-		if err := fn(res, resolvedAt); err != nil {
+		if err := fn(res, inc, resolvedAt); err != nil {
 			return err
 		}
 

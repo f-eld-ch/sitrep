@@ -267,6 +267,71 @@ func TestResourceService_RelieveResource_ClosedIncidentRejected(t *testing.T) {
 	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 
+// ── ReactivateResource ────────────────────────────────────────────────────────
+
+func TestResourceService_ReactivateResource(t *testing.T) {
+	incSvc, spSvc, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Mehrtägiger Einsatz", nil, nil, nil, testActor)
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Süd", nil, testActor)
+	require.NoError(t, err)
+
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	defaultSP := alerted.SchadenplatzID
+
+	_, err = resSvc.MarkResourceReady(ctx(), alerted.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = resSvc.ReassignResource(ctx(), alerted.ID, sp.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = resSvc.DeployResource(ctx(), alerted.ID, nil, testActor)
+	require.NoError(t, err)
+	relieved, err := resSvc.RelieveResource(ctx(), alerted.ID, nil, nil, testActor)
+	require.NoError(t, err)
+	require.Len(t, relieved.DeploymentHistory, 1)
+
+	reactivated, err := resSvc.ReactivateResource(ctx(), alerted.ID, nil, testActor)
+	require.NoError(t, err)
+
+	assert.Equal(t, resource.StatusAufgeboten, reactivated.Status)
+	assert.Equal(t, defaultSP, reactivated.SchadenplatzID, "reactivated resource returns to the default Schadenplatz")
+	assert.Nil(t, reactivated.EinsatzBeginn)
+	assert.Nil(t, reactivated.EinsatzEnde)
+	assert.Nil(t, reactivated.RelievedAt)
+	assert.Len(t, reactivated.DeploymentHistory, 1, "history from the previous day is kept")
+
+	// It can run through the whole lifecycle again, ending up with two history periods.
+	_, err = resSvc.MarkResourceReady(ctx(), alerted.ID, nil, testActor)
+	require.NoError(t, err)
+	deployed, err := resSvc.DeployResource(ctx(), alerted.ID, nil, testActor)
+	require.NoError(t, err)
+	assert.Len(t, deployed.DeploymentHistory, 2)
+	assert.NotNil(t, deployed.EinsatzBeginn)
+}
+
+func TestResourceService_ReactivateResource_NotRelievedRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	_, err := resSvc.ReactivateResource(ctx(), alerted.ID, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrInvalidInput)
+}
+
+func TestResourceService_ReactivateResource_ClosedIncidentRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	_, err := resSvc.RelieveResource(ctx(), alerted.ID, nil, nil, testActor)
+	require.NoError(t, err)
+	_, err = incSvc.CloseIncident(ctx(), inc.IncidentID, testActor)
+	require.NoError(t, err)
+
+	_, err = resSvc.ReactivateResource(ctx(), alerted.ID, nil, testActor)
+	assert.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+}
+
 // ── ReassignResource ──────────────────────────────────────────────────────────
 
 func TestResourceService_ReassignResource(t *testing.T) {
@@ -551,4 +616,21 @@ func TestResourceService_HandOver_AlreadyRelievedPredecessorRejected(t *testing.
 
 	_, err = resSvc.HandOver(ctx(), predecessor.ID, successor.ID, nil, testActor)
 	assert.Error(t, err, "handing over an already-relieved predecessor must fail")
+}
+
+func TestResourceService_ReactivateResource_UsesProvidedAt(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(24 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	_, err := resSvc.RelieveResource(ctx(), alerted.ID, nil, nil, testActor)
+	require.NoError(t, err)
+
+	reactivated, err := resSvc.ReactivateResource(ctx(), alerted.ID, &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, customAt, reactivated.AlertedAt)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"Reactivated event must carry the provided at, not clock.Now()")
 }

@@ -456,6 +456,106 @@ func TestResourceHandler_ForSchadenplatz_ExcludesRelievedResources(t *testing.T)
 	assert.Empty(t, rows, "relieved resource must be excluded from ForSchadenplatz")
 }
 
+// ── Reactivated ───────────────────────────────────────────────────────────────
+
+func TestResourceHandler_Reactivated_ResetsCycleAndKeepsHistory(t *testing.T) {
+	s := newResourceProjStack(t)
+
+	res, incID := s.alertTestResource(t)
+	svc := s.resourceSvc()
+
+	_, err := svc.MarkResourceReady(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = svc.DeployResource(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = svc.RelieveResource(ctx(), res.ID, nil, nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+	require.Empty(t, s.resources.ForSchadenplatz(uuid.UUID(res.SchadenplatzID)))
+
+	_, err = svc.ReactivateResource(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	row := s.resources.Get(uuid.UUID(res.ID))
+	require.NotNil(t, row)
+	assert.Equal(t, "AUFGEBOTEN", row.Status)
+	assert.Nil(t, row.ReadyAt)
+	assert.Nil(t, row.DeployedAt)
+	assert.Nil(t, row.RelievedAt)
+	assert.Nil(t, row.EinsatzBeginn)
+	assert.Nil(t, row.EinsatzEnde)
+	assert.Nil(t, row.SuccessorID)
+	assert.Empty(t, row.Hauptaufgabe)
+	require.Len(t, row.DeploymentHistory, 1, "previous day's history must survive")
+	assert.NotNil(t, row.DeploymentHistory[0].EndedAt)
+
+	active := s.resources.ForSchadenplatz(uuid.UUID(res.SchadenplatzID))
+	assert.Len(t, active, 1, "reactivated resource is visible on its Schadenplatz again")
+	assert.Len(t, s.resources.ForIncident(uuid.UUID(incID)), 1)
+
+	// A second deployment appends to the history and restarts einsatzBeginn.
+	_, err = svc.MarkResourceReady(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = svc.DeployResource(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	row = s.resources.Get(uuid.UUID(res.ID))
+	require.NotNil(t, row)
+	assert.Len(t, row.DeploymentHistory, 2)
+	assert.NotNil(t, row.EinsatzBeginn)
+}
+
+func TestResourceHandler_Reactivated_ReplayIsIdempotent(t *testing.T) {
+	s := newResourceProjStack(t)
+
+	res, _ := s.alertTestResource(t)
+	_, err := s.resourceSvc().RelieveResource(ctx(), res.ID, nil, nil, testActor)
+	require.NoError(t, err)
+	_, err = s.resourceSvc().ReactivateResource(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	before := *s.resources.Get(uuid.UUID(res.ID))
+
+	require.NoError(t, s.proj.Reset(ctx()))
+
+	after := s.resources.Get(uuid.UUID(res.ID))
+	require.NotNil(t, after)
+	assert.Equal(t, before.Status, after.Status)
+	assert.Equal(t, before.SchadenplatzID, after.SchadenplatzID)
+	assert.Equal(t, before.AlertedAt, after.AlertedAt)
+}
+
+func TestResourceHandler_Relieved_AfterStandDownKeepsEarlierEndedAt(t *testing.T) {
+	s := newResourceProjStack(t)
+
+	res, _ := s.alertTestResource(t)
+	svc := s.resourceSvc()
+
+	_, err := svc.MarkResourceReady(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+	_, err = svc.DeployResource(ctx(), res.ID, nil, testActor)
+	require.NoError(t, err)
+
+	standDownAt := testAt.Add(time.Hour)
+	_, err = svc.StandDownResource(ctx(), res.ID, &standDownAt, testActor)
+	require.NoError(t, err)
+
+	relieveAt := testAt.Add(2 * time.Hour)
+	_, err = svc.RelieveResource(ctx(), res.ID, nil, &relieveAt, testActor)
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx()))
+
+	row := s.resources.Get(uuid.UUID(res.ID))
+	require.NotNil(t, row)
+	require.Len(t, row.DeploymentHistory, 1)
+	require.NotNil(t, row.DeploymentHistory[0].EndedAt)
+	assert.Equal(t, standDownAt, *row.DeploymentHistory[0].EndedAt,
+		"relieving after stand down must not move the already closed period's end")
+}
+
 // ── Reset / Idempotency ───────────────────────────────────────────────────────
 
 func TestResourceHandler_Reset_RebuildsFromLog(t *testing.T) {

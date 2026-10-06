@@ -74,7 +74,7 @@ func New(id shared.ResourceID) *Resource {
 	r := &Resource{}
 	r.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(r,
-		Alerted{}, MarkedReady{}, Deployed{}, StoodDown{}, Relieved{},
+		Alerted{}, MarkedReady{}, Deployed{}, StoodDown{}, Relieved{}, Reactivated{},
 		SuccessionLinked{}, ReassignedToSchadenplatz{}, DeploymentLocationUpdated{},
 		HauptaufgabeChanged{}, ContactUpdated{}, PersonnelCountUpdated{},
 	)
@@ -227,6 +227,22 @@ func (r *Resource) Relieve(successorID *shared.ResourceID, actor string, at time
 	}
 
 	eventsourcing.TrackChange(r, Relieved{At: at, SuccessorID: successorID}, at, baseMeta(actor))
+
+	return nil
+}
+
+// Reactivate returns a relieved resource to AUFGEBOTEN on the given Schadenplatz so it can be
+// deployed again (e.g. the next day of a multi-day operation). The deployment history is kept;
+// the Einsatz timestamps, task, location and succession links of the previous cycle are reset.
+func (r *Resource) Reactivate(schadenplatzID shared.SchadenplatzID, actor string, at time.Time) error {
+	if r.status != StatusAbgeloest {
+		return shared.ValidationError{
+			Field:   "status",
+			Message: fmt.Sprintf("cannot reactivate from status %s", r.status),
+		}
+	}
+
+	eventsourcing.TrackChange(r, Reactivated{At: at, SchadenplatzID: schadenplatzID}, at, baseMeta(actor))
 
 	return nil
 }
@@ -463,6 +479,21 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.relievedAt = &d.At
 		r.einsatzEnde = &d.At
 		r.successorID = d.SuccessorID
+	case Reactivated:
+		r.schadenplatzID = d.SchadenplatzID
+		r.status = StatusAufgeboten
+		r.statusAt = d.At
+		r.alertedAt = d.At
+		r.readyAt = nil
+		r.deployedAt = nil
+		r.stoodDownAt = nil
+		r.relievedAt = nil
+		r.einsatzBeginn = nil
+		r.einsatzEnde = nil
+		r.hauptaufgabe = ""
+		r.deploymentLocation = nil
+		r.successorID = nil
+		r.predecessorID = nil
 	case SuccessionLinked:
 		id := d.PredecessorID
 		r.predecessorID = &id
