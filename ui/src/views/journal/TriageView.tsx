@@ -2147,9 +2147,9 @@ const FORMATIONS: FormationMeta[] = [
 ];
 
 const SIZES: SizeMeta[] = [
-  { key: "TRUPP", babsId: "4801", min: 1, max: 2 },
-  { key: "GRUPPE", babsId: "4802", min: 3, max: 12 },
-  { key: "ZUG", babsId: "4803", min: 13, max: 60 },
+  { key: "TRUPP", babsId: "4801", min: 1, max: 5 },
+  { key: "GRUPPE", babsId: "4802", min: 6, max: 19 },
+  { key: "ZUG", babsId: "4803", min: 20, max: 60 },
   { key: "KOMPANIE", babsId: "4804", min: 61, max: 300 },
   { key: "BATAILLON", babsId: "4805", min: 301, max: Infinity },
 ];
