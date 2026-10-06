@@ -6240,10 +6240,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"earcut@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "earcut@npm:3.2.3"
-  checksum: 10/3c3c6bfc214060e6df83da1da413709cf15c77139b0e094a71e6e960ffce033c88586c1e880496ea0a39d891df74a065ccfe24c18f426898ea07a51e0fc0a446
+"earcut@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "earcut@npm:3.2.4"
+  checksum: 10/0936ebdebb71de20f44aa1f95d55f3ae0bbec72ef45ecb94da38deabdde3dc809fc335d93d9d6b7e1c2c221f08544ed607365520c4228d3f31925b0425ff6d07
   languageName: node
   linkType: hard
 
@@ -8615,8 +8615,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^6.3.0":
-  version: 6.11.2
-  resolution: "maplibre-gl@npm:6.11.2"
+  version: 6.12.0
+  resolution: "maplibre-gl@npm:6.12.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
@@ -8628,7 +8628,7 @@ __metadata:
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
     bidi-js: "npm:^1.1.0"
-    earcut: "npm:^3.2.3"
+    earcut: "npm:^3.2.4"
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
     murmurhash-js: "npm:^1.0.0"
@@ -8636,7 +8636,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/64f603a24ab34c7b74ad763e372ec6bf700d19ef9e92e0d68bf52456e14d427bb5dce38b3b73f7e14f416d4a1d5aef65b8756672e8dd1c1970c6b858aee98200
+  checksum: 10/ccc0d18b34ea263474c66c17c97d5ec0a87f352c10cf9b2dd603e0c23e4fc9a70b7293e76bcaebc2ff5fa1205a062d855f9ae4589b4c10be0220408ccff6193e
   languageName: node
   linkType: hard
 
