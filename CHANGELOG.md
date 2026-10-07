@@ -1,11 +1,21 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- Reactivate relieved resources and improve resource/casualty views ([#1933](https://github.com/f-eld-ch/sitrep/issues/1933)) - ([882f737](https://github.com/f-eld-ch/sitrep/commit/882f737e76b1bcbd496e468470bfcf4ee72b22e9))
+
 ### 🐛 Bug Fixes
 
 - Correct casualties when re-triaging a message ([#1918](https://github.com/f-eld-ch/sitrep/issues/1918)) - ([5e0b4fc](https://github.com/f-eld-ch/sitrep/commit/5e0b4fc9edb64080e14211e079639c7c8a5a5430))
 
 ### ⚙️  Other
 
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1935](https://github.com/f-eld-ch/sitrep/issues/1935)) - ([3490868](https://github.com/f-eld-ch/sitrep/commit/34908685dba5374a642a3a4a2b4e08980cb516d3))
+- *(deps)* Bump ol from 10.10.0 to 10.11.0 in /ui ([#1927](https://github.com/f-eld-ch/sitrep/issues/1927)) - ([cfb88e1](https://github.com/f-eld-ch/sitrep/commit/cfb88e1513862a792b426332c94acc4c3bc6cb00))
+- *(deps)* Bump the otel group across 1 directory with 9 updates ([#1931](https://github.com/f-eld-ch/sitrep/issues/1931)) - ([236b8be](https://github.com/f-eld-ch/sitrep/commit/236b8be3878f4ac7e5625ec0b8a251ec79a24cf4))
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1934](https://github.com/f-eld-ch/sitrep/issues/1934)) - ([b2c28ad](https://github.com/f-eld-ch/sitrep/commit/b2c28addc40a23c58dd9ba92b368efc6ddbfb2b6))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.8 to 3.51.11 ([#1924](https://github.com/f-eld-ch/sitrep/issues/1924)) - ([3aa9cae](https://github.com/f-eld-ch/sitrep/commit/3aa9caefc28c2a366a7551d69dcf5b79567ce6e8))
+- *(deps)* Bump http-cache-semantics ([#1932](https://github.com/f-eld-ch/sitrep/issues/1932)) - ([5802650](https://github.com/f-eld-ch/sitrep/commit/5802650d93a9f7559411fdbf8299e44e402181e8))
 - *(deps)* Bump modernc.org/sqlite from 1.59.0 to 1.60.1 ([#1921](https://github.com/f-eld-ch/sitrep/issues/1921)) - ([c3a198f](https://github.com/f-eld-ch/sitrep/commit/c3a198f7ef84f5fe5f402a64f871868d0578b569))
 - *(deps)* Bump @flipt-io/flipt-client-js from 0.5.1 to 0.6.0 in /ui ([#1928](https://github.com/f-eld-ch/sitrep/issues/1928)) - ([9369261](https://github.com/f-eld-ch/sitrep/commit/9369261e88568f9d69d810c1a01cee82f905f5d6))
 - *(deps)* Bump maplibre-gl from 6.11.2 to 6.12.0 in /ui ([#1926](https://github.com/f-eld-ch/sitrep/issues/1926)) - ([29b5a50](https://github.com/f-eld-ch/sitrep/commit/29b5a5060a923822519fbd9efc7ae5b7188a8b69))
