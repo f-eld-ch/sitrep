@@ -184,7 +184,7 @@ class ControlSlot implements IControl {
   readonly container = document.createElement("div");
 
   onAdd(): HTMLElement {
-    this.container.className = "maplibregl-ctrl maplibregl-ctrl-group text-black";
+    this.container.className = "maplibregl-ctrl maplibregl-ctrl-group mb-3! text-black";
 
     return this.container;
   }
