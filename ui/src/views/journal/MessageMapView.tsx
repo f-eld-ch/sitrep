@@ -145,7 +145,9 @@ function MessageMapView() {
           }}
           extraChips={
             <FilterChip
-              label={`${t("messageMap.pending")} (${undrawn.length})`}
+              label={
+                onlyUndrawn ? `${t("messageMap.pending")} (${undrawn.length})` : t("messageMap.all")
+              }
               active={onlyUndrawn}
               onToggle={() => setOnlyUndrawn((v) => !v)}
               activeClassName="bg-warning/15 text-warning border-warning/30"
