@@ -76,7 +76,7 @@ export function TimeControl() {
   return (
     <div
       ref={overlay}
-      className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex justify-center px-2"
+      className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center px-2"
     >
       <TimelineSlider
         className="pointer-events-auto max-w-2xl"
