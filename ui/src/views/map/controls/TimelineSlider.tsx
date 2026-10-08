@@ -27,6 +27,11 @@ export interface TimelineSliderProps {
   tickTimes: number[];
   /** Extra content on the right of the label row, e.g. options that only make sense while live. */
   footerExtra?: ReactNode;
+  /**
+   * Draw the slider in a box (border, background, shadow). It is wanted over a map, where the
+   * slider needs something to stand out against; on a plain page it can go without.
+   */
+  framed?: boolean;
   className?: string;
 }
 
@@ -42,6 +47,7 @@ export function TimelineSlider({
   start,
   tickTimes,
   footerExtra,
+  framed = true,
   className,
 }: TimelineSliderProps) {
   const { t } = useTranslation();
@@ -91,7 +97,8 @@ export function TimelineSlider({
   return (
     <div
       className={clsx(
-        "flex w-full flex-col gap-1.5 rounded-lg border border-border bg-bg/95 px-3 py-2 text-xs text-fg shadow-lg backdrop-blur",
+        "flex w-full flex-col gap-1.5 text-xs text-fg",
+        framed && "rounded-lg border border-border bg-bg/95 px-3 py-2 shadow-lg backdrop-blur",
         className,
       )}
     >

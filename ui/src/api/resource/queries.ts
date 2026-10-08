@@ -1,4 +1,5 @@
 import { useQuery } from "@apollo/client/react";
+import { useState } from "react";
 import { apiErrorFromApolloError } from "../errors";
 import { isMutationRecent } from "../mutationActivity";
 import type { QueryResult } from "../result";
@@ -70,9 +71,30 @@ export function useIncidentResources(
 
   const { loading, error, data, refetch } = asOf === undefined ? live : past;
 
+  // Moving to another point in time starts a new query without data. Rather than falling back to
+  // a spinner, keep showing what was there until the new data arrives (see isRefreshing).
+  const [lastReady, setLastReady] = useState<
+    { incidentId: string; wire: object; data: IncidentResourcesData } | undefined
+  >();
+
   const refresh = () => void refetch();
 
+  const wire = data?.incident;
+  if (incidentId && wire && lastReady?.wire !== wire) {
+    setLastReady({ incidentId, wire, data: toIncidentResourcesData(wire) });
+  }
+
   if (!incidentId || (loading && !data)) {
+    if (incidentId && lastReady?.incidentId === incidentId) {
+      return {
+        status: "ready",
+        data: lastReady.data,
+        error: undefined,
+        isRefreshing: true,
+        refresh,
+      };
+    }
+
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
   }
 
@@ -99,20 +121,34 @@ export function useIncidentResources(
 
   return {
     status: "ready",
-    data: {
-      incidentId: inc.id,
-      incidentName: inc.name,
-      childIncidents: inc.childIncidents.map((child) => ({
-        id: child.id,
-        name: child.name,
-        casualties: sumCasualties(child.schadenplaetze),
-      })),
-      resources: inc.resources.map(toResource),
-      schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),
-    },
+    data: toIncidentResourcesData(inc),
     error: undefined,
     isRefreshing: loading,
     refresh,
+  };
+}
+
+function toIncidentResourcesData(inc: {
+  id: string;
+  name: string;
+  childIncidents: Array<{
+    id: string;
+    name: string;
+    schadenplaetze: Parameters<typeof sumCasualties>[0];
+  }>;
+  resources: Parameters<typeof toResource>[0][];
+  schadenplaetze: Parameters<typeof toSchadenplatzWithResources>[0][];
+}): IncidentResourcesData {
+  return {
+    incidentId: inc.id,
+    incidentName: inc.name,
+    childIncidents: inc.childIncidents.map((child) => ({
+      id: child.id,
+      name: child.name,
+      casualties: sumCasualties(child.schadenplaetze),
+    })),
+    resources: inc.resources.map(toResource),
+    schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),
   };
 }
 

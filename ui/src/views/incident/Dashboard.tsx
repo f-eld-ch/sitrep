@@ -12,6 +12,7 @@ import { ZERO_CASUALTIES, addCasualties, type CasualtyTotals } from "views/casua
 import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
+import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { useContext, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
@@ -122,7 +123,14 @@ function DashboardKpis({
   const formationGroups = resourcesByFormation(resourcesResult.data.resources);
 
   return (
-    <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+    <aside
+      aria-busy={resourcesResult.isRefreshing}
+      className={clsx(
+        "flex min-h-0 flex-col gap-3 overflow-y-auto transition-opacity duration-300",
+        // The previous values stay in place, dimmed, until the new ones fade in.
+        resourcesResult.isRefreshing && "opacity-50",
+      )}
+    >
       <section className="rounded border border-border bg-bg-elevated p-3">
         <h2 className="mb-3 text-sm font-semibold text-fg">{t("casualties.overview")}</h2>
         <CasualtyList totals={casualties} iconsLoaded={iconsLoaded} />
@@ -331,6 +339,7 @@ export default function Dashboard() {
             </div>
             {showTimeline && (
               <TimelineSlider
+                framed={false}
                 asOf={asOf}
                 onAsOfChange={setAsOf}
                 start={timelineStart}

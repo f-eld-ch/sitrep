@@ -58,4 +58,52 @@ describe("useIncidentResources", () => {
     expect(live.skip).toBe(true);
     expect(past.skip).toBe(true);
   });
+
+  describe("while another point in time loads", () => {
+    // Apollo hands out the same result object until the data changes; the mocks must too.
+    const incident = (name: string) => ({
+      incident: { id: "inc-1", name, childIncidents: [], resources: [], schadenplaetze: [] },
+    });
+    const at10 = incident("as of 10:00");
+    const at11 = incident("as of 11:00");
+
+    it("keeps showing the previous data instead of falling back to loading", () => {
+      const first = new Date("2026-01-15T10:00:00Z");
+      const second = new Date("2026-01-15T11:00:00Z");
+
+      // the first point in time has arrived...
+      useQuery.mockImplementation((_doc: unknown, options: Options) =>
+        options.skip ? empty : { ...empty, data: at10 },
+      );
+      const { result, rerender } = renderHook(({ asOf }) => useIncidentResources("inc-1", asOf), {
+        initialProps: { asOf: first },
+      });
+      expect(result.current.status).toBe("ready");
+      expect(result.current.isRefreshing).toBe(false);
+
+      // ...and the slider moves on: the new query has no data yet
+      useQuery.mockImplementation((_doc: unknown, options: Options) =>
+        options.skip ? empty : { ...empty, loading: true, data: undefined },
+      );
+      rerender({ asOf: second });
+
+      expect(result.current.status).toBe("ready");
+      expect(result.current.isRefreshing).toBe(true);
+      expect(result.current.data?.incidentName).toBe("as of 10:00");
+
+      // the new data replaces it
+      useQuery.mockImplementation((_doc: unknown, options: Options) =>
+        options.skip ? empty : { ...empty, data: at11 },
+      );
+      rerender({ asOf: second });
+      expect(result.current.isRefreshing).toBe(false);
+      expect(result.current.data?.incidentName).toBe("as of 11:00");
+    });
+
+    it("shows loading on the very first load", () => {
+      useQuery.mockReturnValue({ ...empty, loading: true });
+      const { result } = renderHook(() => useIncidentResources("inc-1"));
+      expect(result.current.status).toBe("loading");
+    });
+  });
 });
