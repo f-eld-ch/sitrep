@@ -110,9 +110,14 @@ interface MapViewOptions {
   deselectToken?: number;
   /** Called when something is drawn, changed or deleted for the message (see MapSelection). */
   onDrawingChange?: () => void;
+  /**
+   * The kind of layer to show first. A read-only map showing it stays on it instead of cycling
+   * through all layers. Without one, a map for drawing starts on a standard layer.
+   */
+  preferredLayerKind?: Layer["kind"];
 }
 
-function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
+function MapView({ embedded = false, readOnly = false, preferredLayerKind }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
   // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
   const messageMapEnabled = useBooleanFlagValue("new-triage-view", false);
@@ -162,14 +167,20 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && <ExportControl position="bottom-left" />}
-        <Layers readOnly={readOnly} />
+        <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>
   );
 }
 
-function Layers({ readOnly = false }: { readOnly?: boolean }) {
+function Layers({
+  readOnly = false,
+  stayOnPreferredLayer = false,
+}: {
+  readOnly?: boolean;
+  stayOnPreferredLayer?: boolean;
+}) {
   const { state } = useContext(LayerContext);
   const {
     state: { incident },
@@ -210,7 +221,11 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
       {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
-        <ReadOnlyLayers following={following} onUserMove={() => setFollowing(false)} />
+        <ReadOnlyLayers
+          following={following}
+          rotate={!stayOnPreferredLayer}
+          onUserMove={() => setFollowing(false)}
+        />
       ) : (
         <InactiveLayers
           layers={
@@ -252,7 +267,16 @@ function FollowControl({ following, onFollow }: { following: boolean; onFollow: 
   );
 }
 
-function ReadOnlyLayers({ following, onUserMove }: { following: boolean; onUserMove: () => void }) {
+function ReadOnlyLayers({
+  following,
+  rotate,
+  onUserMove,
+}: {
+  following: boolean;
+  /** Cycle through the layers; off when one layer is the point of the map. */
+  rotate: boolean;
+  onUserMove: () => void;
+}) {
   const { state, dispatch } = useContext(LayerContext);
   const { current: map } = useMap();
   const visibleLayers = useMemo(
@@ -288,7 +312,7 @@ function ReadOnlyLayers({ following, onUserMove }: { following: boolean; onUserM
   }, [map, onUserMove]);
 
   useEffect(() => {
-    if (visibleLayers.length < 2 || !following) return;
+    if (visibleLayers.length < 2 || !following || !rotate) return;
 
     const timer = setInterval(() => {
       dispatch({
@@ -298,7 +322,7 @@ function ReadOnlyLayers({ following, onUserMove }: { following: boolean; onUserM
     }, READ_ONLY_LAYER_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [dispatch, following, state.activeLayer, visibleLayers]);
+  }, [dispatch, following, rotate, state.activeLayer, visibleLayers]);
 
   useEffect(() => {
     if (map === undefined || activeLayer === undefined || !following) return;
@@ -361,13 +385,19 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
 const SLOW_POLL_INTERVAL_MS = 10_000;
 
 // LayerFetcher polls from the layers and sets the layers from remote
-function LayerFetcher({ livePollInterval }: { livePollInterval: number }) {
+function LayerFetcher({
+  livePollInterval,
+  preferredLayerKind,
+}: {
+  livePollInterval: number;
+  preferredLayerKind?: Layer["kind"];
+}) {
   const { incidentId } = useParams();
   const { dispatch } = useContext(LayerContext);
   const { asOf, drawingMessage } = useContext(MapTimeContext);
   const syncedLayers = useRef<Layer[] | undefined>(undefined);
   const syncedIncidentId = useRef<string | undefined>(undefined);
-  const preferredKind = drawingMessage ? "MESSAGE_MAP" : "STANDARD";
+  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "STANDARD");
 
   // A fixed point in the past does not change while it is looked at, so it is not polled. The
   // operator's own drawing updates the cache directly; others' arrive on a slow poll.
@@ -919,6 +949,7 @@ function MapWithProvder({
               <MapView {...options} />
               {/* A read-only map (the dashboard) only displays; it does not need the editing cadence. */}
               <LayerFetcher
+                preferredLayerKind={options.preferredLayerKind}
                 livePollInterval={options.readOnly ? SLOW_POLL_INTERVAL_MS : LIVE_POLL_INTERVAL_MS}
               />
             </MapSelectionContext.Provider>

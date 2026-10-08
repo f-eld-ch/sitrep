@@ -218,7 +218,7 @@ function MessageMapView() {
               <p className="text-lg font-bold">{t("messageMap.allDrawn")}</p>
             </div>
             <div className="min-h-0 flex-1">
-              <IncidentMap embedded readOnly />
+              <IncidentMap embedded readOnly preferredLayerKind="MESSAGE_MAP" />
             </div>
           </>
         ) : selected === undefined ? (
