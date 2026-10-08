@@ -115,6 +115,7 @@ export const CREATE_LAYER: TypedDocumentNode<CreateLayerMutation, CreateLayerMut
         sourceIncidentId
         sourceIncidentName
         name
+        kind
       }
     }
   `;
