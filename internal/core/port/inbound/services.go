@@ -175,8 +175,21 @@ type MessageState struct {
 // a projection read (which would race the asynchronous projector).
 type FeatureState struct {
 	ID         shared.FeatureID
+	IncidentID shared.IncidentID
+	LayerID    shared.LayerID
 	Geometry   map[string]any
 	Properties map[string]any
+	// MessageIDs are all messages that touched the feature, in first-linked order.
+	MessageIDs []shared.MessageID
+}
+
+// FeatureChange says when a feature change takes effect on the map timeline.
+// Changes on the message map layer must carry a MessageID and take effect at that
+// message's time; changes on other layers may carry an explicit EffectiveAt (never in
+// the future). With neither, the change takes effect now.
+type FeatureChange struct {
+	MessageID   *shared.MessageID
+	EffectiveAt *time.Time
 }
 
 // IncidentService is the driving port for incident lifecycle commands.
@@ -306,14 +319,19 @@ type LayerService interface {
 
 // FeatureService is the driving port for feature (map object) commands.
 type FeatureService interface {
+	// PlaceFeature places a feature. The feature ID is derived server-side from the
+	// incident and the client's draw key, which makes a re-sent create idempotent: the
+	// same key with the same payload returns the existing state, a different payload
+	// returns ErrConflict.
 	PlaceFeature(
 		ctx context.Context,
-		id shared.FeatureID,
 		incidentID shared.IncidentID,
 		layerID shared.LayerID,
+		clientKey string,
 		geometry, properties map[string]any,
+		change FeatureChange,
 		actor identity.Actor,
-	) error
+	) (FeatureState, error)
 
 	// ModifyFeature updates geometry and/or properties in a single aggregate load,
 	// avoiding the optimistic concurrency conflict that would occur from two parallel saves.
@@ -322,9 +340,10 @@ type FeatureService interface {
 		ctx context.Context,
 		id shared.FeatureID,
 		geometry, properties map[string]any,
+		change FeatureChange,
 		actor identity.Actor,
 	) (FeatureState, error)
-	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
+	RemoveFeature(ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor) error
 }
 
 // SchadenplatzState carries the command result for Schadenplatz write operations.

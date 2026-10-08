@@ -1585,20 +1585,8 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 }
 
 // AddFeature is the resolver for the addFeature field.
-func (r *mutationResolver) AddFeature(
-	ctx context.Context,
-	incidentID string,
-	layerID string,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	featureID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -1613,50 +1601,51 @@ func (r *mutationResolver) AddFeature(
 		return nil, err
 	}
 
-	if err := r.Features.PlaceFeature(ctx,
-		shared.FeatureID(featureID), shared.IncidentID(incID), shared.LayerID(layID),
-		geometry, properties, actor); err != nil {
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
 		return nil, err
 	}
 
-	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
+	state, err := r.Features.PlaceFeature(ctx,
+		shared.IncidentID(incID), shared.LayerID(layID), clientKey, geometry, properties, featureChange, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return featureStateToModel(state), nil
 }
 
 // ModifyFeature is the resolver for the modifyFeature field.
-func (r *mutationResolver) ModifyFeature(
-	ctx context.Context,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	featureID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	featureChange, err := featureChangeFromInput(change)
 	if err != nil {
 		return nil, err
 	}
 
 	// Ownership is enforced by FeatureService.ModifyFeature against the freshly loaded
 	// aggregate, not here — a pre-check against the read model would race the projector.
-	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor)
+	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, featureChange, actor)
 	if err != nil {
 		return nil, err
 	}
 	// Return the full aggregate state so Apollo receives both geometry and
 	// properties even for sparse updates — prevents null from overwriting the
 	// unchanged cached field.
-	return &model.Feature{
-		ID:         id,
-		Geometry:   scalar.JSONMap(state.Geometry),
-		Properties: scalar.JSONMap(state.Properties),
-	}, nil
+	return featureStateToModel(state), nil
 }
 
 // DeleteFeature is the resolver for the deleteFeature field.
-func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string, error) {
+func (r *mutationResolver) DeleteFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -1667,9 +1656,14 @@ func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string
 		return "", err
 	}
 
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
+		return "", err
+	}
+
 	// Ownership is enforced by FeatureService.RemoveFeature against the freshly loaded
 	// aggregate, not here — a pre-check against the read model would race the projector.
-	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), actor); err != nil {
+	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), featureChange, actor); err != nil {
 		return "", err
 	}
 

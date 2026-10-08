@@ -191,6 +191,7 @@ func (f *Factory) FeatureService(
 	repo outbound.FeatureRepository,
 	incidents outbound.IncidentRepository,
 	layers outbound.LayerRepository,
+	messages outbound.MessageRepository,
 ) *FeatureService {
-	return NewFeatureService(f.tx, repo, incidents, layers, f.accessChecker, f.clock, f.notifier)
+	return NewFeatureService(f.tx, repo, incidents, layers, messages, f.accessChecker, f.clock, f.notifier)
 }

@@ -814,3 +814,31 @@ func defaultAccessResultToModel(r inbound.DefaultAccessResult) *model.DefaultAcc
 		Grants: grants,
 	}
 }
+
+func featureChangeFromInput(in *model.FeatureChangeInput) (inbound.FeatureChange, error) {
+	if in == nil {
+		return inbound.FeatureChange{}, nil
+	}
+
+	change := inbound.FeatureChange{EffectiveAt: in.EffectiveAt}
+
+	if in.MessageID != nil {
+		id, err := parseUUID(*in.MessageID)
+		if err != nil {
+			return inbound.FeatureChange{}, err
+		}
+
+		msgID := shared.MessageID(id)
+		change.MessageID = &msgID
+	}
+
+	return change, nil
+}
+
+func featureStateToModel(s inbound.FeatureState) *model.Feature {
+	return &model.Feature{
+		ID:         s.ID.String(),
+		Geometry:   scalar.JSONMap(s.Geometry),
+		Properties: scalar.JSONMap(s.Properties),
+	}
+}

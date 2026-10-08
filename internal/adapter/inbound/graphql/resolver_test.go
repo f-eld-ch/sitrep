@@ -16,6 +16,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -52,7 +53,7 @@ func newTestStack(t *testing.T) *testStack {
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
 	messageSvc := factory.MessageService(msgRepo, incRepo)
 	layerSvc := factory.LayerService(layerRepo, incRepo)
-	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
 
 	incHandler := projection.NewIncidentHandler()
 	divHandler := projection.NewIncidentDivisionHandler()
@@ -883,15 +884,22 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 	require.NotEmpty(t, layers)
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
 	geometry := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
 	props := map[string]any{"label": "HQ"}
 
-	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, geometry, props)
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1", geometry, props, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, feat)
-	assert.Equal(t, featureID, feat.ID)
+
+	incUUID, err := uuid.Parse(inc.Incident.ID)
+	require.NoError(t, err)
+	assert.Equal(
+		t,
+		feature.DeriveID(shared.IncidentID(incUUID), "draw-1").String(),
+		feat.ID,
+		"ID is derived server-side",
+	)
 	assert.Equal(t, geometry, map[string]any(feat.Geometry))
 	assert.Equal(t, props, map[string]any(feat.Properties))
 }
@@ -913,15 +921,16 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
 	origGeom := map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}}
 	origProps := map[string]any{"label": "Old"}
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, origGeom, origProps)
+	added, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1", origGeom, origProps, nil)
 	require.NoError(t, err)
+
+	featureID := added.ID
 
 	newGeom := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
 	newProps := map[string]any{"label": "New"}
-	modified, err := s.resolver.Mutation().ModifyFeature(ctx, featureID, newGeom, newProps)
+	modified, err := s.resolver.Mutation().ModifyFeature(ctx, featureID, newGeom, newProps, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, modified)
@@ -947,14 +956,15 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID,
+	added, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1",
 		map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}},
 		map[string]any{},
+		nil,
 	)
 	require.NoError(t, err)
 
-	deletedID, err := s.resolver.Mutation().DeleteFeature(ctx, featureID)
+	featureID := added.ID
+	deletedID, err := s.resolver.Mutation().DeleteFeature(ctx, featureID, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, featureID, deletedID)
@@ -969,9 +979,62 @@ func TestAddFeature_InvalidLayerID_ReturnsError(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, "not-a-uuid", uuid.NewString(),
-		map[string]any{}, map[string]any{})
+	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, "not-a-uuid", "draw-1",
+		map[string]any{}, map[string]any{}, nil)
 	require.Error(t, err)
+}
+
+func TestAddFeature_MessageMapLayerRequiresMessage(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Map Layer", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+
+	var mapLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	require.NotEmpty(t, mapLayerID)
+
+	geometry := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
+
+	_, err = s.resolver.Mutation().
+		AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1", geometry, map[string]any{}, nil)
+	require.ErrorIs(t, err, shared.ErrInvalidInput)
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "Brand", Medium: model.MediumRadio,
+	})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+		Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+	})
+	require.NoError(t, err)
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1", geometry,
+		map[string]any{}, &model.FeatureChangeInput{MessageID: &msg.ID})
+	require.NoError(t, err)
+	assert.NotEmpty(t, feat.ID)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1064,7 +1127,7 @@ func newAccessTestStack(t *testing.T) *testStack {
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
 	messageSvc := factory.MessageService(msgRepo, incRepo)
 	layerSvc := factory.LayerService(layerRepo, incRepo)
-	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
 	accessSvc := factory.AccessService()
 
 	proj := projection.NewProjector(store, []projection.Handler{

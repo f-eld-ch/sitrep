@@ -599,9 +599,16 @@ the dev database — they will be lost on the next `migrate up` run.
   locked for the duration of the write transaction to guarantee gapless assignment. Do not derive
   message numbers from list position or event version.
 
-- **Feature IDs are deterministic UUIDs.** The UI derives feature IDs with `uuidv3(drawId, URL)`.
-  The backend accepts the client-supplied ID — it never generates one for `PlaceFeature`. Changing
-  this breaks re-sent create idempotency.
+- **Feature IDs are derived server-side.** The UI sends a `clientKey` (the draw id) and the backend
+  derives the ID with `feature.DeriveID(incidentID, clientKey)` (UUIDv5 scoped to the incident) and
+  returns it. Re-sending the same key and payload is idempotent; the same key with a different
+  payload fails with `CONFLICT`. Never accept a client-supplied feature ID on create.
+
+- **Feature changes are ordered by effective time, not by when they were drawn.** Every feature
+  event carries `EffectiveAt` (and the connected `MessageID`). Changes on the message map layer
+  must reference a message and take effect at that message's time; the aggregate keeps the state
+  that is latest by effective time. Events written before this existed have no `EffectiveAt` and
+  fall back to their `OccurredAt`.
 
 - **`Owned` interface for `aggregate_index`.** Aggregates that belong to an incident implement
   `eventsourcing.Owned` (`OwnerIncidentID() uuid.UUID`). The Postgres event store checks this

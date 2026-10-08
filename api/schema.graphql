@@ -402,6 +402,17 @@ type Query {
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
 
+"""
+When a feature change takes effect on the map timeline.
+On the message map layer, messageId is required and the change takes effect at that message's
+time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+without it the change takes effect now.
+"""
+input FeatureChangeInput {
+  messageId: ID
+  effectiveAt: DateTime
+}
+
 input LayerInput {
   name: String!
 }
@@ -640,17 +651,26 @@ type Mutation {
 
   """
   Add a GeoJSON feature to a layer.
-  id is client-generated (UUID) for optimistic map updates.
+  clientKey is a client-chosen identifier (e.g. the draw id) of 1-128 characters. The server
+  derives the feature ID from the incident and the key and returns it. Re-sending the same
+  key with the same payload is idempotent; the same key with a different payload fails with CONFLICT.
   incidentId is required for event-stream routing (Feature is its own aggregate).
   """
-  addFeature(incidentId: ID!, layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  addFeature(
+    incidentId: ID!
+    layerId: ID!
+    clientKey: String!
+    geometry: Geometry
+    properties: JSONObject
+    change: FeatureChangeInput
+  ): Feature!
 
   """
   Update geometry and/or properties of a feature in a single operation.
   Supplying both in one call avoids the optimistic concurrency conflict from two parallel saves.
   """
-  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject, change: FeatureChangeInput): Feature!
 
   """Permanently remove a feature."""
-  deleteFeature(id: ID!): ID!
+  deleteFeature(id: ID!, change: FeatureChangeInput): ID!
 }

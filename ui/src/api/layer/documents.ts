@@ -41,14 +41,14 @@ export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutati
   mutation AddFeature(
     $incidentId: ID!
     $layerId: ID!
-    $id: ID!
+    $clientKey: String!
     $geometry: Geometry
     $properties: JSONObject
   ) {
     addFeature(
       incidentId: $incidentId
       layerId: $layerId
-      id: $id
+      clientKey: $clientKey
       geometry: $geometry
       properties: $properties
     ) {

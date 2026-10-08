@@ -186,6 +186,14 @@ var (
 	// that has already been merged into the default one.
 	ErrSchadenplatzMerged = errors.New("SCHADENPLATZ_MERGED")
 
+	// ErrBeforeFeaturePlaced is returned when a feature change takes effect before the
+	// feature itself was placed on the map timeline.
+	ErrBeforeFeaturePlaced = errors.New("BEFORE_FEATURE_PLACED")
+
+	// ErrFeatureHasLaterChanges is returned when a feature would be removed at a time
+	// that precedes changes already recorded for it.
+	ErrFeatureHasLaterChanges = errors.New("FEATURE_HAS_LATER_CHANGES")
+
 	// ErrCasualtyBelowZero is returned when a casualty delta would make a total
 	// go negative.
 	ErrCasualtyBelowZero = errors.New("CASUALTY_BELOW_ZERO")

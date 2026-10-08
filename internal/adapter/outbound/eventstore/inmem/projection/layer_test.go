@@ -11,7 +11,6 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
-	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 )
@@ -63,6 +62,7 @@ func (s *layerStack) featureSvc() inbound.FeatureService {
 		eventstore.NewFeatureRepository(s.store),
 		eventstore.NewIncidentRepository(s.store),
 		eventstore.NewLayerRepository(s.store),
+		eventstore.NewMessageRepository(s.store),
 	)
 }
 
@@ -153,10 +153,9 @@ func TestLayerHandler_FeaturePlaced(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	_, err = s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
@@ -174,10 +173,11 @@ func TestLayerHandler_FeaturePlaced_GeoJSONContainsFeature(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	state, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
+	featureID := state.ID
+
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
@@ -203,13 +203,14 @@ func TestLayerHandler_FeatureRemoved(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	state, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
+	featureID := state.ID
+
 	require.NoError(t, err)
 
-	err = s.featureSvc().RemoveFeature(ctx(), featureID, testActor)
+	err = s.featureSvc().RemoveFeature(ctx(), featureID, inbound.FeatureChange{}, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
@@ -227,17 +228,13 @@ func TestLayerHandler_MultipleFeatures_RevisionTracked(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	f1 := shared.FeatureID(uuid.New())
-	f2 := shared.FeatureID(uuid.New())
 
-	require.NoError(
-		t,
-		s.featureSvc().PlaceFeature(ctx(), f1, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
-	)
-	require.NoError(
-		t,
-		s.featureSvc().PlaceFeature(ctx(), f2, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
-	)
+	for _, key := range []string{"draw-1", "draw-2"} {
+		_, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, key, testGeometry, testProperties,
+			inbound.FeatureChange{}, testActor)
+		require.NoError(t, err)
+	}
+
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	rows := s.userLayers(uuid.UUID(inc.IncidentID))

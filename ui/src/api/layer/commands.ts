@@ -21,7 +21,8 @@ export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
 
 export interface AddFeatureArgs {
   layerId: string;
-  id: string;
+  /** Client-side identifier (the draw id). The server derives and returns the feature id. */
+  clientKey: string;
   geometry: unknown;
   properties: unknown;
   incidentId: string;
@@ -63,7 +64,7 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
       variables: {
         incidentId: args.incidentId,
         layerId: args.layerId,
-        id: args.id,
+        clientKey: args.clientKey,
         geometry: args.geometry as unknown as import("geojson").Geometry,
         properties: args.properties as Record<string, unknown>,
       },

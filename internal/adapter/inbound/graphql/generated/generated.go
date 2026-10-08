@@ -180,7 +180,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddFeature                   func(childComplexity int, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		AddFeature                   func(childComplexity int, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) int
 		AddGroupMember               func(childComplexity int, groupID string, subject string) int
 		AlertResource                func(childComplexity int, input model.AlertResourceInput) int
 		ArchiveAccessGroup           func(childComplexity int, groupID string) int
@@ -192,7 +192,7 @@ type ComplexityRoot struct {
 		CreateLayer                  func(childComplexity int, incidentID string, name string) int
 		CreateMessage                func(childComplexity int, input model.CreateMessageInput) int
 		CreateSchadenplatz           func(childComplexity int, incidentID string, name string, occurredAt *time.Time) int
-		DeleteFeature                func(childComplexity int, id string) int
+		DeleteFeature                func(childComplexity int, id string, change *model.FeatureChangeInput) int
 		DeleteIncident               func(childComplexity int, id string) int
 		DeleteMessage                func(childComplexity int, id string) int
 		DeployResource               func(childComplexity int, id string, at *time.Time) int
@@ -203,7 +203,7 @@ type ComplexityRoot struct {
 		LinkIncidentParent           func(childComplexity int, childID string, parentID string) int
 		MarkResourceReady            func(childComplexity int, id string, at *time.Time) int
 		MergeSchadenplatz            func(childComplexity int, id string, messageTime *time.Time) int
-		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap) int
+		ModifyFeature                func(childComplexity int, id string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) int
 		ReactivateResource           func(childComplexity int, id string, at *time.Time) int
 		ReassignResource             func(childComplexity int, id string, schadenplatzID string, at *time.Time) int
 		RecordCasualties             func(childComplexity int, id string, sourceMessageID string, occurredAt *time.Time, input model.CasualtyDeltasInput) int
@@ -388,9 +388,9 @@ type MutationResolver interface {
 	UpdatePersonnelCount(ctx context.Context, id string, count int, at *time.Time) (*model.Resource, error)
 	HandOver(ctx context.Context, id string, successorID string, at *time.Time) (*model.HandOverResult, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
-	AddFeature(ctx context.Context, incidentID string, layerID string, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
-	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap) (*model.Feature, error)
-	DeleteFeature(ctx context.Context, id string) (string, error)
+	AddFeature(ctx context.Context, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error)
+	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error)
+	DeleteFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (string, error)
 }
 type QueryResolver interface {
 	Incidents(ctx context.Context) ([]*model.Incident, error)
@@ -996,7 +996,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.AddFeature(childComplexity, args["incidentId"].(string), args["layerId"].(string), args["id"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap)), true
+		return e.ComplexityRoot.Mutation.AddFeature(childComplexity, args["incidentId"].(string), args["layerId"].(string), args["clientKey"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap), args["change"].(*model.FeatureChangeInput)), true
 	case "Mutation.addGroupMember":
 		if e.ComplexityRoot.Mutation.AddGroupMember == nil {
 			break
@@ -1128,7 +1128,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.DeleteFeature(childComplexity, args["id"].(string)), true
+		return e.ComplexityRoot.Mutation.DeleteFeature(childComplexity, args["id"].(string), args["change"].(*model.FeatureChangeInput)), true
 	case "Mutation.deleteIncident":
 		if e.ComplexityRoot.Mutation.DeleteIncident == nil {
 			break
@@ -1249,7 +1249,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Mutation.ModifyFeature(childComplexity, args["id"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap)), true
+		return e.ComplexityRoot.Mutation.ModifyFeature(childComplexity, args["id"].(string), args["geometry"].(scalar.JSONMap), args["properties"].(scalar.JSONMap), args["change"].(*model.FeatureChangeInput)), true
 	case "Mutation.reactivateResource":
 		if e.ComplexityRoot.Mutation.ReactivateResource == nil {
 			break
@@ -1988,6 +1988,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDefaultGrantInput,
 		ec.unmarshalInputDeploymentLocationInput,
 		ec.unmarshalInputDivisionInput,
+		ec.unmarshalInputFeatureChangeInput,
 		ec.unmarshalInputLayerInput,
 		ec.unmarshalInputResourceContactInput,
 		ec.unmarshalInputResourceHomeLocationInput,
@@ -2473,6 +2474,17 @@ type Query {
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
 
+"""
+When a feature change takes effect on the map timeline.
+On the message map layer, messageId is required and the change takes effect at that message's
+time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+without it the change takes effect now.
+"""
+input FeatureChangeInput {
+  messageId: ID
+  effectiveAt: DateTime
+}
+
 input LayerInput {
   name: String!
 }
@@ -2711,19 +2723,28 @@ type Mutation {
 
   """
   Add a GeoJSON feature to a layer.
-  id is client-generated (UUID) for optimistic map updates.
+  clientKey is a client-chosen identifier (e.g. the draw id) of 1-128 characters. The server
+  derives the feature ID from the incident and the key and returns it. Re-sending the same
+  key with the same payload is idempotent; the same key with a different payload fails with CONFLICT.
   incidentId is required for event-stream routing (Feature is its own aggregate).
   """
-  addFeature(incidentId: ID!, layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  addFeature(
+    incidentId: ID!
+    layerId: ID!
+    clientKey: String!
+    geometry: Geometry
+    properties: JSONObject
+    change: FeatureChangeInput
+  ): Feature!
 
   """
   Update geometry and/or properties of a feature in a single operation.
   Supplying both in one call avoids the optimistic concurrency conflict from two parallel saves.
   """
-  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject, change: FeatureChangeInput): Feature!
 
   """Permanently remove a feature."""
-  deleteFeature(id: ID!): ID!
+  deleteFeature(id: ID!, change: FeatureChangeInput): ID!
 }
 `, BuiltIn: false},
 }
@@ -3298,14 +3319,14 @@ func (ec *executionContext) field_Mutation_addFeature_args(ctx context.Context, 
 		return nil, err
 	}
 	args["layerId"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "clientKey",
 		func(ctx context.Context, v any) (string, error) {
-			return ec.unmarshalNID2string(ctx, v)
+			return ec.unmarshalNString2string(ctx, v)
 		})
 	if err != nil {
 		return nil, err
 	}
-	args["id"] = arg2
+	args["clientKey"] = arg2
 	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "geometry",
 		func(ctx context.Context, v any) (scalar.JSONMap, error) {
 			return ec.unmarshalOGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, v)
@@ -3322,6 +3343,14 @@ func (ec *executionContext) field_Mutation_addFeature_args(ctx context.Context, 
 		return nil, err
 	}
 	args["properties"] = arg4
+	arg5, err := graphql.ProcessArgField(ctx, rawArgs, "change",
+		func(ctx context.Context, v any) (*model.FeatureChangeInput, error) {
+			return ec.unmarshalOFeatureChangeInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["change"] = arg5
 	return args, nil
 }
 
@@ -3554,6 +3583,14 @@ func (ec *executionContext) field_Mutation_deleteFeature_args(ctx context.Contex
 		return nil, err
 	}
 	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "change",
+		func(ctx context.Context, v any) (*model.FeatureChangeInput, error) {
+			return ec.unmarshalOFeatureChangeInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["change"] = arg1
 	return args, nil
 }
 
@@ -3820,6 +3857,14 @@ func (ec *executionContext) field_Mutation_modifyFeature_args(ctx context.Contex
 		return nil, err
 	}
 	args["properties"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "change",
+		func(ctx context.Context, v any) (*model.FeatureChangeInput, error) {
+			return ec.unmarshalOFeatureChangeInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["change"] = arg3
 	return args, nil
 }
 
@@ -8722,7 +8767,7 @@ func (ec *executionContext) _Mutation_addFeature(ctx context.Context, field grap
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().AddFeature(ctx, fc.Args["incidentId"].(string), fc.Args["layerId"].(string), fc.Args["id"].(string), fc.Args["geometry"].(scalar.JSONMap), fc.Args["properties"].(scalar.JSONMap))
+			return ec.Resolvers.Mutation().AddFeature(ctx, fc.Args["incidentId"].(string), fc.Args["layerId"].(string), fc.Args["clientKey"].(string), fc.Args["geometry"].(scalar.JSONMap), fc.Args["properties"].(scalar.JSONMap), fc.Args["change"].(*model.FeatureChangeInput))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Feature) graphql.Marshaler {
@@ -8766,7 +8811,7 @@ func (ec *executionContext) _Mutation_modifyFeature(ctx context.Context, field g
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().ModifyFeature(ctx, fc.Args["id"].(string), fc.Args["geometry"].(scalar.JSONMap), fc.Args["properties"].(scalar.JSONMap))
+			return ec.Resolvers.Mutation().ModifyFeature(ctx, fc.Args["id"].(string), fc.Args["geometry"].(scalar.JSONMap), fc.Args["properties"].(scalar.JSONMap), fc.Args["change"].(*model.FeatureChangeInput))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Feature) graphql.Marshaler {
@@ -8810,7 +8855,7 @@ func (ec *executionContext) _Mutation_deleteFeature(ctx context.Context, field g
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Mutation().DeleteFeature(ctx, fc.Args["id"].(string))
+			return ec.Resolvers.Mutation().DeleteFeature(ctx, fc.Args["id"].(string), fc.Args["change"].(*model.FeatureChangeInput))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
@@ -12294,6 +12339,43 @@ func (ec *executionContext) unmarshalInputDivisionInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Description = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFeatureChangeInput(ctx context.Context, obj any) (model.FeatureChangeInput, error) {
+	var it model.FeatureChangeInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"messageId", "effectiveAt"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "messageId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("messageId"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MessageID = data
+		case "effectiveAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effectiveAt"))
+			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffectiveAt = data
 		}
 	}
 	return it, nil
@@ -16560,6 +16642,14 @@ func (ec *executionContext) unmarshalODivisionInput2ᚕᚖgithubᚗcomᚋfᚑeld
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOFeatureChangeInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeInput(ctx context.Context, v any) (*model.FeatureChangeInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFeatureChangeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {

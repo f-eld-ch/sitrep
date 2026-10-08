@@ -33,7 +33,6 @@ import {
   useLayersForIncident,
   useModifyFeature,
 } from "api";
-import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
@@ -488,14 +487,10 @@ function Draw() {
       for (const f of createdFeatures) {
         const feature = cleanFeature(f);
 
-        if (!validateUUID(f.id)) {
-          feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
-        }
-
         void addFeature({
           layerId: layer,
           geometry: feature.geometry,
-          id: String(feature.id ?? ""),
+          clientKey: String(f.id ?? ""),
           properties: feature.properties,
           incidentId: incidentId ?? "",
         }).then(({ featureId }) => {

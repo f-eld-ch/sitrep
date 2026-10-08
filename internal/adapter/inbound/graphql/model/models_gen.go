@@ -148,6 +148,15 @@ type Feature struct {
 	Properties scalar.JSONMap `json:"properties,omitempty"`
 }
 
+// When a feature change takes effect on the map timeline.
+// On the message map layer, messageId is required and the change takes effect at that message's
+// time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+// without it the change takes effect now.
+type FeatureChangeInput struct {
+	MessageID   *string    `json:"messageId,omitempty"`
+	EffectiveAt *time.Time `json:"effectiveAt,omitempty"`
+}
+
 type GlobalRoleGrant struct {
 	Subject string     `json:"subject"`
 	Role    GlobalRole `json:"role"`
