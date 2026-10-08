@@ -170,7 +170,7 @@ function MessageMapView() {
           onSelect={requestSelect}
           acknowledgementDivisionId={mapDivision.id}
           initialFilters={{}}
-          enabledFilters={{ untriaged: false, highPriority: true, mine: false }}
+          enabledFilters={{ untriaged: false, highPriority: false, mine: false }}
           baseFilter={{
             triage: "triaged_only",
             divisionId: mapDivision.id,
@@ -181,7 +181,9 @@ function MessageMapView() {
           extraChips={
             <FilterChip
               label={
-                onlyUndrawn ? `${t("messageMap.pending")} (${undrawn.length})` : t("messageMap.all")
+                onlyUndrawn
+                  ? t("messageMap.showAll")
+                  : `${t("messageMap.showPending")} (${undrawn.length})`
               }
               active={onlyUndrawn}
               onToggle={() => setOnlyUndrawn((v) => !v)}

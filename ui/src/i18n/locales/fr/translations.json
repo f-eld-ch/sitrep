@@ -190,8 +190,8 @@
     "filterMine": "Les miens"
   },
   "messageMap": {
-    "pending": "Non dessiné",
-    "all": "Tous",
+    "showPending": "Afficher les non dessinés",
+    "showAll": "Tout afficher",
     "drawn": "Dessiné",
     "finish": "Terminer",
     "edit": "Modifier",

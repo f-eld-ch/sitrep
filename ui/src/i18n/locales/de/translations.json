@@ -190,8 +190,8 @@
     "filterMine": "Meine"
   },
   "messageMap": {
-    "pending": "Ungezeichnet",
-    "all": "Alle",
+    "showPending": "Zeige ungezeichnete",
+    "showAll": "Zeige alle",
     "drawn": "Gezeichnet",
     "finish": "Abschliessen",
     "edit": "Ändern",

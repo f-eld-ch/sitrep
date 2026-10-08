@@ -190,8 +190,8 @@
     "filterMine": "Mine"
   },
   "messageMap": {
-    "pending": "Not drawn",
-    "all": "All",
+    "showPending": "Show not drawn",
+    "showAll": "Show all",
     "drawn": "Drawn",
     "finish": "Finish",
     "edit": "Edit",
