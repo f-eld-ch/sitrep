@@ -17,6 +17,7 @@ export {
   LIVE_POLL_INTERVAL_MS,
   useFeatureMessages,
   useLayersForIncident,
+  useFeatureChangeTimes,
   useMessageFeatureHalos,
 } from "./queries";
 export type { FeatureHalo, HaloKind } from "./halos";

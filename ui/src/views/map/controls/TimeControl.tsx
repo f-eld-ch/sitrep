@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { useParams } from "react-router";
+import { useFeatureChangeTimes } from "api/layer";
 import { useIncidentMessages } from "api/message";
 import { IncidentContext } from "utils";
 import { MapTimeContext } from "../MapTimeContext";
@@ -21,6 +22,8 @@ export function TimeControl() {
   const { state: incidentState } = useContext(IncidentContext);
   const { asOf, setAsOf } = useContext(MapTimeContext);
   const messages = useIncidentMessages(incidentId ?? "", { pollInterval: TICK_REFRESH_MS });
+  // Free drawing on any layer puts changes on the timeline too, whichever layer is in view.
+  const featureTimes = useFeatureChangeTimes(incidentId, { pollInterval: TICK_REFRESH_MS });
   // Taken when the control mounts; only used when the incident has no start time yet.
   const [now] = useState(() => currentTime());
 
@@ -42,7 +45,7 @@ export function TimeControl() {
     messages.status === "ready" ? messages.data.messages.map((m) => m.time.getTime()) : [];
   const createdAt = incidentState.incident?.createdAt;
   const start = new Date(
-    Math.min(...allMessageTimes, ...(createdAt ? [createdAt.getTime()] : [now])),
+    Math.min(...allMessageTimes, ...featureTimes, ...(createdAt ? [createdAt.getTime()] : [now])),
   );
 
   return (
@@ -52,7 +55,7 @@ export function TimeControl() {
         asOf={asOf}
         onAsOfChange={setAsOf}
         start={start}
-        tickTimes={messageTimes}
+        tickTimes={[...messageTimes, ...featureTimes]}
       />
     </div>
   );

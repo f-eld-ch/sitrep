@@ -25,6 +25,9 @@ const message = (id: string, iso: string) => ({
   divisions: [{ division: MAP_DIVISION }],
 });
 
+// No free drawing: nothing but the messages puts ticks on the timeline.
+const NO_TIMES: number[] = [];
+vi.mock("api/layer", () => ({ useFeatureChangeTimes: () => NO_TIMES }));
 vi.mock("api/message", () => ({
   useIncidentMessages: () => ({
     status: "ready",

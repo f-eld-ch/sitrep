@@ -1,6 +1,6 @@
 import { Spinner } from "components";
 import { Notification, PageTitle, Tag } from "components/ui";
-import { useIncidentMessages, useIncidentResources } from "api";
+import { useFeatureChangeTimes, useIncidentMessages, useIncidentResources } from "api";
 import type { Resource, ResourceFormation, ResourceStatus } from "api";
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
@@ -179,6 +179,9 @@ function DashboardKpis({
   );
 }
 
+/** How often the map changes are re-read for the timeline; in step with the dashboard map. */
+const TIMELINE_REFRESH_MS = 10_000;
+
 export default function Dashboard() {
   const { incidentId } = useParams();
   const { t, i18n } = useTranslation();
@@ -217,12 +220,29 @@ export default function Dashboard() {
       earliest === undefined || message.time < earliest ? message.time : earliest,
     undefined,
   );
-  const timelineStart = [incidentState.incident?.createdAt, earliestMessage]
+  // One timeline for the whole dashboard, whichever layer the map is showing: key messages and
+  // every change on any layer. It does not depend on the point in time being shown either, so the
+  // slider keeps its range and ticks while it is moved.
+  const featureTimes = useFeatureChangeTimes(incidentId, { pollInterval: TIMELINE_REFRESH_MS });
+  const timelineStart = [
+    incidentState.incident?.createdAt,
+    earliestMessage,
+    ...(featureTimes.length > 0 ? [new Date(Math.min(...featureTimes))] : []),
+  ]
     .filter((date): date is Date => date !== undefined)
     .reduce<Date | undefined>(
       (earliest, date) => (earliest === undefined || date < earliest ? date : earliest),
       undefined,
     );
+  const tickTimes = [
+    ...buildMessageList(messagesResult.status === "ready" ? messagesResult.data.messages : [], {
+      triage: "triaged_only",
+      priority: PriorityStatus.High,
+      assignment: "all",
+      author: "all",
+    }).map((message) => message.time.getTime()),
+    ...featureTimes,
+  ];
 
   const keyMessages = buildMessageList(allMessages, {
     triage: "triaged_only",
@@ -343,7 +363,7 @@ export default function Dashboard() {
                 asOf={asOf}
                 onAsOfChange={setAsOf}
                 start={timelineStart}
-                tickTimes={keyMessages.map((message) => message.time.getTime())}
+                tickTimes={tickTimes}
               />
             )}
           </section>

@@ -149,6 +149,7 @@ export {
   LIVE_POLL_INTERVAL_MS,
   useFeatureMessages,
   useLayersForIncident,
+  useFeatureChangeTimes,
   useMessageFeatureHalos,
   useModifyFeature,
 } from "./layer";

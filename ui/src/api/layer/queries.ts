@@ -126,3 +126,26 @@ export function useMessageFeatureHalos(
 
   return { halos, ready: data !== undefined };
 }
+
+/**
+ * When the map's features changed, on the incident timeline, across all of the incident's
+ * layers: the points a timeline over the map can stop at. Layers that are not shown right now
+ * count too, so the timeline is the same whichever layer is in view.
+ */
+export function useFeatureChangeTimes(
+  incidentId: string | undefined,
+  options: { pollInterval?: number } = {},
+): number[] {
+  const { data } = useQuery(GET_FEATURE_CHANGES, {
+    variables: { incidentId: incidentId ?? "" },
+    skip: !incidentId,
+    pollInterval: options.pollInterval,
+    skipPollAttempt: () => document.hidden,
+    fetchPolicy: "cache-and-network",
+  });
+
+  return useMemo(
+    () => [...new Set((data?.featureChanges ?? []).map((c) => new Date(c.effectiveAt).getTime()))],
+    [data],
+  );
+}
