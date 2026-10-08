@@ -408,6 +408,21 @@ function useLiveDrawGeometry(
     : undefined;
 }
 
+/**
+ * Whether the active layer can be drawn on right now. The message map layer is only drawn on
+ * for a message, and a message only draws on it; a map showing the past is for looking, unless
+ * it is the one drawn for a message.
+ */
+function useDrawingAllowed(): boolean {
+  const { state } = useContext(LayerContext);
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const activeLayerKind = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer.kind;
+  const onMessageMap = activeLayerKind === "MESSAGE_MAP";
+  const viewingPast = asOf !== undefined && drawingMessage === undefined;
+
+  return onMessageMap === (drawingMessage !== undefined) && !viewingPast;
+}
+
 function ActiveLayer() {
   const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
@@ -418,6 +433,7 @@ function ActiveLayer() {
     [state.layers, state.activeLayer],
   );
   const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
+  const drawingAllowed = useDrawingAllowed();
   const featureCollection = useMemo(() => layerToFeatureCollection(activeLayer), [activeLayer]);
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
@@ -461,7 +477,9 @@ function ActiveLayer() {
     return null;
   }
 
-  if (!isOwnLayer) {
+  // Only the draw control paints the active layer's features, so a layer that cannot be
+  // drawn on right now is shown like any other passive layer instead of vanishing.
+  if (!isOwnLayer || !drawingAllowed) {
     return <InactiveLayer id={state.activeLayer} featureCollection={featureCollection} />;
   }
 
@@ -648,17 +666,7 @@ function Draw() {
     }
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
-  // The message map layer is only drawn on for a message, and a message only draws on it.
-  const activeLayerKind = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer.kind;
-  const drawsOnMessageMap = activeLayerKind === "MESSAGE_MAP";
-  // A map showing the past is for looking, unless it is the one drawn for a message.
-  const viewingPast = asOf !== undefined && drawingMessage === undefined;
-  if (
-    incident?.closedAt != null ||
-    state.activeLayer === undefined ||
-    drawsOnMessageMap !== (drawingMessage !== undefined) ||
-    viewingPast
-  ) {
+  if (incident?.closedAt != null || state.activeLayer === undefined) {
     return;
   }
 
