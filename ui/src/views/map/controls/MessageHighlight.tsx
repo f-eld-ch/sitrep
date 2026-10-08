@@ -186,10 +186,11 @@ export function MessageHighlight({
           closeButton={false}
           closeOnClick={false}
           closeOnMove={false}
+          maxWidth="none"
           offset={12}
           onClose={() => setTarget(undefined)}
         >
-          <div className="min-w-[200px] p-3 text-sm text-gray-800">
+          <div className="w-64 p-3 text-sm text-gray-800">
             <p className="mb-2">{t("messageMap.restoreHint")}</p>
             {restoreState.error && (
               <p className="mb-2 text-xs text-red-600">{t(`errors.${restoreState.error.code}`)}</p>
