@@ -46,7 +46,6 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   const showResources = useBooleanFlagValue("show-resources", false);
   const showTasks = useBooleanFlagValue("show-tasks", false);
   const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
-  const showMessageMapView = useBooleanFlagValue("message-map-view", false);
 
   const incidentId = incidentState.incident?.id;
   const mobileItem = "flex items-center px-4 py-2 gap-2 capitalize w-full";
@@ -232,7 +231,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                   <span>{t("triageView")}</span>
                 </NavLink>
               )}
-              {showMessageMapView && (
+              {showNewTriageView && (
                 <NavLink
                   className={({ isActive }) =>
                     clsx(
@@ -503,7 +502,6 @@ const JournalNavBar: FunctionComponent = () => {
   const { t } = useTranslation();
   const { state: incidentState } = useContext(IncidentContext);
   const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
-  const showMessageMapView = useBooleanFlagValue("message-map-view", false);
 
   if (!incidentState || !incidentState.incident) return;
 
@@ -551,7 +549,7 @@ const JournalNavBar: FunctionComponent = () => {
             <span>{t("triageView")}</span>
           </NavLink>
         )}
-        {showMessageMapView && (
+        {showNewTriageView && (
           <NavLink
             className={({ isActive }) =>
               clsx(

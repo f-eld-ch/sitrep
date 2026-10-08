@@ -102,7 +102,7 @@ interface MapViewOptions {
 function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
   // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
-  const messageMapEnabled = useBooleanFlagValue("message-map-view", false);
+  const messageMapEnabled = useBooleanFlagValue("new-triage-view", false);
   const timelineEnabled = messageMapEnabled && !embedded && !readOnly;
   const { i18n } = useTranslation();
 
