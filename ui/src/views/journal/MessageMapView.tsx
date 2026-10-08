@@ -185,7 +185,7 @@ function MessageMapView() {
                   ? t("messageMap.showAll")
                   : `${t("messageMap.showPending")} (${undrawn.length})`
               }
-              active={onlyUndrawn}
+              active={!onlyUndrawn}
               onToggle={() => setOnlyUndrawn((v) => !v)}
               activeClassName="bg-warning/15 text-warning border-warning/30"
             />
