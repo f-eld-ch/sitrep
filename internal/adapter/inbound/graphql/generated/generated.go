@@ -148,8 +148,8 @@ type ComplexityRoot struct {
 		Messages        func(childComplexity int) int
 		Name            func(childComplexity int) int
 		ParentID        func(childComplexity int) int
-		Resources       func(childComplexity int) int
-		Schadenplaetze  func(childComplexity int) int
+		Resources       func(childComplexity int, asOf *time.Time) int
+		Schadenplaetze  func(childComplexity int, asOf *time.Time) int
 		UpdatedAt       func(childComplexity int) int
 	}
 
@@ -359,8 +359,8 @@ type IncidentResolver interface {
 	CanDelete(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManageAccess(ctx context.Context, obj *model.Incident) (bool, error)
 	AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error)
-	Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error)
-	Resources(ctx context.Context, obj *model.Incident) ([]*model.Resource, error)
+	Schadenplaetze(ctx context.Context, obj *model.Incident, asOf *time.Time) ([]*model.Schadenplatz, error)
+	Resources(ctx context.Context, obj *model.Incident, asOf *time.Time) ([]*model.Resource, error)
 }
 type MessageResolver interface {
 	Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error)
@@ -877,13 +877,23 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.ComplexityRoot.Incident.Resources(childComplexity), true
+		args, err := ec.field_Incident_resources_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Incident.Resources(childComplexity, args["asOf"].(*time.Time)), true
 	case "Incident.schadenplaetze":
 		if e.ComplexityRoot.Incident.Schadenplaetze == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Incident.Schadenplaetze(childComplexity), true
+		args, err := ec.field_Incident_schadenplaetze_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Incident.Schadenplaetze(childComplexity, args["asOf"].(*time.Time)), true
 	case "Incident.updatedAt":
 		if e.ComplexityRoot.Incident.UpdatedAt == nil {
 			break
@@ -2585,10 +2595,18 @@ type Incident {
   canManageAccess: Boolean!
   """Access mode of this incident."""
   accessMode: IncidentAccessMode!
-  """All non-merged Schadenplätze for this incident."""
-  schadenplaetze: [Schadenplatz!]!
-  """All resources for this incident, including resources owned by direct child incidents."""
-  resources: [Resource!]!
+  """
+  All non-merged Schadenplätze for this incident. With asOf, the Schadenplätze as they were at that
+  point in time: casualty totals recorded up to then, and merged ones flagged as of then (so
+  clients must skip isMerged ones when summing).
+  """
+  schadenplaetze(asOf: DateTime): [Schadenplatz!]!
+  """
+  All resources for this incident, including resources owned by direct child incidents.
+  With asOf, the resources as they were at that point in time (status, personnel, assignment);
+  resources that did not exist yet are left out.
+  """
+  resources(asOf: DateTime): [Resource!]!
 }
 
 type Feature {
@@ -3548,6 +3566,34 @@ func (ec *executionContext) childFields___Type(ctx context.Context, field graphq
 // endregion ************************** internal!.gotpl ***************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Incident_resources_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "asOf",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["asOf"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Incident_schadenplaetze_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "asOf",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["asOf"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_acknowledgeMessage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -6608,7 +6654,8 @@ func (ec *executionContext) _Incident_schadenplaetze(ctx context.Context, field 
 			return ec.fieldContext_Incident_schadenplaetze(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Incident().Schadenplaetze(ctx, obj)
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Incident().Schadenplaetze(ctx, obj, fc.Args["asOf"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Schadenplatz) graphql.Marshaler {
@@ -6618,7 +6665,7 @@ func (ec *executionContext) _Incident_schadenplaetze(ctx context.Context, field 
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Incident_schadenplaetze(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Incident_schadenplaetze(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Incident",
 		Field:      field,
@@ -6627,6 +6674,17 @@ func (ec *executionContext) fieldContext_Incident_schadenplaetze(_ context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Schadenplatz(ctx, field)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Incident_schadenplaetze_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -6640,7 +6698,8 @@ func (ec *executionContext) _Incident_resources(ctx context.Context, field graph
 			return ec.fieldContext_Incident_resources(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Incident().Resources(ctx, obj)
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Incident().Resources(ctx, obj, fc.Args["asOf"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Resource) graphql.Marshaler {
@@ -6650,7 +6709,7 @@ func (ec *executionContext) _Incident_resources(ctx context.Context, field graph
 		true,
 	)
 }
-func (ec *executionContext) fieldContext_Incident_resources(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Incident_resources(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Incident",
 		Field:      field,
@@ -6659,6 +6718,17 @@ func (ec *executionContext) fieldContext_Incident_resources(_ context.Context, f
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return ec.childFields_Resource(ctx, field)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Incident_resources_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }

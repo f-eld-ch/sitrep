@@ -311,7 +311,11 @@ function LayerFetcher({ livePollInterval }: { livePollInterval: number }) {
   // operator's own drawing updates the cache directly; others' arrive on a slow poll.
   const pollInterval = drawingMessage ? SLOW_POLL_INTERVAL_MS : asOf ? 0 : livePollInterval;
 
-  const result = useLayersForIncident(incidentId, asOf, { pollInterval });
+  // A pure history view (no drawing) bypasses the cache: its features at that time would
+  // otherwise overwrite the current geometry of the same normalized entities.
+  const fetchPolicy = asOf && !drawingMessage ? "no-cache" : "cache-and-network";
+
+  const result = useLayersForIncident(incidentId, asOf, { pollInterval, fetchPolicy });
   const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
 
   useEffect(() => {

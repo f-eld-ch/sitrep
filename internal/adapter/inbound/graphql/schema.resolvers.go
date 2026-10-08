@@ -173,10 +173,28 @@ func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) 
 }
 
 // Schadenplaetze is the resolver for the schadenplaetze field.
-func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error) {
+func (r *incidentResolver) Schadenplaetze(
+	ctx context.Context,
+	obj *model.Incident,
+	asOf *time.Time,
+) ([]*model.Schadenplatz, error) {
 	incID, err := parseUUID(obj.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if asOf != nil {
+		states, err := r.Timeline.SchadenplaetzeAsOf(ctx, shared.IncidentID(incID), *asOf)
+		if err != nil {
+			return nil, err
+		}
+
+		out := make([]*model.Schadenplatz, 0, len(states))
+		for _, s := range states {
+			out = append(out, schadenplatzStateToModel(s))
+		}
+
+		return out, nil
 	}
 
 	rows, err := r.Queries.ListSchadenplaetze(ctx, incID)
@@ -193,10 +211,28 @@ func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incide
 }
 
 // Resources is the resolver for the resources field.
-func (r *incidentResolver) Resources(ctx context.Context, obj *model.Incident) ([]*model.Resource, error) {
+func (r *incidentResolver) Resources(
+	ctx context.Context,
+	obj *model.Incident,
+	asOf *time.Time,
+) ([]*model.Resource, error) {
 	incID, err := parseUUID(obj.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if asOf != nil {
+		states, err := r.Timeline.ResourcesAsOf(ctx, shared.IncidentID(incID), *asOf)
+		if err != nil {
+			return nil, err
+		}
+
+		out := make([]*model.Resource, 0, len(states))
+		for _, s := range states {
+			out = append(out, resourceStateToModel(s))
+		}
+
+		return out, nil
 	}
 
 	rows, err := r.Queries.ListResourcesForIncident(ctx, incID)

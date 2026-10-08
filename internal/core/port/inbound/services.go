@@ -372,6 +372,18 @@ type FeatureService interface {
 	RemoveFeature(ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor) error
 }
 
+// TimelineService is the driving port for reading how an incident looked at a past time.
+// Both methods enforce read access through the read models they start from.
+type TimelineService interface {
+	// ResourcesAsOf returns the resources of an incident and its direct children (relieved
+	// included) as they were at asOf. Resources that did not exist yet are left out.
+	ResourcesAsOf(ctx context.Context, incidentID shared.IncidentID, asOf time.Time) ([]ResourceState, error)
+
+	// SchadenplaetzeAsOf returns the incident's Schadenplätze as they were at asOf, with the
+	// casualty totals recorded up to then and merged ones flagged as of that time.
+	SchadenplaetzeAsOf(ctx context.Context, incidentID shared.IncidentID, asOf time.Time) ([]SchadenplatzState, error)
+}
+
 // SchadenplatzState carries the command result for Schadenplatz write operations.
 type SchadenplatzState struct {
 	ID         shared.SchadenplatzID

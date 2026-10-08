@@ -218,9 +218,13 @@ type Incident struct {
 	CanManageAccess bool `json:"canManageAccess"`
 	// Access mode of this incident.
 	AccessMode IncidentAccessMode `json:"accessMode"`
-	// All non-merged Schadenplätze for this incident.
+	// All non-merged Schadenplätze for this incident. With asOf, the Schadenplätze as they were at that
+	// point in time: casualty totals recorded up to then, and merged ones flagged as of then (so
+	// clients must skip isMerged ones when summing).
 	Schadenplaetze []*Schadenplatz `json:"schadenplaetze"`
 	// All resources for this incident, including resources owned by direct child incidents.
+	// With asOf, the resources as they were at that point in time (status, personnel, assignment);
+	// resources that did not exist yet are left out.
 	Resources []*Resource `json:"resources"`
 }
 

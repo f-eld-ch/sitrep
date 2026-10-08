@@ -13,10 +13,12 @@ import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
 import dayjs from "dayjs";
-import { useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
+import { IncidentContext } from "utils";
+import { TimelineSlider } from "views/map/controls/TimelineSlider";
 import { deployedPersonnel } from "views/resource/personnel";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
@@ -164,8 +166,12 @@ function DashboardKpis({
 export default function Dashboard() {
   const { incidentId } = useParams();
   const { t, i18n } = useTranslation();
-  const resourcesResult = useIncidentResources(incidentId);
+  // The point in time the whole dashboard shows; undefined is live.
+  const [asOf, setAsOf] = useState<Date | undefined>();
+  const resourcesResult = useIncidentResources(incidentId, asOf);
   const messagesResult = useIncidentMessages(incidentId ?? "");
+  const { state: incidentState } = useContext(IncidentContext);
+  const showTimeline = useBooleanFlagValue("new-triage-view", false);
   const iconsLoaded = useBabsIcons();
   const showResources = useBooleanFlagValue("show-resources", false);
   // Tracks a user's explicit selection together with the key message that was
@@ -177,25 +183,26 @@ export default function Dashboard() {
     selectedId: string | null;
   } | null>(null);
 
-  const allMessages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
+  // Messages that existed at the shown point in time; later ones appear as the slider moves on.
+  const allMessages = (
+    messagesResult.status === "ready" ? messagesResult.data.messages : []
+  ).filter((message) => asOf === undefined || message.time.getTime() <= asOf.getTime());
 
-  const latestKeyMessage = useMemo(() => {
-    const messages = messagesResult.status === "ready" ? messagesResult.data.messages : [];
-    const keyMessages = buildMessageList(messages, {
-      triage: "triaged_only",
-      priority: PriorityStatus.High,
-      assignment: "all",
-      author: "all",
-    });
-    return keyMessages[0];
-  }, [messagesResult]);
+  const keyMessages = buildMessageList(allMessages, {
+    triage: "triaged_only",
+    priority: PriorityStatus.High,
+    assignment: "all",
+    author: "all",
+  });
+
+  const latestKeyMessage = keyMessages[0];
 
   const latestKeyMessageId = latestKeyMessage?.id;
 
-  // Auto-select only if the latest key message arrived within the last 30 minutes.
-  // dayjs() is evaluated on each render; messagesResult updates keep this fresh.
+  // Auto-select only if the latest key message arrived within the last 30 minutes of the shown
+  // point in time. dayjs() is evaluated on each render; messagesResult updates keep this fresh.
   const isLatestStale =
-    latestKeyMessage != null && dayjs().diff(dayjs(latestKeyMessage.time), "minute") > 30;
+    latestKeyMessage != null && dayjs(asOf).diff(dayjs(latestKeyMessage.time), "minute") > 30;
 
   const effectiveSelectedId = (() => {
     if (userOverride !== null && userOverride.keyId === latestKeyMessageId) {
@@ -254,8 +261,16 @@ export default function Dashboard() {
               </div>
             )}
             <div className="min-h-[18rem] flex-1 overflow-hidden rounded border border-border bg-bg-elevated">
-              <IncidentMap embedded readOnly />
+              <IncidentMap embedded readOnly asOf={asOf} />
             </div>
+            {showTimeline && (
+              <TimelineSlider
+                asOf={asOf}
+                onAsOfChange={setAsOf}
+                start={incidentState.incident?.createdAt}
+                tickTimes={keyMessages.map((message) => message.time.getTime())}
+              />
+            )}
           </section>
           {/* KPIs — first on mobile, last column on desktop */}
           {showResources && (

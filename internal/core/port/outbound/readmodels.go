@@ -179,6 +179,10 @@ type SchadenplatzQueries interface {
 	// ListSchadenplaetze returns all non-merged Schadenplatz for an incident.
 	ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
 
+	// ListAllSchadenplaetze returns every Schadenplatz of an incident, merged ones included.
+	// A merged Schadenplatz still existed as such at earlier points in time.
+	ListAllSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
+
 	// ListMessageCasualties returns the casualty deltas recorded for a message across all Schadenplätze.
 	ListMessageCasualties(ctx context.Context, messageID uuid.UUID) ([]*MessageCasualtyRM, error)
 }

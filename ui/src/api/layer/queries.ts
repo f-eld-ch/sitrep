@@ -21,7 +21,7 @@ export interface LayersData {
 export function useLayersForIncident(
   incidentId: string | undefined,
   asOf?: Date,
-  options: { pollInterval?: number } = {},
+  options: { pollInterval?: number; fetchPolicy?: "cache-and-network" | "no-cache" } = {},
 ): QueryResult<LayersData> {
   const { data, loading, error, refetch } = useQuery(GET_LAYERS, {
     variables: layersVariables(incidentId ?? "", asOf),
@@ -29,7 +29,7 @@ export function useLayersForIncident(
     pollInterval: options.pollInterval ?? LIVE_POLL_INTERVAL_MS,
     // Nobody watches a hidden tab; resume with the next tick once it is visible again.
     skipPollAttempt: () => document.hidden,
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: options.fetchPolicy ?? "cache-and-network",
   });
 
   const layers = useMemo(() => (data ? data.layersForIncident.map(toLayer) : undefined), [data]);

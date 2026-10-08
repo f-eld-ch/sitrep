@@ -50,6 +50,7 @@ type Stack struct {
 	Access                inbound.AccessService
 	Schadenplaetze        inbound.SchadenplatzService
 	Resources             inbound.ResourceService
+	Timeline              inbound.TimelineService
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker
 	AccessQueries         outbound.AccessQueries
@@ -135,6 +136,7 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 		Access:                stack.Access,
 		Schadenplaetze:        stack.Schadenplaetze,
 		Resources:             stack.Resources,
+		Timeline:              stack.Timeline,
 		IncidentAccessChecker: stack.IncidentAccessChecker,
 		GlobalAccessChecker:   stack.GlobalAccessChecker,
 		AccessQueries:         stack.AccessQueries,

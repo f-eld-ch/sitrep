@@ -396,6 +396,17 @@ func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([
 	return out, nil
 }
 
+func (q *Queries) ListAllSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([]*outbound.SchadenplatzRM, error) {
+	rows := q.schadenplatz.AllForIncident(incidentID)
+
+	out := make([]*outbound.SchadenplatzRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, spRowToRM(row))
+	}
+
+	return out, nil
+}
+
 func (q *Queries) ListMessageCasualties(_ context.Context, messageID uuid.UUID) ([]*outbound.MessageCasualtyRM, error) {
 	rows := q.schadenplatz.GetMessageCasualties(messageID)
 
