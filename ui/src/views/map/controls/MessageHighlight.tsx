@@ -76,18 +76,17 @@ export function MessageHighlightToggle({
   const { t } = useTranslation();
 
   return (
-    <button
-      type="button"
-      aria-pressed={enabled}
-      title={t("messageMap.highlightHint")}
-      className={clsx(
-        "pointer-events-auto flex items-center gap-2 rounded bg-white px-2 py-1 text-xs shadow",
-        enabled ? "text-amber-600" : "text-gray-500",
-      )}
-      onClick={onToggle}
-    >
-      <FontAwesomeIcon icon={faBullseye} />
-      {t("messageMap.highlight")}
-    </button>
+    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <button
+        type="button"
+        aria-pressed={enabled}
+        aria-label={t("messageMap.highlight")}
+        title={`${t("messageMap.highlight")}: ${t("messageMap.highlightHint")}`}
+        className={clsx("maplibregl-ctrl-icon", enabled && "text-amber-500!")}
+        onClick={onToggle}
+      >
+        <FontAwesomeIcon icon={faBullseye} size="lg" />
+      </button>
+    </div>
   );
 }
