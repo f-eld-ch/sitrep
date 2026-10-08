@@ -29,7 +29,7 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 3 }
+func (h *LayerFeaturesHandler) Version() int { return 4 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features, readmodel.feature_change`)
 	return err
@@ -44,7 +44,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 		}
 	case "Feature":
 		switch t {
-		case "Placed", "Moved", "Restyled", "Imported", "Removed":
+		case "Placed", "Moved", "Restyled", "Imported", "Removed", "Restored":
 			return true
 		}
 	}
@@ -131,7 +131,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 
 	id := e.StreamID
 	switch e.EventType {
-	case "Placed", "Imported":
+	case "Placed", "Imported", "Restored":
 		type placed struct {
 			LayerID    string         `json:"layerId"`
 			Geometry   jsontext.Value `json:"geometry"`

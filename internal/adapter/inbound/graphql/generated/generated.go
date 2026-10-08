@@ -233,6 +233,7 @@ type ComplexityRoot struct {
 		RenameAccessGroup            func(childComplexity int, groupID string, name string) int
 		RenameSchadenplatz           func(childComplexity int, id string, name string) int
 		ReopenIncident               func(childComplexity int, id string) int
+		RestoreFeature               func(childComplexity int, id string, change *model.FeatureChangeInput) int
 		RevokeDefaultRole            func(childComplexity int, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		RevokeGlobalRole             func(childComplexity int, subject string, role model.GlobalRole) int
 		RevokeIncidentRole           func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
@@ -416,6 +417,7 @@ type MutationResolver interface {
 	AddFeature(ctx context.Context, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error)
 	ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error)
 	DeleteFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (string, error)
+	RestoreFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (*model.Feature, error)
 }
 type QueryResolver interface {
 	Incidents(ctx context.Context) ([]*model.Incident, error)
@@ -1477,6 +1479,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.ReopenIncident(childComplexity, args["id"].(string)), true
+	case "Mutation.restoreFeature":
+		if e.ComplexityRoot.Mutation.RestoreFeature == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_restoreFeature_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RestoreFeature(childComplexity, args["id"].(string), args["change"].(*model.FeatureChangeInput)), true
 	case "Mutation.revokeDefaultRole":
 		if e.ComplexityRoot.Mutation.RevokeDefaultRole == nil {
 			break
@@ -2296,6 +2309,7 @@ enum FeatureChangeKind {
   MOVED
   RESTYLED
   REMOVED
+  RESTORED
 }
 
 enum PriorityStatus {
@@ -2974,6 +2988,13 @@ type Mutation {
 
   """Permanently remove a feature."""
   deleteFeature(id: ID!, change: FeatureChangeInput): ID!
+
+  """
+  Bring a removed feature back as it last was. The restore takes effect at or after the
+  removal: at the removal's own time (the same message) it cancels it, later it leaves the
+  feature gone in between.
+  """
+  restoreFeature(id: ID!, change: FeatureChangeInput): Feature!
 }
 `, BuiltIn: false},
 }
@@ -4404,6 +4425,28 @@ func (ec *executionContext) field_Mutation_reopenIncident_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_restoreFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "change",
+		func(ctx context.Context, v any) (*model.FeatureChangeInput, error) {
+			return ec.unmarshalOFeatureChangeInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["change"] = arg1
 	return args, nil
 }
 
@@ -9687,6 +9730,50 @@ func (ec *executionContext) fieldContext_Mutation_deleteFeature(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteFeature_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_restoreFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_restoreFeature(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RestoreFeature(ctx, fc.Args["id"].(string), fc.Args["change"].(*model.FeatureChangeInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Feature) graphql.Marshaler {
+			return ec.marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeature(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_restoreFeature(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Feature(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_restoreFeature_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -15390,6 +15477,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteFeature":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteFeature(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "restoreFeature":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_restoreFeature(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

@@ -276,3 +276,63 @@ func TestFeatureService_EffectiveAtOnStandardLayer(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
 }
+
+func TestFeatureService_RestoreFeature(t *testing.T) {
+	f := newFeatureFixture(t)
+	first := f.message(t, testAt.Add(-3*time.Hour), f.mapDivID)
+	second := f.message(t, testAt.Add(-2*time.Hour), f.mapDivID)
+
+	place := func(key string) inbound.FeatureState {
+		state, err := f.features.PlaceFeature(ctx(), f.incidentID, f.mapLayerID, key,
+			testGeometry, testProperties, inbound.FeatureChange{MessageID: &first}, testActor)
+		require.NoError(t, err)
+
+		return state
+	}
+
+	t.Run("a feature that is still there cannot be restored", func(t *testing.T) {
+		state := place("present")
+		_, err := f.features.RestoreFeature(ctx(), state.ID, inbound.FeatureChange{MessageID: &second}, testActor)
+		require.ErrorIs(t, err, shared.ErrFeatureNotRemoved)
+	})
+
+	t.Run("the message that removed it can cancel the removal", func(t *testing.T) {
+		state := place("cancelled")
+		require.NoError(
+			t,
+			f.features.RemoveFeature(ctx(), state.ID, inbound.FeatureChange{MessageID: &second}, testActor),
+		)
+
+		got, err := f.features.RestoreFeature(ctx(), state.ID, inbound.FeatureChange{MessageID: &second}, testActor)
+		require.NoError(t, err)
+		assert.Equal(t, testGeometry, got.Geometry, "state comes from the aggregate")
+		assert.Equal(t, testProperties, got.Properties)
+
+		// And it can be changed again.
+		_, err = f.features.ModifyFeature(ctx(), state.ID, nil, map[string]any{"icon": "x"},
+			inbound.FeatureChange{MessageID: &second}, testActor)
+		require.NoError(t, err)
+	})
+
+	t.Run("an earlier message cannot restore it", func(t *testing.T) {
+		state := place("too-early")
+		require.NoError(
+			t,
+			f.features.RemoveFeature(ctx(), state.ID, inbound.FeatureChange{MessageID: &second}, testActor),
+		)
+
+		earlier := f.message(t, testAt.Add(-150*time.Minute), f.mapDivID) // after first, before second
+		_, err := f.features.RestoreFeature(ctx(), state.ID, inbound.FeatureChange{MessageID: &earlier}, testActor)
+		require.ErrorIs(t, err, shared.ErrBeforeFeatureRemoved)
+	})
+
+	t.Run("an unknown feature is not found", func(t *testing.T) {
+		_, err := f.features.RestoreFeature(
+			ctx(),
+			shared.FeatureID(newID()),
+			inbound.FeatureChange{MessageID: &second},
+			testActor,
+		)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+	})
+}

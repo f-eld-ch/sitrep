@@ -609,6 +609,8 @@ the dev database — they will be lost on the next `migrate up` run.
   must reference a message and take effect at that message's time; the aggregate keeps the state
   that is latest by effective time. Events written before this existed have no `EffectiveAt` and
   fall back to their `OccurredAt`.
+  A removed feature can be brought back with `Restored`, at or after its removal; the event carries
+  the feature's state so the read models can place it again without a lookup.
 
 - **`Owned` interface for `aggregate_index`.** Aggregates that belong to an incident implement
   `eventsourcing.Owned` (`OwnerIncidentID() uuid.UUID`). The Postgres event store checks this

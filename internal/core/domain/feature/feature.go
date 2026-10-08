@@ -50,6 +50,7 @@ type Feature struct {
 	geometry   map[string]any
 	properties map[string]any
 	removed    bool
+	removedAt  time.Time
 
 	placedAt     time.Time
 	geometryAt   time.Time
@@ -67,7 +68,7 @@ func DeriveID(incidentID shared.IncidentID, clientKey string) shared.FeatureID {
 func New(id shared.FeatureID) *Feature {
 	f := &Feature{}
 	f.root.SetID(uuid.UUID(id))
-	eventsourcing.Register(f, Placed{}, Moved{}, Restyled{}, Removed{}, Imported{})
+	eventsourcing.Register(f, Placed{}, Moved{}, Restyled{}, Removed{}, Restored{}, Imported{})
 
 	return f
 }
@@ -155,6 +156,31 @@ func (f *Feature) Remove(reason shared.DeleteReason, change ChangeContext, actor
 	return nil
 }
 
+// Restore brings a removed feature back, as it last was. The restore takes effect at or after
+// the removal: restoring at the removal's own time (the same message) cancels it, a later time
+// leaves the feature gone in between.
+func (f *Feature) Restore(change ChangeContext, actor string, at time.Time) error {
+	if !f.removed {
+		return shared.ErrFeatureNotRemoved
+	}
+
+	eff := change.effective(at)
+	if eff.Before(f.removedAt) {
+		return shared.ErrBeforeFeatureRemoved
+	}
+
+	eventsourcing.TrackChange(f, Restored{
+		IncidentID:  f.incidentID,
+		LayerID:     f.layerID,
+		Geometry:    f.geometry,
+		Properties:  f.properties,
+		EffectiveAt: change.effectivePtr(at),
+		MessageID:   change.MessageID,
+	}, at, meta(actor))
+
+	return nil
+}
+
 func (f *Feature) requireChangeAllowed(effective time.Time) error {
 	if f.removed {
 		return shared.ErrNotFound
@@ -194,6 +220,14 @@ func (f *Feature) Transition(e eventsourcing.Event) error {
 		f.linkMessage(d.MessageID)
 	case Removed:
 		f.removed = true
+		f.removedAt = effectiveTime(d.EffectiveAt, e.OccurredAt)
+		f.linkMessage(d.MessageID)
+	case Restored:
+		// The restored state counts as a change at this time, like the read model treats it:
+		// older edits recorded later are history only.
+		eff := effectiveTime(d.EffectiveAt, e.OccurredAt)
+		f.removed = false
+		f.geometryAt, f.propertiesAt = laterOf(f.geometryAt, eff), laterOf(f.propertiesAt, eff)
 		f.linkMessage(d.MessageID)
 	case Imported:
 		f.incidentID = d.IncidentID
@@ -212,6 +246,14 @@ func (f *Feature) linkMessage(id *shared.MessageID) {
 	if id != nil && !slices.Contains(f.messageIDs, *id) {
 		f.messageIDs = append(f.messageIDs, *id)
 	}
+}
+
+func laterOf(a, b time.Time) time.Time {
+	if b.After(a) {
+		return b
+	}
+
+	return a
 }
 
 func effectiveTime(effective *time.Time, occurredAt time.Time) time.Time {

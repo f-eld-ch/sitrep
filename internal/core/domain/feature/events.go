@@ -43,6 +43,17 @@ type Removed struct {
 	MessageID   *shared.MessageID   `json:"messageId,omitempty"`
 }
 
+// Restored brings a removed feature back. It carries the feature's current state, so the
+// read model can place it again without looking anything up; the state itself does not change.
+type Restored struct {
+	IncidentID  shared.IncidentID `json:"incidentId"`
+	LayerID     shared.LayerID    `json:"layerId"`
+	Geometry    map[string]any    `json:"geometry"`
+	Properties  map[string]any    `json:"properties"`
+	EffectiveAt *time.Time        `json:"effectiveAt,omitempty"`
+	MessageID   *shared.MessageID `json:"messageId,omitempty"`
+}
+
 // Imported is the one-shot event from the goose import migration.
 type Imported struct {
 	IncidentID shared.IncidentID `json:"incidentId"`

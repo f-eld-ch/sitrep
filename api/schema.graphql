@@ -63,6 +63,7 @@ enum FeatureChangeKind {
   MOVED
   RESTYLED
   REMOVED
+  RESTORED
 }
 
 enum PriorityStatus {
@@ -741,4 +742,11 @@ type Mutation {
 
   """Permanently remove a feature."""
   deleteFeature(id: ID!, change: FeatureChangeInput): ID!
+
+  """
+  Bring a removed feature back as it last was. The restore takes effect at or after the
+  removal: at the removal's own time (the same message) it cancels it, later it leaves the
+  feature gone in between.
+  """
+  restoreFeature(id: ID!, change: FeatureChangeInput): Feature!
 }

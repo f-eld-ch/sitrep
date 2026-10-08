@@ -3,6 +3,7 @@ export type {
   AddLayerArgs,
   DeleteFeatureArgs,
   ModifyFeatureArgs,
+  RestoreFeatureArgs,
 } from "./commands";
 export {
   cleanFeature,
@@ -10,6 +11,7 @@ export {
   useAddLayer,
   useDeleteFeature,
   useModifyFeature,
+  useRestoreFeature,
 } from "./commands";
 export { convertFeatureToGeoJsonFeature, layerToFeatureCollection } from "./mapper";
 export type { FeatureMessagesData, LayersData } from "./queries";

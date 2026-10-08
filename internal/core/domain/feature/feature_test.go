@@ -237,3 +237,86 @@ func TestFeature_EffectiveTime(t *testing.T) {
 		assert.Equal(t, t1400, f.PlacedAt())
 	})
 }
+
+func TestFeature_Restore(t *testing.T) {
+	id := shared.FeatureID(uuid.New())
+	t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+	t1405 := t1400.Add(5 * time.Minute)
+	t1410 := t1400.Add(10 * time.Minute)
+	msgA := shared.MessageID(uuid.New())
+	drawnLater := t1410.Add(time.Hour)
+
+	removed := func(t *testing.T, removedAt time.Time) *feature.Feature {
+		t.Helper()
+
+		f := feature.New(id)
+		require.NoError(t, f.Place(incidentID, layerID, geom, props,
+			feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater))
+		require.NoError(t, f.Remove(shared.DeleteReasonManual,
+			feature.ChangeContext{EffectiveAt: removedAt, MessageID: &msgA}, actor, drawnLater))
+
+		return replay(t, id, f.Root().PendingEvents())
+	}
+
+	t.Run("a feature still on the map cannot be restored", func(t *testing.T) {
+		f := feature.New(id)
+		require.NoError(
+			t,
+			f.Place(incidentID, layerID, geom, props, feature.ChangeContext{EffectiveAt: t1400}, actor, drawnLater),
+		)
+
+		require.ErrorIs(
+			t,
+			f.Restore(feature.ChangeContext{EffectiveAt: t1405}, actor, drawnLater),
+			shared.ErrFeatureNotRemoved,
+		)
+	})
+
+	t.Run("restoring at the removal time cancels it", func(t *testing.T) {
+		f := removed(t, t1405)
+		require.True(t, f.IsRemoved())
+
+		require.NoError(t, f.Restore(feature.ChangeContext{EffectiveAt: t1405, MessageID: &msgA}, actor, drawnLater))
+
+		assert.False(t, f.IsRemoved())
+		assert.Equal(t, geom, f.Geometry())
+		assert.Equal(t, props, f.Properties())
+
+		restored, ok := f.Root().PendingEvents()[len(f.Root().PendingEvents())-1].Data.(feature.Restored)
+		require.True(t, ok)
+		assert.Equal(t, geom, restored.Geometry, "carries the state for the read model")
+		assert.Equal(t, layerID, restored.LayerID)
+	})
+
+	t.Run("restoring before the removal is rejected", func(t *testing.T) {
+		f := removed(t, t1410)
+
+		require.ErrorIs(
+			t,
+			f.Restore(feature.ChangeContext{EffectiveAt: t1405}, actor, drawnLater),
+			shared.ErrBeforeFeatureRemoved,
+		)
+	})
+
+	t.Run("a restored feature can be changed and removed again", func(t *testing.T) {
+		f := removed(t, t1405)
+		require.NoError(t, f.Restore(feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
+
+		require.NoError(t, f.Restyle(props, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
+		require.NoError(
+			t,
+			f.Remove(shared.DeleteReasonManual, feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater),
+		)
+		assert.True(t, f.IsRemoved())
+	})
+
+	t.Run("an edit older than the restore is history only", func(t *testing.T) {
+		f := removed(t, t1405)
+		require.NoError(t, f.Restore(feature.ChangeContext{EffectiveAt: t1410}, actor, drawnLater))
+
+		older := map[string]any{"type": "Point", "coordinates": []any{1.0, 1.0}}
+		require.NoError(t, f.Move(older, feature.ChangeContext{EffectiveAt: t1405}, actor, drawnLater))
+
+		assert.Equal(t, geom, f.Geometry())
+	})
+}

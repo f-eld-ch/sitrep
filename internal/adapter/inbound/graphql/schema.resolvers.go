@@ -1723,6 +1723,33 @@ func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometr
 	return featureStateToModel(state), nil
 }
 
+// RestoreFeature is the resolver for the restoreFeature field.
+func (r *mutationResolver) RestoreFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (*model.Feature, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	featureID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
+		return nil, err
+	}
+
+	// The aggregate decides whether the feature is removed and when it may come back, not the
+	// read model: a pre-check there would race the projector.
+	state, err := r.Features.RestoreFeature(ctx, shared.FeatureID(featureID), featureChange, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return featureStateToModel(state), nil
+}
+
 // DeleteFeature is the resolver for the deleteFeature field.
 func (r *mutationResolver) DeleteFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (string, error) {
 	actor, err := identity.ActorFrom(ctx)

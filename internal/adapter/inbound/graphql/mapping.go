@@ -950,6 +950,12 @@ func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf
 			if st := states[featureID]; st != nil {
 				st.removed = true
 			}
+		case "restored":
+			if st := states[featureID]; st != nil {
+				st.geometry = jsonObject(c.Geometry)
+				st.properties = jsonObject(c.Properties)
+				st.removed = false
+			}
 		}
 
 		revisions[layerID]++

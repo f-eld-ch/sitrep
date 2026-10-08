@@ -1,20 +1,23 @@
-import { faBullseye } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import type { Feature, FeatureCollection } from "geojson";
-import type { ExpressionSpecification, IControl } from "maplibre-gl";
+import type { ExpressionSpecification, IControl, MapMouseEvent } from "maplibre-gl";
 import bbox from "@turf/bbox";
-import { useContext, useEffect, useRef, type ReactNode } from "react";
+import { useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Layer as MapLayer, Source, useControl, useMap } from "react-map-gl/maplibre";
+import { Layer as MapLayer, Popup, Source, useControl, useMap } from "react-map-gl/maplibre";
 import { createPortal } from "react-dom";
 import { useParams } from "react-router";
 import {
   convertFeatureToGeoJsonFeature,
   layerToFeatureCollection,
   useMessageFeatureHalos,
+  useRestoreFeature,
 } from "api";
+import { Button } from "components/ui";
 import { LayerContext } from "../LayerContext";
+import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
 
 const SOURCE_ID = "message-highlight";
@@ -68,6 +71,52 @@ export function MessageHighlight({
   const refreshKey = JSON.stringify(layer?.features ?? []);
   const { halos, ready } = useMessageFeatureHalos(incidentId, drawingMessage?.id, refreshKey);
   const { current: map } = useMap();
+  const { asOf } = useContext(MapTimeContext);
+  const { onDrawingChange } = useContext(MapSelectionContext);
+  const { t } = useTranslation();
+  const [restoreFeature, restoreState] = useRestoreFeature();
+  // The removed feature the user clicked, to offer bringing it back.
+  const [target, setTarget] = useState<{ id: string; lng: number; lat: number } | undefined>();
+  const canRestore = enabled && drawingMessage !== undefined && !drawingMessage.locked;
+
+  useEffect(() => {
+    if (map === undefined || !canRestore) return;
+
+    const layerIds = [`${SOURCE_ID}-point`, `${SOURCE_ID}-line-removed`, `${SOURCE_ID}-fill`];
+    const onClick = (e: MapMouseEvent) => {
+      const present = layerIds.filter((id) => map.getLayer(id));
+      const hit = map
+        .queryRenderedFeatures(e.point, { layers: present })
+        .find((f) => f.properties?.halo === "removed");
+      const id = hit?.properties?.featureId;
+
+      setTarget(typeof id === "string" ? { id, lng: e.lngLat.lng, lat: e.lngLat.lat } : undefined);
+    };
+    map.on("click", onClick);
+
+    return () => {
+      map.off("click", onClick);
+    };
+  }, [map, canRestore]);
+
+  const restore = () => {
+    if (!target || !layer || !drawingMessage) return;
+
+    void restoreFeature({
+      id: target.id,
+      layerId: layer.id,
+      incidentId: incidentId ?? "",
+      change: { messageId: drawingMessage.id },
+      asOf,
+    })
+      .then(() => {
+        onDrawingChange?.();
+        setTarget(undefined);
+      })
+      .catch(() => {
+        // restoreState.error shows in the popup
+      });
+  };
 
   // Brings what the message did into view once per message, as soon as its history is known.
   // Only once: later drawing must not move the map under the operator.
@@ -109,7 +158,7 @@ export function MessageHighlight({
         type: "Feature",
         id,
         geometry: halo.lastGeometry,
-        properties: { halo: "removed" },
+        properties: { halo: "removed", featureId: id },
       });
       removed.push(
         convertFeatureToGeoJsonFeature(
@@ -130,6 +179,33 @@ export function MessageHighlight({
 
   return (
     <>
+      {canRestore && target && (
+        <Popup
+          longitude={target.lng}
+          latitude={target.lat}
+          closeButton={false}
+          closeOnClick={false}
+          closeOnMove={false}
+          offset={12}
+          onClose={() => setTarget(undefined)}
+        >
+          <div className="min-w-[200px] p-3 text-sm text-gray-800">
+            <p className="mb-2">{t("messageMap.restoreHint")}</p>
+            {restoreState.error && (
+              <p className="mb-2 text-xs text-red-600">{t(`errors.${restoreState.error.code}`)}</p>
+            )}
+            <div className="flex gap-2">
+              <Button variant="primary" size="sm" disabled={restoreState.loading} onClick={restore}>
+                <FontAwesomeIcon icon={faRotateLeft} />
+                {t("messageMap.restore")}
+              </Button>
+              <Button variant="light" size="sm" onClick={() => setTarget(undefined)}>
+                {t("cancel")}
+              </Button>
+            </div>
+          </div>
+        </Popup>
+      )}
       {removed.length > 0 && renderRemoved({ type: "FeatureCollection", features: removed })}
       <Source id={SOURCE_ID} type="geojson" data={own}>
         <MapLayer

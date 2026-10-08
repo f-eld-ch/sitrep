@@ -14,6 +14,8 @@ import type {
   GetLayersForIncidentQueryVariables,
   ModifyFeatureMutation,
   ModifyFeatureMutationVariables,
+  RestoreFeatureMutation,
+  RestoreFeatureMutationVariables,
 } from "gql/next";
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -124,6 +126,19 @@ export const DELETE_FEATURE: TypedDocumentNode<
 > = gql`
   mutation DeleteFeature($id: ID!, $change: FeatureChangeInput) {
     deleteFeature(id: $id, change: $change)
+  }
+`;
+
+export const RESTORE_FEATURE: TypedDocumentNode<
+  RestoreFeatureMutation,
+  RestoreFeatureMutationVariables
+> = gql`
+  mutation RestoreFeature($id: ID!, $change: FeatureChangeInput) {
+    restoreFeature(id: $id, change: $change) {
+      id
+      geometry
+      properties
+    }
   }
 `;
 

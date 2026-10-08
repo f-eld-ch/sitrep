@@ -203,6 +203,8 @@
     "unavailable": "Cet engagement n'a pas de carte de situation",
     "openMessage": "Ouvrir le message",
     "highlight": "Ce message",
+    "restore": "Rétablir",
+    "restoreHint": "Cet objet a été supprimé avec ce message.",
     "highlightHint": "Vert : ajouté, bleu clair : modifié, rouge clair : supprimé",
     "unfinished": "Le dessin de ce message n'est pas terminé. Les objets déjà dessinés restent enregistrés. Quitter quand même ?",
     "leave": "Quitter"

@@ -203,6 +203,8 @@
     "unavailable": "Questo intervento non ha una carta informativa",
     "openMessage": "Apri messaggio",
     "highlight": "Questo messaggio",
+    "restore": "Ripristina",
+    "restoreHint": "Questo oggetto è stato rimosso con questo messaggio.",
     "highlightHint": "Verde: aggiunto, azzurro: modificato, rosso chiaro: rimosso",
     "unfinished": "Il disegno di questo messaggio non è concluso. Gli oggetti già disegnati restano salvati. Uscire comunque?",
     "leave": "Esci"

@@ -236,6 +236,43 @@ func (s *FeatureService) RemoveFeature(
 	return err
 }
 
+// RestoreFeature brings a removed feature back. Returns the feature's state so the resolver
+// can respond without a projection read.
+func (s *FeatureService) RestoreFeature(
+	ctx context.Context,
+	id shared.FeatureID,
+	change inbound.FeatureChange,
+	actor identity.Actor,
+) (inbound.FeatureState, error) {
+	ctx, span := s.tracer.Start(ctx, "FeatureService.RestoreFeature",
+		trace.WithAttributes(attribute.String("feature.id", id.String())))
+	defer span.End()
+
+	slog.DebugContext(ctx, "restoring feature",
+		slog.String("feature_id", id.String()), slog.String("actor", actor.Sub))
+
+	var state inbound.FeatureState
+
+	err := s.writeFeature(ctx, id, actor, access.FeatureWrite, change,
+		func(f *feature.Feature, changeCtx feature.ChangeContext) error {
+			if err := f.Restore(changeCtx, actor.Sub, s.clock.Now()); err != nil {
+				return err
+			}
+
+			state = featureState(f)
+
+			return nil
+		})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return inbound.FeatureState{}, err
+	}
+
+	return state, nil
+}
+
 func (s *FeatureService) writeFeature(
 	ctx context.Context,
 	id shared.FeatureID,

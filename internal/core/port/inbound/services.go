@@ -370,6 +370,11 @@ type FeatureService interface {
 		actor identity.Actor,
 	) (FeatureState, error)
 	RemoveFeature(ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor) error
+	// RestoreFeature brings a removed feature back as it last was. The restore takes effect at
+	// or after the removal; at the removal's own time (the same message) it cancels it.
+	RestoreFeature(
+		ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor,
+	) (FeatureState, error)
 }
 
 // TimelineService is the driving port for reading how an incident looked at a past time.

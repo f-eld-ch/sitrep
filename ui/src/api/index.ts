@@ -152,4 +152,5 @@ export {
   useFeatureChangeTimes,
   useMessageFeatureHalos,
   useModifyFeature,
+  useRestoreFeature,
 } from "./layer";

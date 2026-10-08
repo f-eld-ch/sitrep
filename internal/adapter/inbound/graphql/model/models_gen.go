@@ -592,6 +592,7 @@ const (
 	FeatureChangeKindMoved    FeatureChangeKind = "MOVED"
 	FeatureChangeKindRestyled FeatureChangeKind = "RESTYLED"
 	FeatureChangeKindRemoved  FeatureChangeKind = "REMOVED"
+	FeatureChangeKindRestored FeatureChangeKind = "RESTORED"
 )
 
 var AllFeatureChangeKind = []FeatureChangeKind{
@@ -599,11 +600,12 @@ var AllFeatureChangeKind = []FeatureChangeKind{
 	FeatureChangeKindMoved,
 	FeatureChangeKindRestyled,
 	FeatureChangeKindRemoved,
+	FeatureChangeKindRestored,
 }
 
 func (e FeatureChangeKind) IsValid() bool {
 	switch e {
-	case FeatureChangeKindPlaced, FeatureChangeKindMoved, FeatureChangeKindRestyled, FeatureChangeKindRemoved:
+	case FeatureChangeKindPlaced, FeatureChangeKindMoved, FeatureChangeKindRestyled, FeatureChangeKindRemoved, FeatureChangeKindRestored:
 		return true
 	}
 	return false

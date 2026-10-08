@@ -24,6 +24,7 @@ const (
 	Moved    Kind = "moved"
 	Restyled Kind = "restyled"
 	Removed  Kind = "removed"
+	Restored Kind = "restored"
 )
 
 // Change is one feature event in projection form.
@@ -40,8 +41,8 @@ type Change struct {
 	IncidentID string
 	LayerID    string
 
-	Geometry   jsontext.Value // placed, moved
-	Properties jsontext.Value // placed, restyled
+	Geometry   jsontext.Value // placed, moved, restored
+	Properties jsontext.Value // placed, restyled, restored
 }
 
 // Decode converts a Feature event. ok is false for events that are not feature changes.
@@ -64,6 +65,8 @@ func Decode(e eventsourcing.Event) (c Change, ok bool, err error) {
 		c.Kind = Restyled
 	case "Removed":
 		c.Kind = Removed
+	case "Restored":
+		c.Kind = Restored
 	default:
 		return Change{}, false, nil
 	}
@@ -100,14 +103,15 @@ func Decode(e eventsourcing.Event) (c Change, ok bool, err error) {
 
 // GuardKinds lists the kinds of earlier changes whose latest effective time gates this
 // change. A placed change is never gated; removal is always applied (the aggregate
-// already guarantees no later changes exist).
+// already guarantees no later changes exist), and so is a restore: it carries the state the
+// feature had when it was removed, and counts as a change of both kinds from then on.
 func (c Change) GuardKinds() []Kind {
 	switch c.Kind {
 	case Moved:
-		return []Kind{Placed, Moved}
+		return []Kind{Placed, Moved, Restored}
 	case Restyled:
-		return []Kind{Placed, Restyled}
-	case Placed, Removed:
+		return []Kind{Placed, Restyled, Restored}
+	case Placed, Removed, Restored:
 		return nil
 	}
 

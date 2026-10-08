@@ -1151,6 +1151,102 @@ func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
 	assert.Empty(t, none)
 }
 
+func TestRestoreFeature_BringsBackARemovedFeatureOnTheTimeline(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Restore", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var mapLayerID, mapDivisionID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	triaged := func(at time.Time) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "m",
+			Medium: model.MediumRadio, Time: &at,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	now := time.Now().UTC()
+	placed, removed, restored := triaged(
+		now.Add(-3*time.Hour),
+	), triaged(
+		now.Add(-2*time.Hour),
+	), triaged(
+		now.Add(-time.Hour),
+	)
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1",
+		map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}, map[string]any{"label": "A"},
+		&model.FeatureChangeInput{MessageID: &placed.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().DeleteFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &removed.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().RestoreFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &placed.ID})
+	require.Error(t, err, "restoring before the removal is rejected")
+
+	got, err := s.resolver.Mutation().RestoreFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &restored.ID})
+	require.NoError(t, err)
+	assert.Equal(t, []any{8.0, 47.0}, got.Geometry["coordinates"], "the state comes from the aggregate")
+	assert.Equal(t, map[string]any{"label": "A"}, map[string]any(got.Properties))
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	onMapAt := func(asOf *time.Time) int {
+		t.Helper()
+
+		all, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, asOf)
+		require.NoError(t, err)
+
+		for _, l := range all {
+			if l.ID == mapLayerID {
+				return len(l.Features)
+			}
+		}
+
+		return -1
+	}
+
+	at := func(d time.Duration) *time.Time { v := now.Add(d); return &v }
+
+	assert.Equal(t, 1, onMapAt(nil), "live: the feature is back")
+	assert.Equal(t, 1, onMapAt(at(-150*time.Minute)), "before the removal")
+	assert.Equal(t, 0, onMapAt(at(-90*time.Minute)), "gone between removal and restore")
+	assert.Equal(t, 1, onMapAt(at(-30*time.Minute)), "after the restore")
+
+	changes, err := s.resolver.Query().FeatureChanges(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, changes, 3)
+	assert.Equal(t, model.FeatureChangeKindRestored, changes[2].Change)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AccessGroups resolver
 // ─────────────────────────────────────────────────────────────────────────────

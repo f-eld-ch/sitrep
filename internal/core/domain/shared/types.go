@@ -198,6 +198,13 @@ var (
 	// that precedes changes already recorded for it.
 	ErrFeatureHasLaterChanges = errors.New("FEATURE_HAS_LATER_CHANGES")
 
+	// ErrFeatureNotRemoved is returned when a feature that is still on the map is restored.
+	ErrFeatureNotRemoved = errors.New("FEATURE_NOT_REMOVED")
+
+	// ErrBeforeFeatureRemoved is returned when a feature would be restored at a time
+	// that precedes its removal.
+	ErrBeforeFeatureRemoved = errors.New("BEFORE_FEATURE_REMOVED")
+
 	// ErrCasualtyBelowZero is returned when a casualty delta would make a total
 	// go negative.
 	ErrCasualtyBelowZero = errors.New("CASUALTY_BELOW_ZERO")

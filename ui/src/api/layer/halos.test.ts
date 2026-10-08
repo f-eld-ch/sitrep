@@ -60,4 +60,32 @@ describe("messageFeatureHalos", () => {
 
     expect(halos.size).toBe(0);
   });
+
+  it("treats a removal the same message undid as no change", () => {
+    const halos = messageFeatureHalos(
+      [
+        c("a", "PLACED", 0, "m1", point(1)),
+        c("a", "REMOVED", 10, "m2"),
+        c("a", "RESTORED", 10, "m2", point(1)),
+      ],
+      "m2",
+    );
+
+    expect(halos.size).toBe(0);
+  });
+
+  it("calls a feature a later message brought back added, and a removed-again one removed", () => {
+    const history = [
+      c("a", "PLACED", 0, "m1", point(1)),
+      c("a", "REMOVED", 5, "m2"),
+      c("a", "RESTORED", 10, "m3", point(1)),
+      c("b", "PLACED", 0, "m1", point(2)),
+      c("b", "REMOVED", 5, "m2"),
+      c("b", "RESTORED", 10, "m3", point(2)),
+      c("b", "REMOVED", 10, "m3"),
+    ];
+
+    expect(messageFeatureHalos(history, "m3").get("a")?.kind).toBe("added");
+    expect(messageFeatureHalos(history, "m3").get("b")?.kind).toBe("removed");
+  });
 });

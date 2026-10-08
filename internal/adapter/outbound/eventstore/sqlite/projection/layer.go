@@ -30,7 +30,7 @@ func NewLayerFeaturesHandler(db *sql.DB) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 3 }
+func (h *LayerFeaturesHandler) Version() int { return 4 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_feature_change`); err != nil {
 		return err
@@ -50,7 +50,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 		}
 	case "Feature":
 		switch t {
-		case "Placed", "Moved", "Restyled", "Imported", "Removed":
+		case "Placed", "Moved", "Restyled", "Imported", "Removed", "Restored":
 			return true
 		}
 	}
@@ -150,7 +150,7 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx
 	featureID := e.StreamID
 
 	switch e.EventType {
-	case "Placed", "Imported":
+	case "Placed", "Imported", "Restored":
 		type placed struct {
 			LayerID    string         `json:"layerId"`
 			Geometry   jsontext.Value `json:"geometry"`

@@ -195,4 +195,51 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		_, err = b.Queries.ListFeatureMessages(ctx, uuid.New())
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
+	t.Run("RemoveAndRestore", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+		t1410 := t1400.Add(10 * time.Minute)
+		msg := shared.MessageID(uuid.New())
+
+		incID, layerID := setup(t, b, drawn)
+		featureID := feature.DeriveID(incID, "draw-1")
+
+		ft := feature.New(featureID)
+		require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": "A"},
+			feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+		require.NoError(t, ft.Remove(shared.DeleteReasonManual,
+			feature.ChangeContext{EffectiveAt: t1410, MessageID: &msg}, "sys", drawn))
+
+		save := func() {
+			require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+				_, err := b.Store.Append(ctx, ft)
+				return err
+			}))
+			require.NoError(t, b.Project(ctx))
+		}
+
+		save()
+		assert.Nil(t, currentGeometry(t, b, incID, featureID), "removed features leave the layer")
+
+		// Restoring at the removal's own time cancels it: the feature is back as it last was.
+		require.NoError(t, ft.Restore(feature.ChangeContext{EffectiveAt: t1410, MessageID: &msg}, "sys", drawn))
+		save()
+		assert.Equal(t, point(8.0), currentGeometry(t, b, incID, featureID))
+
+		changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+		require.NoError(t, err)
+		require.Len(t, changes, 3)
+		assert.Equal(t, []string{"placed", "removed", "restored"},
+			[]string{changes[0].Change, changes[1].Change, changes[2].Change})
+
+		// It is a feature like any other again.
+		require.NoError(
+			t,
+			ft.Move(point(9.0), feature.ChangeContext{EffectiveAt: t1410.Add(time.Minute)}, "sys", drawn),
+		)
+		save()
+		assert.Equal(t, point(9.0), currentGeometry(t, b, incID, featureID))
+	})
 }

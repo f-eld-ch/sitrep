@@ -4,7 +4,14 @@ import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
 import { featureChangeVariable, layersVariables, type FeatureChangeArgs } from "./variables";
-import { ADD_FEATURE, CREATE_LAYER, DELETE_FEATURE, GET_LAYERS, MODIFY_FEATURE } from "./documents";
+import {
+  ADD_FEATURE,
+  CREATE_LAYER,
+  DELETE_FEATURE,
+  GET_LAYERS,
+  MODIFY_FEATURE,
+  RESTORE_FEATURE,
+} from "./documents";
 
 export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
   return {
@@ -51,6 +58,15 @@ export interface ModifyFeatureArgs {
 
 export interface DeleteFeatureArgs {
   id: string;
+  incidentId: string;
+  change?: FeatureChangeArgs;
+  asOf?: Date;
+}
+
+export interface RestoreFeatureArgs {
+  id: string;
+  /** The layer the feature is on, to put it back into the cached map. */
+  layerId: string;
   incidentId: string;
   change?: FeatureChangeArgs;
   asOf?: Date;
@@ -180,6 +196,44 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
   };
 
   return [deleteFeature, state];
+}
+
+export function useRestoreFeature(): CommandHook<RestoreFeatureArgs> {
+  const [mutate, { loading, error }] = useMutation(RESTORE_FEATURE);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const restoreFeature = async (args: RestoreFeatureArgs): Promise<void> => {
+    await mutate({
+      variables: { id: args.id, change: featureChangeVariable(args.change) },
+      update(cache, { data }) {
+        if (!data?.restoreFeature) return;
+        const restored = data.restoreFeature;
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
+        if (!cached?.layersForIncident) return;
+        cache.writeQuery({
+          query: GET_LAYERS,
+          variables,
+          data: {
+            layersForIncident: cached.layersForIncident.map((layer) =>
+              layer.id === args.layerId
+                ? {
+                    ...layer,
+                    features: [...layer.features.filter((f) => f.id !== args.id), restored],
+                  }
+                : layer,
+            ),
+          },
+        });
+      },
+    });
+  };
+
+  return [restoreFeature, state];
 }
 
 export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
