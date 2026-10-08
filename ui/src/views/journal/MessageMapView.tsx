@@ -210,99 +210,114 @@ function MessageMapView() {
             </button>
           </div>
         )}
-        {selected === undefined && mapMessages.length > 0 && undrawn.length === 0 ? (
-          <>
-            {/* Where the message usually is; below it the map as it stands now. */}
-            <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-4 text-success">
-              <FontAwesomeIcon icon={faCheckCircle} className="text-3xl" />
-              <p className="text-lg font-bold">{t("messageMap.allDrawn")}</p>
-            </div>
-            <div className="min-h-0 flex-1">
-              <IncidentMap embedded readOnly preferredLayerKind="MESSAGE_MAP" />
-            </div>
-          </>
-        ) : selected === undefined ? (
+        {selected === undefined && mapMessages.length === 0 ? (
           <EmptyState />
         ) : (
           <>
-            <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-2">
-              <PageTitle level={1} className="flex-1 text-base">
-                {mapLabel}
-                <span className="ml-3 text-sm font-normal text-fg-muted">
-                  {t("messageMap.drawing", {
-                    number: selected.number,
-                    time: dayjs(selected.time).format("HH:mm"),
-                  })}
-                </span>
-              </PageTitle>
-              {hasDrawn(selected) ? (
-                <>
-                  <span className="flex items-center gap-1.5 text-sm text-success">
-                    <FontAwesomeIcon icon={faCheckCircle} />
-                    {t("messageMap.drawn")}
-                  </span>
-                  {editingId === selected.id ? (
-                    <Button
-                      variant="light"
-                      size="sm"
-                      onClick={() => {
-                        setEditingId(undefined);
-                        setInProgress(false);
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faCheck} />
-                      {t("messageMap.editDone")}
-                    </Button>
+            {selected === undefined ? (
+              // Where the message usually is; below it the map as it stands now.
+              <div
+                className={clsx(
+                  "flex shrink-0 items-center gap-3 border-b border-border px-4 py-4",
+                  undrawn.length === 0 ? "text-success" : "text-fg-muted",
+                )}
+              >
+                {undrawn.length === 0 && (
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-3xl" />
+                )}
+                <p className={undrawn.length === 0 ? "text-lg font-bold" : "text-sm"}>
+                  {undrawn.length === 0 ? t("messageMap.allDrawn") : t("messageMap.pickMessage")}
+                </p>
+              </div>
+            ) : (
+              <>
+                <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-2">
+                  <PageTitle level={1} className="flex-1 text-base">
+                    {mapLabel}
+                    <span className="ml-3 text-sm font-normal text-fg-muted">
+                      {t("messageMap.drawing", {
+                        number: selected.number,
+                        time: dayjs(selected.time).format("HH:mm"),
+                      })}
+                    </span>
+                  </PageTitle>
+                  {hasDrawn(selected) ? (
+                    <>
+                      <span className="flex items-center gap-1.5 text-sm text-success">
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                        {t("messageMap.drawn")}
+                      </span>
+                      {editingId === selected.id ? (
+                        <Button
+                          variant="light"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(undefined);
+                            setInProgress(false);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faCheck} />
+                          {t("messageMap.editDone")}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="light"
+                          size="sm"
+                          disabled={incidentClosed}
+                          onClick={() => setEditingId(selected.id)}
+                        >
+                          <FontAwesomeIcon icon={faPen} />
+                          {t("messageMap.edit")}
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <Button
-                      variant="light"
+                      variant="primary"
                       size="sm"
-                      disabled={incidentClosed}
-                      onClick={() => setEditingId(selected.id)}
+                      disabled={acknowledgeState.loading || incidentClosed}
+                      onClick={() => void handleFinish()}
                     >
-                      <FontAwesomeIcon icon={faPen} />
-                      {t("messageMap.edit")}
+                      {t("messageMap.finish")}
                     </Button>
                   )}
-                </>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  disabled={acknowledgeState.loading || incidentClosed}
-                  onClick={() => void handleFinish()}
-                >
-                  {t("messageMap.finish")}
-                </Button>
-              )}
-            </header>
-            {mutationError && (
-              <Notification variant="danger" light className="m-2">
-                {t(`errors.${mutationError.code}`)}
-              </Notification>
+                </header>
+                {mutationError && (
+                  <Notification variant="danger" light className="m-2">
+                    {t(`errors.${mutationError.code}`)}
+                  </Notification>
+                )}
+                <div className="max-h-[30%] shrink-0 overflow-y-auto px-4 py-2">
+                  <JournalMessage
+                    showControls={false}
+                    id={selected.id}
+                    incidentId={incidentId ?? ""}
+                    message={selected}
+                    divisions={incidentState.incident?.divisions ?? []}
+                    setEditorMessage={undefined}
+                    setTriageMessage={undefined}
+                  />
+                </div>
+              </>
             )}
-            <div className="max-h-[30%] shrink-0 overflow-y-auto px-4 py-2">
-              <JournalMessage
-                showControls={false}
-                id={selected.id}
-                incidentId={incidentId ?? ""}
-                message={selected}
-                divisions={incidentState.incident?.divisions ?? []}
-                setEditorMessage={undefined}
-                setTriageMessage={undefined}
-              />
-            </div>
-            {/* Everything drawn here belongs to the selected message and takes effect at its time. */}
+            {/*
+              One map for every state, so selecting or finishing a message does not rebuild it. Everything
+              drawn for the selected message takes effect at its time; without one the map only shows.
+            */}
             <div className="min-h-0 flex-1">
               <IncidentMap
                 embedded
-                asOf={selected.time}
+                readOnly={selected === undefined}
+                preferredLayerKind={selected === undefined ? "MESSAGE_MAP" : undefined}
+                asOf={selected?.time}
                 onDrawingChange={markInProgress}
-                drawingMessage={{
-                  id: selected.id,
-                  time: selected.time,
-                  locked: hasDrawn(selected) && editingId !== selected.id,
-                }}
+                drawingMessage={
+                  selected && {
+                    id: selected.id,
+                    time: selected.time,
+                    locked: hasDrawn(selected) && editingId !== selected.id,
+                  }
+                }
               />
             </div>
           </>

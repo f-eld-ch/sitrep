@@ -212,7 +212,7 @@ function Layers({
             onToggle={() => setHighlightMessage((v) => !v)}
           />
         )}
-        {!readOnly && !drawingMessage?.locked && <LayerControl />}
+        {(!readOnly || stayOnPreferredLayer) && <LayerControl />}
         <StyleController />
       </div>
 
