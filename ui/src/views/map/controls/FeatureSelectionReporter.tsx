@@ -3,6 +3,7 @@ import { useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
+import { isPendingFeature } from "../pending";
 
 /**
  * Reports the feature the user clicked (on a passive layer) or selected (on the layer being
@@ -71,7 +72,10 @@ export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: str
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new token clears
   }, [deselectToken]);
 
-  const featureId = listening ? (clicked ?? state.selectedFeature) : undefined;
+  // A feature that has not been saved yet has no messages to look up.
+  const selected = clicked ?? state.selectedFeature;
+  const featureId =
+    listening && !isPendingFeature(state.pendingFeatures, selected) ? selected : undefined;
 
   useEffect(() => {
     onSelect?.(featureId);

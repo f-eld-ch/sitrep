@@ -99,6 +99,11 @@
       "stoffnummer": "Numero della sostanza ONU",
       "stoffnummerPlaceholder": "Numero ONU a 4 cifre",
       "stoffbezeichnung": "Nome della sostanza"
+    },
+    "pending": {
+      "time": "Momento",
+      "hint": "L'oggetto viene creato solo con «Salva».",
+      "discard": "Scarta"
     }
   },
   "medium": {
@@ -185,7 +190,8 @@
     "all": "Tutti",
     "drawn": "Disegnato",
     "finish": "Concludi",
-    "reopen": "Riapri",
+    "edit": "Modifica",
+    "editDone": "Fatto",
     "drawing": "Disegno per il messaggio {{number}} · {{time}}",
     "allDrawn": "Tutti i messaggi sono disegnati",
     "noMessages": "Nessun messaggio per la carta informativa",
@@ -198,10 +204,7 @@
     "asOf": "Stato alle {{time}}",
     "previous": "Messaggio precedente",
     "next": "Messaggio successivo",
-    "slider": "Momento nello svolgimento dell'intervento",
-    "drawAt": "Disegna a un dato momento",
-    "drawAtHint": "Le modifiche valgono da questo momento invece che da ora.",
-    "drawAtInput": "Momento della modifica"
+    "slider": "Momento nello svolgimento dell'intervento"
   },
   "featureMessages": {
     "filter": "Messaggi dell'oggetto"

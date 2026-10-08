@@ -43,6 +43,7 @@ import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
+import { isPendingFeature, withPendingFeatures } from "./pending";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
@@ -168,6 +169,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   const {
     state: { incident },
   } = useContext(IncidentContext);
+  const { drawingMessage } = useContext(MapTimeContext);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -181,13 +183,13 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <>
       <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
-        {!readOnly && <LayerControl />}
+        {!readOnly && !drawingMessage?.locked && <LayerControl />}
         <StyleController />
       </div>
 
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}
-      {!readOnly && <BabsIconController />}
+      {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
         <ReadOnlyLayers />
@@ -437,7 +439,7 @@ function useDrawingAllowed(): boolean {
   const onMessageMap = activeLayerKind === "MESSAGE_MAP";
   const viewingPast = asOf !== undefined && drawingMessage === undefined;
 
-  return onMessageMap === (drawingMessage !== undefined) && !viewingPast;
+  return onMessageMap === (drawingMessage !== undefined) && !viewingPast && !drawingMessage?.locked;
 }
 
 function ActiveLayer() {
@@ -451,7 +453,10 @@ function ActiveLayer() {
   );
   const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
   const drawingAllowed = useDrawingAllowed();
-  const featureCollection = useMemo(() => layerToFeatureCollection(activeLayer), [activeLayer]);
+  const featureCollection = useMemo(
+    () => withPendingFeatures(activeLayer, state.pendingFeatures),
+    [activeLayer, state.pendingFeatures],
+  );
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
   // arrow and the slide arrow track a vertex as it is dragged rather than jumping once the
@@ -515,17 +520,12 @@ function Draw() {
   } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
-  const { asOf, drawingMessage, drawAt } = useContext(MapTimeContext);
-  // Changes for a message take effect at the message's time (the server derives it from the id);
-  // free drawing can take effect at a chosen past time instead of now.
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  // Changes for a message take effect at the message's time (the server derives it from the id).
+  // Free drawing takes effect now; a new feature can be given a time when it is saved.
   const change = useMemo(
-    () =>
-      drawingMessage
-        ? { messageId: drawingMessage.id }
-        : drawAt
-          ? { effectiveAt: drawAt }
-          : undefined,
-    [drawingMessage, drawAt],
+    () => (drawingMessage ? { messageId: drawingMessage.id } : undefined),
+    [drawingMessage],
   );
 
   const [addFeature] = useAddFeature();
@@ -558,6 +558,27 @@ function Draw() {
       for (const f of createdFeatures) {
         const feature = cleanFeature(f);
 
+        // Free drawing: the feature stays local until it is saved (with the time it should
+        // take effect at). It remains in the draw control, which keeps it selected, so the
+        // symbol picker and the save popup open on it.
+        if (drawingMessage === undefined && f.id !== undefined) {
+          dispatch({
+            type: "ADD_PENDING_FEATURE",
+            payload: {
+              feature: {
+                id: f.id.toString(),
+                layerId: layer,
+                geometry: feature.geometry,
+                properties: feature.properties,
+              },
+            },
+          });
+          dispatch({ type: "SELECT_FEATURE", payload: { id: f.id.toString() } });
+
+          continue;
+        }
+
+        // Drawing for a message: created at once, at the message's time.
         void addFeature({
           layerId: layer,
           geometry: feature.geometry,
@@ -575,7 +596,7 @@ function Draw() {
         }
       }
     },
-    [addFeature, asOf, change, dispatch, incidentId, state.draw],
+    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -585,6 +606,21 @@ function Draw() {
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
+
+        // Not saved yet: the edit only changes the local copy.
+        if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
+          dispatch({
+            type: "UPDATE_PENDING_FEATURE",
+            payload: {
+              id: String(feature.id),
+              geometry: isPropertyOnly ? undefined : feature.geometry,
+              properties: isGeometryOnly ? undefined : feature.properties,
+            },
+          });
+
+          continue;
+        }
+
         void modifyFeature({
           id: String(feature.id ?? ""),
           geometry: isPropertyOnly ? undefined : feature.geometry,
@@ -597,7 +633,7 @@ function Draw() {
         });
       }
     },
-    [asOf, change, incidentId, modifyFeature],
+    [asOf, change, dispatch, incidentId, modifyFeature, state.pendingFeatures],
   );
 
   const onDelete = useCallback(
@@ -605,6 +641,14 @@ function Draw() {
       const deletedFeatures: Feature[] = e.features;
       for (const f of deletedFeatures) {
         const feature = cleanFeature(f);
+
+        // Not saved yet: it never existed on the server, so dropping the local copy is all.
+        if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
+          dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: String(feature.id) } });
+
+          continue;
+        }
+
         void deleteFeature({
           id: String(feature.id ?? ""),
           incidentId: incidentId ?? "",
@@ -614,7 +658,7 @@ function Draw() {
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [asOf, change, dispatch, deleteFeature, incidentId],
+    [asOf, change, dispatch, deleteFeature, incidentId, state.pendingFeatures],
   );
 
   const onCombine = useCallback(
@@ -629,8 +673,9 @@ function Draw() {
   // this is the effect which syncs the drawings
   useEffect(() => {
     if (state.draw && map?.loaded) {
-      const featureCollection: FeatureCollection = layerToFeatureCollection(
+      const featureCollection: FeatureCollection = withPendingFeatures(
         state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
+        state.pendingFeatures,
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -645,7 +690,14 @@ function Draw() {
         }
       });
     }
-  }, [state.draw, map?.loaded, state.layers, state.activeLayer, state.selectedFeature]);
+  }, [
+    state.draw,
+    map?.loaded,
+    state.layers,
+    state.activeLayer,
+    state.selectedFeature,
+    state.pendingFeatures,
+  ]);
 
   // this is the effect which syncs the drawings
   useEffect(() => {
@@ -750,13 +802,12 @@ function MapWithProvder({
 }: MapViewOptions) {
   // A map without a fixed time can be moved along the timeline by its own slider.
   const [timelineAsOf, setTimelineAsOf] = useState<Date | undefined>();
-  const [drawAt, setDrawAt] = useState<Date | undefined>();
   const hasTimeline = asOf === undefined && drawingMessage === undefined;
 
   const asOfTime = (asOf ?? timelineAsOf)?.getTime();
   const messageId = drawingMessage?.id;
   const messageTime = drawingMessage?.time.getTime();
-  const drawAtTime = drawAt?.getTime();
+  const messageLocked = drawingMessage?.locked;
   // Memoized on the values, so a parent re-render with equal dates does not refetch the layers.
   const mapTime = useMemo<MapTime>(
     () => ({
@@ -765,11 +816,9 @@ function MapWithProvder({
       drawingMessage:
         messageId === undefined || messageTime === undefined
           ? undefined
-          : { id: messageId, time: new Date(messageTime) },
-      drawAt: drawAtTime === undefined || !hasTimeline ? undefined : new Date(drawAtTime),
-      setDrawAt: hasTimeline ? setDrawAt : undefined,
+          : { id: messageId, time: new Date(messageTime), locked: messageLocked },
     }),
-    [asOfTime, hasTimeline, messageId, messageTime, drawAtTime],
+    [asOfTime, hasTimeline, messageId, messageTime, messageLocked],
   );
 
   const selection = useMemo(

@@ -4,6 +4,11 @@ import { createContext } from "react";
 export interface DrawingMessage {
   id: string;
   time: Date;
+  /**
+   * Show the map but do not offer to draw: no draw controls, layer control or symbol pickers.
+   * Used for a message that is already drawn, so nothing is changed by accident.
+   */
+  locked?: boolean;
 }
 
 /** Where on the incident timeline the map is, and what a drawing gesture belongs to. */
@@ -21,9 +26,6 @@ export interface MapTime {
    * is read-only.
    */
   drawingMessage?: DrawingMessage;
-  /** Free drawing takes effect at this past time instead of now. Never combined with a message. */
-  drawAt?: Date;
-  setDrawAt?: (drawAt: Date | undefined) => void;
 }
 
 export const MapTimeContext = createContext<MapTime>({});

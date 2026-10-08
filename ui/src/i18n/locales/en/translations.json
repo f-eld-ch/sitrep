@@ -99,6 +99,11 @@
       "stoffnummer": "UN substance number",
       "stoffnummerPlaceholder": "4-digit UN number",
       "stoffbezeichnung": "Substance name"
+    },
+    "pending": {
+      "time": "Time",
+      "hint": "The object is only created when you press “Save”.",
+      "discard": "Discard"
     }
   },
   "medium": {
@@ -185,7 +190,8 @@
     "all": "All",
     "drawn": "Drawn",
     "finish": "Finish",
-    "reopen": "Reopen",
+    "edit": "Edit",
+    "editDone": "Done",
     "drawing": "Drawing for message {{number}} · {{time}}",
     "allDrawn": "All messages are drawn",
     "noMessages": "No messages for the situation map",
@@ -198,10 +204,7 @@
     "asOf": "As of {{time}}",
     "previous": "Previous message",
     "next": "Next message",
-    "slider": "Point in the incident timeline",
-    "drawAt": "Draw at a point in time",
-    "drawAtHint": "Changes take effect from this time instead of now.",
-    "drawAtInput": "Time of the change"
+    "slider": "Point in the incident timeline"
   },
   "featureMessages": {
     "filter": "Messages for this object"

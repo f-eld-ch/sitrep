@@ -1,10 +1,12 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type { GeoJsonProperties, Geometry } from "geojson";
 import { first } from "lodash";
 import type { Layer } from "types/layer";
 import type {
   ActiveLayerState,
   DrawState,
   LayersState,
+  PendingFeature,
   SelectedFeatureState,
   WMSLayer,
   WMSServer,
@@ -19,6 +21,9 @@ export type LayersAction =
   | SelectFeatureAction
   | DeselectFeature
   | SetActiveLayer
+  | AddPendingFeatureAction
+  | UpdatePendingFeatureAction
+  | RemovePendingFeatureAction
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
@@ -47,6 +52,22 @@ export interface RemoveLayerAction {
   payload: {
     id: string;
   };
+}
+
+export interface AddPendingFeatureAction {
+  type: "ADD_PENDING_FEATURE";
+  payload: { feature: PendingFeature };
+}
+
+export interface UpdatePendingFeatureAction {
+  type: "UPDATE_PENDING_FEATURE";
+  /** Only the given parts change: an edit of the geometry leaves the properties alone, and vice versa. */
+  payload: { id: string; geometry?: Geometry; properties?: GeoJsonProperties };
+}
+
+export interface RemovePendingFeatureAction {
+  type: "REMOVE_PENDING_FEATURE";
+  payload: { id: string };
 }
 
 export interface SetActiveLayer {
@@ -192,6 +213,27 @@ function compareLayerText(left: string, right: string): number {
 
   return 0;
 }
+
+export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAction) => {
+  switch (action.type) {
+    case "ADD_PENDING_FEATURE":
+      return [...state.filter((p) => p.id !== action.payload.feature.id), action.payload.feature];
+    case "UPDATE_PENDING_FEATURE":
+      return state.map((p) =>
+        p.id === action.payload.id
+          ? {
+              ...p,
+              geometry: action.payload.geometry ?? p.geometry,
+              properties: action.payload.properties ?? p.properties,
+            }
+          : p,
+      );
+    case "REMOVE_PENDING_FEATURE":
+      return state.filter((p) => p.id !== action.payload.id);
+    default:
+      return state;
+  }
+};
 
 export const selectedFeatureReducer = (state: SelectedFeatureState, action: LayersAction) => {
   switch (action.type) {

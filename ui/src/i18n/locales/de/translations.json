@@ -99,6 +99,11 @@
       "stoffnummer": "Stoffnummer",
       "stoffnummerPlaceholder": "4-stellige UN-Nummer",
       "stoffbezeichnung": "Stoffbezeichnung"
+    },
+    "pending": {
+      "time": "Zeitpunkt",
+      "hint": "Das Objekt wird erst mit «Speichern» angelegt.",
+      "discard": "Verwerfen"
     }
   },
   "medium": {
@@ -185,7 +190,8 @@
     "all": "Alle",
     "drawn": "Gezeichnet",
     "finish": "Abschliessen",
-    "reopen": "Wieder öffnen",
+    "edit": "Ändern",
+    "editDone": "Fertig",
     "drawing": "Einzeichnen für Meldung {{number}} · {{time}}",
     "allDrawn": "Alle Meldungen sind eingezeichnet",
     "noMessages": "Keine Meldungen für die Nachrichtenkarte",
@@ -198,10 +204,7 @@
     "asOf": "Stand {{time}}",
     "previous": "Vorherige Meldung",
     "next": "Nächste Meldung",
-    "slider": "Zeitpunkt im Einsatzverlauf",
-    "drawAt": "Zeichnen mit Zeitpunkt",
-    "drawAtHint": "Änderungen gelten ab diesem Zeitpunkt statt ab jetzt.",
-    "drawAtInput": "Zeitpunkt der Änderung"
+    "slider": "Zeitpunkt im Einsatzverlauf"
   },
   "featureMessages": {
     "filter": "Meldungen zum Objekt"

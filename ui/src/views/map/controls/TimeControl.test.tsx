@@ -105,16 +105,4 @@ describe("TimeControl", () => {
     fireEvent.click(screen.getByRole("button", { name: "mapTimeline.live" }));
     expect(setAsOf).toHaveBeenCalledWith(undefined);
   });
-
-  it("only offers free drawing at a chosen time while live", () => {
-    const setDrawAt = vi.fn();
-    const { unmount } = renderControl({ setAsOf: vi.fn(), setDrawAt });
-
-    fireEvent.click(screen.getByRole("checkbox"));
-    expect(setDrawAt).toHaveBeenCalledWith(new Date(NOW));
-    unmount();
-
-    renderControl({ setAsOf: vi.fn(), setDrawAt, asOf: new Date("2026-01-15T10:00:00Z") });
-    expect(screen.queryByRole("checkbox")).toBeNull();
-  });
 });

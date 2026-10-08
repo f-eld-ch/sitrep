@@ -1,15 +1,11 @@
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import {
-  useAcknowledgeMessage,
-  useIncidentMessages,
-  useRevokeMessageAcknowledgement,
-} from "api/message";
+import { useAcknowledgeMessage, useIncidentMessages } from "api/message";
 import { Spinner } from "components";
 import { Button, Notification, PageTitle } from "components/ui";
 import { IncidentContext } from "utils";
@@ -43,7 +39,9 @@ function MessageMapView() {
   // Like the other filters, a chip: on shows only what is still to draw.
   const [onlyUndrawn, setOnlyUndrawn] = useState(true);
   const [acknowledge, acknowledgeState] = useAcknowledgeMessage();
-  const [revoke, revokeState] = useRevokeMessageAcknowledgement();
+  // The message whose drawing was unlocked with "Ändern". A message that is already drawn is shown
+  // locked, so nothing gets changed by accident; selecting another message locks it again.
+  const [editingId, setEditingId] = useState<string | undefined>();
 
   const messages = result.status === "ready" ? result.data.messages : [];
   const mapDivision =
@@ -96,7 +94,7 @@ function MessageMapView() {
     );
   }
 
-  const mutationError = acknowledgeState.error ?? revokeState.error;
+  const mutationError = acknowledgeState.error;
   const mapLabel = divisionLongLabel(mapDivision, t);
 
   const handleFinish = async () => {
@@ -107,16 +105,6 @@ function MessageMapView() {
       selection.handled(selected.id);
     } catch {
       // acknowledgeState.error renders the notification
-    }
-  };
-
-  const handleReopen = async () => {
-    if (!selected) return;
-
-    try {
-      await revoke({ messageId: selected.id, divisionId: mapDivision.id });
-    } catch {
-      // revokeState.error renders the notification
     }
   };
 
@@ -184,14 +172,22 @@ function MessageMapView() {
                     <FontAwesomeIcon icon={faCheckCircle} />
                     {t("messageMap.drawn")}
                   </span>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    disabled={revokeState.loading || incidentClosed}
-                    onClick={() => void handleReopen()}
-                  >
-                    {t("messageMap.reopen")}
-                  </Button>
+                  {editingId === selected.id ? (
+                    <Button variant="light" size="sm" onClick={() => setEditingId(undefined)}>
+                      <FontAwesomeIcon icon={faCheck} />
+                      {t("messageMap.editDone")}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="light"
+                      size="sm"
+                      disabled={incidentClosed}
+                      onClick={() => setEditingId(selected.id)}
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                      {t("messageMap.edit")}
+                    </Button>
+                  )}
                 </>
               ) : (
                 <Button
@@ -225,7 +221,11 @@ function MessageMapView() {
               <IncidentMap
                 embedded
                 asOf={selected.time}
-                drawingMessage={{ id: selected.id, time: selected.time }}
+                drawingMessage={{
+                  id: selected.id,
+                  time: selected.time,
+                  locked: hasDrawn(selected) && editingId !== selected.id,
+                }}
               />
             </div>
           </>

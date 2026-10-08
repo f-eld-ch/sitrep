@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Layer } from "types/layer";
-import { activeLayerReducer, layersReducer } from "./reducer";
+import { activeLayerReducer, layersReducer, pendingFeaturesReducer } from "./reducer";
 
 function layer(id: string, sourceIncidentId: string): Layer {
   return {
@@ -78,5 +78,61 @@ describe("layersReducer", () => {
       "gfs-ahausen:Nachrichtenkarte",
       "gfs-altdorf:Nachrichtenkarte",
     ]);
+  });
+});
+
+describe("pendingFeaturesReducer", () => {
+  const point = { type: "Point" as const, coordinates: [8, 47] };
+  const pending = (id: string) => ({ id, layerId: "layer-1", geometry: point, properties: {} });
+
+  it("adds drawn features and keeps them local until they are removed", () => {
+    let state = pendingFeaturesReducer([], {
+      type: "ADD_PENDING_FEATURE",
+      payload: { feature: pending("a") },
+    });
+    state = pendingFeaturesReducer(state, {
+      type: "ADD_PENDING_FEATURE",
+      payload: { feature: pending("b") },
+    });
+    expect(state.map((p) => p.id)).toEqual(["a", "b"]);
+
+    state = pendingFeaturesReducer(state, { type: "REMOVE_PENDING_FEATURE", payload: { id: "a" } });
+    expect(state.map((p) => p.id)).toEqual(["b"]);
+  });
+
+  it("adding the same feature again replaces it", () => {
+    const state = pendingFeaturesReducer([pending("a")], {
+      type: "ADD_PENDING_FEATURE",
+      payload: { feature: { ...pending("a"), properties: { label: "new" } } },
+    });
+    expect(state).toHaveLength(1);
+    expect(state[0].properties).toEqual({ label: "new" });
+  });
+
+  it("updates only what changed", () => {
+    const moved = { type: "Point" as const, coordinates: [9, 47] };
+    const state = pendingFeaturesReducer([{ ...pending("a"), properties: { icon: "x" } }], {
+      type: "UPDATE_PENDING_FEATURE",
+      payload: { id: "a", geometry: moved },
+    });
+    expect(state[0].geometry).toEqual(moved);
+    expect(state[0].properties).toEqual({ icon: "x" });
+
+    const restyled = pendingFeaturesReducer(state, {
+      type: "UPDATE_PENDING_FEATURE",
+      payload: { id: "a", properties: { icon: "y" } },
+    });
+    expect(restyled[0].geometry).toEqual(moved);
+    expect(restyled[0].properties).toEqual({ icon: "y" });
+  });
+
+  it("ignores updates for unknown features", () => {
+    const state = [pending("a")];
+    expect(
+      pendingFeaturesReducer(state, {
+        type: "UPDATE_PENDING_FEATURE",
+        payload: { id: "zzz", properties: { x: 1 } },
+      }),
+    ).toEqual(state);
   });
 });
