@@ -18,8 +18,8 @@ export const GET_LAYERS: TypedDocumentNode<
   GetLayersForIncidentQuery,
   GetLayersForIncidentQueryVariables
 > = gql`
-  query GetLayersForIncident($incidentId: ID!) {
-    layersForIncident(incidentId: $incidentId) {
+  query GetLayersForIncident($incidentId: ID!, $asOf: DateTime) {
+    layersForIncident(incidentId: $incidentId, asOf: $asOf) {
       id
       sourceIncidentId
       sourceIncidentName
@@ -44,6 +44,7 @@ export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutati
     $clientKey: String!
     $geometry: Geometry
     $properties: JSONObject
+    $change: FeatureChangeInput
   ) {
     addFeature(
       incidentId: $incidentId
@@ -51,6 +52,7 @@ export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutati
       clientKey: $clientKey
       geometry: $geometry
       properties: $properties
+      change: $change
     ) {
       id
       geometry
@@ -63,8 +65,13 @@ export const MODIFY_FEATURE: TypedDocumentNode<
   ModifyFeatureMutation,
   ModifyFeatureMutationVariables
 > = gql`
-  mutation ModifyFeature($id: ID!, $geometry: Geometry, $properties: JSONObject) {
-    modifyFeature(id: $id, geometry: $geometry, properties: $properties) {
+  mutation ModifyFeature(
+    $id: ID!
+    $geometry: Geometry
+    $properties: JSONObject
+    $change: FeatureChangeInput
+  ) {
+    modifyFeature(id: $id, geometry: $geometry, properties: $properties, change: $change) {
       id
       geometry
       properties
@@ -76,8 +83,8 @@ export const DELETE_FEATURE: TypedDocumentNode<
   DeleteFeatureMutation,
   DeleteFeatureMutationVariables
 > = gql`
-  mutation DeleteFeature($id: ID!) {
-    deleteFeature(id: $id)
+  mutation DeleteFeature($id: ID!, $change: FeatureChangeInput) {
+    deleteFeature(id: $id, change: $change)
   }
 `;
 

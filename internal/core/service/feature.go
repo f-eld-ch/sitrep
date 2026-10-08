@@ -1,11 +1,11 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"reflect"
 	"slices"
 
 	"go.opentelemetry.io/otel"
@@ -404,9 +404,26 @@ func isSamePlacement(
 	return sameJSON(f.Geometry(), geometry) && sameJSON(f.Properties(), properties)
 }
 
+// sameJSON compares two JSON objects by value. Both sides are normalised first: a request
+// decoded by the API layer carries json.Number("8.0") where the stored event decodes to
+// float64(8), which must not make a re-sent create look like a different payload.
 func sameJSON(a, b map[string]any) bool {
-	left, errA := json.Marshal(a)
-	right, errB := json.Marshal(b)
+	left, okA := normalizeJSON(a)
+	right, okB := normalizeJSON(b)
 
-	return errA == nil && errB == nil && bytes.Equal(left, right)
+	return okA && okB && reflect.DeepEqual(left, right)
+}
+
+func normalizeJSON(v map[string]any) (any, bool) {
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return nil, false
+	}
+
+	var out any
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, false
+	}
+
+	return out, true
 }

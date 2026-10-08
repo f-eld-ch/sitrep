@@ -180,6 +180,19 @@
     "filterKeyMessage": "Schlüsselmeldungen",
     "filterMine": "Meine"
   },
+  "messageMap": {
+    "pending": "Ungezeichnet",
+    "all": "Alle",
+    "drawn": "Gezeichnet",
+    "finish": "Abschliessen",
+    "reopen": "Wieder öffnen",
+    "drawing": "Einzeichnen für Meldung {{number}} · {{time}}",
+    "allDrawn": "Alle Meldungen sind eingezeichnet",
+    "noMessages": "Keine Meldungen für die Nachrichtenkarte",
+    "pickMessage": "Wähle eine Meldung, um sie einzuzeichnen",
+    "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
+    "openMessage": "Meldung öffnen"
+  },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
   "viewChangelog": "Changelog anzeigen",

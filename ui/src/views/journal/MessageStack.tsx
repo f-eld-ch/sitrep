@@ -1,4 +1,4 @@
-import { faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -49,8 +49,12 @@ function MessageRow(props: {
   selected: boolean;
   onClick: () => void;
   setRef?: (el: HTMLButtonElement | null) => void;
+  acknowledgementDivisionId?: string;
 }) {
-  const { message, selected, onClick, setRef } = props;
+  const { message, selected, onClick, setRef, acknowledgementDivisionId } = props;
+  const acknowledged =
+    acknowledgementDivisionId !== undefined &&
+    message.acknowledgements.some((a) => a.divisionId === acknowledgementDivisionId);
   const { t } = useTranslation();
   const accent = accentKeyForMessage(message);
 
@@ -86,7 +90,16 @@ function MessageRow(props: {
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-xs text-fg-muted">{dayjs(message.time).format("HH:mm")}</span>
+          <span className="flex items-center gap-1 text-xs text-fg-muted">
+            {acknowledged && (
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="text-[10px] text-success"
+                title={t("messageMap.drawn")}
+              />
+            )}
+            {dayjs(message.time).format("HH:mm")}
+          </span>
           <span className="text-[10px] text-fg-muted/60">
             {dayjs(message.time).format("DD.MM.YY")}
           </span>
@@ -117,6 +130,8 @@ export interface MessageStackProps {
   effectiveId: string | undefined;
   onSelect: (id: string | undefined) => void;
   className?: string;
+  /** Marks messages this division has acknowledged (e.g. drawn on the Nachrichtenkarte) with a check. */
+  acknowledgementDivisionId?: string;
 }
 
 export const MessageStack = memo(function MessageStack({
@@ -124,6 +139,7 @@ export const MessageStack = memo(function MessageStack({
   effectiveId,
   onSelect,
   className,
+  acknowledgementDivisionId,
 }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -192,6 +208,7 @@ export const MessageStack = memo(function MessageStack({
                 key={msg.id}
                 message={msg}
                 selected={msg.id === effectiveId}
+                acknowledgementDivisionId={acknowledgementDivisionId}
                 onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
                 setRef={(el) => {
                   rowRefs.current[msg.id] = el;

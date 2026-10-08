@@ -180,6 +180,19 @@
     "filterKeyMessage": "Messaggi chiave",
     "filterMine": "I miei"
   },
+  "messageMap": {
+    "pending": "Non disegnato",
+    "all": "Tutti",
+    "drawn": "Disegnato",
+    "finish": "Concludi",
+    "reopen": "Riapri",
+    "drawing": "Disegno per il messaggio {{number}} · {{time}}",
+    "allDrawn": "Tutti i messaggi sono disegnati",
+    "noMessages": "Nessun messaggio per la carta informativa",
+    "pickMessage": "Scegli un messaggio per disegnarlo",
+    "unavailable": "Questo intervento non ha una carta informativa",
+    "openMessage": "Apri messaggio"
+  },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",
   "viewChangelog": "Mostra il log delle modifiche",

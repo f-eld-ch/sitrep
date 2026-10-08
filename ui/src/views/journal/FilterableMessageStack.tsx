@@ -58,6 +58,7 @@ export function FilterableMessageStack({
   effectiveId,
   onSelect,
   className,
+  acknowledgementDivisionId,
 }: FilterableMessageStackProps) {
   const enabled = { untriaged: true, highPriority: true, mine: true, ...enabledFilters };
   const { t } = useTranslation();
@@ -91,6 +92,7 @@ export function FilterableMessageStack({
         messages={filtered}
         effectiveId={effectiveId}
         onSelect={onSelect}
+        acknowledgementDivisionId={acknowledgementDivisionId}
         className="min-h-0 w-full flex-1 shrink"
       />
       <div

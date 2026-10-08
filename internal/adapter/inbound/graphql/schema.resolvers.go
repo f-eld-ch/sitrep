@@ -1754,7 +1754,11 @@ func (r *queryResolver) Message(ctx context.Context, id string) (*model.Message,
 }
 
 // LayersForIncident is the resolver for the layersForIncident field.
-func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string) ([]*model.Layer, error) {
+func (r *queryResolver) LayersForIncident(
+	ctx context.Context,
+	incidentID string,
+	asOf *time.Time,
+) ([]*model.Layer, error) {
 	incID, err := parseUUID(incidentID)
 	if err != nil {
 		return nil, err
@@ -1775,7 +1779,16 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 		out = append(out, layer)
 	}
 
-	return out, nil
+	if asOf == nil {
+		return out, nil
+	}
+
+	changes, err := r.Queries.ListFeatureChanges(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	return layersAsOf(out, changes, *asOf), nil
 }
 
 // FeatureChanges is the resolver for the featureChanges field.

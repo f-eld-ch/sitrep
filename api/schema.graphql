@@ -417,8 +417,12 @@ type Query {
   """Single message by ID; used by the triage modal."""
   message(id: ID!): Message
 
-  """Visible layers for an incident: its own layers plus direct child incident layers."""
-  layersForIncident(incidentId: ID!): [Layer!]!
+  """
+  Visible layers for an incident: its own layers plus direct child incident layers.
+  With asOf, each layer's features are the state of the map at that point on the incident timeline
+  (changes that take effect at or before asOf, ordered by effective time); without it, the current state.
+  """
+  layersForIncident(incidentId: ID!, asOf: DateTime): [Layer!]!
 
   """
   Change history of all features on the visible layers (see layersForIncident), ordered by

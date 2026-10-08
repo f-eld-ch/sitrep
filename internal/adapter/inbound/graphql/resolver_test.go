@@ -559,7 +559,7 @@ func TestLayersForIncident_AfterCreate(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 	require.Len(t, layers, 2, "requested layer + message map layer")
 	assert.Equal(t, model.LayerKindMessageMap, layers[0].Kind)
@@ -592,7 +592,7 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -627,7 +627,7 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
 
 	parentLayers = userLayers(parentLayers)
@@ -649,7 +649,7 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 		}
 	}
 
-	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID)
+	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID, nil)
 	require.NoError(t, err)
 
 	childLayers = userLayers(childLayers)
@@ -662,7 +662,7 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
 
 	parentLayers = userLayers(parentLayers)
@@ -707,7 +707,7 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -848,7 +848,7 @@ func TestCreateLayer_AppearsInQuery(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -877,7 +877,7 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -914,7 +914,7 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -949,7 +949,7 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	layers = userLayers(layers)
@@ -994,7 +994,7 @@ func TestAddFeature_MessageMapLayerRequiresMessage(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	var mapLayerID string
@@ -1047,7 +1047,7 @@ func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
 
 	var mapLayerID string
@@ -1106,6 +1106,40 @@ func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
 	require.NotNil(t, changes[1].MessageID)
 	assert.Equal(t, second.ID, *changes[1].MessageID)
 	assert.NotNil(t, changes[1].Geometry)
+
+	// The map as of a point on the incident timeline.
+	featuresOnMapLayer := func(asOf time.Time) []*model.Feature {
+		t.Helper()
+
+		got, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, &asOf)
+		require.NoError(t, err)
+
+		for _, l := range got {
+			if l.ID == mapLayerID {
+				return l.Features
+			}
+		}
+
+		require.Fail(t, "message map layer missing")
+
+		return nil
+	}
+
+	assert.Empty(t, featuresOnMapLayer(now.Add(-4*time.Hour)), "before the first message nothing is drawn")
+
+	between := featuresOnMapLayer(now.Add(-2 * time.Hour))
+	require.Len(t, between, 1)
+	assert.Equal(t, []any{8.0, 47.0}, between[0].Geometry["coordinates"], "as of the first message")
+
+	after := featuresOnMapLayer(now)
+	require.Len(t, after, 1)
+	assert.Equal(t, []any{9.0, 47.0}, after[0].Geometry["coordinates"], "after the second message the feature moved")
+	assert.Equal(
+		t,
+		map[string]any{"label": "A"},
+		map[string]any(after[0].Properties),
+		"unchanged properties carry over",
+	)
 
 	messages, err := s.resolver.Query().FeatureMessages(ctx, feat.ID)
 	require.NoError(t, err)

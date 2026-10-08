@@ -37,6 +37,19 @@ flags:
       - segment:
           key: earlyadopter
           value: true
+  # flag for rolling out the Nachrichtenkarte operator view, remove after it is GA
+  - key: message-map-view
+    name: Message Map View
+    type: BOOLEAN_FLAG_TYPE
+    description: Show the Nachrichtenkarte operator view (draw the messages triaged to the Nachrichtenkarte)
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
+      - segment:
+          key: earlyadopter
+          value: true
   # nimdanitro: flag for indicating that it is a sitrep managed instances
   - key: is-sitrep-managed
     name: Sitrep Managed

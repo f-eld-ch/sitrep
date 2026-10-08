@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -900,4 +901,86 @@ func jsonObject(raw jsontext.Value) scalar.JSONMap {
 	}
 
 	return m
+}
+
+// layersAsOf rebuilds every layer's features as they were at asOf from the change history:
+// all changes that take effect at or before asOf are folded in effective-time order (the
+// order ListFeatureChanges returns). Features keep the z-order of their placement. The layer
+// revision becomes the number of folded changes so clients still detect changes by revision.
+func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf time.Time) []*model.Layer {
+	type featureState struct {
+		layerID    string
+		geometry   scalar.JSONMap
+		properties scalar.JSONMap
+		removed    bool
+	}
+
+	states := make(map[string]*featureState)
+	order := make([]string, 0)
+	revisions := make(map[string]int)
+
+	for _, c := range changes {
+		if c.EffectiveAt.After(asOf) {
+			continue
+		}
+
+		featureID := c.FeatureID.String()
+		layerID := c.LayerID.String()
+
+		switch c.Change {
+		case "placed":
+			if _, seen := states[featureID]; !seen {
+				order = append(order, featureID)
+			}
+
+			states[featureID] = &featureState{
+				layerID:    layerID,
+				geometry:   jsonObject(c.Geometry),
+				properties: jsonObject(c.Properties),
+			}
+		case "moved":
+			if st := states[featureID]; st != nil {
+				st.geometry = jsonObject(c.Geometry)
+			}
+		case "restyled":
+			if st := states[featureID]; st != nil {
+				st.properties = jsonObject(c.Properties)
+			}
+		case "removed":
+			if st := states[featureID]; st != nil {
+				st.removed = true
+			}
+		}
+
+		revisions[layerID]++
+	}
+
+	byLayer := make(map[string][]*model.Feature)
+
+	for _, featureID := range order {
+		st := states[featureID]
+		if st.removed {
+			continue
+		}
+
+		byLayer[st.layerID] = append(byLayer[st.layerID], &model.Feature{
+			ID: featureID, Geometry: st.geometry, Properties: st.properties,
+		})
+	}
+
+	out := make([]*model.Layer, len(layers))
+
+	for i, l := range layers {
+		cp := *l
+
+		cp.Features = byLayer[l.ID]
+		if cp.Features == nil {
+			cp.Features = []*model.Feature{}
+		}
+
+		cp.Revision = revisions[l.ID]
+		out[i] = &cp
+	}
+
+	return out
 }

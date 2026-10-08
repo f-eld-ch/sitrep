@@ -180,6 +180,19 @@
     "filterKeyMessage": "Key messages",
     "filterMine": "Mine"
   },
+  "messageMap": {
+    "pending": "Not drawn",
+    "all": "All",
+    "drawn": "Drawn",
+    "finish": "Finish",
+    "reopen": "Reopen",
+    "drawing": "Drawing for message {{number}} · {{time}}",
+    "allDrawn": "All messages are drawn",
+    "noMessages": "No messages for the situation map",
+    "pickMessage": "Pick a message to draw it",
+    "unavailable": "This incident has no situation map",
+    "openMessage": "Open message"
+  },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "viewChangelog": "Show changelog",

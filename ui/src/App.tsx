@@ -21,6 +21,7 @@ import {
 } from "views/incident";
 import { List as JournalMessageList, TriageView as JournalTriageView } from "views/journal";
 const JournalEditor = lazy(() => import("views/journal/Editor"));
+const JournalMessageMapView = lazy(() => import("views/journal/MessageMapView"));
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { IncidentRoute } from "views/IncidentRoute";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -180,6 +181,16 @@ const router = createBrowserRouter([
                       <Layout>
                         <JournalMessageList showControls={false} autoScroll={true} />
                       </Layout>
+                    ),
+                  },
+                  {
+                    path: "messagemap",
+                    element: (
+                      <LayoutMarginLess>
+                        <Suspense fallback={null}>
+                          <JournalMessageMapView />
+                        </Suspense>
+                      </LayoutMarginLess>
                     ),
                   },
                   {

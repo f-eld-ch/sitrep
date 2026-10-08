@@ -3,6 +3,7 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
+import { featureChangeVariable, layersVariables, type FeatureChangeArgs } from "./variables";
 import { ADD_FEATURE, CREATE_LAYER, DELETE_FEATURE, GET_LAYERS, MODIFY_FEATURE } from "./documents";
 
 export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
@@ -26,6 +27,10 @@ export interface AddFeatureArgs {
   geometry: unknown;
   properties: unknown;
   incidentId: string;
+  /** When the change takes effect; required on the message map layer. */
+  change?: FeatureChangeArgs;
+  /** The point on the timeline the map currently shows; selects the layers result to update. */
+  asOf?: Date;
 }
 
 export interface ModifyFeatureArgs {
@@ -39,11 +44,15 @@ export interface ModifyFeatureArgs {
   /** Full current properties — used for the optimistic cache write. */
   currentProperties: unknown;
   incidentId: string;
+  change?: FeatureChangeArgs;
+  asOf?: Date;
 }
 
 export interface DeleteFeatureArgs {
   id: string;
   incidentId: string;
+  change?: FeatureChangeArgs;
+  asOf?: Date;
 }
 
 export interface AddLayerArgs {
@@ -67,18 +76,17 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
         clientKey: args.clientKey,
         geometry: args.geometry as unknown as import("geojson").Geometry,
         properties: args.properties as Record<string, unknown>,
+        change: featureChangeVariable(args.change),
       },
       update(cache, { data }) {
         if (!data?.addFeature) return;
         const newFeature = data.addFeature;
-        const cached = cache.readQuery({
-          query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
-        });
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
         if (!cached?.layersForIncident) return;
         cache.writeQuery({
           query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
+          variables,
           data: {
             layersForIncident: cached.layersForIncident.map((layer) =>
               layer.id === args.layerId
@@ -111,6 +119,7 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
         id: args.id,
         geometry: args.geometry as unknown as import("geojson").Geometry,
         properties: args.properties as Record<string, unknown>,
+        change: featureChangeVariable(args.change),
       },
       optimisticResponse: {
         modifyFeature: {
@@ -119,6 +128,19 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
           properties: args.currentProperties,
         },
       } as never,
+      update(cache) {
+        // The server answers with the feature's latest state, which can be newer than the
+        // point on the timeline the map shows (an edit for an older message). Restore the
+        // state as of that point until the next poll delivers it.
+        if (!args.asOf) return;
+        cache.modify({
+          id: cache.identify({ __typename: "Feature", id: args.id }),
+          fields: {
+            geometry: () => args.currentGeometry as never,
+            properties: () => args.currentProperties as never,
+          },
+        });
+      },
     });
   };
 
@@ -135,16 +157,14 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
 
   const deleteFeature = async (args: DeleteFeatureArgs): Promise<void> => {
     await mutate({
-      variables: { id: args.id },
+      variables: { id: args.id, change: featureChangeVariable(args.change) },
       update(cache) {
-        const cached = cache.readQuery({
-          query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
-        });
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
         if (!cached?.layersForIncident) return;
         cache.writeQuery({
           query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
+          variables,
           data: {
             layersForIncident: cached.layersForIncident.map((layer) => ({
               ...layer,

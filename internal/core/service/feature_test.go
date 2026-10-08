@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -105,6 +106,18 @@ func TestFeatureService_PlaceIsIdempotentPerClientKey(t *testing.T) {
 	t.Run("same key and payload returns the existing feature", func(t *testing.T) {
 		again, err := f.features.PlaceFeature(ctx(), f.incidentID, f.layerID, "draw-1",
 			testGeometry, testProperties, inbound.FeatureChange{}, testActor)
+		require.NoError(t, err)
+		assert.Equal(t, first.ID, again.ID)
+	})
+
+	t.Run("numbers decoded as json.Number do not count as a different payload", func(t *testing.T) {
+		// The API layer decodes request bodies with UseNumber; "8.0" must equal the stored 8.
+		viaAPI := map[string]any{
+			"type":        "Point",
+			"coordinates": []any{json.Number("8.5417"), json.Number("47.3769")},
+		}
+		again, err := f.features.PlaceFeature(ctx(), f.incidentID, f.layerID, "draw-1",
+			viaAPI, testProperties, inbound.FeatureChange{}, testActor)
 		require.NoError(t, err)
 		assert.Equal(t, first.ID, again.ID)
 	})

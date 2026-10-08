@@ -4,15 +4,23 @@ import type { Layer } from "types/layer";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_LAYERS } from "./documents";
+import { layersVariables } from "./variables";
 import { toLayer } from "./mapper";
 
 export interface LayersData {
   layers: Layer[];
 }
 
-export function useLayersForIncident(incidentId: string | undefined): QueryResult<LayersData> {
+/**
+ * Layers visible from an incident. With `asOf`, each layer's features are the state of the map
+ * at that point on the incident timeline instead of the current state.
+ */
+export function useLayersForIncident(
+  incidentId: string | undefined,
+  asOf?: Date,
+): QueryResult<LayersData> {
   const { data, loading, error, refetch } = useQuery(GET_LAYERS, {
-    variables: { incidentId: incidentId ?? "" },
+    variables: layersVariables(incidentId ?? "", asOf),
     skip: !incidentId,
     pollInterval: 2000,
     fetchPolicy: "cache-and-network",

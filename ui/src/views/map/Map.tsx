@@ -40,6 +40,7 @@ import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
+import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
@@ -88,6 +89,10 @@ function BabsSpriteLanguage() {
 interface MapViewOptions {
   embedded?: boolean;
   readOnly?: boolean;
+  /** Show the map as of this point on the incident timeline; undefined means live. */
+  asOf?: Date;
+  /** Draw for this message: all changes go to the message map layer and take effect at the message's time. */
+  drawingMessage?: DrawingMessage;
 }
 
 function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
@@ -274,10 +279,12 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
 function LayerFetcher() {
   const { incidentId } = useParams();
   const { dispatch } = useContext(LayerContext);
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
   const syncedLayers = useRef<Layer[] | undefined>(undefined);
   const syncedIncidentId = useRef<string | undefined>(undefined);
+  const preferredKind = drawingMessage ? "MESSAGE_MAP" : "STANDARD";
 
-  const result = useLayersForIncident(incidentId);
+  const result = useLayersForIncident(incidentId, asOf);
   const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
 
   useEffect(() => {
@@ -291,9 +298,9 @@ function LayerFetcher() {
     syncedLayers.current = remoteLayers;
     dispatch({
       type: "SET_LAYERS",
-      payload: { layers: remoteLayers, viewedIncidentId: incidentId },
+      payload: { layers: remoteLayers, viewedIncidentId: incidentId, preferredKind },
     });
-  }, [remoteLayers, dispatch, incidentId]);
+  }, [remoteLayers, dispatch, incidentId, preferredKind]);
 
   return null;
 }
@@ -456,6 +463,12 @@ function Draw() {
   } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  // Changes for a message take effect at the message's time; the server derives it from the id.
+  const change = useMemo(
+    () => (drawingMessage ? { messageId: drawingMessage.id } : undefined),
+    [drawingMessage],
+  );
 
   const [addFeature] = useAddFeature();
   const [modifyFeature] = useModifyFeature();
@@ -493,6 +506,8 @@ function Draw() {
           clientKey: String(f.id ?? ""),
           properties: feature.properties,
           incidentId: incidentId ?? "",
+          change,
+          asOf,
         }).then(({ featureId }) => {
           dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
         });
@@ -502,7 +517,7 @@ function Draw() {
         }
       }
     },
-    [addFeature, dispatch, incidentId, state.draw],
+    [addFeature, asOf, change, dispatch, incidentId, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -519,10 +534,12 @@ function Draw() {
           currentGeometry: feature.geometry,
           currentProperties: feature.properties,
           incidentId: incidentId ?? "",
+          change,
+          asOf,
         });
       }
     },
-    [incidentId, modifyFeature],
+    [asOf, change, incidentId, modifyFeature],
   );
 
   const onDelete = useCallback(
@@ -530,11 +547,16 @@ function Draw() {
       const deletedFeatures: Feature[] = e.features;
       for (const f of deletedFeatures) {
         const feature = cleanFeature(f);
-        void deleteFeature({ id: String(feature.id ?? ""), incidentId: incidentId ?? "" });
+        void deleteFeature({
+          id: String(feature.id ?? ""),
+          incidentId: incidentId ?? "",
+          change,
+          asOf,
+        });
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, deleteFeature, incidentId],
+    [asOf, change, dispatch, deleteFeature, incidentId],
   );
 
   const onCombine = useCallback(
@@ -603,7 +625,14 @@ function Draw() {
     }
   }, [state.draw, map?.loaded, state.selectedFeature]);
 
-  if (incident?.closedAt != null || state.activeLayer === undefined) {
+  // The message map layer is only drawn on for a message, and a message only draws on it.
+  const activeLayerKind = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer.kind;
+  const drawsOnMessageMap = activeLayerKind === "MESSAGE_MAP";
+  if (
+    incident?.closedAt != null ||
+    state.activeLayer === undefined ||
+    drawsOnMessageMap !== (drawingMessage !== undefined)
+  ) {
     return;
   }
 
@@ -661,13 +690,30 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   );
 }
 
-function MapWithProvder(options: MapViewOptions) {
+function MapWithProvder({ asOf, drawingMessage, ...options }: MapViewOptions) {
+  const asOfTime = asOf?.getTime();
+  const messageId = drawingMessage?.id;
+  const messageTime = drawingMessage?.time.getTime();
+  // Memoized on the values, so a parent re-render with equal dates does not refetch the layers.
+  const mapTime = useMemo<MapTime>(
+    () => ({
+      asOf: asOfTime === undefined ? undefined : new Date(asOfTime),
+      drawingMessage:
+        messageId === undefined || messageTime === undefined
+          ? undefined
+          : { id: messageId, time: new Date(messageTime) },
+    }),
+    [asOfTime, messageId, messageTime],
+  );
+
   return (
     <MapStyleProvider>
       <MapProvider>
         <LayersProvider>
-          <MapView {...options} />
-          <LayerFetcher />
+          <MapTimeContext.Provider value={mapTime}>
+            <MapView {...options} />
+            <LayerFetcher />
+          </MapTimeContext.Provider>
         </LayersProvider>
       </MapProvider>
     </MapStyleProvider>

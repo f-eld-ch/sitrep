@@ -261,7 +261,7 @@ type ComplexityRoot struct {
 		IncidentAccess     func(childComplexity int, incidentID string) int
 		IncidentAccessMode func(childComplexity int, incidentID string) int
 		Incidents          func(childComplexity int) int
-		LayersForIncident  func(childComplexity int, incidentID string) int
+		LayersForIncident  func(childComplexity int, incidentID string, asOf *time.Time) int
 		Message            func(childComplexity int, id string) int
 		MyGlobalRoles      func(childComplexity int) int
 		Resource           func(childComplexity int, id string) int
@@ -421,7 +421,7 @@ type QueryResolver interface {
 	Incidents(ctx context.Context) ([]*model.Incident, error)
 	Incident(ctx context.Context, id string) (*model.Incident, error)
 	Message(ctx context.Context, id string) (*model.Message, error)
-	LayersForIncident(ctx context.Context, incidentID string) ([]*model.Layer, error)
+	LayersForIncident(ctx context.Context, incidentID string, asOf *time.Time) ([]*model.Layer, error)
 	FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error)
 	FeatureMessages(ctx context.Context, featureID string) ([]*model.Message, error)
 	IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error)
@@ -1734,7 +1734,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.LayersForIncident(childComplexity, args["incidentId"].(string)), true
+		return e.ComplexityRoot.Query.LayersForIncident(childComplexity, args["incidentId"].(string), args["asOf"].(*time.Time)), true
 	case "Query.message":
 		if e.ComplexityRoot.Query.Message == nil {
 			break
@@ -2640,8 +2640,12 @@ type Query {
   """Single message by ID; used by the triage modal."""
   message(id: ID!): Message
 
-  """Visible layers for an incident: its own layers plus direct child incident layers."""
-  layersForIncident(incidentId: ID!): [Layer!]!
+  """
+  Visible layers for an incident: its own layers plus direct child incident layers.
+  With asOf, each layer's features are the state of the map at that point on the incident timeline
+  (changes that take effect at or before asOf, ordered by effective time); without it, the current state.
+  """
+  layersForIncident(incidentId: ID!, asOf: DateTime): [Layer!]!
 
   """
   Change history of all features on the visible layers (see layersForIncident), ordered by
@@ -4828,6 +4832,14 @@ func (ec *executionContext) field_Query_layersForIncident_args(ctx context.Conte
 		return nil, err
 	}
 	args["incidentId"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "asOf",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["asOf"] = arg1
 	return args, nil
 }
 
@@ -9741,7 +9753,7 @@ func (ec *executionContext) _Query_layersForIncident(ctx context.Context, field 
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().LayersForIncident(ctx, fc.Args["incidentId"].(string))
+			return ec.Resolvers.Query().LayersForIncident(ctx, fc.Args["incidentId"].(string), fc.Args["asOf"].(*time.Time))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Layer) graphql.Marshaler {

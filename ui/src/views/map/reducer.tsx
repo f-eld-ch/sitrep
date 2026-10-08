@@ -34,6 +34,11 @@ export interface SetLayerAction {
   payload: {
     layers: Layer[];
     viewedIncidentId?: string;
+    /**
+     * Which kind of own layer is active by default. The Nachrichtenkarte operator draws on the
+     * message map layer; everywhere else that layer is read-only, so a regular one is preferred.
+     */
+    preferredKind?: Layer["kind"];
   };
 }
 
@@ -204,12 +209,13 @@ export const activeLayerReducer = (state: ActiveLayerState, action: LayersAction
     case "SET_ACTIVE_LAYER":
       return action.payload.layerId;
     case "SET_LAYERS":
-      const firstEditableLayer = first(
-        action.payload.layers.filter(
-          (layer) =>
-            action.payload.viewedIncidentId === undefined ||
-            layer.sourceIncidentId === action.payload.viewedIncidentId,
-        ),
+      const ownLayers = action.payload.layers.filter(
+        (layer) =>
+          action.payload.viewedIncidentId === undefined ||
+          layer.sourceIncidentId === action.payload.viewedIncidentId,
+      );
+      const firstEditableLayer = (
+        ownLayers.find((layer) => layer.kind === action.payload.preferredKind) ?? first(ownLayers)
       )?.id;
 
       if (state === undefined) {

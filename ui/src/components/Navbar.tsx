@@ -46,6 +46,7 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   const showResources = useBooleanFlagValue("show-resources", false);
   const showTasks = useBooleanFlagValue("show-tasks", false);
   const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
+  const showMessageMapView = useBooleanFlagValue("message-map-view", false);
 
   const incidentId = incidentState.incident?.id;
   const mobileItem = "flex items-center px-4 py-2 gap-2 capitalize w-full";
@@ -229,6 +230,20 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                 >
                   <FontAwesomeIcon icon={faArrowsToEye} />
                   <span>{t("triageView")}</span>
+                </NavLink>
+              )}
+              {showMessageMapView && (
+                <NavLink
+                  className={({ isActive }) =>
+                    clsx(
+                      mobileSubItem,
+                      isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                    )
+                  }
+                  to={`/incident/${incidentId}/journal/messagemap`}
+                >
+                  <FontAwesomeIcon icon={faMapLocationDot} />
+                  <span>{t("divisionsNames.Karte.description")}</span>
                 </NavLink>
               )}
             </>
@@ -488,6 +503,7 @@ const JournalNavBar: FunctionComponent = () => {
   const { t } = useTranslation();
   const { state: incidentState } = useContext(IncidentContext);
   const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
+  const showMessageMapView = useBooleanFlagValue("message-map-view", false);
 
   if (!incidentState || !incidentState.incident) return;
 
@@ -533,6 +549,20 @@ const JournalNavBar: FunctionComponent = () => {
           >
             <FontAwesomeIcon icon={faArrowsToEye} />
             <span>{t("triageView")}</span>
+          </NavLink>
+        )}
+        {showMessageMapView && (
+          <NavLink
+            className={({ isActive }) =>
+              clsx(
+                "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+              )
+            }
+            to={`/incident/${incidentId}/journal/messagemap`}
+          >
+            <FontAwesomeIcon icon={faMapLocationDot} />
+            <span>{t("divisionsNames.Karte.description")}</span>
           </NavLink>
         )}
       </div>

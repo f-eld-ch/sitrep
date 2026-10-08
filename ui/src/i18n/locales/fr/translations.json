@@ -180,6 +180,19 @@
     "filterKeyMessage": "Messages clés",
     "filterMine": "Les miens"
   },
+  "messageMap": {
+    "pending": "Non dessiné",
+    "all": "Tous",
+    "drawn": "Dessiné",
+    "finish": "Terminer",
+    "reopen": "Rouvrir",
+    "drawing": "Dessin pour le message {{number}} · {{time}}",
+    "allDrawn": "Tous les messages sont dessinés",
+    "noMessages": "Aucun message pour la carte de situation",
+    "pickMessage": "Choisissez un message pour le dessiner",
+    "unavailable": "Cet engagement n'a pas de carte de situation",
+    "openMessage": "Ouvrir le message"
+  },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "viewChangelog": "Afficher le journal des modifications",
