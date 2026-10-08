@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { messageFeatureHalos, type HistoryChange } from "./halos";
+import { messageFeatureHalos, withLocalRemovals, type HistoryChange } from "./halos";
 
 const point = (x: number) => ({ type: "Point" as const, coordinates: [x, 0] });
 const c = (
@@ -87,5 +87,47 @@ describe("messageFeatureHalos", () => {
 
     expect(messageFeatureHalos(history, "m3").get("a")?.kind).toBe("added");
     expect(messageFeatureHalos(history, "m3").get("b")?.kind).toBe("removed");
+  });
+});
+
+describe("withLocalRemovals", () => {
+  const removal = (id: string, messageId = "m") => ({
+    id,
+    messageId,
+    geometry: point(1),
+    properties: { icon: "x" },
+  });
+
+  it("shows a feature just deleted for the message as a ghost", () => {
+    const out = withLocalRemovals(new Map(), [removal("a")], "m", new Set());
+
+    expect(out.get("a")).toEqual({
+      kind: "removed",
+      lastGeometry: point(1),
+      lastProperties: { icon: "x" },
+    });
+  });
+
+  it("leaves the history in charge of what it already knows", () => {
+    const known = new Map([["a", { kind: "removed" as const, lastGeometry: point(9) }]]);
+    const out = withLocalRemovals(known, [removal("a")], "m", new Set());
+
+    expect(out.get("a")?.lastGeometry).toEqual(point(9));
+  });
+
+  it("ignores deletions for another message", () => {
+    expect(withLocalRemovals(new Map(), [removal("a", "other")], "m", new Set()).size).toBe(0);
+  });
+
+  it("shows nothing for a feature the message placed itself", () => {
+    expect(withLocalRemovals(new Map(), [removal("a")], "m", new Set(["a"])).size).toBe(0);
+  });
+
+  it("does not change the halos it is given", () => {
+    const halos = new Map<string, { kind: "added" }>([["b", { kind: "added" }]]);
+    const out = withLocalRemovals(halos, [removal("a")], "m", new Set());
+
+    expect(halos.size).toBe(1);
+    expect(out.size).toBe(2);
   });
 });

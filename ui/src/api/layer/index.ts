@@ -22,7 +22,8 @@ export {
   useFeatureChangeTimes,
   useMessageFeatureHalos,
 } from "./queries";
-export type { FeatureHalo, HaloKind } from "./halos";
+export type { FeatureHalo, HaloKind, LocalRemoval } from "./halos";
+export { withLocalRemovals } from "./halos";
 export { afterLayerWrite } from "./invalidate";
 export { featureChangeVariable, layersVariables } from "./variables";
 export type { FeatureChangeArgs } from "./variables";

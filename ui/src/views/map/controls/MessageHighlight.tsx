@@ -13,6 +13,7 @@ import {
   convertFeatureToGeoJsonFeature,
   layerToFeatureCollection,
   useMessageFeatureHalos,
+  withLocalRemovals,
   useRestoreFeature,
 } from "api";
 import { Button } from "components/ui";
@@ -169,16 +170,7 @@ export function MessageHighlight({
   }
 
   // A feature just deleted here shows as a ghost before the history has caught up with it.
-  const ghosts = new Map(halos);
-  for (const r of state.removedFeatures) {
-    if (
-      r.messageId === drawingMessage.id &&
-      !placedHere.has(r.id) &&
-      halos.get(r.id) === undefined
-    ) {
-      ghosts.set(r.id, { kind: "removed", lastGeometry: r.geometry, lastProperties: r.properties });
-    }
-  }
+  const ghosts = withLocalRemovals(halos, state.removedFeatures, drawingMessage.id, placedHere);
 
   const features: Feature[] = [];
   const removed: Feature[] = [];

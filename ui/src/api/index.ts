@@ -151,6 +151,7 @@ export {
   useLayersForIncident,
   useFeatureChangeTimes,
   useMessageFeatureHalos,
+  withLocalRemovals,
   useModifyFeature,
   useRestoreFeature,
 } from "./layer";

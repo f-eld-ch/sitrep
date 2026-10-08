@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Layer } from "types/layer";
-import { activeLayerReducer, layersReducer, pendingFeaturesReducer } from "./reducer";
+import {
+  activeLayerReducer,
+  layersReducer,
+  pendingFeaturesReducer,
+  removedFeaturesReducer,
+} from "./reducer";
 
 function layer(id: string, sourceIncidentId: string): Layer {
   return {
@@ -152,5 +157,46 @@ describe("pendingFeaturesReducer", () => {
         payload: { id: "zzz", properties: { x: 1 } },
       }),
     ).toEqual(state);
+  });
+});
+
+describe("removedFeaturesReducer", () => {
+  const point = { type: "Point" as const, coordinates: [8, 47] };
+  const removed = (id: string, messageId = "msg-1") => ({
+    id,
+    messageId,
+    geometry: point,
+    properties: { icon: "x" },
+  });
+
+  it("remembers features deleted for a message until they are cleared", () => {
+    let state = removedFeaturesReducer([], {
+      type: "ADD_REMOVED_FEATURE",
+      payload: { feature: removed("a") },
+    });
+    state = removedFeaturesReducer(state, {
+      type: "ADD_REMOVED_FEATURE",
+      payload: { feature: removed("b") },
+    });
+    expect(state.map((r) => r.id)).toEqual(["a", "b"]);
+
+    state = removedFeaturesReducer(state, { type: "CLEAR_REMOVED_FEATURE", payload: { id: "a" } });
+    expect(state.map((r) => r.id)).toEqual(["b"]);
+  });
+
+  it("deleting the same feature again replaces the entry", () => {
+    const state = removedFeaturesReducer([removed("a", "msg-1")], {
+      type: "ADD_REMOVED_FEATURE",
+      payload: { feature: removed("a", "msg-2") },
+    });
+
+    expect(state).toHaveLength(1);
+    expect(state[0].messageId).toBe("msg-2");
+  });
+
+  it("ignores other actions", () => {
+    const state = [removed("a")];
+
+    expect(removedFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null })).toBe(state);
   });
 });

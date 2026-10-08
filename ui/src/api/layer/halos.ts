@@ -23,6 +23,35 @@ export interface HistoryChange {
   properties?: GeoJsonProperties;
 }
 
+/** A feature deleted for a message, as it last looked, before the history has caught up. */
+export interface LocalRemoval {
+  id: string;
+  messageId: string;
+  geometry: Geometry;
+  properties: GeoJsonProperties;
+}
+
+/**
+ * The halos plus a ghost for each feature just deleted for the message, so a deletion shows at
+ * once. Left out: deletions for other messages, features the history already knows (it takes over),
+ * and features this message placed itself (deleting those leaves nothing to show).
+ */
+export function withLocalRemovals(
+  halos: ReadonlyMap<string, FeatureHalo>,
+  removals: readonly LocalRemoval[],
+  messageId: string,
+  placedHere: ReadonlySet<string>,
+): Map<string, FeatureHalo> {
+  const out = new Map(halos);
+  for (const r of removals) {
+    if (r.messageId === messageId && !placedHere.has(r.id) && !halos.has(r.id)) {
+      out.set(r.id, { kind: "removed", lastGeometry: r.geometry, lastProperties: r.properties });
+    }
+  }
+
+  return out;
+}
+
 const isRemoveOrRestore = (c: HistoryChange) => c.change === "REMOVED" || c.change === "RESTORED";
 
 /**

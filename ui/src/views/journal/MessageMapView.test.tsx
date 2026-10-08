@@ -1,9 +1,11 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useEffect, type ReactNode } from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import MessageMapView from "./MessageMapView";
 
 const division = { id: "d1", name: "Karte", description: "Nachrichtenkarte", kind: "MESSAGE_MAP" };
+type Acknowledgement = { divisionId: string; acknowledgedAt: Date; acknowledgedBy: string };
 const msg = (id: string, number: number, minute: number) => ({
   id,
   number,
@@ -20,42 +22,86 @@ const msg = (id: string, number: number, minute: number) => ({
   priority: "NORMAL",
   author: "a",
   divisions: [{ division }],
-  acknowledgements: [],
+  acknowledgements: [] as Acknowledgement[],
   attachments: [],
 });
 
-const data = {
+const drawn = (m: ReturnType<typeof msg>) => ({
+  ...m,
+  acknowledgements: [
+    { divisionId: "d1", acknowledgedAt: new Date(2026, 0, 1, 13), acknowledgedBy: "x" },
+  ],
+});
+
+const openMessages = [msg("m1", 1, 0), msg("m2", 2, 5)];
+const loaded = (messages: ReturnType<typeof msg>[]) => ({
   status: "ready" as const,
-  data: { messages: [msg("m1", 1, 0), msg("m2", 2, 5)], incidentDivisions: [division] },
-};
+  data: { messages, incidentDivisions: [division] },
+});
+
+const mocks = vi.hoisted(() => ({
+  messages: { current: undefined as unknown },
+  mapMounts: { count: 0 },
+  mapProps: { last: undefined as Record<string, unknown> | undefined },
+  stackProps: { last: undefined as Record<string, unknown> | undefined },
+}));
 const acknowledge = vi.fn().mockResolvedValue(undefined);
 const ackState = { loading: false, error: undefined };
 
 vi.mock("api/message", () => ({
-  useIncidentMessages: () => data,
+  useIncidentMessages: () => mocks.messages.current,
   useAcknowledgeMessage: () => [acknowledge, ackState],
 }));
 vi.mock("views/map", () => ({
-  Map: ({ onDrawingChange }: { onDrawingChange?: () => void }) => (
-    <button onClick={onDrawingChange}>draw</button>
-  ),
+  Map: (props: { onDrawingChange?: () => void }) => {
+    useEffect(() => {
+      mocks.mapMounts.count++;
+    }, []);
+    mocks.mapProps.last = props as Record<string, unknown>;
+
+    return <button onClick={props.onDrawingChange}>draw</button>;
+  },
 }));
 vi.mock("./Message", () => ({ default: () => null }));
 vi.mock("./FilterableMessageStack", () => ({
-  FilterChip: () => null,
-  FilterableMessageStack: ({
-    effectiveId,
-    onSelect,
+  FilterChip: ({
+    label,
+    active,
+    onToggle,
   }: {
-    effectiveId?: string;
-    onSelect: (id: string) => void;
+    label: string;
+    active: boolean;
+    onToggle: () => void;
   }) => (
-    <div>
-      <span data-testid="current">{effectiveId}</span>
-      <button onClick={() => onSelect("m2")}>pick m2</button>
-    </div>
+    <button aria-pressed={active} onClick={onToggle}>
+      {label}
+    </button>
   ),
+  FilterableMessageStack: (props: {
+    effectiveId?: string;
+    onSelect: (id: string | undefined) => void;
+    extraChips?: ReactNode;
+  }) => {
+    mocks.stackProps.last = props as Record<string, unknown>;
+
+    return (
+      <div>
+        <span data-testid="current">{props.effectiveId}</span>
+        <button onClick={() => props.onSelect("m1")}>pick m1</button>
+        <button onClick={() => props.onSelect("m2")}>pick m2</button>
+        <button onClick={() => props.onSelect(undefined)}>pick nothing</button>
+        {props.extraChips}
+      </div>
+    );
+  },
 }));
+
+beforeEach(() => {
+  mocks.messages.current = loaded(openMessages);
+  mocks.mapMounts.count = 0;
+  mocks.mapProps.last = undefined;
+  mocks.stackProps.last = undefined;
+});
 
 function setup() {
   const router = createMemoryRouter(
@@ -121,5 +167,108 @@ describe("MessageMapView navigation guard", () => {
     await waitFor(() =>
       expect(screen.queryByRole("button", { name: /leave|verlassen/i })).toBeNull(),
     );
+  });
+});
+
+describe("MessageMapView map", () => {
+  it("draws for the oldest undrawn message, on the message's time", () => {
+    setup();
+
+    expect(mocks.mapProps.last).toMatchObject({
+      readOnly: false,
+      drawingMessage: { id: "m1", locked: false },
+    });
+    expect(mocks.mapProps.last?.asOf).toEqual(openMessages[0].time);
+  });
+
+  it("locks the drawing of a message that is already drawn, until it is unlocked", () => {
+    mocks.messages.current = loaded([drawn(msg("m1", 1, 0)), msg("m2", 2, 5)]);
+    setup();
+    expect(mocks.mapProps.last).toMatchObject({ drawingMessage: { id: "m2", locked: false } });
+
+    fireEvent.click(screen.getByText("pick m1"));
+    expect(mocks.mapProps.last).toMatchObject({ drawingMessage: { id: "m1", locked: true } });
+
+    fireEvent.click(screen.getByRole("button", { name: /messageMap.edit|ändern/i }));
+    expect(mocks.mapProps.last).toMatchObject({ drawingMessage: { id: "m1", locked: false } });
+
+    fireEvent.click(screen.getByRole("button", { name: /messageMap.editDone|fertig/i }));
+    expect(mocks.mapProps.last).toMatchObject({ drawingMessage: { id: "m1", locked: true } });
+  });
+
+  it("shows the finished map, read-only and on the Nachrichtenkarte, once everything is drawn", () => {
+    mocks.messages.current = loaded([drawn(msg("m1", 1, 0)), drawn(msg("m2", 2, 5))]);
+    setup();
+
+    expect(screen.getByText(/messageMap.allDrawn|alle meldungen/i)).toBeInTheDocument();
+    expect(mocks.mapProps.last).toMatchObject({
+      readOnly: true,
+      preferredLayerKind: "MESSAGE_MAP",
+    });
+    expect(mocks.mapProps.last?.drawingMessage).toBeUndefined();
+    expect(mocks.mapProps.last?.asOf).toBeUndefined();
+  });
+
+  it("keeps the same map when a message is selected and deselected", () => {
+    mocks.messages.current = loaded([drawn(msg("m1", 1, 0)), drawn(msg("m2", 2, 5))]);
+    setup();
+    expect(mocks.mapMounts.count).toBe(1);
+
+    fireEvent.click(screen.getByText("pick m2"));
+    expect(mocks.mapProps.last).toMatchObject({ readOnly: false, drawingMessage: { id: "m2" } });
+
+    fireEvent.click(screen.getByText("pick nothing"));
+    expect(mocks.mapProps.last).toMatchObject({ readOnly: true });
+
+    expect(mocks.mapMounts.count).toBe(1);
+  });
+
+  it("shows no map and a hint when no message is triaged to the Nachrichtenkarte", () => {
+    mocks.messages.current = loaded([]);
+    setup();
+
+    expect(mocks.mapProps.last).toBeUndefined();
+    expect(screen.getByText(/messageMap.noMessages|keine meldungen/i)).toBeInTheDocument();
+  });
+
+  it("tells when the Nachrichtenkarte is not available", () => {
+    mocks.messages.current = {
+      status: "ready",
+      data: { messages: [], incidentDivisions: [] },
+    };
+    setup();
+
+    expect(screen.getByText(/messageMap.unavailable|nicht verfügbar/i)).toBeInTheDocument();
+  });
+});
+
+describe("MessageMapView stack", () => {
+  it("has no filters but the undrawn one", () => {
+    setup();
+
+    expect(mocks.stackProps.last?.enabledFilters).toEqual({
+      untriaged: false,
+      highPriority: false,
+      mine: false,
+    });
+  });
+
+  it("offers the action: 'show all' while filtered, 'show undrawn (n)' otherwise", () => {
+    setup();
+
+    // Filtered to what is still to draw: the chip offers to show everything.
+    const toggle = screen.getByRole("button", { name: /messageMap.showAll|zeige alle/i });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(mocks.stackProps.last?.baseFilter).toMatchObject({
+      acknowledgement: { divisionId: "d1", state: "pending" },
+    });
+
+    fireEvent.click(toggle);
+
+    const pending = screen.getByRole("button", {
+      name: /messageMap.showPending.*\(2\)|ungezeichnete.*\(2\)/i,
+    });
+    expect(pending).toHaveAttribute("aria-pressed", "true");
+    expect(mocks.stackProps.last?.baseFilter).toMatchObject({ acknowledgement: undefined });
   });
 });
