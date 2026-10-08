@@ -239,7 +239,7 @@ function MessageMapView() {
                 <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-2">
                   <PageTitle level={1} className="flex-1 text-base">
                     {mapLabel}
-                    <span className="ml-3 text-sm font-normal text-fg-muted">
+                    <span className="ml-3 text-sm font-normal text-fg-muted normal-case">
                       {t("messageMap.drawing", {
                         number: selected.number,
                         time: dayjs(selected.time).format("HH:mm"),
