@@ -41,6 +41,8 @@ import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
 import { withPendingFeatures } from "../pending";
+import { IncidentContext } from "utils";
+import { MapTimeContext } from "../MapTimeContext";
 import { usePendingFeature } from "../usePendingFeature";
 import { LayerContext } from "../LayerContext";
 
@@ -427,15 +429,28 @@ const BabsIconController = () => {
     featureCollection.features.filter((f) => f.id === state.selectedFeature),
   );
   const pending = usePendingFeature(selectedFeature?.id?.toString());
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const { state: incidentState } = useContext(IncidentContext);
+  // A saved feature on the free map can be changed as of an earlier time; drawing for a message
+  // always takes the message's time.
+  const changeTime =
+    pending === undefined && drawingMessage === undefined && asOf === undefined
+      ? { earliest: incidentState.incident?.createdAt }
+      : undefined;
 
   const onUpdate = useCallback(
-    (e: { features: Feature<Geometry, GeoJsonProperties>[]; action?: string }) => {
+    (e: {
+      features: Feature<Geometry, GeoJsonProperties>[];
+      action?: string;
+      effectiveAt?: Date;
+    }) => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
       // changes made here persist by exactly the same mechanism as direct edits.
       fireDrawEvent(map?.getMap(), "draw.update", {
         features: updatedFeatures,
         action: e.action,
+        effectiveAt: e.effectiveAt,
         target: map,
       });
     },
@@ -450,6 +465,7 @@ const BabsIconController = () => {
           selectedFeature={selectedFeature}
           onUpdate={onUpdate}
           pending={pending}
+          changeTime={changeTime}
         />
       )}
       {/*

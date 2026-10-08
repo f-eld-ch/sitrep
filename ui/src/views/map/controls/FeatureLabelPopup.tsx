@@ -61,7 +61,14 @@ export interface PendingFeatureActions {
 
 interface FeatureLabelPopupProps {
   selectedFeature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
+  onUpdate: (e: {
+    features: Feature<Geometry, GeoJsonProperties>[];
+    action: string;
+    /** When the change takes effect on the timeline; absent for "now". */
+    effectiveAt?: Date;
+  }) => void;
+  /** Set on a saved feature of the free map: the popup then offers the time the change takes effect. */
+  changeTime?: { earliest?: Date };
   /** Set while the feature has not been saved yet: the popup then asks for the time and saves it. */
   pending?: PendingFeatureActions;
 }
@@ -122,7 +129,12 @@ function popupAnchorFor(feature: Feature<Geometry, GeoJsonProperties>, map?: Map
   return { lngLat: [maxLng, (minLat + maxLat) / 2], anchor: "left" };
 }
 
-export function FeatureLabelPopup({ selectedFeature, onUpdate, pending }: FeatureLabelPopupProps) {
+export function FeatureLabelPopup({
+  selectedFeature,
+  onUpdate,
+  pending,
+  changeTime,
+}: FeatureLabelPopupProps) {
   const { t, i18n } = useTranslation();
   const { current: map } = useMap();
   const { dispatch } = useContext(LayerContext);
@@ -185,17 +197,22 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate, pending }: Featur
     );
   }, [canRotate, isUnSign, selectedFeature, values]);
 
-  const commit = useCallback(() => {
-    onUpdate({
-      features: [{ ...selectedFeature, properties: buildProperties() }],
-      action: "featureDetail",
-    });
-  }, [buildProperties, onUpdate, selectedFeature]);
-
-  // The time a new feature takes effect at: now unless the user picks another one.
+  // The time a new feature, or a change to a saved one, takes effect at: now unless the user
+  // picks another one.
   const [openedAt] = useState(() => currentTime());
   const [effectiveInput, setEffectiveInput] = useState(() => toLocalInput(new Date(openedAt)));
   const effectiveTouched = effectiveInput !== toLocalInput(new Date(openedAt));
+
+  const commit = useCallback(() => {
+    const picked = new Date(effectiveInput);
+
+    onUpdate({
+      features: [{ ...selectedFeature, properties: buildProperties() }],
+      action: "featureDetail",
+      effectiveAt:
+        changeTime && effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
+    });
+  }, [buildProperties, changeTime, effectiveInput, effectiveTouched, onUpdate, selectedFeature]);
 
   const saveAndClose = useCallback(() => {
     if (pending) {
@@ -550,24 +567,30 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate, pending }: Featur
             </div>
           </div>
         )}
-        {pending && (
+        {(pending || changeTime) && (
           <div className="mb-2">
             <label
               className="mb-1 block text-xs font-semibold text-gray-800"
               htmlFor={`${baseId}-effective`}
             >
-              {t("mapview.pending.time")}
+              {pending ? t("mapview.pending.time") : t("mapview.changeTime.label")}
             </label>
             <input
               id={`${baseId}-effective`}
               type="datetime-local"
               className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
-              min={pending.earliest ? toLocalInput(pending.earliest) : undefined}
+              min={
+                (pending ?? changeTime)?.earliest
+                  ? toLocalInput((pending ?? changeTime)!.earliest!)
+                  : undefined
+              }
               max={toLocalInput(new Date(openedAt))}
               value={effectiveInput}
               onChange={(e) => setEffectiveInput(e.target.value)}
             />
-            <p className="mt-1 text-[11px] text-gray-500">{t("mapview.pending.hint")}</p>
+            <p className="mt-1 text-[11px] text-gray-500">
+              {pending ? t("mapview.pending.hint") : t("mapview.changeTime.hint")}
+            </p>
           </div>
         )}
         {pending?.error && <p className="mb-2 text-xs text-red-600">{pending.error}</p>}

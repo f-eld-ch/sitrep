@@ -100,6 +100,10 @@
       "stoffnummerPlaceholder": "4-digit UN number",
       "stoffbezeichnung": "Substance name"
     },
+    "changeTime": {
+      "label": "Effective from",
+      "hint": "The change applies from this point on the timeline."
+    },
     "pending": {
       "time": "Time",
       "hint": "The object is only created when you press “Save”.",

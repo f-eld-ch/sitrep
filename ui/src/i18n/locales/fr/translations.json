@@ -100,6 +100,10 @@
       "stoffnummerPlaceholder": "Numéro ONU à 4 chiffres",
       "stoffbezeichnung": "Désignation de la substance"
     },
+    "changeTime": {
+      "label": "Valable dès",
+      "hint": "La modification s'applique dès ce moment sur la ligne du temps."
+    },
     "pending": {
       "time": "Moment",
       "hint": "L'objet n'est créé qu'avec « Enregistrer ».",

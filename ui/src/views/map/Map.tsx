@@ -681,7 +681,7 @@ function Draw() {
           currentGeometry: feature.geometry,
           currentProperties: feature.properties,
           incidentId: incidentId ?? "",
-          change,
+          change: e.effectiveAt ? { effectiveAt: e.effectiveAt } : change,
           asOf,
         });
       }
@@ -925,6 +925,8 @@ export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
   /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
+  /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
+  effectiveAt?: Date;
 }
 
 export interface CombineFeatureEvent {
