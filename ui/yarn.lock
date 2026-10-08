@@ -3103,12 +3103,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/geojson-vt@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "@maplibre/geojson-vt@npm:6.1.1"
+"@maplibre/geojson-vt@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@maplibre/geojson-vt@npm:6.1.2"
   dependencies:
     kdbush: "npm:^4.1.0"
-  checksum: 10/61c6ca6dc49d799f22dd98b450d48cf172cacf886edbe73e195b0526fe0bad9c42521792f1c7f4361da0069f604517941b71def7f4745fa945c9635a1eb3e250
+  checksum: 10/a2a991ecd6ca54756fb8b190aa75e22eb87b4b05b3ec20a2ba0bba1f9249b751895e2eadf44f1626ccf3c22b7bbd0c563f515af322ce5dda8ec347a9085dbd18
   languageName: node
   linkType: hard
 
@@ -6298,10 +6298,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"earcut@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "earcut@npm:3.2.3"
-  checksum: 10/3c3c6bfc214060e6df83da1da413709cf15c77139b0e094a71e6e960ffce033c88586c1e880496ea0a39d891df74a065ccfe24c18f426898ea07a51e0fc0a446
+"earcut@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "earcut@npm:3.2.4"
+  checksum: 10/0936ebdebb71de20f44aa1f95d55f3ae0bbec72ef45ecb94da38deabdde3dc809fc335d93d9d6b7e1c2c221f08544ed607365520c4228d3f31925b0425ff6d07
   languageName: node
   linkType: hard
 
@@ -8673,20 +8673,20 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^6.3.0":
-  version: 6.11.2
-  resolution: "maplibre-gl@npm:6.11.2"
+  version: 6.13.0
+  resolution: "maplibre-gl@npm:6.13.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
-    "@maplibre/geojson-vt": "npm:^6.1.1"
+    "@maplibre/geojson-vt": "npm:^6.1.2"
     "@maplibre/maplibre-gl-style-spec": "npm:^26.4.4"
     "@maplibre/mlt": "npm:^1.3.0"
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
     bidi-js: "npm:^1.1.0"
-    earcut: "npm:^3.2.3"
+    earcut: "npm:^3.2.4"
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
     murmurhash-js: "npm:^1.0.0"
@@ -8694,7 +8694,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/64f603a24ab34c7b74ad763e372ec6bf700d19ef9e92e0d68bf52456e14d427bb5dce38b3b73f7e14f416d4a1d5aef65b8756672e8dd1c1970c6b858aee98200
+  checksum: 10/36a7949263cda0471c84363c5090784ca4629df3d10d6989435c395628a58e181cd3e8500fd205f2352a09ad9ca667a7504e9710e27d78b1d24bacf6aa1395e5
   languageName: node
   linkType: hard
 
