@@ -64,7 +64,7 @@ export function MessageHighlight({
   renderRemoved: (features: FeatureCollection) => ReactNode;
 }) {
   const { incidentId } = useParams();
-  const { state } = useContext(LayerContext);
+  const { state, dispatch } = useContext(LayerContext);
   const { drawingMessage } = useContext(MapTimeContext);
   const layer = state.layers.find((l) => l.layer.kind === "MESSAGE_MAP")?.layer;
   // Changes whenever a feature is drawn, modified or removed, which is when the history is re-read.
@@ -101,10 +101,14 @@ export function MessageHighlight({
     };
   }, [map, canRestore]);
 
+  // Features this message put on the map: deleting one of them leaves nothing to show.
+  const [placedHere, setPlacedHere] = useState<ReadonlySet<string>>(new Set());
   // Once the history no longer lists a feature as removed, it needs no marker of its own.
   const [seenHalos, setSeenHalos] = useState(halos);
   if (halos !== seenHalos) {
     setSeenHalos(halos);
+    const added = [...halos].filter(([, h]) => h.kind === "added").map(([id]) => id);
+    if (added.some((id) => !placedHere.has(id))) setPlacedHere(new Set([...placedHere, ...added]));
     setRestoring((ids) => {
       const open = new Set([...ids].filter((id) => halos.get(id)?.kind === "removed"));
 
@@ -117,6 +121,7 @@ export function MessageHighlight({
     if (!target || !ghost || !layer || !drawingMessage) return;
 
     const { id } = target;
+    dispatch({ type: "CLEAR_REMOVED_FEATURE", payload: { id } });
     setRestoring((ids) => new Set(ids).add(id));
     setTarget(undefined);
     onDrawingChange?.();
@@ -159,7 +164,21 @@ export function MessageHighlight({
     );
   }, [drawingMessage, halos, map, ready]);
 
-  if (!enabled || !drawingMessage || halos.size === 0) return null;
+  if (!enabled || !drawingMessage || (halos.size === 0 && state.removedFeatures.length === 0)) {
+    return null;
+  }
+
+  // A feature just deleted here shows as a ghost before the history has caught up with it.
+  const ghosts = new Map(halos);
+  for (const r of state.removedFeatures) {
+    if (
+      r.messageId === drawingMessage.id &&
+      !placedHere.has(r.id) &&
+      halos.get(r.id) === undefined
+    ) {
+      ghosts.set(r.id, { kind: "removed", lastGeometry: r.geometry, lastProperties: r.properties });
+    }
+  }
 
   const features: Feature[] = [];
   const removed: Feature[] = [];
@@ -169,7 +188,7 @@ export function MessageHighlight({
       features.push({ ...f, properties: { halo: halo.kind } });
     }
   }
-  for (const [id, halo] of halos) {
+  for (const [id, halo] of ghosts) {
     if (halo.kind === "removed" && halo.lastGeometry && !restoring.has(id)) {
       features.push({
         type: "Feature",

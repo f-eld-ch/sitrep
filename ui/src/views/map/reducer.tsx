@@ -7,6 +7,7 @@ import type {
   DrawState,
   LayersState,
   PendingFeature,
+  RemovedFeature,
   SelectedFeatureState,
   WMSLayer,
   WMSServer,
@@ -24,6 +25,8 @@ export type LayersAction =
   | AddPendingFeatureAction
   | UpdatePendingFeatureAction
   | RemovePendingFeatureAction
+  | AddRemovedFeatureAction
+  | ClearRemovedFeatureAction
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
@@ -67,6 +70,16 @@ export interface UpdatePendingFeatureAction {
 
 export interface RemovePendingFeatureAction {
   type: "REMOVE_PENDING_FEATURE";
+  payload: { id: string };
+}
+
+export interface AddRemovedFeatureAction {
+  type: "ADD_REMOVED_FEATURE";
+  payload: { feature: RemovedFeature };
+}
+
+export interface ClearRemovedFeatureAction {
+  type: "CLEAR_REMOVED_FEATURE";
   payload: { id: string };
 }
 
@@ -230,6 +243,17 @@ export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAc
       );
     case "REMOVE_PENDING_FEATURE":
       return state.filter((p) => p.id !== action.payload.id);
+    default:
+      return state;
+  }
+};
+
+export const removedFeaturesReducer = (state: RemovedFeature[], action: LayersAction) => {
+  switch (action.type) {
+    case "ADD_REMOVED_FEATURE":
+      return [...state.filter((r) => r.id !== action.payload.feature.id), action.payload.feature];
+    case "CLEAR_REMOVED_FEATURE":
+      return state.filter((r) => r.id !== action.payload.id);
     default:
       return state;
   }

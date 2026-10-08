@@ -753,11 +753,29 @@ function Draw() {
 
         if (drawingMessage) onDrawingChange?.();
 
+        const removedId = String(feature.id ?? "");
+        if (drawingMessage) {
+          // Shown as a ghost at once; the feature history confirms it a moment later.
+          dispatch({
+            type: "ADD_REMOVED_FEATURE",
+            payload: {
+              feature: {
+                id: removedId,
+                messageId: drawingMessage.id,
+                geometry: feature.geometry,
+                properties: feature.properties,
+              },
+            },
+          });
+        }
+
         void deleteFeature({
-          id: String(feature.id ?? ""),
+          id: removedId,
           incidentId: incidentId ?? "",
           change,
           asOf,
+        }).catch(() => {
+          dispatch({ type: "CLEAR_REMOVED_FEATURE", payload: { id: removedId } });
         });
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
