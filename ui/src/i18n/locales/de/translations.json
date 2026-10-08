@@ -197,7 +197,9 @@
     "noMessages": "Keine Meldungen für die Nachrichtenkarte",
     "pickMessage": "Wähle eine Meldung, um sie einzuzeichnen",
     "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
-    "openMessage": "Meldung öffnen"
+    "openMessage": "Meldung öffnen",
+    "unfinished": "Die Zeichnung zu dieser Meldung ist noch nicht abgeschlossen. Bereits gezeichnete Objekte bleiben gespeichert. Trotzdem verlassen?",
+    "leave": "Verlassen"
   },
   "mapTimeline": {
     "live": "Live",

@@ -104,6 +104,8 @@ interface MapViewOptions {
   onFeatureSelect?: (featureId: string | undefined) => void;
   /** Changing this clears the map's feature selection. */
   deselectToken?: number;
+  /** Called when something is drawn, changed or deleted for the message (see MapSelection). */
+  onDrawingChange?: () => void;
 }
 
 function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
@@ -521,6 +523,7 @@ function Draw() {
   const { incidentId } = useParams();
   const { current: map } = useMap();
   const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const { onDrawingChange } = useContext(MapSelectionContext);
   // Changes for a message take effect at the message's time (the server derives it from the id).
   // Free drawing takes effect now; a new feature can be given a time when it is saved.
   const change = useMemo(
@@ -579,6 +582,7 @@ function Draw() {
         }
 
         // Drawing for a message: created at once, at the message's time.
+        onDrawingChange?.();
         void addFeature({
           layerId: layer,
           geometry: feature.geometry,
@@ -596,7 +600,7 @@ function Draw() {
         }
       }
     },
-    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, state.draw],
+    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, onDrawingChange, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -621,6 +625,8 @@ function Draw() {
           continue;
         }
 
+        if (drawingMessage) onDrawingChange?.();
+
         void modifyFeature({
           id: String(feature.id ?? ""),
           geometry: isPropertyOnly ? undefined : feature.geometry,
@@ -633,7 +639,16 @@ function Draw() {
         });
       }
     },
-    [asOf, change, dispatch, incidentId, modifyFeature, state.pendingFeatures],
+    [
+      asOf,
+      change,
+      dispatch,
+      drawingMessage,
+      incidentId,
+      modifyFeature,
+      onDrawingChange,
+      state.pendingFeatures,
+    ],
   );
 
   const onDelete = useCallback(
@@ -649,6 +664,8 @@ function Draw() {
           continue;
         }
 
+        if (drawingMessage) onDrawingChange?.();
+
         void deleteFeature({
           id: String(feature.id ?? ""),
           incidentId: incidentId ?? "",
@@ -658,7 +675,16 @@ function Draw() {
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [asOf, change, dispatch, deleteFeature, incidentId, state.pendingFeatures],
+    [
+      asOf,
+      change,
+      dispatch,
+      deleteFeature,
+      drawingMessage,
+      incidentId,
+      onDrawingChange,
+      state.pendingFeatures,
+    ],
   );
 
   const onCombine = useCallback(
@@ -798,6 +824,7 @@ function MapWithProvder({
   drawingMessage,
   onFeatureSelect,
   deselectToken,
+  onDrawingChange,
   ...options
 }: MapViewOptions) {
   // A map without a fixed time can be moved along the timeline by its own slider.
@@ -822,8 +849,8 @@ function MapWithProvder({
   );
 
   const selection = useMemo(
-    () => ({ onSelect: onFeatureSelect, deselectToken }),
-    [onFeatureSelect, deselectToken],
+    () => ({ onSelect: onFeatureSelect, deselectToken, onDrawingChange }),
+    [onFeatureSelect, deselectToken, onDrawingChange],
   );
 
   return (

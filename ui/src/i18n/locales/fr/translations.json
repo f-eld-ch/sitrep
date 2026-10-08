@@ -197,7 +197,9 @@
     "noMessages": "Aucun message pour la carte de situation",
     "pickMessage": "Choisissez un message pour le dessiner",
     "unavailable": "Cet engagement n'a pas de carte de situation",
-    "openMessage": "Ouvrir le message"
+    "openMessage": "Ouvrir le message",
+    "unfinished": "Le dessin de ce message n'est pas terminé. Les objets déjà dessinés restent enregistrés. Quitter quand même ?",
+    "leave": "Quitter"
   },
   "mapTimeline": {
     "live": "En direct",

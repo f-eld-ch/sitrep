@@ -1,10 +1,10 @@
-import { faCheck, faCheckCircle, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCheckCircle, faPen, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
+import { useBlocker, useParams } from "react-router";
 import { useAcknowledgeMessage, useIncidentMessages } from "api/message";
 import { Spinner } from "components";
 import { Button, Notification, PageTitle } from "components/ui";
@@ -42,6 +42,23 @@ function MessageMapView() {
   // The message whose drawing was unlocked with "Ändern". A message that is already drawn is shown
   // locked, so nothing gets changed by accident; selecting another message locks it again.
   const [editingId, setEditingId] = useState<string | undefined>();
+  // Everything drawn is saved at once, but the message is only dealt with once it is finished.
+  // Until then it has work in progress, and leaving it (to another message, another page, or by
+  // closing the tab) asks first. Cleared by "Abschliessen" and "Fertig".
+  const [inProgress, setInProgress] = useState(false);
+  const markInProgress = useCallback(() => setInProgress(true), []);
+  // The message the user tried to switch to while this one is in progress.
+  const [pendingSelect, setPendingSelect] = useState<{ id: string | undefined } | undefined>();
+  const blocker = useBlocker(inProgress);
+
+  useEffect(() => {
+    if (!inProgress) return;
+
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [inProgress]);
 
   const messages = result.status === "ready" ? result.data.messages : [];
   const mapDivision =
@@ -97,11 +114,36 @@ function MessageMapView() {
   const mutationError = acknowledgeState.error;
   const mapLabel = divisionLongLabel(mapDivision, t);
 
+  // Switching messages while one is in progress asks first, like leaving the page does.
+  const requestSelect = (id: string | undefined) => {
+    if (inProgress && id !== selection.effectiveId) {
+      setPendingSelect({ id });
+      return;
+    }
+
+    selection.select(id);
+  };
+  const leaveMessage = () => {
+    if (pendingSelect) {
+      setInProgress(false);
+      setEditingId(undefined);
+      selection.select(pendingSelect.id);
+      setPendingSelect(undefined);
+    }
+
+    if (blocker.state === "blocked") blocker.proceed();
+  };
+  const stayOnMessage = () => {
+    setPendingSelect(undefined);
+    if (blocker.state === "blocked") blocker.reset();
+  };
+
   const handleFinish = async () => {
     if (!selected) return;
 
     try {
       await acknowledge({ messageId: selected.id, divisionId: mapDivision.id });
+      setInProgress(false);
       selection.handled(selected.id);
     } catch {
       // acknowledgeState.error renders the notification
@@ -120,7 +162,7 @@ function MessageMapView() {
         <FilterableMessageStack
           messages={messages}
           effectiveId={selection.effectiveId}
-          onSelect={selection.select}
+          onSelect={requestSelect}
           acknowledgementDivisionId={mapDivision.id}
           initialFilters={{}}
           enabledFilters={{ untriaged: false, highPriority: true, mine: false }}
@@ -152,6 +194,22 @@ function MessageMapView() {
           selection.isExplicit ? "flex" : "hidden lg:flex",
         )}
       >
+        {(pendingSelect !== undefined || blocker.state === "blocked") && (
+          <div className="m-2 flex shrink-0 items-start gap-3 rounded border border-danger/30 bg-danger/10 p-4">
+            <p className="flex-1 text-sm">{t("messageMap.unfinished")}</p>
+            <Button variant="danger" size="sm" onClick={leaveMessage}>
+              {t("messageMap.leave")}
+            </Button>
+            <button
+              type="button"
+              aria-label={t("cancel")}
+              className="text-fg-muted hover:text-fg"
+              onClick={stayOnMessage}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        )}
         {selected === undefined ? (
           <EmptyState allDrawn={mapMessages.length > 0 && undrawn.length === 0} />
         ) : (
@@ -173,7 +231,14 @@ function MessageMapView() {
                     {t("messageMap.drawn")}
                   </span>
                   {editingId === selected.id ? (
-                    <Button variant="light" size="sm" onClick={() => setEditingId(undefined)}>
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={() => {
+                        setEditingId(undefined);
+                        setInProgress(false);
+                      }}
+                    >
                       <FontAwesomeIcon icon={faCheck} />
                       {t("messageMap.editDone")}
                     </Button>
@@ -221,6 +286,7 @@ function MessageMapView() {
               <IncidentMap
                 embedded
                 asOf={selected.time}
+                onDrawingChange={markInProgress}
                 drawingMessage={{
                   id: selected.id,
                   time: selected.time,

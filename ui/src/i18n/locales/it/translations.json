@@ -197,7 +197,9 @@
     "noMessages": "Nessun messaggio per la carta informativa",
     "pickMessage": "Scegli un messaggio per disegnarlo",
     "unavailable": "Questo intervento non ha una carta informativa",
-    "openMessage": "Apri messaggio"
+    "openMessage": "Apri messaggio",
+    "unfinished": "Il disegno di questo messaggio non è concluso. Gli oggetti già disegnati restano salvati. Uscire comunque?",
+    "leave": "Esci"
   },
   "mapTimeline": {
     "live": "In diretta",

@@ -9,6 +9,11 @@ export interface MapSelection {
   onSelect?: (featureId: string | undefined) => void;
   /** Changing this clears the map's own selection (e.g. when the host clears its filter). */
   deselectToken?: number;
+  /**
+   * Called whenever something is drawn, changed or deleted for the message the map is drawn for
+   * (and so saved right away). Lets the host know the message has work in progress.
+   */
+  onDrawingChange?: () => void;
 }
 
 export const MapSelectionContext = createContext<MapSelection>({});

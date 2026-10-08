@@ -197,7 +197,9 @@
     "noMessages": "No messages for the situation map",
     "pickMessage": "Pick a message to draw it",
     "unavailable": "This incident has no situation map",
-    "openMessage": "Open message"
+    "openMessage": "Open message",
+    "unfinished": "Drawing for this message is not finished. Objects already drawn stay saved. Leave anyway?",
+    "leave": "Leave"
   },
   "mapTimeline": {
     "live": "Live",
