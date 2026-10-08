@@ -17,6 +17,19 @@ import { MapTimeContext } from "../MapTimeContext";
 
 const SOURCE_ID = "message-highlight";
 
+// The halo follows the zoom ramps of what it surrounds: half the icon (a 48px cell scaled from
+// 0.2 at zoom 12 to 1.667 at zoom 20) and a little margin, and the line width ramp plus margin.
+const POINT_RADIUS: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 12, 9, 20, 44];
+const LINE_WIDTH: ExpressionSpecification = [
+  "interpolate",
+  ["exponential", 1],
+  ["zoom"],
+  12,
+  6,
+  19,
+  28,
+];
+
 /** Green for what the message put on the map, orange for what it changed, grey for what it removed. */
 const HALO_COLOR = [
   "match",
@@ -99,18 +112,23 @@ export function MessageHighlight({
           id={`${SOURCE_ID}-line`}
           type="line"
           filter={["!=", ["geometry-type"], "Point"]}
-          paint={{ "line-color": HALO_COLOR, "line-width": 8, "line-opacity": 0.5, "line-blur": 2 }}
+          paint={{
+            "line-color": HALO_COLOR,
+            "line-width": LINE_WIDTH,
+            "line-opacity": 0.5,
+            "line-blur": 2,
+          }}
         />
         <MapLayer
           id={`${SOURCE_ID}-point`}
           type="circle"
           filter={["==", ["geometry-type"], "Point"]}
           paint={{
-            "circle-radius": 22,
+            "circle-radius": POINT_RADIUS,
             "circle-color": HALO_COLOR,
             "circle-opacity": 0.2,
             "circle-stroke-color": HALO_COLOR,
-            "circle-stroke-width": 3,
+            "circle-stroke-width": 2,
             "circle-stroke-opacity": 0.8,
           }}
         />
