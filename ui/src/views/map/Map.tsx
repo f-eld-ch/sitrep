@@ -166,7 +166,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         {!readOnly && <FullscreenControl position={"top-left"} />}
         <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />
-        {!readOnly && <ExportControl position="bottom-left" />}
+        {!readOnly && !embedded && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
         {timelineEnabled && <TimeControl />}
       </MapClass>

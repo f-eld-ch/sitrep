@@ -2,11 +2,12 @@ import { faBullseye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import type { Feature, FeatureCollection } from "geojson";
-import type { ExpressionSpecification } from "maplibre-gl";
+import type { ExpressionSpecification, IControl } from "maplibre-gl";
 import bbox from "@turf/bbox";
 import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Layer as MapLayer, Source, useMap } from "react-map-gl/maplibre";
+import { Layer as MapLayer, Source, useControl, useMap } from "react-map-gl/maplibre";
+import { createPortal } from "react-dom";
 import { useParams } from "react-router";
 import {
   convertFeatureToGeoJsonFeature,
@@ -178,6 +179,21 @@ export function MessageHighlight({
   );
 }
 
+/** A slot in one of the map's corners, so a control lines up with the others there. */
+class ControlSlot implements IControl {
+  readonly container = document.createElement("div");
+
+  onAdd(): HTMLElement {
+    this.container.className = "maplibregl-ctrl maplibregl-ctrl-group text-black";
+
+    return this.container;
+  }
+
+  onRemove(): void {
+    this.container.remove();
+  }
+}
+
 export function MessageHighlightToggle({
   enabled,
   onToggle,
@@ -186,19 +202,20 @@ export function MessageHighlightToggle({
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
+  // In the top right, with the drawing controls.
+  const slot = useControl<ControlSlot>(() => new ControlSlot(), { position: "top-right" });
 
-  return (
-    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
-      <button
-        type="button"
-        aria-pressed={enabled}
-        aria-label={t("messageMap.highlight")}
-        title={`${t("messageMap.highlight")}: ${t("messageMap.highlightHint")}`}
-        className={clsx("maplibregl-ctrl-icon", enabled && "text-amber-500!")}
-        onClick={onToggle}
-      >
-        <FontAwesomeIcon icon={faBullseye} size="lg" />
-      </button>
-    </div>
+  return createPortal(
+    <button
+      type="button"
+      aria-pressed={enabled}
+      aria-label={t("messageMap.highlight")}
+      title={`${t("messageMap.highlight")}: ${t("messageMap.highlightHint")}`}
+      className={clsx("maplibregl-ctrl-icon", enabled && "text-amber-500!")}
+      onClick={onToggle}
+    >
+      <FontAwesomeIcon icon={faBullseye} size="lg" />
+    </button>,
+    slot.container,
   );
 }
