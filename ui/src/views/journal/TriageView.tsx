@@ -823,6 +823,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                       <CasualtySection
                         value={getSpCasualties(spId)}
                         spCasualties={sp?.casualties}
+                        previous={previousCasualties.find((c) => c.schadenplatzId === spId)}
                         onChange={(d) => setSpCasualties(spId, d)}
                       />
                     </div>
@@ -1137,13 +1138,16 @@ export type CasualtyDeltas = {
   eingeschlossene: number;
 };
 
-function CasualtySection({
+export function CasualtySection({
   value,
   spCasualties,
+  previous,
   onChange,
 }: {
   value: CasualtyDeltas;
   spCasualties?: SchadenplatzWithResources["casualties"];
+  // Deltas of this message already counted in spCasualties; excluded to get the baseline.
+  previous?: CasualtyDeltas;
   onChange: (v: CasualtyDeltas) => void;
 }) {
   const { t } = useTranslation();
@@ -1162,7 +1166,7 @@ function CasualtySection({
             key={cat.key}
             category={cat}
             delta={value[cat.key]}
-            currentTotal={spCasualties?.[cat.key] ?? 0}
+            currentTotal={(spCasualties?.[cat.key] ?? 0) - (previous?.[cat.key] ?? 0)}
             iconsLoaded={iconsLoaded}
             onChange={(d) => set(cat.key, d)}
           />
