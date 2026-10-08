@@ -182,7 +182,6 @@
   },
   "messageMap": {
     "pending": "Not drawn",
-    "all": "All",
     "drawn": "Drawn",
     "finish": "Finish",
     "reopen": "Reopen",

@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useContext, useMemo, useState } from "react";
+import { type ReactNode, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus } from "types";
 import type { Message } from "types/journal";
@@ -21,9 +21,11 @@ export interface FilterableMessageStackProps extends Omit<MessageStackProps, "me
   enabledFilters?: Partial<Record<keyof FilterState, boolean>>;
   /** Hard filter applied before chip filters — not user-selectable. */
   baseFilter?: Partial<MessageFilters>;
+  /** Extra chips shown after the built-in ones, for filters only the caller can apply (see `baseFilter`). */
+  extraChips?: ReactNode;
 }
 
-function FilterChip({
+export function FilterChip({
   label,
   active,
   onToggle,
@@ -59,6 +61,7 @@ export function FilterableMessageStack({
   onSelect,
   className,
   acknowledgementDivisionId,
+  extraChips,
 }: FilterableMessageStackProps) {
   const enabled = { untriaged: true, highPriority: true, mine: true, ...enabledFilters };
   const { t } = useTranslation();
@@ -125,6 +128,7 @@ export function FilterableMessageStack({
             activeClassName="bg-primary/15 text-primary border-primary/30"
           />
         )}
+        {extraChips}
       </div>
     </div>
   );

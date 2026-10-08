@@ -15,7 +15,7 @@ import { Button, Notification, PageTitle } from "components/ui";
 import { IncidentContext } from "utils";
 import { divisionLongLabel } from "utils/divisionLabel";
 import { Map as IncidentMap } from "views/map";
-import { FilterableMessageStack } from "./FilterableMessageStack";
+import { FilterableMessageStack, FilterChip } from "./FilterableMessageStack";
 import { buildMessageList, type MessageFilters } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import { useAutoSelectedMessage } from "./useAutoSelectedMessage";
@@ -40,7 +40,8 @@ function MessageMapView() {
   const { state: incidentState } = useContext(IncidentContext);
   const incidentClosed = incidentState.incident?.closedAt != null;
   const result = useIncidentMessages(incidentId ?? "");
-  const [showAll, setShowAll] = useState(false);
+  // Like the other filters, a chip: on shows only what is still to draw.
+  const [onlyUndrawn, setOnlyUndrawn] = useState(true);
   const [acknowledge, acknowledgeState] = useAcknowledgeMessage();
   const [revoke, revokeState] = useRevokeMessageAcknowledgement();
 
@@ -128,25 +129,6 @@ function MessageMapView() {
           selection.isExplicit ? "hidden" : "flex w-full",
         )}
       >
-        <div className="flex shrink-0 items-center gap-1 border-b border-border px-3 py-2">
-          {([false, true] as const).map((all) => (
-            <button
-              key={String(all)}
-              type="button"
-              aria-pressed={showAll === all}
-              onClick={() => setShowAll(all)}
-              className={clsx(
-                "rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
-                showAll === all
-                  ? "border-transparent bg-primary/15 text-primary"
-                  : "border-border bg-bg text-fg-muted hover:text-fg",
-              )}
-            >
-              {all ? t("messageMap.all") : t("messageMap.pending")}
-              {!all && ` (${undrawn.length})`}
-            </button>
-          ))}
-        </div>
         <FilterableMessageStack
           messages={messages}
           effectiveId={selection.effectiveId}
@@ -157,8 +139,18 @@ function MessageMapView() {
           baseFilter={{
             triage: "triaged_only",
             divisionId: mapDivision.id,
-            acknowledgement: showAll ? undefined : { divisionId: mapDivision.id, state: "pending" },
+            acknowledgement: onlyUndrawn
+              ? { divisionId: mapDivision.id, state: "pending" }
+              : undefined,
           }}
+          extraChips={
+            <FilterChip
+              label={`${t("messageMap.pending")} (${undrawn.length})`}
+              active={onlyUndrawn}
+              onToggle={() => setOnlyUndrawn((v) => !v)}
+              activeClassName="bg-warning/15 text-warning border-warning/30"
+            />
+          }
           className="min-h-0 flex-1"
         />
       </div>
