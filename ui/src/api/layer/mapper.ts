@@ -4,8 +4,8 @@ import type {
   GeoJsonProperties,
   Geometry,
 } from "geojson";
-import type { Feature, Layer } from "types/layer";
-import type { GetLayersForIncidentQuery } from "gql/next";
+import type { Feature, FeatureMessage, Layer } from "types/layer";
+import type { GetFeatureMessagesQuery, GetLayersForIncidentQuery } from "gql/next";
 
 type WireFeature = GetLayersForIncidentQuery["layersForIncident"][0]["features"][0];
 type WireLayer = GetLayersForIncidentQuery["layersForIncident"][0];
@@ -54,6 +54,8 @@ export function convertFeatureToGeoJsonFeature(
       updatedAt: f.updatedAt,
       deletedAt: f.deletedAt,
       layerId,
+      // MapLibre drops non-numeric feature ids, so click handlers read the id from here.
+      featureId: f.id,
     }),
   };
 }
@@ -66,4 +68,17 @@ export function layerToFeatureCollection(layer: Layer | undefined): FeatureColle
     fc.features.push(convertFeatureToGeoJsonFeature(f, f.id));
   }
   return fc;
+}
+
+export function toFeatureMessage(
+  w: GetFeatureMessagesQuery["featureMessages"][number],
+): FeatureMessage {
+  return {
+    id: w.id,
+    number: w.number,
+    sender: w.sender,
+    receiver: w.receiver,
+    content: w.content,
+    time: new Date(w.time),
+  };
 }

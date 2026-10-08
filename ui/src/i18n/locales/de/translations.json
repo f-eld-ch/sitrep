@@ -193,6 +193,21 @@
     "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
     "openMessage": "Meldung öffnen"
   },
+  "mapTimeline": {
+    "live": "Live",
+    "asOf": "Stand {{time}}",
+    "previous": "Vorherige Meldung",
+    "next": "Nächste Meldung",
+    "slider": "Zeitpunkt im Einsatzverlauf",
+    "viewOnly": "Verlauf – nur Ansicht",
+    "drawAt": "Zeichnen mit Zeitpunkt",
+    "drawAtHint": "Änderungen gelten ab diesem Zeitpunkt statt ab jetzt.",
+    "drawAtInput": "Zeitpunkt der Änderung"
+  },
+  "featureMessages": {
+    "title": "Verbundene Meldungen",
+    "message": "Meldung {{number}}"
+  },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
   "viewChangelog": "Changelog anzeigen",

@@ -10,6 +10,7 @@ import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -41,6 +42,9 @@ import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
+import { FeatureMessagesPopup } from "./controls/FeatureMessagesPopup";
+import { popupLayerIds } from "./controls/popupAnchor";
+import { TimeControl } from "./controls/TimeControl";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
@@ -97,6 +101,9 @@ interface MapViewOptions {
 
 function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
+  // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
+  const messageMapEnabled = useBooleanFlagValue("message-map-view", false);
+  const timelineEnabled = messageMapEnabled && !embedded && !readOnly;
   const { i18n } = useTranslation();
 
   // Resolved once per basemap style, NOT per language: producing a new style object makes
@@ -144,6 +151,7 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} />
+        {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>
   );
@@ -155,6 +163,14 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
     state: { incident },
   } = useContext(IncidentContext);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
+  // Features of layers drawn as plain sources can be clicked; the active layer's selection
+  // comes from the draw control.
+  const clickLayerIds = popupLayerIds(
+    state.layers
+      .filter((l) => l.isVisible && (readOnly || l.layer?.id !== activeLayer))
+      .map((l) => l.layer),
+    createMapStyle({ forDraw: false }).map((s) => s.id ?? ""),
+  );
 
   return (
     <>
@@ -180,6 +196,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
+      <FeatureMessagesPopup clickLayerIds={clickLayerIds} />
     </>
   );
 }
@@ -463,11 +480,17 @@ function Draw() {
   } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
-  const { asOf, drawingMessage } = useContext(MapTimeContext);
-  // Changes for a message take effect at the message's time; the server derives it from the id.
+  const { asOf, drawingMessage, drawAt } = useContext(MapTimeContext);
+  // Changes for a message take effect at the message's time (the server derives it from the id);
+  // free drawing can take effect at a chosen past time instead of now.
   const change = useMemo(
-    () => (drawingMessage ? { messageId: drawingMessage.id } : undefined),
-    [drawingMessage],
+    () =>
+      drawingMessage
+        ? { messageId: drawingMessage.id }
+        : drawAt
+          ? { effectiveAt: drawAt }
+          : undefined,
+    [drawingMessage, drawAt],
   );
 
   const [addFeature] = useAddFeature();
@@ -628,10 +651,13 @@ function Draw() {
   // The message map layer is only drawn on for a message, and a message only draws on it.
   const activeLayerKind = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer.kind;
   const drawsOnMessageMap = activeLayerKind === "MESSAGE_MAP";
+  // A map showing the past is for looking, unless it is the one drawn for a message.
+  const viewingPast = asOf !== undefined && drawingMessage === undefined;
   if (
     incident?.closedAt != null ||
     state.activeLayer === undefined ||
-    drawsOnMessageMap !== (drawingMessage !== undefined)
+    drawsOnMessageMap !== (drawingMessage !== undefined) ||
+    viewingPast
   ) {
     return;
   }
@@ -691,19 +717,28 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
 }
 
 function MapWithProvder({ asOf, drawingMessage, ...options }: MapViewOptions) {
-  const asOfTime = asOf?.getTime();
+  // A map without a fixed time can be moved along the timeline by its own slider.
+  const [timelineAsOf, setTimelineAsOf] = useState<Date | undefined>();
+  const [drawAt, setDrawAt] = useState<Date | undefined>();
+  const hasTimeline = asOf === undefined && drawingMessage === undefined;
+
+  const asOfTime = (asOf ?? timelineAsOf)?.getTime();
   const messageId = drawingMessage?.id;
   const messageTime = drawingMessage?.time.getTime();
+  const drawAtTime = drawAt?.getTime();
   // Memoized on the values, so a parent re-render with equal dates does not refetch the layers.
   const mapTime = useMemo<MapTime>(
     () => ({
       asOf: asOfTime === undefined ? undefined : new Date(asOfTime),
+      setAsOf: hasTimeline ? setTimelineAsOf : undefined,
       drawingMessage:
         messageId === undefined || messageTime === undefined
           ? undefined
           : { id: messageId, time: new Date(messageTime) },
+      drawAt: drawAtTime === undefined || !hasTimeline ? undefined : new Date(drawAtTime),
+      setDrawAt: hasTimeline ? setDrawAt : undefined,
     }),
-    [asOfTime, messageId, messageTime],
+    [asOfTime, hasTimeline, messageId, messageTime, drawAtTime],
   );
 
   return (

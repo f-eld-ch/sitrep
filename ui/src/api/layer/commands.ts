@@ -16,6 +16,7 @@ export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
       "updatedAt",
       "deletedAt",
       "layerId",
+      "featureId",
     ]) as GeoJsonProperties,
   };
 }

@@ -193,6 +193,21 @@
     "unavailable": "Questo intervento non ha una carta informativa",
     "openMessage": "Apri messaggio"
   },
+  "mapTimeline": {
+    "live": "In diretta",
+    "asOf": "Stato alle {{time}}",
+    "previous": "Messaggio precedente",
+    "next": "Messaggio successivo",
+    "slider": "Momento nello svolgimento dell'intervento",
+    "viewOnly": "Cronologia – sola consultazione",
+    "drawAt": "Disegna a un dato momento",
+    "drawAtHint": "Le modifiche valgono da questo momento invece che da ora.",
+    "drawAtInput": "Momento della modifica"
+  },
+  "featureMessages": {
+    "title": "Messaggi collegati",
+    "message": "Messaggio {{number}}"
+  },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",
   "viewChangelog": "Mostra il log delle modifiche",

@@ -193,6 +193,21 @@
     "unavailable": "This incident has no situation map",
     "openMessage": "Open message"
   },
+  "mapTimeline": {
+    "live": "Live",
+    "asOf": "As of {{time}}",
+    "previous": "Previous message",
+    "next": "Next message",
+    "slider": "Point in the incident timeline",
+    "viewOnly": "History – view only",
+    "drawAt": "Draw at a point in time",
+    "drawAtHint": "Changes take effect from this time instead of now.",
+    "drawAtInput": "Time of the change"
+  },
+  "featureMessages": {
+    "title": "Connected messages",
+    "message": "Message {{number}}"
+  },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "viewChangelog": "Show changelog",

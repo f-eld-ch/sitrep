@@ -1,11 +1,11 @@
 import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
-import type { Layer } from "types/layer";
+import type { FeatureMessage, Layer } from "types/layer";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
-import { GET_LAYERS } from "./documents";
+import { GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
 import { layersVariables } from "./variables";
-import { toLayer } from "./mapper";
+import { toFeatureMessage, toLayer } from "./mapper";
 
 export interface LayersData {
   layers: Layer[];
@@ -45,5 +45,46 @@ export function useLayersForIncident(
   if (layers) {
     return { status: "ready", data: { layers }, error: undefined, isRefreshing: loading, refresh };
   }
+  return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+}
+
+export interface FeatureMessagesData {
+  messages: FeatureMessage[];
+}
+
+/** The messages connected to a feature. Pass undefined to skip (nothing selected). */
+export function useFeatureMessages(
+  featureId: string | undefined,
+): QueryResult<FeatureMessagesData> {
+  const { data, loading, error, refetch } = useQuery(GET_FEATURE_MESSAGES, {
+    variables: { featureId: featureId ?? "" },
+    skip: !featureId,
+    fetchPolicy: "cache-and-network",
+  });
+
+  const refresh = () => void refetch();
+
+  if (!data && loading) {
+    return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+  }
+  if (error) {
+    return {
+      status: "error",
+      data: undefined,
+      error: apiErrorFromApolloError(error),
+      isRefreshing: loading,
+      refresh,
+    };
+  }
+  if (data) {
+    return {
+      status: "ready",
+      data: { messages: data.featureMessages.map(toFeatureMessage) },
+      error: undefined,
+      isRefreshing: loading,
+      refresh,
+    };
+  }
+
   return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
 }

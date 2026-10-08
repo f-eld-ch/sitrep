@@ -12,8 +12,8 @@ export {
   useModifyFeature,
 } from "./commands";
 export { convertFeatureToGeoJsonFeature, layerToFeatureCollection } from "./mapper";
-export type { LayersData } from "./queries";
-export { useLayersForIncident } from "./queries";
+export type { FeatureMessagesData, LayersData } from "./queries";
+export { useFeatureMessages, useLayersForIncident } from "./queries";
 export { afterLayerWrite } from "./invalidate";
 export { featureChangeVariable, layersVariables } from "./variables";
 export type { FeatureChangeArgs } from "./variables";

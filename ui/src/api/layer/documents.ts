@@ -6,6 +6,8 @@ import type {
   CreateLayerMutationVariables,
   DeleteFeatureMutation,
   DeleteFeatureMutationVariables,
+  GetFeatureMessagesQuery,
+  GetFeatureMessagesQueryVariables,
   GetLayersForIncidentQuery,
   GetLayersForIncidentQueryVariables,
   ModifyFeatureMutation,
@@ -31,6 +33,23 @@ export const GET_LAYERS: TypedDocumentNode<
         geometry
         properties
       }
+    }
+  }
+`;
+
+/** The messages a feature was drawn for, ordered by message time. */
+export const GET_FEATURE_MESSAGES: TypedDocumentNode<
+  GetFeatureMessagesQuery,
+  GetFeatureMessagesQueryVariables
+> = gql`
+  query GetFeatureMessages($featureId: ID!) {
+    featureMessages(featureId: $featureId) {
+      id
+      number
+      sender
+      receiver
+      content
+      time
     }
   }
 `;

@@ -146,6 +146,7 @@ export {
   useAddFeature,
   useAddLayer,
   useDeleteFeature,
+  useFeatureMessages,
   useLayersForIncident,
   useModifyFeature,
 } from "./layer";

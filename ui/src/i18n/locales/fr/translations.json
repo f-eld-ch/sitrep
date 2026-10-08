@@ -193,6 +193,21 @@
     "unavailable": "Cet engagement n'a pas de carte de situation",
     "openMessage": "Ouvrir le message"
   },
+  "mapTimeline": {
+    "live": "En direct",
+    "asOf": "État à {{time}}",
+    "previous": "Message précédent",
+    "next": "Message suivant",
+    "slider": "Moment dans le déroulement de l'engagement",
+    "viewOnly": "Historique – consultation seulement",
+    "drawAt": "Dessiner à un moment donné",
+    "drawAtHint": "Les modifications prennent effet à ce moment plutôt que maintenant.",
+    "drawAtInput": "Moment de la modification"
+  },
+  "featureMessages": {
+    "title": "Messages liés",
+    "message": "Message {{number}}"
+  },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "viewChangelog": "Afficher le journal des modifications",
