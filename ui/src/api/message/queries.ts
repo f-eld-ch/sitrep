@@ -15,11 +15,11 @@ export type JournalMessagesData = IncidentMessagesData;
 
 export function useIncidentMessages(
   incidentId: string,
-  options: { pollInterval?: number } = {},
+  options: { pollInterval?: number; skip?: boolean } = {},
 ): QueryResult<IncidentMessagesData> {
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_MESSAGES, {
     variables: { incidentId },
-    skip: !incidentId,
+    skip: !incidentId || options.skip,
     pollInterval: options.pollInterval ?? 5000,
     skipPollAttempt: () => document.hidden,
   });

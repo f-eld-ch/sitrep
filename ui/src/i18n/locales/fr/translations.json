@@ -204,8 +204,7 @@
     "drawAtInput": "Moment de la modification"
   },
   "featureMessages": {
-    "title": "Messages liés",
-    "message": "Message {{number}}"
+    "filter": "Messages de l'objet"
   },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",

@@ -41,7 +41,14 @@ export function TimeControl() {
           .map((m) => m.time.getTime())
       : [];
   const live = asOf === undefined;
-  const start = incidentState.incident?.createdAt;
+  // Messages carry the time of the event they report, which can precede the incident's record
+  // (recorded late), so the slider starts at the earliest of all of them.
+  const allMessageTimes =
+    messages.status === "ready" ? messages.data.messages.map((m) => m.time.getTime()) : [];
+  const createdAt = incidentState.incident?.createdAt;
+  const start = new Date(
+    Math.min(...allMessageTimes, ...(createdAt ? [createdAt.getTime()] : [now])),
+  );
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex justify-center px-2">

@@ -43,8 +43,9 @@ import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
-import { FeatureMessagesPopup } from "./controls/FeatureMessagesPopup";
-import { popupLayerIds } from "./controls/popupAnchor";
+import { clickableLayerIds } from "./controls/clickableLayers";
+import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
+import { MapSelectionContext } from "./MapSelectionContext";
 import { TimeControl } from "./controls/TimeControl";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
@@ -98,6 +99,10 @@ interface MapViewOptions {
   asOf?: Date;
   /** Draw for this message: all changes go to the message map layer and take effect at the message's time. */
   drawingMessage?: DrawingMessage;
+  /** Called with the feature the user clicks or selects (undefined when cleared). */
+  onFeatureSelect?: (featureId: string | undefined) => void;
+  /** Changing this clears the map's feature selection. */
+  deselectToken?: number;
 }
 
 function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
@@ -163,11 +168,10 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   const {
     state: { incident },
   } = useContext(IncidentContext);
-  const { drawingMessage } = useContext(MapTimeContext);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
-  const clickLayerIds = popupLayerIds(
+  const clickLayerIds = clickableLayerIds(
     state.layers
       .filter((l) => l.isVisible && (readOnly || l.layer?.id !== activeLayer))
       .map((l) => l.layer),
@@ -198,8 +202,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
-      {/* The operator drawing for a message already sees which one it is; the popup would only get in the way. */}
-      {drawingMessage === undefined && <FeatureMessagesPopup clickLayerIds={clickLayerIds} />}
+      <FeatureSelectionReporter clickLayerIds={clickLayerIds} />
     </>
   );
 }
@@ -738,7 +741,13 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   );
 }
 
-function MapWithProvder({ asOf, drawingMessage, ...options }: MapViewOptions) {
+function MapWithProvder({
+  asOf,
+  drawingMessage,
+  onFeatureSelect,
+  deselectToken,
+  ...options
+}: MapViewOptions) {
   // A map without a fixed time can be moved along the timeline by its own slider.
   const [timelineAsOf, setTimelineAsOf] = useState<Date | undefined>();
   const [drawAt, setDrawAt] = useState<Date | undefined>();
@@ -763,16 +772,23 @@ function MapWithProvder({ asOf, drawingMessage, ...options }: MapViewOptions) {
     [asOfTime, hasTimeline, messageId, messageTime, drawAtTime],
   );
 
+  const selection = useMemo(
+    () => ({ onSelect: onFeatureSelect, deselectToken }),
+    [onFeatureSelect, deselectToken],
+  );
+
   return (
     <MapStyleProvider>
       <MapProvider>
         <LayersProvider>
           <MapTimeContext.Provider value={mapTime}>
-            <MapView {...options} />
-            {/* A read-only map (the dashboard) only displays; it does not need the editing cadence. */}
-            <LayerFetcher
-              livePollInterval={options.readOnly ? SLOW_POLL_INTERVAL_MS : LIVE_POLL_INTERVAL_MS}
-            />
+            <MapSelectionContext.Provider value={selection}>
+              <MapView {...options} />
+              {/* A read-only map (the dashboard) only displays; it does not need the editing cadence. */}
+              <LayerFetcher
+                livePollInterval={options.readOnly ? SLOW_POLL_INTERVAL_MS : LIVE_POLL_INTERVAL_MS}
+              />
+            </MapSelectionContext.Provider>
           </MapTimeContext.Provider>
         </LayersProvider>
       </MapProvider>

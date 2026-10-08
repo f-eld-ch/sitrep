@@ -204,8 +204,7 @@
     "drawAtInput": "Time of the change"
   },
   "featureMessages": {
-    "title": "Connected messages",
-    "message": "Message {{number}}"
+    "filter": "Messages for this object"
   },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",

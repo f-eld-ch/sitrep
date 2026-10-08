@@ -204,8 +204,7 @@
     "drawAtInput": "Zeitpunkt der Änderung"
   },
   "featureMessages": {
-    "title": "Verbundene Meldungen",
-    "message": "Meldung {{number}}"
+    "filter": "Meldungen zum Objekt"
   },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",

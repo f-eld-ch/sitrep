@@ -204,8 +204,7 @@
     "drawAtInput": "Momento della modifica"
   },
   "featureMessages": {
-    "title": "Messaggi collegati",
-    "message": "Messaggio {{number}}"
+    "filter": "Messaggi dell'oggetto"
   },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",

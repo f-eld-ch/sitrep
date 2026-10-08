@@ -19,6 +19,7 @@ import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
 import { IncidentContext } from "utils";
 import { TimelineSlider } from "views/map/controls/TimelineSlider";
+import { useFeatureMessageIds } from "views/map/useFeatureMessageIds";
 import { deployedPersonnel } from "views/resource/personnel";
 
 const RESOURCE_STATUS_ORDER: ResourceStatus[] = [
@@ -74,10 +75,15 @@ function PriorityMessageStack({
   messages,
   selectedMessageId,
   onSelect,
+  focusMessageIds,
+  onClearFocus,
 }: {
   messages: Message[];
   selectedMessageId: string | undefined;
   onSelect: (id: string | undefined) => void;
+  /** Messages of the feature selected on the map; they replace the stack's own filters. */
+  focusMessageIds: string[] | undefined;
+  onClearFocus: () => void;
 }) {
   return (
     <section className="flex min-h-0 flex-col overflow-hidden">
@@ -88,6 +94,8 @@ function PriorityMessageStack({
         initialFilters={{ highPriority: true }}
         enabledFilters={{ untriaged: false, mine: false }}
         baseFilter={{ triage: "triaged_only" }}
+        focusMessageIds={focusMessageIds}
+        onClearFocus={onClearFocus}
         className="min-h-0 w-full flex-1 shrink"
       />
     </section>
@@ -172,6 +180,10 @@ export default function Dashboard() {
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const { state: incidentState } = useContext(IncidentContext);
   const showTimeline = useBooleanFlagValue("new-triage-view", false);
+  // The feature selected on the map: its messages take over the stack until it is deselected.
+  const [focusFeatureId, setFocusFeatureId] = useState<string | undefined>();
+  const [deselectToken, setDeselectToken] = useState(0);
+  const featureMessageIds = useFeatureMessageIds(focusFeatureId);
   const iconsLoaded = useBabsIcons();
   const showResources = useBooleanFlagValue("show-resources", false);
   // Tracks a user's explicit selection together with the key message that was
@@ -187,6 +199,22 @@ export default function Dashboard() {
   const allMessages = (
     messagesResult.status === "ready" ? messagesResult.data.messages : []
   ).filter((message) => asOf === undefined || message.time.getTime() <= asOf.getTime());
+
+  // Messages carry the time of the event they report, which can precede the incident's record
+  // (recorded late), so the slider starts at the earliest of the two.
+  const earliestMessage = (
+    messagesResult.status === "ready" ? messagesResult.data.messages : []
+  ).reduce<Date | undefined>(
+    (earliest, message) =>
+      earliest === undefined || message.time < earliest ? message.time : earliest,
+    undefined,
+  );
+  const timelineStart = [incidentState.incident?.createdAt, earliestMessage]
+    .filter((date): date is Date => date !== undefined)
+    .reduce<Date | undefined>(
+      (earliest, date) => (earliest === undefined || date < earliest ? date : earliest),
+      undefined,
+    );
 
   const keyMessages = buildMessageList(allMessages, {
     triage: "triaged_only",
@@ -204,7 +232,26 @@ export default function Dashboard() {
   const isLatestStale =
     latestKeyMessage != null && dayjs(asOf).diff(dayjs(latestKeyMessage.time), "minute") > 30;
 
+  // With a feature selected the newest of its messages is shown, unless one was picked in the stack.
+  const [focusPick, setFocusPick] = useState<{ featureId: string; messageId: string } | null>(null);
+  const focusedMessages =
+    featureMessageIds === undefined
+      ? undefined
+      : buildMessageList(
+          allMessages.filter((message) => featureMessageIds.includes(message.id)),
+          { triage: "all", priority: "all", assignment: "all", author: "all" },
+        );
+
   const effectiveSelectedId = (() => {
+    if (focusedMessages !== undefined) {
+      const picked =
+        focusPick?.featureId === focusFeatureId
+          ? focusedMessages.find((message) => message.id === focusPick?.messageId)
+          : undefined;
+
+      return (picked ?? focusedMessages[0])?.id;
+    }
+
     if (userOverride !== null && userOverride.keyId === latestKeyMessageId) {
       // Honour explicit user selection or explicit deselection (null).
       return userOverride.selectedId ?? undefined;
@@ -213,8 +260,19 @@ export default function Dashboard() {
     return isLatestStale ? undefined : latestKeyMessageId;
   })();
 
-  const handleSelect = (id: string | undefined) =>
+  const handleSelect = (id: string | undefined) => {
+    if (focusedMessages !== undefined && focusFeatureId !== undefined) {
+      setFocusPick(id === undefined ? null : { featureId: focusFeatureId, messageId: id });
+      return;
+    }
+
     setUserOverride({ keyId: latestKeyMessageId, selectedId: id ?? null });
+  };
+
+  const clearFocus = () => {
+    setFocusFeatureId(undefined);
+    setDeselectToken((token) => token + 1);
+  };
 
   const title =
     resourcesResult.status === "ready"
@@ -243,6 +301,8 @@ export default function Dashboard() {
                 messages={allMessages}
                 selectedMessageId={effectiveSelectedId}
                 onSelect={handleSelect}
+                focusMessageIds={featureMessageIds}
+                onClearFocus={clearFocus}
               />
             )}
           </div>
@@ -261,13 +321,19 @@ export default function Dashboard() {
               </div>
             )}
             <div className="min-h-[18rem] flex-1 overflow-hidden rounded border border-border bg-bg-elevated">
-              <IncidentMap embedded readOnly asOf={asOf} />
+              <IncidentMap
+                embedded
+                readOnly
+                asOf={asOf}
+                onFeatureSelect={setFocusFeatureId}
+                deselectToken={deselectToken}
+              />
             </div>
             {showTimeline && (
               <TimelineSlider
                 asOf={asOf}
                 onAsOfChange={setAsOf}
-                start={incidentState.incident?.createdAt}
+                start={timelineStart}
                 tickTimes={keyMessages.map((message) => message.time.getTime())}
               />
             )}

@@ -38,7 +38,7 @@ import fr from "dayjs/locale/fr";
 import it from "dayjs/locale/it";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 
-const MapView = lazy(() => import("views/map"));
+const LagebildView = lazy(() => import("views/map/LagebildView"));
 
 const router = createBrowserRouter([
   {
@@ -131,7 +131,7 @@ const router = createBrowserRouter([
                 element: (
                   <LayoutMarginLess>
                     <Suspense fallback={<Spinner />}>
-                      <MapView />
+                      <LagebildView />
                     </Suspense>
                   </LayoutMarginLess>
                 ),
