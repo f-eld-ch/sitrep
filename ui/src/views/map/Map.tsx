@@ -31,6 +31,7 @@ import {
   layerToFeatureCollection,
   useAddFeature,
   useDeleteFeature,
+  LIVE_POLL_INTERVAL_MS,
   useLayersForIncident,
   useModifyFeature,
 } from "api";
@@ -303,7 +304,11 @@ function LayerFetcher() {
   const syncedIncidentId = useRef<string | undefined>(undefined);
   const preferredKind = drawingMessage ? "MESSAGE_MAP" : "STANDARD";
 
-  const result = useLayersForIncident(incidentId, asOf);
+  // A fixed point in the past does not change while it is looked at, so it is not polled. The
+  // operator's own drawing updates the cache directly; others' arrive on a slow poll.
+  const pollInterval = drawingMessage ? 10_000 : asOf ? 0 : LIVE_POLL_INTERVAL_MS;
+
+  const result = useLayersForIncident(incidentId, asOf, { pollInterval });
   const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
 
   useEffect(() => {

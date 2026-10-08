@@ -199,7 +199,6 @@
     "previous": "Vorherige Meldung",
     "next": "Nächste Meldung",
     "slider": "Zeitpunkt im Einsatzverlauf",
-    "viewOnly": "Verlauf – nur Ansicht",
     "drawAt": "Zeichnen mit Zeitpunkt",
     "drawAtHint": "Änderungen gelten ab diesem Zeitpunkt statt ab jetzt.",
     "drawAtInput": "Zeitpunkt der Änderung"

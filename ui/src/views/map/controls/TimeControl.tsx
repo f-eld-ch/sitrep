@@ -19,6 +19,7 @@ const MINUTE = 60_000;
 /** The wall clock; event handlers read it when they run, never during render. */
 const currentTime = () => Date.now();
 const MIN_TICK_GAP_PERCENT = 1.5;
+const TICK_REFRESH_MS = 60_000;
 
 /** Value for a datetime-local input, in the browser's local time. */
 const toLocalInput = (d: Date) => dayjs(d).format("YYYY-MM-DDTHH:mm");
@@ -35,7 +36,8 @@ export function TimeControl() {
   const { incidentId } = useParams();
   const { state: incidentState } = useContext(IncidentContext);
   const { asOf, setAsOf, drawAt, setDrawAt } = useContext(MapTimeContext);
-  const messages = useIncidentMessages(incidentId ?? "");
+  // Only the message times matter here, and they change slowly: no need to follow the 5 s journal poll.
+  const messages = useIncidentMessages(incidentId ?? "", { pollInterval: TICK_REFRESH_MS });
   // The slider position while it is being dragged; the map only follows once it is released.
   const [draft, setDraft] = useState<number | undefined>();
   // Taken when the control mounts and when the user goes live, not on every render.
@@ -99,12 +101,6 @@ export function TimeControl() {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex justify-center px-2">
       <div className="pointer-events-auto flex w-full max-w-2xl flex-col gap-1.5 rounded-lg border border-border bg-bg/95 px-3 py-2 text-xs text-fg shadow-lg backdrop-blur">
-        {!live && (
-          <p className="flex items-center gap-1.5 font-semibold text-warning">
-            <FontAwesomeIcon icon={faClockRotateLeft} />
-            {t("mapTimeline.viewOnly")}
-          </p>
-        )}
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -167,7 +163,10 @@ export function TimeControl() {
           </button>
         </div>
         <div className="flex items-center justify-between gap-3 text-fg-muted">
-          <span>
+          <span
+            className={clsx("flex items-center gap-1.5", !live && "font-semibold text-warning")}
+          >
+            {!live && <FontAwesomeIcon icon={faClockRotateLeft} />}
             {live
               ? t("mapTimeline.live")
               : t("mapTimeline.asOf", { time: dayjs(position).format("DD.MM.YY HH:mm") })}

@@ -7,6 +7,9 @@ import { GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
 import { layersVariables } from "./variables";
 import { toFeatureMessage, toLayer } from "./mapper";
 
+/** How often the live map is refreshed, so other operators' drawings show up quickly. */
+export const LIVE_POLL_INTERVAL_MS = 2000;
+
 export interface LayersData {
   layers: Layer[];
 }
@@ -18,11 +21,14 @@ export interface LayersData {
 export function useLayersForIncident(
   incidentId: string | undefined,
   asOf?: Date,
+  options: { pollInterval?: number } = {},
 ): QueryResult<LayersData> {
   const { data, loading, error, refetch } = useQuery(GET_LAYERS, {
     variables: layersVariables(incidentId ?? "", asOf),
     skip: !incidentId,
-    pollInterval: 2000,
+    pollInterval: options.pollInterval ?? LIVE_POLL_INTERVAL_MS,
+    // Nobody watches a hidden tab; resume with the next tick once it is visible again.
+    skipPollAttempt: () => document.hidden,
     fetchPolicy: "cache-and-network",
   });
 

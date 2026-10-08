@@ -74,7 +74,7 @@ describe("TimeControl", () => {
     expect(
       (screen.getByRole("button", { name: "mapTimeline.next" }) as HTMLButtonElement).disabled,
     ).toBe(true);
-    expect(screen.queryByText("mapTimeline.viewOnly")).toBeNull();
+    expect(screen.queryByText(/mapTimeline.asOf/)).toBeNull();
   });
 
   it("steps back to the latest Nachrichtenkarte message", () => {
@@ -96,11 +96,11 @@ describe("TimeControl", () => {
     expect(setAsOf).toHaveBeenLastCalledWith(undefined); // past the last message: back to live
   });
 
-  it("marks the past as view-only and offers a way back to live", () => {
+  it("shows the point in time it is at and offers a way back to live", () => {
     const setAsOf = vi.fn();
     renderControl({ setAsOf, asOf: new Date("2026-01-15T10:00:00Z") });
 
-    expect(screen.getByText("mapTimeline.viewOnly")).toBeTruthy();
+    expect(screen.getByText(/mapTimeline.asOf:15\.01\.26/)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "mapTimeline.live" }));
     expect(setAsOf).toHaveBeenCalledWith(undefined);

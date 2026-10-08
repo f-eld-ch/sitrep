@@ -199,7 +199,6 @@
     "previous": "Message précédent",
     "next": "Message suivant",
     "slider": "Moment dans le déroulement de l'engagement",
-    "viewOnly": "Historique – consultation seulement",
     "drawAt": "Dessiner à un moment donné",
     "drawAtHint": "Les modifications prennent effet à ce moment plutôt que maintenant.",
     "drawAtInput": "Moment de la modification"

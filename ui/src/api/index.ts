@@ -146,6 +146,7 @@ export {
   useAddFeature,
   useAddLayer,
   useDeleteFeature,
+  LIVE_POLL_INTERVAL_MS,
   useFeatureMessages,
   useLayersForIncident,
   useModifyFeature,

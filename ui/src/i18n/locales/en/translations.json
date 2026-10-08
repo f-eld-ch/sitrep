@@ -199,7 +199,6 @@
     "previous": "Previous message",
     "next": "Next message",
     "slider": "Point in the incident timeline",
-    "viewOnly": "History – view only",
     "drawAt": "Draw at a point in time",
     "drawAtHint": "Changes take effect from this time instead of now.",
     "drawAtInput": "Time of the change"
