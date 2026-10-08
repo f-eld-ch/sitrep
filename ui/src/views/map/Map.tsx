@@ -48,6 +48,7 @@ import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
 import { TimeControl } from "./controls/TimeControl";
+import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
@@ -172,6 +173,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
     state: { incident },
   } = useContext(IncidentContext);
   const { drawingMessage } = useContext(MapTimeContext);
+  const [highlightMessage, setHighlightMessage] = useState(true);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -185,6 +187,12 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <>
       <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
+        {drawingMessage && (
+          <MessageHighlightToggle
+            enabled={highlightMessage}
+            onToggle={() => setHighlightMessage((v) => !v)}
+          />
+        )}
         {!readOnly && !drawingMessage?.locked && <LayerControl />}
         <StyleController />
       </div>
@@ -206,6 +214,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
+      {drawingMessage && <MessageHighlight enabled={highlightMessage} />}
       <FeatureSelectionReporter clickLayerIds={clickLayerIds} />
     </>
   );

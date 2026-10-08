@@ -198,6 +198,8 @@
     "pickMessage": "Scegli un messaggio per disegnarlo",
     "unavailable": "Questo intervento non ha una carta informativa",
     "openMessage": "Apri messaggio",
+    "highlight": "Questo messaggio",
+    "highlightHint": "Evidenzia ciò che è stato disegnato per questo messaggio",
     "unfinished": "Il disegno di questo messaggio non è concluso. Gli oggetti già disegnati restano salvati. Uscire comunque?",
     "leave": "Esci"
   },

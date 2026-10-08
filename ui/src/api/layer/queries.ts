@@ -1,9 +1,9 @@
 import { useQuery } from "@apollo/client/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { FeatureMessage, Layer } from "types/layer";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
-import { GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
+import { GET_FEATURE_CHANGES, GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
 import { layersVariables } from "./variables";
 import { toFeatureMessage, toLayer } from "./mapper";
 
@@ -93,4 +93,36 @@ export function useFeatureMessages(
   }
 
   return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
+}
+
+/**
+ * The ids of the features that were drawn, moved or restyled for a message. Read once per
+ * `refreshKey`: it changes whenever the map's features do, so the answer follows the drawing
+ * without polling.
+ */
+export function useMessageFeatureIds(
+  incidentId: string | undefined,
+  messageId: string | undefined,
+  refreshKey: string,
+): ReadonlySet<string> {
+  const { data, refetch } = useQuery(GET_FEATURE_CHANGES, {
+    variables: { incidentId: incidentId ?? "" },
+    skip: !incidentId || !messageId,
+    // The history is not part of the normalized layer data and is only read here.
+    fetchPolicy: "cache-and-network",
+  });
+
+  useEffect(() => {
+    if (incidentId && messageId) void refetch();
+  }, [incidentId, messageId, refreshKey, refetch]);
+
+  return useMemo(
+    () =>
+      new Set(
+        (data?.featureChanges ?? [])
+          .filter((c) => c.messageId === messageId)
+          .map((c) => c.featureId),
+      ),
+    [data, messageId],
+  );
 }

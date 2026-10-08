@@ -6,6 +6,8 @@ import type {
   CreateLayerMutationVariables,
   DeleteFeatureMutation,
   DeleteFeatureMutationVariables,
+  GetFeatureChangesQuery,
+  GetFeatureChangesQueryVariables,
   GetFeatureMessagesQuery,
   GetFeatureMessagesQueryVariables,
   GetLayersForIncidentQuery,
@@ -50,6 +52,19 @@ export const GET_FEATURE_MESSAGES: TypedDocumentNode<
       receiver
       content
       time
+    }
+  }
+`;
+
+/** Which feature was changed for which message, to find everything drawn for one message. */
+export const GET_FEATURE_CHANGES: TypedDocumentNode<
+  GetFeatureChangesQuery,
+  GetFeatureChangesQueryVariables
+> = gql`
+  query GetFeatureChanges($incidentId: ID!) {
+    featureChanges(incidentId: $incidentId) {
+      featureId
+      messageId
     }
   }
 `;
