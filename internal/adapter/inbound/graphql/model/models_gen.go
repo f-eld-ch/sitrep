@@ -148,6 +148,23 @@ type Feature struct {
 	Properties scalar.JSONMap `json:"properties,omitempty"`
 }
 
+// One change to a feature on the map timeline. effectiveAt is when the change takes effect
+// (the connected message's time on the Nachrichtenkarte); recordedAt is when it was drawn.
+type FeatureChange struct {
+	FeatureID   string            `json:"featureId"`
+	LayerID     string            `json:"layerId"`
+	Change      FeatureChangeKind `json:"change"`
+	EffectiveAt time.Time         `json:"effectiveAt"`
+	RecordedAt  time.Time         `json:"recordedAt"`
+	// The message this change was drawn for; null for free drawing on other layers.
+	MessageID *string `json:"messageId,omitempty"`
+	// Geometry after the change; set for PLACED and MOVED.
+	Geometry scalar.JSONMap `json:"geometry,omitempty"`
+	// Properties after the change; set for PLACED and RESTYLED.
+	Properties scalar.JSONMap `json:"properties,omitempty"`
+	Actor      string         `json:"actor"`
+}
+
 // When a feature change takes effect on the map timeline.
 // On the message map layer, messageId is required and the change takes effect at that message's
 // time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
@@ -549,6 +566,65 @@ func (e *DivisionKind) UnmarshalJSON(b []byte) error {
 }
 
 func (e DivisionKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type FeatureChangeKind string
+
+const (
+	FeatureChangeKindPlaced   FeatureChangeKind = "PLACED"
+	FeatureChangeKindMoved    FeatureChangeKind = "MOVED"
+	FeatureChangeKindRestyled FeatureChangeKind = "RESTYLED"
+	FeatureChangeKindRemoved  FeatureChangeKind = "REMOVED"
+)
+
+var AllFeatureChangeKind = []FeatureChangeKind{
+	FeatureChangeKindPlaced,
+	FeatureChangeKindMoved,
+	FeatureChangeKindRestyled,
+	FeatureChangeKindRemoved,
+}
+
+func (e FeatureChangeKind) IsValid() bool {
+	switch e {
+	case FeatureChangeKindPlaced, FeatureChangeKindMoved, FeatureChangeKindRestyled, FeatureChangeKindRemoved:
+		return true
+	}
+	return false
+}
+
+func (e FeatureChangeKind) String() string {
+	return string(e)
+}
+
+func (e *FeatureChangeKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FeatureChangeKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FeatureChangeKind", str)
+	}
+	return nil
+}
+
+func (e FeatureChangeKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FeatureChangeKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FeatureChangeKind) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

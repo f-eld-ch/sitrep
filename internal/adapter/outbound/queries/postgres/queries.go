@@ -510,6 +510,34 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 		return nil, shared.ErrNotFound
 	}
 
+	visibleIncidentIDs, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.kind, l.geojson, l.revision
+		FROM readmodel.layer_features l
+		JOIN readmodel.incident i ON i.id = l.incident_id
+		WHERE l.removed = false
+		  AND i.is_deleted = false
+		  AND l.incident_id = ANY($2)
+		ORDER BY
+		  CASE WHEN l.incident_id = $1 THEN 0 ELSE 1 END,
+		  CASE WHEN l.incident_id = $1 THEN lower(l.name) ELSE lower(i.name) END COLLATE "C",
+		  lower(l.name) COLLATE "C"`
+
+	rows, err := q.pool.Query(ctx, query, incidentID, visibleIncidentIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return collectLayers(rows)
+}
+
+// visibleIncidentIDs returns the incident itself plus its readable, non-deleted direct children.
+func (q *Queries) visibleIncidentIDs(ctx context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
 	visibleIncidentIDs := []uuid.UUID{incidentID}
 
 	childRows, err := q.pool.Query(
@@ -540,25 +568,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 
 	childRows.Close()
 
-	query := `
-		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.kind, l.geojson, l.revision
-		FROM readmodel.layer_features l
-		JOIN readmodel.incident i ON i.id = l.incident_id
-		WHERE l.removed = false
-		  AND i.is_deleted = false
-		  AND l.incident_id = ANY($2)
-		ORDER BY
-		  CASE WHEN l.incident_id = $1 THEN 0 ELSE 1 END,
-		  CASE WHEN l.incident_id = $1 THEN lower(l.name) ELSE lower(i.name) END COLLATE "C",
-		  lower(l.name) COLLATE "C"`
-
-	rows, err := q.pool.Query(ctx, query, incidentID, visibleIncidentIDs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	return collectLayers(rows)
+	return visibleIncidentIDs, nil
 }
 
 func (q *Queries) GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error) {
@@ -655,4 +665,84 @@ func parseLocation(b []byte) (*outbound.LocationRM, error) {
 		Name:        raw.Name,
 		Coordinates: raw.Coordinates,
 	}, nil
+}
+
+func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {
+	slog.DebugContext(ctx, "listing feature changes", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visible, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT c.feature_id, c.version, c.incident_id, c.layer_id, c.change, c.effective_at, c.recorded_at,
+		       c.message_id, c.geometry, c.properties, c.actor
+		FROM readmodel.feature_change c
+		JOIN readmodel.layer_features l ON l.id = c.layer_id AND l.removed = false
+		JOIN readmodel.incident i ON i.id = c.incident_id AND i.is_deleted = false
+		WHERE c.incident_id = ANY($1)
+		ORDER BY c.effective_at, c.recorded_at, c.feature_id, c.version`, visible)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []*outbound.FeatureChangeRM
+
+	for rows.Next() {
+		var c outbound.FeatureChangeRM
+		if err := rows.Scan(
+			&c.FeatureID, &c.Version, &c.IncidentID, &c.LayerID, &c.Change, &c.EffectiveAt, &c.RecordedAt,
+			&c.MessageID, &c.Geometry, &c.Properties, &c.Actor,
+		); err != nil {
+			return nil, err
+		}
+
+		out = append(out, &c)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing feature messages", slog.String("feature_id", featureID.String()))
+
+	var incidentID uuid.UUID
+
+	err := q.pool.QueryRow(ctx, `
+		SELECT incident_id FROM readmodel.feature_change WHERE feature_id = $1 AND change = 'placed'`,
+		featureID).Scan(&incidentID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, shared.ErrNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT id, number, incident_id, content, sender, sender_detail,
+		       receiver, receiver_detail, medium, msg_time,
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		FROM readmodel.message
+		WHERE id IN (
+		    SELECT message_id FROM readmodel.feature_change
+		    WHERE feature_id = $1 AND message_id IS NOT NULL
+		)
+		ORDER BY msg_time, created_at`, featureID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return collectMessages(rows)
 }

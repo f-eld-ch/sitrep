@@ -541,3 +541,52 @@ func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
 		UpdatedAt:  row.UpdatedAt,
 	}
 }
+
+func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {
+	slog.DebugContext(ctx, "listing feature changes", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
+	visible := []uuid.UUID{incidentID}
+
+	for _, incidentRow := range q.incidents.All() {
+		if !incidentRow.IsDeleted && incidentRow.ParentID != nil && *incidentRow.ParentID == incidentID &&
+			q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
+			visible = append(visible, incidentRow.ID)
+		}
+	}
+
+	rows := q.layers.ChangesForIncidents(visible...)
+	out := make([]*outbound.FeatureChangeRM, len(rows))
+
+	for i, r := range rows {
+		out[i] = &outbound.FeatureChangeRM{
+			FeatureID: r.FeatureID, Version: r.Version, IncidentID: r.IncidentID, LayerID: r.LayerID,
+			Change: r.Kind, EffectiveAt: r.EffectiveAt, RecordedAt: r.RecordedAt, MessageID: r.MessageID,
+			Geometry: r.Geometry, Properties: r.Properties, Actor: r.Actor,
+		}
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing feature messages", slog.String("feature_id", featureID.String()))
+
+	incidentID, ok := q.layers.IncidentIDForFeature(featureID)
+	if !ok || !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
+	var out []*outbound.MessageRM
+
+	for _, id := range q.layers.MessageIDsForFeature(featureID) {
+		if row := q.messages.Get(id); row != nil {
+			out = append(out, toMessageRM(row))
+		}
+	}
+
+	return out, nil
+}

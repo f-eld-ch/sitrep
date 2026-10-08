@@ -7,9 +7,12 @@ import (
 	"encoding/json/v2"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/featurechange"
 	sqlitehelpers "github.com/f-eld-ch/sitrep/internal/adapter/outbound/helpers/sqlite"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
@@ -27,9 +30,14 @@ func NewLayerFeaturesHandler(db *sql.DB) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 2 }
+func (h *LayerFeaturesHandler) Version() int { return 3 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
+	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_feature_change`); err != nil {
+		return err
+	}
+
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_layer_features`)
+
 	return err
 }
 
@@ -134,6 +142,11 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx *sql.Tx, 
 }
 
 func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx *sql.Tx, e eventsourcing.Event) error {
+	apply, err := recordFeatureChange(ctx, tx, e)
+	if err != nil || !apply {
+		return err
+	}
+
 	featureID := e.StreamID
 
 	switch e.EventType {
@@ -381,4 +394,79 @@ func removeFeature(features []feature, id uuid.UUID) []feature {
 	}
 
 	return out
+}
+
+// recordFeatureChange persists the event in readmodel_feature_change and reports whether
+// it should update the layer's current GeoJSON. See the Postgres handler for the rules.
+func recordFeatureChange(ctx context.Context, tx *sql.Tx, e eventsourcing.Event) (bool, error) {
+	c, ok, err := featurechange.Decode(e)
+	if err != nil || !ok {
+		return false, err
+	}
+
+	featureID := e.StreamID.String()
+	incidentID, layerID := c.IncidentID, c.LayerID
+
+	if c.Kind != featurechange.Placed {
+		err := tx.QueryRowContext(ctx, `
+			SELECT incident_id, layer_id
+			FROM readmodel_feature_change
+			WHERE feature_id = ? AND change = 'placed'`, featureID).Scan(&incidentID, &layerID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+
+		if err != nil {
+			return false, err
+		}
+	}
+
+	var latest *time.Time
+
+	if kinds := c.GuardKinds(); len(kinds) > 0 {
+		var latestNT sqlitehelpers.NullTime
+
+		args := []any{featureID, c.Version}
+
+		placeholders := make([]string, len(kinds))
+		for i, k := range kinds {
+			placeholders[i] = "?"
+
+			args = append(args, string(k))
+		}
+
+		if err := tx.QueryRowContext(ctx, `
+			SELECT max(effective_at)
+			FROM readmodel_feature_change
+			WHERE feature_id = ? AND version < ? AND change IN (`+strings.Join(placeholders, ",")+`)`,
+			args...).Scan(&latestNT); err != nil {
+			return false, err
+		}
+
+		latest = latestNT.V
+	}
+
+	var messageID any
+	if c.MessageID != "" {
+		messageID = c.MessageID
+	}
+
+	res, err := tx.ExecContext(ctx, `
+		INSERT INTO readmodel_feature_change
+		  (feature_id, version, incident_id, layer_id, change, effective_at, recorded_at,
+		   message_id, geometry, properties, actor)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (feature_id, version) DO NOTHING`,
+		featureID, c.Version, incidentID, layerID, string(c.Kind),
+		c.EffectiveAt.UTC().Format(sqlitehelpers.TimeLayout), c.RecordedAt.UTC().Format(sqlitehelpers.TimeLayout),
+		messageID, nullableJSON(c.Geometry), nullableJSON(c.Properties), c.Actor)
+	if err != nil {
+		return false, err
+	}
+
+	if n, err := res.RowsAffected(); err != nil || n == 0 {
+		return false, err // already applied
+	}
+
+	return c.UpdatesCurrentState(latest), nil
 }

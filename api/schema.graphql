@@ -58,6 +58,13 @@ enum LayerKind {
   MESSAGE_MAP
 }
 
+enum FeatureChangeKind {
+  PLACED
+  MOVED
+  RESTYLED
+  REMOVED
+}
+
 enum PriorityStatus {
   NORMAL
   HIGH
@@ -355,6 +362,25 @@ type Feature {
   properties: JSONObject
 }
 
+"""
+One change to a feature on the map timeline. effectiveAt is when the change takes effect
+(the connected message's time on the Nachrichtenkarte); recordedAt is when it was drawn.
+"""
+type FeatureChange {
+  featureId: ID!
+  layerId: ID!
+  change: FeatureChangeKind!
+  effectiveAt: DateTime!
+  recordedAt: DateTime!
+  """The message this change was drawn for; null for free drawing on other layers."""
+  messageId: ID
+  """Geometry after the change; set for PLACED and MOVED."""
+  geometry: Geometry
+  """Properties after the change; set for PLACED and RESTYLED."""
+  properties: JSONObject
+  actor: String!
+}
+
 type Layer {
   id: ID!
   """Incident that owns this layer. Differs from the viewed incident for inherited child layers."""
@@ -381,6 +407,15 @@ type Query {
 
   """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
+
+  """
+  Change history of all features on the visible layers (see layersForIncident), ordered by
+  effective time. Use it to render the map as of any point on the incident timeline.
+  """
+  featureChanges(incidentId: ID!): [FeatureChange!]!
+
+  """Messages connected to a feature's changes, ordered by message time."""
+  featureMessages(featureId: ID!): [Message!]!
 
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
   incidentAccessMode(incidentId: ID!): IncidentAccessMode!

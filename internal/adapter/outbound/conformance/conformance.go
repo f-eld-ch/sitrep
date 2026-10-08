@@ -84,6 +84,10 @@ func Run(t *testing.T, f Factory) {
 		RunQueries(t, f)
 	})
 
+	t.Run("FeatureChanges", func(t *testing.T) {
+		RunFeatureChanges(t, f)
+	})
+
 	t.Run("Users", func(t *testing.T) {
 		RunUsers(t, f)
 	})

@@ -4,6 +4,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -841,4 +842,39 @@ func featureStateToModel(s inbound.FeatureState) *model.Feature {
 		Geometry:   scalar.JSONMap(s.Geometry),
 		Properties: scalar.JSONMap(s.Properties),
 	}
+}
+
+func featureChangeRMToModel(r *outbound.FeatureChangeRM) *model.FeatureChange {
+	c := &model.FeatureChange{
+		FeatureID:   r.FeatureID.String(),
+		LayerID:     r.LayerID.String(),
+		Change:      model.FeatureChangeKind(strings.ToUpper(r.Change)),
+		EffectiveAt: r.EffectiveAt,
+		RecordedAt:  r.RecordedAt,
+		Actor:       r.Actor,
+	}
+
+	if r.MessageID != nil {
+		id := r.MessageID.String()
+		c.MessageID = &id
+	}
+
+	c.Geometry = jsonObject(r.Geometry)
+	c.Properties = jsonObject(r.Properties)
+
+	return c
+}
+
+// jsonObject decodes an opaque JSON object; an empty or non-object value yields nil.
+func jsonObject(raw jsontext.Value) scalar.JSONMap {
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil
+	}
+
+	var m scalar.JSONMap
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+
+	return m
 }

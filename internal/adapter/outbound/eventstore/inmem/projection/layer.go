@@ -6,10 +6,14 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"maps"
+	"slices"
+	"sort"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/featurechange"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -69,8 +73,24 @@ func (r *LayerRow) GeoJSON() jsontext.Value {
 
 // LayerFeaturesHandler maintains an in-memory projection of readmodel.layer_features.
 type LayerFeaturesHandler struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*LayerRow
+	mu      sync.RWMutex
+	rows    map[uuid.UUID]*LayerRow
+	changes []*FeatureChangeRow
+}
+
+// FeatureChangeRow mirrors readmodel.feature_change.
+type FeatureChangeRow struct {
+	FeatureID   uuid.UUID
+	Version     int
+	IncidentID  uuid.UUID
+	LayerID     uuid.UUID
+	Kind        string
+	EffectiveAt time.Time
+	RecordedAt  time.Time
+	MessageID   *uuid.UUID
+	Geometry    jsontext.Value
+	Properties  jsontext.Value
+	Actor       string
 }
 
 func NewLayerFeaturesHandler() *LayerFeaturesHandler {
@@ -78,13 +98,14 @@ func NewLayerFeaturesHandler() *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 2 }
+func (h *LayerFeaturesHandler) Version() int { return 3 }
 
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	h.rows = make(map[uuid.UUID]*LayerRow)
+	h.changes = nil
 
 	return nil
 }
@@ -180,6 +201,11 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 }
 
 func (h *LayerFeaturesHandler) applyFeatureEvent(e eventsourcing.Event) error {
+	apply, err := h.recordFeatureChange(e)
+	if err != nil || !apply {
+		return err
+	}
+
 	featureID := e.StreamID
 	switch e.EventType {
 	case "Placed", "Imported":
@@ -295,4 +321,151 @@ func (h *LayerFeaturesHandler) ForIncident(incidentID uuid.UUID) []*LayerRow {
 	}
 
 	return out
+}
+
+// recordFeatureChange stores the event as a FeatureChangeRow and reports whether it should
+// update the layer's current state. See the Postgres handler for the rules. The caller
+// holds h.mu.
+func (h *LayerFeaturesHandler) recordFeatureChange(e eventsourcing.Event) (bool, error) {
+	c, ok, err := featurechange.Decode(e)
+	if err != nil || !ok {
+		return false, err
+	}
+
+	var latest *time.Time
+
+	incidentID, layerID := uuid.Nil, uuid.Nil
+
+	if c.Kind == featurechange.Placed {
+		if incidentID, err = uuid.Parse(c.IncidentID); err != nil {
+			return false, err
+		}
+
+		if layerID, err = uuid.Parse(c.LayerID); err != nil {
+			return false, err
+		}
+	}
+
+	guard := c.GuardKinds()
+	found := c.Kind == featurechange.Placed
+
+	for _, r := range h.changes {
+		if r.FeatureID != e.StreamID {
+			continue
+		}
+
+		if r.Version == c.Version {
+			return false, nil // already applied
+		}
+
+		if r.Kind == string(featurechange.Placed) {
+			incidentID, layerID, found = r.IncidentID, r.LayerID, true
+		}
+
+		if r.Version < c.Version && slices.Contains(guard, featurechange.Kind(r.Kind)) &&
+			(latest == nil || r.EffectiveAt.After(*latest)) {
+			t := r.EffectiveAt
+			latest = &t
+		}
+	}
+
+	if !found {
+		return false, nil
+	}
+
+	row := &FeatureChangeRow{
+		FeatureID: e.StreamID, Version: c.Version, IncidentID: incidentID, LayerID: layerID,
+		Kind: string(c.Kind), EffectiveAt: c.EffectiveAt, RecordedAt: c.RecordedAt,
+		Geometry: c.Geometry, Properties: c.Properties, Actor: c.Actor,
+	}
+
+	if c.MessageID != "" {
+		id, err := uuid.Parse(c.MessageID)
+		if err != nil {
+			return false, err
+		}
+
+		row.MessageID = &id
+	}
+
+	h.changes = append(h.changes, row)
+
+	return c.UpdatesCurrentState(latest), nil
+}
+
+// ChangesForIncidents returns the feature changes of all non-removed layers of the
+// incidents, ordered by effective time, then by recording order.
+func (h *LayerFeaturesHandler) ChangesForIncidents(incidentIDs ...uuid.UUID) []*FeatureChangeRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var out []*FeatureChangeRow
+
+	for _, c := range h.changes {
+		if !slices.Contains(incidentIDs, c.IncidentID) {
+			continue
+		}
+
+		if layer := h.rows[c.LayerID]; layer == nil || layer.Removed {
+			continue
+		}
+
+		cp := *c
+		out = append(out, &cp)
+	}
+
+	sort.SliceStable(out, func(i, j int) bool {
+		if !out[i].EffectiveAt.Equal(out[j].EffectiveAt) {
+			return out[i].EffectiveAt.Before(out[j].EffectiveAt)
+		}
+
+		if !out[i].RecordedAt.Equal(out[j].RecordedAt) {
+			return out[i].RecordedAt.Before(out[j].RecordedAt)
+		}
+
+		return out[i].Version < out[j].Version
+	})
+
+	return out
+}
+
+// MessageIDsForFeature returns the distinct messages linked to the feature's changes,
+// in the order they took effect.
+func (h *LayerFeaturesHandler) MessageIDsForFeature(featureID uuid.UUID) []uuid.UUID {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var rows []*FeatureChangeRow
+
+	for _, c := range h.changes {
+		if c.FeatureID == featureID && c.MessageID != nil {
+			rows = append(rows, c)
+		}
+	}
+
+	sort.SliceStable(rows, func(i, j int) bool { return rows[i].EffectiveAt.Before(rows[j].EffectiveAt) })
+
+	var out []uuid.UUID
+
+	for _, r := range rows {
+		if !slices.Contains(out, *r.MessageID) {
+			out = append(out, *r.MessageID)
+		}
+	}
+
+	return out
+}
+
+// IncidentIDForFeature returns the incident the feature was placed in, including removed features.
+func (h *LayerFeaturesHandler) IncidentIDForFeature(featureID uuid.UUID) (uuid.UUID, bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	for _, c := range h.changes {
+		if c.FeatureID == featureID && c.Kind == string(featurechange.Placed) {
+			return c.IncidentID, true
+		}
+	}
+
+	return uuid.UUID{}, false
 }

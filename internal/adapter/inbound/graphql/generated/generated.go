@@ -102,6 +102,18 @@ type ComplexityRoot struct {
 		Properties func(childComplexity int) int
 	}
 
+	FeatureChange struct {
+		Actor       func(childComplexity int) int
+		Change      func(childComplexity int) int
+		EffectiveAt func(childComplexity int) int
+		FeatureID   func(childComplexity int) int
+		Geometry    func(childComplexity int) int
+		LayerID     func(childComplexity int) int
+		MessageID   func(childComplexity int) int
+		Properties  func(childComplexity int) int
+		RecordedAt  func(childComplexity int) int
+	}
+
 	GlobalRoleGrant struct {
 		Email   func(childComplexity int) int
 		Name    func(childComplexity int) int
@@ -232,6 +244,8 @@ type ComplexityRoot struct {
 	Query struct {
 		AccessGroups       func(childComplexity int) int
 		DefaultAccess      func(childComplexity int) int
+		FeatureChanges     func(childComplexity int, incidentID string) int
+		FeatureMessages    func(childComplexity int, featureID string) int
 		GlobalRoles        func(childComplexity int) int
 		GroupMembers       func(childComplexity int, groupID string) int
 		Incident           func(childComplexity int, id string) int
@@ -397,6 +411,8 @@ type QueryResolver interface {
 	Incident(ctx context.Context, id string) (*model.Incident, error)
 	Message(ctx context.Context, id string) (*model.Message, error)
 	LayersForIncident(ctx context.Context, incidentID string) ([]*model.Layer, error)
+	FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error)
+	FeatureMessages(ctx context.Context, featureID string) ([]*model.Message, error)
 	IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error)
 	IncidentAccessMode(ctx context.Context, incidentID string) (model.IncidentAccessMode, error)
 	AccessGroups(ctx context.Context) ([]*model.AccessGroup, error)
@@ -642,6 +658,61 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Feature.Properties(childComplexity), true
+
+	case "FeatureChange.actor":
+		if e.ComplexityRoot.FeatureChange.Actor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.Actor(childComplexity), true
+	case "FeatureChange.change":
+		if e.ComplexityRoot.FeatureChange.Change == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.Change(childComplexity), true
+	case "FeatureChange.effectiveAt":
+		if e.ComplexityRoot.FeatureChange.EffectiveAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.EffectiveAt(childComplexity), true
+	case "FeatureChange.featureId":
+		if e.ComplexityRoot.FeatureChange.FeatureID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.FeatureID(childComplexity), true
+	case "FeatureChange.geometry":
+		if e.ComplexityRoot.FeatureChange.Geometry == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.Geometry(childComplexity), true
+	case "FeatureChange.layerId":
+		if e.ComplexityRoot.FeatureChange.LayerID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.LayerID(childComplexity), true
+	case "FeatureChange.messageId":
+		if e.ComplexityRoot.FeatureChange.MessageID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.MessageID(childComplexity), true
+	case "FeatureChange.properties":
+		if e.ComplexityRoot.FeatureChange.Properties == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.Properties(childComplexity), true
+	case "FeatureChange.recordedAt":
+		if e.ComplexityRoot.FeatureChange.RecordedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FeatureChange.RecordedAt(childComplexity), true
 
 	case "GlobalRoleGrant.email":
 		if e.ComplexityRoot.GlobalRoleGrant.Email == nil {
@@ -1516,6 +1587,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.DefaultAccess(childComplexity), true
+	case "Query.featureChanges":
+		if e.ComplexityRoot.Query.FeatureChanges == nil {
+			break
+		}
+
+		args, err := ec.field_Query_featureChanges_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FeatureChanges(childComplexity, args["incidentId"].(string)), true
+	case "Query.featureMessages":
+		if e.ComplexityRoot.Query.FeatureMessages == nil {
+			break
+		}
+
+		args, err := ec.field_Query_featureMessages_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FeatureMessages(childComplexity, args["featureId"].(string)), true
 	case "Query.globalRoles":
 		if e.ComplexityRoot.Query.GlobalRoles == nil {
 			break
@@ -2130,6 +2223,13 @@ enum LayerKind {
   MESSAGE_MAP
 }
 
+enum FeatureChangeKind {
+  PLACED
+  MOVED
+  RESTYLED
+  REMOVED
+}
+
 enum PriorityStatus {
   NORMAL
   HIGH
@@ -2427,6 +2527,25 @@ type Feature {
   properties: JSONObject
 }
 
+"""
+One change to a feature on the map timeline. effectiveAt is when the change takes effect
+(the connected message's time on the Nachrichtenkarte); recordedAt is when it was drawn.
+"""
+type FeatureChange {
+  featureId: ID!
+  layerId: ID!
+  change: FeatureChangeKind!
+  effectiveAt: DateTime!
+  recordedAt: DateTime!
+  """The message this change was drawn for; null for free drawing on other layers."""
+  messageId: ID
+  """Geometry after the change; set for PLACED and MOVED."""
+  geometry: Geometry
+  """Properties after the change; set for PLACED and RESTYLED."""
+  properties: JSONObject
+  actor: String!
+}
+
 type Layer {
   id: ID!
   """Incident that owns this layer. Differs from the viewed incident for inherited child layers."""
@@ -2453,6 +2572,15 @@ type Query {
 
   """Visible layers for an incident: its own layers plus direct child incident layers."""
   layersForIncident(incidentId: ID!): [Layer!]!
+
+  """
+  Change history of all features on the visible layers (see layersForIncident), ordered by
+  effective time. Use it to render the map as of any point on the incident timeline.
+  """
+  featureChanges(incidentId: ID!): [FeatureChange!]!
+
+  """Messages connected to a feature's changes, ordered by message time."""
+  featureMessages(featureId: ID!): [Message!]!
 
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
   incidentAccessMode(incidentId: ID!): IncidentAccessMode!
@@ -2874,6 +3002,30 @@ func (ec *executionContext) childFields_Feature(ctx context.Context, field graph
 		return ec.fieldContext_Feature_properties(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Feature", field.Name)
+}
+
+func (ec *executionContext) childFields_FeatureChange(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "featureId":
+		return ec.fieldContext_FeatureChange_featureId(ctx, field)
+	case "layerId":
+		return ec.fieldContext_FeatureChange_layerId(ctx, field)
+	case "change":
+		return ec.fieldContext_FeatureChange_change(ctx, field)
+	case "effectiveAt":
+		return ec.fieldContext_FeatureChange_effectiveAt(ctx, field)
+	case "recordedAt":
+		return ec.fieldContext_FeatureChange_recordedAt(ctx, field)
+	case "messageId":
+		return ec.fieldContext_FeatureChange_messageId(ctx, field)
+	case "geometry":
+		return ec.fieldContext_FeatureChange_geometry(ctx, field)
+	case "properties":
+		return ec.fieldContext_FeatureChange_properties(ctx, field)
+	case "actor":
+		return ec.fieldContext_FeatureChange_actor(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type FeatureChange", field.Name)
 }
 
 func (ec *executionContext) childFields_GlobalRoleGrant(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -4444,6 +4596,34 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_featureChanges_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "incidentId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["incidentId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_featureMessages_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "featureId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["featureId"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_groupMembers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -5423,6 +5603,213 @@ func (ec *executionContext) _Feature_properties(ctx context.Context, field graph
 }
 func (ec *executionContext) fieldContext_Feature_properties(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Feature", field, false, false, errors.New("field of type JSONObject does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_featureId(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_featureId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.FeatureID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_featureId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_layerId(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_layerId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LayerID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_layerId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_change(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_change(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Change, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.FeatureChangeKind) graphql.Marshaler {
+			return ec.marshalNFeatureChangeKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeKind(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_change(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type FeatureChangeKind does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_effectiveAt(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_effectiveAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.EffectiveAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_effectiveAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_recordedAt(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_recordedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.RecordedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_recordedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_messageId(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_messageId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MessageID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOID2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_messageId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_geometry(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_geometry(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Geometry, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v scalar.JSONMap) graphql.Marshaler {
+			return ec.marshalOGeometry2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_geometry(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type Geometry does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_properties(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_properties(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Properties, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v scalar.JSONMap) graphql.Marshaler {
+			return ec.marshalOJSONObject2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋscalarᚐJSONMap(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_properties(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type JSONObject does not have child fields"))
+}
+
+func (ec *executionContext) _FeatureChange_actor(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_FeatureChange_actor(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Actor, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_FeatureChange_actor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("FeatureChange", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _GlobalRoleGrant_subject(ctx context.Context, field graphql.CollectedField, obj *model.GlobalRoleGrant) (ret graphql.Marshaler) {
@@ -9047,6 +9434,94 @@ func (ec *executionContext) fieldContext_Query_layersForIncident(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_layersForIncident_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_featureChanges(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_featureChanges(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FeatureChanges(ctx, fc.Args["incidentId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.FeatureChange) graphql.Marshaler {
+			return ec.marshalNFeatureChange2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_featureChanges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_FeatureChange(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_featureChanges_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_featureMessages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_featureMessages(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FeatureMessages(ctx, fc.Args["featureId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Message) graphql.Marshaler {
+			return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMessageᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_featureMessages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Message(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_featureMessages_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -13134,6 +13609,84 @@ func (ec *executionContext) _Feature(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var featureChangeImplementors = []string{"FeatureChange"}
+
+func (ec *executionContext) _FeatureChange(ctx context.Context, sel ast.SelectionSet, obj *model.FeatureChange) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, featureChangeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FeatureChange")
+		case "featureId":
+			out.Values[i] = ec._FeatureChange_featureId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "layerId":
+			out.Values[i] = ec._FeatureChange_layerId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "change":
+			out.Values[i] = ec._FeatureChange_change(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "effectiveAt":
+			out.Values[i] = ec._FeatureChange_effectiveAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "recordedAt":
+			out.Values[i] = ec._FeatureChange_recordedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "messageId":
+			out.Values[i] = ec._FeatureChange_messageId(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "geometry":
+			out.Values[i] = ec._FeatureChange_geometry(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "properties":
+			out.Values[i] = ec._FeatureChange_properties(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "actor":
+			out.Values[i] = ec._FeatureChange_actor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var globalRoleGrantImplementors = []string{"GlobalRoleGrant"}
 
 func (ec *executionContext) _GlobalRoleGrant(ctx context.Context, sel ast.SelectionSet, obj *model.GlobalRoleGrant) graphql.Marshaler {
@@ -14474,6 +15027,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_layersForIncident(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "featureChanges":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_featureChanges(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "featureMessages":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_featureMessages(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -15936,6 +16533,42 @@ func (ec *executionContext) marshalNFeature2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsit
 		return graphql.Null
 	}
 	return ec._Feature(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFeatureChange2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.FeatureChange) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNFeatureChange2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChange(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNFeatureChange2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChange(ctx context.Context, sel ast.SelectionSet, v *model.FeatureChange) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FeatureChange(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFeatureChangeKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeKind(ctx context.Context, v any) (model.FeatureChangeKind, error) {
+	var res model.FeatureChangeKind
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFeatureChangeKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureChangeKind(ctx context.Context, sel ast.SelectionSet, v model.FeatureChangeKind) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNGlobalRole2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐGlobalRole(ctx context.Context, v any) (model.GlobalRole, error) {

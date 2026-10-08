@@ -1037,6 +1037,86 @@ func TestAddFeature_MessageMapLayerRequiresMessage(t *testing.T) {
 	assert.NotEmpty(t, feat.ID)
 }
 
+func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Timeline", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+
+	var mapLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	triaged := func(content string, at time.Time) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: content,
+			Medium: model.MediumRadio, Time: &at,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	now := time.Now().UTC()
+	first := triaged("first", now.Add(-3*time.Hour))
+	second := triaged("second", now.Add(-time.Hour))
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1",
+		map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}, map[string]any{"label": "A"},
+		&model.FeatureChangeInput{MessageID: &first.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().ModifyFeature(ctx, feat.ID,
+		map[string]any{"type": "Point", "coordinates": []any{9.0, 47.0}}, nil,
+		&model.FeatureChangeInput{MessageID: &second.ID})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	changes, err := s.resolver.Query().FeatureChanges(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, changes, 2)
+	assert.Equal(t, model.FeatureChangeKindPlaced, changes[0].Change)
+	assert.Equal(t, model.FeatureChangeKindMoved, changes[1].Change)
+	assert.WithinDuration(t, now.Add(-3*time.Hour), changes[0].EffectiveAt, time.Second, "effective at message time")
+	assert.WithinDuration(t, now.Add(-time.Hour), changes[1].EffectiveAt, time.Second)
+	require.NotNil(t, changes[1].MessageID)
+	assert.Equal(t, second.ID, *changes[1].MessageID)
+	assert.NotNil(t, changes[1].Geometry)
+
+	messages, err := s.resolver.Query().FeatureMessages(ctx, feat.ID)
+	require.NoError(t, err)
+	require.Len(t, messages, 2)
+	assert.Equal(t, []string{first.ID, second.ID}, []string{messages[0].ID, messages[1].ID}, "ordered by message time")
+
+	none, err := s.resolver.Query().FeatureMessages(ctx, uuid.NewString())
+	require.Error(t, err, "unknown feature")
+	assert.Empty(t, none)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AccessGroups resolver
 // ─────────────────────────────────────────────────────────────────────────────

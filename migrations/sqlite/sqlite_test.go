@@ -46,6 +46,7 @@ func TestMigrationsUpDownUp(t *testing.T) {
 		"readmodel_access_group",
 		"readmodel_access_group_member",
 		"readmodel_access_policy",
+		"readmodel_feature_change",
 		"readmodel_global_access",
 		"readmodel_incident",
 		"readmodel_incident_access",

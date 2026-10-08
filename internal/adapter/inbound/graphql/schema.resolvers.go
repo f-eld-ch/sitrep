@@ -1735,6 +1735,58 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 	return out, nil
 }
 
+// FeatureChanges is the resolver for the featureChanges field.
+func (r *queryResolver) FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error) {
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListFeatureChanges(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.FeatureChange, len(rows))
+	for i, row := range rows {
+		out[i] = featureChangeRMToModel(row)
+	}
+
+	return out, nil
+}
+
+// FeatureMessages is the resolver for the featureMessages field.
+func (r *queryResolver) FeatureMessages(ctx context.Context, featureID string) ([]*model.Message, error) {
+	id, err := parseUUID(featureID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListFeatureMessages(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rows) == 0 {
+		return []*model.Message{}, nil
+	}
+
+	// All messages of a feature belong to the feature's incident.
+	inc, err := r.Queries.GetIncident(ctx, rows[0].IncidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	divIndex := divisionsByID(inc.Divisions)
+
+	out := make([]*model.Message, len(rows))
+	for i, row := range rows {
+		out[i] = messageRMToModel(row, divIndex)
+	}
+
+	return out, nil
+}
+
 // IncidentAccess is the resolver for the incidentAccess field.
 func (r *queryResolver) IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error) {
 	actor, err := identity.ActorFrom(ctx)

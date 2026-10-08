@@ -601,34 +601,8 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 		return nil, shared.ErrNotFound
 	}
 
-	visibleIDs := []string{incidentID.String()}
-
-	childRows, err := q.db.QueryContext(ctx,
-		`SELECT id FROM readmodel_incident WHERE parent_id = ? AND is_deleted = 0`,
-		incidentID.String(),
-	)
+	visibleIDs, err := q.visibleIncidentIDs(ctx, incidentID)
 	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = childRows.Close() }()
-
-	for childRows.Next() {
-		var childIDStr string
-		if err := childRows.Scan(&childIDStr); err != nil {
-			return nil, err
-		}
-
-		childID, err := uuid.Parse(childIDStr)
-		if err != nil {
-			return nil, fmt.Errorf("parse child incident id %q: %w", childIDStr, err)
-		}
-
-		if q.canRead(ctx, childID) {
-			visibleIDs = append(visibleIDs, childIDStr)
-		}
-	}
-
-	if err := childRows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -682,6 +656,42 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	})
 
 	return layers, nil
+}
+
+// visibleIncidentIDs returns the incident itself plus its readable, non-deleted direct children.
+func (q *Queries) visibleIncidentIDs(ctx context.Context, incidentID uuid.UUID) ([]string, error) {
+	visibleIDs := []string{incidentID.String()}
+
+	childRows, err := q.db.QueryContext(ctx,
+		`SELECT id FROM readmodel_incident WHERE parent_id = ? AND is_deleted = 0`,
+		incidentID.String(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = childRows.Close() }()
+
+	for childRows.Next() {
+		var childIDStr string
+		if err := childRows.Scan(&childIDStr); err != nil {
+			return nil, err
+		}
+
+		childID, err := uuid.Parse(childIDStr)
+		if err != nil {
+			return nil, fmt.Errorf("parse child incident id %q: %w", childIDStr, err)
+		}
+
+		if q.canRead(ctx, childID) {
+			visibleIDs = append(visibleIDs, childIDStr)
+		}
+	}
+
+	if err := childRows.Err(); err != nil {
+		return nil, err
+	}
+
+	return visibleIDs, nil
 }
 
 // GetFeatureIncidentID returns the incident that owns the given feature.
@@ -795,4 +805,131 @@ func parseLocation(b []byte) (*outbound.LocationRM, error) {
 		Name:        raw.Name,
 		Coordinates: raw.Coordinates,
 	}, nil
+}
+
+func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {
+	slog.DebugContext(ctx, "listing feature changes", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visibleIDs, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	visibleJSON, err := json.Marshal(visibleIDs)
+	if err != nil {
+		return nil, fmt.Errorf("marshal visible ids: %w", err)
+	}
+
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT c.feature_id, c.version, c.incident_id, c.layer_id, c.change, c.effective_at, c.recorded_at,
+		       c.message_id, c.geometry, c.properties, c.actor
+		FROM readmodel_feature_change c
+		JOIN readmodel_layer_features l ON l.id = c.layer_id AND l.removed = 0
+		JOIN readmodel_incident i ON i.id = c.incident_id AND i.is_deleted = 0
+		WHERE c.incident_id IN (SELECT value FROM json_each(?))
+		ORDER BY c.effective_at, c.recorded_at, c.feature_id, c.version`, string(visibleJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []*outbound.FeatureChangeRM
+
+	for rows.Next() {
+		var (
+			featureID, incID, layerID string
+			messageID                 *string
+			geometry, properties      *string
+			effectiveAt, recordedAt   sqlite.Time
+			c                         outbound.FeatureChangeRM
+		)
+
+		if err := rows.Scan(
+			&featureID, &c.Version, &incID, &layerID, &c.Change, &effectiveAt, &recordedAt,
+			&messageID, &geometry, &properties, &c.Actor,
+		); err != nil {
+			return nil, err
+		}
+
+		if c.FeatureID, err = uuid.Parse(featureID); err != nil {
+			return nil, fmt.Errorf("parse feature id %q: %w", featureID, err)
+		}
+
+		if c.IncidentID, err = uuid.Parse(incID); err != nil {
+			return nil, fmt.Errorf("parse incident id %q: %w", incID, err)
+		}
+
+		if c.LayerID, err = uuid.Parse(layerID); err != nil {
+			return nil, fmt.Errorf("parse layer id %q: %w", layerID, err)
+		}
+
+		c.EffectiveAt, c.RecordedAt = effectiveAt.V, recordedAt.V
+
+		if messageID != nil {
+			id, err := uuid.Parse(*messageID)
+			if err != nil {
+				return nil, fmt.Errorf("parse message id %q: %w", *messageID, err)
+			}
+
+			c.MessageID = &id
+		}
+
+		if geometry != nil {
+			c.Geometry = jsontext.Value(*geometry)
+		}
+
+		if properties != nil {
+			c.Properties = jsontext.Value(*properties)
+		}
+
+		out = append(out, &c)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing feature messages", slog.String("feature_id", featureID.String()))
+
+	var incIDStr string
+
+	err := q.db.QueryRowContext(ctx, `
+		SELECT incident_id FROM readmodel_feature_change WHERE feature_id = ? AND change = 'placed'`,
+		featureID.String()).Scan(&incIDStr)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, shared.ErrNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	incidentID, err := uuid.Parse(incIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("parse incident id %q: %w", incIDStr, err)
+	}
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT id, number, incident_id, content, sender, sender_detail,
+		       receiver, receiver_detail, medium, msg_time,
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		FROM readmodel_message
+		WHERE id IN (
+		    SELECT message_id FROM readmodel_feature_change
+		    WHERE feature_id = ? AND message_id IS NOT NULL
+		)
+		ORDER BY msg_time, created_at`, featureID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	return collectMessages(rows)
 }

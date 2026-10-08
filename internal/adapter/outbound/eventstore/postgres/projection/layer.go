@@ -3,11 +3,14 @@ package projection
 import (
 	"context"
 	"encoding/json/jsontext"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/featurechange"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -26,9 +29,9 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 2 }
+func (h *LayerFeaturesHandler) Version() int { return 3 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
-	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features`)
+	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features, readmodel.feature_change`)
 	return err
 }
 
@@ -121,6 +124,11 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 }
 
 func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx, e eventsourcing.Event) error {
+	apply, err := recordFeatureChange(ctx, tx, e)
+	if err != nil || !apply {
+		return err
+	}
+
 	id := e.StreamID
 	switch e.EventType {
 	case "Placed", "Imported":
@@ -232,4 +240,70 @@ func (h *LayerFeaturesHandler) applyFeatureEvent(ctx context.Context, tx pgx.Tx,
 	}
 
 	return nil
+}
+
+// recordFeatureChange persists the event in readmodel.feature_change and reports whether
+// it should update the layer's current GeoJSON.
+//
+// It is idempotent: a redelivered event finds its row already present and applies nothing.
+// Changes are ordered by effective time, so an older change recorded later (a message
+// drawn out of order) is kept as history but does not override a newer geometry or
+// properties.
+func recordFeatureChange(ctx context.Context, tx pgx.Tx, e eventsourcing.Event) (bool, error) {
+	c, ok, err := featurechange.Decode(e)
+	if err != nil || !ok {
+		return false, err
+	}
+
+	incidentID, layerID := c.IncidentID, c.LayerID
+
+	if c.Kind != featurechange.Placed {
+		// Moved/Restyled/Removed do not repeat where the feature lives; take it from its placed row.
+		err := tx.QueryRow(ctx, `
+			SELECT incident_id::text, layer_id::text
+			FROM readmodel.feature_change
+			WHERE feature_id = $1 AND change = 'placed'`, e.StreamID).Scan(&incidentID, &layerID)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		}
+
+		if err != nil {
+			return false, err
+		}
+	}
+
+	var latest *time.Time
+
+	if kinds := c.GuardKinds(); len(kinds) > 0 {
+		names := make([]string, len(kinds))
+		for i, k := range kinds {
+			names[i] = string(k)
+		}
+
+		if err := tx.QueryRow(ctx, `
+			SELECT max(effective_at)
+			FROM readmodel.feature_change
+			WHERE feature_id = $1 AND change = ANY($2) AND version < $3`,
+			e.StreamID, names, c.Version).Scan(&latest); err != nil {
+			return false, err
+		}
+	}
+
+	tag, err := tx.Exec(ctx, `
+		INSERT INTO readmodel.feature_change
+		  (feature_id, version, incident_id, layer_id, change, effective_at, recorded_at,
+		   message_id, geometry, properties, actor)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, NULLIF($8, '')::uuid, $9, $10, $11)
+		ON CONFLICT (feature_id, version) DO NOTHING`,
+		e.StreamID, c.Version, incidentID, layerID, string(c.Kind), c.EffectiveAt, c.RecordedAt,
+		c.MessageID, nullableJSON(c.Geometry), nullableJSON(c.Properties), c.Actor)
+	if err != nil {
+		return false, err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return false, nil // already applied
+	}
+
+	return c.UpdatesCurrentState(latest), nil
 }
