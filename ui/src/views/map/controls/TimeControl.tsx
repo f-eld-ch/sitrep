@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { useFeatureChangeTimes } from "api/layer";
 import { useIncidentMessages } from "api/message";
@@ -8,6 +8,12 @@ import { TimelineSlider } from "./TimelineSlider";
 
 /** Only the message times matter here, and they change slowly: no need to follow the 5 s journal poll. */
 const TICK_REFRESH_MS = 60_000;
+
+/**
+ * The custom property on the map that carries the height the slider takes at the bottom, so the
+ * controls in the bottom right corner can make room for it.
+ */
+export const TIMELINE_HEIGHT_VAR = "--map-timeline-height";
 
 /** The wall clock; event handlers read it when they run, never during render. */
 const currentTime = () => Date.now();
@@ -26,6 +32,25 @@ export function TimeControl() {
   const featureTimes = useFeatureChangeTimes(incidentId, { pollInterval: TICK_REFRESH_MS });
   // Taken when the control mounts; only used when the incident has no start time yet.
   const [now] = useState(() => currentTime());
+  const overlay = useRef<HTMLDivElement>(null);
+  const hasTimeline = setAsOf !== undefined;
+
+  // Tells the map how much room the slider takes, so the layer box is pushed above it.
+  useEffect(() => {
+    const element = overlay.current;
+    const map = element?.parentElement;
+    if (!hasTimeline || !element || !map || typeof ResizeObserver === "undefined") return;
+
+    const publish = () => map.style.setProperty(TIMELINE_HEIGHT_VAR, `${element.offsetHeight}px`);
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      map.style.removeProperty(TIMELINE_HEIGHT_VAR);
+    };
+  }, [hasTimeline]);
 
   if (!setAsOf) return null;
 
@@ -49,7 +74,10 @@ export function TimeControl() {
   );
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex justify-center px-2">
+    <div
+      ref={overlay}
+      className="pointer-events-none absolute inset-x-0 bottom-9 z-10 flex justify-center px-2"
+    >
       <TimelineSlider
         className="pointer-events-auto max-w-2xl"
         asOf={asOf}

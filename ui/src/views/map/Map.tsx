@@ -50,7 +50,7 @@ import { isPendingFeature, withPendingFeatures } from "./pending";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
-import { TimeControl } from "./controls/TimeControl";
+import { TIMELINE_HEIGHT_VAR, TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
@@ -190,7 +190,10 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
+      <div
+        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1"
+        style={{ paddingBottom: `var(${TIMELINE_HEIGHT_VAR}, 0px)` }}
+      >
         {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
         {drawingMessage && (
           <MessageHighlightToggle
