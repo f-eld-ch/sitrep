@@ -210,8 +210,19 @@ function MessageMapView() {
             </button>
           </div>
         )}
-        {selected === undefined ? (
-          <EmptyState allDrawn={mapMessages.length > 0 && undrawn.length === 0} />
+        {selected === undefined && mapMessages.length > 0 && undrawn.length === 0 ? (
+          <>
+            {/* Where the message usually is; below it the map as it stands now. */}
+            <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-4 text-success">
+              <FontAwesomeIcon icon={faCheckCircle} className="text-3xl" />
+              <p className="text-lg font-bold">{t("messageMap.allDrawn")}</p>
+            </div>
+            <div className="min-h-0 flex-1">
+              <IncidentMap embedded readOnly />
+            </div>
+          </>
+        ) : selected === undefined ? (
+          <EmptyState />
         ) : (
           <>
             <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-4 py-2">
@@ -301,17 +312,14 @@ function MessageMapView() {
   );
 }
 
-function EmptyState({ allDrawn }: { allDrawn: boolean }) {
+function EmptyState() {
   const { t } = useTranslation();
 
   return (
-    <div className={clsx("flex flex-1 items-center justify-center", allDrawn && "text-success")}>
+    <div className="flex flex-1 items-center justify-center">
       <div className="text-center">
-        {allDrawn && <FontAwesomeIcon icon={faCheckCircle} className="mb-3 text-5xl" />}
-        <p className="text-lg font-bold">
-          {allDrawn ? t("messageMap.allDrawn") : t("messageMap.noMessages")}
-        </p>
-        {!allDrawn && <p className="mt-1 text-sm text-fg-muted">{t("messageMap.pickMessage")}</p>}
+        <p className="text-lg font-bold">{t("messageMap.noMessages")}</p>
+        <p className="mt-1 text-sm text-fg-muted">{t("messageMap.pickMessage")}</p>
       </div>
     </div>
   );
