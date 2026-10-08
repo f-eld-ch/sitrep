@@ -107,85 +107,18 @@ export function ReloadPrompt() {
     return () => window.removeEventListener("sw-update-available", handler);
   }, [setNeedRefresh, setOfflineReady, tabId, dismissUntil]);
 
-  // Fallback: directly inspect navigator.serviceWorker registration and events
+  // The running page is controlled by a new worker (this tab or another applied the update),
+  // so there is nothing left to offer. Clearing here is what stops the prompt lingering when
+  // the update was applied without this tab's "Reload now" click.
   useEffect(() => {
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
-
-    let mounted = true;
-
-    async function checkRegistration() {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (!mounted || !reg) return;
-
-        if (reg.waiting) {
-          setNeedRefresh(true);
-          setOfflineReady(true);
-        }
-
-        // If there's an installing worker already, listen to its state changes immediately
-        if (reg.installing) {
-          const inst = reg.installing;
-          const onStateChange = () => {
-            if (inst.state === "installed") {
-              // new SW installed and waiting
-              setNeedRefresh(true);
-              setOfflineReady(true);
-            }
-          };
-          inst.addEventListener("statechange", onStateChange);
-          // check current state in case it is already installed
-          onStateChange();
-        }
-
-        reg.addEventListener("updatefound", () => {
-          const installing = reg.installing;
-          if (installing) {
-            installing.addEventListener("statechange", () => {
-              if (installing.state === "installed") {
-                // new SW installed and waiting
-                setNeedRefresh(true);
-                setOfflineReady(true);
-              }
-            });
-          }
-        });
-      } catch (e) {
-        console.error("SW registration check failed:", e);
-      }
-    }
-
-    checkRegistration();
-
-    // Additional fallback: poll the registration.waiting for short period
-    let polls = 0;
-    const maxPolls = 20; // ~20s
-    const pollInterval = 1000;
-    const pollId = setInterval(async () => {
-      if (!mounted) return;
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg?.waiting) {
-          setNeedRefresh(true);
-          setOfflineReady(true);
-          clearInterval(pollId);
-          return;
-        }
-      } catch (e) {
-        console.error("SW poll failed:", e);
-      }
-      polls += 1;
-      if (polls >= maxPolls) clearInterval(pollId);
-    }, pollInterval);
-
-    return () => {
-      mounted = false;
-      try {
-        clearInterval(pollId);
-      } catch (e) {
-        console.error("Error clearing SW poll interval:", e);
-      }
+    const onControllerChange = () => {
+      setNeedRefresh(false);
+      setOfflineReady(false);
     };
+    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    return () =>
+      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
   }, [setNeedRefresh, setOfflineReady]);
 
   const visible = needRefresh && (!dismissUntil || now() > dismissUntil);
@@ -207,10 +140,17 @@ export function ReloadPrompt() {
 
   const [reloading, setReloading] = useState(false);
 
-  const handleReloadNow = () => {
+  const handleReloadNow = async () => {
     setReloading(true);
     channelRef.current?.post({ type: "apply-now", tabId });
-    updateServiceWorker(true);
+    // updateServiceWorker(true) only reloads when a waiting worker exists. If another tab
+    // already activated it there is nothing to wait for, so reload to pick up the new bundle.
+    const reg = await navigator.serviceWorker?.getRegistration();
+    if (!reg?.waiting) {
+      window.location.reload();
+      return;
+    }
+    await updateServiceWorker(true);
   };
 
   const handleLater = (hours = 1) => {
