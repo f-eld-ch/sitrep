@@ -295,8 +295,11 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
   return layers[nextIndex].id;
 }
 
+/** For maps nobody edits live: the operator drawing for a message, and the read-only dashboard map. */
+const SLOW_POLL_INTERVAL_MS = 10_000;
+
 // LayerFetcher polls from the layers and sets the layers from remote
-function LayerFetcher() {
+function LayerFetcher({ livePollInterval }: { livePollInterval: number }) {
   const { incidentId } = useParams();
   const { dispatch } = useContext(LayerContext);
   const { asOf, drawingMessage } = useContext(MapTimeContext);
@@ -306,7 +309,7 @@ function LayerFetcher() {
 
   // A fixed point in the past does not change while it is looked at, so it is not polled. The
   // operator's own drawing updates the cache directly; others' arrive on a slow poll.
-  const pollInterval = drawingMessage ? 10_000 : asOf ? 0 : LIVE_POLL_INTERVAL_MS;
+  const pollInterval = drawingMessage ? SLOW_POLL_INTERVAL_MS : asOf ? 0 : livePollInterval;
 
   const result = useLayersForIncident(incidentId, asOf, { pollInterval });
   const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
@@ -762,7 +765,10 @@ function MapWithProvder({ asOf, drawingMessage, ...options }: MapViewOptions) {
         <LayersProvider>
           <MapTimeContext.Provider value={mapTime}>
             <MapView {...options} />
-            <LayerFetcher />
+            {/* A read-only map (the dashboard) only displays; it does not need the editing cadence. */}
+            <LayerFetcher
+              livePollInterval={options.readOnly ? SLOW_POLL_INTERVAL_MS : LIVE_POLL_INTERVAL_MS}
+            />
           </MapTimeContext.Provider>
         </LayersProvider>
       </MapProvider>
