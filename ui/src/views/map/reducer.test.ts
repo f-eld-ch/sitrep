@@ -30,6 +30,24 @@ describe("activeLayerReducer", () => {
     expect(result).toBe("parent-layer");
   });
 
+  it("chooses the preferred kind over the first layer", () => {
+    const messageMap = { ...layer("z-map", "parent"), kind: "MESSAGE_MAP" as const };
+    const layers = [layer("a-standard", "parent"), messageMap];
+
+    expect(
+      activeLayerReducer(undefined, {
+        type: "SET_LAYERS",
+        payload: { viewedIncidentId: "parent", layers, preferredKind: "MESSAGE_MAP" },
+      }),
+    ).toBe("z-map");
+    expect(
+      activeLayerReducer(undefined, {
+        type: "SET_LAYERS",
+        payload: { viewedIncidentId: "parent", layers, preferredKind: "STANDARD" },
+      }),
+    ).toBe("a-standard");
+  });
+
   it("keeps an inherited active layer selectable for viewing", () => {
     const result = activeLayerReducer("child-layer", {
       type: "SET_LAYERS",
