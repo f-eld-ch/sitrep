@@ -6,6 +6,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
+import { divisionShortLabel } from "utils/divisionLabel";
 import { ReactPreview } from "./Markdown";
 
 type AccentKey = "warning" | "success" | "dark" | "danger" | "none";
@@ -50,6 +51,7 @@ function MessageRow(props: {
   setRef?: (el: HTMLButtonElement | null) => void;
 }) {
   const { message, selected, onClick, setRef } = props;
+  const { t } = useTranslation();
   const accent = accentKeyForMessage(message);
 
   return (
@@ -97,7 +99,7 @@ function MessageRow(props: {
               key={d.division.id}
               className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
             >
-              {d.division.name || d.division.description}
+              {divisionShortLabel(d.division, t)}
             </span>
           ))}
           {message.divisions.length > 3 && (

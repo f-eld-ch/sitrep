@@ -129,9 +129,10 @@ type DeploymentLocationInput struct {
 }
 
 type Division struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Kind        DivisionKind `json:"kind"`
 }
 
 type DivisionInput struct {
@@ -201,9 +202,10 @@ type IncidentAccessGrant struct {
 type Layer struct {
 	ID string `json:"id"`
 	// Incident that owns this layer. Differs from the viewed incident for inherited child layers.
-	SourceIncidentID   string `json:"sourceIncidentId"`
-	SourceIncidentName string `json:"sourceIncidentName"`
-	Name               string `json:"name"`
+	SourceIncidentID   string    `json:"sourceIncidentId"`
+	SourceIncidentName string    `json:"sourceIncidentName"`
+	Name               string    `json:"name"`
+	Kind               LayerKind `json:"kind"`
 	// Revision counter; increments on every feature change. Use for change detection.
 	Revision int        `json:"revision"`
 	Features []*Feature `json:"features"`
@@ -486,6 +488,63 @@ func (e ContactMedium) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// Classifies system-managed divisions. Clients render a translated label for non-STANDARD kinds.
+type DivisionKind string
+
+const (
+	DivisionKindStandard DivisionKind = "STANDARD"
+	// The Nachrichtenkarte. Exactly one per incident, created and protected by the backend.
+	DivisionKindMessageMap DivisionKind = "MESSAGE_MAP"
+)
+
+var AllDivisionKind = []DivisionKind{
+	DivisionKindStandard,
+	DivisionKindMessageMap,
+}
+
+func (e DivisionKind) IsValid() bool {
+	switch e {
+	case DivisionKindStandard, DivisionKindMessageMap:
+		return true
+	}
+	return false
+}
+
+func (e DivisionKind) String() string {
+	return string(e)
+}
+
+func (e *DivisionKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DivisionKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DivisionKind", str)
+	}
+	return nil
+}
+
+func (e DivisionKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *DivisionKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e DivisionKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type GlobalRole string
 
 const (
@@ -650,6 +709,63 @@ func (e *IncidentRole) UnmarshalJSON(b []byte) error {
 }
 
 func (e IncidentRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Classifies system-managed layers. Clients render a translated label for non-STANDARD kinds.
+type LayerKind string
+
+const (
+	LayerKindStandard LayerKind = "STANDARD"
+	// The Nachrichtenkarte layer. Exactly one per incident, created and protected by the backend.
+	LayerKindMessageMap LayerKind = "MESSAGE_MAP"
+)
+
+var AllLayerKind = []LayerKind{
+	LayerKindStandard,
+	LayerKindMessageMap,
+}
+
+func (e LayerKind) IsValid() bool {
+	switch e {
+	case LayerKindStandard, LayerKindMessageMap:
+		return true
+	}
+	return false
+}
+
+func (e LayerKind) String() string {
+	return string(e)
+}
+
+func (e *LayerKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LayerKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LayerKind", str)
+	}
+	return nil
+}
+
+func (e LayerKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *LayerKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e LayerKind) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

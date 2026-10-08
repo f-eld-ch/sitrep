@@ -29,6 +29,7 @@ type LayerRow struct {
 	ID         uuid.UUID
 	IncidentID uuid.UUID
 	Name       string
+	Kind       string
 	Features   map[uuid.UUID]featureItem
 	Revision   int
 	Removed    bool
@@ -77,7 +78,7 @@ func NewLayerFeaturesHandler() *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 1 }
+func (h *LayerFeaturesHandler) Version() int { return 2 }
 
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -92,7 +93,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 	switch st {
 	case "Layer":
 		switch t {
-		case "Created", "Renamed", "Removed", "Imported":
+		case "Created", "KindAssigned", "Renamed", "Removed", "Imported":
 			return true
 		}
 	case "Feature":
@@ -126,6 +127,7 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 		var d struct {
 			IncidentID string `json:"incidentId"`
 			Name       string `json:"name"`
+			Kind       string `json:"kind"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -140,7 +142,20 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 			ID:         id,
 			IncidentID: incidentID,
 			Name:       d.Name,
+			Kind:       d.Kind,
 			Features:   make(map[uuid.UUID]featureItem),
+		}
+
+	case "KindAssigned":
+		var d struct {
+			Kind string `json:"kind"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.Kind = d.Kind
 		}
 
 	case "Renamed":

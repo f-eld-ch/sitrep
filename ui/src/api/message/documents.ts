@@ -27,6 +27,7 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
         id
         name
         description
+        kind
       }
       messages {
         id
@@ -47,6 +48,7 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
           id
           name
           description
+          kind
         }
         attachments {
           id
@@ -86,6 +88,7 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
         id
         name
         description
+        kind
       }
       attachments {
         id
@@ -112,6 +115,7 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
         id
         name
         description
+        kind
       }
     }
   }
@@ -163,6 +167,7 @@ export const CREATE_MESSAGE: TypedDocumentNode<
         id
         name
         description
+        kind
       }
     }
   }
@@ -238,6 +243,7 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         id
         name
         description
+        kind
       }
       linkedResourceIds
     }

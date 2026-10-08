@@ -22,6 +22,7 @@ const WIRE_LAYER: WireLayer = {
   sourceIncidentId: "inc-1",
   sourceIncidentName: "Regional",
   name: "Alpha Layer",
+  kind: "STANDARD",
   revision: 1,
   features: [WIRE_FEATURE_1, WIRE_FEATURE_2],
 };

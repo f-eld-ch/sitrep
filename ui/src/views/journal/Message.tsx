@@ -52,6 +52,7 @@ import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
 import { Tag } from "components/ui";
+import { divisionShortLabel } from "utils/divisionLabel";
 import type { TagVariant } from "components/ui";
 import { ReactPreview } from "./Markdown";
 import MessageSheet from "./MessageSheet";
@@ -338,9 +339,7 @@ const MessageContainer = ({
           >
             {message.divisions?.map((d) => (
               <Tag key={d.division.id} size="sm" className="px-2" variant={tagVariant}>
-                {d.division.name && d.division.name.trim() !== ""
-                  ? d.division.name
-                  : d.division.description}
+                {divisionShortLabel(d.division, t)}
               </Tag>
             ))}
           </div>

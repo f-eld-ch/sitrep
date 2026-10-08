@@ -1578,6 +1578,7 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 		SourceIncidentID:   incidentID,
 		SourceIncidentName: inc.Name(),
 		Name:               name,
+		Kind:               model.LayerKindStandard,
 		Revision:           0,
 		Features:           []*model.Feature{},
 	}, nil

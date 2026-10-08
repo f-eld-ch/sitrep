@@ -26,11 +26,17 @@ export function toAttachment(w: WireAttachment): Attachment {
   };
 }
 
-export function toDivision(w: { id: string; name: string; description: string }): Division {
+export function toDivision(w: {
+  id: string;
+  name: string;
+  description: string;
+  kind: Division["kind"];
+}): Division {
   return {
     id: w.id,
     name: w.name,
     description: w.description,
+    kind: w.kind,
   };
 }
 

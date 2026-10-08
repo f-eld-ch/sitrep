@@ -104,6 +104,31 @@ const (
 	MediumOther Medium = "OTHER"
 )
 
+// DivisionKind classifies system-managed divisions. The zero value is a regular,
+// user-managed division.
+type DivisionKind string
+
+const (
+	DivisionKindStandard   DivisionKind = ""
+	DivisionKindMessageMap DivisionKind = "MESSAGE_MAP"
+)
+
+// LayerKind classifies system-managed layers. The zero value is a regular layer.
+type LayerKind string
+
+const (
+	LayerKindStandard   LayerKind = ""
+	LayerKindMessageMap LayerKind = "MESSAGE_MAP"
+)
+
+// Fallback labels for system-managed entities. Clients render a translated label
+// based on the kind; these only back stored data and non-localised consumers.
+const (
+	MessageMapDivisionName        = "Karte"
+	MessageMapDivisionDescription = "Nachrichtenkarte"
+	MessageMapLayerName           = "Nachrichtenkarte"
+)
+
 type TriageStatus string
 
 const (

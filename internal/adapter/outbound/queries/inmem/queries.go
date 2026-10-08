@@ -119,6 +119,7 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 			ID:          div.ID,
 			Name:        div.Name,
 			Description: div.Description,
+			Kind:        div.Kind,
 			RemovedAt:   div.RemovedAt,
 		})
 	}
@@ -336,6 +337,7 @@ func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *u
 			SourceIncidentID:   row.IncidentID,
 			SourceIncidentName: sourceName,
 			Name:               row.Name,
+			Kind:               row.Kind,
 			GeoJSON:            row.GeoJSON(),
 			Revision:           row.Revision,
 		})

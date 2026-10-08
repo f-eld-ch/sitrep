@@ -128,8 +128,10 @@ func TestCreateIncident_WithDivisionsAndLayers(t *testing.T) {
 	require.NotNil(t, result)
 	require.NotNil(t, result.Incident)
 	assert.Equal(t, "Incident With Divisions", result.Incident.Name)
-	assert.Len(t, result.Incident.Divisions, 2)
-	assert.Equal(t, "Alpha", result.Incident.Divisions[0].Name)
+	// the system-managed message map division comes first
+	require.Len(t, result.Incident.Divisions, 3)
+	assert.Equal(t, model.DivisionKindMessageMap, result.Incident.Divisions[0].Kind)
+	assert.Equal(t, "Alpha", result.Incident.Divisions[1].Name)
 }
 
 func TestCreateIncident_NoActor_ReturnsError(t *testing.T) {
@@ -558,6 +560,10 @@ func TestLayersForIncident_AfterCreate(t *testing.T) {
 
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
+	require.Len(t, layers, 2, "requested layer + message map layer")
+	assert.Equal(t, model.LayerKindMessageMap, layers[0].Kind)
+
+	layers = userLayers(layers)
 	require.Len(t, layers, 1)
 	assert.Equal(t, "Sector Map", layers[0].Name)
 }
@@ -577,7 +583,7 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 		Name:      "GFS Altdorf",
 		ParentID:  &parent.Incident.ID,
 		Divisions: []*model.DivisionInput{},
-		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+		Layers:    []*model.LayerInput{{Name: "Lagekarte"}},
 	})
 	require.NoError(t, err)
 	require.NotNil(t, child.Incident.ParentID)
@@ -587,7 +593,9 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 
 	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
-	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Nachrichtenkarte"}, []string{
+
+	layers = userLayers(layers)
+	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Lagekarte"}, []string{
 		layers[0].SourceIncidentName + ":" + layers[0].Name,
 		layers[1].SourceIncidentName + ":" + layers[1].Name,
 	})
@@ -620,6 +628,8 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
+
+	parentLayers = userLayers(parentLayers)
 	require.Len(t, parentLayers, 2)
 	assert.ElementsMatch(
 		t,
@@ -640,6 +650,8 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID)
 	require.NoError(t, err)
+
+	childLayers = userLayers(childLayers)
 	require.Len(t, childLayers, 1)
 	assert.Equal(t, "Municipal Map", childLayers[0].Name)
 
@@ -651,6 +663,8 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
+
+	parentLayers = userLayers(parentLayers)
 	require.Len(t, parentLayers, 1)
 	assert.Equal(t, "Regional Map", parentLayers[0].Name)
 }
@@ -673,7 +687,7 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 		Name:      "GFS Ahausen",
 		Divisions: []*model.DivisionInput{},
 		Layers: []*model.LayerInput{
-			{Name: "Nachrichtenkarte"},
+			{Name: "Rettungskarte"},
 			{Name: "Führungskarte"},
 		},
 	})
@@ -682,7 +696,7 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 	altdorf, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
 		Name:      "GFS Altdorf",
 		Divisions: []*model.DivisionInput{},
-		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+		Layers:    []*model.LayerInput{{Name: "Rettungskarte"}},
 	})
 	require.NoError(t, err)
 
@@ -694,14 +708,16 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 
 	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 	require.Len(t, layers, 5)
 
 	assert.Equal(t, []string{
 		"KFS:Erste KFS Karte",
 		"KFS:Zweite KFS Karte",
 		"GFS Ahausen:Führungskarte",
-		"GFS Ahausen:Nachrichtenkarte",
-		"GFS Altdorf:Nachrichtenkarte",
+		"GFS Ahausen:Rettungskarte",
+		"GFS Altdorf:Rettungskarte",
 	}, []string{
 		layers[0].SourceIncidentName + ":" + layers[0].Name,
 		layers[1].SourceIncidentName + ":" + layers[1].Name,
@@ -758,8 +774,8 @@ func TestTriageMessage_WithDivision_EnrichesResponse(t *testing.T) {
 		Layers:    []*model.LayerInput{},
 	})
 	require.NoError(t, err)
-	require.Len(t, inc.Incident.Divisions, 1)
-	divID := inc.Incident.Divisions[0].ID
+	require.Len(t, inc.Incident.Divisions, 2)
+	divID := inc.Incident.Divisions[1].ID
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
 		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B",
@@ -834,6 +850,8 @@ func TestCreateLayer_AppearsInQuery(t *testing.T) {
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
 
+	layers = userLayers(layers)
+
 	var found bool
 
 	for _, l := range layers {
@@ -860,6 +878,8 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 	require.NotEmpty(t, layers)
 	layerID := layers[0].ID
 
@@ -888,6 +908,8 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx))
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 
 	layerID := layers[0].ID
 
@@ -920,6 +942,8 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx))
 	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 
 	layerID := layers[0].ID
 
@@ -1137,4 +1161,17 @@ func TestCreateIncident_InheritsDefaultTemplateGrants(t *testing.T) {
 
 	assert.True(t, grantedIDs[actor.Sub], "creator should be in grants")
 	assert.True(t, grantedIDs[viewer.ID], "default template viewer grant should be inherited")
+}
+
+// userLayers drops the system-managed message map layer that every incident gets.
+func userLayers(layers []*model.Layer) []*model.Layer {
+	out := make([]*model.Layer, 0, len(layers))
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindStandard {
+			out = append(out, l)
+		}
+	}
+
+	return out
 }

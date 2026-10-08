@@ -62,8 +62,12 @@ export interface DivisionList {
   division: Division;
 }
 
+/** STANDARD divisions are user-managed; MESSAGE_MAP is the system-managed Nachrichtenkarte. */
+export type DivisionKind = "STANDARD" | "MESSAGE_MAP";
+
 export interface Division {
   id: string;
   name: string;
   description: string;
+  kind: DivisionKind;
 }

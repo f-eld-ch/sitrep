@@ -30,5 +30,11 @@ func GoMigrations() []*goose.Migration {
 	)
 	sp.Source = "00020_backfill_default_schadenplatz.go"
 
-	return []*goose.Migration{m, access, sp}
+	messageMap := goose.NewGoMigration(27,
+		&goose.GoFunc{RunTx: upBackfillMessageMap},
+		&goose.GoFunc{RunTx: downBackfillMessageMap},
+	)
+	messageMap.Source = "00027_backfill_message_map.go"
+
+	return []*goose.Migration{m, access, sp, messageMap}
 }

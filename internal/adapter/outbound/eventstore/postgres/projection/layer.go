@@ -26,7 +26,7 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 1 }
+func (h *LayerFeaturesHandler) Version() int { return 2 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features`)
 	return err
@@ -36,7 +36,7 @@ func (h *LayerFeaturesHandler) Handles(st, t string) bool {
 	switch st {
 	case "Layer":
 		switch t {
-		case "Created", "Renamed", "Removed", "Imported":
+		case "Created", "KindAssigned", "Renamed", "Removed", "Imported":
 			return true
 		}
 	case "Feature":
@@ -72,6 +72,7 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 		type created struct {
 			IncidentID string `json:"incidentId"`
 			Name       string `json:"name"`
+			Kind       string `json:"kind"`
 		}
 
 		var d created
@@ -80,12 +81,22 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 		}
 
 		err := exec(tx, ctx, `
-			INSERT INTO readmodel.layer_features (id, incident_id, name, geojson, revision, removed)
-			VALUES ($1, $2, $3, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, false)
-			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
-			id, d.IncidentID, d.Name)
+			INSERT INTO readmodel.layer_features (id, incident_id, name, kind, geojson, revision, removed)
+			VALUES ($1, $2, $3, $4, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, false)
+			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, kind = EXCLUDED.kind`,
+			id, d.IncidentID, d.Name, d.Kind)
 
 		return err
+
+	case "KindAssigned":
+		var d struct {
+			Kind string `json:"kind"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(tx, ctx, `UPDATE readmodel.layer_features SET kind = $1 WHERE id = $2`, d.Kind, id)
 
 	case "Renamed":
 		type renamed struct {

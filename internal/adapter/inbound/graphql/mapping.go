@@ -43,6 +43,7 @@ func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
 			ID:          d.ID.String(),
 			Name:        d.Name,
 			Description: d.Description,
+			Kind:        divisionKindToModel(d.Kind),
 		})
 	}
 
@@ -78,6 +79,7 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 			ID:          d.ID.String(),
 			Name:        d.Name,
 			Description: d.Description,
+			Kind:        divisionKindToModel(d.Kind),
 		})
 	}
 
@@ -181,7 +183,24 @@ func divisionRMToModel(r *outbound.DivisionRM) *model.Division {
 		ID:          r.ID.String(),
 		Name:        r.Name,
 		Description: r.Description,
+		Kind:        divisionKindToModel(shared.DivisionKind(r.Kind)),
 	}
+}
+
+func divisionKindToModel(k shared.DivisionKind) model.DivisionKind {
+	if k == shared.DivisionKindMessageMap {
+		return model.DivisionKindMessageMap
+	}
+
+	return model.DivisionKindStandard
+}
+
+func layerKindToModel(k shared.LayerKind) model.LayerKind {
+	if k == shared.LayerKindMessageMap {
+		return model.LayerKindMessageMap
+	}
+
+	return model.LayerKindStandard
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -241,6 +260,7 @@ func layerRMToModel(r *outbound.LayerRM) (*model.Layer, error) {
 		SourceIncidentID:   r.SourceIncidentID.String(),
 		SourceIncidentName: r.SourceIncidentName,
 		Name:               r.Name,
+		Kind:               layerKindToModel(shared.LayerKind(r.Kind)),
 		Revision:           r.Revision,
 	}
 

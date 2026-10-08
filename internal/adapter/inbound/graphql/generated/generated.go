@@ -92,6 +92,7 @@ type ComplexityRoot struct {
 	Division struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Kind        func(childComplexity int) int
 		Name        func(childComplexity int) int
 	}
 
@@ -145,6 +146,7 @@ type ComplexityRoot struct {
 	Layer struct {
 		Features           func(childComplexity int) int
 		ID                 func(childComplexity int) int
+		Kind               func(childComplexity int) int
 		Name               func(childComplexity int) int
 		Revision           func(childComplexity int) int
 		SourceIncidentID   func(childComplexity int) int
@@ -609,6 +611,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Division.ID(childComplexity), true
+	case "Division.kind":
+		if e.ComplexityRoot.Division.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Division.Kind(childComplexity), true
 	case "Division.name":
 		if e.ComplexityRoot.Division.Name == nil {
 			break
@@ -825,6 +833,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Layer.ID(childComplexity), true
+	case "Layer.kind":
+		if e.ComplexityRoot.Layer.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Layer.Kind(childComplexity), true
 	case "Layer.name":
 		if e.ComplexityRoot.Layer.Name == nil {
 			break
@@ -2101,6 +2115,20 @@ enum TriageStatus {
   RESET
 }
 
+"""Classifies system-managed divisions. Clients render a translated label for non-STANDARD kinds."""
+enum DivisionKind {
+  STANDARD
+  """The Nachrichtenkarte. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
+"""Classifies system-managed layers. Clients render a translated label for non-STANDARD kinds."""
+enum LayerKind {
+  STANDARD
+  """The Nachrichtenkarte layer. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
 enum PriorityStatus {
   NORMAL
   HIGH
@@ -2192,6 +2220,7 @@ type Division {
   id: ID!
   name: String!
   description: String!
+  kind: DivisionKind!
 }
 
 """A file attached to a message."""
@@ -2403,6 +2432,7 @@ type Layer {
   sourceIncidentId: ID!
   sourceIncidentName: String!
   name: String!
+  kind: LayerKind!
   """Revision counter; increments on every feature change. Use for change detection."""
   revision: Int!
   features: [Feature!]!
@@ -2807,6 +2837,8 @@ func (ec *executionContext) childFields_Division(ctx context.Context, field grap
 		return ec.fieldContext_Division_name(ctx, field)
 	case "description":
 		return ec.fieldContext_Division_description(ctx, field)
+	case "kind":
+		return ec.fieldContext_Division_kind(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Division", field.Name)
 }
@@ -2915,6 +2947,8 @@ func (ec *executionContext) childFields_Layer(ctx context.Context, field graphql
 		return ec.fieldContext_Layer_sourceIncidentName(ctx, field)
 	case "name":
 		return ec.fieldContext_Layer_name(ctx, field)
+	case "kind":
+		return ec.fieldContext_Layer_kind(ctx, field)
 	case "revision":
 		return ec.fieldContext_Layer_revision(ctx, field)
 	case "features":
@@ -5254,6 +5288,29 @@ func (ec *executionContext) fieldContext_Division_description(_ context.Context,
 	return graphql.NewScalarFieldContext("Division", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
+func (ec *executionContext) _Division_kind(ctx context.Context, field graphql.CollectedField, obj *model.Division) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Division_kind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Kind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.DivisionKind) graphql.Marshaler {
+			return ec.marshalNDivisionKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionKind(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Division_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Division", field, false, false, errors.New("field of type DivisionKind does not have child fields"))
+}
+
 func (ec *executionContext) _Feature_id(ctx context.Context, field graphql.CollectedField, obj *model.Feature) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6152,6 +6209,29 @@ func (ec *executionContext) _Layer_name(ctx context.Context, field graphql.Colle
 }
 func (ec *executionContext) fieldContext_Layer_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Layer", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Layer_kind(ctx context.Context, field graphql.CollectedField, obj *model.Layer) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Layer_kind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Kind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.LayerKind) graphql.Marshaler {
+			return ec.marshalNLayerKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayerKind(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Layer_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Layer", field, false, false, errors.New("field of type LayerKind does not have child fields"))
 }
 
 func (ec *executionContext) _Layer_revision(ctx context.Context, field graphql.CollectedField, obj *model.Layer) (ret graphql.Marshaler) {
@@ -12898,6 +12978,11 @@ func (ec *executionContext) _Division(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "kind":
+			out.Values[i] = ec._Division_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13570,6 +13655,11 @@ func (ec *executionContext) _Layer(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "name":
 			out.Values[i] = ec._Layer_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "kind":
+			out.Values[i] = ec._Layer_kind(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15730,6 +15820,16 @@ func (ec *executionContext) unmarshalNDivisionInput2ᚖgithubᚗcomᚋfᚑeldᚑ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNDivisionKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionKind(ctx context.Context, v any) (model.DivisionKind, error) {
+	var res model.DivisionKind
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDivisionKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionKind(ctx context.Context, sel ast.SelectionSet, v model.DivisionKind) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNFeature2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐFeatureᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Feature) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
@@ -15978,6 +16078,16 @@ func (ec *executionContext) unmarshalNLayerInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑ
 func (ec *executionContext) unmarshalNLayerInput2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayerInput(ctx context.Context, v any) (*model.LayerInput, error) {
 	res, err := ec.unmarshalInputLayerInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNLayerKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayerKind(ctx context.Context, v any) (model.LayerKind, error) {
+	var res model.LayerKind
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNLayerKind2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐLayerKind(ctx context.Context, sel ast.SelectionSet, v model.LayerKind) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNMedium2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMedium(ctx context.Context, v any) (model.Medium, error) {

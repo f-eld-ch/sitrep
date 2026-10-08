@@ -8,6 +8,7 @@ function layer(id: string, sourceIncidentId: string): Layer {
     sourceIncidentId,
     sourceIncidentName: sourceIncidentId,
     name: id,
+    kind: "STANDARD",
     incident: {} as Layer["incident"],
     features: [],
     createdAt: new Date(0),

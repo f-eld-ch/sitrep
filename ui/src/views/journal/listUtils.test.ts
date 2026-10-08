@@ -143,7 +143,7 @@ describe("buildMessageList", () => {
         makeMessage({ id: "a", divisions: [] }),
         makeMessage({
           id: "b",
-          divisions: [{ division: { id: "d1", name: "Alpha", description: "" } }],
+          divisions: [{ division: { id: "d1", name: "Alpha", description: "", kind: "STANDARD" } }],
         }),
       ];
       expect(buildMessageList(msgs, { ...ALL_FILTERS, assignment: "all" })).toHaveLength(2);
@@ -153,11 +153,11 @@ describe("buildMessageList", () => {
       const msgs = [
         makeMessage({
           id: "a",
-          divisions: [{ division: { id: "d1", name: "Alpha", description: "" } }],
+          divisions: [{ division: { id: "d1", name: "Alpha", description: "", kind: "STANDARD" } }],
         }),
         makeMessage({
           id: "b",
-          divisions: [{ division: { id: "d2", name: "Bravo", description: "" } }],
+          divisions: [{ division: { id: "d2", name: "Bravo", description: "", kind: "STANDARD" } }],
         }),
       ];
       const result = buildMessageList(msgs, { ...ALL_FILTERS, assignment: "Alpha" });
@@ -169,8 +169,8 @@ describe("buildMessageList", () => {
       const msg = makeMessage({
         id: "a",
         divisions: [
-          { division: { id: "d1", name: "Alpha", description: "" } },
-          { division: { id: "d2", name: "Bravo", description: "" } },
+          { division: { id: "d1", name: "Alpha", description: "", kind: "STANDARD" } },
+          { division: { id: "d2", name: "Bravo", description: "", kind: "STANDARD" } },
         ],
       });
       const result = buildMessageList([msg], { ...ALL_FILTERS, assignment: "Bravo" });

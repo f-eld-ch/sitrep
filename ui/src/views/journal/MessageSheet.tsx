@@ -5,6 +5,7 @@ import LocalizedFormat from "dayjs/plugin/localizedFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
+import { divisionShortLabel } from "utils/divisionLabel";
 import { type Division, Medium, type Message, PriorityStatus, TriageStatus } from "types";
 import { ReactPreview } from "./Markdown";
 
@@ -113,7 +114,7 @@ const MessageSheet = (
             {divisions?.map((d) => {
               return (
                 <td key={message.id + d.id} className="text-center">
-                  {d.name && d.name.trim() !== "" ? d.name : d.description}
+                  {divisionShortLabel(d, t)}
                 </td>
               );
             })}

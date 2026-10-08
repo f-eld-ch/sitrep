@@ -24,6 +24,7 @@ export const GET_LAYERS: TypedDocumentNode<
       sourceIncidentId
       sourceIncidentName
       name
+      kind
       revision
       features {
         id

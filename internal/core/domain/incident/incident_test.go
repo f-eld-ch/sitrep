@@ -70,10 +70,59 @@ func TestIncident_Open(t *testing.T) {
 			require.NoError(t, err)
 
 			events := inc.Root().PendingEvents()
-			require.Len(t, events, 1)
+			require.Len(t, events, 2)
 			assert.Equal(t, "Opened", events[0].EventType)
+			assert.Equal(t, "DivisionAdded", events[1].EventType)
+
+			div, ok := inc.MessageMapDivision()
+			require.True(t, ok, "message map division is always created")
+			assert.Equal(t, shared.DivisionKindMessageMap, div.Kind)
+			assert.Equal(t, incident.MessageMapDivisionID(id), div.ID)
 		})
 	}
+}
+
+func TestIncident_MessageMapDivisionIsProtected(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+	at := time.Date(2026, 1, 15, 10, 0, 0, 0, time.UTC)
+
+	t.Run("open rejects client-supplied system divisions", func(t *testing.T) {
+		inc := incident.New(id)
+		err := inc.Open("X", nil, []incident.DivisionData{
+			{ID: shared.DivisionID(uuid.New()), Name: "A", Description: "B", Kind: shared.DivisionKindMessageMap},
+		}, at, "actor")
+		require.Error(t, err)
+	})
+
+	t.Run("update ignores and preserves the system division", func(t *testing.T) {
+		inc := incident.New(id)
+		require.NoError(t, inc.Open("X", nil, nil, at, "actor"))
+
+		keep := shared.DivisionID(uuid.New())
+		require.NoError(t, inc.UpdateDivisions([]incident.DivisionData{
+			{ID: keep, Name: "SC", Description: "Stabschef"},
+		}, "actor", at))
+
+		// Dropping everything, or renaming the system division, leaves it untouched.
+		require.NoError(t, inc.UpdateDivisions([]incident.DivisionData{
+			{ID: incident.MessageMapDivisionID(id), Name: "Renamed", Description: "Renamed"},
+		}, "actor", at))
+
+		div, ok := inc.MessageMapDivision()
+		require.True(t, ok)
+		assert.Equal(t, shared.MessageMapDivisionName, div.Name)
+		assert.Len(t, inc.Divisions(), 1)
+	})
+
+	t.Run("update rejects new system divisions", func(t *testing.T) {
+		inc := incident.New(id)
+		require.NoError(t, inc.Open("X", nil, nil, at, "actor"))
+
+		err := inc.UpdateDivisions([]incident.DivisionData{
+			{ID: shared.DivisionID(uuid.New()), Name: "A", Description: "B", Kind: shared.DivisionKindMessageMap},
+		}, "actor", at)
+		require.Error(t, err)
+	})
 }
 
 func TestIncident_Close(t *testing.T) {

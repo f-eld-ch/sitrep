@@ -20,7 +20,12 @@ type Division struct {
 	ID          shared.DivisionID
 	Name        string
 	Description string
+	Kind        shared.DivisionKind
 }
+
+// IsSystem reports whether the division is managed by the system and therefore
+// cannot be renamed or removed by users.
+func (d Division) IsSystem() bool { return d.Kind != shared.DivisionKindStandard }
 
 // Location is a value object owned by the Incident aggregate.
 type Location struct {
@@ -53,7 +58,7 @@ func New(id shared.IncidentID) *Incident {
 	inc.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(inc,
 		Opened{}, Renamed{}, LocationChanged{},
-		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{},
+		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{}, DivisionKindAssigned{},
 		ParentLinked{}, ParentUnlinked{},
 		Closed{}, Reopened{}, Deleted{}, Imported{},
 		DefaultSchadenplatzLinked{},
@@ -99,12 +104,26 @@ func (i *Incident) Division(id shared.DivisionID) (Division, bool) {
 	return d, ok
 }
 
+// MessageMapDivision returns the system-managed Nachrichtenkarte division.
+func (i *Incident) MessageMapDivision() (Division, bool) {
+	for _, d := range i.divisions {
+		if d.Kind == shared.DivisionKindMessageMap {
+			return d, true
+		}
+	}
+
+	return Division{}, false
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Commands (mutating methods)
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Open appends an IncidentOpened event. Called by the service after generating
 // the id, so the aggregate is always created with a pre-known identifier.
+// Open always adds the system-managed message map division (Nachrichtenkarte)
+// with a deterministic ID, so every incident has exactly one. Callers must not
+// pass divisions with a kind.
 func (i *Incident) Open(
 	name string,
 	loc *LocationData,
@@ -120,8 +139,20 @@ func (i *Incident) Open(
 		return err
 	}
 
+	for _, d := range divisions {
+		if d.Kind != shared.DivisionKindStandard {
+			return shared.ValidationError{Field: "division.kind", Message: "system divisions cannot be set"}
+		}
+	}
+
 	meta := baseMeta(actor)
 	eventsourcing.TrackChange(i, Opened{Name: name, Location: loc}, at, meta)
+	eventsourcing.TrackChange(i, DivisionAdded{Division: DivisionData{
+		ID:          MessageMapDivisionID(shared.IncidentID(i.root.ID())),
+		Name:        shared.MessageMapDivisionName,
+		Description: shared.MessageMapDivisionDescription,
+		Kind:        shared.DivisionKindMessageMap,
+	}}, at, meta)
 
 	for _, d := range divisions {
 		eventsourcing.TrackChange(i, DivisionAdded{Division: d}, at, meta)
@@ -172,14 +203,25 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 	meta := baseMeta(actor)
 
 	// Build a lookup of desired divisions by ID.
+	// System divisions are invisible to callers: they are never removed or
+	// renamed, and callers cannot introduce new ones.
 	desiredByID := make(map[shared.DivisionID]DivisionData, len(desired))
+
 	for _, d := range desired {
+		if d.Kind != shared.DivisionKindStandard {
+			return shared.ValidationError{Field: "division.kind", Message: "system divisions cannot be set"}
+		}
+
 		desiredByID[d.ID] = d
 	}
 
 	var removals []shared.DivisionID
 
-	for id := range i.divisions {
+	for id, existing := range i.divisions {
+		if existing.IsSystem() {
+			continue
+		}
+
 		if _, keep := desiredByID[id]; !keep {
 			removals = append(removals, id)
 		}
@@ -191,6 +233,10 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 
 	for _, d := range desired {
 		existing, exists := i.divisions[d.ID]
+		if exists && existing.IsSystem() {
+			continue
+		}
+
 		if !exists {
 			if err := validateDivision(d); err != nil {
 				return err
@@ -219,6 +265,40 @@ func (i *Incident) UpdateDivisions(desired []DivisionData, actor string, at time
 	}
 
 	return nil
+}
+
+// AssignDivisionKind marks an existing division as system-managed. Used by the
+// backfill; it is idempotent and refuses to create a second MESSAGE_MAP division.
+func (i *Incident) AssignDivisionKind(
+	id shared.DivisionID,
+	kind shared.DivisionKind,
+	actor string,
+	at time.Time,
+) error {
+	div, ok := i.divisions[id]
+	if !ok {
+		return shared.ErrNotFound
+	}
+
+	if div.Kind == kind {
+		return nil
+	}
+
+	if kind == shared.DivisionKindMessageMap {
+		if _, exists := i.MessageMapDivision(); exists {
+			return shared.ValidationError{Field: "division.kind", Message: "message map division already exists"}
+		}
+	}
+
+	eventsourcing.TrackChange(i, DivisionKindAssigned{ID: id, Kind: kind}, at, baseMeta(actor))
+
+	return nil
+}
+
+// MessageMapDivisionID derives the stable ID of an incident's message map
+// division, so the domain needs no ID generator.
+func MessageMapDivisionID(incidentID shared.IncidentID) shared.DivisionID {
+	return shared.DivisionID(uuid.NewSHA1(uuid.UUID(incidentID), []byte("message-map-division")))
 }
 
 func validateDivisions(divisions []DivisionData) error {
@@ -351,6 +431,12 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 			ID:          d.Division.ID,
 			Name:        d.Division.Name,
 			Description: d.Division.Description,
+			Kind:        d.Division.Kind,
+		}
+	case DivisionKindAssigned:
+		if div, ok := i.divisions[d.ID]; ok {
+			div.Kind = d.Kind
+			i.divisions[d.ID] = div
 		}
 	case DivisionRenamed:
 		if div, ok := i.divisions[d.ID]; ok {

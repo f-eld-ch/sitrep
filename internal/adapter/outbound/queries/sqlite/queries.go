@@ -277,7 +277,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT id, incident_id, name, description, removed_at
+		SELECT id, incident_id, name, description, kind, removed_at
 		FROM readmodel_incident_division
 		WHERE incident_id IN (SELECT value FROM json_each(?))
 		ORDER BY incident_id, name`, string(idsJSON))
@@ -292,9 +292,10 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 			incIDStr  string
 			name      string
 			desc      string
+			kind      string
 			removedAt sqlite.NullTime
 		)
-		if err := rows.Scan(&divIDStr, &incIDStr, &name, &desc, &removedAt); err != nil {
+		if err := rows.Scan(&divIDStr, &incIDStr, &name, &desc, &kind, &removedAt); err != nil {
 			return err
 		}
 
@@ -313,6 +314,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 				ID:          divID,
 				Name:        name,
 				Description: desc,
+				Kind:        kind,
 				RemovedAt:   removedAt.V,
 			})
 		}
@@ -579,7 +581,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT l.id, l.incident_id, i.name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel_layer_features l
 		JOIN readmodel_incident i ON i.id = l.incident_id
 		WHERE l.incident_id = ? AND l.removed = 0
@@ -636,7 +638,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT l.id, l.incident_id, i.name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel_layer_features l
 		JOIN readmodel_incident i ON i.id = l.incident_id
 		WHERE l.removed = 0
@@ -725,11 +727,12 @@ func collectLayers(rows *sql.Rows) ([]*outbound.LayerRM, error) {
 			incIDStr   string
 			srcName    string
 			name       string
+			kind       string
 			geojsonStr string
 			revision   int
 		)
 
-		if err := rows.Scan(&idStr, &incIDStr, &srcName, &name, &geojsonStr, &revision); err != nil {
+		if err := rows.Scan(&idStr, &incIDStr, &srcName, &name, &kind, &geojsonStr, &revision); err != nil {
 			return nil, err
 		}
 
@@ -749,6 +752,7 @@ func collectLayers(rows *sql.Rows) ([]*outbound.LayerRM, error) {
 			SourceIncidentID:   incID,
 			SourceIncidentName: srcName,
 			Name:               name,
+			Kind:               kind,
 			GeoJSON:            jsontext.Value(geojsonStr),
 			Revision:           revision,
 		})

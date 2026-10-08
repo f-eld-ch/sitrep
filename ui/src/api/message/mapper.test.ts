@@ -10,6 +10,7 @@ const WIRE_DIVISION: WireDivision = {
   id: "div-1",
   name: "Alpha",
   description: "Alpha division",
+  kind: "STANDARD",
 };
 
 const WIRE_ATTACHMENT = {
@@ -57,13 +58,18 @@ describe("toAttachment", () => {
 describe("toDivision", () => {
   it("maps id, name, and description", () => {
     const result = toDivision(WIRE_DIVISION);
-    expect(result).toEqual({ id: "div-1", name: "Alpha", description: "Alpha division" });
+    expect(result).toEqual({
+      id: "div-1",
+      name: "Alpha",
+      description: "Alpha division",
+      kind: "STANDARD",
+    });
   });
 
   it("does not include __typename or extra fields", () => {
     const wireWithExtra = { ...WIRE_DIVISION, __typename: "Division" as const, extra: "noise" };
     const result = toDivision(wireWithExtra);
-    expect(Object.keys(result)).toEqual(["id", "name", "description"]);
+    expect(Object.keys(result)).toEqual(["id", "name", "description", "kind"]);
   });
 });
 
@@ -85,7 +91,7 @@ describe("toMessage", () => {
     const result = toMessage(WIRE_MESSAGE);
     expect(result.divisions).toHaveLength(1);
     expect(result.divisions[0]).toEqual({
-      division: { id: "div-1", name: "Alpha", description: "Alpha division" },
+      division: { id: "div-1", name: "Alpha", description: "Alpha division", kind: "STANDARD" },
     });
   });
 

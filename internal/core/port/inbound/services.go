@@ -96,15 +96,18 @@ type AccessService interface {
 // CreateIncidentResult is returned from CreateIncident so resolvers can build
 // the mutation response from aggregate state without a projection read.
 type CreateIncidentResult struct {
-	IncidentID   shared.IncidentID
-	ParentID     *shared.IncidentID
-	LayerIDs     []shared.LayerID
-	Name         string
-	Location     *incident.LocationData
-	Divisions    []incident.DivisionData
-	CreatedAt    time.Time
-	AccessMode   access.IncidentMode
-	AccessGrants []access.Grant
+	IncidentID shared.IncidentID
+	ParentID   *shared.IncidentID
+	// LayerIDs are the layers requested by the caller (or the default layer).
+	LayerIDs []shared.LayerID
+	// MessageMapLayerID is the system-managed Nachrichtenkarte layer.
+	MessageMapLayerID shared.LayerID
+	Name              string
+	Location          *incident.LocationData
+	Divisions         []incident.DivisionData
+	CreatedAt         time.Time
+	AccessMode        access.IncidentMode
+	AccessGrants      []access.Grant
 }
 
 // IncidentState is returned from incident mutation services so resolvers can

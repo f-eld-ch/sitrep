@@ -44,6 +44,20 @@ enum TriageStatus {
   RESET
 }
 
+"""Classifies system-managed divisions. Clients render a translated label for non-STANDARD kinds."""
+enum DivisionKind {
+  STANDARD
+  """The Nachrichtenkarte. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
+"""Classifies system-managed layers. Clients render a translated label for non-STANDARD kinds."""
+enum LayerKind {
+  STANDARD
+  """The Nachrichtenkarte layer. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
 enum PriorityStatus {
   NORMAL
   HIGH
@@ -135,6 +149,7 @@ type Division {
   id: ID!
   name: String!
   description: String!
+  kind: DivisionKind!
 }
 
 """A file attached to a message."""
@@ -346,6 +361,7 @@ type Layer {
   sourceIncidentId: ID!
   sourceIncidentName: String!
   name: String!
+  kind: LayerKind!
   """Revision counter; increments on every feature change. Use for change detection."""
   revision: Int!
   features: [Feature!]!

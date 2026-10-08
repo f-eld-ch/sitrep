@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -154,6 +155,11 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 	slog.DebugContext(ctx, "creating incident",
 		slog.String("name", name), parentAttr, slog.String("actor", actor.Sub))
 
+	// The message map layer is always created by the backend; clients that still
+	// send the legacy "Nachrichtenkarte" layer name must not get a duplicate.
+	layerNames = slices.DeleteFunc(slices.Clone(layerNames), func(n string) bool {
+		return n == shared.MessageMapLayerName
+	})
 	if len(layerNames) == 0 {
 		layerNames = []string{"Lage"}
 	}
@@ -162,14 +168,19 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 	at := s.clock.Now()
 
 	// Pre-generate division IDs so the service (not the domain) is responsible.
+	// The message map division is added by incident.Open, which also rejects
+	// client-supplied system divisions.
+	divisions = slices.Clone(divisions)
 	for i := range divisions {
 		if divisions[i].ID == (shared.DivisionID{}) {
 			divisions[i].ID = shared.DivisionID(s.ids.New())
 		}
 	}
 
+	messageMapLayerID := shared.LayerID(s.ids.New())
+
 	layerIDs := make([]shared.LayerID, len(layerNames))
-	for i := range layerNames {
+	for i := range layerIDs {
 		layerIDs[i] = shared.LayerID(s.ids.New())
 	}
 
@@ -258,7 +269,18 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 			}
 		}
 
-		// 3. Create each Layer.
+		// 3. Create the message map layer, then each requested Layer.
+		mapLayer := layer.New(messageMapLayerID)
+		if err := mapLayer.CreateWithKind(
+			incID, shared.MessageMapLayerName, shared.LayerKindMessageMap, actor.Sub, at,
+		); err != nil {
+			return fmt.Errorf("create message map layer: %w", err)
+		}
+
+		if _, err := s.layers.Save(ctx, mapLayer); err != nil {
+			return err
+		}
+
 		for i, layerName := range layerNames {
 			l := layer.New(layerIDs[i])
 			if err := l.Create(incID, layerName, actor.Sub, at); err != nil {
@@ -286,15 +308,16 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 	_ = s.notifier.Notify(ctx)
 
 	return inbound.CreateIncidentResult{
-		IncidentID:   incID,
-		ParentID:     parentID,
-		LayerIDs:     layerIDs,
-		Name:         name,
-		Location:     location,
-		Divisions:    divisions,
-		CreatedAt:    at,
-		AccessMode:   accessMode,
-		AccessGrants: accessGrants,
+		IncidentID:        incID,
+		ParentID:          parentID,
+		LayerIDs:          layerIDs,
+		MessageMapLayerID: messageMapLayerID,
+		Name:              name,
+		Location:          location,
+		Divisions:         append([]incident.DivisionData{messageMapDivisionData(incID)}, divisions...),
+		CreatedAt:         at,
+		AccessMode:        accessMode,
+		AccessGrants:      accessGrants,
 	}, nil
 }
 
@@ -708,4 +731,13 @@ func incidentToState(inc *incident.Incident, updatedAt time.Time) inbound.Incide
 	}
 
 	return state
+}
+
+func messageMapDivisionData(incID shared.IncidentID) incident.DivisionData {
+	return incident.DivisionData{
+		ID:          incident.MessageMapDivisionID(incID),
+		Name:        shared.MessageMapDivisionName,
+		Description: shared.MessageMapDivisionDescription,
+		Kind:        shared.DivisionKindMessageMap,
+	}
 }

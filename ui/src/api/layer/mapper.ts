@@ -31,6 +31,7 @@ export function toLayer(w: WireLayer): Layer {
     sourceIncidentId: w.sourceIncidentId,
     sourceIncidentName: w.sourceIncidentName,
     name: w.name,
+    kind: w.kind,
     // Server already hides deleted features — no client-side filter needed.
     features: w.features.map(toFeature),
     incident: {} as Layer["incident"],

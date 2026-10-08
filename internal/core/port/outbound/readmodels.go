@@ -25,7 +25,9 @@ type DivisionRM struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
-	RemovedAt   *time.Time
+	// Kind is "MESSAGE_MAP" for the system-managed Nachrichtenkarte, empty otherwise.
+	Kind      string
+	RemovedAt *time.Time
 }
 
 type IncidentRM struct {
@@ -82,8 +84,10 @@ type LayerRM struct {
 	SourceIncidentID   uuid.UUID
 	SourceIncidentName string
 	Name               string
-	GeoJSON            jsontext.Value
-	Revision           int
+	// Kind is "MESSAGE_MAP" for the system-managed Nachrichtenkarte layer, empty otherwise.
+	Kind     string
+	GeoJSON  jsontext.Value
+	Revision int
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

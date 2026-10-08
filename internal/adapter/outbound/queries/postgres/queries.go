@@ -249,7 +249,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 	}
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT id, incident_id, name, description, removed_at
+		SELECT id, incident_id, name, description, kind, removed_at
 		FROM readmodel.incident_division
 		WHERE incident_id = ANY($1)
 		ORDER BY incident_id, name`, ids)
@@ -264,9 +264,10 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 			incidentID uuid.UUID
 			name       string
 			desc       string
+			kind       string
 			removedAt  *time.Time
 		)
-		if err := rows.Scan(&divID, &incidentID, &name, &desc, &removedAt); err != nil {
+		if err := rows.Scan(&divID, &incidentID, &name, &desc, &kind, &removedAt); err != nil {
 			return err
 		}
 
@@ -275,6 +276,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 				ID:          divID,
 				Name:        name,
 				Description: desc,
+				Kind:        kind,
 				RemovedAt:   removedAt,
 			})
 		}
@@ -488,7 +490,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	}
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel.layer_features l
 		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.incident_id = $1 AND l.removed = false
@@ -539,7 +541,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	childRows.Close()
 
 	query := `
-		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name AS source_incident_name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel.layer_features l
 		JOIN readmodel.incident i ON i.id = l.incident_id
 		WHERE l.removed = false
@@ -611,10 +613,11 @@ func collectLayers(rows pgx.Rows) ([]*outbound.LayerRM, error) {
 			incID              uuid.UUID
 			sourceIncidentName string
 			name               string
+			kind               string
 			geojson            jsontext.Value
 			revision           int
 		)
-		if err := rows.Scan(&id, &incID, &sourceIncidentName, &name, &geojson, &revision); err != nil {
+		if err := rows.Scan(&id, &incID, &sourceIncidentName, &name, &kind, &geojson, &revision); err != nil {
 			return nil, err
 		}
 
@@ -624,6 +627,7 @@ func collectLayers(rows pgx.Rows) ([]*outbound.LayerRM, error) {
 			SourceIncidentID:   incID,
 			SourceIncidentName: sourceIncidentName,
 			Name:               name,
+			Kind:               kind,
 			GeoJSON:            geojson,
 			Revision:           revision,
 		})
