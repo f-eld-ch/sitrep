@@ -184,9 +184,12 @@ export const MessageStack = memo(function MessageStack({
             <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
           </button>
         ) : (
-          <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
-            <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
-          </div>
+          // With nothing in the stack, "no new messages" below carries its own spinner.
+          messages.length > 0 && (
+            <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
+              <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
+            </div>
+          )
         )}
       </div>
 
