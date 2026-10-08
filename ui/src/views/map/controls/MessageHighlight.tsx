@@ -81,7 +81,7 @@ export function MessageHighlightToggle({
       aria-pressed={enabled}
       title={t("messageMap.highlightHint")}
       className={clsx(
-        "flex items-center gap-2 rounded bg-white px-2 py-1 text-xs shadow",
+        "pointer-events-auto flex items-center gap-2 rounded bg-white px-2 py-1 text-xs shadow",
         enabled ? "text-amber-600" : "text-gray-500",
       )}
       onClick={onToggle}
