@@ -1,4 +1,4 @@
-## [unreleased]
+## [26.10.0](https://github.com/f-eld-ch/sitrep/compare/v26.9.9..v26.10.0) - 2026-10-08
 
 ### ⛰️  Features
 
@@ -6,10 +6,16 @@
 
 ### 🐛 Bug Fixes
 
+- *(triage)* Allow decrementing casualties again after saved delta ([#1945](https://github.com/f-eld-ch/sitrep/issues/1945)) - ([8e0d062](https://github.com/f-eld-ch/sitrep/commit/8e0d062da0238460c0f725fa6a193099cf10a8c3))
+- *(ui)* Stop service-worker update prompt from lingering after update ([#1946](https://github.com/f-eld-ch/sitrep/issues/1946)) - ([67ed469](https://github.com/f-eld-ch/sitrep/commit/67ed469e5043d51841d871662e6ae2648b47040c))
 - Correct casualties when re-triaging a message ([#1918](https://github.com/f-eld-ch/sitrep/issues/1918)) - ([5e0b4fc](https://github.com/f-eld-ch/sitrep/commit/5e0b4fc9edb64080e14211e079639c7c8a5a5430))
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.59 to 2.5.60 ([#1936](https://github.com/f-eld-ch/sitrep/issues/1936)) - ([802b6f7](https://github.com/f-eld-ch/sitrep/commit/802b6f7252dbe534ec85411a954584a2ed4f772e))
+- *(deps)* Bump maplibre-gl from 6.11.2 to 6.13.0 in /ui ([#1943](https://github.com/f-eld-ch/sitrep/issues/1943)) - ([2118ea9](https://github.com/f-eld-ch/sitrep/commit/2118ea97b2b896a1b1178fd455e0655b3f6272f8))
+- *(deps)* Bump react-i18next from 17.0.15 to 17.0.16 in /ui ([#1939](https://github.com/f-eld-ch/sitrep/issues/1939)) - ([2ab84ef](https://github.com/f-eld-ch/sitrep/commit/2ab84efb7ccfa2af7f4d2074cc146fbaec9660ac))
+- *(deps)* Bump @apollo/client from 4.3.1 to 4.3.2 in /ui ([#1938](https://github.com/f-eld-ch/sitrep/issues/1938)) - ([ca4a3dc](https://github.com/f-eld-ch/sitrep/commit/ca4a3dc7e2ef38a4ade78fec5bcf7ca0476a63c4))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#1935](https://github.com/f-eld-ch/sitrep/issues/1935)) - ([3490868](https://github.com/f-eld-ch/sitrep/commit/34908685dba5374a642a3a4a2b4e08980cb516d3))
 - *(deps)* Bump ol from 10.10.0 to 10.11.0 in /ui ([#1927](https://github.com/f-eld-ch/sitrep/issues/1927)) - ([cfb88e1](https://github.com/f-eld-ch/sitrep/commit/cfb88e1513862a792b426332c94acc4c3bc6cb00))
 - *(deps)* Bump the otel group across 1 directory with 9 updates ([#1931](https://github.com/f-eld-ch/sitrep/issues/1931)) - ([236b8be](https://github.com/f-eld-ch/sitrep/commit/236b8be3878f4ac7e5625ec0b8a251ec79a24cf4))
@@ -25,6 +31,7 @@
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 3 updates ([#1917](https://github.com/f-eld-ch/sitrep/issues/1917)) - ([ccd9901](https://github.com/f-eld-ch/sitrep/commit/ccd990172c602634ba214ea394d203d9c4021040))
 - *(deps)* Bump github.com/labstack/echo/v5 from 5.3.1 to 5.4.0 ([#1914](https://github.com/f-eld-ch/sitrep/issues/1914)) - ([17f73e1](https://github.com/f-eld-ch/sitrep/commit/17f73e1b00f42e55720507c0a349b845262ce1ba))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.6 to 3.51.8 ([#1915](https://github.com/f-eld-ch/sitrep/issues/1915)) - ([03d0b79](https://github.com/f-eld-ch/sitrep/commit/03d0b79880e56ad9b81b67da7875008e8118b9a7))
+- *(ui)* Improve UI linter configuration - ([be557c1](https://github.com/f-eld-ch/sitrep/commit/be557c1a6c3c865c6f37eb246cb62cee6df4c6bc))
 
 
 ## [26.9.9](https://github.com/f-eld-ch/sitrep/compare/v26.9.8..v26.9.9) - 2026-09-29
