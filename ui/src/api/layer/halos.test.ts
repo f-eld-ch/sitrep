@@ -32,10 +32,11 @@ describe("messageFeatureHalos", () => {
       "m2",
     );
 
-    expect(halos.get("a")).toEqual({ kind: "added" });
-    expect(halos.get("b")).toEqual({ kind: "modified" });
+    expect(halos.get("a")).toEqual({ kind: "added", geometry: point(1) });
+    expect(halos.get("b")).toEqual({ kind: "modified", geometry: point(2) });
     expect(halos.get("c")).toEqual({
       kind: "removed",
+      geometry: point(4),
       lastGeometry: point(4),
       lastProperties: undefined,
     });

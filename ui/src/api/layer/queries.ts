@@ -104,7 +104,7 @@ export function useMessageFeatureHalos(
   incidentId: string | undefined,
   messageId: string | undefined,
   refreshKey: string,
-): ReadonlyMap<string, FeatureHalo> {
+): { halos: ReadonlyMap<string, FeatureHalo>; ready: boolean } {
   const { data, refetch } = useQuery(GET_FEATURE_CHANGES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId || !messageId,
@@ -116,11 +116,13 @@ export function useMessageFeatureHalos(
     if (incidentId && messageId) void refetch();
   }, [incidentId, messageId, refreshKey, refetch]);
 
-  return useMemo(
+  const halos = useMemo(
     () =>
       messageId
         ? messageFeatureHalos((data?.featureChanges ?? []) as HistoryChange[], messageId)
-        : new Map(),
+        : new Map<string, FeatureHalo>(),
     [data, messageId],
   );
+
+  return { halos, ready: data !== undefined };
 }

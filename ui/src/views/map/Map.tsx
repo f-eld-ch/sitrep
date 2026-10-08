@@ -500,6 +500,7 @@ function ActiveLayer() {
   const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
+  const { drawingMessage } = useContext(MapTimeContext);
   const { incidentId } = useParams();
   const activeLayer = useMemo(
     () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
@@ -529,7 +530,8 @@ function ActiveLayer() {
   }, [featureCollection, liveGeometry, state.selectedFeature]);
 
   useEffect(() => {
-    if (fittedLayer.current === state.activeLayer || !map?.loaded) {
+    // Drawing for a message frames what the message did instead (see MessageHighlight).
+    if (drawingMessage !== undefined || fittedLayer.current === state.activeLayer || !map?.loaded) {
       return;
     }
 
@@ -547,7 +549,7 @@ function ActiveLayer() {
       );
       fittedLayer.current = state.activeLayer;
     }
-  }, [featureCollection, map, state.activeLayer]);
+  }, [drawingMessage, featureCollection, map, state.activeLayer]);
 
   if (state.activeLayer === undefined) {
     return null;

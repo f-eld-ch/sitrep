@@ -3,9 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import type { Feature, FeatureCollection } from "geojson";
 import type { ExpressionSpecification } from "maplibre-gl";
-import { useContext, type ReactNode } from "react";
+import bbox from "@turf/bbox";
+import { useContext, useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Layer as MapLayer, Source } from "react-map-gl/maplibre";
+import { Layer as MapLayer, Source, useMap } from "react-map-gl/maplibre";
 import { useParams } from "react-router";
 import {
   convertFeatureToGeoJsonFeature,
@@ -16,6 +17,9 @@ import { LayerContext } from "../LayerContext";
 import { MapTimeContext } from "../MapTimeContext";
 
 const SOURCE_ID = "message-highlight";
+
+/** Not closer than this when bringing a message's features into view: a lone icon keeps its surroundings. */
+const FOCUS_MAX_ZOOM = 16;
 
 // The halo follows the zoom ramps of what it surrounds: half the icon (a 48px cell scaled from
 // 0.2 at zoom 12 to 1.667 at zoom 20) and a little margin, and the line width ramp plus margin.
@@ -61,7 +65,32 @@ export function MessageHighlight({
   const layer = state.layers.find((l) => l.layer.kind === "MESSAGE_MAP")?.layer;
   // Changes whenever a feature is drawn, modified or removed, which is when the history is re-read.
   const refreshKey = JSON.stringify(layer?.features ?? []);
-  const halos = useMessageFeatureHalos(incidentId, drawingMessage?.id, refreshKey);
+  const { halos, ready } = useMessageFeatureHalos(incidentId, drawingMessage?.id, refreshKey);
+  const { current: map } = useMap();
+
+  // Brings what the message did into view once per message, as soon as its history is known.
+  // Only once: later drawing must not move the map under the operator.
+  const focusedMessage = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!ready || map === undefined || drawingMessage === undefined) return;
+    if (focusedMessage.current === drawingMessage.id) return;
+
+    focusedMessage.current = drawingMessage.id;
+    const geometries = [...halos.values()].flatMap((h) => (h.geometry ? [h.geometry] : []));
+    if (geometries.length === 0) return;
+
+    const [west, south, east, north] = bbox({
+      type: "GeometryCollection",
+      geometries,
+    });
+    map.fitBounds(
+      [
+        [west, south],
+        [east, north],
+      ],
+      { animate: true, maxZoom: FOCUS_MAX_ZOOM, padding: 80 },
+    );
+  }, [drawingMessage, halos, map, ready]);
 
   if (!enabled || !drawingMessage || halos.size === 0) return null;
 

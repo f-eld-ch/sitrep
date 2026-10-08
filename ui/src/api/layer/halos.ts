@@ -5,6 +5,8 @@ export type HaloKind = "added" | "modified" | "removed";
 
 export interface FeatureHalo {
   kind: HaloKind;
+  /** Where the feature was when the message was done with it; used to bring it into view. */
+  geometry?: Geometry;
   /** Where a removed feature last was, since it is no longer on the map. */
   lastGeometry?: Geometry;
   /** How a removed feature last looked. */
@@ -45,6 +47,9 @@ export function messageFeatureHalos(
     const own = history.filter((c) => c.messageId === messageId);
     if (own.length === 0) continue;
 
+    const lastOwn = history.lastIndexOf(own[own.length - 1]);
+    const geometry =
+      [...history.slice(0, lastOwn + 1)].reverse().find((c) => c.geometry)?.geometry ?? undefined;
     const placed = own.some((c) => c.change === "PLACED");
     const removedAt = history.findIndex((c) => c.change === "REMOVED" && c.messageId === messageId);
 
@@ -54,13 +59,14 @@ export function messageFeatureHalos(
       const before = history.slice(0, removedAt).reverse();
       halos.set(featureId, {
         kind: "removed",
+        geometry,
         lastGeometry: before.find((c) => c.geometry)?.geometry ?? undefined,
         lastProperties: before.find((c) => c.properties)?.properties ?? undefined,
       });
       continue;
     }
 
-    halos.set(featureId, { kind: placed ? "added" : "modified" });
+    halos.set(featureId, { kind: placed ? "added" : "modified", geometry });
   }
 
   return halos;
