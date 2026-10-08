@@ -229,6 +229,12 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 		DivisionIDs:       row.DivisionIDs,
 		LinkedResourceIDs: row.LinkedResourceIDs,
 	}
+
+	for _, a := range row.Acknowledgements {
+		rm.Acknowledgements = append(rm.Acknowledgements,
+			outbound.AcknowledgementRM{DivisionID: a.DivisionID, At: a.At, By: a.By})
+	}
+
 	if row.AuthorSub != nil {
 		rm.AuthorSub = *row.AuthorSub
 	}

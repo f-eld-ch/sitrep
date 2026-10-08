@@ -20,6 +20,7 @@ function makeMessage(overrides: Partial<Message> = {}): Message {
     triageId: TriageStatus.Pending,
     priorityId: PriorityStatus.Normal,
     attachments: [],
+    acknowledgements: [],
     author: "",
     ...overrides,
   };
@@ -191,5 +192,59 @@ describe("buildMessageList", () => {
       const result = buildMessageList([valid, nullCreatedAt], ALL_FILTERS);
       expect(result.map((m) => m.id)).toEqual(["a"]);
     });
+  });
+});
+
+describe("buildMessageList acknowledgement and division filters", () => {
+  const MAP = "div-map";
+  const SC = "div-sc";
+  const division = (id: string) => ({
+    division: { id, name: id, description: id, kind: "STANDARD" as const },
+  });
+  const ack = (divisionId: string) => ({
+    divisionId,
+    acknowledgedAt: new Date("2024-01-01T11:00:00Z"),
+    acknowledgedBy: "op",
+  });
+
+  const undrawn = makeMessage({ id: "undrawn", divisions: [division(MAP)] });
+  const drawn = makeMessage({
+    id: "drawn",
+    divisions: [division(MAP), division(SC)],
+    acknowledgements: [ack(MAP)],
+  });
+  const otherDivision = makeMessage({ id: "other", divisions: [division(SC)] });
+  const all = [undrawn, drawn, otherDivision];
+
+  it("pending keeps messages triaged to the division that it has not dealt with", () => {
+    const result = buildMessageList(
+      all,
+      { ...ALL_FILTERS, acknowledgement: { divisionId: MAP, state: "pending" } },
+      "",
+    );
+    expect(result.map((m) => m.id)).toEqual(["undrawn"]);
+  });
+
+  it("done keeps messages the division has dealt with", () => {
+    const result = buildMessageList(
+      all,
+      { ...ALL_FILTERS, acknowledgement: { divisionId: MAP, state: "done" } },
+      "",
+    );
+    expect(result.map((m) => m.id)).toEqual(["drawn"]);
+  });
+
+  it("acknowledgement by another division does not count", () => {
+    const result = buildMessageList(
+      [makeMessage({ id: "x", divisions: [division(MAP)], acknowledgements: [ack(SC)] })],
+      { ...ALL_FILTERS, acknowledgement: { divisionId: MAP, state: "pending" } },
+      "",
+    );
+    expect(result.map((m) => m.id)).toEqual(["x"]);
+  });
+
+  it("divisionId keeps only messages triaged to the division, by id", () => {
+    const result = buildMessageList(all, { ...ALL_FILTERS, divisionId: SC }, "");
+    expect(result.map((m) => m.id).sort()).toEqual(["drawn", "other"]);
   });
 });

@@ -175,6 +175,18 @@ func TestBackfillMessageMap(t *testing.T) {
 	appendEv("Layer", "l-matched-1", 1, "Created", created(matched, "Lage", ""))
 	appendEv("Layer", "l-matched-2", 1, "Created", created(matched, "Nachrichtenkarte", ""))
 
+	// messages: one triaged to the (to be marked) Nachrichtenkarte, one to another division
+	const (
+		mapDivision = "00000000-0000-0000-0000-0000000000d1"
+		scDivision  = "00000000-0000-0000-0000-0000000000d2"
+	)
+
+	recorded := `{"incidentId":"` + matched + `"}`
+	appendEv("Message", "msg-map", 1, "Recorded", recorded)
+	appendEv("Message", "msg-map", 2, "Triaged", `{"divisionIds":["`+mapDivision+`"]}`)
+	appendEv("Message", "msg-sc", 1, "Recorded", recorded)
+	appendEv("Message", "msg-sc", 2, "Triaged", `{"divisionIds":["`+scDivision+`"]}`)
+
 	// unmatched: nothing resembles a message map
 	appendEv("Incident", unmatched, 1, "Opened", `{"name":"B"}`)
 	appendEv(
@@ -244,6 +256,10 @@ func TestBackfillMessageMap(t *testing.T) {
 		unmatched).Scan(&newLayers))
 	assert.Equal(t, 2, newLayers)
 
+	// historical messages of the Nachrichtenkarte count as drawn; others are left alone
+	assert.Equal(t, []string{"Recorded", "Triaged", "DivisionAcknowledged"}, eventTypes("Message", "msg-map"))
+	assert.Equal(t, []string{"Recorded", "Triaged"}, eventTypes("Message", "msg-sc"))
+
 	// migrated: untouched
 	assert.Equal(t, []string{"Opened", "DivisionAdded"}, eventTypes("Incident", migrated))
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-migrated-1"))
@@ -253,6 +269,7 @@ func TestBackfillMessageMap(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []string{"Opened", "DivisionAdded", "DivisionAdded"}, eventTypes("Incident", matched))
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-matched-2"))
+	assert.Equal(t, []string{"Recorded", "Triaged"}, eventTypes("Message", "msg-map"))
 
 	require.NoError(t, db.QueryRowContext(t.Context(), `
 		SELECT COUNT(*) FROM eventsourcing_aggregate_index WHERE stream_type = 'Layer' AND incident_id = ?`,

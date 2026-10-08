@@ -301,6 +301,105 @@ func (s *MessageService) TriageMessage(
 	return state, nil
 }
 
+// AcknowledgeMessage records that a division has dealt with the message.
+func (s *MessageService) AcknowledgeMessage(
+	ctx context.Context,
+	id shared.MessageID,
+	divisionID shared.DivisionID,
+	actor identity.Actor,
+) (inbound.MessageState, error) {
+	return s.changeAcknowledgement(ctx, "AcknowledgeMessage", id, divisionID, actor,
+		func(msg *message.Message, at time.Time) error {
+			return msg.AcknowledgeForDivision(divisionID, actor.Sub, at)
+		})
+}
+
+// RevokeMessageAcknowledgement withdraws a division's acknowledgement.
+func (s *MessageService) RevokeMessageAcknowledgement(
+	ctx context.Context,
+	id shared.MessageID,
+	divisionID shared.DivisionID,
+	actor identity.Actor,
+) (inbound.MessageState, error) {
+	return s.changeAcknowledgement(ctx, "RevokeMessageAcknowledgement", id, divisionID, actor,
+		func(msg *message.Message, at time.Time) error {
+			return msg.RevokeDivisionAcknowledgement(divisionID, actor.Sub, at)
+		})
+}
+
+func (s *MessageService) changeAcknowledgement(
+	ctx context.Context,
+	operation string,
+	id shared.MessageID,
+	divisionID shared.DivisionID,
+	actor identity.Actor,
+	apply func(*message.Message, time.Time) error,
+) (inbound.MessageState, error) {
+	ctx, span := s.tracer.Start(ctx, "MessageService."+operation,
+		trace.WithAttributes(
+			attribute.String("message.id", id.String()),
+			attribute.String("division.id", divisionID.String()),
+		))
+	defer span.End()
+
+	slog.DebugContext(ctx, "changing message acknowledgement",
+		slog.String("operation", operation),
+		slog.String("message_id", id.String()),
+		slog.String("division_id", divisionID.String()),
+		slog.String("actor", actor.Sub))
+
+	at := s.clock.Now()
+
+	var state inbound.MessageState
+
+	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		msg, err := s.repo.Load(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		if err := requireIncidentAccess(ctx, s.access, actor, msg.IncidentID(), access.IncidentWrite); err != nil {
+			return err
+		}
+
+		inc, err := s.incidents.Load(ctx, msg.IncidentID())
+		if err != nil {
+			return err
+		}
+
+		if !inc.IsOpen() {
+			return shared.ErrIncidentNotOpen
+		}
+
+		if _, ok := inc.Division(divisionID); !ok {
+			return shared.ValidationError{Field: "divisionId", Message: "division does not belong to this incident"}
+		}
+
+		if err := apply(msg, at); err != nil {
+			return err
+		}
+
+		if _, err := s.repo.Save(ctx, msg); err != nil {
+			return err
+		}
+
+		state = messageToState(msg, at)
+
+		return nil
+	})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		logIfUnexpected(ctx, operation, err, slog.String("id", id.String()))
+
+		return inbound.MessageState{}, err
+	}
+
+	_ = s.notifier.Notify(ctx)
+
+	return state, nil
+}
+
 // DeleteMessage soft-deletes a message and schedules best-effort blob deletion.
 func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID, actor identity.Actor) error {
 	ctx, span := s.tracer.Start(ctx, "MessageService.DeleteMessage",
@@ -758,6 +857,13 @@ func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageSt
 		}
 	}
 
+	acks := msg.Acknowledgements()
+	ackStates := make([]inbound.AcknowledgementState, len(acks))
+
+	for i, a := range acks {
+		ackStates[i] = inbound.AcknowledgementState{DivisionID: a.DivisionID, At: a.At, By: a.By}
+	}
+
 	return inbound.MessageState{
 		ID:                shared.MessageID(msg.Root().ID()),
 		IncidentID:        msg.IncidentID(),
@@ -776,6 +882,7 @@ func messageToState(msg *message.Message, updatedAt time.Time) inbound.MessageSt
 		DivisionIDs:       msg.DivisionIDs(),
 		LinkedResourceIDs: msg.LinkedResourceIDs(),
 		Attachments:       attStates,
+		Acknowledgements:  ackStates,
 		AuthorSub: func() string {
 			if s := msg.AuthorSub(); s != nil {
 				return *s

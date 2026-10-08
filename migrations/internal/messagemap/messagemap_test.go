@@ -1,6 +1,7 @@
 package messagemap_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -163,6 +164,73 @@ func TestPlanLayer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := messagemap.PlanLayer(tt.streams)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestMessageMapDivisionID(t *testing.T) {
+	added := func(id, kind string) messagemap.Event {
+		return ev("DivisionAdded", `{"division":{"id":"`+id+`","name":"n","description":"d","kind":"`+kind+`"}}`)
+	}
+
+	t.Run("by kind on add", func(t *testing.T) {
+		id, ok, err := messagemap.MessageMapDivisionID([]messagemap.Event{added("a", ""), added("b", "MESSAGE_MAP")})
+		require.NoError(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "b", id)
+	})
+
+	t.Run("by assigned kind", func(t *testing.T) {
+		id, ok, err := messagemap.MessageMapDivisionID([]messagemap.Event{
+			added("a", ""), ev("DivisionKindAssigned", `{"id":"a","kind":"MESSAGE_MAP"}`),
+		})
+		require.NoError(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "a", id)
+	})
+
+	t.Run("none", func(t *testing.T) {
+		_, ok, err := messagemap.MessageMapDivisionID([]messagemap.Event{added("a", "")})
+		require.NoError(t, err)
+		assert.False(t, ok)
+	})
+}
+
+func TestNeedsAcknowledgement(t *testing.T) {
+	triaged := func(divisions ...string) messagemap.Event {
+		quoted := make([]string, len(divisions))
+		for i, d := range divisions {
+			quoted[i] = `"` + d + `"`
+		}
+
+		return ev("Triaged", `{"divisionIds":[`+strings.Join(quoted, ",")+`]}`)
+	}
+	ack := ev("DivisionAcknowledged", `{"divisionId":"map","by":"x"}`)
+
+	tests := []struct {
+		name   string
+		events []messagemap.Event
+		want   bool
+	}{
+		{"triaged to the division", []messagemap.Event{triaged("map", "sc")}, true},
+		{"triaged elsewhere", []messagemap.Event{triaged("sc")}, false},
+		{"never triaged", nil, false},
+		{"already acknowledged", []messagemap.Event{triaged("map"), ack}, false},
+		{
+			"acknowledgement revoked",
+			[]messagemap.Event{triaged("map"), ack, ev("DivisionAcknowledgementRevoked", `{"divisionId":"map"}`)},
+			true,
+		},
+		{"division removed again", []messagemap.Event{triaged("map"), triaged("sc")}, false},
+		{"deleted", []messagemap.Event{triaged("map"), ev("Deleted", `{"reason":"MANUAL"}`)}, false},
+		{"imported with divisions", []messagemap.Event{ev("Imported", `{"divisionIds":["map"]}`)}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := messagemap.NeedsAcknowledgement(tt.events, "map")
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})

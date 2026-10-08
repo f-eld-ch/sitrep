@@ -298,6 +298,13 @@ type Resource {
   deploymentHistory: [ResourceDeploymentPeriod!]!
 }
 
+"""A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn."""
+type DivisionAcknowledgement {
+  division: Division!
+  acknowledgedAt: DateTime!
+  acknowledgedBy: String!
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -322,6 +329,11 @@ type Message {
   schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
   """Resource IDs linked to this message during triage."""
   linkedResourceIds: [ID!]!
+  """
+  Divisions that have dealt with this message. A division can only appear here while the message
+  is triaged to it; changed message content or time clears all acknowledgements.
+  """
+  acknowledgements: [DivisionAcknowledgement!]!
   """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
   author: String
 }
@@ -617,6 +629,15 @@ type Mutation {
   Replaces the full division set in a single operation.
   """
   triageMessage(id: ID!, input: TriageMessageInput!): Message!
+
+  """
+  Record that a division has dealt with the message (Nachrichtenkarte: the message has been drawn).
+  The message must currently be triaged to the division. Idempotent.
+  """
+  acknowledgeMessage(id: ID!, divisionId: ID!): Message!
+
+  """Withdraw a division's acknowledgement so the message needs attention again."""
+  revokeMessageAcknowledgement(id: ID!, divisionId: ID!): Message!
 
   deleteMessage(id: ID!): ID!
 

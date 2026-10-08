@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -299,7 +300,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel.message
 		WHERE incident_id = $1
 		ORDER BY msg_time DESC, created_at DESC`, incidentID)
@@ -317,7 +318,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel.message
 		WHERE id = $1`, id)
 	if err != nil {
@@ -440,13 +441,19 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 			priority          string
 			divisionIDs       []uuid.UUID
 			linkedResourceIDs []uuid.UUID
+			acknowledgements  []byte
 			authorSub         *string
 		)
 		if err := rows.Scan(
 			&id, &number, &incidentID, &content, &sender, &senderDetail,
 			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDs, &linkedResourceIDs, &authorSub,
+			&createdAt, &updatedAt, &triage, &priority, &divisionIDs, &linkedResourceIDs, &acknowledgements, &authorSub,
 		); err != nil {
+			return nil, err
+		}
+
+		acks, err := parseAcknowledgements(acknowledgements)
+		if err != nil {
 			return nil, err
 		}
 
@@ -467,6 +474,7 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 			Priority:          priority,
 			DivisionIDs:       divisionIDs,
 			LinkedResourceIDs: linkedResourceIDs,
+			Acknowledgements:  acks,
 		}
 		if authorSub != nil {
 			rm.AuthorSub = *authorSub
@@ -476,6 +484,30 @@ func collectMessages(rows pgx.Rows) ([]*outbound.MessageRM, error) {
 	}
 
 	return out, rows.Err()
+}
+
+// parseAcknowledgements decodes the acknowledgements jsonb column, oldest first.
+func parseAcknowledgements(raw []byte) ([]outbound.AcknowledgementRM, error) {
+	var entries []struct {
+		DivisionID uuid.UUID `json:"divisionId"`
+		At         time.Time `json:"at"`
+		By         string    `json:"by"`
+	}
+
+	if len(raw) > 0 {
+		if err := json.Unmarshal(raw, &entries); err != nil {
+			return nil, fmt.Errorf("unmarshal acknowledgements: %w", err)
+		}
+	}
+
+	out := make([]outbound.AcknowledgementRM, len(entries))
+	for i, e := range entries {
+		out[i] = outbound.AcknowledgementRM{DivisionID: e.DivisionID, At: e.At, By: e.By}
+	}
+
+	slices.SortStableFunc(out, func(a, b outbound.AcknowledgementRM) int { return a.At.Compare(b.At) })
+
+	return out, nil
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -732,7 +764,7 @@ func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) 
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel.message
 		WHERE id IN (
 		    SELECT message_id FROM readmodel.feature_change

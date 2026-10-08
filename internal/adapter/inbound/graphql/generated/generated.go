@@ -96,6 +96,12 @@ type ComplexityRoot struct {
 		Name        func(childComplexity int) int
 	}
 
+	DivisionAcknowledgement struct {
+		AcknowledgedAt func(childComplexity int) int
+		AcknowledgedBy func(childComplexity int) int
+		Division       func(childComplexity int) int
+	}
+
 	Feature struct {
 		Geometry   func(childComplexity int) int
 		ID         func(childComplexity int) int
@@ -171,6 +177,7 @@ type ComplexityRoot struct {
 	}
 
 	Message struct {
+		Acknowledgements       func(childComplexity int) int
 		Attachments            func(childComplexity int) int
 		Author                 func(childComplexity int) int
 		Content                func(childComplexity int) int
@@ -192,6 +199,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AcknowledgeMessage           func(childComplexity int, id string, divisionID string) int
 		AddFeature                   func(childComplexity int, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) int
 		AddGroupMember               func(childComplexity int, groupID string, subject string) int
 		AlertResource                func(childComplexity int, input model.AlertResourceInput) int
@@ -228,6 +236,7 @@ type ComplexityRoot struct {
 		RevokeDefaultRole            func(childComplexity int, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
 		RevokeGlobalRole             func(childComplexity int, subject string, role model.GlobalRole) int
 		RevokeIncidentRole           func(childComplexity int, incidentID string, principalKind model.AccessPrincipalKind, principalID string, role model.IncidentRole) int
+		RevokeMessageAcknowledgement func(childComplexity int, id string, divisionID string) int
 		SetDefaultAccessMode         func(childComplexity int, mode model.IncidentAccessMode) int
 		SetSchadenplatzGeometry      func(childComplexity int, id string, geoJSON *string) int
 		StandDownResource            func(childComplexity int, id string, at *time.Time) int
@@ -382,6 +391,8 @@ type MutationResolver interface {
 	CreateMessage(ctx context.Context, input model.CreateMessageInput) (*model.Message, error)
 	UpdateMessage(ctx context.Context, id string, input model.UpdateMessageInput) (*model.Message, error)
 	TriageMessage(ctx context.Context, id string, input model.TriageMessageInput) (*model.Message, error)
+	AcknowledgeMessage(ctx context.Context, id string, divisionID string) (*model.Message, error)
+	RevokeMessageAcknowledgement(ctx context.Context, id string, divisionID string) (*model.Message, error)
 	DeleteMessage(ctx context.Context, id string) (string, error)
 	RemoveAttachment(ctx context.Context, messageID string, attachmentID string) (string, error)
 	CreateSchadenplatz(ctx context.Context, incidentID string, name string, occurredAt *time.Time) (*model.Schadenplatz, error)
@@ -639,6 +650,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Division.Name(childComplexity), true
+
+	case "DivisionAcknowledgement.acknowledgedAt":
+		if e.ComplexityRoot.DivisionAcknowledgement.AcknowledgedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DivisionAcknowledgement.AcknowledgedAt(childComplexity), true
+	case "DivisionAcknowledgement.acknowledgedBy":
+		if e.ComplexityRoot.DivisionAcknowledgement.AcknowledgedBy == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DivisionAcknowledgement.AcknowledgedBy(childComplexity), true
+	case "DivisionAcknowledgement.division":
+		if e.ComplexityRoot.DivisionAcknowledgement.Division == nil {
+			break
+		}
+
+		return e.ComplexityRoot.DivisionAcknowledgement.Division(childComplexity), true
 
 	case "Feature.geometry":
 		if e.ComplexityRoot.Feature.Geometry == nil {
@@ -948,6 +978,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Location.Name(childComplexity), true
 
+	case "Message.acknowledgements":
+		if e.ComplexityRoot.Message.Acknowledgements == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Message.Acknowledgements(childComplexity), true
 	case "Message.attachments":
 		if e.ComplexityRoot.Message.Attachments == nil {
 			break
@@ -1057,6 +1093,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Message.UpdatedAt(childComplexity), true
 
+	case "Mutation.acknowledgeMessage":
+		if e.ComplexityRoot.Mutation.AcknowledgeMessage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_acknowledgeMessage_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AcknowledgeMessage(childComplexity, args["id"].(string), args["divisionId"].(string)), true
 	case "Mutation.addFeature":
 		if e.ComplexityRoot.Mutation.AddFeature == nil {
 			break
@@ -1453,6 +1500,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RevokeIncidentRole(childComplexity, args["incidentId"].(string), args["principalKind"].(model.AccessPrincipalKind), args["principalId"].(string), args["role"].(model.IncidentRole)), true
+	case "Mutation.revokeMessageAcknowledgement":
+		if e.ComplexityRoot.Mutation.RevokeMessageAcknowledgement == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_revokeMessageAcknowledgement_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RevokeMessageAcknowledgement(childComplexity, args["id"].(string), args["divisionId"].(string)), true
 	case "Mutation.setDefaultAccessMode":
 		if e.ComplexityRoot.Mutation.SetDefaultAccessMode == nil {
 			break
@@ -2463,6 +2521,13 @@ type Resource {
   deploymentHistory: [ResourceDeploymentPeriod!]!
 }
 
+"""A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn."""
+type DivisionAcknowledgement {
+  division: Division!
+  acknowledgedAt: DateTime!
+  acknowledgedBy: String!
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -2487,6 +2552,11 @@ type Message {
   schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
   """Resource IDs linked to this message during triage."""
   linkedResourceIds: [ID!]!
+  """
+  Divisions that have dealt with this message. A division can only appear here while the message
+  is triaged to it; changed message content or time clears all acknowledgements.
+  """
+  acknowledgements: [DivisionAcknowledgement!]!
   """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
   author: String
 }
@@ -2783,6 +2853,15 @@ type Mutation {
   """
   triageMessage(id: ID!, input: TriageMessageInput!): Message!
 
+  """
+  Record that a division has dealt with the message (Nachrichtenkarte: the message has been drawn).
+  The message must currently be triaged to the division. Idempotent.
+  """
+  acknowledgeMessage(id: ID!, divisionId: ID!): Message!
+
+  """Withdraw a division's acknowledgement so the message needs attention again."""
+  revokeMessageAcknowledgement(id: ID!, divisionId: ID!): Message!
+
   deleteMessage(id: ID!): ID!
 
   removeAttachment(messageId: ID!, attachmentId: ID!): ID!
@@ -2992,6 +3071,18 @@ func (ec *executionContext) childFields_Division(ctx context.Context, field grap
 	return nil, fmt.Errorf("no field named %q was found under type Division", field.Name)
 }
 
+func (ec *executionContext) childFields_DivisionAcknowledgement(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "division":
+		return ec.fieldContext_DivisionAcknowledgement_division(ctx, field)
+	case "acknowledgedAt":
+		return ec.fieldContext_DivisionAcknowledgement_acknowledgedAt(ctx, field)
+	case "acknowledgedBy":
+		return ec.fieldContext_DivisionAcknowledgement_acknowledgedBy(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type DivisionAcknowledgement", field.Name)
+}
+
 func (ec *executionContext) childFields_Feature(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
 	case "id":
@@ -3176,6 +3267,8 @@ func (ec *executionContext) childFields_Message(ctx context.Context, field graph
 		return ec.fieldContext_Message_schadenplatzCasualties(ctx, field)
 	case "linkedResourceIds":
 		return ec.fieldContext_Message_linkedResourceIds(ctx, field)
+	case "acknowledgements":
+		return ec.fieldContext_Message_acknowledgements(ctx, field)
 	case "author":
 		return ec.fieldContext_Message_author(ctx, field)
 	}
@@ -3451,6 +3544,28 @@ func (ec *executionContext) childFields___Type(ctx context.Context, field graphq
 // endregion ************************** internal!.gotpl ***************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_acknowledgeMessage_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "divisionId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["divisionId"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addFeature_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -4329,6 +4444,28 @@ func (ec *executionContext) field_Mutation_revokeIncidentRole_args(ctx context.C
 		return nil, err
 	}
 	args["role"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_revokeMessageAcknowledgement_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "divisionId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["divisionId"] = arg1
 	return args, nil
 }
 
@@ -5534,6 +5671,84 @@ func (ec *executionContext) _Division_kind(ctx context.Context, field graphql.Co
 }
 func (ec *executionContext) fieldContext_Division_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Division", field, false, false, errors.New("field of type DivisionKind does not have child fields"))
+}
+
+func (ec *executionContext) _DivisionAcknowledgement_division(ctx context.Context, field graphql.CollectedField, obj *model.DivisionAcknowledgement) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DivisionAcknowledgement_division(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Division, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Division) graphql.Marshaler {
+			return ec.marshalNDivision2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivision(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DivisionAcknowledgement_division(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DivisionAcknowledgement",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Division(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DivisionAcknowledgement_acknowledgedAt(ctx context.Context, field graphql.CollectedField, obj *model.DivisionAcknowledgement) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DivisionAcknowledgement_acknowledgedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AcknowledgedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2timeᚐTime(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DivisionAcknowledgement_acknowledgedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DivisionAcknowledgement", field, false, false, errors.New("field of type DateTime does not have child fields"))
+}
+
+func (ec *executionContext) _DivisionAcknowledgement_acknowledgedBy(ctx context.Context, field graphql.CollectedField, obj *model.DivisionAcknowledgement) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_DivisionAcknowledgement_acknowledgedBy(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AcknowledgedBy, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_DivisionAcknowledgement_acknowledgedBy(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("DivisionAcknowledgement", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Feature_id(ctx context.Context, field graphql.CollectedField, obj *model.Feature) (ret graphql.Marshaler) {
@@ -7185,6 +7400,38 @@ func (ec *executionContext) fieldContext_Message_linkedResourceIds(_ context.Con
 	return graphql.NewScalarFieldContext("Message", field, false, false, errors.New("field of type ID does not have child fields"))
 }
 
+func (ec *executionContext) _Message_acknowledgements(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Message_acknowledgements(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Acknowledgements, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.DivisionAcknowledgement) graphql.Marshaler {
+			return ec.marshalNDivisionAcknowledgement2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionAcknowledgementᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Message_acknowledgements(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_DivisionAcknowledgement(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Message_author(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -8258,6 +8505,94 @@ func (ec *executionContext) fieldContext_Mutation_triageMessage(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_triageMessage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_acknowledgeMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_acknowledgeMessage(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AcknowledgeMessage(ctx, fc.Args["id"].(string), fc.Args["divisionId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Message) graphql.Marshaler {
+			return ec.marshalNMessage2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMessage(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_acknowledgeMessage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Message(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_acknowledgeMessage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_revokeMessageAcknowledgement(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_revokeMessageAcknowledgement(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RevokeMessageAcknowledgement(ctx, fc.Args["id"].(string), fc.Args["divisionId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Message) graphql.Marshaler {
+			return ec.marshalNMessage2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐMessage(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_revokeMessageAcknowledgement(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Message(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_revokeMessageAcknowledgement_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -13561,6 +13896,54 @@ func (ec *executionContext) _Division(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var divisionAcknowledgementImplementors = []string{"DivisionAcknowledgement"}
+
+func (ec *executionContext) _DivisionAcknowledgement(ctx context.Context, sel ast.SelectionSet, obj *model.DivisionAcknowledgement) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, divisionAcknowledgementImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DivisionAcknowledgement")
+		case "division":
+			out.Values[i] = ec._DivisionAcknowledgement_division(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "acknowledgedAt":
+			out.Values[i] = ec._DivisionAcknowledgement_acknowledgedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "acknowledgedBy":
+			out.Values[i] = ec._DivisionAcknowledgement_acknowledgedBy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
 var featureImplementors = []string{"Feature"}
 
 func (ec *executionContext) _Feature(ctx context.Context, sel ast.SelectionSet, obj *model.Feature) graphql.Marshaler {
@@ -14535,6 +14918,11 @@ func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "acknowledgements":
+			out.Values[i] = ec._Message_acknowledgements(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "author":
 			out.Values[i] = ec._Message_author(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
@@ -14745,6 +15133,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "triageMessage":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_triageMessage(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "acknowledgeMessage":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_acknowledgeMessage(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "revokeMessageAcknowledgement":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_revokeMessageAcknowledgement(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -16478,6 +16880,32 @@ func (ec *executionContext) marshalNDivision2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsi
 		return graphql.Null
 	}
 	return ec._Division(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDivisionAcknowledgement2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionAcknowledgementᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.DivisionAcknowledgement) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNDivisionAcknowledgement2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionAcknowledgement(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDivisionAcknowledgement2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionAcknowledgement(ctx context.Context, sel ast.SelectionSet, v *model.DivisionAcknowledgement) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DivisionAcknowledgement(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNDivisionInput2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐDivisionInputᚄ(ctx context.Context, v any) ([]*model.DivisionInput, error) {

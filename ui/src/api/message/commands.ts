@@ -4,9 +4,11 @@ import { Medium, PriorityStatus, TriageStatus, type Attachment, type Division } 
 import { ApiError, apiErrorFromApolloError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
+  ACKNOWLEDGE_MESSAGE,
   CREATE_MESSAGE,
   GET_INCIDENT_MESSAGES,
   REMOVE_ATTACHMENT,
+  REVOKE_MESSAGE_ACKNOWLEDGEMENT,
   TRIAGE_MESSAGE,
   UPDATE_MESSAGE,
 } from "./documents";
@@ -141,6 +143,7 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
           triage: args.triage,
           priority: args.triage === TriageStatus.MoreInfo ? PriorityStatus.Normal : args.priority,
           divisions: args.divisions,
+          acknowledgements: [],
           linkedResourceIds: args.linkedResourceIds,
         },
       },
@@ -175,6 +178,47 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
   };
 
   return [triageMessage, state];
+}
+
+export interface MessageAcknowledgementArgs {
+  messageId: string;
+  /** The division acting on the message (for the Nachrichtenkarte: the message map division). */
+  divisionId: string;
+}
+
+/**
+ * Record that a division has dealt with the message. The server returns the message's
+ * acknowledgements, which Apollo merges into the cached message by id.
+ */
+export function useAcknowledgeMessage(): CommandHook<MessageAcknowledgementArgs> {
+  const [mutate, { loading, error }] = useMutation(ACKNOWLEDGE_MESSAGE);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const acknowledgeMessage = async (args: MessageAcknowledgementArgs): Promise<void> => {
+    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } });
+  };
+
+  return [acknowledgeMessage, state];
+}
+
+/** Withdraw a division's acknowledgement so the message needs attention again. */
+export function useRevokeMessageAcknowledgement(): CommandHook<MessageAcknowledgementArgs> {
+  const [mutate, { loading, error }] = useMutation(REVOKE_MESSAGE_ACKNOWLEDGEMENT);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const revokeMessageAcknowledgement = async (args: MessageAcknowledgementArgs): Promise<void> => {
+    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } });
+  };
+
+  return [revokeMessageAcknowledgement, state];
 }
 
 export interface RemoveAttachmentArgs {

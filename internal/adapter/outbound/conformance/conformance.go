@@ -84,6 +84,10 @@ func Run(t *testing.T, f Factory) {
 		RunQueries(t, f)
 	})
 
+	t.Run("MessageAcknowledgements", func(t *testing.T) {
+		RunMessageAcknowledgements(t, f)
+	})
+
 	t.Run("FeatureChanges", func(t *testing.T) {
 		RunFeatureChanges(t, f)
 	})

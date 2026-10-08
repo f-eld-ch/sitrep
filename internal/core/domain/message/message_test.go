@@ -368,3 +368,130 @@ func TestMessage_RemoveAttachment(t *testing.T) {
 		assert.Empty(t, m2.Attachments())
 	})
 }
+
+func TestMessage_DivisionAcknowledgement(t *testing.T) {
+	id := shared.MessageID(uuid.New())
+	mapDiv := shared.DivisionID(uuid.New())
+	otherDiv := shared.DivisionID(uuid.New())
+
+	triaged := func(t *testing.T, divisions ...shared.DivisionID) *message.Message {
+		t.Helper()
+
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, m.Triage(
+			shared.TriageDone, shared.PriorityNormal, divisions, nil, actor, at, actor))
+		m.Root().ClearPending()
+
+		return m
+	}
+
+	t.Run("a triaged division can acknowledge", func(t *testing.T) {
+		m := triaged(t, mapDiv, otherDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+
+		pending := m.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "DivisionAcknowledged", pending[0].EventType)
+		assert.True(t, m.IsAcknowledgedBy(mapDiv))
+		assert.False(t, m.IsAcknowledgedBy(otherDiv), "acknowledgements are per division")
+	})
+
+	t.Run("a division the message is not triaged to cannot acknowledge", func(t *testing.T) {
+		m := triaged(t, otherDiv)
+		err := m.AcknowledgeForDivision(mapDiv, actor, at)
+		require.ErrorIs(t, err, shared.ErrNotTriagedToDivision)
+		assert.Empty(t, m.Root().PendingEvents())
+	})
+
+	t.Run("acknowledging twice is a no-op", func(t *testing.T) {
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		m.Root().ClearPending()
+
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		assert.Empty(t, m.Root().PendingEvents())
+	})
+
+	t.Run("revoking withdraws, and revoking nothing is a no-op", func(t *testing.T) {
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.RevokeDivisionAcknowledgement(mapDiv, actor, at))
+		assert.Empty(t, m.Root().PendingEvents())
+
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		require.NoError(t, m.RevokeDivisionAcknowledgement(mapDiv, actor, at))
+		assert.False(t, m.IsAcknowledgedBy(mapDiv))
+	})
+
+	t.Run("re-triage that removes a division drops its acknowledgement", func(t *testing.T) {
+		m := triaged(t, mapDiv, otherDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		require.NoError(t, m.AcknowledgeForDivision(otherDiv, actor, at))
+
+		require.NoError(
+			t,
+			m.Triage(shared.TriageDone, shared.PriorityNormal, []shared.DivisionID{otherDiv}, nil, actor, at, actor),
+		)
+		assert.False(t, m.IsAcknowledgedBy(mapDiv))
+		assert.True(t, m.IsAcknowledgedBy(otherDiv), "unrelated divisions keep their acknowledgement")
+
+		// Adding the division back requires a fresh acknowledgement.
+		require.NoError(
+			t,
+			m.Triage(
+				shared.TriageDone,
+				shared.PriorityNormal,
+				[]shared.DivisionID{otherDiv, mapDiv},
+				nil,
+				actor,
+				at,
+				actor,
+			),
+		)
+		assert.False(t, m.IsAcknowledgedBy(mapDiv))
+	})
+
+	t.Run("correcting content or time clears all acknowledgements", func(t *testing.T) {
+		newContent := "Wasserstand sinkt"
+		newTime := at.Add(-time.Minute)
+
+		for name, correct := range map[string]func(*message.Message) error{
+			"content": func(m *message.Message) error {
+				return m.Correct(&newContent, nil, nil, nil, nil, nil, nil, actor, at, actor)
+			},
+			"time": func(m *message.Message) error {
+				return m.Correct(nil, nil, nil, nil, nil, nil, &newTime, actor, at, actor)
+			},
+		} {
+			m := triaged(t, mapDiv, otherDiv)
+			require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+			require.NoError(t, m.AcknowledgeForDivision(otherDiv, actor, at))
+			require.NoError(t, correct(m), name)
+			assert.Empty(t, m.Acknowledgements(), name)
+		}
+	})
+
+	t.Run("correcting other fields keeps acknowledgements", func(t *testing.T) {
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+
+		sender := "Neuer Absender"
+		require.NoError(t, m.Correct(nil, &sender, nil, nil, nil, nil, nil, actor, at, actor))
+		assert.True(t, m.IsAcknowledgedBy(mapDiv))
+	})
+
+	t.Run("state is rebuilt from events", func(t *testing.T) {
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+
+		replayed := replay(t, id, append([]eventsourcing.Event{recorded(id)}, m.Root().PendingEvents()...))
+		assert.True(t, replayed.IsAcknowledgedBy(mapDiv))
+		require.Len(t, replayed.Acknowledgements(), 1)
+		assert.Equal(t, actor, replayed.Acknowledgements()[0].By)
+	})
+
+	t.Run("deleted messages reject acknowledgements", func(t *testing.T) {
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.Delete(shared.DeleteReasonManual, actor, at))
+		require.ErrorIs(t, m.AcknowledgeForDivision(mapDiv, actor, at), shared.ErrNotFound)
+	})
+}

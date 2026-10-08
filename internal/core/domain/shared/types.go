@@ -186,6 +186,10 @@ var (
 	// that has already been merged into the default one.
 	ErrSchadenplatzMerged = errors.New("SCHADENPLATZ_MERGED")
 
+	// ErrNotTriagedToDivision is returned when a division acts on a message it is not
+	// currently triaged to.
+	ErrNotTriagedToDivision = errors.New("NOT_TRIAGED_TO_DIVISION")
+
 	// ErrBeforeFeaturePlaced is returned when a feature change takes effect before the
 	// feature itself was placed on the map timeline.
 	ErrBeforeFeaturePlaced = errors.New("BEFORE_FEATURE_PLACED")

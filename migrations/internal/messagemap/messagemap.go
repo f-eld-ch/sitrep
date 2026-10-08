@@ -11,6 +11,7 @@ package messagemap
 
 import (
 	"encoding/json/v2"
+	"slices"
 	"strings"
 )
 
@@ -56,9 +57,8 @@ type DivisionPlan struct {
 // None reports whether nothing needs to be written.
 func (p DivisionPlan) None() bool { return p.AssignKindTo == "" && !p.AddNew }
 
-// PlanDivision folds the incident's division events (in stream order) and decides
-// what to write. It is idempotent: once a MESSAGE_MAP division exists the plan is empty.
-func PlanDivision(events []Event) (DivisionPlan, error) {
+// foldDivisions replays the incident's division events in stream order.
+func foldDivisions(events []Event) (map[string]*division, []string, error) {
 	divs := map[string]*division{}
 
 	var order []string
@@ -75,7 +75,7 @@ func PlanDivision(events []Event) (DivisionPlan, error) {
 				} `json:"division"`
 			}
 			if err := json.Unmarshal(e.Data, &d); err != nil {
-				return DivisionPlan{}, err
+				return nil, nil, err
 			}
 
 			if _, seen := divs[d.Division.ID]; !seen {
@@ -95,7 +95,7 @@ func PlanDivision(events []Event) (DivisionPlan, error) {
 				} `json:"divisions"`
 			}
 			if err := json.Unmarshal(e.Data, &d); err != nil {
-				return DivisionPlan{}, err
+				return nil, nil, err
 			}
 
 			for _, x := range d.Divisions {
@@ -112,7 +112,7 @@ func PlanDivision(events []Event) (DivisionPlan, error) {
 				Description *string `json:"description"`
 			}
 			if err := json.Unmarshal(e.Data, &d); err != nil {
-				return DivisionPlan{}, err
+				return nil, nil, err
 			}
 
 			if div := divs[d.ID]; div != nil {
@@ -127,7 +127,7 @@ func PlanDivision(events []Event) (DivisionPlan, error) {
 				Kind string `json:"kind"`
 			}
 			if err := json.Unmarshal(e.Data, &d); err != nil {
-				return DivisionPlan{}, err
+				return nil, nil, err
 			}
 
 			if div := divs[d.ID]; div != nil {
@@ -138,13 +138,24 @@ func PlanDivision(events []Event) (DivisionPlan, error) {
 				ID string `json:"id"`
 			}
 			if err := json.Unmarshal(e.Data, &d); err != nil {
-				return DivisionPlan{}, err
+				return nil, nil, err
 			}
 
 			if div := divs[d.ID]; div != nil {
 				div.removed = true
 			}
 		}
+	}
+
+	return divs, order, nil
+}
+
+// PlanDivision folds the incident's division events (in stream order) and decides
+// what to write. It is idempotent: once a MESSAGE_MAP division exists the plan is empty.
+func PlanDivision(events []Event) (DivisionPlan, error) {
+	divs, order, err := foldDivisions(events)
+	if err != nil {
+		return DivisionPlan{}, err
 	}
 
 	var live []*division
@@ -274,4 +285,75 @@ func matches(value string, candidates []string) bool {
 	}
 
 	return false
+}
+
+// MessageMapDivisionID returns the incident's message map division, folding its division
+// events. ok is false when the incident has none (the division backfill has not run).
+func MessageMapDivisionID(events []Event) (id string, ok bool, err error) {
+	divs, order, err := foldDivisions(events)
+	if err != nil {
+		return "", false, err
+	}
+
+	for _, divID := range order {
+		if d := divs[divID]; !d.removed && d.kind == Kind {
+			return d.id, true, nil
+		}
+	}
+
+	return "", false, nil
+}
+
+// NeedsAcknowledgement reports whether a message is currently triaged to the division
+// without the division having acknowledged it. Deleted messages never need one.
+func NeedsAcknowledgement(events []Event, divisionID string) (bool, error) {
+	var (
+		divisions []string
+		acked     bool
+		deleted   bool
+	)
+
+	for _, e := range events {
+		switch e.Type {
+		case "Triaged", "Imported":
+			var d struct {
+				DivisionIDs []string `json:"divisionIds"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return false, err
+			}
+
+			divisions = d.DivisionIDs
+			// A division the message no longer has cannot have acknowledged it.
+			if !slices.Contains(divisions, divisionID) {
+				acked = false
+			}
+		case "DivisionAcknowledged":
+			var d struct {
+				DivisionID string `json:"divisionId"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return false, err
+			}
+
+			if d.DivisionID == divisionID {
+				acked = true
+			}
+		case "DivisionAcknowledgementRevoked":
+			var d struct {
+				DivisionID string `json:"divisionId"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return false, err
+			}
+
+			if d.DivisionID == divisionID {
+				acked = false
+			}
+		case "Deleted":
+			deleted = true
+		}
+	}
+
+	return !deleted && !acked && slices.Contains(divisions, divisionID), nil
 }

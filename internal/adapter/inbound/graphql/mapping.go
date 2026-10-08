@@ -10,6 +10,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -120,6 +121,7 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		Priority:          mapPriorityStatus(string(s.Priority)),
 		Divisions:         []*model.Division{},
 		Attachments:       []*model.Attachment{},
+		Acknowledgements:  []*model.DivisionAcknowledgement{},
 		LinkedResourceIds: linkedIDs,
 		Author:            author,
 	}
@@ -188,6 +190,15 @@ func divisionRMToModel(r *outbound.DivisionRM) *model.Division {
 	}
 }
 
+func divisionToModel(d incident.Division) *model.Division {
+	return &model.Division{
+		ID:          d.ID.String(),
+		Name:        d.Name,
+		Description: d.Description,
+		Kind:        divisionKindToModel(d.Kind),
+	}
+}
+
 func divisionKindToModel(k shared.DivisionKind) model.DivisionKind {
 	if k == shared.DivisionKindMessageMap {
 		return model.DivisionKindMessageMap
@@ -238,6 +249,18 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 
 	if msg.Divisions == nil {
 		msg.Divisions = []*model.Division{}
+	}
+
+	msg.Acknowledgements = []*model.DivisionAcknowledgement{}
+
+	for _, a := range r.Acknowledgements {
+		if d, ok := divsByID[a.DivisionID]; ok {
+			msg.Acknowledgements = append(msg.Acknowledgements, &model.DivisionAcknowledgement{
+				Division:       divisionRMToModel(d),
+				AcknowledgedAt: a.At,
+				AcknowledgedBy: a.By,
+			})
+		}
 	}
 
 	linkedIDs := make([]string, len(r.LinkedResourceIDs))

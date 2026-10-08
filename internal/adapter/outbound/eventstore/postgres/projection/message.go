@@ -25,7 +25,7 @@ func NewMessageHandler(pool *pgxpool.Pool) *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 4 }
+func (h *MessageHandler) Version() int { return 5 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.message, readmodel.message_attachment`)
 	return err
@@ -38,7 +38,7 @@ func (h *MessageHandler) Handles(st, t string) bool {
 
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported",
-		"AttachmentAdded", "AttachmentRemoved":
+		"AttachmentAdded", "AttachmentRemoved", "DivisionAcknowledged", "DivisionAcknowledgementRevoked":
 		return true
 	}
 
@@ -177,7 +177,12 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			  medium          = COALESCE($7, medium),
 			  msg_time        = COALESCE($8::timestamptz, msg_time),
 			  last_editor_sub = $9,
-			  updated_at      = $10
+			  updated_at      = $10,
+			  -- changed content or time invalidates every division's acknowledgement
+			  acknowledgements = CASE
+			    WHEN ($2::text IS NOT NULL AND $2::text <> content)
+			      OR ($8::timestamptz IS NOT NULL AND $8::timestamptz <> msg_time)
+			    THEN '[]'::jsonb ELSE acknowledgements END
 			WHERE id = $1`,
 			id, d.Content, d.Sender, d.SenderDetail, d.Receiver, d.ReceiverDetail,
 			d.Medium, d.Time, d.EditorSub, e.OccurredAt)
@@ -204,9 +209,51 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(db, ctx, `
 			UPDATE readmodel.message
 			SET triage = $2, priority = $3, division_ids = $4, linked_resource_ids = $5,
-			    last_editor_sub = $6, updated_at = $7
+			    last_editor_sub = $6, updated_at = $7,
+			    -- a division that no longer has the message cannot have acknowledged it
+			    acknowledgements = COALESCE((
+			      SELECT jsonb_agg(a) FROM jsonb_array_elements(acknowledgements) a
+			      WHERE (a->>'divisionId')::uuid = ANY($4::uuid[])
+			    ), '[]'::jsonb)
 			WHERE id = $1`,
 			id, d.Triage, d.Priority, d.DivisionIDs, d.LinkedResourceIDs, d.TriagedBy, e.OccurredAt)
+
+	case "DivisionAcknowledged":
+		var d struct {
+			DivisionID string `json:"divisionId"`
+			By         string `json:"by"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		// Remove-then-add keeps replays idempotent.
+		return exec(db, ctx, `
+			UPDATE readmodel.message
+			SET acknowledgements = COALESCE((
+			      SELECT jsonb_agg(a) FROM jsonb_array_elements(acknowledgements) a
+			      WHERE a->>'divisionId' <> $2::text
+			    ), '[]'::jsonb) || jsonb_build_array(
+			      jsonb_build_object('divisionId', $2::text, 'at', $3::timestamptz, 'by', $4::text))
+			WHERE id = $1`,
+			id, d.DivisionID, e.OccurredAt, d.By)
+
+	case "DivisionAcknowledgementRevoked":
+		var d struct {
+			DivisionID string `json:"divisionId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `
+			UPDATE readmodel.message
+			SET acknowledgements = COALESCE((
+			      SELECT jsonb_agg(a) FROM jsonb_array_elements(acknowledgements) a
+			      WHERE a->>'divisionId' <> $2::text
+			    ), '[]'::jsonb)
+			WHERE id = $1`,
+			id, d.DivisionID)
 
 	case "Deleted":
 		if err := exec(db, ctx, `DELETE FROM readmodel.message WHERE id = $1`, id); err != nil {

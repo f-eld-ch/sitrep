@@ -60,6 +60,11 @@ export function toMessage(w: AnyWireMessage): Message {
     triageId: toEnum(ALL_TRIAGE, w.triage, TriageStatus.Pending) as TriageStatus,
     priorityId: toEnum(ALL_PRIORITY, w.priority, PriorityStatus.Normal) as PriorityStatus,
     attachments: (w.attachments ?? []).map(toAttachment),
+    acknowledgements: (w.acknowledgements ?? []).map((a) => ({
+      divisionId: a.division.id,
+      acknowledgedAt: toDate(a.acknowledgedAt),
+      acknowledgedBy: a.acknowledgedBy,
+    })),
     author: w.author ?? "",
   };
 }

@@ -59,7 +59,16 @@ type MessageRM struct {
 	Priority          string
 	DivisionIDs       []uuid.UUID
 	LinkedResourceIDs []uuid.UUID
-	AuthorSub         string
+	// Acknowledgements are the divisions that have dealt with the message, oldest first.
+	Acknowledgements []AcknowledgementRM
+	AuthorSub        string
+}
+
+// AcknowledgementRM records that a division has dealt with a message.
+type AcknowledgementRM struct {
+	DivisionID uuid.UUID
+	At         time.Time
+	By         string
 }
 
 type AttachmentRM struct {

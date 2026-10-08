@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -337,7 +338,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel_message
 		WHERE incident_id = ?
 		ORDER BY msg_time DESC, created_at DESC`, incidentID.String())
@@ -355,7 +356,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel_message
 		WHERE id = ?`, id.String())
 	if err != nil {
@@ -402,13 +403,29 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			priority           string
 			divisionIDsStr     string
 			linkedResourcesStr string
+			acknowledgementStr string
 			authorSub          *string
 		)
 
 		if err := rows.Scan(
-			&idStr, &number, &incIDStr, &content, &sender, &senderDetail,
-			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr, &linkedResourcesStr, &authorSub,
+			&idStr,
+			&number,
+			&incIDStr,
+			&content,
+			&sender,
+			&senderDetail,
+			&receiver,
+			&receiverDetail,
+			&medium,
+			&msgTime,
+			&createdAt,
+			&updatedAt,
+			&triage,
+			&priority,
+			&divisionIDsStr,
+			&linkedResourcesStr,
+			&acknowledgementStr,
+			&authorSub,
 		); err != nil {
 			return nil, err
 		}
@@ -443,6 +460,11 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			linkedResourceIDs = []uuid.UUID{}
 		}
 
+		acks, err := parseAcknowledgements(acknowledgementStr)
+		if err != nil {
+			return nil, err
+		}
+
 		rm := &outbound.MessageRM{
 			ID:                id,
 			Number:            number,
@@ -460,6 +482,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			Priority:          priority,
 			DivisionIDs:       divisionIDs,
 			LinkedResourceIDs: linkedResourceIDs,
+			Acknowledgements:  acks,
 		}
 		if authorSub != nil {
 			rm.AuthorSub = *authorSub
@@ -920,7 +943,7 @@ func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) 
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel_message
 		WHERE id IN (
 		    SELECT message_id FROM readmodel_feature_change
@@ -932,4 +955,28 @@ func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) 
 	}
 
 	return collectMessages(rows)
+}
+
+// parseAcknowledgements decodes the acknowledgements JSON column, oldest first.
+func parseAcknowledgements(raw string) ([]outbound.AcknowledgementRM, error) {
+	var entries []struct {
+		DivisionID uuid.UUID `json:"divisionId"`
+		At         time.Time `json:"at"`
+		By         string    `json:"by"`
+	}
+
+	if raw != "" {
+		if err := json.Unmarshal([]byte(raw), &entries); err != nil {
+			return nil, fmt.Errorf("unmarshal acknowledgements: %w", err)
+		}
+	}
+
+	out := make([]outbound.AcknowledgementRM, len(entries))
+	for i, e := range entries {
+		out[i] = outbound.AcknowledgementRM{DivisionID: e.DivisionID, At: e.At, By: e.By}
+	}
+
+	slices.SortStableFunc(out, func(a, b outbound.AcknowledgementRM) int { return a.At.Compare(b.At) })
+
+	return out, nil
 }

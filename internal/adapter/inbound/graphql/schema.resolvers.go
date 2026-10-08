@@ -983,22 +983,65 @@ func (r *mutationResolver) TriageMessage(
 		return nil, err
 	}
 
-	msg := messageStateToModel(state)
-	// Divisions on a message are incident-level references (stable, no projection race).
-	// Look them up so the mutation response contains full name/description data.
-	if len(state.DivisionIDs) > 0 {
-		inc, lookupErr := r.Queries.GetIncident(ctx, uuid.UUID(state.IncidentID))
-		if lookupErr == nil {
-			divIndex := divisionsByID(inc.Divisions)
-			for _, divID := range state.DivisionIDs {
-				if d, ok := divIndex[uuid.UUID(divID)]; ok {
-					msg.Divisions = append(msg.Divisions, divisionRMToModel(d))
-				}
-			}
-		}
+	return r.messageFromState(ctx, state)
+}
+
+// AcknowledgeMessage is the resolver for the acknowledgeMessage field.
+func (r *mutationResolver) AcknowledgeMessage(
+	ctx context.Context,
+	id string,
+	divisionID string,
+) (*model.Message, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return msg, nil
+	msgID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	divID, err := parseUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Messages.AcknowledgeMessage(ctx, shared.MessageID(msgID), shared.DivisionID(divID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.messageFromState(ctx, state)
+}
+
+// RevokeMessageAcknowledgement is the resolver for the revokeMessageAcknowledgement field.
+func (r *mutationResolver) RevokeMessageAcknowledgement(
+	ctx context.Context,
+	id string,
+	divisionID string,
+) (*model.Message, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	msgID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	divID, err := parseUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Messages.RevokeMessageAcknowledgement(ctx, shared.MessageID(msgID), shared.DivisionID(divID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.messageFromState(ctx, state)
 }
 
 // DeleteMessage is the resolver for the deleteMessage field.

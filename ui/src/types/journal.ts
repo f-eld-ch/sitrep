@@ -27,6 +27,13 @@ export interface Attachment {
   url: string;
 }
 
+/** A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn. */
+export interface MessageAcknowledgement {
+  divisionId: string;
+  acknowledgedAt: Date;
+  acknowledgedBy: string;
+}
+
 export interface Message {
   id: string;
   number: number;
@@ -44,6 +51,8 @@ export interface Message {
   triageId: TriageStatus;
   priorityId: PriorityStatus;
   attachments: Attachment[];
+  /** Divisions that have dealt with the message; cleared when its content or time changes. */
+  acknowledgements: MessageAcknowledgement[];
   /** OAuth sub of the operator who recorded this message. Empty string for older messages. */
   author: string;
 }

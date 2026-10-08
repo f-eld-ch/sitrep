@@ -2,6 +2,10 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
   CreateMessageMutation,
   CreateMessageMutationVariables,
+  AcknowledgeMessageMutation,
+  AcknowledgeMessageMutationVariables,
+  RevokeMessageAcknowledgementMutation,
+  RevokeMessageAcknowledgementMutationVariables,
   GetIncidentMessagesQuery,
   GetIncidentMessagesQueryVariables,
   GetMessageForTriageQuery,
@@ -50,6 +54,13 @@ export const GET_INCIDENT_MESSAGES: TypedDocumentNode<
           description
           kind
         }
+        acknowledgements {
+          division {
+            id
+          }
+          acknowledgedAt
+          acknowledgedBy
+        }
         attachments {
           id
           filename
@@ -89,6 +100,13 @@ export const GET_MESSAGE_FOR_TRIAGE: TypedDocumentNode<
         name
         description
         kind
+      }
+      acknowledgements {
+        division {
+          id
+        }
+        acknowledgedAt
+        acknowledgedBy
       }
       attachments {
         id
@@ -169,6 +187,13 @@ export const CREATE_MESSAGE: TypedDocumentNode<
         description
         kind
       }
+      acknowledgements {
+        division {
+          id
+        }
+        acknowledgedAt
+        acknowledgedBy
+      }
     }
   }
 `;
@@ -245,6 +270,13 @@ export const TRIAGE_MESSAGE: TypedDocumentNode<
         description
         kind
       }
+      acknowledgements {
+        division {
+          id
+        }
+        acknowledgedAt
+        acknowledgedBy
+      }
       linkedResourceIds
     }
   }
@@ -256,5 +288,41 @@ export const REMOVE_ATTACHMENT: TypedDocumentNode<
 > = gql`
   mutation RemoveAttachment($messageId: ID!, $attachmentId: ID!) {
     removeAttachment(messageId: $messageId, attachmentId: $attachmentId)
+  }
+`;
+
+export const ACKNOWLEDGE_MESSAGE: TypedDocumentNode<
+  AcknowledgeMessageMutation,
+  AcknowledgeMessageMutationVariables
+> = gql`
+  mutation AcknowledgeMessage($id: ID!, $divisionId: ID!) {
+    acknowledgeMessage(id: $id, divisionId: $divisionId) {
+      id
+      acknowledgements {
+        division {
+          id
+        }
+        acknowledgedAt
+        acknowledgedBy
+      }
+    }
+  }
+`;
+
+export const REVOKE_MESSAGE_ACKNOWLEDGEMENT: TypedDocumentNode<
+  RevokeMessageAcknowledgementMutation,
+  RevokeMessageAcknowledgementMutationVariables
+> = gql`
+  mutation RevokeMessageAcknowledgement($id: ID!, $divisionId: ID!) {
+    revokeMessageAcknowledgement(id: $id, divisionId: $divisionId) {
+      id
+      acknowledgements {
+        division {
+          id
+        }
+        acknowledgedAt
+        acknowledgedBy
+      }
+    }
   }
 `;

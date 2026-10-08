@@ -167,7 +167,15 @@ type MessageState struct {
 	DivisionIDs       []shared.DivisionID
 	LinkedResourceIDs []shared.ResourceID
 	Attachments       []AttachmentState
+	Acknowledgements  []AcknowledgementState
 	AuthorSub         string
+}
+
+// AcknowledgementState says that a division has dealt with a message.
+type AcknowledgementState struct {
+	DivisionID shared.DivisionID
+	At         time.Time
+	By         string
 }
 
 // FeatureState is returned from ModifyFeature so the resolver can build the
@@ -272,6 +280,24 @@ type MessageService interface {
 		priority shared.PriorityStatus,
 		divisionIDs []shared.DivisionID,
 		linkedResourceIDs []shared.ResourceID,
+		actor identity.Actor,
+	) (MessageState, error)
+
+	// AcknowledgeMessage records that a division has dealt with the message (for the
+	// Nachrichtenkarte division: the message has been drawn). The message must currently
+	// be triaged to the division. Acknowledging again is a no-op.
+	AcknowledgeMessage(
+		ctx context.Context,
+		id shared.MessageID,
+		divisionID shared.DivisionID,
+		actor identity.Actor,
+	) (MessageState, error)
+
+	// RevokeMessageAcknowledgement withdraws a division's acknowledgement.
+	RevokeMessageAcknowledgement(
+		ctx context.Context,
+		id shared.MessageID,
+		divisionID shared.DivisionID,
 		actor identity.Actor,
 	) (MessageState, error)
 

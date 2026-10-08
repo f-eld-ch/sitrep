@@ -135,6 +135,13 @@ type Division struct {
 	Kind        DivisionKind `json:"kind"`
 }
 
+// A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn.
+type DivisionAcknowledgement struct {
+	Division       *Division `json:"division"`
+	AcknowledgedAt time.Time `json:"acknowledgedAt"`
+	AcknowledgedBy string    `json:"acknowledgedBy"`
+}
+
 type DivisionInput struct {
 	// Omit for new divisions; supply the existing ID to preserve assignments.
 	ID          *string `json:"id,omitempty"`
@@ -270,6 +277,9 @@ type Message struct {
 	SchadenplatzCasualties []*SchadenplatzCasualtyEntry `json:"schadenplatzCasualties"`
 	// Resource IDs linked to this message during triage.
 	LinkedResourceIds []string `json:"linkedResourceIds"`
+	// Divisions that have dealt with this message. A division can only appear here while the message
+	// is triaged to it; changed message content or time clears all acknowledgements.
+	Acknowledgements []*DivisionAcknowledgement `json:"acknowledgements"`
 	// OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced.
 	Author *string `json:"author,omitempty"`
 }

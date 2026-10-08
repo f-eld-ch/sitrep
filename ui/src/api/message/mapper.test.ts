@@ -39,6 +39,7 @@ const WIRE_MESSAGE: WireMessage = {
   priority: "NORMAL",
   divisions: [WIRE_DIVISION],
   attachments: [],
+  acknowledgements: [],
   author: null,
 };
 
