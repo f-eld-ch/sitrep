@@ -162,6 +162,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   const {
     state: { incident },
   } = useContext(IncidentContext);
+  const { drawingMessage } = useContext(MapTimeContext);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -196,7 +197,8 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
-      <FeatureMessagesPopup clickLayerIds={clickLayerIds} />
+      {/* The operator drawing for a message already sees which one it is; the popup would only get in the way. */}
+      {drawingMessage === undefined && <FeatureMessagesPopup clickLayerIds={clickLayerIds} />}
     </>
   );
 }
