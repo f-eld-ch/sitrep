@@ -137,13 +137,18 @@ function MessageMapView() {
     setPendingSelect(undefined);
     if (blocker.state === "blocked") blocker.reset();
   };
+  // The work is done (or closed): nothing is in progress, so there is nothing left to warn about.
+  const finishWork = () => {
+    setInProgress(false);
+    stayOnMessage();
+  };
 
   const handleFinish = async () => {
     if (!selected) return;
 
     try {
       await acknowledge({ messageId: selected.id, divisionId: mapDivision.id });
-      setInProgress(false);
+      finishWork();
       selection.handled(selected.id);
     } catch {
       // acknowledgeState.error renders the notification
@@ -253,7 +258,7 @@ function MessageMapView() {
                           size="sm"
                           onClick={() => {
                             setEditingId(undefined);
-                            setInProgress(false);
+                            finishWork();
                           }}
                         >
                           <FontAwesomeIcon icon={faCheck} />

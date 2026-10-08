@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import MessageMapView from "./MessageMapView";
@@ -108,5 +108,18 @@ describe("MessageMapView navigation guard", () => {
     expect(router.state.location.pathname).toBe("/i/x");
     fireEvent.click(screen.getByRole("button", { name: /leave|verlassen/i }));
     expect(router.state.location.pathname).toBe("/other");
+  });
+
+  it("clears the warning once the message is finished", async () => {
+    setup();
+    fireEvent.click(screen.getByText("draw"));
+    fireEvent.click(screen.getByText("pick m2"));
+    expect(screen.getByRole("button", { name: /leave|verlassen/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /messageMap.finish|abschliessen/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: /leave|verlassen/i })).toBeNull(),
+    );
   });
 });
