@@ -236,6 +236,7 @@
     "addWMSLayer": "Ajouter un calques WMS"
   },
   "styleController": {
+    "autoFrame": "Cadrer automatiquement",
     "maps": "Cartes",
     "Basiskarte": "Carte de base légère",
     "Satellit": "Carte satellite"

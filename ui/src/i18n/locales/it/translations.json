@@ -236,6 +236,7 @@
     "addWMSLayer": "Aggiungere il livello WMS"
   },
   "styleController": {
+    "autoFrame": "Inquadra automaticamente",
     "maps": "Mappe",
     "Basiskarte": "Mappa di base leggera",
     "Satellit": "Mappa satellitare"

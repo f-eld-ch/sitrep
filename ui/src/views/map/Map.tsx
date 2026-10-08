@@ -6,10 +6,13 @@ import bbox from "@turf/bbox";
 import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
+import { clsx } from "clsx";
 import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -149,7 +152,6 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         minZoom={9}
         maxZoom={19}
         mapStyle={styleWithBabsSprite}
-        scrollZoom={!readOnly}
         reuseMaps={false}
         RTLTextPlugin={undefined}
       >
@@ -174,6 +176,8 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   } = useContext(IncidentContext);
   const { drawingMessage } = useContext(MapTimeContext);
   const [highlightMessage, setHighlightMessage] = useState(true);
+  // The read-only map frames its layer by itself until somebody moves it; the button resumes.
+  const [following, setFollowing] = useState(true);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -187,6 +191,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <>
       <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
+        {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
         {drawingMessage && (
           <MessageHighlightToggle
             enabled={highlightMessage}
@@ -202,7 +207,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
       {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
-        <ReadOnlyLayers />
+        <ReadOnlyLayers following={following} onUserMove={() => setFollowing(false)} />
       ) : (
         <InactiveLayers
           layers={
@@ -220,7 +225,26 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   );
 }
 
-function ReadOnlyLayers() {
+function FollowControl({ following, onFollow }: { following: boolean; onFollow: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <button
+        type="button"
+        aria-pressed={following}
+        aria-label={t("styleController.autoFrame")}
+        title={t("styleController.autoFrame")}
+        className={clsx("maplibregl-ctrl-icon", following && "text-primary!")}
+        onClick={onFollow}
+      >
+        <FontAwesomeIcon icon={faLocationCrosshairs} size="lg" />
+      </button>
+    </div>
+  );
+}
+
+function ReadOnlyLayers({ following, onUserMove }: { following: boolean; onUserMove: () => void }) {
   const { state, dispatch } = useContext(LayerContext);
   const { current: map } = useMap();
   const visibleLayers = useMemo(
@@ -241,8 +265,22 @@ function ReadOnlyLayers() {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: activeLayer.id } });
   }, [activeLayer, dispatch, state.activeLayer, visibleLayers]);
 
+  // Moves the user makes carry the browser event; the map's own fitBounds does not.
   useEffect(() => {
-    if (visibleLayers.length < 2) return;
+    if (map === undefined) return;
+
+    const onMoveStart = (e: { originalEvent?: unknown }) => {
+      if (e.originalEvent) onUserMove();
+    };
+    map.on("movestart", onMoveStart);
+
+    return () => {
+      map.off("movestart", onMoveStart);
+    };
+  }, [map, onUserMove]);
+
+  useEffect(() => {
+    if (visibleLayers.length < 2 || !following) return;
 
     const timer = setInterval(() => {
       dispatch({
@@ -252,10 +290,10 @@ function ReadOnlyLayers() {
     }, READ_ONLY_LAYER_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [dispatch, state.activeLayer, visibleLayers]);
+  }, [dispatch, following, state.activeLayer, visibleLayers]);
 
   useEffect(() => {
-    if (map === undefined || activeLayer === undefined) return;
+    if (map === undefined || activeLayer === undefined || !following) return;
 
     const featureCollection = layerToFeatureCollection(activeLayer);
     if (featureCollection.features.length === 0) return;
@@ -283,7 +321,7 @@ function ReadOnlyLayers() {
     return () => {
       map.off("load", fit);
     };
-  }, [activeLayer, map]);
+  }, [activeLayer, following, map]);
 
   return (
     <>

@@ -236,6 +236,7 @@
     "addWMSLayer": "Add WMS layer"
   },
   "styleController": {
+    "autoFrame": "Frame automatically",
     "maps": "Maps",
     "Basiskarte": "Light base map",
     "Satellit": "Satellite map"
