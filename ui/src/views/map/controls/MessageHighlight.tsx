@@ -77,6 +77,8 @@ export function MessageHighlight({
   const [restoreFeature, restoreState] = useRestoreFeature();
   // The removed feature the user clicked, to offer bringing it back.
   const [target, setTarget] = useState<{ id: string; lng: number; lat: number } | undefined>();
+  // Features being brought back: their ghost goes at once, before the history says so.
+  const [restoring, setRestoring] = useState<ReadonlySet<string>>(new Set());
   const canRestore = enabled && drawingMessage !== undefined && !drawingMessage.locked;
 
   useEffect(() => {
@@ -99,23 +101,38 @@ export function MessageHighlight({
     };
   }, [map, canRestore]);
 
+  // Once the history no longer lists a feature as removed, it needs no marker of its own.
+  const [seenHalos, setSeenHalos] = useState(halos);
+  if (halos !== seenHalos) {
+    setSeenHalos(halos);
+    setRestoring((ids) => {
+      const open = new Set([...ids].filter((id) => halos.get(id)?.kind === "removed"));
+
+      return open.size === ids.size ? ids : open;
+    });
+  }
+
   const restore = () => {
-    if (!target || !layer || !drawingMessage) return;
+    const ghost = target && halos.get(target.id);
+    if (!target || !ghost || !layer || !drawingMessage) return;
+
+    const { id } = target;
+    setRestoring((ids) => new Set(ids).add(id));
+    setTarget(undefined);
+    onDrawingChange?.();
 
     void restoreFeature({
-      id: target.id,
+      id,
       layerId: layer.id,
       incidentId: incidentId ?? "",
+      current: { geometry: ghost.lastGeometry, properties: ghost.lastProperties },
       change: { messageId: drawingMessage.id },
       asOf,
-    })
-      .then(() => {
-        onDrawingChange?.();
-        setTarget(undefined);
-      })
-      .catch(() => {
-        // restoreState.error shows in the popup
-      });
+    }).catch(() => {
+      // Back to how it was, with the reason in the popup.
+      setRestoring((ids) => new Set([...ids].filter((other) => other !== id)));
+      setTarget(target);
+    });
   };
 
   // Brings what the message did into view once per message, as soon as its history is known.
@@ -153,7 +170,7 @@ export function MessageHighlight({
     }
   }
   for (const [id, halo] of halos) {
-    if (halo.kind === "removed" && halo.lastGeometry) {
+    if (halo.kind === "removed" && halo.lastGeometry && !restoring.has(id)) {
       features.push({
         type: "Feature",
         id,

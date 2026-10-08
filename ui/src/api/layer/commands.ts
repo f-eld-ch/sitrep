@@ -68,6 +68,8 @@ export interface RestoreFeatureArgs {
   /** The layer the feature is on, to put it back into the cached map. */
   layerId: string;
   incidentId: string;
+  /** How the feature last looked; shown at once, before the server has answered. */
+  current: { geometry: unknown; properties: unknown };
   change?: FeatureChangeArgs;
   asOf?: Date;
 }
@@ -209,6 +211,14 @@ export function useRestoreFeature(): CommandHook<RestoreFeatureArgs> {
   const restoreFeature = async (args: RestoreFeatureArgs): Promise<void> => {
     await mutate({
       variables: { id: args.id, change: featureChangeVariable(args.change) },
+      optimisticResponse: {
+        restoreFeature: {
+          __typename: "Feature",
+          id: args.id,
+          geometry: args.current.geometry,
+          properties: args.current.properties,
+        },
+      } as never,
       update(cache, { data }) {
         if (!data?.restoreFeature) return;
         const restored = data.restoreFeature;
