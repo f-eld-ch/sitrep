@@ -203,7 +203,7 @@
     "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
     "openMessage": "Meldung öffnen",
     "highlight": "Diese Meldung",
-    "highlightHint": "Grün: hinzugefügt, Orange: geändert, Grau: entfernt",
+    "highlightHint": "Grün: hinzugefügt, Hellblau: geändert, Hellrot: entfernt",
     "unfinished": "Die Zeichnung zu dieser Meldung ist noch nicht abgeschlossen. Bereits gezeichnete Objekte bleiben gespeichert. Trotzdem verlassen?",
     "leave": "Verlassen"
   },

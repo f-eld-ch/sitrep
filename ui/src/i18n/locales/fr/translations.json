@@ -203,7 +203,7 @@
     "unavailable": "Cet engagement n'a pas de carte de situation",
     "openMessage": "Ouvrir le message",
     "highlight": "Ce message",
-    "highlightHint": "Vert : ajouté, orange : modifié, gris : supprimé",
+    "highlightHint": "Vert : ajouté, bleu clair : modifié, rouge clair : supprimé",
     "unfinished": "Le dessin de ce message n'est pas terminé. Les objets déjà dessinés restent enregistrés. Quitter quand même ?",
     "leave": "Quitter"
   },

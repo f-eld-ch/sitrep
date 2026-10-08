@@ -203,7 +203,7 @@
     "unavailable": "Questo intervento non ha una carta informativa",
     "openMessage": "Apri messaggio",
     "highlight": "Questo messaggio",
-    "highlightHint": "Verde: aggiunto, arancione: modificato, grigio: rimosso",
+    "highlightHint": "Verde: aggiunto, azzurro: modificato, rosso chiaro: rimosso",
     "unfinished": "Il disegno di questo messaggio non è concluso. Gli oggetti già disegnati restano salvati. Uscire comunque?",
     "leave": "Esci"
   },

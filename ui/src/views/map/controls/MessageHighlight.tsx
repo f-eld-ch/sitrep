@@ -30,15 +30,15 @@ const LINE_WIDTH: ExpressionSpecification = [
   28,
 ];
 
-/** Green for what the message put on the map, orange for what it changed, grey for what it removed. */
+/** Green for what the message put on the map, light blue for what it changed, light red for what it removed. */
 const HALO_COLOR = [
   "match",
   ["get", "halo"],
   "added",
   "#22c55e",
   "removed",
-  "#9ca3af",
-  "#f59e0b",
+  "#f87171",
+  "#7dd3fc",
 ] as unknown as ExpressionSpecification;
 
 /**
@@ -111,12 +111,24 @@ export function MessageHighlight({
         <MapLayer
           id={`${SOURCE_ID}-line`}
           type="line"
-          filter={["!=", ["geometry-type"], "Point"]}
+          filter={["all", ["!=", ["geometry-type"], "Point"], ["!=", ["get", "halo"], "removed"]]}
           paint={{
             "line-color": HALO_COLOR,
             "line-width": LINE_WIDTH,
             "line-opacity": 0.5,
             "line-blur": 2,
+          }}
+        />
+        {/* Dashed for what is gone, so it reads as removed without relying on the colour. */}
+        <MapLayer
+          id={`${SOURCE_ID}-line-removed`}
+          type="line"
+          filter={["all", ["!=", ["geometry-type"], "Point"], ["==", ["get", "halo"], "removed"]]}
+          paint={{
+            "line-color": HALO_COLOR,
+            "line-width": LINE_WIDTH,
+            "line-opacity": 0.7,
+            "line-dasharray": [1.5, 1.5],
           }}
         />
         <MapLayer
