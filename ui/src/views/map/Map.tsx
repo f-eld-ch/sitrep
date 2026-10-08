@@ -192,7 +192,7 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
     <>
       <div
         // Collapsed, the buttons stay in the corner; an open panel is lifted above the slider.
-        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 [&>nav]:mb-[calc(var(--map-timeline-height)+2rem)]"
+        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 [&>nav]:mb-[calc(var(--map-timeline-height)+2rem)]!"
       >
         {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
         {drawingMessage && (
