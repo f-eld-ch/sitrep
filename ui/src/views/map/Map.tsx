@@ -50,7 +50,7 @@ import { isPendingFeature, withPendingFeatures } from "./pending";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
-import { TIMELINE_HEIGHT_VAR, TimeControl } from "./controls/TimeControl";
+import { TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
@@ -191,8 +191,8 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <>
       <div
-        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1"
-        style={{ paddingBottom: `var(${TIMELINE_HEIGHT_VAR}, 0px)` }}
+        // Collapsed, the buttons stay in the corner; an open panel is lifted above the slider.
+        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 has-[nav]:pb-(--map-timeline-height)"
       >
         {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
         {drawingMessage && (
