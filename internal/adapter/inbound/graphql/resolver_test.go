@@ -40,6 +40,8 @@ func newTestStack(t *testing.T) *testStack {
 	msgRepo := eventstore.NewMessageRepository(store)
 	layerRepo := eventstore.NewLayerRepository(store)
 	featureRepo := eventstore.NewFeatureRepository(store)
+	spRepo := eventstore.NewSchadenplatzRepository(store)
+	resRepo := eventstore.NewResourceRepository(store)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -51,21 +53,24 @@ func newTestStack(t *testing.T) *testStack {
 	)
 
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
+	incidentSvc.WithSchadenplatzRepository(spRepo)
+
 	messageSvc := factory.MessageService(msgRepo, incRepo)
 	layerSvc := factory.LayerService(layerRepo, incRepo)
 	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
+	resourceSvc := factory.ResourceService(resRepo, incRepo, spRepo)
 
 	incHandler := projection.NewIncidentHandler()
 	divHandler := projection.NewIncidentDivisionHandler()
 	msgHandler := projection.NewMessageHandler()
 	layerHandler := projection.NewLayerFeaturesHandler()
 
-	proj := projection.NewProjector(store, []projection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler,
-	})
-
 	spHandler := projection.NewSchadenplatzHandler()
 	resourceHandler := projection.NewResourceHandler()
+
+	proj := projection.NewProjector(store, []projection.Handler{
+		incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler,
+	})
 	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler)
 
 	r := &gqlresolver.Resolver{
@@ -73,7 +78,9 @@ func newTestStack(t *testing.T) *testStack {
 		Messages:  messageSvc,
 		Layers:    layerSvc,
 		Features:  featureSvc,
+		Resources: resourceSvc,
 		Queries:   queries,
+		Timeline:  factory.TimelineService(store, queries),
 	}
 
 	return &testStack{resolver: r, proj: proj}
@@ -1245,6 +1252,130 @@ func TestRestoreFeature_BringsBackARemovedFeatureOnTheTimeline(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, changes, 3)
 	assert.Equal(t, model.FeatureChangeKindRestored, changes[2].Change)
+}
+
+func TestMessageAcknowledgement_Resolvers(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Ack", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	record := func(divisions ...string) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "m", Medium: model.MediumRadio,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: divisions,
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	msg := record(mapDivisionID)
+
+	t.Run("a division acknowledges a message triaged to it, and takes it back", func(t *testing.T) {
+		got, err := s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		require.Len(t, got.Acknowledgements, 1)
+		assert.Equal(t, mapDivisionID, got.Acknowledgements[0].Division.ID)
+		assert.Equal(t, "test-sub", got.Acknowledgements[0].AcknowledgedBy)
+
+		again, err := s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		assert.Len(t, again.Acknowledgements, 1, "acknowledging twice changes nothing")
+
+		revoked, err := s.resolver.Mutation().RevokeMessageAcknowledgement(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		assert.Empty(t, revoked.Acknowledgements)
+	})
+
+	t.Run("a message not triaged to the division cannot be acknowledged for it", func(t *testing.T) {
+		untriaged := record() // triaged to no division
+
+		_, err := s.resolver.Mutation().AcknowledgeMessage(ctx, untriaged.ID, mapDivisionID)
+		require.ErrorIs(t, err, shared.ErrNotTriagedToDivision)
+	})
+
+	t.Run("unknown ids and unauthenticated calls fail", func(t *testing.T) {
+		_, err := s.resolver.Mutation().AcknowledgeMessage(ctx, "not-a-uuid", mapDivisionID)
+		require.Error(t, err)
+
+		_, err = s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, "not-a-uuid")
+		require.Error(t, err)
+	})
+}
+
+func TestMessageAcknowledgement_RequiresAnActor(t *testing.T) {
+	s := newTestStack(t)
+
+	_, err := s.resolver.Mutation().AcknowledgeMessage(t.Context(), uuid.NewString(), uuid.NewString())
+	require.Error(t, err)
+
+	_, err = s.resolver.Mutation().RevokeMessageAcknowledgement(t.Context(), uuid.NewString(), uuid.NewString())
+	require.Error(t, err)
+}
+
+func TestIncident_ResourcesAndSchadenplaetzeAsOf(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Past", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+
+	alertedAt := time.Now().UTC().Add(-time.Hour)
+	_, err = s.resolver.Mutation().AlertResource(ctx, model.AlertResourceInput{
+		IncidentID: inc.Incident.ID, Formation: model.ResourceFormationFw, Name: "TLF 1",
+		Size: model.ResourceUnitSizeGruppe, PersonnelCount: 6, Hauptaufgabe: "Löschen", OccurredAt: &alertedAt,
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	resources := func(asOf *time.Time) []*model.Resource {
+		t.Helper()
+
+		got, err := s.resolver.Incident().Resources(ctx, inc.Incident, asOf)
+		require.NoError(t, err)
+
+		return got
+	}
+	places := func(asOf *time.Time) []*model.Schadenplatz {
+		t.Helper()
+
+		got, err := s.resolver.Incident().Schadenplaetze(ctx, inc.Incident, asOf)
+		require.NoError(t, err)
+
+		return got
+	}
+
+	before, after := alertedAt.Add(-time.Minute), alertedAt.Add(time.Minute)
+
+	assert.Len(t, resources(nil), 1, "live")
+	assert.Empty(t, resources(&before), "not alerted yet")
+	require.Len(t, resources(&after), 1)
+	assert.Equal(t, "TLF 1", resources(&after)[0].Name)
+	assert.Equal(t, 6, resources(&after)[0].PersonnelCount)
+
+	opened := time.Now().UTC().Add(time.Minute)
+
+	assert.NotEmpty(t, places(nil), "live: the default Schadenplatz")
+	assert.NotEmpty(t, places(&opened), "as of a time after the incident was opened")
+	assert.Empty(t, places(&before), "it did not exist before the incident was opened")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

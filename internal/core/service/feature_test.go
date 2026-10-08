@@ -174,6 +174,8 @@ func TestFeatureService_RejectsWritesOnClosedIncident(t *testing.T) {
 	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 	err = f.features.RemoveFeature(ctx(), state.ID, inbound.FeatureChange{}, testActor)
 	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
+	_, err = f.features.RestoreFeature(ctx(), state.ID, inbound.FeatureChange{}, testActor)
+	require.ErrorIs(t, err, shared.ErrIncidentNotOpen)
 }
 
 func TestFeatureService_MessageMapLayerRequiresMessageContext(t *testing.T) {

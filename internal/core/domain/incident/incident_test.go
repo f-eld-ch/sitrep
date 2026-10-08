@@ -486,3 +486,77 @@ func TestIncident_LinkDefaultSchadenplatz(t *testing.T) {
 		assert.Equal(t, spID, *inc2.DefaultSchadenplatzID())
 	})
 }
+
+func TestIncident_AssignDivisionKind(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+	legacy := shared.DivisionID(uuid.New())
+	other := shared.DivisionID(uuid.New())
+
+	// An incident from before divisions had a kind: its "Karte" division has none.
+	legacyIncident := func(t *testing.T) *incident.Incident {
+		t.Helper()
+
+		return replay(t, id, []eventsourcing.Event{
+			{
+				EventType: "Opened", OccurredAt: at,
+				Data: incident.Opened{Name: "Old"},
+			},
+			{
+				EventType:  "DivisionAdded",
+				OccurredAt: at,
+				Data: incident.DivisionAdded{
+					Division: incident.DivisionData{ID: legacy, Name: "Karte", Description: "Nachrichtenkarte"},
+				},
+			},
+			{
+				EventType:  "DivisionAdded",
+				OccurredAt: at,
+				Data: incident.DivisionAdded{
+					Division: incident.DivisionData{ID: other, Name: "SC", Description: "Stabschef"},
+				},
+			},
+		})
+	}
+
+	t.Run("marks an existing division as the message map division", func(t *testing.T) {
+		inc := legacyIncident(t)
+		_, has := inc.MessageMapDivision()
+		require.False(t, has)
+
+		require.NoError(t, inc.AssignDivisionKind(legacy, shared.DivisionKindMessageMap, actor, at))
+
+		div, has := inc.MessageMapDivision()
+		require.True(t, has)
+		assert.Equal(t, legacy, div.ID)
+		require.Len(t, inc.Root().PendingEvents(), 1)
+		assert.Equal(t, "DivisionKindAssigned", inc.Root().PendingEvents()[0].EventType)
+	})
+
+	t.Run("is idempotent", func(t *testing.T) {
+		inc := legacyIncident(t)
+		require.NoError(t, inc.AssignDivisionKind(legacy, shared.DivisionKindMessageMap, actor, at))
+		inc.Root().ClearPending()
+
+		require.NoError(t, inc.AssignDivisionKind(legacy, shared.DivisionKindMessageMap, actor, at))
+		assert.Empty(t, inc.Root().PendingEvents())
+	})
+
+	t.Run("there is only one message map division", func(t *testing.T) {
+		inc := legacyIncident(t)
+		require.NoError(t, inc.AssignDivisionKind(legacy, shared.DivisionKindMessageMap, actor, at))
+
+		require.ErrorIs(
+			t,
+			inc.AssignDivisionKind(other, shared.DivisionKindMessageMap, actor, at),
+			shared.ErrInvalidInput,
+		)
+	})
+
+	t.Run("an unknown division is not found", func(t *testing.T) {
+		inc := legacyIncident(t)
+
+		require.ErrorIs(t,
+			inc.AssignDivisionKind(shared.DivisionID(uuid.New()), shared.DivisionKindMessageMap, actor, at),
+			shared.ErrNotFound)
+	})
+}
