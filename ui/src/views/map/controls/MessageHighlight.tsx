@@ -118,8 +118,16 @@ export function MessageHighlight({
   }
 
   const restore = () => {
-    const ghost = target && halos.get(target.id);
-    if (!target || !ghost || !layer || !drawingMessage) return;
+    if (!target || !layer || !drawingMessage) return;
+
+    // Also a feature deleted a moment ago, which the history does not list yet.
+    const ghost = withLocalRemovals(
+      halos,
+      state.removedFeatures,
+      drawingMessage.id,
+      placedHere,
+    ).get(target.id);
+    if (!ghost) return;
 
     const { id } = target;
     dispatch({ type: "CLEAR_REMOVED_FEATURE", payload: { id } });

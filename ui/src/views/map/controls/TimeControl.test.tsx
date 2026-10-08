@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IncidentContext } from "utils";
 import { MapTimeContext, type MapTime } from "../MapTimeContext";
-import { TimeControl } from "./TimeControl";
+import { TIMELINE_HEIGHT_VAR, TimeControl } from "./TimeControl";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -26,8 +26,9 @@ const message = (id: string, iso: string) => ({
 });
 
 // No free drawing: nothing but the messages puts ticks on the timeline.
-const NO_TIMES: number[] = [];
-vi.mock("api/layer", () => ({ useFeatureChangeTimes: () => NO_TIMES }));
+// Free drawing on any layer: none unless a test says otherwise.
+const featureTimes = vi.hoisted(() => ({ current: [] as number[] }));
+vi.mock("api/layer", () => ({ useFeatureChangeTimes: () => featureTimes.current }));
 vi.mock("api/message", () => ({
   useIncidentMessages: () => ({
     status: "ready",
@@ -61,6 +62,49 @@ describe("TimeControl", () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(NOW);
+    featureTimes.current = [];
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("also stops at changes drawn freely on other layers", () => {
+    featureTimes.current = [new Date("2026-01-15T13:00:00Z").getTime()];
+    const setAsOf = vi.fn();
+    renderControl({ setAsOf });
+
+    fireEvent.click(screen.getByRole("button", { name: "mapTimeline.previous" }));
+    expect(setAsOf).toHaveBeenLastCalledWith(new Date("2026-01-15T13:00:00Z"));
+  });
+
+  it("lets the bottom-right controls know how much room it takes, and gives it back", () => {
+    const heights: string[] = [];
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(56);
+
+    const { container, unmount } = renderControl({ setAsOf: vi.fn() });
+    const map = container;
+    heights.push(map.style.getPropertyValue(TIMELINE_HEIGHT_VAR));
+    unmount();
+    heights.push(map.style.getPropertyValue(TIMELINE_HEIGHT_VAR));
+
+    expect(heights).toEqual(["56px", ""]);
+  });
+
+  it("does not publish anything on a map without a timeline", () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(56);
+
+    const { container } = renderControl({});
+
+    expect(container.style.getPropertyValue(TIMELINE_HEIGHT_VAR)).toBe("");
   });
 
   it("renders nothing on a map without a timeline", () => {

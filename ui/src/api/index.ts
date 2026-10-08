@@ -135,7 +135,10 @@ export type {
   AddFeatureArgs,
   AddLayerArgs,
   DeleteFeatureArgs,
+  FeatureHalo,
+  HaloKind,
   LayersData,
+  LocalRemoval,
   ModifyFeatureArgs,
 } from "./layer";
 export {
