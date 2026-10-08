@@ -205,6 +205,11 @@ export function MessageHighlightToggle({
   // In the top right, with the drawing controls.
   const slot = useControl<ControlSlot>(() => new ControlSlot(), { position: "top-right" });
 
+  // Controls stack in the order they were added; this one goes on top, whatever else is there.
+  useEffect(() => {
+    slot.container.parentElement?.prepend(slot.container);
+  }, [slot]);
+
   return createPortal(
     <button
       type="button"
