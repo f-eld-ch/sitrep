@@ -208,52 +208,62 @@ func (p LayerPlan) None() bool { return p.AssignKindTo == "" && !p.AddNew }
 
 // PlanLayer decides what to write for an incident's layers. Streams must be
 // ordered oldest first; the oldest matching layer wins.
-func PlanLayer(streams []LayerStream) (LayerPlan, error) {
-	type layerState struct {
-		id      string
-		name    string
-		kind    string
-		removed bool
+type layerState struct {
+	id      string
+	name    string
+	kind    string
+	removed bool
+}
+
+// foldLayer replays one layer stream.
+func foldLayer(s LayerStream) (layerState, error) {
+	st := layerState{id: s.ID}
+
+	for _, e := range s.Events {
+		switch e.Type {
+		case "Created", "Imported":
+			var d struct {
+				Name string `json:"name"`
+				Kind string `json:"kind"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return layerState{}, err
+			}
+
+			st.name, st.kind = d.Name, d.Kind
+		case "Renamed":
+			var d struct {
+				Name string `json:"name"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return layerState{}, err
+			}
+
+			st.name = d.Name
+		case "KindAssigned":
+			var d struct {
+				Kind string `json:"kind"`
+			}
+			if err := json.Unmarshal(e.Data, &d); err != nil {
+				return layerState{}, err
+			}
+
+			st.kind = d.Kind
+		case "Removed":
+			st.removed = true
+		}
 	}
 
+	return st, nil
+}
+
+func PlanLayer(streams []LayerStream) (LayerPlan, error) {
 	var live []layerState
 
 	for _, s := range streams {
-		st := layerState{id: s.ID}
-
-		for _, e := range s.Events {
-			switch e.Type {
-			case "Created", "Imported":
-				var d struct {
-					Name string `json:"name"`
-					Kind string `json:"kind"`
-				}
-				if err := json.Unmarshal(e.Data, &d); err != nil {
-					return LayerPlan{}, err
-				}
-
-				st.name, st.kind = d.Name, d.Kind
-			case "Renamed":
-				var d struct {
-					Name string `json:"name"`
-				}
-				if err := json.Unmarshal(e.Data, &d); err != nil {
-					return LayerPlan{}, err
-				}
-
-				st.name = d.Name
-			case "KindAssigned":
-				var d struct {
-					Kind string `json:"kind"`
-				}
-				if err := json.Unmarshal(e.Data, &d); err != nil {
-					return LayerPlan{}, err
-				}
-
-				st.kind = d.Kind
-			case "Removed":
-				st.removed = true
-			}
+		st, err := foldLayer(s)
+		if err != nil {
+			return LayerPlan{}, err
 		}
 
 		if st.removed {
@@ -276,15 +286,26 @@ func PlanLayer(streams []LayerStream) (LayerPlan, error) {
 	return LayerPlan{AddNew: true}, nil
 }
 
-func matches(value string, candidates []string) bool {
-	v := strings.TrimSpace(value)
-	for _, c := range candidates {
-		if strings.EqualFold(v, c) {
-			return true
+// FallbackStandardLayerName labels the regular layer added to incidents that have none.
+const FallbackStandardLayerName = "Lage"
+
+// NeedsStandardLayer reports whether the incident has no regular (non-system) layer left.
+// Before the message map layer became read-only outside a message, many incidents had the
+// Nachrichtenkarte as their only drawing layer; without a regular layer they cannot be
+// drawn on freely any more.
+func NeedsStandardLayer(streams []LayerStream) (bool, error) {
+	for _, s := range streams {
+		st, err := foldLayer(s)
+		if err != nil {
+			return false, err
+		}
+
+		if !st.removed && st.kind != Kind {
+			return false, nil
 		}
 	}
 
-	return false
+	return true, nil
 }
 
 // MessageMapDivisionID returns the incident's message map division, folding its division
@@ -356,4 +377,15 @@ func NeedsAcknowledgement(events []Event, divisionID string) (bool, error) {
 	}
 
 	return !deleted && !acked && slices.Contains(divisions, divisionID), nil
+}
+
+func matches(value string, candidates []string) bool {
+	v := strings.TrimSpace(value)
+	for _, c := range candidates {
+		if strings.EqualFold(v, c) {
+			return true
+		}
+	}
+
+	return false
 }

@@ -236,3 +236,41 @@ func TestNeedsAcknowledgement(t *testing.T) {
 		})
 	}
 }
+
+func TestNeedsStandardLayer(t *testing.T) {
+	created := func(name, kind string) []messagemap.Event {
+		return []messagemap.Event{ev("Created", `{"incidentId":"i","name":"`+name+`","kind":"`+kind+`"}`)}
+	}
+
+	tests := []struct {
+		name    string
+		streams []messagemap.LayerStream
+		want    bool
+	}{
+		{
+			"only the message map layer",
+			[]messagemap.LayerStream{{ID: "a", Events: created("Nachrichtenkarte", "MESSAGE_MAP")}},
+			true,
+		},
+		{"no layers at all", nil, true},
+		{"a regular layer exists", []messagemap.LayerStream{
+			{ID: "a", Events: created("Nachrichtenkarte", "MESSAGE_MAP")},
+			{ID: "b", Events: created("Lage", "")},
+		}, false},
+		{"a removed regular layer does not count", []messagemap.LayerStream{
+			{ID: "a", Events: created("Nachrichtenkarte", "MESSAGE_MAP")},
+			{ID: "b", Events: append(created("Lage", ""), ev("Removed", `{"reason":"MANUAL"}`))},
+		}, true},
+		{"a layer marked as message map by assignment does not count", []messagemap.LayerStream{
+			{ID: "a", Events: append(created("Nachrichtenkarte", ""), ev("KindAssigned", `{"kind":"MESSAGE_MAP"}`))},
+		}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := messagemap.NeedsStandardLayer(tt.streams)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

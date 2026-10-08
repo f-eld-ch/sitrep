@@ -260,16 +260,34 @@ func TestBackfillMessageMap(t *testing.T) {
 	assert.Equal(t, []string{"Recorded", "Triaged", "DivisionAcknowledged"}, eventTypes("Message", "msg-map"))
 	assert.Equal(t, []string{"Recorded", "Triaged"}, eventTypes("Message", "msg-sc"))
 
+	layersOf := func(incidentID string) int {
+		t.Helper()
+
+		var n int
+
+		require.NoError(t, db.QueryRowContext(t.Context(), `
+			SELECT COUNT(*) FROM eventsourcing_aggregate_index WHERE stream_type = 'Layer' AND incident_id = ?`,
+			incidentID).Scan(&n))
+
+		return n
+	}
+
+	// the Nachrichtenkarte is read-only outside a message, so an incident whose only layer it was
+	// gets a regular layer to draw on; incidents that already have one do not
+	assert.Equal(t, 2, layersOf(migrated), "message map layer + the added regular layer")
+	assert.Equal(t, 2, layersOf(matched), "already had a regular layer")
+
 	// migrated: untouched
 	assert.Equal(t, []string{"Opened", "DivisionAdded"}, eventTypes("Incident", migrated))
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-migrated-1"))
 
-	// down removes exactly what the backfill wrote
+	// down removes exactly what the backfills wrote
 	_, err = provider.DownTo(t.Context(), 14)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"Opened", "DivisionAdded", "DivisionAdded"}, eventTypes("Incident", matched))
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-matched-2"))
 	assert.Equal(t, []string{"Recorded", "Triaged"}, eventTypes("Message", "msg-map"))
+	assert.Equal(t, 1, layersOf(migrated))
 
 	require.NoError(t, db.QueryRowContext(t.Context(), `
 		SELECT COUNT(*) FROM eventsourcing_aggregate_index WHERE stream_type = 'Layer' AND incident_id = ?`,

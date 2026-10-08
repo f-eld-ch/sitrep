@@ -32,5 +32,11 @@ func GoMigrations() []*goose.Migration {
 	)
 	acks.Source = "00018_backfill_message_map_acknowledgements.go"
 
-	return []*goose.Migration{backfill, messageMap, acks}
+	standardLayer := goose.NewGoMigration(19,
+		&goose.GoFunc{RunTx: upBackfillStandardLayer},
+		&goose.GoFunc{RunTx: downBackfillStandardLayer},
+	)
+	standardLayer.Source = "00019_backfill_standard_layer.go"
+
+	return []*goose.Migration{backfill, messageMap, acks, standardLayer}
 }
