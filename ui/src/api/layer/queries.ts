@@ -5,6 +5,7 @@ import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_FEATURE_CHANGES, GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
 import { layersVariables } from "./variables";
+import { messageFeatureHalos, type FeatureHalo, type HistoryChange } from "./halos";
 import { toFeatureMessage, toLayer } from "./mapper";
 
 /** How often the live map is refreshed, so other operators' drawings show up quickly. */
@@ -96,15 +97,14 @@ export function useFeatureMessages(
 }
 
 /**
- * The ids of the features that were drawn, moved or restyled for a message. Read once per
- * `refreshKey`: it changes whenever the map's features do, so the answer follows the drawing
- * without polling.
+ * What a message added, modified and removed. Read once per `refreshKey`: it changes whenever the
+ * map's features do, so the answer follows the drawing without polling.
  */
-export function useMessageFeatureIds(
+export function useMessageFeatureHalos(
   incidentId: string | undefined,
   messageId: string | undefined,
   refreshKey: string,
-): ReadonlySet<string> {
+): ReadonlyMap<string, FeatureHalo> {
   const { data, refetch } = useQuery(GET_FEATURE_CHANGES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId || !messageId,
@@ -118,11 +118,9 @@ export function useMessageFeatureIds(
 
   return useMemo(
     () =>
-      new Set(
-        (data?.featureChanges ?? [])
-          .filter((c) => c.messageId === messageId)
-          .map((c) => c.featureId),
-      ),
+      messageId
+        ? messageFeatureHalos((data?.featureChanges ?? []) as HistoryChange[], messageId)
+        : new Map(),
     [data, messageId],
   );
 }

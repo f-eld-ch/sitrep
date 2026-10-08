@@ -219,7 +219,12 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
-      {drawingMessage && <MessageHighlight enabled={highlightMessage} />}
+      {drawingMessage && (
+        <MessageHighlight
+          enabled={highlightMessage}
+          renderRemoved={(fc) => <InactiveLayer id="message-removed" featureCollection={fc} />}
+        />
+      )}
       <FeatureSelectionReporter clickLayerIds={clickLayerIds} />
     </>
   );

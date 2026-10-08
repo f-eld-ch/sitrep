@@ -203,7 +203,7 @@
     "unavailable": "This incident has no situation map",
     "openMessage": "Open message",
     "highlight": "This message",
-    "highlightHint": "Highlights what was drawn for this message",
+    "highlightHint": "Green: added, orange: modified, grey: removed",
     "unfinished": "Drawing for this message is not finished. Objects already drawn stay saved. Leave anyway?",
     "leave": "Leave"
   },

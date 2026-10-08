@@ -56,7 +56,7 @@ export const GET_FEATURE_MESSAGES: TypedDocumentNode<
   }
 `;
 
-/** Which feature was changed for which message, to find everything drawn for one message. */
+/** Every change to the incident's features, to find what each message added, modified or removed. */
 export const GET_FEATURE_CHANGES: TypedDocumentNode<
   GetFeatureChangesQuery,
   GetFeatureChangesQueryVariables
@@ -64,7 +64,12 @@ export const GET_FEATURE_CHANGES: TypedDocumentNode<
   query GetFeatureChanges($incidentId: ID!) {
     featureChanges(incidentId: $incidentId) {
       featureId
+      change
+      effectiveAt
+      recordedAt
       messageId
+      geometry
+      properties
     }
   }
 `;

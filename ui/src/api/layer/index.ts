@@ -17,8 +17,9 @@ export {
   LIVE_POLL_INTERVAL_MS,
   useFeatureMessages,
   useLayersForIncident,
-  useMessageFeatureIds,
+  useMessageFeatureHalos,
 } from "./queries";
+export type { FeatureHalo, HaloKind } from "./halos";
 export { afterLayerWrite } from "./invalidate";
 export { featureChangeVariable, layersVariables } from "./variables";
 export type { FeatureChangeArgs } from "./variables";
