@@ -226,7 +226,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           {assignments.map((d, index) => (
             <div key={d.id || `new-${index}`} className="flex gap-2">
               <input
-                className={inputSmBase + " flex-1 min-w-0"}
+                className={inputSmBase + " min-w-0 flex-1"}
                 type="text"
                 value={d.description}
                 onChange={(e) =>
@@ -276,7 +276,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         </label>
         <div className="flex w-full flex-1 gap-2">
           <input
-            className={inputSmBase + " flex-1 min-w-0"}
+            className={inputSmBase + " min-w-0 flex-1"}
             type="text"
             value={assignmentDescription}
             onChange={(e) => setAssignmentDescription(e.target.value)}
