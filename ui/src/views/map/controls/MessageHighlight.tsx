@@ -195,7 +195,7 @@ export function MessageHighlight({
             {restoreState.error && (
               <p className="mb-2 text-xs text-red-600">{t(`errors.${restoreState.error.code}`)}</p>
             )}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="primary" size="sm" disabled={restoreState.loading} onClick={restore}>
                 <FontAwesomeIcon icon={faRotateLeft} />
                 {t("messageMap.restore")}
