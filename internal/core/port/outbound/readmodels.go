@@ -161,6 +161,10 @@ type LayerQueries interface {
 	// the order they were drawn.
 	ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*FeatureChangeRM, error)
 
+	// ListFeatureChangeTimes returns just the distinct effective times of those changes, oldest
+	// first: what a timeline needs to put its ticks, without every change's geometry.
+	ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error)
+
 	// ListFeatureMessages returns the messages connected to a feature's changes, ordered by
 	// message time. Returns ErrNotFound when the feature is unknown or not readable.
 	ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*MessageRM, error)

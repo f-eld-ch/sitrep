@@ -8,6 +8,7 @@ import (
 	"context"
 	"log/slog"
 	"sort"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -557,6 +558,23 @@ func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
 		CreatedAt:  row.CreatedAt,
 		UpdatedAt:  row.UpdatedAt,
 	}
+}
+
+func (q *Queries) ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error) {
+	changes, err := q.ListFeatureChanges(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []time.Time
+
+	for _, c := range changes { // already ordered by effective time
+		if len(out) == 0 || !out[len(out)-1].Equal(c.EffectiveAt) {
+			out = append(out, c.EffectiveAt)
+		}
+	}
+
+	return out, nil
 }
 
 func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {

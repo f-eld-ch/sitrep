@@ -3,7 +3,12 @@ import { useEffect, useMemo } from "react";
 import type { FeatureMessage, Layer } from "types/layer";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
-import { GET_FEATURE_CHANGES, GET_FEATURE_MESSAGES, GET_LAYERS } from "./documents";
+import {
+  GET_FEATURE_CHANGE_TIMES,
+  GET_FEATURE_CHANGES,
+  GET_FEATURE_MESSAGES,
+  GET_LAYERS,
+} from "./documents";
 import { layersVariables } from "./variables";
 import { messageFeatureHalos, type FeatureHalo, type HistoryChange } from "./halos";
 import { toFeatureMessage, toLayer } from "./mapper";
@@ -136,7 +141,8 @@ export function useFeatureChangeTimes(
   incidentId: string | undefined,
   options: { pollInterval?: number } = {},
 ): number[] {
-  const { data } = useQuery(GET_FEATURE_CHANGES, {
+  // Only the times: this is polled, so it must not carry every change's geometry along.
+  const { data } = useQuery(GET_FEATURE_CHANGE_TIMES, {
     variables: { incidentId: incidentId ?? "" },
     skip: !incidentId,
     pollInterval: options.pollInterval,
@@ -145,7 +151,7 @@ export function useFeatureChangeTimes(
   });
 
   return useMemo(
-    () => [...new Set((data?.featureChanges ?? []).map((c) => new Date(c.effectiveAt).getTime()))],
+    () => [...new Set((data?.featureChangeTimes ?? []).map((at) => new Date(at).getTime()))],
     [data],
   );
 }

@@ -45,7 +45,7 @@ func (q failingQueries) ListAllSchadenplaetze(context.Context, uuid.UUID) ([]*ou
 // failingStore cannot load any stream.
 type failingStore struct{ outbound.EventStore }
 
-func (failingStore) Load(context.Context, string, uuid.UUID) ([]eventsourcing.Event, error) {
+func (failingStore) LoadMany(context.Context, string, []uuid.UUID) (map[uuid.UUID][]eventsourcing.Event, error) {
 	return nil, errBoom
 }
 

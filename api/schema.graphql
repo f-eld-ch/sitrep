@@ -439,6 +439,12 @@ type Query {
   """
   featureChanges(incidentId: ID!): [FeatureChange!]!
 
+  """
+  When the features on the incident's layers changed (the effective times of featureChanges,
+  each once, oldest first): what a timeline needs for its ticks, without any geometry.
+  """
+  featureChangeTimes(incidentId: ID!): [DateTime!]!
+
   """Messages connected to a feature's changes, ordered by message time."""
   featureMessages(featureId: ID!): [Message!]!
 

@@ -254,6 +254,7 @@ type ComplexityRoot struct {
 	Query struct {
 		AccessGroups       func(childComplexity int) int
 		DefaultAccess      func(childComplexity int) int
+		FeatureChangeTimes func(childComplexity int, incidentID string) int
 		FeatureChanges     func(childComplexity int, incidentID string) int
 		FeatureMessages    func(childComplexity int, featureID string) int
 		GlobalRoles        func(childComplexity int) int
@@ -425,6 +426,7 @@ type QueryResolver interface {
 	Message(ctx context.Context, id string) (*model.Message, error)
 	LayersForIncident(ctx context.Context, incidentID string, asOf *time.Time) ([]*model.Layer, error)
 	FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error)
+	FeatureChangeTimes(ctx context.Context, incidentID string) ([]*time.Time, error)
 	FeatureMessages(ctx context.Context, featureID string) ([]*model.Message, error)
 	IncidentAccess(ctx context.Context, incidentID string) ([]*model.IncidentAccessGrant, error)
 	IncidentAccessMode(ctx context.Context, incidentID string) (model.IncidentAccessMode, error)
@@ -1668,6 +1670,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.DefaultAccess(childComplexity), true
+	case "Query.featureChangeTimes":
+		if e.ComplexityRoot.Query.FeatureChangeTimes == nil {
+			break
+		}
+
+		args, err := ec.field_Query_featureChangeTimes_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FeatureChangeTimes(childComplexity, args["incidentId"].(string)), true
 	case "Query.featureChanges":
 		if e.ComplexityRoot.Query.FeatureChanges == nil {
 			break
@@ -2684,6 +2697,12 @@ type Query {
   effective time. Use it to render the map as of any point on the incident timeline.
   """
   featureChanges(incidentId: ID!): [FeatureChange!]!
+
+  """
+  When the features on the incident's layers changed (the effective times of featureChanges,
+  each once, oldest first): what a timeline needs for its ticks, without any geometry.
+  """
+  featureChangeTimes(incidentId: ID!): [DateTime!]!
 
   """Messages connected to a feature's changes, ordered by message time."""
   featureMessages(featureId: ID!): [Message!]!
@@ -4823,6 +4842,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_featureChangeTimes_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "incidentId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["incidentId"] = arg0
 	return args, nil
 }
 
@@ -9982,6 +10015,50 @@ func (ec *executionContext) fieldContext_Query_featureChanges(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_featureChanges_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_featureChangeTimes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_featureChangeTimes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FeatureChangeTimes(ctx, fc.Args["incidentId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*time.Time) graphql.Marshaler {
+			return ec.marshalNDateTime2ᚕᚖtimeᚐTimeᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_featureChangeTimes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_featureChangeTimes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -15639,6 +15716,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "featureChangeTimes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_featureChangeTimes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "featureMessages":
 			field := field
 
@@ -16988,6 +17087,57 @@ func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, 
 func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	_ = sel
 	res := graphql.MarshalTime(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNDateTime2ᚕᚖtimeᚐTimeᚄ(ctx context.Context, v any) ([]*time.Time, error) {
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]*time.Time, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDateTime2ᚖtimeᚐTime(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNDateTime2ᚕᚖtimeᚐTimeᚄ(ctx context.Context, sel ast.SelectionSet, v []*time.Time) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNDateTime2ᚖtimeᚐTime(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNDateTime2ᚖtimeᚐTime(ctx context.Context, v any) (*time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDateTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalTime(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")

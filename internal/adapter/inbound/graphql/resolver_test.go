@@ -1158,6 +1158,54 @@ func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
 	assert.Empty(t, none)
 }
 
+func TestFeatureChangeTimes_ListsEachInstantOnce(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Ticks", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var standardLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindStandard {
+			standardLayerID = l.ID
+		}
+	}
+
+	if standardLayerID == "" {
+		layer, err := s.resolver.Mutation().CreateLayer(ctx, inc.Incident.ID, "Lage")
+		require.NoError(t, err)
+
+		standardLayerID = layer.ID
+	}
+
+	at := time.Now().UTC().Add(-2 * time.Hour).Truncate(time.Second)
+	point := map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}
+
+	for _, key := range []string{"a", "b"} {
+		_, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, standardLayerID, key, point,
+			map[string]any{"label": key}, &model.FeatureChangeInput{EffectiveAt: &at})
+		require.NoError(t, err)
+	}
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	times, err := s.resolver.Query().FeatureChangeTimes(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, times, 1, "two changes at the same time are one tick")
+	assert.WithinDuration(t, at, *times[0], time.Second)
+
+	_, err = s.resolver.Query().FeatureChangeTimes(ctx, "not-a-uuid")
+	require.Error(t, err)
+}
+
 func TestRestoreFeature_BringsBackARemovedFeatureOnTheTimeline(t *testing.T) {
 	s := newTestStack(t)
 	ctx := actorCtx()

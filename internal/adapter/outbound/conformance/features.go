@@ -242,4 +242,44 @@ func RunFeatureChanges(t *testing.T, f Factory) {
 		save()
 		assert.Equal(t, point(9.0), currentGeometry(t, b, incID, featureID))
 	})
+	t.Run("ChangeTimes", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		drawn := time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC)
+		t1400 := time.Date(2026, 1, 15, 14, 0, 0, 0, time.UTC)
+
+		incID, layerID := setup(t, b, drawn)
+
+		// Two features changed at the same instants: each time is listed once, oldest first.
+		for _, key := range []string{"one", "two"} {
+			ft := feature.New(feature.DeriveID(incID, key))
+			require.NoError(t, ft.Place(incID, layerID, point(8.0), map[string]any{"label": key},
+				feature.ChangeContext{EffectiveAt: t1400}, "sys", drawn))
+			require.NoError(t, ft.Move(point(9.0),
+				feature.ChangeContext{EffectiveAt: t1400.Add(10 * time.Minute)}, "sys", drawn))
+
+			require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+				_, err := b.Store.Append(ctx, ft)
+
+				return err
+			}))
+		}
+
+		require.NoError(t, b.Project(ctx))
+
+		times, err := b.Queries.ListFeatureChangeTimes(ctx, uuid.UUID(incID))
+		require.NoError(t, err)
+
+		require.Len(t, times, 2)
+		assert.True(t, times[0].Equal(t1400), "oldest first")
+		assert.True(t, times[1].Equal(t1400.Add(10*time.Minute)))
+
+		changes, err := b.Queries.ListFeatureChanges(ctx, uuid.UUID(incID))
+		require.NoError(t, err)
+		assert.Len(t, changes, 4, "the full history still has every change")
+
+		none, err := b.Queries.ListFeatureChangeTimes(ctx, uuid.New())
+		require.NoError(t, err)
+		assert.Empty(t, none, "an incident without changes has no ticks")
+	})
 }

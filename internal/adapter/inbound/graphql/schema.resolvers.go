@@ -1854,6 +1854,26 @@ func (r *queryResolver) LayersForIncident(
 	return layersAsOf(out, changes, *asOf), nil
 }
 
+// FeatureChangeTimes is the resolver for the featureChangeTimes field.
+func (r *queryResolver) FeatureChangeTimes(ctx context.Context, incidentID string) ([]*time.Time, error) {
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	times, err := r.Queries.ListFeatureChangeTimes(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*time.Time, len(times))
+	for i := range times {
+		out[i] = &times[i]
+	}
+
+	return out, nil
+}
+
 // FeatureChanges is the resolver for the featureChanges field.
 func (r *queryResolver) FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error) {
 	incID, err := parseUUID(incidentID)

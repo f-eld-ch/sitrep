@@ -63,12 +63,22 @@ func (s *TimelineService) ResourcesAsOf(
 		return nil, err
 	}
 
+	res0 := resource.New(shared.ResourceID{})
+
+	streams, err := s.loadStreams(ctx, res0.AggregateType(), len(rows), func(i int) uuid.UUID { return rows[i].ID })
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, err
+	}
+
 	out := make([]inbound.ResourceState, 0, len(rows))
 
 	for _, row := range rows {
 		res := resource.New(shared.ResourceID(row.ID))
 
-		existed, err := s.replayAsOf(ctx, res, row.ID, asOf, nil)
+		existed, err := replayAsOf(res, streams[row.ID], asOf, nil)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
@@ -104,6 +114,17 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 		return nil, err
 	}
 
+	streams, err := s.loadStreams(
+		ctx, schadenplatz.New(shared.SchadenplatzID{}).AggregateType(), len(rows),
+		func(i int) uuid.UUID { return rows[i].ID },
+	)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, err
+	}
+
 	out := make([]inbound.SchadenplatzState, 0, len(rows))
 
 	for _, row := range rows {
@@ -112,7 +133,7 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 		// A Schadenplatz exists from the incident's start however late its record was made, while
 		// its casualties are stamped with the (earlier) message times: pin its creation, so an
 		// early casualty never ends up on a Schadenplatz without a name.
-		existed, err := s.replayAsOf(ctx, sp, row.ID, asOf, func(e eventsourcing.Event) bool {
+		existed, err := replayAsOf(sp, streams[row.ID], asOf, func(e eventsourcing.Event) bool {
 			return e.EventType == "Created"
 		})
 		if err != nil {
@@ -150,22 +171,35 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 	return out, nil
 }
 
-// replayAsOf rebuilds the aggregate from the events that had taken effect by asOf, in order of
-// when they took effect. Events for which pinned reports true are applied regardless of time,
-// before the others. It reports whether the aggregate existed at all by then, that is whether
-// any event took effect.
-func (s *TimelineService) replayAsOf(
+// loadStreams loads the event streams of n aggregates of one type in one round trip.
+func (s *TimelineService) loadStreams(
 	ctx context.Context,
+	streamType string,
+	n int,
+	idAt func(i int) uuid.UUID,
+) (map[uuid.UUID][]eventsourcing.Event, error) {
+	if n == 0 {
+		return map[uuid.UUID][]eventsourcing.Event{}, nil
+	}
+
+	ids := make([]uuid.UUID, n)
+	for i := range ids {
+		ids[i] = idAt(i)
+	}
+
+	return s.events.LoadMany(ctx, streamType, ids)
+}
+
+// replayAsOf rebuilds the aggregate from the events of its stream that had taken effect by asOf,
+// in order of when they took effect. Events for which pinned reports true are applied regardless
+// of time, before the others. It reports whether the aggregate existed at all by then, that is
+// whether any event took effect.
+func replayAsOf(
 	agg eventsourcing.Aggregate,
-	id uuid.UUID,
+	events []eventsourcing.Event,
 	asOf time.Time,
 	pinned func(eventsourcing.Event) bool,
 ) (bool, error) {
-	events, err := s.events.Load(ctx, agg.AggregateType(), id)
-	if err != nil {
-		return false, err
-	}
-
 	var pinnedEvents, effective []eventsourcing.Event
 
 	tookEffect := false

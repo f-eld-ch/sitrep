@@ -8,6 +8,8 @@ import type {
   DeleteFeatureMutationVariables,
   GetFeatureChangesQuery,
   GetFeatureChangesQueryVariables,
+  GetFeatureChangeTimesQuery,
+  GetFeatureChangeTimesQueryVariables,
   GetFeatureMessagesQuery,
   GetFeatureMessagesQueryVariables,
   GetLayersForIncidentQuery,
@@ -73,6 +75,16 @@ export const GET_FEATURE_CHANGES: TypedDocumentNode<
       geometry
       properties
     }
+  }
+`;
+
+/** Just when the features changed, for the ticks of a timeline: no geometry, no properties. */
+export const GET_FEATURE_CHANGE_TIMES: TypedDocumentNode<
+  GetFeatureChangeTimesQuery,
+  GetFeatureChangeTimesQueryVariables
+> = gql`
+  query GetFeatureChangeTimes($incidentId: ID!) {
+    featureChangeTimes(incidentId: $incidentId)
   }
 `;
 

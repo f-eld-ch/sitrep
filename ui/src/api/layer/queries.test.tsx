@@ -94,13 +94,13 @@ describe("useMessageFeatureHalos", () => {
 });
 
 describe("useFeatureChangeTimes", () => {
-  it("lists each point in time once, across all layers", async () => {
+  it("lists each point in time once, oldest first, across all layers", async () => {
     await mockQuery({
       data: {
-        featureChanges: [
-          change("a", "PLACED", "2026-01-15T10:00:00Z", "m1"),
-          change("b", "PLACED", "2026-01-15T10:00:00Z", "m1"),
-          change("a", "MOVED", "2026-01-15T11:00:00Z", null),
+        featureChangeTimes: [
+          "2026-01-15T10:00:00Z",
+          "2026-01-15T11:00:00Z",
+          "2026-01-15T10:00:00Z",
         ],
       },
     });
@@ -113,7 +113,17 @@ describe("useFeatureChangeTimes", () => {
     ]);
   });
 
-  it("is empty until the changes are loaded", async () => {
+  it("asks only for the times, never for the changes themselves", async () => {
+    const useQuery = await mockQuery({ data: undefined });
+
+    renderHook(() => useFeatureChangeTimes("inc-1"));
+
+    const document = useQuery.mock.calls[0][0] as { loc?: { source: { body: string } } };
+    expect(document.loc?.source.body).toContain("featureChangeTimes");
+    expect(document.loc?.source.body).not.toMatch(/geometry|properties/);
+  });
+
+  it("is empty until the times are loaded", async () => {
     await mockQuery({ data: undefined });
 
     expect(renderHook(() => useFeatureChangeTimes("inc-1")).result.current).toEqual([]);
