@@ -37,6 +37,60 @@ func RunEventStore(t *testing.T, f Factory) {
 		assert.Equal(t, "widgetCreated", events[0].EventType)
 	})
 
+	t.Run("LoadMany", func(t *testing.T) {
+		b := f(t)
+
+		// More streams than one statement can name, so a chunked implementation is exercised.
+		const streams = 620
+
+		ids := make([]uuid.UUID, 0, streams+1)
+
+		for i := range streams {
+			a := newWidget(uuid.New())
+			trackWidget(a, widgetCreated{Name: "stream"})
+
+			if i%2 == 0 {
+				trackWidget(a, widgetRenamed{Name: "renamed"})
+			}
+
+			require.NoError(t, b.Transactor.WithinTx(t.Context(), func(ctx context.Context) error {
+				_, err := b.Store.Append(ctx, a)
+
+				return err
+			}))
+
+			ids = append(ids, a.Root().ID())
+		}
+
+		unknown := uuid.New()
+		ids = append(ids, unknown)
+
+		got, err := b.Store.LoadMany(t.Context(), "Widget", ids)
+		require.NoError(t, err)
+
+		assert.Len(t, got, streams, "streams without events are absent")
+		assert.NotContains(t, got, unknown)
+
+		for i, id := range ids[:streams] {
+			events := got[id]
+			require.Len(t, events, 1+(1-i%2), "stream %d", i)
+			assert.Equal(t, id, events[0].StreamID)
+			assert.Equal(t, 1, events[0].Version)
+		}
+
+		single, err := b.Store.Load(t.Context(), "Widget", ids[0])
+		require.NoError(t, err)
+		assert.Equal(t, single, got[ids[0]], "the same as loading the stream alone")
+
+		none, err := b.Store.LoadMany(t.Context(), "Widget", nil)
+		require.NoError(t, err)
+		assert.Empty(t, none)
+
+		other, err := b.Store.LoadMany(t.Context(), "Gadget", ids[:5])
+		require.NoError(t, err)
+		assert.Empty(t, other, "streams of another type are not returned")
+	})
+
 	t.Run("Append_NoPending_NilCursor", func(t *testing.T) {
 		b := f(t)
 		a := newWidget(uuid.New())

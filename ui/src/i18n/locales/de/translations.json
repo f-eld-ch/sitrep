@@ -99,6 +99,18 @@
       "stoffnummer": "Stoffnummer",
       "stoffnummerPlaceholder": "4-stellige UN-Nummer",
       "stoffbezeichnung": "Stoffbezeichnung"
+    },
+    "changeTime": {
+      "label": "Gültig ab",
+      "hint": "Die Änderung gilt ab diesem Zeitpunkt auf dem Zeitstrahl."
+    },
+    "selectionRing": "Ausgewähltes Objekt hervorheben",
+    "pending": {
+      "time": "Zeitpunkt",
+      "hint": "Das Objekt wird erst mit «Speichern» angelegt.",
+      "unsaved": "Es gibt noch nicht gespeicherte Objekte auf der Karte ({{count}}). Sie gehen verloren, wenn Sie die Seite verlassen.",
+      "leave": "Verlassen",
+      "discard": "Verwerfen"
     }
   },
   "medium": {
@@ -134,6 +146,7 @@
   "messageFlow": "Meldefluss",
   "messageSheet": "Meldezettel",
   "messageTriageTitle": "Triage der Nachricht",
+  "messageTimeLocked": "Die Zeit kann nicht mehr geändert werden, weil die Meldung bereits triagiert ist.",
   "messageTimeTooFarInFuture": "Die Nachrichtenzeit darf nicht mehr als fünf Minuten in der Zukunft liegen.",
   "name": "Name",
   "incidentName": "Ereignisname",
@@ -180,6 +193,36 @@
     "filterKeyMessage": "Schlüsselmeldungen",
     "filterMine": "Meine"
   },
+  "messageMap": {
+    "showPending": "Zeige ungezeichnete",
+    "showAll": "Zeige alle",
+    "drawn": "Gezeichnet",
+    "finish": "Abschliessen",
+    "edit": "Ändern",
+    "editDone": "Fertig",
+    "drawing": "Einzeichnen für Meldung {{number}} · {{time}}",
+    "allDrawn": "Alle Meldungen sind eingezeichnet",
+    "noMessages": "Keine Meldungen für die Nachrichtenkarte",
+    "pickMessage": "Wähle eine Meldung, um sie einzuzeichnen",
+    "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
+    "openMessage": "Meldung öffnen",
+    "highlight": "Diese Meldung",
+    "restore": "Wiederherstellen",
+    "restoreHint": "Dieses Objekt wurde mit dieser Meldung entfernt.",
+    "highlightHint": "Grün: hinzugefügt, Hellblau: geändert, Hellrot: entfernt",
+    "unfinished": "Die Zeichnung zu dieser Meldung ist noch nicht abgeschlossen. Bereits gezeichnete Objekte bleiben gespeichert. Trotzdem verlassen?",
+    "leave": "Verlassen"
+  },
+  "mapTimeline": {
+    "live": "Live",
+    "asOf": "Stand {{time}}",
+    "previous": "Vorherige Meldung",
+    "next": "Nächste Meldung",
+    "slider": "Zeitpunkt im Einsatzverlauf"
+  },
+  "featureMessages": {
+    "filter": "Meldungen zum Objekt"
+  },
   "write": "schreiben",
   "updateNotification": "Eine neue Version der Anwendung ist verfügbar. Bitte aktualisieren Sie die Seite mit dem Refresh-Button.",
   "viewChangelog": "Changelog anzeigen",
@@ -203,6 +246,7 @@
     "addWMSLayer": "WMS-Layer hinzufügen"
   },
   "styleController": {
+    "autoFrame": "Automatisch ausrichten",
     "maps": "Karten",
     "Basiskarte": "Leichte Basiskarte",
     "Satellit": "Satellitenkarte"
@@ -267,6 +311,12 @@
     "CONFLICT": "Die Anfrage kann aufgrund eines Konflikts nicht ausgeführt werden.",
     "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "NETWORK_ERROR": "Keine Verbindung zum Server. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "NOT_TRIAGED_TO_DIVISION": "Diese Meldung ist dieser Abteilung nicht zugewiesen.",
+    "BEFORE_FEATURE_PLACED": "Die Änderung liegt vor dem Zeitpunkt, an dem das Objekt eingezeichnet wurde.",
+    "FEATURE_HAS_LATER_CHANGES": "Das Objekt hat spätere Änderungen und kann deshalb zu diesem Zeitpunkt nicht entfernt werden.",
+    "FEATURE_NOT_REMOVED": "Das Objekt wurde nicht entfernt.",
+    "BEFORE_FEATURE_REMOVED": "Das Objekt kann nicht vor seiner Entfernung wiederhergestellt werden.",
+    "MESSAGE_TIME_LOCKED": "Die Zeit einer triagierten Meldung kann nicht geändert werden.",
     "UNKNOWN": "Ein unbekannter Fehler ist aufgetreten."
   },
   "incidentAccess": {

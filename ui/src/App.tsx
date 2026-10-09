@@ -21,6 +21,7 @@ import {
 } from "views/incident";
 import { List as JournalMessageList, TriageView as JournalTriageView } from "views/journal";
 const JournalEditor = lazy(() => import("views/journal/Editor"));
+const JournalMessageMapView = lazy(() => import("views/journal/MessageMapView"));
 import { Layout, LayoutMarginLess } from "views/Layout";
 import { IncidentRoute } from "views/IncidentRoute";
 import { List as ImmediateMeasuresList } from "views/measures/immediateMeasures";
@@ -37,7 +38,7 @@ import fr from "dayjs/locale/fr";
 import it from "dayjs/locale/it";
 import LocalizedFormat from "dayjs/plugin/localizedFormat";
 
-const MapView = lazy(() => import("views/map"));
+const LagebildView = lazy(() => import("views/map/LagebildView"));
 
 const router = createBrowserRouter([
   {
@@ -130,7 +131,7 @@ const router = createBrowserRouter([
                 element: (
                   <LayoutMarginLess>
                     <Suspense fallback={<Spinner />}>
-                      <MapView />
+                      <LagebildView />
                     </Suspense>
                   </LayoutMarginLess>
                 ),
@@ -180,6 +181,16 @@ const router = createBrowserRouter([
                       <Layout>
                         <JournalMessageList showControls={false} autoScroll={true} />
                       </Layout>
+                    ),
+                  },
+                  {
+                    path: "messagemap",
+                    element: (
+                      <LayoutMarginLess>
+                        <Suspense fallback={null}>
+                          <JournalMessageMapView />
+                        </Suspense>
+                      </LayoutMarginLess>
                     ),
                   },
                   {

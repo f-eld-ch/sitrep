@@ -6,6 +6,8 @@ export interface Layer {
   sourceIncidentId: string;
   sourceIncidentName: string;
   name: string;
+  /** MESSAGE_MAP is the system-managed Nachrichtenkarte layer. */
+  kind: "STANDARD" | "MESSAGE_MAP";
   incident: Incident;
   features: Feature[];
   createdAt: Date;
@@ -20,4 +22,14 @@ export interface Feature {
   createdAt: Date;
   updatedAt: Date | null;
   deletedAt: Date | null;
+}
+
+/** A message a feature was drawn for; just what the feature popup shows. */
+export interface FeatureMessage {
+  id: string;
+  number: number;
+  sender: string;
+  receiver: string;
+  content: string;
+  time: Date;
 }

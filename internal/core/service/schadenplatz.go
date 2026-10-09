@@ -348,6 +348,15 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 		// The SP's own ID doubles as a synthetic message ID — this makes the
 		// CasualtiesRecorded event idempotent on projection replay (ON CONFLICT
 		// on (message_id, schadenplatz_id)).
+		// The merge takes effect at the message time (the service clock when not provided),
+		// both for the copied totals and for the merge itself. Replaying the incident as of a
+		// past time must see the totals move at one instant, not count them on both
+		// Schadenplätze in between.
+		mergeAt := at
+		if messageTime != nil {
+			mergeAt = *messageTime
+		}
+
 		c := sp.Casualties()
 		if c.Vermisste != 0 || c.Tote != 0 || c.Verletzte != 0 ||
 			c.Obdachlose != 0 || c.Eingeschlossene != 0 {
@@ -356,19 +365,12 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 				return err
 			}
 
-			// Record at the message time so the totals are attributed to the
-			// correct moment; fall back to the service clock when not provided.
-			casualtyAt := at
-			if messageTime != nil {
-				casualtyAt = *messageTime
-			}
-
 			syntheticMsgID := shared.MessageID(id)
 			if err := defaultSp.RecordCasualties(
 				syntheticMsgID,
 				schadenplatz.CasualtyDeltas(c),
 				actor.Sub,
-				casualtyAt,
+				mergeAt,
 			); err != nil {
 				return err
 			}
@@ -378,7 +380,7 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 			}
 		}
 
-		if err := sp.MergeIntoDefault(*defaultID, actor.Sub, at); err != nil {
+		if err := sp.MergeIntoDefault(*defaultID, actor.Sub, mergeAt); err != nil {
 			return err
 		}
 

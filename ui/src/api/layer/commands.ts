@@ -1,9 +1,17 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
-import { ADD_FEATURE, CREATE_LAYER, DELETE_FEATURE, GET_LAYERS, MODIFY_FEATURE } from "./documents";
+import { featureChangeVariable, layersVariables, type FeatureChangeArgs } from "./variables";
+import {
+  ADD_FEATURE,
+  CREATE_LAYER,
+  DELETE_FEATURE,
+  GET_LAYERS,
+  MODIFY_FEATURE,
+  RESTORE_FEATURE,
+} from "./documents";
 
 export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
   return {
@@ -15,16 +23,22 @@ export function cleanFeature(f: Feature): Feature<Geometry, GeoJsonProperties> {
       "updatedAt",
       "deletedAt",
       "layerId",
+      "featureId",
     ]) as GeoJsonProperties,
   };
 }
 
 export interface AddFeatureArgs {
   layerId: string;
-  id: string;
+  /** Client-side identifier (the draw id). The server derives and returns the feature id. */
+  clientKey: string;
   geometry: unknown;
   properties: unknown;
   incidentId: string;
+  /** When the change takes effect; required on the message map layer. */
+  change?: FeatureChangeArgs;
+  /** The point on the timeline the map currently shows; selects the layers result to update. */
+  asOf?: Date;
 }
 
 export interface ModifyFeatureArgs {
@@ -38,11 +52,26 @@ export interface ModifyFeatureArgs {
   /** Full current properties — used for the optimistic cache write. */
   currentProperties: unknown;
   incidentId: string;
+  change?: FeatureChangeArgs;
+  asOf?: Date;
 }
 
 export interface DeleteFeatureArgs {
   id: string;
   incidentId: string;
+  change?: FeatureChangeArgs;
+  asOf?: Date;
+}
+
+export interface RestoreFeatureArgs {
+  id: string;
+  /** The layer the feature is on, to put it back into the cached map. */
+  layerId: string;
+  incidentId: string;
+  /** How the feature last looked; shown at once, before the server has answered. */
+  current: { geometry: unknown; properties: unknown };
+  change?: FeatureChangeArgs;
+  asOf?: Date;
 }
 
 export interface AddLayerArgs {
@@ -63,21 +92,20 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
       variables: {
         incidentId: args.incidentId,
         layerId: args.layerId,
-        id: args.id,
+        clientKey: args.clientKey,
         geometry: args.geometry as unknown as import("geojson").Geometry,
         properties: args.properties as Record<string, unknown>,
+        change: featureChangeVariable(args.change),
       },
       update(cache, { data }) {
         if (!data?.addFeature) return;
         const newFeature = data.addFeature;
-        const cached = cache.readQuery({
-          query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
-        });
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
         if (!cached?.layersForIncident) return;
         cache.writeQuery({
           query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
+          variables,
           data: {
             layersForIncident: cached.layersForIncident.map((layer) =>
               layer.id === args.layerId
@@ -110,6 +138,7 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
         id: args.id,
         geometry: args.geometry as unknown as import("geojson").Geometry,
         properties: args.properties as Record<string, unknown>,
+        change: featureChangeVariable(args.change),
       },
       optimisticResponse: {
         modifyFeature: {
@@ -118,6 +147,19 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
           properties: args.currentProperties,
         },
       } as never,
+      update(cache) {
+        // The server answers with the feature's latest state, which can be newer than the
+        // point on the timeline the map shows (an edit for an older message). Restore the
+        // state as of that point until the next poll delivers it.
+        if (!args.asOf) return;
+        cache.modify({
+          id: cache.identify({ __typename: "Feature", id: args.id }),
+          fields: {
+            geometry: () => args.currentGeometry as never,
+            properties: () => args.currentProperties as never,
+          },
+        });
+      },
     });
   };
 
@@ -134,16 +176,14 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
 
   const deleteFeature = async (args: DeleteFeatureArgs): Promise<void> => {
     await mutate({
-      variables: { id: args.id },
+      variables: { id: args.id, change: featureChangeVariable(args.change) },
       update(cache) {
-        const cached = cache.readQuery({
-          query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
-        });
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
         if (!cached?.layersForIncident) return;
         cache.writeQuery({
           query: GET_LAYERS,
-          variables: { incidentId: args.incidentId },
+          variables,
           data: {
             layersForIncident: cached.layersForIncident.map((layer) => ({
               ...layer,
@@ -160,8 +200,55 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
   return [deleteFeature, state];
 }
 
+export function useRestoreFeature(): CommandHook<RestoreFeatureArgs> {
+  const [mutate, { loading, error }] = useMutation(RESTORE_FEATURE);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const restoreFeature = async (args: RestoreFeatureArgs): Promise<void> => {
+    await mutate({
+      variables: { id: args.id, change: featureChangeVariable(args.change) },
+      optimisticResponse: {
+        restoreFeature: {
+          __typename: "Feature",
+          id: args.id,
+          geometry: args.current.geometry,
+          properties: args.current.properties,
+        },
+      } as never,
+      update(cache, { data }) {
+        if (!data?.restoreFeature) return;
+        const restored = data.restoreFeature;
+        const variables = layersVariables(args.incidentId, args.asOf);
+        const cached = cache.readQuery({ query: GET_LAYERS, variables });
+        if (!cached?.layersForIncident) return;
+        cache.writeQuery({
+          query: GET_LAYERS,
+          variables,
+          data: {
+            layersForIncident: cached.layersForIncident.map((layer) =>
+              layer.id === args.layerId
+                ? {
+                    ...layer,
+                    features: [...layer.features.filter((f) => f.id !== args.id), restored],
+                  }
+                : layer,
+            ),
+          },
+        });
+      },
+    });
+  };
+
+  return [restoreFeature, state];
+}
+
 export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
   const [mutate, { loading, error }] = useMutation(CREATE_LAYER);
+  const { cache } = useApolloClient();
 
   const state: CommandState = {
     loading,
@@ -169,8 +256,22 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
   };
 
   const addLayer = async (args: AddLayerArgs): Promise<{ layerId: string }> => {
+    // The layer shows up at once, as the server will answer: the incident's own layers carry its name.
+    const own = cache
+      .readQuery({ query: GET_LAYERS, variables: { incidentId: args.incidentId } })
+      ?.layersForIncident.find((layer) => layer.sourceIncidentId === args.incidentId);
     const result = await mutate({
       variables: { incidentId: args.incidentId, name: args.name },
+      optimisticResponse: {
+        createLayer: {
+          __typename: "Layer",
+          id: `pending-layer-${crypto.randomUUID()}`,
+          sourceIncidentId: args.incidentId,
+          sourceIncidentName: own?.sourceIncidentName ?? "",
+          name: args.name,
+          kind: "STANDARD",
+        },
+      } as never,
       update(cache, { data }) {
         if (!data?.createLayer) return;
         const newLayer = data.createLayer;

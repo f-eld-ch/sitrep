@@ -173,10 +173,28 @@ func (r *incidentResolver) AccessMode(ctx context.Context, obj *model.Incident) 
 }
 
 // Schadenplaetze is the resolver for the schadenplaetze field.
-func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incident) ([]*model.Schadenplatz, error) {
+func (r *incidentResolver) Schadenplaetze(
+	ctx context.Context,
+	obj *model.Incident,
+	asOf *time.Time,
+) ([]*model.Schadenplatz, error) {
 	incID, err := parseUUID(obj.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if asOf != nil {
+		states, err := r.Timeline.SchadenplaetzeAsOf(ctx, shared.IncidentID(incID), *asOf)
+		if err != nil {
+			return nil, err
+		}
+
+		out := make([]*model.Schadenplatz, 0, len(states))
+		for _, s := range states {
+			out = append(out, schadenplatzStateToModel(s))
+		}
+
+		return out, nil
 	}
 
 	rows, err := r.Queries.ListSchadenplaetze(ctx, incID)
@@ -193,10 +211,28 @@ func (r *incidentResolver) Schadenplaetze(ctx context.Context, obj *model.Incide
 }
 
 // Resources is the resolver for the resources field.
-func (r *incidentResolver) Resources(ctx context.Context, obj *model.Incident) ([]*model.Resource, error) {
+func (r *incidentResolver) Resources(
+	ctx context.Context,
+	obj *model.Incident,
+	asOf *time.Time,
+) ([]*model.Resource, error) {
 	incID, err := parseUUID(obj.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if asOf != nil {
+		states, err := r.Timeline.ResourcesAsOf(ctx, shared.IncidentID(incID), *asOf)
+		if err != nil {
+			return nil, err
+		}
+
+		out := make([]*model.Resource, 0, len(states))
+		for _, s := range states {
+			out = append(out, resourceStateToModel(s))
+		}
+
+		return out, nil
 	}
 
 	rows, err := r.Queries.ListResourcesForIncident(ctx, incID)
@@ -983,22 +1019,65 @@ func (r *mutationResolver) TriageMessage(
 		return nil, err
 	}
 
-	msg := messageStateToModel(state)
-	// Divisions on a message are incident-level references (stable, no projection race).
-	// Look them up so the mutation response contains full name/description data.
-	if len(state.DivisionIDs) > 0 {
-		inc, lookupErr := r.Queries.GetIncident(ctx, uuid.UUID(state.IncidentID))
-		if lookupErr == nil {
-			divIndex := divisionsByID(inc.Divisions)
-			for _, divID := range state.DivisionIDs {
-				if d, ok := divIndex[uuid.UUID(divID)]; ok {
-					msg.Divisions = append(msg.Divisions, divisionRMToModel(d))
-				}
-			}
-		}
+	return r.messageFromState(ctx, state)
+}
+
+// AcknowledgeMessage is the resolver for the acknowledgeMessage field.
+func (r *mutationResolver) AcknowledgeMessage(
+	ctx context.Context,
+	id string,
+	divisionID string,
+) (*model.Message, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return msg, nil
+	msgID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	divID, err := parseUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Messages.AcknowledgeMessage(ctx, shared.MessageID(msgID), shared.DivisionID(divID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.messageFromState(ctx, state)
+}
+
+// RevokeMessageAcknowledgement is the resolver for the revokeMessageAcknowledgement field.
+func (r *mutationResolver) RevokeMessageAcknowledgement(
+	ctx context.Context,
+	id string,
+	divisionID string,
+) (*model.Message, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	msgID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	divID, err := parseUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Messages.RevokeMessageAcknowledgement(ctx, shared.MessageID(msgID), shared.DivisionID(divID), actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.messageFromState(ctx, state)
 }
 
 // DeleteMessage is the resolver for the deleteMessage field.
@@ -1578,26 +1657,15 @@ func (r *mutationResolver) CreateLayer(ctx context.Context, incidentID string, n
 		SourceIncidentID:   incidentID,
 		SourceIncidentName: inc.Name(),
 		Name:               name,
+		Kind:               model.LayerKindStandard,
 		Revision:           0,
 		Features:           []*model.Feature{},
 	}, nil
 }
 
 // AddFeature is the resolver for the addFeature field.
-func (r *mutationResolver) AddFeature(
-	ctx context.Context,
-	incidentID string,
-	layerID string,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) AddFeature(ctx context.Context, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	featureID, err := parseUUID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -1612,50 +1680,78 @@ func (r *mutationResolver) AddFeature(
 		return nil, err
 	}
 
-	if err := r.Features.PlaceFeature(ctx,
-		shared.FeatureID(featureID), shared.IncidentID(incID), shared.LayerID(layID),
-		geometry, properties, actor); err != nil {
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
 		return nil, err
 	}
 
-	return &model.Feature{ID: id, Geometry: geometry, Properties: properties}, nil
+	state, err := r.Features.PlaceFeature(ctx,
+		shared.IncidentID(incID), shared.LayerID(layID), clientKey, geometry, properties, featureChange, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return featureStateToModel(state), nil
 }
 
 // ModifyFeature is the resolver for the modifyFeature field.
-func (r *mutationResolver) ModifyFeature(
-	ctx context.Context,
-	id string,
-	geometry scalar.JSONMap,
-	properties scalar.JSONMap,
-) (*model.Feature, error) {
+func (r *mutationResolver) ModifyFeature(ctx context.Context, id string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	featureID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	featureChange, err := featureChangeFromInput(change)
 	if err != nil {
 		return nil, err
 	}
 
 	// Ownership is enforced by FeatureService.ModifyFeature against the freshly loaded
 	// aggregate, not here — a pre-check against the read model would race the projector.
-	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, actor)
+	state, err := r.Features.ModifyFeature(ctx, shared.FeatureID(featureID), geometry, properties, featureChange, actor)
 	if err != nil {
 		return nil, err
 	}
 	// Return the full aggregate state so Apollo receives both geometry and
 	// properties even for sparse updates — prevents null from overwriting the
 	// unchanged cached field.
-	return &model.Feature{
-		ID:         id,
-		Geometry:   scalar.JSONMap(state.Geometry),
-		Properties: scalar.JSONMap(state.Properties),
-	}, nil
+	return featureStateToModel(state), nil
+}
+
+// RestoreFeature is the resolver for the restoreFeature field.
+func (r *mutationResolver) RestoreFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (*model.Feature, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	featureID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
+		return nil, err
+	}
+
+	// The aggregate decides whether the feature is removed and when it may come back, not the
+	// read model: a pre-check there would race the projector.
+	state, err := r.Features.RestoreFeature(ctx, shared.FeatureID(featureID), featureChange, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return featureStateToModel(state), nil
 }
 
 // DeleteFeature is the resolver for the deleteFeature field.
-func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string, error) {
+func (r *mutationResolver) DeleteFeature(ctx context.Context, id string, change *model.FeatureChangeInput) (string, error) {
 	actor, err := identity.ActorFrom(ctx)
 	if err != nil {
 		return "", err
@@ -1666,9 +1762,14 @@ func (r *mutationResolver) DeleteFeature(ctx context.Context, id string) (string
 		return "", err
 	}
 
+	featureChange, err := featureChangeFromInput(change)
+	if err != nil {
+		return "", err
+	}
+
 	// Ownership is enforced by FeatureService.RemoveFeature against the freshly loaded
 	// aggregate, not here — a pre-check against the read model would race the projector.
-	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), actor); err != nil {
+	if err := r.Features.RemoveFeature(ctx, shared.FeatureID(featureID), featureChange, actor); err != nil {
 		return "", err
 	}
 
@@ -1716,7 +1817,11 @@ func (r *queryResolver) Message(ctx context.Context, id string) (*model.Message,
 }
 
 // LayersForIncident is the resolver for the layersForIncident field.
-func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string) ([]*model.Layer, error) {
+func (r *queryResolver) LayersForIncident(
+	ctx context.Context,
+	incidentID string,
+	asOf *time.Time,
+) ([]*model.Layer, error) {
 	incID, err := parseUUID(incidentID)
 	if err != nil {
 		return nil, err
@@ -1735,6 +1840,87 @@ func (r *queryResolver) LayersForIncident(ctx context.Context, incidentID string
 		}
 
 		out = append(out, layer)
+	}
+
+	if asOf == nil {
+		return out, nil
+	}
+
+	changes, err := r.Queries.ListFeatureChanges(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	return layersAsOf(out, changes, *asOf), nil
+}
+
+// FeatureChangeTimes is the resolver for the featureChangeTimes field.
+func (r *queryResolver) FeatureChangeTimes(ctx context.Context, incidentID string) ([]*time.Time, error) {
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	times, err := r.Queries.ListFeatureChangeTimes(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*time.Time, len(times))
+	for i := range times {
+		out[i] = &times[i]
+	}
+
+	return out, nil
+}
+
+// FeatureChanges is the resolver for the featureChanges field.
+func (r *queryResolver) FeatureChanges(ctx context.Context, incidentID string) ([]*model.FeatureChange, error) {
+	incID, err := parseUUID(incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListFeatureChanges(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*model.FeatureChange, len(rows))
+	for i, row := range rows {
+		out[i] = featureChangeRMToModel(row)
+	}
+
+	return out, nil
+}
+
+// FeatureMessages is the resolver for the featureMessages field.
+func (r *queryResolver) FeatureMessages(ctx context.Context, featureID string) ([]*model.Message, error) {
+	id, err := parseUUID(featureID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.Queries.ListFeatureMessages(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rows) == 0 {
+		return []*model.Message{}, nil
+	}
+
+	// All messages of a feature belong to the feature's incident.
+	inc, err := r.Queries.GetIncident(ctx, rows[0].IncidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	divIndex := divisionsByID(inc.Divisions)
+
+	out := make([]*model.Message, len(rows))
+	for i, row := range rows {
+		out[i] = messageRMToModel(row, divIndex)
 	}
 
 	return out, nil

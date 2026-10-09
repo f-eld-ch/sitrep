@@ -20,7 +20,8 @@ export interface CreateIncidentArgs {
   parentId?: string;
   location: string;
   divisions: { name: string; description: string }[];
-  layerName: string;
+  /** Optional extra layer; the backend always creates the Nachrichtenkarte layer itself. */
+  layerName?: string;
 }
 
 export interface UpdateIncidentArgs {
@@ -57,7 +58,7 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
       name: args.name,
       location: args.location || undefined,
       divisions: args.divisions,
-      layers: [{ name: args.layerName }],
+      layers: args.layerName ? [{ name: args.layerName }] : [],
     };
     const updateIncidentCache = (newIncident: {
       id: string;

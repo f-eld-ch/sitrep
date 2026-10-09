@@ -112,3 +112,47 @@ func TestLayer_Remove(t *testing.T) {
 		require.ErrorIs(t, err, shared.ErrNotFound)
 	})
 }
+
+func TestLayer_MessageMapKind(t *testing.T) {
+	id := shared.LayerID(uuid.New())
+
+	messageMap := func(t *testing.T) *layer.Layer {
+		t.Helper()
+
+		l := layer.New(id)
+		require.NoError(t, l.CreateWithKind(incidentID, "Nachrichtenkarte", shared.LayerKindMessageMap, actor, at))
+
+		return replay(t, id, l.Root().PendingEvents())
+	}
+
+	t.Run("the message map layer cannot be renamed or removed", func(t *testing.T) {
+		l := messageMap(t)
+		assert.Equal(t, shared.LayerKindMessageMap, l.Kind())
+
+		require.ErrorIs(t, l.Rename("Other", actor, at), shared.ErrInvalidInput)
+		require.ErrorIs(t, l.Remove(shared.DeleteReasonManual, actor, at), shared.ErrInvalidInput)
+	})
+
+	t.Run("assigning the kind marks an existing layer, once", func(t *testing.T) {
+		l := replay(t, id, []eventsourcing.Event{created(id)})
+		assert.Equal(t, shared.LayerKindStandard, l.Kind())
+
+		require.NoError(t, l.AssignKind(shared.LayerKindMessageMap, actor, at))
+		pending := l.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "KindAssigned", pending[0].EventType)
+		assert.Equal(t, shared.LayerKindMessageMap, l.Kind())
+
+		l.Root().ClearPending()
+		require.NoError(t, l.AssignKind(shared.LayerKindMessageMap, actor, at))
+		assert.Empty(t, l.Root().PendingEvents(), "idempotent: no second event")
+	})
+
+	t.Run("a removed layer cannot be marked", func(t *testing.T) {
+		l := replay(t, id, []eventsourcing.Event{created(id)})
+		require.NoError(t, l.Remove(shared.DeleteReasonManual, actor, at))
+		l.Root().ClearPending()
+
+		require.ErrorIs(t, l.AssignKind(shared.LayerKindMessageMap, actor, at), shared.ErrNotFound)
+	})
+}

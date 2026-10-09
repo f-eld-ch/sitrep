@@ -11,7 +11,6 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
-	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 )
@@ -63,6 +62,7 @@ func (s *layerStack) featureSvc() inbound.FeatureService {
 		eventstore.NewFeatureRepository(s.store),
 		eventstore.NewIncidentRepository(s.store),
 		eventstore.NewLayerRepository(s.store),
+		eventstore.NewMessageRepository(s.store),
 	)
 }
 
@@ -75,7 +75,7 @@ func TestLayerHandler_LayerCreatedViaIncident(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(res.IncidentID))
+	rows := s.userLayers(uuid.UUID(res.IncidentID))
 	require.Len(t, rows, 1)
 	assert.Equal(t, "Ops Map", rows[0].Name)
 	assert.Equal(t, uuid.UUID(res.IncidentID), rows[0].IncidentID)
@@ -92,7 +92,7 @@ func TestLayerHandler_LayerCreatedExplicitly(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	assert.Len(t, rows, 2, "default layer + explicitly created layer")
 
 	names := make([]string, len(rows))
@@ -116,7 +116,7 @@ func TestLayerHandler_MultipleLayersForIncident(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	assert.Len(t, rows, 3)
 }
 
@@ -129,8 +129,8 @@ func TestLayerHandler_LayersSegregatedByIncident(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rowsA := s.layers.ForIncident(uuid.UUID(incA.IncidentID))
-	rowsB := s.layers.ForIncident(uuid.UUID(incB.IncidentID))
+	rowsA := s.userLayers(uuid.UUID(incA.IncidentID))
+	rowsB := s.userLayers(uuid.UUID(incB.IncidentID))
 
 	require.Len(t, rowsA, 1)
 	require.Len(t, rowsB, 1)
@@ -153,14 +153,13 @@ func TestLayerHandler_FeaturePlaced(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	_, err = s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	require.Len(t, rows, 1)
 	assert.Len(t, rows[0].Features, 1)
 	assert.Equal(t, 1, rows[0].Revision)
@@ -174,14 +173,15 @@ func TestLayerHandler_FeaturePlaced_GeoJSONContainsFeature(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	state, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
+	featureID := state.ID
+
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	gj := s.layers.ForIncident(uuid.UUID(inc.IncidentID))[0].GeoJSON()
+	gj := s.userLayers(uuid.UUID(inc.IncidentID))[0].GeoJSON()
 
 	var fc struct {
 		Type     string `json:"type"`
@@ -203,17 +203,18 @@ func TestLayerHandler_FeatureRemoved(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	featureID := shared.FeatureID(uuid.New())
 
-	err = s.featureSvc().
-		PlaceFeature(ctx(), featureID, inc.IncidentID, layerID, testGeometry, testProperties, testActor)
+	state, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, "draw-1", testGeometry, testProperties,
+		inbound.FeatureChange{}, testActor)
+	featureID := state.ID
+
 	require.NoError(t, err)
 
-	err = s.featureSvc().RemoveFeature(ctx(), featureID, testActor)
+	err = s.featureSvc().RemoveFeature(ctx(), featureID, inbound.FeatureChange{}, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	require.Len(t, rows, 1)
 	assert.Empty(t, rows[0].Features)
 	assert.Equal(t, 2, rows[0].Revision, "place+remove = 2 revisions")
@@ -227,20 +228,16 @@ func TestLayerHandler_MultipleFeatures_RevisionTracked(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
 	layerID := inc.LayerIDs[0]
-	f1 := shared.FeatureID(uuid.New())
-	f2 := shared.FeatureID(uuid.New())
 
-	require.NoError(
-		t,
-		s.featureSvc().PlaceFeature(ctx(), f1, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
-	)
-	require.NoError(
-		t,
-		s.featureSvc().PlaceFeature(ctx(), f2, inc.IncidentID, layerID, testGeometry, testProperties, testActor),
-	)
+	for _, key := range []string{"draw-1", "draw-2"} {
+		_, err := s.featureSvc().PlaceFeature(ctx(), inc.IncidentID, layerID, key, testGeometry, testProperties,
+			inbound.FeatureChange{}, testActor)
+		require.NoError(t, err)
+	}
+
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	require.Len(t, rows, 1)
 	assert.Len(t, rows[0].Features, 2)
 	assert.Equal(t, 2, rows[0].Revision)
@@ -255,7 +252,7 @@ func TestLayerHandler_GeoJSON_EmptyLayer(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	require.Len(t, rows, 1)
 
 	var fc struct {
@@ -275,11 +272,25 @@ func TestLayerHandler_Reset_RebuildsFromLog(t *testing.T) {
 	inc, err := s.incidentSvc().CreateIncident(ctx(), "Reset", nil, nil, []string{"Map"}, testActor)
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx()))
-	require.Len(t, s.layers.ForIncident(uuid.UUID(inc.IncidentID)), 1)
+	require.Len(t, s.userLayers(uuid.UUID(inc.IncidentID)), 1)
 
 	require.NoError(t, s.proj.Reset(ctx()))
 
-	rows := s.layers.ForIncident(uuid.UUID(inc.IncidentID))
+	rows := s.userLayers(uuid.UUID(inc.IncidentID))
 	require.Len(t, rows, 1, "Reset must replay from event log")
 	assert.Equal(t, "Map", rows[0].Name)
+}
+
+// userLayers returns the layers of an incident without the system-managed
+// message map layer that every incident gets on creation.
+func (s *layerStack) userLayers(incidentID uuid.UUID) []*projection.LayerRow {
+	var out []*projection.LayerRow
+
+	for _, r := range s.layers.ForIncident(incidentID) {
+		if r.Kind == "" {
+			out = append(out, r)
+		}
+	}
+
+	return out
 }

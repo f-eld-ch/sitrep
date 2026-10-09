@@ -7,6 +7,7 @@ import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
+import dayjs from "dayjs";
 import { isUndefined, omitBy } from "lodash";
 import { Button } from "components/ui";
 import { useCallback, useContext, useEffect, useId, useState } from "react";
@@ -46,10 +47,37 @@ function iconLabel(iconValue: string | undefined, language: string): string | un
   }
 }
 
+/** What the popup needs to save or drop a feature that only exists locally so far. */
+export interface PendingFeatureActions {
+  saving: boolean;
+  /** Message of the last failed save, if any. */
+  error?: string;
+  /** The earliest time the feature can be given (the incident's start). */
+  earliest?: Date;
+  /** Create the feature on the server with these properties; `effectiveAt` is undefined for "now". */
+  onSave: (properties: GeoJsonProperties, effectiveAt: Date | undefined) => void;
+  onDiscard: () => void;
+}
+
 interface FeatureLabelPopupProps {
   selectedFeature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: { features: Feature<Geometry, GeoJsonProperties>[]; action: string }) => void;
+  onUpdate: (e: {
+    features: Feature<Geometry, GeoJsonProperties>[];
+    action: string;
+    /** When the change takes effect on the timeline; absent for "now". */
+    effectiveAt?: Date;
+  }) => void;
+  /** Set on a saved feature of the free map: the popup then offers the time the change takes effect. */
+  changeTime?: { earliest?: Date };
+  /** Set while the feature has not been saved yet: the popup then asks for the time and saves it. */
+  pending?: PendingFeatureActions;
 }
+
+/** Value for a datetime-local input, in the browser's local time. */
+const toLocalInput = (d: Date) => dayjs(d).format("YYYY-MM-DDTHH:mm");
+
+/** The wall clock; read when the popup opens, never during render. */
+const currentTime = () => Date.now();
 
 interface PopupAnchor {
   lngLat: [number, number];
@@ -101,7 +129,12 @@ function popupAnchorFor(feature: Feature<Geometry, GeoJsonProperties>, map?: Map
   return { lngLat: [maxLng, (minLat + maxLat) / 2], anchor: "left" };
 }
 
-export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPopupProps) {
+export function FeatureLabelPopup({
+  selectedFeature,
+  onUpdate,
+  pending,
+  changeTime,
+}: FeatureLabelPopupProps) {
   const { t, i18n } = useTranslation();
   const { current: map } = useMap();
   const { dispatch } = useContext(LayerContext);
@@ -143,8 +176,8 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
     dispatch({ type: "DESELECT_FEATURE", payload: null });
   }, [dispatch]);
 
-  const commit = useCallback(() => {
-    const properties: GeoJsonProperties = omitBy(
+  const buildProperties = useCallback((): GeoJsonProperties => {
+    return omitBy(
       isUnSign
         ? {
             ...selectedFeature.properties,
@@ -162,16 +195,39 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
           },
       isEmptyValue,
     );
+  }, [canRotate, isUnSign, selectedFeature, values]);
+
+  // The time a new feature, or a change to a saved one, takes effect at: now unless the user
+  // picks another one.
+  const [openedAt] = useState(() => currentTime());
+  const [effectiveInput, setEffectiveInput] = useState(() => toLocalInput(new Date(openedAt)));
+  const effectiveTouched = effectiveInput !== toLocalInput(new Date(openedAt));
+
+  const commit = useCallback(() => {
+    const picked = new Date(effectiveInput);
+
     onUpdate({
-      features: [{ ...selectedFeature, properties }],
+      features: [{ ...selectedFeature, properties: buildProperties() }],
       action: "featureDetail",
+      effectiveAt:
+        changeTime && effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
     });
-  }, [canRotate, isUnSign, onUpdate, selectedFeature, values]);
+  }, [buildProperties, changeTime, effectiveInput, effectiveTouched, onUpdate, selectedFeature]);
 
   const saveAndClose = useCallback(() => {
+    if (pending) {
+      const picked = new Date(effectiveInput);
+      pending.onSave(
+        buildProperties(),
+        effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
+      );
+
+      return;
+    }
+
     commit();
     close();
-  }, [commit, close]);
+  }, [buildProperties, close, commit, effectiveInput, effectiveTouched, pending]);
 
   const onReverseDirection = useCallback(() => {
     if (selectedFeature.geometry.type !== "LineString") return;
@@ -511,12 +567,54 @@ export function FeatureLabelPopup({ selectedFeature, onUpdate }: FeatureLabelPop
             </div>
           </div>
         )}
-        <div>
-          <div>
-            <Button variant="primary" size="sm" className="w-full" onClick={saveAndClose}>
-              {t("save")}
-            </Button>
+        {(pending || changeTime) && (
+          <div className="mb-2">
+            <label
+              className="mb-1 block text-xs font-semibold text-gray-800"
+              htmlFor={`${baseId}-effective`}
+            >
+              {pending ? t("mapview.pending.time") : t("mapview.changeTime.label")}
+            </label>
+            <input
+              id={`${baseId}-effective`}
+              type="datetime-local"
+              className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
+              min={
+                (pending ?? changeTime)?.earliest
+                  ? toLocalInput((pending ?? changeTime)!.earliest!)
+                  : undefined
+              }
+              max={toLocalInput(new Date(openedAt))}
+              value={effectiveInput}
+              onChange={(e) => setEffectiveInput(e.target.value)}
+            />
+            <p className="mt-1 text-[11px] text-gray-500">
+              {pending ? t("mapview.pending.hint") : t("mapview.changeTime.hint")}
+            </p>
           </div>
+        )}
+        {pending?.error && <p className="mb-2 text-xs text-red-600">{pending.error}</p>}
+        <div className="space-y-2">
+          <Button
+            variant="primary"
+            size="sm"
+            className="w-full"
+            disabled={pending?.saving}
+            onClick={saveAndClose}
+          >
+            {t("save")}
+          </Button>
+          {pending && (
+            <Button
+              variant="light"
+              size="sm"
+              className="w-full"
+              disabled={pending.saving}
+              onClick={pending.onDiscard}
+            >
+              {t("mapview.pending.discard")}
+            </Button>
+          )}
         </div>
       </div>
     </Popup>

@@ -13,11 +13,15 @@ export interface IncidentMessagesData {
 /** @deprecated use useIncidentMessages */
 export type JournalMessagesData = IncidentMessagesData;
 
-export function useIncidentMessages(incidentId: string): QueryResult<IncidentMessagesData> {
+export function useIncidentMessages(
+  incidentId: string,
+  options: { pollInterval?: number; skip?: boolean } = {},
+): QueryResult<IncidentMessagesData> {
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_MESSAGES, {
     variables: { incidentId },
-    skip: !incidentId,
-    pollInterval: 5000,
+    skip: !incidentId || options.skip,
+    pollInterval: options.pollInterval ?? 5000,
+    skipPollAttempt: () => document.hidden,
   });
 
   const refresh = () => void refetch();

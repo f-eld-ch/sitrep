@@ -16,6 +16,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/eventstore/inmem/projection"
 	inmemqueries "github.com/f-eld-ch/sitrep/internal/adapter/outbound/queries/inmem"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -39,6 +40,8 @@ func newTestStack(t *testing.T) *testStack {
 	msgRepo := eventstore.NewMessageRepository(store)
 	layerRepo := eventstore.NewLayerRepository(store)
 	featureRepo := eventstore.NewFeatureRepository(store)
+	spRepo := eventstore.NewSchadenplatzRepository(store)
+	resRepo := eventstore.NewResourceRepository(store)
 
 	factory := service.NewFactory(
 		service.WithTransactor(tx),
@@ -50,21 +53,24 @@ func newTestStack(t *testing.T) *testStack {
 	)
 
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
+	incidentSvc.WithSchadenplatzRepository(spRepo)
+
 	messageSvc := factory.MessageService(msgRepo, incRepo)
 	layerSvc := factory.LayerService(layerRepo, incRepo)
-	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
+	resourceSvc := factory.ResourceService(resRepo, incRepo, spRepo)
 
 	incHandler := projection.NewIncidentHandler()
 	divHandler := projection.NewIncidentDivisionHandler()
 	msgHandler := projection.NewMessageHandler()
 	layerHandler := projection.NewLayerFeaturesHandler()
 
-	proj := projection.NewProjector(store, []projection.Handler{
-		incHandler, divHandler, msgHandler, layerHandler,
-	})
-
 	spHandler := projection.NewSchadenplatzHandler()
 	resourceHandler := projection.NewResourceHandler()
+
+	proj := projection.NewProjector(store, []projection.Handler{
+		incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler,
+	})
 	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler)
 
 	r := &gqlresolver.Resolver{
@@ -72,7 +78,9 @@ func newTestStack(t *testing.T) *testStack {
 		Messages:  messageSvc,
 		Layers:    layerSvc,
 		Features:  featureSvc,
+		Resources: resourceSvc,
 		Queries:   queries,
+		Timeline:  factory.TimelineService(store, queries),
 	}
 
 	return &testStack{resolver: r, proj: proj}
@@ -128,8 +136,10 @@ func TestCreateIncident_WithDivisionsAndLayers(t *testing.T) {
 	require.NotNil(t, result)
 	require.NotNil(t, result.Incident)
 	assert.Equal(t, "Incident With Divisions", result.Incident.Name)
-	assert.Len(t, result.Incident.Divisions, 2)
-	assert.Equal(t, "Alpha", result.Incident.Divisions[0].Name)
+	// the system-managed message map division comes first
+	require.Len(t, result.Incident.Divisions, 3)
+	assert.Equal(t, model.DivisionKindMessageMap, result.Incident.Divisions[0].Kind)
+	assert.Equal(t, "Alpha", result.Incident.Divisions[1].Name)
 }
 
 func TestCreateIncident_NoActor_ReturnsError(t *testing.T) {
@@ -556,8 +566,12 @@ func TestLayersForIncident_AfterCreate(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
+	require.Len(t, layers, 2, "requested layer + message map layer")
+	assert.Equal(t, model.LayerKindMessageMap, layers[0].Kind)
+
+	layers = userLayers(layers)
 	require.Len(t, layers, 1)
 	assert.Equal(t, "Sector Map", layers[0].Name)
 }
@@ -577,7 +591,7 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 		Name:      "GFS Altdorf",
 		ParentID:  &parent.Incident.ID,
 		Divisions: []*model.DivisionInput{},
-		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+		Layers:    []*model.LayerInput{{Name: "Lagekarte"}},
 	})
 	require.NoError(t, err)
 	require.NotNil(t, child.Incident.ParentID)
@@ -585,9 +599,11 @@ func TestCreateIncident_WithParentLinksAtomically(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
-	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Nachrichtenkarte"}, []string{
+
+	layers = userLayers(layers)
+	assert.Equal(t, []string{"KFS:KFS Karte", "GFS Altdorf:Lagekarte"}, []string{
 		layers[0].SourceIncidentName + ":" + layers[0].Name,
 		layers[1].SourceIncidentName + ":" + layers[1].Name,
 	})
@@ -618,8 +634,10 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	parentLayers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
+
+	parentLayers = userLayers(parentLayers)
 	require.Len(t, parentLayers, 2)
 	assert.ElementsMatch(
 		t,
@@ -638,8 +656,10 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 		}
 	}
 
-	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID)
+	childLayers, err := s.resolver.Query().LayersForIncident(ctx, child.Incident.ID, nil)
 	require.NoError(t, err)
+
+	childLayers = userLayers(childLayers)
 	require.Len(t, childLayers, 1)
 	assert.Equal(t, "Municipal Map", childLayers[0].Name)
 
@@ -649,8 +669,10 @@ func TestLayersForIncident_IncludesChildLayersForParentOnly(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	parentLayers, err = s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
+
+	parentLayers = userLayers(parentLayers)
 	require.Len(t, parentLayers, 1)
 	assert.Equal(t, "Regional Map", parentLayers[0].Name)
 }
@@ -673,7 +695,7 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 		Name:      "GFS Ahausen",
 		Divisions: []*model.DivisionInput{},
 		Layers: []*model.LayerInput{
-			{Name: "Nachrichtenkarte"},
+			{Name: "Rettungskarte"},
 			{Name: "Führungskarte"},
 		},
 	})
@@ -682,7 +704,7 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 	altdorf, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
 		Name:      "GFS Altdorf",
 		Divisions: []*model.DivisionInput{},
-		Layers:    []*model.LayerInput{{Name: "Nachrichtenkarte"}},
+		Layers:    []*model.LayerInput{{Name: "Rettungskarte"}},
 	})
 	require.NoError(t, err)
 
@@ -692,16 +714,18 @@ func TestLayersForIncident_OrdersParentLayersBeforeGroupedChildLayers(t *testing
 	require.NoError(t, err)
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, parent.Incident.ID, nil)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 	require.Len(t, layers, 5)
 
 	assert.Equal(t, []string{
 		"KFS:Erste KFS Karte",
 		"KFS:Zweite KFS Karte",
 		"GFS Ahausen:Führungskarte",
-		"GFS Ahausen:Nachrichtenkarte",
-		"GFS Altdorf:Nachrichtenkarte",
+		"GFS Ahausen:Rettungskarte",
+		"GFS Altdorf:Rettungskarte",
 	}, []string{
 		layers[0].SourceIncidentName + ":" + layers[0].Name,
 		layers[1].SourceIncidentName + ":" + layers[1].Name,
@@ -758,8 +782,8 @@ func TestTriageMessage_WithDivision_EnrichesResponse(t *testing.T) {
 		Layers:    []*model.LayerInput{},
 	})
 	require.NoError(t, err)
-	require.Len(t, inc.Incident.Divisions, 1)
-	divID := inc.Incident.Divisions[0].ID
+	require.Len(t, inc.Incident.Divisions, 2)
+	divID := inc.Incident.Divisions[1].ID
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
 		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B",
@@ -831,8 +855,10 @@ func TestCreateLayer_AppearsInQuery(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 
 	var found bool
 
@@ -858,20 +884,29 @@ func TestAddFeature_ReturnsModel(t *testing.T) {
 
 	require.NoError(t, s.proj.CatchUp(ctx))
 
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 	require.NotEmpty(t, layers)
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
 	geometry := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
 	props := map[string]any{"label": "HQ"}
 
-	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, geometry, props)
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1", geometry, props, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, feat)
-	assert.Equal(t, featureID, feat.ID)
+
+	incUUID, err := uuid.Parse(inc.Incident.ID)
+	require.NoError(t, err)
+	assert.Equal(
+		t,
+		feature.DeriveID(shared.IncidentID(incUUID), "draw-1").String(),
+		feat.ID,
+		"ID is derived server-side",
+	)
 	assert.Equal(t, geometry, map[string]any(feat.Geometry))
 	assert.Equal(t, props, map[string]any(feat.Properties))
 }
@@ -886,20 +921,23 @@ func TestModifyFeature_ReturnsUpdatedModel(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
 	origGeom := map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}}
 	origProps := map[string]any{"label": "Old"}
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID, origGeom, origProps)
+	added, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1", origGeom, origProps, nil)
 	require.NoError(t, err)
+
+	featureID := added.ID
 
 	newGeom := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
 	newProps := map[string]any{"label": "New"}
-	modified, err := s.resolver.Mutation().ModifyFeature(ctx, featureID, newGeom, newProps)
+	modified, err := s.resolver.Mutation().ModifyFeature(ctx, featureID, newGeom, newProps, nil)
 
 	require.NoError(t, err)
 	require.NotNil(t, modified)
@@ -918,19 +956,22 @@ func TestDeleteFeature_ReturnsID(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, s.proj.CatchUp(ctx))
-	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID)
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
 	require.NoError(t, err)
+
+	layers = userLayers(layers)
 
 	layerID := layers[0].ID
 
-	featureID := uuid.NewString()
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, featureID,
+	added, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1",
 		map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}},
 		map[string]any{},
+		nil,
 	)
 	require.NoError(t, err)
 
-	deletedID, err := s.resolver.Mutation().DeleteFeature(ctx, featureID)
+	featureID := added.ID
+	deletedID, err := s.resolver.Mutation().DeleteFeature(ctx, featureID, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, featureID, deletedID)
@@ -945,9 +986,444 @@ func TestAddFeature_InvalidLayerID_ReturnsError(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, "not-a-uuid", uuid.NewString(),
-		map[string]any{}, map[string]any{})
+	_, err = s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, "not-a-uuid", "draw-1",
+		map[string]any{}, map[string]any{}, nil)
 	require.Error(t, err)
+}
+
+func TestAddFeature_MessageMapLayerRequiresMessage(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Map Layer", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var mapLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	require.NotEmpty(t, mapLayerID)
+
+	geometry := map[string]any{"type": "Point", "coordinates": []any{8.5, 47.3}}
+
+	_, err = s.resolver.Mutation().
+		AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1", geometry, map[string]any{}, nil)
+	require.ErrorIs(t, err, shared.ErrInvalidInput)
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+		IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "Brand", Medium: model.MediumRadio,
+	})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+		Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+	})
+	require.NoError(t, err)
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1", geometry,
+		map[string]any{}, &model.FeatureChangeInput{MessageID: &msg.ID})
+	require.NoError(t, err)
+	assert.NotEmpty(t, feat.ID)
+}
+
+func TestFeatureChangesAndMessages_FollowMessageTime(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Timeline", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var mapLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	triaged := func(content string, at time.Time) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: content,
+			Medium: model.MediumRadio, Time: &at,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	now := time.Now().UTC()
+	first := triaged("first", now.Add(-3*time.Hour))
+	second := triaged("second", now.Add(-time.Hour))
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1",
+		map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}, map[string]any{"label": "A"},
+		&model.FeatureChangeInput{MessageID: &first.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().ModifyFeature(ctx, feat.ID,
+		map[string]any{"type": "Point", "coordinates": []any{9.0, 47.0}}, nil,
+		&model.FeatureChangeInput{MessageID: &second.ID})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	changes, err := s.resolver.Query().FeatureChanges(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, changes, 2)
+	assert.Equal(t, model.FeatureChangeKindPlaced, changes[0].Change)
+	assert.Equal(t, model.FeatureChangeKindMoved, changes[1].Change)
+	assert.WithinDuration(t, now.Add(-3*time.Hour), changes[0].EffectiveAt, time.Second, "effective at message time")
+	assert.WithinDuration(t, now.Add(-time.Hour), changes[1].EffectiveAt, time.Second)
+	require.NotNil(t, changes[1].MessageID)
+	assert.Equal(t, second.ID, *changes[1].MessageID)
+	assert.NotNil(t, changes[1].Geometry)
+
+	// The map as of a point on the incident timeline.
+	featuresOnMapLayer := func(asOf time.Time) []*model.Feature {
+		t.Helper()
+
+		got, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, &asOf)
+		require.NoError(t, err)
+
+		for _, l := range got {
+			if l.ID == mapLayerID {
+				return l.Features
+			}
+		}
+
+		require.Fail(t, "message map layer missing")
+
+		return nil
+	}
+
+	assert.Empty(t, featuresOnMapLayer(now.Add(-4*time.Hour)), "before the first message nothing is drawn")
+
+	between := featuresOnMapLayer(now.Add(-2 * time.Hour))
+	require.Len(t, between, 1)
+	assert.Equal(t, []any{8.0, 47.0}, between[0].Geometry["coordinates"], "as of the first message")
+
+	after := featuresOnMapLayer(now)
+	require.Len(t, after, 1)
+	assert.Equal(t, []any{9.0, 47.0}, after[0].Geometry["coordinates"], "after the second message the feature moved")
+	assert.Equal(
+		t,
+		map[string]any{"label": "A"},
+		map[string]any(after[0].Properties),
+		"unchanged properties carry over",
+	)
+
+	messages, err := s.resolver.Query().FeatureMessages(ctx, feat.ID)
+	require.NoError(t, err)
+	require.Len(t, messages, 2)
+	assert.Equal(t, []string{first.ID, second.ID}, []string{messages[0].ID, messages[1].ID}, "ordered by message time")
+
+	none, err := s.resolver.Query().FeatureMessages(ctx, uuid.NewString())
+	require.Error(t, err, "unknown feature")
+	assert.Empty(t, none)
+}
+
+func TestFeatureChangeTimes_ListsEachInstantOnce(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Ticks", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var standardLayerID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindStandard {
+			standardLayerID = l.ID
+		}
+	}
+
+	if standardLayerID == "" {
+		layer, err := s.resolver.Mutation().CreateLayer(ctx, inc.Incident.ID, "Lage")
+		require.NoError(t, err)
+
+		standardLayerID = layer.ID
+	}
+
+	at := time.Now().UTC().Add(-2 * time.Hour).Truncate(time.Second)
+	point := map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}
+
+	for _, key := range []string{"a", "b"} {
+		_, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, standardLayerID, key, point,
+			map[string]any{"label": key}, &model.FeatureChangeInput{EffectiveAt: &at})
+		require.NoError(t, err)
+	}
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	times, err := s.resolver.Query().FeatureChangeTimes(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, times, 1, "two changes at the same time are one tick")
+	assert.WithinDuration(t, at, *times[0], time.Second)
+
+	_, err = s.resolver.Query().FeatureChangeTimes(ctx, "not-a-uuid")
+	require.Error(t, err)
+}
+
+func TestRestoreFeature_BringsBackARemovedFeatureOnTheTimeline(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Restore", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	var mapLayerID, mapDivisionID string
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindMessageMap {
+			mapLayerID = l.ID
+		}
+	}
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	triaged := func(at time.Time) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "m",
+			Medium: model.MediumRadio, Time: &at,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{mapDivisionID},
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	now := time.Now().UTC()
+	placed, removed, restored := triaged(
+		now.Add(-3*time.Hour),
+	), triaged(
+		now.Add(-2*time.Hour),
+	), triaged(
+		now.Add(-time.Hour),
+	)
+
+	feat, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, mapLayerID, "draw-1",
+		map[string]any{"type": "Point", "coordinates": []any{8.0, 47.0}}, map[string]any{"label": "A"},
+		&model.FeatureChangeInput{MessageID: &placed.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().DeleteFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &removed.ID})
+	require.NoError(t, err)
+
+	_, err = s.resolver.Mutation().RestoreFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &placed.ID})
+	require.Error(t, err, "restoring before the removal is rejected")
+
+	got, err := s.resolver.Mutation().RestoreFeature(ctx, feat.ID, &model.FeatureChangeInput{MessageID: &restored.ID})
+	require.NoError(t, err)
+	assert.Equal(t, []any{8.0, 47.0}, got.Geometry["coordinates"], "the state comes from the aggregate")
+	assert.Equal(t, map[string]any{"label": "A"}, map[string]any(got.Properties))
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	onMapAt := func(asOf *time.Time) int {
+		t.Helper()
+
+		all, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, asOf)
+		require.NoError(t, err)
+
+		for _, l := range all {
+			if l.ID == mapLayerID {
+				return len(l.Features)
+			}
+		}
+
+		return -1
+	}
+
+	at := func(d time.Duration) *time.Time { v := now.Add(d); return &v }
+
+	assert.Equal(t, 1, onMapAt(nil), "live: the feature is back")
+	assert.Equal(t, 1, onMapAt(at(-150*time.Minute)), "before the removal")
+	assert.Equal(t, 0, onMapAt(at(-90*time.Minute)), "gone between removal and restore")
+	assert.Equal(t, 1, onMapAt(at(-30*time.Minute)), "after the restore")
+
+	changes, err := s.resolver.Query().FeatureChanges(ctx, inc.Incident.ID)
+	require.NoError(t, err)
+	require.Len(t, changes, 3)
+	assert.Equal(t, model.FeatureChangeKindRestored, changes[2].Change)
+}
+
+func TestMessageAcknowledgement_Resolvers(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Ack", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+
+	var mapDivisionID string
+
+	for _, d := range inc.Incident.Divisions {
+		if d.Kind == model.DivisionKindMessageMap {
+			mapDivisionID = d.ID
+		}
+	}
+
+	record := func(divisions ...string) *model.Message {
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "m", Medium: model.MediumRadio,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: divisions,
+		})
+		require.NoError(t, err)
+
+		return msg
+	}
+
+	msg := record(mapDivisionID)
+
+	t.Run("a division acknowledges a message triaged to it, and takes it back", func(t *testing.T) {
+		got, err := s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		require.Len(t, got.Acknowledgements, 1)
+		assert.Equal(t, mapDivisionID, got.Acknowledgements[0].Division.ID)
+		assert.Equal(t, "test-sub", got.Acknowledgements[0].AcknowledgedBy)
+
+		again, err := s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		assert.Len(t, again.Acknowledgements, 1, "acknowledging twice changes nothing")
+
+		revoked, err := s.resolver.Mutation().RevokeMessageAcknowledgement(ctx, msg.ID, mapDivisionID)
+		require.NoError(t, err)
+		assert.Empty(t, revoked.Acknowledgements)
+	})
+
+	t.Run("a message not triaged to the division cannot be acknowledged for it", func(t *testing.T) {
+		untriaged := record() // triaged to no division
+
+		_, err := s.resolver.Mutation().AcknowledgeMessage(ctx, untriaged.ID, mapDivisionID)
+		require.ErrorIs(t, err, shared.ErrNotTriagedToDivision)
+	})
+
+	t.Run("unknown ids and unauthenticated calls fail", func(t *testing.T) {
+		_, err := s.resolver.Mutation().AcknowledgeMessage(ctx, "not-a-uuid", mapDivisionID)
+		require.Error(t, err)
+
+		_, err = s.resolver.Mutation().AcknowledgeMessage(ctx, msg.ID, "not-a-uuid")
+		require.Error(t, err)
+	})
+}
+
+func TestMessageAcknowledgement_RequiresAnActor(t *testing.T) {
+	s := newTestStack(t)
+
+	_, err := s.resolver.Mutation().AcknowledgeMessage(t.Context(), uuid.NewString(), uuid.NewString())
+	require.Error(t, err)
+
+	_, err = s.resolver.Mutation().RevokeMessageAcknowledgement(t.Context(), uuid.NewString(), uuid.NewString())
+	require.Error(t, err)
+}
+
+func TestIncident_ResourcesAndSchadenplaetzeAsOf(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Past", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+
+	alertedAt := time.Now().UTC().Add(-time.Hour)
+	_, err = s.resolver.Mutation().AlertResource(ctx, model.AlertResourceInput{
+		IncidentID: inc.Incident.ID, Formation: model.ResourceFormationFw, Name: "TLF 1",
+		Size: model.ResourceUnitSizeGruppe, PersonnelCount: 6, Hauptaufgabe: "Löschen", OccurredAt: &alertedAt,
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	resources := func(asOf *time.Time) []*model.Resource {
+		t.Helper()
+
+		got, err := s.resolver.Incident().Resources(ctx, inc.Incident, asOf)
+		require.NoError(t, err)
+
+		return got
+	}
+	places := func(asOf *time.Time) []*model.Schadenplatz {
+		t.Helper()
+
+		got, err := s.resolver.Incident().Schadenplaetze(ctx, inc.Incident, asOf)
+		require.NoError(t, err)
+
+		return got
+	}
+
+	before, after := alertedAt.Add(-time.Minute), alertedAt.Add(time.Minute)
+
+	assert.Len(t, resources(nil), 1, "live")
+	assert.Empty(t, resources(&before), "not alerted yet")
+	require.Len(t, resources(&after), 1)
+	assert.Equal(t, "TLF 1", resources(&after)[0].Name)
+	assert.Equal(t, 6, resources(&after)[0].PersonnelCount)
+
+	opened := time.Now().UTC().Add(time.Minute)
+
+	assert.NotEmpty(t, places(nil), "live: the default Schadenplatz")
+	assert.NotEmpty(t, places(&opened), "as of a time after the incident was opened")
+	assert.Empty(t, places(&before), "it did not exist before the incident was opened")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1040,7 +1516,7 @@ func newAccessTestStack(t *testing.T) *testStack {
 	incidentSvc := factory.IncidentService(incRepo, layerRepo)
 	messageSvc := factory.MessageService(msgRepo, incRepo)
 	layerSvc := factory.LayerService(layerRepo, incRepo)
-	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo)
+	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
 	accessSvc := factory.AccessService()
 
 	proj := projection.NewProjector(store, []projection.Handler{
@@ -1137,4 +1613,17 @@ func TestCreateIncident_InheritsDefaultTemplateGrants(t *testing.T) {
 
 	assert.True(t, grantedIDs[actor.Sub], "creator should be in grants")
 	assert.True(t, grantedIDs[viewer.ID], "default template viewer grant should be inherited")
+}
+
+// userLayers drops the system-managed message map layer that every incident gets.
+func userLayers(layers []*model.Layer) []*model.Layer {
+	out := make([]*model.Layer, 0, len(layers))
+
+	for _, l := range layers {
+		if l.Kind == model.LayerKindStandard {
+			out = append(out, l)
+		}
+	}
+
+	return out
 }

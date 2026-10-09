@@ -99,6 +99,18 @@
       "stoffnummer": "Numero della sostanza ONU",
       "stoffnummerPlaceholder": "Numero ONU a 4 cifre",
       "stoffbezeichnung": "Nome della sostanza"
+    },
+    "changeTime": {
+      "label": "Valido dal",
+      "hint": "La modifica vale da questo momento sulla linea temporale."
+    },
+    "selectionRing": "Evidenzia l'oggetto selezionato",
+    "pending": {
+      "time": "Momento",
+      "hint": "L'oggetto viene creato solo con «Salva».",
+      "unsaved": "Ci sono oggetti sulla mappa non ancora salvati ({{count}}). Andranno persi se lasci la pagina.",
+      "leave": "Esci",
+      "discard": "Scarta"
     }
   },
   "medium": {
@@ -134,6 +146,7 @@
   "messageFlow": "flusso di segnalazione",
   "messageSheet": "Modulo di registrazione",
   "messageTriageTitle": "valuta il messaggio",
+  "messageTimeLocked": "L'orario non può più essere modificato perché il messaggio è già stato smistato.",
   "messageTimeTooFarInFuture": "L'orario del messaggio non può essere più di cinque minuti nel futuro.",
   "name": "nome",
   "incidentName": "nome di incidente",
@@ -180,6 +193,36 @@
     "filterKeyMessage": "Messaggi chiave",
     "filterMine": "I miei"
   },
+  "messageMap": {
+    "showPending": "Mostra non disegnati",
+    "showAll": "Mostra tutti",
+    "drawn": "Disegnato",
+    "finish": "Concludi",
+    "edit": "Modifica",
+    "editDone": "Fatto",
+    "drawing": "Disegno per il messaggio {{number}} · {{time}}",
+    "allDrawn": "Tutti i messaggi sono disegnati",
+    "noMessages": "Nessun messaggio per la carta informativa",
+    "pickMessage": "Scegli un messaggio per disegnarlo",
+    "unavailable": "Questo intervento non ha una carta informativa",
+    "openMessage": "Apri messaggio",
+    "highlight": "Questo messaggio",
+    "restore": "Ripristina",
+    "restoreHint": "Questo oggetto è stato rimosso con questo messaggio.",
+    "highlightHint": "Verde: aggiunto, azzurro: modificato, rosso chiaro: rimosso",
+    "unfinished": "Il disegno di questo messaggio non è concluso. Gli oggetti già disegnati restano salvati. Uscire comunque?",
+    "leave": "Esci"
+  },
+  "mapTimeline": {
+    "live": "In diretta",
+    "asOf": "Stato alle {{time}}",
+    "previous": "Messaggio precedente",
+    "next": "Messaggio successivo",
+    "slider": "Momento nello svolgimento dell'intervento"
+  },
+  "featureMessages": {
+    "filter": "Messaggi dell'oggetto"
+  },
   "write": "scrivere",
   "updateNotification": "È disponibile una nuova versione dell'applicazione. Si prega di aggiornare la pagina con il pulsante di aggiornamento.",
   "viewChangelog": "Mostra il log delle modifiche",
@@ -203,6 +246,7 @@
     "addWMSLayer": "Aggiungere il livello WMS"
   },
   "styleController": {
+    "autoFrame": "Inquadra automaticamente",
     "maps": "Mappe",
     "Basiskarte": "Mappa di base leggera",
     "Satellit": "Mappa satellitare"
@@ -267,6 +311,12 @@
     "CONFLICT": "La richiesta non può essere completata a causa di un conflitto.",
     "INTERNAL_ERROR": "Si è verificato un errore interno. Riprovare.",
     "NETWORK_ERROR": "Impossibile contattare il server. Controllare la connessione di rete.",
+    "NOT_TRIAGED_TO_DIVISION": "Questo messaggio non è assegnato a quella divisione.",
+    "BEFORE_FEATURE_PLACED": "La modifica è precedente al momento in cui l'oggetto è stato disegnato.",
+    "FEATURE_HAS_LATER_CHANGES": "L'oggetto ha modifiche successive e non può quindi essere rimosso in questo momento.",
+    "FEATURE_NOT_REMOVED": "L'oggetto non è stato rimosso.",
+    "BEFORE_FEATURE_REMOVED": "L'oggetto non può essere ripristinato prima della sua rimozione.",
+    "MESSAGE_TIME_LOCKED": "L'orario di un messaggio smistato non può essere modificato.",
     "UNKNOWN": "Si è verificato un errore imprevisto."
   },
   "incidentAccess": {

@@ -30,5 +30,12 @@ func GoMigrations() []*goose.Migration {
 	)
 	sp.Source = "00020_backfill_default_schadenplatz.go"
 
-	return []*goose.Migration{m, access, sp}
+	// The Nachrichtenkarte: read-model schema and the backfills, in one migration.
+	nachrichtenkarte := goose.NewGoMigration(26,
+		&goose.GoFunc{RunTx: upNachrichtenkarte},
+		&goose.GoFunc{RunTx: downNachrichtenkarte},
+	)
+	nachrichtenkarte.Source = "00026_nachrichtenkarte.go"
+
+	return []*goose.Migration{m, access, sp, nachrichtenkarte}
 }

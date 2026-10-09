@@ -6,10 +6,14 @@ import bbox from "@turf/bbox";
 import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
+import { clsx } from "clsx";
 import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { faBullseye, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -30,10 +34,10 @@ import {
   layerToFeatureCollection,
   useAddFeature,
   useDeleteFeature,
+  LIVE_POLL_INTERVAL_MS,
   useLayersForIncident,
   useModifyFeature,
 } from "api";
-import { v3 as uuidv3, validate as validateUUID } from "uuid";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
@@ -41,6 +45,14 @@ import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
+import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
+import { isPendingFeature, withPendingFeatures } from "./pending";
+import { clickableLayerIds } from "./controls/clickableLayers";
+import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
+import { MapSelectionContext } from "./MapSelectionContext";
+import { TimeControl } from "./controls/TimeControl";
+import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
+import { PendingFeaturesGuard } from "./controls/PendingFeaturesGuard";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
@@ -89,10 +101,30 @@ function BabsSpriteLanguage() {
 interface MapViewOptions {
   embedded?: boolean;
   readOnly?: boolean;
+  /** Show the map as of this point on the incident timeline; undefined means live. */
+  asOf?: Date;
+  /** Draw for this message: all changes go to the message map layer and take effect at the message's time. */
+  drawingMessage?: DrawingMessage;
+  /** Called with the feature the user clicks or selects (undefined when cleared). */
+  onFeatureSelect?: (featureId: string | undefined) => void;
+  /** Changing this clears the map's feature selection. */
+  deselectToken?: number;
+  /** Called when something is drawn, changed or deleted for the message (see MapSelection). */
+  onDrawingChange?: () => void;
+  /** Called when the map's own timeline slider is moved; undefined is live. */
+  onTimeChange?: (asOf: Date | undefined) => void;
+  /**
+   * The kind of layer to show first. A read-only map showing it stays on it instead of cycling
+   * through all layers. Without one, a map for drawing starts on a standard layer.
+   */
+  preferredLayerKind?: Layer["kind"];
 }
 
-function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
+function MapView({ embedded = false, readOnly = false, preferredLayerKind }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
+  // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
+  const messageMapEnabled = useBooleanFlagValue("new-triage-view", false);
+  const timelineEnabled = messageMapEnabled && !embedded && !readOnly;
   const { i18n } = useTranslation();
 
   // Resolved once per basemap style, NOT per language: producing a new style object makes
@@ -128,7 +160,6 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         minZoom={9}
         maxZoom={19}
         mapStyle={styleWithBabsSprite}
-        scrollZoom={!readOnly}
         reuseMaps={false}
         RTLTextPlugin={undefined}
       >
@@ -138,33 +169,75 @@ function MapView({ embedded = false, readOnly = false }: MapViewOptions) {
         {!readOnly && <FullscreenControl position={"top-left"} />}
         <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />
-        {!readOnly && <ExportControl position="bottom-left" />}
-        <Layers readOnly={readOnly} />
+        {!readOnly && !embedded && <ExportControl position="bottom-left" />}
+        <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
+        {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
+        {!readOnly && !embedded && <PendingFeaturesGuard />}
+        {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>
   );
 }
 
-function Layers({ readOnly = false }: { readOnly?: boolean }) {
+function Layers({
+  readOnly = false,
+  stayOnPreferredLayer = false,
+}: {
+  readOnly?: boolean;
+  stayOnPreferredLayer?: boolean;
+}) {
   const { state } = useContext(LayerContext);
   const {
     state: { incident },
   } = useContext(IncidentContext);
+  const { drawingMessage } = useContext(MapTimeContext);
+  const [highlightMessage, setHighlightMessage] = useState(true);
+  // The read-only map frames its layer by itself until somebody moves it; the button resumes.
+  const [following, setFollowing] = useState(true);
+  // The ring around a selected feature is an option on every map that reports its selection, and
+  // starts off.
+  const { onSelect } = useContext(MapSelectionContext);
+  const [showRing, setShowRing] = useState(false);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
+  // Features of layers drawn as plain sources can be clicked; the active layer's selection
+  // comes from the draw control.
+  const clickLayerIds = clickableLayerIds(
+    state.layers
+      .filter((l) => l.isVisible && (readOnly || l.layer?.id !== activeLayer))
+      .map((l) => l.layer),
+    createMapStyle({ forDraw: false }).map((s) => s.id ?? ""),
+  );
 
   return (
     <>
-      <div className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1">
-        {!readOnly && <LayerControl />}
+      <div
+        // Collapsed, the buttons stay in the corner; an open panel is lifted above the slider.
+        className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 [&>nav]:mb-[calc(var(--map-timeline-height)-1rem)]!"
+      >
+        {onSelect && !drawingMessage && (
+          <SelectionRingToggle enabled={showRing} onToggle={() => setShowRing((on) => !on)} />
+        )}
+        {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
+        {drawingMessage && (
+          <MessageHighlightToggle
+            enabled={highlightMessage}
+            onToggle={() => setHighlightMessage((v) => !v)}
+          />
+        )}
+        {(!readOnly || stayOnPreferredLayer) && <LayerControl />}
         <StyleController />
       </div>
 
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}
-      {!readOnly && <BabsIconController />}
+      {!readOnly && !drawingMessage?.locked && <BabsIconController />}
 
       {readOnly ? (
-        <ReadOnlyLayers />
+        <ReadOnlyLayers
+          following={following}
+          rotate={!stayOnPreferredLayer}
+          onUserMove={() => setFollowing(false)}
+        />
       ) : (
         <InactiveLayers
           layers={
@@ -176,11 +249,65 @@ function Layers({ readOnly = false }: { readOnly?: boolean }) {
         />
       )}
       {!readOnly && <ActiveWMSLayers />}
+      {drawingMessage && (
+        <MessageHighlight
+          enabled={highlightMessage}
+          renderRemoved={(fc) => <InactiveLayer id="message-removed" featureCollection={fc} />}
+        />
+      )}
+      <FeatureSelectionReporter clickLayerIds={clickLayerIds} showRing={showRing} />
     </>
   );
 }
 
-function ReadOnlyLayers() {
+function SelectionRingToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <button
+        type="button"
+        aria-pressed={enabled}
+        aria-label={t("mapview.selectionRing")}
+        title={t("mapview.selectionRing")}
+        className={clsx("maplibregl-ctrl-icon", enabled && "text-primary!")}
+        onClick={onToggle}
+      >
+        <FontAwesomeIcon icon={faBullseye} size="lg" />
+      </button>
+    </div>
+  );
+}
+
+function FollowControl({ following, onFollow }: { following: boolean; onFollow: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <button
+        type="button"
+        aria-pressed={following}
+        aria-label={t("styleController.autoFrame")}
+        title={t("styleController.autoFrame")}
+        className={clsx("maplibregl-ctrl-icon", following && "text-primary!")}
+        onClick={onFollow}
+      >
+        <FontAwesomeIcon icon={faLocationCrosshairs} size="lg" />
+      </button>
+    </div>
+  );
+}
+
+function ReadOnlyLayers({
+  following,
+  rotate,
+  onUserMove,
+}: {
+  following: boolean;
+  /** Cycle through the layers; off when one layer is the point of the map. */
+  rotate: boolean;
+  onUserMove: () => void;
+}) {
   const { state, dispatch } = useContext(LayerContext);
   const { current: map } = useMap();
   const visibleLayers = useMemo(
@@ -201,8 +328,22 @@ function ReadOnlyLayers() {
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: activeLayer.id } });
   }, [activeLayer, dispatch, state.activeLayer, visibleLayers]);
 
+  // Moves the user makes carry the browser event; the map's own fitBounds does not.
   useEffect(() => {
-    if (visibleLayers.length < 2) return;
+    if (map === undefined) return;
+
+    const onMoveStart = (e: { originalEvent?: unknown }) => {
+      if (e.originalEvent) onUserMove();
+    };
+    map.on("movestart", onMoveStart);
+
+    return () => {
+      map.off("movestart", onMoveStart);
+    };
+  }, [map, onUserMove]);
+
+  useEffect(() => {
+    if (visibleLayers.length < 2 || !following || !rotate) return;
 
     const timer = setInterval(() => {
       dispatch({
@@ -212,10 +353,10 @@ function ReadOnlyLayers() {
     }, READ_ONLY_LAYER_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [dispatch, state.activeLayer, visibleLayers]);
+  }, [dispatch, following, rotate, state.activeLayer, visibleLayers]);
 
   useEffect(() => {
-    if (map === undefined || activeLayer === undefined) return;
+    if (map === undefined || activeLayer === undefined || !following) return;
 
     const featureCollection = layerToFeatureCollection(activeLayer);
     if (featureCollection.features.length === 0) return;
@@ -229,6 +370,7 @@ function ReadOnlyLayers() {
         ],
         {
           animate: true,
+          maxZoom: FIT_MAX_ZOOM,
           padding: { top: 40, bottom: 40, left: 40, right: 40 },
         },
       );
@@ -243,7 +385,7 @@ function ReadOnlyLayers() {
     return () => {
       map.off("load", fit);
     };
-  }, [activeLayer, map]);
+  }, [activeLayer, following, map]);
 
   return (
     <>
@@ -271,14 +413,36 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
   return layers[nextIndex].id;
 }
 
+/** Not closer than this when framing a layer: a lone icon keeps its surroundings. */
+const FIT_MAX_ZOOM = 16;
+
+/** For maps nobody edits live: the operator drawing for a message, and the read-only dashboard map. */
+const SLOW_POLL_INTERVAL_MS = 10_000;
+
 // LayerFetcher polls from the layers and sets the layers from remote
-function LayerFetcher() {
+function LayerFetcher({
+  livePollInterval,
+  preferredLayerKind,
+}: {
+  livePollInterval: number;
+  preferredLayerKind?: Layer["kind"];
+}) {
   const { incidentId } = useParams();
   const { dispatch } = useContext(LayerContext);
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
   const syncedLayers = useRef<Layer[] | undefined>(undefined);
   const syncedIncidentId = useRef<string | undefined>(undefined);
+  const preferredKind = drawingMessage ? "MESSAGE_MAP" : (preferredLayerKind ?? "STANDARD");
 
-  const result = useLayersForIncident(incidentId);
+  // A fixed point in the past does not change while it is looked at, so it is not polled. The
+  // operator's own drawing updates the cache directly; others' arrive on a slow poll.
+  const pollInterval = drawingMessage ? SLOW_POLL_INTERVAL_MS : asOf ? 0 : livePollInterval;
+
+  // A pure history view (no drawing) bypasses the cache: its features at that time would
+  // otherwise overwrite the current geometry of the same normalized entities.
+  const fetchPolicy = asOf && !drawingMessage ? "no-cache" : "cache-and-network";
+
+  const result = useLayersForIncident(incidentId, asOf, { pollInterval, fetchPolicy });
   const remoteLayers = result.status === "ready" ? result.data.layers : undefined;
 
   useEffect(() => {
@@ -292,9 +456,9 @@ function LayerFetcher() {
     syncedLayers.current = remoteLayers;
     dispatch({
       type: "SET_LAYERS",
-      payload: { layers: remoteLayers, viewedIncidentId: incidentId },
+      payload: { layers: remoteLayers, viewedIncidentId: incidentId, preferredKind },
     });
-  }, [remoteLayers, dispatch, incidentId]);
+  }, [remoteLayers, dispatch, incidentId, preferredKind]);
 
   return null;
 }
@@ -385,17 +549,37 @@ function useLiveDrawGeometry(
     : undefined;
 }
 
+/**
+ * Whether the active layer can be drawn on right now. The message map layer is only drawn on
+ * for a message, and a message only draws on it; a map showing the past is for looking, unless
+ * it is the one drawn for a message.
+ */
+function useDrawingAllowed(): boolean {
+  const { state } = useContext(LayerContext);
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const activeLayerKind = state.layers.find((l) => l.layer.id === state.activeLayer)?.layer.kind;
+  const onMessageMap = activeLayerKind === "MESSAGE_MAP";
+  const viewingPast = asOf !== undefined && drawingMessage === undefined;
+
+  return onMessageMap === (drawingMessage !== undefined) && !viewingPast && !drawingMessage?.locked;
+}
+
 function ActiveLayer() {
   const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
   const { state } = useContext(LayerContext);
+  const { drawingMessage } = useContext(MapTimeContext);
   const { incidentId } = useParams();
   const activeLayer = useMemo(
     () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
     [state.layers, state.activeLayer],
   );
   const isOwnLayer = activeLayer?.sourceIncidentId === incidentId;
-  const featureCollection = useMemo(() => layerToFeatureCollection(activeLayer), [activeLayer]);
+  const drawingAllowed = useDrawingAllowed();
+  const featureCollection = useMemo(
+    () => withPendingFeatures(activeLayer, state.pendingFeatures),
+    [activeLayer, state.pendingFeatures],
+  );
 
   // Enrichment follows the geometry under the cursor, not the last saved one, so the flow
   // arrow and the slide arrow track a vertex as it is dragged rather than jumping once the
@@ -414,7 +598,8 @@ function ActiveLayer() {
   }, [featureCollection, liveGeometry, state.selectedFeature]);
 
   useEffect(() => {
-    if (fittedLayer.current === state.activeLayer || !map?.loaded) {
+    // Drawing for a message frames what the message did instead (see MessageHighlight).
+    if (drawingMessage !== undefined || fittedLayer.current === state.activeLayer || !map?.loaded) {
       return;
     }
 
@@ -427,18 +612,21 @@ function ActiveLayer() {
         ],
         {
           animate: true,
+          maxZoom: FIT_MAX_ZOOM,
           padding: { top: 30, bottom: 30, left: 30, right: 30 },
         },
       );
       fittedLayer.current = state.activeLayer;
     }
-  }, [featureCollection, map, state.activeLayer]);
+  }, [drawingMessage, featureCollection, map, state.activeLayer]);
 
   if (state.activeLayer === undefined) {
     return null;
   }
 
-  if (!isOwnLayer) {
+  // Only the draw control paints the active layer's features, so a layer that cannot be
+  // drawn on right now is shown like any other passive layer instead of vanishing.
+  if (!isOwnLayer || !drawingAllowed) {
     return <InactiveLayer id={state.activeLayer} featureCollection={featureCollection} />;
   }
 
@@ -457,6 +645,18 @@ function Draw() {
   } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const { onDrawingChange } = useContext(MapSelectionContext);
+  // Changes for a message take effect at the message's time (the server derives it from the id).
+  // Free drawing takes effect now; a new feature can be given a time when it is saved.
+  const change = useMemo(
+    () => (drawingMessage ? { messageId: drawingMessage.id } : undefined),
+    [drawingMessage],
+  );
+
+  // Features created in this session for a message. Deleting one of them leaves nothing to show
+  // as a ghost, and the feature history may not list them yet to say so.
+  const createdHere = useRef(new Set<string>());
 
   const [addFeature] = useAddFeature();
   const [modifyFeature] = useModifyFeature();
@@ -488,17 +688,38 @@ function Draw() {
       for (const f of createdFeatures) {
         const feature = cleanFeature(f);
 
-        if (!validateUUID(f.id)) {
-          feature.id = uuidv3(f.id?.toString() || "", uuidv3.URL);
+        // Free drawing: the feature stays local until it is saved (with the time it should
+        // take effect at). It remains in the draw control, which keeps it selected, so the
+        // symbol picker and the save popup open on it.
+        if (drawingMessage === undefined && f.id !== undefined) {
+          dispatch({
+            type: "ADD_PENDING_FEATURE",
+            payload: {
+              feature: {
+                id: f.id.toString(),
+                layerId: layer,
+                geometry: feature.geometry,
+                properties: feature.properties,
+              },
+            },
+          });
+          dispatch({ type: "SELECT_FEATURE", payload: { id: f.id.toString() } });
+
+          continue;
         }
 
+        // Drawing for a message: created at once, at the message's time.
+        onDrawingChange?.();
         void addFeature({
           layerId: layer,
           geometry: feature.geometry,
-          id: String(feature.id ?? ""),
+          clientKey: String(f.id ?? ""),
           properties: feature.properties,
           incidentId: incidentId ?? "",
+          change,
+          asOf,
         }).then(({ featureId }) => {
+          createdHere.current.add(featureId);
           dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
         });
 
@@ -507,7 +728,7 @@ function Draw() {
         }
       }
     },
-    [addFeature, dispatch, incidentId, state.draw],
+    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, onDrawingChange, state.draw],
   );
 
   const onUpdate = useCallback(
@@ -517,6 +738,23 @@ function Draw() {
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
+
+        // Not saved yet: the edit only changes the local copy.
+        if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
+          dispatch({
+            type: "UPDATE_PENDING_FEATURE",
+            payload: {
+              id: String(feature.id),
+              geometry: isPropertyOnly ? undefined : feature.geometry,
+              properties: isGeometryOnly ? undefined : feature.properties,
+            },
+          });
+
+          continue;
+        }
+
+        if (drawingMessage) onDrawingChange?.();
+
         void modifyFeature({
           id: String(feature.id ?? ""),
           geometry: isPropertyOnly ? undefined : feature.geometry,
@@ -524,10 +762,21 @@ function Draw() {
           currentGeometry: feature.geometry,
           currentProperties: feature.properties,
           incidentId: incidentId ?? "",
+          change: e.effectiveAt ? { effectiveAt: e.effectiveAt } : change,
+          asOf,
         });
       }
     },
-    [incidentId, modifyFeature],
+    [
+      asOf,
+      change,
+      dispatch,
+      drawingMessage,
+      incidentId,
+      modifyFeature,
+      onDrawingChange,
+      state.pendingFeatures,
+    ],
   );
 
   const onDelete = useCallback(
@@ -535,11 +784,54 @@ function Draw() {
       const deletedFeatures: Feature[] = e.features;
       for (const f of deletedFeatures) {
         const feature = cleanFeature(f);
-        void deleteFeature({ id: String(feature.id ?? ""), incidentId: incidentId ?? "" });
+
+        // Not saved yet: it never existed on the server, so dropping the local copy is all.
+        if (isPendingFeature(state.pendingFeatures, feature.id?.toString())) {
+          dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: String(feature.id) } });
+
+          continue;
+        }
+
+        if (drawingMessage) onDrawingChange?.();
+
+        const removedId = String(feature.id ?? "");
+        const placedThisSession = createdHere.current.delete(removedId);
+        if (drawingMessage && !placedThisSession) {
+          // Shown as a ghost at once; the feature history confirms it a moment later.
+          dispatch({
+            type: "ADD_REMOVED_FEATURE",
+            payload: {
+              feature: {
+                id: removedId,
+                messageId: drawingMessage.id,
+                geometry: feature.geometry,
+                properties: feature.properties,
+              },
+            },
+          });
+        }
+
+        void deleteFeature({
+          id: removedId,
+          incidentId: incidentId ?? "",
+          change,
+          asOf,
+        }).catch(() => {
+          dispatch({ type: "CLEAR_REMOVED_FEATURE", payload: { id: removedId } });
+        });
       }
       dispatch({ type: "DESELECT_FEATURE", payload: null });
     },
-    [dispatch, deleteFeature, incidentId],
+    [
+      asOf,
+      change,
+      dispatch,
+      deleteFeature,
+      drawingMessage,
+      incidentId,
+      onDrawingChange,
+      state.pendingFeatures,
+    ],
   );
 
   const onCombine = useCallback(
@@ -554,8 +846,9 @@ function Draw() {
   // this is the effect which syncs the drawings
   useEffect(() => {
     if (state.draw && map?.loaded) {
-      const featureCollection: FeatureCollection = layerToFeatureCollection(
+      const featureCollection: FeatureCollection = withPendingFeatures(
         state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
+        state.pendingFeatures,
       );
 
       safeDrawInvoke(state.draw, (d) => {
@@ -570,7 +863,14 @@ function Draw() {
         }
       });
     }
-  }, [state.draw, map?.loaded, state.layers, state.activeLayer, state.selectedFeature]);
+  }, [
+    state.draw,
+    map?.loaded,
+    state.layers,
+    state.activeLayer,
+    state.selectedFeature,
+    state.pendingFeatures,
+  ]);
 
   // this is the effect which syncs the drawings
   useEffect(() => {
@@ -631,7 +931,7 @@ function Draw() {
         uncombine_features: false,
       }}
       boxSelect={false}
-      clickBuffer={10}
+      clickBuffer={16}
       defaultMode="simple_select"
       modes={modes}
       userProperties={true}
@@ -666,13 +966,62 @@ function InactiveLayer(props: { featureCollection: FeatureCollection; id: string
   );
 }
 
-function MapWithProvder(options: MapViewOptions) {
+function MapWithProvder({
+  asOf,
+  drawingMessage,
+  onFeatureSelect,
+  deselectToken,
+  onDrawingChange,
+  onTimeChange,
+  ...options
+}: MapViewOptions) {
+  // A map without a fixed time can be moved along the timeline by its own slider.
+  const [timelineAsOf, setTimelineAsOf] = useState<Date | undefined>();
+  const moveOnTimeline = useCallback(
+    (next: Date | undefined) => {
+      setTimelineAsOf(next);
+      onTimeChange?.(next);
+    },
+    [onTimeChange],
+  );
+  const hasTimeline = asOf === undefined && drawingMessage === undefined;
+
+  const asOfTime = (asOf ?? timelineAsOf)?.getTime();
+  const messageId = drawingMessage?.id;
+  const messageTime = drawingMessage?.time.getTime();
+  const messageLocked = drawingMessage?.locked;
+  // Memoized on the values, so a parent re-render with equal dates does not refetch the layers.
+  const mapTime = useMemo<MapTime>(
+    () => ({
+      asOf: asOfTime === undefined ? undefined : new Date(asOfTime),
+      setAsOf: hasTimeline ? moveOnTimeline : undefined,
+      drawingMessage:
+        messageId === undefined || messageTime === undefined
+          ? undefined
+          : { id: messageId, time: new Date(messageTime), locked: messageLocked },
+    }),
+    [asOfTime, hasTimeline, moveOnTimeline, messageId, messageTime, messageLocked],
+  );
+
+  const selection = useMemo(
+    () => ({ onSelect: onFeatureSelect, deselectToken, onDrawingChange }),
+    [onFeatureSelect, deselectToken, onDrawingChange],
+  );
+
   return (
     <MapStyleProvider>
       <MapProvider>
         <LayersProvider>
-          <MapView {...options} />
-          <LayerFetcher />
+          <MapTimeContext.Provider value={mapTime}>
+            <MapSelectionContext.Provider value={selection}>
+              <MapView {...options} />
+              {/* A read-only map (the dashboard) only displays; it does not need the editing cadence. */}
+              <LayerFetcher
+                preferredLayerKind={options.preferredLayerKind}
+                livePollInterval={options.readOnly ? SLOW_POLL_INTERVAL_MS : LIVE_POLL_INTERVAL_MS}
+              />
+            </MapSelectionContext.Provider>
+          </MapTimeContext.Provider>
         </LayersProvider>
       </MapProvider>
     </MapStyleProvider>
@@ -685,6 +1034,8 @@ export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
   /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
+  /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
+  effectiveAt?: Date;
 }
 
 export interface CombineFeatureEvent {

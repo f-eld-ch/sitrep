@@ -1,8 +1,9 @@
 import { useQuery } from "@apollo/client/react";
+import { useState } from "react";
 import { apiErrorFromApolloError } from "../errors";
 import { isMutationRecent } from "../mutationActivity";
 import type { QueryResult } from "../result";
-import { GET_INCIDENT_RESOURCES } from "./documents";
+import { GET_INCIDENT_RESOURCES, GET_INCIDENT_RESOURCES_AS_OF } from "./documents";
 import { toResource } from "./mapper";
 import type { Resource } from "./mapper";
 
@@ -46,20 +47,54 @@ export interface ChildIncidentCasualties {
   casualties: SchadenplatzWithResources["casualties"];
 }
 
+/**
+ * Resources and casualties of an incident. With `asOf` they are the state at that point in time:
+ * a past view does not change, so it is not polled, and it bypasses the cache because its
+ * resources would otherwise overwrite the current state of the same (normalized) entities.
+ */
 export function useIncidentResources(
   incidentId: string | undefined,
+  asOf?: Date,
 ): QueryResult<IncidentResourcesData> {
-  const { loading, error, data, refetch } = useQuery(GET_INCIDENT_RESOURCES, {
+  const live = useQuery(GET_INCIDENT_RESOURCES, {
     variables: { incidentId: incidentId ?? "" },
-    skip: !incidentId,
+    skip: !incidentId || asOf !== undefined,
     fetchPolicy: "cache-and-network",
     pollInterval: 5000,
-    skipPollAttempt: isMutationRecent,
+    skipPollAttempt: () => document.hidden || isMutationRecent(),
   });
+  const past = useQuery(GET_INCIDENT_RESOURCES_AS_OF, {
+    variables: { incidentId: incidentId ?? "", asOf: asOf?.toISOString() ?? "" },
+    skip: !incidentId || asOf === undefined,
+    fetchPolicy: "no-cache",
+  });
+
+  const { loading, error, data, refetch } = asOf === undefined ? live : past;
+
+  // Moving to another point in time starts a new query without data. Rather than falling back to
+  // a spinner, keep showing what was there until the new data arrives (see isRefreshing).
+  const [lastReady, setLastReady] = useState<
+    { incidentId: string; wire: object; data: IncidentResourcesData } | undefined
+  >();
 
   const refresh = () => void refetch();
 
+  const wire = data?.incident;
+  if (incidentId && wire && lastReady?.wire !== wire) {
+    setLastReady({ incidentId, wire, data: toIncidentResourcesData(wire) });
+  }
+
   if (!incidentId || (loading && !data)) {
+    if (incidentId && lastReady?.incidentId === incidentId) {
+      return {
+        status: "ready",
+        data: lastReady.data,
+        error: undefined,
+        isRefreshing: true,
+        refresh,
+      };
+    }
+
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
   }
 
@@ -86,20 +121,34 @@ export function useIncidentResources(
 
   return {
     status: "ready",
-    data: {
-      incidentId: inc.id,
-      incidentName: inc.name,
-      childIncidents: inc.childIncidents.map((child) => ({
-        id: child.id,
-        name: child.name,
-        casualties: sumCasualties(child.schadenplaetze),
-      })),
-      resources: inc.resources.map(toResource),
-      schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),
-    },
+    data: toIncidentResourcesData(inc),
     error: undefined,
     isRefreshing: loading,
     refresh,
+  };
+}
+
+function toIncidentResourcesData(inc: {
+  id: string;
+  name: string;
+  childIncidents: Array<{
+    id: string;
+    name: string;
+    schadenplaetze: Parameters<typeof sumCasualties>[0];
+  }>;
+  resources: Parameters<typeof toResource>[0][];
+  schadenplaetze: Parameters<typeof toSchadenplatzWithResources>[0][];
+}): IncidentResourcesData {
+  return {
+    incidentId: inc.id,
+    incidentName: inc.name,
+    childIncidents: inc.childIncidents.map((child) => ({
+      id: child.id,
+      name: child.name,
+      casualties: sumCasualties(child.schadenplaetze),
+    })),
+    resources: inc.resources.map(toResource),
+    schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),
   };
 }
 
@@ -111,7 +160,8 @@ function toSchadenplatzWithResources(sp: {
   isMerged: boolean;
   mergedInto: string | null;
   casualties: SchadenplatzWithResources["casualties"];
-  resources: Parameters<typeof toResource>[0][];
+  /** Absent when the query skipped it (past views). */
+  resources?: Parameters<typeof toResource>[0][];
 }): SchadenplatzWithResources {
   return {
     id: sp.id,
@@ -121,7 +171,7 @@ function toSchadenplatzWithResources(sp: {
     isMerged: sp.isMerged,
     mergedInto: sp.mergedInto,
     casualties: sp.casualties,
-    resources: sp.resources.map(toResource),
+    resources: (sp.resources ?? []).map(toResource),
   };
 }
 

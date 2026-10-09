@@ -77,6 +77,7 @@ import { buildMessageList } from "./listUtils";
 import { FilterableMessageStack } from "./FilterableMessageStack";
 import { TriageCanvas } from "./TriageCanvas";
 import { IncidentContext } from "utils";
+import { divisionLongLabel } from "utils/divisionLabel";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 
@@ -231,7 +232,7 @@ function TriageSummary(props: {
                     key={d.id}
                     className="rounded bg-primary px-2.5 py-0.5 text-xs font-semibold text-white"
                   >
-                    {d.description || d.name}
+                    {divisionLongLabel(d, t)}
                   </span>
                 ))}
               </div>

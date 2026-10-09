@@ -96,15 +96,18 @@ type AccessService interface {
 // CreateIncidentResult is returned from CreateIncident so resolvers can build
 // the mutation response from aggregate state without a projection read.
 type CreateIncidentResult struct {
-	IncidentID   shared.IncidentID
-	ParentID     *shared.IncidentID
-	LayerIDs     []shared.LayerID
-	Name         string
-	Location     *incident.LocationData
-	Divisions    []incident.DivisionData
-	CreatedAt    time.Time
-	AccessMode   access.IncidentMode
-	AccessGrants []access.Grant
+	IncidentID shared.IncidentID
+	ParentID   *shared.IncidentID
+	// LayerIDs are the layers requested by the caller (or the default layer).
+	LayerIDs []shared.LayerID
+	// MessageMapLayerID is the system-managed Nachrichtenkarte layer.
+	MessageMapLayerID shared.LayerID
+	Name              string
+	Location          *incident.LocationData
+	Divisions         []incident.DivisionData
+	CreatedAt         time.Time
+	AccessMode        access.IncidentMode
+	AccessGrants      []access.Grant
 }
 
 // IncidentState is returned from incident mutation services so resolvers can
@@ -164,7 +167,15 @@ type MessageState struct {
 	DivisionIDs       []shared.DivisionID
 	LinkedResourceIDs []shared.ResourceID
 	Attachments       []AttachmentState
+	Acknowledgements  []AcknowledgementState
 	AuthorSub         string
+}
+
+// AcknowledgementState says that a division has dealt with a message.
+type AcknowledgementState struct {
+	DivisionID shared.DivisionID
+	At         time.Time
+	By         string
 }
 
 // FeatureState is returned from ModifyFeature so the resolver can build the
@@ -172,8 +183,21 @@ type MessageState struct {
 // a projection read (which would race the asynchronous projector).
 type FeatureState struct {
 	ID         shared.FeatureID
+	IncidentID shared.IncidentID
+	LayerID    shared.LayerID
 	Geometry   map[string]any
 	Properties map[string]any
+	// MessageIDs are all messages that touched the feature, in first-linked order.
+	MessageIDs []shared.MessageID
+}
+
+// FeatureChange says when a feature change takes effect on the map timeline.
+// Changes on the message map layer must carry a MessageID and take effect at that
+// message's time; changes on other layers may carry an explicit EffectiveAt (never in
+// the future). With neither, the change takes effect now.
+type FeatureChange struct {
+	MessageID   *shared.MessageID
+	EffectiveAt *time.Time
 }
 
 // IncidentService is the driving port for incident lifecycle commands.
@@ -259,6 +283,24 @@ type MessageService interface {
 		actor identity.Actor,
 	) (MessageState, error)
 
+	// AcknowledgeMessage records that a division has dealt with the message (for the
+	// Nachrichtenkarte division: the message has been drawn). The message must currently
+	// be triaged to the division. Acknowledging again is a no-op.
+	AcknowledgeMessage(
+		ctx context.Context,
+		id shared.MessageID,
+		divisionID shared.DivisionID,
+		actor identity.Actor,
+	) (MessageState, error)
+
+	// RevokeMessageAcknowledgement withdraws a division's acknowledgement.
+	RevokeMessageAcknowledgement(
+		ctx context.Context,
+		id shared.MessageID,
+		divisionID shared.DivisionID,
+		actor identity.Actor,
+	) (MessageState, error)
+
 	DeleteMessage(ctx context.Context, id shared.MessageID, actor identity.Actor) error
 
 	// AttachFile streams a file onto an existing message.
@@ -303,14 +345,19 @@ type LayerService interface {
 
 // FeatureService is the driving port for feature (map object) commands.
 type FeatureService interface {
+	// PlaceFeature places a feature. The feature ID is derived server-side from the
+	// incident and the client's draw key, which makes a re-sent create idempotent: the
+	// same key with the same payload returns the existing state, a different payload
+	// returns ErrConflict.
 	PlaceFeature(
 		ctx context.Context,
-		id shared.FeatureID,
 		incidentID shared.IncidentID,
 		layerID shared.LayerID,
+		clientKey string,
 		geometry, properties map[string]any,
+		change FeatureChange,
 		actor identity.Actor,
-	) error
+	) (FeatureState, error)
 
 	// ModifyFeature updates geometry and/or properties in a single aggregate load,
 	// avoiding the optimistic concurrency conflict that would occur from two parallel saves.
@@ -319,9 +366,27 @@ type FeatureService interface {
 		ctx context.Context,
 		id shared.FeatureID,
 		geometry, properties map[string]any,
+		change FeatureChange,
 		actor identity.Actor,
 	) (FeatureState, error)
-	RemoveFeature(ctx context.Context, id shared.FeatureID, actor identity.Actor) error
+	RemoveFeature(ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor) error
+	// RestoreFeature brings a removed feature back as it last was. The restore takes effect at
+	// or after the removal; at the removal's own time (the same message) it cancels it.
+	RestoreFeature(
+		ctx context.Context, id shared.FeatureID, change FeatureChange, actor identity.Actor,
+	) (FeatureState, error)
+}
+
+// TimelineService is the driving port for reading how an incident looked at a past time.
+// Both methods enforce read access through the read models they start from.
+type TimelineService interface {
+	// ResourcesAsOf returns the resources of an incident and its direct children (relieved
+	// included) as they were at asOf. Resources that did not exist yet are left out.
+	ResourcesAsOf(ctx context.Context, incidentID shared.IncidentID, asOf time.Time) ([]ResourceState, error)
+
+	// SchadenplaetzeAsOf returns the incident's Schadenplätze as they were at asOf, with the
+	// casualty totals recorded up to then and merged ones flagged as of that time.
+	SchadenplaetzeAsOf(ctx context.Context, incidentID shared.IncidentID, asOf time.Time) ([]SchadenplatzState, error)
 }
 
 // SchadenplatzState carries the command result for Schadenplatz write operations.

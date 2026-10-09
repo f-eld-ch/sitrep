@@ -13,7 +13,10 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { useAddLayer } from "api";
 import { Button } from "components/ui";
+import type { Layer } from "types/layer";
+import { layerLabel } from "utils/divisionLabel";
 import { LayerContext, type DrawingLayerState } from "../LayerContext";
+import { MapTimeContext } from "../MapTimeContext";
 
 interface LayerGroup {
   sourceIncidentId: string;
@@ -58,9 +61,15 @@ const ActiveLayersControl: React.FC = () => {
   const [addLayer] = useAddLayer();
   const { incidentId } = useParams();
   const { t } = useTranslation();
+  const { drawingMessage } = useContext(MapTimeContext);
 
-  const handleLayerClick = (layerId: string) => {
-    dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId } });
+  // The message map layer is only drawn on for a message, and a message only draws on it.
+  const canActivate = (layer: Layer) =>
+    (layer.kind === "MESSAGE_MAP") === (drawingMessage !== undefined);
+
+  const handleLayerClick = (layer: Layer) => {
+    if (!canActivate(layer)) return;
+    dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: layer.id } });
   };
 
   const handleAddLayer = (name: string) => {
@@ -130,7 +139,7 @@ const ActiveLayersControl: React.FC = () => {
               <div
                 key={s.layer.id}
                 className={`flex cursor-pointer items-center justify-between border-b border-gray-200 px-3 py-2 text-xs transition-colors last:border-b-0 hover:bg-gray-100 ${state.activeLayer === s.layer.id ? "bg-primary/10 hover:bg-primary/20" : ""}`}
-                onClick={() => handleLayerClick(s.layer.id)}
+                onClick={() => handleLayerClick(s.layer)}
               >
                 <div
                   className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}
@@ -147,7 +156,7 @@ const ActiveLayersControl: React.FC = () => {
                       size="lg"
                     />
                   </span>
-                  {s.layer.name}
+                  {layerLabel(s.layer, t)}
                 </div>
                 {s.layer.id !== state.activeLayer && (
                   <div className="flex shrink-0 items-center gap-2">
@@ -161,13 +170,13 @@ const ActiveLayersControl: React.FC = () => {
                     >
                       <FontAwesomeIcon icon={s.isVisible ? faEye : faEyeSlash} />
                     </button>
-                    {!isInherited && (
+                    {!isInherited && canActivate(s.layer) && (
                       <button
                         className="leading-none transition-colors hover:text-primary"
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleLayerClick(s.layer.id);
+                          handleLayerClick(s.layer);
                         }}
                       >
                         <FontAwesomeIcon icon={faEdit} />

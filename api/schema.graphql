@@ -44,6 +44,28 @@ enum TriageStatus {
   RESET
 }
 
+"""Classifies system-managed divisions. Clients render a translated label for non-STANDARD kinds."""
+enum DivisionKind {
+  STANDARD
+  """The Nachrichtenkarte. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
+"""Classifies system-managed layers. Clients render a translated label for non-STANDARD kinds."""
+enum LayerKind {
+  STANDARD
+  """The Nachrichtenkarte layer. Exactly one per incident, created and protected by the backend."""
+  MESSAGE_MAP
+}
+
+enum FeatureChangeKind {
+  PLACED
+  MOVED
+  RESTYLED
+  REMOVED
+  RESTORED
+}
+
 enum PriorityStatus {
   NORMAL
   HIGH
@@ -135,6 +157,7 @@ type Division {
   id: ID!
   name: String!
   description: String!
+  kind: DivisionKind!
 }
 
 """A file attached to a message."""
@@ -276,6 +299,13 @@ type Resource {
   deploymentHistory: [ResourceDeploymentPeriod!]!
 }
 
+"""A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn."""
+type DivisionAcknowledgement {
+  division: Division!
+  acknowledgedAt: DateTime!
+  acknowledgedBy: String!
+}
+
 type Message {
   id: ID!
   """Sequential number assigned by the server, ordered by recording time."""
@@ -300,6 +330,11 @@ type Message {
   schadenplatzCasualties: [SchadenplatzCasualtyEntry!]!
   """Resource IDs linked to this message during triage."""
   linkedResourceIds: [ID!]!
+  """
+  Divisions that have dealt with this message. A division can only appear here while the message
+  is triaged to it; changed message content or time clears all acknowledgements.
+  """
+  acknowledgements: [DivisionAcknowledgement!]!
   """OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced."""
   author: String
 }
@@ -328,10 +363,18 @@ type Incident {
   canManageAccess: Boolean!
   """Access mode of this incident."""
   accessMode: IncidentAccessMode!
-  """All non-merged Schadenplätze for this incident."""
-  schadenplaetze: [Schadenplatz!]!
-  """All resources for this incident, including resources owned by direct child incidents."""
-  resources: [Resource!]!
+  """
+  All non-merged Schadenplätze for this incident. With asOf, the Schadenplätze as they were at that
+  point in time: casualty totals recorded up to then, and merged ones flagged as of then (so
+  clients must skip isMerged ones when summing).
+  """
+  schadenplaetze(asOf: DateTime): [Schadenplatz!]!
+  """
+  All resources for this incident, including resources owned by direct child incidents.
+  With asOf, the resources as they were at that point in time (status, personnel, assignment);
+  resources that did not exist yet are left out.
+  """
+  resources(asOf: DateTime): [Resource!]!
 }
 
 type Feature {
@@ -340,12 +383,32 @@ type Feature {
   properties: JSONObject
 }
 
+"""
+One change to a feature on the map timeline. effectiveAt is when the change takes effect
+(the connected message's time on the Nachrichtenkarte); recordedAt is when it was drawn.
+"""
+type FeatureChange {
+  featureId: ID!
+  layerId: ID!
+  change: FeatureChangeKind!
+  effectiveAt: DateTime!
+  recordedAt: DateTime!
+  """The message this change was drawn for; null for free drawing on other layers."""
+  messageId: ID
+  """Geometry after the change; set for PLACED and MOVED."""
+  geometry: Geometry
+  """Properties after the change; set for PLACED and RESTYLED."""
+  properties: JSONObject
+  actor: String!
+}
+
 type Layer {
   id: ID!
   """Incident that owns this layer. Differs from the viewed incident for inherited child layers."""
   sourceIncidentId: ID!
   sourceIncidentName: String!
   name: String!
+  kind: LayerKind!
   """Revision counter; increments on every feature change. Use for change detection."""
   revision: Int!
   features: [Feature!]!
@@ -363,8 +426,27 @@ type Query {
   """Single message by ID; used by the triage modal."""
   message(id: ID!): Message
 
-  """Visible layers for an incident: its own layers plus direct child incident layers."""
-  layersForIncident(incidentId: ID!): [Layer!]!
+  """
+  Visible layers for an incident: its own layers plus direct child incident layers.
+  With asOf, each layer's features are the state of the map at that point on the incident timeline
+  (changes that take effect at or before asOf, ordered by effective time); without it, the current state.
+  """
+  layersForIncident(incidentId: ID!, asOf: DateTime): [Layer!]!
+
+  """
+  Change history of all features on the visible layers (see layersForIncident), ordered by
+  effective time. Use it to render the map as of any point on the incident timeline.
+  """
+  featureChanges(incidentId: ID!): [FeatureChange!]!
+
+  """
+  When the features on the incident's layers changed (the effective times of featureChanges,
+  each once, oldest first): what a timeline needs for its ticks, without any geometry.
+  """
+  featureChangeTimes(incidentId: ID!): [DateTime!]!
+
+  """Messages connected to a feature's changes, ordered by message time."""
+  featureMessages(featureId: ID!): [Message!]!
 
   incidentAccess(incidentId: ID!): [IncidentAccessGrant!]!
   incidentAccessMode(incidentId: ID!): IncidentAccessMode!
@@ -385,6 +467,17 @@ type Query {
 }
 
 # ─── Mutation inputs ──────────────────────────────────────────────────────────
+
+"""
+When a feature change takes effect on the map timeline.
+On the message map layer, messageId is required and the change takes effect at that message's
+time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+without it the change takes effect now.
+"""
+input FeatureChangeInput {
+  messageId: ID
+  effectiveAt: DateTime
+}
 
 input LayerInput {
   name: String!
@@ -556,6 +649,15 @@ type Mutation {
   """
   triageMessage(id: ID!, input: TriageMessageInput!): Message!
 
+  """
+  Record that a division has dealt with the message (Nachrichtenkarte: the message has been drawn).
+  The message must currently be triaged to the division. Idempotent.
+  """
+  acknowledgeMessage(id: ID!, divisionId: ID!): Message!
+
+  """Withdraw a division's acknowledgement so the message needs attention again."""
+  revokeMessageAcknowledgement(id: ID!, divisionId: ID!): Message!
+
   deleteMessage(id: ID!): ID!
 
   removeAttachment(messageId: ID!, attachmentId: ID!): ID!
@@ -624,17 +726,33 @@ type Mutation {
 
   """
   Add a GeoJSON feature to a layer.
-  id is client-generated (UUID) for optimistic map updates.
+  clientKey is a client-chosen identifier (e.g. the draw id) of 1-128 characters. The server
+  derives the feature ID from the incident and the key and returns it. Re-sending the same
+  key with the same payload is idempotent; the same key with a different payload fails with CONFLICT.
   incidentId is required for event-stream routing (Feature is its own aggregate).
   """
-  addFeature(incidentId: ID!, layerId: ID!, id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  addFeature(
+    incidentId: ID!
+    layerId: ID!
+    clientKey: String!
+    geometry: Geometry
+    properties: JSONObject
+    change: FeatureChangeInput
+  ): Feature!
 
   """
   Update geometry and/or properties of a feature in a single operation.
   Supplying both in one call avoids the optimistic concurrency conflict from two parallel saves.
   """
-  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject): Feature!
+  modifyFeature(id: ID!, geometry: Geometry, properties: JSONObject, change: FeatureChangeInput): Feature!
 
   """Permanently remove a feature."""
-  deleteFeature(id: ID!): ID!
+  deleteFeature(id: ID!, change: FeatureChangeInput): ID!
+
+  """
+  Bring a removed feature back as it last was. The restore takes effect at or after the
+  removal: at the removal's own time (the same message) it cancels it, later it leaves the
+  feature gone in between.
+  """
+  restoreFeature(id: ID!, change: FeatureChangeInput): Feature!
 }

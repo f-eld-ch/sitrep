@@ -8,6 +8,7 @@ import (
 	"context"
 	"log/slog"
 	"sort"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -119,6 +120,7 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 			ID:          div.ID,
 			Name:        div.Name,
 			Description: div.Description,
+			Kind:        div.Kind,
 			RemovedAt:   div.RemovedAt,
 		})
 	}
@@ -228,6 +230,12 @@ func toMessageRM(row *projection.MessageRow) *outbound.MessageRM {
 		DivisionIDs:       row.DivisionIDs,
 		LinkedResourceIDs: row.LinkedResourceIDs,
 	}
+
+	for _, a := range row.Acknowledgements {
+		rm.Acknowledgements = append(rm.Acknowledgements,
+			outbound.AcknowledgementRM{DivisionID: a.DivisionID, At: a.At, By: a.By})
+	}
+
 	if row.AuthorSub != nil {
 		rm.AuthorSub = *row.AuthorSub
 	}
@@ -336,6 +344,7 @@ func (q *Queries) layerRowsToRM(rows []*projection.LayerRow, viewedIncidentID *u
 			SourceIncidentID:   row.IncidentID,
 			SourceIncidentName: sourceName,
 			Name:               row.Name,
+			Kind:               row.Kind,
 			GeoJSON:            row.GeoJSON(),
 			Revision:           row.Revision,
 		})
@@ -379,6 +388,17 @@ func (q *Queries) GetSchadenplatz(_ context.Context, id uuid.UUID) (*outbound.Sc
 
 func (q *Queries) ListSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([]*outbound.SchadenplatzRM, error) {
 	rows := q.schadenplatz.ForIncident(incidentID)
+
+	out := make([]*outbound.SchadenplatzRM, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, spRowToRM(row))
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListAllSchadenplaetze(_ context.Context, incidentID uuid.UUID) ([]*outbound.SchadenplatzRM, error) {
+	rows := q.schadenplatz.AllForIncident(incidentID)
 
 	out := make([]*outbound.SchadenplatzRM, 0, len(rows))
 	for _, row := range rows {
@@ -538,4 +558,70 @@ func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
 		CreatedAt:  row.CreatedAt,
 		UpdatedAt:  row.UpdatedAt,
 	}
+}
+
+func (q *Queries) ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error) {
+	changes, err := q.ListFeatureChanges(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []time.Time
+
+	for _, c := range changes { // already ordered by effective time
+		if len(out) == 0 || !out[len(out)-1].Equal(c.EffectiveAt) {
+			out = append(out, c.EffectiveAt)
+		}
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {
+	slog.DebugContext(ctx, "listing feature changes", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
+	visible := []uuid.UUID{incidentID}
+
+	for _, incidentRow := range q.incidents.All() {
+		if !incidentRow.IsDeleted && incidentRow.ParentID != nil && *incidentRow.ParentID == incidentID &&
+			q.canRead(ctx, shared.IncidentID(incidentRow.ID)) {
+			visible = append(visible, incidentRow.ID)
+		}
+	}
+
+	rows := q.layers.ChangesForIncidents(visible...)
+	out := make([]*outbound.FeatureChangeRM, len(rows))
+
+	for i, r := range rows {
+		out[i] = &outbound.FeatureChangeRM{
+			FeatureID: r.FeatureID, Version: r.Version, IncidentID: r.IncidentID, LayerID: r.LayerID,
+			Change: r.Kind, EffectiveAt: r.EffectiveAt, RecordedAt: r.RecordedAt, MessageID: r.MessageID,
+			Geometry: r.Geometry, Properties: r.Properties, Actor: r.Actor,
+		}
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing feature messages", slog.String("feature_id", featureID.String()))
+
+	incidentID, ok := q.layers.IncidentIDForFeature(featureID)
+	if !ok || !q.canRead(ctx, shared.IncidentID(incidentID)) {
+		return nil, shared.ErrNotFound
+	}
+
+	var out []*outbound.MessageRM
+
+	for _, id := range q.layers.MessageIDsForFeature(featureID) {
+		if row := q.messages.Get(id); row != nil {
+			out = append(out, toMessageRM(row))
+		}
+	}
+
+	return out, nil
 }

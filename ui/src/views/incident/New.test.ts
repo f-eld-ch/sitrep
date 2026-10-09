@@ -73,20 +73,43 @@ describe("canEditParentIncident", () => {
 describe("initializeDivision", () => {
   it("keeps existing valid division fields", () => {
     expect(
-      initializeDivision({ id: "division-1", name: "Ops", description: "Operations" }, 0),
-    ).toEqual({ id: "division-1", name: "Ops", description: "Operations" });
+      initializeDivision(
+        { id: "division-1", name: "Ops", description: "Operations", kind: "STANDARD" },
+        0,
+      ),
+    ).toEqual({ id: "division-1", name: "Ops", description: "Operations", kind: "STANDARD" });
   });
 
   it("fills missing legacy division fields with stable defaults", () => {
-    expect(initializeDivision({ id: "division-1", name: " ", description: "" }, 1)).toEqual({
+    expect(
+      initializeDivision({ id: "division-1", name: " ", description: "", kind: "STANDARD" }, 1),
+    ).toEqual({
       id: "division-1",
       name: "Division 2",
       description: "Division 2",
+      kind: "STANDARD",
     });
   });
 });
 
 describe("initialDivisions", () => {
+  it("does not list the backend-managed Nachrichtenkarte in the creation defaults", () => {
+    const names = initialDivisions(undefined, (key) => key).map((d) => d.name);
+    expect(names).not.toContain("divisionsNames.Karte.name");
+    expect(names).toEqual(["divisionsNames.CLage.name", "divisionsNames.SC.name"]);
+  });
+
+  it("hides system divisions when editing an existing incident", () => {
+    const incident = {
+      ...baseIncident,
+      divisions: [
+        { id: "m", name: "Karte", description: "Nachrichtenkarte", kind: "MESSAGE_MAP" as const },
+        { id: "s", name: "SC", description: "Stabschef", kind: "STANDARD" as const },
+      ],
+    };
+    expect(initialDivisions(incident, (key) => key).map((d) => d.id)).toEqual(["s"]);
+  });
+
   it("uses an existing incident's empty division list instead of creation defaults", () => {
     expect(initialDivisions(baseIncident, (key) => key)).toEqual([]);
   });
@@ -97,27 +120,34 @@ describe("updateDivision", () => {
     expect(
       updateDivision(
         [
-          { id: "division-1", name: "Ops", description: "Operations" },
-          { id: "division-2", name: "Map", description: "Mapping" },
+          { id: "division-1", name: "Ops", description: "Operations", kind: "STANDARD" },
+          { id: "division-2", name: "Map", description: "Mapping", kind: "STANDARD" },
         ],
         1,
         { name: "Situation" },
       ),
     ).toEqual([
-      { id: "division-1", name: "Ops", description: "Operations" },
-      { id: "division-2", name: "Situation", description: "Mapping" },
+      { id: "division-1", name: "Ops", description: "Operations", kind: "STANDARD" },
+      { id: "division-2", name: "Situation", description: "Mapping", kind: "STANDARD" },
     ]);
   });
 });
 
 describe("canRemoveDivision", () => {
   it("allows removing unsaved divisions", () => {
-    expect(canRemoveDivision({ id: "", name: "Ops", description: "Operations" })).toBe(true);
+    expect(
+      canRemoveDivision({ id: "", name: "Ops", description: "Operations", kind: "STANDARD" }),
+    ).toBe(true);
   });
 
   it("hides removal for persisted divisions in the UI", () => {
-    expect(canRemoveDivision({ id: "division-1", name: "Ops", description: "Operations" })).toBe(
-      false,
-    );
+    expect(
+      canRemoveDivision({
+        id: "division-1",
+        name: "Ops",
+        description: "Operations",
+        kind: "STANDARD",
+      }),
+    ).toBe(false);
   });
 });

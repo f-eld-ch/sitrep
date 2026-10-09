@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -277,7 +278,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT id, incident_id, name, description, removed_at
+		SELECT id, incident_id, name, description, kind, removed_at
 		FROM readmodel_incident_division
 		WHERE incident_id IN (SELECT value FROM json_each(?))
 		ORDER BY incident_id, name`, string(idsJSON))
@@ -292,9 +293,10 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 			incIDStr  string
 			name      string
 			desc      string
+			kind      string
 			removedAt sqlite.NullTime
 		)
-		if err := rows.Scan(&divIDStr, &incIDStr, &name, &desc, &removedAt); err != nil {
+		if err := rows.Scan(&divIDStr, &incIDStr, &name, &desc, &kind, &removedAt); err != nil {
 			return err
 		}
 
@@ -313,6 +315,7 @@ func (q *Queries) loadDivisions(ctx context.Context, incidents []*outbound.Incid
 				ID:          divID,
 				Name:        name,
 				Description: desc,
+				Kind:        kind,
 				RemovedAt:   removedAt.V,
 			})
 		}
@@ -335,7 +338,7 @@ func (q *Queries) ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*ou
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel_message
 		WHERE incident_id = ?
 		ORDER BY msg_time DESC, created_at DESC`, incidentID.String())
@@ -353,7 +356,7 @@ func (q *Queries) GetMessage(ctx context.Context, id uuid.UUID) (*outbound.Messa
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id, number, incident_id, content, sender, sender_detail,
 		       receiver, receiver_detail, medium, msg_time,
-		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, author_sub
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
 		FROM readmodel_message
 		WHERE id = ?`, id.String())
 	if err != nil {
@@ -400,13 +403,29 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			priority           string
 			divisionIDsStr     string
 			linkedResourcesStr string
+			acknowledgementStr string
 			authorSub          *string
 		)
 
 		if err := rows.Scan(
-			&idStr, &number, &incIDStr, &content, &sender, &senderDetail,
-			&receiver, &receiverDetail, &medium, &msgTime,
-			&createdAt, &updatedAt, &triage, &priority, &divisionIDsStr, &linkedResourcesStr, &authorSub,
+			&idStr,
+			&number,
+			&incIDStr,
+			&content,
+			&sender,
+			&senderDetail,
+			&receiver,
+			&receiverDetail,
+			&medium,
+			&msgTime,
+			&createdAt,
+			&updatedAt,
+			&triage,
+			&priority,
+			&divisionIDsStr,
+			&linkedResourcesStr,
+			&acknowledgementStr,
+			&authorSub,
 		); err != nil {
 			return nil, err
 		}
@@ -441,6 +460,11 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			linkedResourceIDs = []uuid.UUID{}
 		}
 
+		acks, err := parseAcknowledgements(acknowledgementStr)
+		if err != nil {
+			return nil, err
+		}
+
 		rm := &outbound.MessageRM{
 			ID:                id,
 			Number:            number,
@@ -458,6 +482,7 @@ func collectMessages(rows *sql.Rows) ([]*outbound.MessageRM, error) {
 			Priority:          priority,
 			DivisionIDs:       divisionIDs,
 			LinkedResourceIDs: linkedResourceIDs,
+			Acknowledgements:  acks,
 		}
 		if authorSub != nil {
 			rm.AuthorSub = *authorSub
@@ -579,7 +604,7 @@ func (q *Queries) ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*outb
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT l.id, l.incident_id, i.name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel_layer_features l
 		JOIN readmodel_incident i ON i.id = l.incident_id
 		WHERE l.incident_id = ? AND l.removed = 0
@@ -599,34 +624,8 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 		return nil, shared.ErrNotFound
 	}
 
-	visibleIDs := []string{incidentID.String()}
-
-	childRows, err := q.db.QueryContext(ctx,
-		`SELECT id FROM readmodel_incident WHERE parent_id = ? AND is_deleted = 0`,
-		incidentID.String(),
-	)
+	visibleIDs, err := q.visibleIncidentIDs(ctx, incidentID)
 	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = childRows.Close() }()
-
-	for childRows.Next() {
-		var childIDStr string
-		if err := childRows.Scan(&childIDStr); err != nil {
-			return nil, err
-		}
-
-		childID, err := uuid.Parse(childIDStr)
-		if err != nil {
-			return nil, fmt.Errorf("parse child incident id %q: %w", childIDStr, err)
-		}
-
-		if q.canRead(ctx, childID) {
-			visibleIDs = append(visibleIDs, childIDStr)
-		}
-	}
-
-	if err := childRows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -636,7 +635,7 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT l.id, l.incident_id, i.name, l.name, l.geojson, l.revision
+		SELECT l.id, l.incident_id, i.name, l.name, l.kind, l.geojson, l.revision
 		FROM readmodel_layer_features l
 		JOIN readmodel_incident i ON i.id = l.incident_id
 		WHERE l.removed = 0
@@ -682,6 +681,42 @@ func (q *Queries) ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) (
 	return layers, nil
 }
 
+// visibleIncidentIDs returns the incident itself plus its readable, non-deleted direct children.
+func (q *Queries) visibleIncidentIDs(ctx context.Context, incidentID uuid.UUID) ([]string, error) {
+	visibleIDs := []string{incidentID.String()}
+
+	childRows, err := q.db.QueryContext(ctx,
+		`SELECT id FROM readmodel_incident WHERE parent_id = ? AND is_deleted = 0`,
+		incidentID.String(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = childRows.Close() }()
+
+	for childRows.Next() {
+		var childIDStr string
+		if err := childRows.Scan(&childIDStr); err != nil {
+			return nil, err
+		}
+
+		childID, err := uuid.Parse(childIDStr)
+		if err != nil {
+			return nil, fmt.Errorf("parse child incident id %q: %w", childIDStr, err)
+		}
+
+		if q.canRead(ctx, childID) {
+			visibleIDs = append(visibleIDs, childIDStr)
+		}
+	}
+
+	if err := childRows.Err(); err != nil {
+		return nil, err
+	}
+
+	return visibleIDs, nil
+}
+
 // GetFeatureIncidentID returns the incident that owns the given feature.
 // Unlike the Postgres implementation, which incorrectly queries by layer id,
 // this correctly finds the layer containing featureID via JSON1.
@@ -725,11 +760,12 @@ func collectLayers(rows *sql.Rows) ([]*outbound.LayerRM, error) {
 			incIDStr   string
 			srcName    string
 			name       string
+			kind       string
 			geojsonStr string
 			revision   int
 		)
 
-		if err := rows.Scan(&idStr, &incIDStr, &srcName, &name, &geojsonStr, &revision); err != nil {
+		if err := rows.Scan(&idStr, &incIDStr, &srcName, &name, &kind, &geojsonStr, &revision); err != nil {
 			return nil, err
 		}
 
@@ -749,6 +785,7 @@ func collectLayers(rows *sql.Rows) ([]*outbound.LayerRM, error) {
 			SourceIncidentID:   incID,
 			SourceIncidentName: srcName,
 			Name:               name,
+			Kind:               kind,
 			GeoJSON:            jsontext.Value(geojsonStr),
 			Revision:           revision,
 		})
@@ -791,4 +828,198 @@ func parseLocation(b []byte) (*outbound.LocationRM, error) {
 		Name:        raw.Name,
 		Coordinates: raw.Coordinates,
 	}, nil
+}
+
+func (q *Queries) ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error) {
+	slog.DebugContext(ctx, "listing feature change times", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visibleIDs, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	visibleJSON, err := json.Marshal(visibleIDs)
+	if err != nil {
+		return nil, fmt.Errorf("marshal visible ids: %w", err)
+	}
+
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT DISTINCT c.effective_at
+		FROM readmodel_feature_change c
+		JOIN readmodel_layer_features l ON l.id = c.layer_id AND l.removed = 0
+		JOIN readmodel_incident i ON i.id = c.incident_id AND i.is_deleted = 0
+		WHERE c.incident_id IN (SELECT value FROM json_each(?))
+		ORDER BY c.effective_at`, string(visibleJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []time.Time
+
+	for rows.Next() {
+		var at sqlite.Time
+		if err := rows.Scan(&at); err != nil {
+			return nil, err
+		}
+
+		out = append(out, at.V)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*outbound.FeatureChangeRM, error) {
+	slog.DebugContext(ctx, "listing feature changes", slog.String("incident_id", incidentID.String()))
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visibleIDs, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	visibleJSON, err := json.Marshal(visibleIDs)
+	if err != nil {
+		return nil, fmt.Errorf("marshal visible ids: %w", err)
+	}
+
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT c.feature_id, c.version, c.incident_id, c.layer_id, c.change, c.effective_at, c.recorded_at,
+		       c.message_id, c.geometry, c.properties, c.actor
+		FROM readmodel_feature_change c
+		JOIN readmodel_layer_features l ON l.id = c.layer_id AND l.removed = 0
+		JOIN readmodel_incident i ON i.id = c.incident_id AND i.is_deleted = 0
+		WHERE c.incident_id IN (SELECT value FROM json_each(?))
+		ORDER BY c.effective_at, c.recorded_at, c.feature_id, c.version`, string(visibleJSON))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []*outbound.FeatureChangeRM
+
+	for rows.Next() {
+		var (
+			featureID, incID, layerID string
+			messageID                 *string
+			geometry, properties      *string
+			effectiveAt, recordedAt   sqlite.Time
+			c                         outbound.FeatureChangeRM
+		)
+
+		if err := rows.Scan(
+			&featureID, &c.Version, &incID, &layerID, &c.Change, &effectiveAt, &recordedAt,
+			&messageID, &geometry, &properties, &c.Actor,
+		); err != nil {
+			return nil, err
+		}
+
+		if c.FeatureID, err = uuid.Parse(featureID); err != nil {
+			return nil, fmt.Errorf("parse feature id %q: %w", featureID, err)
+		}
+
+		if c.IncidentID, err = uuid.Parse(incID); err != nil {
+			return nil, fmt.Errorf("parse incident id %q: %w", incID, err)
+		}
+
+		if c.LayerID, err = uuid.Parse(layerID); err != nil {
+			return nil, fmt.Errorf("parse layer id %q: %w", layerID, err)
+		}
+
+		c.EffectiveAt, c.RecordedAt = effectiveAt.V, recordedAt.V
+
+		if messageID != nil {
+			id, err := uuid.Parse(*messageID)
+			if err != nil {
+				return nil, fmt.Errorf("parse message id %q: %w", *messageID, err)
+			}
+
+			c.MessageID = &id
+		}
+
+		if geometry != nil {
+			c.Geometry = jsontext.Value(*geometry)
+		}
+
+		if properties != nil {
+			c.Properties = jsontext.Value(*properties)
+		}
+
+		out = append(out, &c)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*outbound.MessageRM, error) {
+	slog.DebugContext(ctx, "listing feature messages", slog.String("feature_id", featureID.String()))
+
+	var incIDStr string
+
+	err := q.db.QueryRowContext(ctx, `
+		SELECT incident_id FROM readmodel_feature_change WHERE feature_id = ? AND change = 'placed'`,
+		featureID.String()).Scan(&incIDStr)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, shared.ErrNotFound
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	incidentID, err := uuid.Parse(incIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("parse incident id %q: %w", incIDStr, err)
+	}
+
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT id, number, incident_id, content, sender, sender_detail,
+		       receiver, receiver_detail, medium, msg_time,
+		       created_at, updated_at, triage, priority, division_ids, linked_resource_ids, acknowledgements, author_sub
+		FROM readmodel_message
+		WHERE id IN (
+		    SELECT message_id FROM readmodel_feature_change
+		    WHERE feature_id = ? AND message_id IS NOT NULL
+		)
+		ORDER BY msg_time, created_at`, featureID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	return collectMessages(rows)
+}
+
+// parseAcknowledgements decodes the acknowledgements JSON column, oldest first.
+func parseAcknowledgements(raw string) ([]outbound.AcknowledgementRM, error) {
+	var entries []struct {
+		DivisionID uuid.UUID `json:"divisionId"`
+		At         time.Time `json:"at"`
+		By         string    `json:"by"`
+	}
+
+	if raw != "" {
+		if err := json.Unmarshal([]byte(raw), &entries); err != nil {
+			return nil, fmt.Errorf("unmarshal acknowledgements: %w", err)
+		}
+	}
+
+	out := make([]outbound.AcknowledgementRM, len(entries))
+	for i, e := range entries {
+		out[i] = outbound.AcknowledgementRM{DivisionID: e.DivisionID, At: e.At, By: e.By}
+	}
+
+	slices.SortStableFunc(out, func(a, b outbound.AcknowledgementRM) int { return a.At.Compare(b.At) })
+
+	return out, nil
 }

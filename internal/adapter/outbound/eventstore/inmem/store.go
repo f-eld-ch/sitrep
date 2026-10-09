@@ -72,6 +72,27 @@ func (s *EventStore) Load(_ context.Context, streamType string, id uuid.UUID) ([
 	return out, nil
 }
 
+func (s *EventStore) LoadMany(
+	ctx context.Context,
+	streamType string,
+	ids []uuid.UUID,
+) (map[uuid.UUID][]eventsourcing.Event, error) {
+	out := make(map[uuid.UUID][]eventsourcing.Event, len(ids))
+
+	for _, id := range ids {
+		events, err := s.Load(ctx, streamType, id)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(events) > 0 {
+			out[id] = events
+		}
+	}
+
+	return out, nil
+}
+
 func (s *EventStore) Append(_ context.Context, a eventsourcing.Aggregate) (outbound.Cursor, error) {
 	pending := a.Root().PendingEvents()
 	if len(pending) == 0 {

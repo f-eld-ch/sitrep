@@ -129,9 +129,17 @@ type DeploymentLocationInput struct {
 }
 
 type Division struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Kind        DivisionKind `json:"kind"`
+}
+
+// A division has dealt with a message. For the Nachrichtenkarte division: the message has been drawn.
+type DivisionAcknowledgement struct {
+	Division       *Division `json:"division"`
+	AcknowledgedAt time.Time `json:"acknowledgedAt"`
+	AcknowledgedBy string    `json:"acknowledgedBy"`
 }
 
 type DivisionInput struct {
@@ -145,6 +153,32 @@ type Feature struct {
 	ID         string         `json:"id"`
 	Geometry   scalar.JSONMap `json:"geometry,omitempty"`
 	Properties scalar.JSONMap `json:"properties,omitempty"`
+}
+
+// One change to a feature on the map timeline. effectiveAt is when the change takes effect
+// (the connected message's time on the Nachrichtenkarte); recordedAt is when it was drawn.
+type FeatureChange struct {
+	FeatureID   string            `json:"featureId"`
+	LayerID     string            `json:"layerId"`
+	Change      FeatureChangeKind `json:"change"`
+	EffectiveAt time.Time         `json:"effectiveAt"`
+	RecordedAt  time.Time         `json:"recordedAt"`
+	// The message this change was drawn for; null for free drawing on other layers.
+	MessageID *string `json:"messageId,omitempty"`
+	// Geometry after the change; set for PLACED and MOVED.
+	Geometry scalar.JSONMap `json:"geometry,omitempty"`
+	// Properties after the change; set for PLACED and RESTYLED.
+	Properties scalar.JSONMap `json:"properties,omitempty"`
+	Actor      string         `json:"actor"`
+}
+
+// When a feature change takes effect on the map timeline.
+// On the message map layer, messageId is required and the change takes effect at that message's
+// time. On other layers, messageId is rejected and effectiveAt (never in the future) is optional;
+// without it the change takes effect now.
+type FeatureChangeInput struct {
+	MessageID   *string    `json:"messageId,omitempty"`
+	EffectiveAt *time.Time `json:"effectiveAt,omitempty"`
 }
 
 type GlobalRoleGrant struct {
@@ -184,9 +218,13 @@ type Incident struct {
 	CanManageAccess bool `json:"canManageAccess"`
 	// Access mode of this incident.
 	AccessMode IncidentAccessMode `json:"accessMode"`
-	// All non-merged Schadenplätze for this incident.
+	// All non-merged Schadenplätze for this incident. With asOf, the Schadenplätze as they were at that
+	// point in time: casualty totals recorded up to then, and merged ones flagged as of then (so
+	// clients must skip isMerged ones when summing).
 	Schadenplaetze []*Schadenplatz `json:"schadenplaetze"`
 	// All resources for this incident, including resources owned by direct child incidents.
+	// With asOf, the resources as they were at that point in time (status, personnel, assignment);
+	// resources that did not exist yet are left out.
 	Resources []*Resource `json:"resources"`
 }
 
@@ -201,9 +239,10 @@ type IncidentAccessGrant struct {
 type Layer struct {
 	ID string `json:"id"`
 	// Incident that owns this layer. Differs from the viewed incident for inherited child layers.
-	SourceIncidentID   string `json:"sourceIncidentId"`
-	SourceIncidentName string `json:"sourceIncidentName"`
-	Name               string `json:"name"`
+	SourceIncidentID   string    `json:"sourceIncidentId"`
+	SourceIncidentName string    `json:"sourceIncidentName"`
+	Name               string    `json:"name"`
+	Kind               LayerKind `json:"kind"`
 	// Revision counter; increments on every feature change. Use for change detection.
 	Revision int        `json:"revision"`
 	Features []*Feature `json:"features"`
@@ -242,6 +281,9 @@ type Message struct {
 	SchadenplatzCasualties []*SchadenplatzCasualtyEntry `json:"schadenplatzCasualties"`
 	// Resource IDs linked to this message during triage.
 	LinkedResourceIds []string `json:"linkedResourceIds"`
+	// Divisions that have dealt with this message. A division can only appear here while the message
+	// is triaged to it; changed message content or time clears all acknowledgements.
+	Acknowledgements []*DivisionAcknowledgement `json:"acknowledgements"`
 	// OAuth subject (sub) of the operator who recorded this message. Null for messages created before this field was introduced.
 	Author *string `json:"author,omitempty"`
 }
@@ -486,6 +528,124 @@ func (e ContactMedium) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// Classifies system-managed divisions. Clients render a translated label for non-STANDARD kinds.
+type DivisionKind string
+
+const (
+	DivisionKindStandard DivisionKind = "STANDARD"
+	// The Nachrichtenkarte. Exactly one per incident, created and protected by the backend.
+	DivisionKindMessageMap DivisionKind = "MESSAGE_MAP"
+)
+
+var AllDivisionKind = []DivisionKind{
+	DivisionKindStandard,
+	DivisionKindMessageMap,
+}
+
+func (e DivisionKind) IsValid() bool {
+	switch e {
+	case DivisionKindStandard, DivisionKindMessageMap:
+		return true
+	}
+	return false
+}
+
+func (e DivisionKind) String() string {
+	return string(e)
+}
+
+func (e *DivisionKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DivisionKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DivisionKind", str)
+	}
+	return nil
+}
+
+func (e DivisionKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *DivisionKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e DivisionKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type FeatureChangeKind string
+
+const (
+	FeatureChangeKindPlaced   FeatureChangeKind = "PLACED"
+	FeatureChangeKindMoved    FeatureChangeKind = "MOVED"
+	FeatureChangeKindRestyled FeatureChangeKind = "RESTYLED"
+	FeatureChangeKindRemoved  FeatureChangeKind = "REMOVED"
+	FeatureChangeKindRestored FeatureChangeKind = "RESTORED"
+)
+
+var AllFeatureChangeKind = []FeatureChangeKind{
+	FeatureChangeKindPlaced,
+	FeatureChangeKindMoved,
+	FeatureChangeKindRestyled,
+	FeatureChangeKindRemoved,
+	FeatureChangeKindRestored,
+}
+
+func (e FeatureChangeKind) IsValid() bool {
+	switch e {
+	case FeatureChangeKindPlaced, FeatureChangeKindMoved, FeatureChangeKindRestyled, FeatureChangeKindRemoved, FeatureChangeKindRestored:
+		return true
+	}
+	return false
+}
+
+func (e FeatureChangeKind) String() string {
+	return string(e)
+}
+
+func (e *FeatureChangeKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FeatureChangeKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FeatureChangeKind", str)
+	}
+	return nil
+}
+
+func (e FeatureChangeKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *FeatureChangeKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e FeatureChangeKind) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type GlobalRole string
 
 const (
@@ -650,6 +810,63 @@ func (e *IncidentRole) UnmarshalJSON(b []byte) error {
 }
 
 func (e IncidentRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+// Classifies system-managed layers. Clients render a translated label for non-STANDARD kinds.
+type LayerKind string
+
+const (
+	LayerKindStandard LayerKind = "STANDARD"
+	// The Nachrichtenkarte layer. Exactly one per incident, created and protected by the backend.
+	LayerKindMessageMap LayerKind = "MESSAGE_MAP"
+)
+
+var AllLayerKind = []LayerKind{
+	LayerKindStandard,
+	LayerKindMessageMap,
+}
+
+func (e LayerKind) IsValid() bool {
+	switch e {
+	case LayerKindStandard, LayerKindMessageMap:
+		return true
+	}
+	return false
+}
+
+func (e LayerKind) String() string {
+	return string(e)
+}
+
+func (e *LayerKind) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LayerKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LayerKind", str)
+	}
+	return nil
+}
+
+func (e LayerKind) MarshalGQL(w io.Writer) {
+	_, _ = fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *LayerKind) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e LayerKind) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

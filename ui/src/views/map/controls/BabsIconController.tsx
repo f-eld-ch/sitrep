@@ -40,8 +40,11 @@ const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
+import { withPendingFeatures } from "../pending";
+import { IncidentContext } from "utils";
+import { MapTimeContext } from "../MapTimeContext";
+import { usePendingFeature } from "../usePendingFeature";
 import { LayerContext } from "../LayerContext";
-import { layerToFeatureCollection } from "api";
 
 // Picker button: fixed 35×35 px, icon centred with 3 px padding so the SVG sits inside.
 const pickerBtnClass =
@@ -420,19 +423,34 @@ const BabsIconController = () => {
   );
   const { current: map } = useMap();
 
-  const featureCollection = layerToFeatureCollection(layer);
+  // Saved features plus the ones drawn on the free map that have not been saved yet.
+  const featureCollection = withPendingFeatures(layer, state.pendingFeatures);
   const selectedFeature = first(
     featureCollection.features.filter((f) => f.id === state.selectedFeature),
   );
+  const pending = usePendingFeature(selectedFeature?.id?.toString());
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const { state: incidentState } = useContext(IncidentContext);
+  // A saved feature on the free map can be changed as of an earlier time; drawing for a message
+  // always takes the message's time.
+  const changeTime =
+    pending === undefined && drawingMessage === undefined && asOf === undefined
+      ? { earliest: incidentState.incident?.createdAt }
+      : undefined;
 
   const onUpdate = useCallback(
-    (e: { features: Feature<Geometry, GeoJsonProperties>[]; action?: string }) => {
+    (e: {
+      features: Feature<Geometry, GeoJsonProperties>[];
+      action?: string;
+      effectiveAt?: Date;
+    }) => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
       // changes made here persist by exactly the same mechanism as direct edits.
       fireDrawEvent(map?.getMap(), "draw.update", {
         features: updatedFeatures,
         action: e.action,
+        effectiveAt: e.effectiveAt,
         target: map,
       });
     },
@@ -441,8 +459,14 @@ const BabsIconController = () => {
 
   return (
     <>
-      {selectedFeature !== undefined && hasTypeSelected(selectedFeature) && (
-        <FeatureLabelPopup selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      {/* A pending feature gets the popup at once: it is where it is saved, whatever its type. */}
+      {selectedFeature !== undefined && (hasTypeSelected(selectedFeature) || pending) && (
+        <FeatureLabelPopup
+          selectedFeature={selectedFeature}
+          onUpdate={onUpdate}
+          pending={pending}
+          changeTime={changeTime}
+        />
       )}
       {/*
        * Supplies the resolved language to <BabsIcon>, which is what selects the

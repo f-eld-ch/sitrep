@@ -99,6 +99,18 @@
       "stoffnummer": "Numéro de substance ONU",
       "stoffnummerPlaceholder": "Numéro ONU à 4 chiffres",
       "stoffbezeichnung": "Désignation de la substance"
+    },
+    "changeTime": {
+      "label": "Valable dès",
+      "hint": "La modification s'applique dès ce moment sur la ligne du temps."
+    },
+    "selectionRing": "Mettre en évidence l'objet sélectionné",
+    "pending": {
+      "time": "Moment",
+      "hint": "L'objet n'est créé qu'avec « Enregistrer ».",
+      "unsaved": "Des objets de la carte ne sont pas encore enregistrés ({{count}}). Ils seront perdus si vous quittez la page.",
+      "leave": "Quitter",
+      "discard": "Annuler"
     }
   },
   "medium": {
@@ -134,6 +146,7 @@
   "messageFlow": "Liste de distribution",
   "messageSheet": "formulaire de message",
   "messageTriageTitle": "trier le message",
+  "messageTimeLocked": "L'heure ne peut plus être modifiée, car le message a déjà été trié.",
   "messageTimeTooFarInFuture": "L'heure du message ne peut pas être à plus de cinq minutes dans le futur.",
   "name": "nom",
   "incidentName": "Nom de l'événement",
@@ -180,6 +193,36 @@
     "filterKeyMessage": "Messages clés",
     "filterMine": "Les miens"
   },
+  "messageMap": {
+    "showPending": "Afficher les non dessinés",
+    "showAll": "Tout afficher",
+    "drawn": "Dessiné",
+    "finish": "Terminer",
+    "edit": "Modifier",
+    "editDone": "Terminé",
+    "drawing": "Dessin pour le message {{number}} · {{time}}",
+    "allDrawn": "Tous les messages sont dessinés",
+    "noMessages": "Aucun message pour la carte de situation",
+    "pickMessage": "Choisissez un message pour le dessiner",
+    "unavailable": "Cet engagement n'a pas de carte de situation",
+    "openMessage": "Ouvrir le message",
+    "highlight": "Ce message",
+    "restore": "Rétablir",
+    "restoreHint": "Cet objet a été supprimé avec ce message.",
+    "highlightHint": "Vert : ajouté, bleu clair : modifié, rouge clair : supprimé",
+    "unfinished": "Le dessin de ce message n'est pas terminé. Les objets déjà dessinés restent enregistrés. Quitter quand même ?",
+    "leave": "Quitter"
+  },
+  "mapTimeline": {
+    "live": "En direct",
+    "asOf": "État à {{time}}",
+    "previous": "Message précédent",
+    "next": "Message suivant",
+    "slider": "Moment dans le déroulement de l'engagement"
+  },
+  "featureMessages": {
+    "filter": "Messages de l'objet"
+  },
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "viewChangelog": "Afficher le journal des modifications",
@@ -203,6 +246,7 @@
     "addWMSLayer": "Ajouter un calques WMS"
   },
   "styleController": {
+    "autoFrame": "Cadrer automatiquement",
     "maps": "Cartes",
     "Basiskarte": "Carte de base légère",
     "Satellit": "Carte satellite"
@@ -267,6 +311,12 @@
     "CONFLICT": "La demande n'a pas pu être complétée en raison d'un conflit.",
     "INTERNAL_ERROR": "Une erreur interne s'est produite. Veuillez réessayer.",
     "NETWORK_ERROR": "Impossible de contacter le serveur. Veuillez vérifier votre connexion réseau.",
+    "NOT_TRIAGED_TO_DIVISION": "Ce message n'est pas attribué à cette division.",
+    "BEFORE_FEATURE_PLACED": "La modification est antérieure au moment où l'objet a été dessiné.",
+    "FEATURE_HAS_LATER_CHANGES": "L'objet a des modifications ultérieures et ne peut donc pas être supprimé à ce moment.",
+    "FEATURE_NOT_REMOVED": "L'objet n'a pas été supprimé.",
+    "BEFORE_FEATURE_REMOVED": "L'objet ne peut pas être rétabli avant sa suppression.",
+    "MESSAGE_TIME_LOCKED": "L'heure d'un message trié ne peut pas être modifiée.",
     "UNKNOWN": "Une erreur inattendue s'est produite."
   },
   "incidentAccess": {

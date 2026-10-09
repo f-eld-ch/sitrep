@@ -39,6 +39,10 @@ type EventStore interface {
 	// Load replays all events for one aggregate stream in version order.
 	Load(ctx context.Context, streamType string, id uuid.UUID) ([]eventsourcing.Event, error)
 
+	// LoadMany replays the events of several streams of one type in a single round trip, each
+	// stream in version order. A stream without events is absent from the result.
+	LoadMany(ctx context.Context, streamType string, ids []uuid.UUID) (map[uuid.UUID][]eventsourcing.Event, error)
+
 	// Append writes the aggregate's pending events atomically.
 	// Returns the cursor of the last written event for consistent-read tokens.
 	// Fails with a conflict error if another writer advanced the version.

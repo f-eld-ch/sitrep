@@ -25,7 +25,9 @@ type DivisionRM struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
-	RemovedAt   *time.Time
+	// Kind is "MESSAGE_MAP" for the system-managed Nachrichtenkarte, empty otherwise.
+	Kind      string
+	RemovedAt *time.Time
 }
 
 type IncidentRM struct {
@@ -57,7 +59,16 @@ type MessageRM struct {
 	Priority          string
 	DivisionIDs       []uuid.UUID
 	LinkedResourceIDs []uuid.UUID
-	AuthorSub         string
+	// Acknowledgements are the divisions that have dealt with the message, oldest first.
+	Acknowledgements []AcknowledgementRM
+	AuthorSub        string
+}
+
+// AcknowledgementRM records that a division has dealt with a message.
+type AcknowledgementRM struct {
+	DivisionID uuid.UUID
+	At         time.Time
+	By         string
 }
 
 type AttachmentRM struct {
@@ -82,8 +93,26 @@ type LayerRM struct {
 	SourceIncidentID   uuid.UUID
 	SourceIncidentName string
 	Name               string
-	GeoJSON            jsontext.Value
-	Revision           int
+	// Kind is "MESSAGE_MAP" for the system-managed Nachrichtenkarte layer, empty otherwise.
+	Kind     string
+	GeoJSON  jsontext.Value
+	Revision int
+}
+
+// FeatureChangeRM is one change to a feature on the map timeline. EffectiveAt is when
+// the change takes effect (the connected message's time); RecordedAt is when it was drawn.
+type FeatureChangeRM struct {
+	FeatureID   uuid.UUID
+	Version     int
+	IncidentID  uuid.UUID
+	LayerID     uuid.UUID
+	Change      string // placed | moved | restyled | removed
+	EffectiveAt time.Time
+	RecordedAt  time.Time
+	MessageID   *uuid.UUID
+	Geometry    jsontext.Value
+	Properties  jsontext.Value
+	Actor       string
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -106,18 +135,6 @@ type IncidentQueries interface {
 	// Returns ErrNotFound when the message does not exist or is deleted.
 	GetMessage(ctx context.Context, id uuid.UUID) (*MessageRM, error)
 
-	// ListLayers returns all non-removed layers for an incident.
-	// Each LayerRM carries the full GeoJSON FeatureCollection.
-	ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
-
-	// ListVisibleLayers returns layers visible from an incident: its own layers
-	// plus layers owned by direct child incidents.
-	ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
-
-	// GetFeatureIncidentID returns the incident ID that owns the given feature.
-	// Returns ErrNotFound when the feature does not exist or has been removed.
-	GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error)
-
 	// ListChildIncidents returns non-deleted incidents directly linked to parentID.
 	ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([]*IncidentRM, error)
 
@@ -129,6 +146,34 @@ type IncidentQueries interface {
 	GetAttachment(ctx context.Context, id uuid.UUID) (*AttachmentRM, error)
 }
 
+// LayerQueries is the driven port for layer, feature and map-timeline read-model access.
+type LayerQueries interface {
+	// ListLayers returns all non-removed layers for an incident.
+	// Each LayerRM carries the full GeoJSON FeatureCollection.
+	ListLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
+
+	// ListVisibleLayers returns layers visible from an incident: its own layers
+	// plus layers owned by direct child incidents.
+	ListVisibleLayers(ctx context.Context, incidentID uuid.UUID) ([]*LayerRM, error)
+
+	// ListFeatureChanges returns the change history of all features on the layers visible
+	// from an incident (see ListVisibleLayers), ordered by effective time and then by
+	// the order they were drawn.
+	ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*FeatureChangeRM, error)
+
+	// ListFeatureChangeTimes returns just the distinct effective times of those changes, oldest
+	// first: what a timeline needs to put its ticks, without every change's geometry.
+	ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error)
+
+	// ListFeatureMessages returns the messages connected to a feature's changes, ordered by
+	// message time. Returns ErrNotFound when the feature is unknown or not readable.
+	ListFeatureMessages(ctx context.Context, featureID uuid.UUID) ([]*MessageRM, error)
+
+	// GetFeatureIncidentID returns the incident ID that owns the given feature.
+	// Returns ErrNotFound when the feature does not exist or has been removed.
+	GetFeatureIncidentID(ctx context.Context, featureID uuid.UUID) (uuid.UUID, error)
+}
+
 // SchadenplatzQueries is the driven port for Schadenplatz read-model access.
 type SchadenplatzQueries interface {
 	// GetSchadenplatz returns one Schadenplatz by ID.
@@ -137,6 +182,10 @@ type SchadenplatzQueries interface {
 
 	// ListSchadenplaetze returns all non-merged Schadenplatz for an incident.
 	ListSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
+
+	// ListAllSchadenplaetze returns every Schadenplatz of an incident, merged ones included.
+	// A merged Schadenplatz still existed as such at earlier points in time.
+	ListAllSchadenplaetze(ctx context.Context, incidentID uuid.UUID) ([]*SchadenplatzRM, error)
 
 	// ListMessageCasualties returns the casualty deltas recorded for a message across all Schadenplätze.
 	ListMessageCasualties(ctx context.Context, messageID uuid.UUID) ([]*MessageCasualtyRM, error)
@@ -147,6 +196,7 @@ type SchadenplatzQueries interface {
 // Sub-interfaces can be used independently where only a subset is needed.
 type Queries interface {
 	IncidentQueries
+	LayerQueries
 	SchadenplatzQueries
 	ResourceQueries
 }

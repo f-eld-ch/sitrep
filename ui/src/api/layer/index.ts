@@ -3,6 +3,7 @@ export type {
   AddLayerArgs,
   DeleteFeatureArgs,
   ModifyFeatureArgs,
+  RestoreFeatureArgs,
 } from "./commands";
 export {
   cleanFeature,
@@ -10,8 +11,19 @@ export {
   useAddLayer,
   useDeleteFeature,
   useModifyFeature,
+  useRestoreFeature,
 } from "./commands";
 export { convertFeatureToGeoJsonFeature, layerToFeatureCollection } from "./mapper";
-export type { LayersData } from "./queries";
-export { useLayersForIncident } from "./queries";
+export type { FeatureMessagesData, LayersData } from "./queries";
+export {
+  LIVE_POLL_INTERVAL_MS,
+  useFeatureMessages,
+  useLayersForIncident,
+  useFeatureChangeTimes,
+  useMessageFeatureHalos,
+} from "./queries";
+export type { FeatureHalo, HaloKind, LocalRemoval } from "./halos";
+export { withLocalRemovals } from "./halos";
 export { afterLayerWrite } from "./invalidate";
+export { featureChangeVariable, layersVariables } from "./variables";
+export type { FeatureChangeArgs } from "./variables";

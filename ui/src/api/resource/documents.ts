@@ -9,6 +9,8 @@ import type {
   DeployResourceMutationVariables,
   ReactivateResourceMutation,
   ReactivateResourceMutationVariables,
+  GetIncidentResourcesAsOfQuery,
+  GetIncidentResourcesAsOfQueryVariables,
   GetIncidentResourcesQuery,
   GetIncidentResourcesQueryVariables,
   HandOverMutation,
@@ -134,6 +136,37 @@ export const GET_INCIDENT_RESOURCES: TypedDocumentNode<
         resources {
           ...ResourceFields
         }
+      }
+    }
+  }
+`;
+
+/**
+ * The same data as of a past point in time. Without the places' own resource lists: only their
+ * current state exists, and the incident's `resources` already carries every resource.
+ */
+export const GET_INCIDENT_RESOURCES_AS_OF: TypedDocumentNode<
+  GetIncidentResourcesAsOfQuery,
+  GetIncidentResourcesAsOfQueryVariables
+> = gql`
+  ${SCHADENPLATZ_FIELDS}
+  ${RESOURCE_FIELDS}
+  query GetIncidentResourcesAsOf($incidentId: ID!, $asOf: DateTime!) {
+    incident(id: $incidentId) {
+      id
+      name
+      childIncidents {
+        id
+        name
+        schadenplaetze(asOf: $asOf) {
+          ...SchadenplatzFields
+        }
+      }
+      resources(asOf: $asOf) {
+        ...ResourceFields
+      }
+      schadenplaetze(asOf: $asOf) {
+        ...SchadenplatzFields
       }
     }
   }

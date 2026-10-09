@@ -54,6 +54,7 @@ export function toIncidentDetails(w: WireIncidentDetail): Incident {
       id: d.id,
       name: d.name,
       description: d.description,
+      kind: d.kind,
     })),
     childIncidents: [],
     layers: [],

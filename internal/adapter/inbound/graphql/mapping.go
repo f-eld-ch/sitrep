@@ -4,11 +4,14 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -43,6 +46,7 @@ func incidentResultToModel(r inbound.CreateIncidentResult) *model.Incident {
 			ID:          d.ID.String(),
 			Name:        d.Name,
 			Description: d.Description,
+			Kind:        divisionKindToModel(d.Kind),
 		})
 	}
 
@@ -78,6 +82,7 @@ func incidentStateToModel(s inbound.IncidentState) *model.Incident {
 			ID:          d.ID.String(),
 			Name:        d.Name,
 			Description: d.Description,
+			Kind:        divisionKindToModel(d.Kind),
 		})
 	}
 
@@ -117,6 +122,7 @@ func messageStateToModel(s inbound.MessageState) *model.Message {
 		Priority:          mapPriorityStatus(string(s.Priority)),
 		Divisions:         []*model.Division{},
 		Attachments:       []*model.Attachment{},
+		Acknowledgements:  []*model.DivisionAcknowledgement{},
 		LinkedResourceIds: linkedIDs,
 		Author:            author,
 	}
@@ -181,7 +187,33 @@ func divisionRMToModel(r *outbound.DivisionRM) *model.Division {
 		ID:          r.ID.String(),
 		Name:        r.Name,
 		Description: r.Description,
+		Kind:        divisionKindToModel(shared.DivisionKind(r.Kind)),
 	}
+}
+
+func divisionToModel(d incident.Division) *model.Division {
+	return &model.Division{
+		ID:          d.ID.String(),
+		Name:        d.Name,
+		Description: d.Description,
+		Kind:        divisionKindToModel(d.Kind),
+	}
+}
+
+func divisionKindToModel(k shared.DivisionKind) model.DivisionKind {
+	if k == shared.DivisionKindMessageMap {
+		return model.DivisionKindMessageMap
+	}
+
+	return model.DivisionKindStandard
+}
+
+func layerKindToModel(k shared.LayerKind) model.LayerKind {
+	if k == shared.LayerKindMessageMap {
+		return model.LayerKindMessageMap
+	}
+
+	return model.LayerKindStandard
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -220,6 +252,18 @@ func messageRMToModel(r *outbound.MessageRM, divsByID map[uuid.UUID]*outbound.Di
 		msg.Divisions = []*model.Division{}
 	}
 
+	msg.Acknowledgements = []*model.DivisionAcknowledgement{}
+
+	for _, a := range r.Acknowledgements {
+		if d, ok := divsByID[a.DivisionID]; ok {
+			msg.Acknowledgements = append(msg.Acknowledgements, &model.DivisionAcknowledgement{
+				Division:       divisionRMToModel(d),
+				AcknowledgedAt: a.At,
+				AcknowledgedBy: a.By,
+			})
+		}
+	}
+
 	linkedIDs := make([]string, len(r.LinkedResourceIDs))
 	for i, id := range r.LinkedResourceIDs {
 		linkedIDs[i] = id.String()
@@ -241,6 +285,7 @@ func layerRMToModel(r *outbound.LayerRM) (*model.Layer, error) {
 		SourceIncidentID:   r.SourceIncidentID.String(),
 		SourceIncidentName: r.SourceIncidentName,
 		Name:               r.Name,
+		Kind:               layerKindToModel(shared.LayerKind(r.Kind)),
 		Revision:           r.Revision,
 	}
 
@@ -793,4 +838,155 @@ func defaultAccessResultToModel(r inbound.DefaultAccessResult) *model.DefaultAcc
 		Mode:   incidentModeFromDomain(r.Mode),
 		Grants: grants,
 	}
+}
+
+func featureChangeFromInput(in *model.FeatureChangeInput) (inbound.FeatureChange, error) {
+	if in == nil {
+		return inbound.FeatureChange{}, nil
+	}
+
+	change := inbound.FeatureChange{EffectiveAt: in.EffectiveAt}
+
+	if in.MessageID != nil {
+		id, err := parseUUID(*in.MessageID)
+		if err != nil {
+			return inbound.FeatureChange{}, err
+		}
+
+		msgID := shared.MessageID(id)
+		change.MessageID = &msgID
+	}
+
+	return change, nil
+}
+
+func featureStateToModel(s inbound.FeatureState) *model.Feature {
+	return &model.Feature{
+		ID:         s.ID.String(),
+		Geometry:   scalar.JSONMap(s.Geometry),
+		Properties: scalar.JSONMap(s.Properties),
+	}
+}
+
+func featureChangeRMToModel(r *outbound.FeatureChangeRM) *model.FeatureChange {
+	c := &model.FeatureChange{
+		FeatureID:   r.FeatureID.String(),
+		LayerID:     r.LayerID.String(),
+		Change:      model.FeatureChangeKind(strings.ToUpper(r.Change)),
+		EffectiveAt: r.EffectiveAt,
+		RecordedAt:  r.RecordedAt,
+		Actor:       r.Actor,
+	}
+
+	if r.MessageID != nil {
+		id := r.MessageID.String()
+		c.MessageID = &id
+	}
+
+	c.Geometry = jsonObject(r.Geometry)
+	c.Properties = jsonObject(r.Properties)
+
+	return c
+}
+
+// jsonObject decodes an opaque JSON object; an empty or non-object value yields nil.
+func jsonObject(raw jsontext.Value) scalar.JSONMap {
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil
+	}
+
+	var m scalar.JSONMap
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+
+	return m
+}
+
+// layersAsOf rebuilds every layer's features as they were at asOf from the change history:
+// all changes that take effect at or before asOf are folded in effective-time order (the
+// order ListFeatureChanges returns). Features keep the z-order of their placement. The layer
+// revision becomes the number of folded changes so clients still detect changes by revision.
+func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf time.Time) []*model.Layer {
+	type featureState struct {
+		layerID    string
+		geometry   scalar.JSONMap
+		properties scalar.JSONMap
+		removed    bool
+	}
+
+	states := make(map[string]*featureState)
+	order := make([]string, 0)
+	revisions := make(map[string]int)
+
+	for _, c := range changes {
+		if c.EffectiveAt.After(asOf) {
+			continue
+		}
+
+		featureID := c.FeatureID.String()
+		layerID := c.LayerID.String()
+
+		switch c.Change {
+		case "placed":
+			if _, seen := states[featureID]; !seen {
+				order = append(order, featureID)
+			}
+
+			states[featureID] = &featureState{
+				layerID:    layerID,
+				geometry:   jsonObject(c.Geometry),
+				properties: jsonObject(c.Properties),
+			}
+		case "moved":
+			if st := states[featureID]; st != nil {
+				st.geometry = jsonObject(c.Geometry)
+			}
+		case "restyled":
+			if st := states[featureID]; st != nil {
+				st.properties = jsonObject(c.Properties)
+			}
+		case "removed":
+			if st := states[featureID]; st != nil {
+				st.removed = true
+			}
+		case "restored":
+			if st := states[featureID]; st != nil {
+				st.geometry = jsonObject(c.Geometry)
+				st.properties = jsonObject(c.Properties)
+				st.removed = false
+			}
+		}
+
+		revisions[layerID]++
+	}
+
+	byLayer := make(map[string][]*model.Feature)
+
+	for _, featureID := range order {
+		st := states[featureID]
+		if st.removed {
+			continue
+		}
+
+		byLayer[st.layerID] = append(byLayer[st.layerID], &model.Feature{
+			ID: featureID, Geometry: st.geometry, Properties: st.properties,
+		})
+	}
+
+	out := make([]*model.Layer, len(layers))
+
+	for i, l := range layers {
+		cp := *l
+
+		cp.Features = byLayer[l.ID]
+		if cp.Features == nil {
+			cp.Features = []*model.Feature{}
+		}
+
+		cp.Revision = revisions[l.ID]
+		out[i] = &cp
+	}
+
+	return out
 }

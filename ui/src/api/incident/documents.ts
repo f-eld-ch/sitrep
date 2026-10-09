@@ -71,6 +71,7 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
         id
         name
         description
+        kind
       }
     }
   }
@@ -110,6 +111,7 @@ export const CREATE_INCIDENT: TypedDocumentNode<
           id
           name
           description
+          kind
         }
       }
       accessMode
@@ -163,6 +165,7 @@ export const CREATE_INCIDENT_WITH_PARENT: TypedDocumentNode<
           id
           name
           description
+          kind
         }
       }
       accessMode
@@ -198,6 +201,7 @@ export const UPDATE_INCIDENT: TypedDocumentNode<
         id
         name
         description
+        kind
       }
     }
   }

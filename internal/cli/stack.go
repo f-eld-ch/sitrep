@@ -49,6 +49,7 @@ type stack struct {
 	AccessSvc             inbound.AccessService
 	SchadenplatzSvc       inbound.SchadenplatzService
 	ResourceSvc           inbound.ResourceService
+	TimelineSvc           inbound.TimelineService
 	Queries               outbound.Queries
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
@@ -285,10 +286,11 @@ func buildPostgresStack(
 		IncidentSvc:           incidentSvcPg,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
-		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		FeatureSvc:            factory.FeatureService(features, repos, layers, messages),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetze, repos),
 		ResourceSvc:           factory.ResourceService(resources, repos, schadenplaetze),
+		TimelineSvc:           factory.TimelineService(store, queries),
 		Queries:               queries,
 		AccessQueries:         pgAccessQueries,
 		IncidentAccessChecker: accessChecker,
@@ -401,10 +403,11 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 		IncidentSvc:           incidentSvcInmem,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
-		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		FeatureSvc:            factory.FeatureService(features, repos, layers, messages),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeInmem, repos),
 		ResourceSvc:           factory.ResourceService(resourcesInmem, repos, schadenplaetzeInmem),
+		TimelineSvc:           factory.TimelineService(store, queries),
 		Queries:               queries,
 		AccessQueries:         inmemAccessQueries,
 		IncidentAccessChecker: accessChecker,
@@ -539,10 +542,11 @@ func buildSQLiteStack(
 		IncidentSvc:           incidentSvcSq,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),
-		FeatureSvc:            factory.FeatureService(features, repos, layers),
+		FeatureSvc:            factory.FeatureService(features, repos, layers, messages),
 		AccessSvc:             factory.AccessService(),
 		SchadenplatzSvc:       factory.SchadenplatzService(schadenplaetzeSq, repos),
 		ResourceSvc:           factory.ResourceService(resourcesSq, repos, schadenplaetzeSq),
+		TimelineSvc:           factory.TimelineService(store, queries),
 		Queries:               queries,
 		AccessQueries:         sqAccessQueries,
 		IncidentAccessChecker: accessChecker,

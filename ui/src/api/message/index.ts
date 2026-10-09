@@ -1,5 +1,6 @@
 export type {
   CreateMessageArgs,
+  MessageAcknowledgementArgs,
   RemoveAttachmentArgs,
   SchadenplatzCasualtyInput,
   TriageMessageArgs,
@@ -7,8 +8,10 @@ export type {
   UploadAttachmentArgs,
 } from "./commands";
 export {
+  useAcknowledgeMessage,
   useCreateMessage,
   useRemoveAttachment,
+  useRevokeMessageAcknowledgement,
   useTriageMessage,
   useUpdateMessage,
   useUploadAttachment,

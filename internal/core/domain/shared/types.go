@@ -104,6 +104,31 @@ const (
 	MediumOther Medium = "OTHER"
 )
 
+// DivisionKind classifies system-managed divisions. The zero value is a regular,
+// user-managed division.
+type DivisionKind string
+
+const (
+	DivisionKindStandard   DivisionKind = ""
+	DivisionKindMessageMap DivisionKind = "MESSAGE_MAP"
+)
+
+// LayerKind classifies system-managed layers. The zero value is a regular layer.
+type LayerKind string
+
+const (
+	LayerKindStandard   LayerKind = ""
+	LayerKindMessageMap LayerKind = "MESSAGE_MAP"
+)
+
+// Fallback labels for system-managed entities. Clients render a translated label
+// based on the kind; these only back stored data and non-localised consumers.
+const (
+	MessageMapDivisionName        = "Karte"
+	MessageMapDivisionDescription = "Nachrichtenkarte"
+	MessageMapLayerName           = "Nachrichtenkarte"
+)
+
 type TriageStatus string
 
 const (
@@ -160,6 +185,29 @@ var (
 	// ErrSchadenplatzMerged is returned when an operation targets a Schadenplatz
 	// that has already been merged into the default one.
 	ErrSchadenplatzMerged = errors.New("SCHADENPLATZ_MERGED")
+
+	// ErrNotTriagedToDivision is returned when a division acts on a message it is not
+	// currently triaged to.
+	ErrNotTriagedToDivision = errors.New("NOT_TRIAGED_TO_DIVISION")
+
+	// ErrBeforeFeaturePlaced is returned when a feature change takes effect before the
+	// feature itself was placed on the map timeline.
+	ErrBeforeFeaturePlaced = errors.New("BEFORE_FEATURE_PLACED")
+
+	// ErrFeatureHasLaterChanges is returned when a feature would be removed at a time
+	// that precedes changes already recorded for it.
+	ErrFeatureHasLaterChanges = errors.New("FEATURE_HAS_LATER_CHANGES")
+
+	// ErrMessageTimeLocked is returned when the time of a message that has been triaged is
+	// changed. What was drawn and acknowledged for it is tied to that time.
+	ErrMessageTimeLocked = errors.New("MESSAGE_TIME_LOCKED")
+
+	// ErrFeatureNotRemoved is returned when a feature that is still on the map is restored.
+	ErrFeatureNotRemoved = errors.New("FEATURE_NOT_REMOVED")
+
+	// ErrBeforeFeatureRemoved is returned when a feature would be restored at a time
+	// that precedes its removal.
+	ErrBeforeFeatureRemoved = errors.New("BEFORE_FEATURE_REMOVED")
 
 	// ErrCasualtyBelowZero is returned when a casualty delta would make a total
 	// go negative.
