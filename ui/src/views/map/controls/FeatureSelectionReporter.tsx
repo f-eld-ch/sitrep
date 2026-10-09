@@ -4,11 +4,12 @@ import { LayerContext } from "../LayerContext";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
 import { isPendingFeature } from "../pending";
+import { SelectedFeatureHighlight } from "./SelectedFeatureHighlight";
 
 /**
  * Reports the feature the user clicked (on a passive layer) or selected (on the layer being
  * edited) to the host of the map, so it can react, for instance by showing the messages the
- * feature was drawn for. Renders nothing.
+ * feature was drawn for. The selected feature gets a ring around it.
  *
  * Clicking empty map, pressing Escape, or the host changing `deselectToken` clears the
  * selection. The operator drawing for a message has no use for it and is not reported.
@@ -81,5 +82,5 @@ export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: str
     onSelect?.(featureId);
   }, [featureId, onSelect]);
 
-  return null;
+  return <SelectedFeatureHighlight featureId={featureId} />;
 }

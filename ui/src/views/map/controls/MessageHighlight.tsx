@@ -18,6 +18,7 @@ import {
 } from "api";
 import { Button } from "components/ui";
 import { LayerContext } from "../LayerContext";
+import { LINE_WIDTH, POINT_RADIUS } from "./haloStyle";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
 
@@ -25,19 +26,6 @@ const SOURCE_ID = "message-highlight";
 
 /** Not closer than this when bringing a message's features into view: a lone icon keeps its surroundings. */
 const FOCUS_MAX_ZOOM = 16;
-
-// The halo follows the zoom ramps of what it surrounds: half the icon (a 48px cell scaled from
-// 0.2 at zoom 12 to 1.667 at zoom 20) and a little margin, and the line width ramp plus margin.
-const POINT_RADIUS: ExpressionSpecification = ["interpolate", ["linear"], ["zoom"], 12, 9, 20, 44];
-const LINE_WIDTH: ExpressionSpecification = [
-  "interpolate",
-  ["exponential", 1],
-  ["zoom"],
-  12,
-  6,
-  19,
-  28,
-];
 
 /** Green for what the message put on the map, light blue for what it changed, light red for what it removed. */
 const HALO_COLOR = [
