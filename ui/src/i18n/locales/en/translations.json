@@ -145,6 +145,7 @@
   "messageFlow": "reporting flow",
   "messageSheet": "message sheet",
   "messageTriageTitle": "message triage",
+  "messageTimeLocked": "The time can no longer be changed because the message has already been triaged.",
   "messageTimeTooFarInFuture": "Message time cannot be more than five minutes in the future.",
   "name": "name",
   "incidentName": "incident name",
@@ -314,6 +315,7 @@
     "FEATURE_HAS_LATER_CHANGES": "The object has later changes, so it cannot be removed at this time.",
     "FEATURE_NOT_REMOVED": "The object has not been removed.",
     "BEFORE_FEATURE_REMOVED": "The object cannot be restored before it was removed.",
+    "MESSAGE_TIME_LOCKED": "The time of a triaged message cannot be changed.",
     "UNKNOWN": "An unexpected error occurred."
   },
   "incidentAccess": {

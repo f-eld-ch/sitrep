@@ -612,6 +612,11 @@ the dev database — they will be lost on the next `migrate up` run.
   A removed feature can be brought back with `Restored`, at or after its removal; the event carries
   the feature's state so the read models can place it again without a lookup.
 
+- **The time of a message is fixed once it is triaged.** `Message.Correct` rejects a changed time
+  with `ErrMessageTimeLocked` (`MESSAGE_TIME_LOCKED`) while the triage status is `DONE`: what is
+  drawn for a message and acknowledged by a division takes effect at its time. Before that, the
+  time may be corrected freely; sending the same time again is fine.
+
 - **`Owned` interface for `aggregate_index`.** Aggregates that belong to an incident implement
   `eventsourcing.Owned` (`OwnerIncidentID() uuid.UUID`). The Postgres event store checks this
   interface in `Append` and upserts into `eventsourcing.aggregate_index` on version 1. New

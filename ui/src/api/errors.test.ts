@@ -78,6 +78,7 @@ describe("apiErrorFromApolloError", () => {
     "FEATURE_HAS_LATER_CHANGES",
     "FEATURE_NOT_REMOVED",
     "BEFORE_FEATURE_REMOVED",
+    "MESSAGE_TIME_LOCKED",
   ])("recognises the timeline code %s", (code) => {
     mockCombined.mockReturnValue(true);
     const e = Object.assign(new Error(`input:2:3: restoreFeature ${code}`), {

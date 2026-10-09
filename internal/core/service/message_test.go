@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -75,6 +76,46 @@ func TestMessageService_CorrectMessage(t *testing.T) {
 	newContent := "Korrigiert"
 	_, err = messageSvc.CorrectMessage(ctx(), ms.ID, &newContent, nil, nil, nil, nil, nil, nil, testActor)
 	require.NoError(t, err)
+}
+
+func TestMessageService_TimeIsLockedOnceTriaged(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, messages, layers, _ := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	messageSvc := factory.MessageService(messages, incidents)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Übung", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	recordedAt := testAt.Add(-time.Hour)
+	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		"Original", "Alpha", "", "Beta", "", shared.MediumRadio, &recordedAt, testActor)
+	require.NoError(t, err)
+
+	earlier := recordedAt.Add(-10 * time.Minute)
+
+	t.Run("before it is triaged the time can be corrected", func(t *testing.T) {
+		state, err := messageSvc.CorrectMessage(ctx(), ms.ID, nil, nil, nil, nil, nil, nil, &earlier, testActor)
+		require.NoError(t, err)
+		assert.True(t, earlier.Equal(state.Time))
+	})
+
+	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityNormal, nil, nil, testActor)
+	require.NoError(t, err)
+
+	t.Run("afterwards it cannot", func(t *testing.T) {
+		later := earlier.Add(5 * time.Minute)
+
+		_, err := messageSvc.CorrectMessage(ctx(), ms.ID, nil, nil, nil, nil, nil, nil, &later, testActor)
+		require.ErrorIs(t, err, shared.ErrMessageTimeLocked)
+	})
+
+	t.Run("but the rest can, and the same time may be sent again", func(t *testing.T) {
+		content := "Korrigiert"
+
+		_, err := messageSvc.CorrectMessage(ctx(), ms.ID, &content, nil, nil, nil, nil, nil, &earlier, testActor)
+		require.NoError(t, err)
+	})
 }
 
 func TestMessageService_TriageMessage(t *testing.T) {

@@ -145,6 +145,7 @@
   "messageFlow": "flusso di segnalazione",
   "messageSheet": "Modulo di registrazione",
   "messageTriageTitle": "valuta il messaggio",
+  "messageTimeLocked": "L'orario non può più essere modificato perché il messaggio è già stato smistato.",
   "messageTimeTooFarInFuture": "L'orario del messaggio non può essere più di cinque minuti nel futuro.",
   "name": "nome",
   "incidentName": "nome di incidente",
@@ -314,6 +315,7 @@
     "FEATURE_HAS_LATER_CHANGES": "L'oggetto ha modifiche successive e non può quindi essere rimosso in questo momento.",
     "FEATURE_NOT_REMOVED": "L'oggetto non è stato rimosso.",
     "BEFORE_FEATURE_REMOVED": "L'oggetto non può essere ripristinato prima della sua rimozione.",
+    "MESSAGE_TIME_LOCKED": "L'orario di un messaggio smistato non può essere modificato.",
     "UNKNOWN": "Si è verificato un errore imprevisto."
   },
   "incidentAccess": {

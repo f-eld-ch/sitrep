@@ -169,6 +169,53 @@ func TestMessage_Correct(t *testing.T) {
 	})
 }
 
+func TestMessage_TimeLockedOnceTriaged(t *testing.T) {
+	id := shared.MessageID(uuid.New())
+	divID := shared.DivisionID(uuid.New())
+	earlier := at.Add(-time.Hour)
+
+	triaged := func(t *testing.T, status shared.TriageStatus) *message.Message {
+		t.Helper()
+
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+		require.NoError(t, m.Triage(status, shared.PriorityNormal, []shared.DivisionID{divID}, nil, actor, at, actor))
+		m.Root().ClearPending()
+
+		return m
+	}
+
+	t.Run("a message that is not triaged yet can change its time", func(t *testing.T) {
+		m := replay(t, id, []eventsourcing.Event{recorded(id)})
+
+		require.NoError(t, m.Correct(nil, nil, nil, nil, nil, nil, &earlier, actor, at, actor))
+		assert.True(t, earlier.Equal(m.Time()))
+	})
+
+	t.Run("a triaged message cannot", func(t *testing.T) {
+		m := triaged(t, shared.TriageDone)
+
+		err := m.Correct(nil, nil, nil, nil, nil, nil, &earlier, actor, at, actor)
+
+		require.ErrorIs(t, err, shared.ErrMessageTimeLocked)
+		assert.Empty(t, m.Root().PendingEvents())
+	})
+
+	t.Run("a message waiting for more information is not triaged yet", func(t *testing.T) {
+		m := triaged(t, shared.TriageMoreInfo)
+
+		require.NoError(t, m.Correct(nil, nil, nil, nil, nil, nil, &earlier, actor, at, actor))
+	})
+
+	t.Run("a triaged message may repeat its time, and change anything else", func(t *testing.T) {
+		m := triaged(t, shared.TriageDone)
+		same := m.Time()
+		content := "korrigiert"
+
+		require.NoError(t, m.Correct(&content, nil, nil, nil, nil, nil, &same, actor, at, actor))
+		assert.Equal(t, "korrigiert", m.Content())
+	})
+}
+
 func TestMessage_Triage(t *testing.T) {
 	id := shared.MessageID(uuid.New())
 	divID := shared.DivisionID(uuid.New())
@@ -450,24 +497,25 @@ func TestMessage_DivisionAcknowledgement(t *testing.T) {
 		assert.False(t, m.IsAcknowledgedBy(mapDiv))
 	})
 
-	t.Run("correcting content or time clears all acknowledgements", func(t *testing.T) {
+	t.Run("correcting the content clears all acknowledgements", func(t *testing.T) {
 		newContent := "Wasserstand sinkt"
+
+		m := triaged(t, mapDiv, otherDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		require.NoError(t, m.AcknowledgeForDivision(otherDiv, actor, at))
+		require.NoError(t, m.Correct(&newContent, nil, nil, nil, nil, nil, nil, actor, at, actor))
+		assert.Empty(t, m.Acknowledgements())
+	})
+
+	t.Run("the time cannot be corrected, so acknowledgements stay", func(t *testing.T) {
 		newTime := at.Add(-time.Minute)
 
-		for name, correct := range map[string]func(*message.Message) error{
-			"content": func(m *message.Message) error {
-				return m.Correct(&newContent, nil, nil, nil, nil, nil, nil, actor, at, actor)
-			},
-			"time": func(m *message.Message) error {
-				return m.Correct(nil, nil, nil, nil, nil, nil, &newTime, actor, at, actor)
-			},
-		} {
-			m := triaged(t, mapDiv, otherDiv)
-			require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
-			require.NoError(t, m.AcknowledgeForDivision(otherDiv, actor, at))
-			require.NoError(t, correct(m), name)
-			assert.Empty(t, m.Acknowledgements(), name)
-		}
+		m := triaged(t, mapDiv)
+		require.NoError(t, m.AcknowledgeForDivision(mapDiv, actor, at))
+		require.ErrorIs(t,
+			m.Correct(nil, nil, nil, nil, nil, nil, &newTime, actor, at, actor),
+			shared.ErrMessageTimeLocked)
+		assert.True(t, m.IsAcknowledgedBy(mapDiv))
 	})
 
 	t.Run("correcting other fields keeps acknowledgements", func(t *testing.T) {

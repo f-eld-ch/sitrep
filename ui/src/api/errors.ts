@@ -18,6 +18,7 @@ export type ApiErrorCode =
   | "FEATURE_HAS_LATER_CHANGES"
   | "FEATURE_NOT_REMOVED"
   | "BEFORE_FEATURE_REMOVED"
+  | "MESSAGE_TIME_LOCKED"
   | "UNKNOWN";
 
 const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
@@ -40,6 +41,7 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
   FEATURE_HAS_LATER_CHANGES: "The object has later changes, so it cannot be removed at this time.",
   FEATURE_NOT_REMOVED: "The object has not been removed.",
   BEFORE_FEATURE_REMOVED: "The object cannot be restored before it was removed.",
+  MESSAGE_TIME_LOCKED: "The time of a triaged message cannot be changed.",
   UNKNOWN: "An unexpected error occurred.",
 };
 
@@ -77,6 +79,7 @@ const knownCodes = new Set<ApiErrorCode>([
   "FEATURE_HAS_LATER_CHANGES",
   "FEATURE_NOT_REMOVED",
   "BEFORE_FEATURE_REMOVED",
+  "MESSAGE_TIME_LOCKED",
 ]);
 
 function isKnownCode(code: unknown): code is ApiErrorCode {

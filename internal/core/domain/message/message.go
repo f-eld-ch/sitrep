@@ -226,6 +226,12 @@ func (m *Message) Correct(
 		if err := validateMessageTime(*msgTime, at); err != nil {
 			return err
 		}
+
+		// Once triaged, the divisions act on the message at its time (the Nachrichtenkarte draws
+		// at it, others acknowledge it), so the time is fixed. Saying the same time again is fine.
+		if m.triage == shared.TriageDone && !msgTime.Equal(m.time) {
+			return shared.ErrMessageTimeLocked
+		}
 	}
 
 	eventsourcing.TrackChange(m, Corrected{
@@ -408,8 +414,9 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.createdAt = e.OccurredAt
 		m.authorSub = &d.AuthorSub
 	case Corrected:
-		// What the divisions acted on changed, so they have to look at the message again.
-		if d.Content != nil && *d.Content != m.content || d.Time != nil && !d.Time.Equal(m.time) {
+		// What the divisions acted on changed, so they have to look at the message again. (Its time
+		// cannot change once it is triaged, so only the content can.)
+		if d.Content != nil && *d.Content != m.content {
 			clear(m.acknowledgements)
 		}
 

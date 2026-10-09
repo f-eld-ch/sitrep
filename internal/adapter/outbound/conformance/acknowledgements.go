@@ -95,9 +95,8 @@ func RunMessageAcknowledgements(t *testing.T, f Factory) {
 		assert.Equal(t, []uuid.UUID{uuid.UUID(scDiv)}, acknowledged(t, b, id))
 	})
 
-	t.Run("CorrectingContentOrTimeClearsAcknowledgements", func(t *testing.T) {
+	t.Run("CorrectingContentClearsAcknowledgements", func(t *testing.T) {
 		newContent := "Pegel sinkt"
-		newTime := at.Add(-time.Minute)
 
 		b := f(t)
 		id := project(t, b, func(m *message.Message) {
@@ -105,13 +104,6 @@ func RunMessageAcknowledgements(t *testing.T, f Factory) {
 			require.NoError(t, m.Correct(&newContent, nil, nil, nil, nil, nil, nil, "sys", at, "sys"))
 		})
 		assert.Empty(t, acknowledged(t, b, id), "content change")
-
-		b = f(t)
-		id = project(t, b, func(m *message.Message) {
-			require.NoError(t, m.AcknowledgeForDivision(mapDiv, "operator", at))
-			require.NoError(t, m.Correct(nil, nil, nil, nil, nil, nil, &newTime, "sys", at, "sys"))
-		})
-		assert.Empty(t, acknowledged(t, b, id), "time change")
 
 		sender := "Neuer Absender"
 		b = f(t)

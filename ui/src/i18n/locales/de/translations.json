@@ -145,6 +145,7 @@
   "messageFlow": "Meldefluss",
   "messageSheet": "Meldezettel",
   "messageTriageTitle": "Triage der Nachricht",
+  "messageTimeLocked": "Die Zeit kann nicht mehr geändert werden, weil die Meldung bereits triagiert ist.",
   "messageTimeTooFarInFuture": "Die Nachrichtenzeit darf nicht mehr als fünf Minuten in der Zukunft liegen.",
   "name": "Name",
   "incidentName": "Ereignisname",
@@ -314,6 +315,7 @@
     "FEATURE_HAS_LATER_CHANGES": "Das Objekt hat spätere Änderungen und kann deshalb zu diesem Zeitpunkt nicht entfernt werden.",
     "FEATURE_NOT_REMOVED": "Das Objekt wurde nicht entfernt.",
     "BEFORE_FEATURE_REMOVED": "Das Objekt kann nicht vor seiner Entfernung wiederhergestellt werden.",
+    "MESSAGE_TIME_LOCKED": "Die Zeit einer triagierten Meldung kann nicht geändert werden.",
     "UNKNOWN": "Ein unbekannter Fehler ist aufgetreten."
   },
   "incidentAccess": {

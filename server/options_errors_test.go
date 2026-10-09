@@ -16,6 +16,7 @@ func TestMapTimelineErrorCode(t *testing.T) {
 		"FEATURE_HAS_LATER_CHANGES": shared.ErrFeatureHasLaterChanges,
 		"FEATURE_NOT_REMOVED":       shared.ErrFeatureNotRemoved,
 		"BEFORE_FEATURE_REMOVED":    shared.ErrBeforeFeatureRemoved,
+		"MESSAGE_TIME_LOCKED":       shared.ErrMessageTimeLocked,
 	}
 
 	for want, sentinel := range tests {

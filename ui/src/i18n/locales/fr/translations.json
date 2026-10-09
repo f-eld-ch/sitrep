@@ -145,6 +145,7 @@
   "messageFlow": "Liste de distribution",
   "messageSheet": "formulaire de message",
   "messageTriageTitle": "trier le message",
+  "messageTimeLocked": "L'heure ne peut plus être modifiée, car le message a déjà été trié.",
   "messageTimeTooFarInFuture": "L'heure du message ne peut pas être à plus de cinq minutes dans le futur.",
   "name": "nom",
   "incidentName": "Nom de l'événement",
@@ -314,6 +315,7 @@
     "FEATURE_HAS_LATER_CHANGES": "L'objet a des modifications ultérieures et ne peut donc pas être supprimé à ce moment.",
     "FEATURE_NOT_REMOVED": "L'objet n'a pas été supprimé.",
     "BEFORE_FEATURE_REMOVED": "L'objet ne peut pas être rétabli avant sa suppression.",
+    "MESSAGE_TIME_LOCKED": "L'heure d'un message trié ne peut pas être modifiée.",
     "UNKNOWN": "Une erreur inattendue s'est produite."
   },
   "incidentAccess": {

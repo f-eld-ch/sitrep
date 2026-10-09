@@ -266,6 +266,7 @@ var timelineErrors = []error{
 	shared.ErrFeatureHasLaterChanges,
 	shared.ErrFeatureNotRemoved,
 	shared.ErrBeforeFeatureRemoved,
+	shared.ErrMessageTimeLocked,
 }
 
 // mapTimelineErrorCode returns the code of a timeline domain error; ok is false for anything else.

@@ -198,6 +198,10 @@ var (
 	// that precedes changes already recorded for it.
 	ErrFeatureHasLaterChanges = errors.New("FEATURE_HAS_LATER_CHANGES")
 
+	// ErrMessageTimeLocked is returned when the time of a message that has been triaged is
+	// changed. What was drawn and acknowledged for it is tied to that time.
+	ErrMessageTimeLocked = errors.New("MESSAGE_TIME_LOCKED")
+
 	// ErrFeatureNotRemoved is returned when a feature that is still on the map is restored.
 	ErrFeatureNotRemoved = errors.New("FEATURE_NOT_REMOVED")
 
