@@ -104,6 +104,7 @@
       "label": "Valido dal",
       "hint": "La modifica vale da questo momento sulla linea temporale."
     },
+    "selectionRing": "Evidenzia l'oggetto selezionato",
     "pending": {
       "time": "Momento",
       "hint": "L'oggetto viene creato solo con «Salva».",

@@ -11,7 +11,7 @@ import { first, isEqual, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import { faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
+import { faBullseye, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -194,6 +194,10 @@ function Layers({
   const [highlightMessage, setHighlightMessage] = useState(true);
   // The read-only map frames its layer by itself until somebody moves it; the button resumes.
   const [following, setFollowing] = useState(true);
+  // The ring around a selected feature: always on where one edits, an option on a read-only map,
+  // where it starts off.
+  const { onSelect } = useContext(MapSelectionContext);
+  const [showRing, setShowRing] = useState(!readOnly);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -210,6 +214,9 @@ function Layers({
         // Collapsed, the buttons stay in the corner; an open panel is lifted above the slider.
         className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 [&>nav]:mb-[calc(var(--map-timeline-height)-1rem)]!"
       >
+        {readOnly && onSelect && (
+          <SelectionRingToggle enabled={showRing} onToggle={() => setShowRing((on) => !on)} />
+        )}
         {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
         {drawingMessage && (
           <MessageHighlightToggle
@@ -248,8 +255,27 @@ function Layers({
           renderRemoved={(fc) => <InactiveLayer id="message-removed" featureCollection={fc} />}
         />
       )}
-      <FeatureSelectionReporter clickLayerIds={clickLayerIds} />
+      <FeatureSelectionReporter clickLayerIds={clickLayerIds} showRing={showRing} />
     </>
+  );
+}
+
+function SelectionRingToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="maplibregl-ctrl maplibregl-ctrl-group mb-0! self-end text-black">
+      <button
+        type="button"
+        aria-pressed={enabled}
+        aria-label={t("mapview.selectionRing")}
+        title={t("mapview.selectionRing")}
+        className={clsx("maplibregl-ctrl-icon", enabled && "text-primary!")}
+        onClick={onToggle}
+      >
+        <FontAwesomeIcon icon={faBullseye} size="lg" />
+      </button>
+    </div>
   );
 }
 

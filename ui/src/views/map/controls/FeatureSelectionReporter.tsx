@@ -22,7 +22,14 @@ const HOVER_INTERVAL_MS = 60;
  * `clickLayerIds` are the style layers a click on a passive layer can hit; the layer being
  * edited is drawn by mapbox-gl-draw, whose selection arrives as `selectedFeature`.
  */
-export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: string[] }) {
+export function FeatureSelectionReporter({
+  clickLayerIds,
+  showRing = true,
+}: {
+  clickLayerIds: string[];
+  /** Draw the ring around the selected feature. The selection is reported either way. */
+  showRing?: boolean;
+}) {
   const { state, dispatch } = useContext(LayerContext);
   const { current: map } = useMap();
   const { drawingMessage } = useContext(MapTimeContext);
@@ -98,5 +105,5 @@ export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: str
     onSelect?.(featureId);
   }, [featureId, onSelect]);
 
-  return <SelectedFeatureHighlight featureId={featureId} />;
+  return <SelectedFeatureHighlight featureId={showRing ? featureId : undefined} />;
 }

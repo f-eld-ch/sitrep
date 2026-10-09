@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LayerContext, type LayerState } from "../LayerContext";
 import { MapSelectionContext } from "../MapSelectionContext";
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("react-map-gl/maplibre", () => ({
   Layer: () => null,
-  Source: () => null,
+  Source: ({ id }: { id: string }) => <div data-testid={`source-${id}`} />,
   useMap: () => ({
     current: {
       on: (type: string, handler: (e: unknown) => void) => (mocks.handlers[type] = handler),
@@ -41,14 +41,19 @@ const icon = (id: string) => ({
   properties: { featureId: id },
 });
 
-function setup({ onSelect = vi.fn(), drawing = false } = {}) {
+function setup({
+  onSelect = vi.fn(),
+  drawing = false,
+  showRing,
+  layerState = state,
+}: { onSelect?: () => void; drawing?: boolean; showRing?: boolean; layerState?: LayerState } = {}) {
   return render(
-    <LayerContext.Provider value={{ state, dispatch: vi.fn() }}>
+    <LayerContext.Provider value={{ state: layerState, dispatch: vi.fn() }}>
       <MapTimeContext.Provider
         value={drawing ? { drawingMessage: { id: "m", time: new Date() } } : {}}
       >
         <MapSelectionContext.Provider value={{ onSelect }}>
-          <FeatureSelectionReporter clickLayerIds={["layer"]} />
+          <FeatureSelectionReporter clickLayerIds={["layer"]} showRing={showRing} />
         </MapSelectionContext.Provider>
       </MapTimeContext.Provider>
     </LayerContext.Provider>,
@@ -105,5 +110,38 @@ describe("FeatureSelectionReporter cursor", () => {
     setup({ drawing: true });
 
     expect(mocks.handlers.mousemove).toBeUndefined();
+  });
+
+  describe("FeatureSelectionReporter ring", () => {
+    const selected = {
+      ...state,
+      layers: [
+        {
+          layer: {
+            id: "l1",
+            kind: "STANDARD",
+            features: [
+              { id: "f1", geometry: { type: "Point", coordinates: [8, 47] }, properties: {} },
+            ],
+          },
+          isVisible: true,
+        },
+      ],
+      selectedFeature: "f1",
+    } as unknown as LayerState;
+
+    it("rings the selected feature by default", () => {
+      setup({ layerState: selected });
+
+      expect(screen.getByTestId("source-selected-feature")).toBeInTheDocument();
+    });
+
+    it("draws no ring when switched off, but still reports the selection", () => {
+      const onSelect = vi.fn();
+      setup({ layerState: selected, showRing: false, onSelect });
+
+      expect(screen.queryByTestId("source-selected-feature")).toBeNull();
+      expect(onSelect).toHaveBeenCalledWith("f1");
+    });
   });
 });

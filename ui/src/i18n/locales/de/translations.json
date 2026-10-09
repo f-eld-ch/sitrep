@@ -104,6 +104,7 @@
       "label": "Gültig ab",
       "hint": "Die Änderung gilt ab diesem Zeitpunkt auf dem Zeitstrahl."
     },
+    "selectionRing": "Ausgewähltes Objekt hervorheben",
     "pending": {
       "time": "Zeitpunkt",
       "hint": "Das Objekt wird erst mit «Speichern» angelegt.",
