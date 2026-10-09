@@ -107,6 +107,8 @@
     "pending": {
       "time": "Moment",
       "hint": "L'objet n'est créé qu'avec « Enregistrer ».",
+      "unsaved": "Des objets de la carte ne sont pas encore enregistrés ({{count}}). Ils seront perdus si vous quittez la page.",
+      "leave": "Quitter",
       "discard": "Annuler"
     }
   },

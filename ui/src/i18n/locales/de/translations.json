@@ -107,6 +107,8 @@
     "pending": {
       "time": "Zeitpunkt",
       "hint": "Das Objekt wird erst mit «Speichern» angelegt.",
+      "unsaved": "Es gibt noch nicht gespeicherte Objekte auf der Karte ({{count}}). Sie gehen verloren, wenn Sie die Seite verlassen.",
+      "leave": "Verlassen",
       "discard": "Verwerfen"
     }
   },

@@ -52,6 +52,7 @@ import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
 import { TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
+import { PendingFeaturesGuard } from "./controls/PendingFeaturesGuard";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
@@ -168,6 +169,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && !embedded && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
+        {!readOnly && <PendingFeaturesGuard />}
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>

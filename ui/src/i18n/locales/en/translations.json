@@ -107,6 +107,8 @@
     "pending": {
       "time": "Time",
       "hint": "The object is only created when you press “Save”.",
+      "unsaved": "There are objects on the map that are not saved yet ({{count}}). They are lost if you leave the page.",
+      "leave": "Leave",
       "discard": "Discard"
     }
   },

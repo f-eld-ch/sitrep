@@ -107,6 +107,8 @@
     "pending": {
       "time": "Momento",
       "hint": "L'oggetto viene creato solo con «Salva».",
+      "unsaved": "Ci sono oggetti sulla mappa non ancora salvati ({{count}}). Andranno persi se lasci la pagina.",
+      "leave": "Esci",
       "discard": "Scarta"
     }
   },
