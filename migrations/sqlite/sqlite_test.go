@@ -117,7 +117,7 @@ func TestBackfillMessageMap(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	_, err = provider.UpTo(t.Context(), 14)
+	_, err = provider.UpTo(t.Context(), 13)
 	require.NoError(t, err)
 
 	const (
@@ -282,7 +282,7 @@ func TestBackfillMessageMap(t *testing.T) {
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-migrated-1"))
 
 	// down removes exactly what the backfills wrote
-	_, err = provider.DownTo(t.Context(), 14)
+	_, err = provider.DownTo(t.Context(), 13)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"Opened", "DivisionAdded", "DivisionAdded"}, eventTypes("Incident", matched))
 	assert.Equal(t, []string{"Created"}, eventTypes("Layer", "l-matched-2"))

@@ -20,23 +20,12 @@ func GoMigrations() []*goose.Migration {
 	)
 	backfill.Source = "00011_backfill_default_schadenplatz.go"
 
-	messageMap := goose.NewGoMigration(15,
-		&goose.GoFunc{RunTx: upBackfillMessageMap},
-		&goose.GoFunc{RunTx: downBackfillMessageMap},
+	// The Nachrichtenkarte: read-model schema and the backfills, in one migration.
+	nachrichtenkarte := goose.NewGoMigration(14,
+		&goose.GoFunc{RunTx: upNachrichtenkarte},
+		&goose.GoFunc{RunTx: downNachrichtenkarte},
 	)
-	messageMap.Source = "00015_backfill_message_map.go"
+	nachrichtenkarte.Source = "00014_nachrichtenkarte.go"
 
-	acks := goose.NewGoMigration(18,
-		&goose.GoFunc{RunTx: upBackfillMessageMapAcknowledgements},
-		&goose.GoFunc{RunTx: downBackfillMessageMapAcknowledgements},
-	)
-	acks.Source = "00018_backfill_message_map_acknowledgements.go"
-
-	standardLayer := goose.NewGoMigration(19,
-		&goose.GoFunc{RunTx: upBackfillStandardLayer},
-		&goose.GoFunc{RunTx: downBackfillStandardLayer},
-	)
-	standardLayer.Source = "00019_backfill_standard_layer.go"
-
-	return []*goose.Migration{backfill, messageMap, acks, standardLayer}
+	return []*goose.Migration{backfill, nachrichtenkarte}
 }
