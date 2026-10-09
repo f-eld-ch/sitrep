@@ -72,6 +72,24 @@ describe("apiErrorFromApolloError", () => {
     expect(err.message).toMatch(/permission/i);
   });
 
+  it.each([
+    "NOT_TRIAGED_TO_DIVISION",
+    "BEFORE_FEATURE_PLACED",
+    "FEATURE_HAS_LATER_CHANGES",
+    "FEATURE_NOT_REMOVED",
+    "BEFORE_FEATURE_REMOVED",
+  ])("recognises the timeline code %s", (code) => {
+    mockCombined.mockReturnValue(true);
+    const e = Object.assign(new Error(`input:2:3: restoreFeature ${code}`), {
+      errors: [{ message: `input:2:3: restoreFeature ${code}`, extensions: { code } }],
+    });
+
+    const err = apiErrorFromApolloError(e);
+
+    expect(err.code).toBe(code);
+    expect(err.message).not.toBe("An unexpected error occurred.");
+  });
+
   it("uses the server message when it differs from the code after stripping", () => {
     mockCombined.mockReturnValue(true);
     const e = Object.assign(

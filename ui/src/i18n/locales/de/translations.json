@@ -307,6 +307,11 @@
     "CONFLICT": "Die Anfrage kann aufgrund eines Konflikts nicht ausgeführt werden.",
     "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "NETWORK_ERROR": "Keine Verbindung zum Server. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "NOT_TRIAGED_TO_DIVISION": "Diese Meldung ist dieser Abteilung nicht zugewiesen.",
+    "BEFORE_FEATURE_PLACED": "Die Änderung liegt vor dem Zeitpunkt, an dem das Objekt eingezeichnet wurde.",
+    "FEATURE_HAS_LATER_CHANGES": "Das Objekt hat spätere Änderungen und kann deshalb zu diesem Zeitpunkt nicht entfernt werden.",
+    "FEATURE_NOT_REMOVED": "Das Objekt wurde nicht entfernt.",
+    "BEFORE_FEATURE_REMOVED": "Das Objekt kann nicht vor seiner Entfernung wiederhergestellt werden.",
     "UNKNOWN": "Ein unbekannter Fehler ist aufgetreten."
   },
   "incidentAccess": {

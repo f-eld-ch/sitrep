@@ -239,6 +239,12 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	case errors.Is(e, shared.ErrConflict):
 		code = "CONFLICT"
 	default:
+		if timelineCode, ok := mapTimelineErrorCode(e); ok {
+			code = timelineCode
+
+			break
+		}
+
 		slog.LogAttrs(ctx, slog.LevelError, "resolver error", attrs...)
 
 		return &gqlerror.Error{
@@ -250,4 +256,25 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 	slog.LogAttrs(ctx, slog.LevelWarn, "resolver domain error", append(attrs, slog.String("code", code))...)
 
 	return &gqlerror.Error{Message: e.Error(), Extensions: map[string]any{"code": code}}
+}
+
+// timelineErrors are the expected outcomes of drawing on the message timeline and of
+// acknowledging a message. They carry their own code so the UI can say what went wrong.
+var timelineErrors = []error{
+	shared.ErrNotTriagedToDivision,
+	shared.ErrBeforeFeaturePlaced,
+	shared.ErrFeatureHasLaterChanges,
+	shared.ErrFeatureNotRemoved,
+	shared.ErrBeforeFeatureRemoved,
+}
+
+// mapTimelineErrorCode returns the code of a timeline domain error; ok is false for anything else.
+func mapTimelineErrorCode(e error) (string, bool) {
+	for _, sentinel := range timelineErrors {
+		if errors.Is(e, sentinel) {
+			return sentinel.Error(), true
+		}
+	}
+
+	return "", false
 }

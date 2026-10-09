@@ -307,6 +307,11 @@
     "CONFLICT": "La demande n'a pas pu être complétée en raison d'un conflit.",
     "INTERNAL_ERROR": "Une erreur interne s'est produite. Veuillez réessayer.",
     "NETWORK_ERROR": "Impossible de contacter le serveur. Veuillez vérifier votre connexion réseau.",
+    "NOT_TRIAGED_TO_DIVISION": "Ce message n'est pas attribué à cette division.",
+    "BEFORE_FEATURE_PLACED": "La modification est antérieure au moment où l'objet a été dessiné.",
+    "FEATURE_HAS_LATER_CHANGES": "L'objet a des modifications ultérieures et ne peut donc pas être supprimé à ce moment.",
+    "FEATURE_NOT_REMOVED": "L'objet n'a pas été supprimé.",
+    "BEFORE_FEATURE_REMOVED": "L'objet ne peut pas être rétabli avant sa suppression.",
     "UNKNOWN": "Une erreur inattendue s'est produite."
   },
   "incidentAccess": {

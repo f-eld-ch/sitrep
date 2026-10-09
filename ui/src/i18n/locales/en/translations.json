@@ -307,6 +307,11 @@
     "CONFLICT": "The request could not be completed due to a conflict.",
     "INTERNAL_ERROR": "An internal error occurred. Please try again.",
     "NETWORK_ERROR": "Could not reach the server. Please check your network connection.",
+    "NOT_TRIAGED_TO_DIVISION": "This message is not assigned to that division.",
+    "BEFORE_FEATURE_PLACED": "The change is dated before the object was placed.",
+    "FEATURE_HAS_LATER_CHANGES": "The object has later changes, so it cannot be removed at this time.",
+    "FEATURE_NOT_REMOVED": "The object has not been removed.",
+    "BEFORE_FEATURE_REMOVED": "The object cannot be restored before it was removed.",
     "UNKNOWN": "An unexpected error occurred."
   },
   "incidentAccess": {
