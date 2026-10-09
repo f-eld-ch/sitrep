@@ -1,3 +1,4 @@
+import { throttle } from "lodash";
 import { useContext, useEffect, useState } from "react";
 import { useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
@@ -6,6 +7,9 @@ import { MapTimeContext } from "../MapTimeContext";
 import { isPendingFeature } from "../pending";
 import { pickFeature } from "./pickFeature";
 import { SelectedFeatureHighlight } from "./SelectedFeatureHighlight";
+
+/** How often the hover cursor looks at what is under the mouse. */
+const HOVER_INTERVAL_MS = 60;
 
 /**
  * Reports the feature the user clicked (on a passive layer) or selected (on the layer being
@@ -38,10 +42,22 @@ export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: str
       setClicked(typeof featureId === "string" ? featureId : undefined);
     };
 
+    // What a click would select shows the pointing finger, as the layer being edited does (the draw
+    // control sets that one), so the cursor does not depend on which layer a feature is on.
+    const container = map.getCanvasContainer();
+    const onMove = throttle((e: { point: { x: number; y: number } }) => {
+      const layers = clickLayerIds.filter((id) => map.getLayer(id));
+      container.style.cursor = pickFeature(map, e.point, layers) ? "pointer" : "";
+    }, HOVER_INTERVAL_MS);
+
     map.on("click", onClick);
+    map.on("mousemove", onMove);
 
     return () => {
       map.off("click", onClick);
+      map.off("mousemove", onMove);
+      onMove.cancel();
+      container.style.cursor = "";
     };
   }, [map, listening, clickLayerIds]);
 
