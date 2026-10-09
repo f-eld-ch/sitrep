@@ -194,10 +194,10 @@ function Layers({
   const [highlightMessage, setHighlightMessage] = useState(true);
   // The read-only map frames its layer by itself until somebody moves it; the button resumes.
   const [following, setFollowing] = useState(true);
-  // The ring around a selected feature: always on where one edits, an option on a read-only map,
-  // where it starts off.
+  // The ring around a selected feature is an option on every map that reports its selection, and
+  // starts off.
   const { onSelect } = useContext(MapSelectionContext);
-  const [showRing, setShowRing] = useState(!readOnly);
+  const [showRing, setShowRing] = useState(false);
   const activeLayer = incident?.closedAt != null ? undefined : state.activeLayer;
   // Features of layers drawn as plain sources can be clicked; the active layer's selection
   // comes from the draw control.
@@ -214,7 +214,7 @@ function Layers({
         // Collapsed, the buttons stay in the corner; an open panel is lifted above the slider.
         className="maplibregl-ctrl-bottom-right mx-2 my-2 flex flex-col gap-1 [&>nav]:mb-[calc(var(--map-timeline-height)-1rem)]!"
       >
-        {readOnly && onSelect && (
+        {onSelect && !drawingMessage && (
           <SelectionRingToggle enabled={showRing} onToggle={() => setShowRing((on) => !on)} />
         )}
         {readOnly && <FollowControl following={following} onFollow={() => setFollowing(true)} />}
