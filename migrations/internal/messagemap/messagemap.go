@@ -206,8 +206,7 @@ type LayerPlan struct {
 // None reports whether nothing needs to be written.
 func (p LayerPlan) None() bool { return p.AssignKindTo == "" && !p.AddNew }
 
-// PlanLayer decides what to write for an incident's layers. Streams must be
-// ordered oldest first; the oldest matching layer wins.
+// layerState is what is left of a layer stream once its events are replayed.
 type layerState struct {
 	id      string
 	name    string
@@ -257,6 +256,8 @@ func foldLayer(s LayerStream) (layerState, error) {
 	return st, nil
 }
 
+// PlanLayer decides what to write for an incident's layers. Streams must be
+// ordered oldest first; the oldest matching layer wins.
 func PlanLayer(streams []LayerStream) (LayerPlan, error) {
 	var live []layerState
 

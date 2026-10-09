@@ -27,8 +27,9 @@ import (
 // from, so events are replayed in order of when they took effect (occurred_at), not when they
 // were recorded.
 //
-// Which streams to replay comes from the read models, which also enforce read access;
-// the stream content comes from the event store.
+// Which streams to replay comes from the read models; the stream content comes from the event
+// store. Neither checks who is asking: the caller has to have established that the actor may
+// read the incident (the Incident resolver does).
 type TimelineService struct {
 	events  outbound.EventStore
 	queries outbound.Queries
