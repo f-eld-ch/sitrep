@@ -231,20 +231,6 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                   <span>{t("triageView")}</span>
                 </NavLink>
               )}
-              {showNewTriageView && (
-                <NavLink
-                  className={({ isActive }) =>
-                    clsx(
-                      mobileSubItem,
-                      isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-                    )
-                  }
-                  to={`/incident/${incidentId}/journal/messagemap`}
-                >
-                  <FontAwesomeIcon icon={faMapLocationDot} />
-                  <span>{t("divisionsNames.Karte.description")}</span>
-                </NavLink>
-              )}
             </>
           )}
           {/* Resources */}
@@ -343,6 +329,20 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
             >
               <FontAwesomeIcon icon={faMapLocationDot} />
               <span className="capitalize">{t("map")}</span>
+            </NavLink>
+          )}
+          {showNewTriageView && incidentId && (
+            <NavLink
+              className={({ isActive }) =>
+                clsx(
+                  mobileSubItem,
+                  isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                )
+              }
+              to={`/incident/${incidentId}/journal/messagemap`}
+            >
+              <FontAwesomeIcon icon={faMapLocationDot} />
+              <span>{t("divisionsNames.Karte.description")}</span>
             </NavLink>
           )}
           {/* User settings */}
@@ -549,20 +549,6 @@ const JournalNavBar: FunctionComponent = () => {
             <span>{t("triageView")}</span>
           </NavLink>
         )}
-        {showNewTriageView && (
-          <NavLink
-            className={({ isActive }) =>
-              clsx(
-                "flex w-full items-center gap-2 px-4 py-2 capitalize",
-                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-              )
-            }
-            to={`/incident/${incidentId}/journal/messagemap`}
-          >
-            <FontAwesomeIcon icon={faMapLocationDot} />
-            <span>{t("divisionsNames.Karte.description")}</span>
-          </NavLink>
-        )}
       </div>
     </div>
   );
@@ -657,23 +643,42 @@ const ResourcesNavBar: FunctionComponent = () => {
 const MapNavBar: FunctionComponent = () => {
   const { incidentId } = useParams();
   const { t } = useTranslation();
+  const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
 
   if (!incidentId) return;
 
   return (
-    <NavLink
-      className={({ isActive }) =>
-        clsx(
-          "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
-          isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-        )
-      }
-      to={`/incident/${incidentId}/map`}
-      title={t("map")}
-    >
-      <FontAwesomeIcon icon={faMapLocationDot} />
-      <span className="hidden xl:inline">{t("map")}</span>
-    </NavLink>
+    <div className="group relative flex items-stretch">
+      <NavLink
+        className={({ isActive }) =>
+          clsx(
+            "flex items-center gap-2 px-3 whitespace-nowrap capitalize",
+            isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+          )
+        }
+        to={`/incident/${incidentId}/map`}
+        title={t("map")}
+      >
+        <FontAwesomeIcon icon={faMapLocationDot} />
+        <span className="hidden xl:inline">{t("map")}</span>
+      </NavLink>
+      {showNewTriageView && (
+        <div className="absolute top-full left-0 z-50 hidden min-w-52 overflow-hidden rounded-b-xl border-t border-border bg-bg text-sm whitespace-nowrap text-text shadow-lg group-hover:block [&_a]:text-inherit">
+          <NavLink
+            className={({ isActive }) =>
+              clsx(
+                "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+              )
+            }
+            to={`/incident/${incidentId}/journal/messagemap`}
+          >
+            <FontAwesomeIcon icon={faMapLocationDot} />
+            <span>{t("divisionsNames.Karte.description")}</span>
+          </NavLink>
+        </div>
+      )}
+    </div>
   );
 };
 
