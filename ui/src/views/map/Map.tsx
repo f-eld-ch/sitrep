@@ -904,7 +904,7 @@ function Draw() {
         uncombine_features: false,
       }}
       boxSelect={false}
-      clickBuffer={10}
+      clickBuffer={16}
       defaultMode="simple_select"
       modes={modes}
       userProperties={true}

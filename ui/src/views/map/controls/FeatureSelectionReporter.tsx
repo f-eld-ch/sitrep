@@ -4,6 +4,7 @@ import { LayerContext } from "../LayerContext";
 import { MapSelectionContext } from "../MapSelectionContext";
 import { MapTimeContext } from "../MapTimeContext";
 import { isPendingFeature } from "../pending";
+import { pickFeature } from "./pickFeature";
 import { SelectedFeatureHighlight } from "./SelectedFeatureHighlight";
 
 /**
@@ -30,9 +31,8 @@ export function FeatureSelectionReporter({ clickLayerIds }: { clickLayerIds: str
 
     const onClick = (e: { point: { x: number; y: number } }) => {
       const layers = clickLayerIds.filter((id) => map.getLayer(id));
-      const hit = layers.length
-        ? map.queryRenderedFeatures([e.point.x, e.point.y], { layers })[0]
-        : undefined;
+      // A small icon is hard to hit exactly: whatever is close enough counts.
+      const hit = pickFeature(map, e.point, layers);
       const featureId = hit?.properties?.featureId;
 
       setClicked(typeof featureId === "string" ? featureId : undefined);
