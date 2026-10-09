@@ -622,6 +622,10 @@ function Draw() {
     [drawingMessage],
   );
 
+  // Features created in this session for a message. Deleting one of them leaves nothing to show
+  // as a ghost, and the feature history may not list them yet to say so.
+  const createdHere = useRef(new Set<string>());
+
   const [addFeature] = useAddFeature();
   const [modifyFeature] = useModifyFeature();
   const [deleteFeature] = useDeleteFeature();
@@ -683,6 +687,7 @@ function Draw() {
           change,
           asOf,
         }).then(({ featureId }) => {
+          createdHere.current.add(featureId);
           dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
         });
 
@@ -758,7 +763,8 @@ function Draw() {
         if (drawingMessage) onDrawingChange?.();
 
         const removedId = String(feature.id ?? "");
-        if (drawingMessage) {
+        const placedThisSession = createdHere.current.delete(removedId);
+        if (drawingMessage && !placedThisSession) {
           // Shown as a ghost at once; the feature history confirms it a moment later.
           dispatch({
             type: "ADD_REMOVED_FEATURE",
