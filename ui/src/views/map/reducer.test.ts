@@ -79,6 +79,37 @@ describe("activeLayerReducer", () => {
 });
 
 describe("layersReducer", () => {
+  it("puts the Nachrichtenkarte first, whatever it is called, then the others alphabetically", () => {
+    const messageMap = (name: string, incident: string): Layer => ({
+      ...layer(name, incident),
+      kind: "MESSAGE_MAP",
+    });
+
+    const result = layersReducer([], {
+      type: "SET_LAYERS",
+      payload: {
+        viewedIncidentId: "kfs",
+        layers: [
+          layer("Zeta", "kfs"),
+          layer("alpha", "kfs"),
+          messageMap("Zzz Nachrichtenkarte", "kfs"),
+          layer("Beta", "kfs"),
+          layer("Lage", "child"),
+          messageMap("Carte", "child"),
+        ],
+      },
+    });
+
+    expect(result.map((item) => item.layer.name)).toEqual([
+      "Zzz Nachrichtenkarte",
+      "alpha",
+      "Beta",
+      "Zeta",
+      "Carte",
+      "Lage",
+    ]);
+  });
+
   it("orders own layers first, then child layers by incident and layer name", () => {
     const result = layersReducer([], {
       type: "SET_LAYERS",

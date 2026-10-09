@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/client/react";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { apiErrorFromApolloError } from "../errors";
 import { omit } from "lodash";
@@ -248,6 +248,7 @@ export function useRestoreFeature(): CommandHook<RestoreFeatureArgs> {
 
 export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
   const [mutate, { loading, error }] = useMutation(CREATE_LAYER);
+  const { cache } = useApolloClient();
 
   const state: CommandState = {
     loading,
@@ -255,8 +256,22 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
   };
 
   const addLayer = async (args: AddLayerArgs): Promise<{ layerId: string }> => {
+    // The layer shows up at once, as the server will answer: the incident's own layers carry its name.
+    const own = cache
+      .readQuery({ query: GET_LAYERS, variables: { incidentId: args.incidentId } })
+      ?.layersForIncident.find((layer) => layer.sourceIncidentId === args.incidentId);
     const result = await mutate({
       variables: { incidentId: args.incidentId, name: args.name },
+      optimisticResponse: {
+        createLayer: {
+          __typename: "Layer",
+          id: `pending-layer-${crypto.randomUUID()}`,
+          sourceIncidentId: args.incidentId,
+          sourceIncidentName: own?.sourceIncidentName ?? "",
+          name: args.name,
+          kind: "STANDARD",
+        },
+      } as never,
       update(cache, { data }) {
         if (!data?.createLayer) return;
         const newLayer = data.createLayer;

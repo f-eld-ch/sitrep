@@ -171,7 +171,8 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <ScaleControl unit={"metric"} position={"bottom-left"} />
         {!readOnly && !embedded && <ExportControl position="bottom-left" />}
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
-        {!readOnly && <PendingFeaturesGuard />}
+        {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
+        {!readOnly && !embedded && <PendingFeaturesGuard />}
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>

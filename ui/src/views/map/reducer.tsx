@@ -200,6 +200,11 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
             }
           }
 
+          // The Nachrichtenkarte first, then the others alphabetically.
+          const leftMap = left.kind === "MESSAGE_MAP";
+          const rightMap = right.kind === "MESSAGE_MAP";
+          if (leftMap !== rightMap) return leftMap ? -1 : 1;
+
           return compareLayerText(left.name, right.name);
         })
         .map((layer) => ({

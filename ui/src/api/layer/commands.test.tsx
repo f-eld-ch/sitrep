@@ -1,8 +1,18 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useAddFeature, useDeleteFeature, useModifyFeature, useRestoreFeature } from "./commands";
+import {
+  useAddFeature,
+  useAddLayer,
+  useDeleteFeature,
+  useModifyFeature,
+  useRestoreFeature,
+} from "./commands";
 
-vi.mock("@apollo/client/react", () => ({ useMutation: vi.fn() }));
+vi.mock("@apollo/client/react", () => ({
+  useMutation: vi.fn(),
+  // Read lazily: the cache of the test at hand.
+  useApolloClient: () => ({ cache }),
+}));
 
 type MutateOptions = {
   variables: Record<string, unknown>;
@@ -182,6 +192,64 @@ describe("useAddFeature", () => {
         incidentId: "inc-1",
       }),
     ).rejects.toThrow("Failed to add feature");
+  });
+});
+
+describe("useAddLayer", () => {
+  const ownLayer = {
+    id: "layer-1",
+    sourceIncidentId: "inc-1",
+    sourceIncidentName: "Brand",
+    name: "Lage",
+    kind: "STANDARD",
+    features: [],
+  };
+
+  it("shows the layer at once, as the server will answer it", async () => {
+    cache = new FakeCache([ownLayer]);
+    const mutate = await setupMutation({
+      createLayer: { ...ownLayer, id: "real", name: "Neu" },
+    });
+    const { result } = renderHook(() => useAddLayer());
+
+    await result.current[0]({ incidentId: "inc-1", name: "Neu" });
+
+    const options = mutate.mock.calls[0][0];
+    expect(options.optimisticResponse).toMatchObject({
+      createLayer: {
+        __typename: "Layer",
+        sourceIncidentId: "inc-1",
+        sourceIncidentName: "Brand",
+        name: "Neu",
+        kind: "STANDARD",
+      },
+    });
+    expect((options.optimisticResponse as { createLayer: { id: string } }).createLayer.id).toMatch(
+      /^pending-layer-/,
+    );
+  });
+
+  it("adds the answered layer, empty, after the existing ones", async () => {
+    cache = new FakeCache([ownLayer]);
+    await setupMutation({ createLayer: { ...ownLayer, id: "real", name: "Neu" } });
+    const { result } = renderHook(() => useAddLayer());
+
+    const added = await result.current[0]({ incidentId: "inc-1", name: "Neu" });
+
+    expect(added).toEqual({ layerId: "real" });
+    const layers = (cache.written as { layersForIncident: { id: string; features: unknown[] }[] })
+      .layersForIncident;
+    expect(layers.map((l) => l.id)).toEqual(["layer-1", "real"]);
+    expect(layers[1].features).toEqual([]);
+  });
+
+  it("fails when the server does not return a layer", async () => {
+    await setupMutation({ createLayer: null });
+    const { result } = renderHook(() => useAddLayer());
+
+    await expect(result.current[0]({ incidentId: "inc-1", name: "Neu" })).rejects.toThrow(
+      "Failed to add layer",
+    );
   });
 });
 
