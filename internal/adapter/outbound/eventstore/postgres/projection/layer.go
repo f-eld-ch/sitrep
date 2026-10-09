@@ -5,6 +5,7 @@ import (
 	"encoding/json/jsontext"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -264,6 +265,13 @@ func recordFeatureChange(ctx context.Context, tx pgx.Tx, e eventsourcing.Event) 
 			FROM readmodel.feature_change
 			WHERE feature_id = $1 AND change = 'placed'`, e.StreamID).Scan(&incidentID, &layerID)
 		if errors.Is(err, pgx.ErrNoRows) {
+			// Nothing to attach the change to. Not an error (a replay can only be missing the
+			// placement of a feature that no longer matters), but worth being able to see.
+			slog.WarnContext(ctx, "feature change skipped: the feature has no placed change",
+				slog.String("stream_id", e.StreamID.String()),
+				slog.String("event_type", e.EventType),
+				slog.Int("version", e.Version))
+
 			return false, nil
 		}
 

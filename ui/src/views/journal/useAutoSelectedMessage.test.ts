@@ -60,6 +60,19 @@ describe("useAutoSelectedMessage", () => {
     expect(result.current.effectiveId).toBe("b");
   });
 
+  it("selects a handled message again when it becomes the candidate again", () => {
+    const { result, rerender } = renderHook(({ id }) => useAutoSelectedMessage(id), {
+      initialProps: { id: "a" as string | undefined },
+    });
+
+    act(() => result.current.handled("a"));
+    rerender({ id: undefined }); // everything is drawn
+    expect(result.current.effectiveId).toBeUndefined();
+
+    rerender({ id: "a" }); // its acknowledgement was revoked
+    expect(result.current.effectiveId).toBe("a");
+  });
+
   it("has nothing selected when there is no candidate", () => {
     const { result } = renderHook(() => useAutoSelectedMessage(undefined));
     expect(result.current.effectiveId).toBeUndefined();

@@ -7,6 +7,7 @@ import (
 	"encoding/json/v2"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -413,6 +414,13 @@ func recordFeatureChange(ctx context.Context, tx *sql.Tx, e eventsourcing.Event)
 			FROM readmodel_feature_change
 			WHERE feature_id = ? AND change = 'placed'`, featureID).Scan(&incidentID, &layerID)
 		if errors.Is(err, sql.ErrNoRows) {
+			// Nothing to attach the change to. Not an error (a replay can only be missing the
+			// placement of a feature that no longer matters), but worth being able to see.
+			slog.WarnContext(ctx, "feature change skipped: the feature has no placed change",
+				slog.String("stream_id", featureID),
+				slog.String("event_type", e.EventType),
+				slog.Int("version", e.Version))
+
 			return false, nil
 		}
 

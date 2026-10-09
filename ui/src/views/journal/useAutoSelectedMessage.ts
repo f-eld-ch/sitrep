@@ -42,6 +42,13 @@ export function useAutoSelectedMessage(defaultId: string | undefined): AutoSelec
     }
   }
 
+  // A message only needs to be kept out of the running while the cache still reports it as the
+  // candidate. Once the candidate has moved on it may become one again (its acknowledgement
+  // revoked, or the message corrected), and then it is selected like any other.
+  if (handledId !== undefined && defaultId !== handledId) {
+    setHandledId(undefined);
+  }
+
   // With nothing chosen or locked, the candidate is locked in. Checked on every render, not only
   // when the candidate changes: handling a message can find the candidate already advanced (the
   // mutation's result reaches the cache before the caller gets to say it is handled).
