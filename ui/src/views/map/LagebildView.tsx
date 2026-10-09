@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { useIncidentMessages } from "api/message";
 import { FilterableMessageStack } from "views/journal/FilterableMessageStack";
+import JournalMessage from "views/journal/Message";
 import { Map as IncidentMap } from "./index";
 import { useFeatureMessageIds } from "./useFeatureMessageIds";
 
@@ -33,10 +34,24 @@ export default function LagebildView() {
     (message) => asOf === undefined || message.time.getTime() <= asOf.getTime(),
   );
 
+  // The feature's messages, and the one shown in full below the stack: the one picked, or the only
+  // one there is.
+  const focused = messageIds
+    ? shownMessages.filter((message) => messageIds.includes(message.id))
+    : [];
+  const effectiveId = focused.some((message) => message.id === selectedMessageId)
+    ? selectedMessageId
+    : focused.length === 1
+      ? focused[0].id
+      : undefined;
+  const selectedMessage = focused.find((message) => message.id === effectiveId);
+
   return (
-    <div className="flex grow">
+    <div className="relative flex grow">
       {open && (
-        <aside className="mt-[2.75rem] flex w-[22rem] shrink-0 flex-col border-r border-border bg-bg">
+        // Over the map, not beside it: the map keeps its size when the stack comes and goes, so it
+        // does not resize and redraw. Starts below the map's own controls in the top left.
+        <aside className="absolute top-[11rem] bottom-10 left-2 z-10 flex w-[26rem] flex-col overflow-hidden rounded border border-border bg-bg shadow-lg">
           <FilterableMessageStack
             messages={shownMessages}
             focusMessageIds={messageIds}
@@ -44,10 +59,23 @@ export default function LagebildView() {
               setFeatureId(undefined);
               setDeselectToken((token) => token + 1);
             }}
-            effectiveId={selectedMessageId}
+            effectiveId={effectiveId}
             onSelect={setSelectedMessageId}
             className="min-h-0 flex-1"
           />
+          {/* The rows in the stack are cut short; the picked message is shown in full. */}
+          {selectedMessage && (
+            <div className="max-h-[55%] shrink-0 overflow-y-auto border-t border-border">
+              <JournalMessage
+                id={selectedMessage.id}
+                incidentId={incidentId ?? ""}
+                message={selectedMessage}
+                divisions={selectedMessage.divisions.map((entry) => entry.division)}
+                showControls={false}
+                stabilizeActionBar
+              />
+            </div>
+          )}
         </aside>
       )}
       <IncidentMap

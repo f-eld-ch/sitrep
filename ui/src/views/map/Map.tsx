@@ -343,6 +343,7 @@ function ReadOnlyLayers({
         ],
         {
           animate: true,
+          maxZoom: FIT_MAX_ZOOM,
           padding: { top: 40, bottom: 40, left: 40, right: 40 },
         },
       );
@@ -384,6 +385,9 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
 
   return layers[nextIndex].id;
 }
+
+/** Not closer than this when framing a layer: a lone icon keeps its surroundings. */
+const FIT_MAX_ZOOM = 16;
 
 /** For maps nobody edits live: the operator drawing for a message, and the read-only dashboard map. */
 const SLOW_POLL_INTERVAL_MS = 10_000;
@@ -581,6 +585,7 @@ function ActiveLayer() {
         ],
         {
           animate: true,
+          maxZoom: FIT_MAX_ZOOM,
           padding: { top: 30, bottom: 30, left: 30, right: 30 },
         },
       );

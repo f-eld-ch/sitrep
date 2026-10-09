@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import LagebildView from "./LagebildView";
 
@@ -9,9 +9,9 @@ const mocks = vi.hoisted(() => ({
 
 const at = (hour: number) => new Date(Date.UTC(2026, 0, 15, hour));
 const messages = [
-  { id: "early", time: at(10) },
-  { id: "middle", time: at(12) },
-  { id: "late", time: at(14) },
+  { id: "early", time: at(10), divisions: [] },
+  { id: "middle", time: at(12), divisions: [] },
+  { id: "late", time: at(14), divisions: [] },
 ];
 
 vi.mock("react-router", () => ({ useParams: () => ({ incidentId: "inc-1" }) }));
@@ -22,15 +22,26 @@ vi.mock("./useFeatureMessageIds", () => ({
   useFeatureMessageIds: () => mocks.featureMessageIds.current,
 }));
 vi.mock("views/journal/FilterableMessageStack", () => ({
-  FilterableMessageStack: ({ messages: shown }: { messages: { id: string }[] }) => {
+  FilterableMessageStack: ({
+    messages: shown,
+    onSelect,
+  }: {
+    messages: { id: string }[];
+    onSelect: (id: string) => void;
+  }) => {
     return (
       <ul>
         {shown.map((m) => (
-          <li key={m.id}>{m.id}</li>
+          <li key={m.id}>
+            <button onClick={() => onSelect(m.id)}>{m.id}</button>
+          </li>
         ))}
       </ul>
     );
   },
+}));
+vi.mock("views/journal/Message", () => ({
+  default: ({ id }: { id: string }) => <article data-testid="full-message">{id}</article>,
 }));
 vi.mock("./index", () => ({
   Map: (props: Record<string, unknown>) => {
@@ -84,5 +95,35 @@ describe("LagebildView", () => {
 
     moveSlider(undefined);
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
+  });
+
+  it("shows the picked message in full under the stack", () => {
+    render(<LagebildView />);
+    expect(screen.queryByTestId("full-message")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "middle" }));
+    expect(screen.getByTestId("full-message")).toHaveTextContent("middle");
+
+    fireEvent.click(screen.getByRole("button", { name: "late" }));
+    expect(screen.getByTestId("full-message")).toHaveTextContent("late");
+  });
+
+  it("shows the only message of a feature in full at once", () => {
+    mocks.featureMessageIds.current = ["middle"];
+    render(<LagebildView />);
+
+    expect(screen.getByTestId("full-message")).toHaveTextContent("middle");
+  });
+
+  it("drops the full message when the slider moves before it", () => {
+    render(<LagebildView />);
+    fireEvent.click(screen.getByRole("button", { name: "late" }));
+    expect(screen.getByTestId("full-message")).toBeInTheDocument();
+
+    moveSlider(at(11)); // only the early message existed: it is the only one there is
+    expect(screen.getByTestId("full-message")).toHaveTextContent("early");
+
+    moveSlider(at(9)); // nothing existed yet
+    expect(screen.queryByTestId("full-message")).toBeNull();
   });
 });
