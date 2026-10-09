@@ -55,7 +55,7 @@ jobs:
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           install-only: true
-          version: v2.13.2
+          version: v2.14.0
 
       # --diff reports and fails; a bare `fmt` rewrites the checkout and exits 0,
       # which never fails a build.
@@ -65,7 +65,7 @@ jobs:
       - name: Go Lint
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.13.2
+          version: v2.14.0
           args: --timeout=5m ./...
 
       - name: Go Test

@@ -48,7 +48,8 @@ func openGooseDB(ctx context.Context, dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	switch set.Dialect {
+	// Only Postgres and SQLite are supported; the default case rejects every other dialect.
+	switch set.Dialect { //nolint:exhaustive // the default case covers the dialects goose offers that we do not
 	case goose.DialectPostgres:
 		cfg, err := pgx.ParseConfig(dsn)
 		if err != nil {
