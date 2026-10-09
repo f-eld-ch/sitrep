@@ -96,4 +96,22 @@ describe("MessageStack", () => {
 
     expect(container.querySelectorAll(".fa-check")).toHaveLength(1);
   });
+
+  it("cuts a long message short, unless it is the selected one and the stack is told to expand it", () => {
+    const long = message("a", { content: "word ".repeat(60) });
+    const clamped = (container: HTMLElement) => container.querySelectorAll(".line-clamp-4").length;
+
+    const { container, rerender } = render(
+      <MessageStack messages={[long]} effectiveId="a" onSelect={vi.fn()} />,
+    );
+    expect(clamped(container)).toBe(1);
+
+    rerender(<MessageStack messages={[long]} effectiveId="a" onSelect={vi.fn()} expandSelected />);
+    expect(clamped(container)).toBe(0);
+
+    rerender(
+      <MessageStack messages={[long]} effectiveId={undefined} onSelect={vi.fn()} expandSelected />,
+    );
+    expect(clamped(container)).toBe(1);
+  });
 });

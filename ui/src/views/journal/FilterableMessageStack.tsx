@@ -69,6 +69,7 @@ export function FilterableMessageStack({
   onSelect,
   className,
   acknowledgementDivisionId,
+  expandSelected,
   extraChips,
   focusMessageIds,
   onClearFocus,
@@ -114,6 +115,7 @@ export function FilterableMessageStack({
         effectiveId={effectiveId}
         onSelect={onSelect}
         acknowledgementDivisionId={acknowledgementDivisionId}
+        expandSelected={expandSelected}
         className="min-h-0 w-full flex-1 shrink"
       />
       <div

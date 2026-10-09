@@ -39,9 +39,19 @@ export function useAutoSelectedMessage(defaultId: string | undefined): AutoSelec
       // An explicit choice replaces the lock, so a later reset picks a fresh default.
       if (lockedId !== undefined) setLockedId(undefined);
       if (handledId !== undefined) setHandledId(undefined);
-    } else if (lockedId === undefined && defaultId !== undefined && defaultId !== handledId) {
-      setLockedId(defaultId);
     }
+  }
+
+  // With nothing chosen or locked, the candidate is locked in. Checked on every render, not only
+  // when the candidate changes: handling a message can find the candidate already advanced (the
+  // mutation's result reaches the cache before the caller gets to say it is handled).
+  if (
+    selectedId === undefined &&
+    lockedId === undefined &&
+    defaultId !== undefined &&
+    defaultId !== handledId
+  ) {
+    setLockedId(defaultId);
   }
 
   const select = useCallback((id: string | undefined) => setSelectedId(id), []);

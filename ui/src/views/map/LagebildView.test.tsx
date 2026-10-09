@@ -5,6 +5,7 @@ import LagebildView from "./LagebildView";
 const mocks = vi.hoisted(() => ({
   featureMessageIds: { current: undefined as string[] | undefined },
   mapProps: { last: undefined as Record<string, unknown> | undefined },
+  stackProps: { last: undefined as Record<string, unknown> | undefined },
 }));
 
 const at = (hour: number) => new Date(Date.UTC(2026, 0, 15, hour));
@@ -24,11 +25,17 @@ vi.mock("./useFeatureMessageIds", () => ({
 vi.mock("views/journal/FilterableMessageStack", () => ({
   FilterableMessageStack: ({
     messages: shown,
+    effectiveId,
+    expandSelected,
     onSelect,
   }: {
     messages: { id: string }[];
+    effectiveId?: string;
+    expandSelected?: boolean;
     onSelect: (id: string) => void;
   }) => {
+    mocks.stackProps.last = { effectiveId, expandSelected };
+
     return (
       <ul>
         {shown.map((m) => (
@@ -39,9 +46,6 @@ vi.mock("views/journal/FilterableMessageStack", () => ({
       </ul>
     );
   },
-}));
-vi.mock("views/journal/Message", () => ({
-  default: ({ id }: { id: string }) => <article data-testid="full-message">{id}</article>,
 }));
 vi.mock("./index", () => ({
   Map: (props: Record<string, unknown>) => {
@@ -54,6 +58,7 @@ vi.mock("./index", () => ({
 beforeEach(() => {
   mocks.featureMessageIds.current = ["early", "middle", "late"];
   mocks.mapProps.last = undefined;
+  mocks.stackProps.last = undefined;
 });
 
 const moveSlider = (to: Date | undefined) => {
@@ -97,33 +102,33 @@ describe("LagebildView", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
   });
 
-  it("shows the picked message in full under the stack", () => {
+  it("shows the picked message in full in the stack", () => {
     render(<LagebildView />);
-    expect(screen.queryByTestId("full-message")).toBeNull();
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: undefined, expandSelected: true });
 
     fireEvent.click(screen.getByRole("button", { name: "middle" }));
-    expect(screen.getByTestId("full-message")).toHaveTextContent("middle");
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: "middle" });
 
     fireEvent.click(screen.getByRole("button", { name: "late" }));
-    expect(screen.getByTestId("full-message")).toHaveTextContent("late");
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: "late" });
   });
 
-  it("shows the only message of a feature in full at once", () => {
+  it("selects the only message of a feature at once", () => {
     mocks.featureMessageIds.current = ["middle"];
     render(<LagebildView />);
 
-    expect(screen.getByTestId("full-message")).toHaveTextContent("middle");
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: "middle", expandSelected: true });
   });
 
-  it("drops the full message when the slider moves before it", () => {
+  it("forgets the pick when the slider moves before it", () => {
     render(<LagebildView />);
     fireEvent.click(screen.getByRole("button", { name: "late" }));
-    expect(screen.getByTestId("full-message")).toBeInTheDocument();
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: "late" });
 
     moveSlider(at(11)); // only the early message existed: it is the only one there is
-    expect(screen.getByTestId("full-message")).toHaveTextContent("early");
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: "early" });
 
     moveSlider(at(9)); // nothing existed yet
-    expect(screen.queryByTestId("full-message")).toBeNull();
+    expect(mocks.stackProps.last).toMatchObject({ effectiveId: undefined });
   });
 });

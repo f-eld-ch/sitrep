@@ -50,8 +50,10 @@ function MessageRow(props: {
   onClick: () => void;
   setRef?: (el: HTMLButtonElement | null) => void;
   acknowledgementDivisionId?: string;
+  /** Show the whole message, not the cut-short summary. */
+  expanded?: boolean;
 }) {
-  const { message, selected, onClick, setRef, acknowledgementDivisionId } = props;
+  const { message, selected, onClick, setRef, acknowledgementDivisionId, expanded } = props;
   const acknowledged =
     acknowledgementDivisionId !== undefined &&
     message.acknowledgements.some((a) => a.divisionId === acknowledgementDivisionId);
@@ -83,7 +85,7 @@ function MessageRow(props: {
           <div
             className={clsx(
               "text-xs leading-snug text-fg-muted [&_*]:text-xs [&_li]:m-0 [&_ol]:m-0 [&_p]:m-0 [&_ul]:m-0",
-              (message.content?.length ?? 0) > 120 && "line-clamp-4",
+              !expanded && (message.content?.length ?? 0) > 120 && "line-clamp-4",
             )}
           >
             {message.content ? <ReactPreview content={message.content} /> : "…"}
@@ -107,7 +109,7 @@ function MessageRow(props: {
       </div>
       {message.divisions.length > 0 && (
         <div className="mt-1.5 flex flex-wrap gap-1">
-          {message.divisions.slice(0, 3).map((d) => (
+          {(expanded ? message.divisions : message.divisions.slice(0, 3)).map((d) => (
             <span
               key={d.division.id}
               className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
@@ -115,7 +117,7 @@ function MessageRow(props: {
               {divisionShortLabel(d.division, t)}
             </span>
           ))}
-          {message.divisions.length > 3 && (
+          {!expanded && message.divisions.length > 3 && (
             <span className="text-[10px] text-fg-muted">+{message.divisions.length - 3}</span>
           )}
         </div>
@@ -132,6 +134,8 @@ export interface MessageStackProps {
   className?: string;
   /** Marks messages this division has acknowledged (e.g. drawn on the Nachrichtenkarte) with a check. */
   acknowledgementDivisionId?: string;
+  /** Show the selected message in full instead of cut short, like the others are. */
+  expandSelected?: boolean;
 }
 
 export const MessageStack = memo(function MessageStack({
@@ -140,6 +144,7 @@ export const MessageStack = memo(function MessageStack({
   onSelect,
   className,
   acknowledgementDivisionId,
+  expandSelected,
 }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -211,6 +216,7 @@ export const MessageStack = memo(function MessageStack({
                 key={msg.id}
                 message={msg}
                 selected={msg.id === effectiveId}
+                expanded={expandSelected && msg.id === effectiveId}
                 acknowledgementDivisionId={acknowledgementDivisionId}
                 onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
                 setRef={(el) => {

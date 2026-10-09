@@ -46,6 +46,20 @@ describe("useAutoSelectedMessage", () => {
     expect(result.current.effectiveId).toBe("b");
   });
 
+  it("moves on even when the candidate had advanced before the message was handled", () => {
+    const { result, rerender } = renderHook(({ id }) => useAutoSelectedMessage(id), {
+      initialProps: { id: "a" as string | undefined },
+    });
+
+    // The mutation's result reaches the cache, and so the candidate, before the caller continues.
+    rerender({ id: "b" });
+    expect(result.current.effectiveId).toBe("a");
+
+    act(() => result.current.handled("a"));
+
+    expect(result.current.effectiveId).toBe("b");
+  });
+
   it("has nothing selected when there is no candidate", () => {
     const { result } = renderHook(() => useAutoSelectedMessage(undefined));
     expect(result.current.effectiveId).toBeUndefined();
