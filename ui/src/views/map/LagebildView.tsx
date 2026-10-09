@@ -18,6 +18,8 @@ export default function LagebildView() {
   const [featureId, setFeatureId] = useState<string | undefined>();
   const [deselectToken, setDeselectToken] = useState(0);
   const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>();
+  // The point in time the map's slider shows; undefined is live.
+  const [asOf, setAsOf] = useState<Date | undefined>();
   const messageIds = useFeatureMessageIds(featureId);
   const open = messageIds !== undefined;
   // The journal is only needed once there is a feature with messages to show.
@@ -26,12 +28,17 @@ export default function LagebildView() {
     pollInterval: SIDE_STACK_POLL_MS,
   });
 
+  // Messages that existed at the shown point in time; later ones appear as the slider moves on.
+  const shownMessages = (messages.status === "ready" ? messages.data.messages : []).filter(
+    (message) => asOf === undefined || message.time.getTime() <= asOf.getTime(),
+  );
+
   return (
     <div className="flex grow">
       {open && (
         <aside className="mt-[2.75rem] flex w-[22rem] shrink-0 flex-col border-r border-border bg-bg">
           <FilterableMessageStack
-            messages={messages.status === "ready" ? messages.data.messages : []}
+            messages={shownMessages}
             focusMessageIds={messageIds}
             onClearFocus={() => {
               setFeatureId(undefined);
@@ -43,7 +50,11 @@ export default function LagebildView() {
           />
         </aside>
       )}
-      <IncidentMap onFeatureSelect={setFeatureId} deselectToken={deselectToken} />
+      <IncidentMap
+        onFeatureSelect={setFeatureId}
+        deselectToken={deselectToken}
+        onTimeChange={setAsOf}
+      />
     </div>
   );
 }

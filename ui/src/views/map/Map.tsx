@@ -111,6 +111,8 @@ interface MapViewOptions {
   deselectToken?: number;
   /** Called when something is drawn, changed or deleted for the message (see MapSelection). */
   onDrawingChange?: () => void;
+  /** Called when the map's own timeline slider is moved; undefined is live. */
+  onTimeChange?: (asOf: Date | undefined) => void;
   /**
    * The kind of layer to show first. A read-only map showing it stays on it instead of cycling
    * through all layers. Without one, a map for drawing starts on a standard layer.
@@ -932,10 +934,18 @@ function MapWithProvder({
   onFeatureSelect,
   deselectToken,
   onDrawingChange,
+  onTimeChange,
   ...options
 }: MapViewOptions) {
   // A map without a fixed time can be moved along the timeline by its own slider.
   const [timelineAsOf, setTimelineAsOf] = useState<Date | undefined>();
+  const moveOnTimeline = useCallback(
+    (next: Date | undefined) => {
+      setTimelineAsOf(next);
+      onTimeChange?.(next);
+    },
+    [onTimeChange],
+  );
   const hasTimeline = asOf === undefined && drawingMessage === undefined;
 
   const asOfTime = (asOf ?? timelineAsOf)?.getTime();
@@ -946,13 +956,13 @@ function MapWithProvder({
   const mapTime = useMemo<MapTime>(
     () => ({
       asOf: asOfTime === undefined ? undefined : new Date(asOfTime),
-      setAsOf: hasTimeline ? setTimelineAsOf : undefined,
+      setAsOf: hasTimeline ? moveOnTimeline : undefined,
       drawingMessage:
         messageId === undefined || messageTime === undefined
           ? undefined
           : { id: messageId, time: new Date(messageTime), locked: messageLocked },
     }),
-    [asOfTime, hasTimeline, messageId, messageTime, messageLocked],
+    [asOfTime, hasTimeline, moveOnTimeline, messageId, messageTime, messageLocked],
   );
 
   const selection = useMemo(
