@@ -114,4 +114,25 @@ describe("MessageStack", () => {
     );
     expect(clamped(container)).toBe(1);
   });
+
+  it("is just the messages, as cards, when bare", () => {
+    const { container } = render(
+      <MessageStack
+        messages={[message("a"), message("b")]}
+        effectiveId={undefined}
+        onSelect={vi.fn()}
+        bare
+      />,
+    );
+
+    expect(spinners(container)).toHaveLength(0);
+    expect(screen.queryByText("noOlderMessages")).toBeNull();
+    expect(container.querySelectorAll(".shadow-md")).toHaveLength(2);
+  });
+
+  it("still tells there is nothing in a bare stack", () => {
+    render(<MessageStack messages={[]} effectiveId={undefined} onSelect={vi.fn()} bare />);
+
+    expect(screen.getByText("noNewMessagesAbove")).toBeInTheDocument();
+  });
 });

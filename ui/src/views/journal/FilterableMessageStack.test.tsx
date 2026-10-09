@@ -101,4 +101,36 @@ describe("FilterableMessageStack focus", () => {
     expect(screen.queryByText("plain")).toBeNull();
     expect(screen.getByText("messageStack.filterKeyMessage")).toBeTruthy();
   });
+
+  describe("FilterableMessageStack bare", () => {
+    it("has no filter chips, not even the one that clears a focus", () => {
+      render(
+        <FilterableMessageStack
+          messages={MESSAGES}
+          effectiveId={undefined}
+          onSelect={() => {}}
+          focusMessageIds={["plain"]}
+          onClearFocus={() => {}}
+          bare
+        />,
+      );
+
+      expect(screen.getByText("plain")).toBeTruthy();
+      expect(screen.queryByRole("button")).toBeNull();
+    });
+
+    it("has the chips when not bare", () => {
+      render(
+        <FilterableMessageStack
+          messages={MESSAGES}
+          effectiveId={undefined}
+          onSelect={() => {}}
+          focusMessageIds={["plain"]}
+          onClearFocus={() => {}}
+        />,
+      );
+
+      expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
+    });
+  });
 });

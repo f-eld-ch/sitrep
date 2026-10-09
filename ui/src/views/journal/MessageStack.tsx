@@ -52,8 +52,10 @@ function MessageRow(props: {
   acknowledgementDivisionId?: string;
   /** Show the whole message, not the cut-short summary. */
   expanded?: boolean;
+  /** Each row stands on its own, as a card (see MessageStackProps.bare). */
+  bare?: boolean;
 }) {
-  const { message, selected, onClick, setRef, acknowledgementDivisionId, expanded } = props;
+  const { message, selected, onClick, setRef, acknowledgementDivisionId, expanded, bare } = props;
   const acknowledged =
     acknowledgementDivisionId !== undefined &&
     message.acknowledgements.some((a) => a.divisionId === acknowledgementDivisionId);
@@ -70,6 +72,8 @@ function MessageRow(props: {
         "transition-all duration-100 focus:outline-none",
         rowBorderR[accent],
         rowBgTint[accent],
+        bare && "shadow-md",
+        bare && accent === "none" && "bg-bg",
         !selected && rowHoverShadow[accent],
         selected
           ? "mr-0 w-full pr-7"
@@ -136,6 +140,11 @@ export interface MessageStackProps {
   acknowledgementDivisionId?: string;
   /** Show the selected message in full instead of cut short, like the others are. */
   expandSelected?: boolean;
+  /**
+   * Just the messages, as cards: no backdrop, no scroll spinner, no "no older messages" footer. For
+   * a stack floating over something else, such as the map.
+   */
+  bare?: boolean;
 }
 
 export const MessageStack = memo(function MessageStack({
@@ -145,6 +154,7 @@ export const MessageStack = memo(function MessageStack({
   className,
   acknowledgementDivisionId,
   expandSelected,
+  bare,
 }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -179,7 +189,7 @@ export const MessageStack = memo(function MessageStack({
 
   return (
     <div className={clsx("flex flex-col", className)}>
-      <div className="flex justify-center py-1">
+      <div className={clsx("flex justify-center py-1", bare && !showScrollUp && "hidden")}>
         {showScrollUp ? (
           <button
             type="button"
@@ -190,7 +200,8 @@ export const MessageStack = memo(function MessageStack({
           </button>
         ) : (
           // With nothing in the stack, "no new messages" below carries its own spinner.
-          messages.length > 0 && (
+          messages.length > 0 &&
+          !bare && (
             <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
               <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
             </div>
@@ -217,6 +228,7 @@ export const MessageStack = memo(function MessageStack({
                 message={msg}
                 selected={msg.id === effectiveId}
                 expanded={expandSelected && msg.id === effectiveId}
+                bare={bare}
                 acknowledgementDivisionId={acknowledgementDivisionId}
                 onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
                 setRef={(el) => {
@@ -226,9 +238,11 @@ export const MessageStack = memo(function MessageStack({
             ))}
 
             <div ref={bottomSentinelRef} className="h-px shrink-0" aria-hidden />
-            <div className="flex items-center justify-center py-2 text-fg-muted/50">
-              <span className="text-[11px]">{t("noOlderMessages")}</span>
-            </div>
+            {!bare && (
+              <div className="flex items-center justify-center py-2 text-fg-muted/50">
+                <span className="text-[11px]">{t("noOlderMessages")}</span>
+              </div>
+            )}
           </>
         )}
       </div>

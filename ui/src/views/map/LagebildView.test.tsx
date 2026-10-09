@@ -27,14 +27,16 @@ vi.mock("views/journal/FilterableMessageStack", () => ({
     messages: shown,
     effectiveId,
     expandSelected,
+    bare,
     onSelect,
   }: {
     messages: { id: string }[];
     effectiveId?: string;
     expandSelected?: boolean;
+    bare?: boolean;
     onSelect: (id: string) => void;
   }) => {
-    mocks.stackProps.last = { effectiveId, expandSelected };
+    mocks.stackProps.last = { effectiveId, expandSelected, bare };
 
     return (
       <ul>
@@ -104,7 +106,11 @@ describe("LagebildView", () => {
 
   it("shows the picked message in full in the stack", () => {
     render(<LagebildView />);
-    expect(mocks.stackProps.last).toMatchObject({ effectiveId: undefined, expandSelected: true });
+    expect(mocks.stackProps.last).toMatchObject({
+      effectiveId: undefined,
+      expandSelected: true,
+      bare: true,
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "middle" }));
     expect(mocks.stackProps.last).toMatchObject({ effectiveId: "middle" });

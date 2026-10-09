@@ -1,7 +1,7 @@
 import { faBullseye, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
-import type { Feature, FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { ExpressionSpecification, IControl, MapMouseEvent } from "maplibre-gl";
 import bbox from "@turf/bbox";
 import { useContext, useEffect, useRef, useState, type ReactNode } from "react";
@@ -137,29 +137,43 @@ export function MessageHighlight({
     });
   };
 
-  // Brings what the message did into view once per message, as soon as its history is known.
-  // Only once: later drawing must not move the map under the operator.
+  // Frames the map. On arrival, the whole Nachrichtenkarte layer: the operator first needs the
+  // overview. From then on, what the selected message did, once per message and as soon as its
+  // history is known. Only once: later drawing must not move the map under the operator.
   const focusedMessage = useRef<string | undefined>(undefined);
+  const positioned = useRef(false);
   useEffect(() => {
-    if (!ready || map === undefined || drawingMessage === undefined) return;
-    if (focusedMessage.current === drawingMessage.id) return;
+    if (map === undefined || drawingMessage === undefined) return;
+
+    const frame = (geometries: Geometry[]) => {
+      if (geometries.length === 0) return;
+
+      const [west, south, east, north] = bbox({ type: "GeometryCollection", geometries });
+      map.fitBounds(
+        [
+          [west, south],
+          [east, north],
+        ],
+        { animate: true, maxZoom: FOCUS_MAX_ZOOM, padding: 80 },
+      );
+    };
+
+    if (!positioned.current) {
+      // The layers have not arrived yet.
+      if (layer === undefined) return;
+
+      positioned.current = true;
+      focusedMessage.current = drawingMessage.id;
+      frame(layerToFeatureCollection(layer).features.map((f) => f.geometry));
+
+      return;
+    }
+
+    if (!ready || focusedMessage.current === drawingMessage.id) return;
 
     focusedMessage.current = drawingMessage.id;
-    const geometries = [...halos.values()].flatMap((h) => (h.geometry ? [h.geometry] : []));
-    if (geometries.length === 0) return;
-
-    const [west, south, east, north] = bbox({
-      type: "GeometryCollection",
-      geometries,
-    });
-    map.fitBounds(
-      [
-        [west, south],
-        [east, north],
-      ],
-      { animate: true, maxZoom: FOCUS_MAX_ZOOM, padding: 80 },
-    );
-  }, [drawingMessage, halos, map, ready]);
+    frame([...halos.values()].flatMap((h) => (h.geometry ? [h.geometry] : [])));
+  }, [drawingMessage, halos, layer, map, ready]);
 
   if (!enabled || !drawingMessage || (halos.size === 0 && state.removedFeatures.length === 0)) {
     return null;

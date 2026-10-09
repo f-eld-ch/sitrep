@@ -70,6 +70,7 @@ export function FilterableMessageStack({
   className,
   acknowledgementDivisionId,
   expandSelected,
+  bare,
   extraChips,
   focusMessageIds,
   onClearFocus,
@@ -116,48 +117,51 @@ export function FilterableMessageStack({
         onSelect={onSelect}
         acknowledgementDivisionId={acknowledgementDivisionId}
         expandSelected={expandSelected}
+        bare={bare}
         className="min-h-0 w-full flex-1 shrink"
       />
-      <div
-        className={clsx(
-          "flex flex-wrap gap-1 px-3 py-1.5",
-          anyActive ? "border-t border-border/60" : "border-t border-transparent",
-        )}
-      >
-        {focusMessageIds !== undefined && (
-          <FilterChip
-            label={`${t("featureMessages.filter")} (${filtered.length}) ✕`}
-            active
-            onToggle={() => onClearFocus?.()}
-            activeClassName="bg-primary/15 text-primary border-primary/30"
-          />
-        )}
-        {focusMessageIds === undefined && enabled.untriaged && (
-          <FilterChip
-            label={t("messageStack.filterUntriaged")}
-            active={filters.untriaged}
-            onToggle={() => toggle("untriaged")}
-            activeClassName="bg-warning/15 text-warning-fg border-warning/30"
-          />
-        )}
-        {focusMessageIds === undefined && enabled.highPriority && (
-          <FilterChip
-            label={t("messageStack.filterKeyMessage")}
-            active={filters.highPriority}
-            onToggle={() => toggle("highPriority")}
-            activeClassName="bg-danger/15 text-danger border-danger/30"
-          />
-        )}
-        {focusMessageIds === undefined && enabled.mine && (
-          <FilterChip
-            label={t("messageStack.filterMine")}
-            active={filters.mine}
-            onToggle={() => toggle("mine")}
-            activeClassName="bg-primary/15 text-primary border-primary/30"
-          />
-        )}
-        {focusMessageIds === undefined && extraChips}
-      </div>
+      {!bare && (
+        <div
+          className={clsx(
+            "flex flex-wrap gap-1 px-3 py-1.5",
+            anyActive ? "border-t border-border/60" : "border-t border-transparent",
+          )}
+        >
+          {focusMessageIds !== undefined && (
+            <FilterChip
+              label={`${t("featureMessages.filter")} (${filtered.length}) ✕`}
+              active
+              onToggle={() => onClearFocus?.()}
+              activeClassName="bg-primary/15 text-primary border-primary/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.untriaged && (
+            <FilterChip
+              label={t("messageStack.filterUntriaged")}
+              active={filters.untriaged}
+              onToggle={() => toggle("untriaged")}
+              activeClassName="bg-warning/15 text-warning-fg border-warning/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.highPriority && (
+            <FilterChip
+              label={t("messageStack.filterKeyMessage")}
+              active={filters.highPriority}
+              onToggle={() => toggle("highPriority")}
+              activeClassName="bg-danger/15 text-danger border-danger/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.mine && (
+            <FilterChip
+              label={t("messageStack.filterMine")}
+              active={filters.mine}
+              onToggle={() => toggle("mine")}
+              activeClassName="bg-primary/15 text-primary border-primary/30"
+            />
+          )}
+          {focusMessageIds === undefined && extraChips}
+        </div>
+      )}
     </div>
   );
 }

@@ -48,22 +48,26 @@ export default function LagebildView() {
     <div className="relative flex grow">
       {open && (
         // Over the map, not beside it: the map keeps its size when the stack comes and goes, so it
-        // does not resize and redraw. As tall as its messages need, centred, and never so tall that
-        // it runs into the map's own controls.
-        <aside className="absolute top-1/2 left-2 z-10 flex max-h-[calc(100%-14rem)] min-h-0 w-[26rem] -translate-y-1/2 flex-col overflow-hidden rounded border border-border bg-bg shadow-lg">
-          <FilterableMessageStack
-            messages={shownMessages}
-            focusMessageIds={messageIds}
-            onClearFocus={() => {
-              setFeatureId(undefined);
-              setDeselectToken((token) => token + 1);
-            }}
-            effectiveId={effectiveId}
-            onSelect={setSelectedMessageId}
-            expandSelected
-            className="min-h-0"
-          />
-        </aside>
+        // does not resize and redraw. Just the messages, as cards, with no backdrop of their own.
+        // Centred in the band between the map's own controls (the zoom buttons above, the print
+        // button below), and only as tall as the messages need.
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pt-[12rem] pb-[8rem]">
+          <aside className="pointer-events-auto flex max-h-full min-h-0 w-[26rem] flex-col">
+            <FilterableMessageStack
+              messages={shownMessages}
+              focusMessageIds={messageIds}
+              onClearFocus={() => {
+                setFeatureId(undefined);
+                setDeselectToken((token) => token + 1);
+              }}
+              effectiveId={effectiveId}
+              onSelect={setSelectedMessageId}
+              expandSelected
+              bare
+              className="min-h-0"
+            />
+          </aside>
+        </div>
       )}
       <IncidentMap
         onFeatureSelect={setFeatureId}

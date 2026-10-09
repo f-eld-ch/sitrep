@@ -76,16 +76,17 @@ const renderRemoved = vi.fn((features: unknown) => (
   <div data-testid="ghosts" data-features={JSON.stringify(features)} />
 ));
 
-function setup({
+function tree({
   enabled = true,
   locked = false,
   layerState = state(),
-}: { enabled?: boolean; locked?: boolean; layerState?: LayerState } = {}) {
-  return render(
+  messageId = "msg-1",
+}: { enabled?: boolean; locked?: boolean; layerState?: LayerState; messageId?: string } = {}) {
+  return (
     <LayerContext.Provider value={{ state: layerState, dispatch }}>
       <MapTimeContext.Provider
         value={{
-          drawingMessage: { id: "msg-1", time: new Date("2026-01-15T10:00:00Z"), locked },
+          drawingMessage: { id: messageId, time: new Date("2026-01-15T10:00:00Z"), locked },
           asOf: new Date("2026-01-15T10:00:00Z"),
         }}
       >
@@ -93,8 +94,18 @@ function setup({
           <MessageHighlight enabled={enabled} renderRemoved={renderRemoved} />
         </MapSelectionContext.Provider>
       </MapTimeContext.Provider>
-    </LayerContext.Provider>,
+    </LayerContext.Provider>
   );
+}
+
+function setup(options: Parameters<typeof tree>[0] = {}) {
+  const result = render(tree(options));
+
+  return {
+    ...result,
+    /** The same map, now drawing for another message. */
+    switchTo: (messageId: string) => result.rerender(tree({ ...options, messageId })),
+  };
 }
 
 const halo = (kind: FeatureHalo["kind"], extra: Partial<FeatureHalo> = {}) => ({
@@ -178,26 +189,53 @@ describe("MessageHighlight halos", () => {
     expect(sourceFeatures().map((f) => f.id)).toEqual(["fresh"]);
   });
 
-  it("brings the message's features into view once", () => {
-    mocks.halos.current = new Map([["added", halo("added")]]);
-    const { rerender } = setup();
+  it("frames the whole layer on arrival, not closer than level 16", () => {
+    mocks.halos.ready = false; // the history is not needed for the overview
+    setup();
+
     expect(mocks.fitBounds).toHaveBeenCalledTimes(1);
     expect(mocks.fitBounds.mock.calls[0][1]).toMatchObject({ maxZoom: 16 });
+  });
+
+  it("waits for the layers before framing anything", () => {
+    setup({ layerState: state({ layers: [] }) });
+
+    expect(mocks.fitBounds).not.toHaveBeenCalled();
+  });
+
+  it("then frames what each message did, once per message and after its history is known", () => {
+    mocks.halos.current = new Map([["added", halo("added")]]);
+    const { switchTo } = setup();
+    expect(mocks.fitBounds).toHaveBeenCalledTimes(1); // the overview
+
+    switchTo("msg-2");
+    expect(mocks.fitBounds).toHaveBeenCalledTimes(2);
 
     mocks.halos.current = new Map([
       ["added", halo("added")],
       ["more", halo("added")],
     ]);
-    rerender(<div />);
+    switchTo("msg-2"); // more drawing for the same message must not move the map
+    expect(mocks.fitBounds).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not move the map for a message that did nothing", () => {
+    const { switchTo } = setup();
+    expect(mocks.fitBounds).toHaveBeenCalledTimes(1);
+
+    switchTo("msg-2");
+
     expect(mocks.fitBounds).toHaveBeenCalledTimes(1);
   });
 
-  it("waits for the history before framing anything", () => {
+  it("waits for the history before framing a message's features", () => {
     mocks.halos.current = new Map([["added", halo("added")]]);
     mocks.halos.ready = false;
-    setup();
+    const { switchTo } = setup();
 
-    expect(mocks.fitBounds).not.toHaveBeenCalled();
+    switchTo("msg-2");
+
+    expect(mocks.fitBounds).toHaveBeenCalledTimes(1);
   });
 });
 
