@@ -2,7 +2,11 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/exaring/otelpgx from 0.12.0 to 0.12.1 ([#1951](https://github.com/f-eld-ch/sitrep/issues/1951)) - ([79fa4eb](https://github.com/f-eld-ch/sitrep/commit/79fa4eb11e81adb70e45bf90e8884aa3dc99e0e6))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.11 to 3.51.13 ([#1952](https://github.com/f-eld-ch/sitrep/issues/1952)) - ([d224e00](https://github.com/f-eld-ch/sitrep/commit/d224e00088469242a86ffaae5b12244432bf551e))
+- *(deps)* Bump @apollo/client from 4.3.2 to 4.3.3 in /ui ([#1949](https://github.com/f-eld-ch/sitrep/issues/1949)) - ([c321f13](https://github.com/f-eld-ch/sitrep/commit/c321f132a08c60f973b75c2293798b8166e9158b))
 - *(deps)* Bump maplibre-gl from 6.11.2 to 6.13.0 in /ui ([#1948](https://github.com/f-eld-ch/sitrep/issues/1948)) - ([c8a79fb](https://github.com/f-eld-ch/sitrep/commit/c8a79fbf19411583c3ba4ad8ee5cf0e41f3eb051))
+- *(go)* Bump golangci-lint to v2.14.0 ([#1954](https://github.com/f-eld-ch/sitrep/issues/1954)) - ([693ac24](https://github.com/f-eld-ch/sitrep/commit/693ac2406a793479100598acb0a4ccbe2b374aba))
 
 
 ## [26.10.0](https://github.com/f-eld-ch/sitrep/compare/v26.9.9..v26.10.0) - 2026-10-08
