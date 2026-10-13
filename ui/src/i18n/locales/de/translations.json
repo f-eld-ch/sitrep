@@ -1,7 +1,7 @@
 {
   "actions": "Aktionen",
   "add": "hinzufügen",
-  "devisionAdd": "Neuer Fachbereich hinzufügen",
+  "devisionAdd": "Neues Ressort hinzufügen",
   "all": "alle",
   "assignPriority": "Priorität zuweisen",
   "close": "schliessen",
@@ -18,7 +18,7 @@
   "discard": "Änderungen verwerfen",
   "unsavedChanges": "Sie haben ungespeicherte Änderungen. Verwerfen und verlassen?",
   "dismissNotification": "Benachrichtigung schließen",
-  "divisions": "Fachbereiche",
+  "divisions": "Ressorts",
   "edit": "bearbeiten",
   "editIncident": "Ereignis bearbeiten",
   "editor": "Editor",

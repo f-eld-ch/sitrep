@@ -18,7 +18,7 @@
   "discard": "Ignorer les modifications",
   "unsavedChanges": "Vous avez des modifications non enregistrées. Ignorer et quitter?",
   "dismissNotification": "Ignorer la notification",
-  "divisions": "domaine",
+  "divisions": "Domaines",
   "edit": "éditer",
   "editIncident": "Modifier un événement",
   "editor": "éditeur",
@@ -51,16 +51,16 @@
   "keyMessage": "Renseignements-clés",
   "stepPersonen": "Personnes",
   "stepMittel": "Moyens",
-  "stepSchadenplatz": "Lieu sinistre",
+  "stepSchadenplatz": "Zone sinistrée",
   "schadenplatz": {
-    "select": "Choisir le lieu",
-    "selectHint": "Ce message concerne-t-il un lieu sinistre spécifique ?",
-    "defaultHint": "Aucun lieu sinistre spécifique",
-    "new": "Créer nouveau",
-    "namePlaceholder": "Nom du lieu sinistre",
+    "select": "Choisir la zone sinistrée",
+    "selectHint": "Ce message concerne-t-il une zone sinistrée spécifique ?",
+    "defaultHint": "Aucune zone sinistrée spécifique",
+    "new": "Créer une nouvelle zone sinistrée",
+    "namePlaceholder": "Nom de la zone sinistrée",
     "create": "Créer",
     "defaultLabel": "Par défaut",
-    "noneCreated": "Aucun lieu sinistre créé"
+    "noneCreated": "Aucune zone sinistrée créée"
   },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
@@ -76,9 +76,9 @@
   "login": "connexion",
   "loginTagline": "Conduite d'intervention. Indépendante. Digitale.",
   "logout": "déconnexion",
-  "map": "Suivi dessiné",
+  "map": "Tableau de la situation",
   "mapview": {
-    "rotate": "Tourner la signe",
+    "rotate": "Tourner le signe",
     "rotation": "Rotation",
     "layer": "calque",
     "unlock": "Désamarrer le signe",
@@ -131,8 +131,8 @@
       "disabled": "Les pièces jointes ne sont pas activées sur ce serveur"
     }
   },
-  "messageFlow": "Liste de distribution",
-  "messageSheet": "formulaire de message",
+  "messageFlow": "Flux du message",
+  "messageSheet": "Feuille de message",
   "messageTriageTitle": "trier le message",
   "messageTimeTooFarInFuture": "L'heure du message ne peut pas être à plus de cinq minutes dans le futur.",
   "name": "nom",
@@ -157,7 +157,7 @@
   "radioChannel": "canal",
   "requests": "demandes",
   "requestsNeeds": "besoins / demandes",
-  "resources": "ressources",
+  "resources": "Moyens",
   "save": "enregistrer",
   "saveMoreInfo": "Besoin de plus d'informations",
   "saveTriage": "Terminer le triage",
@@ -177,7 +177,7 @@
   },
   "messageStack": {
     "filterUntriaged": "Non trié",
-    "filterKeyMessage": "Messages clés",
+    "filterKeyMessage": "Renseignements-clés",
     "filterMine": "Les miens"
   },
   "write": "saisir",
@@ -210,7 +210,7 @@
   "divisionsNames": {
     "Karte": {
       "name": "Carte",
-      "description": "Carte de situation"
+      "description": "Carte de renseignements"
     },
     "SC": {
       "name": "C EM",
@@ -228,11 +228,11 @@
     "verletzte": "Blessés",
     "obdachlose": "Sans-abri",
     "eingeschlossene": "Bloqués",
-    "summary": "Aperçu des personnes",
-    "overview": "Victimes",
+    "summary": "Vue d'ensemble des personnes",
+    "overview": "Personnes",
     "thisIncident": "Cet incident",
     "none": "Aucune victime enregistrée",
-    "byLocation": "Par lieu"
+    "byLocation": "Par zone sinistrée"
   },
   "dashboard": {
     "title": "Dashboard",
