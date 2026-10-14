@@ -30,10 +30,12 @@ All feedback and feature requests are welcome. Please check the [discussions](ht
 
 ## Demo-Environment
 
-The current develop version is automatically deployed to: [https://demo.sitrep.ch](https://demo.sitrep.ch)
-The data is automatically cleaned periodically - don't use this environment to run your crisis!
+[https://demo.sitrep.ch](https://demo.sitrep.ch) always runs the latest sitrep release.
+The data is automatically cleaned periodically and potentially visible to everyone - don't use this environment to run your crisis!
 
 Login is possible with your Github account or sign-up for a new account.
+
+The current state of the `develop` branch is automatically deployed to [https://dev.sitrep.ch](https://dev.sitrep.ch).
 
 ## Backed by F-ELD
 
