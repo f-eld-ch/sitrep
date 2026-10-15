@@ -1,7 +1,7 @@
 {
   "actions": "azioni",
   "add": "aggiungere",
-  "devisionAdd": "aggiungere nuovo dipartimento",
+  "devisionAdd": "Aggiungi nuovo settore",
   "all": "tutti",
   "assignPriority": "assegnare la priorità",
   "close": "chiudere",
@@ -9,7 +9,7 @@
   "closedAt": "chiuso",
   "create": "creare",
   "createIncident": "crea nuovo incidente",
-  "createJournal": "crea un nuovo diario",
+  "createJournal": "Crea un nuovo giornale d'intervento",
   "createNewImmediateMeasures": "creare nuove misure immediate",
   "createNewRequest": "Crea una nuova applicazione",
   "createNewTask": "crea una nuova attività",
@@ -18,7 +18,7 @@
   "discard": "Scarta le modifiche",
   "unsavedChanges": "Hai modifiche non salvate. Scartare e uscire?",
   "dismissNotification": "Chiudi notifica",
-  "divisions": "dipartimenti",
+  "divisions": "Settori",
   "edit": "modificare",
   "editIncident": "modifica incidente",
   "editor": "editore",
@@ -37,9 +37,9 @@
   "immediateMeasures": "misure immediate",
   "incident": "incidente",
   "incidents": "incidenti",
-  "journal": "diario delle operazioni",
-  "journalFeed": "feed del diario delle operazioni",
-  "journalList": "panoramica del diario delle operazioni",
+  "journal": "Giornale d'intervento",
+  "journalFeed": "Feed del giornale d'intervento",
+  "journalList": "Panoramica del giornale d'intervento",
   "triageView": "Triage",
   "selectMessageToTriage": "Seleziona un messaggio da triaggiare",
   "noMessages": "Nessun messaggio",
@@ -51,16 +51,16 @@
   "keyMessage": "Notizie chiave",
   "stepPersonen": "Persone",
   "stepMittel": "Mezzi",
-  "stepSchadenplatz": "Luogo sinistro",
+  "stepSchadenplatz": "Zona sinistrata",
   "schadenplatz": {
-    "select": "Seleziona luogo",
-    "selectHint": "Questo messaggio riguarda un luogo sinistro specifico?",
-    "defaultHint": "Nessun luogo sinistro specifico",
-    "new": "Crea nuovo",
-    "namePlaceholder": "Nome luogo sinistro",
+    "select": "Seleziona zona sinistrata",
+    "selectHint": "Questo messaggio riguarda una zona sinistrata specifica?",
+    "defaultHint": "Nessuna zona sinistrata specifica",
+    "new": "Crea nuova zona sinistrata",
+    "namePlaceholder": "Nome della zona sinistrata",
     "create": "Crea",
     "defaultLabel": "Predefinito",
-    "noneCreated": "Nessun luogo sinistro creato"
+    "noneCreated": "Nessuna zona sinistrata creata"
   },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
@@ -76,13 +76,13 @@
   "login": "accesso",
   "loginTagline": "Condotta dell'intervento. Indipendente. Digitale.",
   "logout": "disconnessione",
-  "map": "immagine della situazione",
+  "map": "Aggiornamento grafico",
   "mapview": {
     "rotate": "Direzione di rotazione",
     "rotation": "Rotazione",
     "layer": "Livello",
-    "unlock": "Rilasciare l'allineamento",
-    "lock": "Fissare l'allineamento",
+    "unlock": "Rilasciare il segno fissato",
+    "lock": "Fissare il segno",
     "wmsLayerMenu": {
       "errorFetchingLayers": "Impossibile raggiungere il server WMS o non sono stati trovati livelli.",
       "noLayersFound": "Nessun livello compatibile trovato. Il server WMS deve supportare la proiezione EPSG:3857."
@@ -143,8 +143,8 @@
       "disabled": "Gli allegati non sono abilitati su questo server"
     }
   },
-  "messageFlow": "flusso di segnalazione",
-  "messageSheet": "Modulo di registrazione",
+  "messageFlow": "Flusso dei messaggi",
+  "messageSheet": "Modulo di notifica",
   "messageTriageTitle": "valuta il messaggio",
   "messageTimeLocked": "L'orario non può più essere modificato perché il messaggio è già stato smistato.",
   "messageTimeTooFarInFuture": "L'orario del messaggio non può essere più di cinque minuti nel futuro.",
@@ -170,7 +170,7 @@
   "radioChannel": "canale",
   "requests": "richieste",
   "requestsNeeds": "bisogni/richieste",
-  "resources": "risorse",
+  "resources": "Mezzi",
   "save": "salvare",
   "saveMoreInfo": "Ha bisogno di più informazioni",
   "saveTriage": "Completare il triage",
@@ -190,7 +190,7 @@
   },
   "messageStack": {
     "filterUntriaged": "Non triageto",
-    "filterKeyMessage": "Messaggi chiave",
+    "filterKeyMessage": "Notizie chiave",
     "filterMine": "I miei"
   },
   "messageMap": {
@@ -261,8 +261,8 @@
       "description": "Capo di stato maggiore"
     },
     "CLage": {
-      "name": "ANSIT ",
-      "description": "Capo ANSIT "
+      "name": "ANSIT",
+      "description": "Capo ANSIT"
     }
   },
   "casualties": {
@@ -272,11 +272,11 @@
     "verletzte": "Feriti",
     "obdachlose": "Senzatetto",
     "eingeschlossene": "Intrappolati",
-    "summary": "Riepilogo persone",
-    "overview": "Vittime",
+    "summary": "Compendio delle persone",
+    "overview": "Persone",
     "thisIncident": "Questo incidente",
     "none": "Nessuna vittima registrata",
-    "byLocation": "Per luogo"
+    "byLocation": "Per zona sinistrata"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -367,8 +367,8 @@
   "adminGroups": {
     "title": "Gruppi",
     "newGroup": "Nuovo gruppo",
-    "name": "Nome della risorsa",
-    "namePlaceholder": "Nome della risorsa",
+    "name": "Nome del gruppo",
+    "namePlaceholder": "Nome del gruppo",
     "description": "Descrizione",
     "create": "Crea",
     "cancel": "Annulla",
@@ -499,7 +499,7 @@
     "validation": {
       "hauptaufgabeRequired": "Il compito principale è obbligatorio per l'impiego",
       "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego",
-      "duplicateIdentity": "Esiste già una risorsa attiva con la stessa formazione/luogo, tipo di formazione e nome.",
+      "duplicateIdentity": "Esiste già un mezzo attivo con la stessa formazione/luogo, tipo di formazione e nome.",
       "relievedIdentity": "Questa unità è avvicendata – riattivarla invece di crearne una nuova."
     },
     "relievedSection": "Avvicendati"

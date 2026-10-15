@@ -1,6 +1,8 @@
 name: PR Conventional Commit Validation
 on:
-  pull_request:
+  # pull_request_target: Dependabot PRs only get a read-only token with pull_request, but their
+  # title has to be fixed. Only the base branch is checked out, no code of the PR is ever run.
+  pull_request_target:
     types: [opened, synchronize, reopened, edited]
 permissions: read-all
 jobs:
@@ -13,7 +15,27 @@ jobs:
       pull-requests: write
       repository-projects: read
     steps:
+      - name: Checkout (base branch only)
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/fix-pr-title.sh
+      - name: Fix Dependabot PR title
+        id: fix
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          fixed="$(scripts/fix-pr-title.sh "$PR_TITLE")"
+          if [ "$fixed" != "$PR_TITLE" ]; then
+            gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --title "$fixed"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # After a title change the "edited" event starts this workflow again with the new title.
       - name: PR Conventional Commit Validation
+        if: steps.fix.outputs.changed != 'true'
         uses: f-eld-ch/PRConventionalCommits@86cd82507a797d18a90dd54260ac0effb2f32786 # main
         with:
           task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert", "security"]'
