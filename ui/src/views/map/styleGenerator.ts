@@ -1000,8 +1000,6 @@ export function createTimeLabelStyle(): LayerProps[] {
     },
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#000000"],
-      "text-halo-color": "#fff",
-      "text-halo-width": 1,
     },
   } as const;
 
