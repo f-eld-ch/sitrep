@@ -954,7 +954,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
 const TIME_LABEL_FIELD = ["coalesce", ["get", "timeLabel"], ""] as ExpressionSpecification;
 
 /**
- * Grows with the symbols, at the same linear pace as `ICON_SIZE` (about 9px of text per unit of
+ * Grows with the symbols, at the same linear pace as `ICON_SIZE` (about 11px of text per unit of
  * icon scale), so a time stays in proportion to what it stamps.
  */
 const TIME_LABEL_SIZE: ExpressionSpecification = [
