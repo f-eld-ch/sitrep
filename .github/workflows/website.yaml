@@ -1,0 +1,15 @@
+name: Website
+permissions: read-all
+# Rebuild sitrep.ch when a release is published, so that its changelog page stays current.
+on:
+  release:
+    types: [published]
+jobs:
+  rebuild:
+    name: Trigger sitrep.ch rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the Cloudflare deploy hook (main) of the sitrep.ch Worker
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.SITREP_CH_DEPLOY_HOOK }}
+        run: curl --fail --silent --show-error -X POST "$DEPLOY_HOOK_URL"
