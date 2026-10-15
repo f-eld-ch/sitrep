@@ -31,7 +31,7 @@ import {
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { first, isUndefined, omitBy } from "lodash";
+import { first, isEqual, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useState } from "react";
 import { FeatureLabelPopup } from "./FeatureLabelPopup";
 
@@ -512,7 +512,8 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   // Adjusted during render, for the same reason as the rotation lock above.
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
-  if (selectedFeature !== syncedFeature) {
+  // By content: the feature is rebuilt on every render, and what is being typed must survive that.
+  if (!isEqual(selectedFeature, syncedFeature)) {
     setSyncedFeature(selectedFeature);
     setEnteredText(selectedFeature?.properties?.name || "");
     if (selectedFeature === undefined) {

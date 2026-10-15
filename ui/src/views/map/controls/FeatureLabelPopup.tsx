@@ -8,7 +8,7 @@ import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/lab
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import dayjs from "dayjs";
-import { isUndefined, omitBy } from "lodash";
+import { isEqual, isUndefined, omitBy } from "lodash";
 import { Button } from "components/ui";
 import { useCallback, useContext, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -165,7 +165,9 @@ export function FeatureLabelPopup({
   );
 
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
-  if (selectedFeature !== syncedFeature) {
+  // By content, not identity: the feature object is rebuilt whenever the map re-renders, and
+  // that must not wipe what the user is typing. Only a real change to the feature resets the form.
+  if (!isEqual(selectedFeature, syncedFeature)) {
     setSyncedFeature(selectedFeature);
     setValues(valuesFromFeature());
     setRotation(selectedFeature?.properties?.iconRotation ?? 0);
