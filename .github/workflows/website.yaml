@@ -1,0 +1,20 @@
+name: Website
+permissions: read-all
+# Rebuild sitrep.ch when a release is published, so that its changelog page stays current.
+on:
+  release:
+    types: [published]
+jobs:
+  rebuild:
+    name: Trigger sitrep.ch rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch to f-eld-ch/sitrep.ch
+        env:
+          GH_TOKEN: ${{ secrets.SITREP_CH_DISPATCH_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh api repos/f-eld-ch/sitrep.ch/dispatches \
+            --method POST \
+            -f event_type=sitrep-release \
+            -f "client_payload[tag]=${TAG}"
