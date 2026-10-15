@@ -5169,13 +5169,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/maplibre-gl-export@npm:~4.1.2":
-  version: 4.1.2
-  resolution: "@watergis/maplibre-gl-export@npm:4.1.2"
+"@watergis/maplibre-gl-export@npm:~5.0.1":
+  version: 5.0.1
+  resolution: "@watergis/maplibre-gl-export@npm:5.0.1"
   dependencies:
+    html-to-image: "npm:^1.11.13"
     jspdf: "npm:^4.2.1"
-    maplibre-gl: "npm:^5.21.1"
-  checksum: 10/b858b3b3e48a145164052f59a0eeea0a8878a8a3b2ee9df2f535694033c297e5765074a9cd459aab8a6f7bb5ec389d058b8ca05f3acb5a77b77ac684099f2b18
+  peerDependencies:
+    maplibre-gl: ^5.21.1 || >=6.0.0-0 <7.0.0
+  checksum: 10/df89b8506d85e5771fff186d7176a3529523c44fe782f25670b5af212ed27a767e66ea3043bb487e9630d0e8196b0b287599757003c318c90e09b1d9cb655726
   languageName: node
   linkType: hard
 
@@ -7426,6 +7428,13 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/092401bc3f6b55b53f32e5c2fa3a9ac6d7d412f5759882c057f2c079a837ff0859a1f6c5e8aff8f62295df69675a6211fa2eb715c3a40876980db168c8af10c9
+  languageName: node
+  linkType: hard
+
+"html-to-image@npm:^1.11.13":
+  version: 1.11.13
+  resolution: "html-to-image@npm:1.11.13"
+  checksum: 10/f5950a0221b4ed4e59853db09917606309ebe3ddd2051c2f89aed3e37026d1893880f76e61bc2ca2280e3f1bbc0ad5b9ea5325188ff339987c8eeccbe8284f3f
   languageName: node
   linkType: hard
 
@@ -11304,7 +11313,7 @@ __metadata:
     "@vite-pwa/assets-generator": "npm:^2.0.0"
     "@vitejs/plugin-react": "npm:^6.1.2"
     "@vitest/coverage-v8": "npm:^5.0.4"
-    "@watergis/maplibre-gl-export": "npm:~4.1.2"
+    "@watergis/maplibre-gl-export": "npm:~5.0.1"
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.23"
     git-rev-sync: "npm:^3.0.2"
