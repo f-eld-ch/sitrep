@@ -38,6 +38,7 @@ export const GET_LAYERS: TypedDocumentNode<
         id
         geometry
         properties
+        placedAt
       }
     }
   }
@@ -110,6 +111,7 @@ export const ADD_FEATURE: TypedDocumentNode<AddFeatureMutation, AddFeatureMutati
       id
       geometry
       properties
+      placedAt
     }
   }
 `;
@@ -128,6 +130,7 @@ export const MODIFY_FEATURE: TypedDocumentNode<
       id
       geometry
       properties
+      placedAt
     }
   }
 `;
@@ -150,6 +153,7 @@ export const RESTORE_FEATURE: TypedDocumentNode<
       id
       geometry
       properties
+      placedAt
     }
   }
 `;

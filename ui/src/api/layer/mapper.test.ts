@@ -9,12 +9,14 @@ const WIRE_FEATURE_1: WireFeature = {
   id: "feat-1",
   geometry: { type: "Point", coordinates: [8.5, 47.1] },
   properties: { color: "red" },
+  placedAt: "2026-10-10T08:15:00Z",
 };
 
 const WIRE_FEATURE_2: WireFeature = {
   id: "feat-2",
   geometry: { type: "Point", coordinates: [8.6, 47.2] },
   properties: {},
+  placedAt: null,
 };
 
 const WIRE_LAYER: WireLayer = {

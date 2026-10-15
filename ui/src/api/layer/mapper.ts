@@ -17,6 +17,7 @@ function toFeature(w: WireFeature): Feature {
     // app can treat them as structured GeoJSON.
     geometry: w.geometry as unknown as Feature["geometry"],
     properties: w.properties as unknown as Feature["properties"],
+    placedAt: w.placedAt ? new Date(w.placedAt) : undefined,
     // createdAt/updatedAt/deletedAt are not exposed by the new schema; use
     // safe defaults so the domain type remains satisfied.
     createdAt: new Date(0),

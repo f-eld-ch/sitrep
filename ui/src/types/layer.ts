@@ -19,6 +19,8 @@ export interface Feature {
   id: string;
   geometry: Geometry;
   properties: GeoJsonProperties;
+  /** When the feature first appeared on the timeline; later changes do not move it. */
+  placedAt?: Date;
   createdAt: Date;
   updatedAt: Date | null;
   deletedAt: Date | null;

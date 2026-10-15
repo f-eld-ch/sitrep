@@ -161,6 +161,10 @@ type LayerQueries interface {
 	// the order they were drawn.
 	ListFeatureChanges(ctx context.Context, incidentID uuid.UUID) ([]*FeatureChangeRM, error)
 
+	// ListFeaturePlacements returns, for each feature on the layers visible from an incident, the
+	// effective time of its first change: when it appeared on the map timeline.
+	ListFeaturePlacements(ctx context.Context, incidentID uuid.UUID) (map[uuid.UUID]time.Time, error)
+
 	// ListFeatureChangeTimes returns just the distinct effective times of those changes, oldest
 	// first: what a timeline needs to put its ticks, without every change's geometry.
 	ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error)

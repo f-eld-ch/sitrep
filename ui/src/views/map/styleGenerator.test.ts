@@ -1,11 +1,12 @@
 import { listIcons } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
+import type { SymbolLayerSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { iconIdentifiers } from "components/babs/iconResolver";
 import { ANNOTATED_CATEGORIES } from "components/babs/labelSchema";
 import { Colors } from "components/babs/lineAndZoneTypes";
-import { createMapStyle } from "./styleGenerator";
+import { createMapStyle, createTimeLabelStyle } from "./styleGenerator";
 
 /**
  * Converts an array of layer specifications to a map indexed by layer ID
@@ -1244,3 +1245,28 @@ const displayStyle: LayerProps[] = [
     },
   },
 ];
+
+describe("createTimeLabelStyle", () => {
+  const byId = layersToMap(createTimeLabelStyle()) as Record<string, SymbolLayerSpecification>;
+
+  it("sits above symbols, where no name rule puts text", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.layout?.["text-anchor"]).toBe("bottom");
+    expect(point.paint?.["text-translate"]).toBeDefined();
+    const nameAnchors = Object.values(
+      layersToMap(createMapStyle({ forDraw: false })) as Record<string, SymbolLayerSpecification>,
+    )
+      .filter((l) => l.id?.includes("text-name-point"))
+      .map((l) => l.layout?.["text-anchor"]);
+    expect(nameAnchors).not.toContain("bottom");
+  });
+
+  it("is in the feature colour and never dropped for lack of room", () => {
+    for (const layer of Object.values(byId)) {
+      expect(layer.paint?.["text-color"]).toEqual(["coalesce", ["get", "color"], "#000000"]);
+      expect(layer.layout?.["text-allow-overlap"]).toBe(true);
+      expect(layer.layout?.["text-ignore-placement"]).toBe(true);
+    }
+  });
+});

@@ -189,6 +189,8 @@ type FeatureState struct {
 	Properties map[string]any
 	// MessageIDs are all messages that touched the feature, in first-linked order.
 	MessageIDs []shared.MessageID
+	// PlacedAt is when the feature first appeared on the map timeline; later changes do not move it.
+	PlacedAt time.Time
 }
 
 // FeatureChange says when a feature change takes effect on the map timeline.

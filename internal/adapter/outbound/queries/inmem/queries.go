@@ -560,6 +560,23 @@ func spRowToRM(row *projection.SchadenplatzRow) *outbound.SchadenplatzRM {
 	}
 }
 
+func (q *Queries) ListFeaturePlacements(ctx context.Context, incidentID uuid.UUID) (map[uuid.UUID]time.Time, error) {
+	changes, err := q.ListFeatureChanges(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(map[uuid.UUID]time.Time)
+
+	for _, c := range changes {
+		if c.Change == "placed" {
+			out[c.FeatureID] = c.EffectiveAt
+		}
+	}
+
+	return out, nil
+}
+
 func (q *Queries) ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error) {
 	changes, err := q.ListFeatureChanges(ctx, incidentID)
 	if err != nil {

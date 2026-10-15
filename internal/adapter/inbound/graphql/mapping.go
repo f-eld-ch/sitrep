@@ -861,10 +861,33 @@ func featureChangeFromInput(in *model.FeatureChangeInput) (inbound.FeatureChange
 }
 
 func featureStateToModel(s inbound.FeatureState) *model.Feature {
-	return &model.Feature{
+	feature := &model.Feature{
 		ID:         s.ID.String(),
 		Geometry:   scalar.JSONMap(s.Geometry),
 		Properties: scalar.JSONMap(s.Properties),
+	}
+
+	if !s.PlacedAt.IsZero() {
+		placedAt := s.PlacedAt
+		feature.PlacedAt = &placedAt
+	}
+
+	return feature
+}
+
+// withPlacements says on each feature when it first appeared on the timeline.
+func withPlacements(layers []*model.Layer, placements map[uuid.UUID]time.Time) {
+	for _, layer := range layers {
+		for _, feature := range layer.Features {
+			id, err := uuid.Parse(feature.ID)
+			if err != nil {
+				continue
+			}
+
+			if at, ok := placements[id]; ok {
+				feature.PlacedAt = &at
+			}
+		}
 	}
 }
 

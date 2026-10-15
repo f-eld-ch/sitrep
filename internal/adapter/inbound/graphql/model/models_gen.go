@@ -153,6 +153,10 @@ type Feature struct {
 	ID         string         `json:"id"`
 	Geometry   scalar.JSONMap `json:"geometry,omitempty"`
 	Properties scalar.JSONMap `json:"properties,omitempty"`
+	// When the feature first appeared on the map timeline: the time of the message it was first drawn
+	// for, or the effective time on other layers. Later changes (moved, restyled, restored) do not
+	// move it.
+	PlacedAt *time.Time `json:"placedAt,omitempty"`
 }
 
 // One change to a feature on the map timeline. effectiveAt is when the change takes effect

@@ -105,6 +105,7 @@ type ComplexityRoot struct {
 	Feature struct {
 		Geometry   func(childComplexity int) int
 		ID         func(childComplexity int) int
+		PlacedAt   func(childComplexity int) int
 		Properties func(childComplexity int) int
 	}
 
@@ -686,6 +687,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Feature.ID(childComplexity), true
+	case "Feature.placedAt":
+		if e.ComplexityRoot.Feature.PlacedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Feature.PlacedAt(childComplexity), true
 	case "Feature.properties":
 		if e.ComplexityRoot.Feature.Properties == nil {
 			break
@@ -2640,6 +2647,12 @@ type Feature {
   id: ID!
   geometry: Geometry
   properties: JSONObject
+  """
+  When the feature first appeared on the map timeline: the time of the message it was first drawn
+  for, or the effective time on other layers. Later changes (moved, restyled, restored) do not
+  move it.
+  """
+  placedAt: DateTime
 }
 
 """
@@ -3153,6 +3166,8 @@ func (ec *executionContext) childFields_Feature(ctx context.Context, field graph
 		return ec.fieldContext_Feature_geometry(ctx, field)
 	case "properties":
 		return ec.fieldContext_Feature_properties(ctx, field)
+	case "placedAt":
+		return ec.fieldContext_Feature_placedAt(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type Feature", field.Name)
 }
@@ -5952,6 +5967,29 @@ func (ec *executionContext) _Feature_properties(ctx context.Context, field graph
 }
 func (ec *executionContext) fieldContext_Feature_properties(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Feature", field, false, false, errors.New("field of type JSONObject does not have child fields"))
+}
+
+func (ec *executionContext) _Feature_placedAt(ctx context.Context, field graphql.CollectedField, obj *model.Feature) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Feature_placedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PlacedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *time.Time) graphql.Marshaler {
+			return ec.marshalODateTime2ᚖtimeᚐTime(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Feature_placedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Feature", field, false, false, errors.New("field of type DateTime does not have child fields"))
 }
 
 func (ec *executionContext) _FeatureChange_featureId(ctx context.Context, field graphql.CollectedField, obj *model.FeatureChange) (ret graphql.Marshaler) {
@@ -14214,6 +14252,11 @@ func (ec *executionContext) _Feature(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "properties":
 			out.Values[i] = ec._Feature_properties(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "placedAt":
+			out.Values[i] = ec._Feature_placedAt(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}

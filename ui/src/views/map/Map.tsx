@@ -47,6 +47,7 @@ import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
 import { isPendingFeature, withPendingFeatures } from "./pending";
+import { TimeLabels } from "./controls/TimeLabels";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
@@ -255,6 +256,7 @@ function Layers({
           renderRemoved={(fc) => <InactiveLayer id="message-removed" featureCollection={fc} />}
         />
       )}
+      <TimeLabels />
       <FeatureSelectionReporter clickLayerIds={clickLayerIds} showRing={showRing} />
     </>
   );

@@ -419,6 +419,7 @@ func featureState(f *feature.Feature) inbound.FeatureState {
 		Geometry:   f.Geometry(),
 		Properties: f.Properties(),
 		MessageIDs: f.MessageIDs(),
+		PlacedAt:   f.PlacedAt(),
 	}
 }
 

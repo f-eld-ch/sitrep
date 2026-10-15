@@ -699,6 +699,44 @@ func parseLocation(b []byte) (*outbound.LocationRM, error) {
 	}, nil
 }
 
+func (q *Queries) ListFeaturePlacements(ctx context.Context, incidentID uuid.UUID) (map[uuid.UUID]time.Time, error) {
+	if !q.canRead(ctx, incidentID) {
+		return nil, shared.ErrNotFound
+	}
+
+	visible, err := q.visibleIncidentIDs(ctx, incidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := q.pool.Query(ctx, `
+		SELECT c.feature_id, c.effective_at
+		FROM readmodel.feature_change c
+		JOIN readmodel.layer_features l ON l.id = c.layer_id AND l.removed = false
+		JOIN readmodel.incident i ON i.id = c.incident_id AND i.is_deleted = false
+		WHERE c.incident_id = ANY($1) AND c.change = 'placed'`, visible)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make(map[uuid.UUID]time.Time)
+
+	for rows.Next() {
+		var (
+			id uuid.UUID
+			at time.Time
+		)
+		if err := rows.Scan(&id, &at); err != nil {
+			return nil, err
+		}
+
+		out[id] = at
+	}
+
+	return out, rows.Err()
+}
+
 func (q *Queries) ListFeatureChangeTimes(ctx context.Context, incidentID uuid.UUID) ([]time.Time, error) {
 	slog.DebugContext(ctx, "listing feature change times", slog.String("incident_id", incidentID.String()))
 

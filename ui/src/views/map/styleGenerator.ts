@@ -949,3 +949,59 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
 
   return styles;
 }
+
+/** Text of the label that stamps a drawing with the time it first appeared. */
+const TIME_LABEL_FIELD = ["coalesce", ["get", "timeLabel"], ""] as ExpressionSpecification;
+
+/** Half an icon (48px cell, scaled by the zoom ramp), plus a little air. */
+const TIME_LABEL_POINT_LIFT: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  ["literal", [0, -8]],
+  20,
+  ["literal", [0, -44]],
+];
+
+/**
+ * The time a drawing first appeared, in the drawing's colour. Own layers on an own source, so
+ * the label never competes with the name rules: those sit centred, below, left and right of a
+ * symbol (or on a line or area), and this one sits above it. Placement is switched off for the
+ * same reason the name labels do: a time must not vanish because something else is nearby.
+ */
+export function createTimeLabelStyle(): LayerProps[] {
+  const common = {
+    type: "symbol",
+    layout: {
+      "text-field": TIME_LABEL_FIELD,
+      "text-font": ["B612 Bold"],
+      "text-anchor": "bottom",
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 18, 13],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "color"], "#000000"],
+      "text-halo-color": "#fff",
+      "text-halo-width": 1,
+    },
+  } as const;
+
+  return [
+    {
+      ...common,
+      id: "time-label-point",
+      filter: ["==", ["geometry-type"], "Point"],
+      layout: { ...common.layout, "text-offset": [0, 0] },
+      paint: { ...common.paint, "text-translate": TIME_LABEL_POINT_LIFT },
+    },
+    // Lines and areas carry their name on the middle; the time goes just above it.
+    {
+      ...common,
+      id: "time-label-shape",
+      filter: ["!=", ["geometry-type"], "Point"],
+      layout: { ...common.layout, "text-offset": [0, -0.6] },
+    },
+  ] as unknown as LayerProps[];
+}

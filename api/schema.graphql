@@ -381,6 +381,12 @@ type Feature {
   id: ID!
   geometry: Geometry
   properties: JSONObject
+  """
+  When the feature first appeared on the map timeline: the time of the message it was first drawn
+  for, or the effective time on other layers. Later changes (moved, restyled, restored) do not
+  move it.
+  """
+  placedAt: DateTime
 }
 
 """

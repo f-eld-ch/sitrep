@@ -1842,7 +1842,14 @@ func (r *queryResolver) LayersForIncident(
 		out = append(out, layer)
 	}
 
+	placements, err := r.Queries.ListFeaturePlacements(ctx, incID)
+	if err != nil {
+		return nil, err
+	}
+
 	if asOf == nil {
+		withPlacements(out, placements)
+
 		return out, nil
 	}
 
@@ -1851,7 +1858,10 @@ func (r *queryResolver) LayersForIncident(
 		return nil, err
 	}
 
-	return layersAsOf(out, changes, *asOf), nil
+	asOfLayers := layersAsOf(out, changes, *asOf)
+	withPlacements(asOfLayers, placements)
+
+	return asOfLayers, nil
 }
 
 // FeatureChangeTimes is the resolver for the featureChangeTimes field.

@@ -1627,3 +1627,47 @@ func userLayers(layers []*model.Layer) []*model.Layer {
 
 	return out
 }
+
+func TestLayersForIncident_PlacedAtStaysTheFirstTime(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Placed At", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{{Name: "Map"}},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	layers, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, nil)
+	require.NoError(t, err)
+
+	layerID := userLayers(layers)[0].ID
+	first := time.Now().UTC().Add(-3 * time.Hour).Truncate(time.Second)
+	later := first.Add(time.Hour)
+
+	added, err := s.resolver.Mutation().AddFeature(ctx, inc.Incident.ID, layerID, "draw-1",
+		map[string]any{"type": "Point", "coordinates": []any{0.0, 0.0}},
+		map[string]any{}, &model.FeatureChangeInput{EffectiveAt: &first})
+	require.NoError(t, err)
+	require.NotNil(t, added.PlacedAt)
+	assert.True(t, first.Equal(*added.PlacedAt))
+
+	moved, err := s.resolver.Mutation().ModifyFeature(ctx, added.ID,
+		map[string]any{"type": "Point", "coordinates": []any{1.0, 1.0}},
+		map[string]any{"color": "#ff0000"}, &model.FeatureChangeInput{EffectiveAt: &later})
+	require.NoError(t, err)
+	require.NotNil(t, moved.PlacedAt)
+	assert.True(t, first.Equal(*moved.PlacedAt), "a later change does not move the time")
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	for name, asOf := range map[string]*time.Time{"live": nil, "as of": &later} {
+		got, err := s.resolver.Query().LayersForIncident(ctx, inc.Incident.ID, asOf)
+		require.NoError(t, err, name)
+
+		features := userLayers(got)[0].Features
+		require.Len(t, features, 1, name)
+		require.NotNil(t, features[0].PlacedAt, name)
+		assert.True(t, first.Equal(*features[0].PlacedAt), name)
+	}
+}
