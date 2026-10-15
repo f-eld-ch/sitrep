@@ -962,9 +962,9 @@ const TIME_LABEL_SIZE: ExpressionSpecification = [
   ["linear"],
   ["zoom"],
   15,
-  7,
+  9,
   20,
-  15,
+  19,
 ];
 
 /** Below this zoom the symbols are too small for a time to be read, so it is left out. */

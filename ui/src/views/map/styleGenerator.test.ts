@@ -1278,9 +1278,9 @@ describe("createTimeLabelStyle", () => {
         ["linear"],
         ["zoom"],
         15,
-        7,
+        9,
         20,
-        15,
+        19,
       ]);
     }
   });
