@@ -76,7 +76,7 @@
   "login": "login",
   "loginTagline": "Incident command. Independent. Digital.",
   "logout": "logout",
-  "map": "situation picture",
+  "map": "situation map",
   "mapview": {
     "rotate": "Turn direction",
     "rotation": "Rotation",
