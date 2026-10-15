@@ -1262,12 +1262,28 @@ describe("createTimeLabelStyle", () => {
     expect(nameAnchors).not.toContain("bottom");
   });
 
-  it("is in the feature colour and never dropped for lack of room", () => {
+  it("is in the feature colour", () => {
     for (const layer of Object.values(byId)) {
       expect(layer.paint?.["text-color"]).toEqual(["coalesce", ["get", "color"], "#000000"]);
-      expect(layer.layout?.["text-allow-overlap"]).toBe(true);
-      expect(layer.layout?.["text-ignore-placement"]).toBe(true);
     }
+  });
+
+  it("shows the time of a symbol always, and in the way of the times of lines and areas", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.layout?.["text-allow-overlap"]).toBe(true);
+    expect(point.layout?.["text-ignore-placement"]).toBe(false);
+  });
+
+  it("pushes the time of a line or area aside for those of symbols", () => {
+    const shape = byId["time-label-shape"];
+    const order = Object.keys(byId);
+
+    // Layers are placed from the top down, so the symbols' layer must be the later one.
+    expect(order.indexOf("time-label-point")).toBeGreaterThan(order.indexOf("time-label-shape"));
+    expect(shape.layout?.["text-allow-overlap"]).toBe(false);
+    expect(shape.layout?.["text-ignore-placement"]).toBe(true);
+    expect(shape.layout?.["symbol-placement"]).toBe("line");
   });
 
   it("scales with the symbols and is left out when they are too small to read", () => {
@@ -1288,7 +1304,7 @@ describe("createTimeLabelStyle", () => {
   it("puts the time of a line or area on the line, above where its name runs", () => {
     const shape = byId["time-label-shape"];
 
-    expect(shape.layout?.["symbol-placement"]).toBe("line-center");
+    expect(shape.layout?.["symbol-placement"]).toBe("line");
     expect(shape.layout?.["text-offset"]).toEqual([0, -1]);
   });
 

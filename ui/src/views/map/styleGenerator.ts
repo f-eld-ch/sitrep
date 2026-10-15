@@ -984,8 +984,12 @@ const TIME_LABEL_POINT_LIFT: ExpressionSpecification = [
 /**
  * The time a drawing first appeared, in the drawing's colour. Own layers on an own source, so
  * the label never competes with the name rules: those sit centred, below, left and right of a
- * symbol (or on a line or area), and this one sits above it. Placement is switched off for the
- * same reason the name labels do: a time must not vanish because something else is nearby.
+ * symbol (or on a line or area), and this one sits above it.
+ *
+ * A symbol's time always shows. A line's or area's time gives way to it: MapLibre places the
+ * layers from the top down, so the symbols' layer comes last in the list, and the shapes' layer
+ * drops any label that would touch an already placed one. Along a line the label repeats, so
+ * one that is pushed aside leaves the next one further along.
  */
 export function createTimeLabelStyle(): LayerProps[] {
   const common = {
@@ -994,8 +998,6 @@ export function createTimeLabelStyle(): LayerProps[] {
       "text-field": TIME_LABEL_FIELD,
       "text-font": ["B612 Bold"],
       "text-anchor": "bottom",
-      "text-allow-overlap": true,
-      "text-ignore-placement": true,
       "text-size": TIME_LABEL_SIZE,
     },
     paint: {
@@ -1004,6 +1006,24 @@ export function createTimeLabelStyle(): LayerProps[] {
   } as const;
 
   return [
+    // Lines and areas: on the line itself, following it, just above where the name runs (the name
+    // rules put it at an offset below). They never block anything.
+    {
+      ...common,
+      id: "time-label-shape",
+      minzoom: TIME_LABEL_MIN_ZOOM,
+      filter: ["!=", ["geometry-type"], "Point"],
+      layout: {
+        ...common.layout,
+        "symbol-placement": "line",
+        "symbol-spacing": 250,
+        "text-anchor": "center",
+        "text-offset": [0, -1],
+        "text-allow-overlap": false,
+        "text-ignore-placement": true,
+        "text-padding": 6,
+      },
+    },
     {
       ...common,
       id: "time-label-point",
@@ -1012,6 +1032,9 @@ export function createTimeLabelStyle(): LayerProps[] {
       layout: {
         ...common.layout,
         "text-offset": [0, 0],
+        // Placed first, and in the way of the shapes' labels, never dropped itself.
+        "text-allow-overlap": true,
+        "text-ignore-placement": false,
         // Upright on the screen whatever the map's bearing and pitch, like the icon it sits on.
         "text-rotation-alignment": "viewport",
         "text-pitch-alignment": "viewport",
@@ -1022,20 +1045,6 @@ export function createTimeLabelStyle(): LayerProps[] {
         // The lift is "up on the screen", not "north on the map": a rotated map must not swing
         // the label round to the side of the symbol.
         "text-translate-anchor": "viewport",
-      },
-    },
-    // Lines and areas: on the line itself, following it, at its middle, just above where the name
-    // runs (the name rules put it at an offset below).
-    {
-      ...common,
-      id: "time-label-shape",
-      minzoom: TIME_LABEL_MIN_ZOOM,
-      filter: ["!=", ["geometry-type"], "Point"],
-      layout: {
-        ...common.layout,
-        "symbol-placement": "line-center",
-        "text-anchor": "center",
-        "text-offset": [0, -1],
       },
     },
   ] as unknown as LayerProps[];
