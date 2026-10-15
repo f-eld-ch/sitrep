@@ -1291,4 +1291,12 @@ describe("createTimeLabelStyle", () => {
     expect(shape.layout?.["symbol-placement"]).toBe("line-center");
     expect(shape.layout?.["text-offset"]).toEqual([0, -1]);
   });
+
+  it("keeps the time of a symbol above it on the screen when the map is rotated or tilted", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.paint?.["text-translate-anchor"]).toBe("viewport");
+    expect(point.layout?.["text-rotation-alignment"]).toBe("viewport");
+    expect(point.layout?.["text-pitch-alignment"]).toBe("viewport");
+  });
 });

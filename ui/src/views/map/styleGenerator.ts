@@ -1011,8 +1011,20 @@ export function createTimeLabelStyle(): LayerProps[] {
       id: "time-label-point",
       minzoom: TIME_LABEL_MIN_ZOOM,
       filter: ["==", ["geometry-type"], "Point"],
-      layout: { ...common.layout, "text-offset": [0, 0] },
-      paint: { ...common.paint, "text-translate": TIME_LABEL_POINT_LIFT },
+      layout: {
+        ...common.layout,
+        "text-offset": [0, 0],
+        // Upright on the screen whatever the map's bearing and pitch, like the icon it sits on.
+        "text-rotation-alignment": "viewport",
+        "text-pitch-alignment": "viewport",
+      },
+      paint: {
+        ...common.paint,
+        "text-translate": TIME_LABEL_POINT_LIFT,
+        // The lift is "up on the screen", not "north on the map": a rotated map must not swing
+        // the label round to the side of the symbol.
+        "text-translate-anchor": "viewport",
+      },
     },
     // Lines and areas: on the line itself, following it, at its middle, just above where the name
     // runs (the name rules put it at an offset below).
