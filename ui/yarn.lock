@@ -5169,13 +5169,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@watergis/maplibre-gl-export@npm:~4.1.2":
-  version: 4.1.2
-  resolution: "@watergis/maplibre-gl-export@npm:4.1.2"
+"@watergis/maplibre-gl-export@npm:~4.2.0":
+  version: 4.2.0
+  resolution: "@watergis/maplibre-gl-export@npm:4.2.0"
   dependencies:
     jspdf: "npm:^4.2.1"
-    maplibre-gl: "npm:^5.21.1"
-  checksum: 10/b858b3b3e48a145164052f59a0eeea0a8878a8a3b2ee9df2f535694033c297e5765074a9cd459aab8a6f7bb5ec389d058b8ca05f3acb5a77b77ac684099f2b18
+  peerDependencies:
+    maplibre-gl: ^5.21.1 || >=6.0.0-0 <7.0.0
+  checksum: 10/d97e7ae5f98a2146f152569e8c7cab10b03d74fef7196cfe72f8d8f1759023b2ed082fe8c91247d0a34145df3bd5b6740b30dec8d4385fc28220928045ef457c
   languageName: node
   linkType: hard
 
@@ -11304,7 +11305,7 @@ __metadata:
     "@vite-pwa/assets-generator": "npm:^2.0.0"
     "@vitejs/plugin-react": "npm:^6.1.2"
     "@vitest/coverage-v8": "npm:^5.0.4"
-    "@watergis/maplibre-gl-export": "npm:~4.1.2"
+    "@watergis/maplibre-gl-export": "npm:~4.2.0"
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.23"
     git-rev-sync: "npm:^3.0.2"
