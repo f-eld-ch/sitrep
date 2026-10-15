@@ -953,6 +953,23 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
 /** Text of the label that stamps a drawing with the time it first appeared. */
 const TIME_LABEL_FIELD = ["coalesce", ["get", "timeLabel"], ""] as ExpressionSpecification;
 
+/**
+ * Grows with the symbols, at the same linear pace as `ICON_SIZE` (about 9px of text per unit of
+ * icon scale), so a time stays in proportion to what it stamps.
+ */
+const TIME_LABEL_SIZE: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  15,
+  7,
+  20,
+  15,
+];
+
+/** Below this zoom the symbols are too small for a time to be read, so it is left out. */
+const TIME_LABEL_MIN_ZOOM = 15;
+
 /** Half an icon (48px cell, scaled by the zoom ramp), plus a little air. */
 const TIME_LABEL_POINT_LIFT: ExpressionSpecification = [
   "interpolate",
@@ -979,7 +996,7 @@ export function createTimeLabelStyle(): LayerProps[] {
       "text-anchor": "bottom",
       "text-allow-overlap": true,
       "text-ignore-placement": true,
-      "text-size": ["interpolate", ["linear"], ["zoom"], 12, 9, 18, 13],
+      "text-size": TIME_LABEL_SIZE,
     },
     paint: {
       "text-color": ["coalesce", ["get", "color"], "#000000"],
@@ -992,6 +1009,7 @@ export function createTimeLabelStyle(): LayerProps[] {
     {
       ...common,
       id: "time-label-point",
+      minzoom: TIME_LABEL_MIN_ZOOM,
       filter: ["==", ["geometry-type"], "Point"],
       layout: { ...common.layout, "text-offset": [0, 0] },
       paint: { ...common.paint, "text-translate": TIME_LABEL_POINT_LIFT },
@@ -1000,6 +1018,7 @@ export function createTimeLabelStyle(): LayerProps[] {
     {
       ...common,
       id: "time-label-shape",
+      minzoom: TIME_LABEL_MIN_ZOOM,
       filter: ["!=", ["geometry-type"], "Point"],
       layout: { ...common.layout, "text-offset": [0, -0.6] },
     },

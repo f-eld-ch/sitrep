@@ -1269,4 +1269,19 @@ describe("createTimeLabelStyle", () => {
       expect(layer.layout?.["text-ignore-placement"]).toBe(true);
     }
   });
+
+  it("scales with the symbols and is left out when they are too small to read", () => {
+    for (const layer of Object.values(byId)) {
+      expect(layer.minzoom).toBe(15);
+      expect(layer.layout?.["text-size"]).toEqual([
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        15,
+        7,
+        20,
+        15,
+      ]);
+    }
+  });
 });
