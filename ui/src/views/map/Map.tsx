@@ -454,11 +454,20 @@ function LayerFetcher({
       return;
     }
 
+    // A layer that did not change keeps its object, so only the layers that did are redrawn:
+    // moving along the timeline usually touches one or two of them.
+    const previous = syncedIncidentId.current === incidentId ? syncedLayers.current : undefined;
+    const layers = remoteLayers.map((layer) => {
+      const before = previous?.find((l) => l.id === layer.id);
+
+      return before !== undefined && isEqual(before, layer) ? before : layer;
+    });
+
     syncedIncidentId.current = incidentId;
-    syncedLayers.current = remoteLayers;
+    syncedLayers.current = layers;
     dispatch({
       type: "SET_LAYERS",
-      payload: { layers: remoteLayers, viewedIncidentId: incidentId, preferredKind },
+      payload: { layers, viewedIncidentId: incidentId, preferredKind },
     });
   }, [remoteLayers, dispatch, incidentId, preferredKind]);
 
