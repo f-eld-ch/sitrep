@@ -1,4 +1,5 @@
 import { useQuery } from "@apollo/client/react";
+import { useMemo } from "react";
 import type { Division, Message } from "types";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
@@ -13,14 +14,28 @@ export interface IncidentMessagesData {
 /** @deprecated use useIncidentMessages */
 export type JournalMessagesData = IncidentMessagesData;
 
-export function useIncidentMessages(incidentId: string): QueryResult<IncidentMessagesData> {
+export function useIncidentMessages(
+  incidentId: string,
+  options: { pollInterval?: number; skip?: boolean } = {},
+): QueryResult<IncidentMessagesData> {
   const { loading, error, data, refetch } = useQuery(GET_INCIDENT_MESSAGES, {
     variables: { incidentId },
-    skip: !incidentId,
-    pollInterval: 5000,
+    skip: !incidentId || options.skip,
+    pollInterval: options.pollInterval ?? 5000,
+    skipPollAttempt: () => document.hidden,
   });
 
   const refresh = () => void refetch();
+
+  // Converted once per response: new message objects on every render would make every row and
+  // everything derived from the list look changed.
+  const converted = useMemo<IncidentMessagesData>(
+    () => ({
+      messages: (data?.incident?.messages ?? []).map(toMessage),
+      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
+    }),
+    [data],
+  );
 
   if (!incidentId || (loading && !data)) {
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
@@ -29,12 +44,7 @@ export function useIncidentMessages(incidentId: string): QueryResult<IncidentMes
   if (error) {
     return {
       status: "error",
-      data: data?.incident
-        ? {
-            messages: (data.incident.messages ?? []).map(toMessage),
-            incidentDivisions: data.incident.divisions.map(toDivision),
-          }
-        : undefined,
+      data: data?.incident ? converted : undefined,
       error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
@@ -43,10 +53,7 @@ export function useIncidentMessages(incidentId: string): QueryResult<IncidentMes
 
   return {
     status: "ready",
-    data: {
-      messages: (data?.incident?.messages ?? []).map(toMessage),
-      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
-    },
+    data: converted,
     error: undefined,
     isRefreshing: loading,
     refresh,

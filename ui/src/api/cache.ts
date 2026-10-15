@@ -15,5 +15,13 @@ export const cache: InMemoryCache = new InMemoryCache({
     DefaultAccessGrant: {
       keyFields: ["principalKind", "principalId"],
     },
+    // A layer's features are the whole list as of the query's point in time (live, or the time of
+    // a message), so a newer answer replaces the list. Said explicitly, Apollo does not warn about
+    // "cache data may be lost" whenever the Lagebild and the operator view take turns writing it.
+    Layer: {
+      fields: {
+        features: { merge: false },
+      },
+    },
   },
 });

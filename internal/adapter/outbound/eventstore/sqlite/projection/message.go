@@ -22,7 +22,7 @@ type MessageHandler struct{ db *sql.DB }
 func NewMessageHandler(db *sql.DB) *MessageHandler { return &MessageHandler{db: db} }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 4 }
+func (h *MessageHandler) Version() int { return 5 }
 func (h *MessageHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_message_attachment`); err != nil {
 		return err
@@ -40,7 +40,7 @@ func (h *MessageHandler) Handles(st, t string) bool {
 
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported",
-		"AttachmentAdded", "AttachmentRemoved":
+		"AttachmentAdded", "AttachmentRemoved", "DivisionAcknowledged", "DivisionAcknowledgementRevoked":
 		return true
 	}
 
@@ -201,10 +201,15 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 			  medium          = COALESCE(?, medium),
 			  msg_time        = COALESCE(?, msg_time),
 			  last_editor_sub = ?,
-			  updated_at      = ?
+			  updated_at      = ?,
+			  -- changed content or time invalidates every division's acknowledgement
+			  acknowledgements = CASE
+			    WHEN (? IS NOT NULL AND ? <> content) OR (? IS NOT NULL AND ? <> msg_time)
+			    THEN '[]' ELSE acknowledgements END
 			WHERE id = ?`,
 			d.Content, d.Sender, d.SenderDetail, d.Receiver, d.ReceiverDetail,
-			d.Medium, &msgTimeNT, d.EditorSub, sqlite.FormatTime(e.OccurredAt), id)
+			d.Medium, &msgTimeNT, d.EditorSub, sqlite.FormatTime(e.OccurredAt),
+			d.Content, d.Content, &msgTimeNT, &msgTimeNT, id)
 
 	case "Triaged":
 		type triaged struct {
@@ -243,10 +248,61 @@ func (h *MessageHandler) Apply(ctx context.Context, e eventsourcing.Event) error
 		return exec(tx, ctx, `
 			UPDATE readmodel_message
 			SET triage = ?, priority = ?, division_ids = ?, linked_resource_ids = ?,
-			    last_editor_sub = ?, updated_at = ?
+			    last_editor_sub = ?, updated_at = ?,
+			    -- a division that no longer has the message cannot have acknowledged it
+			    acknowledgements = COALESCE((
+			      SELECT json_group_array(json(value)) FROM json_each(acknowledgements)
+			      WHERE json_extract(value, '$.divisionId') IN (SELECT value FROM json_each(?))
+			    ), '[]')
 			WHERE id = ?`,
 			d.Triage, d.Priority, string(divJSON), string(linkedJSON),
-			d.TriagedBy, sqlite.FormatTime(e.OccurredAt), id)
+			d.TriagedBy, sqlite.FormatTime(e.OccurredAt), string(divJSON), id)
+
+	case "DivisionAcknowledged":
+		var d struct {
+			DivisionID string `json:"divisionId"`
+			By         string `json:"by"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		entry, err := json.Marshal(map[string]string{
+			"divisionId": d.DivisionID,
+			"at":         e.OccurredAt.UTC().Format(time.RFC3339Nano),
+			"by":         d.By,
+		})
+		if err != nil {
+			return fmt.Errorf("marshal acknowledgement: %w", err)
+		}
+
+		// Remove-then-add keeps replays idempotent.
+		return exec(tx, ctx, `
+			UPDATE readmodel_message
+			SET acknowledgements = json_insert(
+			      COALESCE((
+			        SELECT json_group_array(json(value)) FROM json_each(acknowledgements)
+			        WHERE json_extract(value, '$.divisionId') <> ?
+			      ), '[]'), '$[#]', json(?))
+			WHERE id = ?`,
+			d.DivisionID, string(entry), id)
+
+	case "DivisionAcknowledgementRevoked":
+		var d struct {
+			DivisionID string `json:"divisionId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(tx, ctx, `
+			UPDATE readmodel_message
+			SET acknowledgements = COALESCE((
+			      SELECT json_group_array(json(value)) FROM json_each(acknowledgements)
+			      WHERE json_extract(value, '$.divisionId') <> ?
+			    ), '[]')
+			WHERE id = ?`,
+			d.DivisionID, id)
 
 	case "Deleted":
 		if err := exec(tx, ctx, `DELETE FROM readmodel_message WHERE id = ?`, id); err != nil {

@@ -9,6 +9,13 @@ import (
 type Created struct {
 	IncidentID shared.IncidentID `json:"incidentId"`
 	Name       string            `json:"name"`
+	// Kind marks system-managed layers; old events lack it and replay as regular.
+	Kind shared.LayerKind `json:"kind,omitempty"`
+}
+
+// KindAssigned marks an existing layer as system-managed (backfill only).
+type KindAssigned struct {
+	Kind shared.LayerKind `json:"kind"`
 }
 
 type Renamed struct {

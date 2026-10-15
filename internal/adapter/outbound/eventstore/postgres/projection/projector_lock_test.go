@@ -28,6 +28,14 @@ func (s *countingStore) Load(ctx context.Context, streamType string, id uuid.UUI
 	return s.inner.Load(ctx, streamType, id)
 }
 
+func (s *countingStore) LoadMany(
+	ctx context.Context,
+	streamType string,
+	ids []uuid.UUID,
+) (map[uuid.UUID][]eventsourcing.Event, error) {
+	return s.inner.LoadMany(ctx, streamType, ids)
+}
+
 func (s *countingStore) Append(ctx context.Context, a eventsourcing.Aggregate) (outbound.Cursor, error) {
 	return s.inner.Append(ctx, a)
 }

@@ -15,6 +15,7 @@ import { useParams } from "react-router";
 import { useReactToPrint } from "react-to-print";
 import { type Division, type Message, PriorityStatus, TriageStatus } from "types";
 import { useIncidentDetails, useIncidentMessages } from "api";
+import { divisionLongLabel } from "utils/divisionLabel";
 import { buildMessageList } from "./listUtils";
 import { default as JournalMessage } from "./Message";
 import MessageTable from "./Table";
@@ -147,7 +148,7 @@ function List(props: {
               <option label={t("all") as string}>all</option>
               {divisions.map((element) => (
                 <option key={element.id} value={element.name}>
-                  {element.description}
+                  {divisionLongLabel(element, t)}
                 </option>
               ))}
             </select>

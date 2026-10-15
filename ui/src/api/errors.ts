@@ -13,6 +13,12 @@ export type ApiErrorCode =
   | "NETWORK_ERROR"
   | "ATTACHMENT_TOO_LARGE"
   | "ATTACHMENT_DISABLED"
+  | "NOT_TRIAGED_TO_DIVISION"
+  | "BEFORE_FEATURE_PLACED"
+  | "FEATURE_HAS_LATER_CHANGES"
+  | "FEATURE_NOT_REMOVED"
+  | "BEFORE_FEATURE_REMOVED"
+  | "MESSAGE_TIME_LOCKED"
   | "UNKNOWN";
 
 const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
@@ -30,6 +36,12 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
   NETWORK_ERROR: "Network error — please check your connection.",
   ATTACHMENT_TOO_LARGE: "The file exceeds the maximum allowed upload size.",
   ATTACHMENT_DISABLED: "File attachments are not enabled on this server.",
+  NOT_TRIAGED_TO_DIVISION: "This message is not assigned to that division.",
+  BEFORE_FEATURE_PLACED: "The change is dated before the object was placed.",
+  FEATURE_HAS_LATER_CHANGES: "The object has later changes, so it cannot be removed at this time.",
+  FEATURE_NOT_REMOVED: "The object has not been removed.",
+  BEFORE_FEATURE_REMOVED: "The object cannot be restored before it was removed.",
+  MESSAGE_TIME_LOCKED: "The time of a triaged message cannot be changed.",
   UNKNOWN: "An unexpected error occurred.",
 };
 
@@ -62,6 +74,12 @@ const knownCodes = new Set<ApiErrorCode>([
   "INVALID_PARENT_INCIDENT",
   "CONFLICT",
   "INTERNAL_ERROR",
+  "NOT_TRIAGED_TO_DIVISION",
+  "BEFORE_FEATURE_PLACED",
+  "FEATURE_HAS_LATER_CHANGES",
+  "FEATURE_NOT_REMOVED",
+  "BEFORE_FEATURE_REMOVED",
+  "MESSAGE_TIME_LOCKED",
 ]);
 
 function isKnownCode(code: unknown): code is ApiErrorCode {

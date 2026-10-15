@@ -66,6 +66,53 @@ func (s *EventStore) Load(ctx context.Context, streamType string, id uuid.UUID) 
 	return scanEvents(rows)
 }
 
+// loadManyChunk bounds the number of placeholders in one statement.
+const loadManyChunk = 500
+
+func (s *EventStore) LoadMany(
+	ctx context.Context,
+	streamType string,
+	ids []uuid.UUID,
+) (map[uuid.UUID][]eventsourcing.Event, error) {
+	out := make(map[uuid.UUID][]eventsourcing.Event, len(ids))
+
+	for start := 0; start < len(ids); start += loadManyChunk {
+		events, err := s.loadChunk(ctx, streamType, ids[start:min(start+loadManyChunk, len(ids))])
+		if err != nil {
+			return nil, err
+		}
+
+		for _, e := range events {
+			out[e.StreamID] = append(out[e.StreamID], e)
+		}
+	}
+
+	return out, nil
+}
+
+// loadChunk loads the streams of at most loadManyChunk ids in one statement.
+func (s *EventStore) loadChunk(ctx context.Context, streamType string, ids []uuid.UUID) ([]eventsourcing.Event, error) {
+	args := make([]any, 0, len(ids)+1)
+	args = append(args, streamType)
+
+	for _, id := range ids {
+		args = append(args, id.String())
+	}
+
+	rows, err := s.readHandle(ctx).QueryContext(ctx, `
+		SELECT stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at
+		  FROM eventsourcing_events
+		 WHERE stream_type = ? AND stream_id IN (`+strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")+`)
+		 ORDER BY stream_id, version`, args...)
+	if err != nil {
+		return nil, fmt.Errorf("eventstore.LoadMany: %w", err)
+	}
+
+	defer func() { _ = rows.Close() }()
+
+	return scanEvents(rows)
+}
+
 func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (outbound.Cursor, error) {
 	pending := a.Root().PendingEvents()
 	if len(pending) == 0 {

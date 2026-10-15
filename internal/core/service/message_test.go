@@ -2,11 +2,14 @@ package service_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 )
 
 func TestMessageService_RecordMessage(t *testing.T) {
@@ -73,6 +76,46 @@ func TestMessageService_CorrectMessage(t *testing.T) {
 	newContent := "Korrigiert"
 	_, err = messageSvc.CorrectMessage(ctx(), ms.ID, &newContent, nil, nil, nil, nil, nil, nil, testActor)
 	require.NoError(t, err)
+}
+
+func TestMessageService_TimeIsLockedOnceTriaged(t *testing.T) {
+	factory, store := testStack(t)
+	incidents, messages, layers, _ := repos(store)
+	incidentSvc := factory.IncidentService(incidents, layers)
+	messageSvc := factory.MessageService(messages, incidents)
+
+	res, err := incidentSvc.CreateIncident(ctx(), "Übung", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	recordedAt := testAt.Add(-time.Hour)
+	ms, err := messageSvc.RecordMessage(ctx(), res.IncidentID,
+		"Original", "Alpha", "", "Beta", "", shared.MediumRadio, &recordedAt, testActor)
+	require.NoError(t, err)
+
+	earlier := recordedAt.Add(-10 * time.Minute)
+
+	t.Run("before it is triaged the time can be corrected", func(t *testing.T) {
+		state, err := messageSvc.CorrectMessage(ctx(), ms.ID, nil, nil, nil, nil, nil, nil, &earlier, testActor)
+		require.NoError(t, err)
+		assert.True(t, earlier.Equal(state.Time))
+	})
+
+	_, err = messageSvc.TriageMessage(ctx(), ms.ID, shared.TriageDone, shared.PriorityNormal, nil, nil, testActor)
+	require.NoError(t, err)
+
+	t.Run("afterwards it cannot", func(t *testing.T) {
+		later := earlier.Add(5 * time.Minute)
+
+		_, err := messageSvc.CorrectMessage(ctx(), ms.ID, nil, nil, nil, nil, nil, nil, &later, testActor)
+		require.ErrorIs(t, err, shared.ErrMessageTimeLocked)
+	})
+
+	t.Run("but the rest can, and the same time may be sent again", func(t *testing.T) {
+		content := "Korrigiert"
+
+		_, err := messageSvc.CorrectMessage(ctx(), ms.ID, &content, nil, nil, nil, nil, nil, &earlier, testActor)
+		require.NoError(t, err)
+	})
 }
 
 func TestMessageService_TriageMessage(t *testing.T) {
@@ -188,4 +231,88 @@ func TestMessageService_CounterIsPerIncident(t *testing.T) {
 		testActor,
 	)
 	require.NoError(t, err)
+}
+
+func TestMessageService_Acknowledgement(t *testing.T) {
+	setup := func(t *testing.T) (svc inbound.MessageService, incID shared.IncidentID, msgID shared.MessageID, mapDiv, scDiv shared.DivisionID) {
+		t.Helper()
+
+		factory, store := testStack(t)
+		incidents, messages, layers, _ := repos(store)
+		incidentSvc := factory.IncidentService(incidents, layers)
+		svc = factory.MessageService(messages, incidents)
+
+		res, err := incidentSvc.CreateIncident(ctx(), "Lage", nil,
+			[]incident.DivisionData{{Name: "SC", Description: "Stabschef"}}, nil, testActor)
+		require.NoError(t, err)
+
+		mapDiv = incident.MessageMapDivisionID(res.IncidentID)
+
+		for _, d := range res.Divisions {
+			if d.Kind == shared.DivisionKindStandard {
+				scDiv = d.ID
+			}
+		}
+
+		ms, err := svc.RecordMessage(ctx(), res.IncidentID,
+			"Pegel steigt", "Beobachter", "", "Führung", "", shared.MediumRadio, nil, testActor)
+		require.NoError(t, err)
+
+		return svc, res.IncidentID, ms.ID, mapDiv, scDiv
+	}
+
+	t.Run("acknowledge and revoke return aggregate state", func(t *testing.T) {
+		svc, _, msgID, mapDiv, scDiv := setup(t)
+		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
+			[]shared.DivisionID{mapDiv, scDiv}, nil, testActor)
+		require.NoError(t, err)
+
+		state, err := svc.AcknowledgeMessage(ctx(), msgID, mapDiv, testActor)
+		require.NoError(t, err)
+		require.Len(t, state.Acknowledgements, 1)
+		assert.Equal(t, mapDiv, state.Acknowledgements[0].DivisionID)
+		assert.Equal(t, testActor.Sub, state.Acknowledgements[0].By)
+
+		state, err = svc.RevokeMessageAcknowledgement(ctx(), msgID, mapDiv, testActor)
+		require.NoError(t, err)
+		assert.Empty(t, state.Acknowledgements)
+	})
+
+	t.Run("a division the message is not triaged to cannot acknowledge", func(t *testing.T) {
+		svc, _, msgID, mapDiv, scDiv := setup(t)
+		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
+			[]shared.DivisionID{scDiv}, nil, testActor)
+		require.NoError(t, err)
+
+		_, err = svc.AcknowledgeMessage(ctx(), msgID, mapDiv, testActor)
+		require.ErrorIs(t, err, shared.ErrNotTriagedToDivision)
+	})
+
+	t.Run("a division of another incident is rejected", func(t *testing.T) {
+		svc, _, msgID, _, _ := setup(t)
+
+		_, err := svc.AcknowledgeMessage(ctx(), msgID, shared.DivisionID(newID()), testActor)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("re-triage drops the acknowledgement", func(t *testing.T) {
+		svc, _, msgID, mapDiv, scDiv := setup(t)
+		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
+			[]shared.DivisionID{mapDiv}, nil, testActor)
+		require.NoError(t, err)
+		_, err = svc.AcknowledgeMessage(ctx(), msgID, mapDiv, testActor)
+		require.NoError(t, err)
+
+		state, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
+			[]shared.DivisionID{scDiv}, nil, testActor)
+		require.NoError(t, err)
+		assert.Empty(t, state.Acknowledgements)
+	})
+
+	t.Run("unknown message", func(t *testing.T) {
+		svc, _, _, mapDiv, _ := setup(t)
+
+		_, err := svc.AcknowledgeMessage(ctx(), shared.MessageID(newID()), mapDiv, testActor)
+		require.ErrorIs(t, err, shared.ErrNotFound)
+	})
 }

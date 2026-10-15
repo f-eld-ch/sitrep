@@ -2,7 +2,7 @@
 import { fc } from "@fast-check/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import type { Attachment, Division, Message } from "../../types";
+import type { Attachment, Division, Message, MessageAcknowledgement } from "../../types";
 import { Medium, PriorityStatus, TriageStatus } from "../../types";
 import MessageContainer from "./Message";
 
@@ -56,6 +56,7 @@ describe("MessageContainer", () => {
     priorityId: PriorityStatus.High,
     triageId: TriageStatus.Pending,
     divisions: [],
+    acknowledgements: [],
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: new Date(0),
@@ -317,6 +318,7 @@ describe("MessageContainer", () => {
           medium: fc.constantFrom(Medium.Email, Medium.Phone, Medium.Radio),
           number: fc.nat(),
           attachments: fc.constant([] as Attachment[]),
+          acknowledgements: fc.constant([] as MessageAcknowledgement[]),
           author: fc.constant(""),
         }),
         (msg) => {

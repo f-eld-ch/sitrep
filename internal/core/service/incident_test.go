@@ -19,8 +19,9 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 		result, err := svc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
 		require.NoError(t, err)
 		assert.NotEqual(t, shared.IncidentID{}, result.IncidentID)
-		// default layer created when no layerNames supplied
+		// default layer when no layerNames supplied; the message map layer is separate
 		assert.Len(t, result.LayerIDs, 1)
+		assert.NotEqual(t, shared.LayerID{}, result.MessageMapLayerID)
 	})
 
 	t.Run("creates requested layers", func(t *testing.T) {
@@ -31,6 +32,23 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 		result, err := svc.CreateIncident(ctx(), "Brand", nil, nil, []string{"Lage", "Rettung"}, testActor)
 		require.NoError(t, err)
 		assert.Len(t, result.LayerIDs, 2)
+	})
+
+	t.Run("legacy message map layer name does not create a duplicate", func(t *testing.T) {
+		factory, store := testStack(t)
+		incidents, _, layers, _ := repos(store)
+		svc := factory.IncidentService(incidents, layers)
+
+		result, err := svc.CreateIncident(
+			ctx(),
+			"Brand",
+			nil,
+			nil,
+			[]string{shared.MessageMapLayerName, "Rettung"},
+			testActor,
+		)
+		require.NoError(t, err)
+		assert.Len(t, result.LayerIDs, 1)
 	})
 
 	t.Run("incident is loadable after creation", func(t *testing.T) {
@@ -61,7 +79,12 @@ func TestIncidentService_CreateIncident(t *testing.T) {
 
 		inc, err := svc.LoadIncident(ctx(), result.IncidentID)
 		require.NoError(t, err)
-		assert.Len(t, inc.Divisions(), 2)
+		// two requested divisions + the system message map division
+		assert.Len(t, inc.Divisions(), 3)
+
+		mapDiv, ok := inc.MessageMapDivision()
+		require.True(t, ok)
+		assert.Equal(t, shared.DivisionKindMessageMap, mapDiv.Kind)
 	})
 
 	t.Run("creates child incident with parent atomically", func(t *testing.T) {
@@ -344,7 +367,15 @@ func TestIncidentService_UpdateDivisions(t *testing.T) {
 	inc, err := svc.LoadIncident(ctx(), id)
 	require.NoError(t, err)
 
-	if assert.Len(t, inc.Divisions(), 1) {
-		assert.Equal(t, newName, inc.Divisions()[0].Name)
+	// the system message map division survives the set-replacement
+	if assert.Len(t, inc.Divisions(), 2) {
+		_, ok := inc.MessageMapDivision()
+		assert.True(t, ok)
+
+		for _, d := range inc.Divisions() {
+			if !d.IsSystem() {
+				assert.Equal(t, newName, d.Name)
+			}
+		}
 	}
 }

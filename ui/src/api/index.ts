@@ -135,7 +135,10 @@ export type {
   AddFeatureArgs,
   AddLayerArgs,
   DeleteFeatureArgs,
+  FeatureHalo,
+  HaloKind,
   LayersData,
+  LocalRemoval,
   ModifyFeatureArgs,
 } from "./layer";
 export {
@@ -146,6 +149,12 @@ export {
   useAddFeature,
   useAddLayer,
   useDeleteFeature,
+  LIVE_POLL_INTERVAL_MS,
+  useFeatureMessages,
   useLayersForIncident,
+  useFeatureChangeTimes,
+  useMessageFeatureHalos,
+  withLocalRemovals,
   useModifyFeature,
+  useRestoreFeature,
 } from "./layer";

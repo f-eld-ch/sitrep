@@ -90,7 +90,6 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           name,
           parentId,
           location,
-          layerName: t("divisionsNames.Karte.description"),
           divisions: assignments.map((d) => ({ name: d.name, description: d.description })),
         });
 
@@ -300,7 +299,14 @@ function IncidentForm(props: { incident: Incident | undefined }) {
               setAssignments(
                 unionBy(
                   assignments,
-                  [{ id: "", name: assignmentName, description: assignmentDescription }],
+                  [
+                    {
+                      id: "",
+                      name: assignmentName,
+                      description: assignmentDescription,
+                      kind: "STANDARD",
+                    },
+                  ],
                   iteratee("name"),
                 ),
               );
@@ -332,24 +338,25 @@ export default New;
 
 function initialDivisions(incident: Incident | undefined, t: (key: string) => string): Division[] {
   if (incident !== undefined) {
-    return incident.divisions.map((division, index) => initializeDivision(division, index));
+    // System divisions (the Nachrichtenkarte) are managed by the backend and not editable.
+    return incident.divisions
+      .filter((division) => division.kind === "STANDARD")
+      .map((division, index) => initializeDivision(division, index));
   }
 
+  // The Nachrichtenkarte division is created by the backend, not listed here.
   return [
-    {
-      id: "",
-      name: t("divisionsNames.Karte.name"),
-      description: t("divisionsNames.Karte.description"),
-    },
     {
       id: "",
       name: t("divisionsNames.CLage.name"),
       description: t("divisionsNames.CLage.description"),
+      kind: "STANDARD",
     },
     {
       id: "",
       name: t("divisionsNames.SC.name"),
       description: t("divisionsNames.SC.description"),
+      kind: "STANDARD",
     },
   ];
 }

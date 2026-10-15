@@ -190,7 +190,7 @@ func NewIncidentDivisionHandler(pool *pgxpool.Pool) *IncidentDivisionHandler {
 }
 
 func (h *IncidentDivisionHandler) Name() string { return "readmodel.incident_division" }
-func (h *IncidentDivisionHandler) Version() int { return 2 }
+func (h *IncidentDivisionHandler) Version() int { return 3 }
 func (h *IncidentDivisionHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.incident_division`)
 	return err
@@ -202,7 +202,7 @@ func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Opened", "DivisionAdded", "DivisionRenamed", "DivisionRemoved", "Imported":
+	case "Opened", "DivisionAdded", "DivisionKindAssigned", "DivisionRenamed", "DivisionRemoved", "Imported":
 		return true
 	}
 
@@ -252,6 +252,7 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 				ID          string `json:"id"`
 				Name        string `json:"name"`
 				Description string `json:"description"`
+				Kind        string `json:"kind"`
 			} `json:"division"`
 		}
 
@@ -261,10 +262,22 @@ func (h *IncidentDivisionHandler) Apply(ctx context.Context, e eventsourcing.Eve
 		}
 
 		return exec(db, ctx, `
-			INSERT INTO readmodel.incident_division (id, incident_id, name, description, removed_at)
-			VALUES ($1, $2, $3, $4, NULL)
-			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
-			d.Division.ID, incidentID, d.Division.Name, d.Division.Description)
+			INSERT INTO readmodel.incident_division (id, incident_id, name, description, kind, removed_at)
+			VALUES ($1, $2, $3, $4, $5, NULL)
+			ON CONFLICT (id) DO UPDATE
+			SET name = EXCLUDED.name, description = EXCLUDED.description, kind = EXCLUDED.kind`,
+			d.Division.ID, incidentID, d.Division.Name, d.Division.Description, d.Division.Kind)
+
+	case "DivisionKindAssigned":
+		var d struct {
+			ID   string `json:"id"`
+			Kind string `json:"kind"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `UPDATE readmodel.incident_division SET kind = $1 WHERE id = $2`, d.Kind, d.ID)
 
 	case "DivisionRenamed":
 		type divisionRenamed struct {

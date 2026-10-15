@@ -41,6 +41,20 @@ type Triaged struct {
 	TriagedBy         string                `json:"triagedBy"`
 }
 
+// DivisionAcknowledged records that a division has dealt with the message (for the
+// Nachrichtenkarte: the message has been drawn on the map).
+type DivisionAcknowledged struct {
+	DivisionID shared.DivisionID `json:"divisionId"`
+	By         string            `json:"by"`
+}
+
+// DivisionAcknowledgementRevoked withdraws a division's acknowledgement so the
+// message needs attention again.
+type DivisionAcknowledgementRevoked struct {
+	DivisionID shared.DivisionID `json:"divisionId"`
+	By         string            `json:"by"`
+}
+
 // Deleted marks the message as soft-deleted.
 type Deleted struct {
 	Reason shared.DeleteReason `json:"reason"`

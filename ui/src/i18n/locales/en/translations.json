@@ -99,6 +99,18 @@
       "stoffnummer": "UN substance number",
       "stoffnummerPlaceholder": "4-digit UN number",
       "stoffbezeichnung": "Substance name"
+    },
+    "changeTime": {
+      "label": "Effective from",
+      "hint": "The change applies from this point on the timeline."
+    },
+    "selectionRing": "Highlight the selected object",
+    "pending": {
+      "time": "Time",
+      "hint": "The object is only created when you press “Save”.",
+      "unsaved": "There are objects on the map that are not saved yet ({{count}}). They are lost if you leave the page.",
+      "leave": "Leave",
+      "discard": "Discard"
     }
   },
   "medium": {
@@ -134,6 +146,7 @@
   "messageFlow": "reporting flow",
   "messageSheet": "message sheet",
   "messageTriageTitle": "message triage",
+  "messageTimeLocked": "The time can no longer be changed because the message has already been triaged.",
   "messageTimeTooFarInFuture": "Message time cannot be more than five minutes in the future.",
   "name": "name",
   "incidentName": "incident name",
@@ -180,6 +193,36 @@
     "filterKeyMessage": "Key messages",
     "filterMine": "Mine"
   },
+  "messageMap": {
+    "showPending": "Show not drawn",
+    "showAll": "Show all",
+    "drawn": "Drawn",
+    "finish": "Finish",
+    "edit": "Edit",
+    "editDone": "Done",
+    "drawing": "Drawing for message {{number}} · {{time}}",
+    "allDrawn": "All messages are drawn",
+    "noMessages": "No messages for the situation map",
+    "pickMessage": "Pick a message to draw it",
+    "unavailable": "This incident has no situation map",
+    "openMessage": "Open message",
+    "highlight": "This message",
+    "restore": "Restore",
+    "restoreHint": "This object was removed with this message.",
+    "highlightHint": "Green: added, light blue: modified, light red: removed",
+    "unfinished": "Drawing for this message is not finished. Objects already drawn stay saved. Leave anyway?",
+    "leave": "Leave"
+  },
+  "mapTimeline": {
+    "live": "Live",
+    "asOf": "As of {{time}}",
+    "previous": "Previous message",
+    "next": "Next message",
+    "slider": "Point in the incident timeline"
+  },
+  "featureMessages": {
+    "filter": "Messages for this object"
+  },
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "viewChangelog": "Show changelog",
@@ -203,6 +246,7 @@
     "addWMSLayer": "Add WMS layer"
   },
   "styleController": {
+    "autoFrame": "Frame automatically",
     "maps": "Maps",
     "Basiskarte": "Light base map",
     "Satellit": "Satellite map"
@@ -267,6 +311,12 @@
     "CONFLICT": "The request could not be completed due to a conflict.",
     "INTERNAL_ERROR": "An internal error occurred. Please try again.",
     "NETWORK_ERROR": "Could not reach the server. Please check your network connection.",
+    "NOT_TRIAGED_TO_DIVISION": "This message is not assigned to that division.",
+    "BEFORE_FEATURE_PLACED": "The change is dated before the object was placed.",
+    "FEATURE_HAS_LATER_CHANGES": "The object has later changes, so it cannot be removed at this time.",
+    "FEATURE_NOT_REMOVED": "The object has not been removed.",
+    "BEFORE_FEATURE_REMOVED": "The object cannot be restored before it was removed.",
+    "MESSAGE_TIME_LOCKED": "The time of a triaged message cannot be changed.",
     "UNKNOWN": "An unexpected error occurred."
   },
   "incidentAccess": {

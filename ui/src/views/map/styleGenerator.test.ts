@@ -1,11 +1,12 @@
 import { listIcons } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
+import type { SymbolLayerSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 import { describe, expect, it } from "vitest";
 import { iconIdentifiers } from "components/babs/iconResolver";
 import { ANNOTATED_CATEGORIES } from "components/babs/labelSchema";
 import { Colors } from "components/babs/lineAndZoneTypes";
-import { createMapStyle } from "./styleGenerator";
+import { createMapStyle, createTimeLabelStyle } from "./styleGenerator";
 
 /**
  * Converts an array of layer specifications to a map indexed by layer ID
@@ -105,7 +106,7 @@ const expectedTextFitLayer = (
       "text-anchor": "center",
       "text-offset": textOffset,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": textSize,
     },
     paint: {
@@ -600,7 +601,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [1.5, 0.1],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-justify": "right",
       "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 18, 28],
     },
@@ -625,7 +626,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "right",
       "text-offset": [-2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -649,7 +650,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -675,7 +676,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
       "text-offset": [0, 2.5],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -1134,7 +1135,7 @@ const displayStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [1.5, 0.1],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-justify": "right",
       "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 18, 28],
     },
@@ -1156,7 +1157,7 @@ const displayStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "right",
       "text-offset": [-2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -1177,7 +1178,7 @@ const displayStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -1200,7 +1201,7 @@ const displayStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
       "text-offset": [0, 2.5],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -1244,3 +1245,74 @@ const displayStyle: LayerProps[] = [
     },
   },
 ];
+
+describe("createTimeLabelStyle", () => {
+  const byId = layersToMap(createTimeLabelStyle()) as Record<string, SymbolLayerSpecification>;
+
+  it("sits above symbols, where no name rule puts text", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.layout?.["text-anchor"]).toBe("bottom");
+    expect(point.paint?.["text-translate"]).toBeDefined();
+    const nameAnchors = Object.values(
+      layersToMap(createMapStyle({ forDraw: false })) as Record<string, SymbolLayerSpecification>,
+    )
+      .filter((l) => l.id?.includes("text-name-point"))
+      .map((l) => l.layout?.["text-anchor"]);
+    expect(nameAnchors).not.toContain("bottom");
+  });
+
+  it("is in the feature colour", () => {
+    for (const layer of Object.values(byId)) {
+      expect(layer.paint?.["text-color"]).toEqual(["coalesce", ["get", "color"], "#000000"]);
+    }
+  });
+
+  it("shows the time of a symbol always, and in the way of the times of lines and areas", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.layout?.["text-allow-overlap"]).toBe(true);
+    expect(point.layout?.["text-ignore-placement"]).toBe(false);
+  });
+
+  it("pushes the time of a line or area aside for those of symbols", () => {
+    const shape = byId["time-label-shape"];
+    const order = Object.keys(byId);
+
+    // Layers are placed from the top down, so the symbols' layer must be the later one.
+    expect(order.indexOf("time-label-point")).toBeGreaterThan(order.indexOf("time-label-shape"));
+    expect(shape.layout?.["text-allow-overlap"]).toBe(false);
+    expect(shape.layout?.["text-ignore-placement"]).toBe(true);
+    expect(shape.layout?.["symbol-placement"]).toBe("line");
+  });
+
+  it("scales with the symbols and is left out when they are too small to read", () => {
+    for (const layer of Object.values(byId)) {
+      expect(layer.minzoom).toBe(15);
+      expect(layer.layout?.["text-size"]).toEqual([
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        15,
+        9,
+        20,
+        19,
+      ]);
+    }
+  });
+
+  it("puts the time of a line or area on the line, above where its name runs", () => {
+    const shape = byId["time-label-shape"];
+
+    expect(shape.layout?.["symbol-placement"]).toBe("line");
+    expect(shape.layout?.["text-offset"]).toEqual([0, -1]);
+  });
+
+  it("keeps the time of a symbol above it on the screen when the map is rotated or tilted", () => {
+    const point = byId["time-label-point"];
+
+    expect(point.paint?.["text-translate-anchor"]).toBe("viewport");
+    expect(point.layout?.["text-rotation-alignment"]).toBe("viewport");
+    expect(point.layout?.["text-pitch-alignment"]).toBe("viewport");
+  });
+});

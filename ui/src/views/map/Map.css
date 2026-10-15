@@ -67,7 +67,17 @@
   border-radius: inherit;
 }
 
-/* Map cursor states */
+/*
+ * Map cursor states. MapLibre makes every interactive map an open hand; the draw control then
+ * adds its own set below (pointer over a feature, move, crosshair, ...). Empty map gets the normal
+ * arrow instead, and the closed hand only while the map is being dragged.
+ */
+.maplibregl-map .maplibregl-canvas-container.maplibregl-interactive {
+  cursor: default;
+}
+.maplibregl-map .maplibregl-canvas-container.maplibregl-interactive:active {
+  cursor: grabbing;
+}
 .maplibregl-map.mouse-pointer .maplibregl-canvas-container.maplibregl-interactive {
   cursor: pointer;
 }
@@ -97,7 +107,7 @@
   cursor: move;
 }
 .maplibregl-map.mode-static.mouse-pointer .maplibregl-canvas-container.maplibregl-interactive {
-  cursor: grab;
+  cursor: default;
 }
 
 /* Export (print) control popup */

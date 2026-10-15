@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Hint } from "react-autocomplete-hint";
-import { Medium } from "types";
+import { Medium, TriageStatus } from "types";
 import { Button } from "components/ui";
 import { ReactEditor } from "../MarkdownEditor";
 import { canSave, hasValidMessageTime, useEditorContext } from "../editorState";
@@ -108,6 +108,8 @@ const TimeInput = ({ id }: { id: string }) => {
   const { state, dispatch } = useEditorContext();
   const now = useNow();
   const invalidTime = !hasValidMessageTime(state.time, now);
+  // Once triaged, the divisions act on the message at its time (the Nachrichtenkarte draws at it).
+  const timeLocked = state.messageToEdit?.triageId === TriageStatus.Triaged;
   return (
     <div className="min-w-0 flex-1">
       <div className="relative">
@@ -116,6 +118,8 @@ const TimeInput = ({ id }: { id: string }) => {
           className={inputWithIcon}
           value={dayjs(state.time ?? now).format("YYYY-MM-DDTHH:mm")}
           type="datetime-local"
+          disabled={timeLocked}
+          title={timeLocked ? t("messageTimeLocked") : undefined}
           max={dayjs(now).add(5, "minute").format("YYYY-MM-DDTHH:mm")}
           aria-invalid={invalidTime}
           aria-describedby={invalidTime ? `${id}-error` : undefined}
@@ -130,6 +134,7 @@ const TimeInput = ({ id }: { id: string }) => {
           <FontAwesomeIcon icon={faClock} />
         </span>
       </div>
+      {timeLocked && <p className="mt-1 text-xs text-fg-muted">{t("messageTimeLocked")}</p>}
       {invalidTime && (
         <p id={`${id}-error`} className="mt-1 text-xs text-danger" role="alert">
           {t("messageTimeTooFarInFuture")}

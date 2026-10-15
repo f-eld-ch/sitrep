@@ -1,10 +1,13 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type { GeoJsonProperties, Geometry } from "geojson";
 import { first } from "lodash";
 import type { Layer } from "types/layer";
 import type {
   ActiveLayerState,
   DrawState,
   LayersState,
+  PendingFeature,
+  RemovedFeature,
   SelectedFeatureState,
   WMSLayer,
   WMSServer,
@@ -19,6 +22,11 @@ export type LayersAction =
   | SelectFeatureAction
   | DeselectFeature
   | SetActiveLayer
+  | AddPendingFeatureAction
+  | UpdatePendingFeatureAction
+  | RemovePendingFeatureAction
+  | AddRemovedFeatureAction
+  | ClearRemovedFeatureAction
   | SetDrawLayer
   | AddWMSLayerAction
   | UpdateWMSLayerOpacityAction
@@ -34,6 +42,11 @@ export interface SetLayerAction {
   payload: {
     layers: Layer[];
     viewedIncidentId?: string;
+    /**
+     * Which kind of own layer is active by default. The Nachrichtenkarte operator draws on the
+     * message map layer; everywhere else that layer is read-only, so a regular one is preferred.
+     */
+    preferredKind?: Layer["kind"];
   };
 }
 
@@ -42,6 +55,32 @@ export interface RemoveLayerAction {
   payload: {
     id: string;
   };
+}
+
+export interface AddPendingFeatureAction {
+  type: "ADD_PENDING_FEATURE";
+  payload: { feature: PendingFeature };
+}
+
+export interface UpdatePendingFeatureAction {
+  type: "UPDATE_PENDING_FEATURE";
+  /** Only the given parts change: an edit of the geometry leaves the properties alone, and vice versa. */
+  payload: { id: string; geometry?: Geometry; properties?: GeoJsonProperties };
+}
+
+export interface RemovePendingFeatureAction {
+  type: "REMOVE_PENDING_FEATURE";
+  payload: { id: string };
+}
+
+export interface AddRemovedFeatureAction {
+  type: "ADD_REMOVED_FEATURE";
+  payload: { feature: RemovedFeature };
+}
+
+export interface ClearRemovedFeatureAction {
+  type: "CLEAR_REMOVED_FEATURE";
+  payload: { id: string };
 }
 
 export interface SetActiveLayer {
@@ -161,6 +200,11 @@ export const layersReducer = (state: LayersState, action: LayersAction) => {
             }
           }
 
+          // The Nachrichtenkarte first, then the others alphabetically.
+          const leftMap = left.kind === "MESSAGE_MAP";
+          const rightMap = right.kind === "MESSAGE_MAP";
+          if (leftMap !== rightMap) return leftMap ? -1 : 1;
+
           return compareLayerText(left.name, right.name);
         })
         .map((layer) => ({
@@ -188,6 +232,38 @@ function compareLayerText(left: string, right: string): number {
   return 0;
 }
 
+export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAction) => {
+  switch (action.type) {
+    case "ADD_PENDING_FEATURE":
+      return [...state.filter((p) => p.id !== action.payload.feature.id), action.payload.feature];
+    case "UPDATE_PENDING_FEATURE":
+      return state.map((p) =>
+        p.id === action.payload.id
+          ? {
+              ...p,
+              geometry: action.payload.geometry ?? p.geometry,
+              properties: action.payload.properties ?? p.properties,
+            }
+          : p,
+      );
+    case "REMOVE_PENDING_FEATURE":
+      return state.filter((p) => p.id !== action.payload.id);
+    default:
+      return state;
+  }
+};
+
+export const removedFeaturesReducer = (state: RemovedFeature[], action: LayersAction) => {
+  switch (action.type) {
+    case "ADD_REMOVED_FEATURE":
+      return [...state.filter((r) => r.id !== action.payload.feature.id), action.payload.feature];
+    case "CLEAR_REMOVED_FEATURE":
+      return state.filter((r) => r.id !== action.payload.id);
+    default:
+      return state;
+  }
+};
+
 export const selectedFeatureReducer = (state: SelectedFeatureState, action: LayersAction) => {
   switch (action.type) {
     case "SELECT_FEATURE":
@@ -204,12 +280,13 @@ export const activeLayerReducer = (state: ActiveLayerState, action: LayersAction
     case "SET_ACTIVE_LAYER":
       return action.payload.layerId;
     case "SET_LAYERS":
-      const firstEditableLayer = first(
-        action.payload.layers.filter(
-          (layer) =>
-            action.payload.viewedIncidentId === undefined ||
-            layer.sourceIncidentId === action.payload.viewedIncidentId,
-        ),
+      const ownLayers = action.payload.layers.filter(
+        (layer) =>
+          action.payload.viewedIncidentId === undefined ||
+          layer.sourceIncidentId === action.payload.viewedIncidentId,
+      );
+      const firstEditableLayer = (
+        ownLayers.find((layer) => layer.kind === action.payload.preferredKind) ?? first(ownLayers)
       )?.id;
 
       if (state === undefined) {
