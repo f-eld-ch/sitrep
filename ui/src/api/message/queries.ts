@@ -1,4 +1,5 @@
 import { useQuery } from "@apollo/client/react";
+import { useMemo } from "react";
 import type { Division, Message } from "types";
 import { apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
@@ -26,6 +27,16 @@ export function useIncidentMessages(
 
   const refresh = () => void refetch();
 
+  // Converted once per response: new message objects on every render would make every row and
+  // everything derived from the list look changed.
+  const converted = useMemo<IncidentMessagesData>(
+    () => ({
+      messages: (data?.incident?.messages ?? []).map(toMessage),
+      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
+    }),
+    [data],
+  );
+
   if (!incidentId || (loading && !data)) {
     return { status: "loading", data: undefined, error: undefined, isRefreshing: false, refresh };
   }
@@ -33,12 +44,7 @@ export function useIncidentMessages(
   if (error) {
     return {
       status: "error",
-      data: data?.incident
-        ? {
-            messages: (data.incident.messages ?? []).map(toMessage),
-            incidentDivisions: data.incident.divisions.map(toDivision),
-          }
-        : undefined,
+      data: data?.incident ? converted : undefined,
       error: apiErrorFromApolloError(error),
       isRefreshing: false,
       refresh,
@@ -47,10 +53,7 @@ export function useIncidentMessages(
 
   return {
     status: "ready",
-    data: {
-      messages: (data?.incident?.messages ?? []).map(toMessage),
-      incidentDivisions: (data?.incident?.divisions ?? []).map(toDivision),
-    },
+    data: converted,
     error: undefined,
     isRefreshing: loading,
     refresh,

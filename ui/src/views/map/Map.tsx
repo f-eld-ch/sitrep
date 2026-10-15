@@ -14,7 +14,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { faBullseye, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AttributionControl,
@@ -206,7 +206,7 @@ function Layers({
     state.layers
       .filter((l) => l.isVisible && (readOnly || l.layer?.id !== activeLayer))
       .map((l) => l.layer),
-    createMapStyle({ forDraw: false }).map((s) => s.id ?? ""),
+    inactiveMapStyle().map((s) => s.id ?? ""),
   );
 
   return (
@@ -948,25 +948,40 @@ function InactiveLayers(props: { layers: Layer[] }) {
   return (
     <>
       {layers.map((l) => (
-        <InactiveLayer key={l.id} id={l.id} featureCollection={layerToFeatureCollection(l)} />
+        <InactiveLayerOf key={l.id} layer={l} />
       ))}
     </>
   );
 }
-function InactiveLayer(props: { featureCollection: FeatureCollection; id: string }) {
+
+/** One feature collection per layer state, not one per render: the source only reloads on a change. */
+function InactiveLayerOf({ layer }: { layer: Layer }) {
+  const featureCollection = useMemo(() => layerToFeatureCollection(layer), [layer]);
+
+  return <InactiveLayer id={layer.id} featureCollection={featureCollection} />;
+}
+
+// Building the style walks the whole icon catalogue, so it is built once.
+let inactiveStyle: ReturnType<typeof createMapStyle> | undefined;
+const inactiveMapStyle = () => (inactiveStyle ??= createMapStyle({ forDraw: false }));
+
+const InactiveLayer = memo(function InactiveLayer(props: {
+  featureCollection: FeatureCollection;
+  id: string;
+}) {
   const { featureCollection, id } = props;
 
   return (
     <>
       <EnrichedSymbolSource id={id} featureCollection={featureCollection} />
       <Source key={id} id={id} type="geojson" data={featureCollection}>
-        {createMapStyle({ forDraw: false }).map((s) => (
+        {inactiveMapStyle().map((s) => (
           <MapLayer {...s} key={s.id} id={`${s.id}-${id}`} />
         ))}
       </Source>
     </>
   );
-}
+});
 
 function MapWithProvder({
   asOf,
