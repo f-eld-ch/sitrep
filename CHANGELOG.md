@@ -1,12 +1,32 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(ui)* Align de/fr/it translations with the BABS terminology ([#1956](https://github.com/f-eld-ch/sitrep/issues/1956)) - ([b589429](https://github.com/f-eld-ch/sitrep/commit/b589429acd84cf10db287bf9e556304f330f6b72))
+
+### 📚 Documentation
+
+- *(readme)* Demo runs the latest release, dev runs develop ([#1973](https://github.com/f-eld-ch/sitrep/issues/1973)) - ([0c78524](https://github.com/f-eld-ch/sitrep/commit/0c78524ccd79502b53f0fbe2e58f46d4ae528558))
+
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.13 to 3.51.14 ([#1959](https://github.com/f-eld-ch/sitrep/issues/1959)) - ([961d795](https://github.com/f-eld-ch/sitrep/commit/961d795a3d88b2305ec5aebdc0c08fb4f0e94008))
+- *(deps)* Bump react-dropzone from 20.1.2 to 20.1.3 in /ui ([#1963](https://github.com/f-eld-ch/sitrep/issues/1963)) - ([a3f1ba1](https://github.com/f-eld-ch/sitrep/commit/a3f1ba18bfae93a7bab86047d36d1c2dfccd774c))
+- *(deps)* Bump github.com/pressly/goose/v3 from 3.28.0 to 3.29.0 ([#1976](https://github.com/f-eld-ch/sitrep/issues/1976)) - ([fd7dfec](https://github.com/f-eld-ch/sitrep/commit/fd7dfec99172c9f7aceaff1587b6b352d3eacd8f))
+- *(deps)* Bump i18next from 26.4.2 to 26.4.5 in /ui ([#1977](https://github.com/f-eld-ch/sitrep/issues/1977)) - ([c89f76c](https://github.com/f-eld-ch/sitrep/commit/c89f76c3c177aae504301efa1f0722b988518488))
+- *(deps)* Bump uuid from 14.0.2 to 14.0.3 in /ui ([#1967](https://github.com/f-eld-ch/sitrep/issues/1967)) - ([d1db360](https://github.com/f-eld-ch/sitrep/commit/d1db36002729c56f034b459c3ab64f348d3dfb58))
+- *(deps)* Bump maplibre-gl from 6.13.0 to 6.14.0 in /ui ([#1966](https://github.com/f-eld-ch/sitrep/issues/1966)) - ([d564881](https://github.com/f-eld-ch/sitrep/commit/d5648813d30ccb2cbed43bde4cca4895d035fa2d))
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.60 to 2.5.62 ([#1960](https://github.com/f-eld-ch/sitrep/issues/1960)) - ([2406fa7](https://github.com/f-eld-ch/sitrep/commit/2406fa7e41a6b75f1b0235d5acaa453605b2174b))
+- *(deps)* Bump github.com/exaring/otelpgx from 0.12.1 to 0.13.0 ([#1958](https://github.com/f-eld-ch/sitrep/issues/1958)) - ([5585c12](https://github.com/f-eld-ch/sitrep/commit/5585c1206b2bf22f0af5200d150365e69c01dc9c))
+- *(deps)* Bump golang.org/x/crypto from 0.57.0 to 0.58.0 ([#1961](https://github.com/f-eld-ch/sitrep/issues/1961)) - ([027acf7](https://github.com/f-eld-ch/sitrep/commit/027acf74cf2d37da0a35b06f3c04476cb33df8de))
+- *(deps)* Bump the react group in /ui with 2 updates ([#1975](https://github.com/f-eld-ch/sitrep/issues/1975)) - ([3295785](https://github.com/f-eld-ch/sitrep/commit/329578548aa3fd9ed5191a54e12d88f7a324e803))
 - *(deps)* Bump github.com/exaring/otelpgx from 0.12.0 to 0.12.1 ([#1951](https://github.com/f-eld-ch/sitrep/issues/1951)) - ([79fa4eb](https://github.com/f-eld-ch/sitrep/commit/79fa4eb11e81adb70e45bf90e8884aa3dc99e0e6))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.11 to 3.51.13 ([#1952](https://github.com/f-eld-ch/sitrep/issues/1952)) - ([d224e00](https://github.com/f-eld-ch/sitrep/commit/d224e00088469242a86ffaae5b12244432bf551e))
 - *(deps)* Bump @apollo/client from 4.3.2 to 4.3.3 in /ui ([#1949](https://github.com/f-eld-ch/sitrep/issues/1949)) - ([c321f13](https://github.com/f-eld-ch/sitrep/commit/c321f132a08c60f973b75c2293798b8166e9158b))
 - *(deps)* Bump maplibre-gl from 6.11.2 to 6.13.0 in /ui ([#1948](https://github.com/f-eld-ch/sitrep/issues/1948)) - ([c8a79fb](https://github.com/f-eld-ch/sitrep/commit/c8a79fbf19411583c3ba4ad8ee5cf0e41f3eb051))
 - *(go)* Bump golangci-lint to v2.14.0 ([#1954](https://github.com/f-eld-ch/sitrep/issues/1954)) - ([693ac24](https://github.com/f-eld-ch/sitrep/commit/693ac2406a793479100598acb0a4ccbe2b374aba))
+- *(prs)* Fix Dependabot PR titles before the conventional commit check ([#1979](https://github.com/f-eld-ch/sitrep/issues/1979)) - ([43e7aed](https://github.com/f-eld-ch/sitrep/commit/43e7aedc4c697e84008ae8ee1387eccf94806d73))
+- *(website)* Rebuild sitrep.ch when a release is published ([#1978](https://github.com/f-eld-ch/sitrep/issues/1978)) - ([4e461e0](https://github.com/f-eld-ch/sitrep/commit/4e461e0df011b636e2e735d0712ccad2718c0b20))
 
 
 ## [26.10.0](https://github.com/f-eld-ch/sitrep/compare/v26.9.9..v26.10.0) - 2026-10-08
