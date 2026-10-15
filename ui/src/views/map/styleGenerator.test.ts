@@ -1284,4 +1284,11 @@ describe("createTimeLabelStyle", () => {
       ]);
     }
   });
+
+  it("puts the time of a line or area on the line, above where its name runs", () => {
+    const shape = byId["time-label-shape"];
+
+    expect(shape.layout?.["symbol-placement"]).toBe("line-center");
+    expect(shape.layout?.["text-offset"]).toEqual([0, -1]);
+  });
 });

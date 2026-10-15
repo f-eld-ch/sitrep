@@ -1014,13 +1014,19 @@ export function createTimeLabelStyle(): LayerProps[] {
       layout: { ...common.layout, "text-offset": [0, 0] },
       paint: { ...common.paint, "text-translate": TIME_LABEL_POINT_LIFT },
     },
-    // Lines and areas carry their name on the middle; the time goes just above it.
+    // Lines and areas: on the line itself, following it, at its middle, just above where the name
+    // runs (the name rules put it at an offset below).
     {
       ...common,
       id: "time-label-shape",
       minzoom: TIME_LABEL_MIN_ZOOM,
       filter: ["!=", ["geometry-type"], "Point"],
-      layout: { ...common.layout, "text-offset": [0, -0.6] },
+      layout: {
+        ...common.layout,
+        "symbol-placement": "line-center",
+        "text-anchor": "center",
+        "text-offset": [0, -1],
+      },
     },
   ] as unknown as LayerProps[];
 }
