@@ -1,7 +1,7 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
 import type { GeoJsonProperties, Geometry } from "geojson";
 import type React from "react";
-import { createContext, type Reducer, useEffect, useReducer } from "react";
+import { createContext, type Reducer, useEffect, useMemo, useReducer } from "react";
 import type { Layer } from "types/layer";
 import {
   activeLayerReducer,
@@ -170,7 +170,10 @@ const LayersProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem(wmsLocalStorageKey, JSON.stringify(state.wms));
   }, [state.wms]);
 
-  return <LayerContext.Provider value={{ state, dispatch }}>{children}</LayerContext.Provider>;
+  // One object per state, so a parent re-rendering does not re-render every consumer.
+  const value = useMemo(() => ({ state, dispatch }), [state]);
+
+  return <LayerContext.Provider value={value}>{children}</LayerContext.Provider>;
 };
 
 export { LayerContext, LayersProvider };

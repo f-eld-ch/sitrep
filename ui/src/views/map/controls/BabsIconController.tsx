@@ -32,7 +32,7 @@ import {
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual, isUndefined, omitBy } from "lodash";
-import { memo, useCallback, useContext, useState } from "react";
+import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { FeatureLabelPopup } from "./FeatureLabelPopup";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
@@ -418,15 +418,20 @@ function hasTypeSelected(feature: Feature<Geometry, GeoJsonProperties>): boolean
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
   const { i18n } = useTranslation();
-  const layer = first(
-    state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer),
+  const layer = useMemo(
+    () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+    [state.layers, state.activeLayer],
   );
   const { current: map } = useMap();
 
   // Saved features plus the ones drawn on the free map that have not been saved yet.
-  const featureCollection = withPendingFeatures(layer, state.pendingFeatures);
-  const selectedFeature = first(
-    featureCollection.features.filter((f) => f.id === state.selectedFeature),
+  const featureCollection = useMemo(
+    () => withPendingFeatures(layer, state.pendingFeatures),
+    [layer, state.pendingFeatures],
+  );
+  const selectedFeature = useMemo(
+    () => first(featureCollection.features.filter((f) => f.id === state.selectedFeature)),
+    [featureCollection, state.selectedFeature],
   );
   const pending = usePendingFeature(selectedFeature?.id?.toString());
   const { asOf, drawingMessage } = useContext(MapTimeContext);
