@@ -229,6 +229,9 @@ function Layers({
         <StyleController />
       </div>
 
+      {/* Added before the layers: the times are placed after the resources' text, which wins. */}
+      <TimeLabels />
+
       {/* Active Layer */}
       {activeLayer !== undefined && !readOnly && <ActiveLayer />}
       {!readOnly && !drawingMessage?.locked && <BabsIconController />}
@@ -256,7 +259,6 @@ function Layers({
           renderRemoved={(fc) => <InactiveLayer id="message-removed" featureCollection={fc} />}
         />
       )}
-      <TimeLabels />
       <FeatureSelectionReporter clickLayerIds={clickLayerIds} showRing={showRing} />
     </>
   );

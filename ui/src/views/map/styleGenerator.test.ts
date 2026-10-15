@@ -106,7 +106,7 @@ const expectedTextFitLayer = (
       "text-anchor": "center",
       "text-offset": textOffset,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": textSize,
     },
     paint: {
@@ -601,7 +601,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [1.5, 0.1],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-justify": "right",
       "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 18, 28],
     },
@@ -626,7 +626,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "right",
       "text-offset": [-2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -650,7 +650,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "left",
       "text-offset": [2, 0],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
@@ -676,7 +676,7 @@ const drawStyle: LayerProps[] = [
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
       "text-offset": [0, 2.5],
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
     },
     paint: {
