@@ -9,12 +9,7 @@ jobs:
     name: Trigger sitrep.ch rebuild
     runs-on: ubuntu-latest
     steps:
-      - name: Send repository_dispatch to f-eld-ch/sitrep.ch
+      - name: Call the Cloudflare deploy hook (main) of the sitrep.ch Worker
         env:
-          GH_TOKEN: ${{ secrets.SITREP_CH_DISPATCH_TOKEN }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          gh api repos/f-eld-ch/sitrep.ch/dispatches \
-            --method POST \
-            -f event_type=sitrep-release \
-            -f "client_payload[tag]=${TAG}"
+          DEPLOY_HOOK_URL: ${{ secrets.SITREP_CH_DEPLOY_HOOK }}
+        run: curl --fail --silent --show-error -X POST "$DEPLOY_HOOK_URL"
