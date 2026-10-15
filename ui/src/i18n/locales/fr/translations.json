@@ -76,7 +76,7 @@
   "login": "connexion",
   "loginTagline": "Conduite d'intervention. Indépendante. Digitale.",
   "logout": "déconnexion",
-  "map": "Suivi dessiné",
+  "map": "Tableau de la situation",
   "mapview": {
     "rotate": "Tourner le signe",
     "rotation": "Rotation",
