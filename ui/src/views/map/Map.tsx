@@ -48,6 +48,7 @@ import { MapStyleProvider, StyleController, useMapStyle } from "./controls/Style
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
 import { isPendingFeature, withPendingFeatures } from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
+import { framingCollection } from "./framing";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
@@ -610,14 +611,27 @@ function ActiveLayer() {
     };
   }, [featureCollection, liveGeometry, state.selectedFeature]);
 
+  // Where the incident's drawings are, for a layer that has none of its own yet.
+  const messageMapLayer = useMemo(
+    () =>
+      state.layers.find(
+        (l) => l.layer.kind === "MESSAGE_MAP" && l.layer.sourceIncidentId === incidentId,
+      )?.layer,
+    [state.layers, incidentId],
+  );
+  const framed = useMemo(
+    () => framingCollection(featureCollection, layerToFeatureCollection(messageMapLayer)),
+    [featureCollection, messageMapLayer],
+  );
+
   useEffect(() => {
     // Drawing for a message frames what the message did instead (see MessageHighlight).
     if (drawingMessage !== undefined || fittedLayer.current === state.activeLayer || !map?.loaded) {
       return;
     }
 
-    if (map !== undefined && featureCollection.features.length > 0) {
-      const bboxArray = bbox(featureCollection);
+    if (map !== undefined && framed.features.length > 0) {
+      const bboxArray = bbox(framed);
       map.fitBounds(
         [
           [bboxArray[0], bboxArray[1]],
@@ -631,7 +645,7 @@ function ActiveLayer() {
       );
       fittedLayer.current = state.activeLayer;
     }
-  }, [drawingMessage, featureCollection, map, state.activeLayer]);
+  }, [drawingMessage, framed, map, state.activeLayer]);
 
   if (state.activeLayer === undefined) {
     return null;
