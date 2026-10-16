@@ -25,9 +25,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^4.3.3":
-  version: 4.3.3
-  resolution: "@apollo/client@npm:4.3.3"
+"@apollo/client@npm:^4.3.4":
+  version: 4.3.4
+  resolution: "@apollo/client@npm:4.3.4"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@wry/caches": "npm:^1.0.0"
@@ -52,7 +52,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 10/7f05fa72fd7b60e7a32cc0653c0960bdc8dcf90c43d4f2df9b870fee7cd51df01ae0a42a4fa732c59a554974896ea5833551a149899a5ddeb486736961426e11
+  checksum: 10/32044d8668a66b30bdab87ef59d9d262849650f935ee326cc348abc0cbab9e23f2c5747247efe995b273286bf30a7999207d9659f868a55f9c0e7040f691e9db
   languageName: node
   linkType: hard
 
@@ -11260,7 +11260,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sitrep@workspace:."
   dependencies:
-    "@apollo/client": "npm:^4.3.3"
+    "@apollo/client": "npm:^4.3.4"
     "@f-eld-ch/babs-assets": "npm:^0.7.0"
     "@f-eld-ch/babs-core": "npm:^0.7.0"
     "@f-eld-ch/babs-react": "npm:^0.7.0"
