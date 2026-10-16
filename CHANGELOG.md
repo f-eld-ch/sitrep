@@ -10,6 +10,10 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump @watergis/maplibre-gl-export in /ui ([#1983](https://github.com/f-eld-ch/sitrep/issues/1983)) - ([186a811](https://github.com/f-eld-ch/sitrep/commit/186a8118bcd9bb90f3e616eb32a84f3c173fdd7f))
+- *(deps)* Bump react-i18next from 17.0.16 to 17.0.17 in /ui ([#1984](https://github.com/f-eld-ch/sitrep/issues/1984)) - ([5b3c340](https://github.com/f-eld-ch/sitrep/commit/5b3c340678551ee6082602ef31070f383e89e9e6))
+- *(deps)* Bump maplibre-gl from 6.13.0 to 6.14.0 in /ui ([#1985](https://github.com/f-eld-ch/sitrep/issues/1985)) - ([a2ab896](https://github.com/f-eld-ch/sitrep/commit/a2ab8963a467b5a890b6b502174c70a819e88d66))
+- *(deps)* Bump i18next from 26.4.5 to 26.4.6 in /ui ([#1986](https://github.com/f-eld-ch/sitrep/issues/1986)) - ([7c5051c](https://github.com/f-eld-ch/sitrep/commit/7c5051cf42f289f9de273cdfcba55822caf71c43))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.13 to 3.51.14 ([#1959](https://github.com/f-eld-ch/sitrep/issues/1959)) - ([961d795](https://github.com/f-eld-ch/sitrep/commit/961d795a3d88b2305ec5aebdc0c08fb4f0e94008))
 - *(deps)* Bump react-dropzone from 20.1.2 to 20.1.3 in /ui ([#1963](https://github.com/f-eld-ch/sitrep/issues/1963)) - ([a3f1ba1](https://github.com/f-eld-ch/sitrep/commit/a3f1ba18bfae93a7bab86047d36d1c2dfccd774c))
 - *(deps)* Bump github.com/pressly/goose/v3 from 3.28.0 to 3.29.0 ([#1976](https://github.com/f-eld-ch/sitrep/issues/1976)) - ([fd7dfec](https://github.com/f-eld-ch/sitrep/commit/fd7dfec99172c9f7aceaff1587b6b352d3eacd8f))
