@@ -10221,9 +10221,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:^20.1.3":
-  version: 20.1.3
-  resolution: "react-dropzone@npm:20.1.3"
+"react-dropzone@npm:^20.1.4":
+  version: 20.1.4
+  resolution: "react-dropzone@npm:20.1.4"
   dependencies:
     attr-accept: "npm:^4.0.0"
     file-selector: "npm:^5.0.1"
@@ -10233,7 +10233,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/3e10a67437fea1fd5b5a37a0a5af7ad68432a4d2fb6285fe1d346c4dd1ace1f2773d65deb7c69367892c79149c2be31749cfaffcc6730c72a455fbc91bd67fd2
+  checksum: 10/6d81b46be854e3ca6c7fb051b570077177c4379c20fcd8173de5d033f243508c5b7609f4a8e148b047e99efa89417c79e5c2874863e53e4660fef317c92fdf09
   languageName: node
   linkType: hard
 
@@ -11331,7 +11331,7 @@ __metadata:
     react: "npm:^19.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.3.1"
-    react-dropzone: "npm:^20.1.3"
+    react-dropzone: "npm:^20.1.4"
     react-i18next: "npm:^17.1.0"
     react-map-gl: "npm:~8.1.3"
     react-markdown: "npm:^10.1.0"
