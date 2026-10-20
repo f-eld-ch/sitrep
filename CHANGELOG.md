@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- Nachrichtenkarte rework — message-driven, time-aware Lagebild ([#1950](https://github.com/f-eld-ch/sitrep/issues/1950)) - ([01e15de](https://github.com/f-eld-ch/sitrep/commit/01e15defd0c41276d823142e1019e3e955dbea99))
+
 ### 🐛 Bug Fixes
 
 - *(ui)* Align de/fr/it translations with the BABS terminology ([#1956](https://github.com/f-eld-ch/sitrep/issues/1956)) - ([b589429](https://github.com/f-eld-ch/sitrep/commit/b589429acd84cf10db287bf9e556304f330f6b72))
@@ -10,6 +14,13 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-dropzone from 20.1.3 to 20.1.4 in /ui ([#1995](https://github.com/f-eld-ch/sitrep/issues/1995)) - ([1d980bc](https://github.com/f-eld-ch/sitrep/commit/1d980bccdf4673808c8016399ef597f1dd554271))
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.62 to 2.5.63 ([#1991](https://github.com/f-eld-ch/sitrep/issues/1991)) - ([6ca79f6](https://github.com/f-eld-ch/sitrep/commit/6ca79f6f9b00d12dbc6d3d0fbef7d84d490ef439))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.14 to 3.51.16 ([#1992](https://github.com/f-eld-ch/sitrep/issues/1992)) - ([3b83b75](https://github.com/f-eld-ch/sitrep/commit/3b83b759fd1be06320c37219702951e2ccea1472))
+- *(deps)* Bump react-i18next from 17.0.20 to 17.1.0 in /ui ([#1997](https://github.com/f-eld-ch/sitrep/issues/1997)) - ([1f7aa12](https://github.com/f-eld-ch/sitrep/commit/1f7aa129a85c39c639b975f07066e172aade67d2))
+- *(deps)* Bump react-router from 8.4.0 to 8.5.0 in /ui ([#1998](https://github.com/f-eld-ch/sitrep/issues/1998)) - ([a297c3b](https://github.com/f-eld-ch/sitrep/commit/a297c3b75e8ae53ba30ee98e9d26194a94507d9b))
+- *(deps)* Bump maplibre-gl from 6.14.0 to 6.15.0 in /ui ([#1994](https://github.com/f-eld-ch/sitrep/issues/1994)) - ([7c0f728](https://github.com/f-eld-ch/sitrep/commit/7c0f7284663da131772b8898fe1691eac644efde))
+- *(deps)* Bump i18next from 26.4.7 to 26.5.3 in /ui ([#1999](https://github.com/f-eld-ch/sitrep/issues/1999)) - ([692c651](https://github.com/f-eld-ch/sitrep/commit/692c651ba9be6b7f18b011c51f16ac9c63b9630a))
 - *(deps)* Bump i18next from 26.4.6 to 26.4.7 in /ui ([#1987](https://github.com/f-eld-ch/sitrep/issues/1987)) - ([f5a8d7c](https://github.com/f-eld-ch/sitrep/commit/f5a8d7c6147f606b1068e0d7091212d7dcc5a118))
 - *(deps)* Bump react-i18next from 17.0.17 to 17.0.20 in /ui ([#1989](https://github.com/f-eld-ch/sitrep/issues/1989)) - ([1730f45](https://github.com/f-eld-ch/sitrep/commit/1730f454e28121edb33478a23c3fdb3f6e546e51))
 - *(deps)* Bump @apollo/client from 4.3.3 to 4.3.4 in /ui ([#1990](https://github.com/f-eld-ch/sitrep/issues/1990)) - ([2350e95](https://github.com/f-eld-ch/sitrep/commit/2350e956b0f00f659fbf6abfd1c6e6ca71543d44))
