@@ -240,6 +240,7 @@ type DivisionRow struct {
 	IncidentID  uuid.UUID
 	Name        string
 	Description string
+	Kind        string
 	RemovedAt   *time.Time
 }
 
@@ -254,7 +255,7 @@ func NewIncidentDivisionHandler() *IncidentDivisionHandler {
 }
 
 func (h *IncidentDivisionHandler) Name() string { return "readmodel.incident_division" }
-func (h *IncidentDivisionHandler) Version() int { return 1 }
+func (h *IncidentDivisionHandler) Version() int { return 2 }
 
 func (h *IncidentDivisionHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -271,7 +272,7 @@ func (h *IncidentDivisionHandler) Handles(st, t string) bool {
 	}
 
 	switch t {
-	case "Opened", "DivisionAdded", "DivisionRenamed", "DivisionRemoved", "Imported":
+	case "Opened", "DivisionAdded", "DivisionKindAssigned", "DivisionRenamed", "DivisionRemoved", "Imported":
 		return true
 	}
 
@@ -317,6 +318,7 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 				ID          string `json:"id"`
 				Name        string `json:"name"`
 				Description string `json:"description"`
+				Kind        string `json:"kind"`
 			} `json:"division"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
@@ -333,6 +335,25 @@ func (h *IncidentDivisionHandler) Apply(_ context.Context, e eventsourcing.Event
 			IncidentID:  incidentID,
 			Name:        d.Division.Name,
 			Description: d.Division.Description,
+			Kind:        d.Division.Kind,
+		}
+
+	case "DivisionKindAssigned":
+		var d struct {
+			ID   string `json:"id"`
+			Kind string `json:"kind"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		id, err := uuid.Parse(d.ID)
+		if err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.Kind = d.Kind
 		}
 
 	case "DivisionRenamed":

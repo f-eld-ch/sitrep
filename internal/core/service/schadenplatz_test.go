@@ -248,3 +248,37 @@ func TestSchadenplatzService_CreateSchadenplatz_UsesProvidedOccurredAt(t *testin
 	assert.Equal(t, customAt, events[len(events)-1].OccurredAt,
 		"Created event must carry the provided occurredAt, not clock.Now()")
 }
+
+// A merge takes effect at one instant, the message time, for both the copied totals and the
+// merge itself. Otherwise replaying the incident as of a time in between would count the same
+// casualties on both Schadenplätze.
+func TestSchadenplatzService_MergeSchadenplatz_StampsMergeWithMessageTime(t *testing.T) {
+	incSvc, spSvc, store := setupSchadenplatzServicesWithStore(t)
+
+	inc, err := incSvc.CreateIncident(ctx(), "Grossereignis", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	sp, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt West", nil, testActor)
+	require.NoError(t, err)
+
+	recordedAt := testAt.Add(-3 * time.Hour)
+	_, err = spSvc.RecordCasualties(ctx(), sp.ID, shared.MessageID(newID()),
+		schadenplatz.CasualtyDeltas{Verletzte: 2}, &recordedAt, testActor)
+	require.NoError(t, err)
+
+	messageTime := testAt.Add(-time.Hour)
+	require.NoError(t, spSvc.MergeSchadenplatz(ctx(), sp.ID, &messageTime, testActor))
+
+	events, err := store.Load(ctx(), "Schadenplatz", uuid.UUID(sp.ID))
+	require.NoError(t, err)
+
+	last := events[len(events)-1]
+	assert.Equal(t, "MergedIntoDefault", last.EventType)
+	assert.True(
+		t,
+		last.OccurredAt.Equal(messageTime),
+		"merge is stamped %s, want the message time %s",
+		last.OccurredAt,
+		messageTime,
+	)
+}

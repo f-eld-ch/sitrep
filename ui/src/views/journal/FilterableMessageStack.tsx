@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useContext, useMemo, useState } from "react";
+import { type ReactNode, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus } from "types";
 import type { Message } from "types/journal";
@@ -21,9 +21,19 @@ export interface FilterableMessageStackProps extends Omit<MessageStackProps, "me
   enabledFilters?: Partial<Record<keyof FilterState, boolean>>;
   /** Hard filter applied before chip filters — not user-selectable. */
   baseFilter?: Partial<MessageFilters>;
+  /** Extra chips shown after the built-in ones, for filters only the caller can apply (see `baseFilter`). */
+  extraChips?: ReactNode;
+  /**
+   * Show exactly these messages (e.g. the ones connected to the selected map feature) and
+   * suspend every other filter: the chips and `baseFilter` are not applied, so all of them are
+   * visible. The chips keep their state, so clearing the focus restores the previous filters.
+   */
+  focusMessageIds?: string[];
+  /** Clears the focus; shown as a chip with a close mark while a focus is active. */
+  onClearFocus?: () => void;
 }
 
-function FilterChip({
+export function FilterChip({
   label,
   active,
   onToggle,
@@ -58,6 +68,12 @@ export function FilterableMessageStack({
   effectiveId,
   onSelect,
   className,
+  acknowledgementDivisionId,
+  expandSelected,
+  bare,
+  extraChips,
+  focusMessageIds,
+  onClearFocus,
 }: FilterableMessageStackProps) {
   const enabled = { untriaged: true, highPriority: true, mine: true, ...enabledFilters };
   const { t } = useTranslation();
@@ -73,6 +89,13 @@ export function FilterableMessageStack({
   const toggle = (key: keyof FilterState) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const filtered = useMemo(() => {
+    if (focusMessageIds !== undefined) {
+      return buildMessageList(
+        messages.filter((m) => focusMessageIds.includes(m.id)),
+        { triage: "all", priority: "all", assignment: "all", author: "all" },
+      );
+    }
+
     const chipFilters: MessageFilters = {
       triage: filters.untriaged ? "untriaged" : "all",
       priority: filters.highPriority ? PriorityStatus.High : "all",
@@ -81,9 +104,10 @@ export function FilterableMessageStack({
     };
     const effectiveFilters: MessageFilters = { ...chipFilters, ...baseFilter };
     return buildMessageList(messages, effectiveFilters, userState.sub);
-  }, [messages, filters, baseFilter, userState.sub]);
+  }, [messages, filters, baseFilter, userState.sub, focusMessageIds]);
 
-  const anyActive = filters.untriaged || filters.highPriority || filters.mine;
+  const anyActive =
+    focusMessageIds !== undefined || filters.untriaged || filters.highPriority || filters.mine;
 
   return (
     <div className={clsx("flex flex-col", className)}>
@@ -91,39 +115,53 @@ export function FilterableMessageStack({
         messages={filtered}
         effectiveId={effectiveId}
         onSelect={onSelect}
+        acknowledgementDivisionId={acknowledgementDivisionId}
+        expandSelected={expandSelected}
+        bare={bare}
         className="min-h-0 w-full flex-1 shrink"
       />
-      <div
-        className={clsx(
-          "flex flex-wrap gap-1 px-3 py-1.5",
-          anyActive ? "border-t border-border/60" : "border-t border-transparent",
-        )}
-      >
-        {enabled.untriaged && (
-          <FilterChip
-            label={t("messageStack.filterUntriaged")}
-            active={filters.untriaged}
-            onToggle={() => toggle("untriaged")}
-            activeClassName="bg-warning/15 text-warning-fg border-warning/30"
-          />
-        )}
-        {enabled.highPriority && (
-          <FilterChip
-            label={t("messageStack.filterKeyMessage")}
-            active={filters.highPriority}
-            onToggle={() => toggle("highPriority")}
-            activeClassName="bg-danger/15 text-danger border-danger/30"
-          />
-        )}
-        {enabled.mine && (
-          <FilterChip
-            label={t("messageStack.filterMine")}
-            active={filters.mine}
-            onToggle={() => toggle("mine")}
-            activeClassName="bg-primary/15 text-primary border-primary/30"
-          />
-        )}
-      </div>
+      {!bare && (
+        <div
+          className={clsx(
+            "flex flex-wrap gap-1 px-3 py-1.5",
+            anyActive ? "border-t border-border/60" : "border-t border-transparent",
+          )}
+        >
+          {focusMessageIds !== undefined && (
+            <FilterChip
+              label={`${t("featureMessages.filter")} (${filtered.length}) ✕`}
+              active
+              onToggle={() => onClearFocus?.()}
+              activeClassName="bg-primary/15 text-primary border-primary/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.untriaged && (
+            <FilterChip
+              label={t("messageStack.filterUntriaged")}
+              active={filters.untriaged}
+              onToggle={() => toggle("untriaged")}
+              activeClassName="bg-warning/15 text-warning-fg border-warning/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.highPriority && (
+            <FilterChip
+              label={t("messageStack.filterKeyMessage")}
+              active={filters.highPriority}
+              onToggle={() => toggle("highPriority")}
+              activeClassName="bg-danger/15 text-danger border-danger/30"
+            />
+          )}
+          {focusMessageIds === undefined && enabled.mine && (
+            <FilterChip
+              label={t("messageStack.filterMine")}
+              active={filters.mine}
+              onToggle={() => toggle("mine")}
+              activeClassName="bg-primary/15 text-primary border-primary/30"
+            />
+          )}
+          {focusMessageIds === undefined && extraChips}
+        </div>
+      )}
     </div>
   );
 }

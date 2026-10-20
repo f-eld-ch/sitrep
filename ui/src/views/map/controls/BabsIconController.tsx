@@ -31,8 +31,8 @@ import {
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { first, isUndefined, omitBy } from "lodash";
-import { memo, useCallback, useContext, useState } from "react";
+import { first, isEqual, isUndefined, omitBy } from "lodash";
+import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { FeatureLabelPopup } from "./FeatureLabelPopup";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
@@ -40,8 +40,11 @@ const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { fireDrawEvent } from "../drawEvents";
+import { withPendingFeatures } from "../pending";
+import { IncidentContext } from "utils";
+import { MapTimeContext } from "../MapTimeContext";
+import { usePendingFeature } from "../usePendingFeature";
 import { LayerContext } from "../LayerContext";
-import { layerToFeatureCollection } from "api";
 
 // Picker button: fixed 35×35 px, icon centred with 3 px padding so the SVG sits inside.
 const pickerBtnClass =
@@ -415,24 +418,44 @@ function hasTypeSelected(feature: Feature<Geometry, GeoJsonProperties>): boolean
 const BabsIconController = () => {
   const { state } = useContext(LayerContext);
   const { i18n } = useTranslation();
-  const layer = first(
-    state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer),
+  const layer = useMemo(
+    () => first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+    [state.layers, state.activeLayer],
   );
   const { current: map } = useMap();
 
-  const featureCollection = layerToFeatureCollection(layer);
-  const selectedFeature = first(
-    featureCollection.features.filter((f) => f.id === state.selectedFeature),
+  // Saved features plus the ones drawn on the free map that have not been saved yet.
+  const featureCollection = useMemo(
+    () => withPendingFeatures(layer, state.pendingFeatures),
+    [layer, state.pendingFeatures],
   );
+  const selectedFeature = useMemo(
+    () => first(featureCollection.features.filter((f) => f.id === state.selectedFeature)),
+    [featureCollection, state.selectedFeature],
+  );
+  const pending = usePendingFeature(selectedFeature?.id?.toString());
+  const { asOf, drawingMessage } = useContext(MapTimeContext);
+  const { state: incidentState } = useContext(IncidentContext);
+  // A saved feature on the free map can be changed as of an earlier time; drawing for a message
+  // always takes the message's time.
+  const changeTime =
+    pending === undefined && drawingMessage === undefined && asOf === undefined
+      ? { earliest: incidentState.incident?.createdAt }
+      : undefined;
 
   const onUpdate = useCallback(
-    (e: { features: Feature<Geometry, GeoJsonProperties>[]; action?: string }) => {
+    (e: {
+      features: Feature<Geometry, GeoJsonProperties>[];
+      action?: string;
+      effectiveAt?: Date;
+    }) => {
       const updatedFeatures: Feature[] = e.features;
       // Route the edit back through the draw control's own update path, so feature
       // changes made here persist by exactly the same mechanism as direct edits.
       fireDrawEvent(map?.getMap(), "draw.update", {
         features: updatedFeatures,
         action: e.action,
+        effectiveAt: e.effectiveAt,
         target: map,
       });
     },
@@ -441,8 +464,14 @@ const BabsIconController = () => {
 
   return (
     <>
-      {selectedFeature !== undefined && hasTypeSelected(selectedFeature) && (
-        <FeatureLabelPopup selectedFeature={selectedFeature} onUpdate={onUpdate} />
+      {/* A pending feature gets the popup at once: it is where it is saved, whatever its type. */}
+      {selectedFeature !== undefined && (hasTypeSelected(selectedFeature) || pending) && (
+        <FeatureLabelPopup
+          selectedFeature={selectedFeature}
+          onUpdate={onUpdate}
+          pending={pending}
+          changeTime={changeTime}
+        />
       )}
       {/*
        * Supplies the resolved language to <BabsIcon>, which is what selects the
@@ -488,7 +517,8 @@ const FeatureDetailControlPanel = memo((props: BabsIconControllerProps) => {
 
   // Adjusted during render, for the same reason as the rotation lock above.
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
-  if (selectedFeature !== syncedFeature) {
+  // By content: the feature is rebuilt on every render, and what is being typed must survive that.
+  if (!isEqual(selectedFeature, syncedFeature)) {
     setSyncedFeature(selectedFeature);
     setEnteredText(selectedFeature?.properties?.name || "");
     if (selectedFeature === undefined) {

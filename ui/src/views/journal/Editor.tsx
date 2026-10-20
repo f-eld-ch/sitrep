@@ -183,6 +183,7 @@ function Editor() {
                 triageId: TriageStatus.Pending,
                 divisions: [],
                 attachments: [],
+                acknowledgements: [],
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: new Date(0),
@@ -472,6 +473,7 @@ function InputBox({
     priorityId: state.messageToEdit?.priorityId || PriorityStatus.Normal,
     triageId: state.messageToEdit?.triageId || TriageStatus.Pending,
     attachments: state.messageToEdit?.attachments ?? [],
+    acknowledgements: state.messageToEdit?.acknowledgements ?? [],
     author: state.messageToEdit?.author ?? "",
   };
 
@@ -598,6 +600,7 @@ export const MessageEditorForm = React.forwardRef<
       triageId: state.messageToEdit?.triageId ?? message.triageId,
       divisions: state.messageToEdit?.divisions ?? message.divisions,
       attachments: state.messageToEdit?.attachments ?? message.attachments,
+      acknowledgements: state.messageToEdit?.acknowledgements ?? message.acknowledgements,
       createdAt: state.messageToEdit?.createdAt ?? message.createdAt,
       updatedAt: state.messageToEdit?.updatedAt ?? message.updatedAt,
       deletedAt: state.messageToEdit?.deletedAt ?? message.deletedAt,

@@ -1,12 +1,15 @@
 import type MapboxDraw from "@mapbox/mapbox-gl-draw";
+import type { GeoJsonProperties, Geometry } from "geojson";
 import type React from "react";
-import { createContext, type Reducer, useEffect, useReducer } from "react";
+import { createContext, type Reducer, useEffect, useMemo, useReducer } from "react";
 import type { Layer } from "types/layer";
 import {
   activeLayerReducer,
   drawReducer,
   type LayersAction,
   layersReducer,
+  pendingFeaturesReducer,
+  removedFeaturesReducer,
   selectedFeatureReducer,
   wmsReducer,
 } from "./reducer";
@@ -44,8 +47,33 @@ export interface WMSState {
   servers: WMSServer[];
 }
 
+/**
+ * A feature drawn on the free map that has not been saved yet. It only exists locally, in the
+ * draw control and here; it is created on the server when the user saves it.
+ */
+export interface PendingFeature {
+  /** The draw control's id; the server derives the feature id from it when saving. */
+  id: string;
+  layerId: string;
+  geometry: Geometry;
+  properties: GeoJsonProperties;
+}
+
+/**
+ * A feature deleted for a message, as it last looked. The map shows it as a ghost at once; the
+ * feature history confirms it a moment later.
+ */
+export interface RemovedFeature {
+  id: string;
+  messageId: string;
+  geometry: Geometry;
+  properties: GeoJsonProperties;
+}
+
 export interface LayerState {
   layers: LayersState;
+  pendingFeatures: PendingFeature[];
+  removedFeatures: RemovedFeature[];
   activeLayer: string | undefined;
   selectedFeature: SelectedFeatureState;
   draw: DrawState;
@@ -54,6 +82,8 @@ export interface LayerState {
 
 const initialState: LayerState = {
   layers: [],
+  pendingFeatures: [],
+  removedFeatures: [],
   activeLayer: undefined,
   selectedFeature: undefined,
   draw: undefined,
@@ -101,6 +131,8 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
 ) => {
   const next = {
     layers: layersReducer(state.layers, action),
+    pendingFeatures: pendingFeaturesReducer(state.pendingFeatures, action),
+    removedFeatures: removedFeaturesReducer(state.removedFeatures, action),
     activeLayer: activeLayerReducer(state.activeLayer, action),
     selectedFeature: selectedFeatureReducer(state.selectedFeature, action),
     draw: drawReducer(state.draw, action),
@@ -108,6 +140,8 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
   };
 
   return next.layers === state.layers &&
+    next.pendingFeatures === state.pendingFeatures &&
+    next.removedFeatures === state.removedFeatures &&
     next.activeLayer === state.activeLayer &&
     next.selectedFeature === state.selectedFeature &&
     next.draw === state.draw &&
@@ -136,7 +170,10 @@ const LayersProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem(wmsLocalStorageKey, JSON.stringify(state.wms));
   }, [state.wms]);
 
-  return <LayerContext.Provider value={{ state, dispatch }}>{children}</LayerContext.Provider>;
+  // One object per state, so a parent re-rendering does not re-render every consumer.
+  const value = useMemo(() => ({ state, dispatch }), [state]);
+
+  return <LayerContext.Provider value={value}>{children}</LayerContext.Provider>;
 };
 
 export { LayerContext, LayersProvider };

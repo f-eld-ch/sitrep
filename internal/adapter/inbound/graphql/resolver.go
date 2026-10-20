@@ -18,6 +18,7 @@ type Resolver struct {
 	Access                inbound.AccessService
 	Schadenplaetze        inbound.SchadenplatzService
 	Resources             inbound.ResourceService
+	Timeline              inbound.TimelineService
 	AccessQueries         outbound.AccessQueries
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker

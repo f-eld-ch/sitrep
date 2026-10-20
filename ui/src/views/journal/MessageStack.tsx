@@ -1,4 +1,4 @@
-import { faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faChevronDown, faChevronUp, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -6,6 +6,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PriorityStatus, TriageStatus } from "types";
 import type { Message } from "types/journal";
+import { divisionShortLabel } from "utils/divisionLabel";
 import { ReactPreview } from "./Markdown";
 
 type AccentKey = "warning" | "success" | "dark" | "danger" | "none";
@@ -48,8 +49,17 @@ function MessageRow(props: {
   selected: boolean;
   onClick: () => void;
   setRef?: (el: HTMLButtonElement | null) => void;
+  acknowledgementDivisionId?: string;
+  /** Show the whole message, not the cut-short summary. */
+  expanded?: boolean;
+  /** Each row stands on its own, as a card (see MessageStackProps.bare). */
+  bare?: boolean;
 }) {
-  const { message, selected, onClick, setRef } = props;
+  const { message, selected, onClick, setRef, acknowledgementDivisionId, expanded, bare } = props;
+  const acknowledged =
+    acknowledgementDivisionId !== undefined &&
+    message.acknowledgements.some((a) => a.divisionId === acknowledgementDivisionId);
+  const { t } = useTranslation();
   const accent = accentKeyForMessage(message);
 
   return (
@@ -62,6 +72,8 @@ function MessageRow(props: {
         "transition-all duration-100 focus:outline-none",
         rowBorderR[accent],
         rowBgTint[accent],
+        bare && "shadow-md",
+        bare && accent === "none" && "bg-bg",
         !selected && rowHoverShadow[accent],
         selected
           ? "mr-0 w-full pr-7"
@@ -77,14 +89,23 @@ function MessageRow(props: {
           <div
             className={clsx(
               "text-xs leading-snug text-fg-muted [&_*]:text-xs [&_li]:m-0 [&_ol]:m-0 [&_p]:m-0 [&_ul]:m-0",
-              (message.content?.length ?? 0) > 120 && "line-clamp-4",
+              !expanded && (message.content?.length ?? 0) > 120 && "line-clamp-4",
             )}
           >
             {message.content ? <ReactPreview content={message.content} /> : "…"}
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-xs text-fg-muted">{dayjs(message.time).format("HH:mm")}</span>
+          <span className="flex items-center gap-1 text-xs text-fg-muted">
+            {acknowledged && (
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="text-[10px] text-success"
+                title={t("messageMap.drawn")}
+              />
+            )}
+            {dayjs(message.time).format("HH:mm")}
+          </span>
           <span className="text-[10px] text-fg-muted/60">
             {dayjs(message.time).format("DD.MM.YY")}
           </span>
@@ -92,15 +113,15 @@ function MessageRow(props: {
       </div>
       {message.divisions.length > 0 && (
         <div className="mt-1.5 flex flex-wrap gap-1">
-          {message.divisions.slice(0, 3).map((d) => (
+          {(expanded ? message.divisions : message.divisions.slice(0, 3)).map((d) => (
             <span
               key={d.division.id}
               className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
             >
-              {d.division.name || d.division.description}
+              {divisionShortLabel(d.division, t)}
             </span>
           ))}
-          {message.divisions.length > 3 && (
+          {!expanded && message.divisions.length > 3 && (
             <span className="text-[10px] text-fg-muted">+{message.divisions.length - 3}</span>
           )}
         </div>
@@ -115,6 +136,15 @@ export interface MessageStackProps {
   effectiveId: string | undefined;
   onSelect: (id: string | undefined) => void;
   className?: string;
+  /** Marks messages this division has acknowledged (e.g. drawn on the Nachrichtenkarte) with a check. */
+  acknowledgementDivisionId?: string;
+  /** Show the selected message in full instead of cut short, like the others are. */
+  expandSelected?: boolean;
+  /**
+   * Just the messages, as cards: no backdrop, no scroll spinner, no "no older messages" footer. For
+   * a stack floating over something else, such as the map.
+   */
+  bare?: boolean;
 }
 
 export const MessageStack = memo(function MessageStack({
@@ -122,6 +152,9 @@ export const MessageStack = memo(function MessageStack({
   effectiveId,
   onSelect,
   className,
+  acknowledgementDivisionId,
+  expandSelected,
+  bare,
 }: MessageStackProps) {
   const { t } = useTranslation();
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -156,7 +189,7 @@ export const MessageStack = memo(function MessageStack({
 
   return (
     <div className={clsx("flex flex-col", className)}>
-      <div className="flex justify-center py-1">
+      <div className={clsx("flex justify-center py-1", bare && !showScrollUp && "hidden")}>
         {showScrollUp ? (
           <button
             type="button"
@@ -166,9 +199,13 @@ export const MessageStack = memo(function MessageStack({
             <FontAwesomeIcon icon={faChevronUp} className="text-[10px]" />
           </button>
         ) : (
-          <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
-            <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
-          </div>
+          // With nothing in the stack, "no new messages" below carries its own spinner.
+          messages.length > 0 &&
+          !bare && (
+            <div className="rounded-full bg-bg-elevated/80 px-2 py-0.5 text-xs text-fg-muted shadow-sm">
+              <FontAwesomeIcon icon={faSpinner} spin className="text-[10px]" />
+            </div>
+          )
         )}
       </div>
 
@@ -190,6 +227,9 @@ export const MessageStack = memo(function MessageStack({
                 key={msg.id}
                 message={msg}
                 selected={msg.id === effectiveId}
+                expanded={expandSelected && msg.id === effectiveId}
+                bare={bare}
+                acknowledgementDivisionId={acknowledgementDivisionId}
                 onClick={() => onSelect(msg.id === effectiveId ? undefined : msg.id)}
                 setRef={(el) => {
                   rowRefs.current[msg.id] = el;
@@ -198,9 +238,11 @@ export const MessageStack = memo(function MessageStack({
             ))}
 
             <div ref={bottomSentinelRef} className="h-px shrink-0" aria-hidden />
-            <div className="flex items-center justify-center py-2 text-fg-muted/50">
-              <span className="text-[11px]">{t("noOlderMessages")}</span>
-            </div>
+            {!bare && (
+              <div className="flex items-center justify-center py-2 text-fg-muted/50">
+                <span className="text-[11px]">{t("noOlderMessages")}</span>
+              </div>
+            )}
           </>
         )}
       </div>

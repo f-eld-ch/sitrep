@@ -2,6 +2,7 @@ package projection
 
 import (
 	"context"
+	"slices"
 	"sync"
 	"time"
 
@@ -29,6 +30,13 @@ type AttachmentRow struct {
 var _ Handler = (*MessageHandler)(nil)
 
 // MessageRow mirrors readmodel.message.
+// AcknowledgementRow records that a division has dealt with a message.
+type AcknowledgementRow struct {
+	DivisionID uuid.UUID
+	At         time.Time
+	By         string
+}
+
 type MessageRow struct {
 	ID                uuid.UUID
 	IncidentID        uuid.UUID
@@ -44,6 +52,7 @@ type MessageRow struct {
 	Priority          string
 	DivisionIDs       []uuid.UUID
 	LinkedResourceIDs []uuid.UUID
+	Acknowledgements  []AcknowledgementRow
 	AuthorSub         *string
 	LastEditorSub     *string
 	CreatedAt         time.Time
@@ -67,7 +76,7 @@ func NewMessageHandler() *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 4 }
+func (h *MessageHandler) Version() int { return 5 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -86,7 +95,7 @@ func (h *MessageHandler) Handles(st, t string) bool {
 
 	switch t {
 	case "Recorded", "Corrected", "Triaged", "Deleted", "Imported",
-		"AttachmentAdded", "AttachmentRemoved":
+		"AttachmentAdded", "AttachmentRemoved", "DivisionAcknowledged", "DivisionAcknowledgementRevoked":
 		return true
 	}
 
@@ -163,6 +172,11 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			return nil
 		}
 
+		// Changed content or time invalidates every division's acknowledgement.
+		if d.Content != nil && *d.Content != row.Content || d.Time != nil && !d.Time.Equal(row.MsgTime) {
+			row.Acknowledgements = nil
+		}
+
 		if d.Content != nil {
 			row.Content = *d.Content
 		}
@@ -221,6 +235,42 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 		row.LinkedResourceIDs = d.LinkedResourceIDs
 		row.LastEditorSub = &d.TriagedBy
 		row.UpdatedAt = e.OccurredAt
+
+		// A division that no longer has the message cannot have acknowledged it.
+		row.Acknowledgements = slices.DeleteFunc(row.Acknowledgements, func(a AcknowledgementRow) bool {
+			return !slices.Contains(row.DivisionIDs, a.DivisionID)
+		})
+
+	case "DivisionAcknowledged":
+		var d struct {
+			DivisionID uuid.UUID `json:"divisionId"`
+			By         string    `json:"by"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.Acknowledgements = slices.DeleteFunc(row.Acknowledgements, func(a AcknowledgementRow) bool {
+				return a.DivisionID == d.DivisionID
+			})
+			row.Acknowledgements = append(row.Acknowledgements,
+				AcknowledgementRow{DivisionID: d.DivisionID, At: e.OccurredAt, By: d.By})
+		}
+
+	case "DivisionAcknowledgementRevoked":
+		var d struct {
+			DivisionID uuid.UUID `json:"divisionId"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.Acknowledgements = slices.DeleteFunc(row.Acknowledgements, func(a AcknowledgementRow) bool {
+				return a.DivisionID == d.DivisionID
+			})
+		}
 
 	case "Deleted":
 		if row := h.rows[id]; row != nil {

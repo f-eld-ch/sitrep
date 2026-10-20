@@ -87,6 +87,51 @@ func (s *EventStore) Load(ctx context.Context, streamType string, id uuid.UUID) 
 	return events, rows.Err()
 }
 
+func (s *EventStore) LoadMany(
+	ctx context.Context,
+	streamType string,
+	ids []uuid.UUID,
+) (map[uuid.UUID][]eventsourcing.Event, error) {
+	out := make(map[uuid.UUID][]eventsourcing.Event, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at
+		  FROM eventsourcing.events
+		 WHERE stream_type = $1 AND stream_id = ANY($2)
+		 ORDER BY stream_id, version`,
+		streamType, ids)
+	if err != nil {
+		return nil, fmt.Errorf("eventstore.LoadMany: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			e                eventsourcing.Event
+			rawData, rawMeta []byte
+		)
+		if err := rows.Scan(
+			&e.StreamType, &e.StreamID, &e.Version, &e.EventType,
+			&rawData, &rawMeta,
+			&e.OccurredAt, &e.RecordedAt,
+		); err != nil {
+			return nil, fmt.Errorf("eventstore.LoadMany scan: %w", err)
+		}
+
+		e.Data = jsontext.Value(rawData)
+		if len(rawMeta) > 0 {
+			_ = json.Unmarshal(rawMeta, &e.Metadata)
+		}
+
+		out[e.StreamID] = append(out[e.StreamID], e)
+	}
+
+	return out, rows.Err()
+}
+
 func (s *EventStore) Append(ctx context.Context, a eventsourcing.Aggregate) (outbound.Cursor, error) {
 	pending := a.Root().PendingEvents()
 	if len(pending) == 0 {

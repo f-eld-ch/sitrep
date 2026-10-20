@@ -29,7 +29,7 @@ const WIRE_DETAILS: NonNullable<GetIncidentDetailQuery["incident"]> = {
   canDelete: true,
   canManageAccess: true,
   location: { name: "Sector 7", coordinates: null },
-  divisions: [{ id: "div-1", name: "Alpha", description: "Alpha division" }],
+  divisions: [{ id: "div-1", name: "Alpha", description: "Alpha division", kind: "STANDARD" }],
 };
 
 describe("toIncidentSummary", () => {
@@ -95,6 +95,7 @@ describe("toIncidentDetails", () => {
       id: "div-1",
       name: "Alpha",
       description: "Alpha division",
+      kind: "STANDARD",
     });
   });
 

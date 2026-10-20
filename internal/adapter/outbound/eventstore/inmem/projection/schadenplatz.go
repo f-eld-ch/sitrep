@@ -242,6 +242,23 @@ func (h *SchadenplatzHandler) ForIncident(incidentID uuid.UUID) []*SchadenplatzR
 	return out
 }
 
+// AllForIncident returns every Schadenplatz of the incident, merged ones included.
+func (h *SchadenplatzHandler) AllForIncident(incidentID uuid.UUID) []*SchadenplatzRow {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	var out []*SchadenplatzRow
+
+	for _, row := range h.rows {
+		if row.IncidentID == incidentID {
+			cp := *row
+			out = append(out, &cp)
+		}
+	}
+
+	return out
+}
+
 // GetMessageCasualties returns all per-message casualty rows for the given message ID.
 func (h *SchadenplatzHandler) GetMessageCasualties(messageID uuid.UUID) []*MessageCasualtyRow {
 	h.mu.RLock()

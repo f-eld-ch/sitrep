@@ -186,11 +186,17 @@ func (f *Factory) LayerService(repo outbound.LayerRepository, incidents outbound
 	return NewLayerService(f.tx, repo, incidents, f.accessChecker, f.clock, f.ids, f.notifier)
 }
 
+// TimelineService creates a ready-to-use TimelineService.
+func (f *Factory) TimelineService(events outbound.EventStore, queries outbound.Queries) *TimelineService {
+	return NewTimelineService(events, queries)
+}
+
 // FeatureService creates a ready-to-use FeatureService.
 func (f *Factory) FeatureService(
 	repo outbound.FeatureRepository,
 	incidents outbound.IncidentRepository,
 	layers outbound.LayerRepository,
+	messages outbound.MessageRepository,
 ) *FeatureService {
-	return NewFeatureService(f.tx, repo, incidents, layers, f.accessChecker, f.clock, f.notifier)
+	return NewFeatureService(f.tx, repo, incidents, layers, messages, f.accessChecker, f.clock, f.notifier)
 }

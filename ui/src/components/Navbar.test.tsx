@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
-import { UserContext } from "utils";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
+import { IncidentContext, UserContext } from "utils";
 import { vi } from "vitest";
 import Navbar from "./Navbar";
 
@@ -164,6 +165,76 @@ describe("Navbar Component", () => {
 
       // Check if the toggle function is called
       expect(mockToggle).toHaveBeenCalled();
+    });
+  });
+
+  describe("Nachrichtenkarte entry", () => {
+    const messageMapPath = "/incident/inc-1/journal/messagemap";
+
+    const renderAtIncident = () =>
+      render(
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
+          <IncidentContext.Provider
+            value={{
+              state: { incident: { id: "inc-1", name: "Lage" }, loadedForId: "inc-1" } as never,
+              dispatch: vi.fn(),
+            }}
+          >
+            <MemoryRouter initialEntries={["/incident/inc-1/map"]}>
+              <Routes>
+                <Route path="/incident/:incidentId/*" element={<Navbar />} />
+              </Routes>
+            </MemoryRouter>
+          </IncidentContext.Provider>
+        </UserContext.Provider>,
+      );
+
+    const linksTo = (path: string) =>
+      screen.queryAllByRole("link").filter((a) => a.getAttribute("href") === path);
+
+    it("sits under the Lagebild, not under the journal", () => {
+      vi.mocked(useBooleanFlagValue).mockReturnValue(true);
+      renderAtIncident();
+
+      const [entry] = linksTo(messageMapPath);
+      const group = entry.closest(".group") as HTMLElement;
+
+      expect(group).not.toBeNull();
+      expect(Array.from(group.querySelectorAll("a")).map((a) => a.getAttribute("href"))).toEqual([
+        "/incident/inc-1/map",
+        messageMapPath,
+      ]);
+      expect(group.querySelector('a[href$="/journal/messages"]')).toBeNull();
+    });
+
+    it("is not under the journal's menu either", () => {
+      vi.mocked(useBooleanFlagValue).mockReturnValue(true);
+      renderAtIncident();
+
+      const journal = linksTo("/incident/inc-1/journal/messages")[0].closest(
+        ".group",
+      ) as HTMLElement;
+
+      expect(journal.querySelector(`a[href="${messageMapPath}"]`)).toBeNull();
+    });
+
+    it("is in the mobile menu below the Lagebild", () => {
+      vi.mocked(useBooleanFlagValue).mockReturnValue(true);
+      renderAtIncident();
+      fireEvent.click(screen.getByRole("button", { name: /Toggle menu/i }));
+
+      const mobile = screen.getByTestId("navbar-menu");
+      const hrefs = Array.from(mobile.querySelectorAll("a")).map((a) => a.getAttribute("href"));
+
+      expect(hrefs.indexOf(messageMapPath)).toBe(hrefs.indexOf("/incident/inc-1/map") + 1);
+    });
+
+    it("is hidden without the flag, and the Lagebild stays a plain link", () => {
+      vi.mocked(useBooleanFlagValue).mockReturnValue(false);
+      renderAtIncident();
+
+      expect(linksTo(messageMapPath)).toHaveLength(0);
+      expect(linksTo("/incident/inc-1/map").length).toBeGreaterThan(0);
     });
   });
 });

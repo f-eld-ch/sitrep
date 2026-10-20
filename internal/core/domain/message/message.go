@@ -28,6 +28,13 @@ type Attachment struct {
 	AddedAt     time.Time
 }
 
+// Acknowledgement records that a division has dealt with the message.
+type Acknowledgement struct {
+	DivisionID shared.DivisionID
+	At         time.Time
+	By         string
+}
+
 // Message is the aggregate root for a single message entry.
 type Message struct {
 	root eventsourcing.Root
@@ -50,13 +57,16 @@ type Message struct {
 	lastEditorSub     *string
 	deleted           bool
 	attachments       []Attachment
+	// acknowledgements are per division. They only exist for divisions the message is
+	// currently triaged to, and are cleared when the message content or time changes.
+	acknowledgements map[shared.DivisionID]Acknowledgement
 }
 
 func New(id shared.MessageID) *Message {
-	m := &Message{}
+	m := &Message{acknowledgements: make(map[shared.DivisionID]Acknowledgement)}
 	m.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(m, Recorded{}, Corrected{}, Triaged{}, Deleted{}, Imported{},
-		AttachmentAdded{}, AttachmentRemoved{})
+		AttachmentAdded{}, AttachmentRemoved{}, DivisionAcknowledged{}, DivisionAcknowledgementRevoked{})
 
 	return m
 }
@@ -85,6 +95,31 @@ func (m *Message) DivisionIDs() []shared.DivisionID       { return m.divisionIDs
 func (m *Message) LinkedResourceIDs() []shared.ResourceID { return m.linkedResourceIDs }
 func (m *Message) AuthorSub() *string                     { return m.authorSub }
 func (m *Message) IsDeleted() bool                        { return m.deleted }
+
+// Acknowledgements returns the divisions that have acknowledged the message, oldest first.
+func (m *Message) Acknowledgements() []Acknowledgement {
+	out := make([]Acknowledgement, 0, len(m.acknowledgements))
+	for _, a := range m.acknowledgements {
+		out = append(out, a)
+	}
+
+	slices.SortFunc(out, func(a, b Acknowledgement) int {
+		if c := a.At.Compare(b.At); c != 0 {
+			return c
+		}
+
+		return strings.Compare(a.DivisionID.String(), b.DivisionID.String())
+	})
+
+	return out
+}
+
+// IsAcknowledgedBy reports whether the division has acknowledged the message.
+func (m *Message) IsAcknowledgedBy(divisionID shared.DivisionID) bool {
+	_, ok := m.acknowledgements[divisionID]
+
+	return ok
+}
 
 // Attachments returns a copy of the attachment list so callers cannot mutate aggregate state.
 func (m *Message) Attachments() []Attachment {
@@ -191,6 +226,12 @@ func (m *Message) Correct(
 		if err := validateMessageTime(*msgTime, at); err != nil {
 			return err
 		}
+
+		// Once triaged, the divisions act on the message at its time (the Nachrichtenkarte draws
+		// at it, others acknowledge it), so the time is fixed. Saying the same time again is fine.
+		if m.triage == shared.TriageDone && !msgTime.Equal(m.time) {
+			return shared.ErrMessageTimeLocked
+		}
 	}
 
 	eventsourcing.TrackChange(m, Corrected{
@@ -238,6 +279,42 @@ func (m *Message) Triage(
 		LinkedResourceIDs: linkedResourceIDs,
 		TriagedBy:         triagedBy,
 	}, at, baseMeta(actor))
+
+	return nil
+}
+
+// AcknowledgeForDivision records that the division has dealt with the message. The
+// division must currently be triaged to the message. Acknowledging twice is a no-op.
+func (m *Message) AcknowledgeForDivision(divisionID shared.DivisionID, actor string, at time.Time) error {
+	if m.deleted {
+		return shared.ErrNotFound
+	}
+
+	if !slices.Contains(m.divisionIDs, divisionID) {
+		return shared.ErrNotTriagedToDivision
+	}
+
+	if m.IsAcknowledgedBy(divisionID) {
+		return nil
+	}
+
+	eventsourcing.TrackChange(m, DivisionAcknowledged{DivisionID: divisionID, By: actor}, at, baseMeta(actor))
+
+	return nil
+}
+
+// RevokeDivisionAcknowledgement withdraws the division's acknowledgement. Revoking an
+// acknowledgement that does not exist is a no-op.
+func (m *Message) RevokeDivisionAcknowledgement(divisionID shared.DivisionID, actor string, at time.Time) error {
+	if m.deleted {
+		return shared.ErrNotFound
+	}
+
+	if !m.IsAcknowledgedBy(divisionID) {
+		return nil
+	}
+
+	eventsourcing.TrackChange(m, DivisionAcknowledgementRevoked{DivisionID: divisionID, By: actor}, at, baseMeta(actor))
 
 	return nil
 }
@@ -337,6 +414,12 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.createdAt = e.OccurredAt
 		m.authorSub = &d.AuthorSub
 	case Corrected:
+		// What the divisions acted on changed, so they have to look at the message again. (Its time
+		// cannot change once it is triaged, so only the content can.)
+		if d.Content != nil && *d.Content != m.content {
+			clear(m.acknowledgements)
+		}
+
 		if d.Content != nil {
 			m.content = *d.Content
 		}
@@ -372,6 +455,17 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.divisionIDs = d.DivisionIDs
 		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.lastEditorSub = &d.TriagedBy
+
+		// A division that no longer has the message cannot have acknowledged it.
+		for id := range m.acknowledgements {
+			if !slices.Contains(m.divisionIDs, id) {
+				delete(m.acknowledgements, id)
+			}
+		}
+	case DivisionAcknowledged:
+		m.acknowledgements[d.DivisionID] = Acknowledgement{DivisionID: d.DivisionID, At: e.OccurredAt, By: d.By}
+	case DivisionAcknowledgementRevoked:
+		delete(m.acknowledgements, d.DivisionID)
 	case Deleted:
 		m.deleted = true
 	case Imported:

@@ -85,6 +85,8 @@ func sqliteFactory(t *testing.T) *conformance.Backend {
 		sqprojection.NewMessageHandler(write),
 		sqprojection.NewLayerFeaturesHandler(write),
 		sqprojection.NewAccessHandler(write),
+		sqprojection.NewSchadenplatzHandler(write),
+		sqprojection.NewResourceHandler(write),
 	}
 
 	proj := sqprojection.NewProjector(read, write, store, notifier, handlers)

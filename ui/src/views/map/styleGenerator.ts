@@ -369,13 +369,14 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       "text-font": ["B612 Bold"],
       "text-anchor": "center",
       "text-offset": textOffset,
-      // Both are needed, and they do different jobs. `text-ignore-placement` only stops this
+      // Both are needed, and they do different jobs. `text-ignore-placement` (off: a resource's
+      // text hides the basemap labels and the times of lines and areas under it) is about this
       // label blocking *other* symbols; `text-allow-overlap` is what stops it being dropped
       // when something else got there first. Without the latter the whole symbol disappears,
       // not just the count: `icon-optional` defaults to false, so a suppressed label takes
       // its icon down with it — and a casualty figure must never be hidden by a collision.
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-ignore-placement": false,
       "text-size": textSize,
     },
     paint: {
@@ -734,7 +735,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         "text-font": ["B612 Bold"],
         "text-anchor": "left",
         "text-offset": [1.5, 0.1],
-        "text-ignore-placement": true,
+        "text-ignore-placement": false,
         "text-justify": "right",
         "text-size": ["interpolate", ["linear"], ["zoom"], 12, 4, 18, 28],
       },
@@ -755,7 +756,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         "text-font": ["B612 Bold"],
         "text-anchor": "right",
         "text-offset": [-2, 0],
-        "text-ignore-placement": true,
+        "text-ignore-placement": false,
         "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
       },
       paint: {
@@ -775,7 +776,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         "text-font": ["B612 Bold"],
         "text-anchor": "left",
         "text-offset": [2, 0],
-        "text-ignore-placement": true,
+        "text-ignore-placement": false,
         "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
       },
       paint: {
@@ -797,7 +798,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
         "text-font": ["B612 Bold"],
         "text-anchor": "center",
         "text-offset": [0, 2.5],
-        "text-ignore-placement": true,
+        "text-ignore-placement": false,
         "text-size": ["interpolate", ["linear"], ["zoom"], 13, 1, 17, 14],
       },
       paint: {
@@ -948,4 +949,104 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
   }
 
   return styles;
+}
+
+/** Text of the label that stamps a drawing with the time it first appeared. */
+const TIME_LABEL_FIELD = ["coalesce", ["get", "timeLabel"], ""] as ExpressionSpecification;
+
+/**
+ * Grows with the symbols, at the same linear pace as `ICON_SIZE` (about 11px of text per unit of
+ * icon scale), so a time stays in proportion to what it stamps.
+ */
+const TIME_LABEL_SIZE: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  15,
+  9,
+  20,
+  19,
+];
+
+/** Below this zoom the symbols are too small for a time to be read, so it is left out. */
+const TIME_LABEL_MIN_ZOOM = 15;
+
+/** Half an icon (48px cell, scaled by the zoom ramp), plus a little air. */
+const TIME_LABEL_POINT_LIFT: ExpressionSpecification = [
+  "interpolate",
+  ["linear"],
+  ["zoom"],
+  12,
+  ["literal", [0, -8]],
+  20,
+  ["literal", [0, -44]],
+];
+
+/**
+ * The time a drawing first appeared, in the drawing's colour. Own layers on an own source, so
+ * the label never competes with the name rules: those sit centred, below, left and right of a
+ * symbol (or on a line or area), and this one sits above it.
+ *
+ * A symbol's time always shows. A line's or area's time gives way to it: MapLibre places the
+ * layers from the top down, so the symbols' layer comes last in the list, and the shapes' layer
+ * drops any label that would touch an already placed one. Along a line the label repeats, so
+ * one that is pushed aside leaves the next one further along.
+ */
+export function createTimeLabelStyle(): LayerProps[] {
+  const common = {
+    type: "symbol",
+    layout: {
+      "text-field": TIME_LABEL_FIELD,
+      "text-font": ["B612 Bold"],
+      "text-anchor": "bottom",
+      "text-size": TIME_LABEL_SIZE,
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "color"], "#000000"],
+    },
+  } as const;
+
+  return [
+    // Lines and areas: on the line itself, following it, just above where the name runs (the name
+    // rules put it at an offset below). They never block anything.
+    {
+      ...common,
+      id: "time-label-shape",
+      minzoom: TIME_LABEL_MIN_ZOOM,
+      filter: ["!=", ["geometry-type"], "Point"],
+      layout: {
+        ...common.layout,
+        "symbol-placement": "line",
+        "symbol-spacing": 250,
+        "text-anchor": "center",
+        "text-offset": [0, -1],
+        "text-allow-overlap": false,
+        "text-ignore-placement": true,
+        "text-padding": 6,
+      },
+    },
+    {
+      ...common,
+      id: "time-label-point",
+      minzoom: TIME_LABEL_MIN_ZOOM,
+      filter: ["==", ["geometry-type"], "Point"],
+      layout: {
+        ...common.layout,
+        "text-offset": [0, 0],
+        // Placed first, and in the way of the shapes' labels, never dropped itself.
+        "text-allow-overlap": true,
+        "text-ignore-placement": false,
+        // Upright on the screen whatever the map's bearing and pitch, like the icon it sits on.
+        "text-rotation-alignment": "viewport",
+        "text-pitch-alignment": "viewport",
+      },
+      paint: {
+        ...common.paint,
+        "text-translate": TIME_LABEL_POINT_LIFT,
+        // The lift is "up on the screen", not "north on the map": a rotated map must not swing
+        // the label round to the side of the symbol.
+        "text-translate-anchor": "viewport",
+      },
+    },
+  ] as unknown as LayerProps[];
 }

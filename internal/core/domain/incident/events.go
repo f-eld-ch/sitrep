@@ -21,6 +21,9 @@ type DivisionData struct {
 	ID          shared.DivisionID `json:"id"`
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
+	// Kind marks system-managed divisions. Empty for regular divisions; old
+	// events lack it and replay as regular.
+	Kind shared.DivisionKind `json:"kind,omitempty"`
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -44,6 +47,13 @@ type LocationChanged struct {
 // DivisionAdded fires for each new division in a set-replacement.
 type DivisionAdded struct {
 	Division DivisionData `json:"division"`
+}
+
+// DivisionKindAssigned marks an existing division as system-managed. Written by
+// the backfill migration for incidents that predate division kinds.
+type DivisionKindAssigned struct {
+	ID   shared.DivisionID   `json:"id"`
+	Kind shared.DivisionKind `json:"kind"`
 }
 
 // DivisionRenamed fires when an existing division's name or description changes.
