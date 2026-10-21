@@ -1,7 +1,8 @@
-## [unreleased]
+## [26.10.1](https://github.com/f-eld-ch/sitrep/compare/v26.10.0..v26.10.1) - 2026-10-21
 
 ### ⛰️  Features
 
+- *(ui)* Explain empty Mittel, casualty, triage and Nachrichtenkarte views ([#2007](https://github.com/f-eld-ch/sitrep/issues/2007)) - ([4fadf26](https://github.com/f-eld-ch/sitrep/commit/4fadf2693a15714b2583cc209fc6a719812ae382))
 - Nachrichtenkarte rework — message-driven, time-aware Lagebild ([#1950](https://github.com/f-eld-ch/sitrep/issues/1950)) - ([01e15de](https://github.com/f-eld-ch/sitrep/commit/01e15defd0c41276d823142e1019e3e955dbea99))
 
 ### 🐛 Bug Fixes
@@ -12,8 +13,15 @@
 
 - *(readme)* Demo runs the latest release, dev runs develop ([#1973](https://github.com/f-eld-ch/sitrep/issues/1973)) - ([0c78524](https://github.com/f-eld-ch/sitrep/commit/0c78524ccd79502b53f0fbe2e58f46d4ae528558))
 
+### ⚡ Performance
+
+- Use indexes for the resource list and drop a redundant casualty index ([#2008](https://github.com/f-eld-ch/sitrep/issues/2008)) - ([9892ad7](https://github.com/f-eld-ch/sitrep/commit/9892ad7a03d9b6e92e9a278cd2100f858353155a))
+
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.14.0 to 6.15.0 in /ui ([#2005](https://github.com/f-eld-ch/sitrep/issues/2005)) - ([6553d78](https://github.com/f-eld-ch/sitrep/commit/6553d78ae5314db9ffbe859152af323ab5af2c9d))
+- *(deps)* Bump html-react-parser from 6.1.8 to 6.1.9 in /ui ([#2004](https://github.com/f-eld-ch/sitrep/issues/2004)) - ([7482536](https://github.com/f-eld-ch/sitrep/commit/748253651fbc1f36c38035803e61b59e5ec4594d))
+- *(deps)* Bump @apollo/client from 4.3.4 to 4.3.5 in /ui ([#2006](https://github.com/f-eld-ch/sitrep/issues/2006)) - ([02ff880](https://github.com/f-eld-ch/sitrep/commit/02ff880c91525f0707f98307102f067310ee0f97))
 - *(deps)* Bump react-dropzone from 20.1.3 to 20.1.4 in /ui ([#1995](https://github.com/f-eld-ch/sitrep/issues/1995)) - ([1d980bc](https://github.com/f-eld-ch/sitrep/commit/1d980bccdf4673808c8016399ef597f1dd554271))
 - *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.62 to 2.5.63 ([#1991](https://github.com/f-eld-ch/sitrep/issues/1991)) - ([6ca79f6](https://github.com/f-eld-ch/sitrep/commit/6ca79f6f9b00d12dbc6d3d0fbef7d84d490ef439))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.14 to 3.51.16 ([#1992](https://github.com/f-eld-ch/sitrep/issues/1992)) - ([3b83b75](https://github.com/f-eld-ch/sitrep/commit/3b83b759fd1be06320c37219702951e2ccea1472))
