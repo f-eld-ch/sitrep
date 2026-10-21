@@ -279,6 +279,7 @@
     "overview": "Persone",
     "thisIncident": "Questo incidente",
     "none": "Nessuna vittima registrata",
+    "noneHint": "Le persone vengono registrate durante il triage di un messaggio. Apri un messaggio nel triage e inserisci dispersi, morti, feriti, senzatetto o persone intrappolate nel passaggio «Persone».",
     "byLocation": "Per zona sinistrata"
   },
   "dashboard": {

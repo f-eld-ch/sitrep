@@ -279,6 +279,7 @@
     "overview": "Personenübersicht",
     "thisIncident": "Schadenplätze",
     "none": "Keine Personen erfasst",
+    "noneHint": "Personen werden bei der Triage einer Meldung erfasst. Öffne eine Meldung in der Triage und trage im Schritt «Personen» Vermisste, Tote, Verletzte, Obdachlose oder Eingeschlossene ein.",
     "byLocation": "Nach Schadenplatz"
   },
   "dashboard": {

@@ -40,13 +40,13 @@ const FORMATION_ICON: Record<ResourceFormation, string> = {
   OTHER: "4802",
 };
 
-function casualtyTotals(resourcesResult: ReturnType<typeof useIncidentResources>): CasualtyTotals {
-  if (resourcesResult.status !== "ready") return ZERO_CASUALTIES;
+type ResourcesData = Extract<ReturnType<typeof useIncidentResources>, { status: "ready" }>["data"];
 
-  const ownTotals = resourcesResult.data.schadenplaetze
+function casualtyTotals(data: ResourcesData): CasualtyTotals {
+  const ownTotals = data.schadenplaetze
     .filter((sp) => !sp.isMerged)
     .reduce((acc, sp) => addCasualties(acc, sp.casualties), ZERO_CASUALTIES);
-  const childTotals = resourcesResult.data.childIncidents.reduce(
+  const childTotals = data.childIncidents.reduce(
     (acc, child) => addCasualties(acc, child.casualties),
     ZERO_CASUALTIES,
   );
@@ -61,6 +61,25 @@ function resourcesByFormation(resources: Resource[]) {
       (resource) => resource.formation === formation && resource.status !== "ABGELOEST",
     ),
   })).filter((group) => group.resources.length > 0);
+}
+
+/**
+ * What the KPI column has to show, so that empty blocks and, when both are empty, the whole column
+ * can be left out. A past view does not fetch the records flag, so there non-zero totals count as
+ * recorded.
+ */
+function kpiSummary(data: ResourcesData) {
+  const casualties = casualtyTotals(data);
+  const hasCasualties =
+    data.hasCasualtyRecords ||
+    data.childIncidents.some((child) => child.hasCasualtyRecords) ||
+    Object.values(casualties).some((count) => count !== 0);
+
+  return {
+    casualties,
+    hasCasualties,
+    formationGroups: resourcesByFormation(data.resources),
+  };
 }
 
 function personnelByStatus(resources: Resource[]) {
@@ -119,8 +138,7 @@ function DashboardKpis({
     );
   }
 
-  const casualties = casualtyTotals(resourcesResult);
-  const formationGroups = resourcesByFormation(resourcesResult.data.resources);
+  const { casualties, hasCasualties, formationGroups } = kpiSummary(resourcesResult.data);
 
   return (
     <aside
@@ -133,16 +151,18 @@ function DashboardKpis({
     >
       <section className="rounded border border-border bg-bg-elevated p-3">
         <h2 className="mb-3 text-sm font-semibold text-fg">{t("casualties.overview")}</h2>
-        <CasualtyList totals={casualties} iconsLoaded={iconsLoaded} />
+        {hasCasualties ? (
+          <CasualtyList totals={casualties} iconsLoaded={iconsLoaded} />
+        ) : (
+          <p className="text-sm text-fg-muted">{t("casualties.none")}</p>
+        )}
       </section>
 
-      <section className="rounded border border-border bg-bg-elevated p-3">
-        <h2 className="mb-3 text-sm font-semibold text-fg">{t("resources")}</h2>
-        <div className="space-y-2">
-          {formationGroups.length === 0 ? (
-            <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
-          ) : (
-            formationGroups.map((group) => (
+      {formationGroups.length > 0 && (
+        <section className="rounded border border-border bg-bg-elevated p-3">
+          <h2 className="mb-3 text-sm font-semibold text-fg">{t("resources")}</h2>
+          <div className="space-y-2">
+            {formationGroups.map((group) => (
               <div key={group.formation} className="rounded border border-border p-2">
                 <div className="flex items-center gap-2">
                   <span className="min-w-0 flex-1 truncate text-xs font-semibold text-fg">
@@ -171,10 +191,10 @@ function DashboardKpis({
                   ))}
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
     </aside>
   );
 }
@@ -311,11 +331,24 @@ export default function Dashboard() {
 
   const selectedMessage = allMessages.find((message) => message.id === effectiveSelectedId);
 
+  // Nothing to put in the KPI column once it is known that there are neither casualties nor
+  // resources: the map then takes the space. Until loaded, the column shows its spinner.
+  const kpis = resourcesResult.status === "ready" ? kpiSummary(resourcesResult.data) : undefined;
+  const showKpiColumn =
+    showResources && (kpis === undefined || kpis.hasCasualties || kpis.formationGroups.length > 0);
+
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
       <div className="flex flex-1 flex-col pt-[3.5rem] pr-3 pb-3 xl:min-h-0">
         <PageTitle className="mb-0 shrink-0 pl-3">{title}</PageTitle>
-        <div className="grid gap-1 xl:min-h-0 xl:flex-1 xl:grid-cols-[28rem_minmax(0,1fr)_18rem]">
+        <div
+          className={clsx(
+            "grid gap-1 xl:min-h-0 xl:flex-1",
+            showKpiColumn
+              ? "xl:grid-cols-[28rem_minmax(0,1fr)_18rem]"
+              : "xl:grid-cols-[28rem_minmax(0,1fr)]",
+          )}
+        >
           {/* Message stack — last on mobile, first column on desktop */}
           <div className="order-3 flex min-h-0 flex-col xl:order-1">
             {messagesResult.status === "loading" ? (
@@ -368,7 +401,7 @@ export default function Dashboard() {
             )}
           </section>
           {/* KPIs — first on mobile, last column on desktop */}
-          {showResources && (
+          {showKpiColumn && (
             <div className="order-1 xl:order-3 xl:pt-[28px]">
               <DashboardKpis resourcesResult={resourcesResult} iconsLoaded={iconsLoaded} />
             </div>

@@ -279,6 +279,7 @@
     "overview": "Casualties",
     "thisIncident": "This incident",
     "none": "No casualties recorded",
+    "noneHint": "Casualties are recorded when a message is triaged. Open a message in the triage and enter missing, dead, injured, homeless or trapped persons in the “Persons” step.",
     "byLocation": "By location"
   },
   "dashboard": {

@@ -1,12 +1,14 @@
 import { Spinner } from "components";
-import { PageTitle } from "components/ui";
+import { Button, EmptyState, PageTitle } from "components/ui";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { useIncidentResources } from "api";
 import type { SchadenplatzWithResources } from "api";
 import { BabsIconProvider } from "@f-eld-ch/babs-react";
+import { faArrowsToEye, faPersonFallingBurst } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CasualtyList } from "./CasualtyList";
 import { ZERO_CASUALTIES, addCasualties, type CasualtyTotals } from "./categories";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
 function sum(sps: SchadenplatzWithResources[]): CasualtyTotals {
@@ -56,6 +58,7 @@ export function List() {
   const { t, i18n } = useTranslation();
   const result = useIncidentResources(incidentId);
   const iconsLoaded = useBabsIcons();
+  const navigate = useNavigate();
 
   if (result.status === "error") return <p className="p-4 text-red-600">{t("errors.UNKNOWN")}</p>;
   if (result.status === "loading" || !result.data) return <Spinner />;
@@ -63,8 +66,15 @@ export function List() {
   const activeSps = result.data.schadenplaetze.filter((sp) => !sp.isMerged);
   const defaultSp = activeSps.find((sp) => sp.isDefault);
   const namedSps = activeSps.filter((sp) => !sp.isDefault);
-  const locationSps = defaultSp ? [defaultSp, ...namedSps] : namedSps;
   const { childIncidents } = result.data;
+  // Recorded, not just non-zero: deltas that cancel out still mean casualties were triaged.
+  const hasCasualtyRecords =
+    result.data.hasCasualtyRecords || childIncidents.some((c) => c.hasCasualtyRecords);
+  // The default Schadenplatz only says "not assigned to a place": no point showing it empty, or
+  // at all while nothing was recorded.
+  const showDefaultSp =
+    defaultSp !== undefined && hasCasualtyRecords && isNonZero(defaultSp.casualties);
+  const locationSps = showDefaultSp ? [defaultSp, ...namedSps] : namedSps;
 
   // Grand total: own SPs + all child incidents
   const ownTotals = sum(activeSps);
@@ -79,10 +89,30 @@ export function List() {
       <div className="space-y-6">
         <PageTitle>{t("casualties.overview")}</PageTitle>
 
-        <CasualtyList totals={grandTotal} iconsLoaded={iconsLoaded} variant="cards" />
+        {hasCasualtyRecords ? (
+          <CasualtyList totals={grandTotal} iconsLoaded={iconsLoaded} variant="cards" />
+        ) : (
+          <EmptyState
+            className="mx-auto w-full max-w-lg"
+            icon={faPersonFallingBurst}
+            title={t("casualties.none")}
+            hint={t("casualties.noneHint")}
+          >
+            {incidentId && (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => navigate(`/incident/${incidentId}/journal/triage`)}
+              >
+                <FontAwesomeIcon icon={faArrowsToEye} />
+                <span>{t("triageView")}</span>
+              </Button>
+            )}
+          </EmptyState>
+        )}
 
         {/* This incident's own casualty breakdown comes first. */}
-        {(namedSps.length > 0 || (defaultSp && isNonZero(defaultSp.casualties))) && (
+        {locationSps.length > 0 && (
           <section className="space-y-3">
             <h2 className="text-base font-bold text-fg">{t("casualties.thisIncident")}</h2>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-3">
@@ -115,8 +145,6 @@ export function List() {
             </div>
           </section>
         )}
-
-        {/* When no named SPs, show default only if it has data */}
       </div>
     </BabsIconProvider>
   );

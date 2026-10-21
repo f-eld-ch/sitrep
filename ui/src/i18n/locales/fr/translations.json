@@ -279,6 +279,7 @@
     "overview": "Personnes",
     "thisIncident": "Cet incident",
     "none": "Aucune victime enregistrée",
+    "noneHint": "Les personnes sont enregistrées lors du triage d’un message. Ouvrez un message dans le triage et saisissez les disparus, morts, blessés, sans-abri ou personnes bloquées à l’étape «Personnes».",
     "byLocation": "Par zone sinistrée"
   },
   "dashboard": {
