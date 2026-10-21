@@ -126,6 +126,8 @@ func (q *Queries) ListMessageCasualties(
 func (q *Queries) HasCasualtyRecords(ctx context.Context, incidentID uuid.UUID) (bool, error) {
 	var found bool
 
+	// The non-zero predicate must stay identical to the partial index
+	// idx_readmodel_message_casualties_schadenplatz_nonzero (migration 00015), or it is not used.
 	err := q.db.QueryRowContext(ctx, `
 		SELECT EXISTS (
 			SELECT 1
