@@ -43,6 +43,8 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 		return nil, shared.ErrNotFound
 	}
 
+	// The incident and its direct children as one array: "incident_id = $1 OR incident_id IN
+	// (subselect)" cannot use the incident_id index and scans the whole resource table.
 	rows, err := q.pool.Query(ctx, `
 		SELECT id, incident_id, schadenplatz_id, formation, name, size, personnel_count, hauptaufgabe,
 		       contact_medium, contact_detail, home_location_name, home_location_lat, home_location_lng,
@@ -51,10 +53,10 @@ func (q *Queries) ListResourcesForIncident(ctx context.Context, incidentID uuid.
 		       einsatz_beginn, einsatz_ende,
 		       predecessor_id, successor_id, source_message_id, created_at, updated_at, deployment_history
 		FROM readmodel.resource
-		WHERE incident_id = $1
-		   OR incident_id IN (
-		       SELECT id FROM readmodel.incident WHERE parent_id = $1 AND is_deleted = false
-		   )
+		WHERE incident_id = ANY (
+		    ARRAY(SELECT id FROM readmodel.incident WHERE parent_id = $1 AND is_deleted = false)
+		    || $1::uuid
+		)
 		ORDER BY created_at ASC`, incidentID)
 	if err != nil {
 		return nil, err

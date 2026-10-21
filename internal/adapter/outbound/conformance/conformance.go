@@ -92,6 +92,10 @@ func Run(t *testing.T, f Factory) {
 		RunTimeline(t, f)
 	})
 
+	t.Run("Listings", func(t *testing.T) {
+		RunListings(t, f)
+	})
+
 	t.Run("FeatureChanges", func(t *testing.T) {
 		RunFeatureChanges(t, f)
 	})
