@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
+  "triageNoMessages": "Ancora nessun messaggio registrato",
+  "triageNoMessagesHint": "Nessun messaggio è ancora stato creato. Crea i messaggi nell’editor e appariranno qui per il triage.",
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",
   "keybindings": {
     "title": "Scorciatoie da tastiera",

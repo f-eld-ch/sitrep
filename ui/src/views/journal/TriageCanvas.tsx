@@ -1,14 +1,16 @@
 import {
   faCheckCircle,
+  faFilePen,
   faKeyboard,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PageTitle } from "components/ui";
+import { useNavigate, useParams } from "react-router";
+import { Button, EmptyState, PageTitle } from "components/ui";
 
-function EmptyState() {
+function CaughtUp() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-1 items-center justify-center text-success">
@@ -87,12 +89,47 @@ function KeybindingHelp() {
   );
 }
 
+/** Nothing to triage because nothing has been created yet: messages are added in the editor. */
+function NoMessages() {
+  const { t } = useTranslation();
+  const { incidentId } = useParams();
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-1 items-center justify-center p-4">
+      <EmptyState
+        className="w-full max-w-lg"
+        icon={faFilePen}
+        title={t("triageNoMessages")}
+        hint={t("triageNoMessagesHint")}
+      >
+        {incidentId && (
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => navigate(`/incident/${incidentId}/journal/edit`)}
+          >
+            <FontAwesomeIcon icon={faFilePen} />
+            <span>{t("editor")}</span>
+          </Button>
+        )}
+      </EmptyState>
+    </div>
+  );
+}
+
 export interface TriageCanvasProps {
   children?: React.ReactNode;
   incidentClosed?: boolean;
+  /** False when the incident has no messages at all, as opposed to none left to triage. */
+  hasMessages?: boolean;
 }
 
-export function TriageCanvas({ children, incidentClosed = false }: TriageCanvasProps) {
+export function TriageCanvas({
+  children,
+  incidentClosed = false,
+  hasMessages = true,
+}: TriageCanvasProps) {
   const { t } = useTranslation();
   return (
     <div className="ml-4 flex flex-1 flex-col overflow-hidden">
@@ -102,7 +139,13 @@ export function TriageCanvas({ children, incidentClosed = false }: TriageCanvasP
         </PageTitle>
         <KeybindingHelp />
       </header>
-      {incidentClosed ? <ClosedWarning /> : (children ?? <EmptyState />)}
+      {incidentClosed ? (
+        <ClosedWarning />
+      ) : !hasMessages ? (
+        <NoMessages />
+      ) : (
+        (children ?? <CaughtUp />)
+      )}
     </div>
   );
 }

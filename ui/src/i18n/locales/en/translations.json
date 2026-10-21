@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
+  "triageNoMessages": "No messages recorded yet",
+  "triageNoMessagesHint": "No message has been created yet. Create messages in the editor and they will appear here for triage.",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
   "keybindings": {
     "title": "Keyboard shortcuts",

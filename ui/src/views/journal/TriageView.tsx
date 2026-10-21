@@ -1115,7 +1115,10 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
           <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
           {t("back")}
         </button>
-        <TriageCanvas incidentClosed={incidentIsClosed}>
+        <TriageCanvas
+          incidentClosed={incidentIsClosed}
+          hasMessages={result.status !== "ready" || result.data.messages.length > 0}
+        >
           {selectedMessage && !caughtUp && (
             <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
               <TriagePanel

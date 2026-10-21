@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
+  "triageNoMessages": "Noch keine Meldungen erfasst",
+  "triageNoMessagesHint": "Es wurde noch keine Meldung erfasst. Meldungen legst du im Editor an, danach erscheinen sie hier zur Triage.",
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
   "keybindings": {
     "title": "Tastenkombinationen",

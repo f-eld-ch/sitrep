@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
+  "triageNoMessages": "Aucun message enregistré pour le moment",
+  "triageNoMessagesHint": "Aucun message n’a encore été créé. Créez des messages dans l’éditeur et ils apparaîtront ici pour le triage.",
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
   "keybindings": {
     "title": "Raccourcis clavier",
