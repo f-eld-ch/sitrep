@@ -2,7 +2,7 @@
 import { Fragment, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { Spinner } from "components";
-import { Button, Notification, PageTitle, Tag } from "components/ui";
+import { Button, EmptyState, Notification, PageTitle, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -698,12 +698,12 @@ function NoResources({ incidentId }: { incidentId?: string }) {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border bg-bg-elevated px-6 py-12 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-3xl text-primary">
-        <FontAwesomeIcon icon={faTruckMedical} />
-      </div>
-      <p className="text-lg font-bold">{t("resource.noResources")}</p>
-      <p className="max-w-md text-sm text-fg-muted">{t("resource.noResourcesHint")}</p>
+    <EmptyState
+      className="mx-auto w-full max-w-lg"
+      icon={faTruckMedical}
+      title={t("resource.noResources")}
+      hint={t("resource.noResourcesHint")}
+    >
       {incidentId && (
         <Button
           type="button"
@@ -714,7 +714,7 @@ function NoResources({ incidentId }: { incidentId?: string }) {
           <span>{t("triageView")}</span>
         </Button>
       )}
-    </div>
+    </EmptyState>
   );
 }
 
