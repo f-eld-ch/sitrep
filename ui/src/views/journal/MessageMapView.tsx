@@ -1,13 +1,20 @@
-import { faCheck, faCheckCircle, faPen, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faCheck,
+  faCheckCircle,
+  faMapLocationDot,
+  faPen,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useBlocker, useParams } from "react-router";
+import { useBlocker, useNavigate, useParams } from "react-router";
 import { useAcknowledgeMessage, useIncidentMessages } from "api/message";
 import { Spinner } from "components";
-import { Button, Notification, PageTitle } from "components/ui";
+import { Button, EmptyState, Notification, PageTitle } from "components/ui";
 import { IncidentContext } from "utils";
 import { divisionLongLabel } from "utils/divisionLabel";
 import { Map as IncidentMap } from "views/map";
@@ -218,7 +225,7 @@ function MessageMapView() {
           </div>
         )}
         {selected === undefined && mapMessages.length === 0 ? (
-          <EmptyState />
+          <NoMessages />
         ) : (
           <>
             {selected === undefined ? (
@@ -334,15 +341,30 @@ function MessageMapView() {
   );
 }
 
-function EmptyState() {
+function NoMessages() {
   const { t } = useTranslation();
+  const { incidentId } = useParams();
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-1 items-center justify-center">
-      <div className="text-center">
-        <p className="text-lg font-bold">{t("messageMap.noMessages")}</p>
-        <p className="mt-1 text-sm text-fg-muted">{t("messageMap.pickMessage")}</p>
-      </div>
+      <EmptyState
+        className="w-full max-w-lg"
+        icon={faMapLocationDot}
+        title={t("messageMap.noMessages")}
+        hint={t("messageMap.noMessagesHint")}
+      >
+        {incidentId && (
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => navigate(`/incident/${incidentId}/journal/triage`)}
+          >
+            <FontAwesomeIcon icon={faArrowsToEye} />
+            <span>{t("triageView")}</span>
+          </Button>
+        )}
+      </EmptyState>
     </div>
   );
 }

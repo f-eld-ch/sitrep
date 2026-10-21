@@ -8,3 +8,6 @@ export { Tag } from "./Tag";
 export type { TagProps, TagVariant } from "./Tag";
 
 export { PageTitle } from "./PageTitle";
+
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";

@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
+  "triageNoMessages": "Ancora nessun messaggio registrato",
+  "triageNoMessagesHint": "Nessun messaggio è ancora stato creato. Crea i messaggi nell’editor e appariranno qui per il triage.",
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",
   "keybindings": {
     "title": "Scorciatoie da tastiera",
@@ -202,7 +204,8 @@
     "editDone": "Fatto",
     "drawing": "Disegno per il messaggio {{number}} · {{time}}",
     "allDrawn": "Tutti i messaggi sono disegnati",
-    "noMessages": "Nessun messaggio per la carta informativa",
+    "noMessages": "Ancora nessun messaggio per la mappa dei messaggi",
+    "noMessagesHint": "Nessun messaggio è ancora stato assegnato alla mappa dei messaggi. Assegna i messaggi alla mappa durante il triage e appariranno qui per essere disegnati.",
     "pickMessage": "Scegli un messaggio per disegnarlo",
     "unavailable": "Questo intervento non ha una carta informativa",
     "openMessage": "Apri messaggio",
@@ -276,6 +279,7 @@
     "overview": "Persone",
     "thisIncident": "Questo incidente",
     "none": "Nessuna vittima registrata",
+    "noneHint": "Le persone vengono registrate durante il triage di un messaggio. Apri un messaggio nel triage e inserisci dispersi, morti, feriti, senzatetto o persone intrappolate nel passaggio «Persone».",
     "byLocation": "Per zona sinistrata"
   },
   "dashboard": {
@@ -480,6 +484,7 @@
       "reachability": "Recapito"
     },
     "noResources": "Nessun mezzo registrato",
+    "noResourcesHint": "I mezzi vengono registrati durante il triage di un messaggio. Apri un messaggio nel triage e aggiungi i mezzi nel passaggio «Mezzi».",
     "search": "Cerca mezzi…",
     "noResults": "Nessun mezzo trovato",
     "showMore": "Mostra altri {{count}}",

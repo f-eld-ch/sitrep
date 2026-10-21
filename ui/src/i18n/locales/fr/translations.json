@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Pas de nouveaux messages",
   "triageCaughtUp": "Tout est traité !",
+  "triageNoMessages": "Aucun message enregistré pour le moment",
+  "triageNoMessagesHint": "Aucun message n’a encore été créé. Créez des messages dans l’éditeur et ils apparaîtront ici pour le triage.",
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
   "keybindings": {
     "title": "Raccourcis clavier",
@@ -202,7 +204,8 @@
     "editDone": "Terminé",
     "drawing": "Dessin pour le message {{number}} · {{time}}",
     "allDrawn": "Tous les messages sont dessinés",
-    "noMessages": "Aucun message pour la carte de situation",
+    "noMessages": "Pas encore de messages pour la carte des messages",
+    "noMessagesHint": "Aucun message n’a encore été attribué à la carte des messages. Attribuez des messages à la carte lors du triage et ils apparaîtront ici pour être dessinés.",
     "pickMessage": "Choisissez un message pour le dessiner",
     "unavailable": "Cet engagement n'a pas de carte de situation",
     "openMessage": "Ouvrir le message",
@@ -276,6 +279,7 @@
     "overview": "Personnes",
     "thisIncident": "Cet incident",
     "none": "Aucune victime enregistrée",
+    "noneHint": "Les personnes sont enregistrées lors du triage d’un message. Ouvrez un message dans le triage et saisissez les disparus, morts, blessés, sans-abri ou personnes bloquées à l’étape «Personnes».",
     "byLocation": "Par zone sinistrée"
   },
   "dashboard": {
@@ -480,6 +484,7 @@
       "reachability": "Coordonnées"
     },
     "noResources": "Aucun moyen enregistré",
+    "noResourcesHint": "Les moyens sont enregistrés lors du triage d’un message. Ouvrez un message dans le triage et ajoutez des moyens à l’étape «Moyens».",
     "search": "Rechercher des moyens…",
     "noResults": "Aucun moyen trouvé",
     "showMore": "Afficher {{count}} de plus",

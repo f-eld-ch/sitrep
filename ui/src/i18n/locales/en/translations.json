@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
+  "triageNoMessages": "No messages recorded yet",
+  "triageNoMessagesHint": "No message has been created yet. Create messages in the editor and they will appear here for triage.",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
   "keybindings": {
     "title": "Keyboard shortcuts",
@@ -202,7 +204,8 @@
     "editDone": "Done",
     "drawing": "Drawing for message {{number}} · {{time}}",
     "allDrawn": "All messages are drawn",
-    "noMessages": "No messages for the situation map",
+    "noMessages": "No messages for the message map yet",
+    "noMessagesHint": "No message has been triaged to the message map yet. Assign messages to the message map during triage and they will appear here to be drawn.",
     "pickMessage": "Pick a message to draw it",
     "unavailable": "This incident has no situation map",
     "openMessage": "Open message",
@@ -276,6 +279,7 @@
     "overview": "Casualties",
     "thisIncident": "This incident",
     "none": "No casualties recorded",
+    "noneHint": "Casualties are recorded when a message is triaged. Open a message in the triage and enter missing, dead, injured, homeless or trapped persons in the “Persons” step.",
     "byLocation": "By location"
   },
   "dashboard": {
@@ -480,6 +484,7 @@
       "reachability": "Contact"
     },
     "noResources": "No resources recorded",
+    "noResourcesHint": "Resources are recorded when a message is triaged. Open a message in the triage and add resources in the “Resources” step.",
     "search": "Search resources…",
     "noResults": "No resources found",
     "showMore": "Show {{count}} more",

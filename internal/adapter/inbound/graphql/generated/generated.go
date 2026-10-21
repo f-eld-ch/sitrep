@@ -134,24 +134,25 @@ type ComplexityRoot struct {
 	}
 
 	Incident struct {
-		AccessMode      func(childComplexity int) int
-		CanDelete       func(childComplexity int) int
-		CanManage       func(childComplexity int) int
-		CanManageAccess func(childComplexity int) int
-		CanWrite        func(childComplexity int) int
-		ChildIncidents  func(childComplexity int) int
-		ClosedAt        func(childComplexity int) int
-		CreatedAt       func(childComplexity int) int
-		Divisions       func(childComplexity int) int
-		ID              func(childComplexity int) int
-		IsClosed        func(childComplexity int) int
-		Location        func(childComplexity int) int
-		Messages        func(childComplexity int) int
-		Name            func(childComplexity int) int
-		ParentID        func(childComplexity int) int
-		Resources       func(childComplexity int, asOf *time.Time) int
-		Schadenplaetze  func(childComplexity int, asOf *time.Time) int
-		UpdatedAt       func(childComplexity int) int
+		AccessMode         func(childComplexity int) int
+		CanDelete          func(childComplexity int) int
+		CanManage          func(childComplexity int) int
+		CanManageAccess    func(childComplexity int) int
+		CanWrite           func(childComplexity int) int
+		ChildIncidents     func(childComplexity int) int
+		ClosedAt           func(childComplexity int) int
+		CreatedAt          func(childComplexity int) int
+		Divisions          func(childComplexity int) int
+		HasCasualtyRecords func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		IsClosed           func(childComplexity int) int
+		Location           func(childComplexity int) int
+		Messages           func(childComplexity int) int
+		Name               func(childComplexity int) int
+		ParentID           func(childComplexity int) int
+		Resources          func(childComplexity int, asOf *time.Time) int
+		Schadenplaetze     func(childComplexity int, asOf *time.Time) int
+		UpdatedAt          func(childComplexity int) int
 	}
 
 	IncidentAccessGrant struct {
@@ -356,6 +357,7 @@ type ComplexityRoot struct {
 
 type IncidentResolver interface {
 	ChildIncidents(ctx context.Context, obj *model.Incident) ([]*model.Incident, error)
+	HasCasualtyRecords(ctx context.Context, obj *model.Incident) (bool, error)
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
 	CanWrite(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManage(ctx context.Context, obj *model.Incident) (bool, error)
@@ -847,6 +849,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Incident.Divisions(childComplexity), true
+	case "Incident.hasCasualtyRecords":
+		if e.ComplexityRoot.Incident.HasCasualtyRecords == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.HasCasualtyRecords(childComplexity), true
 	case "Incident.id":
 		if e.ComplexityRoot.Incident.ID == nil {
 			break
@@ -2617,6 +2625,11 @@ type Incident {
   divisions: [Division!]!
   """Direct child incidents whose layers bubble up into this incident."""
   childIncidents: [Incident!]!
+  """
+  Whether any message recorded a non-zero casualty delta for this incident's own Schadenplätze
+  (child incidents excluded). Unlike the totals it stays true when deltas cancel each other out.
+  """
+  hasCasualtyRecords: Boolean!
   """All messages for this incident, newest first."""
   messages: [Message!]!
   """Whether the current user has write access to this incident."""
@@ -3242,6 +3255,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_divisions(ctx, field)
 	case "childIncidents":
 		return ec.fieldContext_Incident_childIncidents(ctx, field)
+	case "hasCasualtyRecords":
+		return ec.fieldContext_Incident_hasCasualtyRecords(ctx, field)
 	case "messages":
 		return ec.fieldContext_Incident_messages(ctx, field)
 	case "canWrite":
@@ -6610,6 +6625,29 @@ func (ec *executionContext) fieldContext_Incident_childIncidents(_ context.Conte
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Incident_hasCasualtyRecords(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_hasCasualtyRecords(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Incident().HasCasualtyRecords(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_hasCasualtyRecords(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, true, true, errors.New("field of type Boolean does not have child fields"))
 }
 
 func (ec *executionContext) _Incident_messages(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
@@ -14522,6 +14560,44 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Incident_childIncidents(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "hasCasualtyRecords":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Incident_hasCasualtyRecords(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

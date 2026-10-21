@@ -39,12 +39,19 @@ export interface IncidentResourcesData {
   schadenplaetze: SchadenplatzWithResources[];
   childIncidents: ChildIncidentCasualties[];
   resources: Resource[];
+  /**
+   * Whether any casualties were ever recorded for this incident's own Schadenplätze. Unlike the
+   * totals it stays true when deltas cancel out. Only live: false in a past view, which does not
+   * fetch it.
+   */
+  hasCasualtyRecords: boolean;
 }
 
 export interface ChildIncidentCasualties {
   id: string;
   name: string;
   casualties: SchadenplatzWithResources["casualties"];
+  hasCasualtyRecords: boolean;
 }
 
 /**
@@ -131,9 +138,11 @@ export function useIncidentResources(
 function toIncidentResourcesData(inc: {
   id: string;
   name: string;
+  hasCasualtyRecords?: boolean;
   childIncidents: Array<{
     id: string;
     name: string;
+    hasCasualtyRecords?: boolean;
     schadenplaetze: Parameters<typeof sumCasualties>[0];
   }>;
   resources: Parameters<typeof toResource>[0][];
@@ -142,10 +151,12 @@ function toIncidentResourcesData(inc: {
   return {
     incidentId: inc.id,
     incidentName: inc.name,
+    hasCasualtyRecords: inc.hasCasualtyRecords ?? false,
     childIncidents: inc.childIncidents.map((child) => ({
       id: child.id,
       name: child.name,
       casualties: sumCasualties(child.schadenplaetze),
+      hasCasualtyRecords: child.hasCasualtyRecords ?? false,
     })),
     resources: inc.resources.map(toResource),
     schadenplaetze: inc.schadenplaetze.map(toSchadenplatzWithResources),

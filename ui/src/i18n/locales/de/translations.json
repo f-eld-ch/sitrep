@@ -64,6 +64,8 @@
   },
   "noNewMessagesAbove": "Keine neuen Meldungen",
   "triageCaughtUp": "Alles triagiert!",
+  "triageNoMessages": "Noch keine Meldungen erfasst",
+  "triageNoMessagesHint": "Es wurde noch keine Meldung erfasst. Meldungen legst du im Editor an, danach erscheinen sie hier zur Triage.",
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
   "keybindings": {
     "title": "Tastenkombinationen",
@@ -202,7 +204,8 @@
     "editDone": "Fertig",
     "drawing": "Einzeichnen für Meldung {{number}} · {{time}}",
     "allDrawn": "Alle Meldungen sind eingezeichnet",
-    "noMessages": "Keine Meldungen für die Nachrichtenkarte",
+    "noMessages": "Noch keine Meldungen für die Nachrichtenkarte",
+    "noMessagesHint": "Es wurde noch keine Meldung der Nachrichtenkarte zugewiesen. Weise Meldungen in der Triage der Nachrichtenkarte zu, dann erscheinen sie hier zum Einzeichnen.",
     "pickMessage": "Wähle eine Meldung, um sie einzuzeichnen",
     "unavailable": "Dieser Einsatz hat keine Nachrichtenkarte",
     "openMessage": "Meldung öffnen",
@@ -276,6 +279,7 @@
     "overview": "Personenübersicht",
     "thisIncident": "Schadenplätze",
     "none": "Keine Personen erfasst",
+    "noneHint": "Personen werden bei der Triage einer Meldung erfasst. Öffne eine Meldung in der Triage und trage im Schritt «Personen» Vermisste, Tote, Verletzte, Obdachlose oder Eingeschlossene ein.",
     "byLocation": "Nach Schadenplatz"
   },
   "dashboard": {
@@ -480,6 +484,7 @@
       "reachability": "Erreichbarkeit"
     },
     "noResources": "Keine Mittel erfasst",
+    "noResourcesHint": "Mittel werden bei der Triage einer Meldung erfasst. Öffne eine Meldung in der Triage und biete im Schritt «Mittel» Mittel auf.",
     "search": "Mittel suchen…",
     "noResults": "Keine Mittel gefunden",
     "showMore": "{{count}} weitere anzeigen",

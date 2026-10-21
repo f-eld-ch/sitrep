@@ -50,6 +50,8 @@ models:
         resolver: true
       resources:
         resolver: true
+      hasCasualtyRecords:
+        resolver: true
   Schadenplatz:
     fields:
       resources:

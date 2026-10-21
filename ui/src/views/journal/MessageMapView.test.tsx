@@ -228,7 +228,9 @@ describe("MessageMapView map", () => {
     setup();
 
     expect(mocks.mapProps.last).toBeUndefined();
-    expect(screen.getByText(/messageMap.noMessages|keine meldungen/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/^(messageMap\.noMessages|keine meldungen[^.]*)$/i),
+    ).toBeInTheDocument();
   });
 
   it("tells when the Nachrichtenkarte is not available", () => {

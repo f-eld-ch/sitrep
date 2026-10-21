@@ -193,6 +193,11 @@ type SchadenplatzQueries interface {
 
 	// ListMessageCasualties returns the casualty deltas recorded for a message across all Schadenplätze.
 	ListMessageCasualties(ctx context.Context, messageID uuid.UUID) ([]*MessageCasualtyRM, error)
+
+	// HasCasualtyRecords reports whether any message ever recorded a non-zero casualty delta for
+	// one of the incident's own Schadenplätze (child incidents excluded). Unlike the totals it
+	// stays true when deltas cancel each other out.
+	HasCasualtyRecords(ctx context.Context, incidentID uuid.UUID) (bool, error)
 }
 
 // Queries is the driven port for read-model access. Implementations query

@@ -210,6 +210,9 @@ type Incident struct {
 	Divisions []*Division `json:"divisions"`
 	// Direct child incidents whose layers bubble up into this incident.
 	ChildIncidents []*Incident `json:"childIncidents"`
+	// Whether any message recorded a non-zero casualty delta for this incident's own Schadenplätze
+	// (child incidents excluded). Unlike the totals it stays true when deltas cancel each other out.
+	HasCasualtyRecords bool `json:"hasCasualtyRecords"`
 	// All messages for this incident, newest first.
 	Messages []*Message `json:"messages"`
 	// Whether the current user has write access to this incident.

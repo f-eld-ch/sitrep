@@ -276,6 +276,27 @@ func (h *SchadenplatzHandler) GetMessageCasualties(messageID uuid.UUID) []*Messa
 	return out
 }
 
+// HasCasualtyRecords reports whether any message recorded a non-zero casualty delta for one of
+// the incident's Schadenplätze.
+func (h *SchadenplatzHandler) HasCasualtyRecords(incidentID uuid.UUID) bool {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	for key, row := range h.messageCasualties {
+		sp := h.rows[key[1]]
+		if sp == nil || sp.IncidentID != incidentID {
+			continue
+		}
+
+		if row.Vermisste != 0 || row.Tote != 0 || row.Verletzte != 0 ||
+			row.Obdachlose != 0 || row.Eingeschlossene != 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
 // DefaultForIncident returns the default Schadenplatz row for an incident, or nil.
 func (h *SchadenplatzHandler) DefaultForIncident(incidentID uuid.UUID) *SchadenplatzRow {
 	h.mu.RLock()
