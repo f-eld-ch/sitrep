@@ -480,6 +480,7 @@
       "reachability": "Recapito"
     },
     "noResources": "Nessun mezzo registrato",
+    "noResourcesHint": "I mezzi vengono registrati durante il triage di un messaggio. Apri un messaggio nel triage e aggiungi i mezzi nel passaggio «Mezzi».",
     "search": "Cerca mezzi…",
     "noResults": "Nessun mezzo trovato",
     "showMore": "Mostra altri {{count}}",

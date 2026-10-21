@@ -480,6 +480,7 @@
       "reachability": "Contact"
     },
     "noResources": "No resources recorded",
+    "noResourcesHint": "Resources are recorded when a message is triaged. Open a message in the triage and add resources in the “Resources” step.",
     "search": "Search resources…",
     "noResults": "No resources found",
     "showMore": "Show {{count}} more",

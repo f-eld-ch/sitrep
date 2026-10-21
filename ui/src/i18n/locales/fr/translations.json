@@ -480,6 +480,7 @@
       "reachability": "Coordonnées"
     },
     "noResources": "Aucun moyen enregistré",
+    "noResourcesHint": "Les moyens sont enregistrés lors du triage d’un message. Ouvrez un message dans le triage et ajoutez des moyens à l’étape «Moyens».",
     "search": "Rechercher des moyens…",
     "noResults": "Aucun moyen trouvé",
     "showMore": "Afficher {{count}} de plus",

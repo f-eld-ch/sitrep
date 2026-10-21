@@ -480,6 +480,7 @@
       "reachability": "Erreichbarkeit"
     },
     "noResources": "Keine Mittel erfasst",
+    "noResourcesHint": "Mittel werden bei der Triage einer Meldung erfasst. Öffne eine Meldung in der Triage und biete im Schritt «Mittel» Mittel auf.",
     "search": "Mittel suchen…",
     "noResults": "Keine Mittel gefunden",
     "showMore": "{{count}} weitere anzeigen",

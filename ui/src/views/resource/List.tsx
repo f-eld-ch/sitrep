@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { Spinner } from "components";
 import { Button, Notification, PageTitle, Tag } from "components/ui";
 import type { TagVariant } from "components/ui/Tag";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { useIncidentResources, useIncidentDetails } from "api";
@@ -18,7 +18,13 @@ import type {
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronRight, faPrint } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsToEye,
+  faChevronDown,
+  faChevronRight,
+  faPrint,
+  faTruckMedical,
+} from "@fortawesome/free-solid-svg-icons";
 import ResourceTable from "./ResourceTable";
 import { deployedPersonnel } from "./personnel";
 
@@ -686,6 +692,32 @@ function Mitteltabelle({
   );
 }
 
+/** Empty state: resources are only ever added while triaging a message, so point there. */
+function NoResources({ incidentId }: { incidentId?: string }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border bg-bg-elevated px-6 py-12 text-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-3xl text-primary">
+        <FontAwesomeIcon icon={faTruckMedical} />
+      </div>
+      <p className="text-lg font-bold">{t("resource.noResources")}</p>
+      <p className="max-w-md text-sm text-fg-muted">{t("resource.noResourcesHint")}</p>
+      {incidentId && (
+        <Button
+          type="button"
+          variant="primary"
+          onClick={() => navigate(`/incident/${incidentId}/journal/triage`)}
+        >
+          <FontAwesomeIcon icon={faArrowsToEye} />
+          <span>{t("triageView")}</span>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function List() {
   const { incidentId } = useParams();
   const { t, i18n } = useTranslation();
@@ -729,7 +761,7 @@ function List() {
           )}
         </div>
         {allResources.length === 0 ? (
-          <p className="text-sm text-fg-muted">{t("resource.noResources")}</p>
+          <NoResources incidentId={incidentId} />
         ) : (
           <>
             <FormationKpis resources={allResources} iconsLoaded={iconsLoaded} />
