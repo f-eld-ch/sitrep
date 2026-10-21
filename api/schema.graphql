@@ -351,6 +351,11 @@ type Incident {
   divisions: [Division!]!
   """Direct child incidents whose layers bubble up into this incident."""
   childIncidents: [Incident!]!
+  """
+  Whether any message recorded a non-zero casualty delta for this incident's own Schadenplätze
+  (child incidents excluded). Unlike the totals it stays true when deltas cancel each other out.
+  """
+  hasCasualtyRecords: Boolean!
   """All messages for this incident, newest first."""
   messages: [Message!]!
   """Whether the current user has write access to this incident."""

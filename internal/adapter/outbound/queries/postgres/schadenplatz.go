@@ -117,6 +117,22 @@ func (q *Queries) ListMessageCasualties(
 	return out, rows.Err()
 }
 
+func (q *Queries) HasCasualtyRecords(ctx context.Context, incidentID uuid.UUID) (bool, error) {
+	var found bool
+
+	err := q.pool.QueryRow(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM readmodel.message_casualties mc
+			JOIN readmodel.schadenplatz sp ON sp.id = mc.schadenplatz_id
+			WHERE sp.incident_id = $1
+			  AND (mc.vermisste <> 0 OR mc.tote <> 0 OR mc.verletzte <> 0
+			       OR mc.obdachlose <> 0 OR mc.eingeschlossene <> 0)
+		)`, incidentID).Scan(&found)
+
+	return found, err
+}
+
 func scanPgSchadenplatz(s incidentScanner) (*outbound.SchadenplatzRM, error) {
 	var (
 		rm         outbound.SchadenplatzRM

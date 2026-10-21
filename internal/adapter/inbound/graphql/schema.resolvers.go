@@ -45,6 +45,16 @@ func (r *incidentResolver) ChildIncidents(ctx context.Context, obj *model.Incide
 	return out, nil
 }
 
+// HasCasualtyRecords is the resolver for the hasCasualtyRecords field.
+func (r *incidentResolver) HasCasualtyRecords(ctx context.Context, obj *model.Incident) (bool, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return r.Queries.HasCasualtyRecords(ctx, incID)
+}
+
 // Messages is the field resolver for Incident.messages.
 // It is called whenever a client requests the messages field on an Incident.
 func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error) {

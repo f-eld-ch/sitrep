@@ -121,9 +121,11 @@ export const GET_INCIDENT_RESOURCES: TypedDocumentNode<
     incident(id: $incidentId) {
       id
       name
+      hasCasualtyRecords
       childIncidents {
         id
         name
+        hasCasualtyRecords
         schadenplaetze {
           ...SchadenplatzFields
         }

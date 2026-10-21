@@ -427,6 +427,10 @@ func (q *Queries) ListMessageCasualties(_ context.Context, messageID uuid.UUID) 
 	return out, nil
 }
 
+func (q *Queries) HasCasualtyRecords(_ context.Context, incidentID uuid.UUID) (bool, error) {
+	return q.schadenplatz.HasCasualtyRecords(incidentID), nil
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Resource
 // ──────────────────────────────────────────────────────────────────────────────

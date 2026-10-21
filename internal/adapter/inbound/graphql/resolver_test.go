@@ -59,6 +59,7 @@ func newTestStack(t *testing.T) *testStack {
 	layerSvc := factory.LayerService(layerRepo, incRepo)
 	featureSvc := factory.FeatureService(featureRepo, incRepo, layerRepo, msgRepo)
 	resourceSvc := factory.ResourceService(resRepo, incRepo, spRepo)
+	schadenplatzSvc := factory.SchadenplatzService(spRepo, incRepo)
 
 	incHandler := projection.NewIncidentHandler()
 	divHandler := projection.NewIncidentDivisionHandler()
@@ -74,13 +75,14 @@ func newTestStack(t *testing.T) *testStack {
 	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler)
 
 	r := &gqlresolver.Resolver{
-		Incidents: incidentSvc,
-		Messages:  messageSvc,
-		Layers:    layerSvc,
-		Features:  featureSvc,
-		Resources: resourceSvc,
-		Queries:   queries,
-		Timeline:  factory.TimelineService(store, queries),
+		Incidents:      incidentSvc,
+		Messages:       messageSvc,
+		Layers:         layerSvc,
+		Features:       featureSvc,
+		Resources:      resourceSvc,
+		Schadenplaetze: schadenplatzSvc,
+		Queries:        queries,
+		Timeline:       factory.TimelineService(store, queries),
 	}
 
 	return &testStack{resolver: r, proj: proj}
@@ -1424,6 +1426,70 @@ func TestIncident_ResourcesAndSchadenplaetzeAsOf(t *testing.T) {
 	assert.NotEmpty(t, places(nil), "live: the default Schadenplatz")
 	assert.NotEmpty(t, places(&opened), "as of a time after the incident was opened")
 	assert.Empty(t, places(&before), "it did not exist before the incident was opened")
+}
+
+func TestIncident_HasCasualtyRecords(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	inc, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Casualties", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	newMessage := func() string {
+		t.Helper()
+
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: inc.Incident.ID, Sender: "A", Receiver: "B", Content: "c", Medium: model.MediumRadio,
+		})
+		require.NoError(t, err)
+
+		return msg.ID
+	}
+	record := func(spID, msgID string, injured int) {
+		t.Helper()
+
+		_, err := s.resolver.Mutation().
+			RecordCasualties(ctx, spID, msgID, nil, model.CasualtyDeltasInput{Verletzte: injured})
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx))
+	}
+	hasRecords := func() bool {
+		t.Helper()
+
+		got, err := s.resolver.Incident().HasCasualtyRecords(ctx, inc.Incident)
+		require.NoError(t, err)
+
+		return got
+	}
+
+	places, err := s.resolver.Incident().Schadenplaetze(ctx, inc.Incident, nil)
+	require.NoError(t, err)
+	require.NotEmpty(t, places)
+
+	spID := places[0].ID
+	first, second := newMessage(), newMessage()
+
+	assert.False(t, hasRecords(), "nothing recorded yet")
+
+	record(spID, first, 3)
+	assert.True(t, hasRecords())
+
+	// A correction that cancels the first one: the totals are back at zero, but casualties were
+	// recorded, which is what the casualties overview needs to know.
+	record(spID, second, -3)
+
+	places, err = s.resolver.Incident().Schadenplaetze(ctx, inc.Incident, nil)
+	require.NoError(t, err)
+	assert.Zero(t, places[0].Casualties.Verletzte)
+	assert.True(t, hasRecords(), "cancelled out, but still recorded")
+
+	// Taking both back to zero leaves nothing recorded.
+	record(spID, second, 0)
+	record(spID, first, 0)
+	assert.False(t, hasRecords(), "every delta corrected back to zero")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
