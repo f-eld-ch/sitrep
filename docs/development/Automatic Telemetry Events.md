@@ -204,7 +204,7 @@ Close is serialised with every other write to the incident's recordings, by comm
 
 ## Ingesting
 
-The telemetry daemon is an external service: it receives or fetches data from devices and third-party providers — for example over APRS-IS, MQTT, LoRaWAN or a web API — normalises it into positions and readings in engineering units, and calls sitrep's gRPC ingest API, an inbound adapter specified separately.
+The telemetry daemon is an external service: it receives or fetches data from devices and third-party providers — for example over APRS-IS, MQTT, LoRaWAN or a web API — normalises it into positions and readings in engineering units, and calls sitrep's gRPC ingest API, an inbound adapter specified in [gRPC API](gRPC%20API.md).
 
 ```mermaid
 flowchart LR
