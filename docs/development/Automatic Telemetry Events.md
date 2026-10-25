@@ -234,8 +234,6 @@ A sample has these fields:
 
 A sample has a position, readings or both. As `metadata`, the telemetry daemon may add what helps to trace a sample, such as the protocol, the path it took through repeaters, gateways or networks, or the clock source, e.g. `{"protocol": "aprs", "path": "digi-1,digi-2,igate-1", "clock_source": "gnss"}`.
 
-A call is acknowledged once its effects are stored; a telemetry daemon retries until it is.
-
 Ingest updates the discovery state with every sample newer than the one it holds. If the source was attached to an incident at the sample's `OccurredAt`, ingest appends the sample to that incident's recording for the source, limited to the position and channels switched on in the `Configured` in effect at that time (see [Attaching](#attaching)); otherwise it stores nothing else. An incident that is no longer open is never modified, so a late sample for it is dropped. The discovery state is written directly by ingest, not projected, because it also covers unattached sources, whose data are not events.
 
 A reading that does not match its channel's declaration — another unit, a state the channel does not declare, or a value of the wrong type — is dropped.
