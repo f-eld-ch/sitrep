@@ -252,7 +252,13 @@ Devices are provisioned in the telemetry daemon, with their name, icon and chann
 
 Without limits, a device sending every second would produce almost 30,000 samples in eight hours. Most devices already send at a sensible rate: APRS trackers typically use [SmartBeaconing](https://www.qsl.net/n2ixd/digitraker/smartbeaconing.htm) — rare when parked, frequent at speed, extra on turns — and sensors report about once a minute, enum channels on change and periodically. The telemetry daemon may limit the rate of a device that sends more often than an incident needs.
 
-Ingest limits rates to protect sitrep from overload, whatever devices and telemetry daemons send. A position is dropped if its `OccurredAt` is less than about 30 s from the `OccurredAt` of another recorded position of the same source. A numeric reading is dropped if its `OccurredAt` is less than about 30 s from the `OccurredAt` of another recorded reading of the same channel. Enum channels can change in bursts, so an enum reading is dropped only if its channel already has about 5 recorded readings whose `OccurredAt` is within about 1 min of its own. The position and each reading of a sample are checked separately, so a sample's position can be dropped while its readings are kept.
+Ingest limits rates to protect sitrep from overload, whatever devices and telemetry daemons send. It drops:
+
+- a position whose `OccurredAt` is less than 30 s from that of another recorded position of the same source;
+- a numeric reading whose `OccurredAt` is less than 30 s from that of another recorded reading of the same channel;
+- an enum reading whose channel already has 5 recorded readings with an `OccurredAt` within 60 s of its own, since enum channels can change in bursts.
+
+The position and each reading of a sample are checked separately, so a sample's position can be dropped while its readings are kept. The intervals and the burst size are configurable; the values above are the defaults.
 
 A recording then typically grows by about 120 events per hour, under 10,000 over a three-day incident. Ingest loads the recording for every sample, replaying its events. With recordings growing at this rate, this is acceptable at first; if load latency is measured to matter, `outbound.SnapshotStore` (so far only no-op implementations) is the remedy. Operator commands rarely write to a recording, so on a version conflict with incoming telemetry the service retries.
 
@@ -273,7 +279,7 @@ The telemetry daemon sets `occurred_at` depending on the device's clock, since a
 
 The following applies to every sample:
 
-- Upper bound: a sample whose `OccurredAt` is later than the time ingest receives it, plus a small buffer for skewed clocks, is dropped. Correcting such a time is up to the telemetry daemon, which may keep the original in `metadata`.
+- Upper bound: a sample whose `OccurredAt` is more than 60 s later than the time ingest receives it is dropped. The 60 s are configurable, to tolerate skewed clocks. Correcting such a time is up to the telemetry daemon, which may keep the original in `metadata`.
 - Lower bound: the attach. A sample from before it is not recorded, also one with a clock reset to 1970 or a week-number rollover.
 
 Detecting misconfigured device clocks, e.g. by a constant offset in whole hours, is up to the telemetry daemon.
