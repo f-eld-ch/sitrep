@@ -220,9 +220,9 @@ The ingest API has at least these calls:
 |---|---|
 | announce a device | `device_id`, `name`, `icon`, `channels`: the source's fields, see [`TelemetrySource`](#telemetrysource) |
 | de-provision a device | `device_id` |
-| send samples | a list of samples |
+| send a sample | a sample |
 
-Each sample in "send samples" has these fields:
+A sample has these fields:
 
 | Field | Meaning |
 |---|---|
