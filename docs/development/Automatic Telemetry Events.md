@@ -8,11 +8,11 @@ The Einsatzjournal holds hand-written messages. Telemetry adds machine input fro
 
 ## Terms
 
-A **device** is a piece of hardware that sends positions or readings on its own: a vehicle tracker, a handheld, a drone, a dose-rate probe, a weather station, a water gauge. Network elements that only relay data, such as a LoRaWAN gateway, a router or a repeater, are not devices.
+A **device** is a piece of hardware that sends positions or readings on its own: a vehicle tracker, a handheld, a drone, a dose-rate probe, a weather station, a water gauge. Network elements that only relay data, such as a LoRaWAN gateway, a router or a repeater, are not devices. In sitrep, a device is represented by its **source**, see [`TelemetrySource`](#telemetrysource).
 
 A **sample** is what a device measured at one time: a position and/or sensor readings.
 
-The **discovery state** is kept outside any incident, per device: the latest position, the latest readings, the time of the latest sample and the device's clock offset.
+The **discovery state** is kept outside any incident, per source: the latest position, the latest readings and the time of the latest sample.
 
 ---
 
@@ -25,15 +25,15 @@ classDiagram
         <<aggregate>>
         one per device
         owned by no incident
-        identity, name, kind
-        default symbol
+        device id, name
+        icon
         channels
         attachments
     }
     namespace Incident {
         class TelemetryRecording {
             <<aggregate>>
-            one per device per incident
+            one per source per incident
             configuration
             positions
             readings
@@ -41,7 +41,7 @@ classDiagram
         }
         class Feature["Feature (existing)"] {
             <<aggregate>>
-            name, symbol, layer
+            name, icon, layer
             own position
         }
     }
@@ -61,28 +61,46 @@ Ownership uses the existing mechanism: an owned aggregate implements `eventsourc
 
 ### `TelemetrySource`
 
-An aggregate, one stream per device; "source" for short. Its id is derived from the device's identity, like `feature.DeriveID`, so ingest finds a device's source without a lookup.
+An aggregate, one stream per device; "source" for short. Its id is derived from the device id, like `feature.DeriveID`, so ingest finds a device's source without a lookup.
 
 | Field | Meaning |
 |---|---|
-| identity | must be unique among all devices, e.g. an IMEI, callsign-SSID or DevEUI |
-| name | recognisable in discovery, e.g. "Tracker Peli 4" |
-| kind | tracker, probe, gauge, weather station |
-| default symbol | taktisches Zeichen used when the source is attached with a new `Feature` |
-| channels | the quantities it reports, see below |
+| `device_id` | the device's id in its protocol, unique among all devices, e.g. an IMEI, callsign-SSID or DevEUI |
+| `name` | recognisable in discovery, e.g. "Tracker Peli 4" |
+| `icon` | used for a `Feature` created when the source is attached; opaque to sitrep, stored as sent |
+| `channels` | the quantities it reports, see [Channel](#channel) |
 
-A source reports zero or one position: latitude, longitude, accuracy, fix type, and optionally course, speed and altitude. Position is not a channel, because it decides where the source is on the map rather than being a quantity to chart.
-
-A channel is a declaration on the source: label, description, unit and value type. Value types are numeric and enum. An enum channel declares labelled states instead of a unit. Readings arrive normalised to engineering units and checked for plausibility by the telemetry daemon (see [Ingesting](#ingesting)).
+A source reports zero or one position. Position is not a channel, because it decides where the source is on the map rather than being a quantity to chart.
 
 | Event | Data |
 |---|---|
-| `Registered` | identity, kind, name, default symbol |
-| `Updated` | name, kind, default symbol |
+| `Registered` | device id, name, icon |
+| `Updated` | name, icon |
 | `ChannelAdded` / `ChannelUpdated` | channel declaration |
-| `ChannelRemoved` | channel |
+| `ChannelRemoved` | channel id |
 | `Attached` / `Detached` | incident, recording id |
 | `Unregistered` | — |
+
+#### Channel
+
+A channel is a quantity the source reports, declared on the source.
+
+| Field | Meaning |
+|---|---|
+| `channel_id` | unique within the source; never changes; readings refer to it |
+| `label` | a [label](#translated-text); may change |
+| `type` | `numeric` or `enum` |
+| `unit` (numeric only) | a case-sensitive [UCUM](https://ucum.org/ucum) code, e.g. `m`, `L`, `uSv/h`, `Cel` |
+| `states` (enum only) | the possible values, each `{id, label}`, with `id` unique within the channel |
+
+```json
+{ "channel_id": "water_level", "label": { "de": "Pegel" }, "type": "numeric", "unit": "m" }
+{ "channel_id": "gate", "label": { "de": "Schieber" }, "type": "enum",
+  "states": [ { "id": "open", "label": { "de": "offen" } },
+              { "id": "closed", "label": { "de": "geschlossen" } } ] }
+```
+
+Readings arrive normalised to engineering units and checked for plausibility by the telemetry daemon (see [Ingesting](#ingesting)).
 
 ### `TelemetryRecording`
 
@@ -94,14 +112,36 @@ Its configuration says what is recorded: the linked `Feature`, if any, whether t
 
 | Event | Written | Data |
 |---|---|---|
-| `SourceDescribed` | on attach; when the source changes while attached | identity, kind, name, channels |
-| `Configured` | on attach; when the configuration changes; on detach | feature id, position on/off, channels — empty on detach |
-| `PositionRecorded` | by ingest, if the position is recorded | `{lat, lon, accuracy, fixType, course?, speed?, altitude?}` |
-| `ReadingsRecorded` | by ingest | `[{channel, value, unit}]`, the recorded readings of one sample |
+| `SourceDescribed` | on attach; when the source changes while attached | device id, name, channels |
+| `Configured` | on attach; when the configuration changes; on detach | feature id, position on/off, ids of the recorded channels — empty on detach |
+| `PositionRecorded` | by ingest, if the position is recorded | a [position](#position) |
+| `ReadingsRecorded` | by ingest | the recorded [readings](#reading) of one sample, without `unit` |
 
-A reading's `value` matches its channel's value type: a number, or an enum state's key as a string. The unit is on every numeric reading, so a reading stays correct when its channel's declaration changes. An enum reading has no unit; its key is resolved with the channel's states in the `SourceDescribed` in effect when it was recorded.
+Positions and readings carry the sample's `metadata`.
 
-Positions and readings carry protocol, gateway, clock source, raw payload and, if the time was replaced, the original time as metadata.
+#### Position
+
+| Field | Meaning |
+|---|---|
+| `latitude` | decimal degrees, WGS 84, −90 to 90, positive north of the equator |
+| `longitude` | decimal degrees, WGS 84, −180 to 180, positive east of Greenwich |
+| `accuracy` (optional) | horizontal accuracy in m, at 95 % confidence |
+| `altitude` (optional) | m above the WGS 84 ellipsoid |
+| `altitude_accuracy` (optional) | accuracy of `altitude` in m, at 95 % confidence |
+| `heading` (optional) | direction of travel in degrees, 0 ≤ heading < 360, clockwise from true north; absent when stationary |
+| `speed` (optional) | horizontal speed in m/s, non-negative |
+
+As in W3C [`GeolocationCoordinates`](https://www.w3.org/TR/2026/CR-geolocation-20260326/#coordinates_interface), except that `accuracy` is optional and field names are in snake_case.
+
+The telemetry daemon converts heights above mean sea level, as sent by APRS or NMEA `GGA`, to heights above the ellipsoid. Positions are converted for display only, e.g. to swisstopo's LV95 coordinates and LN02 heights, which most users in Switzerland expect.
+
+#### Reading
+
+| Field | Meaning |
+|---|---|
+| `channel_id` | the channel's id |
+| `value` | for a numeric channel, a number; for an enum channel, a state's id. Once recorded, its unit or state is resolved with the channel in the `SourceDescribed` in effect when it was recorded |
+| `unit` (numeric only) | the UCUM code of `value`'s unit; must match the channel's `unit`; not recorded |
 
 ### `Feature`
 
@@ -114,6 +154,10 @@ The existing aggregate for a drawn object on a layer. It gains links to a record
 
 How the links behave is described in [Attaching](#attaching).
 
+### Translated text
+
+sitrep's UI is available in German, French, Italian and English, so text that the telemetry daemon declares and that viewers read must be translatable: the labels of channels and of their states. Such text is always a **label**: a map from two-letter ISO 639-1 language code to text, e.g. `{"de": "Pegel", "fr": "Niveau d'eau"}`. A source's `name`, e.g. "Tracker Peli 4", is a proper name and is not translated.
+
 ---
 
 ## Attaching
@@ -122,7 +166,7 @@ Attaching a source to an incident is a command. The operator chooses a `Feature`
 
 | `Feature` | Linked to | Position on the map |
 |---|---|---|
-| linked, position on | existing, or new with the source's name and default symbol | follows the recorded positions |
+| linked, position on | existing, or new with the source's name and icon | follows the recorded positions |
 | linked, position off | existing | the `Feature`'s own, moved by operators |
 | none | — | none; where such a source is shown is left to the UI |
 
@@ -132,7 +176,7 @@ A source is attached to at most one incident at a time: one device in two incide
 
 ### Position on the map
 
-While `PositionLinked`, the `Feature`'s position on the map comes from the recording's `PositionRecorded` events, not from the `Feature` itself. The `Feature` therefore rejects a `Moved` that takes effect while it is `PositionLinked`, also once the link has ended, except the one written when a position link ends. A `Moved` that takes effect outside a link is accepted, for example one for an older message on a message map layer. Name and symbol change with `Restyled` as usual; the layer is fixed, as for any `Feature`.
+While `PositionLinked`, the `Feature`'s position on the map comes from the recording's `PositionRecorded` events, not from the `Feature` itself. The `Feature` therefore rejects a `Moved` that takes effect while it is `PositionLinked`, also once the link has ended, except the one written when a position link ends. A `Moved` that takes effect outside a link is accepted, for example one for an older message on a message map layer. Name and icon change with `Restyled` as usual; the layer is fixed, as for any `Feature`.
 
 A `Feature` created on attach is `Placed` without geometry, and a `Feature` without geometry is not shown on the map.
 
@@ -174,23 +218,35 @@ The ingest API has at least these calls:
 
 | Call | Carries |
 |---|---|
-| announce a device | identity, name, kind, default symbol, channels |
-| de-provision a device | identity |
-| send samples | per sample: identity, `OccurredAt`, clock source, position and/or readings, metadata |
+| announce a device | `device_id`, `name`, `icon`, `channels`: the source's fields, see [`TelemetrySource`](#telemetrysource) |
+| de-provision a device | `device_id` |
+| send samples | a list of samples |
+
+Each sample in "send samples" has these fields:
+
+| Field | Meaning |
+|---|---|
+| `device_id` | the device id, see [`TelemetrySource`](#telemetrysource) |
+| `occurred_at` | an [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) timestamp in UTC, e.g. `2026-10-24T14:03:00Z` |
+| `position` (optional) | a [position](#position) |
+| `readings` (optional) | a list of [readings](#reading) |
+| `metadata` (optional) | a map of string to string, opaque to sitrep, stored as sent |
+
+A sample has a position, readings or both. As `metadata`, the telemetry daemon may add what helps to trace a sample, such as the protocol, the path it took through repeaters, gateways or networks, or the clock source, e.g. `{"protocol": "aprs", "path": "digi-1,digi-2,igate-1", "clock_source": "gnss"}`.
 
 A call is acknowledged once its effects are stored; a telemetry daemon retries until it is.
 
 Ingest updates the discovery state with every sample newer than the one it holds. If the source was attached to an incident at the sample's `OccurredAt`, ingest appends the sample to that incident's recording for the source, limited to the position and channels switched on in the `Configured` in effect at that time (see [Attaching](#attaching)); otherwise it stores nothing else. An incident that is no longer open is never modified, so a late sample for it is dropped. The discovery state is written directly by ingest, not projected, because it also covers unattached sources, whose data are not events.
 
-If a reading reaches ingest with a unit other than its channel's declared unit, ingest records it as sent.
+A reading that does not match its channel's declaration — another unit, a state the channel does not declare, or a value of the wrong type — is dropped.
 
 ### Trust
 
-The telemetry daemon, not the device, is authenticated by sitrep; the telemetry daemon vouches for the sources in its payload. Devices are verified by the telemetry daemon or the system it receives data from, as far as the protocol allows: a LoRaWAN network server checks device keys, APRS has nothing to check. sitrep holds no per-device credentials.
+The telemetry daemon, not the device, is authenticated by sitrep; the telemetry daemon vouches for the devices in its payload. Devices are verified by the telemetry daemon or the system it receives data from, as far as the protocol allows: a LoRaWAN network server checks device keys, APRS has nothing to check. sitrep holds no per-device credentials.
 
 ### Provisioning
 
-Devices are provisioned in the telemetry daemon, with their name, kind, default symbol and channels. The telemetry daemon forwards data only from provisioned devices, and its configuration can limit that further, for example by region or callsign for a provider such as aprs.fi. Ingest registers a source when the telemetry daemon announces a provisioned device; announcing a device whose source is registered updates its name, kind, default symbol and channels. A channel missing from the announcement is removed. A channel in a `Configured` that the source no longer declares is ignored. A sample from a device without a registered source is dropped. When a device is de-provisioned, the telemetry daemon calls ingest to de-provision it, and ingest unregisters its source, detaching it first if it is attached, and removes it from the discovery state. Data already recorded in incidents is unaffected. If the device is provisioned again, ingest registers its previous source again, because the source's id is derived from the device's identity.
+Devices are provisioned in the telemetry daemon, with their name, icon and channels. The telemetry daemon forwards data only from provisioned devices, and its configuration can limit that further, for example by region or callsign for a provider such as aprs.fi. Ingest registers a source when the telemetry daemon announces a provisioned device; announcing a device whose source is registered updates its name, icon and channels. A channel missing from the announcement is removed. A channel in a `Configured` that the source no longer declares is ignored. A sample from a device without a registered source is dropped. When a device is de-provisioned, the telemetry daemon calls ingest to de-provision it, and ingest unregisters its source, detaching it first if it is attached, and removes it from the discovery state. Data already recorded in incidents is unaffected. If the device is provisioned again, ingest registers its previous source again, because the source's id is derived from the device id.
 
 ### Rates
 
@@ -206,9 +262,9 @@ A duplicate, such as a retried send or the same sample relayed by two telemetry 
 
 ### Time and device clocks
 
-`PositionRecorded` and `ReadingsRecorded` carry `OccurredAt`, the device time of the sample, and `RecordedAt`, when it was stored. Ordering is by `OccurredAt`; late arrival, e.g. a buffer sent after a device was offline, is normal. A recording's versions follow arrival order, not `OccurredAt`: anything that depends on time — the recording's own state, the read models — orders by `OccurredAt`; a version only identifies an event.
+`PositionRecorded` and `ReadingsRecorded` carry `OccurredAt`, the time of the sample as sent by the telemetry daemon, and `RecordedAt`, when it was stored. Ordering is by `OccurredAt`; late arrival, e.g. a buffer sent after a device was offline, is normal. A recording's versions follow arrival order, not `OccurredAt`: anything that depends on time — the recording's own state, the read models — orders by `OccurredAt`; a version only identifies an event.
 
-The telemetry daemon states the clock source with each sample, since a device can lose GNSS and fall back to its own clock:
+The telemetry daemon sets `occurred_at` depending on the device's clock, since a device can lose GNSS and fall back to its own clock:
 
 | Clock source | `OccurredAt` |
 |---|---|
@@ -217,10 +273,14 @@ The telemetry daemon states the clock source with each sample, since a device ca
 
 The following applies to every sample:
 
-- Upper bound: `OccurredAt` may be at most the time ingest receives the sample, plus a small buffer for skewed clocks. Later values are replaced by the time ingest received the sample, with the original time kept in metadata.
-- No lower bound: the attachment check above also drops samples with a clock reset to 1970 or a week-number rollover.
-- Ingest counts, per source, the samples it drops — from before the attach, for an incident that is no longer open, too frequent — and the samples whose time it replaced, as OTel metrics, so a device whose samples are all dropped is visible outside the incident.
-- The discovery state shows each source's clock offset, `RecordedAt − OccurredAt`. A constant offset, especially in whole hours, indicates a misconfigured clock and is reported as an OTel metric with a `Warn` log and flagged in discovery; a shrinking one is a buffer being sent. sitrep never corrects offsets.
+- Upper bound: a sample whose `OccurredAt` is later than the time ingest receives it, plus a small buffer for skewed clocks, is dropped. Correcting such a time is up to the telemetry daemon, which may keep the original in `metadata`.
+- Lower bound: the attach. A sample from before it is not recorded, also one with a clock reset to 1970 or a week-number rollover.
+
+Detecting misconfigured device clocks, e.g. by a constant offset in whole hours, is up to the telemetry daemon.
+
+### Observability
+
+For each source, ingest counts the positions and readings it records and those it drops. Drops are counted per reason.
 
 ---
 
@@ -232,7 +292,7 @@ The following applies to every sample:
 | `ReadingHandler` | `readmodel.reading` — reading series for charts |
 | `SourceRegistryHandler` | `readmodel.telemetry_source` — registrations, channels, current attachment |
 
-In `readmodel.layer_features`, a linked `Feature` combines name and symbol from the `Feature`, the latest readings while readings are linked, and the position with the latest `OccurredAt` while the position is linked, together with that `OccurredAt`, so the map can show how old the position is.
+In `readmodel.layer_features`, a linked `Feature` combines name and icon from the `Feature`, the latest readings while readings are linked, and the position with the latest `OccurredAt` while the position is linked, together with that `OccurredAt`, so the map can show how old the position is.
 
 Reading series are per `Feature`: a reading belongs to the `Feature` linked at its `OccurredAt`, also if it arrives late. A source without a `Feature` has one series per recording. The read models show an enum reading with its state's label.
 
@@ -246,8 +306,8 @@ At about one position per minute, twenty vehicles cause one layer update every t
 
 | Action | Who |
 |---|---|
-| provision and de-provision devices, with their name, kind and default symbol, in the telemetry daemon | `system_admin`; the means are not decided yet |
-| see the full discovery state, with positions and clock offsets | `system_admin`; while attaching, whoever may attach |
+| provision and de-provision devices, with their name and icon, in the telemetry daemon | `system_admin`; the means are not decided yet |
+| see the full discovery state, with positions | `system_admin`; while attaching, whoever may attach |
 | attach, configure, detach | new incident action `telemetry.attach`: owner, manager, editor |
 | see recorded data | whoever may read the incident's layers |
 
@@ -290,7 +350,7 @@ Truck TLF 21 has a tracker with GNSS and a sensor for the water left in its tank
 
 ### Telemetry daemon
 
-A UI for provisioning devices in the telemetry daemon, ahead of an incident or during it, for an organisation's own devices and third-party sources. A catalogue of providers — MeteoSchweiz, aprs.fi, Flightradar24 — could make theirs available with little configuration.
+A UI for provisioning devices in the telemetry daemon, ahead of an incident or during it, for an organisation's own devices and third-party providers. A catalogue of providers — MeteoSchweiz, aprs.fi, Flightradar24 — could make theirs available with little configuration.
 
 A static clock offset per device, configured in the telemetry daemon, for devices whose clocks cannot be fixed.
 
@@ -312,6 +372,6 @@ A recording starts at attach, and sitrep keeps no history for unattached sources
 
 Discovery, the attach dialog, and where sources attached without a `Feature` are shown.
 
-Sources can also be attached through a Mittel. `Resource` is currently created inside an incident. Once Mittel can be created ahead of time, a Mittel can list its sources: alerting it into an incident attaches them with a default configuration, name and symbol, and `Relieved` detaches them. Manual attach remains for sources without a Mittel, such as a MeteoSchweiz weather station.
+Sources can also be attached through a Mittel. `Resource` is currently created inside an incident. Once Mittel can be created ahead of time, a Mittel can list its sources: alerting it into an incident attaches them with a default configuration, name and icon, and `Relieved` detaches them. Manual attach remains for sources without a Mittel, such as a MeteoSchweiz weather station.
 
 The Nachrichtenkarte shows the map at a past time from `readmodel.feature_change`, which holds `Feature` changes but no recorded positions. Showing where a source was at that time needs its positions over time.
