@@ -125,7 +125,7 @@
     "minimatch": "^10.2.5",
     "nanoid": "^6.0.1",
     "picomatch": "^4.0.4",
-    "serialize-javascript": "^7.0.5",
+    "serialize-javascript": "^7.1.4",
     "sharp": "^0.35.5",
     "tar": "^7.5.22",
     "vite": "^8.3.5"
