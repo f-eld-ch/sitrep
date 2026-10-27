@@ -1,3 +1,21 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/99designs/gqlgen from 0.17.95 to 0.17.98 ([#2024](https://github.com/f-eld-ch/sitrep/issues/2024)) - ([ca87358](https://github.com/f-eld-ch/sitrep/commit/ca87358efa06b344a5fa3cc1ac604133b607d2c1))
+- *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#2034](https://github.com/f-eld-ch/sitrep/issues/2034)) - ([ae3ed83](https://github.com/f-eld-ch/sitrep/commit/ae3ed832c7ac921159e03e25ab6a1c7da77ea6d8))
+- *(deps)* Bump react-i18next from 17.1.5 to 17.1.9 in /ui ([#2029](https://github.com/f-eld-ch/sitrep/issues/2029)) - ([9d178c4](https://github.com/f-eld-ch/sitrep/commit/9d178c45dbf2ef24630551a2b7b6b49ef3e66b9f))
+- *(deps)* Bump github.com/vektah/gqlparser/v2 from 2.5.63 to 2.5.64 ([#2022](https://github.com/f-eld-ch/sitrep/issues/2022)) - ([d498a58](https://github.com/f-eld-ch/sitrep/commit/d498a58a19c5a731e6dce6a74b3807f7695177bc))
+- *(deps)* Bump maplibre-gl from 6.15.0 to 6.16.0 in /ui ([#2028](https://github.com/f-eld-ch/sitrep/issues/2028)) - ([c86601f](https://github.com/f-eld-ch/sitrep/commit/c86601f6ca9d0c8daa4fc4d8f6f21b5a5984d12b))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.4.0 to 5.4.2 ([#2023](https://github.com/f-eld-ch/sitrep/issues/2023)) - ([1a4a523](https://github.com/f-eld-ch/sitrep/commit/1a4a523848d185652c02ed35f2fccd1245530632))
+- *(deps)* Bump modernc.org/sqlite from 1.60.1 to 1.61.0 ([#2025](https://github.com/f-eld-ch/sitrep/issues/2025)) - ([c227ada](https://github.com/f-eld-ch/sitrep/commit/c227adac0604bc8931c382f5f7731ee8011f4510))
+- *(deps)* Bump @uiw/react-md-editor from 4.1.3 to 4.1.5 in /ui ([#2030](https://github.com/f-eld-ch/sitrep/issues/2030)) - ([c0235aa](https://github.com/f-eld-ch/sitrep/commit/c0235aa987cd10944aeb9409d48ebc7e9964427f))
+- *(deps)* Bump i18next from 26.5.7 to 26.5.11 in /ui ([#2027](https://github.com/f-eld-ch/sitrep/issues/2027)) - ([d341a7e](https://github.com/f-eld-ch/sitrep/commit/d341a7e7475f13bbc8ca453929fd418ea7981d74))
+- *(deps)* Bump @uiw/react-md-editor from 4.1.2 to 4.1.3 in /ui ([#2012](https://github.com/f-eld-ch/sitrep/issues/2012)) - ([8079249](https://github.com/f-eld-ch/sitrep/commit/80792495691572dc88afe2aabec2570f5ca8eec0))
+- *(deps)* Bump react-i18next from 17.1.0 to 17.1.5 in /ui ([#2017](https://github.com/f-eld-ch/sitrep/issues/2017)) - ([c6210f4](https://github.com/f-eld-ch/sitrep/commit/c6210f49f3db160f9e49a8758df5544810d57dcd))
+- *(deps)* Bump i18next from 26.5.3 to 26.5.7 in /ui ([#2018](https://github.com/f-eld-ch/sitrep/issues/2018)) - ([683c847](https://github.com/f-eld-ch/sitrep/commit/683c84714e0aefa281f405a169b6f74fc8be55c8))
+
+
 ## [26.10.1](https://github.com/f-eld-ch/sitrep/compare/v26.10.0..v26.10.1) - 2026-10-21
 
 ### ⛰️  Features
