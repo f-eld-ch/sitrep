@@ -46,6 +46,8 @@ linters:
     - whitespace
     - wsl_v5
   exclusions:
+    paths:
+      - internal/adapter/inbound/graphql/generated
     rules:
       - path: internal/cli/otel.go
         linters:
@@ -171,6 +173,9 @@ formatters:
     - gci
     - gofumpt
     - golines
+  exclusions:
+    paths:
+      - internal/adapter/inbound/graphql/generated
   settings:
     golines:
       max-len: 120
