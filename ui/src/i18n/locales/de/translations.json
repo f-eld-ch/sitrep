@@ -459,7 +459,8 @@
       "relieve": "Ablösen",
       "dismiss": "Entlassen",
       "alert": "Aufbieten",
-      "reactivate": "Reaktivieren"
+      "reactivate": "Reaktivieren",
+      "addToMessage": "Zur Meldung hinzufügen"
     },
     "fields": {
       "name": "Name des Mittels",

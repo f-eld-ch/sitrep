@@ -460,7 +460,8 @@
       "relieve": "Relever",
       "dismiss": "Libérer",
       "alert": "Alerter",
-      "reactivate": "Réactiver"
+      "reactivate": "Réactiver",
+      "addToMessage": "Ajouter au message"
     },
     "fields": {
       "name": "Désignation",

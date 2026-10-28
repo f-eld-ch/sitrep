@@ -460,7 +460,8 @@
       "relieve": "Avvicendare",
       "dismiss": "Congedare",
       "alert": "Allertare",
-      "reactivate": "Riattivare"
+      "reactivate": "Riattivare",
+      "addToMessage": "Aggiungi al messaggio"
     },
     "fields": {
       "name": "Denominazione",

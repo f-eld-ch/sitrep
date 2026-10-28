@@ -459,7 +459,8 @@
       "relieve": "Relieve",
       "dismiss": "Dismiss",
       "alert": "Alert",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "addToMessage": "Add to message"
     },
     "fields": {
       "name": "Resource name",
