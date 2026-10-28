@@ -8,6 +8,7 @@ import {
   faClipboardCheck,
   faClipboardList,
   faClipboardQuestion,
+  faBook,
   faCodeBranch,
   faCog,
   faExplosion,
@@ -34,7 +35,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink, useParams } from "react-router";
 import { IncidentContext, UserContext } from "utils";
 import { useDarkMode } from "utils/useDarkMode";
-import { CURRENT_SHA, CURRENT_VERSION, changelogUrl } from "utils/version";
+import { CURRENT_SHA, CURRENT_VERSION, DOCUMENTATION_URL, buildChangelogUrl } from "utils/version";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false }) => {
@@ -405,9 +406,7 @@ function VersionNavBar() {
       <FontAwesomeIcon icon={faCodeBranch} />
       <span>
         <a
-          /* Deliberately the running build, not the deployed one: this element labels
-             the version the user is currently on. */
-          href={changelogUrl(CURRENT_SHA)}
+          href={buildChangelogUrl(CURRENT_VERSION, CURRENT_SHA)}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -443,6 +442,15 @@ function UserNavBar() {
           <DarkModeSwitcher />
           <LanguageSwitcher />
           <hr className="my-1 border-t border-border" />
+          <a
+            className="flex w-full items-center gap-2 px-4 py-2 hover:bg-bg-subtle"
+            href={DOCUMENTATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FontAwesomeIcon icon={faBook} />
+            <span>{t("documentation")}</span>
+          </a>
           {isAdmin && (
             <NavLink
               className={({ isActive }) =>
@@ -476,6 +484,15 @@ function UserNavBar() {
         </div>
         <DarkModeSwitcher />
         <LanguageSwitcher />
+        <a
+          className="flex items-center gap-2 px-3 py-2 hover:bg-bg-subtle"
+          href={DOCUMENTATION_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FontAwesomeIcon icon={faBook} />
+          <span>{t("documentation")}</span>
+        </a>
         {isAdmin && (
           <NavLink
             className="flex items-center gap-2 px-3 py-2 hover:bg-bg-subtle"

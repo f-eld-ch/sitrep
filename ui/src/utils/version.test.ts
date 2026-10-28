@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CURRENT_SHA, CURRENT_VERSION, changelogUrl, fetchDeployedVersion } from "./version";
+import {
+  CURRENT_SHA,
+  CURRENT_VERSION,
+  changelogUrl,
+  fetchDeployedVersion,
+  buildChangelogUrl,
+} from "./version";
 
 /**
  * `fetchDeployedVersion` runs while the update prompt is being rendered, so a throw would
@@ -98,5 +104,17 @@ describe("build-time constants", () => {
     // link rather than an obviously wrong one.
     expect(CURRENT_VERSION).not.toBe("");
     expect(CURRENT_SHA).not.toBe("");
+  });
+});
+
+describe("buildChangelogUrl", () => {
+  it("links a release to its entry on the published changelog", () => {
+    expect(buildChangelogUrl("v26.10.0", "abc1234")).toBe("https://sitrep.ch/changelog/#v26.10.0");
+  });
+
+  it("links a dev build to the changelog at its commit", () => {
+    for (const version of ["v26.10.0-64-g136b9bf0", "dev", "unknown"]) {
+      expect(buildChangelogUrl(version, "abc1234")).toBe(changelogUrl("abc1234"));
+    }
   });
 });

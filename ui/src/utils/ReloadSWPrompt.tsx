@@ -8,7 +8,7 @@ import { createSWChannel, now, type SWMessage } from "./swUpdateChannel";
 import {
   CURRENT_SHA,
   CURRENT_VERSION,
-  changelogUrl,
+  buildChangelogUrl,
   type DeployedVersion,
   fetchDeployedVersion,
 } from "./version";
@@ -174,7 +174,10 @@ export function ReloadPrompt() {
             <strong>{t("updateNotification")}</strong>
             <div className="mt-2">
               <a
-                href={changelogUrl(deployed?.sha ?? CURRENT_SHA)}
+                href={buildChangelogUrl(
+                  deployed?.version ?? CURRENT_VERSION,
+                  deployed?.sha ?? CURRENT_SHA,
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
               >

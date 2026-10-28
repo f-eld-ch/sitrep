@@ -234,6 +234,7 @@
   "write": "saisir",
   "updateNotification": "Une nouvelle version de l'application est disponible. Veuillez actualiser la page en cliquant sur le bouton Refresh.",
   "viewChangelog": "Afficher le journal des modifications",
+  "documentation": "Documentation",
   "reloadNow": "Recharger maintenant",
   "applyNextVisit": "Appliquer lors de la prochaine visite",
   "later": "Plus tard",
