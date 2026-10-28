@@ -1,4 +1,8 @@
-## [unreleased]
+## [26.10.2](https://github.com/f-eld-ch/sitrep/compare/v26.10.1..v26.10.2) - 2026-10-28
+
+### ⛰️  Features
+
+- *(ui)* Link changelog on sitrep.ch and add documentation menu item ([#2041](https://github.com/f-eld-ch/sitrep/issues/2041)) - ([253665c](https://github.com/f-eld-ch/sitrep/commit/253665c205bcf1bd87330e9dc6485353b92d5412))
 
 ### 🐛 Bug Fixes
 
@@ -7,6 +11,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump babs-icons packages from 0.7.0 to 0.8.0 in /ui ([#2042](https://github.com/f-eld-ch/sitrep/issues/2042)) - ([27c9ebc](https://github.com/f-eld-ch/sitrep/commit/27c9ebc1f599db1a9dc8d3af6575188f58e91241))
 - *(deps)* Bump github.com/samber/slog-multi from 1.8.0 to 1.9.0 ([#2036](https://github.com/f-eld-ch/sitrep/issues/2036)) - ([d2e6ba4](https://github.com/f-eld-ch/sitrep/commit/d2e6ba41fdfdb47c17319641f1b0a55bc11edba7))
 - *(deps)* Bump maplibre-gl from 6.15.0 to 6.16.0 in /ui ([#2038](https://github.com/f-eld-ch/sitrep/issues/2038)) - ([954f667](https://github.com/f-eld-ch/sitrep/commit/954f667bebe9c19571e099761d7a9c4412f35794))
 - *(deps)* Bump github.com/99designs/gqlgen from 0.17.95 to 0.17.98 ([#2024](https://github.com/f-eld-ch/sitrep/issues/2024)) - ([ca87358](https://github.com/f-eld-ch/sitrep/commit/ca87358efa06b344a5fa3cc1ac604133b607d2c1))
