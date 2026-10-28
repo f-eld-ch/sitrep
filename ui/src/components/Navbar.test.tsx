@@ -7,6 +7,17 @@ import Navbar from "./Navbar";
 
 const mockDispatch = vi.fn();
 
+// The build version comes from `git describe`, which is a release tag on a release commit and
+// something else everywhere else. Tests must not depend on that, so the version is fixed here.
+const build = vi.hoisted(() => ({ version: "v26.10.0" }));
+vi.mock("utils/version", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("utils/version")>()),
+  get CURRENT_VERSION() {
+    return build.version;
+  },
+  CURRENT_SHA: "abc1234",
+}));
+
 // Mock the useTranslation hook. LanguageSwitcher reads i18n off the same hook, so the
 // mock has to supply it or every render of the navbar throws.
 const mockChangeLanguage = vi.fn();
@@ -148,7 +159,7 @@ describe("Navbar Component", () => {
   });
 
   describe("Help links", () => {
-    it("links the version to its changelog and offers the user documentation", () => {
+    const renderNavbar = () =>
       render(
         <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
           <MemoryRouter initialEntries={["/"]}>
@@ -159,14 +170,35 @@ describe("Navbar Component", () => {
         </UserContext.Provider>,
       );
 
-      // Both the desktop dropdown and the mobile menu carry the entries.
+    it("offers the user documentation in the desktop dropdown and the mobile menu", () => {
+      renderNavbar();
+
       const docs = screen.getAllByRole("link", { name: "documentation" });
       expect(docs.length).toBeGreaterThan(0);
       for (const link of docs) {
         expect(link).toHaveAttribute("href", "https://sitrep.ch/docs/user/");
       }
-      // The test build is not a release, so the version links to the changelog at its commit.
-      expect(document.querySelector('a[href$="/CHANGELOG.md"]')).not.toBeNull();
+    });
+
+    it("links the version of a release to its entry on the changelog", () => {
+      build.version = "v26.10.0";
+      renderNavbar();
+
+      for (const link of screen.getAllByRole("link", { name: "v26.10.0" })) {
+        expect(link).toHaveAttribute("href", "https://sitrep.ch/changelog/#v26.10.0");
+      }
+    });
+
+    it("links a dev build to the changelog at its commit", () => {
+      build.version = "v26.10.0-64-g136b9bf0";
+      renderNavbar();
+
+      for (const link of screen.getAllByRole("link", { name: "v26.10.0-64-g136b9bf0" })) {
+        expect(link).toHaveAttribute(
+          "href",
+          "https://github.com/f-eld-ch/sitrep/blob/abc1234/CHANGELOG.md",
+        );
+      }
     });
   });
 
