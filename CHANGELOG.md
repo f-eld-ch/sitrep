@@ -6,6 +6,7 @@
 
 ### 🐛 Bug Fixes
 
+- *(ui)* Make Navbar version link test independent of the git tag ([#2043](https://github.com/f-eld-ch/sitrep/issues/2043)) - ([9a0bd1c](https://github.com/f-eld-ch/sitrep/commit/9a0bd1c28ec480a176d7ffb53ba99e0fef9a19b4))
 - *(ui)* Improve triage view ([#2039](https://github.com/f-eld-ch/sitrep/issues/2039)) - ([b8b5c64](https://github.com/f-eld-ch/sitrep/commit/b8b5c64f2aa0e202e49409724e722774ca40f914))
 - *(ui)* Upgrade dependencies and yarn ([#2035](https://github.com/f-eld-ch/sitrep/issues/2035)) - ([f807bc1](https://github.com/f-eld-ch/sitrep/commit/f807bc159152a0e795d4a6675bebe1bd57c238c5))
 
