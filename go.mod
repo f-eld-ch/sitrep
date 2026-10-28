@@ -12,7 +12,7 @@ require (
 	github.com/labstack/echo/v5 v5.4.2
 	github.com/pressly/goose/v3 v3.29.0
 	github.com/ravilushqa/otelgqlgen v0.19.0
-	github.com/samber/slog-multi v1.8.0
+	github.com/samber/slog-multi v1.9.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
