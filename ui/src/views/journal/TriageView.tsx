@@ -71,7 +71,7 @@ import { NewForm as TaskNew } from "../measures/tasks";
 const MessageEditorForm = lazy(() =>
   import("./Editor").then((m) => ({ default: m.MessageEditorForm })),
 );
-import { default as JournalMessage } from "./Message";
+import { default as JournalMessage, PrintSheetAction } from "./Message";
 
 import { buildMessageList } from "./listUtils";
 import { FilterableMessageStack } from "./FilterableMessageStack";
@@ -914,6 +914,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             </Button>
           )}
           <div className="flex-1" />
+          <PrintSheetAction asButton message={previewMessage} divisions={incidentDivisions} />
           {!isLast ? (
             <Button type="button" variant="primary" size="sm" onClick={() => void handleNext()}>
               {t("next")}

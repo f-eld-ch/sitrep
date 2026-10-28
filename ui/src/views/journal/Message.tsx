@@ -4,14 +4,16 @@ import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-function PrintSheetAction({
+export function PrintSheetAction({
   message,
   divisions,
   className,
+  asButton = false,
 }: {
   message: Message;
   divisions: Division[];
-  className: string;
+  className?: string;
+  asButton?: boolean;
 }) {
   const { t } = useTranslation();
   const [showForPrint, setShowForPrint] = useState(false);
@@ -31,15 +33,28 @@ function PrintSheetAction({
 
   return (
     <>
-      <button
-        type="button"
-        className={className}
-        data-testid="print-button"
-        onClick={() => setShowForPrint(true)}
-      >
-        <FontAwesomeIcon icon={faPrint} />
-        <span>{t("messageSheet")}</span>
-      </button>
+      {asButton ? (
+        <Button
+          type="button"
+          variant="light"
+          size="sm"
+          data-testid="print-button"
+          onClick={() => setShowForPrint(true)}
+        >
+          <FontAwesomeIcon icon={faPrint} />
+          <span>{t("messageSheet")}</span>
+        </Button>
+      ) : (
+        <button
+          type="button"
+          className={className}
+          data-testid="print-button"
+          onClick={() => setShowForPrint(true)}
+        >
+          <FontAwesomeIcon icon={faPrint} />
+          <span>{t("messageSheet")}</span>
+        </button>
+      )}
       {showForPrint && (
         <div className="hidden">
           <MessageSheet ref={sheetRef} message={message} divisions={divisions} />
@@ -51,7 +66,7 @@ function PrintSheetAction({
 import { useTranslation } from "react-i18next";
 import { useReactToPrint } from "react-to-print";
 import { type Attachment, type Division, type Message, PriorityStatus, TriageStatus } from "types";
-import { Tag } from "components/ui";
+import { Button, Tag } from "components/ui";
 import { divisionShortLabel } from "utils/divisionLabel";
 import type { TagVariant } from "components/ui";
 import { ReactPreview } from "./Markdown";
