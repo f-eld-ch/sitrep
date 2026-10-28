@@ -14,9 +14,26 @@ export const CURRENT_SHA: string = import.meta.env.VITE_SHA_VERSION || "main";
 
 const CHANGELOG_REPO = "f-eld-ch/sitrep";
 
+/** The published changelog, as shown to users. */
+export const CHANGELOG_URL = "https://sitrep.ch/changelog";
+
+/** The user documentation. */
+export const DOCUMENTATION_URL = "https://sitrep.ch/docs/user/";
+
 /** Link to CHANGELOG.md as of a given commit or ref. */
 export const changelogUrl = (sha: string): string =>
   `https://github.com/${CHANGELOG_REPO}/blob/${sha}/CHANGELOG.md`;
+
+/**
+ * Where to read what a build contains: the entry of a release on the published changelog, e.g.
+ * `https://sitrep.ch/changelog/#v26.10.0`.
+ *
+ * Only an exact release tag has an entry there. A dev build (`v26.10.0-64-g136b9bf0`, `dev`,
+ * `unknown`) links to CHANGELOG.md at its commit on GitHub instead, as unreleased changes are
+ * only listed there.
+ */
+export const buildChangelogUrl = (version: string, sha: string): string =>
+  /^v\d+\.\d+\.\d+$/.test(version) ? `${CHANGELOG_URL}/#${version}` : changelogUrl(sha);
 
 export interface DeployedVersion {
   version: string;

@@ -234,6 +234,7 @@
   "write": "write",
   "updateNotification": "A new version is available. Please refresh the page with the refresh button.",
   "viewChangelog": "Show changelog",
+  "documentation": "Documentation",
   "reloadNow": "Reload now",
   "applyNextVisit": "Use on your next visit",
   "later": "Later",

@@ -147,6 +147,29 @@ describe("Navbar Component", () => {
     });
   });
 
+  describe("Help links", () => {
+    it("links the version to its changelog and offers the user documentation", () => {
+      render(
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
+          <MemoryRouter initialEntries={["/"]}>
+            <Routes>
+              <Route path="/" element={<Navbar />} />
+            </Routes>
+          </MemoryRouter>
+        </UserContext.Provider>,
+      );
+
+      // Both the desktop dropdown and the mobile menu carry the entries.
+      const docs = screen.getAllByRole("link", { name: "documentation" });
+      expect(docs.length).toBeGreaterThan(0);
+      for (const link of docs) {
+        expect(link).toHaveAttribute("href", "https://sitrep.ch/docs/user/");
+      }
+      // The test build is not a release, so the version links to the changelog at its commit.
+      expect(document.querySelector('a[href$="/CHANGELOG.md"]')).not.toBeNull();
+    });
+  });
+
   describe("Dark Mode", () => {
     it("toggles dark mode when the button is clicked", () => {
       render(
