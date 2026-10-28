@@ -12,12 +12,12 @@ export type CasualtyCategory = {
 export const CASUALTY_CATEGORIES: CasualtyCategory[] = [
   { key: "verletzte", labelKey: "casualties.verletzte", babsId: "1301" },
   { key: "vermisste", labelKey: "casualties.vermisste", babsId: "1302" },
+  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
   {
     key: "eingeschlossene",
     labelKey: "casualties.eingeschlossene",
     babsId: "1304",
   },
-  { key: "obdachlose", labelKey: "casualties.obdachlose", babsId: "1303" },
   { key: "tote", labelKey: "casualties.tote", babsId: "1305" },
 ];
 

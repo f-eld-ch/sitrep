@@ -64,6 +64,11 @@
   },
   "noNewMessagesAbove": "No new messages",
   "triageCaughtUp": "All caught up!",
+  "triageSaved": "Triage saved",
+  "triageSavedHint": "Message no. {{number}} has been triaged.",
+  "triageNextPending": "Next pending message (no. {{number}})",
+  "triageAdjust": "Adjust",
+  "triagePendingCount": "{{count}} messages pending",
   "triageNoMessages": "No messages recorded yet",
   "triageNoMessagesHint": "No message has been created yet. Create messages in the editor and they will appear here for triage.",
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
@@ -240,6 +245,7 @@
     "selectLayer": "Select layer"
   },
   "layerControl": {
+    "messageMapHint": "Drawn through messages",
     "layers": "Layers",
     "currentIncidentLayers": "Current incident",
     "addLayer": "Add layer",
@@ -459,7 +465,8 @@
       "relieve": "Relieve",
       "dismiss": "Dismiss",
       "alert": "Alert",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "addToMessage": "Add to message"
     },
     "fields": {
       "name": "Resource name",

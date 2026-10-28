@@ -15,6 +15,7 @@ import reject from "lodash/reject";
 import union from "lodash/union";
 import {
   Fragment,
+  type ReactNode,
   Suspense,
   ViewTransition,
   lazy,
@@ -71,11 +72,11 @@ import { NewForm as TaskNew } from "../measures/tasks";
 const MessageEditorForm = lazy(() =>
   import("./Editor").then((m) => ({ default: m.MessageEditorForm })),
 );
-import { default as JournalMessage } from "./Message";
+import { default as JournalMessage, PrintSheetAction } from "./Message";
 
 import { buildMessageList } from "./listUtils";
 import { FilterableMessageStack } from "./FilterableMessageStack";
-import { TriageCanvas } from "./TriageCanvas";
+import { TriageCanvas, TriageSaved } from "./TriageCanvas";
 import { IncidentContext } from "utils";
 import { divisionLongLabel } from "utils/divisionLabel";
 import { useBabsIcons } from "components/babs/useBabsIcons";
@@ -379,6 +380,8 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const isTriaged =
     message.triageId !== TriageStatus.Pending && message.triageId !== TriageStatus.Reset;
   const [editing, setEditing] = useState(!isTriaged);
+  // The "new resource" form hides the list of existing resources while it is open.
+  const [alertOpen, setAlertOpen] = useState(false);
 
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
   // Named Schadenplätz selected in the dedicated Schadenplatz step. Default is never in this list.
@@ -679,7 +682,12 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
           <Stepper steps={steps} current={safeIndex} onChange={setStepIndex} />
 
           {/* Step content */}
-          <div className="flex-1 overflow-y-auto p-5">
+          <div
+            className={clsx(
+              "flex-1 overflow-y-auto p-5",
+              currentStep.key === "mittel" && "flex flex-col",
+            )}
+          >
             {(triageState.error ?? stepError) &&
               (() => {
                 const err = triageState.error ?? stepError!;
@@ -834,7 +842,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             )}
 
             {currentStep.key === "mittel" && (
-              <div className="space-y-3">
+              <div className="flex flex-1 flex-col gap-3">
                 {resourcesResult.status === "loading" ? (
                   <Spinner />
                 ) : (
@@ -854,35 +862,39 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
                       iconsLoaded={iconsLoaded}
                       messageTime={message.time}
                       prioritySpIds={selectedSpIds}
-                    />
-                    <AlertResourceForm
-                      incidentId={incidentId}
-                      schadenplaetze={effectiveSchadenplaetze}
-                      sourceMessageId={message.id}
-                      messageTime={message.time}
-                      iconsLoaded={iconsLoaded}
-                      existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
-                      relievedResources={relievedResources}
-                      onReactivate={reactivateAndSelect}
-                      onAlerted={(tempId) => {
-                        setSelectedResourceIds((prev) => new Set([...prev, tempId]));
-                      }}
-                      onReplaced={(tempId, realId) => {
-                        setSelectedResourceIds((prev) => {
-                          const next = new Set(prev);
-                          next.delete(tempId);
-                          next.add(realId);
-                          return next;
-                        });
-                      }}
-                      onCancelled={(tempId) => {
-                        setSelectedResourceIds((prev) => {
-                          const next = new Set(prev);
-                          next.delete(tempId);
-                          return next;
-                        });
-                      }}
-                    />
+                      hideAvailable={alertOpen}
+                    >
+                      <AlertResourceForm
+                        incidentId={incidentId}
+                        schadenplaetze={effectiveSchadenplaetze}
+                        sourceMessageId={message.id}
+                        messageTime={message.time}
+                        iconsLoaded={iconsLoaded}
+                        existingResources={schadenplaetze.flatMap((sp) => sp.resources)}
+                        relievedResources={relievedResources}
+                        onReactivate={reactivateAndSelect}
+                        open={alertOpen}
+                        onOpenChange={setAlertOpen}
+                        onAlerted={(tempId) => {
+                          setSelectedResourceIds((prev) => new Set([...prev, tempId]));
+                        }}
+                        onReplaced={(tempId, realId) => {
+                          setSelectedResourceIds((prev) => {
+                            const next = new Set(prev);
+                            next.delete(tempId);
+                            next.add(realId);
+                            return next;
+                          });
+                        }}
+                        onCancelled={(tempId) => {
+                          setSelectedResourceIds((prev) => {
+                            const next = new Set(prev);
+                            next.delete(tempId);
+                            return next;
+                          });
+                        }}
+                      />
+                    </ResourcePicker>
                   </>
                 )}
               </div>
@@ -914,6 +926,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             </Button>
           )}
           <div className="flex-1" />
+          <PrintSheetAction asButton message={previewMessage} divisions={incidentDivisions} />
           {!isLast ? (
             <Button type="button" variant="primary" size="sm" onClick={() => void handleNext()}>
               {t("next")}
@@ -959,6 +972,9 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   // ID of the most-recently saved message. Auto-lock skips this ID so the cache's
   // stale pending status doesn't immediately re-lock to the just-triaged message.
   const [justSavedId, setJustSavedId] = useState<string | undefined>(undefined);
+  // Message whose triage was just saved. While set, the canvas shows a confirmation and waits for
+  // the operator to choose the next step instead of jumping to the next message on its own.
+  const [savedId, setSavedId] = useState<string | undefined>(undefined);
 
   const result = useIncidentMessages(incidentId ?? "");
 
@@ -1018,22 +1034,24 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       }
       if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
       e.preventDefault();
-      const idx = messages.findIndex((m) => m.id === effectiveId);
+      const idx = messages.findIndex((m) => m.id === (savedId ?? effectiveId));
       const next = e.key === "ArrowUp" ? messages[idx - 1] : messages[idx + 1];
       if (!next) return;
       startTransition(() => {
         setCaughtUp(false);
+        setSavedId(undefined);
         setSelectedId(next.id);
       });
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [messages, effectiveId, startTransition]);
+  }, [messages, effectiveId, savedId, startTransition]);
 
   const handleSelect = useCallback(
     (id: string | undefined) => {
       startTransition(() => {
         setCaughtUp(false);
+        setSavedId(undefined);
         // On mobile: tapping the auto-locked row calls onSelect(undefined) because it
         // already appears selected. Treat that as an explicit selection so the panel opens.
         if (
@@ -1079,11 +1097,24 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     setJustSavedId(currentId);
     setAutoLockedId(undefined); // evict immediately so the stale cache can't keep it locked
     startTransition(() => {
-      const nextId = getNextUntriaged(currentId);
-      setSelectedId(nextId); // undefined → auto-selects new oldest pending via defaultId
-      setCaughtUp(nextId === undefined);
+      setSavedId(currentId);
+      setSelectedId(undefined);
+      setCaughtUp(getNextUntriaged(currentId) === undefined);
     });
   };
+
+  // Leave the confirmation for the next pending message (or the one just saved, to adjust it).
+  const goTo = (id: string | undefined) => {
+    startTransition(() => {
+      setSavedId(undefined);
+      setCaughtUp(id === undefined);
+      setSelectedId(id);
+    });
+  };
+
+  const savedMessage = savedId === undefined ? undefined : messages.find((m) => m.id === savedId);
+  const nextPendingId = savedId === undefined ? undefined : getNextUntriaged(savedId);
+  const nextPendingMessage = messages.find((m) => m.id === nextPendingId);
 
   const selectedMessage = messages.find((m) => m.id === effectiveId);
 
@@ -1092,25 +1123,29 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       {/* Stack: full-width on mobile when nothing selected, sidebar on desktop */}
       <FilterableMessageStack
         messages={messages}
-        effectiveId={effectiveId}
+        effectiveId={savedId ?? effectiveId}
         onSelect={handleSelect}
+        enabledFilters={{ mine: false }}
         initialFilters={{}}
         className={clsx(
           "shrink-0 lg:flex lg:w-[36rem]",
-          selectedId !== undefined ? "hidden" : "w-full",
+          selectedId !== undefined || savedId !== undefined ? "hidden" : "w-full",
         )}
       />
       {/* Triage canvas: full-width on mobile when selected, always visible on desktop */}
       <div
         className={clsx(
           "min-w-0 flex-1 flex-col overflow-hidden",
-          selectedId !== undefined ? "flex" : "hidden lg:flex",
+          selectedId !== undefined || savedId !== undefined ? "flex" : "hidden lg:flex",
         )}
       >
         <button
           type="button"
           className="flex shrink-0 items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-primary lg:hidden"
-          onClick={() => setSelectedId(undefined)}
+          onClick={() => {
+            setSavedId(undefined);
+            setSelectedId(undefined);
+          }}
         >
           <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
           {t("back")}
@@ -1119,7 +1154,41 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
           incidentClosed={incidentIsClosed}
           hasMessages={result.status !== "ready" || result.data.messages.length > 0}
         >
-          {selectedMessage && !caughtUp && (
+          {savedId !== undefined ? (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {/* Keep the saved message in view so the confirmation has its context */}
+              {savedMessage && (
+                <div className="max-h-[50%] shrink-0 overflow-y-auto px-5 pt-4 pb-3">
+                  <JournalMessage
+                    showControls={false}
+                    id={savedMessage.id}
+                    incidentId={incidentId ?? ""}
+                    message={savedMessage}
+                    divisions={incidentState.incident?.divisions ?? []}
+                    setEditorMessage={undefined}
+                    setTriageMessage={undefined}
+                  />
+                </div>
+              )}
+              <div className="flex min-h-0 flex-1 overflow-y-auto">
+                <TriageSaved
+                  messageNumber={savedMessage?.number ?? 0}
+                  nextNumber={nextPendingMessage?.number}
+                  pendingCount={pendingMessages.filter((m) => m.id !== savedId).length}
+                  onNext={() => goTo(nextPendingId)}
+                  onAdjust={() => goTo(savedId)}
+                >
+                  {savedMessage && (
+                    <PrintSheetAction
+                      asButton
+                      message={savedMessage}
+                      divisions={incidentState.incident?.divisions ?? []}
+                    />
+                  )}
+                </TriageSaved>
+              </div>
+            </div>
+          ) : selectedMessage && !caughtUp ? (
             <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
               <TriagePanel
                 message={selectedMessage}
@@ -1127,7 +1196,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
                 onSaved={() => handleSaved(selectedMessage.id)}
               />
             </ViewTransition>
-          )}
+          ) : undefined}
         </TriageCanvas>
       </div>
     </div>
@@ -1438,6 +1507,8 @@ function ResourcePicker({
   iconsLoaded,
   messageTime,
   prioritySpIds,
+  children,
+  hideAvailable = false,
 }: {
   schadenplaetze: SchadenplatzWithResources[];
   allResources: Resource[];
@@ -1449,6 +1520,10 @@ function ResourcePicker({
   iconsLoaded: boolean;
   messageTime: Date;
   prioritySpIds?: string[];
+  /** Rendered between the selected resources and the search/list of available resources. */
+  children?: ReactNode;
+  /** Hides the search and the lists of available / relieved resources (e.g. while alerting a new one). */
+  hideAvailable?: boolean;
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -1505,22 +1580,26 @@ function ResourcePicker({
   }, [allAnnotated, selectedIds, messageTime, prioritySpIds]);
 
   const q = search.trim().toLowerCase();
+  // Matches what the row shows: unit, name, damage site, and task / deployment location
+  // (as of the message time, as well as the current values).
+  const matchesQuery = useCallback(
+    (r: Resource & { _spName?: string }) => {
+      const snap = resourceStateAt(r, messageTime);
+      return [
+        qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name),
+        r.name,
+        r._spName,
+        r.hauptaufgabe,
+        r.deploymentLocation?.label,
+        snap.hauptaufgabe,
+        snap.deploymentLabel,
+      ].some((field) => field?.toLowerCase().includes(q));
+    },
+    [q, t, messageTime],
+  );
   const filteredAvailable = useMemo(
-    () =>
-      q
-        ? availableResources.filter((r) => {
-            const qf = qualifiedFormation(
-              t(`resource.formation.${r.formation}`),
-              r.homeLocation?.name,
-            ).toLowerCase();
-            return (
-              qf.includes(q) ||
-              r.name.toLowerCase().includes(q) ||
-              r._spName.toLowerCase().includes(q)
-            );
-          })
-        : availableResources,
-    [availableResources, q, t],
+    () => (q ? availableResources.filter(matchesQuery) : availableResources),
+    [availableResources, q, matchesQuery],
   );
 
   const visibleResources = filteredAvailable.slice(0, visibleCount);
@@ -1528,26 +1607,17 @@ function ResourcePicker({
 
   // Relieved units that can be reactivated; the search applies to them as well.
   const reactivatable = useMemo(
-    () =>
-      relievedResources.filter(
-        (r) =>
-          !selectedIds.has(r.id) &&
-          (!q ||
-            qualifiedFormation(t(`resource.formation.${r.formation}`), r.homeLocation?.name)
-              .toLowerCase()
-              .includes(q) ||
-            r.name.toLowerCase().includes(q)),
-      ),
-    [relievedResources, selectedIds, q, t],
+    () => relievedResources.filter((r) => !selectedIds.has(r.id) && (!q || matchesQuery(r))),
+    [relievedResources, selectedIds, q, matchesQuery],
   );
 
   const toggleEditing = (id: string) => setEditingId((prev) => (prev === id ? null : id));
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-1 flex-col gap-3">
       {/* Selected resources — compact summary with optional edit panel */}
       {selectedResources.length > 0 && (
-        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+        <div className="shrink-0 divide-y divide-border overflow-hidden rounded-lg border border-border">
           {selectedResources.map((r) => (
             <SelectedResourceRow
               key={r.id}
@@ -1565,91 +1635,98 @@ function ResourcePicker({
         </div>
       )}
 
+      {children}
+
       {/* Search to filter available resources */}
-      <input
-        type="search"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setVisibleCount(RESOURCE_PAGE_SIZE);
-        }}
-        placeholder={t("resource.search")}
-        className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-      />
+      {!hideAvailable && (
+        <>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setVisibleCount(RESOURCE_PAGE_SIZE);
+            }}
+            placeholder={t("resource.search")}
+            className="w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+          />
 
-      {/* Available resources list with pagination */}
-      {visibleResources.length > 0 ? (
-        <div className="space-y-0">
-          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-            {visibleResources.map((r) => (
-              <AvailableResourceRow
-                key={r.id}
-                resource={r}
-                currentSpName={r._spName}
-                onSelect={() => {
-                  onToggle(r.id);
-                  setSearch("");
-                  setVisibleCount(RESOURCE_PAGE_SIZE);
-                }}
-                iconsLoaded={iconsLoaded}
-                messageTime={messageTime}
-              />
-            ))}
-          </div>
-          {hasMore && (
-            <button
-              type="button"
-              onClick={() => setVisibleCount((n) => n + RESOURCE_PAGE_SIZE)}
-              className="mt-2 w-full rounded border border-border py-1.5 text-sm text-fg-muted hover:bg-bg-elevated"
-            >
-              {t("resource.showMore", {
-                count: Math.min(RESOURCE_PAGE_SIZE, filteredAvailable.length - visibleCount),
-              })}
-            </button>
-          )}
-        </div>
-      ) : q ? (
-        <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
-      ) : availableResources.length === 0 &&
-        selectedResources.length === 0 &&
-        relievedResources.length === 0 ? (
-        <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResources")}</p>
-      ) : null}
+          {/* Available resources list with pagination */}
+          {visibleResources.length > 0 ? (
+            <div className="flex flex-1 flex-col">
+              {/* Fills the remaining step height; scrolls internally so the footer stays visible */}
+              <div className="min-h-40 flex-1 divide-y divide-border overflow-y-auto rounded-lg border border-border">
+                {visibleResources.map((r) => (
+                  <AvailableResourceRow
+                    key={r.id}
+                    resource={r}
+                    currentSpName={r._spName}
+                    onSelect={() => {
+                      onToggle(r.id);
+                      setSearch("");
+                      setVisibleCount(RESOURCE_PAGE_SIZE);
+                    }}
+                    iconsLoaded={iconsLoaded}
+                    messageTime={messageTime}
+                  />
+                ))}
+              </div>
+              {hasMore && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((n) => n + RESOURCE_PAGE_SIZE)}
+                  className="mt-2 w-full shrink-0 rounded border border-border py-1.5 text-sm text-fg-muted hover:bg-bg-elevated"
+                >
+                  {t("resource.showMore", {
+                    count: Math.min(RESOURCE_PAGE_SIZE, filteredAvailable.length - visibleCount),
+                  })}
+                </button>
+              )}
+            </div>
+          ) : q ? (
+            <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResults")}</p>
+          ) : availableResources.length === 0 &&
+            selectedResources.length === 0 &&
+            relievedResources.length === 0 ? (
+            <p className="px-1 text-sm text-fg-muted italic">{t("resource.noResources")}</p>
+          ) : null}
 
-      {/* Relieved units can be put back into service, e.g. on the next day */}
-      {reactivatable.length > 0 && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowRelieved((open) => !open)}
-            aria-expanded={showRelieved || !!q}
-            className="flex w-full items-center gap-2 px-1 py-1 text-left text-sm text-fg-muted hover:text-fg"
-          >
-            <FontAwesomeIcon
-              icon={showRelieved || q ? faChevronDown : faChevronRight}
-              className="text-xs"
-            />
-            {t("resource.relievedSection")} ({reactivatable.length})
-          </button>
-          {(showRelieved || q) && (
-            <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-              {reactivatable.map((r) => (
-                <AvailableResourceRow
-                  key={r.id}
-                  resource={r}
-                  currentSpName=""
-                  onSelect={() => {
-                    onReactivate(r.id);
-                    setSearch("");
-                  }}
-                  actionLabel={t("resource.actions.reactivate")}
-                  iconsLoaded={iconsLoaded}
-                  messageTime={messageTime}
+          {/* Relieved units can be put back into service, e.g. on the next day */}
+          {reactivatable.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowRelieved((open) => !open)}
+                aria-expanded={showRelieved || !!q}
+                className="flex w-full items-center gap-2 px-1 py-1 text-left text-sm text-fg-muted hover:text-fg"
+              >
+                <FontAwesomeIcon
+                  icon={showRelieved || q ? faChevronDown : faChevronRight}
+                  className="text-xs"
                 />
-              ))}
+                {t("resource.relievedSection")} ({reactivatable.length})
+              </button>
+              {(showRelieved || q) && (
+                <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+                  {reactivatable.map((r) => (
+                    <AvailableResourceRow
+                      key={r.id}
+                      resource={r}
+                      currentSpName=""
+                      onSelect={() => {
+                        onReactivate(r.id);
+                        setSearch("");
+                      }}
+                      actionLabel={t("resource.actions.reactivate")}
+                      iconsLoaded={iconsLoaded}
+                      messageTime={messageTime}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
@@ -1805,7 +1882,9 @@ function AvailableResourceRow({
       {actionLabel ? (
         <span className="shrink-0 text-xs font-medium text-primary">{actionLabel}</span>
       ) : (
-        <FontAwesomeIcon icon={faPlus} className="shrink-0 text-sm text-primary/60" />
+        <span className="shrink-0" title={t("resource.actions.addToMessage")}>
+          <FontAwesomeIcon icon={faPlus} className="text-sm text-primary/60" />
+        </span>
       )}
     </button>
   );
@@ -2244,6 +2323,8 @@ function AlertResourceForm({
   existingResources,
   relievedResources,
   onReactivate,
+  open,
+  onOpenChange,
   onAlerted,
   onReplaced,
   onCancelled,
@@ -2257,6 +2338,9 @@ function AlertResourceForm({
   /** Relieved units; a match is offered for reactivation instead of creating a duplicate. */
   relievedResources: Resource[];
   onReactivate: (id: string) => void;
+  /** Whether the form is expanded; owned by the parent so it can hide the resource list meanwhile. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onAlerted?: (tempId: string) => void;
   onReplaced?: (tempId: string, realId: string) => void;
   onCancelled?: (tempId: string) => void;
@@ -2265,7 +2349,7 @@ function AlertResourceForm({
   const [alertResource, alertState] = useAlertResource();
 
   const defaultSp = schadenplaetze.find((sp) => sp.isDefault);
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
   const [formation, setFormation] = useState<ResourceFormation | null>(null);
   const [name, setName] = useState("");
   const [personnelCount, setPersonnelCount] = useState("");
@@ -2407,9 +2491,43 @@ function AlertResourceForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("resource.fields.namePlaceholder")}
-              className="mt-1 w-full rounded border border-border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:ring-primary focus:outline-none"
+              aria-invalid={identityConflict}
+              className={clsx(
+                "mt-1 w-full rounded border bg-bg-elevated px-2 py-1.5 text-sm font-normal focus:ring-1 focus:outline-none",
+                identityConflict
+                  ? "border-danger focus:ring-danger"
+                  : "border-border focus:ring-primary",
+              )}
             />
           </label>
+          {identityConflict && (
+            <div className="col-span-2 -mt-2 space-y-1" role="alert">
+              {activeConflict && (
+                <p className="text-xs text-danger">{t("resource.validation.duplicateIdentity")}</p>
+              )}
+              {!activeConflict && relievedMatch && (
+                <p className="flex flex-wrap items-center gap-2 text-xs text-danger">
+                  {t("resource.validation.relievedIdentity")}
+                  <Button
+                    type="button"
+                    variant="light"
+                    size="xs"
+                    onClick={() => {
+                      onReactivate(relievedMatch.id);
+                      setOpen(false);
+                      setFormation(null);
+                      setName("");
+                      setPersonnelCount("");
+                      setHauptaufgabe("");
+                      setHomeLocation("");
+                    }}
+                  >
+                    {t("resource.actions.reactivate")}
+                  </Button>
+                </p>
+              )}
+            </div>
+          )}
           <label className="text-xs font-semibold text-fg-muted">
             {t("resource.fields.personnelCount")}
             <input
@@ -2459,30 +2577,6 @@ function AlertResourceForm({
 
       {alertState.error && (
         <p className="text-xs text-danger">{t(`errors.${alertState.error.code}`)}</p>
-      )}
-      {activeConflict && (
-        <p className="text-xs text-danger">{t("resource.validation.duplicateIdentity")}</p>
-      )}
-      {!activeConflict && relievedMatch && (
-        <p className="flex flex-wrap items-center gap-2 text-xs text-danger">
-          {t("resource.validation.relievedIdentity")}
-          <Button
-            type="button"
-            variant="light"
-            size="xs"
-            onClick={() => {
-              onReactivate(relievedMatch.id);
-              setOpen(false);
-              setFormation(null);
-              setName("");
-              setPersonnelCount("");
-              setHauptaufgabe("");
-              setHomeLocation("");
-            }}
-          >
-            {t("resource.actions.reactivate")}
-          </Button>
-        </p>
       )}
 
       <div className="flex justify-end gap-2">

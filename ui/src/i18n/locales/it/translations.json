@@ -64,6 +64,11 @@
   },
   "noNewMessagesAbove": "Nessun nuovo messaggio",
   "triageCaughtUp": "Tutto triaggiato!",
+  "triageSaved": "Triage salvato",
+  "triageSavedHint": "Il messaggio n. {{number}} è stato valutato.",
+  "triageNextPending": "Prossimo messaggio in attesa (n. {{number}})",
+  "triageAdjust": "Modifica",
+  "triagePendingCount": "{{count}} messaggi in attesa",
   "triageNoMessages": "Ancora nessun messaggio registrato",
   "triageNoMessagesHint": "Nessun messaggio è ancora stato creato. Crea i messaggi nell’editor e appariranno qui per il triage.",
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",
@@ -240,6 +245,7 @@
     "selectLayer": "Selezionare il livello"
   },
   "layerControl": {
+    "messageMapHint": "Disegnato tramite i messaggi",
     "layers": "Livelli",
     "currentIncidentLayers": "Evento attuale",
     "addLayer": "Aggiungi livello",
@@ -460,7 +466,8 @@
       "relieve": "Avvicendare",
       "dismiss": "Congedare",
       "alert": "Allertare",
-      "reactivate": "Riattivare"
+      "reactivate": "Riattivare",
+      "addToMessage": "Aggiungi al messaggio"
     },
     "fields": {
       "name": "Denominazione",
