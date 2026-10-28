@@ -1,7 +1,14 @@
 ## [unreleased]
 
+### 🐛 Bug Fixes
+
+- *(ui)* Improve triage view ([#2039](https://github.com/f-eld-ch/sitrep/issues/2039)) - ([b8b5c64](https://github.com/f-eld-ch/sitrep/commit/b8b5c64f2aa0e202e49409724e722774ca40f914))
+- *(ui)* Upgrade dependencies and yarn ([#2035](https://github.com/f-eld-ch/sitrep/issues/2035)) - ([f807bc1](https://github.com/f-eld-ch/sitrep/commit/f807bc159152a0e795d4a6675bebe1bd57c238c5))
+
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/samber/slog-multi from 1.8.0 to 1.9.0 ([#2036](https://github.com/f-eld-ch/sitrep/issues/2036)) - ([d2e6ba4](https://github.com/f-eld-ch/sitrep/commit/d2e6ba41fdfdb47c17319641f1b0a55bc11edba7))
+- *(deps)* Bump maplibre-gl from 6.15.0 to 6.16.0 in /ui ([#2038](https://github.com/f-eld-ch/sitrep/issues/2038)) - ([954f667](https://github.com/f-eld-ch/sitrep/commit/954f667bebe9c19571e099761d7a9c4412f35794))
 - *(deps)* Bump github.com/99designs/gqlgen from 0.17.95 to 0.17.98 ([#2024](https://github.com/f-eld-ch/sitrep/issues/2024)) - ([ca87358](https://github.com/f-eld-ch/sitrep/commit/ca87358efa06b344a5fa3cc1ac604133b607d2c1))
 - *(deps)* Bump the npm_and_yarn group across 1 directory with 2 updates ([#2034](https://github.com/f-eld-ch/sitrep/issues/2034)) - ([ae3ed83](https://github.com/f-eld-ch/sitrep/commit/ae3ed832c7ac921159e03e25ab6a1c7da77ea6d8))
 - *(deps)* Bump react-i18next from 17.1.5 to 17.1.9 in /ui ([#2029](https://github.com/f-eld-ch/sitrep/issues/2029)) - ([9d178c4](https://github.com/f-eld-ch/sitrep/commit/9d178c45dbf2ef24630551a2b7b6b49ef3e66b9f))
@@ -14,6 +21,10 @@
 - *(deps)* Bump @uiw/react-md-editor from 4.1.2 to 4.1.3 in /ui ([#2012](https://github.com/f-eld-ch/sitrep/issues/2012)) - ([8079249](https://github.com/f-eld-ch/sitrep/commit/80792495691572dc88afe2aabec2570f5ca8eec0))
 - *(deps)* Bump react-i18next from 17.1.0 to 17.1.5 in /ui ([#2017](https://github.com/f-eld-ch/sitrep/issues/2017)) - ([c6210f4](https://github.com/f-eld-ch/sitrep/commit/c6210f49f3db160f9e49a8758df5544810d57dcd))
 - *(deps)* Bump i18next from 26.5.3 to 26.5.7 in /ui ([#2018](https://github.com/f-eld-ch/sitrep/issues/2018)) - ([683c847](https://github.com/f-eld-ch/sitrep/commit/683c84714e0aefa281f405a169b6f74fc8be55c8))
+
+### Security
+
+- *(ui)* Fix dependency alerts and drop obsolete resolutions ([#2040](https://github.com/f-eld-ch/sitrep/issues/2040)) - ([5e861b3](https://github.com/f-eld-ch/sitrep/commit/5e861b3cb2cef385ec3c469155cd979632a232c8))
 
 
 ## [26.10.1](https://github.com/f-eld-ch/sitrep/compare/v26.10.0..v26.10.1) - 2026-10-21
