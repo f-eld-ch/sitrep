@@ -111,24 +111,7 @@
     "vitest": "^5.0.5"
   },
   "resolutions": {
-    "@maplibre/maplibre-gl-style-spec": "^26.4.4",
-    "brace-expansion": "^5.0.12",
-    "browserslist": "^4.28.8",
-    "dompurify": "^3.4.17",
-    "glob": "^13.0.6",
-    "handlebars": "^4.7.9",
-    "http-proxy-agent": "^9.0.0",
-    "js-yaml": "^4.3.2",
-    "jspdf": "^4.2.1",
-    "lodash": "^4.18.1",
-    "maplibre-gl": "^6.3.0",
-    "minimatch": "^10.2.5",
-    "nanoid": "^6.0.1",
-    "picomatch": "^4.0.4",
-    "serialize-javascript": "^7.1.4",
-    "sharp": "^0.35.5",
-    "tar": "^7.5.22",
-    "vite": "^8.3.5"
+    "glob": "^13.0.6"
   },
   "browserslist": {
     "production": [
