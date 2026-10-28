@@ -76,7 +76,7 @@ import { default as JournalMessage, PrintSheetAction } from "./Message";
 
 import { buildMessageList } from "./listUtils";
 import { FilterableMessageStack } from "./FilterableMessageStack";
-import { TriageCanvas } from "./TriageCanvas";
+import { TriageCanvas, TriageSaved } from "./TriageCanvas";
 import { IncidentContext } from "utils";
 import { divisionLongLabel } from "utils/divisionLabel";
 import { useBabsIcons } from "components/babs/useBabsIcons";
@@ -972,6 +972,9 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
   // ID of the most-recently saved message. Auto-lock skips this ID so the cache's
   // stale pending status doesn't immediately re-lock to the just-triaged message.
   const [justSavedId, setJustSavedId] = useState<string | undefined>(undefined);
+  // Message whose triage was just saved. While set, the canvas shows a confirmation and waits for
+  // the operator to choose the next step instead of jumping to the next message on its own.
+  const [savedId, setSavedId] = useState<string | undefined>(undefined);
 
   const result = useIncidentMessages(incidentId ?? "");
 
@@ -1031,22 +1034,24 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       }
       if (!e.ctrlKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
       e.preventDefault();
-      const idx = messages.findIndex((m) => m.id === effectiveId);
+      const idx = messages.findIndex((m) => m.id === (savedId ?? effectiveId));
       const next = e.key === "ArrowUp" ? messages[idx - 1] : messages[idx + 1];
       if (!next) return;
       startTransition(() => {
         setCaughtUp(false);
+        setSavedId(undefined);
         setSelectedId(next.id);
       });
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [messages, effectiveId, startTransition]);
+  }, [messages, effectiveId, savedId, startTransition]);
 
   const handleSelect = useCallback(
     (id: string | undefined) => {
       startTransition(() => {
         setCaughtUp(false);
+        setSavedId(undefined);
         // On mobile: tapping the auto-locked row calls onSelect(undefined) because it
         // already appears selected. Treat that as an explicit selection so the panel opens.
         if (
@@ -1092,11 +1097,24 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
     setJustSavedId(currentId);
     setAutoLockedId(undefined); // evict immediately so the stale cache can't keep it locked
     startTransition(() => {
-      const nextId = getNextUntriaged(currentId);
-      setSelectedId(nextId); // undefined → auto-selects new oldest pending via defaultId
-      setCaughtUp(nextId === undefined);
+      setSavedId(currentId);
+      setSelectedId(undefined);
+      setCaughtUp(getNextUntriaged(currentId) === undefined);
     });
   };
+
+  // Leave the confirmation for the next pending message (or the one just saved, to adjust it).
+  const goTo = (id: string | undefined) => {
+    startTransition(() => {
+      setSavedId(undefined);
+      setCaughtUp(id === undefined);
+      setSelectedId(id);
+    });
+  };
+
+  const savedMessage = savedId === undefined ? undefined : messages.find((m) => m.id === savedId);
+  const nextPendingId = savedId === undefined ? undefined : getNextUntriaged(savedId);
+  const nextPendingMessage = messages.find((m) => m.id === nextPendingId);
 
   const selectedMessage = messages.find((m) => m.id === effectiveId);
 
@@ -1105,25 +1123,29 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
       {/* Stack: full-width on mobile when nothing selected, sidebar on desktop */}
       <FilterableMessageStack
         messages={messages}
-        effectiveId={effectiveId}
+        effectiveId={savedId ?? effectiveId}
         onSelect={handleSelect}
+        enabledFilters={{ mine: false }}
         initialFilters={{}}
         className={clsx(
           "shrink-0 lg:flex lg:w-[36rem]",
-          selectedId !== undefined ? "hidden" : "w-full",
+          selectedId !== undefined || savedId !== undefined ? "hidden" : "w-full",
         )}
       />
       {/* Triage canvas: full-width on mobile when selected, always visible on desktop */}
       <div
         className={clsx(
           "min-w-0 flex-1 flex-col overflow-hidden",
-          selectedId !== undefined ? "flex" : "hidden lg:flex",
+          selectedId !== undefined || savedId !== undefined ? "flex" : "hidden lg:flex",
         )}
       >
         <button
           type="button"
           className="flex shrink-0 items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-primary lg:hidden"
-          onClick={() => setSelectedId(undefined)}
+          onClick={() => {
+            setSavedId(undefined);
+            setSelectedId(undefined);
+          }}
         >
           <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
           {t("back")}
@@ -1132,7 +1154,41 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
           incidentClosed={incidentIsClosed}
           hasMessages={result.status !== "ready" || result.data.messages.length > 0}
         >
-          {selectedMessage && !caughtUp && (
+          {savedId !== undefined ? (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {/* Keep the saved message in view so the confirmation has its context */}
+              {savedMessage && (
+                <div className="max-h-[50%] shrink-0 overflow-y-auto px-5 pt-4 pb-3">
+                  <JournalMessage
+                    showControls={false}
+                    id={savedMessage.id}
+                    incidentId={incidentId ?? ""}
+                    message={savedMessage}
+                    divisions={incidentState.incident?.divisions ?? []}
+                    setEditorMessage={undefined}
+                    setTriageMessage={undefined}
+                  />
+                </div>
+              )}
+              <div className="flex min-h-0 flex-1 overflow-y-auto">
+                <TriageSaved
+                  messageNumber={savedMessage?.number ?? 0}
+                  nextNumber={nextPendingMessage?.number}
+                  pendingCount={pendingMessages.filter((m) => m.id !== savedId).length}
+                  onNext={() => goTo(nextPendingId)}
+                  onAdjust={() => goTo(savedId)}
+                >
+                  {savedMessage && (
+                    <PrintSheetAction
+                      asButton
+                      message={savedMessage}
+                      divisions={incidentState.incident?.divisions ?? []}
+                    />
+                  )}
+                </TriageSaved>
+              </div>
+            </div>
+          ) : selectedMessage && !caughtUp ? (
             <ViewTransition key={selectedMessage.id} enter="auto" exit="auto">
               <TriagePanel
                 message={selectedMessage}
@@ -1140,7 +1196,7 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
                 onSaved={() => handleSaved(selectedMessage.id)}
               />
             </ViewTransition>
-          )}
+          ) : undefined}
         </TriageCanvas>
       </div>
     </div>

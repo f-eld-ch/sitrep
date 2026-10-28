@@ -5,7 +5,7 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { Button, EmptyState, PageTitle } from "components/ui";
@@ -112,6 +112,75 @@ function NoMessages() {
             <FontAwesomeIcon icon={faFilePen} />
             <span>{t("editor")}</span>
           </Button>
+        )}
+      </EmptyState>
+    </div>
+  );
+}
+
+export interface TriageSavedProps {
+  /** Number of the message that was just triaged. */
+  messageNumber: number;
+  /** Number of the next pending message; undefined when nothing is left to triage. */
+  nextNumber?: number;
+  /** How many messages are still pending. */
+  pendingCount: number;
+  onNext: () => void;
+  onAdjust: () => void;
+  /** Further actions, e.g. printing the message sheet. */
+  children?: React.ReactNode;
+}
+
+/** Shown after a triage was saved, until the operator chooses how to go on. */
+export function TriageSaved({
+  messageNumber,
+  nextNumber,
+  pendingCount,
+  onNext,
+  onAdjust,
+  children,
+}: TriageSavedProps) {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (nextNumber === undefined) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" || e.repeat) return;
+      // Plain Enter on a focused button or field belongs to that element; Ctrl+Enter always advances.
+      const target = e.target as HTMLElement | null;
+      if (!e.ctrlKey && target?.closest("button, a, input, textarea, select")) return;
+      e.preventDefault();
+      onNext();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [nextNumber, onNext]);
+
+  return (
+    <div className="flex flex-1 items-center justify-center p-4">
+      <EmptyState
+        className="w-full max-w-lg"
+        icon={faCheckCircle}
+        title={t("triageSaved")}
+        hint={t("triageSavedHint", { number: messageNumber })}
+      >
+        {nextNumber !== undefined ? (
+          <Button type="button" variant="primary" onClick={onNext}>
+            {t("triageNextPending", { number: nextNumber })}
+          </Button>
+        ) : (
+          <p className="font-bold text-success">{t("triageCaughtUp")}</p>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button type="button" variant="light" size="sm" onClick={onAdjust}>
+            {t("triageAdjust")}
+          </Button>
+          {children}
+        </div>
+        {pendingCount > 0 && (
+          <p className="text-xs text-fg-muted">
+            {t("triagePendingCount", { count: pendingCount })}
+          </p>
         )}
       </EmptyState>
     </div>
