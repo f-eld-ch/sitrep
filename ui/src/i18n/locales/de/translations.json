@@ -245,6 +245,7 @@
     "selectLayer": "Layer auswählen"
   },
   "layerControl": {
+    "messageMapHint": "Wird über Meldungen gezeichnet",
     "layers": "Layer",
     "currentIncidentLayers": "Aktuelles Ereignis",
     "addLayer": "Layer hinzufügen",

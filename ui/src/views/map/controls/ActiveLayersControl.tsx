@@ -3,19 +3,22 @@ import {
   faEdit,
   faEye,
   faEyeSlash,
+  faClipboardList,
   faObjectGroup,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type React from "react";
 import { useContext, useState } from "react";
+import { useMap } from "react-map-gl/maplibre";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import { useAddLayer } from "api";
+import { layerToFeatureCollection, useAddLayer } from "api";
 import { Button } from "components/ui";
 import type { Layer } from "types/layer";
 import { layerLabel } from "utils/divisionLabel";
 import { LayerContext, type DrawingLayerState } from "../LayerContext";
+import { FIT_MAX_ZOOM, featureBounds } from "../framing";
 import { MapTimeContext } from "../MapTimeContext";
 
 interface LayerGroup {
@@ -50,6 +53,16 @@ export function groupLayersForControl(
   return groups;
 }
 
+/**
+ * The Nachrichtenkarte is filled by drawing for messages, never by editing the layer itself, so
+ * it keeps its own icon in every state.
+ */
+export function layerIcon(layer: Layer, isInherited: boolean, activeLayerId: string | undefined) {
+  if (layer.kind === "MESSAGE_MAP") return faClipboardList;
+  if (isInherited) return faObjectGroup;
+  return activeLayerId === layer.id ? faEdit : faDrawPolygon;
+}
+
 export function hasOwnLayerGroup(groups: LayerGroup[]): boolean {
   return groups.some((group) => !group.isInherited);
 }
@@ -62,12 +75,27 @@ const ActiveLayersControl: React.FC = () => {
   const { incidentId } = useParams();
   const { t } = useTranslation();
   const { drawingMessage } = useContext(MapTimeContext);
+  const { current: map } = useMap();
 
   // The message map layer is only drawn on for a message, and a message only draws on it.
   const canActivate = (layer: Layer) =>
     (layer.kind === "MESSAGE_MAP") === (drawingMessage !== undefined);
 
+  // Picking a layer always shows where its features are, also one that cannot be made active
+  // (the Nachrichtenkarte outside of drawing for a message) or that is already active.
+  const frameLayer = (layer: Layer) => {
+    const bounds = featureBounds(layerToFeatureCollection(layer));
+    if (map === undefined || bounds === undefined) return;
+
+    map.fitBounds(bounds, {
+      animate: true,
+      maxZoom: FIT_MAX_ZOOM,
+      padding: { top: 40, bottom: 40, left: 40, right: 40 },
+    });
+  };
+
   const handleLayerClick = (layer: Layer) => {
+    frameLayer(layer);
     if (!canActivate(layer)) return;
     dispatch({ type: "SET_ACTIVE_LAYER", payload: { layerId: layer.id } });
   };
@@ -144,15 +172,14 @@ const ActiveLayersControl: React.FC = () => {
                 <div
                   className={`mr-3 flex flex-1 items-center ${state.activeLayer === s.layer.id ? "font-bold" : ""}`}
                 >
-                  <span className="mr-3 inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center">
+                  <span
+                    className="mr-3 inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center"
+                    title={
+                      s.layer.kind === "MESSAGE_MAP" ? t("layerControl.messageMapHint") : undefined
+                    }
+                  >
                     <FontAwesomeIcon
-                      icon={
-                        isInherited
-                          ? faObjectGroup
-                          : state.activeLayer === s.layer.id
-                            ? faEdit
-                            : faDrawPolygon
-                      }
+                      icon={layerIcon(s.layer, isInherited, state.activeLayer)}
                       size="lg"
                     />
                   </span>

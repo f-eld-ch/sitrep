@@ -245,6 +245,7 @@
     "selectLayer": "Selezionare il livello"
   },
   "layerControl": {
+    "messageMapHint": "Disegnato tramite i messaggi",
     "layers": "Livelli",
     "currentIncidentLayers": "Evento attuale",
     "addLayer": "Aggiungi livello",

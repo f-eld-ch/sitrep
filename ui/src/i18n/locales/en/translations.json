@@ -245,6 +245,7 @@
     "selectLayer": "Select layer"
   },
   "layerControl": {
+    "messageMapHint": "Drawn through messages",
     "layers": "Layers",
     "currentIncidentLayers": "Current incident",
     "addLayer": "Add layer",

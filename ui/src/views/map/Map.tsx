@@ -48,7 +48,7 @@ import { MapStyleProvider, StyleController, useMapStyle } from "./controls/Style
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
 import { isPendingFeature, withPendingFeatures } from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
-import { framingCollection } from "./framing";
+import { FIT_MAX_ZOOM, framingCollection } from "./framing";
 import { clickableLayerIds } from "./controls/clickableLayers";
 import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
@@ -417,9 +417,6 @@ function nextReadOnlyLayerID(layers: Layer[], activeLayerID: string | undefined)
 
   return layers[nextIndex].id;
 }
-
-/** Not closer than this when framing a layer: a lone icon keeps its surroundings. */
-const FIT_MAX_ZOOM = 16;
 
 /** For maps nobody edits live: the operator drawing for a message, and the read-only dashboard map. */
 const SLOW_POLL_INTERVAL_MS = 10_000;

@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Layer } from "types/layer";
 import type { DrawingLayerState } from "../LayerContext";
-import { groupLayersForControl, hasOwnLayerGroup } from "./ActiveLayersControl";
+import {
+  faDrawPolygon,
+  faEdit,
+  faClipboardList,
+  faObjectGroup,
+} from "@fortawesome/free-solid-svg-icons";
+import { groupLayersForControl, hasOwnLayerGroup, layerIcon } from "./ActiveLayersControl";
 
 function layerState(
   id: string,
@@ -58,5 +64,22 @@ describe("hasOwnLayerGroup", () => {
     );
 
     expect(hasOwnLayerGroup(groups)).toBe(false);
+  });
+});
+
+describe("layerIcon", () => {
+  const standard = layerState("a", "inc-1", "One").layer;
+  const messageMap: Layer = { ...standard, id: "m", kind: "MESSAGE_MAP" };
+
+  it("marks the Nachrichtenkarte with its own icon, active or not, own or inherited", () => {
+    expect(layerIcon(messageMap, false, undefined)).toBe(faClipboardList);
+    expect(layerIcon(messageMap, false, "m")).toBe(faClipboardList);
+    expect(layerIcon(messageMap, true, undefined)).toBe(faClipboardList);
+  });
+
+  it("keeps the usual icons for other layers", () => {
+    expect(layerIcon(standard, false, undefined)).toBe(faDrawPolygon);
+    expect(layerIcon(standard, false, "a")).toBe(faEdit);
+    expect(layerIcon(standard, true, "a")).toBe(faObjectGroup);
   });
 });

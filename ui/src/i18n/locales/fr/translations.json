@@ -245,6 +245,7 @@
     "selectLayer": "Sélectionner une calque"
   },
   "layerControl": {
+    "messageMapHint": "Dessiné via les messages",
     "layers": "Calques",
     "currentIncidentLayers": "Événement actuel",
     "addLayer": "Ajouter un calque",
