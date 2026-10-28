@@ -9737,13 +9737,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tailwindcss@npm:^1.16.0":
-  version: 1.16.0
-  resolution: "oxlint-tailwindcss@npm:1.16.0"
+"oxlint-tailwindcss@npm:^1.17.0":
+  version: 1.17.0
+  resolution: "oxlint-tailwindcss@npm:1.17.0"
   dependencies:
     "@tailwindcss/node": "npm:^4.3.3"
     tailwindcss: "npm:^4.3.3"
-  checksum: 10/b1ae2032663caa01067d97f9014dacd43155467a0c2aabc290e4a6f44f86b58ab3b68cbda899ea2dbba202a52cca829418392dc83ea189f8212cfdfb65154723
+  checksum: 10/b536fce1839162651ba59e81c1445c032739052603fb57f9a4987536a91af1e55e153c505c78e2e5d12e94b450a982dfec6ef5c36b3461ce7c8db6d57d61f117
   languageName: node
   linkType: hard
 
@@ -11332,7 +11332,7 @@ __metadata:
     ol: "npm:^10.11.0"
     oxfmt: "npm:^0.75.0"
     oxlint: "npm:^1.90.0"
-    oxlint-tailwindcss: "npm:^1.16.0"
+    oxlint-tailwindcss: "npm:^1.17.0"
     oxlint-tsgolint: "npm:^7.0.2005"
     proj4: "npm:^2.22.0"
     react: "npm:^19.3.1"
