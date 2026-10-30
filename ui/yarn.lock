@@ -7422,12 +7422,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-browser-languagedetector@npm:^8.2.3":
-  version: 8.2.3
-  resolution: "i18next-browser-languagedetector@npm:8.2.3"
+"i18next-browser-languagedetector@npm:^8.2.4":
+  version: 8.2.4
+  resolution: "i18next-browser-languagedetector@npm:8.2.4"
   dependencies:
     "@babel/runtime": "npm:^7.29.2"
-  checksum: 10/02cb7f3a1d075230d9fd8403cea7d3c7a3c2918128355d18104a083bbde0734d1b340be44d0e81e74f1cf6e7e89e8a051137aba590c534555985593d9079d37f
+  checksum: 10/43ba08ca6ece8af78f96b278927503f843084b0866aa8a96f712a693a0e087a7f80f2ad3bae79240722c8a2724f0bfba7a6abd710d481babfc61da5307b867f0
   languageName: node
   linkType: hard
 
@@ -11337,7 +11337,7 @@ __metadata:
     graphql: "npm:^17.0.2"
     html-react-parser: "npm:^6.1.9"
     i18next: "npm:^26.5.11"
-    i18next-browser-languagedetector: "npm:^8.2.3"
+    i18next-browser-languagedetector: "npm:^8.2.4"
     jsdom: "npm:^30.1.3"
     lodash: "npm:^4.18.1"
     maplibre-gl: "npm:6.16.0"
