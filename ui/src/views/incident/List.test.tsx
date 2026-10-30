@@ -1,7 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import type { Incident } from "../../types";
 import { IncidentCard, IncidentCards } from "./List";
+
+const mockFlag = vi.hoisted(() => ({ review: false }));
+vi.mock("@openfeature/react-sdk", () => ({
+  useBooleanFlagValue: (key: string) => key === "incident-review" && mockFlag.review,
+}));
 
 const mockNavigate = vi.fn();
 vi.mock("react-router", () => ({
@@ -110,28 +115,44 @@ describe("IncidentCard", () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 
-  it("links the review of a closed incident, and only of a closed one", () => {
-    const { unmount } = render(
-      <IncidentCard
-        incident={{ ...baseIncident, closedAt: new Date() }}
-        closeIncident={mockCloseIncident}
-        reopenIncident={mockReopenIncident}
-        deleteIncident={mockDeleteIncident}
-      />,
-    );
-    fireEvent.click(screen.getByTestId("review-button"));
-    expect(mockNavigate).toHaveBeenLastCalledWith(`../${baseIncident.id}/review`);
-    unmount();
+  describe("review link", () => {
+    const renderCard = (closedAt: Date | null) =>
+      render(
+        <IncidentCard
+          incident={{ ...baseIncident, closedAt }}
+          closeIncident={mockCloseIncident}
+          reopenIncident={mockReopenIncident}
+          deleteIncident={mockDeleteIncident}
+        />,
+      );
 
-    render(
-      <IncidentCard
-        incident={{ ...baseIncident, closedAt: null }}
-        closeIncident={mockCloseIncident}
-        reopenIncident={mockReopenIncident}
-        deleteIncident={mockDeleteIncident}
-      />,
-    );
-    expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
+    afterEach(() => {
+      mockFlag.review = false;
+    });
+
+    it("links the review of a closed incident, with the flag", () => {
+      mockFlag.review = true;
+      renderCard(new Date());
+
+      fireEvent.click(screen.getByTestId("review-button"));
+      expect(mockNavigate).toHaveBeenLastCalledWith(`../${baseIncident.id}/review`);
+    });
+
+    it("has none for an open incident, flag or not", () => {
+      mockFlag.review = true;
+      renderCard(null);
+
+      expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
+    });
+
+    it("is hidden without the flag, also for a closed incident", () => {
+      mockFlag.review = false;
+      renderCard(new Date());
+
+      expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
+      // The other actions of a closed incident are not affected.
+      expect(screen.getByTestId("open-button")).toBeInTheDocument();
+    });
   });
 
   it("calls navigate when edit button is clicked", () => {

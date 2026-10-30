@@ -37,6 +37,19 @@ flags:
       - segment:
           key: earlyadopter
           value: true
+  # flag for rolling out the review (Auswertung) of an incident, remove within 3 months after it is integrated
+  - key: incident-review
+    name: Incident Review
+    type: BOOLEAN_FLAG_TYPE
+    description: Show the review (Auswertung) of an incident's messages and the comparison with other incidents, in the incident menu and the incident list
+    enabled: false
+    rollouts:
+      - segment:
+          key: Development
+          value: true
+      - segment:
+          key: earlyadopter
+          value: true
   # nimdanitro: flag for indicating that it is a sitrep managed instances
   - key: is-sitrep-managed
     name: Sitrep Managed

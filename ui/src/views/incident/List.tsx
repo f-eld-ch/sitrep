@@ -12,6 +12,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import { Spinner } from "components";
 import { Button, Notification, PageTitle, Tag } from "components/ui";
@@ -185,6 +186,8 @@ export function IncidentCard(props: {
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
+  // The review of an incident is being rolled out; remove the flag once it is released to everyone.
+  const showReview = useBooleanFlagValue("incident-review", false);
 
   const cardClass = clsx(
     "mb-3 rounded border border-border shadow-md dark:border-white/10 dark:shadow-[0_4px_20px_rgba(0,0,0,0.5)]",
@@ -247,7 +250,7 @@ export function IncidentCard(props: {
             <FontAwesomeIcon icon={faArrowRightFromBracket} />
             <span>{t("enter")}</span>
           </button>
-          {incident.closedAt !== null && (
+          {showReview && incident.closedAt !== null && (
             <button
               type="button"
               data-testid="review-button"

@@ -48,6 +48,8 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
   const showResources = useBooleanFlagValue("show-resources", false);
   const showTasks = useBooleanFlagValue("show-tasks", false);
   const showNewTriageView = useBooleanFlagValue("new-triage-view", false);
+  // The review of an incident is being rolled out; remove the flag once it is released to everyone.
+  const showReview = useBooleanFlagValue("incident-review", false);
 
   const incidentId = incidentState.incident?.id;
   const mobileItem = "flex items-center px-4 py-2 gap-2 capitalize w-full";
@@ -101,18 +103,22 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                     <FontAwesomeIcon icon={faTachographDigital} />
                     <span>{t("dashboard.title")}</span>
                   </NavLink>
-                  <NavLink
-                    className={({ isActive }) =>
-                      clsx(
-                        "flex w-full items-center gap-2 px-4 py-2 capitalize",
-                        isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-                      )
-                    }
-                    to={`/incident/${incidentId}/review`}
-                  >
-                    <FontAwesomeIcon icon={faChartColumn} />
-                    <span>{t("review.title")}</span>
-                  </NavLink>
+                  {showReview && (
+                    <NavLink
+                      className={({ isActive }) =>
+                        clsx(
+                          "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                          isActive
+                            ? "bg-primary text-white! hover:bg-primary"
+                            : "hover:bg-bg-subtle",
+                        )
+                      }
+                      to={`/incident/${incidentId}/review`}
+                    >
+                      <FontAwesomeIcon icon={faChartColumn} />
+                      <span>{t("review.title")}</span>
+                    </NavLink>
+                  )}
                   <NavLink
                     className={({ isActive }) =>
                       clsx(
@@ -190,18 +196,20 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                 <FontAwesomeIcon icon={faTachographDigital} />
                 <span>{t("dashboard.title")}</span>
               </NavLink>
-              <NavLink
-                className={({ isActive }) =>
-                  clsx(
-                    mobileSubItem,
-                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
-                  )
-                }
-                to={`/incident/${incidentId}/review`}
-              >
-                <FontAwesomeIcon icon={faChartColumn} />
-                <span>{t("review.title")}</span>
-              </NavLink>
+              {showReview && (
+                <NavLink
+                  className={({ isActive }) =>
+                    clsx(
+                      mobileSubItem,
+                      isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                    )
+                  }
+                  to={`/incident/${incidentId}/review`}
+                >
+                  <FontAwesomeIcon icon={faChartColumn} />
+                  <span>{t("review.title")}</span>
+                </NavLink>
+              )}
               <NavLink
                 className={({ isActive }) =>
                   clsx(
