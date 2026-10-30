@@ -118,14 +118,30 @@ func TestCompare_ATieIsInTheMiddle(t *testing.T) {
 }
 
 func TestCompare_SaysNothingAgainstTooFewIncidents(t *testing.T) {
-	peers := []kpi.Summary{summary(60, 9, 10), summary(120, 9, 10), summary(180, 9, 10)}
+	// One less than it takes, whatever that is.
+	var peers []kpi.Summary
+	for i := range kpi.MinPeers - 1 {
+		peers = append(peers, summary(int64(60*(i+1)), 9, 10))
+	}
 
 	cmp := kpi.Compare(summary(90, 9, 10), peers)
 
-	assert.Equal(t, 3, cmp.TriageMedian.Peers)
+	assert.Equal(t, kpi.MinPeers-1, cmp.TriageMedian.Peers)
 	assert.False(t, cmp.TriageMedian.Sufficient)
-	assert.Nil(t, cmp.TriageMedian.BetterThan, "no ranking against three")
-	assert.InDelta(t, 120.0, cmp.TriageMedian.Median, 1e-9, "the spread is still there to show")
+	assert.Nil(t, cmp.TriageMedian.BetterThan, "no ranking against so few")
+	assert.Greater(t, cmp.TriageMedian.Median, 0.0, "the spread is still there to show")
+}
+
+func TestCompare_RanksFromTheMinimumOnwards(t *testing.T) {
+	var peers []kpi.Summary
+	for i := range kpi.MinPeers {
+		peers = append(peers, summary(int64(60*(i+1)), 9, 10))
+	}
+
+	cmp := kpi.Compare(summary(90, 9, 10), peers)
+
+	assert.True(t, cmp.TriageMedian.Sufficient)
+	assert.NotNil(t, cmp.TriageMedian.BetterThan)
 }
 
 func TestCompare_LeavesOutIncidentsWithoutAValue(t *testing.T) {

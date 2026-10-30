@@ -50,9 +50,12 @@ func Summarize(r Report) Summary {
 	}
 }
 
-// MinPeers is how many other incidents it takes for a comparison to say anything: against two or
-// three, "faster than 66 %" is an accident.
-const MinPeers = 5
+// MinPeers is how many other incidents it takes for a comparison to say anything: against one or
+// two, "faster than 50 %" is an accident.
+//
+// Temporarily lowered from 5 while there are few incidents with a kept review to compare with.
+// Raise it again once there are enough: with so few peers a ranking is only a rough indication.
+const MinPeers = 3
 
 // Benchmark is where one value of an incident lies among the same value of the other incidents.
 type Benchmark struct {
