@@ -74,6 +74,8 @@
   "triageIncidentClosed": "This incident is closed. Triage is no longer possible.",
   "review": {
     "title": "Review",
+    "pdf": "Save as PDF",
+    "pdfHint": "Opens the print dialog. Choose “Save as PDF” there.",
     "interim": "Interim status: the incident is still open, the figures are only final once it is closed.",
     "notAvailable": "There is no review for this incident because it was imported from an earlier system.",
     "duration": "Duration",

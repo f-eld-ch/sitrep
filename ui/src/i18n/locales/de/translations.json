@@ -74,6 +74,8 @@
   "triageIncidentClosed": "Dieses Ereignis ist abgeschlossen. Triage ist nicht mehr möglich.",
   "review": {
     "title": "Auswertung",
+    "pdf": "Als PDF speichern",
+    "pdfHint": "Öffnet den Druckdialog. Dort „Als PDF speichern“ wählen.",
     "interim": "Zwischenstand: Das Ereignis ist noch offen, die Zahlen werden erst mit dem Abschluss endgültig.",
     "notAvailable": "Für dieses Ereignis gibt es keine Auswertung, weil es aus einem früheren System übernommen wurde.",
     "duration": "Dauer",

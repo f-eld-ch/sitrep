@@ -41,7 +41,7 @@ export function PieChart({
   return (
     <figure className={clsx("shrink-0", className)}>
       <figcaption className="sr-only">{caption}</figcaption>
-      <svg aria-hidden viewBox="0 0 100 100" className="h-32 w-32">
+      <svg aria-hidden viewBox="0 0 100 100" className="h-32 w-32 print:h-20 print:w-20">
         {present.length === 1 ? (
           <circle cx={CENTER} cy={CENTER} r={RADIUS} className={present[0].fillClass}>
             <title>{present[0].label}</title>

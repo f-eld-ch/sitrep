@@ -74,6 +74,8 @@
   "triageIncidentClosed": "Questo evento è chiuso. Il triage non è più possibile.",
   "review": {
     "title": "Valutazione",
+    "pdf": "Salva come PDF",
+    "pdfHint": "Apre la finestra di stampa. Scegliere «Salva come PDF».",
     "interim": "Stato intermedio: l'evento è ancora aperto, i dati sono definitivi solo alla chiusura.",
     "notAvailable": "Per questo evento non c'è una valutazione perché è stato ripreso da un sistema precedente.",
     "duration": "Durata",

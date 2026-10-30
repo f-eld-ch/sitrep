@@ -1,11 +1,15 @@
+import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
+import { useReactToPrint } from "react-to-print";
 import { useIncidentReview } from "api";
 import { Spinner } from "components";
-import { Notification, PageTitle, Tag } from "components/ui";
+import { Button, Notification, PageTitle, Tag } from "components/ui";
 import { formatDuration } from "utils/duration";
+import { REVIEW_PAGE_STYLE, unfoldForPrint } from "./print";
 import { DivisionSection, FlowSection, LoadSection, ReworkSection } from "./sections";
 
 /**
@@ -18,6 +22,28 @@ export default function Review() {
   const result = useIncidentReview(incidentId);
   // Where an open incident's duration runs to; the figures themselves refresh on their own.
   const [now] = useState(() => new Date());
+
+  // The PDF is the browser's own "save as PDF" of the printed page: the text stays text and the
+  // charts stay sharp. The title becomes the name of the file.
+  const contentRef = useRef<HTMLDivElement>(null);
+  const refold = useRef<(() => void) | undefined>(undefined);
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle:
+      result.status === "ready"
+        ? `${t("review.title")} - ${result.data.incidentName}`
+        : t("review.title"),
+    pageStyle: REVIEW_PAGE_STYLE,
+    onBeforePrint: () => {
+      if (contentRef.current) refold.current = unfoldForPrint(contentRef.current);
+
+      return Promise.resolve();
+    },
+    onAfterPrint: () => {
+      refold.current?.();
+      refold.current = undefined;
+    },
+  });
 
   if (result.status === "loading") return <Spinner />;
 
@@ -49,8 +75,21 @@ export default function Review() {
   const seconds = (end.getTime() - review.openedAt.getTime()) / 1000;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4">
-      <PageTitle className="mb-0">{title}</PageTitle>
+    <div ref={contentRef} className="mx-auto flex max-w-6xl flex-col gap-4 print:gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <PageTitle className="mb-0">{title}</PageTitle>
+        <Button
+          type="button"
+          variant="light"
+          size="sm"
+          className="print:hidden"
+          title={t("review.pdfHint")}
+          onClick={() => void handlePrint()}
+        >
+          <FontAwesomeIcon icon={faFilePdf} />
+          <span>{t("review.pdf")}</span>
+        </Button>
+      </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-fg-muted">
         <Tag light size="sm" variant={review.closedAt ? "gray" : "warning"}>

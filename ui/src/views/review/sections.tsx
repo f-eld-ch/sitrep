@@ -17,7 +17,7 @@ import { BenchmarkLegend, BenchmarkStrip } from "./BenchmarkStrip";
 import { PieChart } from "./PieChart";
 import { bucketLabel, chartTime, percent, rangeLabel, spansDays } from "./format";
 
-const card = "rounded border border-border bg-bg-elevated p-3";
+const card = "break-inside-avoid rounded border border-border bg-bg-elevated p-3 print:p-2";
 const heading = "mb-3 text-sm font-semibold text-fg";
 
 /** Median, the time 90 % stayed within, and the longest. */
@@ -65,7 +65,10 @@ function ComparisonBlock({
       : undefined;
 
   return (
-    <details className="group mt-4 border-t border-border pt-3">
+    <details
+      data-print-open
+      className="group mt-4 border-t border-border pt-3 print:mt-2 print:pt-2"
+    >
       <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-fg-muted marker:hidden hover:text-fg [&::-webkit-details-marker]:hidden">
         <FontAwesomeIcon
           icon={faChevronRight}
@@ -75,7 +78,7 @@ function ComparisonBlock({
         {teaser && <span className="ml-auto text-right font-semibold text-fg">{teaser}</span>}
       </summary>
 
-      <div className="mt-3 space-y-3">
+      <div className="mt-3 space-y-3 print:mt-2 print:space-y-2">
         <BenchmarkStrip label={t("review.median")} benchmark={comparison.median} kind="time" />
         <BenchmarkStrip label={t("review.shareLabel")} benchmark={comparison.share} kind="share" />
         <BenchmarkLegend />
@@ -117,7 +120,9 @@ function MetricCard({
       ) : (
         <>
           <div className="mb-1 flex items-baseline justify-between gap-2">
-            <span className="text-2xl font-bold text-fg tabular-nums">{percent(ratio)} %</span>
+            <span className="text-2xl font-bold text-fg tabular-nums print:text-xl">
+              {percent(ratio)} %
+            </span>
             <span className="text-xs text-fg-muted">{t(doneKey, { completed, total })}</span>
           </div>
           <ShareBar ratio={ratio} />
@@ -132,7 +137,7 @@ function MetricCard({
             </div>
           )}
           {distribution.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-4 print:mt-2">
               <h4 className="mb-1 text-xs font-medium text-fg-muted">
                 {t("review.distributionHint")}
               </h4>
@@ -161,7 +166,7 @@ export function FlowSection({ review }: { review: IncidentReview }) {
       <h2 id="review-flow" className="mb-2 text-base font-bold text-fg">
         {t("review.flow")}
       </h2>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-3 print:grid-cols-2 print:gap-2">
         <MetricCard
           testId="review-triage"
           title={t("review.timeToTriage")}
@@ -188,7 +193,7 @@ export function FlowSection({ review }: { review: IncidentReview }) {
         />
       </div>
       {/* On a line of its own, below the two times. */}
-      <div className="mt-3">
+      <div className="mt-3 print:mt-2">
         <PriorityCard high={review.triageHigh} normal={review.triageNormal} />
       </div>
     </section>
@@ -229,12 +234,12 @@ function PriorityCard({
       {/* Three columns across the whole card: the pie, then the times of each priority. */}
       <div
         className={clsx(
-          "grid grid-cols-1 gap-6 lg:gap-0",
-          total > 0 ? "lg:grid-cols-3" : "lg:grid-cols-2",
+          "grid grid-cols-1 gap-6 lg:gap-0 print:gap-0",
+          total > 0 ? "lg:grid-cols-3 print:grid-cols-3" : "lg:grid-cols-2 print:grid-cols-2",
         )}
       >
         {total > 0 && (
-          <div className="flex items-center gap-4 lg:pr-6">
+          <div className="flex items-center gap-4 lg:pr-6 print:pr-4">
             <PieChart
               caption={t("review.priority")}
               slices={groups.map((g) => ({
@@ -269,9 +274,11 @@ function PriorityCard({
           <div
             key={g.key}
             className={clsx(
-              "min-w-0 lg:px-6",
+              "min-w-0 lg:px-6 print:px-4",
               // A rule between the columns, but none in front of the first one.
-              total > 0 || i > 0 ? "lg:border-l lg:border-border" : "lg:pl-0",
+              total > 0 || i > 0
+                ? "lg:border-l lg:border-border print:border-l print:border-border"
+                : "lg:pl-0 print:pl-0",
             )}
           >
             <div className="mb-1">
@@ -432,7 +439,7 @@ export function LoadSection({ review }: { review: IncidentReview }) {
         </div>
       </div>
 
-      <details className="mt-4">
+      <details className="mt-4 print:hidden">
         <summary className="cursor-pointer text-sm text-primary">{t("review.showTable")}</summary>
         <table className="mt-2 w-full text-sm tabular-nums">
           <thead>

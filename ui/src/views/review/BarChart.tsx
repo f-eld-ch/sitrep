@@ -6,6 +6,9 @@ export interface Bar {
   value: number;
 }
 
+/** The height of the plot: shorter on paper, where a page holds more than a screen. */
+const PLOT_HEIGHT = "h-32 print:h-20";
+
 /** About this many gridlines, including the baseline. */
 const TARGET_INTERVALS = 4;
 
@@ -65,7 +68,12 @@ export function BarChart({
       <figcaption className="sr-only">{caption}</figcaption>
       <div aria-hidden className="pt-2">
         <div className="flex gap-2">
-          <div className="relative h-32 w-8 shrink-0 text-xs text-fg-muted tabular-nums">
+          <div
+            className={clsx(
+              "relative w-8 shrink-0 text-xs text-fg-muted tabular-nums",
+              PLOT_HEIGHT,
+            )}
+          >
             {ticks.map((tick) => (
               <span
                 key={tick}
@@ -77,7 +85,7 @@ export function BarChart({
             ))}
           </div>
 
-          <div className="relative h-32 min-w-0 flex-1">
+          <div className={clsx("relative min-w-0 flex-1", PLOT_HEIGHT)}>
             {ticks.map((tick) => (
               <div
                 key={tick}
@@ -105,7 +113,7 @@ export function BarChart({
         </div>
 
         {labels === "alternate" ? (
-          <div className="mt-1 ml-10 flex gap-px text-[10px] text-fg-muted tabular-nums sm:gap-1 sm:text-xs">
+          <div className="mt-1 ml-10 flex gap-px text-[10px] text-fg-muted tabular-nums sm:gap-1 sm:text-xs print:text-[9px]">
             {bars.map((bar, i) => (
               <div key={`${bar.label}-${i}`} className="flex min-w-0 flex-1 justify-center">
                 {i % 2 === 0 && <span className="whitespace-nowrap">{bar.label}</span>}

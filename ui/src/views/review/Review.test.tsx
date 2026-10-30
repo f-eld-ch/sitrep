@@ -4,7 +4,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IncidentReview } from "types";
 import Review from "./Review";
 
-const mocks = vi.hoisted(() => ({ result: { current: undefined as unknown } }));
+const mocks = vi.hoisted(() => ({
+  result: { current: undefined as unknown },
+  print: vi.fn(),
+  printOptions: { current: undefined as Record<string, unknown> | undefined },
+}));
+
+vi.mock("react-to-print", () => ({
+  useReactToPrint: (options: Record<string, unknown>) => {
+    mocks.printOptions.current = options;
+
+    return mocks.print;
+  },
+}));
 
 vi.mock("api", () => ({ useIncidentReview: () => mocks.result.current }));
 vi.mock("react-router", async (importOriginal) => ({
@@ -133,6 +145,8 @@ const renderReview = () =>
 
 beforeEach(() => {
   mocks.result.current = ready(review);
+  mocks.print.mockClear();
+  mocks.printOptions.current = undefined;
 });
 
 describe("Review", () => {
@@ -374,5 +388,61 @@ describe("Review", () => {
     renderReview();
 
     expect(screen.getByText("errors.UNKNOWN")).toBeInTheDocument();
+  });
+});
+
+describe("Review as a PDF", () => {
+  it("has a button that prints the report, hidden from the printout itself", () => {
+    renderReview();
+
+    const button = screen.getByRole("button", { name: "review.pdf" });
+    expect(button).toHaveClass("print:hidden");
+    expect(button).toHaveAttribute("title", "review.pdfHint");
+
+    fireEvent.click(button);
+    expect(mocks.print).toHaveBeenCalledTimes(1);
+  });
+
+  it("names the file after the incident and prints an upright A4", () => {
+    renderReview();
+
+    expect(mocks.printOptions.current?.documentTitle).toBe("review.title - Hochwasser");
+    expect(mocks.printOptions.current?.pageStyle).toContain("A4 portrait");
+  });
+
+  it("unfolds the comparisons for the printout and folds them again afterwards", async () => {
+    const { container } = renderReview();
+    const options = mocks.printOptions.current as {
+      onBeforePrint: () => Promise<void>;
+      onAfterPrint: () => void;
+    };
+
+    const comparisons = Array.from(
+      container.querySelectorAll<HTMLDetailsElement>("details[data-print-open]"),
+    );
+    const table = container.querySelector<HTMLDetailsElement>("details:not([data-print-open])");
+    expect(comparisons.length).toBeGreaterThan(0);
+    expect(comparisons.every((d) => !d.open)).toBe(true);
+
+    await options.onBeforePrint();
+    expect(comparisons.every((d) => d.open)).toBe(true);
+    expect(table?.open).toBe(false);
+
+    options.onAfterPrint();
+    expect(comparisons.every((d) => !d.open)).toBe(true);
+  });
+
+  it("leaves the table of the load out of the printout", () => {
+    const { container } = renderReview();
+
+    const table = container.querySelector("details:not([data-print-open])");
+    expect(table).toHaveClass("print:hidden");
+  });
+
+  it("has no button when there is no review to print", () => {
+    mocks.result.current = ready(null);
+    renderReview();
+
+    expect(screen.queryByRole("button", { name: "review.pdf" })).toBeNull();
   });
 });

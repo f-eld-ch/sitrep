@@ -74,6 +74,8 @@
   "triageIncidentClosed": "Cet incident est clôturé. Le triage n'est plus possible.",
   "review": {
     "title": "Évaluation",
+    "pdf": "Enregistrer en PDF",
+    "pdfHint": "Ouvre la boîte de dialogue d'impression. Choisir « Enregistrer en PDF ».",
     "interim": "État intermédiaire : l'événement est encore ouvert, les chiffres ne sont définitifs qu'à la clôture.",
     "notAvailable": "Il n'y a pas d'évaluation pour cet événement, car il a été repris d'un ancien système.",
     "duration": "Durée",
