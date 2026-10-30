@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
@@ -48,6 +49,9 @@ type Incident struct {
 	closedAt  *time.Time
 	deletedAt *time.Time
 
+	// reviewSummary is the headline of the review, kept for comparing incidents; nil while the
+	// incident is open, and until it is worked out for one closed before it was kept.
+	reviewSummary *kpi.Summary
 	// imported is set for an incident that comes from the legacy import: the history of its
 	// messages is not known, so nothing can be worked out about how they were handled.
 	imported bool
@@ -65,7 +69,7 @@ func New(id shared.IncidentID) *Incident {
 		DivisionAdded{}, DivisionRenamed{}, DivisionRemoved{}, DivisionKindAssigned{},
 		ParentLinked{}, ParentUnlinked{},
 		Closed{}, Reopened{}, Deleted{}, Imported{},
-		DefaultSchadenplatzLinked{},
+		DefaultSchadenplatzLinked{}, ReviewSummarised{},
 	)
 
 	return inc
@@ -93,6 +97,9 @@ func (i *Incident) IsOpen() bool                                  { return i.clo
 
 // IsImported reports whether the incident comes from the legacy import.
 func (i *Incident) IsImported() bool { return i.imported }
+
+// ReviewSummary is the headline of the review as it was kept, nil if none was.
+func (i *Incident) ReviewSummary() *kpi.Summary { return i.reviewSummary }
 
 func (i *Incident) IsClosed() bool  { return i.closedAt != nil && i.deletedAt == nil }
 func (i *Incident) IsDeleted() bool { return i.deletedAt != nil }
@@ -345,6 +352,22 @@ func (i *Incident) Close(reason shared.CloseReason, actor string, at time.Time) 
 	return nil
 }
 
+// RecordReviewSummary keeps the headline of the incident's review, to compare it with other
+// incidents. Only a closed incident has a final one; a later call replaces an earlier one.
+func (i *Incident) RecordReviewSummary(summary kpi.Summary, actor string, at time.Time) error {
+	if i.IsDeleted() {
+		return shared.ErrIncidentDeleted
+	}
+
+	if !i.IsClosed() {
+		return shared.ErrIncidentNotClosed
+	}
+
+	eventsourcing.TrackChange(i, ReviewSummarised{Summary: summary}, at, baseMeta(actor))
+
+	return nil
+}
+
 // Reopen re-opens a previously closed incident.
 func (i *Incident) Reopen(actor string, at time.Time) error {
 	if i.IsDeleted() {
@@ -465,6 +488,10 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 		i.closedAt = &d.ClosedAt
 	case Reopened:
 		i.closedAt = nil
+		i.reviewSummary = nil
+	case ReviewSummarised:
+		summary := d.Summary
+		i.reviewSummary = &summary
 	case Deleted:
 		now := e.OccurredAt
 		i.deletedAt = &now

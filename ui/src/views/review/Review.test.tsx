@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IncidentReview } from "types";
@@ -31,7 +31,34 @@ const drawBuckets = [
   { from: 60, to: null, count: 28 },
 ];
 
+const benchmark = {
+  value: 252,
+  peers: 18,
+  sufficient: true,
+  lowest: 60,
+  q1: 180,
+  median: 330,
+  q3: 600,
+  highest: 1800,
+  betterThan: 0.7,
+};
+
 const review: IncidentReview = {
+  comparison: {
+    triageMedian: benchmark,
+    triageRatio: {
+      ...benchmark,
+      value: 0.87,
+      lowest: 0.5,
+      q1: 0.7,
+      median: 0.8,
+      q3: 0.9,
+      highest: 1,
+      betterThan: 0.8,
+    },
+    drawMedian: { ...benchmark, peers: 3, sufficient: false, betterThan: null },
+    drawRatio: { ...benchmark, value: null, peers: 0, sufficient: false, betterThan: null },
+  },
   openedAt: new Date("2026-01-15T10:00:00Z"),
   closedAt: new Date("2026-01-15T12:30:00Z"),
   messageCount: 100,
@@ -131,6 +158,58 @@ describe("Review", () => {
     expect(draw.getByText("100 %")).toBeInTheDocument();
     expect(draw.queryByText(/review.neverDrawn/)).toBeNull();
     expect(draw.getByText("2 min 40 s")).toBeInTheDocument();
+  });
+
+  it("folds the comparison away, saying how the time compares in its heading", () => {
+    renderReview();
+
+    const details = screen
+      .getByTestId("review-triage")
+      .querySelector<HTMLDetailsElement>("details");
+
+    expect(details).not.toBeNull();
+    expect(details?.open).toBe(false);
+
+    const summary = details?.querySelector("summary") as HTMLElement;
+    expect(within(summary).getByText("review.comparisonTitle")).toBeInTheDocument();
+    // Folded away, it still says the one thing most want to know.
+    expect(within(summary).getByText(/review.fasterThan.*"percent":70/)).toBeInTheDocument();
+
+    fireEvent.click(summary);
+    expect(details?.open).toBe(true);
+  });
+
+  it("has no teaser in the heading when there is nothing to rank against", () => {
+    renderReview();
+
+    const summary = screen
+      .getByTestId("review-draw")
+      .querySelector("details > summary") as HTMLElement;
+
+    expect(within(summary).getByText("review.comparisonTitle")).toBeInTheDocument();
+    expect(within(summary).queryByText(/review.fasterThan/)).toBeNull();
+  });
+
+  it("sets each step against the other incidents, inside its box", () => {
+    renderReview();
+
+    const triage = within(screen.getByTestId("review-triage"));
+    expect(triage.getByText("review.comparisonTitle")).toBeInTheDocument();
+    expect(triage.getAllByTestId("benchmark")).toHaveLength(2);
+    expect(triage.getByText(/review.typical.*"5 min 30 s"/)).toBeInTheDocument();
+    // Once in the folded heading, once under the strip.
+    expect(triage.getAllByText(/review.fasterThan.*"percent":70/)).toHaveLength(2);
+    expect(triage.getByText(/review.higherThan.*"percent":80/)).toBeInTheDocument();
+    expect(triage.getByText("review.legendThis")).toBeInTheDocument();
+  });
+
+  it("says why there is no comparison, instead of leaving a gap", () => {
+    renderReview();
+
+    const draw = within(screen.getByTestId("review-draw"));
+    expect(draw.getByText(/review.fewPeers.*"peers":3/)).toBeInTheDocument();
+    expect(draw.getByText("review.noPeers")).toBeInTheDocument();
+    expect(draw.queryByText(/review.fasterThan/)).toBeNull();
   });
 
   it("splits the triage time by priority, with a pie of how many of each", () => {

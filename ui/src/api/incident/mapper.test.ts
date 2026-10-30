@@ -125,7 +125,36 @@ describe("toIncidentReview", () => {
     { fromSeconds: 7200, toSeconds: null, count: 5 },
   ];
   const metric = { total: 10, completed: 8, ratio: 0.8, duration, distribution };
+  const benchmark = {
+    value: 252,
+    peers: 18,
+    sufficient: true,
+    lowest: 60,
+    q1: 180,
+    median: 330,
+    q3: 600,
+    highest: 1800,
+    betterThan: 0.7,
+  };
+  const noBenchmark = {
+    value: null,
+    peers: 0,
+    sufficient: false,
+    lowest: 0,
+    q1: 0,
+    median: 0,
+    q3: 0,
+    highest: 0,
+    betterThan: null,
+  };
   const wire: Wire = {
+    incidentId: "inc-1",
+    comparison: {
+      triageMedian: benchmark,
+      triageRatio: { ...benchmark, value: 0.87, median: 0.9 },
+      drawMedian: noBenchmark,
+      drawRatio: noBenchmark,
+    },
     openedAt: "2026-01-15T10:00:00Z",
     closedAt: null,
     messageCount: 10,
@@ -191,6 +220,21 @@ describe("toIncidentReview", () => {
       assigned: 5,
       acknowledged: 4,
     });
+    expect(review?.comparison.triageMedian).toEqual({
+      value: 252,
+      peers: 18,
+      sufficient: true,
+      lowest: 60,
+      q1: 180,
+      median: 330,
+      q3: 600,
+      highest: 1800,
+      betterThan: 0.7,
+    });
+    expect(review?.comparison.triageRatio.value).toBe(0.87);
+    expect(review?.comparison.drawMedian.value).toBeNull();
+    expect(review?.comparison.drawMedian.betterThan).toBeNull();
+    expect(review?.comparison.drawMedian.sufficient).toBe(false);
     expect(review?.rework.reworked).toBe(3);
     expect(review?.reportingLag?.max).toBe(300);
     expect(review?.load.buckets[0].start).toEqual(new Date("2026-01-15T10:00:00Z"));

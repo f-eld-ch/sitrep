@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -29,9 +30,11 @@ type IncidentRow struct {
 	IsDeleted bool
 	ClosedAt  *time.Time
 	DeletedAt *time.Time
-	Location  jsontext.Value
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	// ReviewSummary is the headline of the review kept for comparing incidents, nil if none.
+	ReviewSummary *kpi.Summary
+	Location      jsontext.Value
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // IncidentHandler maintains an in-memory projection of the readmodel.incident table.
@@ -45,7 +48,7 @@ func NewIncidentHandler() *IncidentHandler {
 }
 
 func (h *IncidentHandler) Name() string { return "readmodel.incident" }
-func (h *IncidentHandler) Version() int { return 3 }
+func (h *IncidentHandler) Version() int { return 4 }
 
 func (h *IncidentHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -70,7 +73,8 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 		"Closed",
 		"Reopened",
 		"Deleted",
-		"Imported":
+		"Imported",
+		"ReviewSummarised":
 		return true
 	}
 
@@ -183,10 +187,23 @@ func (h *IncidentHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 			row.UpdatedAt = e.OccurredAt
 		}
 
+	case "ReviewSummarised":
+		var d struct {
+			Summary kpi.Summary `json:"summary"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.ReviewSummary = &d.Summary
+		}
+
 	case "Reopened":
 		if row := h.rows[id]; row != nil {
 			row.IsClosed = false
 			row.ClosedAt = nil
+			row.ReviewSummary = nil
 			row.UpdatedAt = e.OccurredAt
 		}
 

@@ -90,6 +90,36 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	return out, nil
 }
 
+func (q *Queries) ListClosedIncidentsWithoutReviewSummary(_ context.Context) ([]uuid.UUID, error) {
+	var out []uuid.UUID
+
+	for _, row := range q.incidents.All() {
+		if row.IsClosed && !row.IsDeleted && row.ReviewSummary == nil {
+			out = append(out, row.ID)
+		}
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListReviewSummaries(ctx context.Context) ([]outbound.ReviewSummaryRM, error) {
+	var out []outbound.ReviewSummaryRM
+
+	for _, row := range q.incidents.All() {
+		if row.IsDeleted || row.ReviewSummary == nil {
+			continue
+		}
+
+		if !q.canRead(ctx, shared.IncidentID(row.ID)) {
+			continue
+		}
+
+		out = append(out, outbound.ReviewSummaryRM{IncidentID: row.ID, Summary: *row.ReviewSummary})
+	}
+
+	return out, nil
+}
+
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {
 	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 

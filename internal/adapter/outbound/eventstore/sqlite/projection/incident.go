@@ -25,7 +25,7 @@ type IncidentHandler struct{ db *sql.DB }
 func NewIncidentHandler(db *sql.DB) *IncidentHandler { return &IncidentHandler{db: db} }
 
 func (h *IncidentHandler) Name() string { return "readmodel.incident" }
-func (h *IncidentHandler) Version() int { return 3 }
+func (h *IncidentHandler) Version() int { return 4 }
 func (h *IncidentHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_incident`)
 	return err
@@ -38,7 +38,7 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 
 	switch t {
 	case "Opened", "Renamed", "LocationChanged", "ParentLinked", "ParentUnlinked",
-		"Closed", "Reopened", "Deleted", "Imported":
+		"Closed", "Reopened", "Deleted", "Imported", "ReviewSummarised":
 		return true
 	}
 
@@ -167,11 +167,24 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(tx, ctx, `UPDATE readmodel_incident SET is_closed = 1, closed_at = ?, updated_at = ? WHERE id = ?`,
 			now, now, id)
 
+	case "ReviewSummarised":
+		// The headline of the review, kept to compare incidents. It is no change to the incident
+		// itself, so it leaves updated_at alone.
+		var d struct {
+			Summary jsontext.Value `json:"summary"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(tx, ctx, `UPDATE readmodel_incident SET review_summary = ? WHERE id = ?`,
+			nullableJSON(d.Summary), id)
+
 	case "Reopened":
 		return exec(
 			tx,
 			ctx,
-			`UPDATE readmodel_incident SET is_closed = 0, closed_at = NULL, updated_at = ? WHERE id = ?`,
+			`UPDATE readmodel_incident SET is_closed = 0, closed_at = NULL, review_summary = NULL, updated_at = ? WHERE id = ?`,
 			sqlite.FormatTime(e.OccurredAt),
 			id,
 		)

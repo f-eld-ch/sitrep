@@ -67,7 +67,26 @@ func (r *incidentResolver) Review(ctx context.Context, obj *model.Incident) (*mo
 		return nil, err
 	}
 
-	return reviewToModel(report), nil
+	return reviewToModel(shared.IncidentID(incID), report), nil
+}
+
+// Comparison is the resolver for the comparison field.
+func (r *incidentReviewResolver) Comparison(
+	ctx context.Context,
+	obj *model.IncidentReview,
+) (*model.ReviewComparison, error) {
+	incID, err := parseUUID(obj.IncidentID)
+	if err != nil {
+		return nil, err
+	}
+
+	// The headline of the review that was just worked out, not a second pass over the messages.
+	comparison, err := r.Incidents.CompareIncident(ctx, shared.IncidentID(incID), summaryFromReviewModel(obj))
+	if err != nil {
+		return nil, err
+	}
+
+	return comparisonToModel(comparison), nil
 }
 
 // Messages is the field resolver for Incident.messages.
@@ -2277,6 +2296,11 @@ func (r *schadenplatzResolver) Resources(ctx context.Context, obj *model.Schaden
 // Incident returns generated.IncidentResolver implementation.
 func (r *Resolver) Incident() generated.IncidentResolver { return &incidentResolver{r} }
 
+// IncidentReview returns generated.IncidentReviewResolver implementation.
+func (r *Resolver) IncidentReview() generated.IncidentReviewResolver {
+	return &incidentReviewResolver{r}
+}
+
 // Message returns generated.MessageResolver implementation.
 func (r *Resolver) Message() generated.MessageResolver { return &messageResolver{r} }
 
@@ -2290,9 +2314,10 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 func (r *Resolver) Schadenplatz() generated.SchadenplatzResolver { return &schadenplatzResolver{r} }
 
 type (
-	incidentResolver     struct{ *Resolver }
-	messageResolver      struct{ *Resolver }
-	mutationResolver     struct{ *Resolver }
-	queryResolver        struct{ *Resolver }
-	schadenplatzResolver struct{ *Resolver }
+	incidentResolver       struct{ *Resolver }
+	incidentReviewResolver struct{ *Resolver }
+	messageResolver        struct{ *Resolver }
+	mutationResolver       struct{ *Resolver }
+	queryResolver          struct{ *Resolver }
+	schadenplatzResolver   struct{ *Resolver }
 )

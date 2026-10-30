@@ -250,7 +250,10 @@ type IncidentAccessGrant struct {
 // messages' history: for a closed incident it is always the same, for an open one it is an interim
 // status.
 type IncidentReview struct {
-	OpenedAt time.Time `json:"openedAt"`
+	IncidentID string `json:"incidentId"`
+	// How this incident compares with the other ones. Worked out when asked for.
+	Comparison *ReviewComparison `json:"comparison"`
+	OpenedAt   time.Time         `json:"openedAt"`
 	// Null while the incident is open.
 	ClosedAt *time.Time `json:"closedAt,omitempty"`
 	// The messages the figures are based on.
@@ -424,6 +427,41 @@ type ResourceHomeLocationInput struct {
 	Name string   `json:"name"`
 	Lat  *float64 `json:"lat,omitempty"`
 	Lng  *float64 `json:"lng,omitempty"`
+}
+
+// Where one value of an incident lies among the same value of the other incidents the caller can
+// read: the closed ones that kept a review.
+type ReviewBenchmark struct {
+	// This incident's value, null when it has none (no message got that far).
+	Value *float64 `json:"value,omitempty"`
+	// How many other incidents have a value.
+	Peers int `json:"peers"`
+	// Whether there are enough of them to compare with. Without, "betterThan" is null.
+	Sufficient bool `json:"sufficient"`
+	// The lowest value of the other incidents.
+	Lowest float64 `json:"lowest"`
+	// A quarter of the other incidents are at or below this.
+	Q1     float64 `json:"q1"`
+	Median float64 `json:"median"`
+	// Three quarters of the other incidents are at or below this.
+	Q3 float64 `json:"q3"`
+	// The highest value of the other incidents.
+	Highest float64 `json:"highest"`
+	// The share of the other incidents this one beats, from 0 to 1: the faster one for a time, the
+	// higher one for a share of messages. Null without a value or without enough other incidents.
+	BetterThan *float64 `json:"betterThan,omitempty"`
+}
+
+// How an incident's headline compares with the other incidents. Times are in seconds.
+type ReviewComparison struct {
+	// The median time to triage.
+	TriageMedian *ReviewBenchmark `json:"triageMedian"`
+	// The share of messages that were triaged.
+	TriageRatio *ReviewBenchmark `json:"triageRatio"`
+	// The median time to draw.
+	DrawMedian *ReviewBenchmark `json:"drawMedian"`
+	// The share of the messages triaged to the Nachrichtenkarte that were drawn.
+	DrawRatio *ReviewBenchmark `json:"drawRatio"`
 }
 
 // How many messages a division was given, how many it acknowledged, and how long that took.

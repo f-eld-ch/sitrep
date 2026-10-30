@@ -434,11 +434,53 @@ type ReviewLoad {
 }
 
 """
+Where one value of an incident lies among the same value of the other incidents the caller can
+read: the closed ones that kept a review.
+"""
+type ReviewBenchmark {
+  """This incident's value, null when it has none (no message got that far)."""
+  value: Float
+  """How many other incidents have a value."""
+  peers: Int!
+  """Whether there are enough of them to compare with. Without, "betterThan" is null."""
+  sufficient: Boolean!
+  """The lowest value of the other incidents."""
+  lowest: Float!
+  """A quarter of the other incidents are at or below this."""
+  q1: Float!
+  median: Float!
+  """Three quarters of the other incidents are at or below this."""
+  q3: Float!
+  """The highest value of the other incidents."""
+  highest: Float!
+  """
+  The share of the other incidents this one beats, from 0 to 1: the faster one for a time, the
+  higher one for a share of messages. Null without a value or without enough other incidents.
+  """
+  betterThan: Float
+}
+
+"""How an incident's headline compares with the other incidents. Times are in seconds."""
+type ReviewComparison {
+  """The median time to triage."""
+  triageMedian: ReviewBenchmark!
+  """The share of messages that were triaged."""
+  triageRatio: ReviewBenchmark!
+  """The median time to draw."""
+  drawMedian: ReviewBenchmark!
+  """The share of the messages triaged to the Nachrichtenkarte that were drawn."""
+  drawRatio: ReviewBenchmark!
+}
+
+"""
 The review of an incident's messages, for the discussion after the operation. Computed from the
 messages' history: for a closed incident it is always the same, for an open one it is an interim
 status.
 """
 type IncidentReview {
+  incidentId: ID!
+  """How this incident compares with the other ones. Worked out when asked for."""
+  comparison: ReviewComparison!
   openedAt: DateTime!
   """Null while the incident is open."""
   closedAt: DateTime

@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 )
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -40,6 +42,12 @@ type IncidentRM struct {
 	IsClosed  bool
 	Location  *LocationRM
 	Divisions []*DivisionRM
+}
+
+// ReviewSummaryRM is the kept headline of the review of one closed incident.
+type ReviewSummaryRM struct {
+	IncidentID uuid.UUID
+	Summary    kpi.Summary
 }
 
 type MessageRM struct {
@@ -127,6 +135,12 @@ type IncidentQueries interface {
 	// GetIncident returns one incident by ID, including its active divisions.
 	// Returns ErrNotFound when the incident does not exist or is deleted.
 	GetIncident(ctx context.Context, id uuid.UUID) (*IncidentRM, error)
+	// ListReviewSummaries returns the kept headline of the review of every closed incident the
+	// caller can read, to compare incidents with each other. Incidents without one are left out.
+	ListReviewSummaries(ctx context.Context) ([]ReviewSummaryRM, error)
+	// ListClosedIncidentsWithoutReviewSummary returns the closed incidents that have no kept review
+	// headline yet, those closed before it was kept. It is for maintenance and checks no access.
+	ListClosedIncidentsWithoutReviewSummary(ctx context.Context) ([]uuid.UUID, error)
 
 	// ListMessages returns all non-deleted messages for an incident, newest first.
 	ListMessages(ctx context.Context, incidentID uuid.UUID) ([]*MessageRM, error)

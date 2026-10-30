@@ -1,15 +1,19 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import type {
   IncidentReview,
   KpiDuration,
   KpiMetric,
+  ReviewBenchmark,
   ReviewDivision,
   ReviewPriorityGroup,
 } from "types";
 import { divisionLongLabel } from "utils/divisionLabel";
 import { formatDuration } from "utils/duration";
 import { BarChart } from "./BarChart";
+import { BenchmarkLegend, BenchmarkStrip } from "./BenchmarkStrip";
 import { PieChart } from "./PieChart";
 import { bucketLabel, chartTime, percent, rangeLabel, spansDays } from "./format";
 
@@ -44,6 +48,42 @@ function ShareBar({ ratio }: { ratio: number }) {
   );
 }
 
+/**
+ * The comparison with the other incidents, folded away until asked for. Folded, its heading still
+ * says how this incident does on the time, which is what most people want to know.
+ */
+function ComparisonBlock({
+  comparison,
+}: {
+  comparison: { median: ReviewBenchmark; share: ReviewBenchmark };
+}) {
+  const { t } = useTranslation();
+  const { value, sufficient, betterThan } = comparison.median;
+  const teaser =
+    sufficient && value !== null && betterThan !== null
+      ? t("review.fasterThan", { percent: percent(betterThan) })
+      : undefined;
+
+  return (
+    <details className="group mt-4 border-t border-border pt-3">
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-fg-muted marker:hidden hover:text-fg [&::-webkit-details-marker]:hidden">
+        <FontAwesomeIcon
+          icon={faChevronRight}
+          className="shrink-0 transition-transform group-open:rotate-90"
+        />
+        <span>{t("review.comparisonTitle")}</span>
+        {teaser && <span className="ml-auto text-right font-semibold text-fg">{teaser}</span>}
+      </summary>
+
+      <div className="mt-3 space-y-3">
+        <BenchmarkStrip label={t("review.median")} benchmark={comparison.median} kind="time" />
+        <BenchmarkStrip label={t("review.shareLabel")} benchmark={comparison.share} kind="share" />
+        <BenchmarkLegend />
+      </div>
+    </details>
+  );
+}
+
 function MetricCard({
   title,
   metric,
@@ -51,9 +91,12 @@ function MetricCard({
   missingKey,
   noneKey,
   testId,
+  comparison,
 }: {
   title: string;
   metric: KpiMetric;
+  /** How the median time and the share of messages compare with the other incidents. */
+  comparison?: { median: ReviewBenchmark; share: ReviewBenchmark };
   /** "{{completed}} of {{total}} messages triaged" */
   doneKey: string;
   /** "{{count}} never triaged" */
@@ -78,11 +121,11 @@ function MetricCard({
             <span className="text-xs text-fg-muted">{t(doneKey, { completed, total })}</span>
           </div>
           <ShareBar ratio={ratio} />
-          {completed < total && (
-            <p className="mt-1 text-xs text-fg-muted">
-              {t(missingKey, { count: total - completed })}
-            </p>
-          )}
+          {/* The line is there even when nothing is missing, so the cards next to each other keep
+              the same layout and their charts line up. */}
+          <p className="mt-1 min-h-4 text-xs text-fg-muted">
+            {completed < total ? t(missingKey, { count: total - completed }) : null}
+          </p>
           {duration && (
             <div className="mt-3">
               <DurationRows duration={duration} />
@@ -103,6 +146,7 @@ function MetricCard({
               />
             </div>
           )}
+          {comparison && <ComparisonBlock comparison={comparison} />}
         </>
       )}
     </section>
@@ -125,6 +169,10 @@ export function FlowSection({ review }: { review: IncidentReview }) {
           doneKey="review.triaged"
           missingKey="review.neverTriaged"
           noneKey="review.noMessages"
+          comparison={{
+            median: review.comparison.triageMedian,
+            share: review.comparison.triageRatio,
+          }}
         />
         <MetricCard
           testId="review-draw"
@@ -133,6 +181,10 @@ export function FlowSection({ review }: { review: IncidentReview }) {
           doneKey="review.drawn"
           missingKey="review.neverDrawn"
           noneKey="review.noDrawMessages"
+          comparison={{
+            median: review.comparison.drawMedian,
+            share: review.comparison.drawRatio,
+          }}
         />
       </div>
       {/* On a line of its own, below the two times. */}

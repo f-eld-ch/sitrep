@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -175,4 +176,30 @@ func writeConfig(t *testing.T, contents string) string {
 	require.NoError(t, os.WriteFile(configPath, []byte(contents), 0o600))
 
 	return configPath
+}
+
+func TestReviewBackfillCommand(t *testing.T) {
+	rootCmd, err := NewRootCmd()
+	require.NoError(t, err)
+
+	cmd, _, err := rootCmd.Find([]string{"review", "backfill"})
+	require.NoError(t, err)
+	assert.Equal(t, "backfill", cmd.Name())
+
+	t.Run("refuses without a database, instead of reviewing an empty in-memory store", func(t *testing.T) {
+		t.Setenv("DATABASE_URL", "")
+
+		rootCmd, err := NewRootCmd()
+		require.NoError(t, err)
+
+		var out bytes.Buffer
+
+		rootCmd.SetOut(&out)
+		rootCmd.SetErr(&out)
+		rootCmd.SetArgs([]string{"review", "backfill"})
+
+		err = rootCmd.Execute()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "database-url")
+	})
 }

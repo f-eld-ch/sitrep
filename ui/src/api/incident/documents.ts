@@ -89,6 +89,53 @@ export const GET_INCIDENT_REVIEW: TypedDocumentNode<
       id
       name
       review {
+        incidentId
+        comparison {
+          triageMedian {
+            value
+            peers
+            sufficient
+            lowest
+            q1
+            median
+            q3
+            highest
+            betterThan
+          }
+          triageRatio {
+            value
+            peers
+            sufficient
+            lowest
+            q1
+            median
+            q3
+            highest
+            betterThan
+          }
+          drawMedian {
+            value
+            peers
+            sufficient
+            lowest
+            q1
+            median
+            q3
+            highest
+            betterThan
+          }
+          drawRatio {
+            value
+            peers
+            sufficient
+            lowest
+            q1
+            median
+            q3
+            highest
+            betterThan
+          }
+        }
         openedAt
         closedAt
         messageCount

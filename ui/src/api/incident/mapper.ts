@@ -101,6 +101,12 @@ export function toIncidentReview(w: WireReview | null | undefined): IncidentRevi
   if (!w) return null;
 
   return {
+    comparison: {
+      triageMedian: { ...w.comparison.triageMedian },
+      triageRatio: { ...w.comparison.triageRatio },
+      drawMedian: { ...w.comparison.drawMedian },
+      drawRatio: { ...w.comparison.drawRatio },
+    },
     openedAt: toDate(w.openedAt),
     closedAt: toOptionalDate(w.closedAt),
     messageCount: w.messageCount,

@@ -2,6 +2,7 @@ package graphql_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -1815,5 +1816,84 @@ func TestIncident_Review(t *testing.T) {
 
 		assert.NotNil(t, review.ClosedAt)
 		assert.Equal(t, 1, review.Triage.Completed)
+	})
+}
+
+func TestIncidentReview_Comparison(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	// Six incidents that were closed with a triaged message each: the closing keeps their headline.
+	var ids []string
+
+	for i := range 6 {
+		created, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+			Name: fmt.Sprintf("Einsatz %d", i), Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+		})
+		require.NoError(t, err)
+
+		msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: created.Incident.ID, Sender: "A", Receiver: "B",
+			SenderDetail: "", ReceiverDetail: "", Content: "Meldung", Medium: model.MediumRadio,
+		})
+		require.NoError(t, err)
+
+		_, err = s.resolver.Mutation().TriageMessage(ctx, msg.ID, model.TriageMessageInput{
+			Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{},
+		})
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx))
+
+		_, err = s.resolver.Mutation().CloseIncident(ctx, created.Incident.ID)
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx))
+
+		ids = append(ids, created.Incident.ID)
+	}
+
+	review := func(id string) *model.IncidentReview {
+		t.Helper()
+
+		incident, err := s.resolver.Query().Incident(ctx, id)
+		require.NoError(t, err)
+
+		r, err := s.resolver.Incident().Review(ctx, incident)
+		require.NoError(t, err)
+		require.NotNil(t, r)
+
+		return r
+	}
+
+	t.Run("compares an incident with the other five, not with itself", func(t *testing.T) {
+		r := review(ids[0])
+		assert.Equal(t, ids[0], r.IncidentID)
+
+		cmp, err := s.resolver.IncidentReview().Comparison(ctx, r)
+		require.NoError(t, err)
+
+		assert.Equal(t, 5, cmp.TriageMedian.Peers)
+		assert.True(t, cmp.TriageMedian.Sufficient)
+		require.NotNil(t, cmp.TriageMedian.Value)
+		assert.Equal(t, 5, cmp.TriageRatio.Peers)
+		require.NotNil(t, cmp.TriageRatio.Value)
+		assert.InDelta(t, 1.0, *cmp.TriageRatio.Value, 1e-9, "everything was triaged")
+
+		assert.Zero(t, cmp.DrawMedian.Peers, "nothing was drawn anywhere, so nothing to compare")
+		assert.Nil(t, cmp.DrawMedian.Value)
+		assert.False(t, cmp.DrawMedian.Sufficient)
+	})
+
+	t.Run("an open incident can be compared too", func(t *testing.T) {
+		open, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+			Name: "Läuft noch", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+		})
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx))
+
+		cmp, err := s.resolver.IncidentReview().Comparison(ctx, review(open.Incident.ID))
+		require.NoError(t, err)
+
+		assert.Equal(t, 6, cmp.TriageMedian.Peers, "all six closed ones")
+		assert.Nil(t, cmp.TriageMedian.Value, "no message was triaged here yet")
 	})
 }

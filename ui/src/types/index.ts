@@ -17,6 +17,8 @@ export type {
   KpiDuration,
   KpiMetric,
   Location,
+  ReviewBenchmark,
+  ReviewComparison,
   ReviewDivision,
   ReviewLoad,
   ReviewLoadBucket,

@@ -87,11 +87,39 @@ export interface ReviewLoad {
   peakBacklogAt: Date | null;
 }
 
+/** Where one value of an incident lies among the same value of the other incidents. */
+export interface ReviewBenchmark {
+  /** This incident's value, null when it has none. Times are in seconds, shares from 0 to 1. */
+  value: number | null;
+  /** How many other incidents have a value. */
+  peers: number;
+  /** Whether there are enough of them to compare with. */
+  sufficient: boolean;
+  lowest: number;
+  /** A quarter of the other incidents are at or below this. */
+  q1: number;
+  median: number;
+  /** Three quarters of the other incidents are at or below this. */
+  q3: number;
+  highest: number;
+  /** The share of the other incidents this one beats, 0 to 1; null without a value or peers. */
+  betterThan: number | null;
+}
+
+/** How an incident's headline compares with the other incidents. */
+export interface ReviewComparison {
+  triageMedian: ReviewBenchmark;
+  triageRatio: ReviewBenchmark;
+  drawMedian: ReviewBenchmark;
+  drawRatio: ReviewBenchmark;
+}
+
 /**
  * The review of an incident's messages, for the discussion after the operation. For a closed
  * incident it is always the same; for an open one it is an interim status.
  */
 export interface IncidentReview {
+  comparison: ReviewComparison;
   openedAt: Date;
   /** Null while the incident is open. */
   closedAt: Date | null;

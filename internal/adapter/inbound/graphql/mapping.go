@@ -4,6 +4,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -1016,7 +1017,7 @@ func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf
 }
 
 // reviewToModel maps the review of an incident's messages; nil when there is none (imported).
-func reviewToModel(r *kpi.Report) *model.IncidentReview {
+func reviewToModel(incidentID shared.IncidentID, r *kpi.Report) *model.IncidentReview {
 	if r == nil {
 		return nil
 	}
@@ -1054,6 +1055,7 @@ func reviewToModel(r *kpi.Report) *model.IncidentReview {
 	}
 
 	return &model.IncidentReview{
+		IncidentID:   incidentID.String(),
 		OpenedAt:     r.OpenedAt,
 		ClosedAt:     r.ClosedAt,
 		MessageCount: r.Messages,
@@ -1078,6 +1080,68 @@ func reviewToModel(r *kpi.Report) *model.IncidentReview {
 		},
 		ReportingLag: kpiDurationToModel(r.ReportingLag),
 		Load:         load,
+	}
+}
+
+func benchmarkToModel(b kpi.Benchmark) *model.ReviewBenchmark {
+	return &model.ReviewBenchmark{
+		Value:      b.Value,
+		Peers:      b.Peers,
+		Sufficient: b.Sufficient,
+		Lowest:     b.Lowest,
+		Q1:         b.Q1,
+		Median:     b.Median,
+		Q3:         b.Q3,
+		Highest:    b.Highest,
+		BetterThan: b.BetterThan,
+	}
+}
+
+func comparisonToModel(c kpi.Comparison) *model.ReviewComparison {
+	return &model.ReviewComparison{
+		TriageMedian: benchmarkToModel(c.TriageMedian),
+		TriageRatio:  benchmarkToModel(c.TriageRatio),
+		DrawMedian:   benchmarkToModel(c.DrawMedian),
+		DrawRatio:    benchmarkToModel(c.DrawRatio),
+	}
+}
+
+// summaryFromReviewModel is the headline of a review that was already worked out and mapped, so
+// comparing it needs no second pass over the messages. It is the inverse of what reviewToModel
+// keeps of kpi.Summarize; a test holds the two together.
+func summaryFromReviewModel(r *model.IncidentReview) kpi.Summary {
+	ms := func(d *model.KpiDuration, seconds func(*model.KpiDuration) float64) int64 {
+		if d == nil {
+			return 0
+		}
+
+		return int64(math.Round(seconds(d) * 1000))
+	}
+	median := func(d *model.KpiDuration) float64 { return d.MedianSeconds }
+	p90 := func(d *model.KpiDuration) float64 { return d.P90Seconds }
+	samples := func(d *model.KpiDuration) int {
+		if d == nil {
+			return 0
+		}
+
+		return d.Count
+	}
+
+	return kpi.Summary{
+		Version:  kpi.SummaryVersion,
+		Messages: r.MessageCount,
+
+		TriageTotal:     r.Triage.Total,
+		TriageCompleted: r.Triage.Completed,
+		TriageSamples:   samples(r.Triage.Duration),
+		TriageMedianMs:  ms(r.Triage.Duration, median),
+		TriageP90Ms:     ms(r.Triage.Duration, p90),
+
+		DrawTotal:     r.Draw.Total,
+		DrawCompleted: r.Draw.Completed,
+		DrawSamples:   samples(r.Draw.Duration),
+		DrawMedianMs:  ms(r.Draw.Duration, median),
+		DrawP90Ms:     ms(r.Draw.Duration, p90),
 	}
 }
 

@@ -31,6 +31,7 @@ type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	Incident() IncidentResolver
+	IncidentReview() IncidentReviewResolver
 	Message() MessageResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -166,8 +167,10 @@ type ComplexityRoot struct {
 
 	IncidentReview struct {
 		ClosedAt     func(childComplexity int) int
+		Comparison   func(childComplexity int) int
 		Divisions    func(childComplexity int) int
 		Draw         func(childComplexity int) int
+		IncidentID   func(childComplexity int) int
 		Load         func(childComplexity int) int
 		MessageCount func(childComplexity int) int
 		OpenedAt     func(childComplexity int) int
@@ -360,6 +363,25 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	ReviewBenchmark struct {
+		BetterThan func(childComplexity int) int
+		Highest    func(childComplexity int) int
+		Lowest     func(childComplexity int) int
+		Median     func(childComplexity int) int
+		Peers      func(childComplexity int) int
+		Q1         func(childComplexity int) int
+		Q3         func(childComplexity int) int
+		Sufficient func(childComplexity int) int
+		Value      func(childComplexity int) int
+	}
+
+	ReviewComparison struct {
+		DrawMedian   func(childComplexity int) int
+		DrawRatio    func(childComplexity int) int
+		TriageMedian func(childComplexity int) int
+		TriageRatio  func(childComplexity int) int
+	}
+
 	ReviewDivision struct {
 		Acknowledged func(childComplexity int) int
 		Assigned     func(childComplexity int) int
@@ -442,6 +464,9 @@ type IncidentResolver interface {
 	AccessMode(ctx context.Context, obj *model.Incident) (model.IncidentAccessMode, error)
 	Schadenplaetze(ctx context.Context, obj *model.Incident, asOf *time.Time) ([]*model.Schadenplatz, error)
 	Resources(ctx context.Context, obj *model.Incident, asOf *time.Time) ([]*model.Resource, error)
+}
+type IncidentReviewResolver interface {
+	Comparison(ctx context.Context, obj *model.IncidentReview) (*model.ReviewComparison, error)
 }
 type MessageResolver interface {
 	Attachments(ctx context.Context, obj *model.Message) ([]*model.Attachment, error)
@@ -1039,6 +1064,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.IncidentReview.ClosedAt(childComplexity), true
+	case "IncidentReview.comparison":
+		if e.ComplexityRoot.IncidentReview.Comparison == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IncidentReview.Comparison(childComplexity), true
 	case "IncidentReview.divisions":
 		if e.ComplexityRoot.IncidentReview.Divisions == nil {
 			break
@@ -1051,6 +1082,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.IncidentReview.Draw(childComplexity), true
+	case "IncidentReview.incidentId":
+		if e.ComplexityRoot.IncidentReview.IncidentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.IncidentReview.IncidentID(childComplexity), true
 	case "IncidentReview.load":
 		if e.ComplexityRoot.IncidentReview.Load == nil {
 			break
@@ -2294,6 +2331,86 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.ResourceHomeLocation.Name(childComplexity), true
 
+	case "ReviewBenchmark.betterThan":
+		if e.ComplexityRoot.ReviewBenchmark.BetterThan == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.BetterThan(childComplexity), true
+	case "ReviewBenchmark.highest":
+		if e.ComplexityRoot.ReviewBenchmark.Highest == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Highest(childComplexity), true
+	case "ReviewBenchmark.lowest":
+		if e.ComplexityRoot.ReviewBenchmark.Lowest == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Lowest(childComplexity), true
+	case "ReviewBenchmark.median":
+		if e.ComplexityRoot.ReviewBenchmark.Median == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Median(childComplexity), true
+	case "ReviewBenchmark.peers":
+		if e.ComplexityRoot.ReviewBenchmark.Peers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Peers(childComplexity), true
+	case "ReviewBenchmark.q1":
+		if e.ComplexityRoot.ReviewBenchmark.Q1 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Q1(childComplexity), true
+	case "ReviewBenchmark.q3":
+		if e.ComplexityRoot.ReviewBenchmark.Q3 == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Q3(childComplexity), true
+	case "ReviewBenchmark.sufficient":
+		if e.ComplexityRoot.ReviewBenchmark.Sufficient == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Sufficient(childComplexity), true
+	case "ReviewBenchmark.value":
+		if e.ComplexityRoot.ReviewBenchmark.Value == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewBenchmark.Value(childComplexity), true
+
+	case "ReviewComparison.drawMedian":
+		if e.ComplexityRoot.ReviewComparison.DrawMedian == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewComparison.DrawMedian(childComplexity), true
+	case "ReviewComparison.drawRatio":
+		if e.ComplexityRoot.ReviewComparison.DrawRatio == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewComparison.DrawRatio(childComplexity), true
+	case "ReviewComparison.triageMedian":
+		if e.ComplexityRoot.ReviewComparison.TriageMedian == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewComparison.TriageMedian(childComplexity), true
+	case "ReviewComparison.triageRatio":
+		if e.ComplexityRoot.ReviewComparison.TriageRatio == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ReviewComparison.TriageRatio(childComplexity), true
+
 	case "ReviewDivision.acknowledged":
 		if e.ComplexityRoot.ReviewDivision.Acknowledged == nil {
 			break
@@ -3083,11 +3200,53 @@ type ReviewLoad {
 }
 
 """
+Where one value of an incident lies among the same value of the other incidents the caller can
+read: the closed ones that kept a review.
+"""
+type ReviewBenchmark {
+  """This incident's value, null when it has none (no message got that far)."""
+  value: Float
+  """How many other incidents have a value."""
+  peers: Int!
+  """Whether there are enough of them to compare with. Without, "betterThan" is null."""
+  sufficient: Boolean!
+  """The lowest value of the other incidents."""
+  lowest: Float!
+  """A quarter of the other incidents are at or below this."""
+  q1: Float!
+  median: Float!
+  """Three quarters of the other incidents are at or below this."""
+  q3: Float!
+  """The highest value of the other incidents."""
+  highest: Float!
+  """
+  The share of the other incidents this one beats, from 0 to 1: the faster one for a time, the
+  higher one for a share of messages. Null without a value or without enough other incidents.
+  """
+  betterThan: Float
+}
+
+"""How an incident's headline compares with the other incidents. Times are in seconds."""
+type ReviewComparison {
+  """The median time to triage."""
+  triageMedian: ReviewBenchmark!
+  """The share of messages that were triaged."""
+  triageRatio: ReviewBenchmark!
+  """The median time to draw."""
+  drawMedian: ReviewBenchmark!
+  """The share of the messages triaged to the Nachrichtenkarte that were drawn."""
+  drawRatio: ReviewBenchmark!
+}
+
+"""
 The review of an incident's messages, for the discussion after the operation. Computed from the
 messages' history: for a closed incident it is always the same, for an open one it is an interim
 status.
 """
 type IncidentReview {
+  incidentId: ID!
+  """How this incident compares with the other ones. Worked out when asked for."""
+  comparison: ReviewComparison!
   openedAt: DateTime!
   """Null while the incident is open."""
   closedAt: DateTime
@@ -3801,6 +3960,10 @@ func (ec *executionContext) childFields_IncidentAccessGrant(ctx context.Context,
 
 func (ec *executionContext) childFields_IncidentReview(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "incidentId":
+		return ec.fieldContext_IncidentReview_incidentId(ctx, field)
+	case "comparison":
+		return ec.fieldContext_IncidentReview_comparison(ctx, field)
 	case "openedAt":
 		return ec.fieldContext_IncidentReview_openedAt(ctx, field)
 	case "closedAt":
@@ -4043,6 +4206,44 @@ func (ec *executionContext) childFields_ResourceHomeLocation(ctx context.Context
 		return ec.fieldContext_ResourceHomeLocation_lng(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type ResourceHomeLocation", field.Name)
+}
+
+func (ec *executionContext) childFields_ReviewBenchmark(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "value":
+		return ec.fieldContext_ReviewBenchmark_value(ctx, field)
+	case "peers":
+		return ec.fieldContext_ReviewBenchmark_peers(ctx, field)
+	case "sufficient":
+		return ec.fieldContext_ReviewBenchmark_sufficient(ctx, field)
+	case "lowest":
+		return ec.fieldContext_ReviewBenchmark_lowest(ctx, field)
+	case "q1":
+		return ec.fieldContext_ReviewBenchmark_q1(ctx, field)
+	case "median":
+		return ec.fieldContext_ReviewBenchmark_median(ctx, field)
+	case "q3":
+		return ec.fieldContext_ReviewBenchmark_q3(ctx, field)
+	case "highest":
+		return ec.fieldContext_ReviewBenchmark_highest(ctx, field)
+	case "betterThan":
+		return ec.fieldContext_ReviewBenchmark_betterThan(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ReviewBenchmark", field.Name)
+}
+
+func (ec *executionContext) childFields_ReviewComparison(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "triageMedian":
+		return ec.fieldContext_ReviewComparison_triageMedian(ctx, field)
+	case "triageRatio":
+		return ec.fieldContext_ReviewComparison_triageRatio(ctx, field)
+	case "drawMedian":
+		return ec.fieldContext_ReviewComparison_drawMedian(ctx, field)
+	case "drawRatio":
+		return ec.fieldContext_ReviewComparison_drawRatio(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ReviewComparison", field.Name)
 }
 
 func (ec *executionContext) childFields_ReviewDivision(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -7698,6 +7899,61 @@ func (ec *executionContext) _IncidentAccessGrant_role(ctx context.Context, field
 }
 func (ec *executionContext) fieldContext_IncidentAccessGrant_role(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("IncidentAccessGrant", field, false, false, "IncidentRole")
+}
+
+func (ec *executionContext) _IncidentReview_incidentId(ctx context.Context, field graphql.CollectedField, obj *model.IncidentReview) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_IncidentReview_incidentId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IncidentID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_IncidentReview_incidentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("IncidentReview", field, false, false, "ID")
+}
+
+func (ec *executionContext) _IncidentReview_comparison(ctx context.Context, field graphql.CollectedField, obj *model.IncidentReview) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_IncidentReview_comparison(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.IncidentReview().Comparison(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ReviewComparison) graphql.Marshaler {
+			return ec.marshalNReviewComparison2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewComparison(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_IncidentReview_comparison(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IncidentReview",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ReviewComparison(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _IncidentReview_openedAt(ctx context.Context, field graphql.CollectedField, obj *model.IncidentReview) (ret graphql.Marshaler) {
@@ -12893,6 +13149,341 @@ func (ec *executionContext) fieldContext_ResourceHomeLocation_lng(_ context.Cont
 	return graphql.NewScalarFieldContext("ResourceHomeLocation", field, false, false, "Float")
 }
 
+func (ec *executionContext) _ReviewBenchmark_value(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_value(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Value, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_peers(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_peers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Peers, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_peers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Int")
+}
+
+func (ec *executionContext) _ReviewBenchmark_sufficient(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_sufficient(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Sufficient, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_sufficient(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Boolean")
+}
+
+func (ec *executionContext) _ReviewBenchmark_lowest(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_lowest(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Lowest, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_lowest(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_q1(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_q1(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Q1, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_q1(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_median(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_median(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Median, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_median(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_q3(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_q3(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Q3, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_q3(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_highest(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_highest(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Highest, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_highest(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewBenchmark_betterThan(ctx context.Context, field graphql.CollectedField, obj *model.ReviewBenchmark) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewBenchmark_betterThan(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.BetterThan, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewBenchmark_betterThan(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ReviewBenchmark", field, false, false, "Float")
+}
+
+func (ec *executionContext) _ReviewComparison_triageMedian(ctx context.Context, field graphql.CollectedField, obj *model.ReviewComparison) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewComparison_triageMedian(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TriageMedian, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ReviewBenchmark) graphql.Marshaler {
+			return ec.marshalNReviewBenchmark2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewBenchmark(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewComparison_triageMedian(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewComparison",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ReviewBenchmark(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewComparison_triageRatio(ctx context.Context, field graphql.CollectedField, obj *model.ReviewComparison) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewComparison_triageRatio(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TriageRatio, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ReviewBenchmark) graphql.Marshaler {
+			return ec.marshalNReviewBenchmark2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewBenchmark(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewComparison_triageRatio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewComparison",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ReviewBenchmark(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewComparison_drawMedian(ctx context.Context, field graphql.CollectedField, obj *model.ReviewComparison) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewComparison_drawMedian(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DrawMedian, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ReviewBenchmark) graphql.Marshaler {
+			return ec.marshalNReviewBenchmark2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewBenchmark(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewComparison_drawMedian(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewComparison",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ReviewBenchmark(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewComparison_drawRatio(ctx context.Context, field graphql.CollectedField, obj *model.ReviewComparison) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ReviewComparison_drawRatio(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DrawRatio, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ReviewBenchmark) graphql.Marshaler {
+			return ec.marshalNReviewBenchmark2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewBenchmark(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ReviewComparison_drawRatio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewComparison",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ReviewBenchmark(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ReviewDivision_id(ctx context.Context, field graphql.CollectedField, obj *model.ReviewDivision) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -16711,65 +17302,76 @@ func (ec *executionContext) _IncidentReview(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("IncidentReview")
+		case "incidentId":
+			out.Values[i] = ec._IncidentReview_incidentId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "comparison":
+			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
+				true, true,
+				func(ctx context.Context) graphql.Marshaler {
+					return ec._IncidentReview_comparison(ctx, field, obj)
+				})
 		case "openedAt":
 			out.Values[i] = ec._IncidentReview_openedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "closedAt":
 			out.Values[i] = ec._IncidentReview_closedAt(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "messageCount":
 			out.Values[i] = ec._IncidentReview_messageCount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "triage":
 			out.Values[i] = ec._IncidentReview_triage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "draw":
 			out.Values[i] = ec._IncidentReview_draw(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "triageHigh":
 			out.Values[i] = ec._IncidentReview_triageHigh(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "triageNormal":
 			out.Values[i] = ec._IncidentReview_triageNormal(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "divisions":
 			out.Values[i] = ec._IncidentReview_divisions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "unassigned":
 			out.Values[i] = ec._IncidentReview_unassigned(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "rework":
 			out.Values[i] = ec._IncidentReview_rework(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "reportingLag":
 			out.Values[i] = ec._IncidentReview_reportingLag(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "load":
 			out.Values[i] = ec._IncidentReview_load(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -17979,6 +18581,127 @@ func (ec *executionContext) _ResourceHomeLocation(ctx context.Context, sel ast.S
 		case "lng":
 			out.Values[i] = ec._ResourceHomeLocation_lng(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var reviewBenchmarkImplementors = []string{"ReviewBenchmark"}
+
+func (ec *executionContext) _ReviewBenchmark(ctx context.Context, sel ast.SelectionSet, obj *model.ReviewBenchmark) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reviewBenchmarkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReviewBenchmark")
+		case "value":
+			out.Values[i] = ec._ReviewBenchmark_value(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "peers":
+			out.Values[i] = ec._ReviewBenchmark_peers(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sufficient":
+			out.Values[i] = ec._ReviewBenchmark_sufficient(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lowest":
+			out.Values[i] = ec._ReviewBenchmark_lowest(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "q1":
+			out.Values[i] = ec._ReviewBenchmark_q1(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "median":
+			out.Values[i] = ec._ReviewBenchmark_median(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "q3":
+			out.Values[i] = ec._ReviewBenchmark_q3(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "highest":
+			out.Values[i] = ec._ReviewBenchmark_highest(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "betterThan":
+			out.Values[i] = ec._ReviewBenchmark_betterThan(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	if n := len(deferred.Defers); n > 0 {
+		atomic.AddInt32(&ec.Deferred, int32(min(n, math.MaxInt32)))
+		ec.ProcessDeferredGroup(deferred)
+	}
+
+	return out
+}
+
+var reviewComparisonImplementors = []string{"ReviewComparison"}
+
+func (ec *executionContext) _ReviewComparison(ctx context.Context, sel ast.SelectionSet, obj *model.ReviewComparison) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reviewComparisonImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := graphql.NewDeferredGroup(ctx)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReviewComparison")
+		case "triageMedian":
+			out.Values[i] = ec._ReviewComparison_triageMedian(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "triageRatio":
+			out.Values[i] = ec._ReviewComparison_triageRatio(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "drawMedian":
+			out.Values[i] = ec._ReviewComparison_drawMedian(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "drawRatio":
+			out.Values[i] = ec._ReviewComparison_drawRatio(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		default:
@@ -19527,6 +20250,22 @@ func (ec *executionContext) unmarshalNResourceUnitSize2githubᚗcomᚋfᚑeldᚑ
 
 func (ec *executionContext) marshalNResourceUnitSize2githubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResourceUnitSize(ctx context.Context, sel ast.SelectionSet, v model.ResourceUnitSize) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNReviewBenchmark2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewBenchmark(ctx context.Context, sel ast.SelectionSet, v *model.ReviewBenchmark) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "ReviewBenchmark!")
+		return graphql.Null
+	}
+	return ec._ReviewBenchmark(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReviewComparison2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewComparison(ctx context.Context, sel ast.SelectionSet, v *model.ReviewComparison) graphql.Marshaler {
+	if v == nil {
+		graphql.AddInvalidNullError(ctx, "ReviewComparison!")
+		return graphql.Null
+	}
+	return ec._ReviewComparison(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNReviewDivision2ᚕᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐReviewDivisionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ReviewDivision) graphql.Marshaler {
