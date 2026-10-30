@@ -42,7 +42,6 @@ import {
   useIncidentMessages,
   useTriageMessage,
   useIncidentResources,
-  useCreateSchadenplatz,
   useMessageForTriage,
   useRecordCasualties,
   useAlertResource,
@@ -79,6 +78,7 @@ import { FilterableMessageStack } from "./FilterableMessageStack";
 import { TriageCanvas, TriageSaved } from "./TriageCanvas";
 import { IncidentContext } from "utils";
 import { divisionLongLabel } from "utils/divisionLabel";
+import { schadenplatzLabel } from "utils/schadenplatz";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { BabsIcon, BabsIconProvider } from "@f-eld-ch/babs-react";
 
@@ -172,6 +172,7 @@ function TriageSummary(props: {
     onAdjust,
   } = props;
   const { t, i18n } = useTranslation();
+  const { state: incidentState } = useContext(IncidentContext);
 
   // allResources is the flat incident-level list that includes ABGELOEST units;
   // fall back to schadenplaetze resources for any id not found there.
@@ -255,10 +256,14 @@ function TriageSummary(props: {
                     >
                       <div className="border-b border-border px-3 py-1">
                         <p className="text-[10px] font-medium tracking-wide text-fg-muted/60 uppercase">
-                          Schadenplatz
+                          {sp.isDefault ? t("incident") : "Schadenplatz"}
                         </p>
                         <p className="truncate text-xs font-semibold text-fg-muted">
-                          {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                          {schadenplatzLabel(
+                            sp,
+                            incidentState.incident?.name,
+                            t("schadenplatz.defaultHint"),
+                          )}
                         </p>
                       </div>
                       <div className="divide-y divide-border px-3">
@@ -373,7 +378,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const [recordCasualties] = useRecordCasualties();
   const [reactivateResource] = useReactivateResource();
   const resourcesResult = useIncidentResources(incidentId);
-  const [createSchadenplatz] = useCreateSchadenplatz();
   const iconsLoaded = useBabsIcons();
   const [stepError, setStepError] = useState<ApiError | undefined>(undefined);
 
@@ -384,8 +388,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const [alertOpen, setAlertOpen] = useState(false);
 
   const [priority, setPriority] = useState<PriorityStatus>(message.priorityId);
-  // Named Schadenplätz selected in the dedicated Schadenplatz step. Default is never in this list.
-  const [selectedSpIds, setSelectedSpIds] = useState<string[]>([]);
   // Per-Schadenplatz casualty deltas — pre-populated from previous triage when available.
   const [casualtiesBySpId, setCasualtiesBySpId] = useState<Record<string, CasualtyDeltas>>({});
   const casualtiesInitialized = useRef(false);
@@ -456,10 +458,18 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const schadenplaetze =
     resourcesResult.status === "ready" ? resourcesResult.data.schadenplaetze : [];
   const defaultSp = schadenplaetze.find((s) => s.isDefault);
-  const namedSchadenplaetze = schadenplaetze.filter((s) => !s.isDefault);
+  // Schadenplätze can no longer be chosen or created while triaging, so everything goes to the
+  // default one. Named ones (from earlier triages) only stay in play for a message that already
+  // recorded casualties on them, so those can still be adjusted or cleared.
+  const selectedSpIds = useMemo(
+    () =>
+      defaultSp
+        ? previousCasualties.map((e) => e.schadenplatzId).filter((id) => id !== defaultSp.id)
+        : [],
+    [defaultSp, previousCasualties],
+  );
 
-  // Pre-populate casualties and SP selection from previous triage (once per mount).
-  // Waits for both previousCasualties and defaultSp so we can exclude the default from selectedSpIds.
+  // Pre-populate casualties from previous triage (once per mount).
   useEffect(() => {
     if (casualtiesInitialized.current || previousCasualties.length === 0 || !defaultSp) return;
     casualtiesInitialized.current = true;
@@ -476,12 +486,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     }
     // eslint-disable-next-line react/set-state-in-effect -- initializes local edit state from previous triage query data once.
     setCasualtiesBySpId(initial);
-
-    const namedSpIds = previousCasualties
-      .map((e) => e.schadenplatzId)
-      .filter((id) => id !== defaultSp.id);
-    // eslint-disable-next-line react/set-state-in-effect -- initializes local edit state from previous triage query data once.
-    if (namedSpIds.length > 0) setSelectedSpIds(namedSpIds);
   }, [previousCasualties, defaultSp]);
 
   // Personen step: selected named SPs first (in selection order), then default SP.
@@ -492,8 +496,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
     ],
     [defaultSp, selectedSpIds],
   );
-  const toggleSpId = (id: string) =>
-    setSelectedSpIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const getSpCasualties = useCallback(
     (spId: string): CasualtyDeltas =>
@@ -513,7 +515,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
   const steps: StepDef[] = [
     ...(isPending ? [{ key: "meldung", label: t("stepMeldung") }] : []),
     { key: "meldefluss", label: t("messageFlow") },
-    ...(showResources ? [{ key: "schadenplatz", label: t("stepSchadenplatz") }] : []),
     ...(showResources ? [{ key: "personen", label: t("stepPersonen") }] : []),
     ...(showResources ? [{ key: "mittel", label: t("stepMittel") }] : []),
   ];
@@ -800,30 +801,17 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
               </div>
             )}
 
-            {currentStep.key === "schadenplatz" && (
-              <SchadenplatzSelectStep
-                namedSchadenplaetze={namedSchadenplaetze}
-                selectedIds={selectedSpIds}
-                onToggle={toggleSpId}
-                incidentId={incidentId}
-                onCreated={(id) => setSelectedSpIds((prev) => [...prev, id])}
-                onReplaced={(tempId, realId) =>
-                  setSelectedSpIds((prev) => prev.map((id) => (id === tempId ? realId : id)))
-                }
-                onCancelled={(tempId) =>
-                  setSelectedSpIds((prev) => prev.filter((id) => id !== tempId))
-                }
-                createSchadenplatz={(args) =>
-                  createSchadenplatz({ ...args, occurredAt: message.time })
-                }
-              />
-            )}
-
             {currentStep.key === "personen" && (
               <div className="space-y-6">
                 {personenSpIds.map((spId) => {
                   const sp = schadenplaetze.find((s) => s.id === spId);
-                  const label = sp?.isDefault ? t("schadenplatz.defaultHint") : (sp?.name ?? spId);
+                  const label = sp
+                    ? schadenplatzLabel(
+                        sp,
+                        incidentState.incident?.name,
+                        t("schadenplatz.defaultHint"),
+                      )
+                    : spId;
                   return (
                     <div key={spId}>
                       <h3 className="mb-3 text-sm font-semibold tracking-wide text-fg-muted uppercase">
@@ -1336,132 +1324,6 @@ function CasualtyRow({
   );
 }
 
-// ── SchadenplatzSelectStep ───────────────────────────────────────────────────
-
-// Multi-select step for picking the Schadenplätz that this message concerns.
-// Newly created Schadenplätz are auto-selected. Shows an empty state when none exist yet.
-function SchadenplatzSelectStep({
-  namedSchadenplaetze,
-  selectedIds,
-  onToggle,
-  incidentId,
-  createSchadenplatz,
-  onCreated,
-  onReplaced,
-  onCancelled,
-}: {
-  namedSchadenplaetze: SchadenplatzWithResources[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-  incidentId: string;
-  createSchadenplatz: (args: {
-    incidentId: string;
-    name: string;
-    tempId?: string;
-  }) => Promise<{ id: string; tempId: string }>;
-  onCreated: (id: string) => void;
-  onReplaced: (tempId: string, realId: string) => void;
-  onCancelled: (tempId: string) => void;
-}) {
-  const { t } = useTranslation();
-  const [showNew, setShowNew] = useState(false);
-  const [newSpName, setNewSpName] = useState("");
-  const [creating, setCreating] = useState(false);
-
-  const handleCreate = async () => {
-    if (!newSpName.trim()) return;
-    setCreating(true);
-    const tempId = `__optimistic_sp_${Date.now()}`;
-    onCreated(tempId);
-    try {
-      const result = await createSchadenplatz({ incidentId, name: newSpName.trim(), tempId });
-      if (result.id !== tempId) onReplaced(tempId, result.id);
-      setNewSpName("");
-      setShowNew(false);
-    } catch (e) {
-      onCancelled(tempId);
-      throw e;
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-fg-muted">{t("schadenplatz.selectHint")}</p>
-
-      {namedSchadenplaetze.length === 0 ? (
-        <p className="px-1 text-sm text-fg-muted italic">{t("schadenplatz.noneCreated")}</p>
-      ) : (
-        <div className="space-y-2">
-          {namedSchadenplaetze.map((sp) => {
-            const isSelected = selectedIds.includes(sp.id);
-            return (
-              <label
-                key={sp.id}
-                className={clsx(
-                  "flex cursor-pointer items-center gap-3 rounded border px-3 py-2 text-sm transition-colors",
-                  isSelected
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-bg-elevated hover:border-primary/40",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => onToggle(sp.id)}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span className="flex-1 font-medium text-fg">{sp.name}</span>
-              </label>
-            );
-          })}
-        </div>
-      )}
-
-      <div className={clsx("pt-2", namedSchadenplaetze.length > 0 && "border-t border-border")}>
-        {!showNew ? (
-          <button
-            type="button"
-            className="text-sm text-primary hover:underline"
-            onClick={() => setShowNew(true)}
-          >
-            + {t("schadenplatz.new")}
-          </button>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <input
-              type="text"
-              value={newSpName}
-              onChange={(e) => setNewSpName(e.target.value)}
-              placeholder={t("schadenplatz.namePlaceholder")}
-              className="w-full rounded border border-border bg-bg-elevated px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void handleCreate();
-                if (e.key === "Escape") setShowNew(false);
-              }}
-            />
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="primary"
-                size="xs"
-                disabled={creating || !newSpName.trim()}
-                onClick={() => void handleCreate()}
-              >
-                {t("schadenplatz.create")}
-              </Button>
-              <Button type="button" variant="light" size="xs" onClick={() => setShowNew(false)}>
-                {t("cancel")}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Resource display helpers ──────────────────────────────────────────────────
 
 /**
@@ -1543,10 +1405,11 @@ function ResourcePicker({
         sp.resources.map((r) => ({
           ...r,
           _spId: sp.id,
-          _spName: sp.isDefault ? t("schadenplatz.defaultHint") : sp.name,
+          // The default Schadenplatz is the incident itself: nothing worth showing per resource.
+          _spName: sp.isDefault ? "" : sp.name,
         })),
       ),
-    [schadenplaetze, t],
+    [schadenplaetze],
   );
 
   // Selected resources: look up in allResourcesById first so ABGELOEST units remain visible
@@ -1558,10 +1421,10 @@ function ResourcePicker({
         const r = allResourcesById.get(id) ?? allAnnotated.find((a) => a.id === id);
         if (!r) return [];
         const sp = schadenplaetze.find((s) => s.id === r.schadenplatzId);
-        const _spName = sp ? (sp.isDefault ? t("schadenplatz.defaultHint") : sp.name) : "";
+        const _spName = sp && !sp.isDefault ? sp.name : "";
         return [{ ...r, _spId: r.schadenplatzId, _spName }];
       }),
-    [selectedIds, allResourcesById, allAnnotated, schadenplaetze, t],
+    [selectedIds, allResourcesById, allAnnotated, schadenplaetze],
   );
 
   // Available: not yet selected, not ABGELOEST, alerted before message time.
@@ -1907,6 +1770,7 @@ function ResourceEditPanel({
   onActionComplete: () => void;
 }) {
   const { t } = useTranslation();
+  const { state: incidentState } = useContext(IncidentContext);
   const [markReady, markReadyState] = useMarkResourceReady();
   const [deploy, deployState] = useDeployResource();
   const [standDown, standDownState] = useStandDownResource();
@@ -2061,7 +1925,11 @@ function ResourceEditPanel({
               >
                 {schadenplaetze.map((sp) => (
                   <option key={sp.id} value={sp.id}>
-                    {sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                    {schadenplatzLabel(
+                      sp,
+                      incidentState.incident?.name,
+                      t("schadenplatz.defaultHint"),
+                    )}
                   </option>
                 ))}
               </select>

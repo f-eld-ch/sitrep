@@ -10,6 +10,7 @@ import { CasualtyList } from "./CasualtyList";
 import { ZERO_CASUALTIES, addCasualties, type CasualtyTotals } from "./categories";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import { schadenplatzLabel } from "utils/schadenplatz";
 
 function sum(sps: SchadenplatzWithResources[]): CasualtyTotals {
   return sps.reduce((acc, sp) => addCasualties(acc, sp.casualties), ZERO_CASUALTIES);
@@ -120,7 +121,11 @@ export function List() {
                 <CasualtySpCard
                   key={sp.id}
                   sp={sp}
-                  label={sp.isDefault ? t("schadenplatz.defaultHint") : sp.name}
+                  label={schadenplatzLabel(
+                    sp,
+                    result.data.incidentName,
+                    t("schadenplatz.defaultHint"),
+                  )}
                   iconsLoaded={iconsLoaded}
                 />
               ))}
