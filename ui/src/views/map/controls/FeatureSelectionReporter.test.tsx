@@ -120,6 +120,7 @@ describe("FeatureSelectionReporter cursor", () => {
           layer: {
             id: "l1",
             kind: "STANDARD",
+            sourceIncidentId: "inc-child",
             features: [
               { id: "f1", geometry: { type: "Point", coordinates: [8, 47] }, properties: {} },
             ],
@@ -141,7 +142,16 @@ describe("FeatureSelectionReporter cursor", () => {
       setup({ layerState: selected, showRing: false, onSelect });
 
       expect(screen.queryByTestId("source-selected-feature")).toBeNull();
-      expect(onSelect).toHaveBeenCalledWith("f1");
+      // With the incident the feature's layer belongs to: a parent incident shows the layers of
+      // its sub-incidents, and the messages are in the incident that drew the feature.
+      expect(onSelect).toHaveBeenCalledWith("f1", "inc-child");
+    });
+
+    it("reports no incident for a feature that is on no layer", () => {
+      const onSelect = vi.fn();
+      setup({ layerState: { ...selected, selectedFeature: "elsewhere" }, onSelect });
+
+      expect(onSelect).toHaveBeenCalledWith("elsewhere", undefined);
     });
   });
 });

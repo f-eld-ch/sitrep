@@ -108,7 +108,7 @@ interface MapViewOptions {
   /** Draw for this message: all changes go to the message map layer and take effect at the message's time. */
   drawingMessage?: DrawingMessage;
   /** Called with the feature the user clicks or selects (undefined when cleared). */
-  onFeatureSelect?: (featureId: string | undefined) => void;
+  onFeatureSelect?: (featureId: string | undefined, sourceIncidentId?: string) => void;
   /** Changing this clears the map's feature selection. */
   deselectToken?: number;
   /** Called when something is drawn, changed or deleted for the message (see MapSelection). */
