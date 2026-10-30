@@ -60,10 +60,24 @@ type Message struct {
 	// acknowledgements are per division. They only exist for divisions the message is
 	// currently triaged to, and are cleared when the message content or time changes.
 	acknowledgements map[shared.DivisionID]Acknowledgement
+	// triagedAt is when the message first reached the final triage status; divisionAssignedAt is
+	// when each division it is currently triaged to was given the message. Both come from the
+	// time the events were recorded, which an imported message does not have.
+	triagedAt          *time.Time
+	divisionAssignedAt map[shared.DivisionID]time.Time
+	imported           bool
+	// What had to be done again: the message was sent back for more information, its triage was
+	// reset, or its content was corrected once it had been triaged.
+	everMoreInfo         bool
+	everReset            bool
+	correctedAfterTriage bool
 }
 
 func New(id shared.MessageID) *Message {
-	m := &Message{acknowledgements: make(map[shared.DivisionID]Acknowledgement)}
+	m := &Message{
+		acknowledgements:   make(map[shared.DivisionID]Acknowledgement),
+		divisionAssignedAt: make(map[shared.DivisionID]time.Time),
+	}
 	m.root.SetID(uuid.UUID(id))
 	eventsourcing.Register(m, Recorded{}, Corrected{}, Triaged{}, Deleted{}, Imported{},
 		AttachmentAdded{}, AttachmentRemoved{}, DivisionAcknowledged{}, DivisionAcknowledgementRevoked{})
@@ -95,6 +109,37 @@ func (m *Message) DivisionIDs() []shared.DivisionID       { return m.divisionIDs
 func (m *Message) LinkedResourceIDs() []shared.ResourceID { return m.linkedResourceIDs }
 func (m *Message) AuthorSub() *string                     { return m.authorSub }
 func (m *Message) IsDeleted() bool                        { return m.deleted }
+
+// IsImported reports whether the message comes from the legacy import. Its history is not
+// known, so nothing about when it was handled can be derived from it.
+func (m *Message) IsImported() bool { return m.imported }
+
+// EverMoreInfo reports whether the message was ever sent back for more information.
+func (m *Message) EverMoreInfo() bool { return m.everMoreInfo }
+
+// EverReset reports whether the message's triage was ever reset.
+func (m *Message) EverReset() bool { return m.everReset }
+
+// CorrectedAfterTriage reports whether the message was corrected after it had been triaged.
+func (m *Message) CorrectedAfterTriage() bool { return m.correctedAfterTriage }
+
+// TriagedAt is when the message first reached the final triage status, nil while it has not.
+func (m *Message) TriagedAt() *time.Time { return m.triagedAt }
+
+// DivisionAssignedAt is when the division was given the message by a triage. It is only known
+// for a division the message is currently triaged to.
+func (m *Message) DivisionAssignedAt(divisionID shared.DivisionID) (time.Time, bool) {
+	at, ok := m.divisionAssignedAt[divisionID]
+
+	return at, ok
+}
+
+// AcknowledgedAt is when the division acknowledged the message, if it currently has.
+func (m *Message) AcknowledgedAt(divisionID shared.DivisionID) (time.Time, bool) {
+	ack, ok := m.acknowledgements[divisionID]
+
+	return ack.At, ok
+}
 
 // Acknowledgements returns the divisions that have acknowledged the message, oldest first.
 func (m *Message) Acknowledgements() []Acknowledgement {
@@ -399,6 +444,19 @@ func (m *Message) Delete(reason shared.DeleteReason, actor string, at time.Time)
 // Transition
 // ──────────────────────────────────────────────────────────────────────────────
 
+// changedBy reports whether a correction sets any field to something other than what it is now.
+func (m *Message) changedBy(d Corrected) bool {
+	differs := func(next *string, current string) bool { return next != nil && *next != current }
+
+	return differs(d.Content, m.content) ||
+		differs(d.Sender, m.sender) ||
+		differs(d.SenderDetail, m.senderDetail) ||
+		differs(d.Receiver, m.receiver) ||
+		differs(d.ReceiverDetail, m.receiverDetail) ||
+		(d.Medium != nil && *d.Medium != m.medium) ||
+		(d.Time != nil && !d.Time.Equal(m.time))
+}
+
 func (m *Message) Transition(e eventsourcing.Event) error {
 	switch d := e.Data.(type) {
 	case Recorded:
@@ -414,6 +472,11 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.createdAt = e.OccurredAt
 		m.authorSub = &d.AuthorSub
 	case Corrected:
+		// Saving the same values again is no correction.
+		if m.triagedAt != nil && m.changedBy(d) {
+			m.correctedAfterTriage = true
+		}
+
 		// What the divisions acted on changed, so they have to look at the message again. (Its time
 		// cannot change once it is triaged, so only the content can.)
 		if d.Content != nil && *d.Content != m.content {
@@ -456,6 +519,32 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.lastEditorSub = &d.TriagedBy
 
+		switch d.Triage {
+		case shared.TriageMoreInfo:
+			m.everMoreInfo = true
+		case shared.TriageReset:
+			m.everReset = true
+		case shared.TriagePending, shared.TriageDone:
+		}
+
+		if d.Triage == shared.TriageDone && m.triagedAt == nil {
+			at := e.OccurredAt
+			m.triagedAt = &at
+		}
+
+		// A division keeps the time it was first given the message for as long as it stays in the
+		// set; one that is taken out and given the message again starts over.
+		next := make(map[shared.DivisionID]time.Time, len(d.DivisionIDs))
+		for _, id := range d.DivisionIDs {
+			if at, ok := m.divisionAssignedAt[id]; ok {
+				next[id] = at
+			} else {
+				next[id] = e.OccurredAt
+			}
+		}
+
+		m.divisionAssignedAt = next
+
 		// A division that no longer has the message cannot have acknowledged it.
 		for id := range m.acknowledgements {
 			if !slices.Contains(m.divisionIDs, id) {
@@ -485,6 +574,7 @@ func (m *Message) Transition(e eventsourcing.Event) error {
 		m.linkedResourceIDs = d.LinkedResourceIDs
 		m.authorSub = d.AuthorSub
 		m.lastEditorSub = d.LastEditorSub
+		m.imported = true
 	case AttachmentAdded:
 		m.attachments = append(m.attachments, Attachment{
 			ID:          d.AttachmentID,

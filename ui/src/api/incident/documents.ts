@@ -12,6 +12,8 @@ import type {
   FetchIncidentsQueryVariables,
   GetIncidentDetailQuery,
   GetIncidentDetailQueryVariables,
+  GetIncidentReviewQuery,
+  GetIncidentReviewQueryVariables,
   LinkIncidentParentMutation,
   LinkIncidentParentMutationVariables,
   ReopenIncidentMutation,
@@ -72,6 +74,114 @@ export const GET_INCIDENT_DETAILS: TypedDocumentNode<
         name
         description
         kind
+      }
+    }
+  }
+`;
+
+/** The review of an incident's messages. Null for an imported incident. */
+export const GET_INCIDENT_REVIEW: TypedDocumentNode<
+  GetIncidentReviewQuery,
+  GetIncidentReviewQueryVariables
+> = gql`
+  query GetIncidentReview($incidentId: ID!) {
+    incident(id: $incidentId) {
+      id
+      name
+      review {
+        openedAt
+        closedAt
+        messageCount
+        triage {
+          total
+          completed
+          ratio
+          duration {
+            count
+            medianSeconds
+            p90Seconds
+            maxSeconds
+          }
+          distribution {
+            fromSeconds
+            toSeconds
+            count
+          }
+        }
+        draw {
+          total
+          completed
+          ratio
+          duration {
+            count
+            medianSeconds
+            p90Seconds
+            maxSeconds
+          }
+          distribution {
+            fromSeconds
+            toSeconds
+            count
+          }
+        }
+        triageHigh {
+          count
+          duration {
+            count
+            medianSeconds
+            p90Seconds
+            maxSeconds
+          }
+        }
+        triageNormal {
+          count
+          duration {
+            count
+            medianSeconds
+            p90Seconds
+            maxSeconds
+          }
+        }
+        divisions {
+          id
+          name
+          description
+          kind
+          assigned
+          acknowledged
+          duration {
+            count
+            medianSeconds
+            p90Seconds
+            maxSeconds
+          }
+        }
+        unassigned
+        rework {
+          total
+          moreInfo
+          reset
+          correctedAfterTriage
+          reworked
+        }
+        reportingLag {
+          count
+          medianSeconds
+          p90Seconds
+          maxSeconds
+        }
+        load {
+          bucketSeconds
+          peakEntered
+          peakEnteredAt
+          peakBacklog
+          peakBacklogAt
+          buckets {
+            start
+            entered
+            backlog
+          }
+        }
       }
     }
   }

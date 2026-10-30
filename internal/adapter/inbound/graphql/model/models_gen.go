@@ -215,6 +215,9 @@ type Incident struct {
 	HasCasualtyRecords bool `json:"hasCasualtyRecords"`
 	// All messages for this incident, newest first.
 	Messages []*Message `json:"messages"`
+	// The review of this incident's messages, for the discussion after the operation. Null for an
+	// imported incident, whose message history is not known.
+	Review *IncidentReview `json:"review,omitempty"`
 	// Whether the current user has write access to this incident.
 	CanWrite bool `json:"canWrite"`
 	// Whether the current user can close or reopen this incident.
@@ -241,6 +244,65 @@ type IncidentAccessGrant struct {
 	PrincipalID   string              `json:"principalId"`
 	PrincipalName string              `json:"principalName"`
 	Role          IncidentRole        `json:"role"`
+}
+
+// The review of an incident's messages, for the discussion after the operation. Computed from the
+// messages' history: for a closed incident it is always the same, for an open one it is an interim
+// status.
+type IncidentReview struct {
+	OpenedAt time.Time `json:"openedAt"`
+	// Null while the incident is open.
+	ClosedAt *time.Time `json:"closedAt,omitempty"`
+	// The messages the figures are based on.
+	MessageCount int `json:"messageCount"`
+	// From a message being entered to it being triaged. Applies to every message.
+	Triage *KpiMetric `json:"triage"`
+	// From a message being triaged to the Nachrichtenkarte to it being drawn. Applies to the messages
+	// triaged to the Nachrichtenkarte.
+	Draw         *KpiMetric           `json:"draw"`
+	TriageHigh   *ReviewPriorityGroup `json:"triageHigh"`
+	TriageNormal *ReviewPriorityGroup `json:"triageNormal"`
+	// Every division of the incident, with the triaged messages it was given.
+	Divisions []*ReviewDivision `json:"divisions"`
+	// Triaged messages that no division was given.
+	Unassigned int           `json:"unassigned"`
+	Rework     *ReviewRework `json:"rework"`
+	// How long after an event it was entered. Null when there are no messages.
+	ReportingLag *KpiDuration `json:"reportingLag,omitempty"`
+	Load         *ReviewLoad  `json:"load"`
+}
+
+// How many messages took a time within a range.
+type KpiBucket struct {
+	// Included.
+	FromSeconds float64 `json:"fromSeconds"`
+	// Excluded. Null for the last range, which has no upper end.
+	ToSeconds *float64 `json:"toSeconds,omitempty"`
+	Count     int      `json:"count"`
+}
+
+// How long a step took, over the messages that got through it.
+type KpiDuration struct {
+	// How many messages the figures are based on.
+	Count         int     `json:"count"`
+	MedianSeconds float64 `json:"medianSeconds"`
+	// 90 percent of the messages were at least this fast.
+	P90Seconds float64 `json:"p90Seconds"`
+	MaxSeconds float64 `json:"maxSeconds"`
+}
+
+// One key figure of an incident.
+type KpiMetric struct {
+	// How many messages it applies to.
+	Total int `json:"total"`
+	// How many of those got through.
+	Completed int `json:"completed"`
+	// Share of messages that got through, from 0 to 1. Null when none applied.
+	Ratio *float64 `json:"ratio,omitempty"`
+	// How long it took the messages that got through. Null when none did.
+	Duration *KpiDuration `json:"duration,omitempty"`
+	// How many of them took which time, from shortest to longest range. Empty when none got through.
+	Distribution []*KpiBucket `json:"distribution"`
 }
 
 type Layer struct {
@@ -362,6 +424,63 @@ type ResourceHomeLocationInput struct {
 	Name string   `json:"name"`
 	Lat  *float64 `json:"lat,omitempty"`
 	Lng  *float64 `json:"lng,omitempty"`
+}
+
+// How many messages a division was given, how many it acknowledged, and how long that took.
+type ReviewDivision struct {
+	ID string `json:"id"`
+	// The short name.
+	Name string `json:"name"`
+	// The full name.
+	Description string       `json:"description"`
+	Kind        DivisionKind `json:"kind"`
+	// Triaged messages the division was given.
+	Assigned int `json:"assigned"`
+	// Of those, the ones it acknowledged. For the Nachrichtenkarte, acknowledging is drawing.
+	Acknowledged int `json:"acknowledged"`
+	// From the division being given the message to acknowledging it. Null when none did.
+	Duration *KpiDuration `json:"duration,omitempty"`
+}
+
+// How many messages came in over time, and how many were waiting. It covers the time the messages
+// were handled, from the first one being entered to the last entry or triage, not the time the
+// incident was open.
+type ReviewLoad struct {
+	BucketSeconds int                 `json:"bucketSeconds"`
+	Buckets       []*ReviewLoadBucket `json:"buckets"`
+	PeakEntered   int                 `json:"peakEntered"`
+	PeakEnteredAt *time.Time          `json:"peakEnteredAt,omitempty"`
+	PeakBacklog   int                 `json:"peakBacklog"`
+	PeakBacklogAt *time.Time          `json:"peakBacklogAt,omitempty"`
+}
+
+// One stretch of time on the load chart.
+type ReviewLoadBucket struct {
+	Start time.Time `json:"start"`
+	// Messages entered in it.
+	Entered int `json:"entered"`
+	// Messages that were still waiting for their first triage at its end.
+	Backlog int `json:"backlog"`
+}
+
+// The triage time of the triaged messages of one priority.
+type ReviewPriorityGroup struct {
+	Count int `json:"count"`
+	// Null when none of them has a triage time.
+	Duration *KpiDuration `json:"duration,omitempty"`
+}
+
+// How many messages had to be handled again. A message can be counted in several of them.
+type ReviewRework struct {
+	Total int `json:"total"`
+	// Sent back for more information.
+	MoreInfo int `json:"moreInfo"`
+	// Their triage was reset.
+	Reset int `json:"reset"`
+	// Corrected after they had been triaged.
+	CorrectedAfterTriage int `json:"correctedAfterTriage"`
+	// Messages with any of the above.
+	Reworked int `json:"reworked"`
 }
 
 // A geographic damage site owned by an incident.

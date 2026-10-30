@@ -1,5 +1,6 @@
 import {
   faArrowRightFromBracket,
+  faChartColumn,
   faEdit,
   faEye,
   faEyeLowVision,
@@ -246,6 +247,24 @@ export function IncidentCard(props: {
             <FontAwesomeIcon icon={faArrowRightFromBracket} />
             <span>{t("enter")}</span>
           </button>
+          {incident.closedAt !== null && (
+            <button
+              type="button"
+              data-testid="review-button"
+              className={footerItem}
+              onClick={() => {
+                navigate(`../${props.incident.id}/review`);
+                dispatch({
+                  type: "SET_INCIDENT",
+                  payload: props.incident,
+                  forId: props.incident.id,
+                });
+              }}
+            >
+              <FontAwesomeIcon icon={faChartColumn} />
+              <span>{t("review.title")}</span>
+            </button>
+          )}
           {incident.canWrite && incident.closedAt === null && (
             <button
               type="button"

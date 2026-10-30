@@ -339,6 +339,130 @@ type Message {
   author: String
 }
 
+"""How long a step took, over the messages that got through it."""
+type KpiDuration {
+  """How many messages the figures are based on."""
+  count: Int!
+  medianSeconds: Float!
+  """90 percent of the messages were at least this fast."""
+  p90Seconds: Float!
+  maxSeconds: Float!
+}
+
+"""How many messages took a time within a range."""
+type KpiBucket {
+  """Included."""
+  fromSeconds: Float!
+  """Excluded. Null for the last range, which has no upper end."""
+  toSeconds: Float
+  count: Int!
+}
+
+"""One key figure of an incident."""
+type KpiMetric {
+  """How many messages it applies to."""
+  total: Int!
+  """How many of those got through."""
+  completed: Int!
+  """Share of messages that got through, from 0 to 1. Null when none applied."""
+  ratio: Float
+  """How long it took the messages that got through. Null when none did."""
+  duration: KpiDuration
+  """
+  How many of them took which time, from shortest to longest range. Empty when none got through.
+  """
+  distribution: [KpiBucket!]!
+}
+
+"""The triage time of the triaged messages of one priority."""
+type ReviewPriorityGroup {
+  count: Int!
+  """Null when none of them has a triage time."""
+  duration: KpiDuration
+}
+
+"""How many messages a division was given, how many it acknowledged, and how long that took."""
+type ReviewDivision {
+  id: ID!
+  """The short name."""
+  name: String!
+  """The full name."""
+  description: String!
+  kind: DivisionKind!
+  """Triaged messages the division was given."""
+  assigned: Int!
+  """Of those, the ones it acknowledged. For the Nachrichtenkarte, acknowledging is drawing."""
+  acknowledged: Int!
+  """From the division being given the message to acknowledging it. Null when none did."""
+  duration: KpiDuration
+}
+
+"""How many messages had to be handled again. A message can be counted in several of them."""
+type ReviewRework {
+  total: Int!
+  """Sent back for more information."""
+  moreInfo: Int!
+  """Their triage was reset."""
+  reset: Int!
+  """Corrected after they had been triaged."""
+  correctedAfterTriage: Int!
+  """Messages with any of the above."""
+  reworked: Int!
+}
+
+"""One stretch of time on the load chart."""
+type ReviewLoadBucket {
+  start: DateTime!
+  """Messages entered in it."""
+  entered: Int!
+  """Messages that were still waiting for their first triage at its end."""
+  backlog: Int!
+}
+
+"""
+How many messages came in over time, and how many were waiting. It covers the time the messages
+were handled, from the first one being entered to the last entry or triage, not the time the
+incident was open.
+"""
+type ReviewLoad {
+  bucketSeconds: Int!
+  buckets: [ReviewLoadBucket!]!
+  peakEntered: Int!
+  peakEnteredAt: DateTime
+  peakBacklog: Int!
+  peakBacklogAt: DateTime
+}
+
+"""
+The review of an incident's messages, for the discussion after the operation. Computed from the
+messages' history: for a closed incident it is always the same, for an open one it is an interim
+status.
+"""
+type IncidentReview {
+  openedAt: DateTime!
+  """Null while the incident is open."""
+  closedAt: DateTime
+  """The messages the figures are based on."""
+  messageCount: Int!
+  """From a message being entered to it being triaged. Applies to every message."""
+  triage: KpiMetric!
+  """
+  From a message being triaged to the Nachrichtenkarte to it being drawn. Applies to the messages
+  triaged to the Nachrichtenkarte.
+  """
+  draw: KpiMetric!
+  triageHigh: ReviewPriorityGroup!
+  triageNormal: ReviewPriorityGroup!
+  """Every division of the incident, with the triaged messages it was given."""
+  divisions: [ReviewDivision!]!
+  """Triaged messages that no division was given."""
+  unassigned: Int!
+  rework: ReviewRework!
+  """How long after an event it was entered. Null when there are no messages."""
+  reportingLag: KpiDuration
+  load: ReviewLoad!
+}
+
 type Incident {
   id: ID!
   parentId: ID
@@ -358,6 +482,11 @@ type Incident {
   hasCasualtyRecords: Boolean!
   """All messages for this incident, newest first."""
   messages: [Message!]!
+  """
+  The review of this incident's messages, for the discussion after the operation. Null for an
+  imported incident, whose message history is not known.
+  """
+  review: IncidentReview
   """Whether the current user has write access to this incident."""
   canWrite: Boolean!
   """Whether the current user can close or reopen this incident."""

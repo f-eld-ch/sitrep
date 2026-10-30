@@ -47,6 +47,10 @@ type Incident struct {
 	createdAt time.Time
 	closedAt  *time.Time
 	deletedAt *time.Time
+
+	// imported is set for an incident that comes from the legacy import: the history of its
+	// messages is not known, so nothing can be worked out about how they were handled.
+	imported bool
 }
 
 // New creates a new (empty) Incident aggregate ready to receive commands.
@@ -86,6 +90,9 @@ func (i *Incident) ParentID() *shared.IncidentID                  { return i.par
 func (i *Incident) CreatedAt() time.Time                          { return i.createdAt }
 func (i *Incident) ClosedAt() *time.Time                          { return i.closedAt }
 func (i *Incident) IsOpen() bool                                  { return i.closedAt == nil && i.deletedAt == nil }
+
+// IsImported reports whether the incident comes from the legacy import.
+func (i *Incident) IsImported() bool { return i.imported }
 
 func (i *Incident) IsClosed() bool  { return i.closedAt != nil && i.deletedAt == nil }
 func (i *Incident) IsDeleted() bool { return i.deletedAt != nil }
@@ -463,6 +470,7 @@ func (i *Incident) Transition(e eventsourcing.Event) error {
 		i.deletedAt = &now
 	case Imported:
 		i.name = d.Name
+		i.imported = true
 
 		i.createdAt = d.CreatedAt
 		if d.Location != nil {

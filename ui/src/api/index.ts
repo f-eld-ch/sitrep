@@ -55,6 +55,7 @@ export {
 export type {
   CreateIncidentArgs,
   IncidentDetailsData,
+  IncidentReviewData,
   IncidentsData,
   LinkIncidentParentArgs,
   UnlinkIncidentParentArgs,
@@ -66,6 +67,7 @@ export {
   useCreateIncident,
   useDeleteIncident,
   useIncidentDetails,
+  useIncidentReview,
   useIncidents,
   useLinkIncidentParent,
   useReopenIncident,

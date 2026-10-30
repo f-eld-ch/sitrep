@@ -110,6 +110,30 @@ describe("IncidentCard", () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 
+  it("links the review of a closed incident, and only of a closed one", () => {
+    const { unmount } = render(
+      <IncidentCard
+        incident={{ ...baseIncident, closedAt: new Date() }}
+        closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
+        deleteIncident={mockDeleteIncident}
+      />,
+    );
+    fireEvent.click(screen.getByTestId("review-button"));
+    expect(mockNavigate).toHaveBeenLastCalledWith(`../${baseIncident.id}/review`);
+    unmount();
+
+    render(
+      <IncidentCard
+        incident={{ ...baseIncident, closedAt: null }}
+        closeIncident={mockCloseIncident}
+        reopenIncident={mockReopenIncident}
+        deleteIncident={mockDeleteIncident}
+      />,
+    );
+    expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
+  });
+
   it("calls navigate when edit button is clicked", () => {
     render(
       <IncidentCard

@@ -24,6 +24,9 @@ type IncidentRepository interface {
 // MessageRepository loads and saves the Message aggregate.
 type MessageRepository interface {
 	Load(ctx context.Context, id shared.MessageID) (*message.Message, error)
+	// LoadMany loads several messages in one round trip. A message that does not exist is left
+	// out of the result.
+	LoadMany(ctx context.Context, ids []shared.MessageID) ([]*message.Message, error)
 	Save(ctx context.Context, a *message.Message) (Cursor, error)
 }
 

@@ -223,6 +223,35 @@ describe("Navbar Component", () => {
     });
   });
 
+  describe("Review entry", () => {
+    it("is in the incident menu, on desktop and in the mobile menu", () => {
+      render(
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
+          <IncidentContext.Provider
+            value={{
+              state: { incident: { id: "inc-1", name: "Lage" }, loadedForId: "inc-1" } as never,
+              dispatch: vi.fn(),
+            }}
+          >
+            <MemoryRouter initialEntries={["/incident/inc-1/dashboard"]}>
+              <Routes>
+                <Route path="/incident/:incidentId/*" element={<Navbar />} />
+              </Routes>
+            </MemoryRouter>
+          </IncidentContext.Provider>
+        </UserContext.Provider>,
+      );
+
+      // The mobile menu only exists once it is opened.
+      fireEvent.click(screen.getByRole("button", { name: "Toggle menu" }));
+
+      const entries = screen
+        .getAllByRole("link", { name: "review.title" })
+        .filter((a) => a.getAttribute("href") === "/incident/inc-1/review");
+      expect(entries).toHaveLength(2);
+    });
+  });
+
   describe("Nachrichtenkarte entry", () => {
     const messageMapPath = "/incident/inc-1/journal/messagemap";
 

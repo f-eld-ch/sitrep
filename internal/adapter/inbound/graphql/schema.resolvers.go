@@ -55,6 +55,21 @@ func (r *incidentResolver) HasCasualtyRecords(ctx context.Context, obj *model.In
 	return r.Queries.HasCasualtyRecords(ctx, incID)
 }
 
+// Review is the resolver for the review field.
+func (r *incidentResolver) Review(ctx context.Context, obj *model.Incident) (*model.IncidentReview, error) {
+	incID, err := parseUUID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	report, err := r.Incidents.IncidentReview(ctx, shared.IncidentID(incID))
+	if err != nil {
+		return nil, err
+	}
+
+	return reviewToModel(report), nil
+}
+
 // Messages is the field resolver for Incident.messages.
 // It is called whenever a client requests the messages field on an Incident.
 func (r *incidentResolver) Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error) {

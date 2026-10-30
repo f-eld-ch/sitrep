@@ -73,6 +73,7 @@ func newTestStack(t *testing.T) *testStack {
 		incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler,
 	})
 	queries := inmemqueries.NewQueries(incHandler, divHandler, msgHandler, layerHandler, spHandler, resourceHandler)
+	incidentSvc.WithMessageSource(queries, msgRepo)
 
 	r := &gqlresolver.Resolver{
 		Incidents:      incidentSvc,
@@ -1736,4 +1737,83 @@ func TestLayersForIncident_PlacedAtStaysTheFirstTime(t *testing.T) {
 		require.NotNil(t, features[0].PlacedAt, name)
 		assert.True(t, first.Equal(*features[0].PlacedAt), name)
 	}
+}
+
+func TestIncident_Review(t *testing.T) {
+	s := newTestStack(t)
+	ctx := actorCtx()
+
+	created, err := s.resolver.Mutation().CreateIncident(ctx, model.CreateIncidentInput{
+		Name: "Review", Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},
+	})
+	require.NoError(t, err)
+
+	for _, content := range []string{"Triaged", "Waiting"} {
+		_, err = s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
+			IncidentID: created.Incident.ID, Sender: "A", Receiver: "B",
+			SenderDetail: "", ReceiverDetail: "", Content: content, Medium: model.MediumRadio,
+		})
+		require.NoError(t, err)
+	}
+
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	listed, err := s.resolver.Query().Incident(ctx, created.Incident.ID)
+	require.NoError(t, err)
+
+	messages, err := s.resolver.Incident().Messages(ctx, listed)
+	require.NoError(t, err)
+	require.Len(t, messages, 2)
+
+	_, err = s.resolver.Mutation().TriageMessage(ctx, messages[0].ID, model.TriageMessageInput{
+		Triage: model.TriageStatusDone, Priority: model.PriorityStatusNormal, DivisionIds: []string{},
+	})
+	require.NoError(t, err)
+	require.NoError(t, s.proj.CatchUp(ctx))
+
+	t.Run("an interim status while the incident is open", func(t *testing.T) {
+		review, err := s.resolver.Incident().Review(ctx, listed)
+		require.NoError(t, err)
+		require.NotNil(t, review)
+
+		assert.Nil(t, review.ClosedAt)
+		assert.Equal(t, 2, review.MessageCount)
+		assert.Equal(t, 2, review.Triage.Total)
+		assert.Equal(t, 1, review.Triage.Completed)
+		require.NotNil(t, review.Triage.Ratio)
+		assert.InDelta(t, 0.5, *review.Triage.Ratio, 1e-9)
+		require.NotNil(t, review.Triage.Duration)
+		assert.Equal(t, 1, review.Triage.Duration.Count)
+		require.Len(t, review.Triage.Distribution, 9, "one range more than there are edges")
+		assert.Nil(t, review.Triage.Distribution[len(review.Triage.Distribution)-1].ToSeconds)
+		assert.Empty(t, review.Draw.Distribution, "no draw time, so nothing to spread")
+
+		assert.Zero(t, review.Draw.Total, "nothing was triaged to the Nachrichtenkarte")
+		assert.Nil(t, review.Draw.Ratio)
+		assert.Nil(t, review.Draw.Duration)
+
+		assert.Equal(t, 1, review.TriageNormal.Count)
+		assert.Zero(t, review.TriageHigh.Count)
+		assert.Equal(t, 1, review.Unassigned, "the triaged one was given to no division")
+		assert.Equal(t, 2, review.Rework.Total)
+		assert.NotEmpty(t, review.Divisions)
+		assert.NotEmpty(t, review.Load.Buckets)
+		assert.Equal(t, 2, review.Load.PeakEntered)
+	})
+
+	t.Run("the same once the incident is closed, with when it closed", func(t *testing.T) {
+		_, err := s.resolver.Mutation().CloseIncident(ctx, created.Incident.ID)
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx))
+
+		closed, err := s.resolver.Query().Incident(ctx, created.Incident.ID)
+		require.NoError(t, err)
+
+		review, err := s.resolver.Incident().Review(ctx, closed)
+		require.NoError(t, err)
+		require.NotNil(t, review)
+
+		assert.NotNil(t, review.ClosedAt)
+		assert.Equal(t, 1, review.Triage.Completed)
+	})
 }

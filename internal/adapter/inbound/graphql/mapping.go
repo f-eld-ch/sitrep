@@ -12,6 +12,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -1012,4 +1013,110 @@ func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf
 	}
 
 	return out
+}
+
+// reviewToModel maps the review of an incident's messages; nil when there is none (imported).
+func reviewToModel(r *kpi.Report) *model.IncidentReview {
+	if r == nil {
+		return nil
+	}
+
+	divisions := make([]*model.ReviewDivision, len(r.Divisions))
+	for i, d := range r.Divisions {
+		divisions[i] = &model.ReviewDivision{
+			ID:           d.Division.ID.String(),
+			Name:         d.Division.Name,
+			Description:  d.Division.Description,
+			Kind:         model.DivisionKind(d.Division.Kind),
+			Assigned:     d.Assigned,
+			Acknowledged: d.Acknowledged,
+			Duration:     kpiDurationToModel(d.Duration),
+		}
+	}
+
+	buckets := make([]*model.ReviewLoadBucket, len(r.Load.Buckets))
+	for i, b := range r.Load.Buckets {
+		buckets[i] = &model.ReviewLoadBucket{Start: b.Start, Entered: b.Entered, Backlog: b.Backlog}
+	}
+
+	load := &model.ReviewLoad{
+		BucketSeconds: int(r.Load.BucketSize.Seconds()),
+		Buckets:       buckets,
+		PeakEntered:   r.Load.PeakEntered,
+		PeakBacklog:   r.Load.PeakBacklog,
+	}
+	if r.Load.PeakEntered > 0 {
+		load.PeakEnteredAt = &r.Load.PeakEnteredAt
+	}
+
+	if r.Load.PeakBacklog > 0 {
+		load.PeakBacklogAt = &r.Load.PeakBacklogAt
+	}
+
+	return &model.IncidentReview{
+		OpenedAt:     r.OpenedAt,
+		ClosedAt:     r.ClosedAt,
+		MessageCount: r.Messages,
+		Triage:       kpiMetricToModel(r.Triage),
+		Draw:         kpiMetricToModel(r.Draw),
+		TriageHigh: &model.ReviewPriorityGroup{
+			Count:    r.TriageHigh.Count,
+			Duration: kpiDurationToModel(r.TriageHigh.Duration),
+		},
+		TriageNormal: &model.ReviewPriorityGroup{
+			Count:    r.TriageNormal.Count,
+			Duration: kpiDurationToModel(r.TriageNormal.Duration),
+		},
+		Divisions:  divisions,
+		Unassigned: r.Unassigned,
+		Rework: &model.ReviewRework{
+			Total:                r.Rework.Total,
+			MoreInfo:             r.Rework.MoreInfo,
+			Reset:                r.Rework.Reset,
+			CorrectedAfterTriage: r.Rework.CorrectedAfterTriage,
+			Reworked:             r.Rework.Reworked,
+		},
+		ReportingLag: kpiDurationToModel(r.ReportingLag),
+		Load:         load,
+	}
+}
+
+func kpiMetricToModel(m kpi.Metric) *model.KpiMetric {
+	return &model.KpiMetric{
+		Total:     m.Total,
+		Completed: m.Completed,
+		Ratio:     m.Ratio(),
+		Duration:  kpiDurationToModel(m.Duration),
+
+		Distribution: kpiDistributionToModel(m.Distribution),
+	}
+}
+
+func kpiDistributionToModel(buckets []kpi.DurationBucket) []*model.KpiBucket {
+	out := make([]*model.KpiBucket, len(buckets))
+
+	for i, b := range buckets {
+		out[i] = &model.KpiBucket{FromSeconds: b.From.Seconds(), Count: b.Count}
+
+		if b.To > 0 {
+			to := b.To.Seconds()
+			out[i].ToSeconds = &to
+		}
+	}
+
+	return out
+}
+
+// kpiDurationToModel is nil when no message had a duration.
+func kpiDurationToModel(s kpi.Stats) *model.KpiDuration {
+	if s.Count == 0 {
+		return nil
+	}
+
+	return &model.KpiDuration{
+		Count:         s.Count,
+		MedianSeconds: s.Median.Seconds(),
+		P90Seconds:    s.P90.Seconds(),
+		MaxSeconds:    s.Max.Seconds(),
+	}
 }

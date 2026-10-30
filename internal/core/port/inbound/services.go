@@ -12,6 +12,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -203,7 +204,13 @@ type FeatureChange struct {
 }
 
 // IncidentService is the driving port for incident lifecycle commands.
+//
+//nolint:interfacebloat // All methods operate on the Incident aggregate and belong together as a single port.
 type IncidentService interface {
+	// IncidentReview works out the review of the incident's messages as they are now, nil for an
+	// imported incident. The caller has to have checked that the actor may read the incident.
+	IncidentReview(ctx context.Context, id shared.IncidentID) (*kpi.Report, error)
+
 	CreateIncident(
 		ctx context.Context,
 		name string,

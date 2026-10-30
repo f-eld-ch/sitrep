@@ -4,6 +4,7 @@ import {
   faRectangleList,
   faCaretDown,
   faChevronDown,
+  faChartColumn,
   faClipboard,
   faClipboardCheck,
   faClipboardList,
@@ -107,6 +108,18 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
                         isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
                       )
                     }
+                    to={`/incident/${incidentId}/review`}
+                  >
+                    <FontAwesomeIcon icon={faChartColumn} />
+                    <span>{t("review.title")}</span>
+                  </NavLink>
+                  <NavLink
+                    className={({ isActive }) =>
+                      clsx(
+                        "flex w-full items-center gap-2 px-4 py-2 capitalize",
+                        isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                      )
+                    }
                     to={`/incident/${incidentId}/edit`}
                   >
                     <FontAwesomeIcon icon={faScrewdriverWrench} />
@@ -176,6 +189,18 @@ const Navbar: FunctionComponent<{ isActive?: boolean }> = ({ isActive = false })
               >
                 <FontAwesomeIcon icon={faTachographDigital} />
                 <span>{t("dashboard.title")}</span>
+              </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  clsx(
+                    mobileSubItem,
+                    isActive ? "bg-primary text-white! hover:bg-primary" : "hover:bg-bg-subtle",
+                  )
+                }
+                to={`/incident/${incidentId}/review`}
+              >
+                <FontAwesomeIcon icon={faChartColumn} />
+                <span>{t("review.title")}</span>
               </NavLink>
               <NavLink
                 className={({ isActive }) =>

@@ -14,5 +14,5 @@ export {
   useUpdateIncident,
 } from "./commands";
 export { afterIncidentWrite } from "./invalidate";
-export type { IncidentDetailsData, IncidentsData } from "./queries";
-export { useIncidentDetails, useIncidents } from "./queries";
+export type { IncidentDetailsData, IncidentReviewData, IncidentsData } from "./queries";
+export { useIncidentDetails, useIncidentReview, useIncidents } from "./queries";

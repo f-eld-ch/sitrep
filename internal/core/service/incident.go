@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -36,6 +38,8 @@ type IncidentService struct {
 	access         outbound.IncidentAccessChecker
 	accessRepo     outbound.IncidentAccessRepository
 	accessQueries  outbound.AccessQueries
+	queries        outbound.Queries
+	messages       outbound.MessageRepository
 	clock          outbound.Clock
 	ids            outbound.IDs
 	notifier       outbound.EventNotifier
@@ -71,6 +75,13 @@ func NewIncidentService(
 // can auto-create the default Schadenplatz on incident open.
 func (s *IncidentService) WithSchadenplatzRepository(repo outbound.SchadenplatzRepository) {
 	s.schadenplaetze = repo
+}
+
+// WithMessageSource injects what is needed to review an incident's messages: the read model to
+// find them and the repository to replay their history. Without it there is no review.
+func (s *IncidentService) WithMessageSource(queries outbound.Queries, messages outbound.MessageRepository) {
+	s.queries = queries
+	s.messages = messages
 }
 
 // CreateIncident opens a new incident, creates its divisions, and creates the
@@ -423,6 +434,74 @@ func (s *IncidentService) CloseIncident(
 	}
 
 	return state, err
+}
+
+// IncidentReview works out the review of the incident's messages as it is now: how fast they were
+// triaged and drawn, how they were spread over the divisions, how much had to be done again and
+// when the load was highest.
+//
+// The figures only depend on the messages' history, so for a closed incident, whose messages can
+// no longer change, they are always the same, and for an open one they are an interim status.
+// Nil for an incident that comes from the legacy import, whose message history is not known, and
+// when the service has no message source. The caller has to have checked that the actor may read
+// the incident.
+//
+//nolint:nilnil // no review is a normal outcome (imported incident), not an error
+func (s *IncidentService) IncidentReview(ctx context.Context, id shared.IncidentID) (*kpi.Report, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.IncidentReview",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+
+	fail := func(err error) (*kpi.Report, error) {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, err
+	}
+
+	if s.queries == nil || s.messages == nil {
+		return nil, nil
+	}
+
+	inc, err := s.repo.Load(ctx, id)
+	if err != nil {
+		return fail(err)
+	}
+
+	if inc.IsImported() {
+		return nil, nil
+	}
+
+	rows, err := s.queries.ListMessages(ctx, uuid.UUID(id))
+	if err != nil {
+		return fail(fmt.Errorf("review: list messages: %w", err))
+	}
+
+	ids := make([]shared.MessageID, len(rows))
+	for i, row := range rows {
+		ids[i] = shared.MessageID(row.ID)
+	}
+
+	messages, err := s.messages.LoadMany(ctx, ids)
+	if err != nil {
+		return fail(fmt.Errorf("review: load messages: %w", err))
+	}
+
+	divisions := make([]kpi.Division, 0, len(inc.Divisions()))
+	for _, d := range inc.Divisions() {
+		divisions = append(divisions, kpi.Division{ID: d.ID, Name: d.Name, Description: d.Description, Kind: d.Kind})
+	}
+
+	slices.SortFunc(divisions, func(a, b kpi.Division) int { return strings.Compare(a.Name, b.Name) })
+
+	report := kpi.Compute(kpi.Input{
+		OpenedAt:  inc.CreatedAt(),
+		ClosedAt:  inc.ClosedAt(),
+		Divisions: divisions,
+		Messages:  messages,
+	})
+
+	return &report, nil
 }
 
 // ReopenIncident reopens a closed incident.

@@ -258,6 +258,7 @@ func buildPostgresStack(
 
 	incidentSvcPg := factory.IncidentService(repos, layers)
 	incidentSvcPg.WithSchadenplatzRepository(schadenplaetze)
+	incidentSvcPg.WithMessageSource(queries, messages)
 
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
 	if blobs != nil {
@@ -398,6 +399,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 
 	incidentSvcInmem := factory.IncidentService(repos, layers)
 	incidentSvcInmem.WithSchadenplatzRepository(schadenplaetzeInmem)
+	incidentSvcInmem.WithMessageSource(queries, messages)
 
 	return &stack{
 		IncidentSvc:           incidentSvcInmem,
@@ -537,6 +539,7 @@ func buildSQLiteStack(
 
 	incidentSvcSq := factory.IncidentService(repos, layers)
 	incidentSvcSq.WithSchadenplatzRepository(schadenplaetzeSq)
+	incidentSvcSq.WithMessageSource(queries, messages)
 
 	return &stack{
 		IncidentSvc:           incidentSvcSq,

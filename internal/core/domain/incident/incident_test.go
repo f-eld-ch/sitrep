@@ -443,6 +443,29 @@ func TestIncident_Reopen(t *testing.T) {
 	})
 }
 
+func TestIncident_IsImported(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+
+	t.Run("an imported incident is recognisable", func(t *testing.T) {
+		closed := at
+		inc := replay(t, id, []eventsourcing.Event{
+			{
+				Version:    1,
+				EventType:  "Imported",
+				Data:       incident.Imported{Name: "Altes Ereignis", CreatedAt: at, ClosedAt: &closed},
+				OccurredAt: at,
+			},
+		})
+
+		assert.True(t, inc.IsImported())
+		assert.True(t, inc.IsClosed())
+	})
+
+	t.Run("an incident opened here is not", func(t *testing.T) {
+		assert.False(t, replay(t, id, []eventsourcing.Event{opened(id, "Neu")}).IsImported())
+	})
+}
+
 func TestIncident_LinkDefaultSchadenplatz(t *testing.T) {
 	id := shared.IncidentID(uuid.New())
 	spID := shared.SchadenplatzID(uuid.New())
