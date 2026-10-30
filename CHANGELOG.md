@@ -1,3 +1,15 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(ui)* Look up feature messages in the incident that drew the feature ([#2048](https://github.com/f-eld-ch/sitrep/issues/2048)) - ([052a39f](https://github.com/f-eld-ch/sitrep/commit/052a39f34d9a21e6f4d41fedd18577b283b9f157))
+- *(ui)* Remove the Schadenplatz step from the triage ([#2047](https://github.com/f-eld-ch/sitrep/issues/2047)) - ([37692cc](https://github.com/f-eld-ch/sitrep/commit/37692cc847f33c8d79a406eeaf948af691c4e00d))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-router from 8.5.0 to 8.5.1 in /ui ([#2045](https://github.com/f-eld-ch/sitrep/issues/2045)) - ([e3bc30a](https://github.com/f-eld-ch/sitrep/commit/e3bc30af5066efa4e61048172cd0ae50ba27aed8))
+
+
 ## [26.10.2](https://github.com/f-eld-ch/sitrep/compare/v26.10.1..v26.10.2) - 2026-10-28
 
 ### ⛰️  Features
