@@ -12,6 +12,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -202,8 +203,29 @@ type FeatureChange struct {
 	EffectiveAt *time.Time
 }
 
+// BackfillResult is what BackfillReviewSummaries did.
+type BackfillResult struct {
+	// Recorded incidents got a review headline, Skipped ones had nothing to keep (imported), and
+	// Failed ones could not be worked out.
+	Recorded int
+	Skipped  int
+	Failed   int
+}
+
 // IncidentService is the driving port for incident lifecycle commands.
+//
+//nolint:interfacebloat // All methods operate on the Incident aggregate and belong together as a single port.
 type IncidentService interface {
+	// IncidentReview works out the review of the incident's messages as they are now, nil for an
+	// imported incident. The caller has to have checked that the actor may read the incident.
+	IncidentReview(ctx context.Context, id shared.IncidentID) (*kpi.Report, error)
+	// CompareIncident sets an incident's review headline against the other incidents the actor can
+	// read. The caller has to have checked that the actor may read the incident.
+	CompareIncident(ctx context.Context, id shared.IncidentID, current kpi.Summary) (kpi.Comparison, error)
+	// BackfillReviewSummaries keeps the review headline of the closed incidents that have none or an
+	// out of date one; with force, of all of them.
+	BackfillReviewSummaries(ctx context.Context, actor string, force bool) (BackfillResult, error)
+
 	CreateIncident(
 		ctx context.Context,
 		name string,

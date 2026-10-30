@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
@@ -440,6 +441,104 @@ func TestIncident_Reopen(t *testing.T) {
 		err := inc.Reopen(actor, at)
 		require.NoError(t, err)
 		assert.True(t, inc.IsOpen())
+	})
+}
+
+func TestIncident_IsImported(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+
+	t.Run("an imported incident is recognisable", func(t *testing.T) {
+		closed := at
+		inc := replay(t, id, []eventsourcing.Event{
+			{
+				Version:    1,
+				EventType:  "Imported",
+				Data:       incident.Imported{Name: "Altes Ereignis", CreatedAt: at, ClosedAt: &closed},
+				OccurredAt: at,
+			},
+		})
+
+		assert.True(t, inc.IsImported())
+		assert.True(t, inc.IsClosed())
+	})
+
+	t.Run("an incident opened here is not", func(t *testing.T) {
+		assert.False(t, replay(t, id, []eventsourcing.Event{opened(id, "Neu")}).IsImported())
+	})
+}
+
+func TestIncident_RecordReviewSummary(t *testing.T) {
+	id := shared.IncidentID(uuid.New())
+	summary := kpi.Summary{Version: kpi.SummaryVersion, Messages: 12, TriageTotal: 12, TriageCompleted: 10}
+
+	closed := func(t *testing.T) *incident.Incident {
+		t.Helper()
+
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+		require.NoError(t, inc.Close(shared.ReasonManual, actor, at))
+		inc.Root().ClearPending()
+
+		return inc
+	}
+
+	t.Run("keeps the headline of a closed incident", func(t *testing.T) {
+		inc := closed(t)
+
+		require.NoError(t, inc.RecordReviewSummary(summary, actor, at))
+
+		pending := inc.Root().PendingEvents()
+		require.Len(t, pending, 1)
+		assert.Equal(t, "ReviewSummarised", pending[0].EventType)
+		require.NotNil(t, inc.ReviewSummary())
+		assert.Equal(t, 12, inc.ReviewSummary().Messages)
+	})
+
+	t.Run("a later one replaces an earlier one", func(t *testing.T) {
+		inc := closed(t)
+		require.NoError(t, inc.RecordReviewSummary(summary, actor, at))
+
+		newer := summary
+		newer.Messages = 15
+		require.NoError(t, inc.RecordReviewSummary(newer, actor, at))
+
+		assert.Equal(t, 15, inc.ReviewSummary().Messages)
+	})
+
+	t.Run("an open incident has no final headline", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{opened(id, "Hochwasser")})
+
+		require.ErrorIs(t, inc.RecordReviewSummary(summary, actor, at), shared.ErrIncidentNotClosed)
+		assert.Nil(t, inc.ReviewSummary())
+	})
+
+	t.Run("reopening discards it", func(t *testing.T) {
+		inc := closed(t)
+		require.NoError(t, inc.RecordReviewSummary(summary, actor, at))
+
+		require.NoError(t, inc.Reopen(actor, at))
+
+		assert.Nil(t, inc.ReviewSummary())
+	})
+
+	t.Run("replays from the stored event", func(t *testing.T) {
+		inc := replay(t, id, []eventsourcing.Event{
+			opened(id, "Hochwasser"),
+			{
+				Version:    2,
+				EventType:  "Closed",
+				Data:       incident.Closed{ClosedAt: at, Reason: shared.ReasonManual},
+				OccurredAt: at,
+			},
+			{
+				Version:    3,
+				EventType:  "ReviewSummarised",
+				Data:       incident.ReviewSummarised{Summary: summary},
+				OccurredAt: at,
+			},
+		})
+
+		require.NotNil(t, inc.ReviewSummary())
+		assert.Equal(t, 10, inc.ReviewSummary().TriageCompleted)
 	})
 }
 

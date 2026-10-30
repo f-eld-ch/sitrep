@@ -29,6 +29,7 @@ import { List as RequestList } from "views/measures/requests";
 import { List as TaskList } from "views/measures/tasks";
 import { List as ResourcesList } from "views/resource";
 import { List as CasualtiesList } from "views/casualties";
+import { Review } from "views/review";
 import { Provider as FeatureFlagProvider } from "./FeatureFlags";
 import "./i18n";
 import dayjs from "dayjs";
@@ -123,6 +124,14 @@ const router = createBrowserRouter([
                 element: (
                   <Layout>
                     <CasualtiesList />
+                  </Layout>
+                ),
+              },
+              {
+                path: "review",
+                element: (
+                  <Layout>
+                    <Review />
                   </Layout>
                 ),
               },

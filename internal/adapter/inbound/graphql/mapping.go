@@ -4,6 +4,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/scalar"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -1012,4 +1014,173 @@ func layersAsOf(layers []*model.Layer, changes []*outbound.FeatureChangeRM, asOf
 	}
 
 	return out
+}
+
+// reviewToModel maps the review of an incident's messages; nil when there is none (imported).
+func reviewToModel(incidentID shared.IncidentID, r *kpi.Report) *model.IncidentReview {
+	if r == nil {
+		return nil
+	}
+
+	divisions := make([]*model.ReviewDivision, len(r.Divisions))
+	for i, d := range r.Divisions {
+		divisions[i] = &model.ReviewDivision{
+			ID:           d.Division.ID.String(),
+			Name:         d.Division.Name,
+			Description:  d.Division.Description,
+			Kind:         model.DivisionKind(d.Division.Kind),
+			Assigned:     d.Assigned,
+			Acknowledged: d.Acknowledged,
+			Duration:     kpiDurationToModel(d.Duration),
+		}
+	}
+
+	buckets := make([]*model.ReviewLoadBucket, len(r.Load.Buckets))
+	for i, b := range r.Load.Buckets {
+		buckets[i] = &model.ReviewLoadBucket{Start: b.Start, Entered: b.Entered, Backlog: b.Backlog}
+	}
+
+	load := &model.ReviewLoad{
+		BucketSeconds: int(r.Load.BucketSize.Seconds()),
+		Buckets:       buckets,
+		PeakEntered:   r.Load.PeakEntered,
+		PeakBacklog:   r.Load.PeakBacklog,
+	}
+	if r.Load.PeakEntered > 0 {
+		load.PeakEnteredAt = &r.Load.PeakEnteredAt
+	}
+
+	if r.Load.PeakBacklog > 0 {
+		load.PeakBacklogAt = &r.Load.PeakBacklogAt
+	}
+
+	return &model.IncidentReview{
+		IncidentID:   incidentID.String(),
+		OpenedAt:     r.OpenedAt,
+		ClosedAt:     r.ClosedAt,
+		MessageCount: r.Messages,
+		Triage:       kpiMetricToModel(r.Triage),
+		Draw:         kpiMetricToModel(r.Draw),
+		TriageHigh: &model.ReviewPriorityGroup{
+			Count:    r.TriageHigh.Count,
+			Duration: kpiDurationToModel(r.TriageHigh.Duration),
+		},
+		TriageNormal: &model.ReviewPriorityGroup{
+			Count:    r.TriageNormal.Count,
+			Duration: kpiDurationToModel(r.TriageNormal.Duration),
+		},
+		Divisions:  divisions,
+		Unassigned: r.Unassigned,
+		Rework: &model.ReviewRework{
+			Total:                r.Rework.Total,
+			MoreInfo:             r.Rework.MoreInfo,
+			Reset:                r.Rework.Reset,
+			CorrectedAfterTriage: r.Rework.CorrectedAfterTriage,
+			Reworked:             r.Rework.Reworked,
+		},
+		ReportingLag: kpiDurationToModel(r.ReportingLag),
+		Load:         load,
+	}
+}
+
+func benchmarkToModel(b kpi.Benchmark) *model.ReviewBenchmark {
+	return &model.ReviewBenchmark{
+		Value:      b.Value,
+		Peers:      b.Peers,
+		Sufficient: b.Sufficient,
+		Lowest:     b.Lowest,
+		Q1:         b.Q1,
+		Median:     b.Median,
+		Q3:         b.Q3,
+		Highest:    b.Highest,
+		BetterThan: b.BetterThan,
+	}
+}
+
+func comparisonToModel(c kpi.Comparison) *model.ReviewComparison {
+	return &model.ReviewComparison{
+		TriageMedian: benchmarkToModel(c.TriageMedian),
+		TriageRatio:  benchmarkToModel(c.TriageRatio),
+		DrawMedian:   benchmarkToModel(c.DrawMedian),
+		DrawRatio:    benchmarkToModel(c.DrawRatio),
+	}
+}
+
+// summaryFromReviewModel is the headline of a review that was already worked out and mapped, so
+// comparing it needs no second pass over the messages. It is the inverse of what reviewToModel
+// keeps of kpi.Summarize; a test holds the two together.
+func summaryFromReviewModel(r *model.IncidentReview) kpi.Summary {
+	ms := func(d *model.KpiDuration, seconds func(*model.KpiDuration) float64) int64 {
+		if d == nil {
+			return 0
+		}
+
+		return int64(math.Round(seconds(d) * 1000))
+	}
+	median := func(d *model.KpiDuration) float64 { return d.MedianSeconds }
+	p90 := func(d *model.KpiDuration) float64 { return d.P90Seconds }
+	samples := func(d *model.KpiDuration) int {
+		if d == nil {
+			return 0
+		}
+
+		return d.Count
+	}
+
+	return kpi.Summary{
+		Version:  kpi.SummaryVersion,
+		Messages: r.MessageCount,
+
+		TriageTotal:     r.Triage.Total,
+		TriageCompleted: r.Triage.Completed,
+		TriageSamples:   samples(r.Triage.Duration),
+		TriageMedianMs:  ms(r.Triage.Duration, median),
+		TriageP90Ms:     ms(r.Triage.Duration, p90),
+
+		DrawTotal:     r.Draw.Total,
+		DrawCompleted: r.Draw.Completed,
+		DrawSamples:   samples(r.Draw.Duration),
+		DrawMedianMs:  ms(r.Draw.Duration, median),
+		DrawP90Ms:     ms(r.Draw.Duration, p90),
+	}
+}
+
+func kpiMetricToModel(m kpi.Metric) *model.KpiMetric {
+	return &model.KpiMetric{
+		Total:     m.Total,
+		Completed: m.Completed,
+		Ratio:     m.Ratio(),
+		Duration:  kpiDurationToModel(m.Duration),
+
+		Distribution: kpiDistributionToModel(m.Distribution),
+	}
+}
+
+func kpiDistributionToModel(buckets []kpi.DurationBucket) []*model.KpiBucket {
+	out := make([]*model.KpiBucket, len(buckets))
+
+	for i, b := range buckets {
+		out[i] = &model.KpiBucket{FromSeconds: b.From.Seconds(), Count: b.Count}
+
+		if b.To > 0 {
+			to := b.To.Seconds()
+			out[i].ToSeconds = &to
+		}
+	}
+
+	return out
+}
+
+// kpiDurationToModel is nil when no message had a duration.
+func kpiDurationToModel(s kpi.Stats) *model.KpiDuration {
+	if s.Count == 0 {
+		return nil
+	}
+
+	return &model.KpiDuration{
+		Count:         s.Count,
+		MedianSeconds: s.Median.Seconds(),
+		P90Seconds:    s.P90.Seconds(),
+		MaxSeconds:    s.Max.Seconds(),
+	}
 }

@@ -27,7 +27,7 @@ func NewIncidentHandler(pool *pgxpool.Pool) *IncidentHandler {
 }
 
 func (h *IncidentHandler) Name() string { return "readmodel.incident" }
-func (h *IncidentHandler) Version() int { return 3 }
+func (h *IncidentHandler) Version() int { return 4 }
 func (h *IncidentHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.incident`)
 	return err
@@ -47,7 +47,8 @@ func (h *IncidentHandler) Handles(st, t string) bool {
 		"Closed",
 		"Reopened",
 		"Deleted",
-		"Imported":
+		"Imported",
+		"ReviewSummarised":
 		return true
 	}
 
@@ -165,8 +166,22 @@ func (h *IncidentHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "Reopened":
 		return exec(db, ctx, `
-			UPDATE readmodel.incident SET is_closed = false, closed_at = NULL, updated_at = $1 WHERE id = $2`,
+			UPDATE readmodel.incident
+			   SET is_closed = false, closed_at = NULL, review_summary = NULL, updated_at = $1 WHERE id = $2`,
 			e.OccurredAt, id)
+
+	case "ReviewSummarised":
+		// The headline of the review, kept to compare incidents. It is no change to the incident
+		// itself, so it leaves updated_at alone.
+		var d struct {
+			Summary jsontext.Value `json:"summary"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(db, ctx, `UPDATE readmodel.incident SET review_summary = $1 WHERE id = $2`,
+			nullableJSON(d.Summary), id)
 
 	case "Deleted":
 		return exec(db, ctx, `

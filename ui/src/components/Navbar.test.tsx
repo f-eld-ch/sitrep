@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { IncidentContext, UserContext } from "utils";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import Navbar from "./Navbar";
 
 const mockDispatch = vi.fn();
@@ -220,6 +220,65 @@ describe("Navbar Component", () => {
 
       // Check if the toggle function is called
       expect(mockToggle).toHaveBeenCalled();
+    });
+  });
+
+  describe("Review entry", () => {
+    // Only the flag of the review is on; the others stay off.
+    const withFlag = (on: boolean) =>
+      vi.mocked(useBooleanFlagValue).mockImplementation((key) => on && key === "incident-review");
+
+    afterEach(() => {
+      vi.mocked(useBooleanFlagValue).mockReset();
+      vi.mocked(useBooleanFlagValue).mockReturnValue(false);
+    });
+
+    const renderAtIncident = () =>
+      render(
+        <UserContext.Provider value={{ state: userState, dispatch: mockDispatch }}>
+          <IncidentContext.Provider
+            value={{
+              state: { incident: { id: "inc-1", name: "Lage" }, loadedForId: "inc-1" } as never,
+              dispatch: vi.fn(),
+            }}
+          >
+            <MemoryRouter initialEntries={["/incident/inc-1/dashboard"]}>
+              <Routes>
+                <Route path="/incident/:incidentId/*" element={<Navbar />} />
+              </Routes>
+            </MemoryRouter>
+          </IncidentContext.Provider>
+        </UserContext.Provider>,
+      );
+
+    const reviewLinks = () =>
+      screen
+        .queryAllByRole("link")
+        .filter((a) => a.getAttribute("href") === "/incident/inc-1/review");
+
+    it("is in the incident menu, on desktop and in the mobile menu, with the flag", () => {
+      withFlag(true);
+      renderAtIncident();
+
+      // The mobile menu only exists once it is opened.
+      fireEvent.click(screen.getByRole("button", { name: "Toggle menu" }));
+
+      expect(reviewLinks()).toHaveLength(2);
+    });
+
+    it("is hidden without the flag, in both menus", () => {
+      withFlag(false);
+      renderAtIncident();
+
+      fireEvent.click(screen.getByRole("button", { name: "Toggle menu" }));
+
+      expect(reviewLinks()).toHaveLength(0);
+      // The rest of the incident menu is still there.
+      expect(
+        screen
+          .getAllByRole("link")
+          .some((a) => a.getAttribute("href") === "/incident/inc-1/dashboard"),
+      ).toBe(true);
     });
   });
 

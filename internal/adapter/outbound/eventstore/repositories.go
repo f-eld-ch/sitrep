@@ -82,6 +82,39 @@ func (r *MessageRepository) Load(ctx context.Context, id shared.MessageID) (*mes
 	return msg, nil
 }
 
+func (r *MessageRepository) LoadMany(ctx context.Context, ids []shared.MessageID) ([]*message.Message, error) {
+	uuids := make([]uuid.UUID, len(ids))
+	for i, id := range ids {
+		uuids[i] = uuid.UUID(id)
+	}
+
+	streams, err := r.store.LoadMany(ctx, message.New(shared.MessageID{}).AggregateType(), uuids)
+	if err != nil {
+		return nil, fmt.Errorf("message repository load many: %w", err)
+	}
+
+	out := make([]*message.Message, 0, len(ids))
+
+	for _, id := range ids {
+		events := streams[uuid.UUID(id)]
+		if len(events) == 0 {
+			continue
+		}
+
+		msg := message.New(id)
+
+		for _, e := range events {
+			if err := eventsourcing.Apply(msg, e); err != nil {
+				return nil, fmt.Errorf("message repository load many %s: %w", id, err)
+			}
+		}
+
+		out = append(out, msg)
+	}
+
+	return out, nil
+}
+
 func (r *MessageRepository) Save(ctx context.Context, a *message.Message) (outbound.Cursor, error) {
 	cursor, err := r.store.Append(ctx, a)
 	if err != nil {

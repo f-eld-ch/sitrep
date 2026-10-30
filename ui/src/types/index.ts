@@ -10,7 +10,21 @@ export type {
   IncidentAccessMode,
   IncidentRole,
 } from "./access";
-export type { Incident, Location } from "./incident";
+export type {
+  Incident,
+  IncidentReview,
+  KpiBucket,
+  KpiDuration,
+  KpiMetric,
+  Location,
+  ReviewBenchmark,
+  ReviewComparison,
+  ReviewDivision,
+  ReviewLoad,
+  ReviewLoadBucket,
+  ReviewPriorityGroup,
+  ReviewRework,
+} from "./incident";
 export type {
   Attachment,
   Division,

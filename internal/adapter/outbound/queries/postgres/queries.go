@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -101,6 +102,101 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	slog.DebugContext(ctx, "listed incidents", slog.Int("count", len(out)))
 
 	return out, nil
+}
+
+func (q *Queries) ListIncidentMessageIDs(ctx context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.pool.Query(ctx, `SELECT id FROM readmodel.message WHERE incident_id = $1`, incidentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListClosedIncidentsForReview(ctx context.Context, staleBefore int) ([]uuid.UUID, error) {
+	rows, err := q.pool.Query(ctx, `
+		SELECT id FROM readmodel.incident
+		WHERE is_closed = true AND is_deleted = false
+		  AND (review_summary IS NULL OR COALESCE((review_summary->>'version')::int, 0) < $1)
+		ORDER BY closed_at`, staleBefore)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListReviewSummaries(ctx context.Context) ([]outbound.ReviewSummaryRM, error) {
+	query := `
+		SELECT i.id, i.review_summary
+		FROM readmodel.incident i
+		WHERE i.is_deleted = false AND i.review_summary IS NOT NULL`
+	args := []any{}
+
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		query += `
+		  AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
+		       OR EXISTS (SELECT 1 FROM readmodel.access_policy p WHERE p.subject = $1 AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
+
+		args = append(args, "user:"+actor.Sub)
+	}
+
+	rows, err := q.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []outbound.ReviewSummaryRM
+
+	for rows.Next() {
+		var (
+			id  uuid.UUID
+			raw []byte
+		)
+
+		if err := rows.Scan(&id, &raw); err != nil {
+			return nil, err
+		}
+
+		var summary kpi.Summary
+		if err := json.Unmarshal(raw, &summary); err != nil {
+			return nil, fmt.Errorf("decode review summary of %s: %w", id, err)
+		}
+
+		out = append(out, outbound.ReviewSummaryRM{IncidentID: id, Summary: summary})
+	}
+
+	return out, rows.Err()
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {

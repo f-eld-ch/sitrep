@@ -8,6 +8,8 @@ import List from "./List";
 const mockNavigate = vi.fn();
 vi.mock("react-router", () => ({ useNavigate: () => mockNavigate }));
 vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
+// The cards read the flag of the review; there is no provider in this test.
+vi.mock("@openfeature/react-sdk", () => ({ useBooleanFlagValue: () => false }));
 vi.mock("dayjs", () => ({
   __esModule: true,
   default: () => ({ format: () => "formatted-date" }),

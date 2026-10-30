@@ -52,6 +52,12 @@ models:
         resolver: true
       hasCasualtyRecords:
         resolver: true
+      review:
+        resolver: true
+  IncidentReview:
+    fields:
+      comparison:
+        resolver: true
   Schadenplatz:
     fields:
       resources:

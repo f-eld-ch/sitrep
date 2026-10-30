@@ -5,9 +5,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +21,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -36,6 +40,8 @@ type IncidentService struct {
 	access         outbound.IncidentAccessChecker
 	accessRepo     outbound.IncidentAccessRepository
 	accessQueries  outbound.AccessQueries
+	queries        outbound.Queries
+	messages       outbound.MessageRepository
 	clock          outbound.Clock
 	ids            outbound.IDs
 	notifier       outbound.EventNotifier
@@ -71,6 +77,13 @@ func NewIncidentService(
 // can auto-create the default Schadenplatz on incident open.
 func (s *IncidentService) WithSchadenplatzRepository(repo outbound.SchadenplatzRepository) {
 	s.schadenplaetze = repo
+}
+
+// WithMessageSource injects what is needed to review an incident's messages: the read model to
+// find them and the repository to replay their history. Without it there is no review.
+func (s *IncidentService) WithMessageSource(queries outbound.Queries, messages outbound.MessageRepository) {
+	s.queries = queries
+	s.messages = messages
 }
 
 // CreateIncident opens a new incident, creates its divisions, and creates the
@@ -415,7 +428,14 @@ func (s *IncidentService) CloseIncident(
 			return err
 		}
 
-		return inc.Close(shared.ReasonManual, actor.Sub, s.clock.Now())
+		at := s.clock.Now()
+		if err := inc.Close(shared.ReasonManual, actor.Sub, at); err != nil {
+			return err
+		}
+
+		s.recordReviewSummary(ctx, id, inc, actor.Sub, at)
+
+		return nil
 	})
 	if err != nil {
 		span.RecordError(err)
@@ -423,6 +443,245 @@ func (s *IncidentService) CloseIncident(
 	}
 
 	return state, err
+}
+
+// recordReviewSummary keeps the headline of the incident's review with the incident, to compare it
+// with other incidents. It is best effort: it only serves the comparison, so closing the incident
+// must not fail for it. Without it the incident is left out of comparisons until the summary is
+// worked out afterwards (BackfillReviewSummaries).
+func (s *IncidentService) recordReviewSummary(
+	ctx context.Context,
+	id shared.IncidentID,
+	inc *incident.Incident,
+	actor string,
+	at time.Time,
+) {
+	report, err := s.computeReview(ctx, id, inc)
+	if err != nil {
+		slog.WarnContext(ctx, "review summary not recorded: could not work out the review",
+			slog.String("incident_id", id.String()), slog.String("error", err.Error()))
+
+		return
+	}
+
+	if report == nil {
+		return
+	}
+
+	if err := inc.RecordReviewSummary(kpi.Summarize(*report), actor, at); err != nil {
+		slog.WarnContext(ctx, "review summary not recorded",
+			slog.String("incident_id", id.String()), slog.String("error", err.Error()))
+	}
+}
+
+// IncidentReview works out the review of the incident's messages as it is now: how fast they were
+// triaged and drawn, how they were spread over the divisions, how much had to be done again and
+// when the load was highest.
+//
+// The figures only depend on the messages' history, so for a closed incident, whose messages can
+// no longer change, they are always the same, and for an open one they are an interim status.
+// Nil for an incident that comes from the legacy import, whose message history is not known, and
+// when the service has no message source. The caller has to have checked that the actor may read
+// the incident.
+func (s *IncidentService) IncidentReview(ctx context.Context, id shared.IncidentID) (*kpi.Report, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.IncidentReview",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+
+	fail := func(err error) (*kpi.Report, error) {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return nil, err
+	}
+
+	inc, err := s.repo.Load(ctx, id)
+	if err != nil {
+		return fail(err)
+	}
+
+	report, err := s.computeReview(ctx, id, inc)
+	if err != nil {
+		return fail(err)
+	}
+
+	return report, nil
+}
+
+// computeReview works out the review of an incident's messages. Nil for an incident that comes from
+// the legacy import and when the service has no message source.
+//
+//nolint:nilnil // no review is a normal outcome (imported incident), not an error
+func (s *IncidentService) computeReview(
+	ctx context.Context,
+	id shared.IncidentID,
+	inc *incident.Incident,
+) (*kpi.Report, error) {
+	if s.queries == nil || s.messages == nil || inc.IsImported() {
+		return nil, nil
+	}
+
+	// Not ListMessages: that checks the access of the user in the context, and the server works out
+	// reviews on its own, without one. Whoever serves a user has checked access before.
+	rows, err := s.queries.ListIncidentMessageIDs(ctx, uuid.UUID(id))
+	if err != nil {
+		return nil, fmt.Errorf("review: list messages: %w", err)
+	}
+
+	ids := make([]shared.MessageID, len(rows))
+	for i, row := range rows {
+		ids[i] = shared.MessageID(row)
+	}
+
+	messages, err := s.messages.LoadMany(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("review: load messages: %w", err)
+	}
+
+	divisions := make([]kpi.Division, 0, len(inc.Divisions()))
+	for _, d := range inc.Divisions() {
+		divisions = append(divisions, kpi.Division{ID: d.ID, Name: d.Name, Description: d.Description, Kind: d.Kind})
+	}
+
+	slices.SortFunc(divisions, func(a, b kpi.Division) int { return strings.Compare(a.Name, b.Name) })
+
+	report := kpi.Compute(kpi.Input{
+		OpenedAt:  inc.CreatedAt(),
+		ClosedAt:  inc.ClosedAt(),
+		Divisions: divisions,
+		Messages:  messages,
+	})
+
+	return &report, nil
+}
+
+// CompareIncident sets an incident's review headline against the other incidents' the actor can
+// read: the ones that were closed and kept theirs. `current` is the incident's own headline as
+// it is now, so an open incident can be compared too. The caller has to have checked that the
+// actor may read the incident.
+func (s *IncidentService) CompareIncident(
+	ctx context.Context,
+	id shared.IncidentID,
+	current kpi.Summary,
+) (kpi.Comparison, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.CompareIncident",
+		trace.WithAttributes(attribute.String("incident.id", id.String())))
+	defer span.End()
+
+	if s.queries == nil {
+		return kpi.Compare(current, nil), nil
+	}
+
+	rows, err := s.queries.ListReviewSummaries(ctx)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return kpi.Comparison{}, fmt.Errorf("compare: list review summaries: %w", err)
+	}
+
+	peers := make([]kpi.Summary, 0, len(rows))
+
+	for _, row := range rows {
+		if row.IncidentID != uuid.UUID(id) {
+			peers = append(peers, row.Summary)
+		}
+	}
+
+	span.SetAttributes(attribute.Int("compare.peers", len(peers)))
+
+	return kpi.Compare(current, peers), nil
+}
+
+// BackfillReviewSummaries works out and keeps the review headline of every closed incident that
+// has none, those closed before it was kept, and of those whose headline was worked out in a way
+// that has changed since (an older kpi.SummaryVersion), so they take part in comparisons. With
+// `force`, every closed incident gets a new one. Incidents that come from the legacy import have
+// no message history and are left out. It can be run again: incidents that are up to date are not
+// touched. A failure with one incident does not stop the others.
+func (s *IncidentService) BackfillReviewSummaries(
+	ctx context.Context,
+	actor string,
+	force bool,
+) (inbound.BackfillResult, error) {
+	ctx, span := s.tracer.Start(ctx, "IncidentService.BackfillReviewSummaries")
+	defer span.End()
+
+	var result inbound.BackfillResult
+
+	if s.queries == nil || s.messages == nil {
+		err := errors.New("review backfill: no message source")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return result, err
+	}
+
+	// Every headline is older than a version that is higher than all of them.
+	staleBefore := kpi.SummaryVersion
+	if force {
+		staleBefore = math.MaxInt32
+	}
+
+	ids, err := s.queries.ListClosedIncidentsForReview(ctx, staleBefore)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
+		return result, fmt.Errorf("review backfill: list incidents: %w", err)
+	}
+
+	for _, raw := range ids {
+		id := shared.IncidentID(raw)
+
+		recorded, err := s.backfillReviewSummary(ctx, id, actor)
+
+		switch {
+		case err != nil:
+			result.Failed++
+
+			slog.WarnContext(ctx, "review summary not backfilled",
+				slog.String("incident_id", id.String()), slog.String("error", err.Error()))
+		case recorded:
+			result.Recorded++
+		default:
+			result.Skipped++
+		}
+	}
+
+	span.SetAttributes(
+		attribute.Int("backfill.recorded", result.Recorded),
+		attribute.Int("backfill.skipped", result.Skipped),
+		attribute.Int("backfill.failed", result.Failed),
+	)
+
+	return result, nil
+}
+
+// backfillReviewSummary keeps the review headline of one closed incident. It reports false for an
+// incident there is nothing to keep for.
+func (s *IncidentService) backfillReviewSummary(
+	ctx context.Context,
+	id shared.IncidentID,
+	actor string,
+) (bool, error) {
+	inc, err := s.repo.Load(ctx, id)
+	if err != nil {
+		return false, err
+	}
+
+	report, err := s.computeReview(ctx, id, inc)
+	if err != nil || report == nil {
+		return false, err
+	}
+
+	summary := kpi.Summarize(*report)
+
+	_, err = s.writeIncident(ctx, id, func(inc *incident.Incident) error {
+		return inc.RecordReviewSummary(summary, actor, s.clock.Now())
+	})
+
+	return err == nil, err
 }
 
 // ReopenIncident reopens a closed incident.

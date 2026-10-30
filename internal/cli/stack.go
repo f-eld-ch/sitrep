@@ -258,6 +258,9 @@ func buildPostgresStack(
 
 	incidentSvcPg := factory.IncidentService(repos, layers)
 	incidentSvcPg.WithSchadenplatzRepository(schadenplaetze)
+	incidentSvcPg.WithMessageSource(queries, messages)
+
+	reviewBackfillPg := newReviewBackfill(incidentSvcPg)
 
 	retentionSvc := service.NewRetentionService(tx, repos, retention, pgstore.WallClock{}, notifier)
 	if blobs != nil {
@@ -268,6 +271,8 @@ func buildPostgresStack(
 		pgprojection.WithLock(projLock),
 		pgprojection.WithRetention(func(ctx context.Context) (bool, error) {
 			result, err := retentionSvc.Run(ctx, autoCloseDays, autoArchiveDays)
+			reviewBackfillPg.Start(ctx)
+
 			return result.Archived > 0, err
 		})), "postgres")
 
@@ -398,6 +403,7 @@ func buildInmemStack(ctx context.Context, attCfg attachmentConfig) (*stack, erro
 
 	incidentSvcInmem := factory.IncidentService(repos, layers)
 	incidentSvcInmem.WithSchadenplatzRepository(schadenplaetzeInmem)
+	incidentSvcInmem.WithMessageSource(queries, messages)
 
 	return &stack{
 		IncidentSvc:           incidentSvcInmem,
@@ -513,6 +519,12 @@ func buildSQLiteStack(
 		sqprojection.NewResourceHandler(write),
 	}
 
+	incidentSvcSq := factory.IncidentService(repos, layers)
+	incidentSvcSq.WithSchadenplatzRepository(schadenplaetzeSq)
+	incidentSvcSq.WithMessageSource(queries, messages)
+
+	reviewBackfillSq := newReviewBackfill(incidentSvcSq)
+
 	retentionSvc := service.NewRetentionService(tx, repos, retention, clock, notifier)
 	if blobs != nil {
 		retentionSvc.WithBlobStore(blobs)
@@ -521,6 +533,8 @@ func buildSQLiteStack(
 	proj := projection.NewInstrumentedProjector(sqprojection.NewProjector(read, write, store, notifier, handlers,
 		sqprojection.WithRetention(func(ctx context.Context) (bool, error) {
 			result, err := retentionSvc.Run(ctx, autoCloseDays, autoArchiveDays)
+			reviewBackfillSq.Start(ctx)
+
 			return result.Archived > 0, err
 		})), "sqlite")
 
@@ -534,9 +548,6 @@ func buildSQLiteStack(
 			slog.ErrorContext(projCtx, "projector stopped unexpectedly", slog.String("error", err.Error()))
 		}
 	}()
-
-	incidentSvcSq := factory.IncidentService(repos, layers)
-	incidentSvcSq.WithSchadenplatzRepository(schadenplaetzeSq)
 
 	return &stack{
 		IncidentSvc:           incidentSvcSq,

@@ -19,6 +19,7 @@ import (
 
 	sqlite "github.com/f-eld-ch/sitrep/internal/adapter/outbound/helpers/sqlite"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/platform/identity"
@@ -104,6 +105,114 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	slog.DebugContext(ctx, "listed incidents", slog.Int("count", len(out)))
 
 	return out, nil
+}
+
+func (q *Queries) ListIncidentMessageIDs(ctx context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, `SELECT id FROM readmodel_message WHERE incident_id = ?`, incidentID.String())
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var raw string
+		if err := rows.Scan(&raw); err != nil {
+			return nil, err
+		}
+
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, fmt.Errorf("parse message id %q: %w", raw, err)
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListClosedIncidentsForReview(ctx context.Context, staleBefore int) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT id FROM readmodel_incident
+		WHERE is_closed = 1 AND is_deleted = 0
+		  AND (review_summary IS NULL OR COALESCE(json_extract(review_summary, '$.version'), 0) < ?)
+		ORDER BY closed_at`, staleBefore)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var raw string
+		if err := rows.Scan(&raw); err != nil {
+			return nil, err
+		}
+
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, fmt.Errorf("parse incident id %q: %w", raw, err)
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListReviewSummaries(ctx context.Context) ([]outbound.ReviewSummaryRM, error) {
+	query := `
+		SELECT i.id, i.review_summary
+		FROM readmodel_incident i
+		WHERE i.is_deleted = 0 AND i.review_summary IS NOT NULL`
+
+	var args []any
+
+	if q.access != nil {
+		actor, err := identity.ActorFrom(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		query += `
+		  AND (NOT EXISTS (SELECT 1 FROM readmodel_incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
+		       OR EXISTS (SELECT 1 FROM readmodel_access_policy p WHERE p.subject = ? AND p.domain = 'incident:' || i.id AND p.action = 'incident.read'))`
+
+		args = append(args, "user:"+actor.Sub)
+	}
+
+	rows, err := q.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []outbound.ReviewSummaryRM
+
+	for rows.Next() {
+		var id, raw string
+
+		if err := rows.Scan(&id, &raw); err != nil {
+			return nil, err
+		}
+
+		incidentID, err := uuid.Parse(id)
+		if err != nil {
+			return nil, fmt.Errorf("parse incident id %q: %w", id, err)
+		}
+
+		var summary kpi.Summary
+		if err := json.Unmarshal([]byte(raw), &summary); err != nil {
+			return nil, fmt.Errorf("decode review summary of %s: %w", id, err)
+		}
+
+		out = append(out, outbound.ReviewSummaryRM{IncidentID: incidentID, Summary: summary})
+	}
+
+	return out, rows.Err()
 }
 
 func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.IncidentRM, error) {

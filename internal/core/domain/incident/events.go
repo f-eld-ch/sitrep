@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 )
 
@@ -81,6 +82,13 @@ type Closed struct {
 }
 
 type Reopened struct{}
+
+// ReviewSummarised fires when the headline of a closed incident's review is kept, to compare it
+// with other incidents. It is written when the incident is closed, and later for incidents that
+// were closed before it existed. Reopening the incident discards it.
+type ReviewSummarised struct {
+	Summary kpi.Summary `json:"summary"`
+}
 
 type Deleted struct {
 	Reason shared.DeleteReason `json:"reason"`

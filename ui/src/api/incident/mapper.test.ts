@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { toIncidentDetails, toIncidentSummary } from "./mapper";
-import type { FetchIncidentsQuery, GetIncidentDetailQuery } from "gql/next";
+import { toIncidentDetails, toIncidentReview, toIncidentSummary } from "./mapper";
+import type { FetchIncidentsQuery, GetIncidentDetailQuery, GetIncidentReviewQuery } from "gql/next";
 
 const WIRE_SUMMARY: FetchIncidentsQuery["incidents"][0] = {
   id: "inc-1",
@@ -113,5 +113,132 @@ describe("toIncidentDetails", () => {
     const wireWithTypename = { ...WIRE_DETAILS, __typename: "Incident" as const };
     const result = toIncidentDetails(wireWithTypename);
     expect(Object.keys(result)).not.toContain("__typename");
+  });
+});
+
+describe("toIncidentReview", () => {
+  type Wire = NonNullable<NonNullable<GetIncidentReviewQuery["incident"]>["review"]>;
+
+  const duration = { count: 8, medianSeconds: 60, p90Seconds: 120, maxSeconds: 300 };
+  const distribution = [
+    { fromSeconds: 0, toSeconds: 30, count: 3 },
+    { fromSeconds: 7200, toSeconds: null, count: 5 },
+  ];
+  const metric = { total: 10, completed: 8, ratio: 0.8, duration, distribution };
+  const benchmark = {
+    value: 252,
+    peers: 18,
+    sufficient: true,
+    lowest: 60,
+    q1: 180,
+    median: 330,
+    q3: 600,
+    highest: 1800,
+    betterThan: 0.7,
+  };
+  const noBenchmark = {
+    value: null,
+    peers: 0,
+    sufficient: false,
+    lowest: 0,
+    q1: 0,
+    median: 0,
+    q3: 0,
+    highest: 0,
+    betterThan: null,
+  };
+  const wire: Wire = {
+    incidentId: "inc-1",
+    comparison: {
+      triageMedian: benchmark,
+      triageRatio: { ...benchmark, value: 0.87, median: 0.9 },
+      drawMedian: noBenchmark,
+      drawRatio: noBenchmark,
+    },
+    openedAt: "2026-01-15T10:00:00Z",
+    closedAt: null,
+    messageCount: 10,
+    triage: metric,
+    draw: { total: 0, completed: 0, ratio: null, duration: null, distribution: [] },
+    triageHigh: { count: 2, duration },
+    triageNormal: { count: 6, duration: null },
+    divisions: [
+      {
+        id: "d1",
+        name: "FW",
+        description: "Feuerwehr Altdorf",
+        kind: "STANDARD",
+        assigned: 5,
+        acknowledged: 4,
+        duration,
+      },
+    ],
+    unassigned: 1,
+    rework: { total: 10, moreInfo: 1, reset: 0, correctedAfterTriage: 2, reworked: 3 },
+    reportingLag: duration,
+    load: {
+      bucketSeconds: 900,
+      peakEntered: 4,
+      peakEnteredAt: "2026-01-15T10:15:00Z",
+      peakBacklog: 0,
+      peakBacklogAt: null,
+      buckets: [{ start: "2026-01-15T10:00:00Z", entered: 4, backlog: 1 }],
+    },
+  };
+
+  it("is null when there is none", () => {
+    expect(toIncidentReview(null)).toBeNull();
+    expect(toIncidentReview(undefined)).toBeNull();
+  });
+
+  it("maps durations to seconds and times to dates, keeping what is missing as null", () => {
+    const review = toIncidentReview(wire);
+
+    expect(review?.openedAt).toEqual(new Date("2026-01-15T10:00:00Z"));
+    expect(review?.closedAt).toBeNull();
+    expect(review?.triage).toEqual({
+      total: 10,
+      completed: 8,
+      ratio: 0.8,
+      duration: { count: 8, median: 60, p90: 120, max: 300 },
+      distribution: [
+        { from: 0, to: 30, count: 3 },
+        { from: 7200, to: null, count: 5 },
+      ],
+    });
+    expect(review?.draw).toEqual({
+      total: 0,
+      completed: 0,
+      ratio: null,
+      duration: null,
+      distribution: [],
+    });
+    expect(review?.triageNormal.duration).toBeNull();
+    expect(review?.divisions[0]).toMatchObject({
+      name: "FW",
+      description: "Feuerwehr Altdorf",
+      assigned: 5,
+      acknowledged: 4,
+    });
+    expect(review?.comparison.triageMedian).toEqual({
+      value: 252,
+      peers: 18,
+      sufficient: true,
+      lowest: 60,
+      q1: 180,
+      median: 330,
+      q3: 600,
+      highest: 1800,
+      betterThan: 0.7,
+    });
+    expect(review?.comparison.triageRatio.value).toBe(0.87);
+    expect(review?.comparison.drawMedian.value).toBeNull();
+    expect(review?.comparison.drawMedian.betterThan).toBeNull();
+    expect(review?.comparison.drawMedian.sufficient).toBe(false);
+    expect(review?.rework.reworked).toBe(3);
+    expect(review?.reportingLag?.max).toBe(300);
+    expect(review?.load.buckets[0].start).toEqual(new Date("2026-01-15T10:00:00Z"));
+    expect(review?.load.peakEnteredAt).toEqual(new Date("2026-01-15T10:15:00Z"));
+    expect(review?.load.peakBacklogAt).toBeNull();
   });
 });

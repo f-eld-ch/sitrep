@@ -2,6 +2,7 @@ package conformance
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
@@ -51,6 +53,156 @@ func RunQueries(t *testing.T, f Factory) {
 		require.NotNil(t, rm)
 		assert.Equal(t, "Bravo Incident", rm.Name)
 		assert.Equal(t, id, rm.ID)
+	})
+
+	t.Run("ReviewSummaries_KeptForClosedIncidentsAndDroppedOnReopen", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+
+		kept := openIncident(t, b, ctx, "Closed with summary")
+		withoutSummary := openIncident(t, b, ctx, "Closed without summary")
+		stillOpen := openIncident(t, b, ctx, "Still open")
+
+		change := func(id uuid.UUID, fn func(*incident.Incident) error) {
+			t.Helper()
+			require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+				loaded, err := incidentRepo(b).Load(ctx, shared.IncidentID(id))
+				if err != nil {
+					return err
+				}
+
+				if err := fn(loaded); err != nil {
+					return err
+				}
+
+				_, err = b.Store.Append(ctx, loaded)
+
+				return err
+			}))
+			require.NoError(t, b.Project(ctx))
+		}
+
+		closeIt := func(inc *incident.Incident) error {
+			return inc.Close(shared.ReasonManual, "sys", time.Now().UTC())
+		}
+
+		summary := kpi.Summary{
+			Version: kpi.SummaryVersion, Messages: 100,
+			TriageTotal: 100, TriageCompleted: 87, TriageSamples: 87,
+			TriageMedianMs: 252_000, TriageP90Ms: 660_000,
+			DrawTotal: 58, DrawCompleted: 54, DrawSamples: 54, DrawMedianMs: 160_000, DrawP90Ms: 420_000,
+		}
+
+		change(kept, closeIt)
+		change(withoutSummary, closeIt)
+		change(kept, func(inc *incident.Incident) error {
+			return inc.RecordReviewSummary(summary, "sys", time.Now().UTC())
+		})
+
+		listed, err := b.Queries.ListReviewSummaries(ctx)
+		require.NoError(t, err)
+		require.Len(t, listed, 1, "only the incident that was closed and kept one")
+		assert.Equal(t, kept, listed[0].IncidentID)
+		assert.Equal(t, summary, listed[0].Summary)
+
+		missing, err := b.Queries.ListClosedIncidentsForReview(ctx, kpi.SummaryVersion)
+		require.NoError(t, err)
+		assert.Equal(
+			t,
+			[]uuid.UUID{withoutSummary},
+			missing,
+			"closed, but no headline: not the open one, not the kept one",
+		)
+		assert.NotContains(t, missing, stillOpen)
+
+		// A headline kept by an older way of working it out is due again; one that is up to date is not.
+		stale, err := b.Queries.ListClosedIncidentsForReview(ctx, kpi.SummaryVersion+1)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []uuid.UUID{withoutSummary, kept}, stale, "the kept one is older than the next version")
+
+		forced, err := b.Queries.ListClosedIncidentsForReview(ctx, math.MaxInt32)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []uuid.UUID{withoutSummary, kept}, forced, "every closed incident, never the open one")
+
+		change(kept, func(inc *incident.Incident) error { return inc.Reopen("sys", time.Now().UTC()) })
+
+		listed, err = b.Queries.ListReviewSummaries(ctx)
+		require.NoError(t, err)
+		assert.Empty(t, listed, "reopening drops the headline")
+	})
+
+	t.Run("ReviewSummaries_ADeletedIncidentLeavesTheComparison", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+
+		stays := openIncident(t, b, ctx, "Stays")
+		goes := openIncident(t, b, ctx, "Goes")
+
+		change := func(id uuid.UUID, fn func(*incident.Incident) error) {
+			t.Helper()
+			require.NoError(t, b.Transactor.WithinTx(ctx, func(ctx context.Context) error {
+				loaded, err := incidentRepo(b).Load(ctx, shared.IncidentID(id))
+				if err != nil {
+					return err
+				}
+
+				if err := fn(loaded); err != nil {
+					return err
+				}
+
+				_, err = b.Store.Append(ctx, loaded)
+
+				return err
+			}))
+			require.NoError(t, b.Project(ctx))
+		}
+
+		for _, id := range []uuid.UUID{stays, goes} {
+			change(id, func(inc *incident.Incident) error {
+				if err := inc.Close(shared.ReasonManual, "sys", time.Now().UTC()); err != nil {
+					return err
+				}
+
+				return inc.RecordReviewSummary(
+					kpi.Summary{Version: kpi.SummaryVersion, Messages: 1},
+					"sys",
+					time.Now().UTC(),
+				)
+			})
+		}
+
+		listed, err := b.Queries.ListReviewSummaries(ctx)
+		require.NoError(t, err)
+		require.Len(t, listed, 2)
+
+		change(goes, func(inc *incident.Incident) error {
+			return inc.Delete(shared.DeleteReasonManual, "sys", time.Now().UTC())
+		})
+
+		// Nothing is worked out again: the comparison reads what there is, and the deleted one is gone.
+		listed, err = b.Queries.ListReviewSummaries(ctx)
+		require.NoError(t, err)
+		require.Len(t, listed, 1)
+		assert.Equal(t, stays, listed[0].IncidentID)
+
+		due, err := b.Queries.ListClosedIncidentsForReview(ctx, math.MaxInt32)
+		require.NoError(t, err)
+		assert.Equal(t, []uuid.UUID{stays}, due, "a deleted incident is not worked out for either")
+	})
+
+	t.Run("ListIncidentMessageIDs_OfTheIncidentOnly", func(t *testing.T) {
+		b := f(t)
+		ctx := t.Context()
+		first := openIncident(t, b, ctx, "First")
+		second := openIncident(t, b, ctx, "Second")
+
+		ids, err := b.Queries.ListIncidentMessageIDs(ctx, first)
+		require.NoError(t, err)
+		assert.Empty(t, ids)
+
+		other, err := b.Queries.ListIncidentMessageIDs(ctx, second)
+		require.NoError(t, err)
+		assert.Empty(t, other)
 	})
 
 	t.Run("ListIncidents_DeletedExcluded", func(t *testing.T) {

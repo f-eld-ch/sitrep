@@ -3,12 +3,15 @@ package graphql
 import (
 	"encoding/json/jsontext"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/model"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
 
@@ -216,4 +219,39 @@ func TestModelPriorityToDomain_AllValues(t *testing.T) {
 func TestModelPriorityToDomain_UnknownReturnsError(t *testing.T) {
 	_, err := modelPriorityToDomain(model.PriorityStatus("CRITICAL"))
 	require.Error(t, err)
+}
+
+// comparing a review that was already mapped must give the same headline as working it out from
+// the messages: this holds the two together.
+func TestSummaryFromReviewModel_MatchesSummarize(t *testing.T) {
+	report := kpi.Report{
+		Messages: 120,
+		Triage: kpi.Metric{
+			Total: 120, Completed: 104,
+			Duration: kpi.Stats{Count: 104, Median: 252 * time.Second, P90: 11 * time.Minute, Max: 23 * time.Minute},
+		},
+		Draw: kpi.Metric{
+			Total:     60,
+			Completed: 55,
+			Duration: kpi.Stats{
+				Count:  55,
+				Median: 160*time.Second + 250*time.Millisecond,
+				P90:    7 * time.Minute,
+				Max:    12 * time.Minute,
+			},
+		},
+	}
+
+	got := summaryFromReviewModel(reviewToModel(shared.IncidentID(uuid.New()), &report))
+
+	assert.Equal(t, kpi.Summarize(report), got)
+}
+
+func TestSummaryFromReviewModel_WithoutDurations(t *testing.T) {
+	report := kpi.Report{Messages: 3, Triage: kpi.Metric{Total: 3}}
+
+	got := summaryFromReviewModel(reviewToModel(shared.IncidentID(uuid.New()), &report))
+
+	assert.Equal(t, kpi.Summarize(report), got)
+	assert.Zero(t, got.TriageSamples)
 }
