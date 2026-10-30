@@ -104,11 +104,33 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	return out, nil
 }
 
-func (q *Queries) ListClosedIncidentsWithoutReviewSummary(ctx context.Context) ([]uuid.UUID, error) {
+func (q *Queries) ListIncidentMessageIDs(ctx context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.pool.Query(ctx, `SELECT id FROM readmodel.message WHERE incident_id = $1`, incidentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListClosedIncidentsForReview(ctx context.Context, staleBefore int) ([]uuid.UUID, error) {
 	rows, err := q.pool.Query(ctx, `
 		SELECT id FROM readmodel.incident
-		WHERE is_closed = true AND is_deleted = false AND review_summary IS NULL
-		ORDER BY closed_at`)
+		WHERE is_closed = true AND is_deleted = false
+		  AND (review_summary IS NULL OR COALESCE((review_summary->>'version')::int, 0) < $1)
+		ORDER BY closed_at`, staleBefore)
 	if err != nil {
 		return nil, err
 	}

@@ -222,8 +222,9 @@ type IncidentService interface {
 	// CompareIncident sets an incident's review headline against the other incidents the actor can
 	// read. The caller has to have checked that the actor may read the incident.
 	CompareIncident(ctx context.Context, id shared.IncidentID, current kpi.Summary) (kpi.Comparison, error)
-	// BackfillReviewSummaries keeps the review headline of the closed incidents that have none.
-	BackfillReviewSummaries(ctx context.Context, actor string) (BackfillResult, error)
+	// BackfillReviewSummaries keeps the review headline of the closed incidents that have none or an
+	// out of date one; with force, of all of them.
+	BackfillReviewSummaries(ctx context.Context, actor string, force bool) (BackfillResult, error)
 
 	CreateIncident(
 		ctx context.Context,

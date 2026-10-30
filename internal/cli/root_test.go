@@ -185,6 +185,7 @@ func TestReviewBackfillCommand(t *testing.T) {
 	cmd, _, err := rootCmd.Find([]string{"review", "backfill"})
 	require.NoError(t, err)
 	assert.Equal(t, "backfill", cmd.Name())
+	assert.NotNil(t, cmd.Flags().Lookup("force"), "a way to work every headline out again")
 
 	t.Run("refuses without a database, instead of reviewing an empty in-memory store", func(t *testing.T) {
 		t.Setenv("DATABASE_URL", "")

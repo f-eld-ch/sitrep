@@ -90,13 +90,24 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	return out, nil
 }
 
-func (q *Queries) ListClosedIncidentsWithoutReviewSummary(_ context.Context) ([]uuid.UUID, error) {
+func (q *Queries) ListClosedIncidentsForReview(_ context.Context, staleBefore int) ([]uuid.UUID, error) {
 	var out []uuid.UUID
 
 	for _, row := range q.incidents.All() {
-		if row.IsClosed && !row.IsDeleted && row.ReviewSummary == nil {
+		if row.IsClosed && !row.IsDeleted && (row.ReviewSummary == nil || row.ReviewSummary.Version < staleBefore) {
 			out = append(out, row.ID)
 		}
+	}
+
+	return out, nil
+}
+
+func (q *Queries) ListIncidentMessageIDs(_ context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
+	rows := q.messages.ForIncident(incidentID)
+
+	out := make([]uuid.UUID, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, row.ID)
 	}
 
 	return out, nil

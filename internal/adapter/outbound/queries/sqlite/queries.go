@@ -107,11 +107,38 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	return out, nil
 }
 
-func (q *Queries) ListClosedIncidentsWithoutReviewSummary(ctx context.Context) ([]uuid.UUID, error) {
+func (q *Queries) ListIncidentMessageIDs(ctx context.Context, incidentID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, `SELECT id FROM readmodel_message WHERE incident_id = ?`, incidentID.String())
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []uuid.UUID
+
+	for rows.Next() {
+		var raw string
+		if err := rows.Scan(&raw); err != nil {
+			return nil, err
+		}
+
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, fmt.Errorf("parse message id %q: %w", raw, err)
+		}
+
+		out = append(out, id)
+	}
+
+	return out, rows.Err()
+}
+
+func (q *Queries) ListClosedIncidentsForReview(ctx context.Context, staleBefore int) ([]uuid.UUID, error) {
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT id FROM readmodel_incident
-		WHERE is_closed = 1 AND is_deleted = 0 AND review_summary IS NULL
-		ORDER BY closed_at`)
+		WHERE is_closed = 1 AND is_deleted = 0
+		  AND (review_summary IS NULL OR COALESCE(json_extract(review_summary, '$.version'), 0) < ?)
+		ORDER BY closed_at`, staleBefore)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
+	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 )
 
@@ -44,6 +46,9 @@ type kpiStack struct {
 	incidents *service.IncidentService
 	messages  *service.MessageService
 	proj      *projection.Projector
+	// store and tx let a test write what the service itself would not, e.g. an old headline.
+	incidentRepo *eventstore.IncidentRepository
+	tx           outbound.Transactor
 	// attachMessageSource gives the incident service the means to review messages after the fact,
 	// as it has once a deployment has been brought up to date.
 	attachMessageSource func()
@@ -62,8 +67,9 @@ func newKPIStack(t *testing.T, withMessageSource bool) *kpiStack {
 
 	clock := &steppedClock{t: testAt}
 	queries := inmemqueries.NewQueries(incH, divH, msgH, layerH, spH, resourceH)
+	tx := inmem.NewTransactor()
 	factory := service.NewFactory(
-		service.WithTransactor(inmem.NewTransactor()),
+		service.WithTransactor(tx),
 		service.WithClock(clock),
 		service.WithIDs(inmem.UUIDGen{}),
 		service.WithNotifier(inmem.NewNotifier()),
@@ -86,6 +92,9 @@ func newKPIStack(t *testing.T, withMessageSource bool) *kpiStack {
 		incidents: incidentSvc,
 		messages:  factory.MessageService(messages, incidents),
 		proj:      projection.NewProjector(store, []projection.Handler{incH, divH, msgH, layerH, spH}),
+
+		incidentRepo: incidents,
+		tx:           tx,
 
 		attachMessageSource: func() { incidentSvc.WithMessageSource(queries, messages) },
 	}
@@ -350,7 +359,7 @@ func TestIncidentService_BackfillReviewSummaries(t *testing.T) {
 
 		s.attachMessageSource()
 
-		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system")
+		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
 		require.NoError(t, err)
 		assert.Equal(t, inbound.BackfillResult{Recorded: 1}, result)
 		require.NoError(t, s.proj.CatchUp(ctx()))
@@ -366,11 +375,11 @@ func TestIncidentService_BackfillReviewSummaries(t *testing.T) {
 		s.closedIncident(t, "Alt", time.Minute)
 		s.attachMessageSource()
 
-		_, err := s.incidents.BackfillReviewSummaries(ctx(), "system")
+		_, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
 		require.NoError(t, err)
 		require.NoError(t, s.proj.CatchUp(ctx()))
 
-		again, err := s.incidents.BackfillReviewSummaries(ctx(), "system")
+		again, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
 		require.NoError(t, err)
 		assert.Equal(t, inbound.BackfillResult{}, again)
 	})
@@ -382,7 +391,7 @@ func TestIncidentService_BackfillReviewSummaries(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, s.proj.CatchUp(ctx()))
 
-		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system")
+		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
 		require.NoError(t, err)
 		assert.Equal(t, inbound.BackfillResult{}, result)
 	})
@@ -390,7 +399,80 @@ func TestIncidentService_BackfillReviewSummaries(t *testing.T) {
 	t.Run("refuses without a way to look at the messages", func(t *testing.T) {
 		s := newKPIStack(t, false)
 
-		_, err := s.incidents.BackfillReviewSummaries(ctx(), "system")
+		_, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
 		require.Error(t, err)
+	})
+}
+
+// keepOldSummary replaces the headline of a closed incident with one that an older way of working
+// it out would have kept.
+func (s *kpiStack) keepOldSummary(t *testing.T, id shared.IncidentID) {
+	t.Helper()
+
+	require.NoError(t, s.tx.WithinTx(ctx(), func(c context.Context) error {
+		inc, err := s.incidentRepo.Load(c, id)
+		if err != nil {
+			return err
+		}
+
+		if err := inc.RecordReviewSummary(
+			kpi.Summary{Version: kpi.SummaryVersion - 1, Messages: 99},
+			"test",
+			testAt,
+		); err != nil {
+			return err
+		}
+
+		_, err = s.incidentRepo.Save(c, inc)
+
+		return err
+	}))
+	require.NoError(t, s.proj.CatchUp(ctx()))
+}
+
+func TestIncidentService_BackfillReviewSummaries_RenewsWhatIsOutOfDate(t *testing.T) {
+	t.Run("works out a headline again that an older way of working it out kept", func(t *testing.T) {
+		s := newKPIStack(t, true)
+		id := s.closedIncident(t, "Alt", 2*time.Minute)
+		s.keepOldSummary(t, id)
+
+		inc, err := s.incidents.LoadIncident(ctx(), id)
+		require.NoError(t, err)
+		require.Equal(t, kpi.SummaryVersion-1, inc.ReviewSummary().Version, "the old one is what is kept")
+
+		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
+		require.NoError(t, err)
+		assert.Equal(t, inbound.BackfillResult{Recorded: 1}, result)
+		require.NoError(t, s.proj.CatchUp(ctx()))
+
+		inc, err = s.incidents.LoadIncident(ctx(), id)
+		require.NoError(t, err)
+		assert.Equal(t, kpi.SummaryVersion, inc.ReviewSummary().Version)
+		assert.Equal(t, 1, inc.ReviewSummary().Messages, "worked out from the messages, not the old figure")
+	})
+
+	t.Run("leaves a headline that is up to date alone, unless forced", func(t *testing.T) {
+		s := newKPIStack(t, true)
+		s.closedIncident(t, "Aktuell", time.Minute)
+
+		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system", false)
+		require.NoError(t, err)
+		assert.Equal(t, inbound.BackfillResult{}, result, "nothing to do")
+
+		forced, err := s.incidents.BackfillReviewSummaries(ctx(), "system", true)
+		require.NoError(t, err)
+		assert.Equal(t, inbound.BackfillResult{Recorded: 1}, forced, "every closed incident, also an up to date one")
+	})
+
+	t.Run("forcing leaves open incidents alone", func(t *testing.T) {
+		s := newKPIStack(t, true)
+
+		_, err := s.incidents.CreateIncident(ctx(), "Offen", nil, nil, nil, testActor)
+		require.NoError(t, err)
+		require.NoError(t, s.proj.CatchUp(ctx()))
+
+		result, err := s.incidents.BackfillReviewSummaries(ctx(), "system", true)
+		require.NoError(t, err)
+		assert.Equal(t, inbound.BackfillResult{}, result)
 	})
 }

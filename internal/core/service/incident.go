@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"slices"
 	"strings"
 	"time"
@@ -520,14 +521,16 @@ func (s *IncidentService) computeReview(
 		return nil, nil
 	}
 
-	rows, err := s.queries.ListMessages(ctx, uuid.UUID(id))
+	// Not ListMessages: that checks the access of the user in the context, and the server works out
+	// reviews on its own, without one. Whoever serves a user has checked access before.
+	rows, err := s.queries.ListIncidentMessageIDs(ctx, uuid.UUID(id))
 	if err != nil {
 		return nil, fmt.Errorf("review: list messages: %w", err)
 	}
 
 	ids := make([]shared.MessageID, len(rows))
 	for i, row := range rows {
-		ids[i] = shared.MessageID(row.ID)
+		ids[i] = shared.MessageID(row)
 	}
 
 	messages, err := s.messages.LoadMany(ctx, ids)
@@ -591,12 +594,15 @@ func (s *IncidentService) CompareIncident(
 }
 
 // BackfillReviewSummaries works out and keeps the review headline of every closed incident that
-// has none, those closed before it was kept, so they take part in comparisons. Incidents that come
-// from the legacy import have no message history and are left out. It can be run again: incidents
-// that have one are not touched. A failure with one incident does not stop the others.
+// has none, those closed before it was kept, and of those whose headline was worked out in a way
+// that has changed since (an older kpi.SummaryVersion), so they take part in comparisons. With
+// `force`, every closed incident gets a new one. Incidents that come from the legacy import have
+// no message history and are left out. It can be run again: incidents that are up to date are not
+// touched. A failure with one incident does not stop the others.
 func (s *IncidentService) BackfillReviewSummaries(
 	ctx context.Context,
 	actor string,
+	force bool,
 ) (inbound.BackfillResult, error) {
 	ctx, span := s.tracer.Start(ctx, "IncidentService.BackfillReviewSummaries")
 	defer span.End()
@@ -611,7 +617,13 @@ func (s *IncidentService) BackfillReviewSummaries(
 		return result, err
 	}
 
-	ids, err := s.queries.ListClosedIncidentsWithoutReviewSummary(ctx)
+	// Every headline is older than a version that is higher than all of them.
+	staleBefore := kpi.SummaryVersion
+	if force {
+		staleBefore = math.MaxInt32
+	}
+
+	ids, err := s.queries.ListClosedIncidentsForReview(ctx, staleBefore)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
