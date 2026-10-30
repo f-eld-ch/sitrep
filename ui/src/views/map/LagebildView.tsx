@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { useIncidentMessages } from "api/message";
 import { FilterableMessageStack } from "views/journal/FilterableMessageStack";
@@ -15,7 +15,16 @@ const SIDE_STACK_POLL_MS = 30_000;
  */
 export default function LagebildView() {
   const { incidentId } = useParams();
-  const [featureId, setFeatureId] = useState<string | undefined>();
+  // The selected feature and the incident it belongs to: in a parent incident the map shows the
+  // layers of its sub-incidents, and the feature's messages are in the incident that drew it.
+  const [feature, setFeature] = useState<{ id: string; incidentId?: string } | undefined>();
+  const featureId = feature?.id;
+  const messageIncidentId = feature?.incidentId ?? incidentId;
+  const selectFeature = useCallback(
+    (id: string | undefined, sourceIncidentId?: string) =>
+      setFeature(id === undefined ? undefined : { id, incidentId: sourceIncidentId }),
+    [],
+  );
   const [deselectToken, setDeselectToken] = useState(0);
   const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>();
   // The point in time the map's slider shows; undefined is live.
@@ -23,7 +32,7 @@ export default function LagebildView() {
   const messageIds = useFeatureMessageIds(featureId);
   const open = messageIds !== undefined;
   // The journal is only needed once there is a feature with messages to show.
-  const messages = useIncidentMessages(incidentId ?? "", {
+  const messages = useIncidentMessages(messageIncidentId ?? "", {
     skip: !open,
     pollInterval: SIDE_STACK_POLL_MS,
   });
@@ -57,7 +66,7 @@ export default function LagebildView() {
               messages={shownMessages}
               focusMessageIds={messageIds}
               onClearFocus={() => {
-                setFeatureId(undefined);
+                setFeature(undefined);
                 setDeselectToken((token) => token + 1);
               }}
               effectiveId={effectiveId}
@@ -70,7 +79,7 @@ export default function LagebildView() {
         </div>
       )}
       <IncidentMap
-        onFeatureSelect={setFeatureId}
+        onFeatureSelect={selectFeature}
         deselectToken={deselectToken}
         onTimeChange={setAsOf}
       />

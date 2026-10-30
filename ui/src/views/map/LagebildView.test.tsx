@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   featureMessageIds: { current: undefined as string[] | undefined },
   mapProps: { last: undefined as Record<string, unknown> | undefined },
   stackProps: { last: undefined as Record<string, unknown> | undefined },
+  messageQuery: { lastIncidentId: undefined as string | undefined },
 }));
 
 const at = (hour: number) => new Date(Date.UTC(2026, 0, 15, hour));
@@ -17,7 +18,11 @@ const messages = [
 
 vi.mock("react-router", () => ({ useParams: () => ({ incidentId: "inc-1" }) }));
 vi.mock("api/message", () => ({
-  useIncidentMessages: () => ({ status: "ready", data: { messages } }),
+  useIncidentMessages: (incidentId: string) => {
+    mocks.messageQuery.lastIncidentId = incidentId;
+
+    return { status: "ready", data: { messages } };
+  },
 }));
 vi.mock("./useFeatureMessageIds", () => ({
   useFeatureMessageIds: () => mocks.featureMessageIds.current,
@@ -61,6 +66,7 @@ beforeEach(() => {
   mocks.featureMessageIds.current = ["early", "middle", "late"];
   mocks.mapProps.last = undefined;
   mocks.stackProps.last = undefined;
+  mocks.messageQuery.lastIncidentId = undefined;
 });
 
 const moveSlider = (to: Date | undefined) => {
@@ -69,7 +75,46 @@ const moveSlider = (to: Date | undefined) => {
   act(() => onTimeChange(to));
 };
 
+const selectFeature = (featureId: string | undefined, sourceIncidentId?: string) => {
+  const onFeatureSelect = mocks.mapProps.last?.onFeatureSelect as (
+    id: string | undefined,
+    sourceIncidentId?: string,
+  ) => void;
+
+  act(() => onFeatureSelect(featureId, sourceIncidentId));
+};
+
 describe("LagebildView", () => {
+  describe("in an incident with sub-incidents", () => {
+    it("looks the messages of a feature up in the incident that drew it", () => {
+      render(<LagebildView />);
+
+      selectFeature("feature-1", "inc-child");
+
+      expect(mocks.messageQuery.lastIncidentId).toBe("inc-child");
+    });
+
+    it("uses the viewed incident for its own features, and again after deselecting", () => {
+      render(<LagebildView />);
+
+      selectFeature("feature-1", "inc-child");
+      selectFeature("feature-2", "inc-1");
+      expect(mocks.messageQuery.lastIncidentId).toBe("inc-1");
+
+      selectFeature("feature-1", "inc-child");
+      selectFeature(undefined);
+      expect(mocks.messageQuery.lastIncidentId).toBe("inc-1");
+    });
+
+    it("falls back to the viewed incident when the feature's incident is unknown", () => {
+      render(<LagebildView />);
+
+      selectFeature("feature-1");
+
+      expect(mocks.messageQuery.lastIncidentId).toBe("inc-1");
+    });
+  });
+
   it("shows no side stack until a feature with messages is selected", () => {
     mocks.featureMessageIds.current = undefined;
     render(<LagebildView />);

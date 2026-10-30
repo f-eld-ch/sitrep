@@ -101,9 +101,17 @@ export function FeatureSelectionReporter({
   const featureId =
     listening && !isPendingFeature(state.pendingFeatures, selected) ? selected : undefined;
 
+  // The incident the feature belongs to: in a parent incident the map shows the layers of its
+  // sub-incidents, and a feature's messages live in the incident that drew it.
+  const sourceIncidentId =
+    featureId === undefined
+      ? undefined
+      : state.layers.find((l) => l.layer.features.some((f) => f.id === featureId))?.layer
+          .sourceIncidentId;
+
   useEffect(() => {
-    onSelect?.(featureId);
-  }, [featureId, onSelect]);
+    onSelect?.(featureId, sourceIncidentId);
+  }, [featureId, sourceIncidentId, onSelect]);
 
   return <SelectedFeatureHighlight featureId={showRing ? featureId : undefined} />;
 }

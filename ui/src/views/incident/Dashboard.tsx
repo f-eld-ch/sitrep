@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import type { Message } from "types/journal";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
@@ -212,7 +212,24 @@ export default function Dashboard() {
   const { state: incidentState } = useContext(IncidentContext);
   const showTimeline = useBooleanFlagValue("new-triage-view", false);
   // The feature selected on the map: its messages take over the stack until it is deselected.
-  const [focusFeatureId, setFocusFeatureId] = useState<string | undefined>();
+  const [focusFeature, setFocusFeature] = useState<
+    { id: string; incidentId?: string } | undefined
+  >();
+  const focusFeatureId = focusFeature?.id;
+  const selectFeature = useCallback(
+    (id: string | undefined, sourceIncidentId?: string) =>
+      setFocusFeature(id === undefined ? undefined : { id, incidentId: sourceIncidentId }),
+    [],
+  );
+  // In a parent incident the map shows the layers of its sub-incidents: the messages of such a
+  // feature are in the incident that drew it, not in the one being viewed.
+  const foreignIncidentId =
+    focusFeature?.incidentId !== undefined && focusFeature.incidentId !== incidentId
+      ? focusFeature.incidentId
+      : undefined;
+  const foreignMessagesResult = useIncidentMessages(foreignIncidentId ?? "", {
+    skip: foreignIncidentId === undefined,
+  });
   const [deselectToken, setDeselectToken] = useState(0);
   const featureMessageIds = useFeatureMessageIds(focusFeatureId);
   const iconsLoaded = useBabsIcons();
@@ -282,11 +299,20 @@ export default function Dashboard() {
 
   // With a feature selected the newest of its messages is shown, unless one was picked in the stack.
   const [focusPick, setFocusPick] = useState<{ featureId: string; messageId: string } | null>(null);
+  // By default the stack lists this incident's messages. Only the messages of a feature selected
+  // on the map come from the incident that drew it, which in a parent incident can be a sub-incident.
+  const stackMessages =
+    foreignIncidentId !== undefined && featureMessageIds !== undefined
+      ? (foreignMessagesResult.status === "ready"
+          ? foreignMessagesResult.data.messages
+          : []
+        ).filter((message) => asOf === undefined || message.time.getTime() <= asOf.getTime())
+      : allMessages;
   const focusedMessages =
     featureMessageIds === undefined
       ? undefined
       : buildMessageList(
-          allMessages.filter((message) => featureMessageIds.includes(message.id)),
+          stackMessages.filter((message) => featureMessageIds.includes(message.id)),
           { triage: "all", priority: "all", assignment: "all", author: "all" },
         );
 
@@ -318,7 +344,7 @@ export default function Dashboard() {
   };
 
   const clearFocus = () => {
-    setFocusFeatureId(undefined);
+    setFocusFeature(undefined);
     setDeselectToken((token) => token + 1);
   };
 
@@ -329,7 +355,7 @@ export default function Dashboard() {
 
   if (!incidentId) return <Spinner />;
 
-  const selectedMessage = allMessages.find((message) => message.id === effectiveSelectedId);
+  const selectedMessage = stackMessages.find((message) => message.id === effectiveSelectedId);
 
   // Nothing to put in the KPI column once it is known that there are neither casualties nor
   // resources: the map then takes the space. Until loaded, the column shows its spinner.
@@ -359,7 +385,7 @@ export default function Dashboard() {
               </Notification>
             ) : (
               <PriorityMessageStack
-                messages={allMessages}
+                messages={stackMessages}
                 selectedMessageId={effectiveSelectedId}
                 onSelect={handleSelect}
                 focusMessageIds={featureMessageIds}
@@ -386,7 +412,7 @@ export default function Dashboard() {
                 embedded
                 readOnly
                 asOf={asOf}
-                onFeatureSelect={setFocusFeatureId}
+                onFeatureSelect={selectFeature}
                 deselectToken={deselectToken}
               />
             </div>
