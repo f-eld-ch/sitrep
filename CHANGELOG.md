@@ -1,5 +1,9 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(incident)* Add a review of an incident's messages and compare incidents ([#2049](https://github.com/f-eld-ch/sitrep/issues/2049)) - ([072a799](https://github.com/f-eld-ch/sitrep/commit/072a7992bc8dc70c6ab3bdb8a0cef5dc88084391))
+
 ### 🐛 Bug Fixes
 
 - *(ui)* Look up feature messages in the incident that drew the feature ([#2048](https://github.com/f-eld-ch/sitrep/issues/2048)) - ([052a39f](https://github.com/f-eld-ch/sitrep/commit/052a39f34d9a21e6f4d41fedd18577b283b9f157))
