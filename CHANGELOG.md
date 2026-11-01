@@ -11,6 +11,7 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.5.11 to 26.5.12 in /ui ([#2053](https://github.com/f-eld-ch/sitrep/issues/2053)) - ([a4e488f](https://github.com/f-eld-ch/sitrep/commit/a4e488fa6ae0e06ac34e85172f8e9a0033a4980c))
 - *(deps)* Bump react-router from 8.5.0 to 8.5.1 in /ui ([#2045](https://github.com/f-eld-ch/sitrep/issues/2045)) - ([e3bc30a](https://github.com/f-eld-ch/sitrep/commit/e3bc30af5066efa4e61048172cd0ae50ba27aed8))
 
 
