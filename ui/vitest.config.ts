@@ -8,6 +8,9 @@ export default mergeConfig(
       environment: "jsdom",
       setupFiles: ["./src/setupTests.ts"],
       globals: true,
+      // @uiw/react-md-editor's ESM build has a bare `import "./index.css"`, which Node cannot
+      // load when the package is externalised; inline it so Vite handles the CSS.
+      server: { deps: { inline: [/@uiw\/react-md-editor/, /@uiw\/react-markdown-preview/] } },
       // The first render in a file is slow when every file runs at once in its own jsdom: a test
       // that takes well under a second alone can take over five when the machine is busy.
       testTimeout: 15_000,
