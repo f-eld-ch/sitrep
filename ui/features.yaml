@@ -77,7 +77,7 @@ segments:
       - type: STRING_COMPARISON_TYPE
         property: domainHash
         operator: isoneof
-        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc"]'
+        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc", "ddf53c9cba7cc05f344de0c3ade6c3c40afd6a6e4e2560637ed87c3ce6e0ca5b"]'
   - key: SitrepManaged
     name: SitrepManaged
     constraints:
