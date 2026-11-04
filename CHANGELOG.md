@@ -1,18 +1,33 @@
-## [unreleased]
+## [26.11.0](https://github.com/f-eld-ch/sitrep/compare/v26.10.2..v26.11.0) - 2026-11-04
 
 ### ⛰️  Features
 
 - *(incident)* Add a review of an incident's messages and compare incidents ([#2049](https://github.com/f-eld-ch/sitrep/issues/2049)) - ([072a799](https://github.com/f-eld-ch/sitrep/commit/072a7992bc8dc70c6ab3bdb8a0cef5dc88084391))
+- *(resource)* Correct name, contact and headcount in the triage view ([#2069](https://github.com/f-eld-ch/sitrep/issues/2069)) - ([13de0cb](https://github.com/f-eld-ch/sitrep/commit/13de0cba0b6b5117923012bdc2ed55e86c189daa))
+- *(ui)* Enable earlyadopter for demo.sitrep.ch - ([d1f437e](https://github.com/f-eld-ch/sitrep/commit/d1f437eecabbaddce105c94dbead2127b83e6143))
+- *(ui)* Enable earlyadopter for demo.sitrep.ch ([#2067](https://github.com/f-eld-ch/sitrep/issues/2067)) - ([80f832f](https://github.com/f-eld-ch/sitrep/commit/80f832f082e01e502864e3401623dcff1e015466))
 
 ### 🐛 Bug Fixes
 
 - *(ui)* Look up feature messages in the incident that drew the feature ([#2048](https://github.com/f-eld-ch/sitrep/issues/2048)) - ([052a39f](https://github.com/f-eld-ch/sitrep/commit/052a39f34d9a21e6f4d41fedd18577b283b9f157))
 - *(ui)* Remove the Schadenplatz step from the triage ([#2047](https://github.com/f-eld-ch/sitrep/issues/2047)) - ([37692cc](https://github.com/f-eld-ch/sitrep/commit/37692cc847f33c8d79a406eeaf948af691c4e00d))
+- Upggrade postgres image in compose files ([#2066](https://github.com/f-eld-ch/sitrep/issues/2066)) - ([48eefea](https://github.com/f-eld-ch/sitrep/commit/48eefeaa1d08e29ade47a5d0be38498337de3330))
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.5.12 to 26.7.1 in /ui ([#2057](https://github.com/f-eld-ch/sitrep/issues/2057)) - ([9f70921](https://github.com/f-eld-ch/sitrep/commit/9f709216d62aa5287b88a7d984ccd1f5287f313b))
+- *(deps)* Bump glob and minimatch to patched versions ([#2070](https://github.com/f-eld-ch/sitrep/issues/2070)) - ([fb3a725](https://github.com/f-eld-ch/sitrep/commit/fb3a725d2b4071a6186a1679f4f562fae77d03fe))
+- *(deps)* Bump @uiw/react-md-editor from 4.1.6 to 4.2.3 in /ui ([#2064](https://github.com/f-eld-ch/sitrep/issues/2064)) - ([71481b1](https://github.com/f-eld-ch/sitrep/commit/71481b1268c33ba3254ce42d1d643a06797b1e54))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.4.2 to 5.4.4 ([#2054](https://github.com/f-eld-ch/sitrep/issues/2054)) - ([a3454cf](https://github.com/f-eld-ch/sitrep/commit/a3454cfdcc725b19f920324d8277e2dbc249cc6d))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#2058](https://github.com/f-eld-ch/sitrep/issues/2058)) - ([cb4dadd](https://github.com/f-eld-ch/sitrep/commit/cb4dadd0519831c42b67e43d432fd1bd2afd5583))
+- *(deps)* Bump github.com/jackc/pgx/v5 from 5.11.0 to 5.12.0 ([#2060](https://github.com/f-eld-ch/sitrep/issues/2060)) - ([31e1dfa](https://github.com/f-eld-ch/sitrep/commit/31e1dfa3b568a858703357b5a3b6adf644abe407))
+- *(deps)* Bump modernc.org/sqlite from 1.61.0 to 1.61.1 ([#2061](https://github.com/f-eld-ch/sitrep/issues/2061)) - ([777a1ac](https://github.com/f-eld-ch/sitrep/commit/777a1ac4497d4c8897778aad2f5dd7d804917ef3))
+- *(deps)* Bump react-i18next from 17.1.9 to 17.1.12 in /ui ([#2062](https://github.com/f-eld-ch/sitrep/issues/2062)) - ([95f3497](https://github.com/f-eld-ch/sitrep/commit/95f3497e73a623680a152e23e0d6a5ae52932a5b))
+- *(deps)* Bump @apollo/client from 4.3.5 to 4.3.6 in /ui ([#2063](https://github.com/f-eld-ch/sitrep/issues/2063)) - ([9c590b0](https://github.com/f-eld-ch/sitrep/commit/9c590b09661e01bffb46eee3aadc9b9ae8627291))
 - *(deps)* Bump i18next from 26.5.11 to 26.5.12 in /ui ([#2053](https://github.com/f-eld-ch/sitrep/issues/2053)) - ([a4e488f](https://github.com/f-eld-ch/sitrep/commit/a4e488fa6ae0e06ac34e85172f8e9a0033a4980c))
 - *(deps)* Bump react-router from 8.5.0 to 8.5.1 in /ui ([#2045](https://github.com/f-eld-ch/sitrep/issues/2045)) - ([e3bc30a](https://github.com/f-eld-ch/sitrep/commit/e3bc30af5066efa4e61048172cd0ae50ba27aed8))
+- *(release)* Rebuild sitrep.ch from the release job ([#2071](https://github.com/f-eld-ch/sitrep/issues/2071)) - ([2539e33](https://github.com/f-eld-ch/sitrep/commit/2539e3357569fbaf3b5c48f8e60e01752600d17b))
+- *(ui)* Remove new-triage-view and show-resources flags from code ([#2068](https://github.com/f-eld-ch/sitrep/issues/2068)) - ([29a31c0](https://github.com/f-eld-ch/sitrep/commit/29a31c01c788fec1713be8ed53c6df3271a9d804))
 
 
 ## [26.10.2](https://github.com/f-eld-ch/sitrep/compare/v26.10.1..v26.10.2) - 2026-10-28
