@@ -1641,6 +1641,31 @@ func (r *mutationResolver) UpdatePersonnelCount(
 	return resourceStateToModel(state), nil
 }
 
+// RenameResource is the resolver for the renameResource field.
+func (r *mutationResolver) RenameResource(
+	ctx context.Context,
+	id string,
+	name string,
+	at *time.Time,
+) (*model.Resource, error) {
+	actor, err := identity.ActorFrom(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resID, err := parseUUID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := r.Resources.Rename(ctx, shared.ResourceID(resID), name, at, actor)
+	if err != nil {
+		return nil, err
+	}
+
+	return resourceStateToModel(state), nil
+}
+
 // HandOver is the resolver for the handOver field.
 func (r *mutationResolver) HandOver(
 	ctx context.Context,

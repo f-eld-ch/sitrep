@@ -72,7 +72,7 @@ func NewResourceHandler() *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 6 }
+func (h *ResourceHandler) Version() int { return 7 }
 
 func (h *ResourceHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -91,7 +91,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved", "Reactivated",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated", "Renamed":
 		return true
 	}
 
@@ -413,6 +413,19 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 		if row := h.rows[id]; row != nil {
 			row.PersonnelCount = d.Count
+			row.UpdatedAt = e.OccurredAt
+		}
+
+	case "Renamed":
+		var d struct {
+			Name string `json:"name"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		if row := h.rows[id]; row != nil {
+			row.Name = d.Name
 			row.UpdatedAt = e.OccurredAt
 		}
 	}

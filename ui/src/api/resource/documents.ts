@@ -23,6 +23,8 @@ import type {
   RelieveResourceMutationVariables,
   StandDownResourceMutation,
   StandDownResourceMutationVariables,
+  RenameResourceMutation,
+  RenameResourceMutationVariables,
   UpdateContactMutation,
   UpdateContactMutationVariables,
   UpdateDeploymentLocationMutation,
@@ -267,6 +269,18 @@ export const UPDATE_PERSONNEL_COUNT: TypedDocumentNode<
   ${RESOURCE_FIELDS}
   mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {
     updatePersonnelCount(id: $id, count: $count, at: $at) {
+      ...ResourceFields
+    }
+  }
+`;
+
+export const RENAME_RESOURCE: TypedDocumentNode<
+  RenameResourceMutation,
+  RenameResourceMutationVariables
+> = gql`
+  ${RESOURCE_FIELDS}
+  mutation RenameResource($id: ID!, $name: String!, $at: DateTime) {
+    renameResource(id: $id, name: $name, at: $at) {
       ...ResourceFields
     }
   }

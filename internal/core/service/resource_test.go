@@ -490,6 +490,21 @@ func TestResourceService_UpdateContact_UsesProvidedAt(t *testing.T) {
 		"ContactUpdated event must carry the provided at, not clock.Now()")
 }
 
+func TestResourceService_Rename_UsesProvidedAtAndUpdatesName(t *testing.T) {
+	incSvc, _, resSvc, store := setupResourceServicesWithStore(t)
+
+	customAt := testAt.Add(7 * time.Hour)
+
+	inc, _ := incSvc.CreateIncident(ctx(), "Test", nil, nil, nil, testActor)
+	alerted, _ := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+
+	state, err := resSvc.Rename(ctx(), alerted.ID, "Löschzug 2", &customAt, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, "Löschzug 2", state.Name)
+	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
+		"Renamed event must carry the provided at, not clock.Now()")
+}
+
 // ── HandOver ──────────────────────────────────────────────────────────────────
 
 func TestResourceService_HandOver_AufgeboteneSuccessor(t *testing.T) {

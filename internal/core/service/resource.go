@@ -397,6 +397,26 @@ func (s *ResourceService) UpdatePersonnelCount(
 	)
 }
 
+// Rename corrects the resource's name.
+func (s *ResourceService) Rename(
+	ctx context.Context,
+	id shared.ResourceID,
+	name string,
+	at *time.Time,
+	actor identity.Actor,
+) (inbound.ResourceState, error) {
+	return s.simpleTransition(
+		ctx,
+		"ResourceService.Rename",
+		id,
+		at,
+		actor,
+		func(res *resource.Resource, t time.Time) error {
+			return res.Rename(name, actor.Sub, t)
+		},
+	)
+}
+
 func (s *ResourceService) resolveAt(at *time.Time) time.Time {
 	if at != nil {
 		return *at

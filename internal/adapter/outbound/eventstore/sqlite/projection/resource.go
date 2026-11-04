@@ -20,7 +20,7 @@ func NewResourceHandler(db *sql.DB) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 6 }
+func (h *ResourceHandler) Version() int { return 7 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_resource`)
 	return err
@@ -34,7 +34,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved", "Reactivated",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated", "Renamed":
 		return true
 	}
 
@@ -315,6 +315,23 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			ctx,
 			`UPDATE readmodel_resource SET personnel_count=?, updated_at=? WHERE id=?`,
 			d.Count,
+			now,
+			id,
+		)
+
+	case "Renamed":
+		var d struct {
+			Name string `json:"name"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(
+			tx,
+			ctx,
+			`UPDATE readmodel_resource SET name=?, updated_at=? WHERE id=?`,
+			d.Name,
 			now,
 			id,
 		)

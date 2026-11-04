@@ -536,6 +536,7 @@
       "reactivate": "Reaktivieren",
       "addToMessage": "Zur Meldung hinzufügen"
     },
+    "editDetails": "Angaben korrigieren",
     "fields": {
       "name": "Name des Mittels",
       "namePlaceholder": "Name des Mittels",
@@ -577,6 +578,8 @@
     "deployedAt": "Im Einsatz",
     "relievedAt": "Beendet / Abgelöst",
     "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "personnelCountMin": "Mindestens 1 Person",
       "hauptaufgabeRequired": "Hauptaufgabe ist erforderlich für den Einsatz",
       "einsatzortRequired": "Einsatzort ist erforderlich für den Einsatz",
       "duplicateIdentity": "Ein aktives Mittel mit derselben Formationsbezeichnung, Formation und Name existiert bereits.",

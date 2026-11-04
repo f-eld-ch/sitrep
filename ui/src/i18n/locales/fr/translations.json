@@ -537,6 +537,7 @@
       "reactivate": "Réactiver",
       "addToMessage": "Ajouter au message"
     },
+    "editDetails": "Corriger les données",
     "fields": {
       "name": "Désignation",
       "formation": "Formation",
@@ -577,6 +578,8 @@
     "deployedAt": "Engagé",
     "relievedAt": "Terminé / Relévé",
     "validation": {
+      "nameRequired": "Le nom est obligatoire",
+      "personnelCountMin": "Au moins 1 personne",
       "hauptaufgabeRequired": "La tâche principale est requise pour l'engagement",
       "einsatzortRequired": "Le lieu d'engagement est requis pour l'engagement",
       "duplicateIdentity": "Un moyen actif avec la même formation/lieu, le même type de formation et le même nom existe déjà.",

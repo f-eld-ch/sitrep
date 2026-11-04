@@ -66,6 +66,7 @@ import type {
   SchadenplatzCasualtyInput,
 } from "api";
 import { type MessageEditorFormHandle } from "./editorState";
+import { ResourceDetailsForm } from "./ResourceDetailsForm";
 import { type MessageFilters } from "./listUtils";
 import { NewForm as TaskNew } from "../measures/tasks";
 const MessageEditorForm = lazy(() =>
@@ -2118,6 +2119,16 @@ function ResourceEditPanel({
           {successor.contact &&
             ` · ${t(`medium.${successor.contact.medium}`)}${successor.contact.detail ? `: ${successor.contact.detail}` : ""}`}
         </p>
+      )}
+
+      {/* Rare corrections (name, contact, headcount) — collapsed so the actions above stay first.
+          A relieved resource cannot be changed any more. */}
+      {r.status !== "ABGELOEST" && (
+        <ResourceDetailsForm
+          resource={r}
+          messageTime={messageTime}
+          showContact={r.status !== "AUFGEBOTEN"}
+        />
       )}
     </div>
   );

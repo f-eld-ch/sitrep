@@ -5,6 +5,7 @@ import {
   useChangeHauptaufgabe,
   useReactivateResource,
   useReassignResource,
+  useRenameResource,
   useUpdateContact,
   useUpdateDeploymentLocation,
   useUpdatePersonnelCount,
@@ -233,6 +234,22 @@ describe("useUpdateContact", () => {
     expect(mutate).toHaveBeenCalledWith(
       expect.objectContaining({
         variables: expect.objectContaining({ at: messageTime.toISOString() }),
+      }),
+    );
+  });
+});
+
+describe("useRenameResource", () => {
+  it("passes the name and at as ISO string", async () => {
+    const mutate = await setupMutation({ data: { renameResource: { id: "res-1" } } });
+    const { result } = renderHook(() => useRenameResource());
+    const [renameResource] = result.current;
+
+    await renameResource({ id: "res-1", name: "Löschzug 2", at: messageTime });
+
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: { id: "res-1", name: "Löschzug 2", at: messageTime.toISOString() },
       }),
     );
   });

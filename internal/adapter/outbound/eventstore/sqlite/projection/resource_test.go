@@ -110,3 +110,39 @@ func TestResourceHandler_ReactivatedKeepsHistoryAndResetsCycle(t *testing.T) {
 	require.NotNil(t, einsatzBeg)
 	assert.Contains(t, *einsatzBeg, "2026-01-16", "einsatz_beginn restarts on day 2")
 }
+
+func TestResourceHandler_RenamedReplacesName(t *testing.T) {
+	_, write := openTestDB(t)
+	store := sqstore.NewEventStore(write, write, sqstore.WallClock{})
+	handlers := []projection.Handler{projection.NewResourceHandler(write)}
+	proj := projection.NewProjector(write, write, store, sqstore.NewNotifier(), handlers)
+	require.NoError(t, proj.CatchUp(t.Context()))
+
+	const (
+		handler = "readmodel.resource"
+		resID   = "00000000-0000-0000-0000-0000000000b1"
+		incID   = "00000000-0000-0000-0000-0000000000b2"
+		spID    = "00000000-0000-0000-0000-0000000000b3"
+	)
+
+	at := time.Date(2026, 1, 15, 8, 0, 0, 0, time.UTC)
+
+	alerted := newEvent("Resource", resID, 1, "Alerted", map[string]any{
+		"incidentId": incID, "schadenplatzId": spID, "formation": "FW", "name": "Gruppe Alpah",
+		"size": "GRUPPE", "personnelCount": 9, "hauptaufgabe": "Löschangriff",
+	})
+	alerted.OccurredAt = at
+	applyEvent(t, proj, handler, alerted)
+
+	renamed := newEvent("Resource", resID, 2, "Renamed", map[string]any{"name": "Gruppe Alpha"})
+	renamed.OccurredAt = at.Add(time.Hour)
+
+	// Replaying the same event must give the same result.
+	applyEvent(t, proj, handler, renamed)
+	applyEvent(t, proj, handler, renamed)
+
+	var name string
+	require.NoError(t, write.QueryRowContext(t.Context(),
+		`SELECT name FROM readmodel_resource WHERE id = ?`, resID).Scan(&name))
+	assert.Equal(t, "Gruppe Alpha", name)
+}

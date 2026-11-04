@@ -76,6 +76,7 @@ type Documents = {
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID, $at: DateTime) {\n    relieveResource(id: $id, successorId: $successorId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!, $at: DateTime) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ChangeHauptaufgabeDocument,
     "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {\n    updatePersonnelCount(id: $id, count: $count, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.UpdatePersonnelCountDocument,
+    "\n  \n  mutation RenameResource($id: ID!, $name: String!, $at: DateTime) {\n    renameResource(id: $id, name: $name, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.RenameResourceDocument,
     "\n  \n  mutation ReassignResource($id: ID!, $schadenplatzId: ID!, $at: DateTime) {\n    reassignResource(id: $id, schadenplatzId: $schadenplatzId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.ReassignResourceDocument,
     "\n  \n  mutation UpdateDeploymentLocation($id: ID!, $label: String!, $at: DateTime) {\n    updateDeploymentLocation(id: $id, location: { label: $label }, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.UpdateDeploymentLocationDocument,
     "\n  \n  mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!, $at: DateTime) {\n    updateContact(id: $id, contact: { medium: $medium, detail: $detail }, at: $at) {\n      ...ResourceFields\n    }\n  }\n": typeof types.UpdateContactDocument,
@@ -148,6 +149,7 @@ const documents: Documents = {
     "\n  \n  mutation RelieveResource($id: ID!, $successorId: ID, $at: DateTime) {\n    relieveResource(id: $id, successorId: $successorId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.RelieveResourceDocument,
     "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $hauptaufgabe: String!, $at: DateTime) {\n    changeHauptaufgabe(id: $id, hauptaufgabe: $hauptaufgabe, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.ChangeHauptaufgabeDocument,
     "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {\n    updatePersonnelCount(id: $id, count: $count, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.UpdatePersonnelCountDocument,
+    "\n  \n  mutation RenameResource($id: ID!, $name: String!, $at: DateTime) {\n    renameResource(id: $id, name: $name, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.RenameResourceDocument,
     "\n  \n  mutation ReassignResource($id: ID!, $schadenplatzId: ID!, $at: DateTime) {\n    reassignResource(id: $id, schadenplatzId: $schadenplatzId, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.ReassignResourceDocument,
     "\n  \n  mutation UpdateDeploymentLocation($id: ID!, $label: String!, $at: DateTime) {\n    updateDeploymentLocation(id: $id, location: { label: $label }, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.UpdateDeploymentLocationDocument,
     "\n  \n  mutation UpdateContact($id: ID!, $medium: ContactMedium!, $detail: String!, $at: DateTime) {\n    updateContact(id: $id, contact: { medium: $medium, detail: $detail }, at: $at) {\n      ...ResourceFields\n    }\n  }\n": types.UpdateContactDocument,
@@ -420,6 +422,10 @@ export function graphql(source: "\n  \n  mutation ChangeHauptaufgabe($id: ID!, $
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {\n    updatePersonnelCount(id: $id, count: $count, at: $at) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation UpdatePersonnelCount($id: ID!, $count: Int!, $at: DateTime) {\n    updatePersonnelCount(id: $id, count: $count, at: $at) {\n      ...ResourceFields\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  \n  mutation RenameResource($id: ID!, $name: String!, $at: DateTime) {\n    renameResource(id: $id, name: $name, at: $at) {\n      ...ResourceFields\n    }\n  }\n"): (typeof documents)["\n  \n  mutation RenameResource($id: ID!, $name: String!, $at: DateTime) {\n    renameResource(id: $id, name: $name, at: $at) {\n      ...ResourceFields\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

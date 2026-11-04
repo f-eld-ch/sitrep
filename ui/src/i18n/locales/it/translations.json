@@ -537,6 +537,7 @@
       "reactivate": "Riattivare",
       "addToMessage": "Aggiungi al messaggio"
     },
+    "editDetails": "Correggere i dati",
     "fields": {
       "name": "Denominazione",
       "formation": "Formazione",
@@ -577,6 +578,8 @@
     "deployedAt": "Impiegato",
     "relievedAt": "Avvicendato",
     "validation": {
+      "nameRequired": "Il nome è obbligatorio",
+      "personnelCountMin": "Almeno 1 persona",
       "hauptaufgabeRequired": "Il compito principale è obbligatorio per l'impiego",
       "einsatzortRequired": "Il luogo di impiego è obbligatorio per l'impiego",
       "duplicateIdentity": "Esiste già un mezzo attivo con la stessa formazione/luogo, tipo di formazione e nome.",

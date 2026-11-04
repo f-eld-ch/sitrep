@@ -536,6 +536,7 @@
       "reactivate": "Reactivate",
       "addToMessage": "Add to message"
     },
+    "editDetails": "Correct details",
     "fields": {
       "name": "Resource name",
       "namePlaceholder": "Resource name",
@@ -577,6 +578,8 @@
     "deployedAt": "Deployed",
     "relievedAt": "Ended / Relieved",
     "validation": {
+      "nameRequired": "Name is required",
+      "personnelCountMin": "At least 1 person",
       "hauptaufgabeRequired": "Main task is required before deploying",
       "einsatzortRequired": "Deployment location is required before deploying",
       "duplicateIdentity": "An active resource with the same formation/location, formation type, and name already exists.",

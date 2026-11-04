@@ -19,6 +19,7 @@ import {
   UPDATE_CONTACT,
   UPDATE_DEPLOYMENT_LOCATION,
   UPDATE_PERSONNEL_COUNT,
+  RENAME_RESOURCE,
 } from "./documents";
 
 // The wire shape of a resource as stored in the Apollo normalized cache.
@@ -507,6 +508,43 @@ export function useUpdatePersonnelCount(): CommandHook<{
   };
 
   return [updateCount, state];
+}
+
+export function useRenameResource(): CommandHook<{
+  id: string;
+  name: string;
+  at?: Date | null;
+}> {
+  const readResource = useReadResource();
+  const [mutate, { loading, error }] = useMutation(RENAME_RESOURCE);
+
+  const state: CommandState = {
+    loading,
+    error: error ? apiErrorFromApolloError(error) : undefined,
+  };
+
+  const renameResource = async (args: {
+    id: string;
+    name: string;
+    at?: Date | null;
+  }): Promise<void> => {
+    const current = readResource(args.id);
+    await mutate({
+      variables: { id: args.id, name: args.name, at: args.at?.toISOString() ?? null },
+      optimisticResponse: current ? { renameResource: { ...current, name: args.name } } : undefined,
+      update(cache, { data }) {
+        const resource = data?.renameResource;
+        if (!resource) return;
+        cache.writeFragment({
+          id: cache.identify(resource),
+          fragment: RESOURCE_FIELDS,
+          data: resource,
+        });
+      },
+    });
+  };
+
+  return [renameResource, state];
 }
 
 export function useReassignResource(): CommandHook<{
