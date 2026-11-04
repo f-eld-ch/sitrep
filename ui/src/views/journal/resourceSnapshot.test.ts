@@ -120,4 +120,14 @@ describe("resourceStateAt", () => {
     expect(snap.hauptaufgabe).toBe("Evakuierung");
     expect(snap.deploymentLabel).toBe("Brücke Nord");
   });
+
+  it("shows a corrected headcount for an ongoing deployment, not the one captured at deploy time", () => {
+    const r = resource({
+      status: "EINGESETZT",
+      personnelCount: 12,
+      deploymentHistory: [{ ...period("2026-01-15T09:00:00Z", null), personnelCount: 9 }],
+    });
+
+    expect(resourceStateAt(r, at("2026-01-15T10:00:00Z")).personnelCount).toBe(12);
+  });
 });

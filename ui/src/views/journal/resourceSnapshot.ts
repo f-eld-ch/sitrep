@@ -37,7 +37,7 @@ export function resourceStateAt(r: Resource, at: Date): ResourceSnapshot {
     const ongoing = activePeriod.endedAt === null;
     return {
       status: "EINGESETZT",
-      personnelCount: activePeriod.personnelCount,
+      personnelCount: ongoing ? r.personnelCount : activePeriod.personnelCount,
       hauptaufgabe: ongoing ? r.hauptaufgabe : activePeriod.hauptaufgabe,
       deploymentLabel: ongoing
         ? (r.deploymentLocation?.label ?? activePeriod.deploymentLabel ?? null)

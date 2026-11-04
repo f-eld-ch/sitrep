@@ -12,6 +12,7 @@ export {
   useUpdateContact,
   useUpdateDeploymentLocation,
   useUpdatePersonnelCount,
+  useRenameResource,
 } from "./commands";
 export type {
   ContactMedium,

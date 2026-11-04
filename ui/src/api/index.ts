@@ -126,6 +126,7 @@ export {
   useUpdateContact,
   useUpdateDeploymentLocation,
   useUpdatePersonnelCount,
+  useRenameResource,
 } from "./resource";
 
 // Schadenplatz aggregate
