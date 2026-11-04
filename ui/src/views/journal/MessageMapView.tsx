@@ -309,7 +309,6 @@ function MessageMapView() {
                     message={selected}
                     divisions={incidentState.incident?.divisions ?? []}
                     setEditorMessage={undefined}
-                    setTriageMessage={undefined}
                   />
                 </div>
               </>

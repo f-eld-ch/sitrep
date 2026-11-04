@@ -1,4 +1,3 @@
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { faPaperclip, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -32,7 +31,6 @@ import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { FormRow } from "./EditorForms/FormRow";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
-import TriageModal from "./TriageModal";
 import {
   type AutofillDetail,
   EditorContext,
@@ -83,7 +81,6 @@ function Editor() {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
   const incidentIsClosed = incident?.closedAt != null;
-  const newTriageView = useBooleanFlagValue("new-triage-view", false);
 
   const isDirty =
     state.content !== "" ||
@@ -211,11 +208,6 @@ function Editor() {
     }
   }, []);
 
-  const setTriageMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_triage_message", message }),
-    [],
-  );
-
   const contextValue: EditorContextValue = {
     state,
     dispatch,
@@ -272,15 +264,8 @@ function Editor() {
           <List
             showControls={!incidentIsClosed}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
-            setTriageMessage={incidentIsClosed || newTriageView ? undefined : setTriageMessage}
           />
         </div>
-        <TriageModal
-          message={state.messageToTriage}
-          setMessage={(message: Message | undefined) =>
-            dispatch({ type: "set_triage_message", message })
-          }
-        />
       </div>
     </EditorContext.Provider>
   );
@@ -549,7 +534,6 @@ function InputBox({
             showControls={false}
             divisions={[]}
             setEditorMessage={undefined}
-            setTriageMessage={undefined}
           />
         </>
       )}

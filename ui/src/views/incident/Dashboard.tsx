@@ -15,7 +15,6 @@ import type { Message } from "types/journal";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 import { useCallback, useContext, useState } from "react";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { PriorityStatus } from "types";
 import { buildMessageList } from "views/journal/listUtils";
 import { IncidentContext } from "utils";
@@ -210,7 +209,6 @@ export default function Dashboard() {
   const resourcesResult = useIncidentResources(incidentId, asOf);
   const messagesResult = useIncidentMessages(incidentId ?? "");
   const { state: incidentState } = useContext(IncidentContext);
-  const showTimeline = useBooleanFlagValue("new-triage-view", false);
   // The feature selected on the map: its messages take over the stack until it is deselected.
   const [focusFeature, setFocusFeature] = useState<
     { id: string; incidentId?: string } | undefined
@@ -233,7 +231,6 @@ export default function Dashboard() {
   const [deselectToken, setDeselectToken] = useState(0);
   const featureMessageIds = useFeatureMessageIds(focusFeatureId);
   const iconsLoaded = useBabsIcons();
-  const showResources = useBooleanFlagValue("show-resources", false);
   // Tracks a user's explicit selection together with the key message that was
   // active when they made it. If a new key message arrives (keyId changes),
   // the override is invalidated and we fall back to the latest key message.
@@ -360,8 +357,7 @@ export default function Dashboard() {
   // Nothing to put in the KPI column once it is known that there are neither casualties nor
   // resources: the map then takes the space. Until loaded, the column shows its spinner.
   const kpis = resourcesResult.status === "ready" ? kpiSummary(resourcesResult.data) : undefined;
-  const showKpiColumn =
-    showResources && (kpis === undefined || kpis.hasCasualties || kpis.formationGroups.length > 0);
+  const showKpiColumn = kpis === undefined || kpis.hasCasualties || kpis.formationGroups.length > 0;
 
   return (
     <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
@@ -416,15 +412,13 @@ export default function Dashboard() {
                 deselectToken={deselectToken}
               />
             </div>
-            {showTimeline && (
-              <TimelineSlider
-                framed={false}
-                asOf={asOf}
-                onAsOfChange={setAsOf}
-                start={timelineStart}
-                tickTimes={tickTimes}
-              />
-            )}
+            <TimelineSlider
+              framed={false}
+              asOf={asOf}
+              onAsOfChange={setAsOf}
+              start={timelineStart}
+              tickTimes={tickTimes}
+            />
           </section>
           {/* KPIs — first on mobile, last column on desktop */}
           {showKpiColumn && (

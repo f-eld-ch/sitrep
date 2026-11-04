@@ -27,7 +27,6 @@ function List(props: {
   showControls: boolean;
   autoScroll?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
-  setTriageMessage?: (message: Message | undefined) => void;
 }) {
   const { t } = useTranslation();
   const { incidentId } = useParams();
@@ -178,7 +177,6 @@ function List(props: {
           divisions={divisions}
           incidentId={incidentId ?? ""}
           showControls={props.showControls}
-          setTriageMessage={props.setTriageMessage}
           setEditorMessage={props.setEditorMessage}
         />
       </div>
@@ -203,7 +201,6 @@ function Messages(props: {
   showControls: boolean;
   incidentId: string;
   setEditorMessage?: (message: Message | undefined) => void;
-  setTriageMessage?: (message: Message | undefined) => void;
   messages: Message[];
   divisions: Division[];
 }) {
@@ -218,7 +215,6 @@ function Messages(props: {
           divisions={props.divisions}
           showControls={props.showControls}
           setEditorMessage={props.setEditorMessage}
-          setTriageMessage={props.setTriageMessage}
         />
       ))}
     </>

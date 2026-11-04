@@ -1,4 +1,4 @@
-import { faArrowsToEye, faEdit, faPaperclip, faPrint } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faPaperclip, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -81,7 +81,6 @@ export interface MessageProps {
   accentSide?: "left" | "right";
   stabilizeActionBar?: boolean;
   setEditorMessage?: (message: Message | undefined) => void;
-  setTriageMessage?: (message: Message | undefined) => void;
 }
 
 const MAX_IMG_RETRIES = 3;
@@ -239,7 +238,6 @@ const MessageContainer = ({
   accentSide = "left",
   stabilizeActionBar = false,
   setEditorMessage,
-  setTriageMessage,
   divisions,
 }: MessageProps) => {
   const { t, i18n } = useTranslation();
@@ -379,17 +377,6 @@ const MessageContainer = ({
                   divisions={divisions}
                   className={actionLinkClass}
                 />
-              )}
-              {setTriageMessage && message && (
-                <button
-                  type="button"
-                  className={actionLinkClass}
-                  data-testid="save-triage-button"
-                  onClick={() => setTriageMessage(message)}
-                >
-                  <FontAwesomeIcon icon={faArrowsToEye} />
-                  <span>{t("triageMessage")}</span>
-                </button>
               )}
             </div>
           )}

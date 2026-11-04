@@ -10,7 +10,6 @@ export interface EditorState {
   content: string;
   time: Date | undefined;
   messageToEdit: Message | undefined;
-  messageToTriage: Message | undefined;
   media: Medium;
   radioChannel: string;
 }
@@ -49,7 +48,6 @@ export interface RadioDetail {
 export type EditorAction =
   | { type: "clear" }
   | { type: "set_edit_message"; message: Message }
-  | { type: "set_triage_message"; message: Message | undefined }
   | { type: "set_sender"; sender: string }
   | { type: "set_receiver"; receiver: string }
   | { type: "set_content"; content: string }
@@ -80,7 +78,6 @@ export function useEditorContext(): EditorContextValue {
 
 export function initEditorState(): EditorState {
   return {
-    messageToTriage: undefined,
     messageToEdit: undefined,
     sender: "",
     receiver: "",
@@ -179,8 +176,6 @@ export const editorReducer = (state: EditorState, action: EditorAction): EditorS
         radioChannel: msg.medium === Medium.Radio ? msg.senderDetail : "",
       };
     }
-    case "set_triage_message":
-      return { ...state, messageToTriage: action.message };
     case "remove_attachment":
       if (!state.messageToEdit) return state;
       return {
