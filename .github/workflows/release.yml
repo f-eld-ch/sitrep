@@ -112,3 +112,11 @@ jobs:
             -f event_type=new-release \
             -f client_payload[tag]="${GITHUB_REF_NAME}" \
             -f client_payload[channel]="${CHANNEL}"
+
+      # The release above is created with GITHUB_TOKEN, and GitHub does not start other workflows
+      # from events that token causes, so a `release: published` workflow never runs. Call the hook
+      # here instead, once the release exists, so the changelog on sitrep.ch picks it up.
+      - name: Rebuild sitrep.ch
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.SITREP_CH_DEPLOY_HOOK }}
+        run: curl --fail --silent --show-error -X POST "$DEPLOY_HOOK_URL"
