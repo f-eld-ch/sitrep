@@ -3025,9 +3025,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.5.0":
-  version: 26.5.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.5.0"
+"@maplibre/maplibre-gl-style-spec@npm:^26.5.1":
+  version: 26.5.1
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.5.1"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
     "@mapbox/unitbezier": "npm:^1.0.0"
@@ -3039,7 +3039,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/c53e41f05e033692325e0c371453553fe6b7a569f3bfd9152e44e9c1215840a5c76ae357c7aa473f44395189e179c1dc667984d1e6e62909d1b448568c3d0232
+  checksum: 10/25bd5219ff303a0cda8c492d615ba8e1f187675c4c99bb208ce66dcdc3cf653ec0bff9ca1598ebfc9537c8d20de9c94491afb130c970bc232a665bd98b247e47
   languageName: node
   linkType: hard
 
@@ -11336,7 +11336,7 @@ __metadata:
     "@graphql-codegen/client-preset": "npm:^6.2.3"
     "@graphql-codegen/schema-ast": "npm:^6.1.1"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.2"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.5.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.5.1"
     "@openfeature/core": "npm:^1.12.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.1"
