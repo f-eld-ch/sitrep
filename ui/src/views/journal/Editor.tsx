@@ -31,7 +31,6 @@ import { MediumForm, RadioChannelDetailInput } from "./EditorForms";
 import { FormRow } from "./EditorForms/FormRow";
 import { default as List } from "./List";
 import { default as JournalMessage } from "./Message";
-import TriageModal from "./TriageModal";
 import {
   type AutofillDetail,
   EditorContext,
@@ -265,15 +264,8 @@ function Editor() {
           <List
             showControls={!incidentIsClosed}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
-            setTriageMessage={undefined}
           />
         </div>
-        <TriageModal
-          message={state.messageToTriage}
-          setMessage={(message: Message | undefined) =>
-            dispatch({ type: "set_triage_message", message })
-          }
-        />
       </div>
     </EditorContext.Provider>
   );
@@ -542,7 +534,6 @@ function InputBox({
             showControls={false}
             divisions={[]}
             setEditorMessage={undefined}
-            setTriageMessage={undefined}
           />
         </>
       )}

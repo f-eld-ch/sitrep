@@ -110,35 +110,6 @@ describe("MessageContainer", () => {
     expect(screen.getByTestId("print-button")).toBeInTheDocument();
   });
 
-  it("renders save triage button and calls setTriageMessage", () => {
-    const setTriageMessage = vi.fn();
-    render(
-      <MessageContainer
-        id="msg1"
-        incidentId="incident1"
-        message={baseMessage}
-        divisions={divisions}
-        showControls={true}
-        setTriageMessage={setTriageMessage}
-      />,
-    );
-    fireEvent.click(screen.getByTestId("save-triage-button"));
-    expect(setTriageMessage).toHaveBeenCalledWith(baseMessage);
-  });
-
-  it("hides triage button when setTriageMessage is not provided", () => {
-    render(
-      <MessageContainer
-        id="msg1"
-        incidentId="incident1"
-        message={baseMessage}
-        divisions={divisions}
-        showControls={true}
-      />,
-    );
-    expect(screen.queryByTestId("save-triage-button")).not.toBeInTheDocument();
-  });
-
   it("does not render message number when number is 0 (not yet assigned)", () => {
     render(
       <MessageContainer

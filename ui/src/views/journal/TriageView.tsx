@@ -216,7 +216,6 @@ function TriageSummary(props: {
             message={message}
             divisions={incidentDivisions}
             setEditorMessage={undefined}
-            setTriageMessage={undefined}
           />
         </div>
 
@@ -673,7 +672,6 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
             message={previewMessage}
             divisions={incidentDivisions}
             setEditorMessage={undefined}
-            setTriageMessage={undefined}
           />
         </div>
 
@@ -1153,7 +1151,6 @@ function TriageView({ filters, initialStrategy = "oldest-pending" }: TriageViewP
                     message={savedMessage}
                     divisions={incidentState.incident?.divisions ?? []}
                     setEditorMessage={undefined}
-                    setTriageMessage={undefined}
                   />
                 </div>
               )}
