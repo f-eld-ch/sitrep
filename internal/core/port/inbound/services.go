@@ -589,6 +589,13 @@ type ResourceService interface {
 		at *time.Time,
 		actor identity.Actor,
 	) (ResourceState, error)
+	Rename(
+		ctx context.Context,
+		id shared.ResourceID,
+		name string,
+		at *time.Time,
+		actor identity.Actor,
+	) (ResourceState, error)
 	HandOver(
 		ctx context.Context,
 		predecessorID shared.ResourceID,

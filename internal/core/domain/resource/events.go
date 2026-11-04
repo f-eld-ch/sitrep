@@ -147,6 +147,11 @@ type ContactUpdated struct {
 	Contact Contact `json:"contact"`
 }
 
+// Renamed fires when the resource's name is corrected.
+type Renamed struct {
+	Name string `json:"name"`
+}
+
 // PersonnelCountUpdated fires when the reported headcount is corrected.
 type PersonnelCountUpdated struct {
 	Count int `json:"count"`

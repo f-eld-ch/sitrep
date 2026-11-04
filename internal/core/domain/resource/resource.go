@@ -76,7 +76,7 @@ func New(id shared.ResourceID) *Resource {
 	eventsourcing.Register(r,
 		Alerted{}, MarkedReady{}, Deployed{}, StoodDown{}, Relieved{}, Reactivated{},
 		SuccessionLinked{}, ReassignedToSchadenplatz{}, DeploymentLocationUpdated{},
-		HauptaufgabeChanged{}, ContactUpdated{}, PersonnelCountUpdated{},
+		HauptaufgabeChanged{}, ContactUpdated{}, PersonnelCountUpdated{}, Renamed{},
 	)
 
 	return r
@@ -352,6 +352,23 @@ func (r *Resource) UpdateContact(contact Contact, actor string, at time.Time) er
 	return nil
 }
 
+// Rename corrects the name of the resource. The name is not time-dependent: a correction
+// replaces it for the whole history.
+func (r *Resource) Rename(name, actor string, at time.Time) error {
+	if r.status == StatusAbgeloest {
+		return shared.ValidationError{Field: "status", Message: "cannot update a relieved resource"}
+	}
+
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return shared.ValidationError{Field: "name", Message: "must not be empty"}
+	}
+
+	eventsourcing.TrackChange(r, Renamed{Name: name}, at, baseMeta(actor))
+
+	return nil
+}
+
 // UpdatePersonnelCount corrects the headcount.
 // A mismatch with the UnitSize triggers ErrUnitSizeMismatch (non-blocking).
 func (r *Resource) UpdatePersonnelCount(count int, actor string, at time.Time) error {
@@ -508,6 +525,8 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.contact = &c
 	case PersonnelCountUpdated:
 		r.personnelCount = d.Count
+	case Renamed:
+		r.name = d.Name
 	default:
 		return fmt.Errorf("resource.Transition: unhandled event type %T", e.Data)
 	}

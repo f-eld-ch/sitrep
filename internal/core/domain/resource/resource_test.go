@@ -296,6 +296,12 @@ func TestResource_UpdatesRejectedWhenRelieved(t *testing.T) {
 		err := r.UpdatePersonnelCount(5, actor, at)
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
+
+	t.Run("Rename rejected", func(t *testing.T) {
+		r := replay(t, id, relievedEvents)
+		err := r.Rename("Neuer Name", actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -315,6 +321,23 @@ func TestResource_UpdatePersonnelCount(t *testing.T) {
 		r := replay(t, id, []eventsourcing.Event{alerted(id)})
 		require.NoError(t, r.UpdatePersonnelCount(5, actor, at))
 		assert.Equal(t, 5, r.PersonnelCount())
+	})
+}
+
+func TestResource_Rename(t *testing.T) {
+	id := shared.ResourceID(uuid.New())
+
+	t.Run("blank name is rejected", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		err := r.Rename("   ", actor, at)
+		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	})
+
+	t.Run("name is trimmed and replaced", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.Rename("  Löschzug 2 ", actor, at))
+		assert.Equal(t, "Löschzug 2", r.Name())
+		require.Len(t, r.Root().PendingEvents(), 1)
 	})
 }
 

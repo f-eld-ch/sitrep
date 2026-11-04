@@ -898,6 +898,9 @@ type Mutation {
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
 
+  """Correct the name of a resource. Applies to the whole history of the resource."""
+  renameResource(id: ID!, name: String!, at: DateTime): Resource!
+
   """Relieve a resource and deploy its successor in one atomic operation,
   transferring the task and deployment location to the successor."""
   handOver(id: ID!, successorId: ID!, at: DateTime): HandOverResult!

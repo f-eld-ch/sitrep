@@ -273,6 +273,7 @@ type ComplexityRoot struct {
 		RemoveAttachment             func(childComplexity int, messageID string, attachmentID string) int
 		RemoveGroupMember            func(childComplexity int, groupID string, subject string) int
 		RenameAccessGroup            func(childComplexity int, groupID string, name string) int
+		RenameResource               func(childComplexity int, id string, name string, at *time.Time) int
 		RenameSchadenplatz           func(childComplexity int, id string, name string) int
 		ReopenIncident               func(childComplexity int, id string) int
 		RestoreFeature               func(childComplexity int, id string, change *model.FeatureChangeInput) int
@@ -517,6 +518,7 @@ type MutationResolver interface {
 	ChangeHauptaufgabe(ctx context.Context, id string, hauptaufgabe string, at *time.Time) (*model.Resource, error)
 	UpdateContact(ctx context.Context, id string, contact model.ResourceContactInput, at *time.Time) (*model.Resource, error)
 	UpdatePersonnelCount(ctx context.Context, id string, count int, at *time.Time) (*model.Resource, error)
+	RenameResource(ctx context.Context, id string, name string, at *time.Time) (*model.Resource, error)
 	HandOver(ctx context.Context, id string, successorID string, at *time.Time) (*model.HandOverResult, error)
 	CreateLayer(ctx context.Context, incidentID string, name string) (*model.Layer, error)
 	AddFeature(ctx context.Context, incidentID string, layerID string, clientKey string, geometry scalar.JSONMap, properties scalar.JSONMap, change *model.FeatureChangeInput) (*model.Feature, error)
@@ -1741,6 +1743,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.RenameAccessGroup(childComplexity, args["groupId"].(string), args["name"].(string)), true
+	case "Mutation.renameResource":
+		if e.ComplexityRoot.Mutation.RenameResource == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_renameResource_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.RenameResource(childComplexity, args["id"].(string), args["name"].(string), args["at"].(*time.Time)), true
 	case "Mutation.renameSchadenplatz":
 		if e.ComplexityRoot.Mutation.RenameSchadenplatz == nil {
 			break
@@ -3664,6 +3677,9 @@ type Mutation {
   """Correct the headcount of a resource."""
   updatePersonnelCount(id: ID!, count: Int!, at: DateTime): Resource!
 
+  """Correct the name of a resource. Applies to the whole history of the resource."""
+  renameResource(id: ID!, name: String!, at: DateTime): Resource!
+
   """Relieve a resource and deploy its successor in one atomic operation,
   transferring the task and deployment location to the successor."""
   handOver(id: ID!, successorId: ID!, at: DateTime): HandOverResult!
@@ -5293,6 +5309,36 @@ func (ec *executionContext) field_Mutation_renameAccessGroup_args(ctx context.Co
 		return nil, err
 	}
 	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_renameResource_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "name",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNString2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "at",
+		func(ctx context.Context, v any) (*time.Time, error) {
+			return ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["at"] = arg2
 	return args, nil
 }
 
@@ -11217,6 +11263,50 @@ func (ec *executionContext) fieldContext_Mutation_updatePersonnelCount(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updatePersonnelCount_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_renameResource(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_renameResource(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().RenameResource(ctx, fc.Args["id"].(string), fc.Args["name"].(string), fc.Args["at"].(*time.Time))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.Resource) graphql.Marshaler {
+			return ec.marshalNResource2ᚖgithubᚗcomᚋfᚑeldᚑchᚋsitrepᚋinternalᚋadapterᚋinboundᚋgraphqlᚋmodelᚐResource(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_renameResource(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Resource(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_renameResource_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -18083,6 +18173,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updatePersonnelCount":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePersonnelCount(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "renameResource":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_renameResource(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

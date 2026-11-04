@@ -135,6 +135,7 @@ The `Resource` aggregate represents an operational unit (fire brigade group, pol
 | `HauptaufgabeChanged` | hauptaufgabe |
 | `ContactUpdated` | medium, detail |
 | `PersonnelCountUpdated` | count |
+| `Renamed` | name |
 
 A command method never writes to the database. It validates the invariant, calls `TrackChange` with the event data struct, which calls `Transition` to update in-memory state and appends to the pending list. The service then saves the aggregate via the repository.
 

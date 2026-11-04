@@ -20,7 +20,7 @@ func NewResourceHandler(pool *pgxpool.Pool) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 6 }
+func (h *ResourceHandler) Version() int { return 7 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.resource`)
 	return err
@@ -34,7 +34,7 @@ func (h *ResourceHandler) Handles(st, t string) bool {
 	switch t {
 	case "Alerted", "MarkedReady", "Deployed", "StoodDown", "Relieved", "Reactivated",
 		"SuccessionLinked", "ReassignedToSchadenplatz", "DeploymentLocationUpdated",
-		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated":
+		"HauptaufgabeChanged", "ContactUpdated", "PersonnelCountUpdated", "Renamed":
 		return true
 	}
 
@@ -309,6 +309,23 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 			ctx,
 			`UPDATE readmodel.resource SET personnel_count=$1, updated_at=$2 WHERE id=$3`,
 			d.Count,
+			now,
+			id,
+		)
+
+	case "Renamed":
+		var d struct {
+			Name string `json:"name"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		return exec(
+			db,
+			ctx,
+			`UPDATE readmodel.resource SET name=$1, updated_at=$2 WHERE id=$3`,
+			d.Name,
 			now,
 			id,
 		)
