@@ -342,13 +342,5 @@ describe("Navbar Component", () => {
 
       expect(hrefs.indexOf(messageMapPath)).toBe(hrefs.indexOf("/incident/inc-1/map") + 1);
     });
-
-    it("is hidden without the flag, and the Lagebild stays a plain link", () => {
-      vi.mocked(useBooleanFlagValue).mockReturnValue(false);
-      renderAtIncident();
-
-      expect(linksTo(messageMapPath)).toHaveLength(0);
-      expect(linksTo("/incident/inc-1/map").length).toBeGreaterThan(0);
-    });
   });
 });

@@ -1,4 +1,3 @@
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { faPaperclip, faSpinner, faXmark } from "@fortawesome/free-solid-svg-icons";
@@ -83,7 +82,6 @@ function Editor() {
     setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
   const incidentIsClosed = incident?.closedAt != null;
-  const newTriageView = useBooleanFlagValue("new-triage-view", false);
 
   const isDirty =
     state.content !== "" ||
@@ -211,11 +209,6 @@ function Editor() {
     }
   }, []);
 
-  const setTriageMessage = useCallback(
-    (message: Message | undefined) => dispatch({ type: "set_triage_message", message }),
-    [],
-  );
-
   const contextValue: EditorContextValue = {
     state,
     dispatch,
@@ -272,7 +265,7 @@ function Editor() {
           <List
             showControls={!incidentIsClosed}
             setEditorMessage={incidentIsClosed ? undefined : setEditorMessage}
-            setTriageMessage={incidentIsClosed || newTriageView ? undefined : setTriageMessage}
+            setTriageMessage={undefined}
           />
         </div>
         <TriageModal

@@ -13,7 +13,6 @@ import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "mapli
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { faBullseye, faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useBooleanFlagValue } from "@openfeature/react-sdk";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -125,8 +124,7 @@ interface MapViewOptions {
 function MapView({ embedded = false, readOnly = false, preferredLayerKind }: MapViewOptions) {
   const { selectedStyle: mapStyle } = useMapStyle();
   // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
-  const messageMapEnabled = useBooleanFlagValue("new-triage-view", false);
-  const timelineEnabled = messageMapEnabled && !embedded && !readOnly;
+  const timelineEnabled = !embedded && !readOnly;
   const { i18n } = useTranslation();
 
   // Resolved once per basemap style, NOT per language: producing a new style object makes
