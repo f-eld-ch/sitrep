@@ -72,12 +72,12 @@ segments:
   - key: earlyadopter
     name: Early Adopter
     match_type: ANY_MATCH_TYPE
-    description: Early adopter segment for testing new features (add with echo "domain.tld.ch" | shasum -a 256)
+    description: Early adopter segment for testing new features (add with echo -n "domain.tld.ch" | shasum -a 256)
     constraints:
       - type: STRING_COMPARISON_TYPE
         property: domainHash
         operator: isoneof
-        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc", "ddf53c9cba7cc05f344de0c3ade6c3c40afd6a6e4e2560637ed87c3ce6e0ca5b"]'
+        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc", "29a71de54a6f3a43b18a4bc73a279df460be80daaff914a7f9e44c3b65eb5905"]'
   - key: SitrepManaged
     name: SitrepManaged
     constraints:
