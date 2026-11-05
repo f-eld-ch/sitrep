@@ -10272,9 +10272,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^17.1.12":
-  version: 17.1.12
-  resolution: "react-i18next@npm:17.1.12"
+"react-i18next@npm:^17.1.13":
+  version: 17.1.13
+  resolution: "react-i18next@npm:17.1.13"
   dependencies:
     "@babel/runtime": "npm:^7.29.7"
     html-parse-stringify: "npm:^4.0.1"
@@ -10290,7 +10290,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/c218a01fcce10218909fac6b8d2c893941bbb633faeb7c821ff7991c61d9364d625ea3f63264297a5e0100417616d5b8f82ff5662355c26f0e9e9f57f4707002
+  checksum: 10/335ed1351bb01b12b70e9d85c56a6b05ae236ee2813b3062b64f2e7c36c80fc2d304002d642174bc3295de4d3391160a2f8c2c23b356f4f26104cc684b4bac41
   languageName: node
   linkType: hard
 
@@ -11386,7 +11386,7 @@ __metadata:
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.3.1"
     react-dropzone: "npm:^20.1.4"
-    react-i18next: "npm:^17.1.12"
+    react-i18next: "npm:^17.1.13"
     react-map-gl: "npm:~8.1.3"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^8.5.1"
