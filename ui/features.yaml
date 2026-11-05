@@ -11,32 +11,6 @@ flags:
       - segment:
           key: Development
           value: true
-  # nimdanitro: flag for rolling out Resources Module, remove after resources modules is GA
-  - key: show-resources
-    name: Show Resources
-    type: BOOLEAN_FLAG_TYPE
-    description: Show the resources module (Mittel)
-    enabled: false
-    rollouts:
-      - segment:
-          key: Development
-          value: true
-      - segment:
-          key: earlyadopter
-          value: true
-  # nimdanitro: flag for rolling out new triage view, remove after triage view is GA
-  - key: new-triage-view
-    name: New Triage View
-    type: BOOLEAN_FLAG_TYPE
-    description: Show the new dedicated triage view (hides the triage action buttons on messages)
-    enabled: false
-    rollouts:
-      - segment:
-          key: Development
-          value: true
-      - segment:
-          key: earlyadopter
-          value: true
   # flag for rolling out the review (Auswertung) of an incident, remove within 3 months after it is integrated
   - key: incident-review
     name: Incident Review
@@ -77,7 +51,7 @@ segments:
       - type: STRING_COMPARISON_TYPE
         property: domainHash
         operator: isoneof
-        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc", "29a71de54a6f3a43b18a4bc73a279df460be80daaff914a7f9e44c3b65eb5905"]'
+        value: '["09a707b7b7040178e8c8c5dc04004445eb17541e1eb7f50606b6f0a7525da2cc"]'
   - key: SitrepManaged
     name: SitrepManaged
     constraints:
