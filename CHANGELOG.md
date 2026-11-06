@@ -1,3 +1,14 @@
+## [unreleased]
+
+### ⚙️  Other
+
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.16 to 3.51.17 ([#2074](https://github.com/f-eld-ch/sitrep/issues/2074)) - ([c506a76](https://github.com/f-eld-ch/sitrep/commit/c506a7645f6235b0f5be6627e094d18c43f95cf6))
+- *(deps)* Bump graphql from 17.0.2 to 17.1.0 in /ui ([#2076](https://github.com/f-eld-ch/sitrep/issues/2076)) - ([4e96430](https://github.com/f-eld-ch/sitrep/commit/4e9643045e58e50d8b7061991dc14231a45d439f))
+- *(deps)* Bump i18next from 26.7.1 to 26.7.2 in /ui ([#2077](https://github.com/f-eld-ch/sitrep/issues/2077)) - ([0bfd527](https://github.com/f-eld-ch/sitrep/commit/0bfd527fb2d8705b4a16d14e69b849e1ce08e2c0))
+- *(deps)* Bump react-i18next from 17.1.12 to 17.1.13 in /ui ([#2078](https://github.com/f-eld-ch/sitrep/issues/2078)) - ([770fa8c](https://github.com/f-eld-ch/sitrep/commit/770fa8c02f81cd90f7370e8d7c1b36113dcc67bb))
+- *(flags)* Remove the released show-resources and new-triage-view flags ([#2073](https://github.com/f-eld-ch/sitrep/issues/2073)) - ([9243f31](https://github.com/f-eld-ch/sitrep/commit/9243f31aa3e617a86a3d10616987247a3df4ca27))
+
+
 ## [26.11.0](https://github.com/f-eld-ch/sitrep/compare/v26.10.2..v26.11.0) - 2026-11-04
 
 ### ⛰️  Features
