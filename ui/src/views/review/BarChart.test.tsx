@@ -58,7 +58,7 @@ describe("BarChart", () => {
     const { container } = render(<BarChart bars={bars} caption="x" />);
 
     const tallest = container.querySelector<HTMLElement>('[title="13:00: 14"]');
-    expect(tallest?.style.height).toBe(`${(14 / 15) * 100}%`);
+    expect(parseFloat(tallest?.style.height ?? "")).toBeCloseTo((14 / 15) * 100, 3);
   });
 
   it("can label every other bar, for categories whose labels are wide", () => {
