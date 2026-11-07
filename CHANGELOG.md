@@ -2,6 +2,8 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/spf13/pflag from 1.0.10 to 1.1.0 ([#2080](https://github.com/f-eld-ch/sitrep/issues/2080)) - ([f8fc12b](https://github.com/f-eld-ch/sitrep/commit/f8fc12bad41880ac424377ce4b134053c0425f84))
+- *(deps)* Bump @apollo/client from 4.3.6 to 4.3.7 in /ui ([#2082](https://github.com/f-eld-ch/sitrep/issues/2082)) - ([a54e897](https://github.com/f-eld-ch/sitrep/commit/a54e8979b09b28cce59e458fa3f0ae46418d07b5))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.16 to 3.51.17 ([#2074](https://github.com/f-eld-ch/sitrep/issues/2074)) - ([c506a76](https://github.com/f-eld-ch/sitrep/commit/c506a7645f6235b0f5be6627e094d18c43f95cf6))
 - *(deps)* Bump graphql from 17.0.2 to 17.1.0 in /ui ([#2076](https://github.com/f-eld-ch/sitrep/issues/2076)) - ([4e96430](https://github.com/f-eld-ch/sitrep/commit/4e9643045e58e50d8b7061991dc14231a45d439f))
 - *(deps)* Bump i18next from 26.7.1 to 26.7.2 in /ui ([#2077](https://github.com/f-eld-ch/sitrep/issues/2077)) - ([0bfd527](https://github.com/f-eld-ch/sitrep/commit/0bfd527fb2d8705b4a16d14e69b849e1ce08e2c0))
