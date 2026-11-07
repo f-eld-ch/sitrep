@@ -70,3 +70,11 @@ helm/
 sitrep
 plan-*.prompt.md
 dev.sqlite3*
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

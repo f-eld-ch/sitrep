@@ -20,6 +20,11 @@ interface PageTitleProps {
 export function PageTitle({ children, level = 1, className }: PageTitleProps) {
   const Tag = TAG[level];
   return (
-    <Tag className={clsx("mb-5 font-bold capitalize", SIZE[level], className)}>{children}</Tag>
+    <Tag
+      data-testid="incident-list-Pagetitle"
+      className={clsx("mb-5 font-bold capitalize", SIZE[level], className)}
+    >
+      {children}
+    </Tag>
   );
 }
