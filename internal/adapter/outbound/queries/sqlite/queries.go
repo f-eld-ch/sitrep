@@ -62,7 +62,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 		}
 
 		query = `
-			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 			FROM readmodel_incident i
 			WHERE i.is_deleted = 0
 			  AND (NOT EXISTS (SELECT 1 FROM readmodel_incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
@@ -71,7 +71,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 		args = []any{"user:" + actor.Sub}
 	} else {
 		query = `
-			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 			FROM readmodel_incident i
 			WHERE i.is_deleted = 0
 			ORDER BY i.created_at DESC`
@@ -219,7 +219,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 
 	query := `
-		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 		FROM readmodel_incident i
 		WHERE i.id = ? AND i.is_deleted = 0`
 	args := []any{id.String()}
@@ -273,7 +273,7 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 	}
 
 	rows, err := q.db.QueryContext(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
+		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location, (review_summary IS NOT NULL)
 		FROM readmodel_incident
 		WHERE parent_id = ? AND is_deleted = 0
 		ORDER BY created_at DESC`, parentID.String())
@@ -320,10 +320,11 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		createdAt sqlite.Time
 		updatedAt sqlite.Time
 		locJSON   *string
+		hasReview int
 	)
 
 	if err := row.Scan(
-		&idStr, &parentStr, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON,
+		&idStr, &parentStr, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON, &hasReview,
 	); err != nil {
 		return nil, err
 	}
@@ -352,6 +353,7 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		ClosedAt:  closedAt.V,
 		CreatedAt: createdAt.V,
 		UpdatedAt: updatedAt.V,
+		HasReview: hasReview != 0,
 	}
 
 	if locJSON != nil && len(*locJSON) > 0 {

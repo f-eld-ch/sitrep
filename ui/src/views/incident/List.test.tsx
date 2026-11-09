@@ -35,6 +35,7 @@ describe("IncidentCard", () => {
     updatedAt: new Date(),
     deletedAt: null,
     closedAt: null,
+    hasReview: false,
     parentId: null,
     canWrite: true,
     canManage: true,
@@ -116,10 +117,10 @@ describe("IncidentCard", () => {
   });
 
   describe("review link", () => {
-    const renderCard = (closedAt: Date | null) =>
+    const renderCard = (closedAt: Date | null, hasReview = true) =>
       render(
         <IncidentCard
-          incident={{ ...baseIncident, closedAt }}
+          incident={{ ...baseIncident, closedAt, hasReview }}
           closeIncident={mockCloseIncident}
           reopenIncident={mockReopenIncident}
           deleteIncident={mockDeleteIncident}
@@ -138,8 +139,23 @@ describe("IncidentCard", () => {
       expect(mockNavigate).toHaveBeenLastCalledWith(`../${baseIncident.id}/review`);
     });
 
-    it("has none for an open incident, flag or not", () => {
+    it("has none for a closed incident without a review, e.g. an imported one", () => {
       mockFlag.review = true;
+      renderCard(new Date(), false);
+
+      expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
+      expect(screen.getByTestId("open-button")).toBeInTheDocument();
+    });
+
+    it("links the interim review of an open incident, with the flag", () => {
+      mockFlag.review = true;
+      renderCard(null, false);
+
+      expect(screen.getByTestId("review-button")).toBeInTheDocument();
+    });
+
+    it("has none for an open incident without the flag", () => {
+      mockFlag.review = false;
       renderCard(null);
 
       expect(screen.queryByTestId("review-button")).not.toBeInTheDocument();
@@ -205,6 +221,7 @@ describe("IncidentCards", () => {
     updatedAt: new Date(),
     deletedAt: null,
     closedAt: null,
+    hasReview: false,
     parentId: null,
     canWrite: true,
     canManage: true,

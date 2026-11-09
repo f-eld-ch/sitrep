@@ -152,6 +152,7 @@ func incidentRMToModel(r *outbound.IncidentRM) *model.Incident {
 		UpdatedAt: r.UpdatedAt,
 		ClosedAt:  r.ClosedAt,
 		IsClosed:  r.IsClosed,
+		HasReview: r.HasReview,
 	}
 	if r.ParentID != nil {
 		parentID := r.ParentID.String()

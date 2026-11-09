@@ -37,6 +37,7 @@ export const GET_INCIDENTS: TypedDocumentNode<FetchIncidentsQuery, FetchIncident
         updatedAt
         closedAt
         isClosed
+        hasReview
         canWrite
         canManage
         canDelete
