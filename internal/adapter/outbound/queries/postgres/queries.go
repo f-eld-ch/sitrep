@@ -51,7 +51,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 	slog.DebugContext(ctx, "listing incidents")
 
 	query := `
-		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 		FROM readmodel.incident i
 		WHERE i.is_deleted = false
 		ORDER BY i.created_at DESC`
@@ -64,7 +64,7 @@ func (q *Queries) ListIncidents(ctx context.Context) ([]*outbound.IncidentRM, er
 		}
 
 		query = `
-			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+			SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 			FROM readmodel.incident i
 			WHERE i.is_deleted = false
 			  AND (NOT EXISTS (SELECT 1 FROM readmodel.incident_access_mode m WHERE m.incident_id = i.id AND m.mode = 'restricted')
@@ -203,7 +203,7 @@ func (q *Queries) GetIncident(ctx context.Context, id uuid.UUID) (*outbound.Inci
 	slog.DebugContext(ctx, "getting incident", slog.String("id", id.String()))
 
 	query := `
-		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location
+		SELECT i.id, i.parent_id, i.name, i.is_closed, i.closed_at, i.created_at, i.updated_at, i.location, (i.review_summary IS NOT NULL)
 		FROM readmodel.incident i
 		WHERE i.id = $1 AND i.is_deleted = false`
 	args := []any{id}
@@ -263,8 +263,19 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		createdAt time.Time
 		updatedAt time.Time
 		locJSON   []byte
+		hasReview bool
 	)
-	if err := row.Scan(&id, &parentID, &name, &isClosed, &closedAt, &createdAt, &updatedAt, &locJSON); err != nil {
+	if err := row.Scan(
+		&id,
+		&parentID,
+		&name,
+		&isClosed,
+		&closedAt,
+		&createdAt,
+		&updatedAt,
+		&locJSON,
+		&hasReview,
+	); err != nil {
 		return nil, err
 	}
 
@@ -276,6 +287,7 @@ func scanIncident(row incidentScanner) (*outbound.IncidentRM, error) {
 		ClosedAt:  closedAt,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
+		HasReview: hasReview,
 	}
 
 	if len(locJSON) > 0 {
@@ -298,7 +310,7 @@ func (q *Queries) ListChildIncidents(ctx context.Context, parentID uuid.UUID) ([
 	}
 
 	rows, err := q.pool.Query(ctx, `
-		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location
+		SELECT id, parent_id, name, is_closed, closed_at, created_at, updated_at, location, (review_summary IS NOT NULL)
 		FROM readmodel.incident
 		WHERE parent_id = $1 AND is_deleted = false
 		ORDER BY created_at DESC`, parentID)

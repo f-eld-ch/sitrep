@@ -218,6 +218,9 @@ type Incident struct {
 	// The review of this incident's messages, for the discussion after the operation. Null for an
 	// imported incident, whose message history is not known.
 	Review *IncidentReview `json:"review,omitempty"`
+	// Whether a review has been worked out and kept for this incident. False for an open incident and
+	// for an imported one, whose message history is not known. Cheap, unlike asking for the review.
+	HasReview bool `json:"hasReview"`
 	// Whether the current user has write access to this incident.
 	CanWrite bool `json:"canWrite"`
 	// Whether the current user can close or reopen this incident.

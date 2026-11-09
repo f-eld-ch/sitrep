@@ -145,6 +145,7 @@ type ComplexityRoot struct {
 		CreatedAt          func(childComplexity int) int
 		Divisions          func(childComplexity int) int
 		HasCasualtyRecords func(childComplexity int) int
+		HasReview          func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		IsClosed           func(childComplexity int) int
 		Location           func(childComplexity int) int
@@ -458,6 +459,7 @@ type IncidentResolver interface {
 	HasCasualtyRecords(ctx context.Context, obj *model.Incident) (bool, error)
 	Messages(ctx context.Context, obj *model.Incident) ([]*model.Message, error)
 	Review(ctx context.Context, obj *model.Incident) (*model.IncidentReview, error)
+
 	CanWrite(ctx context.Context, obj *model.Incident) (bool, error)
 	CanManage(ctx context.Context, obj *model.Incident) (bool, error)
 	CanDelete(ctx context.Context, obj *model.Incident) (bool, error)
@@ -958,6 +960,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Incident.HasCasualtyRecords(childComplexity), true
+	case "Incident.hasReview":
+		if e.ComplexityRoot.Incident.HasReview == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Incident.HasReview(childComplexity), true
 	case "Incident.id":
 		if e.ComplexityRoot.Incident.ID == nil {
 			break
@@ -3308,6 +3316,11 @@ type Incident {
   imported incident, whose message history is not known.
   """
   review: IncidentReview
+  """
+  Whether a review has been worked out and kept for this incident. False for an open incident and
+  for an imported one, whose message history is not known. Cheap, unlike asking for the review.
+  """
+  hasReview: Boolean!
   """Whether the current user has write access to this incident."""
   canWrite: Boolean!
   """Whether the current user can close or reopen this incident."""
@@ -3940,6 +3953,8 @@ func (ec *executionContext) childFields_Incident(ctx context.Context, field grap
 		return ec.fieldContext_Incident_messages(ctx, field)
 	case "review":
 		return ec.fieldContext_Incident_review(ctx, field)
+	case "hasReview":
+		return ec.fieldContext_Incident_hasReview(ctx, field)
 	case "canWrite":
 		return ec.fieldContext_Incident_canWrite(ctx, field)
 	case "canManage":
@@ -7627,6 +7642,29 @@ func (ec *executionContext) fieldContext_Incident_review(_ context.Context, fiel
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Incident_hasReview(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Incident_hasReview(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.HasReview, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Incident_hasReview(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Incident", field, false, false, "Boolean")
 }
 
 func (ec *executionContext) _Incident_canWrite(ctx context.Context, field graphql.CollectedField, obj *model.Incident) (ret graphql.Marshaler) {
@@ -17269,6 +17307,11 @@ func (ec *executionContext) _Incident(ctx context.Context, sel ast.SelectionSet,
 				func(ctx context.Context) graphql.Marshaler {
 					return ec._Incident_review(ctx, field, obj)
 				})
+		case "hasReview":
+			out.Values[i] = ec._Incident_hasReview(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "canWrite":
 			out.ResolveConcurrently(ec.OperationContext, &deferred, i,
 				true, true,

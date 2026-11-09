@@ -147,6 +147,8 @@ export interface Incident {
   updatedAt: Date | null;
   deletedAt: Date | null;
   closedAt: Date | null;
+  /** Whether a review has been worked out for the incident; false for an imported one. */
+  hasReview: boolean;
   canWrite: boolean;
   canManage: boolean;
   canDelete: boolean;

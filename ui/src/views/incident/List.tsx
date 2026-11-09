@@ -186,6 +186,8 @@ export function IncidentCard(props: {
   const navigate = useNavigate();
   const { dispatch } = useContext(IncidentContext);
   const { t } = useTranslation();
+  // An open incident always links its interim review; a closed one only when a review was kept (an
+  // imported incident has none).
   // The review of an incident is being rolled out; remove the flag once it is released to everyone.
   const showReview = useBooleanFlagValue("incident-review", false);
 
@@ -250,7 +252,7 @@ export function IncidentCard(props: {
             <FontAwesomeIcon icon={faArrowRightFromBracket} />
             <span>{t("enter")}</span>
           </button>
-          {showReview && incident.closedAt !== null && (
+          {showReview && (incident.closedAt === null || incident.hasReview) && (
             <button
               type="button"
               data-testid="review-button"

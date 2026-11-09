@@ -37,6 +37,7 @@ const baseIncident: Incident = {
   updatedAt: null,
   deletedAt: null,
   closedAt: null,
+  hasReview: false,
   parentId: null,
   canWrite: true,
   canManage: true,

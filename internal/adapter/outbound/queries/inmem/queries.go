@@ -155,6 +155,7 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 		ClosedAt:  row.ClosedAt,
 		CreatedAt: row.CreatedAt,
 		UpdatedAt: row.UpdatedAt,
+		HasReview: row.ReviewSummary != nil,
 	}
 	for _, div := range q.divisions.ForIncident(row.ID) {
 		inc.Divisions = append(inc.Divisions, &outbound.DivisionRM{

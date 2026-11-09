@@ -40,6 +40,9 @@ type IncidentRM struct {
 	UpdatedAt time.Time
 	ClosedAt  *time.Time
 	IsClosed  bool
+	// HasReview is whether the headline of the review was kept, i.e. the incident has a review.
+	// False for an open incident and for an imported one, whose message history is not known.
+	HasReview bool
 	Location  *LocationRM
 	Divisions []*DivisionRM
 }

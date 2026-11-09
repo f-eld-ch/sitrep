@@ -529,6 +529,11 @@ type Incident {
   imported incident, whose message history is not known.
   """
   review: IncidentReview
+  """
+  Whether a review has been worked out and kept for this incident. False for an open incident and
+  for an imported one, whose message history is not known. Cheap, unlike asking for the review.
+  """
+  hasReview: Boolean!
   """Whether the current user has write access to this incident."""
   canWrite: Boolean!
   """Whether the current user can close or reopen this incident."""
