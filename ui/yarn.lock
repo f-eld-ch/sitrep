@@ -1752,6 +1752,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphql-codegen/plugin-helpers@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "@graphql-codegen/plugin-helpers@npm:8.0.0"
+  dependencies:
+    "@graphql-tools/apollo-engine-loader": "npm:^9.0.2"
+    "@graphql-tools/utils": "npm:^13.0.2"
+    change-case-all: "npm:^2.1.0"
+    common-tags: "npm:1.8.2"
+    import-from: "npm:4.0.0"
+    tslib: "npm:^2.8.0"
+  peerDependencies:
+    graphql: ^16.0.0 || ^17.0.0
+  checksum: 10/60904b16d847eaf08196e8d2fb02e50862efc2e35ae212baf07febabbf249c4704b927c9093223660d988f9dd4f3474ee844411035a7bca602b7c8fa5dc86713
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/schema-ast@npm:^6.1.1":
   version: 6.1.1
   resolution: "@graphql-codegen/schema-ast@npm:6.1.1"
@@ -1762,6 +1778,18 @@ __metadata:
   peerDependencies:
     graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10/31ea14b48b44659d02ee09d269eadcff5d4413f29d5bd42d24e83f132693fed3afcfdbdb6fbe874079a2efbd703e18b3c1f3c34fc46f256bc5f181568dff5213
+  languageName: node
+  linkType: hard
+
+"@graphql-codegen/schema-ast@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@graphql-codegen/schema-ast@npm:7.0.0"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": "npm:^8.0.0"
+    tslib: "npm:^2.8.0"
+  peerDependencies:
+    graphql: ^16.0.0 || ^17.0.0
+  checksum: 10/c0f1ebbd5e7c8211b9bcd9212318410acb0cdff3c570f0083b031250c9a10efe9e9298469b719135e9a76c98eb2f6251feeffb8ff2616c801df26f45df39cb23
   languageName: node
   linkType: hard
 
@@ -1852,6 +1880,20 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10/e5e295698f2c58aa92a780561ce559315b41f884bb4dd07d38791635666d09abf128d8468887d233bd983161b390288797afce93d20e7dd2ad839ea3a6826b5b
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/apollo-engine-loader@npm:^9.0.2":
+  version: 9.0.9
+  resolution: "@graphql-tools/apollo-engine-loader@npm:9.0.9"
+  dependencies:
+    "@graphql-tools/utils": "npm:^13.2.2"
+    "@whatwg-node/fetch": "npm:^0.12.0"
+    sync-fetch: "npm:0.7.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^16.0.0 || ^17.0.0
+  checksum: 10/d75cd7f3c618e5bd58e77094b1ff8eba335086a988b226ebc1e70fcf90ba12c34dacb773ce8c506673d3aa61052ae66382b8b94a56c3f9f7f35ddf26b8447f54
   languageName: node
   linkType: hard
 
@@ -2179,6 +2221,19 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10/337225844f139312e364cef441372503ba0b6240d1a266873852daed83b11d721a809f0ac3b221e645ae67e22e9a8fdbec43a4b02aa8c141608770ba65913c82
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/utils@npm:^13.0.2, @graphql-tools/utils@npm:^13.2.2":
+  version: 13.2.2
+  resolution: "@graphql-tools/utils@npm:13.2.2"
+  dependencies:
+    "@graphql-typed-document-node/core": "npm:^3.2.0"
+    "@whatwg-node/promise-helpers": "npm:^2.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^16.0.0 || ^17.0.0
+  checksum: 10/4539927f538f6e4e32e47ff51d8ab603d06fd4bee54a1f1db50c28286c62902889a71d3200607675ecb7c6f97d2c79342e821dd6ba042ef722925f624ba1a57e
   languageName: node
   linkType: hard
 
@@ -5059,6 +5114,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.6.3"
   checksum: 10/f65c91a3dacd402fd6cfe75dbbb51f41561ee7315296bde98c9f02fbba07477556549d1ba67c280332d9479843d1024a91ce1c0834288917fb26bb0d8b72c586
+  languageName: node
+  linkType: hard
+
+"@whatwg-node/promise-helpers@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@whatwg-node/promise-helpers@npm:2.0.1"
+  dependencies:
+    tslib: "npm:^2.6.3"
+  checksum: 10/a05c12cd5f028a12c46cb88530211cb6facc356baec978e754f9cbe677e905b8150c07bb1477793f146a5a7f874e88ade6bb867fbc2efe432adad6e97e35cf4d
   languageName: node
   linkType: hard
 
@@ -11238,7 +11302,7 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^3.5.0"
     "@graphql-codegen/cli": "npm:^7.4.6"
     "@graphql-codegen/client-preset": "npm:^6.2.3"
-    "@graphql-codegen/schema-ast": "npm:^6.1.1"
+    "@graphql-codegen/schema-ast": "npm:^7.0.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.2"
     "@maplibre/maplibre-gl-style-spec": "npm:^26.6.0"
     "@openfeature/core": "npm:^1.12.0"
