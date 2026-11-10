@@ -1,7 +1,19 @@
 ## [unreleased]
 
+### ⛰️  Features
+
+- *(graphql)* Hide the review button for closed incidents without a review ([#2084](https://github.com/f-eld-ch/sitrep/issues/2084)) - ([6a291e9](https://github.com/f-eld-ch/sitrep/commit/6a291e98f287389bca17c36df5b1bc09d9f8bd60))
+
+### 🐛 Bug Fixes
+
+- *(resource)* Let the unit size follow a corrected headcount ([#2096](https://github.com/f-eld-ch/sitrep/issues/2096)) - ([09bbf00](https://github.com/f-eld-ch/sitrep/commit/09bbf008ee9b769b94fafd409db20145c4f09d97))
+- *(ui)* Only draw on the Nachrichtenkarte layer in the Nachrichtenkarte ([#2097](https://github.com/f-eld-ch/sitrep/issues/2097)) - ([e4176a9](https://github.com/f-eld-ch/sitrep/commit/e4176a94c4705e405e9c7326e66337cf56196321))
+
 ### ⚙️  Other
 
+- *(deps)* Bump maplibre-gl from 6.16.0 to 6.17.0 in /ui ([#2090](https://github.com/f-eld-ch/sitrep/issues/2090)) - ([18b7595](https://github.com/f-eld-ch/sitrep/commit/18b7595195bdaacd277b4cd0f9d4038e48726dc4))
+- *(deps)* Bump react-dropzone from 20.1.4 to 20.2.0 in /ui ([#2092](https://github.com/f-eld-ch/sitrep/issues/2092)) - ([83d3ab1](https://github.com/f-eld-ch/sitrep/commit/83d3ab19b34b816742086033168f483f0e5acaa5))
+- *(deps)* Bump react-i18next from 17.1.13 to 18.0.1 in /ui ([#2086](https://github.com/f-eld-ch/sitrep/issues/2086)) - ([9bd3524](https://github.com/f-eld-ch/sitrep/commit/9bd352488079fa0abfcc343dec779ab281e10c35))
 - *(deps)* Bump github.com/spf13/pflag from 1.0.10 to 1.1.0 ([#2080](https://github.com/f-eld-ch/sitrep/issues/2080)) - ([f8fc12b](https://github.com/f-eld-ch/sitrep/commit/f8fc12bad41880ac424377ce4b134053c0425f84))
 - *(deps)* Bump @apollo/client from 4.3.6 to 4.3.7 in /ui ([#2082](https://github.com/f-eld-ch/sitrep/issues/2082)) - ([a54e897](https://github.com/f-eld-ch/sitrep/commit/a54e8979b09b28cce59e458fa3f0ae46418d07b5))
 - *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.16 to 3.51.17 ([#2074](https://github.com/f-eld-ch/sitrep/issues/2074)) - ([c506a76](https://github.com/f-eld-ch/sitrep/commit/c506a7645f6235b0f5be6627e094d18c43f95cf6))
