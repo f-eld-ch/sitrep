@@ -322,6 +322,18 @@ func TestResource_UpdatePersonnelCount(t *testing.T) {
 		require.NoError(t, r.UpdatePersonnelCount(5, actor, at))
 		assert.Equal(t, 5, r.PersonnelCount())
 	})
+
+	t.Run("size follows the headcount", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.UpdatePersonnelCount(65, actor, at))
+		assert.Equal(t, resource.UnitSizeKompanie, r.Size())
+	})
+
+	t.Run("size is kept when the count stays in range", func(t *testing.T) {
+		r := replay(t, id, []eventsourcing.Event{alerted(id)})
+		require.NoError(t, r.UpdatePersonnelCount(6, actor, at))
+		assert.Equal(t, resource.UnitSizeGruppe, r.Size())
+	})
 }
 
 func TestResource_Rename(t *testing.T) {

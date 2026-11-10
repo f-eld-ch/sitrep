@@ -20,7 +20,7 @@ func NewResourceHandler(db *sql.DB) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 7 }
+func (h *ResourceHandler) Version() int { return 8 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_resource`)
 	return err
@@ -304,7 +304,8 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "PersonnelCountUpdated":
 		var d struct {
-			Count int `json:"count"`
+			Count int    `json:"count"`
+			Size  string `json:"size"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -313,8 +314,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			tx,
 			ctx,
-			`UPDATE readmodel_resource SET personnel_count=?, updated_at=? WHERE id=?`,
+			`UPDATE readmodel_resource SET personnel_count=?, size=COALESCE(NULLIF(?, ''), size), updated_at=? WHERE id=?`,
 			d.Count,
+			d.Size,
 			now,
 			id,
 		)

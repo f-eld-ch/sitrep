@@ -153,6 +153,10 @@ type Renamed struct {
 }
 
 // PersonnelCountUpdated fires when the reported headcount is corrected.
+//
+// Size is the unit size the new headcount falls into; it is empty when the size is unchanged and on
+// events written before the size followed the headcount.
 type PersonnelCountUpdated struct {
-	Count int `json:"count"`
+	Count int      `json:"count"`
+	Size  UnitSize `json:"size,omitempty"`
 }
