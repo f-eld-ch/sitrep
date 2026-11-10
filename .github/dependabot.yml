@@ -29,6 +29,12 @@ updates:
         patterns:
           - "vitest"
           - "@vitest/*"
+      # The codegen CLI, presets and plugins have to move to the same major
+      # together, otherwise `yarn codegen` breaks on mismatched plugin versions.
+      graphql-codegen:
+        applies-to: version-updates
+        patterns:
+          - "@graphql-codegen/*"
       development-dependencies:
         dependency-type: "development"
         applies-to: version-updates
