@@ -26,6 +26,11 @@ export interface MapTime {
    * is read-only.
    */
   drawingMessage?: DrawingMessage;
+  /**
+   * The map belongs to the Nachrichtenkarte: only the message map layer can be made active, the
+   * other layers are shown for context and can only be toggled on and off.
+   */
+  messageMapOnly?: boolean;
 }
 
 export const MapTimeContext = createContext<MapTime>({});

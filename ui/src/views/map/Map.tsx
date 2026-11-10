@@ -251,7 +251,7 @@ function Layers({
           }
         />
       )}
-      {!readOnly && <ActiveWMSLayers />}
+      {(!readOnly || stayOnPreferredLayer) && <ActiveWMSLayers />}
       {drawingMessage && (
         <MessageHighlight
           enabled={highlightMessage}
@@ -1027,6 +1027,8 @@ function MapWithProvder({
   const messageId = drawingMessage?.id;
   const messageTime = drawingMessage?.time.getTime();
   const messageLocked = drawingMessage?.locked;
+  const messageMapOnly =
+    drawingMessage !== undefined || options.preferredLayerKind === "MESSAGE_MAP";
   // Memoized on the values, so a parent re-render with equal dates does not refetch the layers.
   const mapTime = useMemo<MapTime>(
     () => ({
@@ -1036,8 +1038,9 @@ function MapWithProvder({
         messageId === undefined || messageTime === undefined
           ? undefined
           : { id: messageId, time: new Date(messageTime), locked: messageLocked },
+      messageMapOnly,
     }),
-    [asOfTime, hasTimeline, moveOnTimeline, messageId, messageTime, messageLocked],
+    [asOfTime, hasTimeline, moveOnTimeline, messageId, messageTime, messageLocked, messageMapOnly],
   );
 
   const selection = useMemo(
