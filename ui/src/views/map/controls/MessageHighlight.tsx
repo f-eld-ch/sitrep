@@ -264,7 +264,7 @@ export function MessageHighlight({
             "line-blur": 2,
           }}
         />
-        {/* Dashed for what is gone, so it reads as removed without relying on the colour. */}
+        {/* Its own layer so the removed feature can be clicked, but drawn like the other halos. */}
         <MapLayer
           id={`${SOURCE_ID}-line-removed`}
           type="line"
@@ -272,8 +272,8 @@ export function MessageHighlight({
           paint={{
             "line-color": HALO_COLOR,
             "line-width": LINE_WIDTH,
-            "line-opacity": 0.7,
-            "line-dasharray": [1.5, 1.5],
+            "line-opacity": 0.5,
+            "line-blur": 2,
           }}
         />
         <MapLayer
