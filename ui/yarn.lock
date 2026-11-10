@@ -2906,25 +2906,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.4.4":
-  version: 26.4.4
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.4"
-  dependencies:
-    "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
-    "@mapbox/unitbezier": "npm:^1.0.0"
-    json-stringify-pretty-compact: "npm:^4.0.0"
-    minimist: "npm:^1.2.8"
-    quickselect: "npm:^3.0.0"
-    tinyqueue: "npm:^3.0.0"
-  bin:
-    gl-style-format: dist/gl-style-format.mjs
-    gl-style-migrate: dist/gl-style-migrate.mjs
-    gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10/c049485af7654f7ffef63cb0ba7afbae231225151fcf0de173f03815e5b3edac5182c94287b0871a77afef0c95537b8d06da6142aa04eecb541430016e368972
-  languageName: node
-  linkType: hard
-
-"@maplibre/maplibre-gl-style-spec@npm:^26.6.0":
+"@maplibre/maplibre-gl-style-spec@npm:^26.5.1, @maplibre/maplibre-gl-style-spec@npm:^26.6.0":
   version: 26.6.0
   resolution: "@maplibre/maplibre-gl-style-spec@npm:26.6.0"
   dependencies:
@@ -8616,16 +8598,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.16.0":
-  version: 6.16.0
-  resolution: "maplibre-gl@npm:6.16.0"
+"maplibre-gl@npm:6.17.0":
+  version: 6.17.0
+  resolution: "maplibre-gl@npm:6.17.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.3.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
     "@maplibre/geojson-vt": "npm:^6.3.0"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.4.4"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.5.1"
     "@maplibre/mlt": "npm:^1.3.0"
     "@maplibre/vt-pbf": "npm:^4.3.3"
     "@types/geojson": "npm:^7946.0.16"
@@ -8638,7 +8620,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10/197646c0cebd0d8f455709e989ee820fa8c1770fccf8655e46100c8364fca1d97eff87ea66c99b34c32c13a6c03d5d81c82049ecc4c96e9e484f65e6cce37bf7
+  checksum: 10/b6a86cd93a8e26160c8394a221323ab55d8b761aa2dd7a308280aa8be1f6a54da5ed36558e31a1c237f448276dc602f4825d23d55ac31d73165fe8ee85d3e90e
   languageName: node
   linkType: hard
 
@@ -11279,7 +11261,7 @@ __metadata:
     i18next-browser-languagedetector: "npm:^8.3.0"
     jsdom: "npm:^31.0.0"
     lodash: "npm:^4.18.1"
-    maplibre-gl: "npm:6.16.0"
+    maplibre-gl: "npm:6.17.0"
     ol: "npm:^10.11.0"
     oxfmt: "npm:^0.78.0"
     oxlint: "npm:^1.93.0"
