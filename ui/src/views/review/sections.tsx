@@ -1,6 +1,7 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import type {
   IncidentReview,
@@ -334,10 +335,7 @@ function DivisionRow({
   );
 }
 
-function divisionDetail(
-  d: ReviewDivision,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string | undefined {
+function divisionDetail(d: ReviewDivision, t: TFunction): string | undefined {
   if (d.assigned === 0) return undefined;
 
   const parts = [
