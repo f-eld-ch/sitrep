@@ -7,7 +7,12 @@ import {
   faClipboardList,
   faObjectGroup,
 } from "@fortawesome/free-solid-svg-icons";
-import { groupLayersForControl, hasOwnLayerGroup, layerIcon } from "./ActiveLayersControl";
+import {
+  canActivateLayer,
+  groupLayersForControl,
+  hasOwnLayerGroup,
+  layerIcon,
+} from "./ActiveLayersControl";
 
 function layerState(
   id: string,
@@ -81,5 +86,21 @@ describe("layerIcon", () => {
     expect(layerIcon(standard, false, undefined)).toBe(faDrawPolygon);
     expect(layerIcon(standard, false, "a")).toBe(faEdit);
     expect(layerIcon(standard, true, "a")).toBe(faObjectGroup);
+  });
+});
+
+describe("canActivateLayer", () => {
+  const standard = layerState("a", "inc-1", "One").layer;
+  const messageMap: Layer = { ...standard, id: "m", kind: "MESSAGE_MAP" };
+
+  it("lets the free map activate every layer but the Nachrichtenkarte", () => {
+    expect(canActivateLayer(standard, false, false)).toBe(true);
+    expect(canActivateLayer(messageMap, false, false)).toBe(false);
+  });
+
+  it("only lets the Nachrichtenkarte activate its own layer, and only for a message", () => {
+    expect(canActivateLayer(standard, true, true)).toBe(false);
+    expect(canActivateLayer(standard, false, true)).toBe(false);
+    expect(canActivateLayer(messageMap, true, true)).toBe(true);
   });
 });

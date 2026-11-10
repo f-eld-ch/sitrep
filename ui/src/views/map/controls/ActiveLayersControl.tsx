@@ -63,6 +63,20 @@ export function layerIcon(layer: Layer, isInherited: boolean, activeLayerId: str
   return activeLayerId === layer.id ? faEdit : faDrawPolygon;
 }
 
+/**
+ * Whether a layer can be made the active one. The message map layer is only drawn on for a
+ * message, and a message only draws on it; on the Nachrichtenkarte no other layer is ever active.
+ */
+export function canActivateLayer(
+  layer: Layer,
+  drawingMessage: boolean,
+  messageMapOnly: boolean,
+): boolean {
+  if (messageMapOnly) return layer.kind === "MESSAGE_MAP" && drawingMessage;
+
+  return (layer.kind === "MESSAGE_MAP") === drawingMessage;
+}
+
 export function hasOwnLayerGroup(groups: LayerGroup[]): boolean {
   return groups.some((group) => !group.isInherited);
 }
@@ -74,12 +88,11 @@ const ActiveLayersControl: React.FC = () => {
   const [addLayer] = useAddLayer();
   const { incidentId } = useParams();
   const { t } = useTranslation();
-  const { drawingMessage } = useContext(MapTimeContext);
+  const { drawingMessage, messageMapOnly = false } = useContext(MapTimeContext);
   const { current: map } = useMap();
 
-  // The message map layer is only drawn on for a message, and a message only draws on it.
   const canActivate = (layer: Layer) =>
-    (layer.kind === "MESSAGE_MAP") === (drawingMessage !== undefined);
+    canActivateLayer(layer, drawingMessage !== undefined, messageMapOnly);
 
   // Picking a layer always shows where its features are, also one that cannot be made active
   // (the Nachrichtenkarte outside of drawing for a message) or that is already active.
@@ -147,7 +160,7 @@ const ActiveLayersControl: React.FC = () => {
 
   return (
     <div className="text-xs">
-      {!hasOwnGroup && (
+      {!messageMapOnly && !hasOwnGroup && (
         <div>
           <div className="flex items-center border-b border-gray-200 px-3 py-1 text-xs font-semibold text-gray-500 last:border-b-0">
             {t("layerControl.currentIncidentLayers")}
@@ -214,7 +227,7 @@ const ActiveLayersControl: React.FC = () => {
               </div>
             );
           })}
-          {!group.isInherited && addLayerControl}
+          {!messageMapOnly && !group.isInherited && addLayerControl}
         </div>
       ))}
     </div>
