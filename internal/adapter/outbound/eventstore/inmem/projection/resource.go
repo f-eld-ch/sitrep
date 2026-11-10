@@ -72,7 +72,7 @@ func NewResourceHandler() *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 7 }
+func (h *ResourceHandler) Version() int { return 8 }
 
 func (h *ResourceHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -405,7 +405,8 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 	case "PersonnelCountUpdated":
 		var d struct {
-			Count int `json:"count"`
+			Count int    `json:"count"`
+			Size  string `json:"size"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -413,6 +414,10 @@ func (h *ResourceHandler) Apply(_ context.Context, e eventsourcing.Event) error 
 
 		if row := h.rows[id]; row != nil {
 			row.PersonnelCount = d.Count
+			if d.Size != "" {
+				row.Size = d.Size
+			}
+
 			row.UpdatedAt = e.OccurredAt
 		}
 

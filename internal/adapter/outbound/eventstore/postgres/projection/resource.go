@@ -20,7 +20,7 @@ func NewResourceHandler(pool *pgxpool.Pool) *ResourceHandler {
 }
 
 func (h *ResourceHandler) Name() string { return "readmodel.resource" }
-func (h *ResourceHandler) Version() int { return 7 }
+func (h *ResourceHandler) Version() int { return 8 }
 func (h *ResourceHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.resource`)
 	return err
@@ -298,7 +298,8 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 
 	case "PersonnelCountUpdated":
 		var d struct {
-			Count int `json:"count"`
+			Count int    `json:"count"`
+			Size  string `json:"size"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -307,8 +308,9 @@ func (h *ResourceHandler) Apply(ctx context.Context, e eventsourcing.Event) erro
 		return exec(
 			db,
 			ctx,
-			`UPDATE readmodel.resource SET personnel_count=$1, updated_at=$2 WHERE id=$3`,
+			`UPDATE readmodel.resource SET personnel_count=$1, size=COALESCE(NULLIF($2, ''), size), updated_at=$3 WHERE id=$4`,
 			d.Count,
+			d.Size,
 			now,
 			id,
 		)

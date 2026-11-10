@@ -370,7 +370,8 @@ func (r *Resource) Rename(name, actor string, at time.Time) error {
 }
 
 // UpdatePersonnelCount corrects the headcount.
-// A mismatch with the UnitSize triggers ErrUnitSizeMismatch (non-blocking).
+// The unit size follows the headcount (it drives the tactical icon); a count that matches no
+// size leaves the current size in place.
 func (r *Resource) UpdatePersonnelCount(count int, actor string, at time.Time) error {
 	if r.status == StatusAbgeloest {
 		return shared.ValidationError{Field: "status", Message: "cannot update a relieved resource"}
@@ -380,7 +381,12 @@ func (r *Resource) UpdatePersonnelCount(count int, actor string, at time.Time) e
 		return shared.ValidationError{Field: "personnelCount", Message: "must be at least 1"}
 	}
 
-	eventsourcing.TrackChange(r, PersonnelCountUpdated{Count: count}, at, baseMeta(actor))
+	var size UnitSize
+	if s := UnitSizeForCount(count); s != "" && s != r.size {
+		size = s
+	}
+
+	eventsourcing.TrackChange(r, PersonnelCountUpdated{Count: count, Size: size}, at, baseMeta(actor))
 
 	return nil
 }
@@ -525,6 +531,9 @@ func (r *Resource) Transition(e eventsourcing.Event) error {
 		r.contact = &c
 	case PersonnelCountUpdated:
 		r.personnelCount = d.Count
+		if d.Size != "" {
+			r.size = d.Size
+		}
 	case Renamed:
 		r.name = d.Name
 	default:
