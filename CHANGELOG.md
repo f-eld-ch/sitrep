@@ -7,10 +7,15 @@
 ### 🐛 Bug Fixes
 
 - *(resource)* Let the unit size follow a corrected headcount ([#2096](https://github.com/f-eld-ch/sitrep/issues/2096)) - ([09bbf00](https://github.com/f-eld-ch/sitrep/commit/09bbf008ee9b769b94fafd409db20145c4f09d97))
+- *(ui)* Draw the removed-feature halo solid and soft like the others ([#2098](https://github.com/f-eld-ch/sitrep/issues/2098)) - ([aa7efad](https://github.com/f-eld-ch/sitrep/commit/aa7efadfa578fd79aa0b2fd80aa51165b38ddd32))
 - *(ui)* Only draw on the Nachrichtenkarte layer in the Nachrichtenkarte ([#2097](https://github.com/f-eld-ch/sitrep/issues/2097)) - ([e4176a9](https://github.com/f-eld-ch/sitrep/commit/e4176a94c4705e405e9c7326e66337cf56196321))
 
 ### ⚙️  Other
 
+- *(deps)* Bump i18next from 26.7.2 to 27.1.1 in /ui ([#2100](https://github.com/f-eld-ch/sitrep/issues/2100)) - ([c5ec7a0](https://github.com/f-eld-ch/sitrep/commit/c5ec7a0a040cbcc7852b3e39b1059a41e1e98ae4))
+- *(deps)* Bump @apollo/client from 4.3.7 to 4.3.8 in /ui ([#2101](https://github.com/f-eld-ch/sitrep/issues/2101)) - ([7886698](https://github.com/f-eld-ch/sitrep/commit/7886698d0c5c8b3ba63ee4b19502b039f617bcf3))
+- *(deps)* Bump modernc.org/sqlite from 1.61.1 to 1.62.0 ([#2099](https://github.com/f-eld-ch/sitrep/issues/2099)) - ([cdb2135](https://github.com/f-eld-ch/sitrep/commit/cdb213576b866cf9698d720ca4cfd398ff0bfe72))
+- *(deps)* Bump @flipt-io/flipt-client-js from 0.6.0 to 0.7.0 in /ui ([#2087](https://github.com/f-eld-ch/sitrep/issues/2087)) - ([9edd90b](https://github.com/f-eld-ch/sitrep/commit/9edd90bc6466da4bc09ac9559d765a62b18ec453))
 - *(deps)* Bump maplibre-gl from 6.16.0 to 6.17.0 in /ui ([#2090](https://github.com/f-eld-ch/sitrep/issues/2090)) - ([18b7595](https://github.com/f-eld-ch/sitrep/commit/18b7595195bdaacd277b4cd0f9d4038e48726dc4))
 - *(deps)* Bump react-dropzone from 20.1.4 to 20.2.0 in /ui ([#2092](https://github.com/f-eld-ch/sitrep/issues/2092)) - ([83d3ab1](https://github.com/f-eld-ch/sitrep/commit/83d3ab19b34b816742086033168f483f0e5acaa5))
 - *(deps)* Bump react-i18next from 17.1.13 to 18.0.1 in /ui ([#2086](https://github.com/f-eld-ch/sitrep/issues/2086)) - ([9bd3524](https://github.com/f-eld-ch/sitrep/commit/9bd352488079fa0abfcc343dec779ab281e10c35))
