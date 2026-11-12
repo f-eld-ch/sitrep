@@ -152,6 +152,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </span>
           <input
             id={nameID}
+            data-testid="create-incident-incident-name-input"
             className={inputWithIcon}
             type="text"
             value={name}
@@ -176,6 +177,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
             </span>
             <select
               id={parentID}
+              data-testid="create-incident-parent-input"
               className={inputWithIcon}
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}
@@ -205,6 +207,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           </span>
           <input
             id={locationID}
+            data-testid="create-incident-location-input"
             className={inputWithIcon}
             type="text"
             value={location}
@@ -247,6 +250,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
               {canRemoveDivision(d) ? (
                 <Button
                   type="button"
+                  data-testid={`create-incident-remove-division-button`}
                   variant="danger"
                   light
                   size="xs"
@@ -275,6 +279,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
         </label>
         <div className="flex w-full flex-1 gap-2">
           <input
+            data-testid="create-incident-add-division-name-input"
             className={inputSmBase + " min-w-0 flex-1"}
             type="text"
             value={assignmentDescription}
@@ -283,6 +288,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           />
           <input
             id={divisionsID}
+            data-testid="create-incident-add-division-short-input"
             className={inputSmBase + " w-20"}
             value={assignmentName}
             type="text"
@@ -291,6 +297,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
           />
           <Button
             type="submit"
+            data-testid="create-incident-add-division-button"
             variant="success"
             size="xs"
             onClick={(e) => {
@@ -324,6 +331,7 @@ function IncidentForm(props: { incident: Incident | undefined }) {
       <Button
         className="xl:ml-[272px]"
         type="submit"
+        data-testid="create-incident-save-button"
         variant="primary"
         capitalized
         onClick={() => void handleSave()}
