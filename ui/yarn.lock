@@ -10162,18 +10162,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proj4@npm:^2.22.0":
-  version: 2.22.0
-  resolution: "proj4@npm:2.22.0"
+"proj4@npm:^2.23.0":
+  version: 2.23.0
+  resolution: "proj4@npm:2.23.0"
   dependencies:
     mgrs: "npm:1.0.0"
-    wkt-parser: "npm:^1.5.5"
+    wkt-parser: "npm:^1.9.0"
   peerDependencies:
     geotiff: "*"
   peerDependenciesMeta:
     geotiff:
       optional: true
-  checksum: 10/10afb35c6e55777f1bdb23c488af18fa2295df4811b11e6573362fe869835fcb2fbaae6698d5cc28a6c8e58a6dd3524734ae0e9df36c852c2c8f0db59c3cf924
+  checksum: 10/5320c417574ff5c5c3c7da268c9ee40743c1b8a8113bf6c8554e1d910130083773837ee2ce7c274e03d170bf87b468f892a7f58b7a3726c22d0ba3e1ce9f6b61
   languageName: node
   linkType: hard
 
@@ -11386,7 +11386,7 @@ __metadata:
     oxlint: "npm:^1.93.0"
     oxlint-tailwindcss: "npm:^1.17.1"
     oxlint-tsgolint: "npm:^7.0.2007"
-    proj4: "npm:^2.22.0"
+    proj4: "npm:^2.23.0"
     react: "npm:^19.3.1"
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.3.1"
@@ -12945,10 +12945,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wkt-parser@npm:^1.5.5":
-  version: 1.5.5
-  resolution: "wkt-parser@npm:1.5.5"
-  checksum: 10/eeeb00f2d6a8a41359d529594a797dcdd18627aecfc2c4f4c96773b37beeaed1c03110aefca3834b671580f7f4b4d55c8209d208da4e717f619a2b34d1139345
+"wkt-parser@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "wkt-parser@npm:1.9.0"
+  checksum: 10/1a9b5f3998c17adc8d55df04f4e0eb42baa63813fc88f0547678ce1b5af7b6c68cd1a12b9d1eac9d27e2e2cd2b5920f02d842c2d4015a1388616409539e552dc
   languageName: node
   linkType: hard
 
