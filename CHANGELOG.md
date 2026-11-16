@@ -1,4 +1,13 @@
-## [unreleased]
+## [26.11.2](https://github.com/f-eld-ch/sitrep/compare/v26.11.1..v26.11.2) - 2026-11-16
+
+### ⛰️  Features
+
+- *(helm)* Add Helm chart published as OCI artifact ([#2113](https://github.com/f-eld-ch/sitrep/issues/2113)) - ([5371dc7](https://github.com/f-eld-ch/sitrep/commit/5371dc7f8968a10daea2945fec28e01321c044fa))
+- *(release)* Add --chart flag to release the Helm chart ([#2114](https://github.com/f-eld-ch/sitrep/issues/2114)) - ([c6bdca3](https://github.com/f-eld-ch/sitrep/commit/c6bdca30b8c79479e6f1357e40db563ab1011583))
+
+### 🐛 Bug Fixes
+
+- *(build)* Give develop images a real creation time, labels and version tag ([#2115](https://github.com/f-eld-ch/sitrep/issues/2115)) - ([35d279b](https://github.com/f-eld-ch/sitrep/commit/35d279b3541caa1e398dc0e11e0f25537cd62dd2))
 
 ### ⚙️  Other
 
