@@ -2,7 +2,8 @@ name: Helm Chart
 
 on:
   push:
-    branches: [develop]
+    # TEMPORARY: feat/helm-chart lets the branch publish a pre-release chart for the kind test. Revert before merging.
+    branches: [develop, feat/helm-chart]
     tags: ["v*"]
     paths:
       - "helm/**"
