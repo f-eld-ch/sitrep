@@ -2,6 +2,12 @@
 
 ### ⚙️  Other
 
+- *(deps)* Bump github.com/pressly/goose/v3 from 3.29.0 to 3.30.1 ([#2110](https://github.com/f-eld-ch/sitrep/issues/2110)) - ([c3b7b3e](https://github.com/f-eld-ch/sitrep/commit/c3b7b3ec22e31e792be6806a1dc32ae355eae31b))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.4.4 to 5.4.5 ([#2109](https://github.com/f-eld-ch/sitrep/issues/2109)) - ([b718317](https://github.com/f-eld-ch/sitrep/commit/b7183171e4887496a9d2a3bccae672e02af27e96))
+- *(deps)* Bump github.com/jackc/pgx/v5 from 5.12.0 to 5.13.0 ([#2111](https://github.com/f-eld-ch/sitrep/issues/2111)) - ([a9c04cd](https://github.com/f-eld-ch/sitrep/commit/a9c04cd48a07e13f4110400fec5767aae466b20d))
+- *(deps)* Bump golang.org/x/crypto from 0.58.0 to 0.59.0 ([#2112](https://github.com/f-eld-ch/sitrep/issues/2112)) - ([414cf85](https://github.com/f-eld-ch/sitrep/commit/414cf8513823ff006bf831ffe691bee150c01f82))
+- *(deps)* Bump github.com/zitadel/oidc/v3 from 3.51.17 to 3.52.0 ([#2105](https://github.com/f-eld-ch/sitrep/issues/2105)) - ([5cbeb87](https://github.com/f-eld-ch/sitrep/commit/5cbeb8780ae828e80f8bb6c3d9b148ea3bef0661))
+- *(deps)* Bump proj4 from 2.22.0 to 2.23.0 in /ui ([#2108](https://github.com/f-eld-ch/sitrep/issues/2108)) - ([c4c89e6](https://github.com/f-eld-ch/sitrep/commit/c4c89e6fce9f83034a22b661feec6ff8efb99e0c))
 - *(deps)* Bump maplibre-gl from 6.17.0 to 6.18.0 in /ui ([#2104](https://github.com/f-eld-ch/sitrep/issues/2104)) - ([3a067d4](https://github.com/f-eld-ch/sitrep/commit/3a067d4556ccad275c0c6418435214a66bf12eb8))
 
 
