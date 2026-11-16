@@ -1,0 +1,118 @@
+name: Helm Chart
+
+on:
+  push:
+    branches: [develop]
+    tags: ["v*"]
+    paths:
+      - "helm/**"
+      - ".github/workflows/helm-workflow.yml"
+  pull_request:
+    paths:
+      - "helm/**"
+      - ".github/workflows/helm-workflow.yml"
+
+permissions:
+  contents: read
+
+# A newer push supersedes an in-flight run on the same ref; never cancel a publish half way.
+concurrency:
+  group: helm-chart-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CHART_DIR: helm
+  OCI_REGISTRY: ghcr.io/f-eld-ch/charts
+
+jobs:
+  lint:
+    name: Lint and render chart
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # helm is preinstalled on GitHub-hosted runners.
+      - name: Lint and render every scenario
+        run: |
+          set -euo pipefail
+          for f in "$CHART_DIR"/ci/*-values.yaml; do
+            echo "::group::$f"
+            helm lint "$CHART_DIR" --strict -f "$f"
+            helm template ci "$CHART_DIR" -f "$f" > /dev/null
+            echo "::endgroup::"
+          done
+
+      - name: Validate manifests against Kubernetes schemas
+        run: |
+          set -euo pipefail
+          for f in "$CHART_DIR"/ci/*-values.yaml; do
+            helm template ci "$CHART_DIR" -f "$f" --kube-version 1.30.0 \
+              | docker run --rm -i ghcr.io/yannh/kubeconform:v0.7.0 \
+                  -strict -summary -kubernetes-version 1.30.0 -
+          done
+
+      - name: Chart behaviour tests
+        run: helm/ci/test.sh
+
+  publish:
+    name: Publish OCI chart
+    needs: lint
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write   # keyless cosign signing
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Release tag v26.11.0 -> chart 26.11.0 / appVersion v26.11.0 (the image tag goreleaser pushes).
+      # develop            -> chart 0.0.0-develop.<sha> / appVersion develop (the moving develop image).
+      - name: Resolve versions
+        id: v
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "chart=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+            echo "app=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "chart=0.0.0-develop.${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+            echo "app=develop" >> "$GITHUB_OUTPUT"
+          fi
+
+      # goreleaser publishes the image in release.yml, in parallel with this workflow. A chart that
+      # points at an image which does not exist yet would break any promotion that picks it up.
+      - name: Wait for the matching image
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          for i in $(seq 1 90); do
+            if docker buildx imagetools inspect "ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }}" > /dev/null 2>&1; then
+              echo "image found"; exit 0
+            fi
+            echo "image not published yet ($i/90)"; sleep 20
+          done
+          echo "::error::ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }} never appeared"; exit 1
+
+      - name: Package and push
+        id: push
+        run: |
+          helm package "$CHART_DIR" \
+            --version "${{ steps.v.outputs.chart }}" \
+            --app-version "${{ steps.v.outputs.app }}" \
+            --destination "$RUNNER_TEMP"
+          helm push "$RUNNER_TEMP/sitrep-${{ steps.v.outputs.chart }}.tgz" "oci://$OCI_REGISTRY" 2>&1 | tee "$RUNNER_TEMP/push.log"
+          echo "digest=$(sed -n 's/^Digest: //p' "$RUNNER_TEMP/push.log")" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+
+      - name: Sign the chart (keyless)
+        run: cosign sign --yes "$OCI_REGISTRY/sitrep@${{ steps.push.outputs.digest }}"

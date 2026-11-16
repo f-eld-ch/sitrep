@@ -66,7 +66,6 @@ cert.pem
 .attachments/
 backup.*.sql
 dataloaders.md
-helm/
 sitrep
 plan-*.prompt.md
 dev.sqlite3*

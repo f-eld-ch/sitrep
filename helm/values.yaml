@@ -1,0 +1,200 @@
+# Default values for the SitRep chart.
+
+image:
+  repository: ghcr.io/f-eld-ch/sitrep
+  # Defaults to the chart's appVersion. Kargo/ArgoCD promote by overriding `tag` (or `digest`).
+  tag: ""
+  # When set, takes precedence over `tag`: image is pulled as repository@digest.
+  digest: ""
+  # "" = automatic: Always for mutable tags (develop, stable, latest, pr-*), IfNotPresent for
+  # versioned tags and digests.
+  pullPolicy: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Ignored when autoscaling.enabled=true (the HPA owns the replica count).
+replicaCount: 1
+
+containerPort: 4180
+logLevel: info
+terminationGracePeriodSeconds: 30
+# preStop delay so Service endpoints drop the pod before it stops accepting connections
+# (the server closes its listener immediately on SIGTERM). Needs Kubernetes >= 1.30. 0 disables.
+preStopSleepSeconds: 5
+
+# ---------------------------------------------------------------------------
+# Database
+# ---------------------------------------------------------------------------
+database:
+  # postgres: supports multiple replicas and autoscaling.
+  # sqlite:   single replica only, needs a persistent volume.
+  type: postgres
+  postgres:
+    # Plain connection URL. Stored in a chart-managed Secret; prefer secrets.existingSecret
+    # (key `database-url`) so credentials stay out of Git.
+    url: ""
+  sqlite:
+    # File name inside persistence.mountPath.
+    file: sitrep.db
+
+# ---------------------------------------------------------------------------
+# Secrets
+# ---------------------------------------------------------------------------
+secrets:
+  # Name of an existing Secret (External Secrets, Sealed Secrets, ...) with the keys:
+  #   database-url         (postgres)
+  #   oidc-client-secret   (when oidc.clientId is set)
+  #   cookie-key           (required for more than one replica)
+  existingSecret: ""
+  # Only used when existingSecret is empty. Rendered into a chart-managed Secret.
+  oidcClientSecret: ""
+  # Session cookie signing key. Must be identical on all replicas.
+  cookieKey: ""
+  # Pods read the Secret only at start. After rotating secrets.existingSecret, change this value
+  # (any string) to roll them; it is a pod annotation, so the change is visible in Git/ArgoCD.
+  # A rollout-on-change controller can be used instead via podAnnotations.
+  version: ""
+
+# OIDC login. Leave clientId empty only together with insecureLocalAuth.
+oidc:
+  clientId: ""
+  issuer: ""
+  redirectUrl: ""
+
+# DEVELOPMENT ONLY: accept every request as a hard-coded local user.
+insecureLocalAuth: false
+
+allowedOrigins: []
+autoCloseIncidents: 0
+autoArchiveIncidents: 0
+
+attachments:
+  enabled: true
+  # "" = database (postgres/sqlite). "filesystem" needs persistence and a single replica.
+  backend: ""
+  maxSize: 25mb
+
+telemetry:
+  disabled: false
+
+# ---------------------------------------------------------------------------
+# Migrations
+# ---------------------------------------------------------------------------
+migrations:
+  # auto    -> Helm/ArgoCD pre-upgrade Job for postgres, --migrate-on-startup for sqlite
+  # job     -> always a pre-upgrade hook Job (not usable with sqlite's RWO volume)
+  # startup -> run in the server at boot (single replica only)
+  # disabled-> never migrate (you run `sitrep migrate up` yourself)
+  mode: auto
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  resources: {}
+
+# ---------------------------------------------------------------------------
+# Horizontal Pod Autoscaling (opt-in, postgres only)
+# ---------------------------------------------------------------------------
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  # targetMemoryUtilizationPercentage: 80
+  # behavior:
+  #   scaleDown:
+  #     stabilizationWindowSeconds: 300
+  behavior: {}
+
+podDisruptionBudget:
+  # Only rendered when more than one replica can run.
+  enabled: true
+  minAvailable: ""
+  maxUnavailable: 1
+
+# Needed by the HPA: utilization is measured against the CPU request.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 1Gi
+
+# ---------------------------------------------------------------------------
+# Persistence (sqlite database file or filesystem attachments)
+# ---------------------------------------------------------------------------
+persistence:
+  enabled: false
+  mountPath: /var/lib/sitrep
+  existingClaim: ""
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 5Gi
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Kubernetes plumbing
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+# TLS is expected to terminate at the ingress; the chart does not configure ACME.
+ingress:
+  enabled: false
+  className: ""
+  # Attachments go up to 25 MB; raise the controller's request body limit accordingly,
+  # e.g. for ingress-nginx:
+  #   nginx.ingress.kubernetes.io/proxy-body-size: 30m
+  annotations: {}
+  hosts:
+    - host: sitrep.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Opt-in NetworkPolicy: ingress only from the listed peers, egress only to DNS plus the listed peers.
+networkPolicy:
+  enabled: false
+  # Peers allowed to reach the pod, e.g. the ingress controller namespace:
+  #   - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: ingress-nginx}}
+  # Empty = any source.
+  ingressFrom: []
+  # Extra egress rules (database, OIDC provider, telemetry endpoint, ...). Required once enabled:
+  #   - to: [{ipBlock: {cidr: 10.0.0.0/8}}]
+  #     ports: [{port: 5432}]
+  #   - ports: [{port: 443}]
+  egress: []
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+extraEnv: []
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+# Empty = soft spread across nodes whenever more than one replica can run.
+topologySpreadConstraints: []

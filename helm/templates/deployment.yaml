@@ -1,0 +1,195 @@
+{{- include "sitrep.validate" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sitrep.fullname" . }}
+  labels:
+    {{- include "sitrep.labels" . | nindent 4 }}
+spec:
+  {{- /* With an HPA the controller owns the replica count; setting it here would reset it on every sync. */}}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- if eq .Values.database.type "sqlite" }}
+  # The SQLite file is single-writer and the volume is ReadWriteOnce: never run old and new pods together.
+  strategy:
+    type: Recreate
+  {{- else }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sitrep.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if include "sitrep.createSecret" . }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.secrets.version }}
+        # Bump to roll the pods after rotating an existing Secret (the chart cannot see its content).
+        sitrep.ch/secret-version: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "sitrep.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sitrep.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: sitrep
+          image: {{ include "sitrep.image" . | quote }}
+          imagePullPolicy: {{ include "sitrep.pullPolicy" . }}
+          {{- if eq (include "sitrep.migrationMode" .) "startup" }}
+          args: ["serve", "--migrate-on-startup"]
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          env:
+            {{- include "sitrep.env" . | nindent 12 }}
+            {{- with .Values.oidc }}
+            {{- if .clientId }}
+            - name: SITREP_OIDC_CLIENT_ID
+              value: {{ .clientId | quote }}
+            - name: SITREP_OIDC_ISSUER
+              value: {{ required "oidc.issuer is required when oidc.clientId is set" .issuer | quote }}
+            - name: SITREP_OIDC_REDIRECT_URL
+              value: {{ required "oidc.redirectUrl is required when oidc.clientId is set" .redirectUrl | quote }}
+            - name: SITREP_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sitrep.secretName" $ }}
+                  key: oidc-client-secret
+            {{- end }}
+            {{- end }}
+            {{- if or .Values.secrets.cookieKey .Values.secrets.existingSecret }}
+            - name: SITREP_COOKIE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sitrep.secretName" . }}
+                  key: cookie-key
+                  optional: true
+            {{- end }}
+            {{- if .Values.insecureLocalAuth }}
+            - name: SITREP_INSECURE_LOCAL_AUTH
+              value: "true"
+            {{- end }}
+            {{- with .Values.allowedOrigins }}
+            - name: SITREP_ALLOWED_ORIGINS
+              value: {{ join "," . | quote }}
+            {{- end }}
+            - name: SITREP_AUTO_CLOSE_INCIDENTS
+              value: {{ .Values.autoCloseIncidents | quote }}
+            - name: SITREP_AUTO_ARCHIVE_INCIDENTS
+              value: {{ .Values.autoArchiveIncidents | quote }}
+            - name: SITREP_STORAGE_ATTACHMENTS_ENABLED
+              value: {{ .Values.attachments.enabled | quote }}
+            {{- with .Values.attachments.backend }}
+            - name: SITREP_STORAGE_ATTACHMENTS_BACKEND
+              value: {{ . | quote }}
+            {{- end }}
+            - name: SITREP_STORAGE_ATTACHMENTS_MAX_SIZE
+              value: {{ .Values.attachments.maxSize | quote }}
+            {{- if eq .Values.attachments.backend "filesystem" }}
+            - name: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
+              value: {{ printf "%s/attachments" (.Values.persistence.mountPath | trimSuffix "/") | quote }}
+            {{- end }}
+            {{- if .Values.telemetry.disabled }}
+            - name: SITREP_TELEMETRY_DISABLED
+              value: "true"
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if .Values.preStopSleepSeconds }}
+          lifecycle:
+            preStop:
+              # Keeps serving while the endpoint removal propagates; the image has no shell for `sleep`.
+              sleep:
+                seconds: {{ .Values.preStopSleepSeconds }}
+          {{- end }}
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-data" (include "sitrep.fullname" .)) .Values.persistence.existingClaim }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
+      {{- else if include "sitrep.multiReplica" . }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "sitrep.selectorLabels" . | nindent 14 }}
+      {{- end }}

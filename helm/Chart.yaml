@@ -1,0 +1,15 @@
+apiVersion: v2
+name: sitrep
+description: SitRep - digital situation reporting (Lageverarbeitung) for incident management
+type: application
+# Placeholders: the chart workflow stamps the real values with
+# `helm package --version <v> --app-version <v>` (see .github/workflows/chart-workflow.yml).
+version: 0.1.0
+appVersion: "develop"
+kubeVersion: ">=1.30.0-0"
+home: https://sitrep.ch
+sources:
+  - https://github.com/f-eld-ch/sitrep
+maintainers:
+  - name: f-eld.ch
+    email: info@f-eld.ch
