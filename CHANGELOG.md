@@ -1,3 +1,15 @@
+## [26.11.3](https://github.com/f-eld-ch/sitrep/compare/v26.11.2..v26.11.3) - 2026-11-16
+
+### ⛰️  Features
+
+- *(helm)* Read the database URL from a separate Secret ([#2116](https://github.com/f-eld-ch/sitrep/issues/2116)) - ([5cd45fb](https://github.com/f-eld-ch/sitrep/commit/5cd45fb206d5a0f1ed0eb41593f1683c091c7c6c))
+
+### ⚙️  Other
+
+- *(deps)* Bump react-i18next from 18.0.1 to 18.0.2 in /ui ([#2118](https://github.com/f-eld-ch/sitrep/issues/2118)) - ([d5f4602](https://github.com/f-eld-ch/sitrep/commit/d5f4602c5ae310d47899836c52a86eca9d13a9a0))
+- *(deps)* Bump i18next from 27.1.1 to 27.1.3 in /ui ([#2119](https://github.com/f-eld-ch/sitrep/issues/2119)) - ([11aacb5](https://github.com/f-eld-ch/sitrep/commit/11aacb544ba5dbc1ca46fa4cfa54d07074bd6168))
+
+
 ## [26.11.2](https://github.com/f-eld-ch/sitrep/compare/v26.11.1..v26.11.2) - 2026-11-16
 
 ### ⛰️  Features
