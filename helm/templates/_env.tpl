@@ -4,8 +4,8 @@
   {{- if eq .Values.database.type "postgres" }}
   valueFrom:
     secretKeyRef:
-      name: {{ include "sitrep.secretName" . }}
-      key: database-url
+      name: {{ default (include "sitrep.secretName" .) .Values.database.postgres.existingSecret }}
+      key: {{ .Values.database.postgres.urlKey | default "database-url" }}
   {{- else }}
   value: {{ printf "sqlite://%s/%s" (.Values.persistence.mountPath | trimSuffix "/") .Values.database.sqlite.file | quote }}
   {{- end }}
