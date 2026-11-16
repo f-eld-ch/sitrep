@@ -91,7 +91,7 @@ jobs:
           # from it (v26.8.0-64-g136b9bf0), and is byte-identical to what the UI bakes in,
           # so the two never disagree. The image tags themselves are unaffected: they come
           # from image_tags_labels below.
-          SITREP_VERSION="$(git describe --tags --always)"
+          SITREP_VERSION="$(git describe --tags --always --match 'v[0-9]*')"
           if [ -z "$SITREP_VERSION" ]; then
             echo "::error::git describe produced an empty version; refusing to build an unversioned image"
             exit 1
