@@ -6,8 +6,35 @@ The chart lives in [`helm/`](../../helm) and is published as an OCI artifact:
 helm install sitrep oci://ghcr.io/f-eld-ch/charts/sitrep --version <chart-version> -f values.yaml
 ```
 
-Release tags `vYY.M.P` publish chart version `YY.M.P` (appVersion `vYY.M.P`). Pushes to `develop`
-publish `0.0.0-develop.<run>.<sha>` with appVersion `develop`.
+The chart is versioned **independently of the app**: SemVer for the chart (`1.2.0`), CalVer for the app
+(`v26.11.1`).
+
+| Published by | Chart version | appVersion |
+|---|---|---|
+| tag `chart-v1.2.0` | `1.2.0`, exactly the `version` in `Chart.yaml` | the app release it was tested with, e.g. `v26.11.1` |
+| push to `develop` | `0.0.0-develop.<run>.<sha>` | `develop` |
+
+### Releasing the chart
+
+1. Change the chart, and bump `version` in `helm/Chart.yaml` (patch = fix, minor = new values,
+   major = breaking values). Update `appVersion` if the chart now needs a newer app.
+2. Merge to `develop`.
+3. Push the tag `chart-v<version>`. The workflow refuses a tag that differs from `Chart.yaml`, requires
+   `appVersion` to be a released app tag whose image exists, then publishes and signs the chart.
+
+An app release (`vYY.M.P`) does not publish a chart, and a chart release does not need a new app release.
+
+### Charts and Kargo Freight
+
+A Freight is a tested **pair**: one app image and one chart version, chosen independently by the Warehouse.
+Demo proves the pair, and customers only accept Freight that passed demo.
+
+- `develop` Warehouse: image `develop` (by digest) + chart `>=0.0.0-0 <0.0.1` (develop builds).
+- `releases` Warehouse: image `^v\d+\.\d+\.\d+$` + chart `>=1.0.0`. The constraint excludes develop builds,
+  pre-releases and anything before the first release, so customers can only ever get a released chart.
+
+Because the two move separately, `appVersion` is a floor: a chart may require features of a newer app
+(for example the `/ready` database check), and demo is where an incompatible pair is caught.
 
 ## Postgres (recommended, supports autoscaling)
 
@@ -90,7 +117,7 @@ Read this before promoting automatically.
    release rebuilds the read model. An older image then refuses to start (`projection is newer than
    this build`) and crash-loops. Roll forward with a fix, or restore the database; do not simply
    re-promote the previous image. Kargo stages should treat such releases as not auto-revertible.
-3. The chart is only published for a release tag once the matching image exists, and it is signed with
+3. A released chart is signed with
    cosign (keyless): `cosign verify ghcr.io/f-eld-ch/charts/sitrep:<version>
    --certificate-identity-regexp 'https://github.com/f-eld-ch/sitrep/' --certificate-oidc-issuer https://token.actions.githubusercontent.com`.
 

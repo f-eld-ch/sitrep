@@ -4,7 +4,7 @@ on:
   push:
     # TEMPORARY: feat/helm-chart lets the branch publish a pre-release chart for the kind test. Revert before merging.
     branches: [develop, feat/helm-chart]
-    tags: ["v*"]
+    tags: ["chart-v*"]
     paths:
       - "helm/**"
       - ".github/workflows/helm-workflow.yml"
@@ -76,32 +76,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Release tag v26.11.0 -> chart 26.11.0 / appVersion v26.11.0 (the image tag goreleaser pushes).
-      # develop            -> chart 0.0.0-develop.<run>.<sha> / appVersion develop (the moving develop image).
-      #                       The numeric run number keeps semver ordering chronological (a bare sha would not).
+      # The chart is versioned independently of the app.
+      #   chart-v1.2.0 -> chart 1.2.0, appVersion from Chart.yaml (must be a released app image).
+      #                   The tag must match Chart.yaml so a release can never publish a version
+      #                   nobody reviewed.
+      #   develop      -> chart 0.0.0-develop.<run>.<sha> / appVersion develop (moving image).
+      #                   The numeric run number keeps semver ordering chronological.
       - name: Resolve versions
         id: v
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "chart=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-            echo "app=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          file_version="$(helm show chart "$CHART_DIR" | sed -n 's/^version: //p')"
+          file_app="$(helm show chart "$CHART_DIR" | sed -n 's/^appVersion: //p' | tr -d '"')"
+          if [[ "$GITHUB_REF" == refs/tags/chart-v* ]]; then
+            tag_version="${GITHUB_REF_NAME#chart-v}"
+            if [[ "$tag_version" != "$file_version" ]]; then
+              echo "::error::tag $GITHUB_REF_NAME does not match Chart.yaml version $file_version"; exit 1
+            fi
+            if [[ ! "$file_app" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Chart.yaml appVersion '$file_app' must be a released app tag (vYY.M.P)"; exit 1
+            fi
+            echo "chart=$file_version" >> "$GITHUB_OUTPUT"
+            echo "app=$file_app" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "chart=0.0.0-develop.${GITHUB_RUN_NUMBER}.${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
             echo "app=develop" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # goreleaser publishes the image in release.yml, in parallel with this workflow. A chart that
-      # points at an image which does not exist yet would break any promotion that picks it up.
-      - name: Wait for the matching image
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          for i in $(seq 1 90); do
-            if docker buildx imagetools inspect "ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }}" > /dev/null 2>&1; then
-              echo "image found"; exit 0
-            fi
-            echo "image not published yet ($i/90)"; sleep 20
-          done
-          echo "::error::ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }} never appeared"; exit 1
+      # A released chart defaults to its appVersion image, so that image must exist.
+      - name: Check the default image exists
+        if: steps.v.outputs.release == 'true'
+        run: docker buildx imagetools inspect "ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }}" > /dev/null
 
       - name: Package and push
         id: push
