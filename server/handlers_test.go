@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -164,4 +165,41 @@ func newTestServer(opts ...Option) (*Server, error) {
 	}
 
 	return s, nil
+}
+
+func TestReadyReflectsDependencyCheck(t *testing.T) {
+	tests := []struct {
+		name  string
+		check func(context.Context) error
+		want  int
+	}{
+		{"no check", nil, http.StatusOK},
+		{"healthy dependency", func(context.Context) error { return nil }, http.StatusOK},
+		{
+			"unreachable dependency",
+			func(context.Context) error { return errors.New("connection refused") },
+			http.StatusServiceUnavailable,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := NewServer(WithReadinessCheck(tt.check))
+			require.NoError(t, err)
+
+			s.RegisterRoutes()
+
+			rec := httptest.NewRecorder()
+			s.router.ServeHTTP(rec, httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/ready", nil))
+			assert.Equal(t, tt.want, rec.Code)
+
+			// liveness must never depend on the dependency
+			rec = httptest.NewRecorder()
+			s.router.ServeHTTP(
+				rec,
+				httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/health", nil),
+			)
+			assert.Equal(t, http.StatusOK, rec.Code)
+		})
+	}
 }

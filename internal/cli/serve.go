@@ -223,6 +223,10 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			MaxAttachmentSize: int64(v.GetSizeInBytes("storage.attachments.max-size")),
 		}, apiOpts...),
 	}
+	if s.Ping != nil {
+		opts = append(opts, server.WithReadinessCheck(s.Ping))
+	}
+
 	opts = append(opts, tlsOptions(v)...)
 
 	oidcPartial := []string{"oidc-issuer", "oidc-client-secret", "oidc-redirect-url"}

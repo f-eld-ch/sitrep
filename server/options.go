@@ -68,6 +68,17 @@ type apiV2Config struct {
 }
 
 // WithPort sets the server port.
+// WithReadinessCheck makes /ready also depend on a dependency probe (typically the database), so
+// a pod that cannot reach it is taken out of the Service instead of failing requests.
+// /health stays dependency-free on purpose: restarting pods does not fix a database outage.
+func WithReadinessCheck(check func(context.Context) error) Option {
+	return func(s *Server) error {
+		s.readyCheck = check
+
+		return nil
+	}
+}
+
 func WithPort(port uint) Option {
 	return func(s *Server) error {
 		s.port = port
