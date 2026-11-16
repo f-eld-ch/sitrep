@@ -1,10 +1,16 @@
 package server
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
+
+// readyCheckTimeout bounds the dependency probe; the kubelet probe timeout is 3s.
+const readyCheckTimeout = 2 * time.Second
 
 func (s *Server) health(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
@@ -24,6 +30,18 @@ func (s *Server) buildInfo(c *echo.Context) error {
 func (s *Server) ready(c *echo.Context) error {
 	if s.isShuttingDown.Load() {
 		return c.JSON(http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
+	}
+
+	if s.readyCheck != nil {
+		ctx, cancel := context.WithTimeout(c.Request().Context(), readyCheckTimeout)
+		defer cancel()
+
+		if err := s.readyCheck(ctx); err != nil {
+			// Debug only: the kubelet probes every few seconds, so anything louder floods the log.
+			s.logger.DebugContext(ctx, "readiness check failed", slog.String("error", err.Error()))
+
+			return c.JSON(http.StatusServiceUnavailable, map[string]string{"status": "unavailable"})
+		}
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"status": "ready"})

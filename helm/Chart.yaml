@@ -1,0 +1,23 @@
+apiVersion: v2
+name: sitrep
+description: SitRep - digital situation reporting (Lageverarbeitung) for incident management
+type: application
+# The chart is versioned independently of the app (SemVer here, CalVer for the app).
+#
+# version:    bump on EVERY change under helm/ before releasing it: patch = fix, minor = new
+#             values/features, major = breaking values. Released by pushing the tag chart-v<version>
+#             (the workflow refuses a tag that does not match this field).
+# appVersion: the app release this chart was last tested with; it is also the default image tag.
+#             Kargo overrides the image per environment, so this is a floor, not a pin.
+#
+# Pushes to develop publish 0.0.0-develop.<run>.<sha> with appVersion "develop" instead; those
+# never match a release constraint such as >=1.0.0.
+version: 1.0.0
+appVersion: "v26.11.1"
+kubeVersion: ">=1.34.0-0"
+home: https://sitrep.ch
+sources:
+  - https://github.com/f-eld-ch/sitrep
+maintainers:
+  - name: f-eld.ch
+    email: info@f-eld.ch

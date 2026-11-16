@@ -1,0 +1,16 @@
+SitRep {{ .Values.image.tag | default .Chart.AppVersion }} deployed ({{ .Values.database.type }}).
+{{- if .Values.autoscaling.enabled }}
+Horizontal autoscaling: {{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas.
+{{- end }}
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+URL: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+Reach it locally with:
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "sitrep.fullname" . }} 8080:{{ .Values.service.port }}
+{{- end }}
+{{- if .Values.insecureLocalAuth }}
+
+WARNING: insecureLocalAuth is enabled. Every request is accepted without authentication.
+{{- end }}

@@ -26,6 +26,7 @@ type Server struct {
 	version        string
 	sha            string
 	allowedOrigins []string
+	readyCheck     func(context.Context) error
 	auth.Enforcer
 	router        *echo.Echo
 	registerAPIV2 func()

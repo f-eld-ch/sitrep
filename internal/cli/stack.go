@@ -56,6 +56,9 @@ type stack struct {
 	GlobalAccessChecker   outbound.GlobalAccessChecker
 	// UserRepo is nil when running with the in-memory backend.
 	UserRepo outbound.UserRepository
+	// Ping reports whether the backing database is reachable; nil when there is nothing to probe
+	// (in-memory and SQLite, which live inside the process).
+	Ping func(ctx context.Context) error
 	// Teardown stops the projector and releases infrastructure resources.
 	Teardown func()
 }
@@ -288,6 +291,7 @@ func buildPostgresStack(
 	}()
 
 	return &stack{
+		Ping:                  pool.Ping,
 		IncidentSvc:           incidentSvcPg,
 		MessageSvc:            factory.MessageService(messages, repos),
 		LayerSvc:              factory.LayerService(layers, repos),

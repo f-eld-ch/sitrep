@@ -1,0 +1,20 @@
+database:
+  postgres:
+    url: postgres://sitrep:secret@postgres:5432/sitrep
+oidc:
+  clientId: sitrep
+  issuer: https://idp.example.com
+  redirectUrl: https://sitrep.example.com/oauth2/callback
+secrets:
+  oidcClientSecret: s3cret
+  cookieKey: 0123456789abcdef0123456789abcdef
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+ingress:
+  enabled: true
+  hosts:
+    - host: sitrep.example.com
+      paths:
+        - path: /
