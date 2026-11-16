@@ -12,8 +12,8 @@ type: application
 #
 # Pushes to develop publish 0.0.0-develop.<run>.<sha> with appVersion "develop" instead; those
 # never match a release constraint such as >=1.0.0.
-version: 1.0.0
-appVersion: "v26.11.1"
+version: 1.1.0
+appVersion: "v26.11.2"
 kubeVersion: ">=1.34.0-0"
 home: https://sitrep.ch
 sources:
