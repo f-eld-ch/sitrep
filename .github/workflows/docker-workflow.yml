@@ -98,4 +98,27 @@ jobs:
           fi
           echo "Stamping version: $SITREP_VERSION"
           export SITREP_VERSION
-          ko build --bare . --tags ${{ steps.image_tags_labels.outputs.tags }} ${{ steps.image_tags_labels.outputs.labels }}
+
+          # Creation time = commit time, exactly what goreleaser does for releases
+          # (creation_time: CommitTimestamp). ko does not set one on its own, so without this every
+          # image reports the creation date of its Chainguard base image (weeks old).
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export SOURCE_DATE_EPOCH
+          created="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
+
+          # The base image also contributes org.opencontainers.image.* annotations (created, source,
+          # title ...), and those are what Kargo shows on a Freight. Set the app's own, like the
+          # release images have. Labels go last so they win over metadata-action's (version=develop).
+          meta="org.opencontainers.image.created=$created,org.opencontainers.image.revision=$(git rev-parse HEAD),org.opencontainers.image.version=$SITREP_VERSION"
+          annotations="$meta,org.opencontainers.image.source=https://github.com/f-eld-ch/sitrep,org.opencontainers.image.title=sitrep,org.opencontainers.image.licenses=AGPL-3.0,org.opencontainers.image.url=https://github.com/f-eld-ch/sitrep"
+
+          # Develop images also get the version as a tag (v26.11.1-13-gc6bdca30, the string /version
+          # and the UI show), so a Kargo Freight names the build. Only when the version carries the
+          # -<commits>-g<sha> suffix: on an exact release tag it would collide with the release image.
+          tags="${{ steps.image_tags_labels.outputs.tags }}"
+          if [ "$GITHUB_REF" = "refs/heads/develop" ] && [[ "$SITREP_VERSION" =~ -[0-9]+-g[0-9a-f]+$ ]]; then
+            tags="$tags,$SITREP_VERSION"
+          fi
+
+          ko build --bare . --tags "$tags" ${{ steps.image_tags_labels.outputs.labels }} \
+            --image-label "$meta" --image-annotation "$annotations"
