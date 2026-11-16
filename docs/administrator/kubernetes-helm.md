@@ -13,6 +13,10 @@ The chart is versioned **independently of the app**: SemVer for the chart (`1.2.
 |---|---|---|
 | tag `chart-v1.2.0` | `1.2.0`, exactly the `version` in `Chart.yaml` | the app release it was tested with, e.g. `v26.11.1` |
 | push to `develop` | `0.0.0-develop.<run>.<sha>` | `develop` |
+| pull request | `<Chart.yaml version>-pr.<number>.<run>`, packaged but **never pushed** | `develop` |
+
+Charts are pushed only from `develop` and from `chart-v*` tags that sit on a `develop` commit. A release
+never overwrites an already published version.
 
 ### Releasing the chart
 

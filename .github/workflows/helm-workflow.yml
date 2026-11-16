@@ -2,8 +2,7 @@ name: Helm Chart
 
 on:
   push:
-    # TEMPORARY: feat/helm-chart lets the branch publish a pre-release chart for the kind test. Revert before merging.
-    branches: [develop, feat/helm-chart]
+    branches: [develop]
     tags: ["chart-v*"]
     paths:
       - "helm/**"
@@ -56,10 +55,31 @@ jobs:
       - name: Chart behaviour tests
         run: helm/ci/test.sh
 
+  # Pull requests never publish. They package the chart with a pre-release version derived from
+  # Chart.yaml, so a broken package is caught before merge and the version can never match a release
+  # constraint such as >=1.0.0.
+  package-pr:
+    name: Package chart (pull request, not published)
+    needs: lint
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Package with a PR pre-release version
+        run: |
+          set -euo pipefail
+          base="$(helm show chart "$CHART_DIR" | sed -n 's/^version: //p')"
+          version="${base}-pr.${{ github.event.pull_request.number }}.${GITHUB_RUN_NUMBER}"
+          helm package "$CHART_DIR" --version "$version" --app-version develop --destination "$RUNNER_TEMP"
+          helm show chart "$RUNNER_TEMP/sitrep-${version}.tgz" | grep -E "^(version|appVersion):"
+
   publish:
     name: Publish OCI chart
     needs: lint
-    if: github.event_name == 'push'
+    # Only develop and chart tags publish; PR branches and any other branch never do.
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/tags/chart-v'))
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -68,6 +88,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
@@ -75,6 +97,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # A chart release must be cut from a commit that is on develop.
+      - name: Ensure the tag is on develop
+        if: startsWith(github.ref, 'refs/tags/chart-v')
+        run: |
+          git fetch --quiet origin develop
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/develop; then
+            echo "::error::$GITHUB_REF_NAME is not on develop; releases are cut from develop only"; exit 1
+          fi
 
       # The chart is versioned independently of the app.
       #   chart-v1.2.0 -> chart 1.2.0, appVersion from Chart.yaml (must be a released app image).
@@ -109,6 +140,13 @@ jobs:
       - name: Check the default image exists
         if: steps.v.outputs.release == 'true'
         run: docker buildx imagetools inspect "ghcr.io/f-eld-ch/sitrep:${{ steps.v.outputs.app }}" > /dev/null
+
+      - name: Refuse to overwrite a published release
+        if: steps.v.outputs.release == 'true'
+        run: |
+          if docker buildx imagetools inspect "$OCI_REGISTRY/sitrep:${{ steps.v.outputs.chart }}" > /dev/null 2>&1; then
+            echo "::error::chart ${{ steps.v.outputs.chart }} is already published; bump version in Chart.yaml"; exit 1
+          fi
 
       - name: Package and push
         id: push
