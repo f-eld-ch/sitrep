@@ -23,7 +23,8 @@ never overwrites an already published version.
 1. Change the chart, and bump `version` in `helm/Chart.yaml` (patch = fix, minor = new values,
    major = breaking values). Update `appVersion` if the chart now needs a newer app.
 2. Merge to `develop`.
-3. Push the tag `chart-v<version>`. The workflow refuses a tag that differs from `Chart.yaml`, requires
+3. Run `./scripts/release.sh --chart` (add `--bump patch|minor|major` to bump the version for you), or push
+   the tag `chart-v<version>` yourself. The workflow refuses a tag that differs from `Chart.yaml`, requires
    `appVersion` to be a released app tag whose image exists, then publishes and signs the chart.
 
 An app release (`vYY.M.P`) does not publish a chart, and a chart release does not need a new app release.

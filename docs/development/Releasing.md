@@ -83,6 +83,36 @@ changed since the previous candidate.
 
 ---
 
+## Releasing the Helm chart
+
+The chart has its own SemVer (`helm/Chart.yaml`), independent of the app's CalVer, and its own tag:
+`chart-vX.Y.Z`. App tags (`vYY.M.P`) never publish a chart, and chart tags never build the app.
+
+```bash
+./scripts/release.sh --chart --dry-run                  # print the plan, change nothing
+./scripts/release.sh --chart                            # release the version already in Chart.yaml
+./scripts/release.sh --chart --bump patch               # bump patch|minor|major, then release
+./scripts/release.sh --chart --version 1.2.0            # explicit chart version
+./scripts/release.sh --chart --app-version v26.11.1     # also change the tested app version
+```
+
+Same safety checks as an app release (on `develop`, clean tree, in sync with `origin`), plus:
+
+- the app release in `appVersion` must be an existing tag, and the new chart version must be newer
+  than the latest `chart-v*` tag and not already tagged;
+- `helm lint --strict` and `helm/ci/test.sh` must pass;
+- if `Chart.yaml` changed, it is committed as `chore(release): prepare chart release chart-vX.Y.Z`;
+  otherwise the current commit is tagged.
+
+Pushing the tag is what matters: `.github/workflows/helm-workflow.yml` verifies the tag against
+`Chart.yaml`, checks the default image exists, refuses to overwrite a published version, then publishes
+and signs `ghcr.io/f-eld-ch/charts/sitrep:<version>`.
+
+Chart tags are kept out of the app's version and changelog: `cliff.toml` only matches `^v[0-9]`, and
+`git describe` for `/version` and the UI uses `--match 'v[0-9]*'`.
+
+---
+
 ## Versions at runtime
 
 The version a running instance reports comes from the git tag, linked into the binary:
