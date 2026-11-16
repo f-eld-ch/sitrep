@@ -21,7 +21,7 @@ containerPort: 4180
 logLevel: info
 terminationGracePeriodSeconds: 30
 # preStop delay so Service endpoints drop the pod before it stops accepting connections
-# (the server closes its listener immediately on SIGTERM). Needs Kubernetes >= 1.30. 0 disables.
+# (the server closes its listener immediately on SIGTERM). Needs Kubernetes >= 1.34. 0 disables.
 preStopSleepSeconds: 5
 
 # ---------------------------------------------------------------------------

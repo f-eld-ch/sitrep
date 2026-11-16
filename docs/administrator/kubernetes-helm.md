@@ -60,7 +60,7 @@ Uses a `Recreate` rollout, a PVC and `--migrate-on-startup`.
 **Readiness and liveness.** `/health` (liveness) never touches the database, so a database outage does
 not restart pods. `/ready` (readiness) pings PostgreSQL and fails during shutdown, so a pod that cannot
 reach the database is taken out of the Service. A `preStop` sleep (`preStopSleepSeconds`, Kubernetes
-1.30+) gives endpoint removal time to propagate before the server stops accepting connections.
+1.34+) gives endpoint removal time to propagate before the server stops accepting connections.
 
 **Rotating secrets.** The chart cannot see the content of `secrets.existingSecret`, and pods read
 it only at start. After a rotation, change `secrets.version` (any string) in the values file to roll the

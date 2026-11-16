@@ -6,7 +6,7 @@ type: application
 # `helm package --version <v> --app-version <v>` (see .github/workflows/chart-workflow.yml).
 version: 0.1.0
 appVersion: "develop"
-kubeVersion: ">=1.30.0-0"
+kubeVersion: ">=1.34.0-0"
 home: https://sitrep.ch
 sources:
   - https://github.com/f-eld-ch/sitrep

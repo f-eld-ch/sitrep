@@ -47,9 +47,9 @@ jobs:
         run: |
           set -euo pipefail
           for f in "$CHART_DIR"/ci/*-values.yaml; do
-            helm template ci "$CHART_DIR" -f "$f" --kube-version 1.30.0 \
+            helm template ci "$CHART_DIR" -f "$f" --kube-version 1.36.0 \
               | docker run --rm -i ghcr.io/yannh/kubeconform:v0.7.0 \
-                  -strict -summary -kubernetes-version 1.30.0 -
+                  -strict -summary -kubernetes-version 1.36.0 -
           done
 
       - name: Chart behaviour tests
