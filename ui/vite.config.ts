@@ -17,7 +17,8 @@ const buildSha = process.env.VITE_SHA_VERSION || git.long("../") || "dev";
 /**
  * `git describe` output, e.g. `v26.8.0` on a tag or `v26.8.0-64-g136b9bf0` past one.
  *
- * The same command the Ko Build step runs, deliberately: the backend serves its version on
+ * The same command the Ko Build step runs, deliberately (including `--match`, which keeps chart-v*
+ * tags out of the version): the backend serves its version on
  * /version and the update prompt shows it, so any difference in scheme would have the app
  * displaying two different version strings at once.
  *
@@ -28,7 +29,7 @@ const buildSha = process.env.VITE_SHA_VERSION || git.long("../") || "dev";
  */
 function describeVersion(): string {
   try {
-    return execSync("git describe --tags --always", {
+    return execSync("git describe --tags --always --match 'v[0-9]*'", {
       cwd: "..",
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
