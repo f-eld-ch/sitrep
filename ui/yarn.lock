@@ -10314,9 +10314,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:^18.0.1":
-  version: 18.0.1
-  resolution: "react-i18next@npm:18.0.1"
+"react-i18next@npm:^18.0.2":
+  version: 18.0.2
+  resolution: "react-i18next@npm:18.0.2"
   dependencies:
     html-parse-stringify: "npm:^4.0.1"
   peerDependencies:
@@ -10329,7 +10329,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/7487016e448b45f1298e6286a5b23bd38ad7bac3380a9cc3d097c62811097aae3de45cb595736cb09d03f5204a21608ea1d38985eb5d61082053a72f4da6ecf0
+  checksum: 10/d26c434583486453b21b05eb336536479fc2b89f123a716f3f88df1c08e2121f0618b867df07ada84256f36f71b9e537572671f38fe32145b81429156f9d70b8
   languageName: node
   linkType: hard
 
@@ -11409,7 +11409,7 @@ __metadata:
     react-autocomplete-hint: "npm:^2.0.0"
     react-dom: "npm:^19.3.1"
     react-dropzone: "npm:^20.2.0"
-    react-i18next: "npm:^18.0.1"
+    react-i18next: "npm:^18.0.2"
     react-map-gl: "npm:~8.1.3"
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^8.5.1"
