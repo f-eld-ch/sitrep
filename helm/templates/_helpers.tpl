@@ -97,8 +97,8 @@ IfNotPresent
 {{- if and (eq .Values.database.type "sqlite") (not .Values.persistence.enabled) -}}
 {{- fail "database.type=sqlite requires persistence.enabled=true, otherwise the database is lost whenever the pod restarts." -}}
 {{- end -}}
-{{- if and (eq .Values.database.type "postgres") (not .Values.secrets.existingSecret) (not .Values.database.postgres.url) -}}
-{{- fail "database.type=postgres requires either secrets.existingSecret (key 'database-url') or database.postgres.url." -}}
+{{- if and (eq .Values.database.type "postgres") (not .Values.secrets.existingSecret) (not .Values.database.postgres.existingSecret) (not .Values.database.postgres.url) -}}
+{{- fail "database.type=postgres requires database.postgres.existingSecret, secrets.existingSecret (key 'database-url') or database.postgres.url." -}}
 {{- end -}}
 {{- if and .Values.autoscaling.enabled (not (dig "requests" "cpu" "" (.Values.resources | default dict))) -}}
 {{- fail "autoscaling.enabled requires resources.requests.cpu: utilization targets are relative to the CPU request." -}}

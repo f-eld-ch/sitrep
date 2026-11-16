@@ -54,9 +54,17 @@ expect_render  "sqlite migrates on startup"            'migrate-on-startup' "${S
 expect_render  "sqlite uses Recreate rollout"          'type: Recreate' "${SQ[@]}"
 expect_render  "sqlite mounts the volume"              'kind: PersistentVolumeClaim' "${SQ[@]}"
 expect_fail    "sqlite needs persistence"              'requires persistence.enabled' "${SQ[@]}" --set persistence.enabled=false
-expect_fail    "postgres needs a database url"         'requires either secrets.existingSecret' --set database.type=postgres
+expect_fail    "postgres needs a database url"         'requires database.postgres.existingSecret' --set database.type=postgres
 expect_fail    "startup migrations rejected at scale"  'races between replicas' "${HPA[@]}" --set migrations.mode=startup
 expect_absent  "existingSecret creates no Secret"      'kind: Secret' "${HPA[@]}" --set secrets.existingSecret=mine --set database.postgres.url= --set secrets.oidcClientSecret= --set secrets.cookieKey=
+
+# --- external database secret (e.g. a managed database's connection Secret) -----
+EXT=(-f "$CI/hpa-values.yaml" --set database.postgres.url= --set database.postgres.existingSecret=sitrep-db --set database.postgres.urlKey=POSTGRESQL_URL)
+expect_render  "pod reads the url from the external secret"  'name: sitrep-db' "${EXT[@]}"
+expect_render  "pod reads the configured key"                'key: POSTGRESQL_URL' "${EXT[@]}"
+expect_render  "migration job reads it too"                  'POSTGRESQL_URL' --set autoscaling.enabled=false "${EXT[@]}"
+expect_absent  "default key unchanged elsewhere"             'key: database-url' "${EXT[@]}"
+expect_render  "default still database-url"                  'key: database-url' "${PG[@]}"
 
 # --- rollout / shutdown ---------------------------------------------------
 expect_render  "zero-unavailable rolling update"       'maxUnavailable: 0' "${PG[@]}"

@@ -32,9 +32,14 @@ database:
   # sqlite:   single replica only, needs a persistent volume.
   type: postgres
   postgres:
-    # Plain connection URL. Stored in a chart-managed Secret; prefer secrets.existingSecret
-    # (key `database-url`) so credentials stay out of Git.
+    # Plain connection URL. Stored in a chart-managed Secret; prefer an existing Secret
+    # (below) so credentials stay out of Git.
     url: ""
+    # Read the URL from a Secret that something else creates, e.g. the connection Secret of a
+    # managed database (VSHN AppCat writes POSTGRESQL_URL). Empty = the Secret from
+    # secrets.existingSecret (or the chart-managed one), key `database-url`.
+    existingSecret: ""
+    urlKey: database-url
   sqlite:
     # File name inside persistence.mountPath.
     file: sitrep.db
