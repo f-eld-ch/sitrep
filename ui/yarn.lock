@@ -7530,15 +7530,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^27.1.1":
-  version: 27.1.1
-  resolution: "i18next@npm:27.1.1"
+"i18next@npm:^27.1.3":
+  version: 27.1.3
+  resolution: "i18next@npm:27.1.3"
   peerDependencies:
     typescript: ^5 || ^6 || ^7
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/f4be22eeccd16daee51cfb72a98ea343f5abd87d7dcd952e11442c6c48ddc34c075667d9cfaf87f464554f99d5d6b6f481f7f8bcbc016c0072019f7a0e51bae4
+  checksum: 10/03184d5d86ade5852cda1f8627f01af0ccd5d8f3804facd9979a26ccef795942c4386e077f80bf48420a3d346f70d9418870e8f03740f4fff960f27e852061e9
   languageName: node
   linkType: hard
 
@@ -11394,7 +11394,7 @@ __metadata:
     git-rev-sync: "npm:^3.0.2"
     graphql: "npm:^17.1.0"
     html-react-parser: "npm:^6.1.9"
-    i18next: "npm:^27.1.1"
+    i18next: "npm:^27.1.3"
     i18next-browser-languagedetector: "npm:^8.3.0"
     jsdom: "npm:^31.0.1"
     lodash: "npm:^4.18.1"
