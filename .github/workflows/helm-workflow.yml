@@ -76,7 +76,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Release tag v26.11.0 -> chart 26.11.0 / appVersion v26.11.0 (the image tag goreleaser pushes).
-      # develop            -> chart 0.0.0-develop.<sha> / appVersion develop (the moving develop image).
+      # develop            -> chart 0.0.0-develop.<run>.<sha> / appVersion develop (the moving develop image).
+      #                       The numeric run number keeps semver ordering chronological (a bare sha would not).
       - name: Resolve versions
         id: v
         run: |
@@ -84,7 +85,7 @@ jobs:
             echo "chart=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
             echo "app=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           else
-            echo "chart=0.0.0-develop.${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+            echo "chart=0.0.0-develop.${GITHUB_RUN_NUMBER}.${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
             echo "app=develop" >> "$GITHUB_OUTPUT"
           fi
 

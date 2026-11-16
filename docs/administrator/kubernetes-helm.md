@@ -7,7 +7,7 @@ helm install sitrep oci://ghcr.io/f-eld-ch/charts/sitrep --version <chart-versio
 ```
 
 Release tags `vYY.M.P` publish chart version `YY.M.P` (appVersion `vYY.M.P`). Pushes to `develop`
-publish `0.0.0-develop.<sha>` with appVersion `develop`.
+publish `0.0.0-develop.<run>.<sha>` with appVersion `develop`.
 
 ## Postgres (recommended, supports autoscaling)
 
