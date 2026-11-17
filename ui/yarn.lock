@@ -4978,9 +4978,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uiw/react-md-editor@npm:^4.2.3":
-  version: 4.2.3
-  resolution: "@uiw/react-md-editor@npm:4.2.3"
+"@uiw/react-md-editor@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "@uiw/react-md-editor@npm:4.2.4"
   dependencies:
     "@babel/runtime": "npm:^7.14.6"
     "@uiw/react-markdown-preview": "npm:^5.2.0"
@@ -4989,7 +4989,7 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 10/4949466a2e15ca0c3aba7b3666ce8b269141d1654ea00289dbef864655b17f394feacd16399cb937f463c116d75e4afec6b75ed5276d37fde79c6abc3b7c3009
+  checksum: 10/9b363f23f2799a636692a80779891d93a15ccf3635cdd17b5e80483a889b52d10fee36db00d1bb4bb933a6ca7bf55aa680161ad9283d459ebd281d6aeb02a1dd
   languageName: node
   linkType: hard
 
@@ -11222,7 +11222,7 @@ __metadata:
     "@types/node": "npm:^26.6.6"
     "@types/react": "npm:^19.3.0"
     "@types/react-dom": "npm:^19.3.0"
-    "@uiw/react-md-editor": "npm:^4.2.3"
+    "@uiw/react-md-editor": "npm:^4.2.4"
     "@vite-pwa/assets-generator": "npm:^2.0.0"
     "@vitejs/plugin-react": "npm:^6.3.0"
     "@vitest/coverage-v8": "npm:^5.1.0"
