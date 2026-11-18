@@ -196,3 +196,31 @@
 .maplibregl-canvas-container.maplibregl-interactive:active {
   cursor: default;
 }
+
+/* Short swisstopo attribution ("© swisstopo") that expands to the full list on a click (see
+   ExpandableAttribution in Map.tsx). The full list is always in the markup, which is what the map
+   export reads; only its display is folded. */
+.maplibregl-ctrl-attrib-inner .attrib-short {
+  cursor: pointer;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short::after {
+  content: " ▸";
+  opacity: 0.6;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short .attrib-more {
+  display: none;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short.attrib-expanded::after {
+  content: "";
+}
+.maplibregl-ctrl-attrib-inner .attrib-short.attrib-expanded .attrib-more {
+  display: inline;
+}
+
+/* The time slider is an overlay at the bottom of the map (TimeControl). While it is there it
+   publishes its height as --map-timeline-height on the map element, and the controls in the bottom
+   left corner (attribution, scale, export) move up to sit above it instead of underneath. The
+   slider's own offset from the edge (0.5rem) is added as a gap. */
+.maplibregl-map[style*="--map-timeline-height"] .maplibregl-ctrl-bottom-left {
+  bottom: calc(var(--map-timeline-height) + 0.5rem);
+}

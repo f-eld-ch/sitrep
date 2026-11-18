@@ -44,6 +44,7 @@ import ExportControl from "./controls/ExportControl";
 import LayerControl from "./controls/LayerControl";
 import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
+import { swisstopoAttributionHtml, toggleAttributionAt } from "./swisstopoAttribution";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
 import { isPendingFeature, withPendingFeatures } from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
@@ -99,6 +100,31 @@ function BabsSpriteLanguage() {
   return null;
 }
 
+/**
+ * Makes the short swisstopo attribution ("© swisstopo") expand to the full list on a click or tap.
+ *
+ * MapLibre sanitizes attribution markup, so it cannot carry a script or a <details> element; one
+ * delegated listener on the map container does the toggling instead, and keeps working when the
+ * attribution is rebuilt. Renders nothing.
+ */
+function ExpandableAttribution() {
+  const { current: map } = useMap();
+
+  useEffect(() => {
+    const container = map?.getContainer();
+    if (!container) return;
+
+    const onClick = (event: MouseEvent) => {
+      toggleAttributionAt(event.target);
+    };
+
+    container.addEventListener("click", onClick);
+    return () => container.removeEventListener("click", onClick);
+  }, [map]);
+
+  return null;
+}
+
 interface MapViewOptions {
   embedded?: boolean;
   readOnly?: boolean;
@@ -126,6 +152,9 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
   // The timeline replays the Nachrichtenkarte, so it ships with the operator view.
   const timelineEnabled = !embedded && !readOnly;
   const { i18n } = useTranslation();
+  // The swisstopo credits are published per language. Unlike the style this may change at any time:
+  // the control is keyed by it, so a new language rebuilds only the attribution, not the map.
+  const attributionLanguage = i18n.resolvedLanguage ?? i18n.language;
 
   // Resolved once per basemap style, NOT per language: producing a new style object makes
   // react-map-gl call setStyle, which rebuilds every layer. Language changes are handled
@@ -164,8 +193,14 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         RTLTextPlugin={undefined}
       >
         <BabsSpriteLanguage />
+        <ExpandableAttribution />
         {!readOnly && <SearchControl />}
-        <AttributionControl position="bottom-left" compact={true} />
+        <AttributionControl
+          key={attributionLanguage}
+          position="bottom-left"
+          compact={true}
+          customAttribution={swisstopoAttributionHtml(attributionLanguage)}
+        />
         {!readOnly && <FullscreenControl position={"top-left"} />}
         <NavigationControl position="top-left" showCompass={true} visualizePitch={true} />
         <ScaleControl unit={"metric"} position={"bottom-left"} />

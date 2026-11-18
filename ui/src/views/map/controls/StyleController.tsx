@@ -28,12 +28,26 @@ function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecificati
   // Source URLs (TileJSON) are fetched by the map; make same-origin ones absolute like glyphs and
   // sprites. The backend emits absolute tile URLs inside the TileJSON itself.
   const sources = Object.fromEntries(
-    Object.entries(previousStyle.sources ?? {}).map(([name, source]) => [
-      name,
-      "url" in source && typeof source.url === "string" && !source.url.startsWith("http")
-        ? { ...source, url: new URL(source.url, window.location.href).href }
-        : source,
-    ]),
+    Object.entries(previousStyle.sources ?? {}).map(([name, source]) => {
+      if (!("url" in source) || typeof source.url !== "string" || source.url.startsWith("http")) {
+        return [name, source];
+      }
+
+      // The tiles served by sitrep carry the English swisstopo credits in their TileJSON. The map
+      // shows them in the app language instead, from <AttributionControl customAttribution>, so
+      // the source blanks its own (a source's attribution wins over the TileJSON's, and blank
+      // entries are not shown).
+      const fromSitrep = source.url.startsWith("/api/v2/tiles/");
+
+      return [
+        name,
+        {
+          ...source,
+          url: new URL(source.url, window.location.href).href,
+          ...(fromSitrep ? { attribution: " " } : {}),
+        },
+      ];
+    }),
   ) as StyleSpecification["sources"];
 
   return {

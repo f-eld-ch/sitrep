@@ -8,8 +8,10 @@ import (
 	"fmt"
 )
 
-// Attribution is the source reference that swisstopo requires for the Base Map.
-// The upstream TileJSON only carries "© swisstopo", so we always send the full string.
+// Attribution is the source reference that swisstopo requires for the Base Map, in English.
+// The upstream TileJSON only carries "© swisstopo", so we always send the full string. The map UI
+// shows the same reference in the app language instead (ui/src/views/map/swisstopoAttribution.ts:
+// swisstopo publishes it in German, French, Italian and English); this text is for other clients.
 const Attribution = "© swisstopo, © FDFA, © FOEN, © FOCP, © SAC, © Naturefriends Switzerland, © opentransportdata.swiss"
 
 // MaxZoom is the highest zoom level a coordinate may address.
