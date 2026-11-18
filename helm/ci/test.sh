@@ -86,4 +86,35 @@ expect_render  "networkpolicy renders"                 'kind: NetworkPolicy' "${
 expect_render  "memory limit raised, request kept"     'memory: 1Gi' "${PG[@]}"
 expect_render  "memory request kept"                  'memory: 128Mi' "${PG[@]}"
 
+# --- map tiles -------------------------------------------------------------
+TILES=(--set mapTiles.enabled=true)
+expect_absent  "tiles are off by default"              'SITREP_MAP_TILES|name: tiles|-tiles' "${PG[@]}"
+expect_render  "tiles: env points at the volume"       'SITREP_MAP_TILES_DIR' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: download is on by default"      'SITREP_MAP_TILES_AUTO_DOWNLOAD' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: volume is mounted"              'mountPath: /var/lib/sitrep-tiles' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: one replica gets a PVC"         'name: t-sitrep-tiles' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: PVC survives uninstall"         'helm.sh/resource-policy: keep' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: PVC size covers two archives"   'storage: 6Gi' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: storage class is used"          'storageClassName: "fast"' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.storageClass=fast
+expect_render  "tiles: pvc rollout is Recreate"        'type: Recreate' "${PG[@]}" "${TILES[@]}"
+expect_absent  "tiles: no rolling update with a pvc"   'maxUnavailable: 0' "${PG[@]}" "${TILES[@]}"
+expect_render  "tiles: existing claim is mounted"      'claimName: my-tiles' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.existingClaim=my-tiles
+expect_absent  "tiles: existing claim creates no pvc"  'name: t-sitrep-tiles' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.existingClaim=my-tiles
+expect_render  "tiles: scaled out uses own volumes"    'volumeClaimTemplate' "${HPA[@]}" "${TILES[@]}"
+expect_absent  "tiles: scaled out shares no pvc"       'name: t-sitrep-tiles' "${HPA[@]}" "${TILES[@]}"
+expect_render  "tiles: scaled out keeps rolling update" 'maxUnavailable: 0' "${HPA[@]}" "${TILES[@]}"
+expect_absent  "tiles: scaled out needs no Recreate"   'type: Recreate' "${HPA[@]}" "${TILES[@]}"
+expect_render  "tiles: ephemeral on one replica"       'volumeClaimTemplate' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.type=ephemeral
+expect_render  "tiles: ephemeral keeps rolling update" 'maxUnavailable: 0' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.type=ephemeral
+expect_render  "tiles: manual fill mounts read-only"   'readOnly: true' "${PG[@]}" "${TILES[@]}" --set mapTiles.autoDownload=false
+if render "${PG[@]}" "${TILES[@]}" --set mapTiles.autoDownload=false | grep -A1 "SITREP_MAP_TILES_AUTO_DOWNLOAD" | grep -q 'value: "false"'; then ok "tiles: manual fill disables download"; else bad "tiles: manual fill disables download"; fi
+expect_fail    "tiles: pvc rejected when scaled out"   'cannot be used with more than one replica' "${HPA[@]}" "${TILES[@]}" --set mapTiles.persistence.type=pvc
+expect_fail    "tiles: existing claim rejected when scaled out" 'existingClaim only works' "${HPA[@]}" "${TILES[@]}" --set mapTiles.persistence.existingClaim=x
+expect_fail    "tiles: empty per-pod volumes need download" 'empty forever' "${HPA[@]}" "${TILES[@]}" --set mapTiles.autoDownload=false
+expect_fail    "tiles: unknown volume type rejected"   'mapTiles' "${PG[@]}" "${TILES[@]}" --set mapTiles.persistence.type=nfs
+expect_fail    "tiles: mount must not overlap data"    'must not be the same as, or inside' "${PG[@]}" "${TILES[@]}" --set mapTiles.mountPath=/var/lib/sitrep/tiles
+expect_fail    "tiles: mount must not contain data"    'must not be the same as, or inside' "${PG[@]}" "${TILES[@]}" --set mapTiles.mountPath=/var/lib
+expect_fail    "tiles: same mount as data rejected"    'must not be the same as, or inside' "${PG[@]}" "${TILES[@]}" --set mapTiles.mountPath=/var/lib/sitrep
+expect_render  "tiles: coexists with sqlite data"      'name: t-sitrep-tiles' "${SQ[@]}" "${TILES[@]}"
+
 exit $fail

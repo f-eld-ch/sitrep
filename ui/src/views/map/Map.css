@@ -196,3 +196,31 @@
 .maplibregl-canvas-container.maplibregl-interactive:active {
   cursor: default;
 }
+
+/* Short swisstopo attribution ("© swisstopo") that expands to the full list on a click (see
+   ExpandableAttribution in Map.tsx). The full list is always in the markup, which is what the map
+   export reads; only its display is folded. */
+.maplibregl-ctrl-attrib-inner .attrib-short {
+  cursor: pointer;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short::after {
+  content: " ▸";
+  opacity: 0.6;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short .attrib-more {
+  display: none;
+}
+.maplibregl-ctrl-attrib-inner .attrib-short.attrib-expanded::after {
+  content: "";
+}
+.maplibregl-ctrl-attrib-inner .attrib-short.attrib-expanded .attrib-more {
+  display: inline;
+}
+
+/* The corner controls (attribution, scale, export) stay in the bottom left corner. The time slider
+   (TimeControl) is an overlay above them, which on a narrow map hid the expanded attribution, so
+   they are drawn above the slider instead. Collapsed they take little room; expanded the
+   attribution simply lies over the slider until it is folded again. */
+.maplibregl-ctrl-bottom-left {
+  z-index: 11;
+}

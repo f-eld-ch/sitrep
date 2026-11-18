@@ -118,4 +118,41 @@ IfNotPresent
 {{- if and .Values.networkPolicy.enabled (not .Values.networkPolicy.egress) -}}
 {{- fail "networkPolicy.enabled requires networkPolicy.egress rules for the database and OIDC provider; otherwise the pod cannot reach them." -}}
 {{- end -}}
+{{- include "sitrep.validateMapTiles" . -}}
+{{- end }}
+
+{{/* How the map tile volume is provided: "" (tiles off), "pvc" or "ephemeral". */}}
+{{- define "sitrep.tilesVolumeKind" -}}
+{{- if .Values.mapTiles.enabled -}}
+{{- $type := .Values.mapTiles.persistence.type | default "auto" -}}
+{{- if eq $type "auto" -}}
+{{- if include "sitrep.multiReplica" . }}ephemeral{{ else }}pvc{{ end -}}
+{{- else -}}
+{{- $type -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/* Validation of the mapTiles values. Included by sitrep.validate. */}}
+{{- define "sitrep.validateMapTiles" -}}
+{{- if .Values.mapTiles.enabled -}}
+{{- if not (has (.Values.mapTiles.persistence.type | default "auto") (list "auto" "pvc" "ephemeral")) -}}
+{{- fail "mapTiles.persistence.type must be 'auto', 'pvc' or 'ephemeral'" -}}
+{{- end -}}
+{{- $kind := include "sitrep.tilesVolumeKind" . -}}
+{{- if and (eq $kind "pvc") (include "sitrep.multiReplica" .) -}}
+{{- fail "mapTiles.persistence.type=pvc cannot be used with more than one replica: a ReadWriteOnce volume is attached to one pod. Use 'ephemeral' (the default for several replicas): every pod then gets and downloads its own copy." -}}
+{{- end -}}
+{{- if and (eq $kind "ephemeral") .Values.mapTiles.persistence.existingClaim -}}
+{{- fail "mapTiles.persistence.existingClaim only works with type 'pvc' (one replica)." -}}
+{{- end -}}
+{{- if and (eq $kind "ephemeral") (not .Values.mapTiles.autoDownload) -}}
+{{- fail "mapTiles.autoDownload=false leaves the per-pod tile volumes empty forever. Enable autoDownload, or run a single replica with a PVC that you fill yourself." -}}
+{{- end -}}
+{{- $tiles := .Values.mapTiles.mountPath | trimSuffix "/" -}}
+{{- $data := .Values.persistence.mountPath | trimSuffix "/" -}}
+{{- if or (eq $tiles $data) (hasPrefix (printf "%s/" $data) $tiles) (hasPrefix (printf "%s/" $tiles) $data) -}}
+{{- fail "mapTiles.mountPath must not be the same as, or inside, persistence.mountPath (or the other way round): the two volumes would overlap." -}}
+{{- end -}}
+{{- end -}}
 {{- end }}

@@ -325,6 +325,7 @@
   "styleController": {
     "autoFrame": "Inquadra automaticamente",
     "maps": "Mappe",
+    "notAvailableOffline": "Non disponibile offline",
     "Basiskarte": "Mappa di base leggera",
     "Satellit": "Mappa satellitare"
   },

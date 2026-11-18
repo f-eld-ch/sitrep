@@ -106,6 +106,11 @@ func cacheControlMiddleWare(next echo.HandlerFunc) echo.HandlerFunc {
 
 		resp.Before(func() {
 			path := c.Request().URL.Path
+			// tile handlers set their own Cache-Control (long for tiles, none for redirects)
+			if isTilePath(path) && resp.Header().Get("Cache-Control") != "" {
+				return
+			}
+
 			if resp.Status == http.StatusOK {
 				if strings.HasPrefix(path, "/assets/") {
 					resp.Header().Set("Cache-Control", "public, max-age=31536000, immutable")

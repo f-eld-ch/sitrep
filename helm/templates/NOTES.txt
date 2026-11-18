@@ -14,3 +14,22 @@ Reach it locally with:
 
 WARNING: insecureLocalAuth is enabled. Every request is accepted without authentication.
 {{- end }}
+{{- if .Values.mapTiles.enabled }}
+
+Map tiles: the swisstopo vector tiles are served from {{ .Values.mapTiles.mountPath }}
+({{ include "sitrep.tilesVolumeKind" . }} volume, {{ .Values.mapTiles.persistence.size }}).
+{{- if .Values.mapTiles.autoDownload }}
+Each pod downloads the archives (about 2.5 GB) on first start and checks for updates every {{ .Values.mapTiles.updateInterval }};
+until a download is complete the map uses swisstopo online. Watch it with:
+  kubectl --namespace {{ .Release.Namespace }} logs deploy/{{ include "sitrep.fullname" . }} | grep -E "tile (archive|sync)"
+{{- if .Values.networkPolicy.enabled }}
+The downloader needs egress to vectortiles.geo.admin.ch (TCP 443): make sure networkPolicy.egress allows it.
+{{- end }}
+{{- else }}
+Downloading is off: put the archives into the volume yourself (see the sitrep documentation).
+{{- end }}
+{{- if and .Values.autoscaling.enabled .Values.autoscaling.targetMemoryUtilizationPercentage }}
+Note: serving tiles fills the page cache, which counts towards memory utilization. Prefer targetCPUUtilizationPercentage
+for autoscaling when map tiles are enabled.
+{{- end }}
+{{- end }}

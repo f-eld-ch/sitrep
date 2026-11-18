@@ -69,6 +69,9 @@ interface MapPanelBlockProps {
   column?: boolean;
   className?: string;
   onClick?: () => void;
+  /** Greyed out and not clickable, e.g. a map that is not available offline. */
+  disabled?: boolean;
+  title?: string;
 }
 
 export function MapPanelBlock({
@@ -77,6 +80,8 @@ export function MapPanelBlock({
   column = false,
   className,
   onClick,
+  disabled = false,
+  title,
 }: MapPanelBlockProps) {
   return (
     <div
@@ -84,10 +89,13 @@ export function MapPanelBlock({
         "flex border-b border-gray-200 px-3 py-2 text-xs last:border-b-0",
         column ? "flex-col items-start" : "items-center",
         active && "bg-primary/10",
-        onClick && "cursor-pointer hover:bg-gray-100",
+        onClick && !disabled && "cursor-pointer hover:bg-gray-100",
+        disabled && "cursor-not-allowed text-gray-400",
         className,
       )}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      aria-disabled={disabled || undefined}
+      title={title}
     >
       {children}
     </div>

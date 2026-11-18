@@ -51,6 +51,7 @@ type Stack struct {
 	Schadenplaetze        inbound.SchadenplatzService
 	Resources             inbound.ResourceService
 	Timeline              inbound.TimelineService
+	Tiles                 inbound.TileService
 	IncidentAccessChecker outbound.IncidentAccessChecker
 	GlobalAccessChecker   outbound.GlobalAccessChecker
 	AccessQueries         outbound.AccessQueries
@@ -199,6 +200,10 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 
 	apiv2.POST("/messages/:id/attachments", uploadAttachment(stack.Messages, stack.MaxAttachmentSize))
 	apiv2.GET("/attachments/:id", downloadAttachment(stack.Messages))
+
+	if stack.Tiles != nil {
+		registerTiles(apiv2, stack.Tiles)
+	}
 }
 
 func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {

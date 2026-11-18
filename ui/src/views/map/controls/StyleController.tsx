@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPanel, MapPanelBlock } from "./MapPanel";
+import { useSatelliteAvailable } from "./satelliteAvailability";
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
@@ -11,6 +12,8 @@ import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte
 interface MapStyle {
   name: string;
   style: StyleSpecification;
+  /** Needs swisstopo online: there are no offline tiles for it (the satellite imagery). */
+  onlineOnly?: boolean;
 }
 
 function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecification {
@@ -22,8 +25,34 @@ function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecificati
     return absoluteURL.replace("%7Brange%7D", "{range}").replace("%7Bfontstack%7D", "{fontstack}");
   };
 
+  // Source URLs (TileJSON) are fetched by the map; make same-origin ones absolute like glyphs and
+  // sprites. The backend emits absolute tile URLs inside the TileJSON itself.
+  const sources = Object.fromEntries(
+    Object.entries(previousStyle.sources ?? {}).map(([name, source]) => {
+      if (!("url" in source) || typeof source.url !== "string" || source.url.startsWith("http")) {
+        return [name, source];
+      }
+
+      // The tiles served by sitrep carry the English swisstopo credits in their TileJSON. The map
+      // shows them in the app language instead, from <AttributionControl customAttribution>, so
+      // the source blanks its own (a source's attribution wins over the TileJSON's, and blank
+      // entries are not shown).
+      const fromSitrep = source.url.startsWith("/api/v2/tiles/");
+
+      return [
+        name,
+        {
+          ...source,
+          url: new URL(source.url, window.location.href).href,
+          ...(fromSitrep ? { attribution: " " } : {}),
+        },
+      ];
+    }),
+  ) as StyleSpecification["sources"];
+
   return {
     ...previousStyle,
+    sources,
     glyphs: convertToAbsoluteURL(previousStyle.glyphs),
     sprite:
       typeof previousStyle.sprite === "string"
@@ -51,23 +80,36 @@ export const MapStyles: MapStyle[] = [
   {
     name: "Satellit",
     style: ExpandRelativeURLs(basisKarteImagery as unknown as StyleSpecification),
+    onlineOnly: true,
   },
 ];
 
 interface MapStyleContextValue {
   selectedStyle: MapStyle;
   setSelectedStyle: (s: MapStyle) => void;
+  /** False while the online-only maps (the satellite map) cannot be loaded. */
+  onlineMapsAvailable: boolean;
 }
 
 const MapStyleContext = createContext<MapStyleContextValue>({
   selectedStyle: MapStyles[0],
   setSelectedStyle: () => {},
+  onlineMapsAvailable: true,
 });
 
 export function MapStyleProvider({ children }: { children: React.ReactNode }) {
   const [selectedStyle, setSelectedStyle] = useState<MapStyle>(MapStyles[0]);
+  const onlineMapsAvailable = useSatelliteAvailable();
+
+  // The satellite map cannot draw without swisstopo. Go back to the base map, which sitrep can
+  // serve itself, instead of leaving a blank map. Adjusting state while rendering (guarded, so it
+  // settles at once) instead of in an effect avoids drawing the blank satellite map in between.
+  if (selectedStyle.onlineOnly && !onlineMapsAvailable) {
+    setSelectedStyle(MapStyles[0]);
+  }
+
   return (
-    <MapStyleContext.Provider value={{ selectedStyle, setSelectedStyle }}>
+    <MapStyleContext.Provider value={{ selectedStyle, setSelectedStyle, onlineMapsAvailable }}>
       {children}
     </MapStyleContext.Provider>
   );
@@ -79,7 +121,7 @@ export function useMapStyle(): MapStyleContextValue {
 
 function StyleController() {
   const [active, setActive] = useState<boolean>(false);
-  const { selectedStyle: style, setSelectedStyle } = useMapStyle();
+  const { selectedStyle: style, setSelectedStyle, onlineMapsAvailable } = useMapStyle();
   const { t } = useTranslation();
 
   const btnClass = clsx({
@@ -106,15 +148,27 @@ function StyleController() {
 
   return (
     <MapPanel title={t("styleController.maps")} onClose={() => setActive(false)}>
-      {MapStyles.map((s) => (
-        <MapPanelBlock key={s.name} active={style.name === s.name} onClick={() => onClick(s)}>
-          <span
-            className={`capitalize ${style.name === s.name ? "text-primary font-semibold" : ""}`}
+      {MapStyles.map((s) => {
+        const disabled = !!s.onlineOnly && !onlineMapsAvailable;
+        return (
+          <MapPanelBlock
+            key={s.name}
+            active={style.name === s.name}
+            onClick={() => onClick(s)}
+            disabled={disabled}
+            title={disabled ? t("styleController.notAvailableOffline") : undefined}
           >
-            {t(`styleController.${s.name}`)}
-          </span>
-        </MapPanelBlock>
-      ))}
+            <span
+              className={`capitalize ${style.name === s.name ? "text-primary font-semibold" : ""}`}
+            >
+              {t(`styleController.${s.name}`)}
+            </span>
+            {disabled && (
+              <span className="ml-2 text-[11px]">({t("styleController.notAvailableOffline")})</span>
+            )}
+          </MapPanelBlock>
+        );
+      })}
     </MapPanel>
   );
 }

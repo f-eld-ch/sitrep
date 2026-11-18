@@ -116,7 +116,7 @@
   "pitch": 0,
   "sources": {
     "base_v1.0.0": {
-      "url": "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.base.vt/v1.0.0/tiles.json",
+      "url": "/api/v2/tiles/ch.swisstopo.base.vt/v1.0.0/tiles.json",
       "type": "vector"
     },
     "swissimage_wmts": {

@@ -138,6 +138,41 @@ persistence:
   annotations: {}
 
 # ---------------------------------------------------------------------------
+# Map tiles (swisstopo vector tiles served by sitrep, so the map works offline)
+# ---------------------------------------------------------------------------
+# Off: the map loads its tiles from swisstopo online. On: each pod downloads the two swisstopo
+# archives (about 2.5 GB) into its own volume, keeps them up to date and serves tiles from there;
+# until a download is complete it uses swisstopo online. Needs egress to vectortiles.geo.admin.ch
+# (TCP 443) when networkPolicy.enabled. Every pod has its own copy, so no shared storage is needed.
+# The satellite map has no offline tiles and stays online-only.
+mapTiles:
+  enabled: false
+  # Must not overlap persistence.mountPath.
+  mountPath: /var/lib/sitrep-tiles
+  # Download and update the archives in the background. When false the volume is mounted read-only
+  # and you put the files there yourself (single replica with a PVC only).
+  autoDownload: true
+  # How often to check swisstopo for a newer version (at least 1m).
+  updateInterval: 24h
+  persistence:
+    # auto:      a PVC for one replica, a per-pod ephemeral volume when several can run.
+    # pvc:       a PVC (one replica only). Survives restarts, so the tiles are downloaded once.
+    #            The rollout then uses `Recreate`: a ReadWriteOnce volume cannot be attached by the
+    #            old and the new pod at once, so a rolling update would hang.
+    # ephemeral: a volume created with each pod and deleted with it (every new pod downloads again).
+    #            Keeps the zero-downtime rolling update.
+    type: auto
+    # Use a PVC that exists already (type pvc only).
+    existingClaim: ""
+    storageClass: ""
+    # Both archives (about 2.5 GB) plus the one being replaced during an update.
+    size: 6Gi
+    # Keep the PVC when the release is uninstalled: downloading again costs 2.5 GB.
+    annotations:
+      helm.sh/resource-policy: keep
+
+
+# ---------------------------------------------------------------------------
 # Kubernetes plumbing
 # ---------------------------------------------------------------------------
 serviceAccount:

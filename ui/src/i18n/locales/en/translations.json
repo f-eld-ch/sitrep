@@ -325,6 +325,7 @@
   "styleController": {
     "autoFrame": "Frame automatically",
     "maps": "Maps",
+    "notAvailableOffline": "Not available offline",
     "Basiskarte": "Light base map",
     "Satellit": "Satellite map"
   },

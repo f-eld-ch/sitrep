@@ -179,6 +179,7 @@ func NewRootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(newMigrateCmd(v))
 	rootCmd.AddCommand(newAccessCmd(v))
 	rootCmd.AddCommand(newReviewCmd(v))
+	rootCmd.AddCommand(newTilesCmd(v))
 
 	return rootCmd, nil
 }
