@@ -1,3 +1,18 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(scripts)* Make approve-dependabot-prs fail loudly and continue on errors ([#2125](https://github.com/f-eld-ch/sitrep/issues/2125)) - ([c2bfd40](https://github.com/f-eld-ch/sitrep/commit/c2bfd40f82b7ed3a33ee0c788a065074b0c585c5))
+
+### ⚙️  Other
+
+- *(deps)* Bump @uiw/react-md-editor from 4.2.3 to 4.2.4 in /ui ([#2120](https://github.com/f-eld-ch/sitrep/issues/2120)) - ([f0b85b4](https://github.com/f-eld-ch/sitrep/commit/f0b85b4fde9dfa2df1c6388f20907def23408424))
+- *(deps)* Bump i18next-browser-languagedetector in /ui ([#2121](https://github.com/f-eld-ch/sitrep/issues/2121)) - ([a7a866d](https://github.com/f-eld-ch/sitrep/commit/a7a866dcfa9d065f35702f16a9a89d9e6dbc0b9e))
+- *(deps)* Bump html-react-parser from 6.1.9 to 6.1.10 in /ui ([#2122](https://github.com/f-eld-ch/sitrep/issues/2122)) - ([fd20e83](https://github.com/f-eld-ch/sitrep/commit/fd20e8368ede25ca8f84cb05b33c7facf2c59678))
+- *(deps)* Bump maplibre-gl from 6.18.0 to 6.19.0 in /ui ([#2123](https://github.com/f-eld-ch/sitrep/issues/2123)) - ([5646d5e](https://github.com/f-eld-ch/sitrep/commit/5646d5ec0adbfdfb285535715008884755f4771b))
+- *(deps)* Bump i18next from 27.1.3 to 27.1.5 in /ui ([#2124](https://github.com/f-eld-ch/sitrep/issues/2124)) - ([8825113](https://github.com/f-eld-ch/sitrep/commit/8825113d708a43ea18fd15ff4566180577d0e89f))
+
+
 ## [26.11.3](https://github.com/f-eld-ch/sitrep/compare/v26.11.2..v26.11.3) - 2026-11-16
 
 ### ⛰️  Features
