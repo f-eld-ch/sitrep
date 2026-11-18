@@ -1629,36 +1629,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@f-eld-ch/babs-assets@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@f-eld-ch/babs-assets@npm:0.8.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-assets%2F0.8.0%2F2268ac5c17c35a0eb3707af7c88b3e97275bf638"
-  checksum: 10/6b8d18ac54949054912797394262056bb3de4f5203b9f69c403e381fc13e709e37fbbb6d433a733ef0864deca028b8af4ef5457e6e177c88ee423d317a2ed834
+"@f-eld-ch/babs-assets@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@f-eld-ch/babs-assets@npm:0.8.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-assets%2F0.8.1%2Fbb7e9f856b2e9b65d3c9439b5743a8000e8fcc28"
+  checksum: 10/13a497606b328df925491a8f3556bb45a843a9a438f792353ebef4f8a77b648c60706c89bccdaf8806924796efa75552e5043e0ea0ee964c7db82ae42f287682
   languageName: node
   linkType: hard
 
-"@f-eld-ch/babs-core@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@f-eld-ch/babs-core@npm:0.8.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-core%2F0.8.0%2Fa77b2a147c04594a4eaa919ef75008ff9f1e461e"
-  checksum: 10/62aa58c1de084553c1906f54898fb1cdb6ebd0ef4f4fa423b28cb94355a8b8b49c661e01662d65a7d15bc24386e841354dd0233bea7e34e6c57136c026dacdc9
+"@f-eld-ch/babs-core@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@f-eld-ch/babs-core@npm:0.8.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-core%2F0.8.1%2F4657aef912a63d8185eeeac4e66a9df43722b38b"
+  checksum: 10/895e94d2d7241650af8ce47e0b7a993a5465cab672384aa96ea0e0045d99558df927c8467151cdd4e2d537c023412f4afbbeebc977f4df17587da22a68738222
   languageName: node
   linkType: hard
 
-"@f-eld-ch/babs-react@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@f-eld-ch/babs-react@npm:0.8.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-react%2F0.8.0%2Fe9a4ff7222723519abccfb2551ee4ac3180f4fcf"
+"@f-eld-ch/babs-react@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@f-eld-ch/babs-react@npm:0.8.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-react%2F0.8.1%2F09fc9851d6a9888922f549aeef610038ed37c15f"
   peerDependencies:
-    "@f-eld-ch/babs-core": 0.8.0
+    "@f-eld-ch/babs-core": 0.8.1
     react: ">=18"
-  checksum: 10/0ed2682b0bb6a01756665a67b55de91efe6500b74ab9261ac3b1f7ef43ac42bfb9f5127f3f22f2ba9dc81f4a292717d4927df248baf8eb78ee7574d175a6c886
+  checksum: 10/f7bea180103e80f2b99001493aafa4e0dfe8d0d7a419495459240f449cc016a2fb29a2f08b1603e1245c866d11240f4b8c490fa64d8e7cc9822ce70770de05eb
   languageName: node
   linkType: hard
 
-"@f-eld-ch/babs-sprites@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@f-eld-ch/babs-sprites@npm:0.8.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-sprites%2F0.8.0%2Ffb0f0b7cdb4a1a9ee8ca65b543624d0c95135e32"
+"@f-eld-ch/babs-sprites@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@f-eld-ch/babs-sprites@npm:0.8.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40f-eld-ch%2Fbabs-sprites%2F0.8.1%2F947c11bd6733cfb39b72ee8824607fabe238a45c"
   peerDependencies:
     vite: ">=5"
-  checksum: 10/ce827d1fb484fb448ab7d984647f79229b69719bc1e766036f8edd705bdda25f72ca3ca0632a4ce876802dedc74bcf75bcf33be57c3d317fd6a2c1d7e3d80231
+  checksum: 10/8469849e8ef12c79484ed1dc30f45b3f13df3b9486dfe96aea204bc852f47becaa045dd80ba68e9fdb7b0d26b843dcefcb78b922a174f0a551f75f04aa229349
   languageName: node
   linkType: hard
 
@@ -11182,10 +11182,10 @@ __metadata:
   resolution: "sitrep@workspace:."
   dependencies:
     "@apollo/client": "npm:^4.3.8"
-    "@f-eld-ch/babs-assets": "npm:^0.8.0"
-    "@f-eld-ch/babs-core": "npm:^0.8.0"
-    "@f-eld-ch/babs-react": "npm:^0.8.0"
-    "@f-eld-ch/babs-sprites": "npm:^0.8.0"
+    "@f-eld-ch/babs-assets": "npm:^0.8.1"
+    "@f-eld-ch/babs-core": "npm:^0.8.1"
+    "@f-eld-ch/babs-react": "npm:^0.8.1"
+    "@f-eld-ch/babs-sprites": "npm:^0.8.1"
     "@fast-check/vitest": "npm:^0.5.0"
     "@flipt-io/flipt-client-js": "npm:0.7.0"
     "@fortawesome/fontawesome-svg-core": "npm:^7.3.1"
