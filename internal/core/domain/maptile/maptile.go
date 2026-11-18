@@ -41,6 +41,15 @@ var Supported = []Tileset{
 	{Name: "ch.swisstopo.relief.vt", Version: "v1.0.0"},
 }
 
+// Validate reports ErrUnknownTileset unless t is one of the Supported tilesets. Adapters call it
+// before building a URL or a file path from the tileset, so nothing but the known names and
+// versions can ever reach the remote server or the file system, whatever the caller passes.
+func (t Tileset) Validate() error {
+	_, err := ParseTileset(t.Name, t.Version)
+
+	return err
+}
+
 // ParseTileset returns the supported tileset for name and version, or
 // ErrUnknownTileset. Anything not in Supported is rejected, which also keeps
 // path traversal out of file names derived from it.

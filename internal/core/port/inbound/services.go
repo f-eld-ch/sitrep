@@ -5,6 +5,7 @@ package inbound
 
 import (
 	"context"
+	"errors"
 	"io"
 	"time"
 
@@ -638,8 +639,93 @@ type TileService interface {
 	// Tile returns one tile, a redirect to swisstopo, or an empty result.
 	Tile(ctx context.Context, ts maptile.Tileset, c maptile.Coord) (TileState, error)
 
+	// Refresh re-checks the local archives now. The updater calls it after each sync so that a
+	// downloaded archive is switched to (and logged) right away.
+	Refresh(ctx context.Context)
+
+	// LocalStatus opens every local archive and reports which tilesets are served locally. It
+	// never contacts swisstopo.
+	LocalStatus(ctx context.Context) []TilesetLocal
+
 	// ETag returns the current archive ETag without reading a tile, so a
 	// conditional request can be answered without a database lookup. It returns
 	// "" when there is no local archive.
 	ETag(ctx context.Context, ts maptile.Tileset) string
+}
+
+// ErrSyncInProgress is returned by TileSyncService.Sync when another sync is running.
+var ErrSyncInProgress = errors.New("tile sync already in progress")
+
+// SyncOutcome is what a sync did for one tileset.
+type SyncOutcome string
+
+const (
+	SyncUpToDate         SyncOutcome = "up_to_date"
+	SyncDownloaded       SyncOutcome = "downloaded"
+	SyncResumed          SyncOutcome = "resumed"
+	SyncSkippedDiskSpace SyncOutcome = "skipped_disk_space"
+	SyncFailed           SyncOutcome = "failed"
+)
+
+// TilesetSync is the result of syncing one tileset.
+type TilesetSync struct {
+	Tileset maptile.Tileset
+	Outcome SyncOutcome
+	// Bytes is the number of bytes downloaded in this run.
+	Bytes int64
+	// Err is set when Outcome is SyncFailed.
+	Err error
+}
+
+// SyncReport is the result of one sync over all tilesets.
+type SyncReport struct {
+	Tilesets []TilesetSync
+}
+
+// TilesetStatus compares the installed archive of a tileset with upstream.
+type TilesetStatus struct {
+	Tileset      maptile.Tileset
+	Installed    bool
+	LocalETag    string
+	LocalSize    int64
+	DownloadedAt time.Time
+	// RemoteETag is empty when upstream could not be reached (see RemoteErr).
+	RemoteETag string
+	RemoteSize int64
+	RemoteErr  string
+	UpToDate   bool
+	// PartSize is the size of a partial download, 0 when there is none.
+	PartSize int64
+}
+
+// PrunedFile is a file removed by Prune.
+type PrunedFile struct {
+	Path string
+	Size int64
+}
+
+// TileSyncService downloads and updates the local tile archives from swisstopo.
+type TileSyncService interface {
+	// Sync brings every tileset up to date, one at a time. It returns ErrSyncInProgress when
+	// another sync is running. A failure of one tileset does not stop the others; it is
+	// reported in the result.
+	Sync(ctx context.Context) (SyncReport, error)
+
+	// Status compares what is installed with what upstream offers.
+	Status(ctx context.Context) ([]TilesetStatus, error)
+
+	// Prune removes archives and partial downloads that are no longer needed.
+	Prune(ctx context.Context) ([]PrunedFile, error)
+}
+
+// TilesetLocal describes the local archive of one tileset, for the startup report.
+type TilesetLocal struct {
+	Tileset maptile.Tileset
+	// Ready is true when the archive exists and could be opened, so tiles are served locally.
+	Ready       bool
+	Size        int64
+	InstalledAt time.Time
+	// Err is set when an archive exists but cannot be used; tiles then fail instead of
+	// falling back, which is why it is worth reporting at startup.
+	Err error
 }

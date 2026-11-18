@@ -51,6 +51,10 @@ func (s *TileService) TileJSON(
 	ts maptile.Tileset,
 	tileBaseURL string,
 ) (inbound.TileJSONState, error) {
+	if err := ts.Validate(); err != nil {
+		return inbound.TileJSONState{}, err
+	}
+
 	ctx, span := s.tracer.Start(ctx, "TileService.TileJSON",
 		trace.WithAttributes(attribute.String("tileset", ts.String())))
 	defer span.End()
@@ -87,6 +91,14 @@ func (s *TileService) TileJSON(
 // only add export volume (the HTTP middleware skips them too). The tiles.served
 // counter covers the load instead.
 func (s *TileService) Tile(ctx context.Context, ts maptile.Tileset, c maptile.Coord) (inbound.TileState, error) {
+	if err := ts.Validate(); err != nil {
+		return inbound.TileState{}, err
+	}
+
+	if _, err := maptile.NewCoord(c.Z, c.X, c.Y); err != nil {
+		return inbound.TileState{}, err
+	}
+
 	data, err := s.store.Tile(ctx, ts, c)
 
 	switch {
@@ -143,3 +155,30 @@ func upstreamTileJSON(ts maptile.Tileset) maptile.TileJSON {
 }
 
 func tilesetAttr(ts maptile.Tileset) slog.Attr { return slog.String("tileset", ts.String()) }
+
+// LocalStatus implements inbound.TileService. Opening the archive here, instead of on the first
+// tile request, shows a broken file at startup and warms the reader.
+func (s *TileService) LocalStatus(ctx context.Context) []inbound.TilesetLocal {
+	out := make([]inbound.TilesetLocal, 0, len(maptile.Supported))
+
+	for _, ts := range maptile.Supported {
+		l := inbound.TilesetLocal{Tileset: ts}
+
+		info, err := s.store.Info(ctx, ts)
+
+		switch {
+		case err == nil:
+			l.Ready, l.Size, l.InstalledAt = true, info.Size, info.ModTime
+		case errors.Is(err, outbound.ErrTilesetNotAvailable):
+		default:
+			l.Err = err
+		}
+
+		out = append(out, l)
+	}
+
+	return out
+}
+
+// Refresh implements inbound.TileService.
+func (s *TileService) Refresh(ctx context.Context) { s.store.Refresh(ctx) }

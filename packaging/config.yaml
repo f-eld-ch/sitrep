@@ -86,6 +86,18 @@ storage:
 map:
   tiles:
     dir: "/var/lib/sitrep/tiles"
+    # Download the archives from swisstopo (about 2.5 GB) into dir and keep them up to date. Off by
+    # default: the map then uses the public swisstopo tiles until the files are put there, either by
+    # `sitrep tiles download` or by copying them. At most one archive and one partial download are
+    # kept per tileset; needs about 4 GB free while an update is downloading.
+    # Env: SITREP_MAP_TILES_AUTO_DOWNLOAD
+    #auto-download: false
+    # How often to check swisstopo for a newer version (at least 1m).
+    # Env: SITREP_MAP_TILES_UPDATE_INTERVAL
+    #update-interval: 24h
+    # Remove interrupted downloads that did not progress for this long.
+    # Env: SITREP_MAP_TILES_PART_MAX_AGE
+    #part-max-age: 168h
 
 # ── Telemetry ────────────────────────────────────────────────────────────────
 

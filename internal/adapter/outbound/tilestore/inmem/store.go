@@ -72,3 +72,6 @@ func (s *Store) Tile(_ context.Context, ts maptile.Tileset, c maptile.Coord) ([]
 
 	return data, nil
 }
+
+// Refresh implements outbound.TileStore; an in-memory store is always current.
+func (s *Store) Refresh(context.Context) {}

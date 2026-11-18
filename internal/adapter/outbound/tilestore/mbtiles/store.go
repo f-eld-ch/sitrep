@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -49,6 +50,11 @@ type Store struct {
 
 	mu      sync.RWMutex
 	entries map[maptile.Tileset]*entry
+	// missing marks tilesets last seen without an archive, so that one appearing later is
+	// reported as a change; archives already there at startup are not. openErr holds the last
+	// logged problem per tileset, so an unusable file is reported once, not on every request.
+	missing map[maptile.Tileset]bool
+	openErr map[maptile.Tileset]string
 }
 
 type entry struct {
@@ -67,13 +73,14 @@ func New(dir string) *Store {
 		dir = abs
 	}
 
-	return &Store{dir: dir, statEvery: statInterval, entries: make(map[maptile.Tileset]*entry)}
+	return &Store{
+		dir: dir, statEvery: statInterval, entries: make(map[maptile.Tileset]*entry),
+		missing: make(map[maptile.Tileset]bool), openErr: make(map[maptile.Tileset]string),
+	}
 }
 
 // Path returns where the archive for ts lives.
-func (s *Store) Path(ts maptile.Tileset) string {
-	return filepath.Join(s.dir, ts.Name, ts.Version, ts.Name+".mbtiles")
-}
+func (s *Store) Path(ts maptile.Tileset) string { return archivePath(s.dir, ts) }
 
 // Info implements outbound.TileStore.
 func (s *Store) Info(ctx context.Context, ts maptile.Tileset) (outbound.TileArchiveInfo, error) {
@@ -125,6 +132,10 @@ func (s *Store) Close() error {
 // entry returns the open archive for ts, opening or replacing it when the file
 // appeared or changed. The file is stat'ed at most once per statInterval.
 func (s *Store) entry(ctx context.Context, ts maptile.Tileset) (*entry, error) {
+	if err := ts.Validate(); err != nil {
+		return nil, err
+	}
+
 	now := time.Now()
 
 	s.mu.RLock()
@@ -150,7 +161,13 @@ func (s *Store) entry(ctx context.Context, ts maptile.Tileset) (*entry, error) {
 		if e != nil {
 			delete(s.entries, ts)
 			e.closeLater()
+
+			slog.WarnContext(ctx, "local tile archive was removed, the map uses swisstopo online again",
+				slog.String("tileset", ts.String()), slog.String("path", path))
 		}
+
+		s.missing[ts] = true
+		delete(s.openErr, ts)
 
 		return nil, outbound.ErrTilesetNotAvailable
 	}
@@ -167,14 +184,34 @@ func (s *Store) entry(ctx context.Context, ts maptile.Tileset) (*entry, error) {
 
 	fresh, err := open(ctx, path, fi)
 	if err != nil {
+		// Report an unusable file once; every tile request would retry it.
+		if msg := err.Error(); s.openErr[ts] != msg {
+			s.openErr[ts] = msg
+
+			slog.WarnContext(ctx, "local tile archive cannot be used; tile requests for it fail until it is fixed",
+				slog.String("tileset", ts.String()), slog.String("path", path), slog.String("error", msg))
+		}
+
 		return nil, err
 	}
 
 	fresh.checked.Store(now.UnixNano())
 	s.entries[ts] = fresh
+	delete(s.openErr, ts)
 
-	if e != nil {
+	switch {
+	case e != nil:
 		e.closeLater()
+
+		slog.InfoContext(ctx, "tile archive replaced by a newer file, now serving the new version",
+			slog.String("tileset", ts.String()), slog.String("size", humanBytes(fresh.info.Size)),
+			slog.Time("installed_at", fresh.info.ModTime))
+	case s.missing[ts]:
+		delete(s.missing, ts)
+
+		slog.InfoContext(ctx, "local tile archive is now available, switching from swisstopo to local tiles",
+			slog.String("tileset", ts.String()), slog.String("size", humanBytes(fresh.info.Size)),
+			slog.Time("installed_at", fresh.info.ModTime))
 	}
 
 	return fresh, nil
@@ -224,6 +261,8 @@ func open(ctx context.Context, path string, fi os.FileInfo) (*entry, error) {
 	}
 
 	info.ETag = fmt.Sprintf(`"%x-%x"`, fi.ModTime().UnixNano(), fi.Size())
+	info.Size = fi.Size()
+	info.ModTime = fi.ModTime()
 
 	stmt, err := db.PrepareContext(
 		ctx,
@@ -315,4 +354,38 @@ func floats(s string) []float64 {
 // fresh reports whether the archive file was checked less than every ago.
 func (e *entry) fresh(now time.Time, every time.Duration) bool {
 	return now.Sub(time.Unix(0, e.checked.Load())) < every
+}
+
+// Refresh re-checks every archive now instead of waiting for the next tile request or the
+// stat interval, so a download that just finished (or a removed file) takes effect, and is
+// logged, immediately.
+func (s *Store) Refresh(ctx context.Context) {
+	for _, ts := range maptile.Supported {
+		s.mu.RLock()
+		e := s.entries[ts]
+		s.mu.RUnlock()
+
+		if e != nil {
+			e.checked.Store(0) // forces a stat
+		}
+
+		_, _ = s.entry(ctx, ts)
+	}
+}
+
+// humanBytes renders a size like "992.5 MiB".
+func humanBytes(n int64) string {
+	const unit = 1024
+
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+
+	div, exp := int64(unit), 0
+	for m := n / unit; m >= unit; m /= unit {
+		div *= unit
+		exp++
+	}
+
+	return strings.TrimSuffix(fmt.Sprintf("%.1f", float64(n)/float64(div)), ".0") + " " + string("KMGT"[exp]) + "iB"
 }

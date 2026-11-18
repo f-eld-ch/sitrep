@@ -1,9 +1,12 @@
 package mbtiles
 
 import (
+	"bytes"
 	"database/sql"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -201,4 +204,149 @@ func TestStore_RelativeDirectory(t *testing.T) {
 	got, err := s.Tile(t.Context(), testSet, maptile.Coord{Z: 3, X: 2, Y: 1})
 	require.NoError(t, err)
 	assert.Equal(t, "relative-ok", string(got))
+}
+
+func TestStore_InfoReportsSizeAndInstallTime(t *testing.T) {
+	s := New(t.TempDir())
+	t.Cleanup(func() { _ = s.Close() })
+
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "x"}, "n")
+
+	fi, err := os.Stat(s.Path(testSet))
+	require.NoError(t, err)
+
+	info, err := s.Info(t.Context(), testSet)
+	require.NoError(t, err)
+
+	assert.Equal(t, fi.Size(), info.Size)
+	assert.True(t, info.ModTime.Equal(fi.ModTime()))
+}
+
+func TestStore_BrokenArchiveIsAnErrorNotAFallback(t *testing.T) {
+	s := New(t.TempDir())
+	t.Cleanup(func() { _ = s.Close() })
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(s.Path(testSet)), 0o750))
+	require.NoError(t, os.WriteFile(s.Path(testSet), []byte("not a sqlite file"), 0o600))
+
+	_, err := s.Info(t.Context(), testSet)
+	require.Error(t, err)
+	require.NotErrorIs(t, err, outbound.ErrTilesetNotAvailable)
+}
+
+// captureLog redirects the default logger to a buffer for the test.
+func captureLog(t *testing.T) *bytes.Buffer {
+	t.Helper()
+
+	var buf bytes.Buffer
+
+	old := slog.Default()
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(old) })
+
+	return &buf
+}
+
+func TestStore_LogsWhenAnArchiveAppearsAfterBeingMissing(t *testing.T) {
+	logs := captureLog(t)
+	s := New(t.TempDir())
+
+	t.Cleanup(func() { _ = s.Close() })
+
+	_, err := s.Info(t.Context(), testSet)
+	require.ErrorIs(t, err, outbound.ErrTilesetNotAvailable)
+	assert.Empty(t, logs.String(), "a missing archive at startup is reported by the startup log, not here")
+
+	// The download finishes.
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "x"}, "n")
+	s.Refresh(t.Context())
+
+	assert.Contains(t, logs.String(), "local tile archive is now available, switching from swisstopo to local tiles")
+	assert.Contains(t, logs.String(), "ch.swisstopo.base.vt/v1.0.0")
+
+	// Later requests do not repeat it.
+	logs.Reset()
+
+	_, err = s.Info(t.Context(), testSet)
+	require.NoError(t, err)
+
+	s.Refresh(t.Context())
+	assert.Empty(t, logs.String())
+}
+
+func TestStore_ArchiveThereAtStartupIsNotReportedAsAChange(t *testing.T) {
+	logs := captureLog(t)
+	s := New(t.TempDir())
+
+	t.Cleanup(func() { _ = s.Close() })
+
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "x"}, "n")
+
+	_, err := s.Info(t.Context(), testSet)
+	require.NoError(t, err)
+	assert.Empty(t, logs.String())
+}
+
+func TestStore_RefreshPicksUpAReplacementImmediately(t *testing.T) {
+	logs := captureLog(t)
+	s := New(t.TempDir()) // default 30 s stat interval: only Refresh can notice in time
+
+	t.Cleanup(func() { _ = s.Close() })
+
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "old"}, "old")
+	_, err := s.Info(t.Context(), testSet)
+	require.NoError(t, err)
+
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "new-and-longer"}, "new")
+
+	got, err := s.Tile(t.Context(), testSet, maptile.Coord{})
+	require.NoError(t, err)
+	assert.Equal(t, "old", string(got), "without a refresh the old archive is still served")
+
+	s.Refresh(t.Context())
+
+	got, err = s.Tile(t.Context(), testSet, maptile.Coord{})
+	require.NoError(t, err)
+	assert.Equal(t, "new-and-longer", string(got))
+	assert.Contains(t, logs.String(), "tile archive replaced by a newer file")
+}
+
+func TestStore_LogsWhenTheArchiveIsRemoved(t *testing.T) {
+	logs := captureLog(t)
+	s := New(t.TempDir())
+
+	t.Cleanup(func() { _ = s.Close() })
+
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "x"}, "n")
+	_, err := s.Info(t.Context(), testSet)
+	require.NoError(t, err)
+
+	require.NoError(t, os.Remove(s.Path(testSet)))
+	s.Refresh(t.Context())
+
+	assert.Contains(t, logs.String(), "local tile archive was removed, the map uses swisstopo online again")
+
+	// And when it comes back, that is reported too.
+	logs.Reset()
+	writeArchive(t, s.Path(testSet), map[[3]int]string{{0, 0, 0}: "x"}, "n")
+	s.Refresh(t.Context())
+	assert.Contains(t, logs.String(), "now available")
+}
+
+func TestStore_UnusableArchiveIsReportedOnceNotOnEveryRequest(t *testing.T) {
+	logs := captureLog(t)
+	s := New(t.TempDir())
+
+	t.Cleanup(func() { _ = s.Close() })
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(s.Path(testSet)), 0o750))
+	require.NoError(t, os.WriteFile(s.Path(testSet), []byte("not a sqlite file"), 0o600))
+
+	for range 20 {
+		_, err := s.Tile(t.Context(), testSet, maptile.Coord{})
+		require.Error(t, err)
+	}
+
+	assert.Equal(t, 1, strings.Count(logs.String(), "cannot be used"), "one warning, not one per tile request")
 }

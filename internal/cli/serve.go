@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/tilesync"
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/tilestore/mbtiles"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/server"
@@ -106,6 +107,24 @@ var serveConfigOptions = []configOption{
 		"tiles-dir",
 		"/var/lib/sitrep/tiles",
 		"Directory with the swisstopo MBTiles archives (<dir>/<tileset>/<version>/<tileset>.mbtiles); tiles are served from it when present, from swisstopo otherwise",
+	),
+	boolOptionF(
+		"map.tiles.auto-download",
+		"tiles-auto-download",
+		false,
+		"Download the swisstopo tile archives (about 2.5 GB) into map.tiles.dir and keep them up to date",
+	),
+	stringOptionF(
+		"map.tiles.update-interval",
+		"tiles-update-interval",
+		"24h",
+		"How often to check swisstopo for a newer tile archive (e.g. 24h); at least 1m",
+	),
+	stringOptionF(
+		"map.tiles.part-max-age",
+		"tiles-part-max-age",
+		"168h",
+		"Remove interrupted tile downloads that have not progressed for this long (e.g. 168h)",
 	),
 }
 
@@ -207,8 +226,24 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	}
 	defer s.Teardown()
 
-	tileStore := mbtiles.New(v.GetString("map.tiles.dir"))
+	tilesCfg, err := readTilesConfig(v)
+	if err != nil {
+		slog.ErrorContext(ctx, "invalid tile configuration", slog.String("error", err.Error()))
+
+		return err
+	}
+
+	tileStore := mbtiles.New(tilesCfg.dir)
 	defer func() { _ = tileStore.Close() }()
+
+	tileSvc := service.NewTileService(tileStore)
+	logTilesAtStartup(ctx, tileSvc, tilesCfg)
+
+	if tilesCfg.autoDownload {
+		go tilesync.New(newTileSyncService(tilesCfg), tilesCfg.interval, updaterJitter(tileSvc.LocalStatus(ctx))).
+			AfterSync(tileSvc.Refresh).
+			Run(ctx)
+	}
 
 	apiOpts := []server.APIV2Option{}
 	if v.GetBool("graphql-introspection") {
@@ -228,7 +263,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Schadenplaetze:        s.SchadenplatzSvc,
 			Resources:             s.ResourceSvc,
 			Timeline:              s.TimelineSvc,
-			Tiles:                 service.NewTileService(tileStore),
+			Tiles:                 tileSvc,
 			IncidentAccessChecker: s.IncidentAccessChecker,
 			GlobalAccessChecker:   s.GlobalAccessChecker,
 			AccessQueries:         s.AccessQueries,

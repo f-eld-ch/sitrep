@@ -35,3 +35,21 @@ func TestNewCoord(t *testing.T) {
 		require.ErrorIs(t, err, maptile.ErrInvalidCoord, "%v", v)
 	}
 }
+
+func TestTileset_Validate(t *testing.T) {
+	for _, ts := range maptile.Supported {
+		require.NoError(t, ts.Validate())
+	}
+
+	for _, ts := range []maptile.Tileset{
+		{},
+		{Name: "ch.swisstopo.base.vt", Version: "v2.0.0"},
+		{Name: "../ch.swisstopo.base.vt", Version: "v1.0.0"},
+		{Name: "ch.swisstopo.base.vt/../../x", Version: "v1.0.0"},
+		{Name: "ch.swisstopo.base.vt", Version: "v1.0.0/../../x"},
+		{Name: "ch.swisstopo.base.vt?x=1", Version: "v1.0.0"},
+		{Name: "evil.example.com", Version: "v1.0.0"},
+	} {
+		require.ErrorIs(t, ts.Validate(), maptile.ErrUnknownTileset, "%+v", ts)
+	}
+}
