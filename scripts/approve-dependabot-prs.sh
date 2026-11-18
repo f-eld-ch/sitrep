@@ -52,8 +52,28 @@ classify='
      else "pending" end),
     .title] | @tsv'
 
+# Fetch first, so that a failing gh/jq call aborts the script instead of silently yielding an
+# empty list (a failure inside `< <(...)` is invisible to `set -e`).
+prs=$(gh pr list "${repo_args[@]}" --state open --author "app/dependabot" --limit 200 \
+  --json number,title,isDraft,mergeable,reviewDecision,statusCheckRollup --jq "$classify") || {
+  echo "error: could not list pull requests" >&2
+  exit 1
+}
+
 approved=0
 merged=0
+failed=0
+# Runs a gh command for one PR; a failure is reported and counted but does not stop the run.
+try() {
+  local number=$1
+  shift
+  if ! "$@" >/dev/null; then
+    echo "FAILED   #$number: $*" >&2
+    failed=$((failed + 1))
+    return 1
+  fi
+}
+
 while IFS=$'\t' read -r number state title; do
   case "$state" in
     ready) ;;
@@ -61,26 +81,31 @@ while IFS=$'\t' read -r number state title; do
     *) echo "skip     #$number ($state): $title"; continue ;;
   esac
   if [ "$state" != "approved" ]; then
-    approved=$((approved + 1))
     if $dry_run; then
+      approved=$((approved + 1))
       echo "approve  #$number (dry run): $title"
-    else
-      gh pr review "$number" "${repo_args[@]}" --approve >/dev/null
+    elif try "$number" gh pr review "$number" "${repo_args[@]}" --approve; then
+      approved=$((approved + 1))
       echo "approved #$number: $title"
+    else
+      continue
     fi
   fi
   if $merge; then
-    merged=$((merged + 1))
     if $dry_run; then
+      merged=$((merged + 1))
       echo "automerge #$number (dry run): $title"
-    else
-      gh pr merge "$number" "${repo_args[@]}" --auto --squash >/dev/null
+    elif try "$number" gh pr merge "$number" "${repo_args[@]}" --auto --squash; then
+      merged=$((merged + 1))
       echo "automerge #$number enabled: $title"
     fi
   fi
-done < <(gh pr list "${repo_args[@]}" --state open --author "app/dependabot" --limit 200 \
-  --json number,title,isDraft,mergeable,reviewDecision,statusCheckRollup --jq "$classify")
+done <<<"$prs"
 
 suffix=""
 $dry_run && suffix=" (dry run)"
 echo "$approved PR(s) approved, auto-merge enabled on $merged PR(s)$suffix."
+if [ "$failed" -gt 0 ]; then
+  echo "$failed operation(s) failed, see errors above." >&2
+  exit 1
+fi
