@@ -142,9 +142,11 @@ func TestTiles_DisabledWhenNoService(t *testing.T) {
 	srv, err := NewServer(WithApiV2(Stack{}))
 	require.NoError(t, err)
 
-	rec := get(t, srv, tileBase+"/tiles.json", nil)
-	// falls through to the static UI handler rather than a tile handler
-	assert.NotContains(t, rec.Header().Get("Content-Type"), "application/json")
+	// The tile routes are not registered at all. (Do not assert on the response:
+	// it depends on whether a UI build is embedded, which CI does not have.)
+	for _, r := range srv.router.Router().Routes() {
+		assert.NotContains(t, r.Path, "/tiles/")
+	}
 }
 
 func TestTiles_TileJSON_IgnoresForwardedProtoFromPublicPeer(t *testing.T) {
