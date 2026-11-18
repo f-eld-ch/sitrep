@@ -5067,9 +5067,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-v8@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "@vitest/coverage-v8@npm:5.1.0"
+"@vitest/coverage-v8@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "@vitest/coverage-v8@npm:5.1.1"
   dependencies:
     "@bcoe/v8-coverage": "npm:^1.0.2"
     "@vitest/istanbul-lib-coverage": "npm:^2.1.0"
@@ -5080,12 +5080,12 @@ __metadata:
     std-env: "npm:^4.3.0"
     tinyrainbow: "npm:^3.2.0"
   peerDependencies:
-    "@vitest/browser": 5.1.0
-    vitest: 5.1.0
+    "@vitest/browser": 5.1.1
+    vitest: 5.1.1
   peerDependenciesMeta:
     "@vitest/browser":
       optional: true
-  checksum: 10/3d9990e702e7719e6aa3557c80a03a801864d316455afe0632186da4d9e7c2ac038bf6637129bc70105aefa7d5d0f9e0aa18615bcfbabfcfda9d4487fd44bdaa
+  checksum: 10/82324ab93c2d3eef85d0c486ebff7612129d624cad1b5aec9a0b94eb89ab568487b1539be6c13b2e11569707aa15f385dfb628c7763d4de8323f921266ea04b1
   languageName: node
   linkType: hard
 
@@ -11225,7 +11225,7 @@ __metadata:
     "@uiw/react-md-editor": "npm:^4.2.4"
     "@vite-pwa/assets-generator": "npm:^2.0.0"
     "@vitejs/plugin-react": "npm:^6.3.0"
-    "@vitest/coverage-v8": "npm:^5.1.0"
+    "@vitest/coverage-v8": "npm:^5.1.1"
     "@watergis/maplibre-gl-export": "npm:~4.2.0"
     clsx: "npm:^2.1.1"
     dayjs: "npm:^1.11.23"
