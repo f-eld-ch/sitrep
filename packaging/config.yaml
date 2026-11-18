@@ -76,6 +76,17 @@ storage:
       # Env: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
       dir: "/var/lib/sitrep/attachments"
 
+# ── Map tiles ────────────────────────────────────────────────────────────────
+
+# Directory with swisstopo vector tiles as MBTiles archives, laid out as
+# <dir>/<tileset>/<version>/<tileset>.mbtiles (e.g. ch.swisstopo.base.vt/v1.0.0/ch.swisstopo.base.vt.mbtiles).
+# When the files are present the map is served from them, which works without internet access;
+# when they are missing it uses the public swisstopo tiles. The files are only read.
+# Env: SITREP_MAP_TILES_DIR
+map:
+  tiles:
+    dir: "/var/lib/sitrep/tiles"
+
 # ── Telemetry ────────────────────────────────────────────────────────────────
 
 # Disable OpenTelemetry telemetry export. The OTLP endpoint is baked in at

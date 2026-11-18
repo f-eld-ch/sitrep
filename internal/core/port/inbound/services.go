@@ -13,6 +13,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/kpi"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/maptile"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -603,4 +604,42 @@ type ResourceService interface {
 		at *time.Time,
 		actor identity.Actor,
 	) (HandOverState, error)
+}
+
+// TileJSONState is the TileJSON of a tileset plus where its tiles come from.
+type TileJSONState struct {
+	TileJSON maptile.TileJSON
+	// Local is true when the tiles are served by this instance.
+	Local bool
+}
+
+// TileState is the outcome of a tile lookup.
+type TileState struct {
+	// Data is the gzip-compressed MVT. Empty when Redirect or Empty is set.
+	Data []byte
+	// ETag identifies the archive version (empty when Redirect is set).
+	ETag string
+	// Redirect is true when there is no local archive; the caller sends the
+	// client to RedirectURL.
+	Redirect    bool
+	RedirectURL string
+	// Empty is true when the local archive has no tile at the coordinate.
+	Empty bool
+}
+
+// TileService serves swisstopo vector tiles from a local archive when one exists
+// and describes the public swisstopo tiles otherwise.
+type TileService interface {
+	// TileJSON returns the TileJSON for ts. tileBaseURL is the absolute base URL
+	// of the tile endpoint (e.g. "https://host/api/v2/tiles"); it is used only for
+	// local tiles.
+	TileJSON(ctx context.Context, ts maptile.Tileset, tileBaseURL string) (TileJSONState, error)
+
+	// Tile returns one tile, a redirect to swisstopo, or an empty result.
+	Tile(ctx context.Context, ts maptile.Tileset, c maptile.Coord) (TileState, error)
+
+	// ETag returns the current archive ETag without reading a tile, so a
+	// conditional request can be answered without a database lookup. It returns
+	// "" when there is no local archive.
+	ETag(ctx context.Context, ts maptile.Tileset) string
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/tilestore/mbtiles"
+	"github.com/f-eld-ch/sitrep/internal/core/service"
 	"github.com/f-eld-ch/sitrep/server"
 	"github.com/f-eld-ch/sitrep/server/auth"
 )
@@ -96,6 +98,14 @@ var serveConfigOptions = []configOption{
 		"attachments-dir",
 		"/var/lib/sitrep/attachments",
 		"Root directory for attachment blobs (backend=filesystem only)",
+	),
+
+	// Map tiles
+	stringOptionF(
+		"map.tiles.dir",
+		"tiles-dir",
+		"/var/lib/sitrep/tiles",
+		"Directory with the swisstopo MBTiles archives (<dir>/<tileset>/<version>/<tileset>.mbtiles); tiles are served from it when present, from swisstopo otherwise",
 	),
 }
 
@@ -197,6 +207,9 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 	}
 	defer s.Teardown()
 
+	tileStore := mbtiles.New(v.GetString("map.tiles.dir"))
+	defer func() { _ = tileStore.Close() }()
+
 	apiOpts := []server.APIV2Option{}
 	if v.GetBool("graphql-introspection") {
 		apiOpts = append(apiOpts, server.WithGraphQLIntrospection())
@@ -215,6 +228,7 @@ func runServe(cmd *cobra.Command, _ []string, v *viper.Viper) error {
 			Schadenplaetze:        s.SchadenplatzSvc,
 			Resources:             s.ResourceSvc,
 			Timeline:              s.TimelineSvc,
+			Tiles:                 service.NewTileService(tileStore),
 			IncidentAccessChecker: s.IncidentAccessChecker,
 			GlobalAccessChecker:   s.GlobalAccessChecker,
 			AccessQueries:         s.AccessQueries,

@@ -63,7 +63,8 @@ func (s *Server) RegisterMiddlewares() {
 		Skipper: func(c *echo.Context) bool {
 			// Skip tracing for health check endpoints
 			return c.Path() == "/health" || strings.HasPrefix(c.Path(), "/assets") ||
-				strings.HasPrefix(c.Path(), "/map")
+				strings.HasPrefix(c.Path(), "/map") ||
+				isTileDataPath(c.Request().URL.Path)
 		},
 	}))
 

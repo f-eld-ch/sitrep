@@ -64,6 +64,7 @@ cert.pem
 
 # local dev artifacts
 .attachments/
+.tiles/
 backup.*.sql
 dataloaders.md
 sitrep
