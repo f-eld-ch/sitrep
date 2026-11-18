@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -30,8 +31,15 @@ func registerTiles(g *echo.Group, svc inbound.TileService) {
 	g.GET("/tiles/:name/:version/:z/:x/:file", tileHandler(svc))
 }
 
+// statusClientClosedRequest is the de-facto status (from nginx) for a request the client gave up on.
+const statusClientClosedRequest = 499
+
 func tileErrorToHTTP(c *echo.Context, err error) error {
 	switch {
+	case errors.Is(err, context.Canceled):
+		// The browser aborts tile requests it no longer needs, e.g. while zooming. That is normal, not
+		// an error, so it is neither logged nor answered with a 500; nobody is listening anyway.
+		return c.NoContent(statusClientClosedRequest)
 	case errors.Is(err, maptile.ErrUnknownTileset):
 		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	case errors.Is(err, maptile.ErrInvalidCoord):

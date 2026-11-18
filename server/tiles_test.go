@@ -1,8 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +15,7 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/adapter/outbound/tilestore/inmem"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/maptile"
+	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
 )
 
@@ -158,4 +162,30 @@ func TestTiles_TileJSON_IgnoresForwardedProtoFromPublicPeer(t *testing.T) {
 	var tj tileJSONResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &tj))
 	assert.Equal(t, "http://example.com/api/v2/tiles/ch.swisstopo.base.vt/v1.0.0/{z}/{x}/{y}.pbf", tj.Tiles[0])
+}
+
+// cancelledTiles is a TileService whose reads fail because the client went away.
+type cancelledTiles struct{ inbound.TileService }
+
+func (cancelledTiles) ETag(context.Context, maptile.Tileset) string { return "" }
+
+func (cancelledTiles) Tile(context.Context, maptile.Tileset, maptile.Coord) (inbound.TileState, error) {
+	return inbound.TileState{}, fmt.Errorf("read tile: %w", context.Canceled)
+}
+
+func TestTiles_ClientAbortIsNotAnError(t *testing.T) {
+	var logs bytes.Buffer
+
+	old := slog.Default()
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(&logs, nil)))
+	t.Cleanup(func() { slog.SetDefault(old) })
+
+	srv, err := NewServer(WithApiV2(Stack{Tiles: cancelledTiles{}}))
+	require.NoError(t, err)
+
+	rec := get(t, srv, tileBase+"/3/2/1.pbf", nil)
+
+	assert.Equal(t, statusClientClosedRequest, rec.Code, "not a 500")
+	assert.Empty(t, logs.String(), "an aborted request must not be logged as an error")
 }

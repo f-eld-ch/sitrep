@@ -1,6 +1,11 @@
 package service
 
 import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -149,4 +154,34 @@ func TestTileService_LocalStatus(t *testing.T) {
 func TestTileService_RefreshDelegatesToTheStore(t *testing.T) {
 	svc, _ := newTileService(t)
 	svc.Refresh(t.Context()) // must not panic; the in-memory store is always current
+}
+
+// failingStore fails every read with err.
+type failingStore struct {
+	inmem.Store
+	err error
+}
+
+func (f *failingStore) Tile(context.Context, maptile.Tileset, maptile.Coord) ([]byte, error) {
+	return nil, f.err
+}
+
+func TestTileService_ClientAbortIsNotLogged(t *testing.T) {
+	var logs bytes.Buffer
+
+	old := slog.Default()
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(&logs, nil)))
+	t.Cleanup(func() { slog.SetDefault(old) })
+
+	_, err := NewTileService(&failingStore{err: fmt.Errorf("read tile: %w", context.Canceled)}).
+		Tile(t.Context(), tileTestSet, maptile.Coord{Z: 1, X: 0, Y: 0})
+	require.ErrorIs(t, err, context.Canceled, "the caller still sees the error")
+	assert.Empty(t, logs.String())
+
+	// A real failure is still logged.
+	_, err = NewTileService(&failingStore{err: errors.New("disk on fire")}).
+		Tile(t.Context(), tileTestSet, maptile.Coord{Z: 1, X: 0, Y: 0})
+	require.Error(t, err)
+	assert.Contains(t, logs.String(), "disk on fire")
 }

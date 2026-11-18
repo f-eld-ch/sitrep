@@ -77,9 +77,11 @@ func (s *TileService) TileJSON(
 
 		return inbound.TileJSONState{TileJSON: upstreamTileJSON(ts)}, nil
 	default:
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		logIfUnexpected(ctx, "TileJSON", err, tilesetAttr(ts))
+		if !errors.Is(err, context.Canceled) {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			logIfUnexpected(ctx, "TileJSON", err, tilesetAttr(ts))
+		}
 
 		return inbound.TileJSONState{}, err
 	}
@@ -119,7 +121,10 @@ func (s *TileService) Tile(ctx context.Context, ts maptile.Tileset, c maptile.Co
 
 		return inbound.TileState{Redirect: true, RedirectURL: url}, nil
 	default:
-		logIfUnexpected(ctx, "Tile", err, tilesetAttr(ts))
+		// A client that aborted the request (the browser does that while zooming) is not a fault.
+		if !errors.Is(err, context.Canceled) {
+			logIfUnexpected(ctx, "Tile", err, tilesetAttr(ts))
+		}
 
 		return inbound.TileState{}, err
 	}
