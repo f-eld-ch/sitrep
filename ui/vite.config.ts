@@ -296,6 +296,13 @@ export default defineConfig({
         target: "http://localhost:4180",
         changeOrigin: true,
       },
+      // The backend builds absolute tile URLs from the request Host, and the map's web worker
+      // must fetch them from this server (same origin, so the session cookie is sent).
+      // Keep the original Host header instead of rewriting it to the backend's.
+      "/api/v2/tiles": {
+        target: "http://localhost:4180",
+        changeOrigin: false,
+      },
       "/oauth2": {
         target: "http://localhost:4180",
         changeOrigin: true,
@@ -328,6 +335,13 @@ export default defineConfig({
       "/api/v2/attachments": {
         target: "http://localhost:4180",
         changeOrigin: true,
+      },
+      // The backend builds absolute tile URLs from the request Host, and the map's web worker
+      // must fetch them from this server (same origin, so the session cookie is sent).
+      // Keep the original Host header instead of rewriting it to the backend's.
+      "/api/v2/tiles": {
+        target: "http://localhost:4180",
+        changeOrigin: false,
       },
       "/oauth2": {
         target: "http://localhost:4180",

@@ -22,8 +22,20 @@ function ExpandRelativeURLs(previousStyle: StyleSpecification): StyleSpecificati
     return absoluteURL.replace("%7Brange%7D", "{range}").replace("%7Bfontstack%7D", "{fontstack}");
   };
 
+  // Source URLs (TileJSON) are fetched by the map; make same-origin ones absolute like glyphs and
+  // sprites. The backend emits absolute tile URLs inside the TileJSON itself.
+  const sources = Object.fromEntries(
+    Object.entries(previousStyle.sources ?? {}).map(([name, source]) => [
+      name,
+      "url" in source && typeof source.url === "string" && !source.url.startsWith("http")
+        ? { ...source, url: new URL(source.url, window.location.href).href }
+        : source,
+    ]),
+  ) as StyleSpecification["sources"];
+
   return {
     ...previousStyle,
+    sources,
     glyphs: convertToAbsoluteURL(previousStyle.glyphs),
     sprite:
       typeof previousStyle.sprite === "string"
