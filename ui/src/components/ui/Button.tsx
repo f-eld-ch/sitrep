@@ -59,6 +59,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      data-testid={`incident-list-button-${variant}`}
       className={clsx(
         base,
         sizes[size],

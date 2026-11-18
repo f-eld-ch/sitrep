@@ -1,0 +1,19 @@
+{
+  "name": "sitrep",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:f-eld-ch/sitrep.git",
+  "author": "<jasmineegli24@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5"
+  },
+  "scripts": {
+    "test:e2e": "npx playwright test tests/ --project=chromium",
+    "test:smoke": "npx playwright test tests/ --grep @smoke --project=chromium"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.23"
+  }
+}
