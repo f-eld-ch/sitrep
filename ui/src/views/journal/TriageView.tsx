@@ -747,46 +747,11 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
 
                   <div className="min-w-0">
                     <h3 className="mb-3 text-base font-bold">{t("messageFlow")}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {incidentDivisions.map((d) => {
-                        const isPresent = assignments.some((e) => e.name === d.name);
-                        return (
-                          <div
-                            key={d.name}
-                            className="flex overflow-hidden rounded text-xs font-semibold"
-                          >
-                            <span
-                              className={
-                                isPresent
-                                  ? "bg-primary px-3 py-0.5 text-white"
-                                  : "bg-fg px-3 py-0.5 text-bg"
-                              }
-                            >
-                              {d.description || d.name}
-                            </span>
-                            {isPresent ? (
-                              <button
-                                type="button"
-                                className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
-                                onClick={() =>
-                                  setAssignments(reject(assignments, (e) => e.id === d.id))
-                                }
-                              >
-                                <FontAwesomeIcon icon={faMinus} />
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
-                                onClick={() => setAssignments(union(assignments, [d]))}
-                              >
-                                <FontAwesomeIcon icon={faPlus} />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <DivisionFlowChips
+                      divisions={incidentDivisions}
+                      assignments={assignments}
+                      onChange={setAssignments}
+                    />
                   </div>
                 </div>
 
@@ -1195,6 +1160,59 @@ export type CasualtyDeltas = {
   obdachlose: number;
   eingeschlossene: number;
 };
+
+/**
+ * The divisions of an incident as chips, to assign the message to a division or take it away.
+ * The labels go through divisionLongLabel so the system division (the Nachrichtenkarte) is
+ * shown in the active language and not with the German text stored in the incident.
+ */
+export function DivisionFlowChips({
+  divisions,
+  assignments,
+  onChange,
+}: {
+  divisions: Division[];
+  assignments: Division[];
+  onChange: (assignments: Division[]) => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {divisions.map((d) => {
+        const isPresent = assignments.some((e) => e.name === d.name);
+        return (
+          <div key={d.name} className="flex overflow-hidden rounded text-xs font-semibold">
+            <span
+              className={
+                isPresent ? "bg-primary px-3 py-0.5 text-white" : "bg-fg px-3 py-0.5 text-bg"
+              }
+            >
+              {divisionLongLabel(d, t)}
+            </span>
+            {isPresent ? (
+              <button
+                type="button"
+                className="bg-primary/20 px-2 py-0.5 text-primary transition-colors hover:bg-primary/30"
+                onClick={() => onChange(reject(assignments, (e) => e.id === d.id))}
+              >
+                <FontAwesomeIcon icon={faMinus} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="bg-success/20 px-2 py-0.5 text-success transition-colors hover:bg-success/30"
+                onClick={() => onChange(union(assignments, [d]))}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function CasualtySection({
   value,
