@@ -99,38 +99,6 @@ describe("TimeControl", () => {
     expect(heights).toEqual(["56px", ""]);
   });
 
-  it("publishes the height on the map container, not on react-map-gl's wrapper around the children", () => {
-    vi.stubGlobal(
-      "ResizeObserver",
-      class {
-        observe() {}
-        disconnect() {}
-      },
-    );
-    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(56);
-
-    // The controls MapLibre manages itself (attribution, scale) are inside the map container but
-    // not inside the wrapper that holds the children, so only the container reaches them.
-    const { getByTestId } = renderControl(
-      { setAsOf: vi.fn() },
-      <div className="maplibregl-map" data-testid="map">
-        <div data-testid="children-wrapper">
-          <TimeControl />
-        </div>
-      </div>,
-    );
-
-    expect(getByTestId("map").style.getPropertyValue(TIMELINE_HEIGHT_VAR)).toBe("56px");
-    expect(getByTestId("children-wrapper").style.getPropertyValue(TIMELINE_HEIGHT_VAR)).toBe("");
-  });
-
-  it("keeps the variable name that Map.css and Map.tsx spell out", () => {
-    // Map.css lifts the bottom-left controls (attribution, scale) with this variable, and Map.tsx
-    // lifts the bottom-right panels with it. Neither can import the constant, so a rename here
-    // must be made there too.
-    expect(TIMELINE_HEIGHT_VAR).toBe("--map-timeline-height");
-  });
-
   it("does not publish anything on a map without a timeline", () => {
     vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(56);
 

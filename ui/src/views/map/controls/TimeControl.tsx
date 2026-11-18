@@ -11,9 +11,7 @@ const TICK_REFRESH_MS = 60_000;
 
 /**
  * The custom property on the map that carries the height the slider takes at the bottom, so the
- * controls in the corners (bottom right here, bottom left in Map.css) can make room for it. It is set
- * on the map container, which holds both the overlay children and the controls MapLibre manages
- * itself, such as the attribution.
+ * controls in the bottom right corner can make room for it.
  */
 export const TIMELINE_HEIGHT_VAR = "--map-timeline-height";
 
@@ -37,12 +35,10 @@ export function TimeControl() {
   const overlay = useRef<HTMLDivElement>(null);
   const hasTimeline = setAsOf !== undefined;
 
-  // Tells the map how much room the slider takes, so the layer box and the attribution are pushed
-  // above it. react-map-gl puts the children in a wrapper div, so the parent is not the map: the
-  // controls MapLibre manages (attribution, scale) live next to that wrapper, not inside it.
+  // Tells the map how much room the slider takes, so the layer box is pushed above it.
   useEffect(() => {
     const element = overlay.current;
-    const map = element?.closest<HTMLElement>(".maplibregl-map") ?? element?.parentElement;
+    const map = element?.parentElement;
     if (!hasTimeline || !element || !map || typeof ResizeObserver === "undefined") return;
 
     const publish = () => map.style.setProperty(TIMELINE_HEIGHT_VAR, `${element.offsetHeight}px`);

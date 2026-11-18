@@ -217,10 +217,10 @@
   display: inline;
 }
 
-/* The time slider is an overlay at the bottom of the map (TimeControl). While it is there it
-   publishes its height as --map-timeline-height on the map element, and the controls in the bottom
-   left corner (attribution, scale, export) move up to sit above it instead of underneath. The
-   slider's own offset from the edge (0.5rem) is added as a gap. */
-.maplibregl-map[style*="--map-timeline-height"] .maplibregl-ctrl-bottom-left {
-  bottom: calc(var(--map-timeline-height) + 0.5rem);
+/* The corner controls (attribution, scale, export) stay in the bottom left corner. The time slider
+   (TimeControl) is an overlay above them, which on a narrow map hid the expanded attribution, so
+   they are drawn above the slider instead. Collapsed they take little room; expanded the
+   attribution simply lies over the slider until it is folded again. */
+.maplibregl-ctrl-bottom-left {
+  z-index: 11;
 }
