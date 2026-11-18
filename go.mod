@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/securecookie v1.1.2
 	github.com/jackc/pgx/v5 v5.13.0
 	github.com/labstack/echo-otel/v5 v5.0.0
-	github.com/labstack/echo/v5 v5.4.5
+	github.com/labstack/echo/v5 v5.4.6
 	github.com/pressly/goose/v3 v3.30.1
 	github.com/ravilushqa/otelgqlgen v0.19.0
 	github.com/samber/slog-multi v1.9.0
