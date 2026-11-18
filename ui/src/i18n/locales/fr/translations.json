@@ -325,6 +325,7 @@
   "styleController": {
     "autoFrame": "Cadrer automatiquement",
     "maps": "Cartes",
+    "notAvailableOffline": "Indisponible hors ligne",
     "Basiskarte": "Carte de base légère",
     "Satellit": "Carte satellite"
   },
