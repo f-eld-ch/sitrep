@@ -14,6 +14,11 @@ spec:
   # The SQLite file is single-writer and the volume is ReadWriteOnce: never run old and new pods together.
   strategy:
     type: Recreate
+  {{- else if eq (include "sitrep.tilesVolumeKind" .) "pvc" }}
+  # The tile volume is a ReadWriteOnce PVC: the old and the new pod cannot both attach it, so a
+  # rolling update would wait forever. (mapTiles.persistence.type=ephemeral keeps rolling updates.)
+  strategy:
+    type: Recreate
   {{- else }}
   strategy:
     type: RollingUpdate
@@ -114,6 +119,14 @@ spec:
             - name: SITREP_STORAGE_ATTACHMENTS_FILESYSTEM_DIR
               value: {{ printf "%s/attachments" (.Values.persistence.mountPath | trimSuffix "/") | quote }}
             {{- end }}
+            {{- if .Values.mapTiles.enabled }}
+            - name: SITREP_MAP_TILES_DIR
+              value: {{ .Values.mapTiles.mountPath | trimSuffix "/" | quote }}
+            - name: SITREP_MAP_TILES_AUTO_DOWNLOAD
+              value: {{ .Values.mapTiles.autoDownload | quote }}
+            - name: SITREP_MAP_TILES_UPDATE_INTERVAL
+              value: {{ .Values.mapTiles.updateInterval | quote }}
+            {{- end }}
             {{- if .Values.telemetry.disabled }}
             - name: SITREP_TELEMETRY_DISABLED
               value: "true"
@@ -155,6 +168,13 @@ spec:
             - name: data
               mountPath: {{ .Values.persistence.mountPath }}
             {{- end }}
+            {{- if .Values.mapTiles.enabled }}
+            - name: tiles
+              mountPath: {{ .Values.mapTiles.mountPath }}
+              {{- if not .Values.mapTiles.autoDownload }}
+              readOnly: true
+              {{- end }}
+            {{- end }}
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -165,6 +185,28 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-data" (include "sitrep.fullname" .)) .Values.persistence.existingClaim }}
+        {{- end }}
+        {{- if .Values.mapTiles.enabled }}
+        - name: tiles
+          {{- if eq (include "sitrep.tilesVolumeKind" .) "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-tiles" (include "sitrep.fullname" .)) .Values.mapTiles.persistence.existingClaim }}
+          {{- else }}
+          # One volume per pod, created with the pod and deleted with it: no shared storage needed.
+          ephemeral:
+            volumeClaimTemplate:
+              metadata:
+                labels:
+                  {{- include "sitrep.selectorLabels" . | nindent 18 }}
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                {{- with .Values.mapTiles.persistence.storageClass }}
+                storageClassName: {{ . | quote }}
+                {{- end }}
+                resources:
+                  requests:
+                    storage: {{ .Values.mapTiles.persistence.size }}
+          {{- end }}
         {{- end }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}

@@ -1,0 +1,22 @@
+{{- if and (eq (include "sitrep.tilesVolumeKind" .) "pvc") (not .Values.mapTiles.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "sitrep.fullname" . }}-tiles
+  labels:
+    {{- include "sitrep.labels" . | nindent 4 }}
+    app.kubernetes.io/component: map-tiles
+  {{- with .Values.mapTiles.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- with .Values.mapTiles.persistence.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.mapTiles.persistence.size }}
+{{- end }}
