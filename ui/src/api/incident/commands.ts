@@ -60,19 +60,34 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
       divisions: args.divisions,
       layers: args.layerName ? [{ name: args.layerName }] : [],
     };
-    const updateIncidentCache = (newIncident: {
-      id: string;
-      name: string;
-      parentId?: string | null;
-    }) => {
+    // The list entry of a just-created incident, with every field GET_INCIDENTS selects: a missing
+    // one makes Apollo log "Missing field" and leaves the entry incomplete until the next poll.
+    // The creator owns the incident, so the permission flags are not taken from the response, which
+    // can still lag behind the access projection.
+    const updateIncidentCache = (
+      newIncident: NonNullable<
+        NonNullable<Awaited<ReturnType<typeof mutate>>["data"]>["createIncident"]
+      >["incident"],
+      accessMode: NonNullable<
+        NonNullable<Awaited<ReturnType<typeof mutate>>["data"]>["createIncident"]
+      >["accessMode"],
+    ) => {
+      const now = new Date().toISOString();
+
       return {
-        ...newIncident,
+        id: newIncident.id,
+        name: newIncident.name,
         parentId: args.parentId ?? null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
         closedAt: null,
         isClosed: false,
-        location: null,
+        hasReview: false,
+        canWrite: true,
+        canManage: true,
+        canDelete: true,
+        accessMode,
+        location: newIncident.location ?? null,
       };
     };
 
@@ -115,7 +130,10 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
                 data: {
                   incidents: [
                     ...cached.incidents,
-                    updateIncidentCache(data.createIncident.incident),
+                    updateIncidentCache(
+                      data.createIncident.incident,
+                      data.createIncident.accessMode,
+                    ),
                   ],
                 },
               });
@@ -134,7 +152,10 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
                 data: {
                   incidents: [
                     ...cached.incidents,
-                    updateIncidentCache(data.createIncident.incident),
+                    updateIncidentCache(
+                      data.createIncident.incident,
+                      data.createIncident.accessMode,
+                    ),
                   ],
                 },
               });

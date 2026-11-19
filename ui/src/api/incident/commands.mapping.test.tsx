@@ -181,12 +181,14 @@ describe("useCreateIncident cache seeding", () => {
         data: { incidents: [listedIncident("inc-old")] as never },
       });
       const write = vi.spyOn(cache, "writeQuery");
-      // The hook's list entry lacks hasReview/canWrite/accessMode; Apollo reports that on stderr.
-      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleError = vi.spyOn(console, "error");
 
       mutateOptions(parentId ? mutateWithParent : mutate).update?.(cache, {
-        data: { createIncident: { incident } },
+        data: { createIncident: { incident, accessMode: "RESTRICTED" } },
       });
+
+      // Apollo logs "Missing field" when the written entry lacks a field the query selects.
+      expect(consoleError).not.toHaveBeenCalled();
       consoleError.mockRestore();
 
       const listWrite = write.mock.calls.find(([options]) => options.query === GET_INCIDENTS);
@@ -198,7 +200,17 @@ describe("useCreateIncident cache seeding", () => {
         parentId: parentId ?? null,
         closedAt: null,
         isClosed: false,
+        hasReview: false,
+        canWrite: true,
+        canManage: true,
+        canDelete: true,
+        accessMode: "RESTRICTED",
       });
+      // The entry is complete: the list can be read back with every selected field.
+      expect(cache.readQuery({ query: GET_INCIDENTS })?.incidents.map((i) => i.id)).toEqual([
+        "inc-old",
+        "inc-new",
+      ]);
     },
   );
 
