@@ -41,28 +41,42 @@ const icon = (id: string) => ({
   properties: { featureId: id },
 });
 
-function setup({
+const dispatch = vi.fn();
+
+function tree({
   onSelect = vi.fn(),
   drawing = false,
   showRing,
   layerState = state,
-}: { onSelect?: () => void; drawing?: boolean; showRing?: boolean; layerState?: LayerState } = {}) {
-  return render(
-    <LayerContext.Provider value={{ state: layerState, dispatch: vi.fn() }}>
+  deselectToken,
+}: {
+  onSelect?: () => void;
+  drawing?: boolean;
+  showRing?: boolean;
+  layerState?: LayerState;
+  deselectToken?: number;
+} = {}) {
+  return (
+    <LayerContext.Provider value={{ state: layerState, dispatch }}>
       <MapTimeContext.Provider
         value={drawing ? { drawingMessage: { id: "m", time: new Date() } } : {}}
       >
-        <MapSelectionContext.Provider value={{ onSelect }}>
+        <MapSelectionContext.Provider value={{ onSelect, deselectToken }}>
           <FeatureSelectionReporter clickLayerIds={["layer"]} showRing={showRing} />
         </MapSelectionContext.Provider>
       </MapTimeContext.Provider>
-    </LayerContext.Provider>,
+    </LayerContext.Provider>
   );
+}
+
+function setup(options: Parameters<typeof tree>[0] = {}) {
+  return render(tree(options));
 }
 
 const move = () => act(() => mocks.handlers.mousemove({ point: { x: 100, y: 50 } }));
 
 beforeEach(() => {
+  dispatch.mockClear();
   vi.useFakeTimers();
   mocks.handlers = {};
   mocks.hits.current = [];
@@ -110,6 +124,98 @@ describe("FeatureSelectionReporter cursor", () => {
     setup({ drawing: true });
 
     expect(mocks.handlers.mousemove).toBeUndefined();
+  });
+
+  describe("selection", () => {
+    const click = () => act(() => mocks.handlers.click({ point: { x: 100, y: 50 } }));
+
+    it("reports the feature that is clicked", () => {
+      mocks.hits.current = [icon("a")];
+      const onSelect = vi.fn();
+      setup({ onSelect });
+
+      click();
+
+      expect(onSelect).toHaveBeenLastCalledWith("a", undefined);
+    });
+
+    it("clears the selection when empty map is clicked", () => {
+      mocks.hits.current = [icon("a")];
+      const onSelect = vi.fn();
+      setup({ onSelect });
+      click();
+
+      mocks.hits.current = [];
+      click();
+
+      expect(onSelect).toHaveBeenLastCalledWith(undefined, undefined);
+    });
+
+    it("ignores a hit that carries no feature id", () => {
+      mocks.hits.current = [{ ...icon("a"), properties: {} }];
+      const onSelect = vi.fn();
+      setup({ onSelect });
+
+      click();
+
+      expect(onSelect).not.toHaveBeenCalledWith("a", undefined);
+      expect(onSelect).toHaveBeenLastCalledWith(undefined, undefined);
+    });
+
+    it("clears the selection with Escape", () => {
+      mocks.hits.current = [icon("a")];
+      const onSelect = vi.fn();
+      setup({ onSelect });
+      click();
+
+      act(() => {
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      });
+
+      expect(dispatch).toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });
+      expect(onSelect).toHaveBeenLastCalledWith(undefined, undefined);
+    });
+
+    it("keeps the selection for other keys", () => {
+      mocks.hits.current = [icon("a")];
+      const onSelect = vi.fn();
+      setup({ onSelect });
+      click();
+
+      act(() => {
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+      });
+
+      expect(dispatch).not.toHaveBeenCalled();
+      expect(onSelect).toHaveBeenLastCalledWith("a", undefined);
+    });
+
+    it("clears the selection when the host changes the deselect token", () => {
+      mocks.hits.current = [icon("a")];
+      const onSelect = vi.fn();
+      const { rerender } = setup({ onSelect, deselectToken: 1 });
+      click();
+      dispatch.mockClear();
+
+      rerender(tree({ onSelect, deselectToken: 2 }));
+
+      expect(dispatch).toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });
+      expect(onSelect).toHaveBeenLastCalledWith(undefined, undefined);
+    });
+
+    it("does not look up the messages of a feature that is not saved yet", () => {
+      const onSelect = vi.fn();
+      setup({
+        onSelect,
+        layerState: {
+          ...state,
+          selectedFeature: "draft",
+          pendingFeatures: [{ id: "draft", layerId: "l", geometry: icon("x").geometry }],
+        } as unknown as LayerState,
+      });
+
+      expect(onSelect).toHaveBeenLastCalledWith(undefined, undefined);
+    });
   });
 
   describe("FeatureSelectionReporter ring", () => {
