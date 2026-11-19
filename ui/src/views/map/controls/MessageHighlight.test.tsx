@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FeatureHalo } from "api";
 import type { Layer } from "types/layer";
 import { LayerContext, type LayerState, type RemovedFeature } from "../LayerContext";
@@ -20,7 +20,11 @@ const mocks = vi.hoisted(() => ({
   clickHandlers: [] as ((e: unknown) => void)[],
   hit: { current: undefined as unknown },
   fitBounds: vi.fn(),
-  slot: { container: document.createElement("div") },
+  slot: {
+    instance: undefined as
+      | { container: HTMLElement; onAdd: () => HTMLElement; onRemove: () => void }
+      | undefined,
+  },
 }));
 
 vi.mock("api", async (importOriginal) => ({
@@ -35,8 +39,23 @@ vi.mock("react-map-gl/maplibre", () => ({
     </div>
   ),
   Layer: ({ id }: { id: string }) => <i data-testid={`layer-${id}`} />,
-  Popup: ({ children }: { children: ReactNode }) => <div data-testid="popup">{children}</div>,
-  useControl: () => mocks.slot,
+  Popup: ({ children, onClose }: { children: ReactNode; onClose?: () => void }) => (
+    <div data-testid="popup">
+      <button type="button" onClick={onClose}>
+        popup-closed-by-map
+      </button>
+      {children}
+    </div>
+  ),
+  // The real control slot, put in the page as the map would put it in a corner.
+  useControl: (factory: () => NonNullable<typeof mocks.slot.instance>) => {
+    if (!mocks.slot.instance) {
+      mocks.slot.instance = factory();
+      document.body.append(mocks.slot.instance.onAdd());
+    }
+
+    return mocks.slot.instance;
+  },
   useMap: () => ({
     current: {
       on: (_: string, handler: (e: unknown) => void) => mocks.clickHandlers.push(handler),
@@ -121,11 +140,6 @@ const sourceFeatures = () =>
     id: string;
     properties: { halo: string; featureId?: string };
   }[];
-
-beforeAll(() => {
-  // The corner slot the toggle is rendered into belongs to the map; here it just has to be in the page.
-  document.body.append(mocks.slot.container);
-});
 
 beforeEach(() => {
   mocks.halos.current = new Map();
@@ -328,6 +342,16 @@ describe("MessageHighlight restore", () => {
     expect(screen.queryByTestId("popup")).toBeNull();
   });
 
+  it("forgets the clicked feature when the map closes the popup", () => {
+    mocks.halos.current = ghostHalos();
+    setup();
+    clickGhost();
+
+    fireEvent.click(screen.getByRole("button", { name: "popup-closed-by-map" }));
+
+    expect(screen.queryByTestId("popup")).toBeNull();
+  });
+
   it("cannot restore while the message is locked or the overlay is off", () => {
     mocks.halos.current = ghostHalos();
     const { unmount } = setup({ locked: true });
@@ -346,9 +370,40 @@ describe("MessageHighlightToggle", () => {
 
     const button = screen.getByRole("button", { name: "messageMap.highlight" });
     expect(button).toHaveAttribute("aria-pressed", "true");
-    expect(mocks.slot.container).toContainElement(button);
+    expect(mocks.slot.instance?.container).toContainElement(button);
+    expect(mocks.slot.instance?.container).toHaveClass("maplibregl-ctrl-group");
 
     fireEvent.click(button);
     expect(onToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it("says when the overlay is off", () => {
+    render(<MessageHighlightToggle enabled={false} onToggle={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "messageMap.highlight" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("goes first among the controls of its corner", () => {
+    render(<MessageHighlightToggle enabled onToggle={vi.fn()} />);
+    const corner = document.createElement("div");
+    const other = document.createElement("div");
+    corner.append(other, mocks.slot.instance?.container as HTMLElement);
+
+    // the effect runs when the toggle mounts: mount again with the slot inside a corner
+    render(<MessageHighlightToggle enabled onToggle={vi.fn()} />);
+
+    expect(corner.firstElementChild).toBe(mocks.slot.instance?.container);
+  });
+
+  it("leaves the map when it is removed", () => {
+    render(<MessageHighlightToggle enabled onToggle={vi.fn()} />);
+    const container = mocks.slot.instance?.container as HTMLElement;
+
+    mocks.slot.instance?.onRemove();
+
+    expect(container).not.toBeInTheDocument();
   });
 });
