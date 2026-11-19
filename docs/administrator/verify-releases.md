@@ -50,6 +50,10 @@ a binary, and `sitrep-ui_<version>.sbom.json` lists the npm packages shipped in 
 carry the license of each package where it is known. They are listed in `checksums.txt`, so the
 check above covers them.
 
+The container image also contains the UI's SBOM as `/var/run/ko/sitrep-ui.spdx.json`. The npm
+packages are compiled into the single binary, so image scanners such as Trivy read that file to see
+them, in addition to the Go modules they find in the binary itself.
+
 The container image carries its own SBOM in the registry, as an image tagged
 `sha256-<digest of the image>.sbom` in the same repository. It is not covered by a separate
 signature; the image itself is (see below).

@@ -42,6 +42,18 @@ jobs:
       - name: Install Go dependencies
         run: go mod download
 
+      # ko copies kodata/ into the image (/var/run/ko). Image scanners cannot see the npm packages
+      # inside the embedded UI, but they read an SBOM file named *.spdx.json, so ship the UI's.
+      # Same file as the release images get (see `before:` in .goreleaser.yaml).
+      - name: Install syft
+        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+
+      - name: Create the UI SBOM for the image
+        run: |
+          mkdir -p kodata
+          syft dir:ui --source-name=sitrep-ui --exclude='./build/**' --enrich=all \
+            --output=spdx-json=kodata/sitrep-ui.spdx.json
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
