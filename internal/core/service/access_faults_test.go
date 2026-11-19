@@ -32,8 +32,6 @@ type accessRig struct {
 	groupID    uuid.UUID
 }
 
-const accessOwner = "owner"
-
 var (
 	ownerActor = identity.Actor{Sub: accessOwner}
 	someone    = access.Principal{Kind: access.UserPrincipal, ID: "someone"}

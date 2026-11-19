@@ -127,14 +127,14 @@ type closeFails struct {
 
 func (c closeFails) Close() error { return c.err }
 
-func newBrokenSync(t *testing.T) (*TileSyncService, *fakeUpstream, *brokenArchive) {
+func newBrokenSync(t *testing.T) (*TileSyncService, *brokenArchive) {
 	t.Helper()
 
 	up, ar := newFakeUpstream(), &brokenArchive{fakeArchive: newFakeArchive()}
 	up.publish(baseTS, `"b1"`, "BASE-ARCHIVE-BYTES")
 	up.publish(reliefTS, `"r1"`, "RELIEF-ARCHIVE-BYTES")
 
-	return NewTileSyncService(up, ar, 7*24*time.Hour), up, ar
+	return NewTileSyncService(up, ar, 7*24*time.Hour), ar
 }
 
 func TestTileSync_ReportsWhatItCannotDo(t *testing.T) {
@@ -167,7 +167,7 @@ func TestTileSync_ReportsWhatItCannotDo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, _, ar := newBrokenSync(t)
+			svc, ar := newBrokenSync(t)
 			tt.break_(ar)
 
 			report, err := svc.Sync(t.Context())
@@ -182,7 +182,7 @@ func TestTileSync_ReportsWhatItCannotDo(t *testing.T) {
 	}
 
 	t.Run("free space that cannot be determined does not stop the download", func(t *testing.T) {
-		svc, _, ar := newBrokenSync(t)
+		svc, ar := newBrokenSync(t)
 		ar.freeErr = errTiles
 
 		report, err := svc.Sync(t.Context())
@@ -193,7 +193,7 @@ func TestTileSync_ReportsWhatItCannotDo(t *testing.T) {
 
 func TestTileSync_StatusAndPruneReportStorageFailures(t *testing.T) {
 	t.Run("Status when the installed archive cannot be read", func(t *testing.T) {
-		svc, _, ar := newBrokenSync(t)
+		svc, ar := newBrokenSync(t)
 		ar.localErr = errTiles
 
 		st, err := svc.Status(t.Context())
@@ -202,7 +202,7 @@ func TestTileSync_StatusAndPruneReportStorageFailures(t *testing.T) {
 	})
 
 	t.Run("Status shows how much of a partial download there is", func(t *testing.T) {
-		svc, _, ar := newBrokenSync(t)
+		svc, ar := newBrokenSync(t)
 		ar.parts[baseTS] = &fakePart{etag: `"b1"`}
 		ar.parts[baseTS].buf.WriteString("BASE")
 
@@ -212,7 +212,7 @@ func TestTileSync_StatusAndPruneReportStorageFailures(t *testing.T) {
 	})
 
 	t.Run("Status leaves out a partial download it cannot read", func(t *testing.T) {
-		svc, _, ar := newBrokenSync(t)
+		svc, ar := newBrokenSync(t)
 		ar.partErr = errTiles
 
 		st, err := svc.Status(t.Context())
@@ -221,7 +221,7 @@ func TestTileSync_StatusAndPruneReportStorageFailures(t *testing.T) {
 	})
 
 	t.Run("Prune when the files cannot be removed", func(t *testing.T) {
-		svc, _, ar := newBrokenSync(t)
+		svc, ar := newBrokenSync(t)
 		ar.pruneErr = errTiles
 
 		removed, err := svc.Prune(t.Context())
