@@ -123,12 +123,5 @@ func sqliteFactory(t *testing.T) *conformance.Backend {
 		ApplyEvent: func(ctx context.Context, handlerName string, e eventsourcing.Event) error {
 			return proj.ApplySingle(ctx, handlerName, e)
 		},
-
-		Caps: conformance.Capabilities{
-			RevisionIdempotent:          true,
-			PlaceIntoMissingLayerIsNoop: true,
-			FeatureOrderStable:          true,
-			FeatureLookupByID:           true,
-		},
 	}
 }

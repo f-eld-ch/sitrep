@@ -67,18 +67,5 @@ func inmemFactory(t *testing.T) *conformance.Backend {
 
 			return fmt.Errorf("no handler named %q", handlerName)
 		},
-
-		// Known divergences in the inmem projection layer.
-		// Each false value corresponds to an open bug in that handler.
-		Caps: conformance.Capabilities{
-			// inmem/projection/layer.go bumps revision unconditionally on Moved/Restyled.
-			RevisionIdempotent: false,
-			// inmem/projection/layer.go errors on Placed into a missing layer.
-			PlaceIntoMissingLayerIsNoop: false,
-			// inmem/projection/layer.go uses a map, not an ordered slice.
-			FeatureOrderStable: false,
-			// queries/postgres/queries.go:553-568 filters on the wrong id column.
-			FeatureLookupByID: false,
-		},
 	}
 }

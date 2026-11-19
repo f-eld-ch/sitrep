@@ -39,24 +39,6 @@ type Backend struct {
 	// ApplyEvent applies one event to the named handler in isolation (bypassing
 	// the projector cursor) to verify per-event idempotency.
 	ApplyEvent func(ctx context.Context, handler string, e eventsourcing.Event) error
-
-	// Caps gates assertions for known backend divergences. A false value means
-	// the backend has a known deficiency, not a deliberate design choice.
-	Caps Capabilities
-}
-
-// Capabilities flags known divergences in a backend. Every false value should
-// have an open issue number recorded in the skip message.
-type Capabilities struct {
-	// RevisionIdempotent: layer.revision bumps only when content actually changes.
-	RevisionIdempotent bool
-	// PlaceIntoMissingLayerIsNoop: placing a feature into a non-existent layer
-	// silently succeeds (no error, no dead-letter).
-	PlaceIntoMissingLayerIsNoop bool
-	// FeatureOrderStable: features within a layer are returned in stable z-order.
-	FeatureOrderStable bool
-	// FeatureLookupByID: GetFeatureIncidentID returns the correct incident.
-	FeatureLookupByID bool
 }
 
 // Factory constructs a fresh Backend for each test. It is called once per
