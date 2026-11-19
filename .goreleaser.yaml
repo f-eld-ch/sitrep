@@ -119,6 +119,22 @@ kos:
 checksum:
   name_template: checksums.txt
 
+# Keyless signature (Sigstore) over the checksum file. checksums.txt lists every archive and
+# package, so one signature covers all of them. Needs cosign on the PATH and the workflow's
+# OIDC token (id-token: write); the signing identity is the release workflow, recorded in the
+# public Rekor log. Verification is documented in docs/administrator/verify-releases.md.
+signs:
+  - id: checksums
+    cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - --yes
+      - --bundle=${signature}
+      - ${artifact}
+    output: true
+
 release:
   prerelease: auto
   make_latest: "{{ not .Prerelease }}"
