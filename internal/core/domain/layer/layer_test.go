@@ -53,11 +53,13 @@ func TestLayer_Create(t *testing.T) {
 		assert.Equal(t, "Lage", l.Name())
 	})
 
-	t.Run("empty name is rejected", func(t *testing.T) {
-		l := layer.New(id)
-		err := l.Create(incidentID, "", actor, at)
-		require.ErrorIs(t, err, shared.ErrInvalidInput)
-		assert.Empty(t, l.Root().PendingEvents())
+	t.Run("a blank name is rejected", func(t *testing.T) {
+		for _, name := range []string{"", " ", " \t\n "} {
+			l := layer.New(id)
+			err := l.Create(incidentID, name, actor, at)
+			require.ErrorIs(t, err, shared.ErrInvalidInput, "name %q", name)
+			assert.Empty(t, l.Root().PendingEvents())
+		}
 	})
 }
 
@@ -74,10 +76,13 @@ func TestLayer_Rename(t *testing.T) {
 		assert.Equal(t, "Renamed", pending[0].EventType)
 	})
 
-	t.Run("empty name is rejected", func(t *testing.T) {
-		l := replay(t, id, []eventsourcing.Event{created(id)})
-		err := l.Rename("", actor, at)
-		require.ErrorIs(t, err, shared.ErrInvalidInput)
+	t.Run("a blank name is rejected", func(t *testing.T) {
+		for _, name := range []string{"", " ", " \t\n "} {
+			l := replay(t, id, []eventsourcing.Event{created(id)})
+			err := l.Rename(name, actor, at)
+			require.ErrorIs(t, err, shared.ErrInvalidInput, "name %q", name)
+			assert.Empty(t, l.Root().PendingEvents())
+		}
 	})
 
 	t.Run("rename on removed layer is rejected", func(t *testing.T) {
