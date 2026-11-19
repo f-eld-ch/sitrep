@@ -43,6 +43,15 @@ The build provenance records which commit and workflow produced a file:
 gh attestation verify sitrep_26.11.3_linux_amd64.tar.gz --repo f-eld-ch/sitrep
 ```
 
+The provenance is also attached to the release as `sitrep_<version>.intoto.jsonl` (for the files)
+and `sitrep-image_<version>.intoto.jsonl` (for the image), so it can be checked without access to
+GitHub's attestation store:
+
+```bash
+gh attestation verify sitrep_26.11.3_linux_amd64.tar.gz --repo f-eld-ch/sitrep \
+  --bundle sitrep_26.11.3.intoto.jsonl
+```
+
 ## Software bill of materials (SBOM)
 
 Each release also contains SBOMs in SPDX JSON format: `<archive>.sbom.json` lists the Go modules in

@@ -152,6 +152,7 @@ jobs:
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       - name: Attest build provenance of the release files
+        id: attest-files
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
@@ -162,11 +163,27 @@ jobs:
             dist/*.sbom.json
 
       - name: Attest build provenance of the container image
+        id: attest-image
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.image.outputs.digest }}
           push-to-registry: true
+
+      # GitHub stores the attestations itself, but OpenSSF Scorecard (Signed-Releases) and offline
+      # verification look for provenance files among the release assets: *.intoto.jsonl.
+      - name: Attach the provenance to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FILES_BUNDLE: ${{ steps.attest-files.outputs.bundle-path }}
+          IMAGE_BUNDLE: ${{ steps.attest-image.outputs.bundle-path }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cp "$FILES_BUNDLE" "$RUNNER_TEMP/sitrep_${version}.intoto.jsonl"
+          cp "$IMAGE_BUNDLE" "$RUNNER_TEMP/sitrep-image_${version}.intoto.jsonl"
+          gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber \
+            "$RUNNER_TEMP/sitrep_${version}.intoto.jsonl" \
+            "$RUNNER_TEMP/sitrep-image_${version}.intoto.jsonl"
 
       - name: Dispatch package repository update
         env:
