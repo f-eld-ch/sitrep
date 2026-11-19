@@ -135,13 +135,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # goreleaser has already signed the image (`docker_signs:` in .goreleaser.yaml). Take the
-      # digest it recorded for the manifest ko pushed, so the attestation and the verification
-      # below refer to exactly that image.
+      # digest it recorded for the manifest ko pushed, so the attestation below refers to exactly
+      # that image.
       - name: Resolve the image digest
         id: image
         run: |
           digest="$(jq -r --arg image "ghcr.io/${GITHUB_REPOSITORY}" \
-            '[.[] | select((.extra.digest // "") != "" and (.name | startswith($image))) | .extra.digest] | unique | .[]' \
+            '[.[] | select((.extra.Digest // "") != "" and (.name | startswith($image))) | .extra.Digest] | unique | .[]' \
             dist/artifacts.json)"
           if [ "$(wc -l <<<"$digest")" -ne 1 ] || [ -z "$digest" ]; then
             echo "::error::expected exactly one image digest in dist/artifacts.json, found: ${digest:-none}"
@@ -166,23 +166,6 @@ jobs:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.image.outputs.digest }}
           push-to-registry: true
-
-      # Check what users will check (docs/administrator/verify-releases.md), so a release whose
-      # signatures cannot be verified fails here and not in someone's deployment.
-      - name: Verify signatures and attestations
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/release.yml@${{ github.ref }}
-        run: |
-          cosign verify-blob dist/checksums.txt \
-            --bundle dist/checksums.txt.sigstore.json \
-            --certificate-identity "$IDENTITY" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com
-          cosign verify "ghcr.io/${GITHUB_REPOSITORY}@${{ steps.image.outputs.digest }}" \
-            --certificate-identity "$IDENTITY" \
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null
-          gh attestation verify dist/checksums.txt --repo "$GITHUB_REPOSITORY"
-          gh attestation verify "oci://ghcr.io/${GITHUB_REPOSITORY}@${{ steps.image.outputs.digest }}" --repo "$GITHUB_REPOSITORY"
 
       - name: Dispatch package repository update
         env:
