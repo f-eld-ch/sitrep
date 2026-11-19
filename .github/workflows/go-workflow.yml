@@ -69,7 +69,11 @@ jobs:
           args: --timeout=5m ./...
 
       - name: Go Test
-        run: go test -coverprofile=go-coverage.out ./...
+        # -coverpkg=./... credits a test for the code it runs in any package, not only its own:
+        # the resolver and service tests drive the domain and the adapters. The profile then holds
+        # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
+        # counts as covered when any of them ran it.
+        run: go test -coverpkg=./... -coverprofile=go-coverage.out ./...
 
       - name: Convert Go coverage to Cobertura
         if: inputs.coverage
