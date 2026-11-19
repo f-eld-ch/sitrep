@@ -1,6 +1,6 @@
 import { useApolloClient, useMutation } from "@apollo/client/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import { apiErrorFromApolloError } from "../errors";
+import { apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import { omit } from "lodash";
 import type { CommandHook, CommandState } from "../result";
 import { featureChangeVariable, layersVariables, type FeatureChangeArgs } from "./variables";
@@ -115,7 +115,7 @@ export function useAddFeature(): CommandHook<AddFeatureArgs, { featureId: string
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     const featureId = result.data?.addFeature?.id;
     if (!featureId) throw new Error("Failed to add feature");
     return { featureId };
@@ -160,7 +160,7 @@ export function useModifyFeature(): CommandHook<ModifyFeatureArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [modifyFeature, state];
@@ -194,7 +194,7 @@ export function useDeleteFeature(): CommandHook<DeleteFeatureArgs> {
         cache.evict({ id: cache.identify({ __typename: "Feature", id: args.id }) });
         cache.gc();
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [deleteFeature, state];
@@ -240,7 +240,7 @@ export function useRestoreFeature(): CommandHook<RestoreFeatureArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [restoreFeature, state];
@@ -291,7 +291,7 @@ export function useAddLayer(): CommandHook<AddLayerArgs, { layerId: string }> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     const layerId = result.data?.createLayer?.id;
     if (!layerId) throw new Error("Failed to add layer");
     return { layerId };

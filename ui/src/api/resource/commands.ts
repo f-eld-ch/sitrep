@@ -1,6 +1,6 @@
 import { useApolloClient, useMutation } from "@apollo/client/react";
 import type { MarkResourceReadyMutation } from "../../gql/next/graphql";
-import { apiErrorFromApolloError } from "../errors";
+import { apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import { recordMutation } from "../mutationActivity";
 import type { CommandHook, CommandState } from "../result";
 import type { ContactMedium, ResourceFormation, ResourceUnitSize } from "./mapper";
@@ -145,7 +145,7 @@ export function useAlertResource(): CommandHook<AlertResourceArgs, { resourceId:
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     const id = result.data?.alertResource?.id;
     if (!id) throw Object.assign(new Error("Alert resource failed"), { code: "UNKNOWN" as const });
     return { resourceId: id };
@@ -180,7 +180,7 @@ export function useMarkResourceReady(): CommandHook<{ id: string; at?: Date }> {
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [markReady, state];
@@ -212,7 +212,7 @@ export function useDeployResource(): CommandHook<{ id: string; at?: Date }> {
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [deploy, state];
@@ -300,7 +300,7 @@ export function useReactivateResource(): CommandHook<{ id: string; at?: Date }> 
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [reactivate, state];
@@ -332,7 +332,7 @@ export function useStandDownResource(): CommandHook<{ id: string; at?: Date }> {
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [standDown, state];
@@ -378,7 +378,7 @@ export function useRelieveResource(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [relieve, state];
@@ -422,7 +422,7 @@ export function useHandOver(): CommandHook<{ id: string; successorId: string; at
           data: result.successor,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [handOver, state];
@@ -465,7 +465,7 @@ export function useChangeHauptaufgabe(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [changeHauptaufgabe, state];
@@ -504,7 +504,7 @@ export function useUpdatePersonnelCount(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [updateCount, state];
@@ -541,7 +541,7 @@ export function useRenameResource(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [renameResource, state];
@@ -584,7 +584,7 @@ export function useReassignResource(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [reassign, state];
@@ -628,7 +628,7 @@ export function useUpdateDeploymentLocation(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [updateLocation, state];
@@ -674,7 +674,7 @@ export function useUpdateContact(): CommandHook<{
           data: resource,
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [updateContact, state];

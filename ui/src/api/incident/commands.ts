@@ -1,6 +1,6 @@
 import { useMutation } from "@apollo/client/react";
 import { GET_INCIDENT_MESSAGES } from "../message/documents";
-import { apiErrorFromApolloError } from "../errors";
+import { apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
   CLOSE_INCIDENT,
@@ -122,7 +122,7 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
             }
             seedEditorCaches(cache, data.createIncident.incident);
           },
-        })
+        }).catch(rethrowAsApiError)
       : await mutate({
           variables,
           update(cache, { data }) {
@@ -141,7 +141,7 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
             }
             seedEditorCaches(cache, data.createIncident.incident);
           },
-        });
+        }).catch(rethrowAsApiError);
 
     const incidentId = result.data?.createIncident?.incident?.id;
     if (!incidentId)
@@ -169,7 +169,7 @@ export function useUpdateIncident(): CommandHook<UpdateIncidentArgs> {
         divisions: args.divisions,
       },
       // Apollo normalizes Incident:${id} — list and detail queries update automatically.
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [updateIncident, state];
@@ -187,7 +187,7 @@ export function useCloseIncident(): CommandHook<{ incidentId: string }> {
     await mutate({
       variables: { id: incidentId },
       // Apollo normalizes Incident:${id} — isClosed/closedAt update automatically.
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [closeIncident, state];
@@ -205,7 +205,7 @@ export function useReopenIncident(): CommandHook<{ incidentId: string }> {
     await mutate({
       variables: { id: incidentId },
       // Apollo normalizes Incident:${id} — isClosed/closedAt update automatically.
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [reopenIncident, state];
@@ -226,7 +226,7 @@ export function useDeleteIncident(): CommandHook<{ incidentId: string }> {
         cache.evict({ id: cache.identify({ __typename: "Incident", id: incidentId }) });
         cache.gc();
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [deleteIncident, state];
@@ -243,7 +243,7 @@ export function useLinkIncidentParent(): CommandHook<LinkIncidentParentArgs> {
   const linkIncidentParent = async (args: LinkIncidentParentArgs): Promise<void> => {
     await mutate({
       variables: { childId: args.childId, parentId: args.parentId },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [linkIncidentParent, state];
@@ -260,7 +260,7 @@ export function useUnlinkIncidentParent(): CommandHook<UnlinkIncidentParentArgs>
   const unlinkIncidentParent = async (args: UnlinkIncidentParentArgs): Promise<void> => {
     await mutate({
       variables: { childId: args.childId },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [unlinkIncidentParent, state];

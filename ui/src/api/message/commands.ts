@@ -1,7 +1,7 @@
 import { useApolloClient, useMutation } from "@apollo/client/react";
 import { useState } from "react";
 import { Medium, PriorityStatus, TriageStatus, type Attachment, type Division } from "types";
-import { ApiError, apiErrorFromApolloError } from "../errors";
+import { ApiError, apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import {
   ACKNOWLEDGE_MESSAGE,
@@ -85,7 +85,7 @@ export function useCreateMessage(): CommandHook<CreateMessageArgs, string> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     return result.data?.createMessage?.id ?? "";
   };
 
@@ -114,7 +114,7 @@ export function useUpdateMessage(): CommandHook<UpdateMessageArgs> {
       },
       // Apollo normalizes by id — the cached message is updated immediately
       // from the mutation response without a projection read.
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [updateMessage, state];
@@ -174,7 +174,7 @@ export function useTriageMessage(): CommandHook<TriageMessageArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [triageMessage, state];
@@ -199,7 +199,9 @@ export function useAcknowledgeMessage(): CommandHook<MessageAcknowledgementArgs>
   };
 
   const acknowledgeMessage = async (args: MessageAcknowledgementArgs): Promise<void> => {
-    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } });
+    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } }).catch(
+      rethrowAsApiError,
+    );
   };
 
   return [acknowledgeMessage, state];
@@ -215,7 +217,9 @@ export function useRevokeMessageAcknowledgement(): CommandHook<MessageAcknowledg
   };
 
   const revokeMessageAcknowledgement = async (args: MessageAcknowledgementArgs): Promise<void> => {
-    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } });
+    await mutate({ variables: { id: args.messageId, divisionId: args.divisionId } }).catch(
+      rethrowAsApiError,
+    );
   };
 
   return [revokeMessageAcknowledgement, state];
@@ -260,7 +264,7 @@ export function useRemoveAttachment(): CommandHook<RemoveAttachmentArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [removeAttachment, state];

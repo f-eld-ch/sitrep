@@ -327,6 +327,23 @@ describe("message acknowledgement commands", () => {
   });
 });
 
+describe("a rejected command", () => {
+  it.each([
+    { name: "useAcknowledgeMessage", hook: useAcknowledgeMessage },
+    { name: "useRevokeMessageAcknowledgement", hook: useRevokeMessageAcknowledgement },
+  ])("$name rejects with an ApiError carrying the server's code", async ({ hook }) => {
+    await mockMutation({ rejection: graphQlError("NOT_TRIAGED_TO_DIVISION") });
+    const { result } = renderHook(() => hook());
+
+    const error = await result.current[0]({ messageId: "m-1", divisionId: "d-1" }).catch(
+      (e: unknown) => e,
+    );
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "NOT_TRIAGED_TO_DIVISION" });
+  });
+});
+
 describe("useRemoveAttachment", () => {
   const args = { incidentId: "inc-1", messageId: "m-1", attachmentId: "a-1" };
 
