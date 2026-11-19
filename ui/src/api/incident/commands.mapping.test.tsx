@@ -1,5 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { GET_INCIDENT_MESSAGES } from "../message/documents";
 import { graphQlError, mockMutation, mutateOptions, newCache } from "../testing/mutations";
 import {
   useCloseIncident,
@@ -115,6 +116,35 @@ describe("useCreateIncident variables", () => {
 });
 
 describe("useCreateIncident cache seeding", () => {
+  it.each([{ withParent: false }, { withParent: true }])(
+    "keeps the seeded details when it seeds the empty message list (withParent=$withParent)",
+    async ({ withParent }) => {
+      const incident = wireIncident("inc-new", withParent ? { parentId: "p-1" } : {});
+      const { mutate, mutateWithParent } = await setupCreate(incident);
+      const { result } = renderHook(() => useCreateIncident());
+      await result.current[0]({
+        name: "KFS",
+        location: "",
+        divisions: [],
+        ...(withParent ? { parentId: "p-1" } : {}),
+      });
+      const cache = newCache();
+
+      mutateOptions(withParent ? mutateWithParent : mutate).update?.(cache, {
+        data: { createIncident: { incident } },
+      });
+
+      expect(
+        cache.readQuery({ query: GET_INCIDENT_DETAILS, variables: { incidentId: "inc-new" } }),
+      ).toMatchObject({ incident: { id: "inc-new", name: "KFS" } });
+      expect(
+        cache.readQuery({ query: GET_INCIDENT_MESSAGES, variables: { incidentId: "inc-new" } }),
+      ).toMatchObject({
+        incident: { id: "inc-new", divisions: incident.divisions, messages: [] },
+      });
+    },
+  );
+
   it("does nothing when the response carries no incident", async () => {
     const { mutate } = await setupCreate(wireIncident("inc-new"));
     const { result } = renderHook(() => useCreateIncident());

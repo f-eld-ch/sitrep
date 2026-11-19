@@ -94,7 +94,12 @@ export function useCreateIncident(): CommandHook<CreateIncidentArgs, { incidentI
       cache.writeQuery({
         query: GET_INCIDENT_MESSAGES,
         variables: { incidentId: incident.id },
-        data: { incident: { id: incident.id, divisions: incident.divisions, messages: [] } },
+        data: {
+          // Spread the response incident so its __typename comes along: without it the entry is
+          // not normalized and replaces the Incident reference written above, discarding the
+          // seeded details.
+          incident: { ...incident, messages: [] },
+        },
       });
     };
 
