@@ -37,9 +37,9 @@ export interface TimelineSliderProps {
 
 /**
  * A slider along the incident timeline, from its start to now, with a tick for each of the given
- * times. Dragging it moves the point in time once it is released; the step buttons jump between
- * the ticks, and "Live" returns to the present. It only reports the chosen point in time: what
- * that changes (map, resources, messages) is up to the screen.
+ * times. Dragging it moves the label at once and the point in time once it is released; the step
+ * buttons jump between the ticks, and "Live" returns to the present. It only reports the chosen
+ * point in time: what that changes (map, resources, messages) is up to the screen.
  */
 export function TimelineSlider({
   asOf,
@@ -90,6 +90,8 @@ export function TimelineSlider({
     onAsOfChange(new Date(target));
   };
 
+  // What the label says follows the handle, also while it is dragged: live, or the time under it.
+  const showsLive = draft === undefined ? live : draft >= bounds.max;
   const canScrub = bounds.max > bounds.min;
   const hasPrevious = neighbourTick(tickTimes, position, -1) !== undefined;
   const hasNext = !live;
@@ -164,9 +166,11 @@ export function TimelineSlider({
         </button>
       </div>
       <div className="flex items-center justify-between gap-3 text-fg-muted">
-        <span className={clsx("flex items-center gap-1.5", !live && "font-semibold text-warning")}>
-          {!live && <FontAwesomeIcon icon={faClockRotateLeft} />}
-          {live
+        <span
+          className={clsx("flex items-center gap-1.5", !showsLive && "font-semibold text-warning")}
+        >
+          {!showsLive && <FontAwesomeIcon icon={faClockRotateLeft} />}
+          {showsLive
             ? t("mapTimeline.live")
             : t("mapTimeline.asOf", { time: dayjs(position).format("DD.MM.YY HH:mm") })}
         </span>

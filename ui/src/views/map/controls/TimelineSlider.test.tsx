@@ -69,6 +69,26 @@ describe("TimelineSlider", () => {
     expect(onAsOfChange).toHaveBeenCalledWith(new Date(at(11)));
   });
 
+  it("shows the time under the handle while it is dragged, also when it started live", () => {
+    renderSlider();
+    expect(screen.getByText("mapTimeline.live", { selector: "span" })).toBeInTheDocument();
+
+    drag(at(11));
+
+    expect(screen.getByText("mapTimeline.asOf:15.01.26 11:00")).toBeInTheDocument();
+    expect(screen.queryByText("mapTimeline.live", { selector: "span" })).not.toBeInTheDocument();
+  });
+
+  it("says live again when the handle is dragged back to the end", () => {
+    renderSlider({ asOf: new Date(at(11)) });
+    expect(screen.getByText("mapTimeline.asOf:15.01.26 11:00")).toBeInTheDocument();
+
+    drag(NOW);
+
+    expect(screen.getByText("mapTimeline.live", { selector: "span" })).toBeInTheDocument();
+    expect(screen.queryByText(/mapTimeline.asOf/)).not.toBeInTheDocument();
+  });
+
   it.each([
     ["keyboard", (el: HTMLElement) => fireEvent.keyUp(el, { key: "ArrowLeft" })],
     ["blur", (el: HTMLElement) => fireEvent.blur(el)],
