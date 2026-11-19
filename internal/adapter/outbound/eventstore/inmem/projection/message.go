@@ -76,7 +76,7 @@ func NewMessageHandler() *MessageHandler {
 }
 
 func (h *MessageHandler) Name() string { return "readmodel.message" }
-func (h *MessageHandler) Version() int { return 5 }
+func (h *MessageHandler) Version() int { return 6 }
 
 func (h *MessageHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -150,6 +150,89 @@ func (h *MessageHandler) Apply(_ context.Context, e eventsourcing.Event) error {
 			AuthorSub:         &authorSub,
 			CreatedAt:         e.OccurredAt,
 			UpdatedAt:         e.OccurredAt,
+		}
+
+	case "Imported":
+		// The one-shot import of a legacy message carries its full state. Like the SQL handlers,
+		// an existing row only takes the fields that the import can change.
+		var d struct {
+			IncidentID        string      `json:"incidentId"`
+			Number            int         `json:"number"`
+			Content           string      `json:"content"`
+			Sender            string      `json:"sender"`
+			SenderDetail      string      `json:"senderDetail"`
+			Receiver          string      `json:"receiver"`
+			ReceiverDetail    string      `json:"receiverDetail"`
+			Medium            string      `json:"medium"`
+			Time              time.Time   `json:"time"`
+			Triage            string      `json:"triage"`
+			Priority          string      `json:"priority"`
+			DivisionIDs       []uuid.UUID `json:"divisionIds"`
+			LinkedResourceIDs []uuid.UUID `json:"linkedResourceIds"`
+			AuthorSub         *string     `json:"authorSub"`
+			LastEditorSub     *string     `json:"lastEditorSub"`
+			RecordedAt        time.Time   `json:"recordedAt"`
+			LastUpdatedAt     time.Time   `json:"lastUpdatedAt"`
+		}
+		if err := remarshal(e.Data, &d); err != nil {
+			return err
+		}
+
+		incidentID, err := uuid.Parse(d.IncidentID)
+		if err != nil {
+			return err
+		}
+
+		if d.DivisionIDs == nil {
+			d.DivisionIDs = []uuid.UUID{}
+		}
+
+		if d.LinkedResourceIDs == nil {
+			d.LinkedResourceIDs = []uuid.UUID{}
+		}
+
+		createdAt := d.RecordedAt
+		if createdAt.IsZero() {
+			createdAt = e.OccurredAt
+		}
+
+		updatedAt := d.LastUpdatedAt
+		if updatedAt.IsZero() {
+			updatedAt = createdAt
+		}
+
+		priority := priorityForTriage(d.Triage, d.Priority)
+
+		if row := h.rows[id]; row != nil {
+			row.Content = d.Content
+			row.Triage = d.Triage
+			row.Priority = priority
+			row.DivisionIDs = d.DivisionIDs
+			row.LinkedResourceIDs = d.LinkedResourceIDs
+			row.UpdatedAt = updatedAt
+
+			return nil
+		}
+
+		h.rows[id] = &MessageRow{
+			ID:                id,
+			IncidentID:        incidentID,
+			Number:            d.Number,
+			Content:           d.Content,
+			Sender:            d.Sender,
+			SenderDetail:      d.SenderDetail,
+			Receiver:          d.Receiver,
+			ReceiverDetail:    d.ReceiverDetail,
+			Medium:            d.Medium,
+			MsgTime:           d.Time,
+			Triage:            d.Triage,
+			Priority:          priority,
+			DivisionIDs:       d.DivisionIDs,
+			LinkedResourceIDs: d.LinkedResourceIDs,
+			AuthorSub:         d.AuthorSub,
+			LastEditorSub:     d.LastEditorSub,
+			CreatedAt:         createdAt,
+			UpdatedAt:         updatedAt,
 		}
 
 	case "Corrected":

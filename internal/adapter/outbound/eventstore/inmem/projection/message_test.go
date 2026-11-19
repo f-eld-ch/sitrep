@@ -1,7 +1,9 @@
 package projection_test
 
 import (
+	"maps"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -320,7 +322,6 @@ func TestMessageHandler_EventsForUnknownMessageAreIgnored(t *testing.T) {
 		evt("Message", msg, "DivisionAcknowledged", obj{"divisionId": uuid.NewString()}, tm(0)),
 		evt("Message", msg, "DivisionAcknowledgementRevoked", obj{"divisionId": uuid.NewString()}, tm(0)),
 		evt("Message", msg, "Deleted", obj{}, tm(0)),
-		evt("Message", msg, "Imported", obj{}, tm(0)),
 	)
 
 	assert.Nil(t, h.Get(msg))
@@ -336,6 +337,8 @@ func TestMessageHandler_MalformedPayloads(t *testing.T) {
 	}{
 		{"recorded undecodable", "Recorded", "x"},
 		{"recorded bad incident id", "Recorded", obj{"incidentId": "nope"}},
+		{"imported undecodable", "Imported", "x"},
+		{"imported bad incident id", "Imported", obj{"incidentId": "nope"}},
 		{"corrected undecodable", "Corrected", "x"},
 		{"triaged undecodable", "Triaged", "x"},
 		{"acknowledged undecodable", "DivisionAcknowledged", "x"},
@@ -377,4 +380,96 @@ func TestMessageHandler_ResetAndSnapshots(t *testing.T) {
 	assert.Nil(t, h.Get(msg))
 	assert.Nil(t, h.GetAttachment(att))
 	assert.Empty(t, h.ForIncident(inc))
+}
+
+func importedEvent(msg, incident uuid.UUID, data obj) eventsourcing.Event {
+	base := obj{
+		"incidentId": incident.String(), "number": 7, "content": "Old message",
+		"sender": "Alice", "senderDetail": "Patrol 1", "receiver": "Bob", "receiverDetail": "HQ",
+		"medium": "RADIO", "time": tm(0), "triage": "DONE", "priority": "HIGH",
+		"authorSub": "sub-alice", "lastEditorSub": "sub-bob", "recordedAt": tm(5), "lastUpdatedAt": tm(9),
+	}
+	maps.Copy(base, data)
+
+	return evt("Message", msg, "Imported", base, tm(20))
+}
+
+func TestMessageHandler_ImportedCarriesTheFullState(t *testing.T) {
+	h := projection.NewMessageHandler()
+	msg, inc, div, res := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+
+	applyAll(t, h, importedEvent(msg, inc, obj{
+		"divisionIds": []string{div.String()}, "linkedResourceIds": []string{res.String()},
+	}))
+
+	row := h.Get(msg)
+	require.NotNil(t, row)
+	assert.Equal(t, inc, row.IncidentID)
+	assert.Equal(t, 7, row.Number)
+	assert.Equal(t, "Old message", row.Content)
+	assert.Equal(t, "Alice", row.Sender)
+	assert.Equal(t, "Patrol 1", row.SenderDetail)
+	assert.Equal(t, "Bob", row.Receiver)
+	assert.Equal(t, "HQ", row.ReceiverDetail)
+	assert.Equal(t, "RADIO", row.Medium)
+	assert.True(t, tm(0).Equal(row.MsgTime))
+	assert.Equal(t, "DONE", row.Triage)
+	assert.Equal(t, "HIGH", row.Priority)
+	assert.Equal(t, []uuid.UUID{div}, row.DivisionIDs)
+	assert.Equal(t, []uuid.UUID{res}, row.LinkedResourceIDs)
+	require.NotNil(t, row.AuthorSub)
+	assert.Equal(t, "sub-alice", *row.AuthorSub)
+	require.NotNil(t, row.LastEditorSub)
+	assert.Equal(t, "sub-bob", *row.LastEditorSub)
+	assert.True(t, tm(5).Equal(row.CreatedAt), "created at the recorded time")
+	assert.True(t, tm(9).Equal(row.UpdatedAt))
+	assert.Equal(t, []*projection.MessageRow{row}, h.ForIncident(inc), "the message is listed for its incident")
+}
+
+func TestMessageHandler_ImportedFallsBackAndNormalisesPriority(t *testing.T) {
+	h := projection.NewMessageHandler()
+	msg, inc := uuid.New(), uuid.New()
+
+	// No timestamps and no lists: the event time and empty lists stand in; MOREINFO resets the priority.
+	applyAll(t, h, importedEvent(msg, inc, obj{
+		"recordedAt": time.Time{}, "lastUpdatedAt": time.Time{}, "triage": "MOREINFO", "priority": "HIGH",
+	}))
+
+	row := h.Get(msg)
+	require.NotNil(t, row)
+	assert.True(t, tm(20).Equal(row.CreatedAt), "created at the event time")
+	assert.True(t, tm(20).Equal(row.UpdatedAt), "updated at the creation time")
+	assert.Equal(t, "NORMAL", row.Priority)
+	assert.NotNil(t, row.DivisionIDs)
+	assert.Empty(t, row.DivisionIDs)
+	assert.NotNil(t, row.LinkedResourceIDs)
+	assert.Empty(t, row.LinkedResourceIDs)
+}
+
+func TestMessageHandler_ImportedReplayUpdatesOnlyWhatTheImportOwns(t *testing.T) {
+	h := projection.NewMessageHandler()
+	msg, inc := uuid.New(), uuid.New()
+	first := importedEvent(msg, inc, nil)
+
+	applyAll(t, h, first)
+	want := h.Get(msg)
+
+	applyAll(t, h, first)
+	assert.Equal(t, want, h.Get(msg), "replaying the same import changes nothing")
+
+	// A second import of the same message updates content, triage and the lists, not the sender.
+	applyAll(t, h, importedEvent(msg, inc, obj{
+		"content":       "Edited",
+		"sender":        "Someone else",
+		"triage":        "PENDING",
+		"priority":      "NORMAL",
+		"lastUpdatedAt": tm(30),
+	}))
+
+	row := h.Get(msg)
+	assert.Equal(t, "Edited", row.Content)
+	assert.Equal(t, "PENDING", row.Triage)
+	assert.Equal(t, "Alice", row.Sender)
+	assert.True(t, tm(30).Equal(row.UpdatedAt))
+	assert.True(t, tm(5).Equal(row.CreatedAt), "the creation time is kept")
 }
