@@ -556,6 +556,7 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
         onSaved();
         return;
       }
+      setStepError(undefined);
       try {
         await triageMessage({
           incidentId,
@@ -567,8 +568,10 @@ function PanelForm(props: { message: Message; incidentId: string; onSaved: () =>
           linkedResourceIds: Array.from(selectedResourceIds),
         });
         onSaved();
-      } catch {
-        // triageState.error is set by useMutation and displayed in the step notification
+      } catch (e) {
+        // The hook's error state shows the failure too, but it is only set for Apollo errors:
+        // whatever else rejects must not leave the user without a message.
+        setStepError(isApiError(e) ? e : new ApiError("UNKNOWN"));
       }
     },
     [

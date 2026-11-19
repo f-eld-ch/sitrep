@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label -- filler cells in history rows have no content by design */
 import dayjs from "dayjs";
-import { forwardRef } from "react";
+import { Fragment, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { Resource, ResourceDeploymentPeriod } from "api";
 import { qualifiedFormation } from "views/journal/TriageView";
@@ -116,12 +116,12 @@ const ResourceTable = (props: ResourceTableProps, ref: React.Ref<HTMLDivElement>
                 : null);
             const historyPeriods = completed.filter((p) => p !== primaryPeriod);
             return (
-              <>
-                <ResourcePrimaryRow key={r.id} r={r} primaryPeriod={primaryPeriod} />
+              <Fragment key={r.id}>
+                <ResourcePrimaryRow r={r} primaryPeriod={primaryPeriod} />
                 {historyPeriods.map((period, i) => (
                   <ResourceHistoryRow key={`${r.id}-${i}`} period={period} />
                 ))}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

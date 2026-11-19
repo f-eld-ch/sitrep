@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { useLocalStorage } from "./useLocalStorage";
-import { useMediaQuery } from "./useMediaQuery";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 const LOCAL_STORAGE_KEY = "usehooks-ts-dark-mode";

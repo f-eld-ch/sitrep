@@ -1,12 +1,16 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { graphQlError } from "../testing/mutations";
 import {
+  cleanFeature,
   useAddFeature,
   useAddLayer,
   useDeleteFeature,
   useModifyFeature,
   useRestoreFeature,
 } from "./commands";
+import { GET_LAYERS } from "./documents";
+import { afterLayerWrite } from "./invalidate";
 
 vi.mock("@apollo/client/react", () => ({
   useMutation: vi.fn(),
@@ -307,5 +311,218 @@ describe("useModifyFeature", () => {
     });
 
     expect(cache.modified).toBeUndefined();
+  });
+
+  it("sends sparse geometry and properties with the effective time of the change", async () => {
+    const mutate = await setupMutation({ modifyFeature: feature("a") });
+    const { result } = renderHook(() => useModifyFeature());
+
+    await result.current[0]({
+      id: "a",
+      geometry: point,
+      currentGeometry: point,
+      currentProperties: {},
+      incidentId: "inc-1",
+      change: { effectiveAt: new Date("2026-01-15T10:00:00.000Z") },
+    });
+
+    expect(mutate.mock.calls[0][0].variables).toEqual({
+      id: "a",
+      geometry: point,
+      properties: undefined,
+      change: { effectiveAt: "2026-01-15T10:00:00.000Z" },
+    });
+  });
+});
+
+describe("cleanFeature", () => {
+  it("drops the properties the client adds for display, and keeps the rest", () => {
+    const cleaned = cleanFeature({
+      type: "Feature",
+      id: "a",
+      geometry: point as never,
+      properties: {
+        label: "Pumpe",
+        createdAt: "x",
+        updatedAt: "x",
+        deletedAt: "x",
+        layerId: "layer-1",
+        featureId: "a",
+      },
+    });
+
+    expect(cleaned).toEqual({
+      type: "Feature",
+      id: "a",
+      geometry: point,
+      properties: { label: "Pumpe" },
+    });
+  });
+});
+
+describe("layers result of the time shown", () => {
+  const asOf = new Date("2026-01-15T10:00:00.000Z");
+
+  it.each([
+    {
+      name: "useAddFeature",
+      run: (hook: () => unknown) =>
+        (hook() as [(a: unknown) => Promise<unknown>])[0]({
+          layerId: "layer-1",
+          clientKey: "k",
+          geometry: point,
+          properties: {},
+          incidentId: "inc-1",
+          asOf,
+        }),
+      hook: useAddFeature,
+      data: { addFeature: feature("n") },
+    },
+    {
+      name: "useDeleteFeature",
+      run: (hook: () => unknown) =>
+        (hook() as [(a: unknown) => Promise<unknown>])[0]({ id: "a", incidentId: "inc-1", asOf }),
+      hook: useDeleteFeature,
+      data: { deleteFeature: "a" },
+    },
+    {
+      name: "useRestoreFeature",
+      run: (hook: () => unknown) =>
+        (hook() as [(a: unknown) => Promise<unknown>])[0]({
+          id: "a",
+          layerId: "layer-1",
+          incidentId: "inc-1",
+          current: { geometry: point, properties: {} },
+          asOf,
+        }),
+      hook: useRestoreFeature,
+      data: { restoreFeature: feature("a") },
+    },
+  ])("$name patches the result cached for that point in time", async ({ hook, run, data }) => {
+    await setupMutation(data);
+    const readQuery = vi.spyOn(cache, "readQuery");
+    const { result } = renderHook(() => hook() as never);
+
+    await run(() => result.current);
+
+    expect(readQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: { incidentId: "inc-1", asOf: "2026-01-15T10:00:00.000Z" },
+      }),
+    );
+  });
+});
+
+describe("when the layers are not cached", () => {
+  const uncached = () => {
+    vi.spyOn(cache, "readQuery").mockReturnValue(null as never);
+  };
+
+  it.each([
+    {
+      name: "useAddFeature",
+      hook: useAddFeature,
+      data: { addFeature: feature("n") },
+      args: {
+        layerId: "layer-1",
+        clientKey: "k",
+        geometry: point,
+        properties: {},
+        incidentId: "inc-1",
+      },
+    },
+    {
+      name: "useDeleteFeature",
+      hook: useDeleteFeature,
+      data: { deleteFeature: "a" },
+      args: { id: "a", incidentId: "inc-1" },
+    },
+    {
+      name: "useRestoreFeature",
+      hook: useRestoreFeature,
+      data: { restoreFeature: feature("a") },
+      args: {
+        id: "a",
+        layerId: "layer-1",
+        incidentId: "inc-1",
+        current: { geometry: point, properties: {} },
+      },
+    },
+  ])("$name writes nothing", async ({ hook, data, args }) => {
+    await setupMutation(data);
+    uncached();
+    const { result } = renderHook(() => hook() as never);
+
+    await (result.current[0] as (a: unknown) => Promise<unknown>)(args);
+
+    expect(cache.written).toBeUndefined();
+    expect(cache.evicted).toEqual([]);
+  });
+
+  it("useAddLayer writes nothing", async () => {
+    await setupMutation({ createLayer: { id: "layer-9", name: "Neu" } });
+    uncached();
+    const { result } = renderHook(() => useAddLayer());
+
+    await result.current[0]({ incidentId: "inc-1", name: "Neu" });
+
+    expect(cache.written).toBeUndefined();
+  });
+
+  it("useAddFeature writes nothing when the server answers no feature", async () => {
+    await setupMutation(undefined);
+    const { result } = renderHook(() => useAddFeature());
+
+    await result.current[0]({
+      layerId: "layer-1",
+      clientKey: "k",
+      geometry: point,
+      properties: {},
+      incidentId: "inc-1",
+    }).catch(() => undefined);
+
+    expect(cache.written).toBeUndefined();
+  });
+});
+
+describe("layer command state", () => {
+  it.each([
+    { name: "useAddFeature", hook: useAddFeature },
+    { name: "useModifyFeature", hook: useModifyFeature },
+    { name: "useDeleteFeature", hook: useDeleteFeature },
+    { name: "useRestoreFeature", hook: useRestoreFeature },
+    { name: "useAddLayer", hook: useAddLayer },
+  ])("$name reports an ApiError converted from the mutation error", async ({ hook }) => {
+    const { useMutation } = await import("@apollo/client/react");
+    vi.mocked(useMutation).mockReturnValue([
+      vi.fn(),
+      {
+        loading: true,
+        error: graphQlError("MESSAGE_TIME_LOCKED"),
+        reset: vi.fn(),
+        called: true,
+      } as never,
+    ]);
+    const { result } = renderHook(() => hook());
+
+    expect(result.current[1].loading).toBe(true);
+    expect(result.current[1].error).toMatchObject({
+      name: "ApiError",
+      code: "MESSAGE_TIME_LOCKED",
+    });
+  });
+});
+
+describe("afterLayerWrite", () => {
+  it("refetches the layers of the incident, at the time shown when there is one", () => {
+    expect(afterLayerWrite("inc-1")).toEqual([
+      { query: GET_LAYERS, variables: { incidentId: "inc-1" } },
+    ]);
+    expect(afterLayerWrite("inc-1", new Date("2026-01-15T10:00:00.000Z"))).toEqual([
+      {
+        query: GET_LAYERS,
+        variables: { incidentId: "inc-1", asOf: "2026-01-15T10:00:00.000Z" },
+      },
+    ]);
   });
 });

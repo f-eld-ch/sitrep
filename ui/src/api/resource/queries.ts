@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client/react";
 import { useState } from "react";
-import { apiErrorFromApolloError } from "../errors";
+import { ApiError, apiErrorFromApolloError } from "../errors";
 import { isMutationRecent } from "../mutationActivity";
 import type { QueryResult } from "../result";
 import { GET_INCIDENT_RESOURCES, GET_INCIDENT_RESOURCES_AS_OF } from "./documents";
@@ -120,7 +120,7 @@ export function useIncidentResources(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error("Incident not found"), { code: "NOT_FOUND" as const }),
+      error: new ApiError("NOT_FOUND", "Incident not found"),
       isRefreshing: false,
       refresh,
     };

@@ -1,5 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "../errors";
+import { graphQlError } from "../testing/mutations";
 import { useCreateIncident, useDeleteIncident } from "./commands";
 
 vi.mock("@apollo/client/react", () => ({
@@ -67,16 +69,15 @@ describe("useDeleteIncident", () => {
     await expect(deleteIncident({ incidentId: "inc-1" })).resolves.toBeUndefined();
   });
 
-  it("throws when the mutation rejects (e.g. incident not closed)", async () => {
-    const gqlError = Object.assign(new Error("incident must be closed before deletion"), {
-      graphQLErrors: [{ extensions: { code: "INCIDENT_NOT_CLOSED" } }],
-    });
-    await setupMutationRejected(gqlError);
+  it("throws an ApiError with the server's code when the mutation rejects (incident not closed)", async () => {
+    await setupMutationRejected(graphQlError("INCIDENT_NOT_CLOSED", "incident must be closed"));
     const { result } = renderHook(() => useDeleteIncident());
     const [deleteIncident] = result.current;
-    await expect(deleteIncident({ incidentId: "inc-1" })).rejects.toThrow(
-      "incident must be closed before deletion",
-    );
+
+    const error = await deleteIncident({ incidentId: "inc-1" }).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "INCIDENT_NOT_CLOSED" });
   });
 });
 

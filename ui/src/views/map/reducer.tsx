@@ -375,15 +375,17 @@ export const wmsReducer = (state: WMSState, action: LayersAction) => {
         servers: [...state.servers, action.payload.server],
         currentServer: action.payload.server.url,
       };
-    case "REMOVE_WMS_SERVER":
+    case "REMOVE_WMS_SERVER": {
+      const servers = state.servers.filter((server) => server.url !== action.payload.server);
       return {
         ...state,
-        servers: state.servers.filter((server) => server.url !== action.payload.server),
+        servers,
         availableLayers: Object.fromEntries(
           Object.entries(state.availableLayers).filter(([key]) => key !== action.payload.server),
         ),
-        currentServer: state.servers.length > 0 ? state.servers[0].url : "",
+        currentServer: servers.length > 0 ? servers[0].url : "",
       };
+    }
     default:
       return state;
   }

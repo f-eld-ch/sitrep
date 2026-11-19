@@ -100,7 +100,7 @@ function FilterState(props: {
   }
 
   return (
-    <p className="text-xs text-fg-muted">
+    <div className="text-xs text-fg-muted">
       <b>{t("filter")}:</b>
       {assignmentFilter !== "all" && (
         <p>
@@ -117,7 +117,7 @@ function FilterState(props: {
           {t("message.triage")}: {t(`triage.${triageFilter}`)}
         </p>
       )}
-    </p>
+    </div>
   );
 }
 

@@ -34,14 +34,16 @@ vi.mock("views/journal/FilterableMessageStack", () => ({
     expandSelected,
     bare,
     onSelect,
+    onClearFocus,
   }: {
     messages: { id: string }[];
     effectiveId?: string;
     expandSelected?: boolean;
     bare?: boolean;
     onSelect: (id: string) => void;
+    onClearFocus: () => void;
   }) => {
-    mocks.stackProps.last = { effectiveId, expandSelected, bare };
+    mocks.stackProps.last = { effectiveId, expandSelected, bare, onClearFocus };
 
     return (
       <ul>
@@ -169,6 +171,19 @@ describe("LagebildView", () => {
     render(<LagebildView />);
 
     expect(mocks.stackProps.last).toMatchObject({ effectiveId: "middle", expandSelected: true });
+  });
+
+  it("deselects the feature on the map when the focus filter is cleared", () => {
+    render(<LagebildView />);
+    selectFeature("feature-1", "inc-child");
+    const token = mocks.mapProps.last?.deselectToken;
+    expect(mocks.messageQuery.lastIncidentId).toBe("inc-child");
+
+    const clearFocus = mocks.stackProps.last?.onClearFocus as () => void;
+    act(() => clearFocus());
+
+    expect(mocks.mapProps.last?.deselectToken).toBe((token as number) + 1);
+    expect(mocks.messageQuery.lastIncidentId).toBe("inc-1");
   });
 
   it("forgets the pick when the slider moves before it", () => {

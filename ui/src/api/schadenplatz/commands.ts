@@ -1,6 +1,6 @@
 import { gql, type Reference } from "@apollo/client";
 import { useApolloClient, useMutation } from "@apollo/client/react";
-import { apiErrorFromApolloError } from "../errors";
+import { apiErrorFromApolloError, rethrowAsApiError } from "../errors";
 import type { CommandHook, CommandState } from "../result";
 import { GET_INCIDENT_RESOURCES } from "../resource/documents";
 import { CREATE_SCHADENPLATZ, RECORD_CASUALTIES } from "./documents";
@@ -75,7 +75,7 @@ export function useCreateSchadenplatz(): CommandHook<
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     const id = result.data?.createSchadenplatz?.id;
     if (!id)
       throw Object.assign(new Error("Create Schadenplatz failed"), {
@@ -195,7 +195,7 @@ export function useRecordCasualties(): CommandHook<RecordCasualtiesArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
 
   return [recordCasualties, state];

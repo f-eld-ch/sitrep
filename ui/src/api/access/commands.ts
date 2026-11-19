@@ -175,7 +175,7 @@ export function useCreateAccessGroup(): CommandHook<CreateAccessGroupArgs, { gro
           data: { accessGroups: [...cached.accessGroups, group] },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
     const groupId = response.data?.createAccessGroup?.id;
     if (!groupId)
       throw Object.assign(new Error("Create access group failed"), { code: "UNKNOWN" as const });
@@ -192,7 +192,9 @@ export interface UpdateAccessGroupDescriptionArgs {
 export function useUpdateAccessGroupDescription(): CommandHook<UpdateAccessGroupDescriptionArgs> {
   const [mutate, result] = useMutation(UPDATE_ACCESS_GROUP_DESCRIPTION);
   const update = async (args: UpdateAccessGroupDescriptionArgs): Promise<void> => {
-    await mutate({ variables: args, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] });
+    await mutate({ variables: args, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] }).catch(
+      rethrowAsApiError,
+    );
   };
   return [update, commandState(result.loading, result.error)];
 }
@@ -200,7 +202,9 @@ export function useUpdateAccessGroupDescription(): CommandHook<UpdateAccessGroup
 export function useRenameAccessGroup(): CommandHook<RenameAccessGroupArgs> {
   const [mutate, result] = useMutation(RENAME_ACCESS_GROUP);
   const rename = async (args: RenameAccessGroupArgs): Promise<void> => {
-    await mutate({ variables: args, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] });
+    await mutate({ variables: args, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] }).catch(
+      rethrowAsApiError,
+    );
   };
   return [rename, commandState(result.loading, result.error)];
 }
@@ -208,7 +212,9 @@ export function useRenameAccessGroup(): CommandHook<RenameAccessGroupArgs> {
 export function useArchiveAccessGroup(): CommandHook<{ groupId: string }> {
   const [mutate, result] = useMutation(ARCHIVE_ACCESS_GROUP);
   const archive = async ({ groupId }: { groupId: string }): Promise<void> => {
-    await mutate({ variables: { groupId }, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] });
+    await mutate({ variables: { groupId }, refetchQueries: [{ query: LIST_ACCESS_GROUPS }] }).catch(
+      rethrowAsApiError,
+    );
   };
   return [archive, commandState(result.loading, result.error)];
 }
@@ -230,7 +236,7 @@ export function useAddGroupMember(): CommandHook<GroupMemberArgs> {
           data: { groupMembers: [...cached.groupMembers, args.subject] },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [add, commandState(result.loading, result.error)];
 }
@@ -254,7 +260,7 @@ export function useRemoveGroupMember(): CommandHook<GroupMemberArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [remove, commandState(result.loading, result.error)];
 }
@@ -290,7 +296,7 @@ export function useGrantGlobalRole(): CommandHook<GlobalRoleArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [grant, commandState(result.loading, result.error)];
 }
@@ -314,7 +320,7 @@ export function useRevokeGlobalRole(): CommandHook<GlobalRoleArgs> {
           },
         });
       },
-    });
+    }).catch(rethrowAsApiError);
   };
   return [revoke, commandState(result.loading, result.error)];
 }

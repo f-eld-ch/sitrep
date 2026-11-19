@@ -170,4 +170,30 @@ describe("toMessage", () => {
     const result = toMessage({ ...WIRE_MESSAGE, attachments: null as unknown as [] });
     expect(result.attachments).toEqual([]);
   });
+
+  it("maps each acknowledgement to the division, the time and who acknowledged", () => {
+    const result = toMessage({
+      ...WIRE_MESSAGE,
+      acknowledgements: [
+        {
+          division: { id: "div-1" },
+          acknowledgedAt: "2024-03-15T09:10:00Z",
+          acknowledgedBy: "user-2",
+        },
+      ],
+    });
+
+    expect(result.acknowledgements).toEqual([
+      {
+        divisionId: "div-1",
+        acknowledgedAt: new Date("2024-03-15T09:10:00Z"),
+        acknowledgedBy: "user-2",
+      },
+    ]);
+  });
+
+  it("treats missing acknowledgements as none", () => {
+    const result = toMessage({ ...WIRE_MESSAGE, acknowledgements: null as unknown as [] });
+    expect(result.acknowledgements).toEqual([]);
+  });
 });

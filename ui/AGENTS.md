@@ -110,6 +110,9 @@ yarn test --run src/api/incident   # a directory or single file
 yarn test --coverage               # v8 provider → coverage/ (Cobertura XML)
 ```
 
+The coverage figure counts every file under `src/` (except generated `src/gql`, tests and
+`setupTests.ts`), also those no test loads, so an untested file shows up as 0% and not as nothing.
+
 Config is in [vitest.config.ts](vitest.config.ts) (merged onto `vite.config.ts`), not in the Vite
 config itself. Environment is `jsdom`; `globals: true` so `describe`/`it`/`expect` need no import.
 [src/setupTests.ts](src/setupTests.ts) wires up `@testing-library/jest-dom` matchers, per-test

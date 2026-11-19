@@ -17,8 +17,13 @@ export default mergeConfig(
       reporters: process.env.GITHUB_ACTIONS ? ["github-actions", "default"] : ["verbose"],
       coverage: {
         provider: "v8",
-        reporter: ["cobertura"],
+        // Cobertura is what CI uploads; the text summary is for a quick look locally.
+        reporter: ["cobertura", "text-summary"],
         reportsDirectory: "./coverage",
+        // Without `include`, v8 only reports the files a test happened to load, so an untested
+        // file is invisible and the figure is too high. Count every source file instead.
+        include: ["src/**/*.{ts,tsx}"],
+        exclude: ["src/gql/**", "src/**/*.test.{ts,tsx}", "src/**/*.d.ts", "src/setupTests.ts"],
       },
     },
   }),
