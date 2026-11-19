@@ -78,7 +78,7 @@ export function resource(id: string, overrides: Partial<Resource> = {}): Resourc
     personnelCount: 8,
     hauptaufgabe: "",
     contact: null,
-    homeLocation: { name: "Altdorf" },
+    homeLocation: home("Altdorf"),
     deploymentLocation: null,
     status: "EINSATZBEREIT",
     statusAt: "2026-01-15T08:00:00Z",
@@ -96,6 +96,8 @@ export function resource(id: string, overrides: Partial<Resource> = {}): Resourc
     ...overrides,
   } as Resource;
 }
+
+export const home = (name: string) => ({ name, lat: 0, lng: 0 });
 
 export const noCasualties = {
   vermisste: 0,
