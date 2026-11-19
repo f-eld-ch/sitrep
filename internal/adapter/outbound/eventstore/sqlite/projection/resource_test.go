@@ -13,7 +13,7 @@ import (
 )
 
 func TestResourceHandler_ReactivatedKeepsHistoryAndResetsCycle(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	store := sqstore.NewEventStore(write, write, sqstore.WallClock{})
 	handlers := []projection.Handler{projection.NewResourceHandler(write)}
 	proj := projection.NewProjector(write, write, store, sqstore.NewNotifier(), handlers)
@@ -112,7 +112,7 @@ func TestResourceHandler_ReactivatedKeepsHistoryAndResetsCycle(t *testing.T) {
 }
 
 func TestResourceHandler_RenamedReplacesName(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	store := sqstore.NewEventStore(write, write, sqstore.WallClock{})
 	handlers := []projection.Handler{projection.NewResourceHandler(write)}
 	proj := projection.NewProjector(write, write, store, sqstore.NewNotifier(), handlers)

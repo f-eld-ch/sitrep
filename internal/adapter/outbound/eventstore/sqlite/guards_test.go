@@ -50,8 +50,8 @@ func (s *stack) openIncident(t *testing.T, name string) shared.IncidentID {
 	return id
 }
 
-// insertEvent writes one raw event of a stream, bypassing the aggregates.
-func (s *stack) insertEvent(t *testing.T, streamType string, stream uuid.UUID, version int, eventType, data string) {
+// insertEvent writes one raw event of an Incident stream, bypassing the aggregate.
+func (s *stack) insertEvent(t *testing.T, stream uuid.UUID, version int, eventType, data string) {
 	t.Helper()
 
 	now := sqlite.FormatTime(time.Now())
@@ -59,7 +59,7 @@ func (s *stack) insertEvent(t *testing.T, streamType string, stream uuid.UUID, v
 		INSERT INTO eventsourcing_events
 		  (stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at)
 		VALUES (?, ?, ?, ?, ?, '{}', ?, ?)`,
-		streamType, stream.String(), version, eventType, data, now, now)
+		"Incident", stream.String(), version, eventType, data, now, now)
 	require.NoError(t, err)
 }
 
@@ -213,17 +213,17 @@ func TestIncidentHierarchyGuard_HasChildren(t *testing.T) {
 
 	assert.False(t, hasChildren(parent), "no events, no children")
 
-	s.insertEvent(t, "Incident", child, 1, "ParentLinked", `{"parentId":"`+parent.String()+`"}`)
+	s.insertEvent(t, child, 1, "ParentLinked", `{"parentId":"`+parent.String()+`"}`)
 	assert.True(t, hasChildren(parent), "a linked child counts")
 	assert.False(t, hasChildren(other), "only the linked parent has children")
 
-	s.insertEvent(t, "Incident", child, 2, "ParentUnlinked", `{}`)
+	s.insertEvent(t, child, 2, "ParentUnlinked", `{}`)
 	assert.False(t, hasChildren(parent), "an unlinked child no longer counts")
 
-	s.insertEvent(t, "Incident", child, 3, "ParentLinked", `{"parentId":"`+parent.String()+`"}`)
+	s.insertEvent(t, child, 3, "ParentLinked", `{"parentId":"`+parent.String()+`"}`)
 	assert.True(t, hasChildren(parent), "re-linking counts again")
 
-	s.insertEvent(t, "Incident", child, 4, "Deleted", `{}`)
+	s.insertEvent(t, child, 4, "Deleted", `{}`)
 	assert.False(t, hasChildren(parent), "a deleted child no longer counts")
 }
 

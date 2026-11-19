@@ -20,8 +20,8 @@ import (
 )
 
 // openTestDB opens a temp-file SQLite database with the same pragmas as
-// production and runs all migrations up. The handle is closed in t.Cleanup.
-func openTestDB(t *testing.T) *sql.DB {
+// production and runs all migrations up. Both handles are closed in t.Cleanup.
+func openTestDB(t *testing.T) (read, write *sql.DB) {
 	t.Helper()
 
 	dbPath := filepath.Join(t.TempDir(), "test.db")
@@ -33,13 +33,28 @@ func openTestDB(t *testing.T) *sql.DB {
 		"&_pragma=foreign_keys(1)" +
 		"&_pragma=temp_store(MEMORY)" +
 		"&_txlock=immediate"
+	readDSN := "file:" + dbPath +
+		"?_pragma=journal_mode(WAL)" +
+		"&_pragma=busy_timeout(10000)" +
+		"&_pragma=synchronous(NORMAL)" +
+		"&_pragma=foreign_keys(1)" +
+		"&_pragma=temp_store(MEMORY)" +
+		"&_pragma=query_only(1)"
 
 	write, err := sql.Open("sqlite", writeDSN)
 	require.NoError(t, err)
 	write.SetMaxOpenConns(1)
 	write.SetMaxIdleConns(1)
 
-	t.Cleanup(func() { _ = write.Close() })
+	read, err = sql.Open("sqlite", readDSN)
+	require.NoError(t, err)
+	read.SetMaxOpenConns(4)
+	read.SetMaxIdleConns(4)
+
+	t.Cleanup(func() {
+		_ = read.Close()
+		_ = write.Close()
+	})
 
 	provider, err := goose.NewProvider(goose.DialectSQLite3, write, sqlitemig.FS,
 		goose.WithGoMigrations(sqlitemig.GoMigrations()...))
@@ -47,7 +62,7 @@ func openTestDB(t *testing.T) *sql.DB {
 	_, err = provider.Up(t.Context())
 	require.NoError(t, err)
 
-	return write
+	return read, write
 }
 
 // applyEvent applies a single event to the named handler in its own transaction
@@ -74,7 +89,7 @@ func newEvent(streamType, streamID string, version int, eventType string, data a
 // ─────────────────────────────────────────────────────────────────────────────
 
 func TestIncidentHandler_OpenedAndRenamed(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -103,7 +118,7 @@ func TestIncidentHandler_OpenedAndRenamed(t *testing.T) {
 }
 
 func TestIncidentHandler_ClosedAndReopened(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -137,7 +152,7 @@ func TestIncidentHandler_ClosedAndReopened(t *testing.T) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func TestLayerHandler_RevisionBumpsOnPlaced(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -165,7 +180,7 @@ func TestLayerHandler_RevisionBumpsOnPlaced(t *testing.T) {
 }
 
 func TestLayerHandler_MovedWithSameGeometryDoesNotBumpRevision(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -202,7 +217,7 @@ func TestLayerHandler_MovedWithSameGeometryDoesNotBumpRevision(t *testing.T) {
 }
 
 func TestLayerHandler_MovedWithDifferentGeometryBumpsRevision(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -238,7 +253,7 @@ func TestLayerHandler_MovedWithDifferentGeometryBumpsRevision(t *testing.T) {
 }
 
 func TestLayerHandler_PlaceIntoMissingLayerIsNoop(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -268,7 +283,7 @@ func TestLayerHandler_PlaceIntoMissingLayerIsNoop(t *testing.T) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func TestIncidentHandler_ApplySingleIsIdempotent(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()
@@ -293,7 +308,7 @@ func TestIncidentHandler_ApplySingleIsIdempotent(t *testing.T) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 func TestProjector_ResetAll(t *testing.T) {
-	write := openTestDB(t)
+	_, write := openTestDB(t)
 	clock := sqstore.WallClock{}
 	store := sqstore.NewEventStore(write, write, clock)
 	notifier := sqstore.NewNotifier()

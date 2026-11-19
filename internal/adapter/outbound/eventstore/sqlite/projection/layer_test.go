@@ -23,14 +23,14 @@ func point(lng, lat float64) map[string]any {
 }
 
 // layerFeatures returns the features of the layer in z-order.
-func layerFeatures(t *testing.T, h *harness, layerID string) []storedFeature {
+func layerFeatures(t *testing.T, h *harness) []storedFeature {
 	t.Helper()
 
 	var doc struct {
 		Features []storedFeature `json:"features"`
 	}
 
-	require.NoError(t, json.Unmarshal([]byte(h.col("readmodel_layer_features", "geojson", layerID)), &doc))
+	require.NoError(t, json.Unmarshal([]byte(h.col("readmodel_layer_features", "geojson", idLayer)), &doc))
 
 	return doc.Features
 }
@@ -100,7 +100,7 @@ func TestLayerHandler_FeatureLifecycle(t *testing.T) {
 	h.apply(events...)
 	h.assertReplayIdempotent(events, "readmodel_layer_features", "readmodel_feature_change")
 
-	features := layerFeatures(t, h, idLayer)
+	features := layerFeatures(t, h)
 	require.Len(t, features, 2)
 	assert.Equal(t, idFeat1, features[0].ID, "features keep their drawing order")
 	assert.Equal(t, idFeat2, features[1].ID)
@@ -109,7 +109,7 @@ func TestLayerHandler_FeatureLifecycle(t *testing.T) {
 	h.apply(h.event("Feature", idFeat1, 2, "Moved", 3, map[string]any{"geometry": point(10, 49)}))
 	h.apply(h.event("Feature", idFeat2, 2, "Restyled", 4, map[string]any{"properties": map[string]any{"label": "B2"}}))
 
-	features = layerFeatures(t, h, idLayer)
+	features = layerFeatures(t, h)
 	require.Len(t, features, 2)
 	assert.JSONEq(t, `{"type":"Point","coordinates":[10,49]}`, string(features[0].Geometry))
 	assert.JSONEq(t, `{"label":"B2"}`, string(features[1].Properties))
@@ -121,7 +121,7 @@ func TestLayerHandler_FeatureLifecycle(t *testing.T) {
 
 	h.apply(h.event("Feature", idFeat1, 3, "Removed", 6, map[string]any{}))
 
-	features = layerFeatures(t, h, idLayer)
+	features = layerFeatures(t, h)
 	require.Len(t, features, 1)
 	assert.Equal(t, idFeat2, features[0].ID)
 
@@ -135,7 +135,7 @@ func TestLayerHandler_FeatureLifecycle(t *testing.T) {
 		"incidentId": idInc1, "layerId": idLayer, "geometry": point(11, 50), "properties": map[string]any{"label": "A"},
 	}))
 
-	features = layerFeatures(t, h, idLayer)
+	features = layerFeatures(t, h)
 	require.Len(t, features, 2)
 	assert.Equal(t, idFeat1, features[1].ID)
 	assert.JSONEq(t, `{"type":"Point","coordinates":[11,50]}`, string(features[1].Geometry))
@@ -157,7 +157,7 @@ func TestLayerHandler_OlderChangesAreHistoryOnly(t *testing.T) {
 		"geometry": point(2, 2), "effectiveAt": "2026-03-01T11:00:00Z", "messageId": idMsg2,
 	}))
 
-	features := layerFeatures(t, h, idLayer)
+	features := layerFeatures(t, h)
 	require.Len(t, features, 1)
 	assert.JSONEq(t, `{"type":"Point","coordinates":[1,1]}`, string(features[0].Geometry),
 		"a change effective before the current state does not overwrite it")
@@ -169,7 +169,7 @@ func TestLayerHandler_OlderChangesAreHistoryOnly(t *testing.T) {
 		"geometry": point(3, 3), "effectiveAt": "2026-03-01T12:00:00Z", "messageId": idMsg2,
 	}))
 
-	features = layerFeatures(t, h, idLayer)
+	features = layerFeatures(t, h)
 	assert.JSONEq(
 		t,
 		`{"type":"Point","coordinates":[3,3]}`,
@@ -186,7 +186,7 @@ func TestLayerHandler_ChangeWithoutPlacementIsSkipped(t *testing.T) {
 	h.apply(h.event("Feature", idFeat1, 3, "Removed", 2, map[string]any{}))
 
 	assert.Zero(t, h.count("readmodel_feature_change", ""), "nothing to attach the change to")
-	assert.Empty(t, layerFeatures(t, h, idLayer))
+	assert.Empty(t, layerFeatures(t, h))
 }
 
 func TestLayerHandler_MalformedFeatureEventFails(t *testing.T) {
