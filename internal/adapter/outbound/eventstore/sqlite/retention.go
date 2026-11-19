@@ -95,8 +95,8 @@ func (r *IncidentRetention) Archive(ctx context.Context, incidentID shared.Incid
 
 	res, err := tx.ExecContext(ctx, `
 		INSERT OR IGNORE INTO eventsourcing_archive_events
-		  (stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at, archived_at)
-		SELECT e.stream_type, e.stream_id, e.version, e.event_type, e.data, e.metadata, e.occurred_at, e.recorded_at, ?
+		  (stream_type, stream_id, version, event_type, data, metadata, occurred_at, recorded_at, seq, archived_at)
+		SELECT e.stream_type, e.stream_id, e.version, e.event_type, e.data, e.metadata, e.occurred_at, e.recorded_at, e.seq, ?
 		  FROM eventsourcing_events e
 		  JOIN eventsourcing_aggregate_index i USING (stream_type, stream_id)
 		 WHERE i.incident_id = ?`,
