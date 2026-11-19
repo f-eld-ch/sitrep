@@ -100,6 +100,10 @@ func Run(t *testing.T, f Factory) {
 		RunFeatureChanges(t, f)
 	})
 
+	t.Run("ReadModels", func(t *testing.T) {
+		RunReadModels(t, f)
+	})
+
 	t.Run("Access", func(t *testing.T) {
 		RunAccess(t, f)
 	})
