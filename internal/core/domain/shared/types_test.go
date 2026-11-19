@@ -80,6 +80,23 @@ func TestIDsRoundTripAsText(t *testing.T) {
 	})
 }
 
+func TestIDStrings(t *testing.T) {
+	raw := uuid.New()
+
+	for name, got := range map[string]string{
+		"incident":     shared.IncidentID(raw).String(),
+		"message":      shared.MessageID(raw).String(),
+		"layer":        shared.LayerID(raw).String(),
+		"feature":      shared.FeatureID(raw).String(),
+		"division":     shared.DivisionID(raw).String(),
+		"attachment":   shared.AttachmentID(raw).String(),
+		"schadenplatz": shared.SchadenplatzID(raw).String(),
+		"resource":     shared.ResourceID(raw).String(),
+	} {
+		assert.Equal(t, raw.String(), got, name)
+	}
+}
+
 func TestValidationError(t *testing.T) {
 	err := shared.ValidationError{Field: "name", Message: "must not be empty"}
 

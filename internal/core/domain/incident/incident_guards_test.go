@@ -102,6 +102,19 @@ func TestIncident_CommandsRespectTheLifecycle(t *testing.T) {
 	})
 }
 
+func TestIncident_ClosedAt(t *testing.T) {
+	inc := incidentIn(t, stateOpen)
+	assert.Nil(t, inc.ClosedAt())
+
+	closedAt := at.Add(time.Hour)
+	require.NoError(t, inc.Close(shared.ReasonManual, actor, closedAt))
+	require.NotNil(t, inc.ClosedAt())
+	assert.Equal(t, closedAt, *inc.ClosedAt())
+
+	require.NoError(t, inc.Reopen(actor, at))
+	assert.Nil(t, inc.ClosedAt())
+}
+
 func TestIncident_Open_RejectsInvalidDivisions(t *testing.T) {
 	tests := []struct {
 		name     string
