@@ -13,7 +13,7 @@ import (
 
 func TestArchive_DiscardPartRemovesThePartAndItsSidecar(t *testing.T) {
 	a := NewArchive(t.TempDir())
-	writePart(t, a, `"v1"`, []byte("some bytes"), false)
+	writePart(t, a, `"v1"`, []byte("some bytes"))
 
 	before, err := a.Part(t.Context(), testSet)
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestArchive_CommitErrors(t *testing.T) {
 	t.Run("the archive cannot be put in place", func(t *testing.T) {
 		data := validArchiveBytes(t)
 		a := NewArchive(t.TempDir())
-		writePart(t, a, `"v1"`, data, false)
+		writePart(t, a, `"v1"`, data)
 		// A non-empty directory at the target makes the rename fail.
 		require.NoError(t, os.MkdirAll(filepath.Join(a.path(testSet), "child"), 0o750))
 
