@@ -1156,17 +1156,21 @@ func (r *mutationResolver) RemoveAttachment(
 		return "", err
 	}
 
-	msgID, err := shared.ParseMessageID(messageID)
+	// parseUUID wraps a malformed id as INVALID_INPUT; the shared Parse* helpers return the raw
+	// uuid error, which would reach the client as an unclassified failure.
+	msgUUID, err := parseUUID(messageID)
 	if err != nil {
 		return "", err
 	}
 
-	attID, err := shared.ParseAttachmentID(attachmentID)
+	attUUID, err := parseUUID(attachmentID)
 	if err != nil {
 		return "", err
 	}
 
-	if err := r.Messages.RemoveAttachment(ctx, msgID, attID, actor); err != nil {
+	if err := r.Messages.RemoveAttachment(
+		ctx, shared.MessageID(msgUUID), shared.AttachmentID(attUUID), actor,
+	); err != nil {
 		return "", err
 	}
 
