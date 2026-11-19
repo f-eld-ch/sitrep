@@ -60,6 +60,8 @@ describe("extractWGS84Coordinates", () => {
   it("negates southern and western values, which then fall outside Switzerland", () => {
     expect(extractWGS84Coordinates("46.5S 6.5E")).toBeUndefined();
     expect(extractWGS84Coordinates("46.5N 6.5W")).toBeUndefined();
+    expect(extractWGS84Coordinates("6.5W 46.5N")).toBeUndefined();
+    expect(extractWGS84Coordinates("6.5E 46.5S")).toBeUndefined();
   });
 
   it.each([
