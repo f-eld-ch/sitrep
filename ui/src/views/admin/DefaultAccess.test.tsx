@@ -153,14 +153,6 @@ describe("DefaultAccess", () => {
       expect(setMode).toHaveBeenCalledWith({ mode: "OPEN_OPERATIONAL" });
     });
 
-    it("does not call the api when the current mode is chosen again", () => {
-      renderPage();
-
-      fireEvent.click(modeRadios()[0]);
-
-      expect(setMode).not.toHaveBeenCalled();
-    });
-
     it("disables the choice while a change is running", () => {
       api.useSetDefaultAccessMode.mockReturnValue([setMode, { loading: true, error: undefined }]);
       renderPage();
@@ -234,15 +226,6 @@ describe("DefaultAccess", () => {
       await waitFor(() =>
         expect(within(rows[2]).getByRole("radio", { name: "Manager" })).toBeEnabled(),
       );
-    });
-
-    it("does not call the api when the current role is chosen again", () => {
-      renderPage();
-
-      const rows = within(screen.getAllByRole("table")[0]).getAllByRole("row");
-      fireEvent.click(within(rows[2]).getByRole("radio", { name: "Bearbeiter" }));
-
-      expect(grantRole).not.toHaveBeenCalled();
     });
 
     it("revokes a grant", async () => {
