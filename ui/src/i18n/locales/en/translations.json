@@ -2,6 +2,7 @@
   "actions": "actions",
   "add": "add",
   "devisionAdd": "add new division",
+  "removeDivision": "remove division",
   "all": "all",
   "close": "close",
   "cancel": "Cancel",
