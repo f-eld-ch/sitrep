@@ -58,6 +58,7 @@ func uintOption(name string, defaultValue uint, description string, legacyEnv ..
 	}
 }
 
+//nolint:unparam // defaultValue is false for every option today; the signature matches the other option constructors.
 func boolOption(name string, defaultValue bool, description string, legacyEnv ...string) configOption {
 	return configOption{
 		name:        name,
@@ -72,6 +73,8 @@ func boolOption(name string, defaultValue bool, description string, legacyEnv ..
 
 // stringOptionF creates an option whose viper key (name) differs from its pflag name (flag).
 // Used for dotted viper keys like "storage.attachments.enabled" → flag "attachments-enabled".
+//
+//nolint:unparam // legacyEnv is unused by the current options; the signature matches the other option constructors.
 func stringOptionF(viperKey, flagName, defaultValue, description string, legacyEnv ...string) configOption {
 	return configOption{
 		name:        viperKey,

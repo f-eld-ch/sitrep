@@ -236,7 +236,7 @@ func (h *AccessHandler) applyGlobal(e eventsourcing.Event) error {
 func (h *AccessHandler) recompute() {
 	h.policies = make(map[string]AccessPolicyRow)
 	for key, role := range h.grants {
-		incidentID, kind, subject, _ := parseGrantKey(key)
+		incidentID, kind, subject := parseGrantKey(key)
 
 		// The default-access template must never generate Casbin policy rows.
 		if entry := h.modes[incidentID]; entry.isDefault {
@@ -338,7 +338,7 @@ func (h *AccessHandler) DefaultGrants() []access.Grant {
 	var grants []access.Grant
 
 	for key, role := range h.grants {
-		incidentID, kind, subject, _ := parseGrantKey(key)
+		incidentID, kind, subject := parseGrantKey(key)
 		if incidentID != access.DefaultAccessTemplateID {
 			continue
 		}
@@ -359,7 +359,7 @@ func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow 
 	var rows []IncidentGrantRow
 
 	for key, role := range h.grants {
-		id, kind, subject, _ := parseGrantKey(key)
+		id, kind, subject := parseGrantKey(key)
 		if id == incidentID {
 			rows = append(rows, IncidentGrantRow{IncidentID: id, PrincipalKind: kind, PrincipalID: subject, Role: role})
 		}
@@ -428,12 +428,11 @@ func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role acce
 	return id.String() + "|" + string(kind) + "|" + subject + "|" + string(role)
 }
 
-func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.Role) {
+func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string) {
 	var (
 		id      uuid.UUID
 		kind    access.PrincipalKind
 		subject string
-		role    access.Role
 	)
 
 	_, _ = fmt.Sscanf(key, "%s", &subject)
@@ -443,10 +442,9 @@ func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.
 		id, _ = uuid.Parse(parts[0])
 		kind = access.PrincipalKind(parts[1])
 		subject = parts[2]
-		role = access.Role(parts[3])
 	}
 
-	return id, kind, subject, role
+	return id, kind, subject
 }
 
 func split(value string, sep byte) []string {
