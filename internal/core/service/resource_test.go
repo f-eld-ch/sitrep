@@ -649,3 +649,65 @@ func TestResourceService_ReactivateResource_UsesProvidedAt(t *testing.T) {
 	assert.Equal(t, customAt, lastEventAt(t, store, alerted.ID),
 		"Reactivated event must carry the provided at, not clock.Now()")
 }
+
+// ── Schadenplatz must belong to the incident ──────────────────────────────────
+
+func TestResourceService_AlertResource_UnknownSchadenplatzRejected(t *testing.T) {
+	incSvc, _, resSvc := setupResourceServices(t)
+
+	inc, err := incSvc.CreateIncident(ctx(), "Hochwasser", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	unknown := shared.SchadenplatzID(newID())
+	input := alertInput(inc.IncidentID)
+	input.SchadenplatzID = &unknown
+
+	_, err = resSvc.AlertResource(ctx(), input, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput)
+}
+
+func TestResourceService_AlertResource_SchadenplatzOfAnotherIncidentRejected(t *testing.T) {
+	incSvc, spSvc, resSvc := setupResourceServices(t)
+
+	mine, err := incSvc.CreateIncident(ctx(), "Meiner", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	other, err := incSvc.CreateIncident(ctx(), "Anderer", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	foreign, err := spSvc.CreateSchadenplatz(ctx(), other.IncidentID, "Fremder Platz", nil, testActor)
+	require.NoError(t, err)
+
+	input := alertInput(mine.IncidentID)
+	input.SchadenplatzID = &foreign.ID
+
+	_, err = resSvc.AlertResource(ctx(), input, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput)
+}
+
+func TestResourceService_ReassignResource_SchadenplatzMustBelongToTheIncident(t *testing.T) {
+	incSvc, spSvc, resSvc := setupResourceServices(t)
+
+	mine, err := incSvc.CreateIncident(ctx(), "Meiner", nil, nil, nil, testActor)
+	require.NoError(t, err)
+	other, err := incSvc.CreateIncident(ctx(), "Anderer", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	res, err := resSvc.AlertResource(ctx(), alertInput(mine.IncidentID), testActor)
+	require.NoError(t, err)
+
+	foreign, err := spSvc.CreateSchadenplatz(ctx(), other.IncidentID, "Fremder Platz", nil, testActor)
+	require.NoError(t, err)
+
+	_, err = resSvc.ReassignResource(ctx(), res.ID, foreign.ID, nil, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput, "site of another incident")
+
+	_, err = resSvc.ReassignResource(ctx(), res.ID, shared.SchadenplatzID(newID()), nil, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput, "unknown site")
+
+	own, err := spSvc.CreateSchadenplatz(ctx(), mine.IncidentID, "Eigener Platz", nil, testActor)
+	require.NoError(t, err)
+
+	moved, err := resSvc.ReassignResource(ctx(), res.ID, own.ID, nil, testActor)
+	require.NoError(t, err)
+	assert.Equal(t, own.ID, moved.SchadenplatzID)
+}
