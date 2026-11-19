@@ -644,6 +644,37 @@ describe("TriageView submit", () => {
     },
   );
 
+  it.each([
+    ["an ApiError", new ApiError("CONFLICT", "server says no"), "server says no"],
+    ["another error", new Error("boom"), "Ein unbekannter Fehler ist aufgetreten."],
+  ])(
+    "shows the error of the rejection when the hook's state carries none (%s)",
+    async (_label, rejection, text) => {
+      h.triage.mockRejectedValue(rejection);
+      renderView();
+      goToLastStep();
+
+      fireEvent.click(screen.getByRole("button", { name: "Triage abschliessen" }));
+
+      expect(await screen.findByText(text)).toBeInTheDocument();
+      expect(screen.queryByText("Triage gespeichert")).not.toBeInTheDocument();
+    },
+  );
+
+  it("clears the error of a failed save when the save is tried again", async () => {
+    h.triage.mockRejectedValueOnce(new ApiError("CONFLICT", "server says no"));
+    renderView();
+    goToLastStep();
+
+    fireEvent.click(screen.getByRole("button", { name: "Triage abschliessen" }));
+    expect(await screen.findByText("server says no")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Triage abschliessen" }));
+
+    expect(await screen.findByText("Triage gespeichert")).toBeInTheDocument();
+    expect(screen.queryByText("server says no")).not.toBeInTheDocument();
+  });
+
   it("disables the submit button while the triage is saved", () => {
     h.triageState.loading = true;
     renderView();
