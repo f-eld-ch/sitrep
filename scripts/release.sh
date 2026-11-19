@@ -10,6 +10,9 @@
 #   ./scripts/release.sh --version 26.10.0
 #   ./scripts/release.sh --dry-run
 #
+# Tags are signed (git tag -s), so a signing key must be configured and registered on GitHub;
+# see docs/development/Releasing.md. The release workflow rejects an unsigned tag.
+#
 # The Helm chart is released separately (SemVer, tag chart-vX.Y.Z; see helm/Chart.yaml):
 #
 #   ./scripts/release.sh --chart                          # release the version in Chart.yaml
@@ -82,6 +85,21 @@ run() {
 	fi
 }
 
+# Release tags are annotated and signed. The release workflow checks with GitHub that the tag
+# is verified, which needs the signing key to be registered on the maintainer's GitHub account.
+require_signing_key() {
+	[[ -n "$(git config --get user.signingkey || true)" ]] ||
+		die "no signing key configured. Tags are signed; set one up first (docs/development/Releasing.md):
+  git config user.signingkey <GPG key id, or path to an SSH public key>
+  git config gpg.format ssh    # only when signing with an SSH key
+and add the same key to https://github.com/settings/keys as a *signing* key"
+}
+
+# sign_tag TAG MESSAGE — creates the signed, annotated tag.
+sign_tag() {
+	run git tag --sign --message "$2" "$1"
+}
+
 # ── Preflight ────────────────────────────────────────────────────────────────
 
 if $chart; then
@@ -89,6 +107,8 @@ if $chart; then
 else
 	command -v git-cliff >/dev/null || die "git-cliff is not installed (https://git-cliff.org)"
 fi
+
+require_signing_key
 
 branch="$(git rev-parse --abbrev-ref HEAD)"
 [[ $branch == "$RELEASE_BRANCH" ]] || die "releases are cut from $RELEASE_BRANCH, not $branch"
@@ -169,7 +189,7 @@ release_chart() {
 	else
 		printf '%s already at %s — tagging the current commit.\n' "$chart_file" "$version"
 	fi
-	run git tag "$tag"
+	sign_tag "$tag" "SitRep Helm chart $version"
 
 	if ! $assume_yes && ! $dry_run; then
 		printf '\nAbout to push %s%s to %s. Continue? [y/N] ' "$($changed && printf '%s and ' "$RELEASE_BRANCH")" "$tag" "$REMOTE"
@@ -262,7 +282,7 @@ fi
 
 run git commit --quiet -m "chore(release): prepare release $tag" -- "${files[@]}"
 
-run git tag "$tag"
+sign_tag "$tag" "SitRep $tag"
 
 # ── Push ─────────────────────────────────────────────────────────────────────
 
