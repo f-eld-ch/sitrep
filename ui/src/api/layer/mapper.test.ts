@@ -129,6 +129,15 @@ describe("layerToFeatureCollection", () => {
     ]);
   });
 
+  it("marks every feature with the id of its layer, not its own", () => {
+    const collection = layerToFeatureCollection(toLayer(WIRE_LAYER));
+
+    expect(collection.features.map((f) => f.properties?.["layerId"])).toEqual([
+      "layer-1",
+      "layer-1",
+    ]);
+  });
+
   it("skips holes in the feature list", () => {
     const layer = toLayer(WIRE_LAYER);
     layer.features = [undefined as never, layer.features[0]];

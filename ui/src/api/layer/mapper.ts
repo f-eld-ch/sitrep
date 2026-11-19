@@ -63,10 +63,10 @@ export function convertFeatureToGeoJsonFeature(
 
 export function layerToFeatureCollection(layer: Layer | undefined): FeatureCollection {
   const fc: FeatureCollection = { features: [], type: "FeatureCollection" };
-  const features = layer?.features ?? [];
-  for (const f of features) {
+  if (layer === undefined) return fc;
+  for (const f of layer.features ?? []) {
     if (f === undefined) continue;
-    fc.features.push(convertFeatureToGeoJsonFeature(f, f.id));
+    fc.features.push(convertFeatureToGeoJsonFeature(f, layer.id));
   }
   return fc;
 }
