@@ -57,6 +57,10 @@ type Capabilities struct {
 	FeatureOrderStable bool
 	// FeatureLookupByID: GetFeatureIncidentID returns the correct incident.
 	FeatureLookupByID bool
+	// AccessListingContract: the access queries order their rows (groups and users by name,
+	// members by subject, global roles by role), resolve group names on grants, list the
+	// owner grant and report ErrNotFound for an unknown incident or an unknown group.
+	AccessListingContract bool
 }
 
 // Factory constructs a fresh Backend for each test. It is called once per
@@ -98,6 +102,10 @@ func Run(t *testing.T, f Factory) {
 
 	t.Run("FeatureChanges", func(t *testing.T) {
 		RunFeatureChanges(t, f)
+	})
+
+	t.Run("Access", func(t *testing.T) {
+		RunAccess(t, f)
 	})
 
 	t.Run("Users", func(t *testing.T) {
