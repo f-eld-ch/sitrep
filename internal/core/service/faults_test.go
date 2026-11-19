@@ -10,6 +10,7 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/layer"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/schadenplatz"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
@@ -168,12 +169,41 @@ type faultySchadenplaetze struct {
 	fault
 }
 
+func (r *faultySchadenplaetze) Load(ctx context.Context, id shared.SchadenplatzID) (*schadenplatz.Schadenplatz, error) {
+	if err := r.onLoad(); err != nil {
+		return nil, err
+	}
+
+	return r.SchadenplatzRepository.Load(ctx, id)
+}
+
 func (r *faultySchadenplaetze) Save(ctx context.Context, a *schadenplatz.Schadenplatz) (outbound.Cursor, error) {
 	if err := r.onSave(); err != nil {
 		return nil, err
 	}
 
 	return r.SchadenplatzRepository.Save(ctx, a)
+}
+
+type faultyResources struct {
+	outbound.ResourceRepository
+	fault
+}
+
+func (r *faultyResources) Load(ctx context.Context, id shared.ResourceID) (*resource.Resource, error) {
+	if err := r.onLoad(); err != nil {
+		return nil, err
+	}
+
+	return r.ResourceRepository.Load(ctx, id)
+}
+
+func (r *faultyResources) Save(ctx context.Context, a *resource.Resource) (outbound.Cursor, error) {
+	if err := r.onSave(); err != nil {
+		return nil, err
+	}
+
+	return r.ResourceRepository.Save(ctx, a)
 }
 
 type faultyAccessRepo struct {

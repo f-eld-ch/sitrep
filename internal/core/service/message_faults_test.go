@@ -11,9 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
+	"github.com/f-eld-ch/sitrep/internal/core/domain/message"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 	"github.com/f-eld-ch/sitrep/internal/core/service"
+	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
 // failingBlobs is a blob store whose operations can be made to fail.
@@ -339,6 +341,30 @@ func TestMessageService_RetriesAfterAConflict(t *testing.T) {
 		require.ErrorIs(t, r.svc.RemoveAttachment(ctx(), r.msg, r.attachment, testActor), shared.ErrConflict)
 		assert.Equal(t, 1, r.blobs.count(), "the blob stays as long as the attachment does")
 	})
+}
+
+// A message from the legacy import has neither an author nor a time it was recorded at.
+func TestMessageService_StateOfAnImportedMessage(t *testing.T) {
+	r := newMessageRig(t)
+	id := shared.MessageID(newID())
+
+	imported := message.New(id)
+	eventsourcing.TrackChange(imported, message.Imported{
+		IncidentID: r.incidentID, Number: 99, Content: "Alt", Sender: "S", Receiver: "R",
+		Medium: shared.MediumRadio, Time: testAt.Add(-time.Hour),
+		Triage: shared.TriageDone, Priority: shared.PriorityNormal,
+	}, testAt, map[string]any{"actor": "import"})
+
+	_, err := r.messages.MessageRepository.Save(ctx(), imported)
+	require.NoError(t, err)
+
+	content := "Alt, berichtigt"
+	state, err := r.svc.CorrectMessage(ctx(), id, &content, nil, nil, nil, nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	assert.Equal(t, "Alt, berichtigt", state.Content)
+	assert.Empty(t, state.AuthorSub, "the import knows no author")
+	assert.Equal(t, testAt, state.CreatedAt, "without a record time the time of the change stands in")
 }
 
 func TestMessageService_TriageAndAcknowledgeCheckTheDivision(t *testing.T) {
