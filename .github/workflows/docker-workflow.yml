@@ -110,7 +110,7 @@ jobs:
           # title ...), and those are what Kargo shows on a Freight. Set the app's own, like the
           # release images have. Labels go last so they win over metadata-action's (version=develop).
           meta="org.opencontainers.image.created=$created,org.opencontainers.image.revision=$(git rev-parse HEAD),org.opencontainers.image.version=$SITREP_VERSION"
-          annotations="$meta,org.opencontainers.image.source=https://github.com/f-eld-ch/sitrep,org.opencontainers.image.title=sitrep,org.opencontainers.image.licenses=AGPL-3.0,org.opencontainers.image.url=https://github.com/f-eld-ch/sitrep"
+          annotations="$meta,org.opencontainers.image.source=https://github.com/f-eld-ch/sitrep,org.opencontainers.image.title=sitrep,org.opencontainers.image.licenses=AGPL-3.0-or-later,org.opencontainers.image.vendor=Verein F-ELD,org.opencontainers.image.authors=Verein F-ELD <info@f-eld.ch>,org.opencontainers.image.url=https://github.com/f-eld-ch/sitrep"
 
           # Develop images also get the version as a tag (v26.11.1-13-gc6bdca30, the string /version
           # and the UI show), so a Kargo Freight names the build. Only when the version carries the

@@ -2,6 +2,7 @@
   "name": "sitrep",
   "version": "26.11.4-rc.1",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "analyze": "ANALYZE=true vite build",
@@ -124,6 +125,5 @@
       "last 1 safari version"
     ]
   },
-  "packageManager": "yarn@4.18.1",
-  "licsense": "AGPL-3.0-or-later"
+  "packageManager": "yarn@4.18.1"
 }
