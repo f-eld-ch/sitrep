@@ -130,16 +130,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ko publishes the image inside goreleaser, so look its digest up in the registry.
+      # goreleaser has already signed the image (`docker_signs:` in .goreleaser.yaml). Take the
+      # digest it recorded for the manifest ko pushed, so the attestation and the verification
+      # below refer to exactly that image.
       - name: Resolve the image digest
         id: image
         run: |
-          digest="$(docker buildx imagetools inspect "ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}" --format '{{ .Manifest.Digest }}')"
-          [ -n "$digest" ] || { echo "::error::could not resolve the digest of the published image"; exit 1; }
+          digest="$(jq -r --arg image "ghcr.io/${GITHUB_REPOSITORY}" \
+            '[.[] | select((.extra.digest // "") != "" and (.name | startswith($image))) | .extra.digest] | unique | .[]' \
+            dist/artifacts.json)"
+          if [ "$(wc -l <<<"$digest")" -ne 1 ] || [ -z "$digest" ]; then
+            echo "::error::expected exactly one image digest in dist/artifacts.json, found: ${digest:-none}"
+            jq -c '.[] | select(.type | test("Docker"; "i")) | {name, type, extra}' dist/artifacts.json
+            exit 1
+          fi
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
-
-      - name: Sign the container image (keyless)
-        run: cosign sign --yes "ghcr.io/${GITHUB_REPOSITORY}@${{ steps.image.outputs.digest }}"
 
       - name: Attest build provenance of the release files
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2

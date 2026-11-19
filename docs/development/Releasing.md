@@ -77,10 +77,10 @@ git tag --sign --message "SitRep v26.9.2" v26.9.2 && git push origin v26.9.2
    - produces six `tar.gz` archives, two `.deb` and two `.rpm` packages
    - builds and pushes the container image to `ghcr.io/f-eld-ch/sitrep`
    - signs `checksums.txt` with cosign (keyless) and uploads `checksums.txt.sigstore.json`
+   - signs the container image manifest with cosign (keyless)
    - creates the GitHub release with every artifact attached
-6. signs the container image with cosign (keyless)
-7. creates build-provenance attestations for the archives, packages, `checksums.txt` and the image
-8. verifies all of the above exactly as users are told to (see
+6. creates build-provenance attestations for the archives, packages, `checksums.txt` and the image
+7. verifies all of the above exactly as users are told to (see
    [Verifying releases](../administrator/verify-releases.md)); a release that cannot be verified
    fails the workflow
 

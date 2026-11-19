@@ -135,6 +135,19 @@ signs:
       - ${artifact}
     output: true
 
+# Keyless signature over the image manifest ko pushes (ko adds its manifests to the artifact list).
+# The default arguments expect a key file, so they are replaced. The digest is the multi-arch
+# manifest, so one signature covers every platform.
+docker_signs:
+  - id: image
+    cmd: cosign
+    artifacts: manifests
+    args:
+      - sign
+      - --yes
+      - ${artifact}@${digest}
+    output: true
+
 release:
   prerelease: auto
   make_latest: "{{ not .Prerelease }}"
