@@ -1,3 +1,16 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- *(map)* Translate the message map layer in the layer card of read-only maps ([#2146](https://github.com/f-eld-ch/sitrep/issues/2146)) - ([6ffa6d8](https://github.com/f-eld-ch/sitrep/commit/6ffa6d87db71e0b6d7db60c9e5e601f5006be9e4))
+- *(ui)* Compute the pie slices without reassigning during render ([#2145](https://github.com/f-eld-ch/sitrep/issues/2145)) - ([75071d9](https://github.com/f-eld-ch/sitrep/commit/75071d9d47eba3455b7a52951f73866fb437b96e))
+
+### ⚙️  Other
+
+- *(go)* Credit tests for the code they run in other packages ([#2148](https://github.com/f-eld-ch/sitrep/issues/2148)) - ([4c7d105](https://github.com/f-eld-ch/sitrep/commit/4c7d10527de749972782f8af70537f6f016ec159))
+- *(go)* Leave generated code out of the coverage report ([#2147](https://github.com/f-eld-ch/sitrep/issues/2147)) - ([6f415d2](https://github.com/f-eld-ch/sitrep/commit/6f415d2eb328fae11975730eaf2e7bb62ff8f053))
+
+
 ## [26.11.4](https://github.com/f-eld-ch/sitrep/compare/v26.11.3..v26.11.4) - 2026-11-19
 
 ### ⛰️  Features
