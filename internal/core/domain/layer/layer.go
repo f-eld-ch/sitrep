@@ -3,6 +3,7 @@ package layer
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,7 +46,7 @@ func (l *Layer) Create(incidentID shared.IncidentID, name, actor string, at time
 func (l *Layer) CreateWithKind(
 	incidentID shared.IncidentID, name string, kind shared.LayerKind, actor string, at time.Time,
 ) error {
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
 	}
 
@@ -78,7 +79,7 @@ func (l *Layer) Rename(name, actor string, at time.Time) error {
 		return shared.ValidationError{Field: "layer", Message: "system layers cannot be renamed"}
 	}
 
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		return shared.ValidationError{Field: "name", Message: "must not be empty"}
 	}
 
@@ -116,6 +117,7 @@ func (l *Layer) Transition(e eventsourcing.Event) error {
 	case Imported:
 		l.incidentID = d.IncidentID
 		l.name = d.Name
+		l.removed = d.DeletedAt != nil
 	default:
 		return fmt.Errorf("layer.Transition: unhandled event type %T", e.Data)
 	}

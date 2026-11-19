@@ -396,6 +396,7 @@
     "FEATURE_NOT_REMOVED": "L'objet n'a pas été supprimé.",
     "BEFORE_FEATURE_REMOVED": "L'objet ne peut pas être rétabli avant sa suppression.",
     "MESSAGE_TIME_LOCKED": "L'heure d'un message trié ne peut pas être modifiée.",
+    "SCHADENPLATZ_MERGED": "La zone sinistrée a été fusionnée avec une autre et ne peut plus être modifiée.",
     "UNKNOWN": "Une erreur inattendue s'est produite."
   },
   "incidentAccess": {

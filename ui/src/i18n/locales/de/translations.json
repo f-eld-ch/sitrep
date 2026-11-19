@@ -396,6 +396,7 @@
     "FEATURE_NOT_REMOVED": "Das Objekt wurde nicht entfernt.",
     "BEFORE_FEATURE_REMOVED": "Das Objekt kann nicht vor seiner Entfernung wiederhergestellt werden.",
     "MESSAGE_TIME_LOCKED": "Die Zeit einer triagierten Meldung kann nicht geändert werden.",
+    "SCHADENPLATZ_MERGED": "Der Schadenplatz wurde mit einem anderen zusammengeführt und kann nicht mehr geändert werden.",
     "UNKNOWN": "Ein unbekannter Fehler ist aufgetreten."
   },
   "incidentAccess": {

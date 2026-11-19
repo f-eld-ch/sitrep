@@ -61,7 +61,7 @@ func (s *AccessService) GrantIncidentRole(
 	role access.Role,
 	actor identity.Actor,
 ) error {
-	return s.changeIncident(ctx, incidentID, actor, func(a *access.IncidentAccess, at time.Time) error {
+	return s.changeIncident(ctx, incidentID, func(a *access.IncidentAccess, at time.Time) error {
 		if err := requireIncidentAccess(
 			ctx,
 			s.incidentChecker,
@@ -112,7 +112,7 @@ func (s *AccessService) RevokeIncidentRole(
 	role access.Role,
 	actor identity.Actor,
 ) error {
-	return s.changeIncident(ctx, incidentID, actor, func(a *access.IncidentAccess, at time.Time) error {
+	return s.changeIncident(ctx, incidentID, func(a *access.IncidentAccess, at time.Time) error {
 		if err := requireIncidentAccess(
 			ctx,
 			s.incidentChecker,
@@ -146,7 +146,7 @@ func (s *AccessService) ChangeIncidentAccessMode(
 ) (access.IncidentMode, error) {
 	var resultMode access.IncidentMode
 
-	err := s.changeIncident(ctx, incidentID, actor, func(a *access.IncidentAccess, at time.Time) error {
+	err := s.changeIncident(ctx, incidentID, func(a *access.IncidentAccess, at time.Time) error {
 		if err := requireIncidentAccess(
 			ctx,
 			s.incidentChecker,
@@ -314,7 +314,6 @@ func (s *AccessService) BootstrapFirstSystemAdmin(ctx context.Context, subject s
 func (s *AccessService) changeIncident(
 	ctx context.Context,
 	id shared.IncidentID,
-	actor identity.Actor,
 	fn func(*access.IncidentAccess, time.Time) error,
 ) error {
 	at := s.clock.Now()

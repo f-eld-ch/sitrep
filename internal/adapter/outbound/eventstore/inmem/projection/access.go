@@ -33,7 +33,7 @@ type incidentModeEntry struct {
 
 type AccessHandler struct {
 	mu       sync.RWMutex
-	grants   map[string]access.Role
+	grants   map[grantID]access.Role
 	groups   map[uuid.UUID]*groupProjection
 	global   map[string]map[access.GlobalRole]bool
 	modes    map[uuid.UUID]incidentModeEntry
@@ -49,7 +49,7 @@ type groupProjection struct {
 
 func NewAccessHandler() *AccessHandler {
 	return &AccessHandler{
-		grants:   make(map[string]access.Role),
+		grants:   make(map[grantID]access.Role),
 		groups:   make(map[uuid.UUID]*groupProjection),
 		global:   make(map[string]map[access.GlobalRole]bool),
 		modes:    make(map[uuid.UUID]incidentModeEntry),
@@ -58,7 +58,7 @@ func NewAccessHandler() *AccessHandler {
 }
 
 func (h *AccessHandler) Name() string { return "readmodel.access" }
-func (h *AccessHandler) Version() int { return 4 }
+func (h *AccessHandler) Version() int { return 5 }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
 }
@@ -67,7 +67,7 @@ func (h *AccessHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.grants = make(map[string]access.Role)
+	h.grants = make(map[grantID]access.Role)
 	h.groups = make(map[uuid.UUID]*groupProjection)
 	h.global = make(map[string]map[access.GlobalRole]bool)
 	h.modes = make(map[uuid.UUID]incidentModeEntry)
@@ -236,7 +236,7 @@ func (h *AccessHandler) applyGlobal(e eventsourcing.Event) error {
 func (h *AccessHandler) recompute() {
 	h.policies = make(map[string]AccessPolicyRow)
 	for key, role := range h.grants {
-		incidentID, kind, subject, _ := parseGrantKey(key)
+		incidentID, kind, subject := key.incident, key.kind, key.subject
 
 		// The default-access template must never generate Casbin policy rows.
 		if entry := h.modes[incidentID]; entry.isDefault {
@@ -244,8 +244,13 @@ func (h *AccessHandler) recompute() {
 		}
 
 		modeEntry := h.modes[incidentID]
-		for _, action := range actionsForMode(role, modeEntry.mode) {
-			h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
+
+		// Only a user principal is a subject itself; a group's members and the "all" principal
+		// get their rows below, like in the SQL projections.
+		if kind == access.UserPrincipal {
+			for _, action := range actionsForMode(role, modeEntry.mode) {
+				h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
+			}
 		}
 
 		if kind == access.GroupPrincipal {
@@ -316,6 +321,17 @@ func (h *AccessHandler) Mode(incidentID uuid.UUID) access.IncidentMode {
 	return h.modes[incidentID].mode
 }
 
+// ModeOf returns the access mode of an incident; the second result is false when the incident has
+// no access state yet.
+func (h *AccessHandler) ModeOf(incidentID uuid.UUID) (access.IncidentMode, bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	entry, ok := h.modes[incidentID]
+
+	return entry.mode, ok
+}
+
 // DefaultIncidentMode returns the mode of the default-access template.
 // The second return value is false when no template has been initialized yet.
 func (h *AccessHandler) DefaultIncidentMode() (access.IncidentMode, bool) {
@@ -338,7 +354,7 @@ func (h *AccessHandler) DefaultGrants() []access.Grant {
 	var grants []access.Grant
 
 	for key, role := range h.grants {
-		incidentID, kind, subject, _ := parseGrantKey(key)
+		incidentID, kind, subject := key.incident, key.kind, key.subject
 		if incidentID != access.DefaultAccessTemplateID {
 			continue
 		}
@@ -359,7 +375,7 @@ func (h *AccessHandler) IncidentGrants(incidentID uuid.UUID) []IncidentGrantRow 
 	var rows []IncidentGrantRow
 
 	for key, role := range h.grants {
-		id, kind, subject, _ := parseGrantKey(key)
+		id, kind, subject := key.incident, key.kind, key.subject
 		if id == incidentID {
 			rows = append(rows, IncidentGrantRow{IncidentID: id, PrincipalKind: kind, PrincipalID: subject, Role: role})
 		}
@@ -424,44 +440,17 @@ func (h *AccessHandler) GlobalRoles() map[string][]access.GlobalRole {
 	return result
 }
 
-func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role access.Role) string {
-	return id.String() + "|" + string(kind) + "|" + subject + "|" + string(role)
+// grantID identifies one role grant. It is a struct and not a joined string because subjects
+// such as "auth0|abc" contain every separator one could pick.
+type grantID struct {
+	incident uuid.UUID
+	kind     access.PrincipalKind
+	subject  string
+	role     access.Role
 }
 
-func parseGrantKey(key string) (uuid.UUID, access.PrincipalKind, string, access.Role) {
-	var (
-		id      uuid.UUID
-		kind    access.PrincipalKind
-		subject string
-		role    access.Role
-	)
-
-	_, _ = fmt.Sscanf(key, "%s", &subject)
-
-	parts := split(key, '|')
-	if len(parts) == 4 {
-		id, _ = uuid.Parse(parts[0])
-		kind = access.PrincipalKind(parts[1])
-		subject = parts[2]
-		role = access.Role(parts[3])
-	}
-
-	return id, kind, subject, role
-}
-
-func split(value string, sep byte) []string {
-	var out []string
-
-	start := 0
-
-	for i := range value {
-		if value[i] == sep {
-			out = append(out, value[start:i])
-			start = i + 1
-		}
-	}
-
-	return append(out, value[start:])
+func grantKey(id uuid.UUID, kind access.PrincipalKind, subject string, role access.Role) grantID {
+	return grantID{incident: id, kind: kind, subject: subject, role: role}
 }
 
 func policyKey(row AccessPolicyRow) string {

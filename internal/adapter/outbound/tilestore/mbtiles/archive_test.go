@@ -26,10 +26,10 @@ func validArchiveBytes(t *testing.T) []byte {
 	return b
 }
 
-func writePart(t *testing.T, a *Archive, etag string, data []byte, resume bool) {
+func writePart(t *testing.T, a *Archive, etag string, data []byte) {
 	t.Helper()
 
-	w, err := a.OpenPart(t.Context(), testSet, etag, int64(len(data)), resume)
+	w, err := a.OpenPart(t.Context(), testSet, etag, int64(len(data)), false)
 	require.NoError(t, err)
 	_, err = w.Write(data)
 	require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestArchive_DownloadInTwoPartsResumesAndInstalls(t *testing.T) {
 
 func TestArchive_ResumeWithOtherETagIsRefused(t *testing.T) {
 	a := NewArchive(t.TempDir())
-	writePart(t, a, `"v1"`, []byte("abc"), false)
+	writePart(t, a, `"v1"`, []byte("abc"))
 
 	_, err := a.OpenPart(t.Context(), testSet, `"v2"`, 100, true)
 	require.ErrorIs(t, err, outbound.ErrUpstreamChanged)
@@ -116,8 +116,8 @@ func TestArchive_ResumeWithOtherETagIsRefused(t *testing.T) {
 
 func TestArchive_NonResumeStartsOver(t *testing.T) {
 	a := NewArchive(t.TempDir())
-	writePart(t, a, `"v1"`, []byte("old-old-old"), false)
-	writePart(t, a, `"v2"`, []byte("new"), false)
+	writePart(t, a, `"v1"`, []byte("old-old-old"))
+	writePart(t, a, `"v2"`, []byte("new"))
 
 	part, err := a.Part(t.Context(), testSet)
 	require.NoError(t, err)
@@ -130,7 +130,7 @@ func TestArchive_CommitRejectsBadFiles(t *testing.T) {
 
 	t.Run("wrong size", func(t *testing.T) {
 		a := NewArchive(t.TempDir())
-		writePart(t, a, `"v1"`, data[:len(data)-1], false)
+		writePart(t, a, `"v1"`, data[:len(data)-1])
 
 		err := a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v1"`, Size: int64(len(data))})
 		require.ErrorIs(t, err, outbound.ErrInvalidArchive)
@@ -139,7 +139,7 @@ func TestArchive_CommitRejectsBadFiles(t *testing.T) {
 	t.Run("not an archive", func(t *testing.T) {
 		a := NewArchive(t.TempDir())
 		garbage := []byte("this is not a sqlite database at all, just text")
-		writePart(t, a, `"v1"`, garbage, false)
+		writePart(t, a, `"v1"`, garbage)
 
 		err := a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v1"`, Size: int64(len(garbage))})
 		require.ErrorIs(t, err, outbound.ErrInvalidArchive)
@@ -147,13 +147,13 @@ func TestArchive_CommitRejectsBadFiles(t *testing.T) {
 
 	t.Run("a failed commit keeps the installed archive", func(t *testing.T) {
 		a := NewArchive(t.TempDir())
-		writePart(t, a, `"v1"`, data, false)
+		writePart(t, a, `"v1"`, data)
 		require.NoError(
 			t,
 			a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v1"`, Size: int64(len(data))}),
 		)
 
-		writePart(t, a, `"v2"`, []byte("garbage"), false)
+		writePart(t, a, `"v2"`, []byte("garbage"))
 		require.ErrorIs(t, a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v2"`, Size: 7}),
 			outbound.ErrInvalidArchive)
 
@@ -166,7 +166,7 @@ func TestArchive_CommitRejectsBadFiles(t *testing.T) {
 func TestArchive_UpdateReplacesWithoutLeavingOldFiles(t *testing.T) {
 	a := NewArchive(t.TempDir())
 	v1 := validArchiveBytes(t)
-	writePart(t, a, `"v1"`, v1, false)
+	writePart(t, a, `"v1"`, v1)
 	require.NoError(t, a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v1"`, Size: int64(len(v1))}))
 
 	p := filepath.Join(t.TempDir(), "v2.mbtiles")
@@ -175,7 +175,7 @@ func TestArchive_UpdateReplacesWithoutLeavingOldFiles(t *testing.T) {
 	v2, err := os.ReadFile(p) //nolint:gosec // test file in a temp directory
 	require.NoError(t, err)
 
-	writePart(t, a, `"v2"`, v2, false)
+	writePart(t, a, `"v2"`, v2)
 	require.NoError(t, a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v2"`, Size: int64(len(v2))}))
 
 	entries, err := os.ReadDir(filepath.Dir(a.path(testSet)))
@@ -200,7 +200,7 @@ func TestArchive_HandCopiedFileHasUnknownVersion(t *testing.T) {
 func TestArchive_SidecarForADifferentFileIsIgnored(t *testing.T) {
 	a := NewArchive(t.TempDir())
 	data := validArchiveBytes(t)
-	writePart(t, a, `"v1"`, data, false)
+	writePart(t, a, `"v1"`, data)
 	require.NoError(t, a.Commit(t.Context(), testSet, outbound.RemoteTileInfo{ETag: `"v1"`, Size: int64(len(data))}))
 
 	// Someone replaces the archive by hand; the old sidecar no longer matches its size.

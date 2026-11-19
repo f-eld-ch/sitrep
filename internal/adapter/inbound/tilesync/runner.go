@@ -85,10 +85,20 @@ func (r *Runner) runOnce(ctx context.Context) {
 				r.log.WarnContext(ctx, "tileset not updated, will retry",
 					slog.String("tileset", ts.Tileset.String()),
 					slog.String("outcome", string(ts.Outcome)),
-					slog.String("error", ts.Err.Error()))
+					slog.String("error", errorText(ts.Err)))
 			}
 		}
 	}
+}
+
+// errorText is err's message; a tileset outcome that should carry an error but does not is
+// reported as unknown instead of crashing the updater.
+func errorText(err error) string {
+	if err == nil {
+		return "unknown"
+	}
+
+	return err.Error()
 }
 
 // sleep waits for d or until ctx is cancelled; it reports whether the full time passed.

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/eventsourcing"
 )
 
@@ -66,11 +67,11 @@ func (g *AccessGroup) HasMember(subject string) bool { return g.members[subject]
 
 func (g *AccessGroup) Create(name, description, actor string, at time.Time) error {
 	if strings.TrimSpace(name) == "" {
-		return fmt.Errorf("group name must not be empty")
+		return fmt.Errorf("%w: group name must not be empty", shared.ErrInvalidInput)
 	}
 
 	if len(name) > 64 {
-		return fmt.Errorf("group name must not exceed 64 characters")
+		return fmt.Errorf("%w: group name must not exceed 64 characters", shared.ErrInvalidInput)
 	}
 
 	eventsourcing.TrackChange(g, GroupCreated{Name: name, Description: description}, at, meta(actor))
@@ -80,15 +81,15 @@ func (g *AccessGroup) Create(name, description, actor string, at time.Time) erro
 
 func (g *AccessGroup) Rename(name, actor string, at time.Time) error {
 	if g.archived {
-		return fmt.Errorf("group is archived")
+		return fmt.Errorf("%w: group is archived", shared.ErrInvalidInput)
 	}
 
 	if strings.TrimSpace(name) == "" {
-		return fmt.Errorf("group name must not be empty")
+		return fmt.Errorf("%w: group name must not be empty", shared.ErrInvalidInput)
 	}
 
 	if len(name) > 64 {
-		return fmt.Errorf("group name must not exceed 64 characters")
+		return fmt.Errorf("%w: group name must not exceed 64 characters", shared.ErrInvalidInput)
 	}
 
 	if g.name == name {
@@ -102,7 +103,7 @@ func (g *AccessGroup) Rename(name, actor string, at time.Time) error {
 
 func (g *AccessGroup) UpdateDescription(description, actor string, at time.Time) error {
 	if g.archived {
-		return fmt.Errorf("group is archived")
+		return fmt.Errorf("%w: group is archived", shared.ErrInvalidInput)
 	}
 
 	if g.description == description {
@@ -126,11 +127,11 @@ func (g *AccessGroup) Archive(actor string, at time.Time) error {
 
 func (g *AccessGroup) AddMember(subject, actor string, at time.Time) error {
 	if g.archived {
-		return fmt.Errorf("group is archived")
+		return fmt.Errorf("%w: group is archived", shared.ErrInvalidInput)
 	}
 
 	if strings.TrimSpace(subject) == "" {
-		return fmt.Errorf("group member subject must not be empty")
+		return fmt.Errorf("%w: group member subject must not be empty", shared.ErrInvalidInput)
 	}
 
 	if g.members[subject] {

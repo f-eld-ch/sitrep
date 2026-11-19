@@ -98,7 +98,7 @@ func NewLayerFeaturesHandler() *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 4 }
+func (h *LayerFeaturesHandler) Version() int { return 5 }
 
 func (h *LayerFeaturesHandler) Reset(_ context.Context) error {
 	h.mu.Lock()
@@ -146,9 +146,10 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 	switch e.EventType {
 	case "Created", "Imported":
 		var d struct {
-			IncidentID string `json:"incidentId"`
-			Name       string `json:"name"`
-			Kind       string `json:"kind"`
+			IncidentID string     `json:"incidentId"`
+			Name       string     `json:"name"`
+			Kind       string     `json:"kind"`
+			DeletedAt  *time.Time `json:"deletedAt"`
 		}
 		if err := remarshal(e.Data, &d); err != nil {
 			return err
@@ -165,6 +166,8 @@ func (h *LayerFeaturesHandler) applyLayerEvent(e eventsourcing.Event) error {
 			Name:       d.Name,
 			Kind:       d.Kind,
 			Features:   make(map[uuid.UUID]featureItem),
+			// An imported layer can arrive already deleted.
+			Removed: e.EventType == "Imported" && d.DeletedAt != nil,
 		}
 
 	case "KindAssigned":

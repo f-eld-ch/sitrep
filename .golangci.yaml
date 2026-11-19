@@ -39,6 +39,7 @@ linters:
     - testifylint
     - thelper
     - unconvert
+    - unparam
     - unqueryvet
     - usestdlibvars
     - usetesting

@@ -19,6 +19,7 @@ export type ApiErrorCode =
   | "FEATURE_NOT_REMOVED"
   | "BEFORE_FEATURE_REMOVED"
   | "MESSAGE_TIME_LOCKED"
+  | "SCHADENPLATZ_MERGED"
   | "UNKNOWN";
 
 const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
@@ -42,6 +43,7 @@ const DEFAULT_MESSAGES: Record<ApiErrorCode, string> = {
   FEATURE_NOT_REMOVED: "The object has not been removed.",
   BEFORE_FEATURE_REMOVED: "The object cannot be restored before it was removed.",
   MESSAGE_TIME_LOCKED: "The time of a triaged message cannot be changed.",
+  SCHADENPLATZ_MERGED: "This location was merged into another one and can no longer be changed.",
   UNKNOWN: "An unexpected error occurred.",
 };
 
@@ -80,6 +82,7 @@ const knownCodes = new Set<ApiErrorCode>([
   "FEATURE_NOT_REMOVED",
   "BEFORE_FEATURE_REMOVED",
   "MESSAGE_TIME_LOCKED",
+  "SCHADENPLATZ_MERGED",
 ]);
 
 function isKnownCode(code: unknown): code is ApiErrorCode {

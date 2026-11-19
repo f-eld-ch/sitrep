@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -91,6 +92,12 @@ func (s *ResourceService) AlertResource(
 		}
 
 		schadenplatzID := input.SchadenplatzID
+		if schadenplatzID != nil {
+			if err := s.requireSchadenplatzOf(ctx, input.IncidentID, *schadenplatzID); err != nil {
+				return err
+			}
+		}
+
 		if schadenplatzID == nil {
 			defID := inc.DefaultSchadenplatzID()
 			if defID == nil {
@@ -208,7 +215,7 @@ func (s *ResourceService) ReactivateResource(
 		id,
 		at,
 		actor,
-		func(res *resource.Resource, inc *incident.Incident, t time.Time) error {
+		func(_ context.Context, res *resource.Resource, inc *incident.Incident, t time.Time) error {
 			defID := inc.DefaultSchadenplatzID()
 			if defID == nil {
 				return shared.ValidationError{
@@ -305,13 +312,17 @@ func (s *ResourceService) ReassignResource(
 	at *time.Time,
 	actor identity.Actor,
 ) (inbound.ResourceState, error) {
-	return s.simpleTransition(
+	return s.transitionWithIncident(
 		ctx,
 		"ResourceService.ReassignResource",
 		id,
 		at,
 		actor,
-		func(res *resource.Resource, t time.Time) error {
+		func(ctx context.Context, res *resource.Resource, _ *incident.Incident, t time.Time) error {
+			if err := s.requireSchadenplatzOf(ctx, res.IncidentID(), schadenplatzID); err != nil {
+				return err
+			}
+
 			return res.Reassign(schadenplatzID, actor.Sub, t)
 		},
 	)
@@ -425,6 +436,37 @@ func (s *ResourceService) resolveAt(at *time.Time) time.Time {
 	return s.clock.Now()
 }
 
+// requireSchadenplatzOf makes sure the Schadenplatz exists, belongs to the incident and is not
+// merged. An id that matches no site, or a site of another incident, is invalid input; the two
+// cases are not told apart so that the existence of another incident's sites is not revealed.
+func (s *ResourceService) requireSchadenplatzOf(
+	ctx context.Context,
+	incidentID shared.IncidentID,
+	id shared.SchadenplatzID,
+) error {
+	notFound := shared.ValidationError{Field: "schadenplatzId", Message: "Schadenplatz not found in this incident"}
+
+	sp, err := s.schadenplaetze.Load(ctx, id)
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return notFound
+		}
+
+		return err
+	}
+
+	if sp.IncidentID() != incidentID {
+		return notFound
+	}
+
+	// A merged Schadenplatz is closed for changes; its work continues on the default one.
+	if sp.IsMerged() {
+		return shared.ValidationError{Field: "schadenplatzId", Message: "Schadenplatz was merged into another one"}
+	}
+
+	return nil
+}
+
 // simpleTransition handles the common load-access-mutate-save pattern for resource commands.
 func (s *ResourceService) simpleTransition(
 	ctx context.Context,
@@ -435,7 +477,7 @@ func (s *ResourceService) simpleTransition(
 	fn func(*resource.Resource, time.Time) error,
 ) (inbound.ResourceState, error) {
 	return s.transitionWithIncident(ctx, spanName, id, at, actor,
-		func(res *resource.Resource, _ *incident.Incident, t time.Time) error {
+		func(_ context.Context, res *resource.Resource, _ *incident.Incident, t time.Time) error {
 			return fn(res, t)
 		})
 }
@@ -448,7 +490,7 @@ func (s *ResourceService) transitionWithIncident(
 	id shared.ResourceID,
 	at *time.Time,
 	actor identity.Actor,
-	fn func(*resource.Resource, *incident.Incident, time.Time) error,
+	fn func(context.Context, *resource.Resource, *incident.Incident, time.Time) error,
 ) (inbound.ResourceState, error) {
 	ctx, span := s.tracer.Start(ctx, spanName,
 		trace.WithAttributes(attribute.String("resource.id", id.String())))
@@ -479,7 +521,7 @@ func (s *ResourceService) transitionWithIncident(
 			return shared.ErrIncidentNotOpen
 		}
 
-		if err := fn(res, inc, resolvedAt); err != nil {
+		if err := fn(ctx, res, inc, resolvedAt); err != nil {
 			return err
 		}
 

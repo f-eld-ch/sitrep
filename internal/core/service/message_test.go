@@ -234,7 +234,7 @@ func TestMessageService_CounterIsPerIncident(t *testing.T) {
 }
 
 func TestMessageService_Acknowledgement(t *testing.T) {
-	setup := func(t *testing.T) (svc inbound.MessageService, incID shared.IncidentID, msgID shared.MessageID, mapDiv, scDiv shared.DivisionID) {
+	setup := func(t *testing.T) (svc inbound.MessageService, msgID shared.MessageID, mapDiv, scDiv shared.DivisionID) {
 		t.Helper()
 
 		factory, store := testStack(t)
@@ -258,11 +258,11 @@ func TestMessageService_Acknowledgement(t *testing.T) {
 			"Pegel steigt", "Beobachter", "", "Führung", "", shared.MediumRadio, nil, testActor)
 		require.NoError(t, err)
 
-		return svc, res.IncidentID, ms.ID, mapDiv, scDiv
+		return svc, ms.ID, mapDiv, scDiv
 	}
 
 	t.Run("acknowledge and revoke return aggregate state", func(t *testing.T) {
-		svc, _, msgID, mapDiv, scDiv := setup(t)
+		svc, msgID, mapDiv, scDiv := setup(t)
 		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
 			[]shared.DivisionID{mapDiv, scDiv}, nil, testActor)
 		require.NoError(t, err)
@@ -279,7 +279,7 @@ func TestMessageService_Acknowledgement(t *testing.T) {
 	})
 
 	t.Run("a division the message is not triaged to cannot acknowledge", func(t *testing.T) {
-		svc, _, msgID, mapDiv, scDiv := setup(t)
+		svc, msgID, mapDiv, scDiv := setup(t)
 		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
 			[]shared.DivisionID{scDiv}, nil, testActor)
 		require.NoError(t, err)
@@ -289,14 +289,14 @@ func TestMessageService_Acknowledgement(t *testing.T) {
 	})
 
 	t.Run("a division of another incident is rejected", func(t *testing.T) {
-		svc, _, msgID, _, _ := setup(t)
+		svc, msgID, _, _ := setup(t)
 
 		_, err := svc.AcknowledgeMessage(ctx(), msgID, shared.DivisionID(newID()), testActor)
 		require.ErrorIs(t, err, shared.ErrInvalidInput)
 	})
 
 	t.Run("re-triage drops the acknowledgement", func(t *testing.T) {
-		svc, _, msgID, mapDiv, scDiv := setup(t)
+		svc, msgID, mapDiv, scDiv := setup(t)
 		_, err := svc.TriageMessage(ctx(), msgID, shared.TriageDone, shared.PriorityNormal,
 			[]shared.DivisionID{mapDiv}, nil, testActor)
 		require.NoError(t, err)
@@ -310,7 +310,7 @@ func TestMessageService_Acknowledgement(t *testing.T) {
 	})
 
 	t.Run("unknown message", func(t *testing.T) {
-		svc, _, _, mapDiv, _ := setup(t)
+		svc, _, mapDiv, _ := setup(t)
 
 		_, err := svc.AcknowledgeMessage(ctx(), shared.MessageID(newID()), mapDiv, testActor)
 		require.ErrorIs(t, err, shared.ErrNotFound)
