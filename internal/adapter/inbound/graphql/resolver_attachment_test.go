@@ -17,7 +17,7 @@ import (
 
 func TestMessage_QueryAndAttachments(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Files", model.IncidentAccessModeRestricted)
+	inc := s.createIncident(t, "Files", model.IncidentAccessModeRestricted)
 	ctx := ctxFor("owner")
 
 	msg, err := s.resolver.Mutation().CreateMessage(ctx, model.CreateMessageInput{
@@ -108,7 +108,7 @@ func TestRemoveAttachment_GuardClauses(t *testing.T) {
 
 func TestIncident_ChildIncidents(t *testing.T) {
 	s := newFullStack(t)
-	parent := s.createIncident(t, "owner", "Parent", model.IncidentAccessModeOpenOperational)
+	parent := s.createIncident(t, "Parent", model.IncidentAccessModeOpenOperational)
 
 	open, err := s.resolver.Mutation().CreateIncident(ctxFor("owner"), model.CreateIncidentInput{
 		Name: "Child", ParentID: &parent.ID, Divisions: []*model.DivisionInput{}, Layers: []*model.LayerInput{},

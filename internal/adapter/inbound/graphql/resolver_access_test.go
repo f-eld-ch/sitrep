@@ -107,7 +107,7 @@ func TestAccessMutations_GuardClauses(t *testing.T) {
 
 func TestIncidentRoles_GrantListRevoke(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Restricted", model.IncidentAccessModeRestricted)
+	inc := s.createIncident(t, "Restricted", model.IncidentAccessModeRestricted)
 	m := s.resolver.Mutation()
 
 	grant, err := m.GrantIncidentRole(
@@ -200,7 +200,7 @@ func TestIncidentAccess_Guards(t *testing.T) {
 
 func TestIncidentAccessMode_ChangeAndQuery(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Mode", model.IncidentAccessModeRestricted)
+	inc := s.createIncident(t, "Mode", model.IncidentAccessModeRestricted)
 
 	mode, err := s.resolver.Query().IncidentAccessMode(ctxFor("owner"), inc.ID)
 	require.NoError(t, err)
@@ -235,7 +235,7 @@ func TestIncidentAccessMode_ChangeAndQuery(t *testing.T) {
 
 func TestIncident_AccessFieldResolvers(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Fields", model.IncidentAccessModeRestricted)
+	inc := s.createIncident(t, "Fields", model.IncidentAccessModeRestricted)
 
 	_, err := s.resolver.Mutation().GrantIncidentRole(
 		ctxFor("owner"), inc.ID, model.AccessPrincipalKindUser, "viewer", model.IncidentRoleViewer,
@@ -315,7 +315,7 @@ func TestIncident_AccessMode_UnknownIncidentIsOpen(t *testing.T) {
 
 func TestDefaultAccess_Lifecycle(t *testing.T) {
 	s := newFullStack(t)
-	s.bootstrapAdmin(t, "admin")
+	s.bootstrapAdmin(t)
 
 	m := s.resolver.Mutation()
 
@@ -371,7 +371,7 @@ func TestDefaultAccess_NotWired_IsOpenAndEmpty(t *testing.T) {
 
 func TestAccessGroups_Lifecycle(t *testing.T) {
 	s := newFullStack(t)
-	s.bootstrapAdmin(t, "admin")
+	s.bootstrapAdmin(t)
 
 	m := s.resolver.Mutation()
 
@@ -451,7 +451,7 @@ func TestAccessGroups_Lifecycle(t *testing.T) {
 
 func TestAccessGroups_UnknownGroupIsNotFound(t *testing.T) {
 	s := newFullStack(t)
-	s.bootstrapAdmin(t, "admin")
+	s.bootstrapAdmin(t)
 
 	_, err := s.resolver.Mutation().RenameAccessGroup(ctxFor("admin"), uuid.NewString(), "x")
 	require.ErrorIs(t, err, shared.ErrNotFound)
@@ -500,7 +500,7 @@ func (usersQueries) ListUsers(context.Context) ([]outbound.UserRM, error) {
 
 func TestUsers_RequiresGroupManage(t *testing.T) {
 	s := newFullStack(t)
-	s.bootstrapAdmin(t, "admin")
+	s.bootstrapAdmin(t)
 	s.resolver.AccessQueries = usersQueries{AccessQueries: s.resolver.AccessQueries}
 
 	users, err := s.resolver.Query().Users(ctxFor("admin"))
@@ -513,7 +513,7 @@ func TestUsers_RequiresGroupManage(t *testing.T) {
 
 func TestGlobalRoles_GrantListRevoke(t *testing.T) {
 	s := newFullStack(t)
-	s.bootstrapAdmin(t, "admin")
+	s.bootstrapAdmin(t)
 
 	m := s.resolver.Mutation()
 

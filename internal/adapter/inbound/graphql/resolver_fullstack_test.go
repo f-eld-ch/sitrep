@@ -117,16 +117,15 @@ func (s *fullStack) catchUp(t *testing.T) {
 	require.NoError(t, s.proj.CatchUp(context.Background()))
 }
 
-// createIncident creates an incident as the given subject sub in the given access mode.
+// createIncident creates an incident as the user "owner" in the given access mode.
 func (s *fullStack) createIncident(
 	t *testing.T,
-	sub string,
 	name string,
 	mode model.IncidentAccessMode,
 ) *model.Incident {
 	t.Helper()
 
-	res, err := s.resolver.Mutation().CreateIncident(ctxFor(sub), model.CreateIncidentInput{
+	res, err := s.resolver.Mutation().CreateIncident(ctxFor("owner"), model.CreateIncidentInput{
 		Name:      name,
 		Divisions: []*model.DivisionInput{},
 		Layers:    []*model.LayerInput{},
@@ -138,9 +137,11 @@ func (s *fullStack) createIncident(
 	return res.Incident
 }
 
-// bootstrapAdmin makes sub a system administrator.
-func (s *fullStack) bootstrapAdmin(t *testing.T, sub string) {
+// bootstrapAdmin makes the user "admin" a system administrator.
+func (s *fullStack) bootstrapAdmin(t *testing.T) {
 	t.Helper()
+
+	const sub = "admin"
 
 	ctx := ctxFor(sub)
 	actor, err := identity.ActorFrom(ctx)

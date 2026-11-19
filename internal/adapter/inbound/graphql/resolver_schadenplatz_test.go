@@ -15,7 +15,7 @@ import (
 
 func TestSchadenplatz_CreateRenameGeometryQuery(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Sites", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Sites", model.IncidentAccessModeOpenOperational)
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -67,7 +67,7 @@ func TestSchadenplatz_CreateRenameGeometryQuery(t *testing.T) {
 
 func TestSchadenplatz_CreateHonoursOccurredAt(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Past", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Past", model.IncidentAccessModeOpenOperational)
 
 	created, err := s.resolver.Mutation().CreateSchadenplatz(
 		ctxFor("owner"), inc.ID, "Früher", new(time.Now().UTC().Add(-time.Hour)),
@@ -87,7 +87,7 @@ func TestSchadenplatz_CreateHonoursOccurredAt(t *testing.T) {
 
 func TestSchadenplatz_MergeIntoDefault(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Merge", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Merge", model.IncidentAccessModeOpenOperational)
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -148,7 +148,7 @@ func TestSchadenplatz_MergeIntoDefault(t *testing.T) {
 
 func TestSchadenplatz_MessageCasualtiesField(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Casualties", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Casualties", model.IncidentAccessModeOpenOperational)
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -230,7 +230,7 @@ func TestSchadenplatzMutations_GuardClauses(t *testing.T) {
 
 func TestSchadenplatzMutations_RequireWriteAccess(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Locked", model.IncidentAccessModeRestricted)
+	inc := s.createIncident(t, "Locked", model.IncidentAccessModeRestricted)
 
 	site, err := s.resolver.Mutation().CreateSchadenplatz(ctxFor("owner"), inc.ID, "Site", nil)
 	require.NoError(t, err)

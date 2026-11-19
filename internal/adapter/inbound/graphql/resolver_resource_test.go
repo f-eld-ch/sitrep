@@ -13,11 +13,11 @@ import (
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 )
 
-// alertResource alerts a Feuerwehr Gruppe on the incident's default Schadenplatz.
-func (s *fullStack) alertResource(t *testing.T, sub, incidentID, name string) *model.Resource {
+// alertResource, as the user "owner", alerts a Feuerwehr Gruppe on the incident's default Schadenplatz.
+func (s *fullStack) alertResource(t *testing.T, incidentID, name string) *model.Resource {
 	t.Helper()
 
-	res, err := s.resolver.Mutation().AlertResource(ctxFor(sub), model.AlertResourceInput{
+	res, err := s.resolver.Mutation().AlertResource(ctxFor("owner"), model.AlertResourceInput{
 		IncidentID:     incidentID,
 		Formation:      model.ResourceFormationFw,
 		Name:           name,
@@ -32,7 +32,7 @@ func (s *fullStack) alertResource(t *testing.T, sub, incidentID, name string) *m
 
 func TestAlertResource_MapsEveryOptionalField(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Resources", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Resources", model.IncidentAccessModeOpenOperational)
 
 	sp, err := s.resolver.Mutation().CreateSchadenplatz(ctxFor("owner"), inc.ID, "Nord", nil)
 	require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestAlertResource_MapsEveryOptionalField(t *testing.T) {
 
 func TestAlertResource_RejectsBadInput(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Bad", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Bad", model.IncidentAccessModeOpenOperational)
 
 	base := func() model.AlertResourceInput {
 		return model.AlertResourceInput{
@@ -134,8 +134,8 @@ func TestAlertResource_RejectsBadInput(t *testing.T) {
 
 func TestResource_StatusLifecycle(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Lifecycle", model.IncidentAccessModeOpenOperational)
-	res := s.alertResource(t, "owner", inc.ID, "TLF 1")
+	inc := s.createIncident(t, "Lifecycle", model.IncidentAccessModeOpenOperational)
+	res := s.alertResource(t, inc.ID, "TLF 1")
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -194,8 +194,8 @@ func TestResource_StatusLifecycle(t *testing.T) {
 
 func TestResource_Edits(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Edits", model.IncidentAccessModeOpenOperational)
-	res := s.alertResource(t, "owner", inc.ID, "TLF 1")
+	inc := s.createIncident(t, "Edits", model.IncidentAccessModeOpenOperational)
+	res := s.alertResource(t, inc.ID, "TLF 1")
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -270,13 +270,13 @@ func TestResource_Edits(t *testing.T) {
 
 func TestResource_RelieveWithSuccessorAndHandOver(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Succession", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Succession", model.IncidentAccessModeOpenOperational)
 	ctx := ctxFor("owner")
 	m := s.resolver.Mutation()
 
-	first := s.alertResource(t, "owner", inc.ID, "Gruppe A")
-	second := s.alertResource(t, "owner", inc.ID, "Gruppe B")
-	third := s.alertResource(t, "owner", inc.ID, "Gruppe C")
+	first := s.alertResource(t, inc.ID, "Gruppe A")
+	second := s.alertResource(t, inc.ID, "Gruppe B")
+	third := s.alertResource(t, inc.ID, "Gruppe C")
 
 	_, err := m.MarkResourceReady(ctx, first.ID, nil)
 	require.NoError(t, err)
@@ -390,8 +390,8 @@ func TestResourceMutations_GuardClauses(t *testing.T) {
 
 func TestResourceMutations_RequireWriteAccess(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Locked", model.IncidentAccessModeRestricted)
-	res := s.alertResource(t, "owner", inc.ID, "TLF 1")
+	inc := s.createIncident(t, "Locked", model.IncidentAccessModeRestricted)
+	res := s.alertResource(t, inc.ID, "TLF 1")
 
 	_, err := s.resolver.Mutation().GrantIncidentRole(
 		ctxFor("owner"), inc.ID, model.AccessPrincipalKindUser, "viewer", model.IncidentRoleViewer,
@@ -437,8 +437,8 @@ func TestResourceMutations_RequireWriteAccess(t *testing.T) {
 
 func TestResourceQueries(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Queries", model.IncidentAccessModeOpenOperational)
-	res := s.alertResource(t, "owner", inc.ID, "TLF 1")
+	inc := s.createIncident(t, "Queries", model.IncidentAccessModeOpenOperational)
+	res := s.alertResource(t, inc.ID, "TLF 1")
 	m := s.resolver.Mutation()
 	ctx := ctxFor("owner")
 
@@ -502,7 +502,7 @@ func TestResourceQueries(t *testing.T) {
 // mutation response) and through the read model (the Resource query).
 func TestAlertResource_EnumsRoundTrip(t *testing.T) {
 	s := newFullStack(t)
-	inc := s.createIncident(t, "owner", "Enums", model.IncidentAccessModeOpenOperational)
+	inc := s.createIncident(t, "Enums", model.IncidentAccessModeOpenOperational)
 
 	formations := []model.ResourceFormation{
 		model.ResourceFormationFw, model.ResourceFormationPol, model.ResourceFormationArmee,
