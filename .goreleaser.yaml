@@ -2,6 +2,17 @@ version: 2
 
 project_name: sitrep
 
+# Image scanners (Trivy, registry scanners) cannot see the npm packages compiled into the embedded
+# UI: the image holds one Go binary and no lock file or node_modules. They do pick up an SBOM file
+# named *.spdx.json inside the image, so write the UI's SBOM into kodata/, which ko copies to
+# /var/run/ko/. Needs syft on the PATH (the release workflow installs it); to rehearse locally
+# without it use `--skip=before`. The same file is built by .github/workflows/docker-workflow.yml
+# for the develop images.
+before:
+  hooks:
+    - mkdir -p kodata
+    - syft dir:ui --source-name=sitrep-ui --source-version={{ .Version }} --exclude=./build/** --enrich=all --output=spdx-json=kodata/sitrep-ui.spdx.json
+
 builds:
   - id: sitrep
     main: .

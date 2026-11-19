@@ -35,6 +35,9 @@ lib-cov
 # Dist folder for goreleaser
 dist/**
 
+# ko data files generated at build time (the UI SBOM, see .goreleaser.yaml)
+kodata/
+
 # Coverage directory used by tools like istanbul
 coverage
 

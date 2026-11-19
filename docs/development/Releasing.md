@@ -186,6 +186,10 @@ goreleaser check                                  # validate the config
 goreleaser release --snapshot --clean --skip=ko   # build everything locally
 ```
 
+The build writes the web UI's SBOM into `kodata/` first (a `before:` hook that runs
+[syft](https://github.com/anchore/syft)), so that the container image contains it. Install syft, or
+add `before` to `--skip` when you do not need the SBOMs: `--skip=ko,before,sbom`.
+
 Snapshot builds get a timestamped version (`26.9.2-snapshot.20260905083643+b25ff3b1`) so
 each run produces a distinct package. Without that, a rebuilt `.rpm` keeps the same
 name-version-release and `dnf` refuses to reinstall it.
