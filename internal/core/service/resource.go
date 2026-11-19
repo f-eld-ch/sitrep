@@ -436,9 +436,9 @@ func (s *ResourceService) resolveAt(at *time.Time) time.Time {
 	return s.clock.Now()
 }
 
-// requireSchadenplatzOf makes sure the Schadenplatz exists and belongs to the incident. An id that
-// matches no site, or a site of another incident, is invalid input; the two cases are not told
-// apart so that the existence of another incident's sites is not revealed.
+// requireSchadenplatzOf makes sure the Schadenplatz exists, belongs to the incident and is not
+// merged. An id that matches no site, or a site of another incident, is invalid input; the two
+// cases are not told apart so that the existence of another incident's sites is not revealed.
 func (s *ResourceService) requireSchadenplatzOf(
 	ctx context.Context,
 	incidentID shared.IncidentID,
@@ -457,6 +457,11 @@ func (s *ResourceService) requireSchadenplatzOf(
 
 	if sp.IncidentID() != incidentID {
 		return notFound
+	}
+
+	// A merged Schadenplatz is closed for changes; its work continues on the default one.
+	if sp.IsMerged() {
+		return shared.ValidationError{Field: "schadenplatzId", Message: "Schadenplatz was merged into another one"}
 	}
 
 	return nil

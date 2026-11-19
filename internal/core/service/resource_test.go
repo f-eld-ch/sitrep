@@ -711,3 +711,26 @@ func TestResourceService_ReassignResource_SchadenplatzMustBelongToTheIncident(t 
 	require.NoError(t, err)
 	assert.Equal(t, own.ID, moved.SchadenplatzID)
 }
+
+func TestResourceService_MergedSchadenplatzIsNotAssignable(t *testing.T) {
+	incSvc, spSvc, resSvc := setupResourceServices(t)
+
+	inc, err := incSvc.CreateIncident(ctx(), "Einsatz", nil, nil, nil, testActor)
+	require.NoError(t, err)
+
+	merged, err := spSvc.CreateSchadenplatz(ctx(), inc.IncidentID, "Abschnitt Nord", nil, testActor)
+	require.NoError(t, err)
+	require.NoError(t, spSvc.MergeSchadenplatz(ctx(), merged.ID, nil, testActor))
+
+	input := alertInput(inc.IncidentID)
+	input.SchadenplatzID = &merged.ID
+
+	_, err = resSvc.AlertResource(ctx(), input, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput, "a new resource cannot be alerted onto a merged site")
+
+	res, err := resSvc.AlertResource(ctx(), alertInput(inc.IncidentID), testActor)
+	require.NoError(t, err)
+
+	_, err = resSvc.ReassignResource(ctx(), res.ID, merged.ID, nil, testActor)
+	require.ErrorIs(t, err, shared.ErrInvalidInput, "a resource cannot be moved onto a merged site")
+}
