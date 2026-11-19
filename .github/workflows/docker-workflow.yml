@@ -116,6 +116,10 @@ jobs:
           # image reports the creation date of its Chainguard base image (weeks old).
           SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
           export SOURCE_DATE_EPOCH
+          # Same for the files ko copies from kodata/ (the UI SBOM): without it they are dated 1970.
+          # goreleaser does this for release images through ko_data_creation_time.
+          KO_DATA_DATE_EPOCH="$SOURCE_DATE_EPOCH"
+          export KO_DATA_DATE_EPOCH
           created="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
 
           # The base image also contributes org.opencontainers.image.* annotations (created, source,
