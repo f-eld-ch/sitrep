@@ -925,7 +925,16 @@ func (s *IncidentService) writeIncident(
 	return state, nil
 }
 
+// errNoHierarchyGuard is returned when a parent link is requested but the service was built
+// without an IncidentHierarchyGuard: the two-level rule cannot be checked across streams then,
+// so the link is refused instead of being written unchecked.
+var errNoHierarchyGuard = errors.New("incident hierarchy guard is not configured")
+
 func (s *IncidentService) requireValidParent(ctx context.Context, childID, parentID shared.IncidentID) error {
+	if s.hierarchy == nil {
+		return errNoHierarchyGuard
+	}
+
 	hasChildren, err := s.hierarchy.HasChildren(ctx, childID)
 	if err != nil {
 		return err
