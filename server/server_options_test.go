@@ -131,6 +131,7 @@ func TestLogAndPresentError(t *testing.T) {
 		{"forbidden", shared.ErrForbidden, "FORBIDDEN", ""},
 		{"invalid input", shared.ErrInvalidInput, "INVALID_INPUT", ""},
 		{"invalid parent", shared.ErrInvalidParent, "INVALID_PARENT_INCIDENT", ""},
+		{"merged schadenplatz", shared.ErrSchadenplatzMerged, "SCHADENPLATZ_MERGED", ""},
 		{"conflict", shared.ErrConflict, "CONFLICT", ""},
 		{"timeline", shared.ErrMessageTimeLocked, "MESSAGE_TIME_LOCKED", ""},
 		{"wrapped domain error", fmt.Errorf("ctx: %w", shared.ErrNotFound), "NOT_FOUND", ""},

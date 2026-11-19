@@ -252,6 +252,8 @@ func logAndPresentError(ctx context.Context, e error) *gqlerror.Error {
 		code = "INVALID_INPUT"
 	case errors.Is(e, shared.ErrInvalidParent):
 		code = "INVALID_PARENT_INCIDENT"
+	case errors.Is(e, shared.ErrSchadenplatzMerged):
+		code = "SCHADENPLATZ_MERGED"
 	case errors.Is(e, shared.ErrConflict):
 		code = "CONFLICT"
 	default:
