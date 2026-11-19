@@ -3,6 +3,8 @@ package service_test
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/feature"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/incident"
@@ -187,16 +189,78 @@ func (r *faultyAccessRepo) Save(ctx context.Context, a *access.IncidentAccess) (
 	return r.IncidentAccessRepository.Save(ctx, a)
 }
 
+func (r *faultyAccessRepo) Load(ctx context.Context, id shared.IncidentID) (*access.IncidentAccess, error) {
+	if err := r.onLoad(); err != nil {
+		return nil, err
+	}
+
+	return r.IncidentAccessRepository.Load(ctx, id)
+}
+
+type faultyGroups struct {
+	outbound.AccessGroupRepository
+	fault
+}
+
+func (r *faultyGroups) Load(ctx context.Context, id uuid.UUID) (*access.AccessGroup, error) {
+	if err := r.onLoad(); err != nil {
+		return nil, err
+	}
+
+	return r.AccessGroupRepository.Load(ctx, id)
+}
+
+func (r *faultyGroups) Save(ctx context.Context, a *access.AccessGroup) (outbound.Cursor, error) {
+	if err := r.onSave(); err != nil {
+		return nil, err
+	}
+
+	return r.AccessGroupRepository.Save(ctx, a)
+}
+
+type faultyGlobal struct {
+	outbound.GlobalAccessRepository
+	fault
+}
+
+func (r *faultyGlobal) Load(ctx context.Context) (*access.GlobalAccess, error) {
+	if err := r.onLoad(); err != nil {
+		return nil, err
+	}
+
+	return r.GlobalAccessRepository.Load(ctx)
+}
+
+func (r *faultyGlobal) Save(ctx context.Context, a *access.GlobalAccess) (outbound.Cursor, error) {
+	if err := r.onSave(); err != nil {
+		return nil, err
+	}
+
+	return r.GlobalAccessRepository.Save(ctx, a)
+}
+
+// globalAccessState is a global access checker the test can switch.
+type globalAccessState struct {
+	denied bool
+	err    error
+}
+
+func (g *globalAccessState) Can(context.Context, string, access.GlobalAction) (bool, error) {
+	return !g.denied, g.err
+}
+
 // ── Access and hierarchy ─────────────────────────────────────────────────────
 
 // accessState is an access checker the test can switch: it allows everything until told otherwise.
 type accessState struct {
 	denied bool
-	err    error
+	// deniedActions refuses only these actions.
+	deniedActions map[access.Action]bool
+	err           error
 }
 
-func (a *accessState) Can(context.Context, string, shared.IncidentID, access.Action) (bool, error) {
-	return !a.denied, a.err
+func (a *accessState) Can(_ context.Context, _ string, _ shared.IncidentID, action access.Action) (bool, error) {
+	return !a.denied && !a.deniedActions[action], a.err
 }
 
 // hierarchyStub is a hierarchy guard with scripted answers.
