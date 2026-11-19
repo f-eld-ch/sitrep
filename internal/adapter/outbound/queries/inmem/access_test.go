@@ -34,14 +34,13 @@ func TestAccessQueriesIncidentAccess(t *testing.T) {
 	incidentID := shared.IncidentID(uuid.New())
 	owner := "owner"
 
-	// Unknown incident: no grants and an empty mode.
+	// Unknown incident: no grants, and no access state to report a mode for.
 	grants, err := q.ListIncidentAccess(ctx, incidentID)
 	require.NoError(t, err)
 	assert.Empty(t, grants)
 
-	mode, err := q.GetIncidentAccessMode(ctx, incidentID)
-	require.NoError(t, err)
-	assert.Empty(t, mode)
+	_, err = q.GetIncidentAccessMode(ctx, incidentID)
+	require.ErrorIs(t, err, shared.ErrNotFound)
 
 	a := access.NewIncidentAccess(incidentID)
 	require.NoError(t, a.Initialize(&owner, access.OpenOperational, owner, queryAt))
@@ -70,7 +69,7 @@ func TestAccessQueriesIncidentAccess(t *testing.T) {
 		},
 	}, grants)
 
-	mode, err = q.GetIncidentAccessMode(ctx, incidentID)
+	mode, err := q.GetIncidentAccessMode(ctx, incidentID)
 	require.NoError(t, err)
 	assert.Equal(t, access.Restricted, mode)
 }
@@ -84,8 +83,9 @@ func TestAccessQueriesGroups(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, groups)
 
-	_, err = q.ListGroupMembers(ctx, uuid.New())
-	require.ErrorIs(t, err, shared.ErrNotFound)
+	none, err := q.ListGroupMembers(ctx, uuid.New())
+	require.NoError(t, err)
+	assert.Empty(t, none, "an unknown group has no members")
 
 	idB, idA1, idA2 := uuid.New(), uuid.New(), uuid.New()
 	mk := func(id uuid.UUID, name, desc string) *access.AccessGroup {

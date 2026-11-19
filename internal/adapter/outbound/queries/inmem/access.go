@@ -2,6 +2,7 @@ package inmem
 
 import (
 	"context"
+	"slices"
 	"sort"
 	"time"
 
@@ -19,34 +20,63 @@ func NewAccessQueries(handler *projection.AccessHandler) *AccessQueries {
 	return &AccessQueries{handler: handler}
 }
 
+// ListIncidentAccess returns the active grants of an incident ordered like the SQL adapters do:
+// by principal kind, then display name (group grants carry the group's name), then role.
 func (q *AccessQueries) ListIncidentAccess(
 	_ context.Context,
 	incidentID shared.IncidentID,
 ) ([]outbound.IncidentAccessGrantRM, error) {
 	rows := q.handler.IncidentGrants(uuid.UUID(incidentID))
+	groups := q.handler.Groups()
 
 	out := make([]outbound.IncidentAccessGrantRM, 0, len(rows))
+
 	for _, row := range rows {
-		out = append(
-			out,
-			outbound.IncidentAccessGrantRM{
-				IncidentID:    incidentID,
-				PrincipalKind: row.PrincipalKind,
-				PrincipalID:   row.PrincipalID,
-				PrincipalName: row.PrincipalID,
-				Role:          row.Role,
-			},
-		)
+		name := row.PrincipalID
+
+		if row.PrincipalKind == access.GroupPrincipal {
+			if id, err := uuid.Parse(row.PrincipalID); err == nil {
+				if group, ok := groups[id]; ok {
+					name = group.Name
+				}
+			}
+		}
+
+		out = append(out, outbound.IncidentAccessGrantRM{
+			IncidentID:    incidentID,
+			PrincipalKind: row.PrincipalKind,
+			PrincipalID:   row.PrincipalID,
+			PrincipalName: name,
+			Role:          row.Role,
+		})
 	}
+
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].PrincipalKind != out[j].PrincipalKind {
+			return out[i].PrincipalKind < out[j].PrincipalKind
+		}
+
+		if out[i].PrincipalName != out[j].PrincipalName {
+			return out[i].PrincipalName < out[j].PrincipalName
+		}
+
+		return out[i].Role < out[j].Role
+	})
 
 	return out, nil
 }
 
+// GetIncidentAccessMode reports shared.ErrNotFound for an incident without access state.
 func (q *AccessQueries) GetIncidentAccessMode(
 	_ context.Context,
 	incidentID shared.IncidentID,
 ) (access.IncidentMode, error) {
-	return q.handler.Mode(uuid.UUID(incidentID)), nil
+	mode, ok := q.handler.ModeOf(uuid.UUID(incidentID))
+	if !ok {
+		return "", shared.ErrNotFound
+	}
+
+	return mode, nil
 }
 
 func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGroupRM, error) {
@@ -81,14 +111,19 @@ func (q *AccessQueries) ListAccessGroups(_ context.Context) ([]outbound.AccessGr
 	return out, nil
 }
 
+// ListGroupMembers returns the members of a group ordered by subject; an unknown group has none,
+// as in the SQL adapters.
 func (q *AccessQueries) ListGroupMembers(_ context.Context, groupID uuid.UUID) ([]outbound.GroupMemberRM, error) {
 	group, ok := q.handler.Groups()[groupID]
 	if !ok {
-		return nil, shared.ErrNotFound
+		return []outbound.GroupMemberRM{}, nil
 	}
 
-	out := make([]outbound.GroupMemberRM, 0, len(group.Members))
-	for _, subject := range group.Members {
+	subjects := slices.Clone(group.Members)
+	slices.Sort(subjects)
+
+	out := make([]outbound.GroupMemberRM, 0, len(subjects))
+	for _, subject := range subjects {
 		out = append(out, outbound.GroupMemberRM{GroupID: groupID, Subject: subject})
 	}
 
@@ -109,6 +144,15 @@ func (q *AccessQueries) ListGlobalRoles(_ context.Context) ([]outbound.GlobalRol
 			out = append(out, outbound.GlobalRoleGrantRM{Subject: subject, Role: role})
 		}
 	}
+
+	// Like the SQL adapters: by role, then by subject.
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Role != out[j].Role {
+			return out[i].Role < out[j].Role
+		}
+
+		return out[i].Subject < out[j].Subject
+	})
 
 	return out, nil
 }

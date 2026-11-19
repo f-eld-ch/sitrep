@@ -10,7 +10,6 @@ import (
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
-	"github.com/f-eld-ch/sitrep/internal/core/port/outbound"
 )
 
 const accessHandler = "readmodel.access"
@@ -33,10 +32,6 @@ func RunAccess(t *testing.T, f Factory) {
 
 	t.Run("IncidentAccessMode_NotFound", func(t *testing.T) {
 		b := f(t)
-
-		if !b.Caps.AccessListingContract {
-			t.Skip("inmem returns no error for an unknown incident")
-		}
 
 		_, err := b.AccessQueries.GetIncidentAccessMode(t.Context(), shared.IncidentID(uuid.New()))
 		require.ErrorIs(t, err, shared.ErrNotFound)
@@ -67,22 +62,18 @@ func RunAccess(t *testing.T, f Factory) {
 		grants, err := b.AccessQueries.ListIncidentAccess(ctx, id)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			require.Len(t, grants, 2)
-			assert.Equal(t, "sub|owner", grants[0].PrincipalID)
-			assert.Equal(t, access.Owner, grants[0].Role)
-			assert.Equal(t, access.UserPrincipal, grants[0].PrincipalKind)
-			assert.Equal(t, id, grants[0].IncidentID)
-			assert.Equal(t, "sub|viewer", grants[1].PrincipalID)
-			assert.Equal(t, access.Viewer, grants[1].Role)
-		}
+		require.Len(t, grants, 2)
+		assert.Equal(t, "sub|owner", grants[0].PrincipalID)
+		assert.Equal(t, access.Owner, grants[0].Role)
+		assert.Equal(t, access.UserPrincipal, grants[0].PrincipalKind)
+		assert.Equal(t, id, grants[0].IncidentID)
+		assert.Equal(t, "sub|viewer", grants[1].PrincipalID)
+		assert.Equal(t, access.Viewer, grants[1].Role)
 
 		can, err := b.IncidentAccess.Can(ctx, "sub|viewer", id, access.IncidentRead)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			assert.True(t, can, "viewer may read a restricted incident")
-		}
+		assert.True(t, can, "viewer may read a restricted incident")
 
 		can, err = b.IncidentAccess.Can(ctx, "sub|viewer", id, access.IncidentWrite)
 		require.NoError(t, err)
@@ -97,10 +88,8 @@ func RunAccess(t *testing.T, f Factory) {
 		grants, err = b.AccessQueries.ListIncidentAccess(ctx, id)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			require.Len(t, grants, 1)
-			assert.Equal(t, "sub|owner", grants[0].PrincipalID)
-		}
+		require.Len(t, grants, 1)
+		assert.Equal(t, "sub|owner", grants[0].PrincipalID)
 
 		can, err = b.IncidentAccess.Can(ctx, "sub|viewer", id, access.IncidentRead)
 		require.NoError(t, err)
@@ -112,9 +101,7 @@ func RunAccess(t *testing.T, f Factory) {
 		can, err = b.IncidentAccess.Can(ctx, "sub|viewer", id, access.IncidentRead)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			assert.True(t, can, "a re-granted role is active again")
-		}
+		assert.True(t, can, "a re-granted role is active again")
 
 		apply(
 			t,
@@ -138,16 +125,12 @@ func RunAccess(t *testing.T, f Factory) {
 		can, err = b.IncidentAccess.Can(ctx, "sub|stranger", id, access.IncidentDelete)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			assert.False(t, can, "delete stays restricted to owners")
-		}
+		assert.False(t, can, "delete stays restricted to owners")
 
 		can, err = b.IncidentAccess.Can(ctx, "sub|owner", id, access.IncidentDelete)
 		require.NoError(t, err)
 
-		if b.Caps.AccessListingContract {
-			assert.True(t, can, "the owner may delete")
-		}
+		assert.True(t, can, "the owner may delete")
 	})
 
 	t.Run("IncidentAccess_UnknownIncidentDeniesAccess", func(t *testing.T) {
@@ -178,9 +161,7 @@ func RunAccess(t *testing.T, f Factory) {
 		require.Len(t, grants, 1)
 		assert.Equal(t, access.GroupPrincipal, grants[0].PrincipalKind)
 
-		if b.Caps.AccessListingContract {
-			assert.Equal(t, "Crew", grants[0].PrincipalName, "group grants carry the group name")
-		}
+		assert.Equal(t, "Crew", grants[0].PrincipalName, "group grants carry the group name")
 
 		can, err := b.IncidentAccess.Can(ctx, "sub|member", id, access.IncidentWrite)
 		require.NoError(t, err)
@@ -271,7 +252,6 @@ func RunAccess(t *testing.T, f Factory) {
 		members, err := b.AccessQueries.ListGroupMembers(ctx, group)
 		require.NoError(t, err)
 		require.Len(t, members, 2)
-		sortMembers(b, members)
 		assert.Equal(t, "sub|a", members[0].Subject, "members are ordered by subject")
 		assert.Equal(t, "sub|b", members[1].Subject)
 		assert.Equal(t, group, members[0].GroupID)
@@ -290,11 +270,9 @@ func RunAccess(t *testing.T, f Factory) {
 		require.NoError(t, err)
 		assert.Len(t, members, 2)
 
-		if b.Caps.AccessListingContract {
-			none, err := b.AccessQueries.ListGroupMembers(ctx, uuid.New())
-			require.NoError(t, err)
-			assert.Empty(t, none)
-		}
+		none, err := b.AccessQueries.ListGroupMembers(ctx, uuid.New())
+		require.NoError(t, err)
+		assert.Empty(t, none)
 	})
 
 	t.Run("GlobalRoles", func(t *testing.T) {
@@ -428,13 +406,4 @@ func RunAccess(t *testing.T, f Factory) {
 		require.NoError(t, err)
 		assert.Empty(t, groups, "no events were stored, so a rebuild leaves no groups")
 	})
-}
-
-// sortMembers orders members by subject for backends that do not promise an order.
-func sortMembers(b *Backend, members []outbound.GroupMemberRM) {
-	if b.Caps.AccessListingContract {
-		return
-	}
-
-	sort.Slice(members, func(i, j int) bool { return members[i].Subject < members[j].Subject })
 }

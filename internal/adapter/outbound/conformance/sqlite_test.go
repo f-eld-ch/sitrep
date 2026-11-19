@@ -129,7 +129,6 @@ func sqliteFactory(t *testing.T) *conformance.Backend {
 			PlaceIntoMissingLayerIsNoop: true,
 			FeatureOrderStable:          true,
 			FeatureLookupByID:           true,
-			AccessListingContract:       true,
 		},
 	}
 }
