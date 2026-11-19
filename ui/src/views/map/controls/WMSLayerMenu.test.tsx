@@ -324,7 +324,12 @@ describe("WMSLayerMenu errors", () => {
   });
 
   it("forgets a server that cannot be reached and says so", async () => {
-    fetchMock.mockRejectedValue(new Error("network"));
+    // only this server is down; the one the menu falls back to answers
+    fetchMock.mockImplementation((url: string) =>
+      url.startsWith(OTHER_SERVER)
+        ? Promise.reject(new Error("network"))
+        : Promise.resolve({ text: () => Promise.resolve(GOOD_DOCUMENT) }),
+    );
     seed({
       currentServer: OTHER_SERVER,
       servers: [
@@ -341,7 +346,12 @@ describe("WMSLayerMenu errors", () => {
   });
 
   it("treats an answer that is not capabilities as an unreachable server", async () => {
-    respondWith("<html>not a wms</html>");
+    fetchMock.mockImplementation((url: string) =>
+      Promise.resolve({
+        text: () =>
+          Promise.resolve(url.startsWith(OTHER_SERVER) ? "<html>not a wms</html>" : GOOD_DOCUMENT),
+      }),
+    );
     seed({
       currentServer: OTHER_SERVER,
       servers: [
@@ -392,7 +402,7 @@ describe("WMSLayerMenu custom server", () => {
   });
 
   it("names a server by its address when it is not a valid URL", () => {
-    fetchMock.mockRejectedValue(new Error("network"));
+    respondWith(GOOD_DOCUMENT);
     renderMenu();
     chooseCustom();
 
