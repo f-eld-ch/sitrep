@@ -35,24 +35,30 @@ export function PieChart({
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   if (total <= 0) return null;
 
-  const present = slices.filter((s) => s.value > 0);
-  let from = 0;
+  // Where each slice starts and ends, as a fraction of the circle. Built up front so that nothing
+  // is reassigned while rendering.
+  const arcs = slices
+    .filter((s) => s.value > 0)
+    .reduce<{ slice: Slice; from: number; to: number }[]>((acc, slice) => {
+      const from = acc.length > 0 ? acc[acc.length - 1].to : 0;
+      acc.push({ slice, from, to: from + slice.value / total });
+
+      return acc;
+    }, []);
 
   return (
     <figure className={clsx("shrink-0", className)}>
       <figcaption className="sr-only">{caption}</figcaption>
       <svg aria-hidden viewBox="0 0 100 100" className="h-32 w-32 print:h-20 print:w-20">
-        {present.length === 1 ? (
-          <circle cx={CENTER} cy={CENTER} r={RADIUS} className={present[0].fillClass}>
-            <title>{present[0].label}</title>
+        {arcs.length === 1 ? (
+          <circle cx={CENTER} cy={CENTER} r={RADIUS} className={arcs[0].slice.fillClass}>
+            <title>{arcs[0].slice.label}</title>
           </circle>
         ) : (
-          present.map((slice) => {
-            const to = from + slice.value / total;
+          arcs.map(({ slice, from, to }) => {
             const [x1, y1] = point(from);
             const [x2, y2] = point(to);
             const large = to - from > 0.5 ? 1 : 0;
-            from = to;
 
             return (
               <path
