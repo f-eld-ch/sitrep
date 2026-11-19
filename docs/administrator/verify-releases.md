@@ -43,6 +43,17 @@ The build provenance records which commit and workflow produced a file:
 gh attestation verify sitrep_26.11.3_linux_amd64.tar.gz --repo f-eld-ch/sitrep
 ```
 
+## Software bill of materials (SBOM)
+
+Each release also contains SBOMs in SPDX JSON format: `<archive>.sbom.json` lists the Go modules in
+a binary, and `sitrep-ui_<version>.sbom.json` lists the npm packages of the web UI (taken from the
+lock file, so build-only tools appear too). They are listed in `checksums.txt`, so the check above
+covers them. The container image carries its own SBOM in the registry:
+
+```bash
+cosign download sbom ghcr.io/f-eld-ch/sitrep:v26.11.3
+```
+
 ## Container image
 
 ```bash
