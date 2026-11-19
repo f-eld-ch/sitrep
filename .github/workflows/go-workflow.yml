@@ -73,7 +73,9 @@ jobs:
         # the resolver and service tests drive the domain and the adapters. The profile then holds
         # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
         # counts as covered when any of them ran it.
-        run: go test -coverpkg=./... -coverprofile=go-coverage.out ./...
+        # -race runs the tests under the race detector, which is the project's dynamic analysis
+        # (coverage is then recorded in atomic mode).
+        run: go test -race -coverpkg=./... -coverprofile=go-coverage.out ./...
 
       - name: Convert Go coverage to Cobertura
         if: inputs.coverage
