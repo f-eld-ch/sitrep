@@ -345,15 +345,15 @@ func TestAccessGroupGuards(t *testing.T) {
 	}
 
 	t.Run("create validates the name", func(t *testing.T) {
-		require.Error(t, NewAccessGroup(uuid.New()).Create("  ", "", "a", guardTime))
-		require.Error(t, NewAccessGroup(uuid.New()).Create(long, "", "a", guardTime))
+		require.ErrorIs(t, NewAccessGroup(uuid.New()).Create("  ", "", "a", guardTime), shared.ErrInvalidInput)
+		require.ErrorIs(t, NewAccessGroup(uuid.New()).Create(long, "", "a", guardTime), shared.ErrInvalidInput)
 		require.NoError(t, NewAccessGroup(uuid.New()).Create(strings.Repeat("x", 64), "", "a", guardTime))
 	})
 
 	t.Run("rename", func(t *testing.T) {
 		g := newGroup(t)
-		require.Error(t, g.Rename("", "a", guardTime))
-		require.Error(t, g.Rename(long, "a", guardTime))
+		require.ErrorIs(t, g.Rename("", "a", guardTime), shared.ErrInvalidInput)
+		require.ErrorIs(t, g.Rename(long, "a", guardTime), shared.ErrInvalidInput)
 
 		before := len(g.Root().PendingEvents())
 		require.NoError(t, g.Rename("Ops", "a", guardTime))
@@ -375,7 +375,7 @@ func TestAccessGroupGuards(t *testing.T) {
 
 	t.Run("members", func(t *testing.T) {
 		g := newGroup(t)
-		require.Error(t, g.AddMember(" ", "a", guardTime))
+		require.ErrorIs(t, g.AddMember(" ", "a", guardTime), shared.ErrInvalidInput)
 		require.NoError(t, g.AddMember("u", "a", guardTime))
 
 		before := len(g.Root().PendingEvents())
@@ -395,9 +395,9 @@ func TestAccessGroupGuards(t *testing.T) {
 		require.NoError(t, g.Archive("a", guardTime), "archiving twice is a no-op")
 		assert.Len(t, g.Root().PendingEvents(), before)
 
-		require.Error(t, g.Rename("Other", "a", guardTime))
-		require.Error(t, g.UpdateDescription("other", "a", guardTime))
-		require.Error(t, g.AddMember("u", "a", guardTime))
+		require.ErrorIs(t, g.Rename("Other", "a", guardTime), shared.ErrInvalidInput)
+		require.ErrorIs(t, g.UpdateDescription("other", "a", guardTime), shared.ErrInvalidInput)
+		require.ErrorIs(t, g.AddMember("u", "a", guardTime), shared.ErrInvalidInput)
 	})
 
 	t.Run("replay of all events", func(t *testing.T) {
