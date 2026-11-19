@@ -37,6 +37,7 @@ import {
   useLayersForIncident,
   useModifyFeature,
 } from "api";
+import { ActiveLayerCard } from "./ActiveLayerCard";
 import ActiveWMSLayers from "./ActiveWMSLayers";
 import { BabsIconController } from "./controls/BabsIconController";
 import DrawControl from "./controls/DrawControl";
@@ -427,18 +428,7 @@ function ReadOnlyLayers({
 
   return (
     <>
-      {activeLayer && (
-        <div className="maplibregl-ctrl-top-right pointer-events-none m-2">
-          <div className="max-w-64 rounded border border-border bg-bg/95 px-3 py-2 text-sm text-fg shadow-lg backdrop-blur">
-            <p className="truncate font-semibold">{activeLayer.name}</p>
-            {activeLayer.sourceIncidentName && (
-              <p className="mt-0.5 truncate text-xs text-fg-muted">
-                {activeLayer.sourceIncidentName}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+      {activeLayer && <ActiveLayerCard layer={activeLayer} />}
       <InactiveLayers layers={visibleLayers} />
     </>
   );
