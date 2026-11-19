@@ -1,5 +1,4 @@
 import type { InMemoryCache } from "@apollo/client";
-import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -172,24 +171,9 @@ describe("useRecordCasualties", () => {
     occurredAt: new Date("2026-01-15T10:00:00Z"),
   };
 
-  const casualtiesFragment = gql`
-    fragment Totals on Schadenplatz {
-      id
-      casualties {
-        vermisste
-        tote
-        verletzte
-        obdachlose
-        eingeschlossene
-      }
-    }
-  `;
-
   function seedTotals(totals: Record<string, number>) {
-    cache.writeFragment({
-      id: "Schadenplatz:sp-1",
-      fragment: casualtiesFragment,
-      data: {
+    cache.restore({
+      "Schadenplatz:sp-1": {
         __typename: "Schadenplatz",
         id: "sp-1",
         casualties: { __typename: "Casualties", ...zero, ...totals },
@@ -276,32 +260,19 @@ describe("useRecordCasualties", () => {
       ...zero,
       tote,
     });
-    const messageFragment = gql`
-      fragment MessageCasualties on Message {
-        id
-        content
-        schadenplatzCasualties {
-          schadenplatzId
-          tote
-        }
-      }
-    `;
     const seedMessage = (entries: unknown[]) =>
-      cache.writeFragment({
-        id: "Message:m-1",
-        fragment: messageFragment,
-        data: {
+      cache.restore({
+        "Message:m-1": {
           __typename: "Message",
           id: "m-1",
           content: "Fire",
           schadenplatzCasualties: entries,
-        } as never,
+        },
       });
     const readMessage = () =>
-      cache.readFragment<{ content: string; schadenplatzCasualties: unknown[] }>({
-        id: "Message:m-1",
-        fragment: messageFragment,
-      });
+      cache.extract()["Message:m-1"] as
+        | { content: string; schadenplatzCasualties: unknown[] }
+        | undefined;
 
     it("replaces this place's entry on the message and keeps the other places", async () => {
       seedMessage([entry("sp-1", 99), entry("sp-2", 5)]);
@@ -312,8 +283,8 @@ describe("useRecordCasualties", () => {
       mutateOptions(mutate).update?.(cache, {});
 
       expect(readMessage()?.schadenplatzCasualties).toEqual([
-        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-2", tote: 5 },
-        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-1", tote: 2 },
+        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-2", ...zero, tote: 5 },
+        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-1", ...args.deltas },
       ]);
       expect(readMessage()?.content).toBe("Fire");
     });
@@ -327,8 +298,28 @@ describe("useRecordCasualties", () => {
       mutateOptions(mutate).update?.(cache, {});
 
       expect(readMessage()?.schadenplatzCasualties).toEqual([
-        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-1", tote: 2 },
+        { __typename: "SchadenplatzCasualtyEntry", schadenplatzId: "sp-1", ...args.deltas },
       ]);
+    });
+
+    it("leaves a casualties field that is a reference rather than a list untouched", async () => {
+      cache.restore({
+        "Message:m-1": {
+          __typename: "Message",
+          id: "m-1",
+          schadenplatzCasualties: { __ref: "Other:1" },
+        },
+        "Other:1": { __typename: "Other", id: "1" },
+      });
+      const mutate = await mockMutation();
+      const { result } = renderHook(() => useRecordCasualties());
+      await result.current[0](args);
+
+      mutateOptions(mutate).update?.(cache, {});
+
+      expect(cache.extract()["Message:m-1"]).toMatchObject({
+        schadenplatzCasualties: { __ref: "Other:1" },
+      });
     });
 
     it("does nothing when the message is not cached", async () => {
@@ -338,7 +329,7 @@ describe("useRecordCasualties", () => {
 
       mutateOptions(mutate).update?.(cache, {});
 
-      expect(readMessage()).toBeNull();
+      expect(readMessage()).toBeUndefined();
     });
   });
 });

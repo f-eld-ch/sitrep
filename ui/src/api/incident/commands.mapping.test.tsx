@@ -145,45 +145,62 @@ describe("useCreateIncident cache seeding", () => {
     },
   );
 
-  it("does nothing when the response carries no incident", async () => {
-    const { mutate } = await setupCreate(wireIncident("inc-new"));
-    const { result } = renderHook(() => useCreateIncident());
-    await result.current[0]({ name: "KFS", location: "", divisions: [] });
-    const cache = newCache();
+  it.each([{ withParent: false }, { withParent: true }])(
+    "does nothing when the response carries no incident (withParent=$withParent)",
+    async ({ withParent }) => {
+      const { mutate, mutateWithParent } = await setupCreate(wireIncident("inc-new"));
+      const { result } = renderHook(() => useCreateIncident());
+      await result.current[0]({
+        name: "KFS",
+        location: "",
+        divisions: [],
+        ...(withParent ? { parentId: "p-1" } : {}),
+      });
+      const cache = newCache();
 
-    mutateOptions(mutate).update?.(cache, { data: { createIncident: null } });
+      mutateOptions(withParent ? mutateWithParent : mutate).update?.(cache, {
+        data: { createIncident: null },
+      });
 
-    expect(
-      cache.readQuery({ query: GET_INCIDENT_DETAILS, variables: { incidentId: "inc-new" } }),
-    ).toBeNull();
-  });
+      expect(
+        cache.readQuery({ query: GET_INCIDENT_DETAILS, variables: { incidentId: "inc-new" } }),
+      ).toBeNull();
+    },
+  );
 
-  it("adds the new incident to a cached incident list, under the parent it was created with", async () => {
-    const incident = wireIncident("inc-new");
-    const { mutateWithParent } = await setupCreate(incident);
-    const { result } = renderHook(() => useCreateIncident());
-    await result.current[0]({ name: "KFS", location: "", divisions: [], parentId: "p-1" });
-    const cache = newCache();
-    cache.writeQuery({
-      query: GET_INCIDENTS,
-      data: { incidents: [listedIncident("inc-old")] as never },
-    });
-    const write = vi.spyOn(cache, "writeQuery");
-    // The hook's list entry lacks hasReview/canWrite/accessMode; Apollo reports that on stderr.
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+  it.each([{ parentId: undefined }, { parentId: "p-1" }])(
+    "adds the new incident to a cached incident list (parentId=$parentId)",
+    async ({ parentId }) => {
+      const incident = wireIncident("inc-new");
+      const { mutate, mutateWithParent } = await setupCreate(incident);
+      const { result } = renderHook(() => useCreateIncident());
+      await result.current[0]({ name: "KFS", location: "", divisions: [], parentId });
+      const cache = newCache();
+      cache.writeQuery({
+        query: GET_INCIDENTS,
+        data: { incidents: [listedIncident("inc-old")] as never },
+      });
+      const write = vi.spyOn(cache, "writeQuery");
+      // The hook's list entry lacks hasReview/canWrite/accessMode; Apollo reports that on stderr.
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    mutateOptions(mutateWithParent).update?.(cache, { data: { createIncident: { incident } } });
-    consoleError.mockRestore();
+      mutateOptions(parentId ? mutateWithParent : mutate).update?.(cache, {
+        data: { createIncident: { incident } },
+      });
+      consoleError.mockRestore();
 
-    const listWrite = write.mock.calls.find(([options]) => options.query === GET_INCIDENTS);
-    const written = listWrite?.[0].data as { incidents: { id: string; parentId: string | null }[] };
-    expect(written.incidents.map((i) => i.id)).toEqual(["inc-old", "inc-new"]);
-    expect(written.incidents[1]).toMatchObject({
-      parentId: "p-1",
-      closedAt: null,
-      isClosed: false,
-    });
-  });
+      const listWrite = write.mock.calls.find(([options]) => options.query === GET_INCIDENTS);
+      const written = listWrite?.[0].data as {
+        incidents: { id: string; parentId: string | null }[];
+      };
+      expect(written.incidents.map((i) => i.id)).toEqual(["inc-old", "inc-new"]);
+      expect(written.incidents[1]).toMatchObject({
+        parentId: parentId ?? null,
+        closedAt: null,
+        isClosed: false,
+      });
+    },
+  );
 
   it("does not write the incident list when it is not cached", async () => {
     const incident = wireIncident("inc-new");

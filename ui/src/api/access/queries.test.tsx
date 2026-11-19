@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client/react";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { QueryResult } from "../result";
-import { graphQlError } from "../testing/mutations";
+import { graphQlError, serverError } from "../testing/mutations";
 import {
   useAccessGroups,
   useAccessUsers,
@@ -217,6 +217,28 @@ describe.each(cases)("$name", ({ run, wire, mapped, empty, refreshes }) => {
     result.current.refresh();
 
     expect(refetch).toHaveBeenCalledTimes(refreshes ? 1 : 0);
+  });
+});
+
+describe("useMyGlobalRoles refresh", () => {
+  it.each([
+    { state: "loading", result: { loading: true, data: undefined } },
+    { state: "error", result: { error: graphQlError("FORBIDDEN"), data: undefined } },
+  ])("is a harmless no-op while $state", ({ result: queryResult }) => {
+    mockQuery(queryResult);
+    const { result } = renderHook(() => useMyGlobalRoles());
+
+    expect(() => result.current.refresh()).not.toThrow();
+    expect(refetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("transport failures", () => {
+  it("are reported as NETWORK_ERROR", () => {
+    mockQuery({ error: serverError(), data: undefined });
+    const { result } = renderHook(() => useAccessGroups());
+
+    expect(result.current).toMatchObject({ status: "error", error: { code: "NETWORK_ERROR" } });
   });
 });
 

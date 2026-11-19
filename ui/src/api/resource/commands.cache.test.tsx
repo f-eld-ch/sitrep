@@ -556,6 +556,22 @@ describe("useReactivateResource", () => {
   });
 });
 
+describe("useReactivateResource cache update", () => {
+  it("still writes the resource when the incident's places are not cached", async () => {
+    const mutate = await mockMutation();
+    const { result } = renderHook(() => useReactivateResource());
+    await result.current[0]({ id: "r-1" });
+    seedResource(cache, wireResource("r-1", { status: "ABGELOEST" }));
+
+    mutateOptions(mutate).update?.(cache, {
+      data: { reactivateResource: wireResource("r-1", { status: "AUFGEBOTEN" }) },
+    });
+
+    expect(readResource(cache, "r-1")?.status).toBe("AUFGEBOTEN");
+    expect(readPlaces(cache)).toBeUndefined();
+  });
+});
+
 describe("command state", () => {
   it.each([
     { name: "useAlertResource", hook: useAlertResource },

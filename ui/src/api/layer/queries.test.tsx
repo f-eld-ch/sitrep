@@ -1,6 +1,8 @@
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { graphQlError } from "../testing/mutations";
 import {
+  LIVE_POLL_INTERVAL_MS,
   useFeatureChangeTimes,
   useFeatureMessages,
   useLayersForIncident,
@@ -224,5 +226,101 @@ describe("useFeatureMessages", () => {
     renderHook(() => useFeatureMessages(undefined));
 
     expect(useQuery.mock.calls[0][1]).toMatchObject({ skip: true });
+  });
+
+  it("is loading before the first answer, and also when nothing was asked", async () => {
+    await mockQuery({ data: undefined, loading: true });
+    expect(renderHook(() => useFeatureMessages("f1")).result.current.status).toBe("loading");
+
+    await mockQuery({ data: undefined, loading: false });
+    expect(renderHook(() => useFeatureMessages(undefined)).result.current.status).toBe("loading");
+  });
+
+  it("is an error with an ApiError and no data when the request failed", async () => {
+    await mockQuery({ data: undefined, error: graphQlError("FORBIDDEN") });
+
+    const { result } = renderHook(() => useFeatureMessages("f1"));
+
+    expect(result.current).toMatchObject({
+      status: "error",
+      data: undefined,
+      error: { name: "ApiError", code: "FORBIDDEN" },
+    });
+  });
+
+  it("refresh refetches", async () => {
+    await mockQuery({ data: { featureMessages: [] } });
+
+    renderHook(() => useFeatureMessages("f1")).result.current.refresh();
+
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useLayersForIncident states and options", () => {
+  it("polls the live map every 2 seconds and not while the tab is hidden", async () => {
+    const useQuery = await mockQuery({ data: undefined, loading: true });
+
+    renderHook(() => useLayersForIncident("inc-1"));
+
+    const options = useQuery.mock.calls[0][1] as {
+      pollInterval: number;
+      fetchPolicy: string;
+      skipPollAttempt: () => boolean;
+    };
+    expect(options.pollInterval).toBe(LIVE_POLL_INTERVAL_MS);
+    expect(options.fetchPolicy).toBe("cache-and-network");
+    const hidden = vi.spyOn(document, "hidden", "get");
+    hidden.mockReturnValue(true);
+    expect(options.skipPollAttempt()).toBe(true);
+    hidden.mockReturnValue(false);
+    expect(options.skipPollAttempt()).toBe(false);
+    hidden.mockRestore();
+  });
+
+  it("takes the poll interval and fetch policy of the caller", async () => {
+    const useQuery = await mockQuery({ data: undefined, loading: true });
+
+    renderHook(() =>
+      useLayersForIncident("inc-1", undefined, { pollInterval: 0, fetchPolicy: "no-cache" }),
+    );
+
+    expect(useQuery.mock.calls[0][1]).toMatchObject({ pollInterval: 0, fetchPolicy: "no-cache" });
+  });
+
+  it("is an error with an ApiError and no data when nothing was loaded", async () => {
+    await mockQuery({ data: undefined, error: graphQlError("NOT_FOUND") });
+
+    const { result } = renderHook(() => useLayersForIncident("inc-1"));
+
+    expect(result.current).toMatchObject({
+      status: "error",
+      data: undefined,
+      error: { name: "ApiError", code: "NOT_FOUND" },
+    });
+  });
+
+  it("is loading, not ready, while skipped without data", async () => {
+    await mockQuery({ data: undefined, loading: false });
+
+    expect(renderHook(() => useLayersForIncident(undefined)).result.current.status).toBe("loading");
+  });
+
+  it("is ready and refreshing while a poll is in flight", async () => {
+    await mockQuery({ data: { layersForIncident: [] }, loading: true });
+
+    expect(renderHook(() => useLayersForIncident("inc-1")).result.current).toMatchObject({
+      status: "ready",
+      data: { layers: [] },
+      isRefreshing: true,
+    });
+  });
+
+  it("refresh refetches", async () => {
+    await mockQuery({ data: { layersForIncident: [] } });
+
+    renderHook(() => useLayersForIncident("inc-1")).result.current.refresh();
+
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 });

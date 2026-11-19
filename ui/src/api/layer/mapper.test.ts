@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toLayer } from "./mapper";
+import { convertFeatureToGeoJsonFeature, layerToFeatureCollection, toLayer } from "./mapper";
 import type { GetLayersForIncidentQuery } from "gql/next";
 
 type WireFeature = GetLayersForIncidentQuery["layersForIncident"][0]["features"][0];
@@ -77,5 +77,62 @@ describe("toLayer", () => {
     const result = toLayer(wireWithTypename);
     expect(Object.keys(result)).not.toContain("__typename");
     expect(Object.keys(result.features[0])).not.toContain("__typename");
+  });
+});
+
+describe("convertFeatureToGeoJsonFeature", () => {
+  const feature = toLayer(WIRE_LAYER).features[0];
+
+  it("keeps id and geometry and merges the display properties into the feature's own", () => {
+    const geo = convertFeatureToGeoJsonFeature(feature, "layer-1");
+
+    expect(geo).toMatchObject({
+      type: "Feature",
+      id: "feat-1",
+      geometry: { type: "Point", coordinates: [8.5, 47.1] },
+      properties: { color: "red", layerId: "layer-1", featureId: "feat-1" },
+    });
+  });
+
+  it("copies the timestamps into the properties", () => {
+    const geo = convertFeatureToGeoJsonFeature(feature, "layer-1");
+
+    expect(geo.properties).toMatchObject({
+      createdAt: feature.createdAt,
+      updatedAt: feature.updatedAt,
+      deletedAt: feature.deletedAt,
+    });
+  });
+
+  it("does not change the feature it converts", () => {
+    convertFeatureToGeoJsonFeature(feature, "layer-1");
+
+    expect(feature.properties).toEqual({ color: "red" });
+  });
+});
+
+describe("layerToFeatureCollection", () => {
+  it("is an empty collection without a layer", () => {
+    expect(layerToFeatureCollection(undefined)).toEqual({
+      type: "FeatureCollection",
+      features: [],
+    });
+  });
+
+  it("has one GeoJSON feature per feature of the layer, in order", () => {
+    const collection = layerToFeatureCollection(toLayer(WIRE_LAYER));
+
+    expect(collection.type).toBe("FeatureCollection");
+    expect(collection.features.map((f) => [f.id, f.properties?.["featureId"]])).toEqual([
+      ["feat-1", "feat-1"],
+      ["feat-2", "feat-2"],
+    ]);
+  });
+
+  it("skips holes in the feature list", () => {
+    const layer = toLayer(WIRE_LAYER);
+    layer.features = [undefined as never, layer.features[0]];
+
+    expect(layerToFeatureCollection(layer).features.map((f) => f.id)).toEqual(["feat-1"]);
   });
 });
