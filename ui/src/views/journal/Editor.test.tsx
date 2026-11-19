@@ -426,6 +426,19 @@ describe("Editor", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("adds no chip for an upload to an edited message that failed", async () => {
+    uploadAttachment.mockRejectedValue(new ApiError("ATTACHMENT_TOO_LARGE"));
+    renderEditor({ messages: [message()] });
+    fireEvent.click(screen.getByRole("button", { name: t("edit") }));
+
+    fireEvent.change(field(t("message.attachments.add")), {
+      target: { files: [new File(["x"], "gross.pdf", { type: "application/pdf" })] },
+    });
+
+    await waitFor(() => expect(uploadAttachment).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText("gross.pdf")).not.toBeInTheDocument();
+  });
+
   it.each([
     ["ATTACHMENT_TOO_LARGE", "message.attachments.tooLarge"],
     ["ATTACHMENT_DISABLED", "message.attachments.disabled"],
