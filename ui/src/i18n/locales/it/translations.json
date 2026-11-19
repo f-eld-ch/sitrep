@@ -448,7 +448,6 @@
     "title": "Gruppi",
     "newGroup": "Nuovo gruppo",
     "name": "Nome del gruppo",
-    "namePlaceholder": "Nome del gruppo",
     "description": "Descrizione",
     "create": "Crea",
     "cancel": "Annulla",
@@ -542,6 +541,7 @@
     "editDetails": "Correggere i dati",
     "fields": {
       "name": "Denominazione",
+      "namePlaceholder": "Nome del mezzo",
       "formation": "Formazione",
       "partner": "Partner",
       "size": "Dimensione unità",

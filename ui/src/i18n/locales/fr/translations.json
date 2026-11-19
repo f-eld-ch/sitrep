@@ -447,8 +447,7 @@
   "adminGroups": {
     "title": "Groupes",
     "newGroup": "Nouveau groupe",
-    "name": "Nom du moyen",
-    "namePlaceholder": "Nom du moyen",
+    "name": "Nom du groupe",
     "description": "Description",
     "create": "Créer",
     "cancel": "Annuler",
@@ -542,6 +541,7 @@
     "editDetails": "Corriger les données",
     "fields": {
       "name": "Désignation",
+      "namePlaceholder": "Nom du moyen",
       "formation": "Formation",
       "partner": "Partenaire",
       "size": "Taille de l'unité",
