@@ -381,3 +381,30 @@ func TestAccessHandler_RejectsUnknownAndMalformedEvents(t *testing.T) {
 		require.NoError(t, h.Apply(t.Context(), evt("Incident", inc, "Opened", obj{}, tm(0))))
 	})
 }
+
+// Only a user principal is a policy subject itself. A group is expanded into its members and the
+// "all" principal has its own row, as in the SQL projections; neither id is a user.
+func TestAccessHandler_GroupAndAllGrantsAreNotUsers(t *testing.T) {
+	h := projection.NewAccessHandler()
+	inc, group := uuid.New(), uuid.New()
+	owner := "o"
+
+	applyAll(t, h,
+		initAccess(inc, "restricted", &owner),
+		groupEvent(group, "GroupCreated", obj{"name": "Ops", "description": "d"}),
+		groupEvent(group, "GroupMemberAdded", obj{"subject": "m1"}),
+		roleEvent(inc, "RoleGranted", "group", group.String(), "editor"),
+		roleEvent(inc, "RoleGranted", "all", access.AllPrincipalID, "viewer"),
+	)
+
+	domain := "incident:" + inc.String()
+
+	for _, row := range h.Policies() {
+		assert.NotEqual(t, "user:"+group.String(), row.Subject, "the group id is not a user")
+		assert.NotEqual(t, "user:"+access.AllPrincipalID, row.Subject, "the all principal is not a user")
+	}
+
+	assert.Contains(t, actionsOf(h, "user:m1", domain), "message.write", "a member is expanded from the group")
+	assert.NotEmpty(t, actionsOf(h, "all", domain), "the all principal keeps its own row")
+	assert.NotEmpty(t, actionsOf(h, "user:o", domain), "a user principal is a subject")
+}

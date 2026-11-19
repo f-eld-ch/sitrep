@@ -58,7 +58,7 @@ func NewAccessHandler() *AccessHandler {
 }
 
 func (h *AccessHandler) Name() string { return "readmodel.access" }
-func (h *AccessHandler) Version() int { return 4 }
+func (h *AccessHandler) Version() int { return 5 }
 func (h *AccessHandler) Handles(st, _ string) bool {
 	return st == "IncidentAccess" || st == "AccessGroup" || st == "GlobalAccess"
 }
@@ -244,8 +244,13 @@ func (h *AccessHandler) recompute() {
 		}
 
 		modeEntry := h.modes[incidentID]
-		for _, action := range actionsForMode(role, modeEntry.mode) {
-			h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
+
+		// Only a user principal is a subject itself; a group's members and the "all" principal
+		// get their rows below, like in the SQL projections.
+		if kind == access.UserPrincipal {
+			for _, action := range actionsForMode(role, modeEntry.mode) {
+				h.addPolicy("user:"+subject, "incident:"+incidentID.String(), string(action))
+			}
 		}
 
 		if kind == access.GroupPrincipal {
