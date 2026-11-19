@@ -129,6 +129,14 @@ describe("MessageTable", () => {
     ).toBeInTheDocument();
   });
 
+  it("does not nest paragraphs when listing the filters (invalid HTML)", () => {
+    const { container } = render(
+      <MessageTable messages={[]} {...none} assignmentFilter="SC" triageFilter="DONE" />,
+    );
+
+    expect(container.querySelector("p p")).toBeNull();
+  });
+
   it("forwards its ref to the printable element", () => {
     const ref = createRef<HTMLDivElement>();
     render(<MessageTable ref={ref} messages={[]} {...none} />);
