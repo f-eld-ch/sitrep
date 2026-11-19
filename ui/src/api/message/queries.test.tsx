@@ -4,6 +4,7 @@ import { Medium, PriorityStatus, TriageStatus } from "types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { graphQlError } from "../testing/mutations";
 import { useIncidentMessages, useJournalMessages, useMessageForTriage } from "./queries";
+import { ApiError } from "../errors";
 
 vi.mock("@apollo/client/react", () => ({ useQuery: vi.fn() }));
 
@@ -248,6 +249,7 @@ describe("useMessageForTriage", () => {
       data: undefined,
       error: { code: "NOT_FOUND" },
     });
+    expect(result.current.error).toBeInstanceOf(ApiError);
   });
 
   it("is an error with an ApiError when the request failed", () => {

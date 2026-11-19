@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isMutationRecent } from "../mutationActivity";
 import { graphQlError } from "../testing/mutations";
 import { useIncidentResources } from "./queries";
+import { ApiError } from "../errors";
 
 const useQuery = vi.hoisted(() => vi.fn());
 
@@ -247,6 +248,7 @@ describe("useIncidentResources", () => {
         data: undefined,
         error: { code: "NOT_FOUND" },
       });
+      expect(result.current.error).toBeInstanceOf(ApiError);
     });
 
     it("is loading without an incident id", () => {

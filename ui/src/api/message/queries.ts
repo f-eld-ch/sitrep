@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { useMemo } from "react";
 import type { Division, Message } from "types";
-import { apiErrorFromApolloError } from "../errors";
+import { ApiError, apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { toDivision, toMessage } from "./mapper";
 import { GET_INCIDENT_MESSAGES, GET_MESSAGE_FOR_TRIAGE } from "./documents";
@@ -111,7 +111,7 @@ export function useMessageForTriage(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error("Message not found"), { code: "NOT_FOUND" as const }),
+      error: new ApiError("NOT_FOUND", "Message not found"),
       isRefreshing: false,
       refresh,
     };

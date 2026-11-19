@@ -3,6 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { graphQlError } from "../testing/mutations";
 import { useIncidentDetails, useIncidentReview, useIncidents } from "./queries";
+import { ApiError } from "../errors";
 
 vi.mock("@apollo/client/react", () => ({ useQuery: vi.fn() }));
 
@@ -212,6 +213,7 @@ describe("useIncidentDetails", () => {
       data: undefined,
       error: { code: "NOT_FOUND" },
     });
+    expect(result.current.error).toBeInstanceOf(ApiError);
   });
 
   it("refresh refetches", () => {
@@ -301,6 +303,7 @@ describe("useIncidentReview", () => {
     const { result } = renderHook(() => useIncidentReview("inc-1"));
 
     expect(result.current).toMatchObject({ status: "error", error: { code: "NOT_FOUND" } });
+    expect(result.current.error).toBeInstanceOf(ApiError);
   });
 
   it("polls every 30 seconds while the incident is open", () => {

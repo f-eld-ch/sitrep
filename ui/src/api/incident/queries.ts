@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client/react";
 import { useEffect } from "react";
 import type { Incident, IncidentReview } from "types";
-import { apiErrorFromApolloError } from "../errors";
+import { ApiError, apiErrorFromApolloError } from "../errors";
 import type { QueryResult } from "../result";
 import { GET_INCIDENT_DETAILS, GET_INCIDENT_REVIEW, GET_INCIDENTS } from "./documents";
 import { toIncidentDetails, toIncidentReview, toIncidentSummary } from "./mapper";
@@ -74,7 +74,7 @@ export function useIncidentDetails(
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error("Incident not found"), { code: "NOT_FOUND" as const }),
+      error: new ApiError("NOT_FOUND", "Incident not found"),
       isRefreshing: false,
       refresh,
     };
@@ -142,7 +142,7 @@ export function useIncidentReview(incidentId: string | undefined): QueryResult<I
     return {
       status: "error",
       data: undefined,
-      error: Object.assign(new Error("Incident not found"), { code: "NOT_FOUND" as const }),
+      error: new ApiError("NOT_FOUND", "Incident not found"),
       isRefreshing: false,
       refresh,
     };
