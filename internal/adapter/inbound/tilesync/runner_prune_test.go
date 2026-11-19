@@ -88,6 +88,13 @@ func TestRunner_RunOnce(t *testing.T) {
 			}}),
 			wantLogs: []string{"tileset not updated, will retry", "skipped_disk_space", "need 2 GiB"},
 		},
+		{
+			name: "a failed tileset without an error does not crash the updater",
+			svc: newSvc(nil, inbound.SyncReport{Tilesets: []inbound.TilesetSync{
+				{Tileset: base, Outcome: inbound.SyncFailed},
+			}}),
+			wantLogs: []string{"tileset not updated, will retry", "failed", "unknown"},
+		},
 	}
 
 	for _, tt := range tests {
