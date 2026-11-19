@@ -8,6 +8,29 @@ Releases are cut from `develop`. The `main` branch is not part of the release fl
 
 ---
 
+## One-time setup: a signing key
+
+Release tags are **signed**, and the release workflow refuses a tag that GitHub does not show as
+verified. Every maintainer who cuts releases needs a signing key, registered on GitHub:
+
+```bash
+# SSH key (simplest if you already use one for git)
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+
+# or a GPG key
+git config --global user.signingkey <GPG key id>
+```
+
+Then add the same public key at <https://github.com/settings/keys> as a **signing key**
+(*New SSH key* → key type *Signing Key*; a GPG key is added under *New GPG key*). The release
+script stops with instructions when `user.signingkey` is not set.
+
+To check a tag locally, `git tag -v v26.9.2` (for an SSH key, set `gpg.ssh.allowedSignersFile`
+first). GitHub shows a *Verified* badge on the tag and on the release.
+
+---
+
 ## Cutting a release
 
 ```bash
@@ -35,7 +58,7 @@ git-cliff --tag v26.9.2 --output CHANGELOG.md
 # edit ui/package.json: "version": "26.9.2"
 git commit -am "chore(release): prepare release v26.9.2"
 git push
-git tag v26.9.2 && git push origin v26.9.2
+git tag --sign --message "SitRep v26.9.2" v26.9.2 && git push origin v26.9.2
 ```
 
 ---
@@ -44,14 +67,22 @@ git tag v26.9.2 && git push origin v26.9.2
 
 `.github/workflows/release.yml` triggers on `v*` and:
 
-1. builds the UI and uploads it as an artifact
-2. downloads it into `ui/build/` so `go:embed` picks it up
-3. resolves the changelog range and generates release notes with git-cliff
-4. runs `goreleaser release`, which
+1. checks that the tag is an annotated tag whose signature GitHub shows as verified; an unsigned
+   or lightweight tag stops the release here
+2. builds the UI and uploads it as an artifact
+3. downloads it into `ui/build/` so `go:embed` picks it up
+4. resolves the changelog range and generates release notes with git-cliff
+5. runs `goreleaser release`, which
    - compiles six binaries (linux/windows/darwin × amd64/arm64) with the version linked in
    - produces six `tar.gz` archives, two `.deb` and two `.rpm` packages
    - builds and pushes the container image to `ghcr.io/f-eld-ch/sitrep`
+   - signs `checksums.txt` with cosign (keyless) and uploads `checksums.txt.sigstore.json`
    - creates the GitHub release with every artifact attached
+6. signs the container image with cosign (keyless)
+7. creates build-provenance attestations for the archives, packages, `checksums.txt` and the image
+8. verifies all of the above exactly as users are told to (see
+   [Verifying releases](../administrator/verify-releases.md)); a release that cannot be verified
+   fails the workflow
 
 The whole run takes a few minutes. Nothing needs to be done by hand afterwards.
 
@@ -104,7 +135,7 @@ Same safety checks as an app release (on `develop`, clean tree, in sync with `or
 - if `Chart.yaml` changed, it is committed as `chore(release): prepare chart release chart-vX.Y.Z`;
   otherwise the current commit is tagged.
 
-Pushing the tag is what matters: `.github/workflows/helm-workflow.yml` verifies the tag against
+The chart tag is signed like an app tag (a signing key is needed, see above). Pushing the tag is what matters: `.github/workflows/helm-workflow.yml` verifies the tag against
 `Chart.yaml`, checks the default image exists, refuses to overwrite a published version, then publishes
 and signs `ghcr.io/f-eld-ch/charts/sitrep:<version>`.
 
@@ -139,7 +170,7 @@ them. Move the tag and let CI run again:
 ```bash
 git push origin :refs/tags/v26.9.2 && git tag -d v26.9.2
 # fix, commit
-git tag v26.9.2 && git push origin v26.9.2
+git tag --sign --message "SitRep v26.9.2" v26.9.2 && git push origin v26.9.2
 ```
 
 Container image tags are already published at that point and will simply be overwritten.
