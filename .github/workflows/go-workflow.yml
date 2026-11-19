@@ -75,7 +75,10 @@ jobs:
         if: inputs.coverage
         run: |
           go install github.com/boumenot/gocover-cobertura@4afa1205ab3b54ae098dd4724c1657aad10f7484
-          gocover-cobertura < go-coverage.out > go-cobertura.xml
+          # Generated code (gqlgen's generated.go) is not ours to test; leaving it in roughly
+          # halves the reported coverage. -ignore-gen-files drops files with a "Code generated ...
+          # DO NOT EDIT." header.
+          gocover-cobertura -ignore-gen-files < go-coverage.out > go-cobertura.xml
 
       - name: Upload Go coverage artifact
         if: inputs.coverage
