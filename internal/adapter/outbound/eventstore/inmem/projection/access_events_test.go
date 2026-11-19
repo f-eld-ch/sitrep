@@ -17,7 +17,7 @@ import (
 
 var accessAt = time.Unix(100, 0)
 
-func applyAll(t *testing.T, h *projection.AccessHandler, events []eventsourcing.Event) {
+func applyAccessEvents(t *testing.T, h *projection.AccessHandler, events []eventsourcing.Event) {
 	t.Helper()
 
 	for _, e := range events {
@@ -103,7 +103,7 @@ func TestAccessHandlerIncidentEventsAreIdempotentOnReplay(t *testing.T) {
 	events := append(incident.Root().PendingEvents(), group.Root().PendingEvents()...)
 
 	h := projection.NewAccessHandler()
-	applyAll(t, h, events)
+	applyAccessEvents(t, h, events)
 
 	once := snapshot(h, incidentID)
 
@@ -145,7 +145,7 @@ func TestAccessHandlerIncidentEventsAreIdempotentOnReplay(t *testing.T) {
 	assert.Nil(t, g.ArchivedAt)
 
 	// Replaying the very same events a second time must not change anything.
-	applyAll(t, h, events)
+	applyAccessEvents(t, h, events)
 
 	twice := snapshot(h, incidentID)
 	assert.ElementsMatch(t, once.policies, twice.policies)
@@ -169,8 +169,8 @@ func TestAccessHandlerArchivedGroupLosesInheritedPolicies(t *testing.T) {
 	require.NoError(t, group.AddMember("m1", "admin", accessAt))
 
 	h := projection.NewAccessHandler()
-	applyAll(t, h, incident.Root().PendingEvents())
-	applyAll(t, h, group.Root().PendingEvents())
+	applyAccessEvents(t, h, incident.Root().PendingEvents())
+	applyAccessEvents(t, h, group.Root().PendingEvents())
 
 	member := projection.AccessPolicyRow{
 		Subject: "user:m1", Domain: "incident:" + incidentID.String(), Object: "incident", Action: "incident.read",
@@ -181,8 +181,8 @@ func TestAccessHandlerArchivedGroupLosesInheritedPolicies(t *testing.T) {
 	require.NoError(t, group.Archive("admin", accessAt.Add(time.Hour)))
 
 	archive := group.Root().PendingEvents()
-	applyAll(t, h, archive)
-	applyAll(t, h, archive) // idempotent
+	applyAccessEvents(t, h, archive)
+	applyAccessEvents(t, h, archive) // idempotent
 
 	assert.NotContains(t, h.Policies(), member)
 
@@ -201,7 +201,7 @@ func TestAccessHandlerGroupGrantWithInvalidGroupIDIsSkipped(t *testing.T) {
 		access.Principal{Kind: access.GroupPrincipal, ID: "not-a-uuid"}, access.Viewer, owner, accessAt))
 
 	h := projection.NewAccessHandler()
-	applyAll(t, h, incident.Root().PendingEvents())
+	applyAccessEvents(t, h, incident.Root().PendingEvents())
 
 	assert.Contains(t, h.IncidentGrants(incidentID), projection.IncidentGrantRow{
 		IncidentID: incidentID, PrincipalKind: access.GroupPrincipal, PrincipalID: "not-a-uuid", Role: access.Viewer,
@@ -217,7 +217,7 @@ func TestAccessHandlerOpenIncidentOnlyGatesDelete(t *testing.T) {
 	require.NoError(t, incident.GrantRole(userP("editor"), access.Editor, owner, accessAt))
 
 	h := projection.NewAccessHandler()
-	applyAll(t, h, incident.Root().PendingEvents())
+	applyAccessEvents(t, h, incident.Root().PendingEvents())
 
 	var ownerActions, editorActions []string
 
@@ -246,8 +246,8 @@ func TestAccessHandlerGlobalEventsAreIdempotentOnReplay(t *testing.T) {
 
 	events := global.Root().PendingEvents()
 	h := projection.NewAccessHandler()
-	applyAll(t, h, events)
-	applyAll(t, h, events)
+	applyAccessEvents(t, h, events)
+	applyAccessEvents(t, h, events)
 
 	roles := h.GlobalRoles()
 	assert.Equal(t, []access.GlobalRole{access.SystemAdmin}, roles["admin"])
@@ -290,8 +290,8 @@ func TestAccessHandlerDefaultTemplateProjectsNoPolicies(t *testing.T) {
 	)
 
 	events := template.Root().PendingEvents()
-	applyAll(t, h, events)
-	applyAll(t, h, events)
+	applyAccessEvents(t, h, events)
+	applyAccessEvents(t, h, events)
 
 	mode, ok = h.DefaultIncidentMode()
 	assert.True(t, ok)
@@ -305,7 +305,7 @@ func TestAccessHandlerDefaultTemplateProjectsNoPolicies(t *testing.T) {
 	// Changing the template's mode keeps it flagged as the default.
 	template.Root().ClearPending()
 	require.NoError(t, template.ChangeAccessMode(access.Restricted, "admin", accessAt))
-	applyAll(t, h, template.Root().PendingEvents())
+	applyAccessEvents(t, h, template.Root().PendingEvents())
 
 	mode, _ = h.DefaultIncidentMode()
 	assert.Equal(t, access.Restricted, mode)
@@ -327,9 +327,9 @@ func TestAccessHandlerResetClearsEverything(t *testing.T) {
 	require.NoError(t, global.GrantRole("admin", access.SystemAdmin, "b", accessAt))
 
 	h := projection.NewAccessHandler()
-	applyAll(t, h, incident.Root().PendingEvents())
-	applyAll(t, h, group.Root().PendingEvents())
-	applyAll(t, h, global.Root().PendingEvents())
+	applyAccessEvents(t, h, incident.Root().PendingEvents())
+	applyAccessEvents(t, h, group.Root().PendingEvents())
+	applyAccessEvents(t, h, global.Root().PendingEvents())
 	require.NotEmpty(t, h.Policies())
 
 	require.NoError(t, h.Reset(context.Background()))
