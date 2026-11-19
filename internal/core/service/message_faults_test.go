@@ -20,8 +20,16 @@ import (
 type failingBlobs struct {
 	*memBlobStore
 
-	putErr, getErr, deleteErr error
-	deleted                   []string
+	putErr, getErr, deleteErr, prefixErr error
+	deleted                              []string
+}
+
+func (b *failingBlobs) DeletePrefix(ctx context.Context, prefix string) error {
+	if b.prefixErr != nil {
+		return b.prefixErr
+	}
+
+	return b.memBlobStore.DeletePrefix(ctx, prefix)
 }
 
 func (b *failingBlobs) Put(ctx context.Context, key string, r io.Reader, size int64, contentType string) error {
