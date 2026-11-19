@@ -81,6 +81,9 @@ git tag --sign --message "SitRep v26.9.2" v26.9.2 && git push origin v26.9.2
    - signs the container image manifest with cosign (keyless)
    - creates the GitHub release with every artifact attached
 6. creates build-provenance attestations for the archives, packages, SBOMs, `checksums.txt` and the image
+7. attaches the provenance as `sitrep_<version>.intoto.jsonl` (files) and
+   `sitrep-image_<version>.intoto.jsonl` (image) to the release, where tools such as OpenSSF
+   Scorecard look for it
 
 The whole run takes a few minutes. Nothing needs to be done by hand afterwards.
 
