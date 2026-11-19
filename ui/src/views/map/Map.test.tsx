@@ -983,6 +983,19 @@ describe("drawing", () => {
       expect(mocks.fakeMap.fitBounds).toHaveBeenCalledTimes(1);
     });
 
+    it("waits for the map to load before it frames", () => {
+      setLayers(makeLayer("L1", {}, ["a", "b"]));
+      mocks.fakeMap.loaded.mockReturnValue(false);
+
+      renderMap();
+      expect(mocks.fakeMap.fitBounds).not.toHaveBeenCalled();
+
+      mocks.fakeMap.loaded.mockReturnValue(true);
+      act(() => emit("load"));
+
+      expect(mocks.fakeMap.fitBounds).toHaveBeenCalledTimes(1);
+    });
+
     it("frames the next layer when the active layer changes", () => {
       setLayers(makeLayer("L1", {}, ["a"]), makeLayer("L2", {}, ["b", "c"]));
       renderMap();
@@ -1231,6 +1244,21 @@ describe("drawing", () => {
       const lastSet = control.set.mock.calls.at(-1)?.[0] as FeatureCollection;
       expect(lastSet.features.map((f) => f.id)).toEqual(["a", "b", "d1"]);
       expect(control.deleteAll).toHaveBeenCalled();
+    });
+
+    it("leaves the draw control alone until the map has loaded", () => {
+      mocks.fakeMap.loaded.mockReturnValue(false);
+      renderMap();
+      const control = fakeDraw();
+
+      dispatch({ type: "SET_DRAW", payload: { draw: control } });
+      expect(control.set).not.toHaveBeenCalled();
+      expect(control.changeMode).not.toHaveBeenCalled();
+
+      mocks.fakeMap.loaded.mockReturnValue(true);
+      act(() => emit("load"));
+
+      expect(control.set).toHaveBeenCalled();
     });
 
     it("keeps the selected feature selected after the reset", () => {

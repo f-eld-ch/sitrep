@@ -57,6 +57,7 @@ import { TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
 import { PendingFeaturesGuard } from "./controls/PendingFeaturesGuard";
 import { LayerContext, LayersProvider } from "./LayerContext";
+import { useMapLoaded } from "./useMapLoaded";
 import { IncidentContext } from "utils";
 import { createMapStyle } from "./styleGenerator";
 
@@ -601,6 +602,7 @@ function useDrawingAllowed(): boolean {
 function ActiveLayer() {
   const fittedLayer = useRef<string | undefined>(undefined);
   const { current: map } = useMap();
+  const mapLoaded = useMapLoaded(map);
   const { state } = useContext(LayerContext);
   const { drawingMessage } = useContext(MapTimeContext);
   const { incidentId } = useParams();
@@ -646,7 +648,7 @@ function ActiveLayer() {
 
   useEffect(() => {
     // Drawing for a message frames what the message did instead (see MessageHighlight).
-    if (drawingMessage !== undefined || fittedLayer.current === state.activeLayer || !map?.loaded) {
+    if (drawingMessage !== undefined || fittedLayer.current === state.activeLayer || !mapLoaded) {
       return;
     }
 
@@ -665,7 +667,7 @@ function ActiveLayer() {
       );
       fittedLayer.current = state.activeLayer;
     }
-  }, [drawingMessage, framed, map, state.activeLayer]);
+  }, [drawingMessage, framed, map, mapLoaded, state.activeLayer]);
 
   if (state.activeLayer === undefined) {
     return null;
@@ -692,6 +694,7 @@ function Draw() {
   } = useContext(IncidentContext);
   const { incidentId } = useParams();
   const { current: map } = useMap();
+  const mapLoaded = useMapLoaded(map);
   const { asOf, drawingMessage } = useContext(MapTimeContext);
   const { onDrawingChange } = useContext(MapSelectionContext);
   // Changes for a message take effect at the message's time (the server derives it from the id).
@@ -892,7 +895,7 @@ function Draw() {
 
   // this is the effect which syncs the drawings
   useEffect(() => {
-    if (state.draw && map?.loaded) {
+    if (state.draw && mapLoaded) {
       const featureCollection: FeatureCollection = withPendingFeatures(
         state.layers.find((l) => l.layer.id === state.activeLayer)?.layer,
         state.pendingFeatures,
@@ -912,7 +915,7 @@ function Draw() {
     }
   }, [
     state.draw,
-    map?.loaded,
+    mapLoaded,
     state.layers,
     state.activeLayer,
     state.selectedFeature,
@@ -921,7 +924,7 @@ function Draw() {
 
   // this is the effect which syncs the drawings
   useEffect(() => {
-    if (state.draw && map?.loaded) {
+    if (state.draw && mapLoaded) {
       if (!isDrawLike(state.draw)) {
         // eslint-disable-next-line no-console
         console.warn("Draw control missing get/changeMode; skipping selection sync.");
@@ -953,7 +956,7 @@ function Draw() {
         d.changeMode("simple_select", { featureIds: [state.selectedFeature] });
       });
     }
-  }, [state.draw, map?.loaded, state.selectedFeature]);
+  }, [state.draw, mapLoaded, state.selectedFeature]);
 
   if (incident?.closedAt != null || state.activeLayer === undefined) {
     return;
