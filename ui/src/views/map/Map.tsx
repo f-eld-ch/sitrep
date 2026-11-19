@@ -172,7 +172,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         unSigns: true,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- language is deliberately excluded
-    [mapStyle.style, i18n.resolvedLanguage, i18n.language],
+    [mapStyle.style],
   );
 
   return (
