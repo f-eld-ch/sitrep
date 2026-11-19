@@ -46,13 +46,13 @@ gh attestation verify sitrep_26.11.3_linux_amd64.tar.gz --repo f-eld-ch/sitrep
 ## Software bill of materials (SBOM)
 
 Each release also contains SBOMs in SPDX JSON format: `<archive>.sbom.json` lists the Go modules in
-a binary, and `sitrep-ui_<version>.sbom.json` lists the npm packages of the web UI (taken from the
-lock file, so build-only tools appear too). They are listed in `checksums.txt`, so the check above
-covers them. The container image carries its own SBOM in the registry:
+a binary, and `sitrep-ui_<version>.sbom.json` lists the npm packages shipped in the web UI. Both
+carry the license of each package where it is known. They are listed in `checksums.txt`, so the
+check above covers them.
 
-```bash
-cosign download sbom ghcr.io/f-eld-ch/sitrep:v26.11.3
-```
+The container image carries its own SBOM in the registry, as an image tagged
+`sha256-<digest of the image>.sbom` in the same repository. It is not covered by a separate
+signature; the image itself is (see below).
 
 ## Container image
 
