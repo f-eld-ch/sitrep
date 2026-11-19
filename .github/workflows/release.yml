@@ -141,7 +141,7 @@ jobs:
         id: image
         run: |
           digest="$(jq -r --arg image "ghcr.io/${GITHUB_REPOSITORY}" \
-            '[.[] | select((.extra.digest // "") != "" and (.name | startswith($image))) | .extra.digest] | unique | .[]' \
+            '[.[] | select((.extra.Digest // "") != "" and (.name | startswith($image))) | .extra.Digest] | unique | .[]' \
             dist/artifacts.json)"
           if [ "$(wc -l <<<"$digest")" -ne 1 ] || [ -z "$digest" ]; then
             echo "::error::expected exactly one image digest in dist/artifacts.json, found: ${digest:-none}"
