@@ -2,6 +2,7 @@ package layer_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -32,4 +33,20 @@ func TestLayer_TransitionRejectsForeignEvents(t *testing.T) {
 	l := layer.New(shared.LayerID(uuid.New()))
 
 	require.Error(t, l.Transition(eventsourcing.Event{Data: 42}))
+}
+
+func TestLayer_ImportedAsDeletedIsRemoved(t *testing.T) {
+	id := shared.LayerID(uuid.New())
+	deletedAt := at.Add(time.Hour)
+
+	l := replay(t, id, []eventsourcing.Event{{
+		Version:    1,
+		EventType:  "Imported",
+		OccurredAt: at,
+		Data:       layer.Imported{IncidentID: incidentID, Name: "Altlage", DeletedAt: &deletedAt},
+	}})
+
+	assert.Equal(t, "Altlage", l.Name())
+	require.ErrorIs(t, l.Rename("Neu", actor, at), shared.ErrNotFound, "a deleted layer cannot be renamed")
+	require.ErrorIs(t, l.Remove(shared.DeleteReasonManual, actor, at), shared.ErrNotFound)
 }

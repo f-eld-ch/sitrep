@@ -78,6 +78,18 @@ func TestLayerHandler_LayerLifecycle(t *testing.T) {
 	assert.Equal(t, "Imported", h.col("readmodel_layer_features", "name", idLayer))
 }
 
+func TestLayerHandler_ImportedAsDeletedIsRemoved(t *testing.T) {
+	h := newLayerHarness(t)
+
+	imported := h.event("Layer", idLayer, 1, "Imported", 0, map[string]any{
+		"incidentId": idInc1, "name": "Old", "kind": "NONE", "deletedAt": "2026-01-02T03:04:05Z",
+	})
+	h.apply(imported)
+	h.assertReplayIdempotent([]eventsourcing.Event{imported}, "readmodel_layer_features")
+
+	assert.Equal(t, "1", h.col("readmodel_layer_features", "removed", idLayer))
+}
+
 func TestLayerHandler_FeatureLifecycle(t *testing.T) {
 	h := newLayerHarness(t)
 

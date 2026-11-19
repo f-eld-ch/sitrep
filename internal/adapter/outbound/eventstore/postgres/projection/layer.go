@@ -30,7 +30,7 @@ func NewLayerFeaturesHandler(pool *pgxpool.Pool) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 4 }
+func (h *LayerFeaturesHandler) Version() int { return 5 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	_, err := h.pool.Exec(ctx, `TRUNCATE readmodel.layer_features, readmodel.feature_change`)
 	return err
@@ -74,9 +74,10 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 	switch e.EventType {
 	case "Created", "Imported":
 		type created struct {
-			IncidentID string `json:"incidentId"`
-			Name       string `json:"name"`
-			Kind       string `json:"kind"`
+			IncidentID string     `json:"incidentId"`
+			Name       string     `json:"name"`
+			Kind       string     `json:"kind"`
+			DeletedAt  *time.Time `json:"deletedAt"`
 		}
 
 		var d created
@@ -84,11 +85,15 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx pgx.Tx, e
 			return err
 		}
 
+		// An imported layer can arrive already deleted.
+		removed := e.EventType == "Imported" && d.DeletedAt != nil
+
 		err := exec(tx, ctx, `
 			INSERT INTO readmodel.layer_features (id, incident_id, name, kind, geojson, revision, removed)
-			VALUES ($1, $2, $3, $4, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, false)
-			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, kind = EXCLUDED.kind`,
-			id, d.IncidentID, d.Name, d.Kind)
+			VALUES ($1, $2, $3, $4, '{"type":"FeatureCollection","features":[]}'::jsonb, 0, $5)
+			ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, kind = EXCLUDED.kind,
+			                               removed = layer_features.removed OR EXCLUDED.removed`,
+			id, d.IncidentID, d.Name, d.Kind, removed)
 
 		return err
 

@@ -31,7 +31,7 @@ func NewLayerFeaturesHandler(db *sql.DB) *LayerFeaturesHandler {
 }
 
 func (h *LayerFeaturesHandler) Name() string { return "readmodel.layer_features" }
-func (h *LayerFeaturesHandler) Version() int { return 4 }
+func (h *LayerFeaturesHandler) Version() int { return 5 }
 func (h *LayerFeaturesHandler) Reset(ctx context.Context) error {
 	if _, err := h.db.ExecContext(ctx, `DELETE FROM readmodel_feature_change`); err != nil {
 		return err
@@ -97,9 +97,10 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx *sql.Tx, 
 	switch e.EventType {
 	case "Created", "Imported":
 		type created struct {
-			IncidentID string `json:"incidentId"`
-			Name       string `json:"name"`
-			Kind       string `json:"kind"`
+			IncidentID string     `json:"incidentId"`
+			Name       string     `json:"name"`
+			Kind       string     `json:"kind"`
+			DeletedAt  *time.Time `json:"deletedAt"`
 		}
 
 		var d created
@@ -107,11 +108,18 @@ func (h *LayerFeaturesHandler) applyLayerEvent(ctx context.Context, tx *sql.Tx, 
 			return err
 		}
 
+		// An imported layer can arrive already deleted.
+		removed := 0
+		if e.EventType == "Imported" && d.DeletedAt != nil {
+			removed = 1
+		}
+
 		return exec(tx, ctx, `
 			INSERT INTO readmodel_layer_features (id, incident_id, name, kind, geojson, revision, removed)
-			VALUES (?, ?, ?, ?, ?, 0, 0)
-			ON CONFLICT (id) DO UPDATE SET name = excluded.name, kind = excluded.kind`,
-			id, d.IncidentID, d.Name, d.Kind, emptyCollection)
+			VALUES (?, ?, ?, ?, ?, 0, ?)
+			ON CONFLICT (id) DO UPDATE SET name = excluded.name, kind = excluded.kind,
+			                               removed = MAX(removed, excluded.removed)`,
+			id, d.IncidentID, d.Name, d.Kind, emptyCollection, removed)
 
 	case "KindAssigned":
 		var d struct {

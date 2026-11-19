@@ -117,6 +117,7 @@ func (l *Layer) Transition(e eventsourcing.Event) error {
 	case Imported:
 		l.incidentID = d.IncidentID
 		l.name = d.Name
+		l.removed = d.DeletedAt != nil
 	default:
 		return fmt.Errorf("layer.Transition: unhandled event type %T", e.Data)
 	}

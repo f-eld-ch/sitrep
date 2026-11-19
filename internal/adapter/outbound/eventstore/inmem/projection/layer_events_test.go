@@ -145,3 +145,19 @@ func TestLayerFeaturesHandler_ReplayedVersionIsIgnored(t *testing.T) {
 	assert.Len(t, row.Features, 1)
 	assert.Len(t, h.ChangesForIncidents(inc), 1, "nor record the change twice")
 }
+
+func TestLayerFeaturesHandler_ImportedAsDeletedIsNotListed(t *testing.T) {
+	h := projection.NewLayerFeaturesHandler()
+	inc, kept, dropped := uuid.New(), uuid.New(), uuid.New()
+
+	applyAll(t, h,
+		evt("Layer", kept, "Imported", obj{"incidentId": inc.String(), "name": "Kept", "kind": "USER"}, tm(1)),
+		evt("Layer", dropped, "Imported", obj{
+			"incidentId": inc.String(), "name": "Dropped", "kind": "USER", "deletedAt": tm(2),
+		}, tm(1)),
+	)
+
+	rows := h.ForIncident(inc)
+	require.Len(t, rows, 1)
+	assert.Equal(t, kept, rows[0].ID)
+}
