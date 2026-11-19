@@ -1,16 +1,36 @@
-## [unreleased]
+## [26.11.4](https://github.com/f-eld-ch/sitrep/compare/v26.11.3..v26.11.4) - 2026-11-19
+
+### ⛰️  Features
+
+- *(image)* Ship the UI SBOM in the container image for image scanners ([#2142](https://github.com/f-eld-ch/sitrep/issues/2142)) - ([54c0422](https://github.com/f-eld-ch/sitrep/commit/54c0422b2294847b1deb5836006dcfe317a47fc4))
+- *(tiles)* Serve swisstopo vector tiles from sitrep, with offline support ([#2128](https://github.com/f-eld-ch/sitrep/issues/2128)) - ([dea26d6](https://github.com/f-eld-ch/sitrep/commit/dea26d6c2d88830ca76079abd37ae0d90795313f))
 
 ### 🐛 Bug Fixes
 
+- *(image)* Correct license, created date, vendor and authors on container images ([#2139](https://github.com/f-eld-ch/sitrep/issues/2139)) - ([0f375cf](https://github.com/f-eld-ch/sitrep/commit/0f375cf1eea74530ac2395fc2fb9539afa19ed97))
+- *(release)* Read the image digest from extra.Digest, add licenses to the UI SBOM ([#2141](https://github.com/f-eld-ch/sitrep/issues/2141)) - ([2fb32eb](https://github.com/f-eld-ch/sitrep/commit/2fb32ebcd9307a5ff5c119fc65934ce7dfdbd942))
+- *(release)* Point the UI SBOM at ../ui, goreleaser runs syft from dist/ ([#2140](https://github.com/f-eld-ch/sitrep/issues/2140)) - ([d0f33e1](https://github.com/f-eld-ch/sitrep/commit/d0f33e15fd0a30761f09620546a702caca3589c9))
 - *(scripts)* Make approve-dependabot-prs fail loudly and continue on errors ([#2125](https://github.com/f-eld-ch/sitrep/issues/2125)) - ([c2bfd40](https://github.com/f-eld-ch/sitrep/commit/c2bfd40f82b7ed3a33ee0c788a065074b0c585c5))
+- *(ui)* Update babs-icons to 0.8.1 for the French Feuerwehr icon ([#2131](https://github.com/f-eld-ch/sitrep/issues/2131)) - ([64cb035](https://github.com/f-eld-ch/sitrep/commit/64cb0359ee0df1a289a46a341520e8993473ecd1))
+- *(ui)* Translate the Nachrichtenkarte division in the triage picker ([#2130](https://github.com/f-eld-ch/sitrep/issues/2130)) - ([530952e](https://github.com/f-eld-ch/sitrep/commit/530952eb992d98fbc5d771d1dfde5733ee6bfeff))
+
+### 📚 Documentation
+
+- Add GOVERNANCE.md describing roles and decision making ([#2137](https://github.com/f-eld-ch/sitrep/issues/2137)) - ([6b05cb1](https://github.com/f-eld-ch/sitrep/commit/6b05cb19a5bbfe7f35b6e44f3becdea17adc7a6b))
+- Add CONTRIBUTING.md with the requirements for contributions ([#2136](https://github.com/f-eld-ch/sitrep/issues/2136)) - ([7632e3d](https://github.com/f-eld-ch/sitrep/commit/7632e3d7096ef23940433eeea53cc216e487cf5c))
 
 ### ⚙️  Other
 
+- *(deps)* Bump react-router from 8.5.1 to 8.5.2 in /ui ([#2135](https://github.com/f-eld-ch/sitrep/issues/2135)) - ([4d1b4a0](https://github.com/f-eld-ch/sitrep/commit/4d1b4a0013b9b7788b50e039ea3fe0d176cadc3d))
+- *(deps)* Bump github.com/labstack/echo/v5 from 5.4.5 to 5.4.6 ([#2132](https://github.com/f-eld-ch/sitrep/issues/2132)) - ([a53c96e](https://github.com/f-eld-ch/sitrep/commit/a53c96edf415ffaeee103f9dd16e34704e74c95a))
 - *(deps)* Bump @uiw/react-md-editor from 4.2.3 to 4.2.4 in /ui ([#2120](https://github.com/f-eld-ch/sitrep/issues/2120)) - ([f0b85b4](https://github.com/f-eld-ch/sitrep/commit/f0b85b4fde9dfa2df1c6388f20907def23408424))
 - *(deps)* Bump i18next-browser-languagedetector in /ui ([#2121](https://github.com/f-eld-ch/sitrep/issues/2121)) - ([a7a866d](https://github.com/f-eld-ch/sitrep/commit/a7a866dcfa9d065f35702f16a9a89d9e6dbc0b9e))
 - *(deps)* Bump html-react-parser from 6.1.9 to 6.1.10 in /ui ([#2122](https://github.com/f-eld-ch/sitrep/issues/2122)) - ([fd20e83](https://github.com/f-eld-ch/sitrep/commit/fd20e8368ede25ca8f84cb05b33c7facf2c59678))
 - *(deps)* Bump maplibre-gl from 6.18.0 to 6.19.0 in /ui ([#2123](https://github.com/f-eld-ch/sitrep/issues/2123)) - ([5646d5e](https://github.com/f-eld-ch/sitrep/commit/5646d5ec0adbfdfb285535715008884755f4771b))
 - *(deps)* Bump i18next from 27.1.3 to 27.1.5 in /ui ([#2124](https://github.com/f-eld-ch/sitrep/issues/2124)) - ([8825113](https://github.com/f-eld-ch/sitrep/commit/8825113d708a43ea18fd15ff4566180577d0e89f))
+- *(release)* Attach the provenance to the release as .intoto.jsonl ([#2144](https://github.com/f-eld-ch/sitrep/issues/2144)) - ([96ac49e](https://github.com/f-eld-ch/sitrep/commit/96ac49ecf1305fe1fcabae718eff2330e6976809))
+- *(release)* Allow the image attestation to create its storage record ([#2143](https://github.com/f-eld-ch/sitrep/issues/2143)) - ([4fc1bb2](https://github.com/f-eld-ch/sitrep/commit/4fc1bb214bd0767da788f48218f28b194a66b212))
+- *(release)* Sign release artifacts and tags, attest build provenance ([#2138](https://github.com/f-eld-ch/sitrep/issues/2138)) - ([e382e88](https://github.com/f-eld-ch/sitrep/commit/e382e8810763e0bf84c26e474654f0e0005fada4))
 
 
 ## [26.11.3](https://github.com/f-eld-ch/sitrep/compare/v26.11.2..v26.11.3) - 2026-11-16
