@@ -81,9 +81,6 @@ git tag --sign --message "SitRep v26.9.2" v26.9.2 && git push origin v26.9.2
    - signs the container image manifest with cosign (keyless)
    - creates the GitHub release with every artifact attached
 6. creates build-provenance attestations for the archives, packages, SBOMs, `checksums.txt` and the image
-7. verifies all of the above exactly as users are told to (see
-   [Verifying releases](../administrator/verify-releases.md)); a release that cannot be verified
-   fails the workflow
 
 The whole run takes a few minutes. Nothing needs to be done by hand afterwards.
 
