@@ -126,6 +126,51 @@ func TestDecode(t *testing.T) {
 	})
 }
 
+func TestDecode_Failures(t *testing.T) {
+	t.Run("a payload that cannot be encoded", func(t *testing.T) {
+		_, ok, err := featurechange.Decode(event("Moved", map[string]any{"geometry": make(chan int)}))
+		require.ErrorContains(t, err, "marshal Moved")
+		assert.False(t, ok)
+	})
+
+	t.Run("a payload of the wrong shape", func(t *testing.T) {
+		_, ok, err := featurechange.Decode(event("Placed", map[string]any{"layerId": 5}))
+		require.ErrorContains(t, err, "decode Placed")
+		assert.False(t, ok)
+	})
+
+	t.Run("a payload that is not an object", func(t *testing.T) {
+		_, ok, err := featurechange.Decode(event("Removed", "text"))
+		require.ErrorContains(t, err, "decode Removed")
+		assert.False(t, ok)
+	})
+}
+
+func TestDecode_Actor(t *testing.T) {
+	e := event("Removed", feature.Removed{})
+
+	t.Run("taken from the metadata", func(t *testing.T) {
+		c, _, err := featurechange.Decode(e)
+		require.NoError(t, err)
+		assert.Equal(t, "alice", c.Actor)
+	})
+
+	t.Run("left empty when there is none or it is not text", func(t *testing.T) {
+		for _, metadata := range []map[string]any{nil, {}, {"actor": 42}} {
+			e.Metadata = metadata
+
+			c, ok, err := featurechange.Decode(e)
+			require.NoError(t, err)
+			require.True(t, ok)
+			assert.Empty(t, c.Actor)
+		}
+	})
+}
+
+func TestGuardKinds_UnknownKindGatesNothing(t *testing.T) {
+	assert.Nil(t, featurechange.Change{Kind: "bogus"}.GuardKinds())
+}
+
 func TestGuardKinds(t *testing.T) {
 	tests := map[featurechange.Kind][]featurechange.Kind{
 		featurechange.Moved:    {featurechange.Placed, featurechange.Moved, featurechange.Restored},
