@@ -60,7 +60,7 @@ go test ./...
 | ------------------------ | ------------------------------------------------- |
 | `golangci-lint fmt ./...` | Canonical Go formatting (replaces `gofmt`)       |
 | `golangci-lint run ./...` | Static analysis, import discipline, style rules  |
-| `go test ./...`           | All unit and integration tests                   |
+| `go test ./...`           | All unit tests (PostgreSQL tests need `-tags integration`, see Testing) |
 
 CI runs identical checks and rejects anything that fails.
 Do **not** use `gofmt` directly — `golangci-lint fmt` is the single formatter.
@@ -109,7 +109,7 @@ go test -race ./...                           # race detector (run before PRs)
 
 ### Test strategy
 
-Tests do **not** require Postgres. The in-memory stack
+Unit tests do **not** require Postgres. The in-memory stack
 (`internal/adapter/outbound/eventstore/inmem`) is wired for all unit and integration tests.
 Use `internal/cli/stack.go`'s `inmem` builder as the reference for how to assemble a full stack
 in tests.
@@ -123,9 +123,40 @@ Three tiers:
 - **Resolver tests** — exercise the full GraphQL resolver layer with the in-memory stack wired in.
   Use `internal/adapter/inbound/graphql/resolver_test.go` as the pattern.
 
-Postgres-only behaviour (e.g. optimistic concurrency, `NOTIFY`/`LISTEN`) is tested by integration
-tests that require a live database and are tagged accordingly — do not add a `+build integration`
-tag without also supplying a Compose-based fixture.
+### Integration tests (PostgreSQL)
+
+Postgres-only behaviour (optimistic concurrency, advisory locks, `NOTIFY`/`LISTEN`, the SQL of the
+Postgres adapters) is tested against a real PostgreSQL in a container, started with
+[testcontainers](https://golang.testcontainers.org/modules/postgres/). These tests are opt-in:
+they carry the `integration` build tag, so `go test ./...` neither compiles nor runs them and needs no
+Docker.
+
+```bash
+go test -tags integration ./...                                   # everything, including PostgreSQL
+go test -tags integration ./internal/adapter/outbound/conformance/ # the shared suite on PostgreSQL
+```
+
+CI runs `-tags integration`, and `.golangci.yaml` sets `run.build-tags` so the tagged files are linted.
+The tests fail, not skip, when no container runtime is available: asking for the tag means asking for
+these tests to run.
+
+How to write them:
+
+- File names end in `_integration_test.go` (or the whole file starts with `//go:build integration`).
+- The package has a `TestMain` that calls `os.Exit(pgtest.Main(m))`. `internal/testutil/pgtest` starts
+  one container per package, migrates it once and takes a snapshot.
+- Each test calls `pgtest.Pool(t)` and gets a pool on a database that is restored to the snapshot
+  afterwards, so tests are isolated. Do **not** use `t.Parallel()` in these tests (they share the
+  container); use goroutines inside a test for concurrency.
+- To test a Postgres adapter against the shared behaviour, add the case to the conformance suite
+  (`internal/adapter/outbound/conformance`), which runs on the in-memory, SQLite and Postgres backends.
+  Use a separate integration test only for behaviour the other backends do not have.
+
+Run them before pushing a change to a Postgres adapter, a projection handler or a Postgres migration.
+
+Requirements: Docker or Podman. With rootless Podman, point testcontainers at its socket:
+`export DOCKER_HOST=unix:///podman/podman.sock`. If the reaper container (Ryuk) fails to
+start, set `TESTCONTAINERS_RYUK_DISABLED=true`.
 
 ---
 
