@@ -5,7 +5,7 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPanel, MapPanelBlock } from "./MapPanel";
 import { useSatelliteAvailable } from "./satelliteAvailability";
-import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
+import type { StyleSpecification } from "maplibre-gl";
 import basisKarte from "assets/map/styles/ch.swisstopo.leichte-basiskarte.vt.json";
 import basisKarteImagery from "assets/map/styles/ch.swisstopo.leichte-basiskarte-imagery.vt.json";
 
