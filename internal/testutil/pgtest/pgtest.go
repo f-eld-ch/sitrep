@@ -56,7 +56,7 @@ var container *tcpostgres.PostgresContainer
 func Main(m *testing.M) int {
 	ctx, cancel := context.WithTimeout(context.Background(), startTimeout)
 
-	ctr, err := start(ctx)
+	ctr, err := startWithRetry(ctx)
 
 	cancel()
 
@@ -79,6 +79,41 @@ func Main(m *testing.M) int {
 	}
 
 	return code
+}
+
+// startWithRetry starts the container, trying again after a transient failure such as a connection
+// reset while pulling the image. The first failure is the useful one if every attempt fails.
+func startWithRetry(ctx context.Context) (*tcpostgres.PostgresContainer, error) {
+	const attempts = 3
+
+	var firstErr error
+
+	for attempt := 1; attempt <= attempts; attempt++ {
+		ctr, err := start(ctx)
+		if err == nil {
+			return ctr, nil
+		}
+
+		if ctr != nil {
+			_ = testcontainers.TerminateContainer(ctr)
+		}
+
+		if firstErr == nil {
+			firstErr = err
+		}
+
+		fmt.Fprintf(os.Stderr, "pgtest: attempt %d of %d failed: %v\n", attempt, attempts, err)
+
+		if attempt < attempts {
+			select {
+			case <-ctx.Done():
+				return nil, firstErr
+			case <-time.After(time.Duration(attempt) * 3 * time.Second):
+			}
+		}
+	}
+
+	return nil, firstErr
 }
 
 func start(ctx context.Context) (*tcpostgres.PostgresContainer, error) {

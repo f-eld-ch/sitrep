@@ -52,7 +52,23 @@ jobs:
           version: v2.14.0
           args: --timeout=5m ./...
 
+      # The tests start PostgreSQL containers (see internal/testutil/pgtest). Several test binaries run at
+      # once, and pulling the image concurrently from Docker Hub made connections reset, so pull it once
+      # up front, with retries. Keep the image in line with `image` in pgtest.go.
+      - name: Pull the PostgreSQL test image
+        run: |
+          for attempt in 1 2 3 4 5; do
+            docker pull postgres:17-alpine && exit 0
+            echo "pull failed (attempt $attempt), retrying"
+            sleep $((attempt * 5))
+          done
+          exit 1
+
       - name: Go Test
+        env:
+          # The reaper container removes containers if the test process is killed; it is one more image
+          # to pull from Docker Hub, and the runner is discarded after the job anyway.
+          TESTCONTAINERS_RYUK_DISABLED: "true"
         # -coverpkg=./... credits a test for the code it runs in any package, not only its own:
         # the resolver and service tests drive the domain and the adapters. The profile then holds
         # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
