@@ -5,6 +5,10 @@ import (
 	"errors"
 	"log/slog"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
 	"github.com/f-eld-ch/sitrep/internal/core/port/inbound"
@@ -68,4 +72,18 @@ func logIfUnexpected(ctx context.Context, op string, err error, attrs ...slog.At
 
 	slog.LogAttrs(ctx, slog.LevelError, "service error",
 		append([]slog.Attr{slog.String("operation", op), slog.String("error", err.Error())}, attrs...)...)
+}
+
+// recordSpanError sets the span status for err. Optimistic-concurrency conflicts are an
+// expected, client-retryable outcome rather than a failure of the service, so they are
+// flagged with a `conflict` attribute instead of an error status. Call span.RecordError
+// separately so the error is still attached to the span.
+func recordSpanError(span trace.Span, err error) {
+	if errors.Is(err, shared.ErrConflict) {
+		span.SetAttributes(attribute.Bool("conflict", true))
+
+		return
+	}
+
+	span.SetStatus(codes.Error, err.Error())
 }

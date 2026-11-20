@@ -15,6 +15,9 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/ravilushqa/otelgqlgen"
 	"github.com/vektah/gqlparser/v2/gqlerror"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	graph "github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql"
 	"github.com/f-eld-ch/sitrep/internal/adapter/inbound/graphql/generated"
@@ -166,7 +169,7 @@ func registerAPIV2(s *Server, stack Stack, config apiV2Config) {
 	cfg.Complexity.Layer.Features = func(childComplexity int) int { return childComplexity + featureCost }
 	srv := handler.New(generated.NewExecutableSchema(cfg))
 	srv.AddTransport(transport.POST{})
-	srv.Use(otelgqlgen.Middleware())
+	srv.Use(otelgqlgen.Middleware(otelgqlgen.WithInterceptResponseResultHandlerFunc(interceptResponseResult)))
 	srv.Use(extension.FixedComplexityLimit(complexityBudget))
 
 	if config.introspection {
@@ -296,4 +299,39 @@ func mapTimelineErrorCode(e error) (string, bool) {
 	}
 
 	return "", false
+}
+
+// interceptResponseResult marks the GraphQL operation span as failed only when the response
+// carries an unexpected error. Domain errors (FORBIDDEN, CONFLICT, NOT_FOUND, …) are expected
+// business outcomes presented to the client with their own code; they are recorded as span
+// attributes but do not flag the span as an error.
+func interceptResponseResult(resp *graphql.Response, span trace.Span) *graphql.Response {
+	if resp == nil || len(resp.Errors) == 0 {
+		span.SetStatus(codes.Ok, "Finished successfully")
+
+		return resp
+	}
+
+	span.SetAttributes(otelgqlgen.ResolverErrors(resp.Errors)...)
+
+	unexpected := false
+
+	for _, e := range resp.Errors {
+		if code, _ := e.Extensions["code"].(string); code == "" || code == "INTERNAL_ERROR" {
+			unexpected = true
+
+			break
+		}
+	}
+
+	if !unexpected {
+		span.SetAttributes(attribute.Bool("graphql.domain_error", true))
+
+		return resp
+	}
+
+	span.SetStatus(codes.Error, resp.Errors.Error())
+	span.RecordError(fmt.Errorf("graphql response errors: %s", resp.Errors.Error()))
+
+	return resp
 }

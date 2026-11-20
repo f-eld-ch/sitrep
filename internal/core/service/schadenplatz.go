@@ -7,7 +7,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -104,7 +103,7 @@ func (s *SchadenplatzService) CreateSchadenplatz(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.SchadenplatzState{}, err
 	}
@@ -167,7 +166,7 @@ func (s *SchadenplatzService) RenameSchadenplatz(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.SchadenplatzState{}, err
 	}
@@ -223,7 +222,7 @@ func (s *SchadenplatzService) SetSchadenplatzGeometry(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.SchadenplatzState{}, err
 	}
@@ -287,7 +286,7 @@ func (s *SchadenplatzService) RecordCasualties(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.SchadenplatzState{}, err
 	}
@@ -390,7 +389,7 @@ func (s *SchadenplatzService) MergeSchadenplatz(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return err
 	}

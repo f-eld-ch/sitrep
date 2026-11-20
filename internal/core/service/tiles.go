@@ -9,7 +9,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
@@ -79,7 +78,7 @@ func (s *TileService) TileJSON(
 	default:
 		if !errors.Is(err, context.Canceled) {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 			logIfUnexpected(ctx, "TileJSON", err, tilesetAttr(ts))
 		}
 

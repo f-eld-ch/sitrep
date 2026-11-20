@@ -7,7 +7,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -131,7 +130,7 @@ func (s *ResourceService) AlertResource(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.ResourceState{}, err
 	}
@@ -294,7 +293,7 @@ func (s *ResourceService) RelieveResource(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.ResourceState{}, err
 	}
@@ -531,7 +530,7 @@ func (s *ResourceService) transitionWithIncident(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.ResourceState{}, err
 	}
@@ -624,7 +623,7 @@ func (s *ResourceService) HandOver(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.HandOverState{}, err
 	}
