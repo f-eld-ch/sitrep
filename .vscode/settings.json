@@ -49,5 +49,6 @@
   "gopls": {
     "formatting.gofumpt": false,
     "formatting.local": "github.com/f-eld-ch/sitrep",
+    "build.buildFlags": ["-tags=integration"]
   },
 }
