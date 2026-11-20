@@ -14,6 +14,8 @@
 // Tests of one package share the container and must not call t.Parallel: the
 // restore after a test replaces the database for everyone.
 //
+// Set PGTEST_IMAGE to use another image or registry (see imageEnv).
+//
 // Docker (or Podman with its Docker-compatible socket) is required. When it is not
 // available the tests fail instead of being skipped, because asking for the
 // integration tag means asking for these tests to run.
@@ -39,8 +41,13 @@ import (
 )
 
 const (
-	image    = "postgres:17-alpine" // keep in line with production and docker-compose.yml
-	database = "sitrep_test"        // not "postgres": snapshots work through the system database
+	defaultImage = "postgres:17-alpine" // keep in line with production and docker-compose.yml
+
+	// imageEnv names an environment variable that replaces the image, for example to pull the same
+	// official image from a mirror (CI uses public.ecr.aws/docker/library/postgres:17-alpine to stay
+	// clear of Docker Hub rate limits).
+	imageEnv = "PGTEST_IMAGE"
+	database = "sitrep_test" // not "postgres": snapshots work through the system database
 	user     = "sitrep"
 	password = "sitrep"
 
@@ -81,6 +88,15 @@ func Main(m *testing.M) int {
 	return code
 }
 
+// image is the PostgreSQL image to start: PGTEST_IMAGE if set, else the default.
+func image() string {
+	if v := os.Getenv(imageEnv); v != "" {
+		return v
+	}
+
+	return defaultImage
+}
+
 // startWithRetry starts the container, trying again after a transient failure such as a connection
 // reset while pulling the image. The first failure is the useful one if every attempt fails.
 func startWithRetry(ctx context.Context) (*tcpostgres.PostgresContainer, error) {
@@ -117,7 +133,7 @@ func startWithRetry(ctx context.Context) (*tcpostgres.PostgresContainer, error) 
 }
 
 func start(ctx context.Context) (*tcpostgres.PostgresContainer, error) {
-	ctr, err := tcpostgres.Run(ctx, image,
+	ctr, err := tcpostgres.Run(ctx, image(),
 		tcpostgres.WithDatabase(database),
 		tcpostgres.WithUsername(user),
 		tcpostgres.WithPassword(password),

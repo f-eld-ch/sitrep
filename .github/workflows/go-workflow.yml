@@ -58,6 +58,9 @@ jobs:
           # removes them if the test process is killed; it is one more image to pull from Docker Hub, and
           # the runner is discarded after the job anyway.
           TESTCONTAINERS_RYUK_DISABLED: "true"
+          # Pull PostgreSQL from AWS's mirror of the official image: Docker Hub resets or rate-limits
+          # anonymous pulls from shared runner addresses. Same image, so the tests behave the same.
+          PGTEST_IMAGE: public.ecr.aws/docker/library/postgres:17-alpine
         # -coverpkg=./... credits a test for the code it runs in any package, not only its own:
         # the resolver and service tests drive the domain and the adapters. The profile then holds
         # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
