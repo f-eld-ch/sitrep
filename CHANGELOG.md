@@ -5,8 +5,21 @@
 - *(map)* Translate the message map layer in the layer card of read-only maps ([#2146](https://github.com/f-eld-ch/sitrep/issues/2146)) - ([6ffa6d8](https://github.com/f-eld-ch/sitrep/commit/6ffa6d87db71e0b6d7db60c9e5e601f5006be9e4))
 - *(ui)* Compute the pie slices without reassigning during render ([#2145](https://github.com/f-eld-ch/sitrep/issues/2145)) - ([75071d9](https://github.com/f-eld-ch/sitrep/commit/75071d9d47eba3455b7a52951f73866fb437b96e))
 
+### 📚 Documentation
+
+- *(security)* Add the security assurance case ([#2153](https://github.com/f-eld-ch/sitrep/issues/2153)) - ([e9c801c](https://github.com/f-eld-ch/sitrep/commit/e9c801c4f9f82cfb15924fc2992a2979b446b539))
+- Move the administrator documentation to sitrep.ch ([#2158](https://github.com/f-eld-ch/sitrep/issues/2158)) - ([d864f96](https://github.com/f-eld-ch/sitrep/commit/d864f96fdb1ffc669bd4ae192487b5f1669f03fb))
+
+### 🧪 Testing
+
+- *(ui)* Improve the UI test harness and fix the bugs it found ([#2150](https://github.com/f-eld-ch/sitrep/issues/2150)) - ([2a96a5c](https://github.com/f-eld-ch/sitrep/commit/2a96a5cce1ff29185f73604dbfa8c73dba0bfd9d))
+- Raise the Go test coverage and fix the bugs it found ([#2149](https://github.com/f-eld-ch/sitrep/issues/2149)) - ([eed9fdf](https://github.com/f-eld-ch/sitrep/commit/eed9fdf60766dd8c0500749788898c688220b2d6))
+
 ### ⚙️  Other
 
+- *(deps)* Bump react-dropzone from 20.2.0 to 20.2.1 in /ui ([#2155](https://github.com/f-eld-ch/sitrep/issues/2155)) - ([131d0f8](https://github.com/f-eld-ch/sitrep/commit/131d0f8a8492a40914d1c65ee605f09160626107))
+- *(deps)* Bump i18next from 27.1.5 to 27.2.2 in /ui ([#2157](https://github.com/f-eld-ch/sitrep/issues/2157)) - ([8f13e07](https://github.com/f-eld-ch/sitrep/commit/8f13e079343c95d638782751013aa44f2f048e97))
+- *(go)* Run the tests under the race detector ([#2151](https://github.com/f-eld-ch/sitrep/issues/2151)) - ([2f764e0](https://github.com/f-eld-ch/sitrep/commit/2f764e07baae5d1b28c5b6db5dd1ec82b0433976))
 - *(go)* Credit tests for the code they run in other packages ([#2148](https://github.com/f-eld-ch/sitrep/issues/2148)) - ([4c7d105](https://github.com/f-eld-ch/sitrep/commit/4c7d10527de749972782f8af70537f6f016ec159))
 - *(go)* Leave generated code out of the coverage report ([#2147](https://github.com/f-eld-ch/sitrep/issues/2147)) - ([6f415d2](https://github.com/f-eld-ch/sitrep/commit/6f415d2eb328fae11975730eaf2e7bb62ff8f053))
 
