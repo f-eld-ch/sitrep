@@ -6,6 +6,7 @@ package inmem
 
 import (
 	"context"
+	"encoding/json/v2"
 	"log/slog"
 	"sort"
 	"time"
@@ -157,6 +158,9 @@ func (q *Queries) toIncidentRM(row *projection.IncidentRow) *outbound.IncidentRM
 		UpdatedAt: row.UpdatedAt,
 		HasReview: row.ReviewSummary != nil,
 	}
+
+	inc.Location = parseLocation(row.Location)
+
 	for _, div := range q.divisions.ForIncident(row.ID) {
 		inc.Divisions = append(inc.Divisions, &outbound.DivisionRM{
 			ID:          div.ID,
@@ -687,4 +691,24 @@ func (q *Queries) ListFeatureMessages(ctx context.Context, featureID uuid.UUID) 
 	}
 
 	return out, nil
+}
+
+// parseLocation decodes the stored location, {"name":"...","coordinates":[lon,lat]}, into a
+// LocationRM. An incident without a location has none, or a JSON null.
+func parseLocation(b []byte) *outbound.LocationRM {
+	if len(b) == 0 || string(b) == "null" {
+		return nil
+	}
+
+	var raw struct {
+		Name        string      `json:"name"`
+		Coordinates *[2]float64 `json:"coordinates"`
+	}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		slog.Warn("in-memory incident has an unreadable location", slog.String("error", err.Error()))
+
+		return nil
+	}
+
+	return &outbound.LocationRM{Name: raw.Name, Coordinates: raw.Coordinates}
 }
