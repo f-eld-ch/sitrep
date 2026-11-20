@@ -3133,6 +3133,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@maplibre/maplibre-gl-style-spec@npm:^26.9.0":
+  version: 26.9.0
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.9.0"
+  dependencies:
+    "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
+    "@mapbox/unitbezier": "npm:^1.0.0"
+    json-stringify-pretty-compact: "npm:^4.0.0"
+    minimist: "npm:^1.2.8"
+    quickselect: "npm:^3.0.0"
+    tinyqueue: "npm:^3.0.0"
+  bin:
+    gl-style-format: dist/gl-style-format.mjs
+    gl-style-migrate: dist/gl-style-migrate.mjs
+    gl-style-validate: dist/gl-style-validate.mjs
+  checksum: 10/4bba58e94c66222260b281dc61a3ab680f053fdd300be838ea980260d9b1a836c61e797ecaefa8962f59ec443fe679e3aced7da1e647b4a2b516576ea85f292b
+  languageName: node
+  linkType: hard
+
 "@maplibre/mlt@npm:^1.3.0":
   version: 1.3.0
   resolution: "@maplibre/mlt@npm:1.3.0"
@@ -11188,7 +11206,7 @@ __metadata:
     "@graphql-codegen/client-preset": "npm:^7.0.0"
     "@graphql-codegen/schema-ast": "npm:^7.0.0"
     "@mapbox/mapbox-gl-draw": "npm:~1.5.2"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.8.0"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.9.0"
     "@openfeature/core": "npm:^1.12.0"
     "@openfeature/flipt-web-provider": "npm:0.1.6"
     "@openfeature/react-sdk": "npm:^1.4.1"
