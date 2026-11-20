@@ -15,6 +15,10 @@ on:
   push:
     branches: [develop]
     paths: [.github/workflows/mirror-test-images.yml]
+  # Also when a pull request changes this workflow, so the change is tried before it is merged (and so the
+  # package is first created by the repository's own token, which links it to the repository).
+  pull_request:
+    paths: [.github/workflows/mirror-test-images.yml]
 
 permissions: {}
 
@@ -25,7 +29,10 @@ concurrency:
 jobs:
   mirror:
     name: Mirror ${{ matrix.target }}
-    if: github.repository == 'f-eld-ch/sitrep'
+    # Not for forks: their token cannot write packages, and they must not publish to our namespace.
+    if: >-
+      github.repository == 'f-eld-ch/sitrep' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
