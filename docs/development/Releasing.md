@@ -143,6 +143,30 @@ and signs `ghcr.io/f-eld-ch/charts/sitrep:<version>`.
 Chart tags are kept out of the app's version and changelog: `cliff.toml` only matches `^v[0-9]`, and
 `git describe` for `/version` and the UI uses `--match 'v[0-9]*'`.
 
+### Published chart versions
+
+| Published by | Chart version | appVersion |
+|---|---|---|
+| tag `chart-v1.2.0` | `1.2.0`, exactly the `version` in `Chart.yaml` | the app release it was tested with, e.g. `v26.11.1` |
+| push to `develop` | `0.0.0-develop.<run>.<sha>` | `develop` |
+| pull request | `<Chart.yaml version>-pr.<number>.<run>`, packaged but **never pushed** | `develop` |
+
+Charts are pushed only from `develop` and from `chart-v*` tags that sit on a `develop` commit. A release
+never overwrites an already published version. Bump `version` in `helm/Chart.yaml` for every chart change
+(patch = fix, minor = new values, major = breaking values) and `appVersion` when the chart needs a newer app.
+
+### Charts and Kargo Freight
+
+A Freight is a tested **pair**: one app image and one chart version, chosen independently by the Warehouse.
+Demo proves the pair, and customers only accept Freight that passed demo.
+
+- `develop` Warehouse: image `develop` (by digest) + chart `>=0.0.0-0 <0.0.1` (develop builds).
+- `releases` Warehouse: image `^v\d+\.\d+\.\d+$` + chart `>=1.0.0`. The constraint excludes develop builds,
+  pre-releases and anything before the first release, so customers can only ever get a released chart.
+
+Because the two move separately, `appVersion` is a floor: a chart may require features of a newer app
+(for example the `/ready` database check), and demo is where an incompatible pair is caught.
+
 ---
 
 ## Versions at runtime
