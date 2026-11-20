@@ -1,0 +1,62 @@
+name: Mirror test images
+
+# Copies the container images the integration tests start (see internal/testutil/pgtest) to ghcr.io.
+# Pulling them anonymously from Docker Hub or a public mirror failed on GitHub's shared runner
+# addresses (connection resets, "Data limit exceeded"); ghcr.io has no such limit for these runners.
+# The copy is registry to registry and keeps every architecture, so Macs on arm64 can use it too.
+#
+# The package ghcr.io/f-eld-ch/test-postgres must be public, or forks and contributors cannot pull it.
+# GitHub creates new packages as private; set the visibility once under the organisation's packages.
+
+on:
+  schedule:
+    - cron: "17 4 * * 1" # weekly, picks up new patch releases of the tag
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths: [.github/workflows/mirror-test-images.yml]
+  # Also when a pull request changes this workflow, so the change is tried before it is merged (and so the
+  # package is first created by the repository's own token, which links it to the repository).
+  pull_request:
+    paths: [.github/workflows/mirror-test-images.yml]
+
+permissions: {}
+
+concurrency:
+  group: mirror-test-images
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Mirror ${{ matrix.target }}
+    # Not for forks: their token cannot write packages, and they must not publish to our namespace.
+    if: >-
+      github.repository == 'f-eld-ch/sitrep' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Keep the source tag in line with `defaultImage` in internal/testutil/pgtest/pgtest.go.
+          - source: docker.io/library/postgres:17-alpine
+            target: ghcr.io/f-eld-ch/test-postgres:17-alpine
+    steps:
+      - name: Log in to ghcr.io
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Copy the image with all its architectures
+        env:
+          SOURCE: ${{ matrix.source }}
+          TARGET: ${{ matrix.target }}
+        run: docker buildx imagetools create --tag "$TARGET" "$SOURCE"
+
+      - name: Show what was published
+        env:
+          TARGET: ${{ matrix.target }}
+        run: docker buildx imagetools inspect "$TARGET"

@@ -86,6 +86,10 @@ func Run(t *testing.T, f Factory) {
 		RunReadModels(t, f)
 	})
 
+	t.Run("Lifecycles", func(t *testing.T) {
+		RunLifecycles(t, f)
+	})
+
 	t.Run("Access", func(t *testing.T) {
 		RunAccess(t, f)
 	})

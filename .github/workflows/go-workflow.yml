@@ -18,22 +18,6 @@ jobs:
     name: "Go Lint and Test"
     permissions:
       contents: read
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: sitrep
-          POSTGRES_PASSWORD: sitrep
-          POSTGRES_DB: sitrep_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      TEST_DATABASE_URL: postgres://sitrep:sitrep@localhost:5432/sitrep_test?sslmode=disable
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -69,16 +53,32 @@ jobs:
           args: --timeout=5m ./...
 
       - name: Go Test
+        env:
+          # The tests start PostgreSQL containers (see internal/testutil/pgtest). The reaper container
+          # removes them if the test process is killed; it is one more image to pull from Docker Hub, and
+          # the runner is discarded after the job anyway.
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          # Pull PostgreSQL from our copy on ghcr.io (kept up to date by mirror-test-images.yml): anonymous
+          # pulls from Docker Hub and public mirrors failed on the shared runner addresses. Same image, so the
+          # tests behave the same.
+          PGTEST_IMAGE: ghcr.io/f-eld-ch/test-postgres:17-alpine
         # -coverpkg=./... credits a test for the code it runs in any package, not only its own:
         # the resolver and service tests drive the domain and the adapters. The profile then holds
         # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
         # counts as covered when any of them ran it.
         # -race runs the tests under the race detector, which is the project's dynamic analysis
         # (coverage is then recorded in atomic mode).
-        run: go test -race -coverpkg=./... -coverprofile=go-coverage.out ./...
+        # -tags integration also runs the tests that need PostgreSQL: they start their own container with
+        # testcontainers (the runner has Docker), so no database service is configured here.
+        run: go test -tags integration -race -coverpkg=./... -coverprofile=go-coverage.out ./...
 
       - name: Convert Go coverage to Cobertura
         if: inputs.coverage
+        env:
+          # The profile includes files that only build with the integration tag (the PostgreSQL tests and
+          # their helper). gocover-cobertura resolves source files with go/packages, so it needs the same tag
+          # or it fails with "unable to determine file path".
+          GOFLAGS: -tags=integration
         run: |
           go install github.com/boumenot/gocover-cobertura@4afa1205ab3b54ae098dd4724c1657aad10f7484
           # Generated code (gqlgen's generated.go) is not ours to test; leaving it in roughly
