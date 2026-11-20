@@ -44,7 +44,7 @@ const (
 	defaultImage = "postgres:17-alpine" // keep in line with production and docker-compose.yml
 
 	// imageEnv names an environment variable that replaces the image, for example to pull the same
-	// official image from a mirror (CI uses public.ecr.aws/docker/library/postgres:17-alpine to stay
+	// official image from a mirror (CI uses mirror.gcr.io/library/postgres:17-alpine to stay
 	// clear of Docker Hub rate limits).
 	imageEnv = "PGTEST_IMAGE"
 	database = "sitrep_test" // not "postgres": snapshots work through the system database
