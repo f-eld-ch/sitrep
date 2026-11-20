@@ -155,7 +155,7 @@ How to write them:
 Run them before pushing a change to a Postgres adapter, a projection handler or a Postgres migration.
 
 Requirements: Docker or Podman. The tests start `postgres:17-alpine`; set `PGTEST_IMAGE` to pull the same image from a mirror (CI uses `public.ecr.aws/docker/library/postgres:17-alpine` to avoid Docker Hub rate limits). With rootless Podman, point testcontainers at its socket:
-`export DOCKER_HOST=unix:///podman/podman.sock`. If the reaper container (Ryuk) fails to
+`export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock`. If the reaper container (Ryuk) fails to
 start, set `TESTCONTAINERS_RYUK_DISABLED=true`.
 
 ---
