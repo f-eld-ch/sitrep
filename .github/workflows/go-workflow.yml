@@ -58,10 +58,10 @@ jobs:
           # removes them if the test process is killed; it is one more image to pull from Docker Hub, and
           # the runner is discarded after the job anyway.
           TESTCONTAINERS_RYUK_DISABLED: "true"
-          # Pull PostgreSQL from Google's cache of Docker Hub: Docker Hub resets anonymous pulls from shared
-          # runner addresses, and the ECR Public mirror answered "Data limit exceeded". Same image, so the
+          # Pull PostgreSQL from our copy on ghcr.io (kept up to date by mirror-test-images.yml): anonymous
+          # pulls from Docker Hub and public mirrors failed on the shared runner addresses. Same image, so the
           # tests behave the same.
-          PGTEST_IMAGE: mirror.gcr.io/library/postgres:17-alpine
+          PGTEST_IMAGE: ghcr.io/f-eld-ch/test-postgres:17-alpine
         # -coverpkg=./... credits a test for the code it runs in any package, not only its own:
         # the resolver and service tests drive the domain and the adapters. The profile then holds
         # every block once per test binary; gocover-cobertura adds the hits up per line, so a line
