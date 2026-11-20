@@ -16,7 +16,6 @@ import (
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -309,7 +308,7 @@ func (s *IncidentService) CreateIncidentWithParentMode(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "CreateIncident", err, slog.String("name", name))
 
 		return inbound.CreateIncidentResult{}, err
@@ -399,7 +398,7 @@ func (s *IncidentService) UpdateIncident(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "UpdateIncident", err, slog.String("id", id.String()))
 
 		return inbound.IncidentState{}, err
@@ -439,7 +438,7 @@ func (s *IncidentService) CloseIncident(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 	}
 
 	return state, err
@@ -490,7 +489,7 @@ func (s *IncidentService) IncidentReview(ctx context.Context, id shared.Incident
 
 	fail := func(err error) (*kpi.Report, error) {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return nil, err
 	}
@@ -575,7 +574,7 @@ func (s *IncidentService) CompareIncident(
 	rows, err := s.queries.ListReviewSummaries(ctx)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return kpi.Comparison{}, fmt.Errorf("compare: list review summaries: %w", err)
 	}
@@ -612,7 +611,7 @@ func (s *IncidentService) BackfillReviewSummaries(
 	if s.queries == nil || s.messages == nil {
 		err := errors.New("review backfill: no message source")
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return result, err
 	}
@@ -626,7 +625,7 @@ func (s *IncidentService) BackfillReviewSummaries(
 	ids, err := s.queries.ListClosedIncidentsForReview(ctx, staleBefore)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return result, fmt.Errorf("review backfill: list incidents: %w", err)
 	}
@@ -706,7 +705,7 @@ func (s *IncidentService) ReopenIncident(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 	}
 
 	return state, err
@@ -730,7 +729,7 @@ func (s *IncidentService) DeleteIncident(ctx context.Context, id shared.Incident
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 	}
 
 	return err
@@ -791,7 +790,7 @@ func (s *IncidentService) LinkIncidentParent(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "LinkIncidentParent", err,
 			slog.String("child_id", childID.String()), slog.String("parent_id", parentID.String()))
 
@@ -849,7 +848,7 @@ func (s *IncidentService) UnlinkIncidentParent(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "UnlinkIncidentParent", err, slog.String("child_id", childID.String()))
 
 		return inbound.IncidentState{}, err

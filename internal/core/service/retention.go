@@ -7,7 +7,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/shared"
@@ -81,7 +80,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 		if err != nil {
 			logIfUnexpected(ctx, "Retention.OpenBefore", err, slog.String("cutoff", cutoff.Format(time.RFC3339)))
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return result, err
 		}
@@ -96,7 +95,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			if err != nil {
 				logIfUnexpected(ctx, "Retention.Close", err, slog.String("incident_id", id.String()))
 				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
+				recordSpanError(span, err)
 
 				return result, err
 			}
@@ -125,7 +124,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 				slog.String("deleted_cutoff", deletedCutoff.Format(time.RFC3339)),
 			)
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return result, err
 		}
@@ -141,7 +140,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 			if err != nil {
 				logIfUnexpected(ctx, "Retention.Archive", err, slog.String("incident_id", id.String()))
 				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
+				recordSpanError(span, err)
 
 				return result, err
 			}
@@ -159,7 +158,7 @@ func (s *RetentionService) Run(ctx context.Context, autoCloseDays, autoArchiveDa
 	if result.Closed > 0 || result.Archived > 0 {
 		if err := s.notifier.Notify(ctx); err != nil {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return result, err
 		}

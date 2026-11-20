@@ -10,7 +10,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/access"
@@ -83,7 +82,7 @@ func (s *FeatureService) PlaceFeature(
 	if clientKey == "" || len(clientKey) > maxClientKeyLength {
 		err := shared.ValidationError{Field: "clientKey", Message: "must be 1-128 characters"}
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.FeatureState{}, err
 	}
@@ -151,7 +150,7 @@ func (s *FeatureService) PlaceFeature(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.FeatureState{}, err
 	}
@@ -202,7 +201,7 @@ func (s *FeatureService) ModifyFeature(
 		})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.FeatureState{}, err
 	}
@@ -230,7 +229,7 @@ func (s *FeatureService) RemoveFeature(
 		})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 	}
 
 	return err
@@ -265,7 +264,7 @@ func (s *FeatureService) RestoreFeature(
 		})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.FeatureState{}, err
 	}
@@ -338,6 +337,11 @@ func (s *FeatureService) withRetry(ctx context.Context, id shared.FeatureID, fn 
 		}
 
 		if !isOptimisticConflict(txErr) || attempt == maxFeatureWriteRetries-1 {
+			if isOptimisticConflict(txErr) {
+				slog.WarnContext(ctx, "feature write optimistic conflict, retries exhausted",
+					slog.Int("attempts", maxFeatureWriteRetries), slog.String("feature_id", id.String()))
+			}
+
 			break
 		}
 

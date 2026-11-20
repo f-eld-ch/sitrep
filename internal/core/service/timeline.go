@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/f-eld-ch/sitrep/internal/core/domain/resource"
@@ -58,7 +57,7 @@ func (s *TimelineService) ResourcesAsOf(
 	rows, err := s.queries.ListResourcesForIncident(ctx, uuid.UUID(incidentID))
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return nil, err
 	}
@@ -68,7 +67,7 @@ func (s *TimelineService) ResourcesAsOf(
 	streams, err := s.loadStreams(ctx, res0.AggregateType(), len(rows), func(i int) uuid.UUID { return rows[i].ID })
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return nil, err
 	}
@@ -81,7 +80,7 @@ func (s *TimelineService) ResourcesAsOf(
 		existed, err := replayAsOf(res, streams[row.ID], asOf, nil)
 		if err != nil {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return nil, err
 		}
@@ -109,7 +108,7 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 	rows, err := s.queries.ListAllSchadenplaetze(ctx, uuid.UUID(incidentID))
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return nil, err
 	}
@@ -120,7 +119,7 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 	)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return nil, err
 	}
@@ -138,7 +137,7 @@ func (s *TimelineService) SchadenplaetzeAsOf(
 		})
 		if err != nil {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return nil, err
 		}

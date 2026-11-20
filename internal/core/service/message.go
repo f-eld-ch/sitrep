@@ -136,7 +136,7 @@ func (s *MessageService) RecordMessage(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "RecordMessage", err, slog.String("incident_id", incidentID.String()))
 
 		return inbound.MessageState{}, err
@@ -212,7 +212,7 @@ func (s *MessageService) CorrectMessage(
 
 	if err := txErr; err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "CorrectMessage", err, slog.String("id", id.String()))
 
 		return inbound.MessageState{}, err
@@ -290,7 +290,7 @@ func (s *MessageService) TriageMessage(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "TriageMessage", err, slog.String("id", id.String()))
 
 		return inbound.MessageState{}, err
@@ -389,7 +389,7 @@ func (s *MessageService) changeAcknowledgement(
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, operation, err, slog.String("id", id.String()))
 
 		return inbound.MessageState{}, err
@@ -442,7 +442,7 @@ func (s *MessageService) DeleteMessage(ctx context.Context, id shared.MessageID,
 	})
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "DeleteMessage", err, slog.String("id", id.String()))
 
 		return err
@@ -481,7 +481,7 @@ func (s *MessageService) AttachFile(
 	if s.blobs == nil {
 		err := shared.ErrNotSupported
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, err
 	}
@@ -508,7 +508,7 @@ func (s *MessageService) AttachFile(
 		return s.requireIncidentOpen(ctx, incidentID)
 	}); err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "AttachFile.precheck", err, slog.String("message_id", messageID.String()))
 
 		return inbound.AttachmentState{}, err
@@ -526,7 +526,7 @@ func (s *MessageService) AttachFile(
 
 	if err := s.blobs.Put(ctx, storageKey, checksumReader, input.Size, input.ContentType); err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, err
 	}
@@ -643,7 +643,7 @@ func (s *MessageService) RemoveAttachment(
 	if s.blobs == nil {
 		err := shared.ErrNotSupported
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return err
 	}
@@ -701,7 +701,7 @@ func (s *MessageService) RemoveAttachment(
 
 	if err := txErr; err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "RemoveAttachment", err,
 			slog.String("message_id", messageID.String()),
 			slog.String("attachment_id", attachmentID.String()))
@@ -738,7 +738,7 @@ func (s *MessageService) OpenAttachment(
 	if s.blobs == nil || s.queries == nil {
 		err := shared.ErrNotSupported
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, nil, err
 	}
@@ -746,7 +746,7 @@ func (s *MessageService) OpenAttachment(
 	row, err := s.queries.GetAttachment(ctx, uuid.UUID(attachmentID))
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, nil, err
 	}
@@ -759,7 +759,7 @@ func (s *MessageService) OpenAttachment(
 		access.IncidentRead,
 	); err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, nil, err
 	}
@@ -767,7 +767,7 @@ func (s *MessageService) OpenAttachment(
 	rc, err := s.blobs.Get(ctx, row.StorageKey)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 
 		return inbound.AttachmentState{}, nil, err
 	}

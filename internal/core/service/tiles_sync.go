@@ -305,7 +305,7 @@ func (s *TileSyncService) Status(ctx context.Context) ([]inbound.TilesetStatus, 
 		local, err := s.archive.Local(ctx, ts)
 		if err != nil {
 			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordSpanError(span, err)
 
 			return nil, err
 		}
@@ -341,7 +341,7 @@ func (s *TileSyncService) Prune(ctx context.Context) ([]inbound.PrunedFile, erro
 	removed, err := s.archive.Prune(ctx, maptile.Supported, s.partMaxAge)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		recordSpanError(span, err)
 		logIfUnexpected(ctx, "TileSyncService.Prune", err)
 
 		return nil, err
