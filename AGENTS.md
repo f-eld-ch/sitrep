@@ -29,6 +29,23 @@ Local auth uses a static actor — no OIDC round-trip required for development.
 
 ---
 
+## Documentation
+
+This repository holds **developer documentation only**, in [docs/development](docs/development).
+Documentation for administrators (installation, configuration, Helm, access control, verifying releases)
+and users lives in the website repository [f-eld-ch/sitrep.ch](https://github.com/f-eld-ch/sitrep.ch),
+checked out next to this one as `../sitrep.ch` and published at <https://sitrep.ch/docs/>.
+
+- Do not add administrator or user documentation here. [docs/administrator](docs/administrator) only holds
+  a README that links to the website.
+- When a change affects what an administrator or user sees (a config option, a CLI command, a Helm value,
+  a UI flow, a release artefact), update the pages in `../sitrep.ch/content/docs/` as part of the same
+  piece of work (separate repository, separate pull request). See that repository's `AGENTS.md` for its
+  language, terminology and layout rules.
+- Link to website pages by their public URL, not a relative path.
+
+---
+
 ## Before every commit — mandatory gates
 
 Run these in order. `fmt` rewrites files; `run` checks what `fmt` produced.

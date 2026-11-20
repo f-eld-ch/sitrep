@@ -1,0 +1,514 @@
+{
+  "features": [
+    {
+      "key": "bergdorf-01",
+      "steps": [
+        {
+          "message": 1,
+          "geometry": {
+            "coordinates": [
+              [
+                8.625566221938357,
+                46.86032561902266
+              ],
+              [
+                8.62593338472891,
+                46.860460007099675
+              ],
+              [
+                8.626814563887706,
+                46.86078119475374
+              ],
+              [
+                8.627539088973663,
+                46.860964092421085
+              ],
+              [
+                8.627911142395504,
+                46.86088825687858
+              ],
+              [
+                8.627806706347656,
+                46.86058045269468
+              ],
+              [
+                8.627323689623665,
+                46.860303873517864
+              ],
+              [
+                8.626749291357271,
+                46.86001390994733
+              ],
+              [
+                8.626263702683246,
+                46.85978703816059
+              ],
+              [
+                8.626138691036317,
+                46.85970279827146
+              ]
+            ],
+            "type": "LineString"
+          },
+          "properties": {
+            "lineType": "Rutschgebiet",
+            "color": "#ff0000"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-02",
+      "steps": [
+        {
+          "message": 1,
+          "geometry": {
+            "coordinates": [
+              8.626048028885947,
+              46.86014125982118
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsErdrutsch",
+            "color": "#ff0000"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-03",
+      "steps": [
+        {
+          "message": 2,
+          "geometry": {
+            "coordinates": [
+              8.62816153319639,
+              46.8603448399293
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsZugFW",
+            "color": "#0000ff",
+            "nameLeft": "Zug 1",
+            "name": "Bergdorf",
+            "nameRight": "Rett"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-04",
+      "steps": [
+        {
+          "message": 2,
+          "geometry": {
+            "coordinates": [
+              [
+                8.62799131808427,
+                46.86047571300355
+              ],
+              [
+                8.627750180008036,
+                46.860669598453256
+              ],
+              [
+                8.627303365338776,
+                46.86043693582991
+              ]
+            ],
+            "type": "LineString"
+          },
+          "properties": {
+            "lineType": "durchgeführterEinsatz",
+            "color": "#0000ff"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-05",
+      "steps": [
+        {
+          "message": 3,
+          "geometry": {
+            "coordinates": [
+              [
+                8.628015999085278,
+                46.861403157206155
+              ],
+              [
+                8.62784237986466,
+                46.86134819201291
+              ],
+              [
+                8.627409749787347,
+                46.86126579182391
+              ],
+              [
+                8.627104781044096,
+                46.8612027798292
+              ],
+              [
+                8.626062213481362,
+                46.8606744455802
+              ],
+              [
+                8.625062199696657,
+                46.860112175898195
+              ],
+              [
+                8.624778507843587,
+                46.85995221879199
+              ],
+              [
+                8.62452318517424,
+                46.85972924748555
+              ]
+            ],
+            "type": "LineString"
+          },
+          "properties": {
+            "color": "#ff0000",
+            "lineType": "unpassierbar"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-06",
+      "steps": [
+        {
+          "message": 3,
+          "geometry": {
+            "coordinates": [
+              8.62806111985887,
+              46.86144522128055
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "iconRotation": 121,
+            "icon": "babsAbsperrungVerkehrswege",
+            "color": "#0000ff"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-07",
+      "steps": [
+        {
+          "message": 3,
+          "geometry": {
+            "coordinates": [
+              8.628195165713691,
+              46.86139025502473
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsTruppP",
+            "color": "#0000ff",
+            "name": "Kapo"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-08",
+      "steps": [
+        {
+          "message": 4,
+          "geometry": {
+            "coordinates": [
+              [
+                [
+                  8.62600204049778,
+                  46.85976744035767
+                ],
+                [
+                  8.626379522654986,
+                  46.860197418361935
+                ],
+                [
+                  8.626844116080747,
+                  46.86056124321502
+                ],
+                [
+                  8.627782981960905,
+                  46.86082914903082
+                ],
+                [
+                  8.62895414455241,
+                  46.861106975871536
+                ],
+                [
+                  8.628915428433828,
+                  46.8609019133423
+                ],
+                [
+                  8.628910588919638,
+                  46.860640622855556
+                ],
+                [
+                  8.62896866309822,
+                  46.86034956360041
+                ],
+                [
+                  8.62903157679105,
+                  46.86000227492519
+                ],
+                [
+                  8.629002539700991,
+                  46.85972444236751
+                ],
+                [
+                  8.628925107463886,
+                  46.859525989660625
+                ],
+                [
+                  8.628741205899559,
+                  46.85944660837217
+                ],
+                [
+                  8.628552464820984,
+                  46.85947968392313
+                ],
+                [
+                  8.628136266543748,
+                  46.85971451974973
+                ],
+                [
+                  8.62802979721809,
+                  46.85976413282074
+                ],
+                [
+                  8.627729747296542,
+                  46.85965167646026
+                ],
+                [
+                  8.627463573980833,
+                  46.85946645370541
+                ],
+                [
+                  8.627250635327982,
+                  46.85929115300942
+                ],
+                [
+                  8.626955424922215,
+                  46.8591886183751
+                ],
+                [
+                  8.626544066160761,
+                  46.859152235070695
+                ],
+                [
+                  8.626229497694936,
+                  46.85938707232896
+                ],
+                [
+                  8.62600204049778,
+                  46.85976744035767
+                ]
+              ]
+            ],
+            "type": "Polygon"
+          },
+          "properties": {
+            "zoneType": "Einsatzraum",
+            "color": "#0000ff",
+            "name": "Evak"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-09",
+      "steps": [
+        {
+          "message": 4,
+          "geometry": {
+            "coordinates": [
+              8.628874309871918,
+              46.862524478386604
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsSammelstelle",
+            "color": "#0000ff"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-10",
+      "steps": [
+        {
+          "message": 5,
+          "geometry": {
+            "coordinates": [
+              8.627738619715899,
+              46.86069852281031
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsVermisste",
+            "color": "#ff0000",
+            "name": "1"
+          }
+        },
+        {
+          "message": 9,
+          "properties": {
+            "icon": "babsTote",
+            "color": "#ff0000",
+            "name": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-11",
+      "steps": [
+        {
+          "message": 5,
+          "geometry": {
+            "coordinates": [
+              8.627131288380525,
+              46.8605492169803
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsTote",
+            "color": "#ff0000",
+            "name": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-12",
+      "steps": [
+        {
+          "message": 5,
+          "geometry": {
+            "coordinates": [
+              8.626965255371744,
+              46.86034317424415
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "color": "#ff0000",
+            "name": "1",
+            "icon": "babsVerletzte"
+          }
+        },
+        {
+          "message": 9,
+          "properties": {
+            "icon": "babsVerletzte",
+            "color": "#ff0000",
+            "name": "3"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-13",
+      "steps": [
+        {
+          "message": 6,
+          "geometry": {
+            "coordinates": [
+              8.629376707804397,
+              46.86099665163678
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "color": "#ff0000",
+            "icon": "babsEnergieausfall"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-14",
+      "steps": [
+        {
+          "message": 6,
+          "geometry": {
+            "coordinates": [
+              8.62995064200615,
+              46.860982089719755
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "color": "#ff0000",
+            "icon": "babsAusfallWasserversorgung"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-15",
+      "steps": [
+        {
+          "message": 6,
+          "geometry": {
+            "coordinates": [
+              8.629571589532077,
+              46.862615111776535
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsTrinkwasserabgabestelle",
+            "color": "#0000ff"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bergdorf-16",
+      "steps": [
+        {
+          "message": 8,
+          "geometry": {
+            "coordinates": [
+              8.629196039214008,
+              46.8622548297956
+            ],
+            "type": "Point"
+          },
+          "properties": {
+            "icon": "babsGruppeFW",
+            "color": "#0000ff",
+            "nameLeft": "Gr 1",
+            "name": "NachbarDorf",
+            "nameRight": "Rett"
+          }
+        }
+      ]
+    }
+  ],
+  "acknowledged": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}

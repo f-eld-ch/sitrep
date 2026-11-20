@@ -1,0 +1,12 @@
+{
+  "name": "bergdorf-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Screenshots for the sitrep.ch documentation, taken from the example incident.",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "playwright-core": "^1.55.0",
+    "typescript": "^5.9.0"
+  }
+}

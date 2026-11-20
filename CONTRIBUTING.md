@@ -11,9 +11,9 @@ By taking part you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
   [issue](https://github.com/f-eld-ch/sitrep/issues/new/choose) and fill in the template.
 - **Report a security problem:** do **not** open a public issue. Follow the
   [Security Policy](.github/SECURITY.md) and use GitHub's private vulnerability reporting.
-- **Improve the documentation:** the administrator and developer documentation lives in
-  [`docs/`](docs/). The user documentation is a separate repository,
-  [f-eld-ch/sitrep.ch](https://github.com/f-eld-ch/sitrep.ch).
+- **Improve the documentation:** the developer documentation lives in
+  [`docs/development`](docs/development). The administrator and user documentation is a separate
+  repository, [f-eld-ch/sitrep.ch](https://github.com/f-eld-ch/sitrep.ch) (published at <https://sitrep.ch/docs/>).
 - **Change the code:** see below.
 
 ## Before you start
@@ -100,8 +100,10 @@ pre-commit install --hook-type pre-commit --hook-type commit-msg
 
 ### 4. It is documented
 
-- Update the documentation in [`docs/`](docs/) when you change behaviour, configuration or
-  deployment (including the Helm chart in [`helm/`](helm/)).
+- Update the developer documentation in [`docs/development`](docs/development) when you change the
+  architecture or the development process, and the administrator and user documentation in
+  [f-eld-ch/sitrep.ch](https://github.com/f-eld-ch/sitrep.ch) when you change behaviour, configuration or
+  deployment (including the Helm chart in [`helm/`](helm/)). Open a matching pull request there.
 - Do not edit [CHANGELOG.md](CHANGELOG.md): it is generated from the commit messages at release time.
 
 ### 5. It does not contain sensitive data

@@ -7,7 +7,7 @@ can be checked. Known gaps are listed in [Known limitations](#known-limitations)
 the case, not hidden from it.
 
 Related documents: [Backend Architecture](Backend%20Architecture.md), [RBAC](RBAC.md),
-[Releasing](Releasing.md), [Verifying releases](../administrator/verify-releases.md),
+[Releasing](Releasing.md), [Verifying releases](https://sitrep.ch/docs/admin/how-to/releases-pruefen/),
 [Security Policy](../../.github/SECURITY.md).
 
 ## 1. Security requirements
@@ -125,7 +125,7 @@ The table follows the OWASP Top 10 (2021) and the most relevant CWE classes.
 | **Security misconfiguration** (A05) | Secure defaults (section 4); partial OIDC configuration is rejected at startup; `middleware.Secure()` sets the standard security headers. | `internal/cli/serve.go`, `server/routes.go` |
 | **Vulnerable and outdated components** (A06) | Dependabot for Go, npm, Docker and GitHub Actions; dependency review on pull requests; CodeQL; SBOMs in every release. | `.github/dependabot.yml`, `.github/workflows/` |
 | **Authentication failures** (A07) | Authentication is delegated to an OIDC provider using the code flow with PKCE and state; the session is a signed and encrypted cookie. No local password database. | `server/auth/oidc.go` |
-| **Software and data integrity failures** (A08, CWE-494) | Release tags and checksums are signed, the image is signed, and build provenance is attested; the release workflow refuses unverified tags. Downloaded tile archives are validated before use. | [Releasing](Releasing.md), [Verifying releases](../administrator/verify-releases.md) |
+| **Software and data integrity failures** (A08, CWE-494) | Release tags and checksums are signed, the image is signed, and build provenance is attested; the release workflow refuses unverified tags. Downloaded tile archives are validated before use. | [Releasing](Releasing.md), [Verifying releases](https://sitrep.ch/docs/admin/how-to/releases-pruefen/) |
 | **Logging and monitoring failures** (A09) | Structured `slog` with trace correlation, OpenTelemetry traces, metrics and logs; unexpected errors are logged, expected domain errors are returned to the caller. Secrets are not logged. | [AGENTS.md](../../AGENTS.md) (Logging) |
 | **Server-side request forgery** (A10, CWE-918) | The server makes no outbound request to a user-supplied URL. The only outbound HTTP client targets the configured OIDC issuer and the fixed swisstopo host. External map URLs are fetched by the browser, not the server. | `server/auth`, `internal/adapter/outbound/tileupstream` |
 | **Path traversal** (CWE-22) | The file store is opened with `os.OpenRoot` (Go confines all access to the root) and builds paths from UUIDs only; the filename given by the user is never used as a path, and is stripped of unsafe characters for the download header. | `internal/adapter/outbound/blobs/filesystem/store.go`, `server/attachments.go` |

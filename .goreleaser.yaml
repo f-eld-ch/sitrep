@@ -162,7 +162,7 @@ sboms:
 # Keyless signature (Sigstore) over the checksum file. checksums.txt lists every archive and
 # package, so one signature covers all of them. Needs cosign on the PATH and the workflow's
 # OIDC token (id-token: write); the signing identity is the release workflow, recorded in the
-# public Rekor log. Verification is documented in docs/administrator/verify-releases.md.
+# public Rekor log. Verification is documented at https://sitrep.ch/docs/admin/how-to/releases-pruefen/.
 signs:
   - id: checksums
     cmd: cosign
