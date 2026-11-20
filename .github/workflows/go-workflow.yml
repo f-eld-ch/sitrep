@@ -70,6 +70,11 @@ jobs:
 
       - name: Convert Go coverage to Cobertura
         if: inputs.coverage
+        env:
+          # The profile includes files that only build with the integration tag (the PostgreSQL tests and
+          # their helper). gocover-cobertura resolves source files with go/packages, so it needs the same tag
+          # or it fails with "unable to determine file path".
+          GOFLAGS: -tags=integration
         run: |
           go install github.com/boumenot/gocover-cobertura@4afa1205ab3b54ae098dd4724c1657aad10f7484
           # Generated code (gqlgen's generated.go) is not ours to test; leaving it in roughly
