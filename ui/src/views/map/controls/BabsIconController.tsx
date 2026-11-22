@@ -14,11 +14,9 @@ import { Button } from "components/ui";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { clsx } from "clsx";
 import { isPickableCategory, isPickableIcon } from "components/babs/excludedIcons";
-import { aliasFor } from "components/babs/iconResolver";
-import { rotationAllowed, unsupportedLabelKeys } from "components/babs/labelSchema";
+import { propertiesWithIcon } from "components/babs/placeIcon";
 import {
   byColor,
-  ColorForCategory,
   LineTypes,
   type SelectableType,
   ZoneTypes,
@@ -136,24 +134,10 @@ function IconCategoryMenu(props: CategoryMenuProps) {
 
   const onClickIcon = useCallback(
     (id: BabsIconId) => {
-      const properties: GeoJsonProperties = Object.assign({}, feature.properties, {
-        // The readable alias, not the numeric id: keeps persisted data greppable, and the
-        // style's match expression resolves it to a sprite key at render time. `iconType`
-        // used to be written here as an exact duplicate of `icon` and was read nowhere,
-        // so it is no longer set.
-        icon: aliasFor(id),
-        color: ColorForCategory[category.number],
-        iconRotation: rotationAllowed(category.number, id)
-          ? feature.properties?.iconRotation
-          : undefined,
-        // Undefined so `omitBy` strips them: the new icon may annotate in fewer positions
-        // than the old one, and a leftover label would keep being drawn.
-        ...Object.fromEntries(
-          unsupportedLabelKeys(category.number, id).map((key) => [key, undefined]),
-        ),
-      });
       onUpdate({
-        features: [{ ...feature, properties: omitBy(properties, isEmptyValue) }],
+        features: [
+          { ...feature, properties: propertiesWithIcon(feature.properties, id, category.number) },
+        ],
         action: "featureDetail",
       });
       collapse();
