@@ -32,7 +32,7 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { FeatureLabelPopup } from "./FeatureLabelPopup";
-import { SymbolPanel } from "./SymbolPanel";
+import { FeaturePanel } from "./FeaturePanel";
 
 import { useIconPickerV2 } from "../useIconPickerV2";
 
@@ -453,14 +453,16 @@ const BabsIconController = () => {
   return (
     <>
       {/* A pending feature gets the popup at once: it is where it is saved, whatever its type. */}
-      {selectedFeature !== undefined && (hasTypeSelected(selectedFeature) || pending) && (
-        <FeatureLabelPopup
-          selectedFeature={selectedFeature}
-          onUpdate={onUpdate}
-          pending={pending}
-          changeTime={changeTime}
-        />
-      )}
+      {!iconPickerV2 &&
+        selectedFeature !== undefined &&
+        (hasTypeSelected(selectedFeature) || pending) && (
+          <FeatureLabelPopup
+            selectedFeature={selectedFeature}
+            onUpdate={onUpdate}
+            pending={pending}
+            changeTime={changeTime}
+          />
+        )}
       {/*
        * Supplies the resolved language to <BabsIcon>, which is what selects the
        * language-specific artwork (51 of the 257 icons have it) and backs
@@ -472,12 +474,21 @@ const BabsIconController = () => {
        */}
       <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
         {iconPickerV2 ? (
-          <SymbolPanel feature={selectedFeature} onUpdate={onUpdate} />
+          selectedFeature !== undefined && (
+            <FeaturePanel
+              selectedFeature={selectedFeature}
+              onUpdate={onUpdate}
+              pending={pending}
+              changeTime={changeTime}
+            />
+          )
         ) : (
-          <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+          <>
+            <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+            <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+            <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+          </>
         )}
-        <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
-        <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       </BabsIconProvider>
     </>
   );

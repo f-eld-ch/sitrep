@@ -28,6 +28,7 @@ import {
 } from "components/babs/pickerConfig";
 import { useBabsIcons } from "components/babs/useBabsIcons";
 import { useRecentIcons } from "components/babs/useRecentIcons";
+import { PanelShell } from "./PanelShell";
 
 type Point = Feature<Geometry, GeoJsonProperties>;
 
@@ -35,6 +36,10 @@ export interface SymbolPanelProps {
   /** The selected feature; the panel is for points only. */
   feature: Point | undefined;
   onUpdate: (e: { features: Point[]; action: string }) => void;
+  /** What to edit once the point has its symbol: the fields, time and save of the feature. */
+  form?: React.ReactNode;
+  /** Set while the point is not saved yet: offered next to the chooser, where it is dropped. */
+  onDiscard?: () => void;
 }
 
 const CATEGORIES: readonly BabsCategory[] = listCategories().filter((category) =>
@@ -52,18 +57,36 @@ const tileClass =
  * The panel sits under the draw controls. A point that already has a symbol shows only that
  * symbol and a button to change it, so the map keeps its room.
  */
-export function SymbolPanel({ feature, onUpdate }: SymbolPanelProps) {
+export function SymbolPanel({ feature, onUpdate, form, onDiscard }: SymbolPanelProps) {
   if (feature === undefined || feature.geometry.type !== "Point") return null;
 
   // Keyed by the feature: selecting another point starts the panel afresh.
-  return <Panel key={String(feature.id)} feature={feature} onUpdate={onUpdate} />;
+  return (
+    <Panel
+      key={String(feature.id)}
+      feature={feature}
+      onUpdate={onUpdate}
+      form={form}
+      onDiscard={onDiscard}
+    />
+  );
 }
 
 type Browse =
   | { category: BabsCategoryNumber; entry?: undefined }
   | { category: BabsCategoryNumber; entry: DrillDownEntry };
 
-function Panel({ feature, onUpdate }: { feature: Point; onUpdate: SymbolPanelProps["onUpdate"] }) {
+function Panel({
+  feature,
+  onUpdate,
+  form,
+  onDiscard,
+}: {
+  feature: Point;
+  onUpdate: SymbolPanelProps["onUpdate"];
+  form: SymbolPanelProps["form"];
+  onDiscard: SymbolPanelProps["onDiscard"];
+}) {
   const { t, i18n } = useTranslation();
   const { label: iconLabel } = useBabsLang();
   const catalogueReady = useBabsIcons();
@@ -123,21 +146,17 @@ function Panel({ feature, onUpdate }: { feature: Point; onUpdate: SymbolPanelPro
     }
   };
 
-  const shell = (children: React.ReactNode) => (
-    <div className="maplibregl-ctrl-top-right mt-[160px]">
-      <div
-        className="maplibregl-ctrl w-[300px] rounded bg-white p-3 text-xs text-black shadow-[0_0_0_2px_rgba(0,0,0,0.1)]"
-        data-testid="symbol-panel"
-      >
-        {children}
-      </div>
-    </div>
-  );
+  const shell = (children: React.ReactNode) => <PanelShell>{children}</PanelShell>;
 
   // A point that has its symbol: show it, and the way to change it.
   if (hasSymbol && !changing) {
     const current = String(feature.properties?.icon);
-    return shell(<CurrentSymbol icon={current} onChange={() => setChanging(true)} />);
+    return shell(
+      <div className="flex flex-col gap-3">
+        <CurrentSymbol icon={current} onChange={() => setChanging(true)} />
+        {form}
+      </div>,
+    );
   }
 
   const listId = `${baseId}-results`;
@@ -250,6 +269,11 @@ function Panel({ feature, onUpdate }: { feature: Point; onUpdate: SymbolPanelPro
       {hasSymbol && (
         <Button variant="light" size="sm" onClick={() => setChanging(false)}>
           {t("cancel")}
+        </Button>
+      )}
+      {!hasSymbol && onDiscard && (
+        <Button variant="light" size="sm" onClick={onDiscard}>
+          {t("mapview.pending.discard")}
         </Button>
       )}
     </div>,

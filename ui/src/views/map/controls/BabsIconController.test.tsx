@@ -443,7 +443,7 @@ describe("BabsIconController", () => {
     expect(screen.getByRole("combobox", { name: "Symbol suchen" })).toBeInTheDocument();
   });
 
-  it("leaves lines and areas to their own controls when the flag is on", () => {
+  it("offers the type panel for a line, and no popup, when the flag is on", () => {
     mocks.iconPickerV2 = true;
     renderController({
       properties: { lineType: "Rutschgebiet" },
@@ -457,6 +457,8 @@ describe("BabsIconController", () => {
     });
 
     expect(screen.queryByTestId("symbol-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("type-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("popup")).not.toBeInTheDocument();
   });
 
   it("shows no picker and no popup when nothing is selected", () => {

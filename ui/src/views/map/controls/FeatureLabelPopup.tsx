@@ -1,83 +1,16 @@
-import { getIcon } from "@f-eld-ch/babs-core";
-import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { faArrowsRotate, faLock, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import bbox from "@turf/bbox";
-import { categoryOf, resolveIconId } from "components/babs/iconResolver";
-import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
-import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import dayjs from "dayjs";
-import { isEqual, isUndefined, omitBy } from "lodash";
-import { Button } from "components/ui";
-import { useCallback, useContext, useEffect, useId, useState } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { type MapRef, Popup, useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
+import { FeatureForm, type FeatureFormProps, featureTitle } from "./FeatureForm";
 
-const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
-const UN_SIGN_ICON = "2109a";
-const UN_SIGN_TITLE = "2109b";
-const UN_SIGN_FIELDS = {
-  kemler: "kemler",
-  unNumber: "unNumber",
-  substance: "stoffbezeichnung",
-} as const;
+export type { PendingFeatureActions } from "./FeatureForm";
 
-const unSignIcon = (kemler: string): string => (kemler ? `un:${kemler}` : UN_SIGN_ICON);
-
-/** MapLibre uses a fixed set of BCP 47 subtags for BABS language resolution. */
-const BABS_LANG_MAP: Record<string, string> = {
-  de: "de",
-  fr: "fr",
-  it: "it",
-  en: "de", // BABS catalogue has no English artwork; fall back to German
-};
-
-/** Returns the BABS catalogue's localized name for the stored icon value, if any. */
-function iconLabel(iconValue: string | undefined, language: string): string | undefined {
-  const id = resolveIconId(iconValue);
-  if (!id) return undefined;
-  try {
-    const meta = getIcon(id);
-    const lang = BABS_LANG_MAP[language] ?? "de";
-    return (meta.labels as Record<string, string>)[lang] ?? meta.labels["de"];
-  } catch {
-    return undefined;
-  }
-}
-
-/** What the popup needs to save or drop a feature that only exists locally so far. */
-export interface PendingFeatureActions {
-  saving: boolean;
-  /** Message of the last failed save, if any. */
-  error?: string;
-  /** The earliest time the feature can be given (the incident's start). */
-  earliest?: Date;
-  /** Create the feature on the server with these properties; `effectiveAt` is undefined for "now". */
-  onSave: (properties: GeoJsonProperties, effectiveAt: Date | undefined) => void;
-  onDiscard: () => void;
-}
-
-interface FeatureLabelPopupProps {
-  selectedFeature: Feature<Geometry, GeoJsonProperties>;
-  onUpdate: (e: {
-    features: Feature<Geometry, GeoJsonProperties>[];
-    action: string;
-    /** When the change takes effect on the timeline; absent for "now". */
-    effectiveAt?: Date;
-  }) => void;
-  /** Set on a saved feature of the free map: the popup then offers the time the change takes effect. */
-  changeTime?: { earliest?: Date };
-  /** Set while the feature has not been saved yet: the popup then asks for the time and saves it. */
-  pending?: PendingFeatureActions;
-}
-
-/** Value for a datetime-local input, in the browser's local time. */
-const toLocalInput = (d: Date) => dayjs(d).format("YYYY-MM-DDTHH:mm");
-
-/** The wall clock; read when the popup opens, never during render. */
-const currentTime = () => Date.now();
+type FeatureLabelPopupProps = FeatureFormProps;
 
 interface PopupAnchor {
   lngLat: [number, number];
@@ -138,217 +71,18 @@ export function FeatureLabelPopup({
   const { t, i18n } = useTranslation();
   const { current: map } = useMap();
   const { dispatch } = useContext(LayerContext);
-  const baseId = useId();
-
-  const iconValue = selectedFeature.properties?.icon as string | undefined;
-  const category = categoryOf(iconValue);
-  const resolvedIconId = resolveIconId(iconValue);
-  const isUnSign = resolvedIconId === UN_SIGN_ICON || iconValue?.startsWith("un:");
-  const fields = fieldsFor(category, resolvedIconId);
-  const canRotate =
-    selectedFeature.geometry.type === "Point" &&
-    rotationAllowed(category, resolvedIconId, iconValue);
-
-  const valuesFromFeature = () =>
-    isUnSign
-      ? {
-          [UN_SIGN_FIELDS.kemler]: iconValue?.startsWith("un:") ? iconValue.slice(3) : "",
-          [UN_SIGN_FIELDS.unNumber]: selectedFeature.properties?.name ?? "",
-          [UN_SIGN_FIELDS.substance]: selectedFeature.properties?.stoffbezeichnung ?? "",
-        }
-      : Object.fromEntries(fields.map((f) => [f.key, selectedFeature.properties?.[f.key] ?? ""]));
-
-  const [values, setValues] = useState<Record<string, string>>(valuesFromFeature);
-  const [rotation, setRotation] = useState<number>(selectedFeature?.properties?.iconRotation ?? 0);
-  const [rotationFixed, setRotationFixed] = useState<boolean>(
-    canRotate && !isUndefined(selectedFeature?.properties?.iconRotation),
-  );
-
-  const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
-  // By content, not identity: the feature object is rebuilt whenever the map re-renders, and
-  // that must not wipe what the user is typing. Only a real change to the feature resets the form.
-  if (!isEqual(selectedFeature, syncedFeature)) {
-    setSyncedFeature(selectedFeature);
-    setValues(valuesFromFeature());
-    setRotation(selectedFeature?.properties?.iconRotation ?? 0);
-    setRotationFixed(canRotate && !isUndefined(selectedFeature?.properties?.iconRotation));
-  }
 
   const close = useCallback(() => {
     dispatch({ type: "DESELECT_FEATURE", payload: null });
   }, [dispatch]);
 
-  const buildProperties = useCallback((): GeoJsonProperties => {
-    return omitBy(
-      isUnSign
-        ? {
-            ...selectedFeature.properties,
-            icon: unSignIcon(values[UN_SIGN_FIELDS.kemler]),
-            name: values[UN_SIGN_FIELDS.unNumber],
-            stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
-            nameLeft: undefined,
-            nameRight: undefined,
-            iconRotation: canRotate ? selectedFeature.properties?.iconRotation : undefined,
-          }
-        : {
-            ...selectedFeature.properties,
-            ...values,
-            iconRotation: canRotate ? selectedFeature.properties?.iconRotation : undefined,
-          },
-      isEmptyValue,
-    );
-  }, [canRotate, isUnSign, selectedFeature, values]);
-
-  // The time a new feature, or a change to a saved one, takes effect at: now unless the user
-  // picks another one.
-  const [openedAt] = useState(() => currentTime());
-  const [effectiveInput, setEffectiveInput] = useState(() => toLocalInput(new Date(openedAt)));
-  const effectiveTouched = effectiveInput !== toLocalInput(new Date(openedAt));
-
-  const commit = useCallback(() => {
-    const picked = new Date(effectiveInput);
-
-    onUpdate({
-      features: [{ ...selectedFeature, properties: buildProperties() }],
-      action: "featureDetail",
-      effectiveAt:
-        changeTime && effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
-    });
-  }, [buildProperties, changeTime, effectiveInput, effectiveTouched, onUpdate, selectedFeature]);
-
-  const saveAndClose = useCallback(() => {
-    if (pending) {
-      const picked = new Date(effectiveInput);
-      pending.onSave(
-        buildProperties(),
-        effectiveTouched && !Number.isNaN(picked.getTime()) ? picked : undefined,
-      );
-
-      return;
-    }
-
-    commit();
-    close();
-  }, [buildProperties, close, commit, effectiveInput, effectiveTouched, pending]);
-
-  const onReverseDirection = useCallback(() => {
-    if (selectedFeature.geometry.type !== "LineString") return;
-    const coords = [...selectedFeature.geometry.coordinates];
-    coords.reverse();
-    const reversed: Feature<Geometry, GeoJsonProperties> = {
-      ...selectedFeature,
-      geometry: { ...selectedFeature.geometry, coordinates: coords },
-    };
-    onUpdate({ features: [reversed], action: "reverseDirection" });
-  }, [onUpdate, selectedFeature]);
-
-  const onRotationChange = (value: number) => {
-    setRotation(value);
-    const properties: GeoJsonProperties = omitBy(
-      isUnSign
-        ? {
-            ...selectedFeature.properties,
-            icon: unSignIcon(values[UN_SIGN_FIELDS.kemler]),
-            name: values[UN_SIGN_FIELDS.unNumber],
-            stoffbezeichnung: values[UN_SIGN_FIELDS.substance],
-            nameLeft: undefined,
-            nameRight: undefined,
-            iconRotation: value,
-          }
-        : {
-            ...selectedFeature.properties,
-            ...values,
-            iconRotation: value,
-          },
-      isEmptyValue,
-    );
-    onUpdate({
-      features: [{ ...selectedFeature, properties }],
-      action: "featureDetail",
-    });
-  };
-
-  const onRotationFix = () => {
-    if (!map) return;
-    setRotationFixed(true);
-    onRotationChange(map.getBearing());
-  };
-
-  const onRotationUnlock = () => {
-    setRotationFixed(false);
-    setRotation(0);
-    const properties: GeoJsonProperties = omitBy(
-      {
-        ...selectedFeature.properties,
-        ...values,
-        iconRotation: undefined,
-      },
-      isEmptyValue,
-    );
-    onUpdate({
-      features: [{ ...selectedFeature, properties }],
-      action: "featureDetail",
-    });
-  };
-
-  const lang = i18n.resolvedLanguage ?? i18n.language;
-
-  const popupTitle = (): string => {
-    const geoType = selectedFeature.geometry.type;
-    if (geoType === "Point") {
-      if (isUnSign) return iconLabel(UN_SIGN_TITLE, lang) ?? "";
-      return iconLabel(iconValue, lang) ?? "";
-    }
-    if (geoType === "Polygon") {
-      const zoneType = selectedFeature.properties?.zoneType as string | undefined;
-      const zone = zoneType ? ZoneTypes[zoneType] : undefined;
-      return (zone?.thumbnail ? iconLabel(zone.thumbnail, lang) : undefined) ?? zoneType ?? "";
-    }
-    if (geoType === "LineString") {
-      const lineType = selectedFeature.properties?.lineType as string | undefined;
-      const line = lineType ? LineTypes[lineType] : undefined;
-      return (line?.thumbnail ? iconLabel(line.thumbnail, lang) : undefined) ?? lineType ?? "";
-    }
-    return "";
-  };
-
-  const title = popupTitle();
-
-  /**
-   * For single-field layouts the icon name is already in the popup title, so the input
-   * label shows the descriptive placeholder text instead of repeating it.
-   * For multi-field layouts (Formation, Fahrzeuge) the specific position labels are shown.
-   */
-  const fieldLabel = (field: LabelField): string => {
-    if (fields.length === 1) {
-      return field.placeholderKey ? t(field.placeholderKey) : t(field.labelKey);
-    }
-    return t(field.labelKey);
-  };
-
-  const popupFields = isUnSign
-    ? [
-        { key: UN_SIGN_FIELDS.kemler, label: t("mapview.labels.kemler") },
-        {
-          key: UN_SIGN_FIELDS.unNumber,
-          label: t("mapview.labels.stoffnummer"),
-        },
-        {
-          key: UN_SIGN_FIELDS.substance,
-          label: t("mapview.labels.stoffbezeichnung"),
-        },
-      ]
-    : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
+  const title = featureTitle(selectedFeature, i18n.resolvedLanguage ?? i18n.language);
 
   const {
     lngLat: [lng, lat],
     anchor,
   } = popupAnchorFor(selectedFeature, map ?? undefined);
   const isPoint = selectedFeature.geometry.type === "Point";
-  const isLine = selectedFeature.geometry.type === "LineString";
-  const isDirectionalLine =
-    isLine && LineTypes[selectedFeature.properties?.lineType as string]?.directional === true;
-
   useEffect(() => {
     if (!map) return;
     if (isPoint) {
@@ -451,173 +185,12 @@ export function FeatureLabelPopup({
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
-        {popupFields.map((field) => {
-          const inputId = `${baseId}-${field.key}`;
-          const isKemler = field.key === UN_SIGN_FIELDS.kemler;
-          const isUnNumber = field.key === UN_SIGN_FIELDS.unNumber;
-          return (
-            <div key={field.key} className="mb-2">
-              <label className="mb-1 block text-xs font-semibold text-gray-800" htmlFor={inputId}>
-                {field.label}
-              </label>
-              <div>
-                {isKemler ? (
-                  <select
-                    id={inputId}
-                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
-                    value={values[field.key] ?? ""}
-                    onChange={(e) =>
-                      setValues((prev) => ({
-                        ...prev,
-                        [field.key]: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">{t("mapview.labels.kemlerPlaceholder")}</option>
-                    {KEMLER_CODES.map((code) => (
-                      <option key={code} value={code}>
-                        {code}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    id={inputId}
-                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
-                    type="text"
-                    inputMode={isUnNumber ? "numeric" : undefined}
-                    maxLength={isUnNumber ? 4 : undefined}
-                    placeholder={
-                      isUnNumber ? t("mapview.labels.stoffnummerPlaceholder") : undefined
-                    }
-                    value={values[field.key] ?? ""}
-                    onChange={(e) =>
-                      setValues((prev) => ({
-                        ...prev,
-                        [field.key]: e.target.value,
-                      }))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") saveAndClose();
-                      if (e.key === "Escape") close();
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {canRotate && (
-          <div className="mb-2">
-            {rotationFixed ? (
-              <>
-                <label
-                  className="mb-1 block text-xs font-semibold text-gray-800"
-                  htmlFor={`${baseId}-rotation`}
-                >
-                  <span className="mr-1">
-                    <FontAwesomeIcon icon={faArrowsRotate} />
-                  </span>
-                  {t("mapview.rotation")} <span className="text-gray-500">({rotation}°)</span>
-                </label>
-                <div>
-                  <input
-                    id={`${baseId}-rotation`}
-                    className="w-full"
-                    type="range"
-                    min="0"
-                    max="360"
-                    step="1"
-                    value={rotation}
-                    aria-label={t("mapview.rotation")}
-                    onChange={(e) => onRotationChange(Number(e.target.value))}
-                  />
-                </div>
-                <Button
-                  variant="light"
-                  size="sm"
-                  className="mt-2 w-full"
-                  onClick={onRotationUnlock}
-                >
-                  <span>
-                    <FontAwesomeIcon icon={faLock} />
-                  </span>
-                  <span>{t("mapview.unlock")}</span>
-                </Button>
-              </>
-            ) : (
-              <div>
-                <Button variant="light" size="sm" className="w-full" onClick={onRotationFix}>
-                  <span>
-                    <FontAwesomeIcon icon={faLock} />
-                  </span>
-                  <span>{t("mapview.lock")}</span>
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-        {isDirectionalLine && (
-          <div className="mb-2">
-            <div>
-              <Button variant="light" size="sm" className="w-full" onClick={onReverseDirection}>
-                <span>
-                  <FontAwesomeIcon icon={faArrowsRotate} />
-                </span>
-                <span>{t("mapview.rotate")}</span>
-              </Button>
-            </div>
-          </div>
-        )}
-        {(pending || changeTime) && (
-          <div className="mb-2">
-            <label
-              className="mb-1 block text-xs font-semibold text-gray-800"
-              htmlFor={`${baseId}-effective`}
-            >
-              {pending ? t("mapview.pending.time") : t("mapview.changeTime.label")}
-            </label>
-            <input
-              id={`${baseId}-effective`}
-              type="datetime-local"
-              className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:outline-none"
-              min={
-                (pending ?? changeTime)?.earliest
-                  ? toLocalInput((pending ?? changeTime)!.earliest!)
-                  : undefined
-              }
-              max={toLocalInput(new Date(openedAt))}
-              value={effectiveInput}
-              onChange={(e) => setEffectiveInput(e.target.value)}
-            />
-            <p className="mt-1 text-[11px] text-gray-500">
-              {pending ? t("mapview.pending.hint") : t("mapview.changeTime.hint")}
-            </p>
-          </div>
-        )}
-        {pending?.error && <p className="mb-2 text-xs text-red-600">{pending.error}</p>}
-        <div className="space-y-2">
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-full"
-            disabled={pending?.saving}
-            onClick={saveAndClose}
-          >
-            {t("save")}
-          </Button>
-          {pending && (
-            <Button
-              variant="light"
-              size="sm"
-              className="w-full"
-              disabled={pending.saving}
-              onClick={pending.onDiscard}
-            >
-              {t("mapview.pending.discard")}
-            </Button>
-          )}
-        </div>
+        <FeatureForm
+          selectedFeature={selectedFeature}
+          onUpdate={onUpdate}
+          pending={pending}
+          changeTime={changeTime}
+        />
       </div>
     </Popup>
   );
