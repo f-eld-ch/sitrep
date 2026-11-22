@@ -26,6 +26,7 @@ function lookup(key: string): string {
 
 const mocks = vi.hoisted(() => ({
   ready: true,
+  iconPickerV2: false,
   fireDrawEvent: vi.fn(),
   pending: undefined as unknown,
   popup: { current: undefined as Record<string, unknown> | undefined },
@@ -37,6 +38,9 @@ vi.mock("react-i18next", () => ({
     t: lookup,
     i18n: { resolvedLanguage: "de", language: "de" },
   }),
+}));
+vi.mock("@openfeature/react-sdk", () => ({
+  useBooleanFlagValue: (key: string) => key === "icon-picker-v2" && mocks.iconPickerV2,
 }));
 vi.mock("react-map-gl/maplibre", () => ({ useMap: () => ({ current: mocks.fakeMap }) }));
 vi.mock("components/babs/useBabsIcons", () => ({ useBabsIcons: () => mocks.ready }));
@@ -111,6 +115,7 @@ const onUpdate = vi.fn();
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.ready = true;
+  mocks.iconPickerV2 = false;
   mocks.pending = undefined;
   mocks.popup.current = undefined;
 });
@@ -377,12 +382,14 @@ describe("BabsIconController", () => {
 
   function renderController({
     properties = feature.properties,
+    geometry = feature.geometry,
     selected = "f1" as string | null,
     time = {},
     pendingFeatures = [] as LayerState["pendingFeatures"],
     children,
   }: {
     properties?: GeoJsonProperties;
+    geometry?: Geometry;
     selected?: string | null;
     time?: MapTime;
     pendingFeatures?: LayerState["pendingFeatures"];
@@ -393,7 +400,7 @@ describe("BabsIconController", () => {
         {
           layer: {
             id: "layer-1",
-            features: [{ id: "f1", geometry: feature.geometry, properties }],
+            features: [{ id: "f1", geometry, properties }],
           },
           isVisible: true,
         },
@@ -426,6 +433,30 @@ describe("BabsIconController", () => {
     renderController();
 
     expect(screen.getByRole("button", { name: "Auswirkungen" })).toBeInTheDocument();
+  });
+
+  it("offers the searchable symbol panel instead of the category overlay when the flag is on", () => {
+    mocks.iconPickerV2 = true;
+    renderController({ properties: {} });
+
+    expect(screen.getByTestId("symbol-panel")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Symbol suchen" })).toBeInTheDocument();
+  });
+
+  it("leaves lines and areas to their own controls when the flag is on", () => {
+    mocks.iconPickerV2 = true;
+    renderController({
+      properties: { lineType: "Rutschgebiet" },
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [8, 47],
+          [9, 48],
+        ],
+      },
+    });
+
+    expect(screen.queryByTestId("symbol-panel")).not.toBeInTheDocument();
   });
 
   it("shows no picker and no popup when nothing is selected", () => {

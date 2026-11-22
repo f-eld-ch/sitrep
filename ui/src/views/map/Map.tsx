@@ -55,6 +55,7 @@ import { FeatureSelectionReporter } from "./controls/FeatureSelectionReporter";
 import { MapSelectionContext } from "./MapSelectionContext";
 import { TimeControl } from "./controls/TimeControl";
 import { MessageHighlight, MessageHighlightToggle } from "./controls/MessageHighlight";
+import { DrawControlsLock } from "./controls/DrawControlsLock";
 import { PendingFeaturesGuard } from "./controls/PendingFeaturesGuard";
 import { LayerContext, LayersProvider } from "./LayerContext";
 import { useMapLoaded } from "./useMapLoaded";
@@ -210,6 +211,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
         {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
         {!readOnly && !embedded && <PendingFeaturesGuard />}
+        {!readOnly && !embedded && <DrawControlsLock />}
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>

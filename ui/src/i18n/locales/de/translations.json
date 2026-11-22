@@ -165,6 +165,19 @@
       "noLayersFound": "Keine kompatiblen Layers gefunden. WMS Server muss EPSG:3857 Projektion unterstützen."
     },
     "back": "Zurück",
+    "iconPicker": {
+      "title": "Symbol",
+      "search": "Symbol suchen",
+      "placeholder": "Symbol suchen …",
+      "clear": "Suche leeren",
+      "results_one": "{{count}} Ergebnis",
+      "results_other": "{{count}} Ergebnisse",
+      "none": "Keine Symbole für «{{query}}»",
+      "recent": "Zuletzt verwendet",
+      "categories": "Kategorien",
+      "change": "Ändern",
+      "hint": "Tippen, um zu suchen. Mit ↑ ↓ wählen, Enter setzt das Symbol, Esc geht zurück."
+    },
     "labels": {
       "kennzeichnung": "Nähere Kennzeichnung",
       "ortsbezeichnung": "Ortsbezeichnung",

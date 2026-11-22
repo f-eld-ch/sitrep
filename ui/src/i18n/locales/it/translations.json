@@ -165,6 +165,19 @@
       "noLayersFound": "Nessun livello compatibile trovato. Il server WMS deve supportare la proiezione EPSG:3857."
     },
     "back": "Indietro",
+    "iconPicker": {
+      "title": "Simbolo",
+      "search": "Cerca un simbolo",
+      "placeholder": "Cerca un simbolo …",
+      "clear": "Cancella la ricerca",
+      "results_one": "{{count}} risultato",
+      "results_other": "{{count}} risultati",
+      "none": "Nessun simbolo per «{{query}}»",
+      "recent": "Usati di recente",
+      "categories": "Categorie",
+      "change": "Modifica",
+      "hint": "Digitare per cercare. Scegliere con ↑ ↓, Invio inserisce il simbolo, Esc torna indietro."
+    },
     "labels": {
       "kennzeichnung": "Designazione",
       "ortsbezeichnung": "Luogo",

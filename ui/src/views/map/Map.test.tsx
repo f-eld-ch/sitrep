@@ -176,6 +176,7 @@ vi.mock("./controls/TimeControl", () => ({
 vi.mock("./controls/PendingFeaturesGuard", () => ({
   PendingFeaturesGuard: () => <div data-testid="pending-guard" />,
 }));
+vi.mock("./controls/DrawControlsLock", () => ({ DrawControlsLock: () => null }));
 vi.mock("./controls/FeatureSelectionReporter", () => ({
   FeatureSelectionReporter: (props: { clickLayerIds: string[]; showRing: boolean }) => {
     mocks.reporterProps = props;

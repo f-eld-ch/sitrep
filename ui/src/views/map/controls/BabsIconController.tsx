@@ -32,6 +32,9 @@ import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import { first, isEqual, isUndefined, omitBy } from "lodash";
 import { memo, useCallback, useContext, useMemo, useState } from "react";
 import { FeatureLabelPopup } from "./FeatureLabelPopup";
+import { SymbolPanel } from "./SymbolPanel";
+
+import { useIconPickerV2 } from "../useIconPickerV2";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 
@@ -407,6 +410,7 @@ const BabsIconController = () => {
     [state.layers, state.activeLayer],
   );
   const { current: map } = useMap();
+  const iconPickerV2 = useIconPickerV2();
 
   // Saved features plus the ones drawn on the free map that have not been saved yet.
   const featureCollection = useMemo(
@@ -467,7 +471,11 @@ const BabsIconController = () => {
        * catalogue is imported lazily by useBabsIcons when a picker first renders.
        */}
       <BabsIconProvider lang={i18n.resolvedLanguage ?? i18n.language}>
-        <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        {iconPickerV2 ? (
+          <SymbolPanel feature={selectedFeature} onUpdate={onUpdate} />
+        ) : (
+          <IconController selectedFeature={selectedFeature} onUpdate={onUpdate} />
+        )}
         <LineController selectedFeature={selectedFeature} onUpdate={onUpdate} />
         <ZoneController selectedFeature={selectedFeature} onUpdate={onUpdate} />
       </BabsIconProvider>

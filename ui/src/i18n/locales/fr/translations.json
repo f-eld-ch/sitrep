@@ -165,6 +165,19 @@
       "noLayersFound": "Aucune calque compatible trouvée. Le serveur WMS doit prendre en charge la projection EPSG:3857."
     },
     "back": "Retour",
+    "iconPicker": {
+      "title": "Symbole",
+      "search": "Rechercher un symbole",
+      "placeholder": "Rechercher un symbole …",
+      "clear": "Effacer la recherche",
+      "results_one": "{{count}} résultat",
+      "results_other": "{{count}} résultats",
+      "none": "Aucun symbole pour «{{query}}»",
+      "recent": "Récemment utilisés",
+      "categories": "Catégories",
+      "change": "Modifier",
+      "hint": "Saisir pour rechercher. Choisir avec ↑ ↓, Entrée place le symbole, Échap pour revenir."
+    },
     "labels": {
       "kennzeichnung": "Désignation",
       "ortsbezeichnung": "Lieu",
