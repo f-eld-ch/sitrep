@@ -31,7 +31,8 @@ const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) 
     () => ({
       type: "FeatureCollection",
       features: featureCollection.features
-        .filter((f) => f.properties?.deletedAt === null)
+        // A feature drawn but not saved yet has no `deletedAt` at all: it is not deleted either.
+        .filter((f) => !f.properties?.deletedAt)
         .flatMap(enrichFeature),
     }),
     [featureCollection],

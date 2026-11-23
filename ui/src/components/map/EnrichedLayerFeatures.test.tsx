@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: required to test for ids */
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { FeatureCollection } from "geojson";
 import { Map as MapLibre } from "react-map-gl/maplibre";
 import { MapStyles } from "views/map/controls/StyleController";
@@ -14,7 +14,14 @@ import {
 
 vi.mock("react-map-gl/maplibre", () => ({
   Map: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-  Source: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Source: ({ children, data }: { children?: React.ReactNode; data?: FeatureCollection }) => (
+    <div
+      data-testid="source"
+      data-parents={(data?.features ?? []).map((f) => f.properties?.parent).join(",")}
+    >
+      {children}
+    </div>
+  ),
   Layer: () => null,
 }));
 
@@ -103,6 +110,40 @@ describe("EnrichedLayerFeatures", () => {
       <EnrichedFeaturesSource id="test" featureCollection={baseFeatureCollection} />,
     );
     expect(container).toBeTruthy();
+  });
+
+  it("enriches a feature that is not saved yet, which has no deletedAt, but not a deleted one", () => {
+    const line = (id: string, properties: Record<string, unknown>): Feature => ({
+      type: "Feature",
+      id,
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [8, 47],
+          [8.1, 47.1],
+        ],
+      },
+      properties,
+    });
+    renderWithMap(
+      <EnrichedFeaturesSource
+        id="test"
+        featureCollection={{
+          type: "FeatureCollection",
+          features: [
+            line("pending", { lineType: "beabsichtigteVerschiebung" }),
+            line("deleted", {
+              lineType: "beabsichtigteVerschiebung",
+              deletedAt: "2023-01-01T00:00:00Z",
+            }),
+          ],
+        }}
+      />,
+    );
+
+    const parents = screen.getByTestId("source").getAttribute("data-parents") ?? "";
+    expect(parents).toContain("pending");
+    expect(parents).not.toContain("deleted");
   });
 
   it("still enriches a feature while it is selected", () => {
