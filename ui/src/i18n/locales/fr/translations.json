@@ -156,6 +156,9 @@
   "map": "Suivi dessiné",
   "mapview": {
     "rotate": "Tourner le signe",
+    "flowEdge": "Sens d'écoulement sur un autre côté",
+    "flowEdgePrev": "Côté précédent",
+    "flowEdgeNext": "Côté suivant",
     "rotation": "Rotation",
     "layer": "calque",
     "unlock": "Désamarrer le signe",

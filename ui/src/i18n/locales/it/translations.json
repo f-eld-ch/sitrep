@@ -156,6 +156,9 @@
   "map": "Aggiornamento grafico",
   "mapview": {
     "rotate": "Direzione di rotazione",
+    "flowEdge": "Direzione del flusso su un altro lato",
+    "flowEdgePrev": "Lato precedente",
+    "flowEdgeNext": "Lato successivo",
     "rotation": "Rotazione",
     "layer": "Livello",
     "unlock": "Rilasciare il segno fissato",

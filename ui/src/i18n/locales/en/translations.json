@@ -156,6 +156,9 @@
   "map": "situation map",
   "mapview": {
     "rotate": "Turn direction",
+    "flowEdge": "Flow direction on another edge",
+    "flowEdgePrev": "Previous edge",
+    "flowEdgeNext": "Next edge",
     "rotation": "Rotation",
     "layer": "Layer",
     "unlock": "Unlock symbol",

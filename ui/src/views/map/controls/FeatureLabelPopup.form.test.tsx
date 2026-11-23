@@ -560,3 +560,42 @@ describe("FeatureLabelPopup placement", () => {
     });
   });
 });
+
+describe("FeatureLabelPopup moving the flow arrow of a flooded area", () => {
+  const ring = [
+    [8, 47],
+    [8.1, 47],
+    [8.1, 47.1],
+    [8, 47.1],
+    [8, 47],
+  ];
+  const flooded = (zoneType: string): F => ({
+    type: "Feature",
+    id: "z1",
+    geometry: { type: "Polygon", coordinates: [ring] },
+    properties: { zoneType },
+  });
+
+  it("starts the ring one vertex on, or one back, leaving the shape alone", () => {
+    renderPopup(flooded("UeberschwemmtesGebiet"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nächste Kante" }));
+    expect(onUpdate.mock.calls[0][0].action).toBe("rotateRing");
+    expect(onUpdate.mock.calls[0][0].features[0].geometry.coordinates[0]).toEqual([
+      [8.1, 47],
+      [8.1, 47.1],
+      [8, 47.1],
+      [8, 47],
+      [8.1, 47],
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Vorherige Kante" }));
+    expect(onUpdate.mock.calls[1][0].features[0].geometry.coordinates[0][0]).toEqual([8, 47.1]);
+  });
+
+  it("offers it for no zone without a flow arrow", () => {
+    renderPopup(flooded("Einsatzraum"));
+
+    expect(screen.queryByRole("button", { name: "Nächste Kante" })).not.toBeInTheDocument();
+  });
+});

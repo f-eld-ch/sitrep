@@ -160,3 +160,24 @@ export const buildFlowArrow = (
     ),
   ];
 };
+
+/**
+ * The outer ring with its starting vertex moved on by `steps` places, so the closing edge the
+ * flow arrow springs from becomes another one. The shape of the zone does not change: only
+ * which vertex the ring begins and ends at. Negative steps move it back.
+ *
+ * Holes are left alone. Returns `undefined` for a ring with fewer than three distinct vertices,
+ * which has no edge to move.
+ */
+export const rotateRing = (ring: Position[], steps: number): Position[] | undefined => {
+  const open = openRing(ring);
+  if (open.length < 3) {
+    return undefined;
+  }
+
+  const n = open.length;
+  const shift = ((steps % n) + n) % n;
+  const rotated = [...open.slice(shift), ...open.slice(0, shift)];
+
+  return [...rotated, rotated[0]];
+};

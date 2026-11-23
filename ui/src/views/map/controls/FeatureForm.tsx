@@ -1,10 +1,17 @@
 import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { faArrowsRotate, faLock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowsRotate,
+  faChevronLeft,
+  faChevronRight,
+  faLock,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
+import { rotateRing } from "components/map/enrichment/flowArrow";
+import { EnrichPolygonMap } from "components/map/enrichment/registry";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import dayjs from "dayjs";
 import { isEqual, isUndefined, omitBy } from "lodash";
@@ -213,6 +220,25 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     onUpdate({ features: [reversed], action: "reverseDirection" });
   }, [onUpdate, selectedFeature]);
 
+  const onMoveFlowEdge = useCallback(
+    (steps: number) => {
+      if (selectedFeature.geometry.type !== "Polygon") return;
+      const [outer, ...holes] = selectedFeature.geometry.coordinates;
+      const ring = outer ? rotateRing(outer, steps) : undefined;
+      if (!ring) return;
+      onUpdate({
+        features: [
+          {
+            ...selectedFeature,
+            geometry: { ...selectedFeature.geometry, coordinates: [ring, ...holes] },
+          },
+        ],
+        action: "rotateRing",
+      });
+    },
+    [onUpdate, selectedFeature],
+  );
+
   const onRotationChange = (value: number) => {
     setRotation(value);
     const properties: GeoJsonProperties = omitBy(
@@ -289,6 +315,9 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
 
   const isLine = selectedFeature.geometry.type === "LineString";
+  const hasFlowArrow =
+    selectedFeature.geometry.type === "Polygon" &&
+    EnrichPolygonMap[selectedFeature.properties?.zoneType as string]?.flowArrow !== undefined;
   const isDirectionalLine =
     isLine && LineTypes[selectedFeature.properties?.lineType as string]?.directional === true;
 
@@ -401,6 +430,35 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
                 <FontAwesomeIcon icon={faArrowsRotate} />
               </span>
               <span>{t("mapview.rotate")}</span>
+            </Button>
+          </div>
+        </div>
+      )}
+      {hasFlowArrow && (
+        <div className="mb-2">
+          <span className="mb-1 block text-xs font-semibold text-gray-800">
+            {t("mapview.flowEdge")}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="light"
+              size="sm"
+              className="flex-1"
+              aria-label={t("mapview.flowEdgePrev")}
+              title={t("mapview.flowEdgePrev")}
+              onClick={() => onMoveFlowEdge(-1)}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </Button>
+            <Button
+              variant="light"
+              size="sm"
+              className="flex-1"
+              aria-label={t("mapview.flowEdgeNext")}
+              title={t("mapview.flowEdgeNext")}
+              onClick={() => onMoveFlowEdge(1)}
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
             </Button>
           </div>
         </div>

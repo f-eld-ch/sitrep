@@ -156,6 +156,9 @@
   "map": "Lagebild",
   "mapview": {
     "rotate": "Richtung drehen",
+    "flowEdge": "Fliessrichtung an einer anderen Kante",
+    "flowEdgePrev": "Vorherige Kante",
+    "flowEdgeNext": "Nächste Kante",
     "rotation": "Drehung",
     "layer": "Layer",
     "unlock": "Fixierte Signatur lösen",
