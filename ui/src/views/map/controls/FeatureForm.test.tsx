@@ -1,13 +1,11 @@
-import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
-import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { aliasFor } from "components/babs/iconResolver";
 import de from "../../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "../LayerContext";
-import { FeatureForm, featureTitle, type PendingFeatureActions } from "./FeatureForm";
+import { FeatureForm, type PendingFeatureActions } from "./FeatureForm";
 
 function lookup(key: string): string {
   const value = key
@@ -27,30 +25,7 @@ vi.mock("react-i18next", () => ({
     i18n: { resolvedLanguage: "de", language: "de" },
   }),
 }));
-vi.mock("react-map-gl/maplibre", () => ({
-  useMap: () => ({ current: mocks.map }),
-  Popup: ({
-    children,
-    longitude,
-    latitude,
-    anchor,
-  }: {
-    children: ReactNode;
-    longitude: number;
-    latitude: number;
-    anchor: string;
-  }) => (
-    <div
-      data-testid="popup"
-      data-popup="feature-label"
-      data-lng={longitude}
-      data-lat={latitude}
-      data-anchor={anchor}
-    >
-      {children}
-    </div>
-  ),
-}));
+vi.mock("react-map-gl/maplibre", () => ({ useMap: () => ({ current: mocks.map }) }));
 
 type F = Feature<Geometry, GeoJsonProperties>;
 
@@ -112,34 +87,6 @@ const label = (text: string) => screen.getByLabelText(text) as HTMLInputElement;
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.map = undefined;
-});
-
-describe("featureTitle", () => {
-  it("names a point after its symbol in the catalogue", () => {
-    expect(featureTitle(point({ icon: aliasFor("1101") }), "de")).toBe(getIcon("1101").labels.de);
-  });
-
-  it("names a zone after its type", () => {
-    expect(featureTitle(polygon({ zoneType: "Schadengebiet" }), "de")).toBe(
-      getIcon("1114").labels.de,
-    );
-  });
-
-  it("names a line after its type", () => {
-    expect(featureTitle(line({ lineType: "Rutschgebiet" }), "de")).toBe(getIcon("1113").labels.de);
-  });
-
-  it("shows the stored type for one the catalogue does not know", () => {
-    expect(featureTitle(line({ lineType: "Frontline" }), "de")).toBe("Frontline");
-  });
-
-  it("names a hazard sign", () => {
-    expect(featureTitle(point({ icon: "un:1203" }), "de")).toBe(getIcon("2109b").labels.de);
-  });
-
-  it("falls back to German for a language the catalogue has no names in", () => {
-    expect(featureTitle(point({ icon: aliasFor("1101") }), "en")).toBe(getIcon("1101").labels.de);
-  });
 });
 
 describe("FeatureForm fields", () => {

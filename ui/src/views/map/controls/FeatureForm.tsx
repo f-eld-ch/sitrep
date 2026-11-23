@@ -1,10 +1,9 @@
-import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
 import { faArrowsRotate, faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
-import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
+import { LineTypes } from "components/babs/lineAndZoneTypes";
 import { defaultFlowAt } from "components/map/enrichment/flowArrow";
 import {
   SLIDE_ARROW_DEFAULT_AT,
@@ -23,7 +22,6 @@ import { LayerContext } from "../LayerContext";
 
 const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
 const UN_SIGN_ICON = "2109a";
-const UN_SIGN_TITLE = "2109b";
 const UN_SIGN_FIELDS = {
   kemler: "kemler",
   unNumber: "unNumber",
@@ -32,28 +30,7 @@ const UN_SIGN_FIELDS = {
 
 const unSignIcon = (kemler: string): string => (kemler ? `un:${kemler}` : UN_SIGN_ICON);
 
-/** MapLibre uses a fixed set of BCP 47 subtags for BABS language resolution. */
-const BABS_LANG_MAP: Record<string, string> = {
-  de: "de",
-  fr: "fr",
-  it: "it",
-  en: "de", // BABS catalogue has no English artwork; fall back to German
-};
-
-/** Returns the BABS catalogue's localized name for the stored icon value, if any. */
-function iconLabel(iconValue: string | undefined, language: string): string | undefined {
-  const id = resolveIconId(iconValue);
-  if (!id) return undefined;
-  try {
-    const meta = getIcon(id);
-    const lang = BABS_LANG_MAP[language] ?? "de";
-    return (meta.labels as Record<string, string>)[lang] ?? meta.labels["de"];
-  } catch {
-    return undefined;
-  }
-}
-
-/** What the popup needs to save or drop a feature that only exists locally so far. */
+/** What the form needs to save or drop a feature that only exists locally so far. */
 export interface PendingFeatureActions {
   saving: boolean;
   /** Message of the last failed save, if any. */
@@ -86,29 +63,6 @@ const toLocalInput = (d: Date) => dayjs(d).format("YYYY-MM-DDTHH:mm");
 
 /** The wall clock; read when the form opens, never during render. */
 const currentTime = () => Date.now();
-
-/** The name of what the feature shows: its symbol, line type or zone type. */
-export function featureTitle(feature: Feature<Geometry, GeoJsonProperties>, lang: string): string {
-  const geoType = feature.geometry.type;
-  const iconValue = feature.properties?.icon as string | undefined;
-  if (geoType === "Point") {
-    if (resolveIconId(iconValue) === UN_SIGN_ICON || iconValue?.startsWith("un:")) {
-      return iconLabel(UN_SIGN_TITLE, lang) ?? "";
-    }
-    return iconLabel(iconValue, lang) ?? "";
-  }
-  if (geoType === "Polygon") {
-    const zoneType = feature.properties?.zoneType as string | undefined;
-    const zone = zoneType ? ZoneTypes[zoneType] : undefined;
-    return (zone?.thumbnail ? iconLabel(zone.thumbnail, lang) : undefined) ?? zoneType ?? "";
-  }
-  if (geoType === "LineString") {
-    const lineType = feature.properties?.lineType as string | undefined;
-    const line = lineType ? LineTypes[lineType] : undefined;
-    return (line?.thumbnail ? iconLabel(line.thumbnail, lang) : undefined) ?? lineType ?? "";
-  }
-  return "";
-}
 
 /**
  * The fields, rotation, direction, time and save buttons of a feature. Used by the popup and by

@@ -167,7 +167,6 @@
     },
     "back": "Indietro",
     "iconPicker": {
-      "title": "Simbolo",
       "search": "Cerca un simbolo",
       "placeholder": "Cerca un simbolo …",
       "clear": "Cancella la ricerca",
