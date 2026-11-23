@@ -1,8 +1,10 @@
+import type { GeoJsonProperties, Geometry } from "geojson";
 import { describe, expect, it } from "vitest";
 import type { Layer } from "types/layer";
 import {
   activeLayerReducer,
   layersReducer,
+  hasType,
   pendingFeaturesReducer,
   removedFeaturesReducer,
 } from "./reducer";
@@ -229,5 +231,65 @@ describe("removedFeaturesReducer", () => {
     const state = [removed("a")];
 
     expect(removedFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null })).toBe(state);
+  });
+});
+
+describe("pendingFeaturesReducer and the selection", () => {
+  const drawn = (id: string, geometry: Geometry, properties: GeoJsonProperties = {}) => ({
+    id,
+    layerId: "l",
+    geometry,
+    properties,
+  });
+  const line: Geometry = {
+    type: "LineString",
+    coordinates: [
+      [8, 47],
+      [9, 48],
+    ],
+  };
+
+  it("drops a drawn object that was never told what it is when the selection leaves it", () => {
+    const state = [drawn("a", line), drawn("b", line, { lineType: "Rutschgebiet" })];
+
+    expect(
+      pendingFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null }, "a").map(
+        (p) => p.id,
+      ),
+    ).toEqual(["b"]);
+    expect(
+      pendingFeaturesReducer(state, { type: "SELECT_FEATURE", payload: { id: "z" } }, "a").map(
+        (p) => p.id,
+      ),
+    ).toEqual(["b"]);
+  });
+
+  it("keeps one that has its type, to be saved later", () => {
+    const state = [drawn("b", line, { lineType: "Rutschgebiet" })];
+
+    expect(pendingFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null }, "b")).toBe(
+      state,
+    );
+  });
+
+  it("keeps a typeless one that stays selected, or is not the selected one", () => {
+    const state = [drawn("a", line)];
+
+    expect(
+      pendingFeaturesReducer(state, { type: "SELECT_FEATURE", payload: { id: "a" } }, "a"),
+    ).toBe(state);
+    expect(
+      pendingFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null }, "other"),
+    ).toBe(state);
+    expect(pendingFeaturesReducer(state, { type: "DESELECT_FEATURE", payload: null })).toBe(state);
+  });
+
+  it.each([
+    ["a point without a symbol", { type: "Point", coordinates: [8, 47] } as Geometry, {}, false],
+    ["a point with one", { type: "Point", coordinates: [8, 47] } as Geometry, { icon: "x" }, true],
+    ["an area without a type", { type: "Polygon", coordinates: [] } as Geometry, {}, false],
+    ["an area with one", { type: "Polygon", coordinates: [] } as Geometry, { zoneType: "z" }, true],
+  ])("tells whether %s has a type", (_name, geometry, properties, typed) => {
+    expect(hasType(drawn("x", geometry, properties))).toBe(typed);
   });
 });

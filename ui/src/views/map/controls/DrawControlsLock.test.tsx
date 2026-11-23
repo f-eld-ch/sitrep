@@ -13,8 +13,8 @@ vi.mock("react-map-gl/maplibre", () => ({
 
 const pending = { id: "p1", layerId: "l", geometry: { type: "Point", coordinates: [8, 47] } };
 
-function renderLock(pendingFeatures: unknown[]) {
-  const state = { pendingFeatures } as unknown as LayerState;
+function renderLock(pendingFeatures: unknown[], selectedFeature: string | undefined = "p1") {
+  const state = { pendingFeatures, selectedFeature } as unknown as LayerState;
 
   return render(
     <LayerContext.Provider value={{ state, dispatch: vi.fn() }}>
@@ -40,13 +40,22 @@ describe("DrawControlsLock", () => {
     expect(mocks.container!.classList.contains(DRAW_LOCKED_CLASS)).toBe(false);
   });
 
+  it("leaves them alone while an unsaved object is left behind, not selected", () => {
+    renderLock([pending], "other");
+
+    expect(mocks.container!.classList.contains(DRAW_LOCKED_CLASS)).toBe(false);
+  });
+
   it("unlocks when the object is saved or discarded", () => {
     const { rerender } = renderLock([pending]);
     expect(mocks.container!.classList.contains(DRAW_LOCKED_CLASS)).toBe(true);
 
     rerender(
       <LayerContext.Provider
-        value={{ state: { pendingFeatures: [] } as unknown as LayerState, dispatch: vi.fn() }}
+        value={{
+          state: { pendingFeatures: [], selectedFeature: undefined } as unknown as LayerState,
+          dispatch: vi.fn(),
+        }}
       >
         <DrawControlsLock />
       </LayerContext.Provider>,

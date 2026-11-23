@@ -6,7 +6,8 @@ import { LayerContext } from "../LayerContext";
 export const DRAW_LOCKED_CLASS = "sitrep-draw-locked";
 
 /**
- * Hides the draw buttons from the moment an object is drawn until it is saved or discarded.
+ * Hides the draw buttons while an object that is drawn and not saved is selected, from the
+ * moment it is drawn until it is saved, discarded or left.
  *
  * An unsaved object has its own panel with Save and Discard, so a second tool is not needed, and
  * picking one would abandon the object half made. The buttons cannot be changed once the draw
@@ -18,7 +19,9 @@ export const DRAW_LOCKED_CLASS = "sitrep-draw-locked";
 export function DrawControlsLock() {
   const { state } = useContext(LayerContext);
   const { current: map } = useMap();
-  const locked = state.pendingFeatures.length > 0;
+  // Only while the unsaved object is the selected one, so with its panel open: one that was left
+  // behind (selected away from) has nothing on screen to save or discard.
+  const locked = state.pendingFeatures.some((p) => p.id === state.selectedFeature);
 
   useEffect(() => {
     const container = map?.getContainer();

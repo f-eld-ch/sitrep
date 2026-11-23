@@ -246,8 +246,34 @@ function compareLayerText(left: string, right: string): number {
   return 0;
 }
 
-export const pendingFeaturesReducer = (state: PendingFeature[], action: LayersAction) => {
+/** Whether a drawn feature has been told what it is: its symbol, line type or area type. */
+export const hasType = ({ geometry, properties }: PendingFeature): boolean => {
+  if (geometry.type === "Point") return Boolean(properties?.icon);
+  if (geometry.type === "LineString") return Boolean(properties?.lineType);
+  if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+    return Boolean(properties?.zoneType);
+  }
+
+  return true;
+};
+
+export const pendingFeaturesReducer = (
+  state: PendingFeature[],
+  action: LayersAction,
+  /** The feature selected before this action. */
+  selected?: string | number,
+) => {
   switch (action.type) {
+    // A drawn object that was never told what it is would stay on the map as a bare black line
+    // or dot, with nothing left to say what it was meant to be. It is dropped when the selection
+    // leaves it; one with a type stays, to be saved later.
+    case "DESELECT_FEATURE":
+    case "SELECT_FEATURE": {
+      if (action.type === "SELECT_FEATURE" && action.payload.id === selected) return state;
+      const kept = state.filter((p) => p.id !== selected || hasType(p));
+
+      return kept.length === state.length ? state : kept;
+    }
     case "ADD_PENDING_FEATURE":
       return [...state.filter((p) => p.id !== action.payload.feature.id), action.payload.feature];
     case "UPDATE_PENDING_FEATURE":
