@@ -1,7 +1,7 @@
 import type { Position } from "geojson";
 import { describe, expect, it } from "vitest";
 import { ARROW } from "./arrow";
-import { enrichFeature } from "./enrichFeature";
+import { enrichFeature, selectionFill } from "./enrichFeature";
 import { buildFlowArrow, rotateRing } from "./flowArrow";
 import { SMOOTHED_ZONE_NAMES } from "./registry";
 
@@ -123,5 +123,38 @@ describe("a flooded area drawn as a curve", () => {
   it("does not round a zone that is not configured for it", () => {
     const other = { ...zone, properties: { ...zone.properties, zoneType: "Einsatzraum" } };
     expect(enrichFeature(other).some((f) => String(f.id).includes(":outline"))).toBe(false);
+  });
+});
+
+describe("the wash of a selected flooded area", () => {
+  const zone = {
+    type: "Feature" as const,
+    id: "z",
+    geometry: { type: "Polygon" as const, coordinates: [square] },
+    properties: { zoneType: "UeberschwemmtesGebiet", deletedAt: null },
+  };
+
+  it("has the shape of the curve, closed, through every vertex", () => {
+    const wash = selectionFill(zone);
+    expect(wash?.geometry.type).toBe("Polygon");
+    const ring = (wash!.geometry as { coordinates: Position[][] }).coordinates[0];
+    expect(ring.length).toBeGreaterThan(20);
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    [A, B, C, D].forEach((vertex) => expect(ring).toContainEqual(vertex));
+  });
+
+  it("covers every part of a multipart zone", () => {
+    const wash = selectionFill({
+      ...zone,
+      geometry: { type: "MultiPolygon", coordinates: [[square], [square]] },
+    });
+    expect(wash?.geometry.type).toBe("MultiPolygon");
+  });
+
+  it("is only there for zones drawn as a curve", () => {
+    expect(selectionFill({ ...zone, properties: { zoneType: "Einsatzraum" } })).toBeUndefined();
+    expect(
+      selectionFill({ ...zone, geometry: { type: "Point", coordinates: [8, 47] } }),
+    ).toBeUndefined();
   });
 });

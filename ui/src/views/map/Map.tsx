@@ -684,7 +684,11 @@ function ActiveLayer() {
   return (
     <>
       <Draw />
-      <EnrichedLayerFeatures id={state.activeLayer} featureCollection={liveCollection} />
+      <EnrichedLayerFeatures
+        id={state.activeLayer}
+        featureCollection={liveCollection}
+        selectedId={state.selectedFeature}
+      />
     </>
   );
 }

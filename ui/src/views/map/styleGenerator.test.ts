@@ -287,7 +287,12 @@ const drawStyle: LayerProps[] = [
   {
     id: "gl-draw-polygon-fill-active",
     type: "fill",
-    filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+    filter: [
+      "all",
+      ["==", "active", "true"],
+      ["==", "$type", "Polygon"],
+      ["!in", "user_zoneType", "UeberschwemmtesGebiet"],
+    ],
     paint: {
       "fill-color": "#fbb03b",
       "fill-outline-color": "#fbb03b",
@@ -325,7 +330,12 @@ const drawStyle: LayerProps[] = [
   {
     id: "gl-draw-polygon-stroke-active",
     type: "line",
-    filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+    filter: [
+      "all",
+      ["==", "active", "true"],
+      ["==", "$type", "Polygon"],
+      ["!in", "user_zoneType", "UeberschwemmtesGebiet"],
+    ],
     layout: {
       "line-cap": "round",
       "line-join": "round",

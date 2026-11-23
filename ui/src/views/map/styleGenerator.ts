@@ -879,7 +879,12 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       {
         id: "gl-draw-polygon-fill-active",
         type: "fill",
-        filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+        filter: [
+          "all",
+          ["==", "active", "true"],
+          ["==", "$type", "Polygon"],
+          ["!in", "user_zoneType", ...SMOOTHED_ZONE_NAMES],
+        ],
         paint: {
           "fill-color": "#fbb03b",
           "fill-outline-color": "#fbb03b",
@@ -898,7 +903,12 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
       {
         id: "gl-draw-polygon-stroke-active",
         type: "line",
-        filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
+        filter: [
+          "all",
+          ["==", "active", "true"],
+          ["==", "$type", "Polygon"],
+          ["!in", "user_zoneType", ...SMOOTHED_ZONE_NAMES],
+        ],
         layout: {
           "line-cap": "round",
           "line-join": "round",

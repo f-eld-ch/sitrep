@@ -137,3 +137,41 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
 
   return features;
 };
+
+const smoothClosed = (ring: Position[]): Position[] => {
+  const open = ring.slice(0, ring.length > 1 ? -1 : undefined);
+  return open.length < 3 ? ring : smoothRing(open);
+};
+
+/**
+ * The wash that shows a selected zone, shaped like the curve it is drawn with. For a zone drawn
+ * as a curve the draw control's own straight wash and dotted outline are left out of the style
+ * (they would show a different shape), so this stands in for them. Nothing for any other zone.
+ */
+export const selectionFill = (f: Feature): SyntheticFeature | undefined => {
+  if (EnrichPolygonMap[f.properties?.zoneType]?.smooth !== true) {
+    return undefined;
+  }
+
+  if (f.geometry.type === "Polygon") {
+    return {
+      type: "Feature",
+      id: `${f.id}:selection`,
+      geometry: { type: "Polygon", coordinates: f.geometry.coordinates.map(smoothClosed) },
+      properties: { parent: f.id },
+    };
+  }
+  if (f.geometry.type === "MultiPolygon") {
+    return {
+      type: "Feature",
+      id: `${f.id}:selection`,
+      geometry: {
+        type: "MultiPolygon",
+        coordinates: f.geometry.coordinates.map((part) => part.map(smoothClosed)),
+      },
+      properties: { parent: f.id },
+    };
+  }
+
+  return undefined;
+};
