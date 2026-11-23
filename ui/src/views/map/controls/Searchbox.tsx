@@ -1,9 +1,10 @@
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faLocationDot, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import parse from "html-react-parser";
 import debounce from "lodash/debounce";
-import { useCallback, useId, useState } from "react";
-import { useMap } from "react-map-gl/maplibre";
+import { useCallback, useId, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Marker, useMap } from "react-map-gl/maplibre";
 import { coordinateFromString } from "utils/coordinates";
 import proj4 from "proj4";
 
@@ -38,13 +39,94 @@ interface SearchFeature {
   };
 }
 
+/**
+ * The text of a result's label, which comes with markup.
+ *
+ * Read by the browser's own parser into a document that is never shown, not stripped with a
+ * pattern: a pattern is easily fooled by broken or nested tags ("<scr<script>ipt>"), and the
+ * parser also decodes entities. Nothing in that document is run or loaded.
+ */
+const plainText = (label: string): string =>
+  (new DOMParser().parseFromString(label, "text/html").body.textContent ?? "").trim();
+
+function search(input: string, show: (results: SearchFeature[]) => void) {
+  fetch(
+    `${BASE_URL}?${new URLSearchParams({
+      searchText: input,
+      type: "locations",
+      geometryFormat: "geojson",
+      origins: "address,gazetteer,parcel",
+      limit: "10",
+    })}`,
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      show(Array.isArray(data.features) ? data.features : []);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      show([]);
+    });
+}
+
+function executeSearch(input: string, show: (results: SearchFeature[]) => void) {
+  try {
+    const coord = coordinateFromString(input);
+    if (coord) {
+      // reproject the coordinate to WGS84 for maplibre
+      const transformed = proj4(coord.coordinateSystem.epsg, "EPSG:4326", coord.coordinate);
+
+      if (transformed) {
+        const searchResult: SearchResult = {
+          features: [
+            {
+              geometry: {
+                coordinates: transformed,
+                type: "Point",
+              },
+              properties: {
+                label: `${coord.coordinateSystem.label} <strong>${coord.coordinate[1].toFixed(3)}, ${coord.coordinate[0].toFixed(3)}</strong>`,
+                detail: "",
+                lat: transformed[1],
+                lon: transformed[0],
+              },
+            },
+          ] as SearchFeature[],
+        };
+        show(searchResult.features);
+      }
+    } else {
+      search(input, show);
+    }
+  } catch (error) {
+    console.error("Error parsing coordinate:", error);
+    search(input, show);
+  }
+}
+
 function SearchControl() {
+  const { t } = useTranslation();
   const { current: map } = useMap();
+  // Where the last search took the map, so the place can still be found once the map has settled.
+  const [found, setFound] = useState<{ lng: number; lat: number; label: string } | undefined>();
   const [searchResults, setSearchResults] = useState<SearchFeature[]>([]);
   const [input, setInput] = useState<string>("");
+  const executeSearchNow = useCallback(
+    (value: string) => executeSearch(value, setSearchResults),
+    [],
+  );
+  // One debounce for the life of the control, so a pending search can be called off: choosing a
+  // result or pressing Enter must not be followed by the search the typing had scheduled.
+  const debouncedSearch = useMemo(() => debounce(executeSearchNow, 1000), [executeSearchNow]);
 
   const flyTo = useCallback(
     (target: SearchFeature) => {
+      debouncedSearch.cancel();
+      setFound({
+        lng: target.properties.lon,
+        lat: target.properties.lat,
+        label: plainText(target.properties.label),
+      });
       map?.flyTo({
         center: [target.properties.lon, target.properties.lat],
         zoom: 17,
@@ -54,65 +136,8 @@ function SearchControl() {
       setSearchResults([]);
       setInput("");
     },
-    [map],
+    [map, debouncedSearch],
   );
-
-  const search = (input: string) => {
-    fetch(
-      `${BASE_URL}?${new URLSearchParams({
-        searchText: input,
-        type: "locations",
-        geometryFormat: "geojson",
-        origins: "address,gazetteer,parcel",
-        limit: "10",
-      })}`,
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setSearchResults(Array.isArray(data.features) ? data.features : []);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setSearchResults([]);
-      });
-  };
-
-  const executeSearch = (input: string) => {
-    try {
-      const coord = coordinateFromString(input);
-      if (coord) {
-        // reproject the coordinate to WGS84 for maplibre
-        const transformed = proj4(coord.coordinateSystem.epsg, "EPSG:4326", coord.coordinate);
-
-        if (transformed) {
-          const searchResult: SearchResult = {
-            features: [
-              {
-                geometry: {
-                  coordinates: transformed,
-                  type: "Point",
-                },
-                properties: {
-                  label: `${coord.coordinateSystem.label} <strong>${coord.coordinate[1].toFixed(3)}, ${coord.coordinate[0].toFixed(3)}</strong>`,
-                  detail: "",
-                  lat: transformed[1],
-                  lon: transformed[0],
-                },
-              },
-            ] as SearchFeature[],
-          };
-          setSearchResults(searchResult.features);
-        }
-      } else {
-        search(input);
-      }
-    } catch (error) {
-      console.error("Error parsing coordinate:", error);
-      search(input);
-    }
-  };
-
-  const debouncedSearch = debounce(executeSearch, 1000);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -123,6 +148,20 @@ function SearchControl() {
   const id = useId();
   return (
     <div className="mt-3 flex items-center justify-center">
+      {found && (
+        <Marker longitude={found.lng} latitude={found.lat} anchor="bottom">
+          {/* Clicking the pin takes it away again. */}
+          <button
+            type="button"
+            title={found.label}
+            aria-label={t("close")}
+            className="cursor-pointer text-[32px] leading-none text-red-600 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+            onClick={() => setFound(undefined)}
+          >
+            <FontAwesomeIcon icon={faLocationDot} />
+          </button>
+        </Marker>
+      )}
       <div className="relative">
         <div className="flex">
           <div className="relative flex-1">
@@ -132,7 +171,11 @@ function SearchControl() {
               value={input}
               placeholder=""
               onChange={onChange}
-              onKeyDown={(e) => e.key === "Enter" && executeSearch(input)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                debouncedSearch.cancel();
+                executeSearchNow(input);
+              }}
             />
             <span className="pointer-events-none absolute inset-y-0 left-0 flex w-9 items-center justify-center text-sm text-gray-400">
               <FontAwesomeIcon icon={faSearch} />
