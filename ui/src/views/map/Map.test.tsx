@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@testing-librar
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { registerSaveOfOpenFeature } from "./pending";
+import { markCreatedForMessage, registerSaveOfOpenFeature } from "./pending";
 import { readyResult } from "api/testing/results";
 import type { Incident } from "types";
 import type { Layer } from "types/layer";
@@ -1308,25 +1308,16 @@ describe("drawing", () => {
       dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
     });
 
-    it("creates a new feature at once, for the message, and removes the draw control's copy", async () => {
+    it("keeps a new feature local until it is saved, as on the free map", () => {
       call("onCreate", { features: [drawn("d1")] }, "L1");
-      await flush();
 
-      expect(onDrawingChange).toHaveBeenCalledTimes(1);
-      expect(mocks.addFeature).toHaveBeenCalledExactlyOnceWith({
-        layerId: "L1",
-        geometry: point(9, 46),
-        clientKey: "d1",
-        properties: { icon: "x" },
-        incidentId: "inc-1",
-        change: { messageId: "msg-1" },
-        asOf: undefined,
-      });
-      expect((state().draw as unknown as { delete: () => void }).delete).toHaveBeenCalledWith([
-        "d1",
+      expect(state().pendingFeatures).toEqual([
+        { id: "d1", layerId: "L1", geometry: point(9, 46), properties: { icon: "x" } },
       ]);
-      expect(state().pendingFeatures).toEqual([]);
-      expect(state().selectedFeature).toBe("server-id");
+      expect(state().selectedFeature).toBe("d1");
+      expect(mocks.addFeature).not.toHaveBeenCalled();
+      // the message has work in progress from the moment something is drawn for it
+      expect(onDrawingChange).toHaveBeenCalledTimes(1);
     });
 
     it("shows a feature deleted for the message as a ghost at once", () => {
@@ -1346,9 +1337,8 @@ describe("drawing", () => {
       );
     });
 
-    it("leaves no ghost for a feature that was drawn for the message in this session", async () => {
-      call("onCreate", { features: [drawn("d1")] }, "L1");
-      await flush();
+    it("leaves no ghost for a feature that was created for the message in this session", () => {
+      markCreatedForMessage("server-id");
 
       call("onDelete", { features: [drawn("server-id")] });
 

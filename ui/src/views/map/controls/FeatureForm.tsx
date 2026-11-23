@@ -57,6 +57,8 @@ export interface FeatureFormProps {
   changeTime?: { earliest?: Date };
   /** Set while the feature has not been saved yet: the form then asks for the time and saves it. */
   pending?: PendingFeatureActions;
+  /** The time is not the user's to choose (a message's drawing takes the message's): no time field. */
+  withoutTime?: boolean;
 }
 
 /** Value for a datetime-local input, in the browser's local time. */
@@ -69,7 +71,13 @@ const currentTime = () => Date.now();
  * The fields, rotation, direction, time and save buttons of a feature. Used by the popup and by
  * the unified panel; neither adds anything to how a feature is edited.
  */
-export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: FeatureFormProps) {
+export function FeatureForm({
+  selectedFeature,
+  onUpdate,
+  pending,
+  changeTime,
+  withoutTime,
+}: FeatureFormProps) {
   const { t } = useTranslation();
   const { current: map } = useMap();
   const { dispatch } = useContext(LayerContext);
@@ -444,7 +452,7 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
           />
         </div>
       )}
-      {(pending || changeTime) && (
+      {(pending || changeTime) && !withoutTime && (
         <div className="mb-2">
           <label
             className="mb-1 block text-xs font-semibold text-gray-800"

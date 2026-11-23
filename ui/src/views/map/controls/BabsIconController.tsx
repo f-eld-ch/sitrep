@@ -86,6 +86,7 @@ const BabsIconController = () => {
           onUpdate={onUpdate}
           pending={pending}
           changeTime={changeTime}
+          withoutTime={drawingMessage !== undefined}
         />
       )}
     </BabsIconProvider>

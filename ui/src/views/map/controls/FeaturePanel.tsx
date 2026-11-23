@@ -28,7 +28,13 @@ const isEmptyValue = (v: unknown): boolean => isUndefined(v) || v === "";
  * the symbol overlay and the popup, and works the same on the free map and the message map; the
  * message map passes no time, as the feature takes the message's.
  */
-export function FeaturePanel({ selectedFeature, onUpdate, pending, changeTime }: FeatureFormProps) {
+export function FeaturePanel({
+  selectedFeature,
+  onUpdate,
+  pending,
+  changeTime,
+  withoutTime,
+}: FeatureFormProps) {
   useKeepFeatureVisible(selectedFeature);
 
   const form = (
@@ -37,6 +43,7 @@ export function FeaturePanel({ selectedFeature, onUpdate, pending, changeTime }:
       onUpdate={onUpdate}
       pending={pending}
       changeTime={changeTime}
+      withoutTime={withoutTime}
     />
   );
 

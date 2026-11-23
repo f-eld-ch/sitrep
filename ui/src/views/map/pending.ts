@@ -77,3 +77,16 @@ export const saveOpenFeature = (): boolean => {
 
   return true;
 };
+
+/**
+ * Features created in this session for a message. Deleting one of them leaves nothing to show as
+ * a ghost, and the feature history may not list them yet to say so.
+ */
+const createdForMessage = new Set<string>();
+
+export const markCreatedForMessage = (id: string): void => {
+  createdForMessage.add(id);
+};
+
+/** True, once, for a feature that was created in this session for a message. */
+export const consumeCreatedForMessage = (id: string): boolean => createdForMessage.delete(id);

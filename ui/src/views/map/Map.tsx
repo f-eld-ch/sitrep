@@ -31,7 +31,6 @@ import type { Layer } from "types/layer";
 import {
   cleanFeature,
   layerToFeatureCollection,
-  useAddFeature,
   useDeleteFeature,
   LIVE_POLL_INTERVAL_MS,
   useLayersForIncident,
@@ -47,7 +46,13 @@ import SearchControl from "./controls/Searchbox";
 import { MapStyleProvider, StyleController, useMapStyle } from "./controls/StyleController";
 import { swisstopoAttributionHtml, toggleAttributionAt } from "./swisstopoAttribution";
 import { MapTimeContext, type DrawingMessage, type MapTime } from "./MapTimeContext";
-import { hasType, isPendingFeature, saveOpenFeature, withPendingFeatures } from "./pending";
+import {
+  consumeCreatedForMessage,
+  hasType,
+  isPendingFeature,
+  saveOpenFeature,
+  withPendingFeatures,
+} from "./pending";
 import { TimeLabels } from "./controls/TimeLabels";
 import { FIT_MAX_ZOOM, framingCollection } from "./framing";
 import { clickableLayerIds } from "./controls/clickableLayers";
@@ -211,7 +216,7 @@ function MapView({ embedded = false, readOnly = false, preferredLayerKind }: Map
         <Layers readOnly={readOnly} stayOnPreferredLayer={preferredLayerKind !== undefined} />
         {/* A router has one blocker: the operator view has its own, and nothing is pending there. */}
         {!readOnly && !embedded && <PendingFeaturesGuard />}
-        {!readOnly && !embedded && <DrawControlsLock />}
+        {!readOnly && <DrawControlsLock />}
         {timelineEnabled && <TimeControl />}
       </MapClass>
     </div>
@@ -710,11 +715,6 @@ function Draw() {
     [drawingMessage],
   );
 
-  // Features created in this session for a message. Deleting one of them leaves nothing to show
-  // as a ghost, and the feature history may not list them yet to say so.
-  const createdHere = useRef(new Set<string>());
-
-  const [addFeature] = useAddFeature();
   const [modifyFeature] = useModifyFeature();
   const [deleteFeature] = useDeleteFeature();
 
@@ -759,10 +759,12 @@ function Draw() {
       for (const f of createdFeatures) {
         const feature = cleanFeature(f);
 
-        // Free drawing: the feature stays local until it is saved (with the time it should
-        // take effect at). It remains in the draw control, which keeps it selected, so the
-        // symbol picker and the save popup open on it.
-        if (drawingMessage === undefined && f.id !== undefined) {
+        // A new object stays local until it is saved, on the free map and for a message alike (with
+        // the time it should take effect at, or the message's). It remains in the draw control,
+        // which keeps it selected, so the type picker and the save panel open on it.
+        if (f.id !== undefined) {
+          // The message has work in progress from the moment something is drawn for it.
+          if (drawingMessage) onDrawingChange?.();
           dispatch({
             type: "ADD_PENDING_FEATURE",
             payload: {
@@ -775,31 +777,10 @@ function Draw() {
             },
           });
           dispatch({ type: "SELECT_FEATURE", payload: { id: f.id.toString() } });
-
-          continue;
-        }
-
-        // Drawing for a message: created at once, at the message's time.
-        onDrawingChange?.();
-        void addFeature({
-          layerId: layer,
-          geometry: feature.geometry,
-          clientKey: String(f.id ?? ""),
-          properties: feature.properties,
-          incidentId: incidentId ?? "",
-          change,
-          asOf,
-        }).then(({ featureId }) => {
-          createdHere.current.add(featureId);
-          dispatch({ type: "SELECT_FEATURE", payload: { id: featureId } });
-        });
-
-        if (f.id !== undefined) {
-          state.draw?.delete([f.id.toString()]);
         }
       }
     },
-    [addFeature, asOf, change, dispatch, drawingMessage, incidentId, onDrawingChange, state.draw],
+    [dispatch, drawingMessage, onDrawingChange],
   );
 
   const onUpdate = useCallback(
@@ -909,7 +890,7 @@ function Draw() {
         if (drawingMessage) onDrawingChange?.();
 
         const removedId = String(feature.id ?? "");
-        const placedThisSession = createdHere.current.delete(removedId);
+        const placedThisSession = consumeCreatedForMessage(removedId);
         if (drawingMessage && !placedThisSession) {
           // Shown as a ghost at once; the feature history confirms it a moment later.
           dispatch({

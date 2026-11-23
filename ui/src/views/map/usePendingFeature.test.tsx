@@ -5,6 +5,7 @@ import { IncidentContext } from "utils";
 import de from "../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "./LayerContext";
 import { MapTimeContext, type MapTime } from "./MapTimeContext";
+import { consumeCreatedForMessage } from "./pending";
 import { usePendingFeature } from "./usePendingFeature";
 
 const mocks = vi.hoisted(() => ({
@@ -110,6 +111,24 @@ describe("usePendingFeature", () => {
       [{ type: "REMOVE_PENDING_FEATURE", payload: { id: "p1" } }],
       [{ type: "DESELECT_FEATURE", payload: null }],
     ]);
+  });
+
+  it("creates a feature drawn for a message in one request, with the message's time", async () => {
+    mocks.addFeature.mockResolvedValue({ featureId: "saved-1" });
+    const drawingMessage = { id: "msg-1", time: new Date("2026-01-15T09:00:00Z") };
+
+    // a time picked by mistake does not count: the message's time is used
+    render("p1", { drawingMessage }).result.current?.onSave(
+      { icon: "y" },
+      new Date("2026-01-15T10:00:00Z"),
+    );
+
+    expect(mocks.addFeature).toHaveBeenCalledWith(
+      expect.objectContaining({ clientKey: "p1", change: { messageId: "msg-1" } }),
+    );
+    await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2));
+    // deleting the feature leaves no ghost
+    expect(consumeCreatedForMessage("saved-1")).toBe(true);
   });
 
   it("saves for now when no time is given", () => {
