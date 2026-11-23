@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
 import { useMap } from "react-map-gl/maplibre";
 import { LayerContext } from "../LayerContext";
-import { useIconPickerV2 } from "../useIconPickerV2";
 
 /** Set on the map's container while the draw buttons are hidden; Map.css does the hiding. */
 export const DRAW_LOCKED_CLASS = "sitrep-draw-locked";
@@ -17,10 +16,9 @@ export const DRAW_LOCKED_CLASS = "sitrep-draw-locked";
  * drawn, so nothing is ever pending there and the buttons stay, the bin included.
  */
 export function DrawControlsLock() {
-  const enabled = useIconPickerV2();
   const { state } = useContext(LayerContext);
   const { current: map } = useMap();
-  const locked = enabled && state.pendingFeatures.length > 0;
+  const locked = state.pendingFeatures.length > 0;
 
   useEffect(() => {
     const container = map?.getContainer();

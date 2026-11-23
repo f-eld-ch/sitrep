@@ -5,7 +5,7 @@ import { useAddFeature } from "api";
 import { IncidentContext } from "utils";
 import { LayerContext } from "./LayerContext";
 import { MapTimeContext } from "./MapTimeContext";
-import type { PendingFeatureActions } from "./controls/FeatureLabelPopup";
+import type { PendingFeatureActions } from "./controls/FeatureForm";
 
 /**
  * Saving and discarding of a feature that has been drawn on the free map but only exists locally.

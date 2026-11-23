@@ -1,13 +1,13 @@
 import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { Feature, GeoJsonProperties, Geometry } from "geojson";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { aliasFor } from "components/babs/iconResolver";
 import de from "../../../i18n/locales/de/translations.json";
 import { LayerContext, type LayerState } from "../LayerContext";
-import { FeatureLabelPopup, type PendingFeatureActions } from "./FeatureLabelPopup";
+import { FeatureForm, featureTitle, type PendingFeatureActions } from "./FeatureForm";
 
 function lookup(key: string): string {
   const value = key
@@ -99,7 +99,7 @@ function renderPopup(
   const state = { layers: [], pendingFeatures: [], removedFeatures: [] } as unknown as LayerState;
   const tree = (f: F) => (
     <LayerContext.Provider value={{ state, dispatch }}>
-      <FeatureLabelPopup selectedFeature={f} onUpdate={onUpdate} {...extra} />
+      <FeatureForm selectedFeature={f} onUpdate={onUpdate} {...extra} />
     </LayerContext.Provider>
   );
   const result = render(tree(feature));
@@ -114,33 +114,35 @@ beforeEach(() => {
   mocks.map = undefined;
 });
 
-describe("FeatureLabelPopup title", () => {
+describe("featureTitle", () => {
   it("names a point after its symbol in the catalogue", () => {
-    renderPopup(point({ icon: aliasFor("1101") }));
-
-    expect(screen.getByText(getIcon("1101").labels.de)).toBeInTheDocument();
+    expect(featureTitle(point({ icon: aliasFor("1101") }), "de")).toBe(getIcon("1101").labels.de);
   });
 
   it("names a zone after its type", () => {
-    renderPopup(polygon({ zoneType: "Schadengebiet" }));
-
-    expect(screen.getByText(getIcon("1114").labels.de)).toBeInTheDocument();
+    expect(featureTitle(polygon({ zoneType: "Schadengebiet" }), "de")).toBe(
+      getIcon("1114").labels.de,
+    );
   });
 
   it("names a line after its type", () => {
-    renderPopup(line({ lineType: "Rutschgebiet" }));
-
-    expect(screen.getByText(getIcon("1113").labels.de)).toBeInTheDocument();
+    expect(featureTitle(line({ lineType: "Rutschgebiet" }), "de")).toBe(getIcon("1113").labels.de);
   });
 
   it("shows the stored type for one the catalogue does not know", () => {
-    renderPopup(line({ lineType: "Frontline" }));
+    expect(featureTitle(line({ lineType: "Frontline" }), "de")).toBe("Frontline");
+  });
 
-    expect(screen.getByText("Frontline")).toBeInTheDocument();
+  it("names a hazard sign", () => {
+    expect(featureTitle(point({ icon: "un:1203" }), "de")).toBe(getIcon("2109b").labels.de);
+  });
+
+  it("falls back to German for a language the catalogue has no names in", () => {
+    expect(featureTitle(point({ icon: aliasFor("1101") }), "en")).toBe(getIcon("1101").labels.de);
   });
 });
 
-describe("FeatureLabelPopup fields", () => {
+describe("FeatureForm fields", () => {
   it("asks for a description for an ordinary symbol", () => {
     renderPopup(point({ icon: aliasFor("1101"), name: "Mitte" }));
 
@@ -194,17 +196,17 @@ describe("FeatureLabelPopup fields", () => {
     expect(dispatch).toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });
   });
 
-  it("closes with the close button without saving", () => {
+  it("closes with Escape without saving", () => {
     renderPopup(point({ icon: aliasFor("1101") }));
 
-    fireEvent.click(screen.getByRole("button", { name: "schliessen" }));
+    fireEvent.keyDown(label("Beschreibung / Details"), { key: "Escape" });
 
     expect(onUpdate).not.toHaveBeenCalled();
     expect(dispatch).toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });
   });
 });
 
-describe("FeatureLabelPopup hazard sign", () => {
+describe("FeatureForm hazard sign", () => {
   const code = KEMLER_CODES[1];
   const unSign = () => point({ icon: `un:${code}`, name: "1203", stoffbezeichnung: "Benzin" });
 
@@ -241,7 +243,7 @@ describe("FeatureLabelPopup hazard sign", () => {
   });
 });
 
-describe("FeatureLabelPopup rotation", () => {
+describe("FeatureForm rotation", () => {
   beforeEach(() => {
     mocks.map = {
       getBearing: () => 30,
@@ -307,7 +309,7 @@ describe("FeatureLabelPopup rotation", () => {
   });
 });
 
-describe("FeatureLabelPopup reversing a line", () => {
+describe("FeatureForm reversing a line", () => {
   it("reverses the coordinates of a directional line", () => {
     renderPopup(line({ lineType: "Rutschgebiet" }));
 
@@ -337,7 +339,7 @@ describe("FeatureLabelPopup reversing a line", () => {
   });
 });
 
-describe("FeatureLabelPopup time", () => {
+describe("FeatureForm time", () => {
   const earliest = new Date(2026, 0, 1, 8, 0);
 
   it("does not ask for a time for a feature that is saved and changed as of now", () => {
@@ -374,7 +376,7 @@ describe("FeatureLabelPopup time", () => {
   });
 });
 
-describe("FeatureLabelPopup unsaved feature", () => {
+describe("FeatureForm unsaved feature", () => {
   const pendingActions = (over: Partial<PendingFeatureActions> = {}): PendingFeatureActions => ({
     saving: false,
     earliest: new Date(2026, 0, 1, 8, 0),
@@ -434,7 +436,7 @@ describe("FeatureLabelPopup unsaved feature", () => {
   });
 });
 
-describe("FeatureLabelPopup form state", () => {
+describe("FeatureForm form state", () => {
   it("resets the form when the feature changes on the server", () => {
     const { rerenderWith } = renderPopup(point({ icon: aliasFor("1101"), name: "Alt" }));
     fireEvent.change(label("Beschreibung / Details"), { target: { value: "Tippen" } });
@@ -445,124 +447,7 @@ describe("FeatureLabelPopup form state", () => {
   });
 });
 
-describe("FeatureLabelPopup placement", () => {
-  it("opens a point's popup above its symbol", () => {
-    renderPopup(point({ icon: aliasFor("1101") }));
-
-    const popup = screen.getByTestId("popup");
-    expect(popup).toHaveAttribute("data-anchor", "bottom");
-    expect(popup).toHaveAttribute("data-lng", "8");
-    expect(popup).toHaveAttribute("data-lat", "47");
-  });
-
-  it("opens a line's popup to the right of its rightmost point", () => {
-    mocks.map = {
-      project: ([lng, lat]: [number, number]) => ({ x: lng * 100, y: lat }),
-      getContainer: () => ({ clientWidth: 2000, clientHeight: 2000 }),
-      getBearing: () => 0,
-      getPitch: () => 0,
-      fitBounds: vi.fn(),
-    };
-
-    renderPopup(line({ lineType: "Rutschgebiet" }));
-
-    const popup = screen.getByTestId("popup");
-    expect(popup).toHaveAttribute("data-anchor", "left");
-    expect(popup).toHaveAttribute("data-lng", "9");
-    expect(popup).toHaveAttribute("data-lat", "48");
-  });
-
-  it("opens a line's popup at the middle of the right edge of its box without a map", () => {
-    renderPopup(line({ lineType: "Rutschgebiet" }));
-
-    const popup = screen.getByTestId("popup");
-    expect(popup).toHaveAttribute("data-anchor", "left");
-    expect(popup).toHaveAttribute("data-lng", "9");
-    expect(popup).toHaveAttribute("data-lat", "47.5");
-  });
-
-  describe("keeping the popup in view", () => {
-    const fitBounds = vi.fn();
-    const panBy = vi.fn();
-    let project: (p: [number, number]) => { x: number; y: number };
-    let popupRect: Partial<DOMRect>;
-
-    beforeEach(() => {
-      vi.useFakeTimers();
-      project = ([lng, lat]) => ({ x: lng * 10, y: lat * 10 });
-      popupRect = { left: 100, right: 300, top: 100, bottom: 300 };
-      mocks.map = {
-        project: (p: [number, number]) => project(p),
-        fitBounds,
-        panBy,
-        getBearing: () => 15,
-        getPitch: () => 5,
-        getContainer: () => ({
-          clientWidth: 1000,
-          clientHeight: 800,
-          getBoundingClientRect: () => ({ left: 0, right: 1000, top: 0, bottom: 800 }),
-          querySelector: () => ({ getBoundingClientRect: () => popupRect }),
-        }),
-      };
-    });
-
-    afterEach(() => vi.useRealTimers());
-
-    const settle = () => act(() => vi.advanceTimersByTime(50));
-
-    it("leaves a popup that fits where it is", () => {
-      renderPopup(point({ icon: aliasFor("1101") }));
-      settle();
-
-      expect(panBy).not.toHaveBeenCalled();
-    });
-
-    it.each([
-      ["left", { left: -20, right: 180 }, [36, 0]],
-      ["right", { left: 850, right: 1050 }, [-66, 0]],
-      ["top", { top: -20, bottom: 180 }, [0, 36]],
-      ["bottom", { top: 700, bottom: 900 }, [0, -116]],
-    ] as const)("pans back a popup that sticks out at the %s", (_edge, rect, [dx, dy]) => {
-      popupRect = { ...popupRect, ...rect };
-
-      renderPopup(point({ icon: aliasFor("1101") }));
-      settle();
-
-      // the map moves opposite to the correction the popup needs
-      expect(panBy).toHaveBeenCalledWith([-dx, -dy], { duration: 300 });
-    });
-
-    it("frames a line that is out of view, keeping bearing and pitch", () => {
-      project = () => ({ x: -50, y: -50 });
-
-      renderPopup(line({ lineType: "Rutschgebiet" }));
-
-      expect(fitBounds).toHaveBeenCalledWith(
-        [
-          [8, 47],
-          [9, 48],
-        ],
-        { padding: { top: 60, right: 340, bottom: 60, left: 60 }, bearing: 15, pitch: 5 },
-      );
-    });
-
-    it("frames a line whose popup would not fit to the right", () => {
-      project = ([lng]) => ({ x: lng === 9 ? 900 : 800, y: 100 });
-
-      renderPopup(line({ lineType: "Rutschgebiet" }));
-
-      expect(fitBounds).toHaveBeenCalledTimes(1);
-    });
-
-    it("leaves a line that is in view with room for the popup", () => {
-      renderPopup(line({ lineType: "Rutschgebiet" }));
-
-      expect(fitBounds).not.toHaveBeenCalled();
-    });
-  });
-});
-
-describe("FeatureLabelPopup moving the flow arrow of a flooded area", () => {
+describe("FeatureForm moving the flow arrow of a flooded area", () => {
   const ring = [
     [8, 47],
     [8.1, 47],
@@ -611,7 +496,7 @@ describe("FeatureLabelPopup moving the flow arrow of a flooded area", () => {
   });
 });
 
-describe("FeatureLabelPopup moving the slide arrow", () => {
+describe("FeatureForm moving the slide arrow", () => {
   const slide = (arrowAt?: number): F =>
     line({ lineType: "Rutschgebiet", ...(arrowAt === undefined ? {} : { arrowAt }) });
 

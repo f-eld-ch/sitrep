@@ -3,9 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LayerContext, type LayerState } from "../LayerContext";
 import { DRAW_LOCKED_CLASS, DrawControlsLock } from "./DrawControlsLock";
 
-const mocks = vi.hoisted(() => ({ flag: true, container: undefined as HTMLElement | undefined }));
+const mocks = vi.hoisted(() => ({ container: undefined as HTMLElement | undefined }));
 
-vi.mock("../useIconPickerV2", () => ({ useIconPickerV2: () => mocks.flag }));
 vi.mock("react-map-gl/maplibre", () => ({
   useMap: () => ({
     current: mocks.container ? { getContainer: () => mocks.container } : undefined,
@@ -26,7 +25,6 @@ function renderLock(pendingFeatures: unknown[]) {
 
 describe("DrawControlsLock", () => {
   beforeEach(() => {
-    mocks.flag = true;
     mocks.container = document.createElement("div");
   });
 
@@ -38,13 +36,6 @@ describe("DrawControlsLock", () => {
 
   it("leaves them alone with nothing pending, as on the message map", () => {
     renderLock([]);
-
-    expect(mocks.container!.classList.contains(DRAW_LOCKED_CLASS)).toBe(false);
-  });
-
-  it("does nothing while the searchable picker is off", () => {
-    mocks.flag = false;
-    renderLock([pending]);
 
     expect(mocks.container!.classList.contains(DRAW_LOCKED_CLASS)).toBe(false);
   });
