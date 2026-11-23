@@ -148,6 +148,34 @@ describe("Searchbox", () => {
     expect(screen.queryByTestId("marker")).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["markup", "<b>Bern</b> (BE) <i>Kanton</i>", "Bern (BE) Kanton"],
+    ["entities", "Bern &amp; Umgebung", "Bern & Umgebung"],
+    [
+      "broken, nested tags",
+      "Bern <scr<script>ipt>alert(1)</scr</script>ipt>",
+      "Bern ipt>alert(1)ipt>",
+    ],
+    ["a script", "Bern<script>alert(1)</script>", "Bernalert(1)"],
+    ["an attribute that runs code", '<img src=x onerror="alert(1)">Bern', "Bern"],
+  ])("names the pin after the place as text, with %s in the label", async (_name, label, title) => {
+    fetchMock.mockResolvedValue({
+      json: () => Promise.resolve({ features: [geoAdminResult(2, label, 6.07, 46.17)] }),
+    });
+    render(<SearchControl />);
+    type("Bern");
+    await settle();
+
+    // choose the (only) result; its label is rendered by the list
+    fireEvent.click(document.querySelector("a")!);
+
+    const pin = screen.getByTestId("marker").querySelector("button")!;
+    expect(pin.getAttribute("title")).toBe(title);
+    // nothing in the label has become part of the page
+    expect(document.querySelector("script")).toBeNull();
+    expect(document.querySelector("img[onerror]")).toBeNull();
+  });
+
   it("moves the marker to the next place that is chosen", async () => {
     fetchMock
       .mockResolvedValueOnce({

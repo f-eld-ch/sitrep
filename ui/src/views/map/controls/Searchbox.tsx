@@ -39,8 +39,15 @@ interface SearchFeature {
   };
 }
 
-/** The text of a result's label, which comes with markup. */
-const plainText = (label: string): string => label.replace(/<[^>]*>/g, "").trim();
+/**
+ * The text of a result's label, which comes with markup.
+ *
+ * Read by the browser's own parser into a document that is never shown, not stripped with a
+ * pattern: a pattern is easily fooled by broken or nested tags ("<scr<script>ipt>"), and the
+ * parser also decodes entities. Nothing in that document is run or loaded.
+ */
+const plainText = (label: string): string =>
+  (new DOMParser().parseFromString(label, "text/html").body.textContent ?? "").trim();
 
 function search(input: string, show: (results: SearchFeature[]) => void) {
   fetch(
