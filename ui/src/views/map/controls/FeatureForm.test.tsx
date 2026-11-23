@@ -153,6 +153,18 @@ describe("FeatureForm fields", () => {
   });
 });
 
+describe("FeatureForm closing a new object", () => {
+  const actions = { saving: false, onSave: vi.fn(), onDiscard: vi.fn() };
+
+  it("is not done with Escape: a new object is left through save or discard", () => {
+    renderPopup(point({ icon: aliasFor("1101") }), { pending: actions });
+
+    fireEvent.keyDown(label("Beschreibung / Details"), { key: "Escape" });
+
+    expect(dispatch).not.toHaveBeenCalledWith({ type: "DESELECT_FEATURE", payload: null });
+  });
+});
+
 describe("FeatureForm hazard sign", () => {
   const code = KEMLER_CODES[1];
   const unSign = () => point({ icon: `un:${code}`, name: "1203", stoffbezeichnung: "Benzin" });

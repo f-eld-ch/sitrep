@@ -1065,6 +1065,45 @@ describe("drawing", () => {
       expect(mocks.addFeature).not.toHaveBeenCalled();
     });
 
+    describe("an object that is drawn and not saved yet", () => {
+      const draw = () => state().draw as unknown as { changeMode: ReturnType<typeof vi.fn> };
+
+      beforeEach(() => {
+        dispatch({ type: "SET_DRAW", payload: { draw: fakeDraw() } });
+        call("onCreate", { features: [drawn("d1")] }, "L1");
+        draw().changeMode.mockClear();
+      });
+
+      it("stays selected when the user clicks on the empty map", () => {
+        call("onSelectionChange", { features: [] });
+
+        expect(state().selectedFeature).toBe("d1");
+        // the draw control had moved on: it is put back on the object
+        expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+      });
+
+      it("stays selected when the user clicks on another object", () => {
+        call("onSelectionChange", { features: [drawn("other")] });
+
+        expect(state().selectedFeature).toBe("d1");
+        expect(draw().changeMode).toHaveBeenCalledWith("simple_select", { featureIds: ["d1"] });
+      });
+
+      it("takes a selection that still includes it", () => {
+        call("onSelectionChange", { features: [drawn("d1")] });
+
+        expect(state().selectedFeature).toBe("d1");
+        expect(draw().changeMode).not.toHaveBeenCalled();
+      });
+
+      it("can be left again once it is discarded", () => {
+        dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: "d1" } });
+        call("onSelectionChange", { features: [] });
+
+        expect(state().selectedFeature).toBeUndefined();
+      });
+    });
+
     it("ignores a feature drawn without an active layer", () => {
       call("onCreate", { features: [drawn("d1")] }, undefined);
 

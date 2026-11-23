@@ -721,6 +721,19 @@ function Draw() {
   const onSelectionChange = useCallback(
     (e: FeatureEvent) => {
       const features: Feature[] = e.features;
+
+      // An object that is drawn and not saved yet stays selected until it is saved or discarded
+      // in its panel: selecting away would leave it behind half made. The draw control has
+      // already moved on, so it is put back.
+      const open = state.pendingFeatures.find((p) => p.id === state.selectedFeature);
+      if (open !== undefined && !features?.some((f) => f.id?.toString() === open.id)) {
+        safeDrawInvoke(state.draw, (d) => {
+          d.changeMode("simple_select", { featureIds: [open.id] });
+        });
+
+        return;
+      }
+
       if (features?.length > 0) {
         const feature = first(features);
         dispatch({
@@ -731,7 +744,7 @@ function Draw() {
         dispatch({ type: "DESELECT_FEATURE", payload: null });
       }
     },
-    [dispatch],
+    [dispatch, state.draw, state.pendingFeatures, state.selectedFeature],
   );
 
   const onCreate = useCallback(

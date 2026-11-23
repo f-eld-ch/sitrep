@@ -124,9 +124,11 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     setArrowAt(arrowAtOf());
   }
 
+  // A new object is left through save or discard, never by closing: the panel is all there is.
   const close = useCallback(() => {
+    if (pending) return;
     dispatch({ type: "DESELECT_FEATURE", payload: null });
-  }, [dispatch]);
+  }, [dispatch, pending]);
 
   const buildProperties = useCallback((): GeoJsonProperties => {
     return omitBy(

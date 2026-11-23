@@ -141,7 +141,7 @@ const mainReducer: Reducer<LayerState, LayersAction> = (
 ) => {
   const next = {
     layers: layersReducer(state.layers, action),
-    pendingFeatures: pendingFeaturesReducer(state.pendingFeatures, action, state.selectedFeature),
+    pendingFeatures: pendingFeaturesReducer(state.pendingFeatures, action),
     draftFeatures: draftFeaturesReducer(state.draftFeatures, action),
     removedFeatures: removedFeaturesReducer(state.removedFeatures, action),
     activeLayer: activeLayerReducer(state.activeLayer, action),
