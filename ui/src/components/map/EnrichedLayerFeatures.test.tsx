@@ -3,13 +3,15 @@ import { render, screen } from "@testing-library/react";
 import type { FeatureCollection } from "geojson";
 import { Map as MapLibre } from "react-map-gl/maplibre";
 import { MapStyles } from "views/map/controls/StyleController";
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import bearing from "@turf/bearing";
+import distance from "@turf/distance";
 import type { Feature, LineString, MultiPolygon, Point, Polygon, Position } from "geojson";
 import {
   enrichFeature,
   EnrichedFeaturesSource,
   EnrichLineStringMap,
+  EnrichPolygonMap,
 } from "./EnrichedLayerFeatures";
 
 vi.mock("react-map-gl/maplibre", () => ({
@@ -309,6 +311,14 @@ describe("Rutschgebiet slide arrow", () => {
  * nothing else in the app depends on, so these tests are the only thing pinning it.
  */
 describe("Überschwemmtes Gebiet flow arrow", () => {
+  // These pin the geometry of the arrow on a straight edge; the rounded outline has its own tests.
+  beforeAll(() => {
+    EnrichPolygonMap.UeberschwemmtesGebiet.smooth = false;
+  });
+  afterAll(() => {
+    EnrichPolygonMap.UeberschwemmtesGebiet.smooth = true;
+  });
+
   /**
    * A square traced clockwise from the south-west corner, with the closing repeat
    * mapbox-gl-draw adds. The last drawn vertex is the south-east corner and the last
@@ -416,13 +426,15 @@ describe("Überschwemmtes Gebiet flow arrow", () => {
     expect(shaftOf([square, hole])[0][1]).toBeCloseTo(CLOSING_EDGE_MIDPOINT[1], 4);
   });
 
-  it("redraws the closing edge heavier, so the arrow's edge is visible while editing", () => {
+  it("redraws a fifth of the outline heavier, centred on the arrow, so it shows while editing", () => {
     const { edge } = parts([square]);
-    // Spans the closing edge exactly: south-east corner back to the south-west one.
-    expect(edge?.geometry.coordinates).toEqual([
-      [8.1, 47.0],
-      [8.0, 47.0],
-    ]);
+    const coordinates = edge?.geometry.coordinates ?? [];
+    // Every point of it is on the outline, which here is the southern edge and bits of its neighbours
+    expect(coordinates.length).toBeGreaterThanOrEqual(2);
+    // Its middle is the middle of the closing edge, where the arrow springs from
+    const lengthKm = (pts: Position[]) =>
+      pts.slice(1).reduce((sum, p, i) => sum + distance(pts[i], p, { units: "kilometers" }), 0);
+    expect(lengthKm(coordinates) / lengthKm(square)).toBeCloseTo(0.2, 2);
     expect(edge?.properties?.width).toBeGreaterThan(2);
   });
 

@@ -2,6 +2,7 @@ import bearing from "@turf/bearing";
 import { point } from "@turf/helpers";
 import type { Feature, Position } from "geojson";
 import { buildFlowArrow } from "./flowArrow";
+import { smoothRing } from "./smooth";
 import { EnrichLineStringMap, EnrichPolygonMap } from "./registry";
 import { buildSlideArrow } from "./slideArrow";
 import type { SyntheticFeature } from "./types";
@@ -81,6 +82,31 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
   }
 
   if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
+    const smooth = EnrichPolygonMap[f.properties?.zoneType]?.smooth === true;
+    if (smooth) {
+      // Every ring of every part, holes included: the style leaves the straight stroke of these
+      // zone types out, so this is the only outline there is.
+      const rings: Position[][] =
+        f.geometry.type === "Polygon" ? f.geometry.coordinates : f.geometry.coordinates.flat();
+      rings.forEach((ring, index) => {
+        const open = ring.slice(0, ring.length > 1 ? -1 : undefined);
+        if (open.length < 3) {
+          features.push({
+            type: "Feature",
+            id: `${f.id}:outline-${index}`,
+            geometry: { type: "LineString", coordinates: ring },
+            properties: { parent: f.id, color: f.properties?.color, opacity: 1 },
+          });
+          return;
+        }
+        features.push({
+          type: "Feature",
+          id: `${f.id}:outline-${index}`,
+          geometry: { type: "LineString", coordinates: smoothRing(open) },
+          properties: { parent: f.id, color: f.properties?.color, opacity: 1 },
+        });
+      });
+    }
     const flowArrow = EnrichPolygonMap[f.properties?.zoneType]?.flowArrow;
     if (flowArrow !== undefined) {
       // Outer rings only. A hole is interior detail, and an arrow springing off one would
@@ -102,6 +128,7 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
             ring,
             flowArrow,
             f.properties?.color,
+            smooth,
           ),
         );
       });

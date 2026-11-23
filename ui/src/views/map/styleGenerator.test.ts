@@ -310,6 +310,7 @@ const drawStyle: LayerProps[] = [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "Polygon"],
+      ["!in", "user_zoneType", "UeberschwemmtesGebiet"],
       ["!=", "mode", "static"],
     ],
     layout: {
@@ -895,7 +896,7 @@ const displayStyle: LayerProps[] = [
   {
     id: "gl-draw-polygon-stroke-inactive",
     type: "line",
-    filter: ["all", ["==", "$type", "Polygon"]],
+    filter: ["all", ["==", "$type", "Polygon"], ["!in", "zoneType", "UeberschwemmtesGebiet"]],
     layout: {
       "line-cap": "round",
       "line-join": "round",

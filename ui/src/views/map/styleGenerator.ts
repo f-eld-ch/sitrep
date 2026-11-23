@@ -7,6 +7,7 @@ import {
 } from "components/babs/iconResolver";
 import { ANNOTATED_CATEGORIES } from "components/babs/labelSchema";
 import { ZoneTypes } from "components/babs/lineAndZoneTypes";
+import { SMOOTHED_ZONE_NAMES } from "components/map/enrichment/registry";
 import type { ExpressionSpecification, FilterSpecification } from "maplibre-gl";
 import type { LayerProps } from "react-map-gl/maplibre";
 
@@ -495,7 +496,11 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     {
       id: "gl-draw-polygon-stroke-inactive",
       type: "line",
-      filter: createFilter([["==", "$type", "Polygon"]]),
+      // Zones drawn as a curve get their outline from the enrichment layer instead.
+      filter: createFilter([
+        ["==", "$type", "Polygon"],
+        ["!in", `${propPrefix}zoneType`, ...SMOOTHED_ZONE_NAMES],
+      ]),
       layout: {
         "line-cap": "round",
         "line-join": "round",

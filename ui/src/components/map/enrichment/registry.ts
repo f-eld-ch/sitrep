@@ -71,6 +71,7 @@ export const EnrichPolygonMap: Record<string, EnrichPolygonConfig> = {
   // rather than decoration, which is why it is generated rather than left to the user. Its
   // ratio is read against the ring's bounding-box diagonal.
   UeberschwemmtesGebiet: {
+    smooth: true,
     flowArrow: {
       icon: ARROW.fireSpread,
       color: Colors.Red,
@@ -78,3 +79,8 @@ export const EnrichPolygonMap: Record<string, EnrichPolygonConfig> = {
     },
   },
 };
+
+/** Zone types whose outline is drawn as a curve by the enrichment layer, not by the style. */
+export const SMOOTHED_ZONE_NAMES: string[] = Object.entries(EnrichPolygonMap)
+  .filter(([, config]) => config.smooth === true)
+  .map(([name]) => name);

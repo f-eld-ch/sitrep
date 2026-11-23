@@ -55,7 +55,7 @@ const EnrichedSymbolSource = ({ id, featureCollection }: EnrichedFeaturesProps) 
         }}
         paint={{
           "line-color": ["coalesce", ["get", "color"], "#000000"],
-          "line-opacity": 0.7,
+          "line-opacity": ["coalesce", ["get", "opacity"], 0.7],
           // Data-driven so the emphasised stretch of outline can share this layer with the
           // arrow shafts instead of needing one of its own.
           "line-width": ["coalesce", ["get", "width"], 2],
