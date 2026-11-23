@@ -89,7 +89,7 @@ describe("usePendingFeature", () => {
     expect(render("p1").result.current?.error).toBeUndefined();
   });
 
-  it("saves the feature under its draw id, and selects the saved one in place of the local copy", async () => {
+  it("saves the feature under its draw id, then drops the local copy and closes the panel", async () => {
     mocks.addFeature.mockResolvedValue({ featureId: "saved-1" });
     const asOf = new Date("2026-01-15T09:00:00Z");
     const effectiveAt = new Date("2026-01-15T08:30:00Z");
@@ -108,7 +108,7 @@ describe("usePendingFeature", () => {
     await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(2));
     expect(dispatch.mock.calls).toEqual([
       [{ type: "REMOVE_PENDING_FEATURE", payload: { id: "p1" } }],
-      [{ type: "SELECT_FEATURE", payload: { id: "saved-1" } }],
+      [{ type: "DESELECT_FEATURE", payload: null }],
     ]);
   });
 

@@ -12,7 +12,8 @@ import type { PendingFeatureActions } from "./controls/FeatureForm";
  * Undefined when the given feature is not such a pending feature.
  *
  * Saving creates the feature on the server, optionally with the time it should take effect at,
- * and then selects the saved feature in place of the local copy. Discarding drops the local copy.
+ * and then drops the local copy and closes the panel, as saving a saved feature does.
+ * Discarding drops the local copy.
  */
 export function usePendingFeature(
   featureId: string | undefined,
@@ -41,9 +42,9 @@ export function usePendingFeature(
         change: effectiveAt ? { effectiveAt } : undefined,
         asOf,
       })
-        .then(({ featureId: savedId }) => {
+        .then(() => {
           dispatch({ type: "REMOVE_PENDING_FEATURE", payload: { id: pending.id } });
-          dispatch({ type: "SELECT_FEATURE", payload: { id: savedId } });
+          dispatch({ type: "DESELECT_FEATURE", payload: null });
         })
         .catch(() => {
           // addState.error renders the message in the popup; the feature stays local.
