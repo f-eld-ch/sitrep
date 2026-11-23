@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -1130,6 +1130,89 @@ describe("drawing", () => {
       expect(mocks.modifyFeature).toHaveBeenCalledWith(
         expect.objectContaining({ change: { effectiveAt } }),
       );
+    });
+
+    describe("a saved feature edited in the panel", () => {
+      const f1 = (
+        properties: Record<string, unknown> = { icon: "x" },
+        geometry = point(8, 47),
+      ) => ({
+        ...drawn("f1", geometry),
+        properties: { ...drawn("f1").properties, ...properties },
+      });
+
+      beforeEach(async () => {
+        cleanup();
+        setLayers(makeLayer("L1"));
+        renderMap();
+        await flush();
+      });
+
+      it("keeps a change as a draft, shown at once and not sent", () => {
+        call("onUpdate", {
+          features: [f1({ icon: "y" })],
+          action: "featureDetail",
+          draft: true,
+        });
+
+        expect(state().draftFeatures).toEqual([
+          { id: "f1", geometry: undefined, properties: { icon: "y" } },
+        ]);
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+      });
+
+      it("sends the draft in one update when saved, and drops it", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: "f1", geometry: undefined, properties: { icon: "y" } }),
+        );
+        expect(state().draftFeatures).toEqual([]);
+      });
+
+      it("sends a drafted geometry along with the properties", () => {
+        call("onUpdate", {
+          features: [f1({}, point(9, 48))],
+          action: "reverseDirection",
+          draft: true,
+        });
+        call("onUpdate", { features: [f1({}, point(9, 48))], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: "f1", geometry: point(9, 48) }),
+        );
+      });
+
+      it("sends nothing when saved without a change", () => {
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+      });
+
+      it("sends nothing when a drafted change was taken back before saving", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true });
+
+        expect(mocks.modifyFeature).not.toHaveBeenCalled();
+        expect(state().draftFeatures).toEqual([]);
+      });
+
+      it("sends a save that only chooses another time", () => {
+        const effectiveAt = new Date("2026-01-15T08:30:00Z");
+        call("onUpdate", { features: [f1()], action: "featureDetail", save: true, effectiveAt });
+
+        expect(mocks.modifyFeature).toHaveBeenCalledWith(
+          expect.objectContaining({ change: { effectiveAt } }),
+        );
+      });
+
+      it("drops a draft when the selection moves on", () => {
+        call("onUpdate", { features: [f1({ icon: "y" })], action: "featureDetail", draft: true });
+        dispatch({ type: "DESELECT_FEATURE", payload: null });
+
+        expect(state().draftFeatures).toEqual([]);
+      });
     });
 
     it("deletes a saved feature on the server", () => {

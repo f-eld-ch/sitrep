@@ -449,6 +449,7 @@ const BabsIconController = () => {
         // With the unified panel every change is kept locally until the user saves; the older
         // pickers have no save, so they send as they always did.
         draft: iconPickerV2 && !e.save,
+        save: e.save,
         target: map,
       });
     },

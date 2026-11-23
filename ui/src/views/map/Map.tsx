@@ -7,7 +7,7 @@ import { BABS_SPRITE_BASE } from "components/babs/iconResolver";
 import EnrichedLayerFeatures, { EnrichedSymbolSource } from "components/map/EnrichedLayerFeatures";
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { clsx } from "clsx";
-import { first, isEqual, throttle } from "lodash";
+import { first, isEqual, omitBy, throttle } from "lodash";
 import * as maplibre from "maplibre-gl";
 import { setMaxParallelImageRequests, setWorkerCount, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
@@ -792,6 +792,12 @@ function Draw() {
       const isGeometryDraft = (id: string) =>
         state.draftFeatures.some((d) => d.id === id && d.geometry);
       const isGeometryOnly = e.action === "reverseDirection";
+      // The saved state of a feature, to tell whether pressing save changes anything.
+      const savedFeatures = layerToFeatureCollection(
+        first(state.layers.filter((l) => l.layer.id === state.activeLayer).map((l) => l.layer)),
+      ).features;
+      const meaningful = (properties: GeoJsonProperties) =>
+        omitBy(properties, (v) => v === undefined || v === "");
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
@@ -827,6 +833,20 @@ function Draw() {
           continue;
         }
 
+        // Save with nothing changed (and no other time chosen) sends nothing.
+        const saved = savedFeatures.find((x) => String(x.id) === id);
+        if (
+          e.save &&
+          e.effectiveAt === undefined &&
+          saved !== undefined &&
+          isEqual(meaningful(cleanFeature(saved).properties), meaningful(feature.properties)) &&
+          isEqual(cleanFeature(saved).geometry, feature.geometry)
+        ) {
+          dispatch({ type: "CLEAR_DRAFT_FEATURE", payload: { id } });
+
+          continue;
+        }
+
         if (drawingMessage) onDrawingChange?.();
         // What is sent now is the draft; the cache shows it at once through the optimistic response.
         dispatch({ type: "CLEAR_DRAFT_FEATURE", payload: { id } });
@@ -851,7 +871,9 @@ function Draw() {
       incidentId,
       modifyFeature,
       onDrawingChange,
+      state.activeLayer,
       state.draftFeatures,
+      state.layers,
       state.pendingFeatures,
     ],
   );
@@ -1136,6 +1158,8 @@ export interface FeatureEvent {
    * the user saves (an event without this flag).
    */
   draft?: boolean;
+  /** The user pressed save in the panel: nothing is sent when nothing differs from what is saved. */
+  save?: boolean;
   /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
   effectiveAt?: Date;
 }
