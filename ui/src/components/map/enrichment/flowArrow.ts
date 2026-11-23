@@ -134,15 +134,46 @@ const stretchOf = (
   return points;
 };
 
+/** The outline as drawn, closed, with the distance along it to every position. */
+const outlineOf = (open: Position[], smooth: boolean) => {
+  // For a curve the closing edge is the last run of points.
+  const path: Position[] = smooth ? smoothRing(open) : [...open, open[0]];
+  const cumulative: number[] = [0];
+  for (let i = 1; i < path.length; i += 1) {
+    cumulative.push(cumulative[i - 1] + distance(point(path[i - 1]), point(path[i]), KM));
+  }
+  const total = cumulative[cumulative.length - 1];
+  // Where the closing edge (last vertex back to the first) starts.
+  const closingStart = cumulative[smooth ? (open.length - 1) * SMOOTH_SAMPLES : open.length - 1];
+
+  return { path, cumulative, total, closingStart };
+};
+
+/**
+ * Where the arrow sits when nothing has been chosen: the middle of the closing edge, as a
+ * fraction of the outline's length counted from the ring's first vertex. The form starts its
+ * slider here, so a zone that was never touched does not move. `undefined` for a ring that
+ * encloses nothing.
+ */
+export const defaultFlowAt = (ring: Position[], smooth = false): number | undefined => {
+  const open = openRing(ring);
+  if (open.length < 3) {
+    return undefined;
+  }
+  const { total, closingStart } = outlineOf(open, smooth);
+
+  return total > 0 ? (closingStart + (total - closingStart) / 2) / total : undefined;
+};
+
 /**
  * The flow-direction arrow: a stretch of the outline redrawn heavier — a fifth of its length —
  * with a straight shaft springing from the middle of it, leaving the outline at a right angle,
  * tipped with a chevron.
  *
- * The stretch is centred on the middle of the outer ring's closing edge (last vertex back to
- * the first), so the arrow sits where the ring closes and moving the ring's start vertex moves
- * the arrow round the outline (`rotateRing`). Nothing extra has to be persisted as a result.
- * The stretch follows the outline, curved or not, past the corners on either side.
+ * It sits at `at`, a fraction of the outline's length counted from the ring's first vertex and
+ * going once round (the middle of the closing edge, last vertex back to the first, when none is
+ * given). The stretch is centred on it and follows the outline, curved or not, past the corners
+ * on either side.
  *
  * Unlike the slide arrow the tail sits *on* the boundary: a polygon stroke is 2px, so there is
  * no pattern band to clear, and springing from the outline is what makes the arrow read as
@@ -157,6 +188,8 @@ export const buildFlowArrow = (
   featureColor: string | undefined,
   /** The outline is drawn as a curve: the stretch and the arrow follow it, not the chords. */
   smooth = false,
+  /** Where on the outline the arrow sits, as a fraction of its length; see above. */
+  at?: number,
 ): SyntheticFeature[] => {
   const open = openRing(ring);
   // Fewer than three distinct vertices enclose nothing, so there is no inside to point out of.
@@ -164,13 +197,7 @@ export const buildFlowArrow = (
     return [];
   }
 
-  // The outline as it is drawn, closed. For a curve the closing edge is the last run of points.
-  const path: Position[] = smooth ? smoothRing(open) : [...open, open[0]];
-  const cumulative: number[] = [0];
-  for (let i = 1; i < path.length; i += 1) {
-    cumulative.push(cumulative[i - 1] + distance(point(path[i - 1]), point(path[i]), KM));
-  }
-  const total = cumulative[cumulative.length - 1];
+  const { path, cumulative, total, closingStart } = outlineOf(open, smooth);
 
   const [minX, minY, maxX, maxY] = bbox(lineString(path));
   const extent = distance(point([minX, minY]), point([maxX, maxY]), KM);
@@ -179,16 +206,18 @@ export const buildFlowArrow = (
     return [];
   }
 
-  // Springs from the middle of the closing edge rather than from a vertex. A corner is shared
-  // by two edges, so an arrow planted there reads as belonging to neither, and the perpendicular
-  // at a corner does not cleanly separate inside from out.
-  const closingStart = cumulative[smooth ? (open.length - 1) * SMOOTH_SAMPLES : open.length - 1];
-  const anchor = closingStart + (total - closingStart) / 2;
+  // By default it springs from the middle of the closing edge rather than from a vertex. A corner
+  // is shared by two edges, so an arrow planted there reads as belonging to neither, and the
+  // perpendicular at a corner does not cleanly separate inside from out.
+  const anchor =
+    typeof at === "number" && Number.isFinite(at)
+      ? (((at % 1) + 1) % 1) * total
+      : closingStart + (total - closingStart) / 2;
   const base = point(pointAlong(path, cumulative, total, anchor));
 
   // Direction of the outline where the arrow springs from: for a straight edge the edge itself,
   // for a curve its tangent there.
-  const reach = Math.min(total * 0.01, (total - closingStart) / 4);
+  const reach = total * 0.01;
   const alongOutline = bearing(
     point(pointAlong(path, cumulative, total, anchor - reach)),
     point(pointAlong(path, cumulative, total, anchor + reach)),
@@ -232,25 +261,4 @@ export const buildFlowArrow = (
       color,
     ),
   ];
-};
-
-/**
- * The outer ring with its starting vertex moved on by `steps` places, so the closing edge the
- * flow arrow springs from becomes another one. The shape of the zone does not change: only
- * which vertex the ring begins and ends at. Negative steps move it back.
- *
- * Holes are left alone. Returns `undefined` for a ring with fewer than three distinct vertices,
- * which has no edge to move.
- */
-export const rotateRing = (ring: Position[], steps: number): Position[] | undefined => {
-  const open = openRing(ring);
-  if (open.length < 3) {
-    return undefined;
-  }
-
-  const n = open.length;
-  const shift = ((steps % n) + n) % n;
-  const rotated = [...open.slice(shift), ...open.slice(0, shift)];
-
-  return [...rotated, rotated[0]];
 };

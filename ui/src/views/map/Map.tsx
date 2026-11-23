@@ -790,7 +790,7 @@ function Draw() {
   const onUpdate = useCallback(
     (e: FeatureEvent) => {
       const isPropertyOnly = e.action === "featureDetail";
-      const isGeometryOnly = e.action === "reverseDirection" || e.action === "rotateRing";
+      const isGeometryOnly = e.action === "reverseDirection";
       const updatedFeatures: Feature[] = e.features;
       for (const f of updatedFeatures) {
         const feature = cleanFeature(f);
@@ -1106,7 +1106,7 @@ export { MapWithProvder as Map };
 
 export interface FeatureEvent {
   features: Feature<Geometry, GeoJsonProperties>[];
-  /** "featureDetail" = property-only change; "reverseDirection" and "rotateRing" = geometry-only changes; absent or other = geometry+properties change */
+  /** "featureDetail" = property-only change; "reverseDirection" = geometry-only change; absent or other = geometry+properties change */
   action?: string;
   /** When a property edit takes effect on the timeline; absent for "now" (or the message's time). */
   effectiveAt?: Date;

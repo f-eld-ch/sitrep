@@ -1,16 +1,11 @@
 import { getIcon } from "@f-eld-ch/babs-core";
 import { KEMLER_CODES } from "@f-eld-ch/babs-core/kemler-codes";
-import {
-  faArrowsRotate,
-  faChevronLeft,
-  faChevronRight,
-  faLock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { categoryOf, resolveIconId } from "components/babs/iconResolver";
 import { fieldsFor, type LabelField, rotationAllowed } from "components/babs/labelSchema";
 import { LineTypes, ZoneTypes } from "components/babs/lineAndZoneTypes";
-import { rotateRing } from "components/map/enrichment/flowArrow";
+import { defaultFlowAt } from "components/map/enrichment/flowArrow";
 import {
   SLIDE_ARROW_DEFAULT_AT,
   SLIDE_ARROW_MAX_AT,
@@ -132,6 +127,14 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     selectedFeature.geometry.type === "Point" &&
     rotationAllowed(category, resolvedIconId, iconValue);
 
+  const defaultArrowAt =
+    selectedFeature.geometry.type === "Polygon"
+      ? (defaultFlowAt(
+          selectedFeature.geometry.coordinates[0] ?? [],
+          EnrichPolygonMap[selectedFeature.properties?.zoneType as string]?.smooth === true,
+        ) ?? 0)
+      : SLIDE_ARROW_DEFAULT_AT;
+
   const valuesFromFeature = () =>
     isUnSign
       ? {
@@ -147,10 +150,11 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     canRotate && !isUndefined(selectedFeature?.properties?.iconRotation),
   );
 
+  /** Where the arrow is: what is stored, else the default of its kind (see `defaultArrowAt`). */
   const arrowAtOf = (): number =>
     typeof selectedFeature.properties?.arrowAt === "number"
       ? selectedFeature.properties.arrowAt
-      : SLIDE_ARROW_DEFAULT_AT;
+      : defaultArrowAt;
   const [arrowAt, setArrowAt] = useState<number>(arrowAtOf);
 
   const [syncedFeature, setSyncedFeature] = useState(selectedFeature);
@@ -232,38 +236,19 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     onUpdate({ features: [reversed], action: "reverseDirection" });
   }, [onUpdate, selectedFeature]);
 
-  /** Moves the slide arrow along the line; the middle is the default and is not stored. */
+  /** Moves the arrow along the line or outline; the default position is not stored. */
   const onArrowAtChange = (fraction: number) => {
     setArrowAt(fraction);
     const properties: GeoJsonProperties = omitBy(
       {
         ...selectedFeature.properties,
         ...values,
-        arrowAt: fraction === SLIDE_ARROW_DEFAULT_AT ? undefined : fraction,
+        arrowAt: Math.abs(fraction - defaultArrowAt) < 0.005 ? undefined : fraction,
       },
       isEmptyValue,
     );
     onUpdate({ features: [{ ...selectedFeature, properties }], action: "featureDetail" });
   };
-
-  const onMoveFlowEdge = useCallback(
-    (steps: number) => {
-      if (selectedFeature.geometry.type !== "Polygon") return;
-      const [outer, ...holes] = selectedFeature.geometry.coordinates;
-      const ring = outer ? rotateRing(outer, steps) : undefined;
-      if (!ring) return;
-      onUpdate({
-        features: [
-          {
-            ...selectedFeature,
-            geometry: { ...selectedFeature.geometry, coordinates: [ring, ...holes] },
-          },
-        ],
-        action: "rotateRing",
-      });
-    },
-    [onUpdate, selectedFeature],
-  );
 
   const onRotationChange = (value: number) => {
     setRotation(value);
@@ -341,12 +326,14 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
     : fields.map((field) => ({ key: field.key, label: fieldLabel(field) }));
 
   const isLine = selectedFeature.geometry.type === "LineString";
-  const hasFlowArrow =
-    selectedFeature.geometry.type === "Polygon" &&
-    EnrichPolygonMap[selectedFeature.properties?.zoneType as string]?.flowArrow !== undefined;
   const hasSlideArrow =
     selectedFeature.geometry.type === "LineString" &&
     EnrichLineStringMap[selectedFeature.properties?.lineType as string]?.slideArrow !== undefined;
+  const zoneEnrichment =
+    selectedFeature.geometry.type === "Polygon"
+      ? EnrichPolygonMap[selectedFeature.properties?.zoneType as string]
+      : undefined;
+  const hasFlowArrow = zoneEnrichment?.flowArrow !== undefined;
   const isDirectionalLine =
     isLine && LineTypes[selectedFeature.properties?.lineType as string]?.directional === true;
 
@@ -463,7 +450,7 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
           </div>
         </div>
       )}
-      {hasSlideArrow && (
+      {(hasSlideArrow || hasFlowArrow) && (
         <div className="mb-2">
           <label
             className="mb-1 block text-xs font-semibold text-gray-800"
@@ -476,41 +463,13 @@ export function FeatureForm({ selectedFeature, onUpdate, pending, changeTime }: 
             id={`${baseId}-arrow-at`}
             className="w-full"
             type="range"
-            min={SLIDE_ARROW_MIN_AT * 100}
-            max={SLIDE_ARROW_MAX_AT * 100}
+            // A line has ends the arrow keeps clear of; an outline has none and goes round.
+            min={hasSlideArrow ? SLIDE_ARROW_MIN_AT * 100 : 0}
+            max={hasSlideArrow ? SLIDE_ARROW_MAX_AT * 100 : 100}
             step="1"
             value={Math.round(arrowAt * 100)}
             onChange={(e) => onArrowAtChange(Number(e.target.value) / 100)}
           />
-        </div>
-      )}
-      {hasFlowArrow && (
-        <div className="mb-2">
-          <span className="mb-1 block text-xs font-semibold text-gray-800">
-            {t("mapview.flowEdge")}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="light"
-              size="sm"
-              className="flex-1"
-              aria-label={t("mapview.flowEdgePrev")}
-              title={t("mapview.flowEdgePrev")}
-              onClick={() => onMoveFlowEdge(-1)}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} />
-            </Button>
-            <Button
-              variant="light"
-              size="sm"
-              className="flex-1"
-              aria-label={t("mapview.flowEdgeNext")}
-              title={t("mapview.flowEdgeNext")}
-              onClick={() => onMoveFlowEdge(1)}
-            >
-              <FontAwesomeIcon icon={faChevronRight} />
-            </Button>
-          </div>
         </div>
       )}
       {(pending || changeTime) && (

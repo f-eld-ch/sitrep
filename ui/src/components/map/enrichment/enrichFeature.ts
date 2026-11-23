@@ -137,6 +137,7 @@ export const enrichFeature = (f: SyntheticFeature): SyntheticFeature[] => {
             flowArrow,
             f.properties?.color,
             smooth,
+            typeof f.properties?.arrowAt === "number" ? f.properties.arrowAt : undefined,
           ),
         );
       });

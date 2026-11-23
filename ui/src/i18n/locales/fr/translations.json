@@ -157,9 +157,6 @@
   "mapview": {
     "rotate": "Tourner le signe",
     "arrowPosition": "Position de la flèche le long de la ligne",
-    "flowEdge": "Sens d'écoulement sur un autre côté",
-    "flowEdgePrev": "Côté précédent",
-    "flowEdgeNext": "Côté suivant",
     "rotation": "Rotation",
     "layer": "calque",
     "unlock": "Désamarrer le signe",

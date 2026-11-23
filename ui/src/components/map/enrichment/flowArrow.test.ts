@@ -2,7 +2,7 @@ import type { Position } from "geojson";
 import { describe, expect, it } from "vitest";
 import { ARROW } from "./arrow";
 import { enrichFeature, selectionFill } from "./enrichFeature";
-import { buildFlowArrow, rotateRing } from "./flowArrow";
+import { buildFlowArrow, defaultFlowAt } from "./flowArrow";
 import { SMOOTHED_ZONE_NAMES } from "./registry";
 
 const A: Position = [8.0, 47.0];
@@ -11,55 +11,59 @@ const C: Position = [8.1, 47.1];
 const D: Position = [8.0, 47.1];
 const square: Position[] = [A, B, C, D, A];
 
-describe("rotateRing", () => {
-  it("moves the start on by one vertex and keeps the ring closed", () => {
-    expect(rotateRing(square, 1)).toEqual([B, C, D, A, B]);
-  });
-
-  it("moves it back with a negative step", () => {
-    expect(rotateRing(square, -1)).toEqual([D, A, B, C, D]);
-  });
-
-  it("comes back to the start after a full turn, and wraps for more steps than vertices", () => {
-    expect(rotateRing(square, 4)).toEqual(square);
-    expect(rotateRing(square, 5)).toEqual(rotateRing(square, 1));
-    expect(rotateRing(rotateRing(square, 1)!, -1)).toEqual(square);
-  });
-
-  it("keeps the vertices, so the zone does not change shape", () => {
-    const rotated = rotateRing(square, 2)!;
-    expect(new Set(rotated.slice(0, -1).map(String))).toEqual(new Set([A, B, C, D].map(String)));
-    expect(rotated[0]).toEqual(rotated[rotated.length - 1]);
-  });
-
-  it("copes with a ring that repeats its first vertex more than once", () => {
-    expect(rotateRing([A, B, C, D, A, A], 1)).toEqual([B, C, D, A, B]);
-  });
-
-  it("has nothing to move in a ring that encloses nothing", () => {
-    expect(rotateRing([A, B, A], 1)).toBeUndefined();
-    expect(rotateRing([], 1)).toBeUndefined();
-  });
-});
-
-describe("the flow arrow follows the rotation", () => {
+describe("the position of the flow arrow", () => {
   const config = { icon: ARROW.fireSpread, color: "#ff0000", lengthRatio: 0.12 };
-  const baseOf = (ring: Position[]) => {
-    const shaft = buildFlowArrow("z", "flow", ring, config, undefined).find((f) =>
+  const tailOf = (at?: number, smooth = false) => {
+    const shaft = buildFlowArrow("z", "flow", square, config, undefined, smooth, at).find((f) =>
       String(f.id).endsWith(":flow"),
     );
-
-    const coordinates = (shaft!.geometry as { coordinates: Position[] }).coordinates;
-
-    return coordinates[0];
+    return (shaft!.geometry as { coordinates: Position[] }).coordinates[0];
   };
 
-  it("springs from the middle of the closing edge, and that edge moves with the ring", () => {
-    // closing edge D→A is the west side
-    expect(baseOf(square)[0]).toBeCloseTo(8.0, 4);
-    // after one step it is A→B, the south side
-    expect(baseOf(rotateRing(square, 1)!)[1]).toBeCloseTo(47.0, 4);
-    expect(baseOf(rotateRing(square, 1)!)[0]).toBeCloseTo(8.05, 3);
+  it("is the middle of the closing edge when none is given", () => {
+    // closing edge D→A is the west side of the square
+    expect(tailOf()[0]).toBeCloseTo(8.0, 4);
+    expect(tailOf()[1]).toBeCloseTo(47.05, 3);
+  });
+
+  it("names that default as a fraction of the outline from the first vertex", () => {
+    // three sides of four, then half the fourth: 3.5 / 4 of the outline (the sides differ in length)
+    const at = defaultFlowAt(square)!;
+    expect(at).toBeGreaterThan(0.8);
+    expect(at).toBeLessThan(1);
+    const [x, y] = tailOf(at);
+    expect(x).toBeCloseTo(tailOf()[0], 4);
+    expect(y).toBeCloseTo(tailOf()[1], 4);
+  });
+
+  it("moves round the outline with the position, from the first vertex", () => {
+    expect(tailOf(0)[0]).toBeCloseTo(8.0, 4);
+    expect(tailOf(0)[1]).toBeCloseTo(47.0, 4);
+    // somewhere on the south side, going east from A
+    const [x, y] = tailOf(0.15);
+    expect(y).toBeCloseTo(47.0, 4);
+    expect(x).toBeGreaterThan(8.0);
+    expect(x).toBeLessThan(8.1);
+  });
+
+  it("goes once round and wraps", () => {
+    expect(tailOf(1.15)[0]).toBeCloseTo(tailOf(0.15)[0], 5);
+    expect(tailOf(-0.85)[0]).toBeCloseTo(tailOf(0.15)[0], 5);
+  });
+
+  it("follows the curve when the outline is drawn as one", () => {
+    const [x, y] = tailOf(0.15, true);
+    // on the smoothed outline, which bulges below the south side
+    expect(y).toBeLessThan(47.0 + 1e-9);
+    expect(x).toBeGreaterThan(8.0);
+  });
+
+  it("falls back to the default for a value that is not a number", () => {
+    expect(tailOf(Number.NaN)[1]).toBeCloseTo(tailOf()[1], 6);
+  });
+
+  it("has no default for a ring that encloses nothing", () => {
+    expect(defaultFlowAt([A, B, A])).toBeUndefined();
   });
 });
 

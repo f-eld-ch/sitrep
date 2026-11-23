@@ -569,34 +569,44 @@ describe("FeatureLabelPopup moving the flow arrow of a flooded area", () => {
     [8, 47.1],
     [8, 47],
   ];
-  const flooded = (zoneType: string): F => ({
+  const flooded = (zoneType: string, arrowAt?: number): F => ({
     type: "Feature",
     id: "z1",
     geometry: { type: "Polygon", coordinates: [ring] },
-    properties: { zoneType },
+    properties: { zoneType, ...(arrowAt === undefined ? {} : { arrowAt }) },
   });
 
-  it("starts the ring one vertex on, or one back, leaving the shape alone", () => {
+  it("offers the same slider as a line, starting at the default position", () => {
     renderPopup(flooded("UeberschwemmtesGebiet"));
 
-    fireEvent.click(screen.getByRole("button", { name: "Nächste Kante" }));
-    expect(onUpdate.mock.calls[0][0].action).toBe("rotateRing");
-    expect(onUpdate.mock.calls[0][0].features[0].geometry.coordinates[0]).toEqual([
-      [8.1, 47],
-      [8.1, 47.1],
-      [8, 47.1],
-      [8, 47],
-      [8.1, 47],
-    ]);
+    const slider = screen.getByLabelText(/Pfeilposition/);
+    // the middle of the closing (western) edge of the square, drawn as a curve: about 86% round
+    expect(slider).toHaveValue("86");
+    expect(slider).toHaveAttribute("min", "0");
+    expect(slider).toHaveAttribute("max", "100");
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Vorherige Kante" }));
-    expect(onUpdate.mock.calls[1][0].features[0].geometry.coordinates[0][0]).toEqual([8, 47.1]);
+  it("stores where the arrow is as a fraction, and nothing for the default", () => {
+    renderPopup(flooded("UeberschwemmtesGebiet"));
+
+    fireEvent.change(screen.getByLabelText(/Pfeilposition/), { target: { value: "25" } });
+    expect(onUpdate.mock.calls[0][0].action).toBe("featureDetail");
+    expect(onUpdate.mock.calls[0][0].features[0].properties).toMatchObject({ arrowAt: 0.25 });
+    // the geometry is left alone
+    expect(onUpdate.mock.calls[0][0].features[0].geometry.coordinates[0]).toEqual(ring);
+
+    fireEvent.change(screen.getByLabelText(/Pfeilposition/), { target: { value: "86" } });
+    expect(onUpdate.mock.calls[1][0].features[0].properties).not.toHaveProperty("arrowAt");
+  });
+
+  it("shows the stored position", () => {
+    renderPopup(flooded("UeberschwemmtesGebiet", 0.3));
+    expect(screen.getByLabelText(/Pfeilposition/)).toHaveValue("30");
   });
 
   it("offers it for no zone without a flow arrow", () => {
     renderPopup(flooded("Einsatzraum"));
-
-    expect(screen.queryByRole("button", { name: "Nächste Kante" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Pfeilposition/)).not.toBeInTheDocument();
   });
 });
 
