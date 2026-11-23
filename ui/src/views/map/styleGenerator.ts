@@ -234,7 +234,15 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
   const propPrefix = options.forDraw ? "user_" : "";
 
   // Generate filter conditions based on mode
-  function createFilter(baseConditions: FilterCondition[]): FilterSpecification {
+  /**
+   * `whileSelected`: the layer also draws a feature that is selected. By default a selected
+   * feature is left to the `-active` styles, which show only its outline; a line type must stay
+   * visible while it is being chosen and edited, so those layers opt in.
+   */
+  function createFilter(
+    baseConditions: FilterCondition[],
+    { whileSelected = false }: { whileSelected?: boolean } = {},
+  ): FilterSpecification {
     // If we're not in draw mode, the filter is simpler
     if (!options.forDraw) {
       return ["all", ...baseConditions] as FilterSpecification;
@@ -290,6 +298,7 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     // Add active condition for non-vertex, non-icon filters
     if (
       !isIconFilter &&
+      !whileSelected &&
       !conditions.some((cond) => Array.isArray(cond) && cond[0] === "==" && cond[1] === "active")
     ) {
       // Insert active condition at the beginning
@@ -535,19 +544,22 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     {
       id: "gl-draw-line-inactive-pattern",
       type: "line",
-      filter: createFilter([
-        ["==", "$type", "LineString"],
+      filter: createFilter(
         [
-          "in",
-          `${propPrefix}lineType`,
-          "unpassierbar",
-          "beabsichtigteErkundung",
-          "durchgeführteErkundung",
-          "Rutschgebiet",
-          "RutschgebietGespiegelt",
-          "rettungsAchse",
+          ["==", "$type", "LineString"],
+          [
+            "in",
+            `${propPrefix}lineType`,
+            "unpassierbar",
+            "beabsichtigteErkundung",
+            "durchgeführteErkundung",
+            "Rutschgebiet",
+            "RutschgebietGespiegelt",
+            "rettungsAchse",
+          ],
         ],
-      ]),
+        { whileSelected: true },
+      ),
       layout: {
         "line-cap": "round",
         "line-join": "round",
@@ -584,20 +596,23 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     {
       id: "gl-draw-line-inactive-solidlines",
       type: "line",
-      filter: createFilter([
-        ["==", "$type", "LineString"],
+      filter: createFilter(
         [
-          "in",
-          `${propPrefix}lineType`,
-          "schwerBegehbar",
-          "durchgeführteVerschiebung",
-          "durchgeführterEinsatz",
-          // Same solid stroke as durchgeführteVerschiebung, in the feature's red.
-          "brandUebergriffErfolgt",
-          // Debris field: 1116 has no pattern tile, so the catalogue's plain red boundary.
-          "Truemmerbereich",
+          ["==", "$type", "LineString"],
+          [
+            "in",
+            `${propPrefix}lineType`,
+            "schwerBegehbar",
+            "durchgeführteVerschiebung",
+            "durchgeführterEinsatz",
+            // Same solid stroke as durchgeführteVerschiebung, in the feature's red.
+            "brandUebergriffErfolgt",
+            // Debris field: 1116 has no pattern tile, so the catalogue's plain red boundary.
+            "Truemmerbereich",
+          ],
         ],
-      ]),
+        { whileSelected: true },
+      ),
       layout: {
         "line-cap": "round",
         "line-join": "round",
@@ -611,19 +626,22 @@ export function createMapStyle(options: MapStyleOptions = { forDraw: true }): La
     {
       id: "gl-draw-line-inactive-dashlines",
       type: "line",
-      filter: createFilter([
-        ["==", "$type", "LineString"],
+      filter: createFilter(
         [
-          "in",
-          `${propPrefix}lineType`,
-          "begehbar",
-          "beabsichtigteVerschiebung",
-          "beabsichtigterEinsatz",
-          // Same dashed stroke as beabsichtigteVerschiebung; red comes from the feature's
-          // own `color`, set by the line type.
-          "brandUebergriffGefahr",
+          ["==", "$type", "LineString"],
+          [
+            "in",
+            `${propPrefix}lineType`,
+            "begehbar",
+            "beabsichtigteVerschiebung",
+            "beabsichtigterEinsatz",
+            // Same dashed stroke as beabsichtigteVerschiebung; red comes from the feature's
+            // own `color`, set by the line type.
+            "brandUebergriffGefahr",
+          ],
         ],
-      ]),
+        { whileSelected: true },
+      ),
       layout: {
         "line-cap": "round",
         "line-join": "round",

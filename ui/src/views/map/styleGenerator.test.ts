@@ -380,7 +380,6 @@ const drawStyle: LayerProps[] = [
     type: "line",
     filter: [
       "all",
-      ["==", "active", "false"],
       ["==", "$type", "LineString"],
       [
         "in",
@@ -425,7 +424,6 @@ const drawStyle: LayerProps[] = [
     type: "line",
     filter: [
       "all",
-      ["==", "active", "false"],
       ["==", "$type", "LineString"],
       [
         "in",
@@ -453,7 +451,6 @@ const drawStyle: LayerProps[] = [
     type: "line",
     filter: [
       "all",
-      ["==", "active", "false"],
       ["==", "$type", "LineString"],
       [
         "in",
