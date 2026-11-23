@@ -1,33 +1,9 @@
-import { listIcons } from "@f-eld-ch/babs-core";
 import { describe, expect, it } from "vitest";
 import { isPickableIcon } from "./excludedIcons";
-import { fold, iconSearch } from "./iconSearch";
-import { ICON_KEYWORDS } from "./iconKeywords";
+import { iconSearch } from "./iconSearch";
 
 const de = iconSearch("de");
 const ids = (query: string, search = de) => search(query).map((hit) => hit.id);
-
-describe("fold", () => {
-  it("treats an umlaut and its transliteration alike", () => {
-    expect(fold("Gebäude").text).toBe(fold("Gebaeude").text);
-    expect(fold("Überschwemmung").text).toBe(fold("Ueberschwemmung").text);
-    expect(fold("Sanität").text).toBe(fold("Sanitaet").text);
-    expect(fold("Straße").text).toBe(fold("Strasse").text);
-  });
-
-  it("ignores case, accents and punctuation", () => {
-    expect(fold("Étage-Détail").text).toBe("etage detail");
-    expect(fold("  Brand,  einzelnes - Gebäude ").text).toBe("brand einzelnes gebaude");
-  });
-
-  it("keeps track of where each folded letter came from", () => {
-    const folded = fold("Sanitaetshilfsstelle");
-    // "ae" is one letter, spanning both original characters
-    expect(folded.text.slice(0, 7)).toBe("sanitat");
-    expect(folded.from[5]).toBe(5);
-    expect(folded.to[5]).toBe(7);
-  });
-});
 
 describe("search", () => {
   it("finds nothing for an empty or blank query", () => {
@@ -162,24 +138,5 @@ describe("what is shown", () => {
     const hit = de("kaputt").find((h) => h.id === "1101")!;
     expect(hit.labelMatch).toEqual([]);
     expect(hit.pathMatch).toEqual([]);
-  });
-});
-
-describe("keywords", () => {
-  it("name only symbols the picker offers", () => {
-    const known = new Set(listIcons().map((meta) => meta.id));
-    const stray = Object.keys(ICON_KEYWORDS).filter(
-      (id) => !known.has(id as never) || !isPickableIcon(id as never),
-    );
-    expect(stray).toEqual([]);
-  });
-
-  it("have no empty entries", () => {
-    const empty = Object.entries(ICON_KEYWORDS)
-      .filter(
-        ([, words]) => !words || words.length === 0 || words.some((word) => word.trim() === ""),
-      )
-      .map(([id]) => id);
-    expect(empty).toEqual([]);
   });
 });

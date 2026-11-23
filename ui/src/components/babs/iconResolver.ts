@@ -2,8 +2,8 @@ import {
   type BabsCategoryNumber,
   type BabsIconId,
   getIcon,
-  isBabsIconId,
   listIcons,
+  resolveIconId as resolveCatalogueId,
 } from "@f-eld-ch/babs-core";
 import type { ExpressionSpecification } from "maplibre-gl";
 import { LEGACY_ICON_IDS, type LegacyIconName } from "./legacyIconNames";
@@ -57,13 +57,6 @@ for (const [legacyName, id] of Object.entries(LEGACY_ICON_IDS)) {
   else legacyNamesById.set(id, [legacyName]);
 }
 
-/** alias (`babsBeschaedigung`) and export name (`babs1101`) → id. */
-const idByName = new Map<string, BabsIconId>();
-for (const meta of ICONS) {
-  idByName.set(meta.alias, meta.id);
-  idByName.set(meta.export, meta.id);
-}
-
 /**
  * Every identifier that can denote one of the given icons — alias, bare id, and any legacy
  * German name mapping to it.
@@ -87,15 +80,15 @@ export function iconIdentifiers(ids: readonly BabsIconId[]): string[] {
 /**
  * Resolves any identifier this application has ever persisted into a catalogue id.
  *
- * Accepts, in order of precedence: a bare catalogue id (`"1101"`), an alias
+ * Accepts: a bare catalogue id (`"1101"`), an alias
  * (`"babsBeschaedigung"`), an export name (`"babs1101"`), or a legacy German name
  * (`"Beschaedigung"`). Returns `undefined` for anything unrecognised, so callers can
  * fall back deliberately rather than rendering a broken image.
  */
 export function resolveIconId(value: string | undefined): BabsIconId | undefined {
-  if (!value) return undefined;
-  if (isBabsIconId(value)) return value;
-  return idByName.get(value) ?? LEGACY_ICON_IDS[value as LegacyIconName];
+  return value
+    ? (resolveCatalogueId(value) ?? LEGACY_ICON_IDS[value as LegacyIconName])
+    : undefined;
 }
 
 /**
